@@ -19,7 +19,37 @@ const DESKTOP_COLUMN_MIN = {
   date: 110,
 };
 
-const DESKTOP_COLUMN_STORAGE_KEY = "klima-desktop-column-widths";
+const DESKTOP_COLUMN_STORAGE_KEY_PREFIX = "klima-desktop-column-widths";
+const DESKTOP_TABLE_ID = "jobs-desktop-main";
+
+function sanitizeColumnWidths(parsed) {
+  return {
+    client: Math.max(DESKTOP_COLUMN_MIN.client, Number(parsed?.client) || DESKTOP_COLUMN_DEFAULTS.client),
+    status: Math.max(DESKTOP_COLUMN_MIN.status, Number(parsed?.status) || DESKTOP_COLUMN_DEFAULTS.status),
+    address: Math.max(DESKTOP_COLUMN_MIN.address, Number(parsed?.address) || DESKTOP_COLUMN_DEFAULTS.address),
+    installers: Math.max(DESKTOP_COLUMN_MIN.installers, Number(parsed?.installers) || DESKTOP_COLUMN_DEFAULTS.installers),
+    date: Math.max(DESKTOP_COLUMN_MIN.date, Number(parsed?.date) || DESKTOP_COLUMN_DEFAULTS.date),
+  };
+}
+
+function readStoredColumnWidths(storageKey) {
+  if (typeof window === "undefined" || !storageKey) return DESKTOP_COLUMN_DEFAULTS;
+  try {
+    const raw = window.localStorage.getItem(storageKey);
+    if (raw) {
+      return sanitizeColumnWidths(JSON.parse(raw));
+    }
+
+    const legacyRaw = window.localStorage.getItem(DESKTOP_COLUMN_STORAGE_KEY_PREFIX);
+    if (legacyRaw) {
+      return sanitizeColumnWidths(JSON.parse(legacyRaw));
+    }
+
+    return DESKTOP_COLUMN_DEFAULTS;
+  } catch {
+    return DESKTOP_COLUMN_DEFAULTS;
+  }
+}
 
 export default function JobsPanel({
   desktopStatusLabels,
@@ -48,30 +78,27 @@ export default function JobsPanel({
   getSortLabel,
   profiles,
 }) {
+  const desktopColumnStorageKey = useMemo(() => {
+    const userKey = profile?.id || sessionUser?.id || "browser";
+    return `${DESKTOP_COLUMN_STORAGE_KEY_PREFIX}:${DESKTOP_TABLE_ID}:${userKey}`;
+  }, [profile?.id, sessionUser?.id]);
+
   const [desktopColumnWidths, setDesktopColumnWidths] = useState(() => {
-    if (typeof window === "undefined") return DESKTOP_COLUMN_DEFAULTS;
-    try {
-      const raw = window.localStorage.getItem(DESKTOP_COLUMN_STORAGE_KEY);
-      if (!raw) return DESKTOP_COLUMN_DEFAULTS;
-      const parsed = JSON.parse(raw);
-      return {
-        client: Math.max(DESKTOP_COLUMN_MIN.client, Number(parsed.client) || DESKTOP_COLUMN_DEFAULTS.client),
-        status: Math.max(DESKTOP_COLUMN_MIN.status, Number(parsed.status) || DESKTOP_COLUMN_DEFAULTS.status),
-        address: Math.max(DESKTOP_COLUMN_MIN.address, Number(parsed.address) || DESKTOP_COLUMN_DEFAULTS.address),
-        installers: Math.max(DESKTOP_COLUMN_MIN.installers, Number(parsed.installers) || DESKTOP_COLUMN_DEFAULTS.installers),
-        date: Math.max(DESKTOP_COLUMN_MIN.date, Number(parsed.date) || DESKTOP_COLUMN_DEFAULTS.date),
-      };
-    } catch {
-      return DESKTOP_COLUMN_DEFAULTS;
-    }
+    const initialUserKey = profile?.id || sessionUser?.id || "browser";
+    return readStoredColumnWidths(`${DESKTOP_COLUMN_STORAGE_KEY_PREFIX}:${DESKTOP_TABLE_ID}:${initialUserKey}`);
   });
 
   const resizeStateRef = useRef(null);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(DESKTOP_COLUMN_STORAGE_KEY, JSON.stringify(desktopColumnWidths));
-  }, [desktopColumnWidths]);
+    if (!desktopColumnStorageKey) return;
+    setDesktopColumnWidths(readStoredColumnWidths(desktopColumnStorageKey));
+  }, [desktopColumnStorageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !desktopColumnStorageKey) return;
+    window.localStorage.setItem(desktopColumnStorageKey, JSON.stringify(desktopColumnWidths));
+  }, [desktopColumnStorageKey, desktopColumnWidths]);
 
   useEffect(() => {
     const handlePointerMove = (event) => {
