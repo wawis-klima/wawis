@@ -1,0 +1,25 @@
+{
+  "name": "klima-app-table-v2",
+  "private": true,
+  "version": "5.51",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "version:bump": "node version-bump.cjs",
+    "zip:release": "node scripts/release-zip.cjs",
+    "release": "npm run version:bump && npm run build && npm run zip:release"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^5.0.0",
+    "browserslist": "^4.28.1",
+    "electron-to-chromium": "^1.5.328"
+  }
+}
