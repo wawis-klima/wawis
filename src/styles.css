@@ -5167,3 +5167,84 @@ img{
     display: none;
   }
 }
+
+
+/* Desktop resizable columns v5.52 */
+.desktopResizableTableWrap {
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.desktopJobsTable {
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.desktopResizableHeaderCell {
+  position: relative;
+  padding-right: 20px !important;
+}
+
+.desktopHeaderContent {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+  width: 100%;
+}
+
+.desktopHeaderLabel,
+.desktopResizableHeaderCell .sortBtn {
+  width: 100%;
+}
+
+.columnResizeHandle {
+  position: absolute;
+  top: 50%;
+  right: -8px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: calc(100% - 10px);
+  min-height: 34px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  z-index: 5;
+}
+
+.columnResizeHandleLine {
+  width: 3px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8db6ff 0%, #4a86ff 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.55);
+  opacity: .95;
+  transition: transform .18s ease, box-shadow .18s ease, height .18s ease;
+}
+
+.columnResizeHandle:hover .columnResizeHandleLine,
+.columnResizeHandle:focus-visible .columnResizeHandleLine {
+  height: 36px;
+  transform: scaleX(1.12);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.75), 0 0 0 4px rgba(74, 134, 255, .12);
+}
+
+.columnResizeHandle:focus-visible {
+  outline: none;
+}
+
+.desktopTableResizeHint {
+  font-size: 12px;
+  color: #53657f;
+}
+
+@media (max-width: 700px) {
+  .columnResizeHandle {
+    display: none;
+  }
+}

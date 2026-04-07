@@ -214,3 +214,6 @@ HISTORIA WERSJI
   - usunięto fałszywy komunikat o błędzie DELETE wynikający z .select() po delete
 
 - 5.50 — Naprawa białego ekranu po otwarciu zlecenia: JobDetailsPanel znów poprawnie odbiera deletingPhotoId i bezpiecznie obsługuje brak photos/viewers/comments.
+
+
+Wersja aplikacji podnosi się automatycznie przy tworzeniu paczki poleceniem `npm run release` (np. 5.51 -> 5.52).

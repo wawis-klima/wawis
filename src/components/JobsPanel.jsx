@@ -74,7 +74,7 @@ export default function JobsPanel({
   }, [desktopColumnWidths]);
 
   useEffect(() => {
-    const handleMouseMove = (event) => {
+    const handlePointerMove = (event) => {
       const resizeState = resizeStateRef.current;
       if (!resizeState) return;
       const nextWidth = resizeState.startWidth + (event.clientX - resizeState.startX);
@@ -84,18 +84,20 @@ export default function JobsPanel({
       }));
     };
 
-    const handleMouseUp = () => {
+    const stopResize = () => {
       resizeStateRef.current = null;
       if (typeof document !== "undefined") {
         document.body.classList.remove("columnResizeActive");
       }
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", stopResize);
+    window.addEventListener("pointercancel", stopResize);
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", stopResize);
+      window.removeEventListener("pointercancel", stopResize);
     };
   }, []);
 
@@ -115,10 +117,20 @@ export default function JobsPanel({
     if (typeof document !== "undefined") {
       document.body.classList.add("columnResizeActive");
     }
+    if (event.currentTarget?.setPointerCapture && event.pointerId != null) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
   }
 
   function resetDesktopColumns() {
     setDesktopColumnWidths(DESKTOP_COLUMN_DEFAULTS);
+  }
+
+  function resetSingleColumn(columnKey) {
+    setDesktopColumnWidths((prev) => ({
+      ...prev,
+      [columnKey]: DESKTOP_COLUMN_DEFAULTS[columnKey],
+    }));
   }
 
   const desktopHeaders = [
@@ -302,7 +314,7 @@ export default function JobsPanel({
       ) : (
         <div className="tableWrap desktopResizableTableWrap">
           <div className="desktopTableActionsRow">
-            <span className="desktopTableResizeHint">Przeciągnij pionowe kreski w nagłówkach, aby zmienić szerokość kolumn.</span>
+            <span className="desktopTableResizeHint">Przeciągnij pionowe kreski przy nagłówkach, aby zmienić szerokość kolumn. Dwuklik przy kresce przywraca domyślną szerokość kolumny.</span>
             <button type="button" className="desktopTableResetBtn" onClick={resetDesktopColumns}>Przywróć szerokości</button>
           </div>
           <table className="jobTable desktopJobsTable" style={{ width: `${desktopTableWidth}px`, minWidth: `${desktopTableWidth}px` }}>
@@ -317,22 +329,23 @@ export default function JobsPanel({
               <tr>
                 {desktopHeaders.map((header) => (
                   <th key={header.key} className="desktopResizableHeaderCell">
-                    {header.sortable ? (
-                      <button type="button" className="sortBtn" onClick={() => toggleSort(header.sortField)}>{header.label}</button>
-                    ) : (
-                      <span className="desktopHeaderLabel">{header.label}</span>
-                    )}
-                    {header.key !== "date" ? (
-                      <button
-                        type="button"
-                        className="columnResizeHandle"
-                        onMouseDown={(event) => beginColumnResize(header.key, event)}
-                        aria-label={`Zmień szerokość kolumny ${header.label}`}
-                        title={`Zmień szerokość kolumny ${header.label}`}
-                      >
-                        <span className="columnResizeHandleLine" />
-                      </button>
-                    ) : null}
+                    <div className="desktopHeaderContent">
+                      {header.sortable ? (
+                        <button type="button" className="sortBtn" onClick={() => toggleSort(header.sortField)}>{header.label}</button>
+                      ) : (
+                        <span className="desktopHeaderLabel">{header.label}</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="columnResizeHandle"
+                      onPointerDown={(event) => beginColumnResize(header.key, event)}
+                      onDoubleClick={() => resetSingleColumn(header.key)}
+                      aria-label={`Zmień szerokość kolumny ${header.label}`}
+                      title={`Przeciągnij, aby zmienić szerokość kolumny ${header.label}. Dwuklik przywraca domyślną szerokość.`}
+                    >
+                      <span className="columnResizeHandleLine" />
+                    </button>
                   </th>
                 ))}
               </tr>
