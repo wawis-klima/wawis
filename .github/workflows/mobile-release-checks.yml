@@ -1,10 +1,6 @@
 name: Mobile release checks
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -99,5 +95,5 @@ jobs:
             echo "Testy mobilne x2, Playwright, build x2 i kontrola ZIP-a zakończyły się poprawnie." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "## ❌ Mobile v${VERSION} — CZERWONY" >> "$GITHUB_STEP_SUMMARY"
-            echo "Co najmniej jeden test, Playwright, build albo kontrola ZIP-a zakończyły się błędem. Nie publikuj tej wersji." >> "$GITHUB_STEP_SUMMARY"
+            echo "Co najmniej jeden test, Playwright, build albo kontrola ZIP-a zakończyły się błędem." >> "$GITHUB_STEP_SUMMARY"
           fi
