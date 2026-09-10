@@ -1,4 +1,4 @@
-/* WAWIS 10.36 — mobile Paliwo: lower inline input height, employee badge colors and 5-entry history pages */
+/* WAWIS 10.37 — mobile Paliwo: slimmer liters/odometer inputs, helper text removed, employee badge colors and 5-entry history pages */
 .fuelModuleCompactMobile {
   gap: 7px !important;
 }
@@ -13,7 +13,7 @@
   grid-template-columns: 104px minmax(0, 1fr) !important;
   align-items: center !important;
   column-gap: 10px !important;
-  row-gap: 2px !important;
+  row-gap: 0 !important;
 }
 
 .fuelModuleCompactMobile .fuelLitersField > span,
@@ -25,24 +25,24 @@
 .fuelModuleCompactMobile .fuelLitersField .fuelInputWithUnit,
 .fuelModuleCompactMobile .fuelOdometerManual .fuelInputWithUnit {
   min-width: 0 !important;
-  min-height: 34px !important;
-  height: 34px !important;
-  border-radius: 10px !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  border-radius: 9px !important;
 }
 
 .fuelModuleCompactMobile .fuelLitersField input,
 .fuelModuleCompactMobile .fuelOdometerManual input {
-  min-height: 32px !important;
-  height: 32px !important;
-  padding: 2px 10px !important;
+  min-height: 28px !important;
+  height: 28px !important;
+  padding: 1px 10px !important;
   font-size: 16px !important;
-  line-height: 1.05 !important;
+  line-height: 1 !important;
 }
 
 .fuelModuleCompactMobile .fuelLitersField .fuelInputWithUnit b,
 .fuelModuleCompactMobile .fuelOdometerManual .fuelInputWithUnit b {
-  padding: 0 10px !important;
-  font-size: 14px !important;
+  padding: 0 9px !important;
+  font-size: 13px !important;
 }
 
 .fuelModuleCompactMobile .fuelOdometerManual {
@@ -50,10 +50,7 @@
 }
 
 .fuelModuleCompactMobile .fuelOdometerManual > small {
-  grid-column: 2 !important;
-  margin-top: -1px !important;
-  font-size: 10px !important;
-  line-height: 1.15 !important;
+  display: none !important;
 }
 
 .fuelModuleCompactMobile .fuelHistoryHeading {
