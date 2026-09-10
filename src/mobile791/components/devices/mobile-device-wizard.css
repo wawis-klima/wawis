@@ -1,0 +1,801 @@
+.mobileDeviceWizard {
+  --wizard-blue: #1464f4;
+  --wizard-ink: #132039;
+  --wizard-muted: #7b879d;
+  position: relative;
+  display: flex;
+  min-height: min(760px, 92vh);
+  flex-direction: column;
+  color: var(--wizard-ink);
+  background: #fff;
+}
+
+.mobileDeviceWizardHeader {
+  display: grid;
+  grid-template-columns: 74px 1fr 74px;
+  align-items: center;
+  gap: 8px;
+  min-height: 54px;
+}
+
+.mobileDeviceWizardHeader h2 {
+  margin: 0;
+  text-align: center;
+  font-size: 21px;
+  line-height: 1.15;
+  color: var(--wizard-ink);
+}
+
+.mobileDeviceWizardBack,
+.mobileDeviceWizardClose {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mobileDeviceWizardBack {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--wizard-blue);
+  padding: 8px 4px;
+}
+
+.mobileDeviceWizardClose {
+  justify-self: end;
+  color: #64748b;
+  padding: 8px 0;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mobileDeviceWizardStep {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0 22px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: #edf4ff;
+  color: var(--wizard-blue);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mobileDeviceWizardStep span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--wizard-blue);
+  color: #fff;
+  letter-spacing: 1px;
+  font-size: 10px;
+}
+
+.mobileDeviceWizardBody {
+  display: grid;
+  gap: 12px;
+  flex: 1;
+  padding: 0 4px 20px;
+}
+
+.mobileDeviceWizardBody > h3 {
+  margin: 5px 3px 1px;
+  font-size: 16px;
+  color: var(--wizard-ink);
+}
+
+.mobileDeviceTypeCard {
+  display: grid;
+  grid-template-columns: 46px 1fr 34px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 94px;
+  padding: 14px 17px;
+  border: 1px solid #e3e8f0;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--wizard-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobileDeviceTypeCard.selected {
+  border-color: var(--wizard-blue);
+  background: #f7faff;
+  box-shadow: 0 10px 25px rgba(20, 100, 244, .08);
+}
+
+.mobileDeviceTypeIcon,
+.mobileMultiOutdoorIcon,
+.mobileMultiIndoorIcon,
+.mobileDeviceOverviewIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wizard-blue);
+}
+
+.mobileDeviceTypeCard strong,
+.mobileDeviceTypeCard small {
+  display: block;
+}
+
+.mobileDeviceTypeCard strong { font-size: 18px; }
+.mobileDeviceTypeCard small { margin-top: 4px; color: var(--wizard-muted); font-size: 13px; }
+
+.mobileDeviceTypeRadio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #d8dee8;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.mobileDeviceTypeCard.selected .mobileDeviceTypeRadio { border-color: var(--wizard-blue); background: var(--wizard-blue); }
+
+.mobileDeviceModeChip {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid #dce5f2;
+  border-radius: 999px;
+  color: var(--wizard-blue);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mobileDeviceModeChip svg { width: 20px; height: 20px; }
+
+.mobileDeviceWizardSelectors {
+  display: grid;
+  gap: 9px;
+}
+
+.mobileDeviceWizardSelection {
+  display: grid;
+  grid-template-columns: 42px 1fr 22px;
+  align-items: center;
+  gap: 11px;
+  min-height: 78px;
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e4e9f1;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--wizard-blue);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobileDeviceWizardSelection:disabled { opacity: .42; cursor: default; }
+.mobileDeviceWizardSelectionIcon { display: inline-flex; align-items: center; justify-content: center; }
+.mobileDeviceWizardSelectionText { min-width: 0; }
+.mobileDeviceWizardSelectionText strong,
+.mobileDeviceWizardSelectionText span { display: block; }
+.mobileDeviceWizardSelectionText strong { color: var(--wizard-ink); font-size: 15px; }
+.mobileDeviceWizardSelectionText span { overflow: hidden; margin-top: 3px; color: var(--wizard-muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+
+.mobileDeviceWizardPhotoGroup {
+  display: grid;
+  gap: 8px;
+  margin-top: 3px;
+  padding: 13px;
+  border: 1px solid #e4e9f1;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.mobileDeviceWizardPhotoGroup h3 { margin: 0 0 3px; font-size: 16px; }
+
+.mobileDeviceWizardCompletion {
+  padding: 8px 10px;
+  border-radius: 11px;
+  background: #fff7ed;
+  color: #b45309;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.mobileDeviceWizardCompletion.ready { background: #ecfdf3; color: #15803d; }
+
+.mobileMultiOutdoorCard,
+.mobileMultiIndoorCard,
+.mobileDeviceOverviewOpen {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  border: 1px solid #e3e8f0;
+  border-radius: 17px;
+  background: #fff;
+  color: var(--wizard-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mobileMultiOutdoorCard { grid-template-columns: 42px 1fr 22px; gap: 11px; min-height: 112px; padding: 14px 16px; }
+.mobileMultiIndoorList { display: grid; gap: 8px; }
+.mobileMultiIndoorCard { grid-template-columns: 39px minmax(0, 1fr) auto 18px; gap: 9px; min-height: 76px; padding: 11px 13px; }
+.mobileMultiOutdoorText strong,
+.mobileMultiOutdoorText small,
+.mobileMultiOutdoorText em,
+.mobileMultiIndoorText strong,
+.mobileMultiIndoorText small { display: block; }
+.mobileMultiOutdoorText strong,
+.mobileMultiIndoorText strong { font-size: 15px; }
+.mobileMultiOutdoorText small,
+.mobileMultiIndoorText small { overflow: hidden; margin-top: 3px; color: var(--wizard-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.mobileMultiOutdoorText em { margin-top: 9px; color: #7c879a; font-size: 11px; font-style: normal; font-weight: 800; }
+.mobileMultiOutdoorText em.ready { color: #16a34a; }
+.mobileMultiIndoorStatus { display: inline-flex; align-items: center; gap: 5px; color: #6b7280; font-size: 12px; font-weight: 900; }
+.mobileMultiIndoorStatus.ready { color: #16a34a; }
+.mobileMultiIndoorStatus small { white-space: nowrap; font-size: 10px; }
+
+.mobileDeviceWizardSecondaryAction {
+  min-height: 50px;
+  width: 100%;
+  border: 1.5px solid var(--wizard-blue);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--wizard-blue);
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.mobileDeviceWizardSecondaryAction:disabled { opacity: .45; cursor: default; }
+.mobileDeviceWizardRemoveUnit { border: 0; background: transparent; color: #dc2626; font-size: 11px; font-weight: 800; cursor: pointer; }
+
+.mobileDeviceOverviewList { display: grid; gap: 10px; }
+.mobileDeviceOverviewCard { overflow: hidden; border: 1px solid #e3e8f0; border-radius: 18px; background: #fff; }
+.mobileDeviceOverviewOpen { grid-template-columns: 43px minmax(0, 1fr) auto 18px; gap: 10px; min-height: 105px; padding: 13px 14px; border: 0; border-radius: 0; }
+.mobileDeviceOverviewText { min-width: 0; }
+.mobileDeviceOverviewText strong,
+.mobileDeviceOverviewText small,
+.mobileDeviceOverviewText em { display: block; }
+.mobileDeviceOverviewText strong { font-size: 15px; }
+.mobileDeviceOverviewText small { overflow: hidden; margin-top: 4px; color: var(--wizard-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.mobileDeviceOverviewText em { margin-top: 8px; color: #d97706; font-size: 11px; font-style: normal; font-weight: 800; }
+.mobileDeviceOverviewText em.ready { color: #16a34a; }
+.mobileDeviceOverviewBadge { padding: 5px 8px; border-radius: 999px; background: #edf4ff; color: var(--wizard-blue); font-size: 10px; font-weight: 900; }
+.mobileDeviceOverviewRemove { width: 100%; padding: 8px; border: 0; border-top: 1px solid #f0f2f6; background: #fff; color: #dc2626; font-size: 10px; font-weight: 800; cursor: pointer; }
+.mobileDeviceAddAnother { margin-top: 3px; }
+.mobileDeviceWizardHint { padding: 10px 12px; border-radius: 13px; background: #f6f8fc; color: #64748b; font-size: 10px; line-height: 1.45; }
+
+.mobileDeviceWizardFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  padding: 12px 4px 2px;
+  background: linear-gradient(180deg, rgba(255,255,255,.15), #fff 25%);
+}
+.mobileDeviceWizardFooter .btn { width: 100%; min-height: 52px; border-radius: 16px; font-size: 16px; }
+
+.mobileDevicePickerOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12050;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(15, 23, 42, .32);
+}
+.mobileDevicePickerSheet {
+  width: min(560px, 100%);
+  max-height: 78vh;
+  overflow: auto;
+  padding: 9px 14px 16px;
+  border-radius: 24px 24px 18px 18px;
+  background: #fff;
+  box-shadow: 0 -20px 50px rgba(15, 23, 42, .18);
+}
+.mobileDevicePickerHandle { width: 42px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: #cbd2de; }
+.mobileDevicePickerTitleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mobileDevicePickerTitleRow h3 { margin: 0; font-size: 18px; }
+.mobileDevicePickerTitleRow button { border: 0; background: transparent; color: var(--wizard-blue); font-size: 11px; font-weight: 800; cursor: pointer; }
+.mobileDevicePickerOptions { display: grid; gap: 7px; margin-top: 13px; }
+.mobileDevicePickerOptions button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 11px 13px; border: 1px solid #e3e8f0; border-radius: 14px; background: #fff; color: var(--wizard-ink); font-size: 14px; font-weight: 800; cursor: pointer; }
+.mobileDevicePickerOptions button.selected { border-color: var(--wizard-blue); background: #f7faff; color: var(--wizard-blue); }
+.mobileDevicePickerCheck,
+.mobileDevicePickerRadio { display: inline-flex; align-items: center; justify-content: center; width: 25px; height: 25px; border-radius: 50%; }
+.mobileDevicePickerCheck { background: var(--wizard-blue); color: #fff; }
+.mobileDevicePickerRadio { border: 1.5px solid #d9dfe8; }
+.mobileDevicePickerCustom { display: grid; gap: 10px; margin-top: 14px; }
+.mobileDevicePickerCustom .input { margin: 0 !important; }
+.mobileDevicePickerCustom .btn { min-height: 48px; }
+
+.mobileDeviceWizardModal {
+  width: min(620px, 100%) !important;
+  max-height: 96vh !important;
+  overflow: auto !important;
+  padding: 14px 18px !important;
+  background: #fff !important;
+}
+
+@media (max-width: 700px) {
+  .formOverlay.mobileDeviceWizardOverlay { padding: 0 !important; align-items: stretch !important; }
+  .mobileDeviceWizardModal { width: 100% !important; min-height: 100dvh !important; max-height: none !important; margin: 0 !important; border-radius: 0 !important; padding: max(10px, env(safe-area-inset-top)) 14px max(10px, env(safe-area-inset-bottom)) !important; }
+  .mobileDeviceWizard { min-height: calc(100dvh - max(20px, env(safe-area-inset-top) + env(safe-area-inset-bottom))); }
+  .mobileDeviceWizardHeader { grid-template-columns: 60px 1fr 60px; }
+  .mobileDeviceWizardHeader h2 { font-size: 19px; }
+  .mobileDeviceWizardStep { margin-bottom: 17px; }
+  .mobileMultiIndoorCard { grid-template-columns: 36px minmax(0, 1fr) 24px 17px; }
+  .mobileMultiIndoorStatus small { display: none; }
+  .mobileDeviceOverviewOpen { grid-template-columns: 39px minmax(0, 1fr) auto 17px; padding: 12px; }
+}
+
+.mobileDevicePickerModelCatalog {
+  display: grid;
+  gap: 13px;
+  margin-top: 13px;
+}
+
+.mobileDevicePickerSearch {
+  position: sticky;
+  top: -1px;
+  z-index: 2;
+  margin: 0 !important;
+  background: #fff !important;
+}
+
+.mobileDevicePickerGroup {
+  display: grid;
+  gap: 7px;
+}
+
+.mobileDevicePickerGroup h4 {
+  margin: 1px 3px 0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.mobileDevicePickerGroup .mobileDevicePickerOptions {
+  margin-top: 0;
+}
+
+.mobileDevicePickerManualOption {
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid #edf0f5;
+}
+
+.mobileDevicePickerEmpty {
+  padding: 18px 12px;
+  border-radius: 14px;
+  background: #f7f8fb;
+  color: #64748b;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* v8.64 — szybki wybór Rotenso: ostatnio używane i najczęściej wybierane. */
+.mobileDevicePickerHistoryGroup {
+  padding: 10px;
+  border: 1px solid #e4eaf3;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.mobileDevicePickerQuickModels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.mobileDevicePickerQuickModels button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #1e293b;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.mobileDevicePickerQuickModels button.selected {
+  border-color: var(--wizard-blue);
+  background: #eff6ff;
+  color: var(--wizard-blue);
+}
+
+.mobileDevicePickerQuickModels .mobileDevicePickerCheck {
+  width: 18px;
+  height: 18px;
+}
+
+.mobileDevicePickerFullCatalogLabel {
+  padding: 2px 3px 0;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+/* v9.83 — protokół korzysta z tej samej, sprawdzonej obudowy co dodawanie urządzenia. */
+.protocolWizardModal {
+  overflow-x: hidden !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
+.mobileProtocolWizard,
+.mobileProtocolWizard * {
+  box-sizing: border-box;
+  min-width: 0;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+
+.mobileProtocolWizard {
+  width: 100%;
+  overflow-x: hidden;
+  background: #fff;
+  white-space: normal;
+}
+
+.mobileProtocolWizardBody {
+  align-content: start;
+  overflow-x: hidden;
+  white-space: normal;
+}
+
+.protocolTestClientName {
+  margin: 0;
+  color: var(--wizard-muted);
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.protocolTestVersionStep {
+  margin-bottom: 17px;
+  text-transform: uppercase;
+}
+
+.mobileProtocolWizard .protocolTestNotice,
+.mobileProtocolWizard .protocolTestSection,
+.mobileProtocolWizard .protocolTestMessage {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.mobileProtocolWizard .protocolTestSignatureCanvas {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 170px !important;
+  min-height: 170px !important;
+  background: #fff !important;
+}
+
+.mobileProtocolWizard .mobileDeviceWizardFooter {
+  width: 100%;
+}
+
+.mobileProtocolWizard .protocolTestFooterActions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 9px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* v9.84 — uporządkowany protokół i osobny, nieruchomy ekran podpisu. */
+.protocolWizardModal,
+.mobileProtocolWizard,
+.mobileProtocolWizard * {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+
+.mobileProtocolWizardBody {
+  gap: 12px !important;
+  padding-bottom: 4px;
+}
+
+.mobileProtocolWizard .protocolTestVersionStep {
+  width: max-content;
+  max-width: 100%;
+  min-height: 34px;
+  margin: 2px auto 14px;
+  padding: 5px 11px 5px 6px;
+  gap: 7px;
+  border-radius: 999px;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+
+.mobileProtocolWizard .protocolTestVersionStep > span {
+  width: 24px;
+  height: 24px;
+  font-size: 8px !important;
+}
+
+.mobileProtocolWizard .protocolTestClientName {
+  margin: 0 !important;
+  color: #142a3a !important;
+  font-size: 17px !important;
+  line-height: 1.25 !important;
+  font-weight: 900 !important;
+}
+
+.mobileProtocolWizard .protocolTestNotice {
+  padding: 10px 12px !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  font-weight: 750 !important;
+}
+.mobileProtocolWizard .protocolTestNotice.saved {
+  border-color: #a8d7c4 !important;
+  background: #f2faf6 !important;
+  color: #176b4d !important;
+}
+
+.mobileProtocolWizard .protocolTestSection {
+  padding: 14px !important;
+  border-radius: 16px !important;
+  background: #f8fafc !important;
+}
+
+.mobileProtocolWizard .protocolTestSection h3 {
+  margin: 0 0 11px !important;
+  color: #142a3a !important;
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+  font-weight: 900 !important;
+}
+
+.mobileProtocolWizard .protocolTestDetails {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  overflow: hidden;
+  border: 1px solid #dfe7ec;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.mobileProtocolWizard .protocolTestDetails > div,
+.mobileProtocolWizard .protocolTestDetails > .protocolTestWide {
+  display: grid !important;
+  grid-column: auto !important;
+  grid-template-columns: 98px minmax(0, 1fr) !important;
+  align-items: start;
+  gap: 10px;
+  min-height: 43px;
+  padding: 10px 11px !important;
+  border-bottom: 1px solid #edf1f4;
+}
+
+.mobileProtocolWizard .protocolTestDetails > div:last-child { border-bottom: 0; }
+.mobileProtocolWizard .protocolTestDetails dt {
+  margin: 1px 0 0 !important;
+  color: #647783 !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+  font-weight: 800 !important;
+}
+.mobileProtocolWizard .protocolTestDetails dd {
+  margin: 0 !important;
+  color: #243746 !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 850 !important;
+  overflow-wrap: anywhere;
+}
+
+.mobileProtocolWizard .protocolTestDevices {
+  display: grid;
+  gap: 8px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.mobileProtocolWizard .protocolTestDeviceHeader { display: none !important; }
+.mobileProtocolWizard .protocolTestDeviceRow {
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) !important;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 3px 10px !important;
+  min-height: 68px;
+  padding: 10px 11px !important;
+  border: 1px solid #dfe7ec !important;
+  border-radius: 13px;
+  background: #fff;
+  color: #243746;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+.mobileProtocolWizard .protocolTestDeviceRow > strong {
+  display: flex;
+  grid-row: 1 / 3;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #eaf7f0;
+  color: #176b4d;
+  font-size: 13px !important;
+  font-weight: 950;
+}
+.mobileProtocolWizard .protocolTestDeviceRow > span {
+  display: block;
+  min-width: 0;
+  color: #243746 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  font-weight: 850 !important;
+  overflow-wrap: anywhere;
+}
+.mobileProtocolWizard .protocolTestDeviceRow > span:last-child {
+  color: #17865e !important;
+  font-size: 11px !important;
+}
+.mobileProtocolWizard .protocolTestDeviceRow > span:last-child::before {
+  content: "Tabliczka: ";
+  color: #647783;
+  font-weight: 750;
+}
+
+.mobileProtocolWizard .protocolTestPhotoSummary {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px !important;
+  margin-top: 10px !important;
+}
+.mobileProtocolWizard .protocolTestPhotoSummary > span {
+  padding: 9px 10px;
+  border-radius: 11px;
+  background: #edf4f6;
+  color: #465a68;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+.protocolTestSignatureStatus {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dfe7ec;
+  border-radius: 13px;
+  background: #fff;
+}
+.protocolTestSignatureStatus > div { display: grid; gap: 3px; }
+.protocolTestSignatureStatus strong { color: #243746; font-size: 13px !important; line-height: 1.35 !important; }
+.protocolTestSignatureStatus span { color: #647783; font-size: 11px !important; line-height: 1.4 !important; }
+.protocolTestSignatureStatus.ready { border-color: #a8d7c4; background: #f2faf6; }
+.protocolTestSignatureStatus.ready strong { color: #176b4d; }
+.protocolTestSignatureOpen { width: 100%; min-height: 44px; border-radius: 12px; font-size: 13px !important; font-weight: 900; }
+
+/* v9.86 - płatność w protokole i jedno wewnętrzne menu druku/wysyłki. */
+.protocolPaymentSection { display: grid; gap: 11px; }
+.protocolPaymentHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.mobileProtocolWizard .protocolPaymentHeading h3 { margin: 0 !important; }
+.protocolPaymentToggle { display: inline-flex; align-items: center; min-height: 38px; padding: 5px 10px; border: 1px solid #b7c7d1; border-radius: 999px; background: #fff; color: #243746; font-size: 11px !important; font-weight: 900; cursor: pointer; }
+.protocolPaymentToggle input { width: 18px; height: 18px; margin: 0 7px 0 0; accent-color: #176b4d; }
+.protocolPaymentForm { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; padding: 12px; border: 1px solid #dfe7ec; border-radius: 13px; background: #fff; box-sizing: border-box; }
+.protocolPaymentForm > label { display: grid; gap: 5px; min-width: 0; color: #465a68; font-size: 11px !important; font-weight: 850; }
+.protocolPaymentForm .input { width: 100%; min-width: 0; max-width: 100%; min-height: 43px; padding: 9px 10px; border-radius: 11px; box-sizing: border-box; font-size: 16px !important; }
+.protocolPaymentForm input[type="date"] { display: block; inline-size: 100%; min-inline-size: 0; max-inline-size: 100%; }
+.protocolPaymentAmount { display: grid; grid-template-columns: minmax(0, 1fr) 28px; align-items: center; gap: 5px; }
+.protocolPaymentAmount b { color: #243746; font-size: 12px !important; }
+.protocolPaymentSummary { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 0; overflow: hidden; border: 1px solid #dfe7ec; border-radius: 13px; background: #fff; }
+.protocolPaymentSummary > div { padding: 10px 11px; border-bottom: 1px solid #edf1f4; }
+.protocolPaymentSummary > div:nth-last-child(-n+2) { border-bottom: 0; }
+.protocolPaymentSummary dt { margin: 0 0 3px; color: #647783; font-size: 10px !important; font-weight: 800; }
+.protocolPaymentSummary dd { margin: 0; color: #243746; font-size: 13px !important; font-weight: 900; overflow-wrap: anywhere; }
+.protocolOutputActions { display: grid; gap: 8px; padding: 14px; border: 1px solid #a8d7c4; border-radius: 16px; background: #f2faf6; }
+.mobileProtocolWizard .protocolOutputActions h3 { margin: 0 0 3px !important; color: #176b4d !important; font-size: 15px !important; }
+.protocolOutputActions .btn { width: 100%; min-height: 46px; border-radius: 12px; font-size: 13px !important; font-weight: 900; }
+.protocolEmailAction { display: grid; gap: 5px; }
+.protocolEmailAction > span { padding: 0 5px; color: #526875; font-size: 10px !important; line-height: 1.35 !important; font-weight: 750; overflow-wrap: anywhere; }
+.protocolEmailAction .btn:disabled + span { color: #8a5a35; }
+
+@media (max-width: 430px) {
+  .protocolPaymentForm { grid-template-columns: 1fr; }
+  .protocolPaymentHeading { align-items: center; }
+}
+
+.protocolSignatureOverlay {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 14000 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  background: #eef3f8 !important;
+}
+
+.protocolSignatureModal {
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: max(12px, env(safe-area-inset-top)) 14px max(12px, env(safe-area-inset-bottom)) !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #eef3f8 !important;
+  box-shadow: none !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+  touch-action: none;
+}
+
+.protocolSignatureScreen {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 12px;
+  width: min(620px, 100%);
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  touch-action: none;
+}
+.protocolSignatureHeader { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 10px; }
+.protocolSignatureHeader h2 { margin: 0; color: #142a3a; font-size: 20px !important; line-height: 1.2 !important; font-weight: 950; }
+.protocolSignatureHeader p { margin: 3px 0 0; color: #647783; font-size: 12px !important; line-height: 1.3 !important; font-weight: 750; overflow-wrap: anywhere; }
+.protocolSignatureBack { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid #d6e0ec; border-radius: 13px; background: #fff; color: #142a3a; }
+.protocolSignatureInstruction { margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff; color: #465a68; font-size: 12px !important; line-height: 1.45 !important; font-weight: 750; }
+.protocolSignatureCanvasWrap { min-height: 0; padding: 8px; overflow: hidden; border: 1px solid #d6e0ec; border-radius: 16px; background: #fff; }
+.protocolSignatureCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  border: 2px dashed #93a8b4;
+  border-radius: 12px;
+  background: #fff;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none !important;
+}
+.protocolSignatureActions { display: grid; grid-template-columns: .8fr 1.2fr; gap: 9px; }
+.protocolSignatureActions .btn { min-height: 52px; border-radius: 15px; font-size: 14px !important; font-weight: 900; }
+
+@media (max-height: 620px) {
+  .protocolSignatureScreen { gap: 8px; }
+  .protocolSignatureInstruction { padding: 7px 10px; }
+  .protocolSignatureCanvas { min-height: 190px; }
+  .protocolSignatureActions .btn { min-height: 46px; }
+}
