@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './mobile791/v1031-overrides.css'
+import './mobile791/v1044-overrides.css'
 
 function registerOfflineWorker() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
