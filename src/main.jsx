@@ -1,8 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import './mobile791/v1031-overrides.css'
-import './mobile791/v1044-overrides.css'
-import './mobile791/v1045-overrides.css'
 
 function registerOfflineWorker() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
@@ -46,7 +43,7 @@ async function boot() {
   const useMobile791 = isMobileRuntime()
   const [appModule, , , diagnosticsModule] = await Promise.all([
     useMobile791 ? import('./mobile791/App.jsx') : import('./App.jsx'),
-    useMobile791 ? import('./mobile791/styles.css') : import('./styles.css'),
+    useMobile791 ? import('./mobile791/mobile.css') : import('./styles.css'),
     useMobile791 ? import('./mobile791/styles/desktop-jobs-table.css') : import('./styles/desktop-jobs-table.css'),
     useMobile791 ? import('./mobile791/modules/diagnostics.js') : import('./modules/diagnostics.js'),
   ])

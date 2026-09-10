@@ -21,6 +21,29 @@ const WARSAW_DATE_TIME = new Intl.DateTimeFormat('pl-PL', {
   timeStyle: 'short',
 });
 
+const HISTORY_PAGE_SIZE = 5;
+
+function compactFuelHistoryDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Warsaw',
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.day}.${values.month}.${values.year}`;
+}
+
+function creatorInitials(fullName) {
+  const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '';
+  const first = parts[0]?.[0] || '';
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] || '') : '';
+  return `${first}${last}`.toLocaleUpperCase('pl-PL');
+}
+
 function formatFuelDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '—' : WARSAW_DATE_TIME.format(date);
@@ -100,6 +123,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   const [readingOdometer, setReadingOdometer] = useState(false);
   const [photoViewerUrl, setPhotoViewerUrl] = useState('');
   const [historyVehicleId, setHistoryVehicleId] = useState('');
+  const [historyPage, setHistoryPage] = useState(1);
   const [capacityEditorOpen, setCapacityEditorOpen] = useState(false);
   const [capacityDrafts, setCapacityDrafts] = useState({});
   const [reportMonth, setReportMonth] = useState(() => getWarsawMonthKey());
@@ -128,6 +152,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     return visibleOdometer;
   }, [entries, vehicleId, vehicles]);
   const displayVehicleOverview = Boolean(showVehicleOverview && isAdmin);
+  const compactMobileAdmin = Boolean(isAdmin && !displayVehicleOverview);
   const entryFormCollapsible = displayVehicleOverview;
   const isEntryFormExpanded = !entryFormCollapsible || entryFormExpanded;
   const vehicleStats = useMemo(() => vehicles.map((vehicle) => {
@@ -154,6 +179,13 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
       ? entries.filter((entry) => entry.vehicle_id === historyVehicleId)
       : entries
   ), [displayVehicleOverview, entries, historyVehicleId]);
+  const historyTotalPages = Math.max(1, Math.ceil(visibleEntries.length / HISTORY_PAGE_SIZE));
+  const pagedVisibleEntries = useMemo(() => {
+    if (!compactMobileAdmin) return visibleEntries;
+    const safePage = Math.min(historyPage, historyTotalPages);
+    const start = (safePage - 1) * HISTORY_PAGE_SIZE;
+    return visibleEntries.slice(start, start + HISTORY_PAGE_SIZE);
+  }, [compactMobileAdmin, historyPage, historyTotalPages, visibleEntries]);
   const selectedHistoryVehicle = useMemo(
     () => vehicles.find((vehicle) => vehicle.id === historyVehicleId) || null,
     [historyVehicleId, vehicles],
@@ -200,6 +232,12 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   }, [displayVehicleOverview, isAdmin, logDiagnostic, supabase]);
 
   useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    if (compactMobileAdmin) setHistoryPage(1);
+  }, [compactMobileAdmin, visibleEntries.length]);
+  useEffect(() => {
+    if (historyPage > historyTotalPages) setHistoryPage(historyTotalPages);
+  }, [historyPage, historyTotalPages]);
   useEffect(() => {
     const timerId = window.setInterval(() => setNow(new Date()), 30000);
     return () => window.clearInterval(timerId);
@@ -450,8 +488,8 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   }
 
   return (
-    <section className="fuelModule" aria-labelledby="fuel-module-title">
-      <header className="fuelModuleHeader">
+    <section className={`fuelModule ${compactMobileAdmin ? 'fuelModuleCompactMobile' : ''}`} aria-labelledby="fuel-module-title">
+      <header className={`fuelModuleHeader ${compactMobileAdmin ? 'fuelModuleHeaderMobile' : ''}`}> 
         <div>
           <span className="fuelEyebrow">{isAdmin ? 'Flota firmowa · widok administratora' : 'Flota firmowa · Twoje tankowania'}</span>
           <h2 id="fuel-module-title">Tankowania</h2>
@@ -626,16 +664,31 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
       ) : null}
 
       <div className="fuelCard fuelHistory">
-        <div className="fuelCardHeading"><div><span className="fuelStep">{displayVehicleOverview ? '4' : '2'}</span><h3>{selectedHistoryVehicle ? `Historia: ${getVehicleLabel(selectedHistoryVehicle)}` : isAdmin ? 'Wszystkie tankowania' : 'Moje tankowania'}</h3></div><span>{visibleEntries.length} wpisów</span></div>
+        <div className={`fuelCardHeading ${compactMobileAdmin ? 'fuelHistoryHeading' : ''}`}>
+          <div><span className="fuelStep">{displayVehicleOverview ? '4' : '2'}</span><h3>{selectedHistoryVehicle ? `Historia: ${getVehicleLabel(selectedHistoryVehicle)}` : isAdmin ? 'Wszystkie tankowania' : 'Moje tankowania'}</h3></div>
+          <span>{visibleEntries.length} wpisów</span>
+          {compactMobileAdmin ? (
+            <button type="button" className="fuelHistoryRefreshIcon" onClick={() => void refresh()} disabled={busy || loading} aria-label="Odśwież tankowania" title="Odśwież">↻</button>
+          ) : null}
+        </div>
         {loading ? <p className="fuelEmpty">Ładowanie historii…</p> : visibleEntries.length ? (
           <div className="fuelHistoryList">
-            {visibleEntries.map((entry) => {
+            {pagedVisibleEntries.map((entry) => {
               const interval = displayVehicleOverview ? consumptionByEntryId.get(entry.id) : null;
               return (
                 <article key={entry.id} className={`fuelHistoryRow ${interval?.unusualHigh ? 'hasConsumptionAnomaly' : ''} ${editingEntryId === entry.id ? 'isEditing' : ''}`}>
                   <div className="fuelHistoryVehicle">
                     <strong>{getRegistration(entry, vehicles)}</strong>
-                    <span>{formatFuelDate(entry.fueled_at)}{isAdmin && entry?.creator?.full_name ? ` · dodał: ${entry.creator.full_name}` : ''}</span>
+                    {compactMobileAdmin ? (
+                      <span className="fuelHistoryMeta">
+                        <span className="fuelHistoryDate">{compactFuelHistoryDate(entry.fueled_at)}</span>
+                        {isAdmin && entry?.creator?.full_name ? (
+                          <span className="fuelCreatorBadge" title={`Dodał: ${entry.creator.full_name}`} aria-label={`Dodał: ${entry.creator.full_name}`}>{creatorInitials(entry.creator.full_name)}</span>
+                        ) : null}
+                      </span>
+                    ) : (
+                      <span>{formatFuelDate(entry.fueled_at)}{isAdmin && entry?.creator?.full_name ? ` · dodał: ${entry.creator.full_name}` : ''}</span>
+                    )}
                     {Number(entry.correction_count || 0) > 0 ? <small className="fuelCorrectionMeta">Skorygowano {entry.correction_count}×{entry.corrected_at ? ` · ${formatFuelDate(entry.corrected_at)}` : ''}{entry?.corrector?.full_name ? ` · ${entry.corrector.full_name}` : ''}</small> : null}
                     {interval?.unusualHigh ? <small className="fuelAnomalyBadge">Nietypowe spalanie {formatConsumption(interval.consumption)} · {formatAnomalyPercent(interval.changePercent)}</small> : null}
                   </div>
@@ -661,6 +714,17 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
             })}
           </div>
         ) : <p className="fuelEmpty">Brak zapisanych tankowań.</p>}
+        {compactMobileAdmin && !loading && visibleEntries.length > 0 && historyTotalPages > 1 ? (
+          <nav className="fuelHistoryPagination" aria-label="Strony historii tankowań">
+            <button type="button" className="fuelHistoryPageArrow" onClick={() => setHistoryPage((current) => Math.max(1, current - 1))} disabled={historyPage === 1} aria-label="Poprzednia strona">‹</button>
+            <div className="fuelHistoryPageNumbers">
+              {Array.from({ length: historyTotalPages }, (_, index) => index + 1).map((pageNumber) => (
+                <button key={pageNumber} type="button" className={`fuelHistoryPageButton ${historyPage === pageNumber ? 'isActive' : ''}`} aria-current={historyPage === pageNumber ? 'page' : undefined} onClick={() => setHistoryPage(pageNumber)}>{pageNumber}</button>
+              ))}
+            </div>
+            <button type="button" className="fuelHistoryPageArrow" onClick={() => setHistoryPage((current) => Math.min(historyTotalPages, current + 1))} disabled={historyPage === historyTotalPages} aria-label="Następna strona">›</button>
+          </nav>
+        ) : null}
       </div>
 
       {photoViewerUrl ? (
