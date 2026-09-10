@@ -1,1 +1,1 @@
-Release checks are manual-only. Production deployment is handled by Vercel from main.
+Release checks are disabled as GitHub Actions workflows. Production deployment is handled by Vercel from main.
