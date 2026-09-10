@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import FuelPanelBase from './FuelPanelBase.jsx';
-import './FuelPanelV1033.css';
+import './FuelPanelV1034.css';
 
 const HISTORY_PAGE_SIZE = 5;
 const PL_MONTHS = {
@@ -79,6 +79,7 @@ export default function FuelPanel(props) {
   const [historyPage, setHistoryPage] = useState(1);
   const [historyTotalPages, setHistoryTotalPages] = useState(1);
   const [paginationTarget, setPaginationTarget] = useState(null);
+  const [refreshTarget, setRefreshTarget] = useState(null);
 
   const compactMobileAdmin = Boolean(isAdmin && !showVehicleOverview);
 
@@ -122,6 +123,7 @@ export default function FuelPanel(props) {
 
     setHistoryTotalPages((current) => current === totalPages ? current : totalPages);
     setPaginationTarget((current) => current === history ? current : history || null);
+    setRefreshTarget((current) => current === historyHeading ? current : historyHeading || null);
   }, [compactMobileAdmin, historyPage]);
 
   useEffect(() => {
@@ -144,9 +146,28 @@ export default function FuelPanel(props) {
     };
   }, [applyMobileHistory, compactMobileAdmin]);
 
+  const handleRefresh = useCallback(() => {
+    const originalRefresh = shellRef.current?.querySelector('.fuelRefreshButton');
+    if (originalRefresh && !originalRefresh.disabled) originalRefresh.click();
+  }, []);
+
   return (
-    <div ref={shellRef} className={showVehicleOverview ? 'fuelV1033DesktopShell' : 'fuelV1033Shell'}>
+    <div ref={shellRef} className={showVehicleOverview ? 'fuelV1034DesktopShell' : 'fuelV1034Shell'}>
       <FuelPanelBase {...props} />
+      {compactMobileAdmin && refreshTarget
+        ? createPortal(
+          <button
+            type="button"
+            className="fuelHistoryRefreshIcon"
+            onClick={handleRefresh}
+            aria-label="Odśwież tankowania"
+            title="Odśwież"
+          >
+            ↻
+          </button>,
+          refreshTarget,
+        )
+        : null}
       {compactMobileAdmin && paginationTarget && historyTotalPages > 1
         ? createPortal(
           <nav className="fuelHistoryPagination" aria-label="Strony historii tankowań">
