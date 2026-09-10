@@ -1,0 +1,1 @@
+Release checks are manual-only. Production deployment is handled by Vercel from main.
