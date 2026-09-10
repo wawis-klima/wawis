@@ -1,0 +1,81 @@
+/* WAWIS 10.32 — mobile Paliwo: compact employee badge and 10-entry history pages */
+.fuelModuleCompactMobile .fuelHistoryHeading > span {
+  display: none !important;
+}
+
+.fuelModuleCompactMobile .fuelHistoryMeta {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.fuelModuleCompactMobile .fuelHistoryDate {
+  white-space: nowrap;
+}
+
+.fuelModuleCompactMobile .fuelCreatorBadge {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 20px;
+  height: 16px;
+  padding: 0 4px;
+  border: 1px solid #cbd9ea;
+  border-radius: 999px;
+  background: #f4f8fd;
+  color: #275987 !important;
+  font-size: 7.8px !important;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: .03em;
+}
+
+.fuelModuleCompactMobile .fuelHistoryPagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid #e8eef6;
+}
+
+.fuelModuleCompactMobile .fuelHistoryPageNumbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.fuelModuleCompactMobile .fuelHistoryPageButton,
+.fuelModuleCompactMobile .fuelHistoryPageArrow {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  min-width: 27px;
+  height: 27px;
+  padding: 0 5px;
+  border: 1px solid #cbd9ea;
+  border-radius: 7px;
+  background: #fff;
+  color: #36526f;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.fuelModuleCompactMobile .fuelHistoryPageButton.isActive {
+  border-color: #2e73cc;
+  background: #2f75cf;
+  color: #fff;
+}
+
+.fuelModuleCompactMobile .fuelHistoryPageArrow:disabled {
+  opacity: .35;
+  cursor: default;
+}
