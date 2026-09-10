@@ -1,0 +1,32 @@
+name: Build Wawis 10.43 archive
+
+on:
+  push:
+    branches:
+      - build-archive-v10.43
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build release ZIP from exact 10.43 source
+        run: |
+          node scripts/release-zip.cjs
+          mkdir -p artifact-root
+          unzip -q releases/klima-app-v10.43.zip -d artifact-root
+
+      - name: Upload full source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: klima-app-v10.43
+          path: artifact-root
+          include-hidden-files: true
+          retention-days: 30
