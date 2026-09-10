@@ -1,6 +1,6 @@
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v10.44");
+    const cache = await caches.open("wawis-app-shell-v10.45");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
@@ -14,7 +14,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v10.44")
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v10.45")
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
@@ -31,7 +31,7 @@ self.addEventListener("fetch", (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open("wawis-app-shell-v10.44");
+          const cache = await caches.open("wawis-app-shell-v10.45");
           await cache.put("/", response.clone());
         }
         return response;
@@ -47,7 +47,7 @@ self.addEventListener("fetch", (event) => {
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {
-      const cache = await caches.open("wawis-app-shell-v10.44");
+      const cache = await caches.open("wawis-app-shell-v10.45");
       await cache.put(request, response.clone());
     }
     return response;
@@ -58,7 +58,7 @@ self.addEventListener("message", (event) => {
   if (event.data?.type !== "WAWIS_CACHE_LOADED_ASSETS") return;
   const urls = Array.isArray(event.data.urls) ? event.data.urls : [];
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v10.44");
+    const cache = await caches.open("wawis-app-shell-v10.45");
     const safeUrls = urls.filter((value) => {
       try {
         return new URL(value, self.location.origin).origin === self.location.origin;

@@ -1,0 +1,21 @@
+/* WAWIS 10.45 — mobile Montaże: active status indicated only by a larger icon */
+@media (max-width:700px){
+  .mobileJobsShellV959 .activeStatusActionButton::before,
+  .mobileJobsShellV959 .activeStatusActionButton::after{
+    content:none!important;
+    display:none!important;
+  }
+
+  .mobileJobsShellV959 .statusActionImage{
+    transition:transform .16s ease!important;
+    transform-origin:center center!important;
+  }
+
+  .mobileJobsShellV959 .activeStatusActionButton .statusActionImage{
+    transform:scale(1.16)!important;
+  }
+
+  .mobileJobsShellV959 .activeStatusActionButton .statusActionShape{
+    z-index:auto!important;
+  }
+}
