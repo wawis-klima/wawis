@@ -1,0 +1,27 @@
+name: Build Wawis 10.46 archive
+
+on:
+  push:
+    branches:
+      - build-archive-v10.46
+
+permissions:
+  contents: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact release state
+        uses: actions/checkout@v4
+
+      - name: Build full release ZIP
+        run: npm run zip:release
+
+      - name: Upload release ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: klima-app-v10.46
+          path: releases/klima-app-v10.46.zip
+          if-no-files-found: error
+          retention-days: 30
