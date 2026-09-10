@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import FuelPanelBase from './FuelPanelBase.jsx';
-import './FuelPanelV1032.css';
+import './FuelPanelV1033.css';
 
-const HISTORY_PAGE_SIZE = 10;
+const HISTORY_PAGE_SIZE = 5;
 const PL_MONTHS = {
   sty: '01',
   lut: '02',
@@ -95,8 +95,6 @@ export default function FuelPanel(props) {
     fuelModule?.classList.add('fuelModuleCompactMobile');
     header?.classList.add('fuelModuleHeaderMobile');
     historyHeading?.classList.add('fuelHistoryHeading');
-    const title = header?.querySelector('h2');
-    if (title) title.textContent = 'Paliwo';
 
     compactCreatorMeta(shell);
 
@@ -147,7 +145,7 @@ export default function FuelPanel(props) {
   }, [applyMobileHistory, compactMobileAdmin]);
 
   return (
-    <div ref={shellRef} className={showVehicleOverview ? 'fuelV1032DesktopShell' : 'fuelV1032Shell'}>
+    <div ref={shellRef} className={showVehicleOverview ? 'fuelV1033DesktopShell' : 'fuelV1033Shell'}>
       <FuelPanelBase {...props} />
       {compactMobileAdmin && paginationTarget && historyTotalPages > 1
         ? createPortal(
