@@ -12,15 +12,20 @@ export default function ModuleSwitcher({ activeModule, setActiveModule, isAdmin 
   ));
 
   return (
-    <div className="moduleSwitcher" aria-label="Przełączanie modułów aplikacji">
+    <div
+      className={`moduleSwitcher moduleSwitcherMobile ${isAdmin ? "isAdmin" : "isWorker"}`}
+      style={{ gridTemplateColumns: `repeat(${visibleModules.length}, minmax(0, 1fr))` }}
+      aria-label="Przełączanie modułów aplikacji"
+    >
       {visibleModules.map((module) => (
         <button
           key={module.id}
           type="button"
+          data-module={module.id}
           className={`moduleSwitcherBtn ${activeModule === module.id ? "active" : ""}`}
           onClick={() => setActiveModule(module.id)}
         >
-          {module.label}
+          <span className="moduleSwitcherLabel">{module.label}</span>
         </button>
       ))}
     </div>
