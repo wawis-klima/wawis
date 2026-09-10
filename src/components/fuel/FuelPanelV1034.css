@@ -1,10 +1,48 @@
-/* WAWIS 10.34 — mobile Paliwo: refresh icon in history heading and 5-entry history pages */
+/* WAWIS 10.35 — mobile Paliwo: compact inline inputs, employee badge colors and 5-entry history pages */
 .fuelModuleCompactMobile {
   gap: 7px !important;
 }
 
 .fuelModuleCompactMobile .fuelModuleHeaderMobile {
   display: none !important;
+}
+
+.fuelModuleCompactMobile .fuelLitersField,
+.fuelModuleCompactMobile .fuelOdometerManual {
+  display: grid !important;
+  grid-template-columns: 104px minmax(0, 1fr) !important;
+  align-items: center !important;
+  column-gap: 10px !important;
+  row-gap: 4px !important;
+}
+
+.fuelModuleCompactMobile .fuelLitersField > span,
+.fuelModuleCompactMobile .fuelOdometerManual > span {
+  margin: 0 !important;
+  align-self: center !important;
+}
+
+.fuelModuleCompactMobile .fuelLitersField .fuelInputWithUnit,
+.fuelModuleCompactMobile .fuelOdometerManual .fuelInputWithUnit {
+  min-width: 0 !important;
+}
+
+.fuelModuleCompactMobile .fuelLitersField input,
+.fuelModuleCompactMobile .fuelOdometerManual input {
+  min-height: 42px !important;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.fuelModuleCompactMobile .fuelOdometerManual {
+  padding-top: 2px !important;
+}
+
+.fuelModuleCompactMobile .fuelOdometerManual > small {
+  grid-column: 2 !important;
+  margin-top: -1px !important;
+  font-size: 10px !important;
+  line-height: 1.15 !important;
 }
 
 .fuelModuleCompactMobile .fuelHistoryHeading {
@@ -66,14 +104,45 @@
   min-width: 20px;
   height: 16px;
   padding: 0 4px;
-  border: 1px solid #cbd9ea;
+  border: 1px solid #b7d4ff;
   border-radius: 999px;
-  background: #f4f8fd;
-  color: #275987 !important;
+  background: #dcecff;
+  color: #10203a !important;
   font-size: 7.8px !important;
   font-weight: 850;
   line-height: 1;
   letter-spacing: .03em;
+}
+
+/* Dokładnie ta sama paleta i mapowanie co badge monterów w module Montaże. */
+.fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Kacper Wydmański"] {
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #14532d !important;
+}
+
+.fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Krystian Swat"] {
+  background: #fce7f3 !important;
+  border-color: #f9a8d4 !important;
+  color: #9d174d !important;
+}
+
+.fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Michał Fiutak"] {
+  background: #fef3c7 !important;
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+
+.fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Paweł Makieła"] {
+  background: #ede9fe !important;
+  border-color: #c4b5fd !important;
+  color: #5b21b6 !important;
+}
+
+.fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Piotr Wasik"] {
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #14532d !important;
 }
 
 .fuelModuleCompactMobile .fuelHistoryPagination {
