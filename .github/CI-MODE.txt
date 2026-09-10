@@ -1,1 +1,1 @@
-Release checks are disabled as GitHub Actions workflows. Production deployment is handled by Vercel from main.
+GitHub Actions release workflows removed. Production deployment is handled by Vercel from main.
