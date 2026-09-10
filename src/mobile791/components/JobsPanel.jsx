@@ -53,27 +53,27 @@ const MOBILE_V959_CSS = `
 
   .mobileJobsShellV959 .wawisCompactFilterExpanded{display:grid !important;grid-template-columns:20px minmax(0,1fr) 32px !important;align-items:center !important;gap:6px !important;width:100% !important;min-height:40px !important;margin-top:6px !important;padding:0 5px 0 10px !important;border:1px solid #bfdbfe !important;border-radius:13px !important;background:#f8fbff !important;box-sizing:border-box !important;}
 
-  /* Statusy — grafiki bez zmian, zaakceptowane badże pozostają na dolnej części ikon. */
-  .mobileJobsShellV959 .statusButtonsBar{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:4px !important;width:100% !important;margin:0 0 -14px !important;padding:2px 0 0 !important;overflow:visible !important;}
+  /* v10.42 — kompaktowe statusy: rozmiar ustawiony bezpośrednio w aktywnym stylu mobile. */
+  .mobileJobsShellV959 .statusButtonsBar{grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:16px !important;width:100% !important;margin:0 0 -2px !important;padding:0 !important;overflow:visible !important;}
   .mobileJobsShellV959 .statusActionButton,
-  .mobileJobsShellV959 .statusActionShape{min-height:82px !important;}
-  .mobileJobsShellV959 .statusActionImage{width:min(23vw,94px) !important;max-width:94px !important;height:auto !important;}
-  .mobileJobsShellV959 .statusActionBadge{bottom:13px !important;transform:translateY(-30px) !important;z-index:3 !important;min-width:22px !important;height:22px !important;min-height:22px !important;padding:0 6px !important;border-radius:999px !important;font-size:11px !important;line-height:1 !important;}
+  .mobileJobsShellV959 .statusActionShape{min-height:56px !important;}
+  .mobileJobsShellV959 .statusActionImage{width:min(15.5vw,64px) !important;min-width:0 !important;max-width:64px !important;height:auto !important;}
+  .mobileJobsShellV959 .statusActionBadge{left:-1px !important;bottom:8px !important;transform:translateY(-20px) !important;z-index:3 !important;min-width:16px !important;height:16px !important;min-height:16px !important;padding:0 4px !important;border-radius:999px !important;font-size:9px !important;line-height:1 !important;}
 
   /* Karty — mniej ramek, mniej powietrza, mniejsza pastylka statusu. */
   .mobileJobsShellV959 .mobileJobList{gap:8px !important;margin-top:0 !important;}
   .mobileJobsShellV959 .mobileJobCard{padding:10px 12px 7px !important;border:1px solid #e0e6ee !important;border-radius:16px !important;background:#fff !important;box-shadow:0 1px 4px rgba(15,35,69,.025) !important;}
-  .mobileJobsShellV959 .mobileJobTop{gap:8px !important;margin-bottom:5px !important;}
-  .mobileJobsShellV959 .mobileJobClient{font-size:16px !important;line-height:1.12 !important;font-weight:700 !important;color:#152238 !important;}
+  .mobileJobsShellV959 .mobileJobTop{gap:8px !important;margin-bottom:4px !important;}
+  .mobileJobsShellV959 .mobileJobClient{font-size:15px !important;line-height:1.08 !important;font-weight:700 !important;color:#152238 !important;}
   .mobileJobsShellV959 .mobileJobDate{font-size:11px !important;line-height:1.1 !important;color:#64748b !important;font-weight:700 !important;}
   .mobileJobsShellV959 .mobileJobGrid.mobileJobGridSingleField{gap:8px !important;margin-bottom:4px !important;}
   .mobileJobsShellV959 .mobileJobLabel{font-size:9.5px !important;line-height:1.05 !important;margin-bottom:2px !important;color:#718096 !important;}
   .mobileJobsShellV959 .mobileJobGrid.mobileJobGridSingleField .mobileJobValue{font-size:13px !important;line-height:1.18 !important;color:#14233c !important;}
   .mobileJobsShellV959 .jobTypeTagRight{display:inline-flex !important;align-items:center !important;justify-content:center !important;height:22px !important;min-height:22px !important;margin-top:2px !important;padding:0 9px !important;border-radius:999px !important;font-size:10.5px !important;line-height:1 !important;}
   .mobileJobsShellV959 .mobileJobFooter{min-height:20px !important;margin-top:4px !important;}
-  .mobileJobsShellV959 .mobileJobBadges{margin-top:2px !important;margin-bottom:0 !important;transform:none !important;min-height:22px !important;}
-  .mobileJobsShellV959 .mobileJobBadges .initialsRow{gap:6px !important;}
-  .mobileJobsShellV959 .mobileJobBadges .initialBadge{width:22px !important;height:22px !important;min-width:22px !important;max-width:22px !important;min-height:22px !important;max-height:22px !important;padding:0 !important;border-radius:50% !important;aspect-ratio:1 / 1 !important;font-size:9px !important;line-height:1 !important;}
+  .mobileJobsShellV959 .mobileJobBadges{margin-top:1px !important;margin-bottom:0 !important;transform:none !important;min-height:20px !important;}
+  .mobileJobsShellV959 .mobileJobBadges .initialsRow{gap:5px !important;}
+  .mobileJobsShellV959 .mobileJobBadges .initialBadge{width:20px !important;height:20px !important;min-width:20px !important;max-width:20px !important;min-height:20px !important;max-height:20px !important;padding:0 !important;border-radius:50% !important;aspect-ratio:1 / 1 !important;font-size:8.5px !important;line-height:1 !important;}
 
   .mobileDiagnosticsPage{display:grid !important;gap:10px !important;}
   .mobileDiagnosticsCard{padding:12px !important;border:1px solid #e0e6ee !important;border-radius:16px !important;background:#fff !important;box-shadow:0 1px 4px rgba(15,35,69,.025) !important;}
