@@ -241,6 +241,7 @@ function buildCombinedJobs({
   nameplatePhotos = [],
   nameplateVerifications = [],
   nameplateVerificationTableMissing = false,
+  nameplateOverviewPending = false,
 }) {
   const existingDetails = getExistingJobDetailsMap(existingJobs);
   const nameplatePhotosByJobId = groupRowsByJobId(nameplatePhotos);
@@ -260,6 +261,7 @@ function buildCombinedJobs({
       nameplatePhotosMeta: nameplatePhotosByJobId.get(jobId) || previousDetails?.nameplatePhotosMeta || [],
       nameplateVerifications: nameplateVerificationsByJobId.get(jobId) || previousDetails?.nameplateVerifications || [],
       nameplateVerificationTableMissing: nameplateVerificationTableMissing || previousDetails?.nameplateVerificationTableMissing || false,
+      nameplateOverviewPending: Boolean(nameplateOverviewPending),
     };
   });
 }
@@ -386,6 +388,16 @@ export async function refreshAppData({
   const profilePromise = getCurrentProfile({ supabase, user, existingProfile });
   const teamPromise = getTeamProfiles({ supabase, existingProfiles });
   const notificationsPromise = getNotificationsData({ supabase, user, existingNotifications });
+  const nameplateOverviewPromise = getNameplateOverviewData({ supabase })
+    .catch((error) => {
+      console.warn('Nie udało się pobrać zbiorczego statusu tabliczek.', error?.message || error);
+      return {
+        nameplatePhotos: [],
+        nameplateVerifications: [],
+        nameplateVerificationTableMissing: false,
+        unavailable: true,
+      };
+    });
 
   const { jobsData: initialJobsData, jobsFields } = await jobsPromise;
   const jobsData = await syncStaleJobsStatus({
@@ -402,14 +414,16 @@ export async function refreshAppData({
     team: existingProfiles,
     existingJobs,
     preserveJobDetails,
+    nameplateOverviewPending: true,
   });
   if (typeof onJobsReady === 'function') await onJobsReady(provisionalJobs);
 
-  const [me, team, accessData, notificationsData] = await Promise.all([
+  const [me, team, accessData, notificationsData, nameplateOverview] = await Promise.all([
     profilePromise,
     teamPromise,
     accessPromise,
     notificationsPromise,
+    nameplateOverviewPromise,
   ]);
 
   const combinedJobs = buildCombinedJobs({
@@ -418,6 +432,10 @@ export async function refreshAppData({
     team,
     existingJobs: provisionalJobs,
     preserveJobDetails,
+    nameplatePhotos: nameplateOverview?.nameplatePhotos || [],
+    nameplateVerifications: nameplateOverview?.nameplateVerifications || [],
+    nameplateVerificationTableMissing: Boolean(nameplateOverview?.nameplateVerificationTableMissing),
+    nameplateOverviewPending: Boolean(nameplateOverview?.unavailable),
   });
 
   return {
