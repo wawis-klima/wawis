@@ -208,11 +208,10 @@ export default function MobileJobsLayout({
                   <span className="mobileJobLabel">Adres</span>
                   <div className="mobileJobValue mobileJobAddressValue">{getJobAddress(job) || "Brak adresu"}</div>
                 </div>
-                <div className={`jobTypeTag jobTypeTagRight ${getJobTypeClass(job)}`}>{getJobTypeLabel(job)}</div>
               </div>
               <div className="mobileJobFooter">
-                <span className="mobileJobLabel"></span>
                 <div className="mobileJobBadges">{renderInitialBadges(getViewerNames(job, profiles))}</div>
+                <div className={`jobTypeTag jobTypeTagFooter ${getJobTypeClass(job)}`}>{getJobTypeLabel(job)}</div>
               </div>
             </button>
           </div>

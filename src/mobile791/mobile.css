@@ -1,4 +1,4 @@
-/* WAWIS 10.46 — single mobile stylesheet entry point. */
+/* WAWIS 10.47 — single mobile stylesheet entry point. */
 @import './styles.css';
 
 /* Montaże + mobile diagnostics: consolidated from the former inline JobsPanel style. */
@@ -60,7 +60,8 @@
   .mobileJobsShellV959 .mobileJobLabel{font-size:9.5px !important;line-height:1.05 !important;margin-bottom:2px !important;color:#718096 !important;}
   .mobileJobsShellV959 .mobileJobGrid.mobileJobGridSingleField .mobileJobValue{font-size:13px !important;line-height:1.18 !important;color:#14233c !important;}
   .mobileJobsShellV959 .jobTypeTagRight{display:inline-flex !important;align-items:center !important;justify-content:center !important;height:22px !important;min-height:22px !important;margin-top:2px !important;padding:0 9px !important;border-radius:999px !important;font-size:10.5px !important;line-height:1 !important;}
-  .mobileJobsShellV959 .mobileJobFooter{min-height:20px !important;margin-top:4px !important;}
+  .mobileJobsShellV959 .jobTypeTagFooter{display:inline-flex !important;align-items:center !important;justify-content:center !important;height:22px !important;min-height:22px !important;margin:0 0 0 auto !important;padding:0 9px !important;border-radius:999px !important;font-size:10.5px !important;line-height:1 !important;flex:0 0 auto !important;}
+  .mobileJobsShellV959 .mobileJobFooter{display:flex !important;align-items:center !important;justify-content:flex-start !important;gap:8px !important;min-height:22px !important;margin-top:4px !important;}
   .mobileJobsShellV959 .mobileJobBadges{margin-top:1px !important;margin-bottom:0 !important;transform:none !important;min-height:20px !important;}
   .mobileJobsShellV959 .mobileJobBadges .initialsRow{gap:5px !important;}
   .mobileJobsShellV959 .mobileJobBadges .initialBadge{width:20px !important;height:20px !important;min-width:20px !important;max-width:20px !important;min-height:20px !important;max-height:20px !important;padding:0 !important;border-radius:50% !important;aspect-ratio:1 / 1 !important;font-size:8.5px !important;line-height:1 !important;}
@@ -161,7 +162,7 @@
   .fuelModuleCompactMobile .fuelDeleteButton,.fuelModuleCompactMobile .fuelPhotoButton,.fuelModuleCompactMobile .fuelEditButton{width:38px!important;min-width:38px!important;min-height:23px!important;padding:2px!important;border-radius:7px!important;font-size:8.2px!important;line-height:1!important}
 }
 
-/* WAWIS 10.46 — final mobile Montaże polish, no layered version overrides. */
+/* WAWIS 10.47 — mobile Montaże card polish. */
 @media (max-width:700px){
   .mobileJobsShellV959 .mobileJobAddressBlock>.mobileJobLabel{display:none!important;}
   .mobileJobsShellV959 .jobTypeTagRight{display:none!important;}
