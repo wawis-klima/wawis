@@ -61,10 +61,12 @@ function getPrimaryAddressText(contractor) {
 }
 
 function getInitials(name = '') {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return '?';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0] || ''}${parts[1][0] || ''}`.toUpperCase();
+  const words = String(name)
+    .toLocaleUpperCase('pl-PL')
+    .match(/[\p{L}\p{N}]+/gu) || [];
+  if (!words.length) return '?';
+  if (words.length === 1) return words[0].slice(0, 2);
+  return `${words[0][0] || ''}${words[1][0] || ''}`;
 }
 
 function formatDate(value) {
