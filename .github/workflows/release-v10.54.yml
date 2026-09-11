@@ -1,0 +1,172 @@
+name: Release Wawis 10.54
+
+on:
+  push:
+    branches:
+      - release-v10.54
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply 10.54 compact form changes
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          modal = Path('src/mobile791/components/modals/JobFormModal.jsx')
+          text = modal.read_text()
+          old = '''      <form onSubmit={handleSubmit} className={serialOnlyMode ? "jobSerialOnlyForm" : ""}>
+                  <div className="jobHead">
+                    <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
+                    <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button>
+                  </div>
+          '''.replace('          ', '')
+          new = '''      <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>
+                  <div className="jobHead">
+                    <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
+                    {editingJobId ? <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button> : null}
+                  </div>
+                  {!editingJobId ? (
+                    <div className="jobFormQuickActions">
+                      <button type="button" className="btn jobFormCloseBtn" onClick={closeJobModal}>Zamknij</button>
+                      <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
+                    </div>
+                  ) : null}
+          '''.replace('          ', '')
+          assert old in text, 'Nie znaleziono nagłówka formularza'
+          text = text.replace(old, new, 1)
+          old = '''        <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
+                  <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
+          '''.replace('          ', '')
+          new = '''        <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
+                  {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} /> : null}
+          '''.replace('          ', '')
+          assert old in text, 'Nie znaleziono głównego przycisku głosowego'
+          text = text.replace(old, new, 1)
+          text = text.replace('Wyczyść datę', 'Wyczyść', 1)
+          modal.write_text(text)
+
+          css = Path('src/mobile791/mobile.css')
+          current = css.read_text().rstrip()
+          marker = '/* WAWIS 10.54 — compact mobile new-job form */'
+          assert marker not in current, 'Reguły 10.54 już istnieją'
+          compact = r'''
+          /* WAWIS 10.54 — compact mobile new-job form */
+          @media (max-width:700px){
+            .formModal .jobFormCreateMode{display:block;}
+            .formModal:has(.jobFormCreateMode){margin:4px 0 10px!important;padding:12px 14px 14px!important;border-radius:20px!important;}
+            .formModal .jobFormCreateMode .jobHead{display:block!important;margin:0 0 8px!important;}
+            .formModal .jobFormCreateMode .jobHead h2{margin:0!important;font-size:19px!important;line-height:1.08!important;letter-spacing:-.01em!important;}
+            .formModal .jobFormCreateMode .jobFormQuickActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;align-items:stretch!important;margin:0 0 8px!important;}
+            .formModal .jobFormCreateMode .jobFormQuickActions>.btn,
+            .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn{width:100%!important;min-width:0!important;min-height:38px!important;height:38px!important;padding:7px 9px!important;margin:0!important;border-radius:13px!important;font-size:13px!important;line-height:1!important;font-weight:650!important;white-space:nowrap!important;}
+            .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientInput{display:block!important;margin:0!important;min-width:0!important;}
+            .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn{display:flex!important;gap:5px!important;}
+            .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn>span:first-child{font-size:14px!important;}
+            .formModal .jobFormCreateMode .jobFormGeneralFields{display:block!important;}
+            .formModal .jobFormCreateMode .jobFormGeneralFields>.voiceFieldRow{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;gap:7px!important;align-items:center!important;margin:0 0 6px!important;}
+            .formModal .jobFormCreateMode .jobFormGeneralFields>.voiceFieldRow>.input,
+            .formModal .jobFormCreateMode .jobFormGeneralFields>select.input,
+            .formModal .jobFormCreateMode .workerCreateStatusField select.input{min-height:38px!important;height:38px!important;margin:0!important;padding:6px 11px!important;border-radius:13px!important;font-size:14px!important;line-height:1.15!important;}
+            .formModal .jobFormCreateMode .jobFormGeneralFields>.voiceFieldRow>.voiceFieldMicBtn{width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important;margin:0!important;border-radius:12px!important;font-size:15px!important;}
+            .formModal .jobFormCreateMode .workerCreateStatusField{margin:0 0 6px!important;}
+            .formModal .jobFormCreateMode .workerCreateStatusField>span{display:none!important;}
+            .formModal .jobFormCreateMode .workerNewClientCommentBlock{margin:4px 0 6px!important;}
+            .formModal .jobFormCreateMode .workerNewClientCommentLabelRow{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin:0 0 5px!important;}
+            .formModal .jobFormCreateMode .workerNewClientCommentLabelRow>span{margin:0!important;font-size:12px!important;line-height:1!important;}
+            .formModal .jobFormCreateMode .workerNewClientCommentVoiceRow{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;gap:7px!important;margin:0!important;align-items:center!important;}
+            .formModal .jobFormCreateMode .workerNewClientCommentTextarea{width:100%!important;min-width:0!important;height:56px!important;min-height:56px!important;max-height:88px!important;margin:0!important;padding:8px 11px!important;border-radius:13px!important;font-size:14px!important;line-height:1.25!important;resize:vertical!important;}
+            .formModal .jobFormCreateMode .workerNewClientCommentVoiceRow>.voiceFieldMicBtn{width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important;margin:0!important;border-radius:12px!important;font-size:15px!important;}
+            .formModal .jobFormCreateMode .installationDateField{display:grid!important;grid-template-columns:auto minmax(128px,1fr) auto!important;column-gap:8px!important;align-items:center!important;width:100%!important;margin:7px 0 0!important;}
+            .formModal .jobFormCreateMode .installationDateLabelRow{display:contents!important;}
+            .formModal .jobFormCreateMode .installationDateLabelRow>span{grid-column:1!important;margin:0!important;font-size:12px!important;line-height:1!important;white-space:nowrap!important;}
+            .formModal .jobFormCreateMode .installationDateInputShell{grid-column:2!important;grid-row:1!important;width:100%!important;min-width:0!important;max-width:none!important;height:38px!important;min-height:38px!important;margin:0!important;border-radius:13px!important;}
+            .formModal .jobFormCreateMode .installationDateNativeInput{width:100%!important;height:38px!important;min-height:38px!important;padding:0 9px!important;font-size:13px!important;line-height:1!important;text-align:center!important;}
+            .formModal .jobFormCreateMode .installationDateClearBtn{grid-column:3!important;grid-row:1!important;align-self:center!important;justify-self:end!important;margin:0!important;padding:0!important;font-size:11px!important;line-height:1!important;white-space:nowrap!important;}
+            .formModal .jobFormCreateMode .row.rightAlign{margin-top:9px!important;padding-top:0!important;}
+            .formModal .jobFormCreateMode .saveJobBtn{min-height:42px!important;height:42px!important;padding:8px 12px!important;border-radius:14px!important;font-size:15px!important;line-height:1!important;}
+          }
+          '''.replace('          ', '')
+          css.write_text(current + '\n\n' + compact.strip() + '\n')
+
+          Path('src/version.js').write_text("export const APP_VERSION = '10.54';\n")
+          Path('src/mobile791/version.js').write_text("export const APP_VERSION = '10.54';\n")
+          Path('app-version.json').write_text('{\n  "version": "10.54"\n}\n')
+
+          sw = Path('public/push-sw.js')
+          sw_text = sw.read_text()
+          assert 'wawis-app-shell-v10.53' in sw_text, 'Brak cache 10.53'
+          sw.write_text(sw_text.replace('wawis-app-shell-v10.53', 'wawis-app-shell-v10.54'))
+
+          pkg = Path('package.json')
+          data = json.loads(pkg.read_text())
+          data['version'] = '10.54'
+          pkg.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+
+          lock = Path('package-lock.json')
+          data = json.loads(lock.read_text())
+          data['version'] = '10.54'
+          if isinstance(data.get('packages'), dict) and '' in data['packages']:
+              data['packages']['']['version'] = '10.54'
+          lock.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+
+          changelog = Path('CHANGELOG.md')
+          old_log = changelog.read_text()
+          if not old_log.startswith('## 10.54'):
+              entry = "## 10.54\n- Mobile / nowy montaż: formularz jest wyraźnie bardziej kompaktowy; zmniejszono pola danych klienta, status, mikrofony, komentarz i przycisk zapisu.\n- `Zamknij` i `Wprowadź głosowo` są obok siebie w jednym rzędzie.\n- `Data montażu` ma zwarty poziomy układ z mniejszym polem daty i przyciskiem `Wyczyść`.\n\n"
+              changelog.write_text(entry + old_log)
+
+          # szybka kontrola zmian przed instalacją zależności
+          check = modal.read_text()
+          assert 'jobFormCreateMode' in check
+          assert 'jobFormQuickActions' in check
+          assert '<ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />' in check
+          assert marker in css.read_text()
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Smoke tests
+        run: |
+          npm run test:smoke:new-job-author-comment
+          npm run test:smoke:mobile-new-job-comment
+          npm run test:smoke:worker-create-status
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit and push main
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add src/mobile791/components/modals/JobFormModal.jsx src/mobile791/mobile.css src/version.js src/mobile791/version.js app-version.json public/push-sw.js package.json package-lock.json CHANGELOG.md
+          git commit -m "Wawis 10.54: compact mobile new-job form"
+          git push origin HEAD:main
+
+      - name: Build release ZIP
+        run: npm run zip:release
+
+      - name: Upload release ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: klima-app-v10.54
+          path: releases/klima-app-v10.54.zip
+          if-no-files-found: error
+          retention-days: 30
