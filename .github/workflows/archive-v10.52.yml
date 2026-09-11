@@ -28,6 +28,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: klima-app-v10.52
-          path: klima-app-v10.52.zip
+          path: releases/klima-app-v10.52.zip
           if-no-files-found: error
           retention-days: 30
