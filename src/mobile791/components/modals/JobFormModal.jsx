@@ -489,7 +489,7 @@ export default function JobFormModal({
             </select>
           </label>
         ) : null}
-        {!isAdmin && !editingJobId ? (
+        {!editingJobId ? (
           <div className="inputLabel workerNewClientCommentBlock" style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}>
             <div className="fieldLabelRow workerNewClientCommentLabelRow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%' }}>
               <span style={{ margin: 0 }}>Komentarz</span>
@@ -731,7 +731,7 @@ export default function JobFormModal({
           </div>
         </div>
         ) : null}
-        {isAdmin ? (
+        {isAdmin && editingJobId ? (
           <div className="jobFormAdminFields" hidden={serialOnlyMode}>
             <div className="inputLabel adminNoteInputBlock" style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}>
               <div

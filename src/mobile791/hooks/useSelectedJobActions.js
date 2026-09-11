@@ -284,7 +284,7 @@ export function useSelectedJobActions({
         sendAssignmentPushFn: sendAssignmentPush,
       });
 
-      if (!isAdmin && String(form.worker_comment || '').trim() && createdJob?.id) {
+      if (String(form.worker_comment || '').trim() && createdJob?.id) {
         try {
           await addJobComment({
             supabase,
@@ -302,8 +302,8 @@ export function useSelectedJobActions({
             createNotification,
           });
         } catch (commentError) {
-          logDiagnostic('worker.new-job.comment.failed', { jobId: createdJob.id, error: commentError });
-          window.alert('Klient został zapisany, ale komentarza nie udało się dodać. Możesz dopisać go po otwarciu montażu.');
+          logDiagnostic('new-job.comment.failed', { jobId: createdJob.id, error: commentError });
+          window.alert('Montaż został zapisany, ale komentarza nie udało się dodać. Możesz dopisać go po otwarciu montażu.');
         }
       }
 

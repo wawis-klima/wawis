@@ -1,3 +1,7 @@
+## 10.53
+- Mobile / nowy montaż: pole komentarza jest zwykłym komentarzem autora montażu dla każdego twórcy, także administratora.
+- Specjalny `Komentarz administratora` pozostaje tylko przy edycji istniejącego zlecenia przez administratora.
+
 ## 10.26
 - Mobile / pracownik: moduł „Paliwo” jest produkcyjnie dostępny z menu obok „Montaże”; pracownik może dodawać tankowania i widzi własną historię.
 - Mobile / administrator: usunięto moduł „Urządzenia” z mobilnego przełącznika; urządzenia pozostają dostępne na desktopie.
