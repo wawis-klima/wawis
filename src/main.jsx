@@ -43,10 +43,15 @@ async function boot() {
   const useMobile791 = isMobileRuntime()
   const [appModule, , , diagnosticsModule] = await Promise.all([
     useMobile791 ? import('./mobile791/App.jsx') : import('./App.jsx'),
-    useMobile791 ? import('./mobile791/mobile.css') : import('./styles.css'),
+    useMobile791 ? import('./mobile791/styles.css') : import('./styles.css'),
     useMobile791 ? import('./mobile791/styles/desktop-jobs-table.css') : import('./styles/desktop-jobs-table.css'),
     useMobile791 ? import('./mobile791/modules/diagnostics.js') : import('./modules/diagnostics.js'),
   ])
+
+  if (useMobile791) {
+    await import('./mobile791/mobile.css')
+    await import('./mobile791/v1048-runtime-fix.css')
+  }
 
   diagnosticsModule.installDiagnosticConsoleCapture()
   diagnosticsModule.installGlobalDiagnosticHandlers()
