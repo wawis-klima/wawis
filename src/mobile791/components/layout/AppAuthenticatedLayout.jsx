@@ -20,6 +20,10 @@ export default function AppAuthenticatedLayout({
   profile = null,
   logout = () => {},
 }) {
+  const renderedJobsPanel = isMobile && React.isValidElement(jobsPanel)
+    ? React.cloneElement(jobsPanel, { inlineDetailsPanel: detailsPanel })
+    : jobsPanel;
+
   const content = (
     <>
       {isRefreshingData ? (
@@ -53,8 +57,8 @@ export default function AppAuthenticatedLayout({
       {errorMsg ? <div className="errorBox">{errorMsg}</div> : null}
 
       <div className={`twoCol twoColDesktopStatusLeft ${["sms", "contractors", "devices", "calendar", "diagnostics", "fuel"].includes(activeModule) ? "singleModuleColumn" : ""}`}>
-        <div>{jobsPanel}</div>
-        {detailsPanel ? <div className="desktopDetailColumnTight">{detailsPanel}</div> : null}
+        <div>{renderedJobsPanel}</div>
+        {!isMobile && detailsPanel ? <div className="desktopDetailColumnTight">{detailsPanel}</div> : null}
       </div>
     </>
   );
