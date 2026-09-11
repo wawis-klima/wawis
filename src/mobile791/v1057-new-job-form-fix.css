@@ -1,0 +1,24 @@
+/* WAWIS 10.57 — skuteczna poprawka formularza nowego zlecenia na mobile */
+@media (max-width:700px){
+  /* Krótka etykieta daty, żeby nic nie chowało się pod polem daty. */
+  .formModal .jobFormCreateMode .installationDateLabelRow > span:first-child{
+    font-size:0 !important;
+    white-space:nowrap !important;
+    flex:0 0 auto !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateLabelRow > span:first-child::after{
+    content:"Data";
+    font-size:16px;
+    font-weight:700;
+    line-height:1.2;
+    color:#334155;
+  }
+
+  /* Większe pole komentarza — wykorzystujemy wolne miejsce nad przyciskiem zapisu. */
+  .formModal .jobFormCreateMode .workerNewClientCommentTextarea{
+    height:104px !important;
+    min-height:104px !important;
+    max-height:132px !important;
+  }
+}
