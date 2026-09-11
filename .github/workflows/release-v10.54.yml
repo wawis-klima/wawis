@@ -32,34 +32,28 @@ jobs:
 
           modal = Path('src/mobile791/components/modals/JobFormModal.jsx')
           text = modal.read_text()
-          old = '''      <form onSubmit={handleSubmit} className={serialOnlyMode ? "jobSerialOnlyForm" : ""}>
-                  <div className="jobHead">
-                    <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
-                    <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button>
-                  </div>
-          '''.replace('          ', '')
-          new = '''      <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>
-                  <div className="jobHead">
-                    <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
-                    {editingJobId ? <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button> : null}
+
+          old_form = '      <form onSubmit={handleSubmit} className={serialOnlyMode ? "jobSerialOnlyForm" : ""}>'
+          new_form = '      <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>'
+          assert old_form in text, 'Nie znaleziono form create'
+          text = text.replace(old_form, new_form, 1)
+
+          old_head_end = '          <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button>\n        </div>'
+          new_head_end = '''          {editingJobId ? <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button> : null}
                   </div>
                   {!editingJobId ? (
                     <div className="jobFormQuickActions">
                       <button type="button" className="btn jobFormCloseBtn" onClick={closeJobModal}>Zamknij</button>
                       <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
                     </div>
-                  ) : null}
-          '''.replace('          ', '')
-          assert old in text, 'Nie znaleziono nagłówka formularza'
-          text = text.replace(old, new, 1)
-          old = '''        <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
-                  <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
-          '''.replace('          ', '')
-          new = '''        <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
-                  {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} /> : null}
-          '''.replace('          ', '')
-          assert old in text, 'Nie znaleziono głównego przycisku głosowego'
-          text = text.replace(old, new, 1)
+                  ) : null}'''.replace('          ', '')
+          assert old_head_end in text, 'Nie znaleziono przycisku Zamknij'
+          text = text.replace(old_head_end, new_head_end, 1)
+
+          old_voice = '        <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />\n        <div className="voiceFieldRow">'
+          new_voice = '        {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} /> : null}\n        <div className="voiceFieldRow">'
+          assert old_voice in text, 'Nie znaleziono przycisku Wprowadź głosowo'
+          text = text.replace(old_voice, new_voice, 1)
           text = text.replace('Wyczyść datę', 'Wyczyść', 1)
           modal.write_text(text)
 
@@ -133,11 +127,9 @@ jobs:
               entry = "## 10.54\n- Mobile / nowy montaż: formularz jest wyraźnie bardziej kompaktowy; zmniejszono pola danych klienta, status, mikrofony, komentarz i przycisk zapisu.\n- `Zamknij` i `Wprowadź głosowo` są obok siebie w jednym rzędzie.\n- `Data montażu` ma zwarty poziomy układ z mniejszym polem daty i przyciskiem `Wyczyść`.\n\n"
               changelog.write_text(entry + old_log)
 
-          # szybka kontrola zmian przed instalacją zależności
           check = modal.read_text()
           assert 'jobFormCreateMode' in check
           assert 'jobFormQuickActions' in check
-          assert '<ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />' in check
           assert marker in css.read_text()
 
       - name: Install dependencies
