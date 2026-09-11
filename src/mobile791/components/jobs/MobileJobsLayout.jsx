@@ -86,6 +86,12 @@ export default function MobileJobsLayout({
     setFilterOpen(true);
   }
 
+  function toggleJobDetails(job) {
+    setSelectedJob((currentJob) => (
+      String(currentJob?.id || "") === String(job?.id || "") ? null : job
+    ));
+  }
+
   return (
     <>
       <div className={`mobileHeaderV2 wawisCompactHeader ${isAdmin ? "wawisCompactHeaderAdmin mobileHeaderAdmin" : "wawisCompactHeaderWorker mobileHeaderWorker"}`}>
@@ -202,7 +208,7 @@ export default function MobileJobsLayout({
           return (
             <React.Fragment key={job.id}>
               <div className={`mobileJobCard ${isSelected ? "activeMobileJobCard" : ""}`}>
-                <button type="button" className="mobileJobCardButton" onClick={() => setSelectedJob(job)} aria-expanded={isSelected}>
+                <button type="button" className="mobileJobCardButton" onClick={() => toggleJobDetails(job)} aria-expanded={isSelected}>
                   <div className="mobileJobTop">
                     <strong className="mobileJobClient">{job.client || job.title}</strong>
                     <span className="mobileJobDate">{job.installation_date ? formatDate(job.installation_date) : "-"}</span>
