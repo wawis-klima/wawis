@@ -1,0 +1,130 @@
+name: Release Wawis 10.53
+
+on:
+  push:
+    branches:
+      - release-v10.53
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply 10.53 changes
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          modal = Path('src/mobile791/components/modals/JobFormModal.jsx')
+          text = modal.read_text()
+          old = '{!isAdmin && !editingJobId ? (\n          <div className="inputLabel workerNewClientCommentBlock"'
+          new = '{!editingJobId ? (\n          <div className="inputLabel workerNewClientCommentBlock"'
+          assert old in text, 'Nie znaleziono warunku komentarza nowego montażu'
+          text = text.replace(old, new, 1)
+          old = '{isAdmin ? (\n          <div className="jobFormAdminFields" hidden={serialOnlyMode}>'
+          new = '{isAdmin && editingJobId ? (\n          <div className="jobFormAdminFields" hidden={serialOnlyMode}>'
+          assert old in text, 'Nie znaleziono bloku komentarza administratora'
+          text = text.replace(old, new, 1)
+          modal.write_text(text)
+
+          actions = Path('src/mobile791/hooks/useSelectedJobActions.js')
+          text = actions.read_text()
+          old = "if (!isAdmin && String(form.worker_comment || '').trim() && createdJob?.id) {"
+          new = "if (String(form.worker_comment || '').trim() && createdJob?.id) {"
+          assert old in text, 'Nie znaleziono zapisu komentarza pracownika'
+          text = text.replace(old, new, 1)
+          text = text.replace("logDiagnostic('worker.new-job.comment.failed'", "logDiagnostic('new-job.comment.failed'", 1)
+          text = text.replace("window.alert('Klient został zapisany, ale komentarza nie udało się dodać. Możesz dopisać go po otwarciu montażu.');", "window.alert('Montaż został zapisany, ale komentarza nie udało się dodać. Możesz dopisać go po otwarciu montażu.');", 1)
+          actions.write_text(text)
+
+          Path('src/version.js').write_text("export const APP_VERSION = '10.53';\n")
+          Path('src/mobile791/version.js').write_text("export const APP_VERSION = '10.53';\n")
+          Path('app-version.json').write_text('{\n  "version": "10.53"\n}\n')
+
+          sw = Path('public/push-sw.js')
+          text = sw.read_text()
+          assert 'wawis-app-shell-v10.52' in text, 'Nie znaleziono cache 10.52'
+          sw.write_text(text.replace('wawis-app-shell-v10.52', 'wawis-app-shell-v10.53'))
+
+          pkg = Path('package.json')
+          data = json.loads(pkg.read_text())
+          data['version'] = '10.53'
+          data.setdefault('scripts', {})['test:smoke:new-job-author-comment'] = 'node scripts/smoke-new-job-author-comment-v1053.cjs'
+          pkg.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+
+          lock = Path('package-lock.json')
+          data = json.loads(lock.read_text())
+          data['version'] = '10.53'
+          if isinstance(data.get('packages'), dict) and '' in data['packages']:
+              data['packages']['']['version'] = '10.53'
+          lock.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
+
+          smoke = Path('scripts/smoke-new-job-author-comment-v1053.cjs')
+          smoke.write_text(r'''const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = path.resolve(__dirname, '..');
+          const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
+          const modal = read('src','mobile791','components','modals','JobFormModal.jsx');
+          const actions = read('src','mobile791','hooks','useSelectedJobActions.js');
+          assert.ok(modal.includes('{!editingJobId ? (\\n          <div className="inputLabel workerNewClientCommentBlock"'), 'Nowy montaż powinien mieć zwykły komentarz autora niezależnie od roli.');
+          assert.ok(modal.includes('{isAdmin && editingJobId ? (\\n          <div className="jobFormAdminFields"'), 'Komentarz administratora ma pozostać tylko przy edycji istniejącego montażu.');
+          assert.ok(modal.includes('placeholder="Komentarz do montażu"'), 'Brak zwykłego pola komentarza nowego montażu.');
+          assert.ok(actions.includes("if (String(form.worker_comment || '').trim() && createdJob?.id)"), 'Komentarz nowego montażu nie zapisuje się dla każdego autora.');
+          assert.ok(!actions.includes("if (!isAdmin && String(form.worker_comment || '').trim() && createdJob?.id)"), 'Komentarz nadal jest ograniczony do pracownika.');
+          assert.ok(actions.includes("type: 'Komentarz'"), 'Komentarz autora powinien być zwykłym komentarzem.');
+          console.log('PASS smoke-new-job-author-comment-v1053');
+          '''.replace('          ', ''))
+
+          changelog = Path('CHANGELOG.md')
+          if changelog.exists():
+              current = changelog.read_text()
+              if not current.startswith('## 10.53'):
+                  entry = "## 10.53\n- Mobile / nowy montaż: pole komentarza jest zwykłym komentarzem autora montażu dla każdego twórcy, także administratora.\n- Specjalny `Komentarz administratora` pozostaje tylko przy edycji istniejącego zlecenia przez administratora.\n\n"
+                  changelog.write_text(entry + current)
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test creator comment
+        run: |
+          npm run test:smoke:new-job-author-comment
+          npm run test:smoke:mobile-new-job-comment
+          npm run test:smoke:worker-create-status
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit and push main
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add src/mobile791/components/modals/JobFormModal.jsx src/mobile791/hooks/useSelectedJobActions.js src/version.js src/mobile791/version.js app-version.json public/push-sw.js package.json package-lock.json scripts/smoke-new-job-author-comment-v1053.cjs CHANGELOG.md
+          git commit -m "Wawis 10.53: creator comment on new mobile jobs"
+          git push origin HEAD:main
+
+      - name: Build release ZIP
+        run: npm run zip:release
+
+      - name: Upload release ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: klima-app-v10.53
+          path: releases/klima-app-v10.53.zip
+          if-no-files-found: error
+          retention-days: 30
