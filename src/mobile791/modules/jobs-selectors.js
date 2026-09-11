@@ -34,15 +34,29 @@ export function getVisibleJobs({
   const normalizedQuery = query.trim().toLowerCase();
   const hasActiveQuery = normalizedQuery.length > 0;
 
-  const filtered = jobs.filter((job) => {
-    const hay = `${job.client || ''} ${job.city || ''} ${job.street || ''} ${job.email || ''} ${job.phone || ''} ${job.device_model || ''} ${job.device_serial_number || ''}`.toLowerCase();
-    const matchesQuery = hay.includes(normalizedQuery);
-    const isAssignedToCurrentUser = job.main_technician_id === profile.id || job.viewers.some((viewer) => viewer.user_id === profile.id);
-    const shouldIgnoreStatusFilter = !isAdmin && showAssignedJobsOnly;
-    const matchesStatus = hasActiveQuery || shouldIgnoreStatusFilter ? true : normalizeStatus(job.status) === desktopStatusFilter;
-    const matchesAssignedFilter = isAdmin || !showAssignedJobsOnly ? true : isAssignedToCurrentUser;
-    return matchesQuery && matchesStatus && matchesAssignedFilter;
-  });
+  const filtered = jobs
+    .map((job) => {
+      const viewers = Array.isArray(job.viewers) ? job.viewers : [];
+      const isAssignedToCurrentUser = job.main_technician_id === profile.id
+        || viewers.some((viewer) => viewer.user_id === profile.id);
+
+      return {
+        ...job,
+        // 10.60: pracownik widzi wszystkie montaże, ale montaż innej osoby
+        // jest oznaczony jako tylko do odczytu dla warstwy uprawnień UI.
+        _workerAssignedToCurrentUser: isAdmin ? true : isAssignedToCurrentUser,
+      };
+    })
+    .filter((job) => {
+      const hay = `${job.client || ''} ${job.city || ''} ${job.street || ''} ${job.email || ''} ${job.phone || ''} ${job.device_model || ''} ${job.device_serial_number || ''}`.toLowerCase();
+      const matchesQuery = hay.includes(normalizedQuery);
+      const matchesStatus = hasActiveQuery ? true : normalizeStatus(job.status) === desktopStatusFilter;
+
+      // showAssignedJobsOnly pozostaje w sygnaturze dla zgodności ze starszym UI,
+      // ale od 10.60 nie ogranicza już pracownika tylko do własnych montaży.
+      void showAssignedJobsOnly;
+      return matchesQuery && matchesStatus;
+    });
 
   return [...filtered].sort((a, b) => {
     if (sortBy === 'client_asc') return (a.client || a.title || '').localeCompare(b.client || b.title || '', 'pl');
