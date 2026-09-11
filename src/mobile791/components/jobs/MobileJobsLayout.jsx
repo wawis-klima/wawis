@@ -48,6 +48,7 @@ export default function MobileJobsLayout({
   setJobsPage,
   selectedJob,
   setSelectedJob,
+  inlineDetailsPanel = null,
   formatDate,
   profiles,
 }) {
@@ -196,26 +197,37 @@ export default function MobileJobsLayout({
       </div>
 
       <div className="mobileJobList">
-        {jobsPageRows.map((job) => (
-          <div key={job.id} className={`mobileJobCard ${selectedJob?.id === job.id ? "activeMobileJobCard" : ""}`}>
-            <button type="button" className="mobileJobCardButton" onClick={() => setSelectedJob(job)}>
-              <div className="mobileJobTop">
-                <strong className="mobileJobClient">{job.client || job.title}</strong>
-                <span className="mobileJobDate">{job.installation_date ? formatDate(job.installation_date) : "-"}</span>
+        {jobsPageRows.map((job) => {
+          const isSelected = String(selectedJob?.id || "") === String(job?.id || "");
+          return (
+            <React.Fragment key={job.id}>
+              <div className={`mobileJobCard ${isSelected ? "activeMobileJobCard" : ""}`}>
+                <button type="button" className="mobileJobCardButton" onClick={() => setSelectedJob(job)} aria-expanded={isSelected}>
+                  <div className="mobileJobTop">
+                    <strong className="mobileJobClient">{job.client || job.title}</strong>
+                    <span className="mobileJobDate">{job.installation_date ? formatDate(job.installation_date) : "-"}</span>
+                  </div>
+                  <div className="mobileJobGrid mobileJobGridSingleField">
+                    <div className="mobileJobAddressBlock">
+                      <span className="mobileJobLabel">Adres</span>
+                      <div className="mobileJobValue mobileJobAddressValue">{getJobAddress(job) || "Brak adresu"}</div>
+                    </div>
+                  </div>
+                  <div className="mobileJobFooter">
+                    <div className="mobileJobBadges">{renderInitialBadges(getViewerNames(job, profiles))}</div>
+                    <div className={`jobTypeTag jobTypeTagFooter ${getJobTypeClass(job)}`}>{getJobTypeLabel(job)}</div>
+                  </div>
+                </button>
               </div>
-              <div className="mobileJobGrid mobileJobGridSingleField">
-                <div className="mobileJobAddressBlock">
-                  <span className="mobileJobLabel">Adres</span>
-                  <div className="mobileJobValue mobileJobAddressValue">{getJobAddress(job) || "Brak adresu"}</div>
+
+              {isSelected && inlineDetailsPanel ? (
+                <div className="mobileInlineJobDetails" data-inline-job-details={job.id}>
+                  {inlineDetailsPanel}
                 </div>
-              </div>
-              <div className="mobileJobFooter">
-                <div className="mobileJobBadges">{renderInitialBadges(getViewerNames(job, profiles))}</div>
-                <div className={`jobTypeTag jobTypeTagFooter ${getJobTypeClass(job)}`}>{getJobTypeLabel(job)}</div>
-              </div>
-            </button>
-          </div>
-        ))}
+              ) : null}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       <JobsPagination
