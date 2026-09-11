@@ -51,6 +51,7 @@ async function boot() {
   if (useMobile791) {
     await import('./mobile791/mobile.css')
     await import('./mobile791/v1048-runtime-fix.css')
+    await import('./mobile791/v1055-new-job-polish.css')
   }
 
   diagnosticsModule.installDiagnosticConsoleCapture()
