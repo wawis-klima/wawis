@@ -14,26 +14,30 @@ export function isWorkerLockedCompletedJob(job, isAdmin) {
   return !isAdmin && isCompletedJob(job);
 }
 
+export function isWorkerReadOnlyJob(job, isAdmin) {
+  return !isAdmin && job?._workerAssignedToCurrentUser === false;
+}
+
 export function canWorkerFinishJob(job, isAdmin) {
-  if (isAdmin) return false;
+  if (isAdmin || isWorkerReadOnlyJob(job, isAdmin)) return false;
   return normalizeStatus(job?.status) === "W trakcie";
 }
 
 export function canWorkerRestartJob(job, isAdmin) {
-  if (isAdmin) return false;
+  if (isAdmin || isWorkerReadOnlyJob(job, isAdmin)) return false;
   return ["Nowe", "Niezrealizowane"].includes(normalizeStatus(job?.status));
 }
 
 export function canEditJob(job, isAdmin) {
-  return !isWorkerLockedCompletedJob(job, isAdmin);
+  return !isWorkerLockedCompletedJob(job, isAdmin) && !isWorkerReadOnlyJob(job, isAdmin);
 }
 
 export function canModifyJobPhotos(job, isAdmin) {
-  return !isWorkerLockedCompletedJob(job, isAdmin);
+  return !isWorkerLockedCompletedJob(job, isAdmin) && !isWorkerReadOnlyJob(job, isAdmin);
 }
 
 export function canAddJobComment(job, isAdmin) {
-  return !isWorkerLockedCompletedJob(job, isAdmin);
+  return !isWorkerLockedCompletedJob(job, isAdmin) && !isWorkerReadOnlyJob(job, isAdmin);
 }
 
 export function canManageJobViewers(job, isAdmin) {
@@ -57,6 +61,7 @@ export function canDeleteJob(job, isAdmin) {
 
 export function canChangeJobStatus(job, nextStatus, isAdmin) {
   if (isAdmin) return Boolean(job?.id);
+  if (isWorkerReadOnlyJob(job, isAdmin)) return false;
   if (nextStatus === "Zakończone") return canWorkerFinishJob(job, isAdmin);
   if (nextStatus === "W trakcie") return canWorkerRestartJob(job, isAdmin);
   return false;
