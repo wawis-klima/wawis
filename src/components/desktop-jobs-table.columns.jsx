@@ -42,12 +42,16 @@ function renderInstallerCell({ job, profiles }) {
 }
 
 function renderNameplateStatusCell({ job }) {
-  if (job?.nameplateOverviewPending && !job?.detailsLoaded) {
+  const hasCachedOverview = Boolean(job?.detailsLoaded)
+    || (Array.isArray(job?.nameplatePhotosMeta) && job.nameplatePhotosMeta.length > 0)
+    || (Array.isArray(job?.nameplateVerifications) && job.nameplateVerifications.length > 0);
+
+  if (job?.nameplateOverviewPending && !hasCachedOverview) {
     return (
       <div className="desktopCellContent desktopNameplatesCellContent">
-        <span className="desktopNameplateSummaryBadge none" title="Trwa pobieranie zapisanych potwierdzeń tabliczek.">
+        <span className="desktopNameplateSummaryBadge none" title="Status tabliczek jest pobierany w tle.">
           <span className="desktopNameplateSummaryDot" aria-hidden="true" />
-          <span>Sprawdzanie</span>
+          <span>—</span>
         </span>
       </div>
     );
