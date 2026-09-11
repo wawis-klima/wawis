@@ -42,6 +42,17 @@ function renderInstallerCell({ job, profiles }) {
 }
 
 function renderNameplateStatusCell({ job }) {
+  if (job?.nameplateOverviewPending && !job?.detailsLoaded) {
+    return (
+      <div className="desktopCellContent desktopNameplatesCellContent">
+        <span className="desktopNameplateSummaryBadge none" title="Trwa pobieranie zapisanych potwierdzeń tabliczek.">
+          <span className="desktopNameplateSummaryDot" aria-hidden="true" />
+          <span>Sprawdzanie</span>
+        </span>
+      </div>
+    );
+  }
+
   const summary = getJobNameplateVerificationSummary(job);
   const className = summary.state === 'approved'
     ? 'approved'
