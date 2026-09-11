@@ -89,9 +89,16 @@
     grid-template-columns:minmax(0,1fr)!important;
     gap:0!important;
     margin-bottom:2px!important;
+    text-align:left!important;
   }
   .mobileJobsShellV959 .mobileJobAddressBlock,
-  .mobileJobsShellV959 .mobileJobAddressValue{min-width:0!important;width:100%!important;}
+  .mobileJobsShellV959 .mobileJobAddressValue{
+    min-width:0!important;
+    width:100%!important;
+    text-align:left!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
 
   .mobileJobsShellV959 .mobileJobFooter{
     display:flex!important;
