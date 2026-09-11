@@ -1,3 +1,8 @@
+## 10.54
+- Mobile / nowy montaż: formularz jest wyraźnie bardziej kompaktowy; zmniejszono pola danych klienta, status, mikrofony, komentarz i przycisk zapisu.
+- `Zamknij` i `Wprowadź głosowo` są obok siebie w jednym rzędzie.
+- `Data montażu` ma zwarty poziomy układ z mniejszym polem daty i przyciskiem `Wyczyść`.
+
 ## 10.53
 - Mobile / nowy montaż: pole komentarza jest zwykłym komentarzem autora montażu dla każdego twórcy, także administratora.
 - Specjalny `Komentarz administratora` pozostaje tylko przy edycji istniejącego zlecenia przez administratora.

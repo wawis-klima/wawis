@@ -417,18 +417,24 @@ export default function JobFormModal({
       overlayClassName="formOverlay"
       contentClassName="card modal formModal"
     >
-      <form onSubmit={handleSubmit} className={serialOnlyMode ? "jobSerialOnlyForm" : ""}>
+      <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>
         <div className="jobHead">
           <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
-          <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button>
+{editingJobId ? <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button> : null}
         </div>
+        {!editingJobId ? (
+<div className="jobFormQuickActions">
+  <button type="button" className="btn jobFormCloseBtn" onClick={closeJobModal}>Zamknij</button>
+  <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
+</div>
+        ) : null}
         {serialOnlyMode ? (
           <div className="jobSerialOnlyIntro">
             Dodaj zdjęcie tabliczki jednostki zewnętrznej JZ i każdej jednostki wewnętrznej JW. Zdjęcia są wymagane do zakończenia zlecenia.
           </div>
         ) : null}
         <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
-        <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
+        {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} /> : null}
         <div className="voiceFieldRow">
           <input className="input" placeholder="Klient" value={jobForm.client} onChange={(e) => updateField("client", e.target.value)} />
           <VoiceFieldButton label="Klient" onValue={(value) => updateField("client", value)} disabled={busy} />
@@ -536,7 +542,7 @@ export default function JobFormModal({
                 style={{ flex: '0 0 auto', alignSelf: 'center', whiteSpace: 'nowrap' }}
                 onClick={() => updateField("installation_date", "")}
               >
-                Wyczyść datę
+                Wyczyść
               </button>
             ) : null}
           </div>

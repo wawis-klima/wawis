@@ -172,3 +172,39 @@
   .mobileJobsShellV959 .statusActionImage{transition:transform .16s ease!important;transform-origin:center center!important;}
   .mobileJobsShellV959 .activeStatusActionButton .statusActionImage{transform:scale(1.16)!important;}
 }
+
+/* WAWIS 10.54 — compact mobile new-job form */
+@media (max-width:700px){
+  .formModal .jobFormCreateMode{display:block;}
+  .formModal:has(.jobFormCreateMode){margin:4px 0 10px!important;padding:12px 14px 14px!important;border-radius:20px!important;}
+  .formModal .jobFormCreateMode .jobHead{display:block!important;margin:0 0 8px!important;}
+  .formModal .jobFormCreateMode .jobHead h2{margin:0!important;font-size:19px!important;line-height:1.08!important;letter-spacing:-.01em!important;}
+  .formModal .jobFormCreateMode .jobFormQuickActions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;align-items:stretch!important;margin:0 0 8px!important;}
+  .formModal .jobFormCreateMode .jobFormQuickActions>.btn,
+  .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn{width:100%!important;min-width:0!important;min-height:38px!important;height:38px!important;padding:7px 9px!important;margin:0!important;border-radius:13px!important;font-size:13px!important;line-height:1!important;font-weight:650!important;white-space:nowrap!important;}
+  .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientInput{display:block!important;margin:0!important;min-width:0!important;}
+  .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn{display:flex!important;gap:5px!important;}
+  .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn>span:first-child{font-size:14px!important;}
+  .formModal .jobFormCreateMode .jobFormGeneralFields{display:block!important;}
+  .formModal .jobFormCreateMode .jobFormGeneralFields>.voiceFieldRow{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;gap:7px!important;align-items:center!important;margin:0 0 6px!important;}
+  .formModal .jobFormCreateMode .jobFormGeneralFields>.voiceFieldRow>.input,
+  .formModal .jobFormCreateMode .jobFormGeneralFields>select.input,
+  .formModal .jobFormCreateMode .workerCreateStatusField select.input{min-height:38px!important;height:38px!important;margin:0!important;padding:6px 11px!important;border-radius:13px!important;font-size:14px!important;line-height:1.15!important;}
+  .formModal .jobFormCreateMode .jobFormGeneralFields>.voiceFieldRow>.voiceFieldMicBtn{width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important;margin:0!important;border-radius:12px!important;font-size:15px!important;}
+  .formModal .jobFormCreateMode .workerCreateStatusField{margin:0 0 6px!important;}
+  .formModal .jobFormCreateMode .workerCreateStatusField>span{display:none!important;}
+  .formModal .jobFormCreateMode .workerNewClientCommentBlock{margin:4px 0 6px!important;}
+  .formModal .jobFormCreateMode .workerNewClientCommentLabelRow{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin:0 0 5px!important;}
+  .formModal .jobFormCreateMode .workerNewClientCommentLabelRow>span{margin:0!important;font-size:12px!important;line-height:1!important;}
+  .formModal .jobFormCreateMode .workerNewClientCommentVoiceRow{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;gap:7px!important;margin:0!important;align-items:center!important;}
+  .formModal .jobFormCreateMode .workerNewClientCommentTextarea{width:100%!important;min-width:0!important;height:56px!important;min-height:56px!important;max-height:88px!important;margin:0!important;padding:8px 11px!important;border-radius:13px!important;font-size:14px!important;line-height:1.25!important;resize:vertical!important;}
+  .formModal .jobFormCreateMode .workerNewClientCommentVoiceRow>.voiceFieldMicBtn{width:38px!important;min-width:38px!important;max-width:38px!important;height:38px!important;min-height:38px!important;max-height:38px!important;margin:0!important;border-radius:12px!important;font-size:15px!important;}
+  .formModal .jobFormCreateMode .installationDateField{display:grid!important;grid-template-columns:auto minmax(128px,1fr) auto!important;column-gap:8px!important;align-items:center!important;width:100%!important;margin:7px 0 0!important;}
+  .formModal .jobFormCreateMode .installationDateLabelRow{display:contents!important;}
+  .formModal .jobFormCreateMode .installationDateLabelRow>span{grid-column:1!important;margin:0!important;font-size:12px!important;line-height:1!important;white-space:nowrap!important;}
+  .formModal .jobFormCreateMode .installationDateInputShell{grid-column:2!important;grid-row:1!important;width:100%!important;min-width:0!important;max-width:none!important;height:38px!important;min-height:38px!important;margin:0!important;border-radius:13px!important;}
+  .formModal .jobFormCreateMode .installationDateNativeInput{width:100%!important;height:38px!important;min-height:38px!important;padding:0 9px!important;font-size:13px!important;line-height:1!important;text-align:center!important;}
+  .formModal .jobFormCreateMode .installationDateClearBtn{grid-column:3!important;grid-row:1!important;align-self:center!important;justify-self:end!important;margin:0!important;padding:0!important;font-size:11px!important;line-height:1!important;white-space:nowrap!important;}
+  .formModal .jobFormCreateMode .row.rightAlign{margin-top:9px!important;padding-top:0!important;}
+  .formModal .jobFormCreateMode .saveJobBtn{min-height:42px!important;height:42px!important;padding:8px 12px!important;border-radius:14px!important;font-size:15px!important;line-height:1!important;}
+}
