@@ -29,12 +29,12 @@
     "notes": "Finalny ZIP z zielonego pełnego runnera GitHub Actions nr 25 został wysłany do Aplikacja/Wersje i ponownie zweryfikowany przez metadane pliku oraz listing folderu Drive."
   },
   "postdeploy_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "production_version_verified": false,
-    "service_worker_verified": false,
-    "notes": "Ponowne wdrożenie 10.60 wywołane przez push na GitHub main; weryfikacja produkcji i Service Workera po zakończeniu deployu."
+    "checked_at": "2026-09-14T16:39:00Z",
+    "result": "GO",
+    "production_version_verified": true,
+    "service_worker_verified": true,
+    "notes": "Produkcja potwierdzona ręcznie na iPhonie jako 10.60. Udane wdrożenie Vercel z commita e97a9f9 zawiera Service Worker/cache wawis-app-shell-v10.60. Po wdrożeniu odnotowano pojedyncze mobilne console.error w module app (10.60) z komunikatem zanonimizowanym przez diagnostykę; brak błędów kolejki i retry, a po tym zdarzeniu nie pojawiły się kolejne wpisy. Ten sam ogólny typ zdarzenia występował historycznie w starszych wersjach i nie stwierdzono wzrostu częstotliwości ani regresji 10.60. Migracje produkcyjne dla zakresu 10.60 są obecne w Supabase. Wydanie zamknięte jako GO."
   }
 }
