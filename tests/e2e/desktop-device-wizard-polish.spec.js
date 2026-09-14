@@ -10,7 +10,8 @@ test.describe('desktop administrator — wąski kreator urządzeń premium', () 
 
   test('okno urządzeń jest wąskie, zwarte i pozbawione szerokich bocznych pasów', async ({ page }, testInfo) => {
     await login(page, ADMIN);
-    await page.getByRole('button', { name: /Zlecenia/ }).click();
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /Niezrealizowane:/ }).click();
     await page.getByText('Klient Testowy A', { exact: true }).first().click();
     await page.getByRole('button', { name: 'Dodaj / edytuj urządzenia i tabliczki' }).click();
 
