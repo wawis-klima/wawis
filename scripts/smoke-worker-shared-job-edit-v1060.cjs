@@ -12,6 +12,7 @@ const sql = read('worker-shared-job-edit-v10.60.sql');
 
 assert.ok(permissions.includes('return false;'), 'Przypisanie nadal blokuje edycję cudzego montażu.');
 assert.ok(permissions.includes('return !isCompletedJob(job);'), 'Pracownik nie może zarządzać instalatorami aktywnego montażu.');
+assert.ok(permissions.includes('isWorkerLockedCompletedJob'), 'UI nie chroni zakończonych montaży pracownika.');
 assert.ok(form.includes("main_technician_id: form.main_technician_id || ''"), 'Nowy montaż pracownika kasuje głównego technika.');
 assert.ok(form.includes('viewers: [...new Set((form.viewers || []).filter(Boolean))]'), 'Nowy montaż pracownika kasuje dodatkowych instalatorów.');
 assert.ok(form.includes('profile.id, ...getAssignedUserIdsFromForm(resolvedForm)'), 'Brak dostępu twórcy i wybranych instalatorów.');
@@ -19,6 +20,8 @@ assert.ok(modal.includes('(editingJobId || !isAdmin) ? ('), 'Pracownik nie widzi
 assert.ok(edge.includes('callerIsStaff'), 'Push nie rozpoznaje pracownika jako członka zespołu.');
 assert.ok(edge.includes('Tylko pracownik lub administrator może wysyłać przypisania push.'), 'Push przypisania nadal jest tylko dla administratora.');
 assert.ok(sql.includes('current_user_is_staff'), 'Brak funkcji RLS dla całego zespołu.');
+assert.ok(sql.includes("lower(trim(coalesce(j.status, ''))) <> 'zakończone'"), 'RLS pozwala pracownikowi edytować zakończony montaż.');
+assert.ok(sql.includes('public.current_user_is_admin()'), 'Administrator nie ma zachowanego pełnego dostępu do zakończonych montaży.');
 assert.ok(sql.includes('access_insert_staff'), 'Pracownik nie może dopisywać instalatorów.');
 assert.ok(sql.includes('access_delete_staff'), 'Pracownik nie może odpiąć instalatora.');
 console.log('PASS smoke-worker-shared-job-edit-v1060');
