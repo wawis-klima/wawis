@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const DRIVE_RELEASE_FOLDER_ID = '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S';
+const DRIVE_RELEASE_FOLDER_PATH = 'Aplikacja/Wersje';
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), 'utf8');
@@ -64,6 +66,24 @@ function validDiagnosticCheck(entry) {
   );
 }
 
+function validDriveBackup(entry, appVersion) {
+  const expectedName = `klima-app-v${appVersion}.zip`;
+  return Boolean(
+    entry &&
+    entry.required === true &&
+    entry.folder_id === DRIVE_RELEASE_FOLDER_ID &&
+    entry.folder_path === DRIVE_RELEASE_FOLDER_PATH &&
+    entry.file_name === expectedName &&
+    typeof entry.file_id === 'string' &&
+    entry.file_id.trim() &&
+    Number(entry.size_bytes) > 0 &&
+    entry.uploaded === true &&
+    typeof entry.uploaded_at === 'string' &&
+    entry.uploaded_at.trim() &&
+    entry.verified === true
+  );
+}
+
 function main() {
   const postMode = process.argv.includes('--post');
   const appVersion = String(readJson('app-version.json').version || '').trim();
@@ -87,10 +107,16 @@ function main() {
   assert(rules.includes('Diagnostyka jest obowiązkową częścią wydania'), 'NO-GO: WAWIS-RULES.md nie zawiera obowiązkowej diagnostyki');
   assert(rules.includes('GO / NO-GO'), 'NO-GO: WAWIS-RULES.md nie zawiera bramki GO/NO-GO');
   assert(rules.includes('POST-DEPLOY DIAGNOSTICS'), 'NO-GO: WAWIS-RULES.md nie zawiera kontroli po wdrożeniu');
+  assert(rules.includes('Aplikacja/Wersje'), 'NO-GO: WAWIS-RULES.md nie zawiera obowiązkowej kopii ZIP na Google Drive');
   assert(checklist.includes('test:smoke:diagnostic-report'), 'NO-GO: RELEASE-CHECKLIST.md nie pilnuje raportu diagnostycznego');
   assert(runRelease.includes('test:smoke:diagnostics-clarity'), 'NO-GO: runner wydania nie uruchamia kontroli czytelności diagnostyki');
   assert(String(vercel.buildCommand || '').includes('node scripts/release-policy-gate.cjs'), 'NO-GO: Vercel build nie uruchamia release-policy-gate');
   assert(workflow.includes('node scripts/release-policy-gate.cjs'), 'NO-GO: GitHub Actions nie uruchamia release-policy-gate');
+
+  const driveBackup = gate.drive_backup || {};
+  assert(driveBackup.required === true, 'NO-GO: RELEASE-GATE.json nie wymaga kopii ZIP na Google Drive');
+  assert(driveBackup.folder_id === DRIVE_RELEASE_FOLDER_ID, 'NO-GO: nieprawidłowy folder Google Drive dla kopii wydania');
+  assert(driveBackup.folder_path === DRIVE_RELEASE_FOLDER_PATH, 'NO-GO: nieprawidłowa ścieżka Google Drive dla kopii wydania');
 
   const enforceFrom = String(gate.policy_enforced_from || '10.60').trim();
   if (gteVersion(appVersion, enforceFrom)) {
@@ -115,6 +141,7 @@ function main() {
     assert(validDiagnosticCheck(post), 'NO-GO: brak potwierdzonej diagnostyki 24h po wdrożeniu');
     assert(post.production_version_verified === true, 'NO-GO: nie potwierdzono numeru wersji na produkcji');
     assert(post.service_worker_verified === true, 'NO-GO: nie potwierdzono Service Workera/cache na produkcji');
+    assert(validDriveBackup(driveBackup, appVersion), `NO-GO: brak zweryfikowanej paczki klima-app-v${appVersion}.zip w Google Drive Aplikacja/Wersje`);
   }
 
   console.log(`WAWIS RELEASE GATE: GO — ${appVersion}${postMode ? ' (post-deploy)' : ' (pre-deploy)'}`);
