@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, login } from './mock-helpers.js';
 
 test.describe('Tankowania 10.22', () => {
@@ -37,7 +37,7 @@ test.describe('Tankowania 10.22', () => {
     await page.getByPlaceholder('np. 48,5').fill('20');
     await page.getByPlaceholder('np. 125400').fill('128000');
     page.once('dialog', async (dialog) => {
-      expect(dialog.message()).toContain('Różnica: 2 600 km');
+      expect(dialog.message()).toMatch(/Różnica: 2(?:[\s\u00a0\u202f])?600 km/);
       await dialog.dismiss();
     });
     await page.getByRole('button', { name: 'Potwierdź i zapisz tankowanie' }).click();
@@ -48,9 +48,14 @@ test.describe('Tankowania 10.22', () => {
     await expect(page.getByRole('alert')).toContainText('Przy różnicy powyżej 5 000 km');
     await expect(page.locator('.fuelHistoryRow')).toHaveCount(1);
   });
+});
+
+const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+
+test.describe('@mobile Tankowania pracownika iPhone', () => {
+  test.use(iphone14);
 
   test('mobilny pracownik ma Paliwo bez desktopowej tabeli samochodów', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
     await login(page, WORKER);
     await page.getByRole('button', { name: 'Paliwo' }).click();
     await expect(page.getByRole('heading', { name: 'Tankowania', exact: true }).last()).toBeVisible();
