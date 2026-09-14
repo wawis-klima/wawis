@@ -33,17 +33,27 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
           id: 'mock-e2e-nameplate-jz',
           job_id: 'mock-job-002',
           image_url: imageUrl,
-          storage_path: 'mock-job-002/nameplates/device-1_jz_MOCK-MIT-002_e2e.png',
+          storage_path: 'mock-job-002/nameplates/device-1_jz_MOCK-MIT-002_e2e.jpg',
           uploaded_by: 'mock-worker-1',
           created_at: '2026-09-14T10:00:00.000Z',
+          photo_kind: 'nameplate',
+          device_index: 1,
+          unit_ref: 'jz',
+          device_ref: 'device-1-jz',
+          upload_status: 'uploaded',
         },
         {
           id: 'mock-e2e-nameplate-jw1',
           job_id: 'mock-job-002',
           image_url: imageUrl,
-          storage_path: 'mock-job-002/nameplates/device-1_jw-1_MOCK-MIT-JW-002_e2e.png',
+          storage_path: 'mock-job-002/nameplates/device-1_jw-1_MOCK-MIT-JW-002_e2e.jpg',
           uploaded_by: 'mock-worker-1',
           created_at: '2026-09-14T10:01:00.000Z',
+          photo_kind: 'nameplate',
+          device_index: 1,
+          unit_ref: 'jw-1',
+          device_ref: 'device-1-jw-1',
+          upload_status: 'uploaded',
         },
       );
       window.localStorage.setItem(storeKey, JSON.stringify(store));
@@ -113,7 +123,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Urządzenia' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
     await expect(page.getByText('Multi', { exact: true })).toBeVisible();
 
     // Niepełny zestaw można zapisać, ale zakończenie nadal pozostaje zablokowane.
