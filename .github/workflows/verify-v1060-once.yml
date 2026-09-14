@@ -26,8 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=optional
 
-      - name: Full mobile release verification without version bump
-        run: node scripts/run-release.cjs mobile --skip-version-bump
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Full release verification without version bump
+        run: node scripts/run-release.cjs full --skip-version-bump
 
       - name: Upload release package
         if: success()
@@ -35,9 +38,9 @@ jobs:
         with:
           name: wawis-10.60-release
           path: |
-            klima-app-v10.60.zip
+            releases/klima-app-v10.60.zip
             RELEASE-RESULT.md
           if-no-files-found: error
           retention-days: 7
 
-# rerun: 6
+# rerun: 7
