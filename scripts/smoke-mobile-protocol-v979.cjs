@@ -68,7 +68,7 @@ assert.match(storageModule, /navigator\.share\(\{ files: \[file\] \}\)/);
 assert.match(storageModule, /PRINT_IMAGE_MIME_TYPE = "image\/png"/);
 assert.match(storageModule, /createProtocolPrintImage/);
 assert.match(storageModule, /pdfjs-dist\/legacy\/build\/pdf\.mjs/);
-assert.match(storageModule, /return \{ method: "share-image" \}/);
+assert.match(storageModule, /return \{ method: "share-image", copies: 1, fullSize: true \}/);
 assert.doesNotMatch(storageModule, /title: `Drukuj protokół|text: "Wybierz aplikację Phomemo/);
 assert.doesNotMatch(storageModule, /triggerBrowserDownload\(blob, record\.file_name\);\s*return \{ method: "download" \};/);
 assert.doesNotMatch(storageModule, /mailto:|createSignedUrl|EMAIL_LINK_TTL_SECONDS/);
