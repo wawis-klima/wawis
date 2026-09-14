@@ -12,6 +12,7 @@ const layout = read('src', 'mobile791', 'components', 'jobs', 'MobileJobsLayout.
 const photos = read('src', 'mobile791', 'modules', 'photos.js');
 const packageJson = JSON.parse(read('package.json'));
 const releaseRunner = read('scripts', 'run-release.cjs');
+const testGroups = read('scripts', 'test-groups.cjs');
 
 assert.match(component, /Synchronizacja zdjęć/);
 assert.match(component, /Wyślij wszystkie/);
@@ -44,6 +45,11 @@ assert.match(layout, /onRetryAll=\{retryAllPhotoUploads\}/);
 assert.match(layout, /onRetryPhoto=\{retryPhotoUpload\}/);
 
 assert.equal(packageJson.scripts['test:smoke:mobile-photo-sync-center'], 'node scripts/smoke-mobile-photo-sync-center.cjs');
-assert.match(releaseRunner, /test:smoke:mobile-photo-sync-center/);
+// Od 10.61 finalny release korzysta z centralnych grup regresji zamiast listy komend
+// wpisanej bezpośrednio w run-release.cjs.
+assert.match(testGroups, /test:smoke:mobile-photo-sync-center/);
+assert.match(testGroups, /photos:\s*\[/);
+assert.match(releaseRunner, /getReleaseGroups/);
+assert.match(releaseRunner, /run-test-group\.cjs/);
 
 console.log('Mobile photo sync center smoke OK');
