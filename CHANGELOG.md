@@ -1,3 +1,6 @@
+## 10.61
+- uzupełnij opis zmian dla wersji 10.61
+
 ## 10.60
 - pracownik mobilny może edytować każdy aktywny montaż, także gdy nie jest do niego przypisany; przypisanie instalatora jest informacją organizacyjną, a nie blokadą dostępu,
 - pracownik tworzący nowy montaż może od razu wybrać głównego technika i dodatkowych instalatorów,
