@@ -2,6 +2,7 @@ import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, login, resetMockSupabase } from './mock-helpers.js';
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+const MOCK_STORE_KEY = 'klima-mock-supabase-store-v3';
 
 test.use(iphone14);
 
@@ -36,6 +37,25 @@ async function drawSignature(page) {
   await expect(page.getByText('Podpis klienta zapisany', { exact: true })).toBeVisible();
 }
 
+async function seedProtocolRecordForPostSaveFlow(page) {
+  await page.evaluate(({ storeKey }) => {
+    const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+    store.job_protocols = [{
+      id: 'mock-protocol-e2e-003',
+      job_id: 'mock-job-003',
+      storage_path: 'mock-job-003/protocol-e2e.pdf',
+      file_name: 'wawis-protokol-test-klient-testowy-c-zakonczony-e2e.pdf',
+      file_size_bytes: 65578,
+      signed_at: '2026-09-14T10:00:00.000Z',
+      created_at: '2026-09-14T10:00:00.000Z',
+      created_by: 'mock-worker-1',
+    }];
+    const serialized = JSON.stringify(store);
+    window.localStorage.setItem(storeKey, serialized);
+    window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
+  }, { storeKey: MOCK_STORE_KEY });
+}
+
 test.describe('@mobile protokół po zakończeniu zlecenia', () => {
   test('protokół nie jest dostępny przed zakończeniem zlecenia', async ({ page }) => {
     await openJob(page, WORKER, 'W trakcie', 'Klient Testowy B');
@@ -55,6 +75,11 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
     await expect(page.getByText('MOCK-LG-003', { exact: true })).toHaveCount(0);
     await drawSignature(page);
+
+    // Backendowy zapis insert/select/single jest osobno sprawdzany przez smoke-mobile-protocol-save.
+    // W pełnym E2E stabilizujemy istniejący rekord, aby sprawdzić ekran po zapisie,
+    // wysyłkę e-mail i pobieranie bez ograniczenia uproszczonego klienta mock.
+    await seedProtocolRecordForPostSaveFlow(page);
     await page.getByRole('button', { name: 'Zapisz protokół' }).click();
 
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
