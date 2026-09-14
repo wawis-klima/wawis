@@ -17,6 +17,10 @@ async function selectNameplateAndCrop(page, input) {
   await expect(page.locator('.nameplateCropModal')).toBeVisible();
   await expect(page.getByText('Dopasuj kadr', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Zapisz kadr' }).click();
+  const saveAnyway = page.getByRole('button', { name: 'Zapisz mimo to', exact: true });
+  if (await saveAnyway.isVisible().catch(() => false)) {
+    await saveAnyway.click();
+  }
   await expect(page.locator('.nameplateCropModal')).toBeHidden();
 }
 
