@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const appVersion = String(JSON.parse(fs.readFileSync(path.join(root, 'app-version.json'), 'utf8')).version || '').trim();
+const publicAppVersion = String(JSON.parse(fs.readFileSync(path.join(root, 'public', 'app-version.json'), 'utf8')).version || '').trim();
 const packageVersion = String(JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version || '').trim();
 const versionSource = fs.readFileSync(path.join(root, 'src', 'version.js'), 'utf8');
 const authScreenSource = fs.readFileSync(path.join(root, 'src', 'components', 'AuthScreen.jsx'), 'utf8');
@@ -15,6 +16,7 @@ const sourceVersionMatch = versionSource.match(/APP_VERSION\s*=\s*['"]([0-9]+\.[
 const sourceVersion = String(sourceVersionMatch?.[1] || '').trim();
 
 assert.ok(appVersion, 'Brak wersji w app-version.json');
+assert.equal(publicAppVersion, appVersion, 'public/app-version.json ma inną wersję niż app-version.json');
 assert.equal(packageVersion, appVersion, 'package.json ma inną wersję niż app-version.json');
 assert.equal(sourceVersion, appVersion, 'src/version.js ma inną wersję niż app-version.json');
 
@@ -35,5 +37,5 @@ assert.match(adminShellSource, /adminDesktopSidebarVersion/);
 assert.match(adminShellSource, /Wersja\s*\{APP_VERSION\}/);
 assert.doesNotMatch(adminShellSource, /Wersja\s+[0-9]+\.[0-9]{2}/);
 
-console.log(`Version UI smoke OK (${appVersion})`);
+console.log(`Version UI + public metadata smoke OK (${appVersion})`);
 process.exit(0);
