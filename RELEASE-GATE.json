@@ -1,40 +1,50 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.60",
+  "version": "10.61",
   "scope": "full",
+  "release_branch": "release/v10.61",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-14T11:27:03.445547Z",
+    "checked_at": "2026-09-14T16:02:23.091557Z",
     "result": "GO",
-    "notes": "Przed zmianą sprawdzono app_diagnostic_events z ostatnich 24 h: brak błędów i ostrzeżeń."
+    "notes": "Baseline przed 10.61: w ostatnich 24 h istnieje 1 pojedynczy wpis z wersji 10.60: console.error, moduł app, platforma mobile, komunikat zanonimizowany jako [REDACTED_TEXT], bez błędów kolejki i bez powtórzeń. Traktowany jako znany stan bazowy, nie regresja 10.61."
   },
   "predeploy_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": true,
-    "checked_at": "2026-09-14T14:47:49.548511Z",
-    "result": "GO",
-    "notes": "Po zmianach i zielonych mobilnych E2E sprawdzono app_diagnostic_events z ostatnich 24 h: 0 zdarzeń, 0 błędów, 0 ostrzeżeń."
+    "checked_at": null,
+    "result": "PENDING",
+    "notes": "Do wykonania po zmianach i przed finalnym runnerem 10.61."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.60.zip",
-    "file_id": "1xhB3823P0zYUX-TfgZhu1QPfWKH4rdqo",
-    "size_bytes": 12172829,
-    "uploaded": true,
-    "uploaded_at": "2026-09-14T14:59:22.177Z",
-    "verified": true,
-    "notes": "Finalny ZIP z zielonego pełnego runnera GitHub Actions nr 25 został wysłany do Aplikacja/Wersje i ponownie zweryfikowany przez metadane pliku oraz listing folderu Drive."
+    "file_name": "klima-app-v10.61.zip",
+    "file_id": null,
+    "size_bytes": 0,
+    "uploaded": false,
+    "uploaded_at": null,
+    "verified": false,
+    "notes": "Do uzupełnienia po zielonym finalnym WAWIS release checks."
+  },
+  "main_protection": {
+    "source_branch": "release/v10.61",
+    "ready_for_main": false,
+    "final_release_run_id": "",
+    "final_release_commit": "",
+    "notes": "ready_for_main wolno ustawić dopiero po zielonym finalnym runnerze oraz zweryfikowanym ZIP na Google Drive."
   },
   "postdeploy_diagnostics": {
+    "evidence_required": true,
     "checked": false,
     "last_24h": true,
     "checked_at": null,
     "result": "PENDING",
     "production_version_verified": false,
     "service_worker_verified": false,
-    "notes": "Ponowne wdrożenie 10.60 wywołane przez push na GitHub main; weryfikacja produkcji i Service Workera po zakończeniu deployu."
+    "evidence_file": "post-deploy-evidence.json",
+    "notes": "Wydanie zamyka dopiero rzeczywisty odczyt produkcyjnego app-version.json, push-sw.js i diagnostyki Supabase."
   }
 }
