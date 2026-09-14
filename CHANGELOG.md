@@ -1,3 +1,12 @@
+## 10.60
+- pracownik mobilny może edytować każdy aktywny montaż, także gdy nie jest do niego przypisany; przypisanie instalatora jest informacją organizacyjną, a nie blokadą dostępu,
+- pracownik tworzący nowy montaż może od razu wybrać głównego technika i dodatkowych instalatorów,
+- wszyscy pracownicy mogą w aktywnym montażu zmieniać dane robocze, dodawać komentarze i zdjęcia oraz zarządzać listą instalatorów,
+- zakończone montaże pozostają zablokowane dla zwykłych pracowników, aby chronić podpisaną dokumentację i protokoły,
+- RLS Supabase dla jobs/job_access oraz zdjęć i komentarzy korzystających z helperów dostępu został rozszerzony na cały zespół pracowników,
+- push o przypisaniu i zakończeniu montażu nie wymaga już wcześniejszego przypisania wykonującego pracownika,
+- dodano regresję testową test:smoke:worker-shared-job-edit.
+
 ## 10.59
 - uzupełnij opis zmian dla wersji 10.59
 

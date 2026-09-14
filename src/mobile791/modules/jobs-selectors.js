@@ -42,8 +42,8 @@ export function getVisibleJobs({
 
       return {
         ...job,
-        // 10.60: pracownik widzi wszystkie montaże, ale montaż innej osoby
-        // jest oznaczony jako tylko do odczytu dla warstwy uprawnień UI.
+        // 10.60: przypisanie pozostaje informacją organizacyjną.
+        // Każdy pracownik może edytować aktywny montaż niezależnie od przypisania.
         _workerAssignedToCurrentUser: isAdmin ? true : isAssignedToCurrentUser,
       };
     })

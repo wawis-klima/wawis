@@ -26,8 +26,8 @@ const installerCount = (modal.match(/Instalatorzy \(opcjonalnie\)/g) || []).leng
 assert.equal(installerCount, 1, 'Sekcja instalatorów powinna występować dokładnie raz w mobilnym formularzu.');
 assert.match(
   modal,
-  /\{editingJobId \? \(\s*<>\s*<h4>Instalatorzy \(opcjonalnie\)<\/h4>[\s\S]*?<\/div>\s*<\/>\s*\) : null\}/,
-  'Instalatorzy mają być widoczni wyłącznie przy edycji istniejącego zlecenia.',
+  /\{\(editingJobId \|\| !isAdmin\) \? \(\s*<>\s*<h4>Instalatorzy \(opcjonalnie\)<\/h4>/,
+  'Pracownik ma widzieć instalatorów również podczas tworzenia nowego montażu.',
 );
 
 assert.ok(voice.includes('export function appendVoiceNoteText'), 'Brak helpera dopisywania kolejnych nagrań.');

@@ -14,8 +14,9 @@ export function isWorkerLockedCompletedJob(job, isAdmin) {
   return !isAdmin && isCompletedJob(job);
 }
 
-export function isWorkerReadOnlyJob(job, isAdmin) {
-  return !isAdmin && job?._workerAssignedToCurrentUser === false;
+export function isWorkerReadOnlyJob(_job, _isAdmin) {
+  // 10.60: przypisanie montera jest informacją organizacyjną, nie blokadą dostępu.
+  return false;
 }
 
 export function canWorkerFinishJob(job, isAdmin) {
@@ -43,8 +44,9 @@ export function canAddJobComment(job, isAdmin) {
 }
 
 export function canManageJobViewers(job, isAdmin) {
-  if (!isAdmin) return false;
-  return Boolean(job?.id);
+  if (!job?.id) return false;
+  if (isAdmin) return true;
+  return !isCompletedJob(job);
 }
 
 export function canManageAdminNote(job, isAdmin) {

@@ -1,32 +1,32 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.59",
-  "scope": "policy-bootstrap",
+  "version": "10.60",
+  "scope": "full",
   "baseline_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "BOOTSTRAP",
-    "notes": "Polityka została dołączona po wydaniu 10.59. Od wersji 10.60 ten wpis musi być uzupełniony przed rozpoczęciem zmian."
+    "checked_at": "2026-09-14T11:27:03.445547Z",
+    "result": "GO",
+    "notes": "Przed zmianą sprawdzono app_diagnostic_events z ostatnich 24 h: brak błędów i ostrzeżeń."
   },
   "predeploy_diagnostics": {
     "checked": false,
     "last_24h": true,
     "checked_at": null,
-    "result": "BOOTSTRAP",
-    "notes": "Od wersji 10.60 wymagane GO przed produkcyjnym buildem."
+    "result": "PENDING",
+    "notes": "Do sprawdzenia po zmianach i testach, przed wdrożeniem produkcyjnym."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.59.zip",
-    "file_id": "1aQ0k_K-9d3m3cSQr-W-G6rdqg6CHREfb",
-    "size_bytes": 12158693,
-    "uploaded": true,
-    "uploaded_at": "2026-09-14T08:51:49.959Z",
-    "verified": true,
-    "notes": "Zweryfikowano istniejącą paczkę 10.59 w folderze Aplikacja/Wersje. Od 10.60 brak zweryfikowanej paczki blokuje zamknięcie wydania."
+    "file_name": "klima-app-v10.60.zip",
+    "file_id": null,
+    "size_bytes": 0,
+    "uploaded": false,
+    "uploaded_at": null,
+    "verified": false,
+    "notes": "Finalna paczka 10.60 musi zostać wysłana i zweryfikowana przed zamknięciem wydania."
   },
   "postdeploy_diagnostics": {
     "checked": false,
@@ -35,6 +35,6 @@
     "result": "PENDING",
     "production_version_verified": false,
     "service_worker_verified": false,
-    "notes": "Po wdrożeniu każdej wersji od 10.60 należy uzupełnić i uruchomić: node scripts/release-policy-gate.cjs --post"
+    "notes": "Do sprawdzenia po wdrożeniu 10.60."
   }
 }

@@ -194,7 +194,14 @@ async function resolveNewJobFormForSave({ supabase, form = {}, contractors = [],
     return resolveJobFormForSave({ supabase, form, contractors, isAdmin: true });
   }
 
-  const workerForm = { ...form, contractor_id: '', main_technician_id: '', viewers: [], admin_note: '', status: normalizeWorkerCreateStatus(form.status) };
+  const workerForm = {
+    ...form,
+    contractor_id: '',
+    admin_note: '',
+    main_technician_id: form.main_technician_id || '',
+    viewers: [...new Set((form.viewers || []).filter(Boolean))],
+    status: normalizeWorkerCreateStatus(form.status),
+  };
   const contractor = await createContractorFromWorkerJobForm({ supabase, form: workerForm });
   return contractor?.id ? mergeContractorSnapshotIntoForm(workerForm, contractor) : workerForm;
 }
@@ -229,7 +236,7 @@ export async function addJobRecord({
     installation_date: resolvedForm.installation_date || null,
     admin_note: isAdmin ? (resolvedForm.admin_note.trim() || null) : null,
     created_by: profile.id,
-    main_technician_id: isAdmin ? (resolvedForm.main_technician_id || null) : null,
+    main_technician_id: resolvedForm.main_technician_id || null,
     sms_consent: true,
     sms_reminder_enabled: true,
     sms_recipient_phone: resolvedForm.phone.trim() || null,
@@ -241,7 +248,7 @@ export async function addJobRecord({
   const createdJob = Array.isArray(data) ? data[0] : data;
   if (!createdJob?.id) throw new Error('Baza nie zwróciła identyfikatora zapisanego montażu.');
 
-  const selectedUsers = [...new Set(isAdmin ? (resolvedForm.viewers || []) : [profile.id])];
+  const selectedUsers = [...new Set([profile.id, ...getAssignedUserIdsFromForm(resolvedForm)])];
   if (selectedUsers.length) {
     const { error: accessError } = await supabase.from('job_access').insert(
       selectedUsers.map((userId) => ({ job_id: createdJob.id, user_id: userId })),
@@ -260,8 +267,8 @@ export async function addJobRecord({
     }
   }
 
-  const assignedUserIds = getAssignedUserIdsFromForm(resolvedForm);
-  if (isAdmin && shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
+  const assignedUserIds = getAssignedUserIdsFromForm(resolvedForm).filter((userId) => userId !== profile.id);
+  if (assignedUserIds.length && shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
     await sendAssignmentPushFn?.({ newUserIds: assignedUserIds, jobId: createdJob.id });
   }
 

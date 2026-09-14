@@ -139,16 +139,16 @@ function runContractorsDuplicateSmoke({ findContractorDuplicates }) {
 
 
 function runDevicesModuleSmoke() {
-  const moduleSwitcherPath = path.join(__dirname, '..', 'src', 'components', 'layout', 'ModuleSwitcher.jsx');
+  const adminDesktopShellPath = path.join(__dirname, '..', 'src', 'components', 'layout', 'AdminDesktopShell.jsx');
   const appPath = path.join(__dirname, '..', 'src', 'App.jsx');
   const devicesPanelPath = path.join(__dirname, '..', 'src', 'components', 'devices', 'DevicesPanel.jsx');
 
-  const moduleSwitcherSource = fs.readFileSync(moduleSwitcherPath, 'utf8');
+  const adminDesktopShellSource = fs.readFileSync(adminDesktopShellPath, 'utf8');
   const appSource = fs.readFileSync(appPath, 'utf8');
   const devicesPanelSource = fs.readFileSync(devicesPanelPath, 'utf8');
 
-  assert.match(moduleSwitcherSource, /id:\s*"devices"/);
-  assert.match(moduleSwitcherSource, /Urządzenia/);
+  assert.match(adminDesktopShellSource, /key:\s*['"]devices['"]/);
+  assert.match(adminDesktopShellSource, /label:\s*['"]Urządzenia['"]/);
   assert.match(appSource, /activeModule === "devices"/);
   assert.match(appSource, /DevicesPanel/);
   assert.match(devicesPanelSource, /<h1>Urządzenia<\/h1>|Przegląd urządzeń na desktopie/);
@@ -459,9 +459,9 @@ async function runSmsModuleSmoke() {
   const { loadSmsModuleData, saveSmsSettings } = loadSmsFetchModule();
 
   assert.ok(moduleSwitcherSource.includes('const MODULES = ['));
-  assert.match(moduleSwitcherSource, /!\["sms", "contractors"\]\.includes\(module\.id\) \|\| isAdmin/);
-  assert.match(appSource, /if \(!isAdmin && \(activeModule === "sms" \|\| activeModule === "contractors" \|\| activeModule === "calendar"\)\) \{/);
-  assert.match(appSource, /jobsPanel=\{activeModule === "jobs" \|\| !isAdmin \?/);
+  assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel"\]\.includes\(module\.id\)/);
+  assert.match(appSource, /const shouldBlockWorkerDesktop\s*=\s*isWorker\s*&&\s*\(!isMobile\s*\|\|\s*!isProbablyPhoneDevice\)/);
+  assert.match(appSource, /jobsPanel=\{activeModule === "jobs" \|\| \(!isAdmin && activeModule !== "fuel"\) \? \(/);
   assert.match(smsFetchSource, /if \(!supabase \|\| !isAdmin\)/);
   assert.match(smsFetchSource, /rpc\('admin_get_sms_module_snapshot'\)/);
   assert.match(smsFetchSource, /rpc\('admin_upsert_sms_settings'/);
@@ -541,9 +541,9 @@ async function runContractorsModuleSmoke() {
   const { loadContractors, saveContractor, removeContractor, removeJobFallbackContractor } = loadContractorsFetchModule();
 
   assert.match(moduleSwitcherSource, /{ id: "contractors", label: "Kontrahenci" }/);
-  assert.match(moduleSwitcherSource, /!\["sms", "contractors"\]\.includes\(module\.id\) \|\| isAdmin/);
+  assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel"\]\.includes\(module\.id\)/);
   assert.match(appSource, /activeModule === "contractors"/);
-  assert.match(appSource, /if \(!isAdmin && \(activeModule === "sms" \|\| activeModule === "contractors" \|\| activeModule === "calendar"\)\)/);
+  assert.match(appSource, /const shouldBlockWorkerDesktop\s*=\s*isWorker\s*&&\s*\(!isMobile\s*\|\|\s*!isProbablyPhoneDevice\)/);
   assert.match(contractorsFetchSource, /rpc\('admin_list_contractors'\)/);
   assert.match(contractorsFetchSource, /rpc\('admin_upsert_contractor'/);
   assert.match(contractorsFetchSource, /rpc\('admin_delete_contractor'/);

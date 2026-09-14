@@ -61,6 +61,10 @@ Deno.serve(async (request) => {
       return json({ error: "Nie udało się pobrać profilu użytkownika." }, 403);
     }
 
+    const normalizedCallerRole = String(callerProfile.role || '').trim().toLowerCase();
+    const callerIsAdmin = ['administrator', 'admin'].includes(normalizedCallerRole);
+    const callerIsStaff = callerIsAdmin || ['employee', 'pracownik'].includes(normalizedCallerRole);
+
     const body = (await request.json()) as PushRequest;
     const jobId = String(body.jobId || "").trim();
     const eventType = body.eventType === "job_completed"
@@ -100,7 +104,7 @@ Deno.serve(async (request) => {
     }
 
     if (eventType === "push_test") {
-      if (callerProfile.role !== "Administrator") {
+      if (!callerIsAdmin) {
         return json({ error: "Tylko administrator może uruchomić test push." }, 403);
       }
 
@@ -144,8 +148,8 @@ Deno.serve(async (request) => {
       });
     }
 
-    if (callerProfile.role !== "Administrator") {
-      return json({ error: "Tylko administrator może wysyłać przypisania push." }, 403);
+    if (!callerIsStaff) {
+      return json({ error: "Tylko pracownik lub administrator może wysyłać przypisania push." }, 403);
     }
 
     const assignedUserIds = [...new Set([
@@ -369,18 +373,9 @@ async function handleJobCompleted({
     }, 409);
   }
 
-  if (callerProfile.role !== "Administrator") {
-    const isMainTechnician = String(job.main_technician_id || "") === String(authUserId);
-    const { data: accessRow } = await adminClient
-      .from("job_access")
-      .select("id")
-      .eq("job_id", job.id)
-      .eq("user_id", authUserId)
-      .maybeSingle();
-
-    if (!isMainTechnician && !accessRow) {
-      return json({ error: "Brak dostępu do tego zlecenia." }, 403);
-    }
+  const normalizedCallerRole = String(callerProfile?.role || '').trim().toLowerCase();
+  if (!['employee', 'pracownik', 'admin', 'administrator'].includes(normalizedCallerRole)) {
+    return json({ error: "Brak uprawnień pracownika do tego zlecenia." }, 403);
   }
 
   const { data: adminProfiles, error: adminProfilesError } = await adminClient

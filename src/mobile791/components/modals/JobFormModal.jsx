@@ -771,7 +771,7 @@ export default function JobFormModal({
                 <VoiceNoteButton label="Komentarz administratora" onValue={(value) => setJobForm((prev) => ({ ...prev, admin_note: appendVoiceNoteText(prev.admin_note, value) }))} disabled={busy} />
               </div>
             </div>
-            {editingJobId ? (
+            {(editingJobId || !isAdmin) ? (
               <>
                 <h4>Instalatorzy (opcjonalnie)</h4>
                 <div className="viewerGrid">
