@@ -35,6 +35,6 @@
     "result": "PENDING",
     "production_version_verified": false,
     "service_worker_verified": false,
-    "notes": "Do sprawdzenia po wdrożeniu 10.60."
+    "notes": "Ponowne wdrożenie 10.60 wywołane przez push na GitHub main; weryfikacja produkcji i Service Workera po zakończeniu deployu."
   }
 }
