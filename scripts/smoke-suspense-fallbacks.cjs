@@ -13,7 +13,7 @@ assert.match(appSource, /const CalendarPanel = lazy\(\(\) => import\("\.\/compon
 assert.match(appSource, /const JobDetailsPanel = lazy\(\(\) => import\("\.\/components\/JobDetailsPanel\.jsx"\)\);/);
 assert.match(appSource, /const JobFormModal = lazy\(\(\) => import\("\.\/components\/modals\/JobFormModal\.jsx"\)\);/);
 assert.match(appSource, /const adminModuleFallback = \(/);
-assert.match(appSource, /Trwa ładowanie modułu administratora\.\.\./);
+assert.match(appSource, /Trwa ładowanie modułu\.\.\./);
 assert.match(appSource, /<Suspense fallback=\{adminModuleFallback\}>/);
 assert.match(appSource, /const jobDetailsFallback = \(/);
 assert.match(appSource, /Trwa ładowanie szczegółów montażu\.\.\./);
