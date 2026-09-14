@@ -24,10 +24,11 @@ test.describe('desktop E2E na mock Supabase', () => {
   test('administrator loguje się i przechodzi przez Montaże, Kalendarz oraz SMS', async ({ page }) => {
     await login(page, ADMIN);
 
-    await expect(page.getByRole('button', { name: /Zlecenia/ })).toBeVisible();
-    await page.getByRole('button', { name: /Zlecenia/ }).click();
+    await expect(page.getByRole('button', { name: /^Montaże$/ })).toBeVisible();
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
     await expect(page.getByRole('heading', { name: 'Montaże' })).toBeVisible();
-    await expect(page.getByText('Klient Testowy A')).toBeVisible();
+    await page.getByRole('button', { name: /W trakcie:/ }).click();
+    await expect(page.getByText('Klient Testowy B', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: /Kalendarz/ }).click();
     await expect(page.getByText('Wybrany dzień')).toBeVisible();
@@ -61,7 +62,7 @@ test.describe('desktop E2E na mock Supabase', () => {
 
   test('administrator tworzy i edytuje montaż', async ({ page }) => {
     await login(page, ADMIN);
-    await page.getByRole('button', { name: /Zlecenia/ }).click();
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
 
     await page.locator('button.desktopActionBtn.primary[title="Dodaj"]').click();
     await expect(page.getByRole('heading', { name: 'Nowy montaż / zlecenie' })).toBeVisible();
@@ -70,13 +71,13 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByPlaceholder('Telefon klienta / SMS').fill('501222333');
     await page.getByPlaceholder('Miejscowość').fill('Poznań');
     await page.getByPlaceholder('Ulica i numer').fill('Testowa 77');
-    await page.getByLabel('Data montażu').locator('input[type="date"]').fill('2026-06-10');
+    await page.getByLabel('Data montażu').locator('input[type="date"]').fill('2026-09-14');
     await page.getByPlaceholder('np. Gree Amber Standard 3,5 kW').fill('Gree E2E 3.5 kW');
     await page.getByPlaceholder('np. SN-2026-000123').fill('E2E-SN-001');
     await page.getByRole('button', { name: 'Zapisz zlecenie' }).click();
 
-    await expect(page.getByText('Klient E2E Create')).toBeVisible();
-    await page.getByText('Klient E2E Create').click();
+    await expect(page.getByText('Klient E2E Create', { exact: true })).toBeVisible();
+    await page.getByText('Klient E2E Create', { exact: true }).click();
     await expect(page.getByText('Gree E2E 3.5 kW')).toBeVisible();
 
     await page.getByRole('button', { name: 'Edytuj montaż' }).click();
@@ -85,33 +86,35 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByPlaceholder('np. SN-2026-000123').fill('E2E-SN-EDITED');
     await page.getByRole('button', { name: 'Zapisz zmiany' }).click();
 
-    await expect(page.getByText('Klient E2E Edited')).toBeVisible();
-    await page.getByText('Klient E2E Edited').click();
+    await expect(page.getByText('Klient E2E Edited', { exact: true })).toBeVisible();
+    await page.getByText('Klient E2E Edited', { exact: true }).click();
     await expect(page.getByText('E2E-SN-EDITED')).toBeVisible();
   });
 
   test('administrator usuwa montaż dopiero po potwierdzeniu', async ({ page }) => {
     await login(page, ADMIN);
-    await page.getByRole('button', { name: /Zlecenia/ }).click();
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /W trakcie:/ }).click();
 
-    await expect(page.getByText('Klient Testowy B')).toBeVisible();
-    await page.getByText('Klient Testowy B').click();
+    await expect(page.getByText('Klient Testowy B', { exact: true })).toBeVisible();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
     await expect(page.getByRole('button', { name: 'Usuń kartę' })).toBeVisible();
     await page.getByRole('button', { name: 'Usuń kartę' }).click();
 
     await expect(page.getByRole('heading', { name: 'Usunąć kartę montażu?' })).toBeVisible();
     await page.getByRole('button', { name: 'Anuluj' }).click();
-    await expect(page.getByText('Klient Testowy B')).toBeVisible();
+    await expect(page.getByText('Klient Testowy B', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Usuń kartę' }).click();
     await page.getByRole('button', { name: 'Usuń na stałe' }).click();
-    await expect(page.getByText('Klient Testowy B')).toHaveCount(0);
+    await expect(page.getByText('Klient Testowy B', { exact: true })).toHaveCount(0);
   });
 
   test('administrator podgląda i wysyła zapisany protokół zakończonego zlecenia', async ({ page }) => {
     await login(page, ADMIN);
-    await page.getByRole('button', { name: /Zlecenia/ }).click();
-    await page.getByText('Klient Testowy C Zakończony').click();
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /Zakończone:/ }).click();
+    await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
 
     const protocolCard = page.locator('[data-desktop-protocol="9.96"]');
     await expect(protocolCard.getByText('Protokół zapisany')).toBeVisible();
@@ -127,32 +130,22 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(protocolCard.getByText('Protokół został wysłany z biuro@wawis.pl do klient.c@example.test.')).toBeVisible();
   });
 
-  test('pracownik nie może edytować ani usuwać cudzych i zakończonych montaży', async ({ page }) => {
+  test('pracownik na komputerze jest kierowany do aplikacji telefonicznej', async ({ page }) => {
     await login(page, WORKER);
 
-    await expect(page.getByText('Klient Testowy C Zakończony')).toBeVisible();
-    await page.getByText('Klient Testowy C Zakończony').click();
-    await expect(page.getByText('Zlecenie zakończone — karta jest tylko do podglądu dla pracownika.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Edytuj montaż' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Usuń kartę' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Zakończone zlecenie' })).toHaveCount(0);
-
-    await page.getByTitle('Pokaż wszystkie zlecenia').click();
-    await page.getByPlaceholder('Filtruj klienta, telefon...').fill('Klient Testowy D Cudzy');
-    await expect(page.getByText('Klient Testowy D Cudzy')).toBeVisible();
-    await page.getByText('Klient Testowy D Cudzy').click();
-    await expect(page.getByText('Toshiba Mock 2.5 kW')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Aplikacja dla pracownika jest dostępna tylko na telefonie' })).toBeVisible();
+    await expect(page.getByText('Wersja komputerowa jest dostępna tylko dla administratora.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Edytuj montaż' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Usuń kartę' })).toHaveCount(0);
   });
 
-  test('pracownik loguje się tylko do modułu Montaże i nie widzi modułów administratora', async ({ page }) => {
+  test('pracownik na desktopie nie widzi modułów administratora', async ({ page }) => {
     await login(page, WORKER);
 
-    await expect(page.getByText('Klient Testowy A')).toBeVisible();
-    await expect(page.getByText('Moje zlecenia')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Aplikacja dla pracownika jest dostępna tylko na telefonie' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^SMS$/ })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Kontrahenci/ })).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Urządzenia/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Wyloguj' })).toBeVisible();
   });
 });
