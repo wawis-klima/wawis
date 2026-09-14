@@ -72,6 +72,7 @@ function main() {
   const mobileVersion = extractSourceVersion(read('src/mobile791/version.js'));
   const rules = read('WAWIS-RULES.md');
   const checklist = read('RELEASE-CHECKLIST.md');
+  const runRelease = read('scripts/run-release.cjs');
   const readme = read('README.md');
   const changelog = read('CHANGELOG.md');
   const gate = readJson('RELEASE-GATE.json');
@@ -87,7 +88,7 @@ function main() {
   assert(rules.includes('GO / NO-GO'), 'NO-GO: WAWIS-RULES.md nie zawiera bramki GO/NO-GO');
   assert(rules.includes('POST-DEPLOY DIAGNOSTICS'), 'NO-GO: WAWIS-RULES.md nie zawiera kontroli po wdrożeniu');
   assert(checklist.includes('test:smoke:diagnostic-report'), 'NO-GO: RELEASE-CHECKLIST.md nie pilnuje raportu diagnostycznego');
-  assert(checklist.includes('test:smoke:diagnostics-clarity'), 'NO-GO: RELEASE-CHECKLIST.md nie pilnuje czytelności diagnostyki');
+  assert(runRelease.includes('test:smoke:diagnostics-clarity'), 'NO-GO: runner wydania nie uruchamia kontroli czytelności diagnostyki');
   assert(String(vercel.buildCommand || '').includes('node scripts/release-policy-gate.cjs'), 'NO-GO: Vercel build nie uruchamia release-policy-gate');
   assert(workflow.includes('node scripts/release-policy-gate.cjs'), 'NO-GO: GitHub Actions nie uruchamia release-policy-gate');
 
