@@ -97,7 +97,7 @@ test.describe('@mobile release visual iPhone', () => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
     await expect(page.locator('.mobileHeaderV2')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Pobierz raport diagnostyczny' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Diagnostyka' })).toHaveCount(0);
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
     await expect(page.getByText('Zakończone · tylko podgląd')).toBeVisible();
