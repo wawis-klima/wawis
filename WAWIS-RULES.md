@@ -52,8 +52,9 @@ Wydanie ma status `GO` wyłącznie wtedy, gdy wszystkie poniższe warunki są sp
 9. Diagnostyka przed publikacją nie zawiera niewyjaśnionego nowego błędu.
 10. Produkcyjna wersja, Service Worker/cache oraz najważniejsze ścieżki zmienionego obszaru zostały sprawdzone po wdrożeniu.
 11. Diagnostyka po wdrożeniu została ponownie sprawdzona.
+12. Finalny ZIP wydania został wysłany na Google Drive do `Aplikacja/Wersje` i po wysłaniu zweryfikowany przez ponowne odczytanie folderu.
 
-`NO-GO` obowiązuje przy czerwonym teście, niespójnym numerze, placeholderze dokumentacji aktualnego wydania, niewyjaśnionym nowym błędzie diagnostycznym albo nierozwiązanej regresji.
+`NO-GO` obowiązuje przy czerwonym teście, niespójnym numerze, placeholderze dokumentacji aktualnego wydania, niewyjaśnionym nowym błędzie diagnostycznym, nierozwiązanej regresji albo braku zweryfikowanej kopii ZIP na Google Drive.
 
 ## 4. Minimalna kontrola po wdrożeniu
 
@@ -77,8 +78,20 @@ W zależności od zakresu sprawdzamy na produkcji co najmniej:
 - Placeholder generowany przy podbiciu wersji jest stanem przejściowym i musi zostać zastąpiony przed zatwierdzeniem wydania.
 - Ograniczeń testu lub środowiska nie wolno przemilczać; zapisujemy je w raporcie wydania.
 
-## 6. Stała kolejność pracy
+## 6. Obowiązkowa kopia ZIP na Google Drive
 
-`BASELINE DIAGNOSTICS -> ZMIANA -> TESTY -> RELEASE GATE -> PRE-DEPLOY DIAGNOSTICS -> DEPLOY -> PRODUCTION CHECK -> POST-DEPLOY DIAGNOSTICS -> ZAMKNIĘCIE WYDANIA`
+Każde zakończone wydanie musi mieć finalną paczkę ZIP w Google Drive:
+
+- folder docelowy: `Aplikacja/Wersje`,
+- identyfikator folderu `Wersje`: `1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S`,
+- nazwa pliku: `klima-app-v<WERSJA>.zip`, np. `klima-app-v10.60.zip`,
+- wysyłamy wyłącznie finalny ZIP po zakończeniu testów i weryfikacji paczki,
+- po wysłaniu ponownie odczytujemy folder `Wersje` i potwierdzamy: nazwę, numer wersji, rozmiar większy od zera i obecność pliku,
+- identyfikator pliku Drive, czas wysłania i wynik weryfikacji zapisujemy w `RELEASE-GATE.json`,
+- brak ZIP-a lub brak weryfikacji oznacza `NO-GO` dla zamknięcia wydania.
+
+## 7. Stała kolejność pracy
+
+`BASELINE DIAGNOSTICS -> ZMIANA -> TESTY -> RELEASE GATE -> PRE-DEPLOY DIAGNOSTICS -> FINAL ZIP -> GOOGLE DRIVE BACKUP -> DEPLOY -> PRODUCTION CHECK -> POST-DEPLOY DIAGNOSTICS -> RELEASE CLOSE GATE -> ZAMKNIĘCIE WYDANIA`
 
 Nie deklarujemy wersji jako zakończonej przed przejściem ostatniego kroku.
