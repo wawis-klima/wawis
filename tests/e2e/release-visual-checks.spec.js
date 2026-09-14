@@ -103,7 +103,7 @@ test.describe('@mobile release visual iPhone', () => {
     await expect(page.getByText('Zakończone · tylko podgląd')).toBeVisible();
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
-    await expect(page.getByText(/WERSJA TESTOWA · 10\.60/)).toBeVisible();
+    await expect(page.getByText(/Wersja testowa · 10\.60/i)).toBeVisible();
 
     const health = await getPageVisualHealth(page);
     expect(health.fontFamily.toLowerCase()).not.toContain('times new roman');
