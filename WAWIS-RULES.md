@@ -10,6 +10,16 @@ Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji
 - Nie odtwarzamy założeń wyłącznie z pamięci rozmowy. Najpierw czytamy ten plik, `RELEASE-CHECKLIST.md`, aktualny `README.md`, `CHANGELOG.md` i odpowiedni kod.
 - Każda regresja, która została naprawiona i może wrócić, powinna mieć test smoke lub E2E.
 
+### 1.1. Praca na gałęzi wydania — bez spamowania CI i Vercela
+
+- Drobnych commitów roboczych nie zapisujemy bezpośrednio na `main`.
+- Dla każdej nowej wersji tworzymy gałąź `release/v<WERSJA>` wychodzącą z aktualnego `main` i na niej wykonujemy zmiany oraz poprawki testów.
+- `Mobile release checks`, `Desktop release checks` i `WAWIS Release Policy Gate` nie uruchamiają się automatycznie po każdym pushu na `main`; uruchamiamy je świadomie przez `workflow_dispatch` albo w pull requeście do `main`.
+- W jednej gałęzi wydania używamy `concurrency` z `cancel-in-progress`, żeby nowy przebieg zastępował starszy zamiast wykonywać kilka kopii równolegle.
+- `main` aktualizujemy dopiero wtedy, gdy wydanie ma zakończone testy, pre-deploy `GO`, finalny ZIP i zweryfikowany backup Google Drive.
+- Push/merge do `main` jest sygnałem produkcyjnego wdrożenia Vercela i powinien wystąpić zasadniczo jeden raz dla gotowej wersji, a nie przy każdej poprawce pośredniej.
+- Jednorazowe workflow diagnostyczne dla konkretnej wersji usuwamy po zakończeniu wydania.
+
 ## 2. Diagnostyka jest obowiązkową częścią wydania
 
 ### Przed zmianą
@@ -92,6 +102,6 @@ Każde zakończone wydanie musi mieć finalną paczkę ZIP w Google Drive:
 
 ## 7. Stała kolejność pracy
 
-`BASELINE DIAGNOSTICS -> ZMIANA -> TESTY -> RELEASE GATE -> PRE-DEPLOY DIAGNOSTICS -> FINAL ZIP -> GOOGLE DRIVE BACKUP -> DEPLOY -> PRODUCTION CHECK -> POST-DEPLOY DIAGNOSTICS -> RELEASE CLOSE GATE -> ZAMKNIĘCIE WYDANIA`
+`BASELINE DIAGNOSTICS -> GAŁĄŹ RELEASE -> ZMIANA -> TESTY -> RELEASE GATE -> PRE-DEPLOY DIAGNOSTICS -> FINAL ZIP -> GOOGLE DRIVE BACKUP -> MERGE/PUSH MAIN -> DEPLOY -> PRODUCTION CHECK -> POST-DEPLOY DIAGNOSTICS -> RELEASE CLOSE GATE -> ZAMKNIĘCIE WYDANIA`
 
 Nie deklarujemy wersji jako zakończonej przed przejściem ostatniego kroku.

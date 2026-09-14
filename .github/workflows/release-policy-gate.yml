@@ -1,11 +1,13 @@
 name: WAWIS Release Policy Gate
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+concurrency:
+  group: release-policy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   release-policy-gate:
