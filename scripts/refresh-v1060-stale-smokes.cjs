@@ -47,10 +47,18 @@ function updateAuthRefreshSmoke() {
     'assert.match(moduleSwitcherSource, /!\\["sms", "contractors"\\]\\.includes\\(module\\.id\\) \\|\\| isAdmin/);',
     'assert.match(moduleSwitcherSource, /isAdmin \\? true : \\["jobs", "fuel"\\]\\.includes\\(module\\.id\\)/);',
   );
+  source = source.replace(
+    'assert.match(appSource, /if \\(!isAdmin && \\(activeModule === "sms" \\|\\| activeModule === "contractors" \\|\\| activeModule === "calendar"\\)\\) \\{/);',
+    'assert.match(appSource, /const shouldBlockWorkerDesktop\\s*=\\s*isWorker\\s*&&\\s*\\(!isMobile\\s*\\|\\|\\s*!isProbablyPhoneDevice\\)/);',
+  );
+  source = source.replace(
+    'assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| !isAdmin \\?/);',
+    'assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| \\(!isAdmin && activeModule !== "fuel"\\) \\? \\(/);',
+  );
   write(file, source);
 }
 
 updateWorkerSmoke();
 updateAdminHeaderSmoke();
 updateAuthRefreshSmoke();
-console.log('Refreshed stale mobile toolbar, admin-field and module-switcher smoke checks.');
+console.log('Refreshed stale mobile toolbar, admin-field, module-switcher and worker-access smoke checks.');
