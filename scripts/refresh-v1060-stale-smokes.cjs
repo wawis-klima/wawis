@@ -42,27 +42,38 @@ function updateAdminHeaderSmoke() {
 
 function updateAuthRefreshSmoke() {
   const file = 'scripts/smoke-auth-refresh.cjs';
-  let source = read(file);
-  source = source.replaceAll(
-    'assert.match(moduleSwitcherSource, /!\\["sms", "contractors"\\]\\.includes\\(module\\.id\\) \\|\\| isAdmin/);',
-    'assert.match(moduleSwitcherSource, /isAdmin \\? true : \\["jobs", "fuel"\\]\\.includes\\(module\\.id\\)/);',
-  );
-  source = source.replaceAll(
-    'assert.match(appSource, /if \\(!isAdmin && \\(activeModule === "sms" \\|\\| activeModule === "contractors" \\|\\| activeModule === "calendar"\\)\\) \\{/);',
-    'assert.match(appSource, /const shouldBlockWorkerDesktop\\s*=\\s*isWorker\\s*&&\\s*\\(!isMobile\\s*\\|\\|\\s*!isProbablyPhoneDevice\\)/);',
-  );
-  source = source.replaceAll(
-    'assert.match(appSource, /if \\(!isAdmin && \\(activeModule === "sms" \\|\\| activeModule === "contractors" \\|\\| activeModule === "calendar"\\)\\)\\)/);',
-    'assert.match(appSource, /const shouldBlockWorkerDesktop\\s*=\\s*isWorker\\s*&&\\s*\\(!isMobile\\s*\\|\\|\\s*!isProbablyPhoneDevice\\)/);',
-  );
-  source = source.replaceAll(
-    'assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| !isAdmin \\?/);',
-    'assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| \\(!isAdmin && activeModule !== "fuel"\\) \\? \\(/);',
-  );
-  write(file, source);
+  const source = read(file);
+  const lines = source.split('\n').map((line) => {
+    if (
+      line.includes('assert.match(moduleSwitcherSource') &&
+      line.includes('sms') &&
+      line.includes('contractors') &&
+      line.includes('module.id')
+    ) {
+      return '  assert.match(moduleSwitcherSource, /isAdmin \\? true : \\["jobs", "fuel"\\]\\.includes\\(module\\.id\\)/);';
+    }
+    if (
+      line.includes('assert.match(appSource') &&
+      line.includes('activeModule === "sms"') &&
+      line.includes('activeModule === "contractors"') &&
+      line.includes('activeModule === "calendar"')
+    ) {
+      return '  assert.match(appSource, /const shouldBlockWorkerDesktop\\s*=\\s*isWorker\\s*&&\\s*\\(!isMobile\\s*\\|\\|\\s*!isProbablyPhoneDevice\\)/);';
+    }
+    if (
+      line.includes('assert.match(appSource') &&
+      line.includes('jobsPanel=') &&
+      line.includes('activeModule === "jobs"') &&
+      line.includes('!isAdmin')
+    ) {
+      return '  assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| \\(!isAdmin && activeModule !== "fuel"\\) \\? \\(/);';
+    }
+    return line;
+  });
+  write(file, lines.join('\n'));
 }
 
 updateWorkerSmoke();
 updateAdminHeaderSmoke();
 updateAuthRefreshSmoke();
-console.log('Refreshed all stale mobile toolbar, admin-field, module-switcher and worker-access smoke checks.');
+console.log('Refreshed all stale mobile toolbar, admin-field, module-switcher and worker-access smoke checks semantically.');
