@@ -110,7 +110,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await expect.poll(() => countQueuedPhotos(page)).toBe(1);
 
     await page.getByRole('button', { name: 'Otwórz Centrum synchronizacji' }).click();
-    await expect(page.getByRole('heading', { name: 'Synchronizacja zdjęć' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Synchronizacja', exact: true })).toBeVisible();
     await expect(page.getByText('Zdjęcie montażu', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Wyślij wszystkie (1)' })).toBeDisabled();
     await page.getByRole('button', { name: 'Zamknij' }).click();
