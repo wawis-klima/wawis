@@ -11,11 +11,11 @@
     "notes": "Baseline przed 10.61: w ostatnich 24 h istnieje 1 pojedynczy wpis z wersji 10.60: console.error, moduł app, platforma mobile, komunikat zanonimizowany jako [REDACTED_TEXT], bez błędów kolejki i bez powtórzeń. Traktowany jako znany stan bazowy, nie regresja 10.61."
   },
   "predeploy_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "notes": "Do wykonania po zmianach i przed finalnym runnerem 10.61."
+    "checked_at": "2026-09-14T17:27:22.962907Z",
+    "result": "GO",
+    "notes": "Kontrola przed finalnym runnerem 10.61: od czasu baseline 2026-09-14T16:02:23.091557Z w app_diagnostic_events nie pojawiły się żadne nowe zdarzenia: 0 błędów, 0 ostrzeżeń, 0 wpisów. Brak oznak regresji; GO."
   },
   "drive_backup": {
     "required": true,
