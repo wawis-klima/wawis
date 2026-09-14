@@ -13,6 +13,8 @@ const PRINT_IMAGE_MIME_TYPE = "image/png";
 const PRINT_IMAGE_WIDTH = 1800;
 const PRINT_IMAGE_MAX_PIXELS = 24_000_000;
 const PRINT_IMAGE_PAGE_GAP = 24;
+const PRINT_COPY_COUNT = 2;
+const PRINT_COPY_GAP = 72;
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -236,7 +238,7 @@ function canvasToBlob(canvas, type) {
 
 function getPrintImageFileName(pdfFileName) {
   const baseName = (normalizeText(pdfFileName) || "wawis-protokol.pdf").replace(/\.pdf$/i, "");
-  return `${baseName}-druk.png`;
+  return `${baseName}-druk-2-egzemplarze.png`;
 }
 
 export async function createProtocolPrintImage(pdfBlob, pdfFileName) {
@@ -271,32 +273,37 @@ export async function createProtocolPrintImage(pdfBlob, pdfFileName) {
     }
 
     let scale = PRINT_IMAGE_WIDTH / widestPage;
-    const gapCount = Math.max(0, pages.length - 1);
+    const pageGapsPerCopy = Math.max(0, pages.length - 1);
     const estimatedWidth = Math.ceil(widestPage * scale);
-    const estimatedHeight = Math.ceil(totalPageHeight * scale) + gapCount * PRINT_IMAGE_PAGE_GAP;
+    const estimatedHeight = Math.ceil(totalPageHeight * scale * PRINT_COPY_COUNT)
+      + pageGapsPerCopy * PRINT_IMAGE_PAGE_GAP * PRINT_COPY_COUNT
+      + Math.max(0, PRINT_COPY_COUNT - 1) * PRINT_COPY_GAP;
     const estimatedPixels = estimatedWidth * estimatedHeight;
     if (estimatedPixels > PRINT_IMAGE_MAX_PIXELS) {
       scale *= Math.sqrt(PRINT_IMAGE_MAX_PIXELS / estimatedPixels);
     }
 
     const viewports = pages.map(({ page }) => page.getViewport({ scale }));
+    const pageHeights = viewports.map((viewport) => Math.ceil(viewport.height));
+    const copyContentHeight = pageHeights.reduce((sum, height) => sum + height, 0)
+      + pageGapsPerCopy * PRINT_IMAGE_PAGE_GAP;
     const canvas = document.createElement("canvas");
     canvas.width = Math.ceil(Math.max(...viewports.map((viewport) => viewport.width)));
-    canvas.height = Math.ceil(viewports.reduce((sum, viewport) => sum + viewport.height, 0))
-      + gapCount * PRINT_IMAGE_PAGE_GAP;
+    canvas.height = copyContentHeight * PRINT_COPY_COUNT
+      + Math.max(0, PRINT_COPY_COUNT - 1) * PRINT_COPY_GAP;
     const context = canvas.getContext("2d", { alpha: false });
     if (!context) throw new Error("Nie udało się uruchomić podglądu wydruku na tym telefonie.");
 
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    let offsetY = 0;
+    let pageOffsetY = 0;
     for (let index = 0; index < pages.length; index += 1) {
       const { page } = pages[index];
       const viewport = viewports[index];
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = Math.ceil(viewport.width);
-      pageCanvas.height = Math.ceil(viewport.height);
+      pageCanvas.height = pageHeights[index];
       const pageContext = pageCanvas.getContext("2d", { alpha: false });
       if (!pageContext) throw new Error("Nie udało się przygotować strony protokołu do wydruku.");
 
@@ -307,8 +314,14 @@ export async function createProtocolPrintImage(pdfBlob, pdfFileName) {
       }).promise;
 
       const offsetX = Math.floor((canvas.width - pageCanvas.width) / 2);
-      context.drawImage(pageCanvas, offsetX, offsetY);
-      offsetY += pageCanvas.height + PRINT_IMAGE_PAGE_GAP;
+      for (let copyIndex = 0; copyIndex < PRINT_COPY_COUNT; copyIndex += 1) {
+        const copyOffsetY = copyIndex * (copyContentHeight + PRINT_COPY_GAP);
+        context.drawImage(pageCanvas, offsetX, copyOffsetY + pageOffsetY);
+      }
+
+      if (index < pages.length - 1) {
+        pageOffsetY += pageCanvas.height + PRINT_IMAGE_PAGE_GAP;
+      }
       page.cleanup();
       pageCanvas.width = 1;
       pageCanvas.height = 1;
@@ -336,8 +349,9 @@ export async function shareStoredJobProtocol({
   if (file && typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
     // M832 przyjmuje z menu iOS obrazy, ale nie deklaruje obsługi zewnętrznych
     // plików PDF. Do Phomemo trafia więc wyłącznie tymczasowy obraz wydruku.
+    // Obraz zawiera dwa kompletne egzemplarze protokołu jeden po drugim.
     await navigator.share({ files: [file] });
-    return { method: "share-image" };
+    return { method: "share-image", copies: PRINT_COPY_COUNT };
   }
 
   throw new Error("Ten telefon nie pozwala przekazać obrazu protokołu bezpośrednio do aplikacji Phomemo.");
