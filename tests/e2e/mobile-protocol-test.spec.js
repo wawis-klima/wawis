@@ -83,7 +83,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await page.getByRole('button', { name: 'Zapisz protokół' }).click();
 
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
-    await expect(page.getByText(/Protokół został zapisany/)).toBeVisible();
+    await expect(page.getByText(/Protokół podpisany i zapisany/).first()).toBeVisible();
 
     await page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Drukuj protokół', exact: true })).toBeVisible();
