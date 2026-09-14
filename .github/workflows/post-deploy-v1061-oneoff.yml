@@ -1,0 +1,77 @@
+name: WAWIS 10.61 post-deploy oneoff
+
+on:
+  push:
+    branches: [release/v10.61]
+    paths:
+      - .github/workflows/post-deploy-v1061-oneoff.yml
+
+concurrency:
+  group: wawis-v1061-post-deploy-oneoff
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Confirm deploy gate before production verification
+        run: node scripts/release-policy-gate.cjs --deploy
+
+      - name: Resolve live production URL
+        id: production
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidates=(
+            "https://wawis-klima.vercel.app"
+            "https://wawis-klima-wawis.vercel.app"
+            "https://app.wawis.pl"
+          )
+          selected=""
+          for base in "${candidates[@]}"; do
+            version="$(curl -fsSL --max-time 15 "$base/app-version.json?release_check=$(date +%s)" 2>/dev/null || true)"
+            sw="$(curl -fsSL --max-time 15 "$base/push-sw.js?release_check=$(date +%s)" 2>/dev/null || true)"
+            if printf '%s' "$version" | grep -Fq '"10.61"' && printf '%s' "$sw" | grep -Fq 'wawis-app-shell-v10.61'; then
+              selected="$base"
+              break
+            fi
+          done
+          if [ -z "$selected" ]; then
+            echo "Nie znaleziono produkcyjnego URL z wersją 10.61 i właściwym Service Workerem." >&2
+            exit 1
+          fi
+          echo "url=$selected" >> "$GITHUB_OUTPUT"
+          echo "Produkcja: $selected"
+
+      - name: Verify live production and Supabase diagnostics
+        run: >-
+          node scripts/post-deploy-check.mjs
+          --url "${{ steps.production.outputs.url }}"
+          --deployment-start "2026-09-14T19:07:49Z"
+
+      - name: Close release gate using live evidence
+        run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
+
+      - name: Upload post-deploy evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-v10.61
+          path: post-deploy-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
