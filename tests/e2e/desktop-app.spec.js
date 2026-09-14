@@ -73,23 +73,21 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByPlaceholder('Miejscowość', { exact: true }).fill('Poznań');
     await page.getByPlaceholder('Ulica i numer', { exact: true }).fill('Testowa 77');
     await dialog.locator('input[type="date"]').fill('2026-09-14');
-    await page.getByPlaceholder('np. Gree Amber Standard 3,5 kW', { exact: true }).fill('Gree E2E 3.5 kW');
-    await page.getByPlaceholder('np. SN-2026-000123', { exact: true }).fill('E2E-SN-001');
     await page.getByRole('button', { name: 'Zapisz zlecenie' }).click();
 
     await expect(page.getByText('Klient E2E Create', { exact: true })).toBeVisible();
     await page.getByText('Klient E2E Create', { exact: true }).click();
-    await expect(page.getByText('Gree E2E 3.5 kW')).toBeVisible();
+    await expect(page.getByText(/Testowa 77/).first()).toBeVisible();
 
     await page.getByRole('button', { name: 'Edytuj montaż' }).click();
     await expect(page.getByRole('heading', { name: 'Edytuj montaż' })).toBeVisible();
     await page.getByRole('textbox', { name: 'Klient', exact: true }).fill('Klient E2E Edited');
-    await page.getByPlaceholder('np. SN-2026-000123', { exact: true }).fill('E2E-SN-EDITED');
+    await page.getByPlaceholder('Ulica i numer', { exact: true }).fill('Testowa 88');
     await page.getByRole('button', { name: 'Zapisz zmiany' }).click();
 
     await expect(page.getByText('Klient E2E Edited', { exact: true })).toBeVisible();
     await page.getByText('Klient E2E Edited', { exact: true }).click();
-    await expect(page.getByText('E2E-SN-EDITED')).toBeVisible();
+    await expect(page.getByText(/Testowa 88/).first()).toBeVisible();
   });
 
   test('administrator usuwa montaż dopiero po potwierdzeniu', async ({ page }) => {
