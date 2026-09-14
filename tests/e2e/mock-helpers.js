@@ -1,11 +1,10 @@
 export async function resetMockSupabase(page) {
   await page.goto('/');
+  await page.waitForFunction(() => Boolean(window.__KLIMA_MOCK_SUPABASE__?.reset));
   await page.evaluate(() => {
     window.localStorage.clear();
     window.sessionStorage.clear();
-    if (window.__KLIMA_MOCK_SUPABASE__?.reset) {
-      window.__KLIMA_MOCK_SUPABASE__.reset();
-    }
+    window.__KLIMA_MOCK_SUPABASE__.reset();
   });
 }
 
