@@ -92,6 +92,7 @@ function main() {
   const postMode = args.includes('--post');
 
   const appVersion = String(readJson('app-version.json').version || '').trim();
+  const publicAppVersion = String(readJson('public/app-version.json').version || '').trim();
   const packageVersion = String(readJson('package.json').version || '').trim();
   const srcVersion = extractSourceVersion(read('src/version.js'));
   const mobileVersion = extractSourceVersion(read('src/mobile791/version.js'));
@@ -102,6 +103,7 @@ function main() {
   const checklist = read('RELEASE-CHECKLIST.md');
   const vercel = readJson('vercel.json');
 
+  assert(appVersion === publicAppVersion, `NO-GO: public/app-version.json=${publicAppVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(appVersion === packageVersion, `NO-GO: package.json=${packageVersion}, oczekiwano ${appVersion}`);
   assert(appVersion === srcVersion, `NO-GO: src/version.js=${srcVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(appVersion === mobileVersion, `NO-GO: mobile version=${mobileVersion || 'brak'}, oczekiwano ${appVersion}`);
