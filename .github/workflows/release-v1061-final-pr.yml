@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
 
-# Finalny przebieg po usunięciu stałego numeru 10.60 z mobilnego testu wizualnego.
+# Finalny przebieg po ustabilizowaniu lokatora wersji w mobilnym teście wizualnym.
 concurrency:
   group: wawis-v1061-single-final
   cancel-in-progress: false
