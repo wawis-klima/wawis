@@ -57,7 +57,8 @@ assert.match(appSource, /const isWorker\s*=\s*profile\?\.role\s*===\s*["']Pracow
 assert.match(appSource, /const shouldBlockWorkerDesktop\s*=\s*isWorker\s*&&\s*\(!isMobile\s*\|\|\s*!isProbablyPhoneDevice\)/);
 assert.match(appSource, /if \(shouldBlockWorkerDesktop\)\s*\{\s*return <EmployeeMobileOnlyBlock profile=\{profile\} logout=\{logout\} \/>;\s*\}/);
 assert.match(appLayoutSource, /if \(!isMobile\s*&&\s*isAdmin\)\s*\{/);
-assert.match(appLayoutSource, /\{isAdmin\s*&&\s*isMobile\s*\?\s*\(/);
+assert.match(appLayoutSource, /\{isMobile\s*\?\s*\(\s*<div className="moduleSwitcherWrap">/);
+assert.match(appLayoutSource, /<ModuleSwitcher activeModule=\{activeModule\} setActiveModule=\{setActiveModule\} isAdmin=\{isAdmin\} \/>/);
 assert.doesNotMatch(appLayoutSource, /!isAdmin\s*&&\s*!isMobile/);
 
 console.log('Desktop-only mobile guard smoke OK');
