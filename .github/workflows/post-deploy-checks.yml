@@ -1,0 +1,54 @@
+name: WAWIS post-deploy checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      production_url:
+        description: Publiczny URL produkcyjnej aplikacji WAWIS
+        required: true
+        type: string
+      deployment_started_at:
+        description: Czas startu wdrożenia w ISO 8601, np. 2026-09-14T15:14:09Z
+        required: true
+        type: string
+
+concurrency:
+  group: wawis-post-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout released code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify live production and Supabase diagnostics
+        run: >-
+          node scripts/post-deploy-check.mjs
+          --url "${{ inputs.production_url }}"
+          --deployment-start "${{ inputs.deployment_started_at }}"
+
+      - name: Close release gate using live evidence
+        run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
+
+      - name: Upload post-deploy evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-${{ github.ref_name }}
+          path: post-deploy-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
