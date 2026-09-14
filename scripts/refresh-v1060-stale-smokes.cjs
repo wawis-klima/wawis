@@ -47,8 +47,7 @@ function updateAuthRefreshSmoke() {
     if (
       line.includes('assert.match(moduleSwitcherSource') &&
       line.includes('sms') &&
-      line.includes('contractors') &&
-      line.includes('module.id')
+      line.includes('contractors')
     ) {
       return '  assert.match(moduleSwitcherSource, /isAdmin \\? true : \\["jobs", "fuel"\\]\\.includes\\(module\\.id\\)/);';
     }
