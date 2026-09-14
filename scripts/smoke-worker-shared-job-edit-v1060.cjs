@@ -20,7 +20,13 @@ assert.ok(modal.includes('(editingJobId || !isAdmin) ? ('), 'Pracownik nie widzi
 assert.ok(edge.includes('callerIsStaff'), 'Push nie rozpoznaje pracownika jako członka zespołu.');
 assert.ok(edge.includes('Tylko pracownik lub administrator może wysyłać przypisania push.'), 'Push przypisania nadal jest tylko dla administratora.');
 assert.ok(sql.includes('current_user_is_staff'), 'Brak funkcji RLS dla całego zespołu.');
+assert.ok(sql.includes('current_user_can_edit_job'), 'Brak osobnej reguły edycji aktywnego montażu.');
 assert.ok(sql.includes("lower(trim(coalesce(j.status, ''))) <> 'zakończone'"), 'RLS pozwala pracownikowi edytować zakończony montaż.');
+assert.ok(sql.includes('current_user_can_finalize_job'), 'Brak bezpiecznej ścieżki zapisu protokołu po zakończeniu.');
+assert.ok(sql.includes('j.completed_by = auth.uid()'), 'Protokół zakończenia nie jest ograniczony do autora zakończenia.');
+assert.ok(sql.includes('job_photos_storage_insert_accessible_job'), 'Brak RLS uploadu zdjęć dla aktywnego montażu.');
+assert.ok(sql.includes('public.current_user_can_edit_job(public.storage_object_job_id(name))'), 'Storage zdjęć nie używa blokady aktywnego montażu.');
+assert.ok(sql.includes('job_protocols_storage_insert_completed_job'), 'Brak kontrolowanego uploadu protokołu po zakończeniu.');
 assert.ok(sql.includes('public.current_user_is_admin()'), 'Administrator nie ma zachowanego pełnego dostępu do zakończonych montaży.');
 assert.ok(sql.includes('access_insert_staff'), 'Pracownik nie może dopisywać instalatorów.');
 assert.ok(sql.includes('access_delete_staff'), 'Pracownik nie może odpiąć instalatora.');
