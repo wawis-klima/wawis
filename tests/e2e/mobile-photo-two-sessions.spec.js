@@ -2,6 +2,7 @@ import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+const MOCK_STORE_KEY = 'klima-mock-supabase-store-v3';
 const tinyPng = {
   name: 'montaz-multi-e2e.png',
   mimeType: 'image/png',
@@ -48,6 +49,19 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
   test('pracownik widzi testowy Multi-Split 3×JW i dodaje do niego zdjęcie', async ({ page }) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
+
+    await page.evaluate(({ storeKey }) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      const job = Array.isArray(store.jobs)
+        ? store.jobs.find((item) => item.id === 'mock-job-005')
+        : null;
+      if (!job) throw new Error('Brak mock-job-005');
+      job.device_model = String(job.device_model || '')
+        .replace('JW2: Rotenso Model JW 2 (TEST)', 'JW2: Rotenso Model JW 2 — poprawiony');
+      window.localStorage.setItem(storeKey, JSON.stringify(store));
+    }, { storeKey: MOCK_STORE_KEY });
+    await page.reload();
+
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
 
@@ -66,6 +80,8 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
     await expect(rows.nth(0)).toContainText('Rotenso Multi-Split JZ (TEST)');
     await expect(rows.nth(1)).toContainText('JW1');
     await expect(rows.nth(1)).toContainText('Rotenso Model JW 1 (TEST)');
+    await expect(rows.nth(2)).toContainText('JW2');
+    await expect(rows.nth(2)).toContainText('Rotenso Model JW 2 — poprawiony');
     await expect(rows.nth(3)).toContainText('JW3');
     await expect(rows.nth(3)).toContainText('Rotenso Model JW 3 (TEST)');
 
@@ -73,7 +89,7 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
       window.__KLIMA_MOCK_SUPABASE__?.getStore()?.jobs?.find((job) => job.id === 'mock-job-005')
     ));
     expect(storedJob?.device_model).toContain('JW1: Rotenso Model JW 1 (TEST)');
-    expect(storedJob?.device_model).toContain('JW2: Rotenso Model JW 2 (TEST)');
+    expect(storedJob?.device_model).toContain('JW2: Rotenso Model JW 2 — poprawiony');
     expect(storedJob?.device_model).toContain('JW3: Rotenso Model JW 3 (TEST)');
     expect(storedJob?.device_model).toContain('JZ: Rotenso Multi-Split JZ (TEST)');
 
