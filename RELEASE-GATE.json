@@ -22,19 +22,19 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.61.zip",
-    "file_id": null,
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Do uzupełnienia po zielonym finalnym WAWIS release checks."
+    "file_id": "1ns7zsQ9Hm9Bsz_bHwEPRGtnOAkFCLG8G",
+    "size_bytes": 12163409,
+    "uploaded": true,
+    "uploaded_at": "2026-09-14T19:06:11.044Z",
+    "verified": true,
+    "notes": "Zweryfikowano ponownym odczytem Google Drive: nazwa, folder, ID i rozmiar 12163409 B są poprawne. SHA-256 lokalnego ZIP: 7fcf610f713d7ad9f45a273e97a9b5c8f28d30d331dafbb064c4a5311954c6b4."
   },
   "main_protection": {
     "source_branch": "release/v10.61",
-    "ready_for_main": false,
-    "final_release_run_id": "",
-    "final_release_commit": "",
-    "notes": "ready_for_main wolno ustawić dopiero po zielonym finalnym runnerze oraz zweryfikowanym ZIP na Google Drive."
+    "ready_for_main": true,
+    "final_release_run_id": "34884475788",
+    "final_release_commit": "8f50c700d703e35e862c0d8426d5a31d8813e653",
+    "notes": "Finalny WAWIS 10.61 full release zakończony sukcesem; PR checks zielone; ZIP zweryfikowany na Google Drive. Release gotowy do main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
