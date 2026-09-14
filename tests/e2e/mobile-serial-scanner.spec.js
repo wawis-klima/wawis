@@ -156,7 +156,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
       await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
     }
 
-    await expect(page.getByText('Tabliczka dodana', { exact: true })).toHaveCount(3);
+    await expect(page.getByText('Tabliczka dodana', { exact: true })).toHaveCount(4);
     await page.getByRole('button', { name: 'Zapisz urządzenie' }).click();
     await expect(page.getByText('Wszystkie tabliczki dodane', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zapisz montaż' }).click();
