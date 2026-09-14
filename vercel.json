@@ -1,0 +1,3 @@
+{
+  "buildCommand": "node scripts/release-policy-gate.cjs && npm run build"
+}
