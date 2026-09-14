@@ -10,11 +10,11 @@
     "notes": "Przed zmianą sprawdzono app_diagnostic_events z ostatnich 24 h: brak błędów i ostrzeżeń."
   },
   "predeploy_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "notes": "Do sprawdzenia po zmianach i testach, przed wdrożeniem produkcyjnym."
+    "checked_at": "2026-09-14T14:47:49.548511Z",
+    "result": "GO",
+    "notes": "Po zmianach i zielonych mobilnych E2E sprawdzono app_diagnostic_events z ostatnich 24 h: 0 zdarzeń, 0 błędów, 0 ostrzeżeń."
   },
   "drive_backup": {
     "required": true,
