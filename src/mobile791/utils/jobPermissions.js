@@ -38,7 +38,7 @@ export function canModifyJobPhotos(job, isAdmin) {
 }
 
 export function canAddJobComment(job, isAdmin) {
-  // WAWIS 10.61: pracownik może dopisać komentarz także do cudzego montażu,
+  // WAWIS 10.60: pracownik może dopisać komentarz także do cudzego montażu,
   // który ma prawo wyświetlić. Zakończone zlecenia pozostają zablokowane.
   return !isWorkerLockedCompletedJob(job, isAdmin);
 }
