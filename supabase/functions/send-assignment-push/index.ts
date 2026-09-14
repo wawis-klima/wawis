@@ -468,17 +468,9 @@ async function handleJobComment({
   if (jobError) return json({ error: jobError.message }, 500);
   if (!job) return json({ error: "Nie znaleziono zlecenia." }, 404);
 
-  const isMainTechnician = String(job.main_technician_id || "") === String(authUserId);
-  const { data: accessRow, error: accessError } = await adminClient
-    .from("job_access")
-    .select("id")
-    .eq("job_id", job.id)
-    .eq("user_id", authUserId)
-    .maybeSingle();
-
-  if (accessError) return json({ error: accessError.message }, 500);
-  if (!isMainTechnician && !accessRow) {
-    return json({ error: "Brak dostępu do tego zlecenia." }, 403);
+  const normalizedCommentCallerRole = String(callerProfile?.role || '').trim().toLowerCase();
+  if (!['employee', 'pracownik'].includes(normalizedCommentCallerRole)) {
+    return json({ error: "Tylko pracownik może wysłać powiadomienie o komentarzu." }, 403);
   }
 
   const { data: adminProfiles, error: adminProfilesError } = await adminClient

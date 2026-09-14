@@ -19,6 +19,8 @@ assert.ok(form.includes('profile.id, ...getAssignedUserIdsFromForm(resolvedForm)
 assert.ok(modal.includes('(editingJobId || !isAdmin) ? ('), 'Pracownik nie widzi wyboru instalatorów przy dodawaniu montażu.');
 assert.ok(edge.includes('callerIsStaff'), 'Push nie rozpoznaje pracownika jako członka zespołu.');
 assert.ok(edge.includes('Tylko pracownik lub administrator może wysyłać przypisania push.'), 'Push przypisania nadal jest tylko dla administratora.');
+assert.ok(edge.includes('normalizedCommentCallerRole'), 'Push komentarza nie rozpoznaje pracownika niezależnie od przypisania.');
+assert.ok(!edge.includes('.from("job_access")'), 'Push komentarza nadal wymaga przypisania do montażu.');
 assert.ok(sql.includes('current_user_is_staff'), 'Brak funkcji RLS dla całego zespołu.');
 assert.ok(sql.includes('current_user_can_edit_job'), 'Brak osobnej reguły edycji aktywnego montażu.');
 assert.ok(sql.includes("lower(trim(coalesce(j.status, ''))) <> 'zakończone'"), 'RLS pozwala pracownikowi edytować zakończony montaż.');
