@@ -12,7 +12,7 @@ test.describe('desktop administrator — wąski kreator urządzeń premium', () 
     await login(page, ADMIN);
     await page.getByRole('button', { name: /^Montaże$/ }).click();
     await page.getByRole('button', { name: /Niezrealizowane:/ }).click();
-    await page.getByText('Klient Testowy A', { exact: true }).first().click();
+    await page.getByRole('table').getByText('Klient Testowy A', { exact: true }).first().click();
     await page.getByRole('button', { name: 'Dodaj / edytuj urządzenia i tabliczki' }).click();
 
     const modal = page.locator('.desktopAdminDeviceWizardModal');
@@ -21,7 +21,7 @@ test.describe('desktop administrator — wąski kreator urządzeń premium', () 
     const saveButton = modal.getByRole('button', { name: 'Zapisz urządzenia' });
 
     await expect(modal).toBeVisible();
-    await expect(modal.getByRole('heading', { name: 'Urządzenia' })).toBeVisible();
+    await expect(modal.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
     await expect(deviceCard).toBeVisible();
     await expect(addButton).toBeVisible();
     await expect(saveButton).toBeVisible();
