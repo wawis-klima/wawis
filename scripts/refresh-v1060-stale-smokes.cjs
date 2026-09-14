@@ -40,6 +40,17 @@ function updateAdminHeaderSmoke() {
   write(file, source);
 }
 
+function updateAuthRefreshSmoke() {
+  const file = 'scripts/smoke-auth-refresh.cjs';
+  let source = read(file);
+  source = source.replace(
+    'assert.match(moduleSwitcherSource, /!\\["sms", "contractors"\\]\\.includes\\(module\\.id\\) \\|\\| isAdmin/);',
+    'assert.match(moduleSwitcherSource, /isAdmin \\? true : \\["jobs", "fuel"\\]\\.includes\\(module\\.id\\)/);',
+  );
+  write(file, source);
+}
+
 updateWorkerSmoke();
 updateAdminHeaderSmoke();
-console.log('Refreshed stale mobile toolbar and admin-field smoke locations.');
+updateAuthRefreshSmoke();
+console.log('Refreshed stale mobile toolbar, admin-field and module-switcher smoke checks.');
