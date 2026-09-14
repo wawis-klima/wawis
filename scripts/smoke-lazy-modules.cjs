@@ -9,6 +9,7 @@ const contractorsPanelSource = fs.readFileSync(path.join(root, 'src', 'component
 const devicesPanelSource = fs.readFileSync(path.join(root, 'src', 'components', 'devices', 'DevicesPanel.jsx'), 'utf8');
 const moduleSwitcherSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'ModuleSwitcher.jsx'), 'utf8');
 const authenticatedLayoutSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AppAuthenticatedLayout.jsx'), 'utf8');
+const adminDesktopShellSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AdminDesktopShell.jsx'), 'utf8');
 
 assert.match(appSource, /const SmsPanel = lazy\(\(\) => import\("\.\/components\/sms\/SmsPanel\.jsx"\)\);/);
 assert.match(appSource, /const ContractorsPanel = lazy\(\(\) => import\("\.\/components\/contractors\/ContractorsPanel\.jsx"\)\);/);
@@ -25,15 +26,18 @@ assert.match(appSource, /activeModule === "contractors"/);
 assert.match(appSource, /activeModule === "devices"/);
 assert.match(appSource, /activeModule === "calendar"/);
 assert.match(appSource, /<SmsPanel/);
-assert.match(authenticatedLayoutSource, /\["center360", "sms", "contractors", "devices", "calendar", "diagnostics"\]\.includes\(activeModule\)/);
+assert.match(authenticatedLayoutSource, /\["center360", "sms", "contractors", "devices", "calendar", "diagnostics", "fuel"\]\.includes\(activeModule\)/);
 
 assert.match(jobsPanelSource, /const MobileJobsLayout = lazy\(\(\) => import\("\.\/jobs\/MobileJobsLayout\.jsx"\)\);/);
 assert.match(jobsPanelSource, /const DesktopJobsLayout = lazy\(\(\) => import\("\.\/jobs\/DesktopJobsLayout\.jsx"\)\);/);
 assert.match(jobsPanelSource, /<Suspense fallback=\{jobsLayoutFallback\}>/);
 assert.match(jobsPanelSource, /Trwa ładowanie widoku montaży/);
 
-assert.match(moduleSwitcherSource, /module\.id === "devices" && !isAdmin \? null/);
-assert.match(moduleSwitcherSource, /!\["sms", "contractors"\]\.includes\(module\.id\) \|\| isAdmin/);
+// Mobile worker navigation is intentionally limited to jobs + fuel.
+assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel"\]\.includes\(module\.id\)/);
+// Devices remain an administrator desktop module in the sidebar, not in the compact mobile switcher.
+assert.match(adminDesktopShellSource, /key:\s*["']devices["']/);
+assert.match(adminDesktopShellSource, /label:\s*["']Urządzenia["']/);
 
 assert.match(contractorsPanelSource, /await loadContractorsXlsxImportModule\(\)/);
 assert.match(contractorsPanelSource, /await loadContractorsXlsxExportModule\(\)/);
