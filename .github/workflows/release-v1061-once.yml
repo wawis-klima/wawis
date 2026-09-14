@@ -1,0 +1,56 @@
+name: WAWIS 10.61 final release once
+
+on:
+  push:
+    branches:
+      - release/v10.61
+    paths:
+      - .github/workflows/release-v1061-once.yml
+
+concurrency:
+  group: wawis-final-release-v10.61-once
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  final-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Pre-release policy gate
+        run: node scripts/release-policy-gate.cjs
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Run one final full release pass
+        run: node scripts/run-release.cjs full --skip-version-bump
+
+      - name: Upload final ZIP and release report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.61
+          path: |
+            releases/klima-app-v10.61.zip
+            RELEASE-RESULT.md
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 14
