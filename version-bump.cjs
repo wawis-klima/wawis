@@ -9,6 +9,7 @@ const changelogPath = process.env.CHANGELOG_FILE || path.join(root, 'CHANGELOG.m
 const lockPath = process.env.PACKAGE_LOCK_FILE || path.join(root, 'package-lock.json');
 const srcVersionPath = process.env.SRC_VERSION_FILE || path.join(root, 'src', 'version.js');
 const mobileSrcVersionPath = process.env.MOBILE_SRC_VERSION_FILE || path.join(root, 'src', 'mobile791', 'version.js');
+const serviceWorkerPath = process.env.SERVICE_WORKER_FILE || path.join(root, 'public', 'push-sw.js');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -25,53 +26,49 @@ function readVersion() {
 
 function getNextVersion(currentVersion) {
   const match = currentVersion.match(/^(\d+)\.(\d+)$/);
-  if (!match) {
-    throw new Error(`Nieprawidłowy format wersji "${currentVersion}". Oczekiwany format: 5.15`);
-  }
+  if (!match) throw new Error(`Nieprawidłowy format wersji "${currentVersion}". Oczekiwany format: 5.15`);
 
   const major = Number(match[1]);
   const minor = Number(match[2]);
-
   if (!Number.isInteger(major) || !Number.isInteger(minor) || major < 0 || minor < 0) {
     throw new Error(`Nieprawidłowy format wersji "${currentVersion}". Oczekiwany format: 5.15`);
   }
 
   const nextMinor = minor + 1;
-  if (nextMinor >= 100) {
-    return `${major + 1}.00`;
-  }
-
-  return `${major}.${String(nextMinor).padStart(2, '0')}`;
+  return nextMinor >= 100 ? `${major + 1}.00` : `${major}.${String(nextMinor).padStart(2, '0')}`;
 }
 
 function updateReadmeVersionMetadata(readme, nextVersion) {
   let updated = readme;
-
   updated = updated.replace(
     /## Ostatnia poprawka\s*- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m,
     `## Ostatnia poprawka\n- wersja \`${nextVersion}\` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.`
   );
-
   updated = updated.replace(
     /## Aktualna wersja\s*-\s*[0-9]+\.[0-9]{2}/m,
     `## Aktualna wersja\n- ${nextVersion}`
   );
-
   return updated;
 }
 
 function ensureReadmeVersionEntry(readme, nextVersion) {
-  if (readme.includes(`wersja \`${nextVersion}\``) && readme.includes(`- ${nextVersion}`)) {
-    return readme;
-  }
+  if (readme.includes(`wersja \`${nextVersion}\``) && readme.includes(`- ${nextVersion}`)) return readme;
   return updateReadmeVersionMetadata(readme, nextVersion);
 }
 
 function ensureChangelogVersionEntry(changelog, nextVersion) {
   const sectionRegex = new RegExp(`^## ${nextVersion}\\n`, 'm');
   if (sectionRegex.test(changelog)) return changelog;
-  const prefix = `## ${nextVersion}\n- uzupełnij opis zmian dla wersji ${nextVersion}\n\n`;
-  return `${prefix}${changelog.replace(/^\s+/, '')}`;
+  return `## ${nextVersion}\n- uzupełnij opis zmian dla wersji ${nextVersion}\n\n${changelog.replace(/^\s+/, '')}`;
+}
+
+function updateServiceWorkerVersion(source, nextVersion) {
+  const cacheName = `wawis-app-shell-v${nextVersion}`;
+  let updated = source.replace(/wawis-app-shell-v[0-9]+\.[0-9]{2}/g, cacheName);
+  if (!updated.includes(cacheName)) {
+    throw new Error('Nie znaleziono nazwy cache WAWIS w public/push-sw.js');
+  }
+  return updated;
 }
 
 function writeVersion(nextVersion) {
@@ -84,29 +81,26 @@ function writeVersion(nextVersion) {
   if (fs.existsSync(lockPath)) {
     const lock = readJson(lockPath);
     lock.version = nextVersion;
-    if (lock.packages?.['']) {
-      lock.packages[''].version = nextVersion;
-    }
+    if (lock.packages?.['']) lock.packages[''].version = nextVersion;
     writeJson(lockPath, lock);
   }
 
   if (fs.existsSync(srcVersionPath)) {
-    const srcVersionSource = fs.readFileSync(srcVersionPath, 'utf8');
-    const updatedSrcVersion = srcVersionSource.replace(/APP_VERSION\s*=\s*['"]([0-9]+\.[0-9]{2})['"]/, `APP_VERSION = '${nextVersion}'`);
-    fs.writeFileSync(srcVersionPath, updatedSrcVersion);
+    const source = fs.readFileSync(srcVersionPath, 'utf8');
+    fs.writeFileSync(srcVersionPath, source.replace(/APP_VERSION\s*=\s*['"]([0-9]+\.[0-9]{2})['"]/, `APP_VERSION = '${nextVersion}'`));
   }
 
   if (fs.existsSync(mobileSrcVersionPath)) {
-    const mobileVersionSource = fs.readFileSync(mobileSrcVersionPath, 'utf8');
-    const updatedMobileVersion = mobileVersionSource.replace(/APP_VERSION\s*=\s*['"]([0-9]+\.[0-9]{2})['"]/, `APP_VERSION = '${nextVersion}'`);
-    fs.writeFileSync(mobileSrcVersionPath, updatedMobileVersion);
+    const source = fs.readFileSync(mobileSrcVersionPath, 'utf8');
+    fs.writeFileSync(mobileSrcVersionPath, source.replace(/APP_VERSION\s*=\s*['"]([0-9]+\.[0-9]{2})['"]/, `APP_VERSION = '${nextVersion}'`));
   }
 
-  const readme = fs.readFileSync(readmePath, 'utf8');
-  fs.writeFileSync(readmePath, ensureReadmeVersionEntry(readme, nextVersion));
+  if (fs.existsSync(serviceWorkerPath)) {
+    fs.writeFileSync(serviceWorkerPath, updateServiceWorkerVersion(fs.readFileSync(serviceWorkerPath, 'utf8'), nextVersion));
+  }
 
-  const changelog = fs.readFileSync(changelogPath, 'utf8');
-  fs.writeFileSync(changelogPath, ensureChangelogVersionEntry(changelog, nextVersion));
+  fs.writeFileSync(readmePath, ensureReadmeVersionEntry(fs.readFileSync(readmePath, 'utf8'), nextVersion));
+  fs.writeFileSync(changelogPath, ensureChangelogVersionEntry(fs.readFileSync(changelogPath, 'utf8'), nextVersion));
 }
 
 function bumpVersion() {
@@ -127,6 +121,7 @@ module.exports = {
   updateReadmeVersionMetadata,
   ensureReadmeVersionEntry,
   ensureChangelogVersionEntry,
+  updateServiceWorkerVersion,
   writeVersion,
   bumpVersion,
 };
