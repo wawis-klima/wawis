@@ -12,10 +12,9 @@ const desktopRowSource = fs.readFileSync(path.join(root, 'src', 'components', 'D
 const jobsColumnsSource = fs.readFileSync(path.join(root, 'src', 'components', 'desktop-jobs-table.columns.jsx'), 'utf8');
 const jobsSelectorsSource = fs.readFileSync(path.join(root, 'src', 'modules', 'jobs-selectors.js'), 'utf8');
 
-
 assert.match(appSource, /const JobDetailsPanel = lazy\(\(\) => import\("\.\/components\/JobDetailsPanel\.jsx"\)\);/);
 assert.match(appSource, /const \[selectedJob, setSelectedJob\] = useState\(null\);/);
-assert.match(appSource, /jobsPanel=\{activeModule === "jobs" \|\| !isAdmin \? \(/);
+assert.match(appSource, /jobsPanel=\{activeModule === "jobs" \|\| \(!isAdmin && activeModule !== "fuel"\) \? \(/);
 assert.match(appSource, /selectedJob=\{selectedJob\}/);
 assert.match(appSource, /const JOBS_PAGE_SIZE = 10;/);
 assert.match(appSource, /const \[jobsPage, setJobsPage\] = useState\(1\);/);
@@ -63,7 +62,6 @@ assert.doesNotMatch(mobileLayoutSource, /job\.created_at \? formatDate\(job\.cre
 assert.match(jobsSelectorsSource, /new Date\(b\.installation_date \|\| 0\) - new Date\(a\.installation_date \|\| 0\)/);
 assert.match(jobsSelectorsSource, /new Date\(a\.installation_date \|\| 0\) - new Date\(b\.installation_date \|\| 0\)/);
 assert.doesNotMatch(jobsSelectorsSource, /sortBy === 'date_desc'[\s\S]*created_at/);
-
 
 console.log('Job selection smoke OK');
 process.exit(0);
