@@ -33,7 +33,7 @@ jobs:
         id: production
         shell: bash
         run: |
-          set -euo pipefail
+          set -u
           candidates=(
             "https://wawis.pages.dev"
             "https://985212ba.wawis.pages.dev"
@@ -43,9 +43,15 @@ jobs:
           )
           selected=""
           for base in "${candidates[@]}"; do
-            echo "Sprawdzam: $base"
-            if curl -fsSL --max-time 15 "$base/app-version.json?release_check=$(date +%s)" -o /tmp/wawis-version.json \
-              && curl -fsSL --max-time 15 "$base/push-sw.js?release_check=$(date +%s)" -o /tmp/wawis-push-sw.js \
+            echo "--- Sprawdzam: $base ---"
+            version_status="$(curl -sSL --max-time 15 -o /tmp/wawis-version.json -w '%{http_code}' "$base/app-version.json?release_check=$(date +%s)" || true)"
+            sw_status="$(curl -sSL --max-time 15 -o /tmp/wawis-push-sw.js -w '%{http_code}' "$base/push-sw.js?release_check=$(date +%s)" || true)"
+            echo "app-version HTTP: $version_status"
+            echo -n "app-version body: "; head -c 240 /tmp/wawis-version.json 2>/dev/null | tr '\n' ' '; echo
+            echo "push-sw HTTP: $sw_status"
+            echo -n "cache marker: "; grep -oE 'wawis-app-shell-v[0-9]+\.[0-9]+' /tmp/wawis-push-sw.js 2>/dev/null | head -1 || true
+            if [ "$version_status" = "200" ] \
+              && [ "$sw_status" = "200" ] \
               && grep -Fq '10.61' /tmp/wawis-version.json \
               && grep -Fq 'wawis-app-shell-v10.61' /tmp/wawis-push-sw.js; then
               selected="$base"
