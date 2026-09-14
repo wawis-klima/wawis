@@ -6,18 +6,23 @@ const root = path.resolve(__dirname, '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const exists = (...parts) => fs.existsSync(path.join(root, ...parts));
 
-assert(exists('.github', 'workflows', 'pr-checks.yml'), 'Brak szybkiego workflow PR');
-assert(exists('.github', 'workflows', 'release-checks.yml'), 'Brak jednego finalnego workflow release');
-assert(exists('.github', 'workflows', 'release-policy-gate.yml'), 'Brak ręcznego policy gate');
+for (const workflow of ['pr-checks.yml', 'release-checks.yml', 'release-policy-gate.yml', 'post-deploy-checks.yml']) {
+  assert(exists('.github', 'workflows', workflow), `Brak workflow ${workflow}`);
+}
 assert(!exists('.github', 'workflows', 'mobile-release-checks.yml'), 'Stary osobny mobile workflow nadal istnieje');
 assert(!exists('.github', 'workflows', 'desktop-release-checks.yml'), 'Stary osobny desktop workflow nadal istnieje');
 
 const pr = read('.github', 'workflows', 'pr-checks.yml');
 const release = read('.github', 'workflows', 'release-checks.yml');
 const policy = read('.github', 'workflows', 'release-policy-gate.yml');
+const postWorkflow = read('.github', 'workflows', 'post-deploy-checks.yml');
 const runner = read('scripts', 'run-release.cjs');
 const verifier = read('scripts', 'verify-release.cjs');
 const groups = read('scripts', 'test-groups.cjs');
+const deployGate = read('scripts', 'release-policy-gate.cjs');
+const postCheck = read('scripts', 'post-deploy-check.mjs');
+const versionBump = read('version-bump.cjs');
+const vercel = JSON.parse(read('vercel.json'));
 
 assert.match(pr, /pull_request/);
 assert.match(pr, /run-pr-checks\.cjs/);
@@ -48,5 +53,25 @@ assert.match(verifier, /app-version\.json/);
 assert.match(verifier, /RELEASE-GATE\.json/);
 assert.match(verifier, /dist\/index\.html|index\.html/);
 assert.match(verifier, /klima-app-v/);
+
+assert.match(deployGate, /--deploy/);
+assert.match(deployGate, /ready_for_main/);
+assert.match(deployGate, /final_release_run_id/);
+assert.match(deployGate, /--evidence/);
+assert.match(deployGate, /service_worker_verified/);
+assert.match(vercel.buildCommand || '', /release-policy-gate\.cjs --deploy/);
+
+assert.match(postWorkflow, /post-deploy-check\.mjs/);
+assert.match(postWorkflow, /release-policy-gate\.cjs --post --evidence/);
+assert.match(postCheck, /app-version\.json/);
+assert.match(postCheck, /push-sw\.js/);
+assert.match(postCheck, /app_diagnostic_events/);
+assert.match(postCheck, /post-deploy-evidence\.json/);
+
+assert.match(versionBump, /SERVICE_WORKER_FILE/);
+assert.match(versionBump, /updateServiceWorkerVersion/);
+assert.match(versionBump, /wawis-app-shell-v/);
+assert(exists('.github', 'CODEOWNERS'), 'Brak CODEOWNERS');
+assert(exists('MAIN-PROTECTION.md'), 'Brak instrukcji ochrony main');
 
 console.log('WAWIS release automation 10.61 smoke OK');
