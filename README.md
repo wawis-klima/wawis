@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 10.60
+- 10.61
 
 Wersja 10.25 usuwa z mobilnego modułu Paliwo instrukcyjny opis pod nagłówkiem „Tankowania”, dzięki czemu formularz zaczyna się wyżej i zajmuje mniej miejsca. Desktop pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 10.25
+# Wawis Klimatyzacja — wersja 10.61
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.60` — wszyscy pracownicy mogą edytować aktywne montaże niezależnie od przypisania; przy dodawaniu montażu pracownik może od razu wskazać pozostałych instalatorów.
+- wersja `10.61` — Uproszczono i zautomatyzowano proces wydań WAWIS: praca odbywa się na gałęzi release, testy robocze są dobierane do zmienionego obszaru, a finalne wydanie wykonuje jeden pełny przebieg z rzeczywistą kontrolą produkcji po wdrożeniu.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.
 - wersja `9.98` — data i wykonawca zakończenia są odsunięci oraz wyśrodkowani, a karty urządzeń na telefonie są domyślnie zwinięte i rozwijane osobno.

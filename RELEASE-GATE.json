@@ -1,40 +1,50 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.60",
+  "version": "10.61",
   "scope": "full",
+  "release_branch": "release/v10.61",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-14T11:27:03.445547Z",
+    "checked_at": "2026-09-14T16:02:23.091557Z",
     "result": "GO",
-    "notes": "Przed zmianą sprawdzono app_diagnostic_events z ostatnich 24 h: brak błędów i ostrzeżeń."
+    "notes": "Baseline przed 10.61: w ostatnich 24 h istnieje 1 pojedynczy wpis z wersji 10.60: console.error, moduł app, platforma mobile, komunikat zanonimizowany jako [REDACTED_TEXT], bez błędów kolejki i bez powtórzeń. Traktowany jako znany stan bazowy, nie regresja 10.61."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-14T14:47:49.548511Z",
+    "checked_at": "2026-09-14T17:27:22.962907Z",
     "result": "GO",
-    "notes": "Po zmianach i zielonych mobilnych E2E sprawdzono app_diagnostic_events z ostatnich 24 h: 0 zdarzeń, 0 błędów, 0 ostrzeżeń."
+    "notes": "Kontrola przed finalnym runnerem 10.61: od czasu baseline 2026-09-14T16:02:23.091557Z w app_diagnostic_events nie pojawiły się żadne nowe zdarzenia: 0 błędów, 0 ostrzeżeń, 0 wpisów. Brak oznak regresji; GO."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.60.zip",
-    "file_id": "1xhB3823P0zYUX-TfgZhu1QPfWKH4rdqo",
-    "size_bytes": 12172829,
+    "file_name": "klima-app-v10.61.zip",
+    "file_id": "1ns7zsQ9Hm9Bsz_bHwEPRGtnOAkFCLG8G",
+    "size_bytes": 12163409,
     "uploaded": true,
-    "uploaded_at": "2026-09-14T14:59:22.177Z",
+    "uploaded_at": "2026-09-14T19:06:11.044Z",
     "verified": true,
-    "notes": "Finalny ZIP z zielonego pełnego runnera GitHub Actions nr 25 został wysłany do Aplikacja/Wersje i ponownie zweryfikowany przez metadane pliku oraz listing folderu Drive."
+    "notes": "Zweryfikowano ponownym odczytem Google Drive: nazwa, folder, ID i rozmiar 12163409 B są poprawne. SHA-256 lokalnego ZIP: 7fcf610f713d7ad9f45a273e97a9b5c8f28d30d331dafbb064c4a5311954c6b4."
+  },
+  "main_protection": {
+    "source_branch": "release/v10.61",
+    "ready_for_main": true,
+    "final_release_run_id": "34884475788",
+    "final_release_commit": "8f50c700d703e35e862c0d8426d5a31d8813e653",
+    "notes": "Finalny WAWIS 10.61 full release zakończony sukcesem; PR checks zielone; ZIP zweryfikowany na Google Drive. Release gotowy do main."
   },
   "postdeploy_diagnostics": {
-    "checked": true,
+    "evidence_required": true,
+    "checked": false,
     "last_24h": true,
-    "checked_at": "2026-09-14T16:39:00Z",
-    "result": "GO",
-    "production_version_verified": true,
-    "service_worker_verified": true,
-    "notes": "Produkcja potwierdzona ręcznie na iPhonie jako 10.60. Udane wdrożenie Vercel z commita e97a9f9 zawiera Service Worker/cache wawis-app-shell-v10.60. Po wdrożeniu odnotowano pojedyncze mobilne console.error w module app (10.60) z komunikatem zanonimizowanym przez diagnostykę; brak błędów kolejki i retry, a po tym zdarzeniu nie pojawiły się kolejne wpisy. Ten sam ogólny typ zdarzenia występował historycznie w starszych wersjach i nie stwierdzono wzrostu częstotliwości ani regresji 10.60. Migracje produkcyjne dla zakresu 10.60 są obecne w Supabase. Wydanie zamknięte jako GO."
+    "checked_at": null,
+    "result": "PENDING",
+    "production_version_verified": false,
+    "service_worker_verified": false,
+    "evidence_file": "post-deploy-evidence.json",
+    "notes": "Wydanie zamyka dopiero rzeczywisty odczyt produkcyjnego app-version.json, push-sw.js i diagnostyki Supabase."
   }
 }

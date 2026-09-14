@@ -33,13 +33,19 @@ assert.match(generatorSource, /admin_cleanup_sms_duplicate_logs/);
 assert.match(generatorSource, /cleanupResult/);
 assert.match(generatorSource, /createdCount, expiredCount, cleanupResult/);
 
+// Od 10.61 release runner korzysta z centralnych grup testów zamiast wpisywać
+// każdą komendę smoke bezpośrednio w scripts/run-release.cjs.
+const testGroupsSource = read('scripts/test-groups.cjs');
+assert.match(testGroupsSource, /test:smoke:sms-log-cleanup/);
+assert.match(testGroupsSource, /desktop:\s*\[/);
+
 const runnerSource = read('scripts/run-release.cjs');
-assert.match(runnerSource, /test:smoke:sms-log-cleanup/);
+assert.match(runnerSource, /getReleaseGroups/);
+assert.match(runnerSource, /run-test-group\.cjs/);
 
 const verifySource = read('scripts/verify-release.cjs');
-assert.match(verifySource, /smokeSmsLogCleanupPath/);
-assert.match(verifySource, /sms-module-stage-9-log-cleanup\.sql/);
-assert.match(verifySource, /test:smoke:sms-log-cleanup/);
+assert.match(verifySource, /predeploy_diagnostics/);
+assert.match(verifySource, /verifyDist/);
 
 const readme = read('README.md');
 assert.match(readme, /test:smoke:sms-log-cleanup/);

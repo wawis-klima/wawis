@@ -1,3 +1,13 @@
+## 10.61
+- Wprowadzono gałęzie release/v<WERSJA>; main jest przeznaczony wyłącznie dla gotowych wydań.
+- PR uruchamia szybkie grupy regresji dobrane do zmienionych plików zamiast pełnego zestawu testów.
+- Finalne wydanie wykonuje każdą grupę regresji, Playwright, build, verify i pakowanie tylko jeden raz.
+- Regresje pogrupowano na jobs, photos, protocol, roles, push, fuel, nameplates oraz obszary platformowe.
+- verify:release sprawdza integralność wydania zamiast historycznych fragmentów implementacji i literalnych tekstów UI.
+- Vercel ma twardy deploy gate wymagający finalnego zielonego runu, zweryfikowanego ZIP na Google Drive i oznaczenia ready_for_main.
+- Post-deploy tworzy dowód z rzeczywistego app-version.json, Service Workera i diagnostyki Supabase zamiast ręcznych flag true/false.
+- Podbicie wersji automatycznie aktualizuje także cache Service Workera, a repo zawiera CODEOWNERS i instrukcję ochrony main.
+
 ## 10.60
 - pracownik mobilny może edytować każdy aktywny montaż, także gdy nie jest do niego przypisany; przypisanie instalatora jest informacją organizacyjną, a nie blokadą dostępu,
 - pracownik tworzący nowy montaż może od razu wybrać głównego technika i dodatkowych instalatorów,
