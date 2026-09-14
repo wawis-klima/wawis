@@ -130,7 +130,7 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(protocolCard.getByText('Protokół został wysłany z biuro@wawis.pl do klient.c@example.test.')).toBeVisible();
   });
 
-  test('pracownik loguje się na komputerze i jest kierowany do aplikacji telefonicznej', async ({ page }) => {
+  test('pracownik loguje się — pracownik na komputerze jest kierowany do aplikacji telefonicznej', async ({ page }) => {
     await login(page, WORKER);
 
     await expect(page.getByRole('heading', { name: 'Aplikacja dla pracownika jest dostępna tylko na telefonie' })).toBeVisible();
