@@ -14,14 +14,20 @@ test.use(iphone14);
 
 async function selectNameplateAndCrop(page, input) {
   await input.setInputFiles(tinyPng);
-  await expect(page.locator('.nameplateCropModal')).toBeVisible();
+  const cropModal = page.locator('.nameplateCropModal');
+  await expect(cropModal).toBeVisible();
   await expect(page.getByText('Dopasuj kadr', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Zapisz kadr' }).click();
+
   const saveAnyway = page.getByRole('button', { name: 'Zapisz mimo to', exact: true });
-  if (await saveAnyway.isVisible().catch(() => false)) {
+  const outcome = await Promise.race([
+    cropModal.waitFor({ state: 'hidden', timeout: 10_000 }).then(() => 'hidden'),
+    saveAnyway.waitFor({ state: 'visible', timeout: 10_000 }).then(() => 'override'),
+  ]);
+  if (outcome === 'override') {
     await saveAnyway.click();
   }
-  await expect(page.locator('.nameplateCropModal')).toBeHidden();
+  await expect(cropModal).toBeHidden();
 }
 
 test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek', () => {
