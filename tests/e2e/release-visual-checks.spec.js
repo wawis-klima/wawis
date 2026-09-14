@@ -42,8 +42,9 @@ test.describe('release visual desktop', () => {
   test('pełna aplikacja desktopowa ma załadowany CSS, poprawne kolumny i zapisuje screenshot kontrolny', async ({ page }) => {
     ensureArtifactsDir();
     await login(page, ADMIN);
-    await page.getByRole('button', { name: /Montaże/ }).click();
-    await page.getByText('Klient Testowy A', { exact: true }).click();
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /W trakcie:/ }).click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
     await expect(page.locator('.adminDesktopShell')).toBeVisible();
     await expect(page.locator('.desktopJobsListPane')).toBeVisible();
     await expect(page.locator('.desktopJobsDetailsPane')).toBeVisible();
@@ -80,7 +81,7 @@ test.describe('release visual desktop', () => {
   test('panel Diagnostyka jest dostępny i raport nie deklaruje danych klientów', async ({ page }) => {
     await login(page, ADMIN);
     await page.getByRole('button', { name: 'Diagnostyka' }).click();
-    await expect(page.getByRole('heading', { name: 'Diagnostyka' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Diagnostyka', exact: true })).toBeVisible();
     await expect(page.getByText('Raport bez danych klientów')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Pobierz raport diagnostyczny' })).toBeVisible();
   });
@@ -102,7 +103,7 @@ test.describe('@mobile release visual iPhone', () => {
     await expect(page.getByText('Zakończone · tylko podgląd')).toBeVisible();
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
-    await expect(page.getByText(/WERSJA TESTOWA · 9\./)).toBeVisible();
+    await expect(page.getByText(/WERSJA TESTOWA · 10\.60/)).toBeVisible();
 
     const health = await getPageVisualHealth(page);
     expect(health.fontFamily.toLowerCase()).not.toContain('times new roman');
