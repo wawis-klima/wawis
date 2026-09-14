@@ -13,9 +13,9 @@
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-14T17:27:22.962907Z",
+    "checked_at": "2026-09-14T19:23:17.108735Z",
     "result": "GO",
-    "notes": "Kontrola przed finalnym runnerem 10.61: od czasu baseline 2026-09-14T16:02:23.091557Z w app_diagnostic_events nie pojawiły się żadne nowe zdarzenia: 0 błędów, 0 ostrzeżeń, 0 wpisów. Brak oznak regresji; GO."
+    "notes": "Kontrola przed ponownym wdrożeniem 10.61 po poprawce public/app-version.json: w ostatnich 24 h pozostaje 1 znany wpis bazowy, a od poprzedniego wdrożenia 2026-09-14T19:07:49Z pojawiło się 0 nowych zdarzeń i 0 nowych problemów. GO."
   },
   "drive_backup": {
     "required": true,
@@ -23,18 +23,18 @@
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.61.zip",
     "file_id": "1ns7zsQ9Hm9Bsz_bHwEPRGtnOAkFCLG8G",
-    "size_bytes": 12163409,
+    "size_bytes": 12163916,
     "uploaded": true,
-    "uploaded_at": "2026-09-14T19:06:11.044Z",
+    "uploaded_at": "2026-09-14T19:22:57.713Z",
     "verified": true,
-    "notes": "Zweryfikowano ponownym odczytem Google Drive: nazwa, folder, ID i rozmiar 12163409 B są poprawne. SHA-256 lokalnego ZIP: 7fcf610f713d7ad9f45a273e97a9b5c8f28d30d331dafbb064c4a5311954c6b4."
+    "notes": "Finalny ZIP po poprawce public/app-version.json zastąpił poprzednią kopię w tym samym pliku Google Drive. Zweryfikowano ID, folder i rozmiar 12163916 B. SHA-256 lokalnego ZIP: f231be7c05594b043e241450d0cee2c98ae1941920cdd986af268824fc9e301c."
   },
   "main_protection": {
     "source_branch": "release/v10.61",
     "ready_for_main": true,
-    "final_release_run_id": "34884475788",
-    "final_release_commit": "8f50c700d703e35e862c0d8426d5a31d8813e653",
-    "notes": "Finalny WAWIS 10.61 full release zakończony sukcesem; PR checks zielone; ZIP zweryfikowany na Google Drive. Release gotowy do main."
+    "final_release_run_id": "34886145131",
+    "final_release_commit": "54b26f35e5cb4a6f742472286ddb200e6d810c58",
+    "notes": "Ponowny finalny WAWIS 10.61 full release po poprawce produkcyjnego app-version.json zakończony sukcesem; PR checks zielone; nowy ZIP zweryfikowany na Google Drive. Release gotowy do main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Wydanie zamyka dopiero rzeczywisty odczyt produkcyjnego app-version.json, push-sw.js i diagnostyki Supabase."
+    "notes": "Wydanie zamyka dopiero rzeczywisty odczyt produkcyjnego app-version.json, push-sw.js i diagnostyki Supabase po ponownym wdrożeniu."
   }
 }
