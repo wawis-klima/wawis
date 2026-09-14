@@ -12,7 +12,7 @@ const runner = read('scripts', 'run-playwright-mobile.cjs');
 
 assert.equal(packageJson.scripts['test:e2e:mobile'], 'node scripts/run-playwright-mobile.cjs');
 assert.match(runner, /@mobile/);
-assert.match(runner, /workers[^\n]*1|--workers[^\n]*1/);
+assert.match(runner, /['"]--workers['"]\s*,\s*['"]1['"]/);
 assert.match(runner, /VITE_SUPABASE_MODE/);
 assert.match(playwrightConfig, /use-fake-device-for-media-stream/);
 assert.match(playwrightConfig, /use-fake-ui-for-media-stream/);
