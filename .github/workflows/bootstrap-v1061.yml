@@ -1,0 +1,37 @@
+name: Bootstrap WAWIS 10.61
+
+on:
+  push:
+    branches:
+      - release/v10.61
+    paths:
+      - '.github/workflows/bootstrap-v1061.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/v10.61
+          fetch-depth: 0
+
+      - name: Bump version to 10.61
+        run: node version-bump.cjs
+
+      - name: Commit generated version files
+        shell: bash
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add app-version.json package.json package-lock.json src/version.js src/mobile791/version.js README.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No version changes to commit"
+            exit 0
+          fi
+          git commit -m "Prepare WAWIS 10.61 version metadata"
+          git push origin HEAD:release/v10.61
