@@ -156,7 +156,11 @@
     "test:smoke:desktop-protocol": "node scripts/smoke-desktop-protocol-v996.cjs",
     "test:smoke:reliable-sync": "node scripts/smoke-reliable-sync-backup-v1010.mjs",
     "test:smoke:new-job-author-comment": "node scripts/smoke-new-job-author-comment-v1053.cjs",
-    "test:smoke:worker-shared-job-edit": "node scripts/smoke-worker-shared-job-edit-v1060.cjs"
+    "test:smoke:worker-shared-job-edit": "node scripts/smoke-worker-shared-job-edit-v1060.cjs",
+    "test:group": "node scripts/run-test-group.cjs",
+    "test:pr": "node scripts/run-pr-checks.cjs",
+    "test:smoke:release-automation": "node scripts/smoke-release-automation-v1061.cjs",
+    "postdeploy:check": "node scripts/post-deploy-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
