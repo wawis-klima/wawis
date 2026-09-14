@@ -16,6 +16,18 @@
     "result": "BOOTSTRAP",
     "notes": "Od wersji 10.60 wymagane GO przed produkcyjnym buildem."
   },
+  "drive_backup": {
+    "required": true,
+    "folder_path": "Aplikacja/Wersje",
+    "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
+    "file_name": "klima-app-v10.59.zip",
+    "file_id": "1aQ0k_K-9d3m3cSQr-W-G6rdqg6CHREfb",
+    "size_bytes": 12158693,
+    "uploaded": true,
+    "uploaded_at": "2026-09-14T08:51:49.959Z",
+    "verified": true,
+    "notes": "Zweryfikowano istniejącą paczkę 10.59 w folderze Aplikacja/Wersje. Od 10.60 brak zweryfikowanej paczki blokuje zamknięcie wydania."
+  },
   "postdeploy_diagnostics": {
     "checked": false,
     "last_24h": true,
