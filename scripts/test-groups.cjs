@@ -105,6 +105,8 @@ const GROUPS = {
   ],
   infra: [
     'node scripts/smoke-release-automation-v1061.cjs',
+    'npm run test:smoke:e2e-mobile',
+    'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',
     'npm run test:smoke:no-services-module',
   ],
