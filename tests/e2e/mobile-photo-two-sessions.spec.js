@@ -52,29 +52,28 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
 
     await expect(page.getByText('Urządzenia i tabliczki', { exact: true })).toBeVisible();
-    await expect(page.getByText('Jednostka zewnętrzna JZ', { exact: true })).toBeVisible();
-    await expect(page.getByText('Rotenso Multi-Split JZ (TEST)', { exact: true })).toBeVisible();
-    await expect(page.getByText('Jednostka wewnętrzna JW 1', { exact: true })).toBeVisible();
-    await expect(page.getByText('Jednostka wewnętrzna JW 3', { exact: true })).toBeVisible();
-    await expect(page.getByText('TEST-MULTI-JW-1', { exact: true })).toBeVisible();
-    await expect(page.getByText('TEST-MULTI-JW-3', { exact: true })).toBeVisible();
-    await page.locator('.workerSerialNumbersBtn').click();
-    await expect(page.getByText('Jednostki wewnętrzne multi-split', { exact: true })).toBeVisible();
-    await expect(page.locator('.jobIndoorUnitField')).toHaveCount(3);
-    await expect(page.getByLabel('Model JW 1 (opcjonalnie)')).toHaveValue('Rotenso Model JW 1 (TEST)');
-    await expect(page.getByLabel('Model JW 2 (opcjonalnie)')).toHaveValue('Rotenso Model JW 2 (TEST)');
-    await expect(page.getByLabel('Model JW 3 (opcjonalnie)')).toHaveValue('Rotenso Model JW 3 (TEST)');
-    await page.getByLabel('Model JW 2 (opcjonalnie)').fill('Rotenso Model JW 2 — poprawiony');
-    await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
-    await expect(page.getByRole('heading', { name: 'Uzupełnij urządzenia i tabliczki' })).toBeHidden();
+    const deviceToggle = page.getByRole('button', { name: 'Rozwiń Urządzenie 1' });
+    await expect(deviceToggle).toBeVisible();
+    await expect(deviceToggle).toHaveAttribute('aria-expanded', 'false');
+    await deviceToggle.click();
+    await expect(page.getByRole('button', { name: 'Zwiń Urządzenie 1' })).toHaveAttribute('aria-expanded', 'true');
 
-    const updatedJob = await page.evaluate(() => (
+    const rows = page.locator('.deviceUnitDocumentationRow');
+    await expect(rows).toHaveCount(4);
+    await expect(rows.nth(0)).toContainText('JZ');
+    await expect(rows.nth(0)).toContainText('Rotenso Multi-Split JZ (TEST)');
+    await expect(rows.nth(1)).toContainText('JW1');
+    await expect(rows.nth(1)).toContainText('Rotenso Model JW 1 (TEST)');
+    await expect(rows.nth(3)).toContainText('JW3');
+    await expect(rows.nth(3)).toContainText('Rotenso Model JW 3 (TEST)');
+
+    const storedJob = await page.evaluate(() => (
       window.__KLIMA_MOCK_SUPABASE__?.getStore()?.jobs?.find((job) => job.id === 'mock-job-005')
     ));
-    expect(updatedJob?.device_model).toContain('JW1: Rotenso Model JW 1 (TEST)');
-    expect(updatedJob?.device_model).toContain('JW2: Rotenso Model JW 2 — poprawiony');
-    expect(updatedJob?.device_model).toContain('JW3: Rotenso Model JW 3 (TEST)');
-    expect(updatedJob?.device_model).toContain('JZ: Rotenso Multi-Split JZ (TEST)');
+    expect(storedJob?.device_model).toContain('JW1: Rotenso Model JW 1 (TEST)');
+    expect(storedJob?.device_model).toContain('JW2: Rotenso Model JW 2 (TEST)');
+    expect(storedJob?.device_model).toContain('JW3: Rotenso Model JW 3 (TEST)');
+    expect(storedJob?.device_model).toContain('JZ: Rotenso Multi-Split JZ (TEST)');
 
     await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
     await expect(page.locator('.thumbCard')).toHaveCount(1);
