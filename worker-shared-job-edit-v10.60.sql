@@ -50,7 +50,15 @@ as $$
   select coalesce(
     public.current_user_is_staff()
     and p_job_id is not null
-    and exists (select 1 from public.jobs j where j.id = p_job_id),
+    and exists (
+      select 1
+      from public.jobs j
+      where j.id = p_job_id
+        and (
+          public.current_user_is_admin()
+          or lower(trim(coalesce(j.status, ''))) <> 'zakończone'
+        )
+    ),
     false
   );
 $$;
@@ -69,7 +77,10 @@ with check (public.current_user_can_access_job(id));
 
 drop policy if exists jobs_create_own on public.jobs;
 create policy jobs_create_own on public.jobs for insert to authenticated
-with check (public.current_user_is_staff() and created_by = auth.uid());
+with check (
+  public.current_user_is_staff()
+  and (created_by = auth.uid() or public.current_user_is_admin())
+);
 
 drop policy if exists access_insert_admin_or_creator_self on public.job_access;
 drop policy if exists access_insert_staff on public.job_access;
