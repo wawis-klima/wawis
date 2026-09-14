@@ -28,14 +28,14 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByRole('button', { name: /^Montaże$/ }).click();
     await expect(page.getByRole('heading', { name: 'Montaże' })).toBeVisible();
     await page.getByRole('button', { name: /W trakcie:/ }).click();
-    await expect(page.getByText('Klient Testowy B', { exact: true })).toBeVisible();
+    await expect(page.getByRole('table').getByText('Klient Testowy B', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: /Kalendarz/ }).click();
     await expect(page.getByText('Wybrany dzień')).toBeVisible();
     await expect(page.locator('.calendarContentGrid')).toBeVisible();
 
     await page.getByRole('button', { name: /^SMS$/ }).click();
-    await expect(page.getByRole('heading', { name: 'Powiadomienia SMS o przeglądzie' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'SMS – przypomnienia serwisowe', exact: true })).toBeVisible();
     await expect(page.getByText('Klienci na liście')).toBeVisible();
   });
 
@@ -66,14 +66,14 @@ test.describe('desktop E2E na mock Supabase', () => {
 
     await page.locator('button.desktopActionBtn.primary[title="Dodaj"]').click();
     await expect(page.getByRole('heading', { name: 'Nowy montaż / zlecenie' })).toBeVisible();
-    await page.getByPlaceholder('Klient').fill('Klient E2E Create');
-    await page.getByPlaceholder('Email klienta').fill('e2e.create@example.test');
-    await page.getByPlaceholder('Telefon klienta / SMS').fill('501222333');
-    await page.getByPlaceholder('Miejscowość').fill('Poznań');
-    await page.getByPlaceholder('Ulica i numer').fill('Testowa 77');
+    await page.getByRole('textbox', { name: 'Klient', exact: true }).fill('Klient E2E Create');
+    await page.getByPlaceholder('Email klienta', { exact: true }).fill('e2e.create@example.test');
+    await page.getByPlaceholder('Telefon klienta / SMS', { exact: true }).fill('501222333');
+    await page.getByPlaceholder('Miejscowość', { exact: true }).fill('Poznań');
+    await page.getByPlaceholder('Ulica i numer', { exact: true }).fill('Testowa 77');
     await page.getByLabel('Data montażu').locator('input[type="date"]').fill('2026-09-14');
-    await page.getByPlaceholder('np. Gree Amber Standard 3,5 kW').fill('Gree E2E 3.5 kW');
-    await page.getByPlaceholder('np. SN-2026-000123').fill('E2E-SN-001');
+    await page.getByPlaceholder('np. Gree Amber Standard 3,5 kW', { exact: true }).fill('Gree E2E 3.5 kW');
+    await page.getByPlaceholder('np. SN-2026-000123', { exact: true }).fill('E2E-SN-001');
     await page.getByRole('button', { name: 'Zapisz zlecenie' }).click();
 
     await expect(page.getByText('Klient E2E Create', { exact: true })).toBeVisible();
@@ -82,8 +82,8 @@ test.describe('desktop E2E na mock Supabase', () => {
 
     await page.getByRole('button', { name: 'Edytuj montaż' }).click();
     await expect(page.getByRole('heading', { name: 'Edytuj montaż' })).toBeVisible();
-    await page.getByPlaceholder('Klient').fill('Klient E2E Edited');
-    await page.getByPlaceholder('np. SN-2026-000123').fill('E2E-SN-EDITED');
+    await page.getByRole('textbox', { name: 'Klient', exact: true }).fill('Klient E2E Edited');
+    await page.getByPlaceholder('np. SN-2026-000123', { exact: true }).fill('E2E-SN-EDITED');
     await page.getByRole('button', { name: 'Zapisz zmiany' }).click();
 
     await expect(page.getByText('Klient E2E Edited', { exact: true })).toBeVisible();
@@ -96,25 +96,26 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByRole('button', { name: /^Montaże$/ }).click();
     await page.getByRole('button', { name: /W trakcie:/ }).click();
 
-    await expect(page.getByText('Klient Testowy B', { exact: true })).toBeVisible();
-    await page.getByText('Klient Testowy B', { exact: true }).click();
+    const clientRow = page.getByRole('table').getByText('Klient Testowy B', { exact: true });
+    await expect(clientRow).toBeVisible();
+    await clientRow.click();
     await expect(page.getByRole('button', { name: 'Usuń kartę' })).toBeVisible();
     await page.getByRole('button', { name: 'Usuń kartę' }).click();
 
     await expect(page.getByRole('heading', { name: 'Usunąć kartę montażu?' })).toBeVisible();
     await page.getByRole('button', { name: 'Anuluj' }).click();
-    await expect(page.getByText('Klient Testowy B', { exact: true })).toBeVisible();
+    await expect(clientRow).toBeVisible();
 
     await page.getByRole('button', { name: 'Usuń kartę' }).click();
     await page.getByRole('button', { name: 'Usuń na stałe' }).click();
-    await expect(page.getByText('Klient Testowy B', { exact: true })).toHaveCount(0);
+    await expect(clientRow).toHaveCount(0);
   });
 
   test('administrator podgląda i wysyła zapisany protokół zakończonego zlecenia', async ({ page }) => {
     await login(page, ADMIN);
     await page.getByRole('button', { name: /^Montaże$/ }).click();
     await page.getByRole('button', { name: /Zakończone:/ }).click();
-    await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
+    await page.getByRole('table').getByText('Klient Testowy C Zakończony', { exact: true }).click();
 
     const protocolCard = page.locator('[data-desktop-protocol="9.96"]');
     await expect(protocolCard.getByText('Protokół zapisany')).toBeVisible();
