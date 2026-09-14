@@ -43,15 +43,19 @@ function updateAdminHeaderSmoke() {
 function updateAuthRefreshSmoke() {
   const file = 'scripts/smoke-auth-refresh.cjs';
   let source = read(file);
-  source = source.replace(
+  source = source.replaceAll(
     'assert.match(moduleSwitcherSource, /!\\["sms", "contractors"\\]\\.includes\\(module\\.id\\) \\|\\| isAdmin/);',
     'assert.match(moduleSwitcherSource, /isAdmin \\? true : \\["jobs", "fuel"\\]\\.includes\\(module\\.id\\)/);',
   );
-  source = source.replace(
+  source = source.replaceAll(
     'assert.match(appSource, /if \\(!isAdmin && \\(activeModule === "sms" \\|\\| activeModule === "contractors" \\|\\| activeModule === "calendar"\\)\\) \\{/);',
     'assert.match(appSource, /const shouldBlockWorkerDesktop\\s*=\\s*isWorker\\s*&&\\s*\\(!isMobile\\s*\\|\\|\\s*!isProbablyPhoneDevice\\)/);',
   );
-  source = source.replace(
+  source = source.replaceAll(
+    'assert.match(appSource, /if \\(!isAdmin && \\(activeModule === "sms" \\|\\| activeModule === "contractors" \\|\\| activeModule === "calendar"\\)\\)\\)/);',
+    'assert.match(appSource, /const shouldBlockWorkerDesktop\\s*=\\s*isWorker\\s*&&\\s*\\(!isMobile\\s*\\|\\|\\s*!isProbablyPhoneDevice\\)/);',
+  );
+  source = source.replaceAll(
     'assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| !isAdmin \\?/);',
     'assert.match(appSource, /jobsPanel=\\{activeModule === "jobs" \\|\\| \\(!isAdmin && activeModule !== "fuel"\\) \\? \\(/);',
   );
@@ -61,4 +65,4 @@ function updateAuthRefreshSmoke() {
 updateWorkerSmoke();
 updateAdminHeaderSmoke();
 updateAuthRefreshSmoke();
-console.log('Refreshed stale mobile toolbar, admin-field, module-switcher and worker-access smoke checks.');
+console.log('Refreshed all stale mobile toolbar, admin-field, module-switcher and worker-access smoke checks.');
