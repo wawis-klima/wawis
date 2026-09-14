@@ -1,0 +1,14 @@
+{
+  "version": "10.61",
+  "summary": "Uproszczono i zautomatyzowano proces wydań WAWIS: praca odbywa się na gałęzi release, testy robocze są dobierane do zmienionego obszaru, a finalne wydanie wykonuje jeden pełny przebieg z rzeczywistą kontrolą produkcji po wdrożeniu.",
+  "changes": [
+    "Wprowadzono gałęzie release/v<WERSJA>; main jest przeznaczony wyłącznie dla gotowych wydań.",
+    "PR uruchamia szybkie grupy regresji dobrane do zmienionych plików zamiast pełnego zestawu testów.",
+    "Finalne wydanie wykonuje każdą grupę regresji, Playwright, build, verify i pakowanie tylko jeden raz.",
+    "Regresje pogrupowano na jobs, photos, protocol, roles, push, fuel, nameplates oraz obszary platformowe.",
+    "verify:release sprawdza integralność wydania zamiast historycznych fragmentów implementacji i literalnych tekstów UI.",
+    "Vercel ma twardy deploy gate wymagający finalnego zielonego runu, zweryfikowanego ZIP na Google Drive i oznaczenia ready_for_main.",
+    "Post-deploy tworzy dowód z rzeczywistego app-version.json, Service Workera i diagnostyki Supabase zamiast ręcznych flag true/false.",
+    "Podbicie wersji automatycznie aktualizuje także cache Service Workera, a repo zawiera CODEOWNERS i instrukcję ochrony main."
+  ]
+}
