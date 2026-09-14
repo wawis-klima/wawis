@@ -113,7 +113,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await expect(page.getByRole('heading', { name: 'Synchronizacja', exact: true })).toBeVisible();
     await expect(page.getByText('Zdjęcie montażu', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Wyślij wszystkie (1)' })).toBeDisabled();
-    await page.getByRole('button', { name: 'Zamknij' }).click();
+    await page.locator('.photoSyncCenterClose').click();
 
     // Ponowne wskazanie dokładnie tego samego pliku nie może utworzyć drugiego
     // wpisu w UI ani drugiego rekordu w kolejce telefonu.
