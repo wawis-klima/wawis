@@ -1,3 +1,6 @@
+## 10.56
+- uzupełnij opis zmian dla wersji 10.56
+
 ## 10.54
 - Mobile / nowy montaż: formularz jest wyraźnie bardziej kompaktowy; zmniejszono pola danych klienta, status, mikrofony, komentarz i przycisk zapisu.
 - `Zamknij` i `Wprowadź głosowo` są obok siebie w jednym rzędzie.
