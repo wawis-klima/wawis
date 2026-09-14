@@ -27,7 +27,9 @@ jobs:
         run: npm ci --include=optional
 
       - name: Expose exact release verification error
-        run: node scripts/verify-release.cjs
+        run: |
+          node scripts/write-release-result.cjs --pending --variant full
+          node scripts/verify-release.cjs
 
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
@@ -49,4 +51,4 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-# rerun: 19
+# rerun: 20
