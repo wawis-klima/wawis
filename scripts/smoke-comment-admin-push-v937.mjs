@@ -85,10 +85,11 @@ for (const rel of ['src/modules/jobs-comments.js', 'src/mobile791/modules/jobs-c
 const edge = read('supabase/functions/send-assignment-push/index.ts');
 assert.match(edge, /eventType === "job_comment"/);
 assert.match(edge, /String\(comment\.author_id \|\| ""\) !== String\(authUserId\)/, 'Edge musi potwierdzić autora komentarza');
-assert.match(edge, /\.from\("job_access"\)/, 'Edge musi potwierdzić dostęp pracownika do zlecenia');
+assert.match(edge, /normalizedCommentCallerRole/, 'Edge musi potwierdzić rolę pracownika bez wymagania przypisania do zlecenia');
+assert.doesNotMatch(edge, /\.from\("job_access"\)/, 'Komentarz nie może ponownie wymagać przypisania pracownika do zlecenia');
 assert.match(edge, /\.eq\("role", "Administrator"\)/, 'Push musi wybierać administratorów po profilu serwerowym');
 assert.match(edge, /deliveryLogType = `job_comment:\$\{comment\.id\}`/, 'Każdy komentarz musi mieć osobny klucz antyduplikacyjny');
 assert.match(edge, /title: "Nowy komentarz do montażu"/);
 assert.match(edge, /tag: `job-comment-\$\{comment\.id\}`/);
 
-console.log('OK: komentarz pracownika wysyła bezpieczny, idempotentny push administratorowi i nie cofa zapisu przy awarii push.');
+console.log('OK: komentarz każdego pracownika wysyła bezpieczny, idempotentny push administratorowi i nie cofa zapisu przy awarii push.');
