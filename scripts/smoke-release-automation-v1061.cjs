@@ -60,6 +60,8 @@ assert.match(deployGate, /final_release_run_id/);
 assert.match(deployGate, /--evidence/);
 assert.match(deployGate, /service_worker_verified/);
 assert.match(vercel.buildCommand || '', /release-policy-gate\.cjs --deploy/);
+assert.equal(vercel.git?.deploymentEnabled?.['*'], false, 'Vercel powinien ignorować automatyczne deploye innych gałęzi');
+assert.equal(vercel.git?.deploymentEnabled?.main, true, 'Vercel powinien automatycznie wdrażać wyłącznie main');
 
 assert.match(postWorkflow, /post-deploy-check\.mjs/);
 assert.match(postWorkflow, /release-policy-gate\.cjs --post --evidence/);
