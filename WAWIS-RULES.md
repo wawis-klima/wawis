@@ -1,107 +1,99 @@
-# WAWIS — stałe zasady projektu i bramka wydania
+# WAWIS — stałe zasady projektu i wydania
 
-Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji WAWIS. Nie zastępuje `RELEASE-CHECKLIST.md`; określa warunki, których nie wolno pominąć nawet przy małej poprawce.
+Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji WAWIS. Szczegóły operacyjne są w `RELEASE-CHECKLIST.md`.
 
-## 1. Zasada źródła prawdy
+## 1. Źródło prawdy i GAŁĄŹ RELEASE
 
-- Punktem startowym jest zawsze ostatnia poprawna wersja z gałęzi `main`.
-- Przed rozpoczęciem zmian trzeba jawnie określić zakres: `mobile`, `desktop` albo `full`.
-- Nie przenosimy funkcji między mobile i desktopem bez osobnej decyzji.
-- Nie odtwarzamy założeń wyłącznie z pamięci rozmowy. Najpierw czytamy ten plik, `RELEASE-CHECKLIST.md`, aktualny `README.md`, `CHANGELOG.md` i odpowiedni kod.
-- Każda regresja, która została naprawiona i może wrócić, powinna mieć test smoke lub E2E.
+- Punktem startowym jest ostatni poprawny `main`.
+- Dla każdej wersji tworzymy `release/v<WERSJA>` i wszystkie zmiany robocze wykonujemy tam.
+- Nie robimy serii roboczych commitów bezpośrednio na `main`.
+- Zakres wydania musi być jawny: `mobile`, `desktop` albo `full`.
+- `main` dostaje dopiero gotowe wydanie po testach, pre-deploy GO, finalnym ZIP i zweryfikowanym backupie Drive.
+- Push/merge do `main` jest sygnałem produkcyjnego wdrożenia Vercela i powinien wystąpić zasadniczo raz dla gotowej wersji.
 
-### 1.1. Praca na gałęzi wydania — bez spamowania CI i Vercela
+## 2. Testy — mniej, ale znaczące
 
-- Drobnych commitów roboczych nie zapisujemy bezpośrednio na `main`.
-- Dla każdej nowej wersji tworzymy gałąź `release/v<WERSJA>` wychodzącą z aktualnego `main` i na niej wykonujemy zmiany oraz poprawki testów.
-- `Mobile release checks`, `Desktop release checks` i `WAWIS Release Policy Gate` nie uruchamiają się automatycznie po każdym pushu na `main`; uruchamiamy je świadomie przez `workflow_dispatch` albo w pull requeście do `main`.
-- W jednej gałęzi wydania używamy `concurrency` z `cancel-in-progress`, żeby nowy przebieg zastępował starszy zamiast wykonywać kilka kopii równolegle.
-- `main` aktualizujemy dopiero wtedy, gdy wydanie ma zakończone testy, pre-deploy `GO`, finalny ZIP i zweryfikowany backup Google Drive.
-- Push/merge do `main` jest sygnałem produkcyjnego wdrożenia Vercela i powinien wystąpić zasadniczo jeden raz dla gotowej wersji, a nie przy każdej poprawce pośredniej.
-- Jednorazowe workflow diagnostyczne dla konkretnej wersji usuwamy po zakończeniu wydania.
+### PR / praca nad wersją
 
-## 2. Diagnostyka jest obowiązkową częścią wydania
+- `.github/workflows/pr-checks.yml` wykrywa zmienione pliki i uruchamia `core` + tylko odpowiednie grupy domenowe.
+- Nowy commit anuluje starszy przebieg tego samego PR (`cancel-in-progress`).
+- PR-check nie uruchamia pełnego Playwright ani pełnego builda.
 
-### Przed zmianą
+### Finalne wydanie
 
-Przed rozpoczęciem pracy sprawdzamy Diagnostykę / historię zdarzeń z ostatnich 24 godzin i zapisujemy stan początkowy:
+- `.github/workflows/release-checks.yml` uruchamiamy świadomie dla `mobile`, `desktop` albo `full`.
+- Każda grupa regresji wykonuje się jeden raz.
+- Playwright mobile wykonuje się najwyżej raz, Playwright desktop najwyżej raz.
+- Build, `verify:bundle` i `verify:release` wykonują się po jednym razie.
+- `verify:release` sprawdza integralność wydania, a nie literalne napisy lub historyczny kształt kodu.
+- Regresje są grupowane: `jobs`, `photos`, `protocol`, `roles`, `push`, `fuel`, `nameplates` oraz grupy platformowe.
+- Test, który sprawdza wyłącznie konkretną treść przycisku albo nazwę scenariusza, nie powinien blokować wydania, jeśli nie jest to wymaganie funkcjonalne.
 
-- nowe błędy i ostrzeżenia,
-- błędy powtarzające się,
-- moduł źródłowy,
-- ostatni czas wystąpienia,
-- timeouty,
-- błędy Supabase, sieci i synchronizacji,
-- zdjęcia i tabliczki,
-- protokoły,
-- push,
-- kolejki offline.
+## 3. Diagnostyka
 
-Celem jest rozróżnienie błędów istniejących przed zmianą od błędów wprowadzonych przez nowe wydanie.
+### Baseline
 
-### Przed publikacją
+Przed zmianami sprawdzamy `app_diagnostic_events` z ostatnich 24 godzin i zapisujemy stan w `RELEASE-GATE.json`.
+Znany, istniejący wcześniej problem może być opisany jako baseline; niewyjaśniony nowy problem oznacza `NO-GO`.
 
-Ponownie sprawdzamy Diagnostykę. Niewyjaśniony nowy błąd techniczny oznacza `NO-GO`. Znany fałszywy alarm można pominąć tylko wtedy, gdy jego przyczyna jest rozpoznana i opisana.
+### Pre-deploy
 
-### Po publikacji
+Po zmianach i przed finalnym release ponownie sprawdzamy ostatnie 24 h. Wymagany jest status `GO`.
 
-Po wdrożeniu produkcyjnym sprawdzamy Diagnostykę jeszcze raz i porównujemy ją ze stanem sprzed zmiany. Nowy błąd lub wyraźny wzrost częstotliwości istniejącego błędu oznacza, że wydanie nie jest zamknięte i wymaga poprawki technicznej.
+### Po wdrożeniu
 
-## 3. Bramka GO / NO-GO
+Po produkcji nie wystarcza ręczne wpisanie `true`. Wymagany jest rzeczywisty odczyt produkcji i diagnostyki — patrz sekcja POST-DEPLOY EVIDENCE.
 
-Wydanie ma status `GO` wyłącznie wtedy, gdy wszystkie poniższe warunki są spełnione:
+## 4. Bramka GO / NO-GO
 
-1. Zakres wydania jest jawny.
-2. Numer wersji jest spójny we wszystkich aktywnych miejscach.
-3. `README.md` i `CHANGELOG.md` opisują rzeczywiste zmiany i nie zawierają placeholdera dla aktualnej wersji.
-4. Testy odpowiednie dla zmienianego obszaru i testy regresji są zielone.
-5. `verify:release` przechodzi.
-6. Zmiany Supabase mają sprawdzone RLS i właściwe `GRANT`.
-7. Build i `verify:bundle` przechodzą, jeśli środowisko pozwala na build.
-8. Jeżeli build jest celowo pomijany w sandboxie, `RELEASE-RESULT.md` musi oznaczać go jawnie jako `POMINIĘTO` z powodem.
-9. Diagnostyka przed publikacją nie zawiera niewyjaśnionego nowego błędu.
-10. Produkcyjna wersja, Service Worker/cache oraz najważniejsze ścieżki zmienionego obszaru zostały sprawdzone po wdrożeniu.
-11. Diagnostyka po wdrożeniu została ponownie sprawdzona.
-12. Finalny ZIP wydania został wysłany na Google Drive do `Aplikacja/Wersje` i po wysłaniu zweryfikowany przez ponowne odczytanie folderu.
+Wydanie ma `GO`, gdy:
 
-`NO-GO` obowiązuje przy czerwonym teście, niespójnym numerze, placeholderze dokumentacji aktualnego wydania, niewyjaśnionym nowym błędzie diagnostycznym, nierozwiązanej regresji albo braku zweryfikowanej kopii ZIP na Google Drive.
+1. wersja jest spójna w aktywnych plikach,
+2. README i CHANGELOG opisują aktualną wersję bez placeholderów,
+3. baseline i pre-deploy diagnostics mają `GO`,
+4. odpowiednie regresje oraz prawdziwe E2E są zielone,
+5. produkcyjny build i `verify:bundle` przechodzą,
+6. `verify:release` przechodzi,
+7. finalny ZIP istnieje i ma poprawną wersję,
+8. ZIP jest zweryfikowany na Google Drive,
+9. release jest jawnie oznaczony jako gotowy do `main`.
 
-## 4. Minimalna kontrola po wdrożeniu
+Czerwony test funkcjonalny, błąd builda, brak Drive albo nowy niewyjaśniony błąd diagnostyczny oznacza `NO-GO`.
 
-W zależności od zakresu sprawdzamy na produkcji co najmniej:
+## 5. Google Drive
 
-- uruchomienie aplikacji,
-- numer wersji,
-- Service Worker i odświeżenie cache,
-- logowanie i rolę użytkownika,
-- zapis i odczyt danych w zmienionym module,
-- brak białego ekranu / freeze,
-- mobile na iPhonie, jeżeli zmiana dotyczy mobile,
-- desktop, jeżeli zmiana dotyczy desktopu,
-- zdjęcia, synchronizację, protokoły, push i Supabase, jeżeli zmiana ich dotyczy.
+Każde wydanie ma finalny ZIP w:
 
-## 5. Dokumentacja wydania
+- ścieżka: `Aplikacja/Wersje`,
+- folder ID: `1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S`,
+- nazwa: `klima-app-v<WERSJA>.zip`.
 
-- `README.md` zawiera aktualną wersję i krótki opis ostatniej poprawki.
-- `CHANGELOG.md` zawiera konkretny opis aktualnej wersji.
-- `RELEASE-RESULT.md` ma ten sam numer co `app-version.json`.
-- Placeholder generowany przy podbiciu wersji jest stanem przejściowym i musi zostać zastąpiony przed zatwierdzeniem wydania.
-- Ograniczeń testu lub środowiska nie wolno przemilczać; zapisujemy je w raporcie wydania.
+Po uploadzie trzeba ponownie odczytać folder i potwierdzić nazwę, ID pliku i rozmiar > 0. Dane zapisujemy w `RELEASE-GATE.json`.
 
-## 6. Obowiązkowa kopia ZIP na Google Drive
+## 6. Ochrona `main` i Vercela
 
-Każde zakończone wydanie musi mieć finalną paczkę ZIP w Google Drive:
+- `main` jest przeznaczony wyłącznie dla gotowych wydań.
+- `RELEASE-GATE.json.main_protection.ready_for_main` musi być `true` dopiero po zielonym finalnym release i backupie Drive.
+- Vercel uruchamia `node scripts/release-policy-gate.cjs --deploy` przed buildem.
+- Deploy gate wymaga zweryfikowanego ZIP-a Drive, właściwej gałęzi `release/v<WERSJA>` i ID finalnego zielonego runu.
+- Dzięki temu przypadkowy push niegotowej wersji na `main` nie powinien przejść do produkcyjnego builda.
+- Dodatkowa ochrona GitHub Branch Protection / Ruleset powinna wymagać PR do `main`; ustawienia są opisane w `MAIN-PROTECTION.md`.
 
-- folder docelowy: `Aplikacja/Wersje`,
-- identyfikator folderu `Wersje`: `1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S`,
-- nazwa pliku: `klima-app-v<WERSJA>.zip`, np. `klima-app-v10.60.zip`,
-- wysyłamy wyłącznie finalny ZIP po zakończeniu testów i weryfikacji paczki,
-- po wysłaniu ponownie odczytujemy folder `Wersje` i potwierdzamy: nazwę, numer wersji, rozmiar większy od zera i obecność pliku,
-- identyfikator pliku Drive, czas wysłania i wynik weryfikacji zapisujemy w `RELEASE-GATE.json`,
-- brak ZIP-a lub brak weryfikacji oznacza `NO-GO` dla zamknięcia wydania.
+## 7. POST-DEPLOY EVIDENCE
 
-## 7. Stała kolejność pracy
+Po wdrożeniu uruchamiamy `.github/workflows/post-deploy-checks.yml` albo równoważny `scripts/post-deploy-check.mjs`.
 
-`BASELINE DIAGNOSTICS -> GAŁĄŹ RELEASE -> ZMIANA -> TESTY -> RELEASE GATE -> PRE-DEPLOY DIAGNOSTICS -> FINAL ZIP -> GOOGLE DRIVE BACKUP -> MERGE/PUSH MAIN -> DEPLOY -> PRODUCTION CHECK -> POST-DEPLOY DIAGNOSTICS -> RELEASE CLOSE GATE -> ZAMKNIĘCIE WYDANIA`
+Dowód musi potwierdzić rzeczywistym odczytem:
 
-Nie deklarujemy wersji jako zakończonej przed przejściem ostatniego kroku.
+- produkcyjny `app-version.json` = aktualna wersja,
+- produkcyjny `push-sw.js` zawiera `wawis-app-shell-v<WERSJA>`,
+- diagnostyka Supabase została odczytana,
+- od chwili wdrożenia nie pojawił się nowy błąd/ostrzeżenie blokujące wydanie.
+
+Skrypt zapisuje `post-deploy-evidence.json`. Dopiero `node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json` może zamknąć wydanie.
+
+## 8. Stała kolejność
+
+`BASELINE DIAGNOSTICS -> GAŁĄŹ RELEASE -> ZMIANA -> TARGETED PR CHECKS -> PRE-DEPLOY DIAGNOSTICS -> FINAL RELEASE CHECKS -> FINAL ZIP -> GOOGLE DRIVE -> READY FOR MAIN -> MAIN/VERCEL -> PRODUCTION CHECK -> POST-DEPLOY EVIDENCE -> RELEASE CLOSE`
+
+Nie deklarujemy wersji jako zakończonej przed ostatnim krokiem.
