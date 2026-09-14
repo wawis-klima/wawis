@@ -3,6 +3,7 @@ const path = require('path');
 
 const root = __dirname;
 const versionFilePath = process.env.APP_VERSION_FILE || path.join(root, 'app-version.json');
+const publicVersionFilePath = process.env.PUBLIC_APP_VERSION_FILE || path.join(root, 'public', 'app-version.json');
 const pkgPath = process.env.PACKAGE_JSON_FILE || path.join(root, 'package.json');
 const readmePath = process.env.README_FILE || path.join(root, 'README.md');
 const changelogPath = process.env.CHANGELOG_FILE || path.join(root, 'CHANGELOG.md');
@@ -16,6 +17,7 @@ function readJson(filePath) {
 }
 
 function writeJson(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(value, null, 2) + '\n');
 }
 
@@ -73,6 +75,7 @@ function updateServiceWorkerVersion(source, nextVersion) {
 
 function writeVersion(nextVersion) {
   writeJson(versionFilePath, { version: nextVersion });
+  writeJson(publicVersionFilePath, { version: nextVersion });
 
   const pkg = readJson(pkgPath);
   pkg.version = nextVersion;
