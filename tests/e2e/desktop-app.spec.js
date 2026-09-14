@@ -79,7 +79,7 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByText('Klient E2E Create', { exact: true }).click();
     await expect(page.getByText(/Testowa 77/).first()).toBeVisible();
 
-    await page.getByRole('button', { name: 'Edytuj montaż' }).click();
+    await page.getByRole('button', { name: 'Edytuj', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Edytuj montaż' })).toBeVisible();
     await page.getByRole('textbox', { name: 'Klient', exact: true }).fill('Klient E2E Edited');
     await page.getByPlaceholder('Ulica i numer', { exact: true }).fill('Testowa 88');
@@ -135,7 +135,7 @@ test.describe('desktop E2E na mock Supabase', () => {
 
     await expect(page.getByRole('heading', { name: 'Aplikacja dla pracownika jest dostępna tylko na telefonie' })).toBeVisible();
     await expect(page.getByText('Wersja komputerowa jest dostępna tylko dla administratora.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Edytuj montaż' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Edytuj', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Usuń kartę' })).toHaveCount(0);
   });
 
