@@ -60,6 +60,8 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
 
     const rows = page.locator('.deviceUnitDocumentationRow');
     await expect(rows).toHaveCount(4);
+    const indoorRows = rows.filter({ hasText: /^JW[123]/ });
+    await expect(indoorRows).toHaveCount(3);
     await expect(rows.nth(0)).toContainText('JZ');
     await expect(rows.nth(0)).toContainText('Rotenso Multi-Split JZ (TEST)');
     await expect(rows.nth(1)).toContainText('JW1');
