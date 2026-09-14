@@ -42,7 +42,13 @@ function updateAdminHeaderSmoke() {
 
 function updateAuthRefreshSmoke() {
   const file = 'scripts/smoke-auth-refresh.cjs';
-  const source = read(file);
+  let source = read(file);
+
+  source = source.replace(
+    "  const moduleSwitcherPath = path.join(__dirname, '..', 'src', 'components', 'layout', 'ModuleSwitcher.jsx');\n  const appPath = path.join(__dirname, '..', 'src', 'App.jsx');\n  const devicesPanelPath = path.join(__dirname, '..', 'src', 'components', 'devices', 'DevicesPanel.jsx');\n\n  const moduleSwitcherSource = fs.readFileSync(moduleSwitcherPath, 'utf8');\n  const appSource = fs.readFileSync(appPath, 'utf8');\n  const devicesPanelSource = fs.readFileSync(devicesPanelPath, 'utf8');\n\n  assert.match(moduleSwitcherSource, /id:\\s*\"devices\"/);\n  assert.match(moduleSwitcherSource, /Urządzenia/);",
+    "  const adminDesktopShellPath = path.join(__dirname, '..', 'src', 'components', 'layout', 'AdminDesktopShell.jsx');\n  const appPath = path.join(__dirname, '..', 'src', 'App.jsx');\n  const devicesPanelPath = path.join(__dirname, '..', 'src', 'components', 'devices', 'DevicesPanel.jsx');\n\n  const adminDesktopShellSource = fs.readFileSync(adminDesktopShellPath, 'utf8');\n  const appSource = fs.readFileSync(appPath, 'utf8');\n  const devicesPanelSource = fs.readFileSync(devicesPanelPath, 'utf8');\n\n  assert.match(adminDesktopShellSource, /key:\\s*['\"]devices['\"]/);\n  assert.match(adminDesktopShellSource, /label:\\s*['\"]Urządzenia['\"]/);",
+  );
+
   const lines = source.split('\n').map((line) => {
     if (
       line.includes('assert.match(moduleSwitcherSource') &&
@@ -75,4 +81,4 @@ function updateAuthRefreshSmoke() {
 updateWorkerSmoke();
 updateAdminHeaderSmoke();
 updateAuthRefreshSmoke();
-console.log('Refreshed all stale mobile toolbar, admin-field, module-switcher and worker-access smoke checks semantically.');
+console.log('Refreshed all stale mobile toolbar, admin-field, module-switcher, devices navigation and worker-access smoke checks.');
