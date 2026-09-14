@@ -65,13 +65,14 @@ test.describe('desktop E2E na mock Supabase', () => {
     await page.getByRole('button', { name: /^Montaże$/ }).click();
 
     await page.locator('button.desktopActionBtn.primary[title="Dodaj"]').click();
+    const dialog = page.getByRole('dialog');
     await expect(page.getByRole('heading', { name: 'Nowy montaż / zlecenie' })).toBeVisible();
     await page.getByRole('textbox', { name: 'Klient', exact: true }).fill('Klient E2E Create');
     await page.getByPlaceholder('Email klienta', { exact: true }).fill('e2e.create@example.test');
     await page.getByPlaceholder('Telefon klienta / SMS', { exact: true }).fill('501222333');
     await page.getByPlaceholder('Miejscowość', { exact: true }).fill('Poznań');
     await page.getByPlaceholder('Ulica i numer', { exact: true }).fill('Testowa 77');
-    await page.getByLabel('Data montażu').locator('input[type="date"]').fill('2026-09-14');
+    await dialog.locator('input[type="date"]').fill('2026-09-14');
     await page.getByPlaceholder('np. Gree Amber Standard 3,5 kW', { exact: true }).fill('Gree E2E 3.5 kW');
     await page.getByPlaceholder('np. SN-2026-000123', { exact: true }).fill('E2E-SN-001');
     await page.getByRole('button', { name: 'Zapisz zlecenie' }).click();
