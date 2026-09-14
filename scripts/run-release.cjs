@@ -45,17 +45,23 @@ function buildPlan({ variant, bumpVersion }) {
       status: 'skipped',
       reason: 'Tryb desktop-sandbox celowo nie weryfikuje bundla.',
     });
+    plan.push({ label: 'Verify', command: 'node scripts/verify-release.cjs --allow-no-build' });
   } else {
     plan.push({ label: 'Build', command: 'npm run build' });
     plan.push({ label: 'Build', command: 'npm run verify:bundle' });
     if (effectiveScope === 'mobile' || effectiveScope === 'full') {
       plan.push({ label: 'Build', command: 'npm run test:smoke:dist-mobile-css' });
     }
+    plan.push({ label: 'Verify', command: 'npm run verify:release' });
   }
 
-  plan.push({ label: 'Verify', command: 'npm run verify:release' });
   plan.push({ label: 'Package', command: 'npm run zip:release' });
-  plan.push({ label: 'Package', command: 'node scripts/verify-release.cjs --require-zip' });
+  plan.push({
+    label: 'Package',
+    command: variant === 'desktop-sandbox'
+      ? 'node scripts/verify-release.cjs --require-zip --allow-no-build'
+      : 'node scripts/verify-release.cjs --require-zip',
+  });
 
   return plan;
 }
