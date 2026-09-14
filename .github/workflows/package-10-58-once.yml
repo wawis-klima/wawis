@@ -1,0 +1,128 @@
+name: One-time WAWIS 10.58 package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/package-10-58-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Change protocol printing to two separate share jobs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/mobile791/modules/job-protocol-storage.js')
+          s = p.read_text()
+          s = s.replace('const PRINT_COPY_COUNT = 2;\n', 'const PRINT_COPY_COUNT = 2;\nconst pendingProtocolPrintCopies = new Map();\n', 1)
+          start = s.index('function createSeparatePrintCopies(file, pdfFileName) {')
+          end = s.index('\nexport async function printStoredJobProtocol', start)
+          new_block = r'''function createSeparatePrintCopy(file, pdfFileName, copyNumber) {
+            return new File(
+              [file],
+              getPrintImageFileName(pdfFileName, copyNumber),
+              { type: file.type || PRINT_IMAGE_MIME_TYPE },
+            );
+          }
+
+          function getProtocolPrintKey(record) {
+            return normalizeText(record?.id) || normalizeText(record?.storage_path);
+          }
+
+          async function shareSinglePrintCopy(file, pdfFileName, copyNumber) {
+            const copyFile = createSeparatePrintCopy(file, pdfFileName, copyNumber);
+            const payload = {
+              files: [copyFile],
+              title: `Protokół WAWIS – egzemplarz ${copyNumber} z ${PRINT_COPY_COUNT}`,
+            };
+            if (typeof navigator === "undefined" || !navigator.share || !navigator.canShare?.({ files: [copyFile] })) {
+              throw new Error("Ten telefon nie pozwala przekazać protokołu bezpośrednio do aplikacji Phomemo.");
+            }
+            await navigator.share(payload);
+          }
+
+          export async function shareStoredJobProtocol({
+            supabase,
+            record,
+            intent = "print",
+            createPrintImage = createProtocolPrintImage,
+          }) {
+            if (intent !== "print") throw new Error("Wysyłkę e-mail realizuje zabezpieczony serwer WAWIS.");
+
+            const printKey = getProtocolPrintKey(record);
+            const pending = printKey ? pendingProtocolPrintCopies.get(printKey) : null;
+
+            // Jeżeli iOS zablokował automatyczne otwarcie drugiego arkusza udostępniania,
+            // następne dotknięcie „Drukuj” wysyła już tylko drugi egzemplarz.
+            if (pending?.file) {
+              await shareSinglePrintCopy(pending.file, record.file_name, 2);
+              pendingProtocolPrintCopies.delete(printKey);
+              return { method: "share-image-second-job", copies: PRINT_COPY_COUNT, completedCopies: 2, separateJobs: true };
+            }
+
+            const pdfBlob = await downloadProtocolBlob({ supabase, record });
+            const file = await createPrintImage(pdfBlob, record.file_name);
+            if (!file) throw new Error("Nie udało się przygotować obrazu protokołu do wydruku.");
+
+            // Pierwszy egzemplarz zawsze trafia jako pojedynczy pełnowymiarowy obraz.
+            await shareSinglePrintCopy(file, record.file_name, 1);
+
+            if (printKey) pendingProtocolPrintCopies.set(printKey, { file });
+
+            try {
+              // Próba automatycznego uruchomienia drugiego osobnego zadania po powrocie z Phomemo.
+              await shareSinglePrintCopy(file, record.file_name, 2);
+              if (printKey) pendingProtocolPrintCopies.delete(printKey);
+              return { method: "share-images-sequential", copies: PRINT_COPY_COUNT, completedCopies: 2, separateJobs: true };
+            } catch (error) {
+              // Safari/iOS zwykle wymaga nowego gestu użytkownika dla kolejnego navigator.share().
+              // W takim przypadku nie wysyłamy dwóch plików razem; zachowujemy drugi egzemplarz
+              // i prosimy o jeszcze jedno dotknięcie przycisku Drukuj.
+              if (error?.name === "NotAllowedError" || error?.name === "AbortError") {
+                const nextTapError = new Error("Pierwszy pełny protokół został przekazany do Phomemo. Dotknij jeszcze raz „Drukuj”, aby wysłać drugi pełny protokół jako osobne zadanie.");
+                nextTapError.name = "SecondPrintNeedsTapError";
+                nextTapError.firstCopyShared = true;
+                throw nextTapError;
+              }
+              throw error;
+            }
+          }
+          '''
+          s = s[:start] + new_block + s[end:]
+          p.write_text(s)
+          PY
+
+      - name: Verify protocol print module syntax
+        run: node --check src/mobile791/modules/job-protocol-storage.js
+
+      - name: Set official next version from 10.57 to 10.58
+        run: node version-bump.cjs
+
+      - name: Commit official 10.58 release
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add src/mobile791/modules/job-protocol-storage.js app-version.json package.json package-lock.json src/version.js src/mobile791/version.js README.md CHANGELOG.md
+          git commit -m "WAWIS 10.58: dwa osobne zadania druku protokołu"
+          git push origin HEAD:main
+
+      - name: Build release ZIP
+        run: node scripts/release-zip.cjs
+
+      - name: Upload WAWIS 10.58 ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: klima-app-v10.58
+          path: releases/klima-app-v10.58.zip
+          if-no-files-found: error
+          retention-days: 7
