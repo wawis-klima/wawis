@@ -36,7 +36,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Read application version
-        id: app-version
+        id: app_version
         shell: bash
         run: echo "version=$(node -p \"require('./app-version.json').version\")" >> "$GITHUB_OUTPUT"
 
@@ -47,9 +47,9 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: wawis-mobile-${{ steps.app-version.outputs.version }}
+          name: wawis-mobile-${{ steps.app_version.outputs.version }}
           path: |
-            releases/klima-app-v${{ steps.app-version.outputs.version }}.zip
+            releases/klima-app-v${{ steps.app_version.outputs.version }}.zip
             RELEASE-RESULT.md
           if-no-files-found: error
           retention-days: 14
@@ -58,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ steps.app-version.outputs.version }}
+          name: playwright-report-${{ steps.app_version.outputs.version }}
           path: |
             playwright-report
             test-results
@@ -70,9 +70,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ job.status }}" = "success" ]; then
-            echo "## ZIELONY — mobilne wydanie ${{ steps.app-version.outputs.version }} przeszło pełną weryfikację." >> "$GITHUB_STEP_SUMMARY"
+            echo "## ZIELONY — mobilne wydanie ${{ steps.app_version.outputs.version }} przeszło pełną weryfikację." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "## CZERWONY — mobilne wydanie ${{ steps.app-version.outputs.version }} nie przeszło pełnej weryfikacji." >> "$GITHUB_STEP_SUMMARY"
+            echo "## CZERWONY — mobilne wydanie ${{ steps.app_version.outputs.version }} nie przeszło pełnej weryfikacji." >> "$GITHUB_STEP_SUMMARY"
             echo "Nie publikuj tej wersji." >> "$GITHUB_STEP_SUMMARY"
           fi
 
