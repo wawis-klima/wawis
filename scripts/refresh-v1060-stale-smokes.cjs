@@ -17,6 +17,10 @@ function updateWorkerSmoke() {
     "assert.ok(jobsPanel.includes('.wawisOneLineToolbar{display:flex !important;'), 'Nagłówek mobile nie jest jednym elastycznym wierszem.');\nassert.ok(jobsPanel.includes('flex-wrap:nowrap !important;'), 'Nagłówek mobile może zawijać elementy do drugiego wiersza.');",
     "assert.match(runtimeCss, /wawisOneLineToolbar\\{[\\s\\S]*?display:flex!important;[\\s\\S]*?flex-wrap:nowrap!important;/, 'Nagłówek mobile nie jest jednym elastycznym wierszem.');",
   );
+  source = source.replace(
+    "assert.ok(modal.includes('{isAdmin ? (\\n          <div className=\"jobFormAdminFields\"'), 'Pola administracyjne nie są ukryte przed pracownikiem.');",
+    "assert.ok(modal.includes('{isAdmin && editingJobId ? (') && modal.includes('jobFormAdminFields'), 'Pola administracyjne nie są ukryte przed pracownikiem.');",
+  );
   write(file, source);
 }
 
@@ -38,4 +42,4 @@ function updateAdminHeaderSmoke() {
 
 updateWorkerSmoke();
 updateAdminHeaderSmoke();
-console.log('Refreshed stale mobile toolbar smoke locations for runtime safety CSS.');
+console.log('Refreshed stale mobile toolbar and admin-field smoke locations.');
