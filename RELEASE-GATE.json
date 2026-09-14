@@ -21,12 +21,12 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.60.zip",
-    "file_id": null,
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Finalna paczka 10.60 musi zostać wysłana i zweryfikowana przed zamknięciem wydania."
+    "file_id": "1xhB3823P0zYUX-TfgZhu1QPfWKH4rdqo",
+    "size_bytes": 12172829,
+    "uploaded": true,
+    "uploaded_at": "2026-09-14T14:59:22.177Z",
+    "verified": true,
+    "notes": "Finalny ZIP z zielonego pełnego runnera GitHub Actions nr 25 został wysłany do Aplikacja/Wersje i ponownie zweryfikowany przez metadane pliku oraz listing folderu Drive."
   },
   "postdeploy_diagnostics": {
     "checked": false,
