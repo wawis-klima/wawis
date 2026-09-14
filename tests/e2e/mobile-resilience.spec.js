@@ -52,7 +52,7 @@ async function countQueuedPhotos(page) {
 
 async function putLegacyQueuedNameplateError(page) {
   await page.evaluate(() => new Promise((resolve, reject) => {
-    const request = indexedDB.open('wawis-mobile-photo-queue', 2);
+    const request = indexedDB.open('wawis-mobile-photo-queue');
     request.onerror = () => reject(request.error);
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -109,7 +109,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await expect(page.getByText('Zapisano na telefonie', { exact: true })).toBeVisible();
     await expect.poll(() => countQueuedPhotos(page)).toBe(1);
 
-    await page.getByRole('button', { name: 'Otwórz Centrum synchronizacji zdjęć' }).click();
+    await page.getByRole('button', { name: 'Otwórz Centrum synchronizacji' }).click();
     await expect(page.getByRole('heading', { name: 'Synchronizacja zdjęć' })).toBeVisible();
     await expect(page.getByText('Zdjęcie montażu', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Wyślij wszystkie (1)' })).toBeDisabled();
@@ -163,6 +163,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await page.getByText('Klient Testowy B', { exact: true }).click();
 
     await expect.poll(() => countQueuedPhotos(page), { timeout: 15_000 }).toBe(0);
+    await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
     const outdoorRow = page.locator('.deviceUnitDocumentationRow').filter({ hasText: 'JZ' }).first();
     await expect(outdoorRow).toContainText('Zapisano w systemie');
     await expect(outdoorRow).not.toContainText('Błąd wysyłania');
