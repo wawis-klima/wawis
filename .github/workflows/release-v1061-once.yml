@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/release-v1061-once.yml
 
+# Jednorazowy finalny runner dla wydania 10.61.
 concurrency:
   group: wawis-final-release-v10.61-once
   cancel-in-progress: true
