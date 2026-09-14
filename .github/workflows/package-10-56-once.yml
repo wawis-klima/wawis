@@ -1,0 +1,41 @@
+name: One-time WAWIS 10.56 package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/package-10-56-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set official next version from 10.55 to 10.56
+        run: node version-bump.cjs
+
+      - name: Commit official 10.56 version metadata
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add app-version.json package.json package-lock.json src/version.js src/mobile791/version.js README.md CHANGELOG.md
+          git commit -m "WAWIS 10.56: official release version after 10.55"
+          git push origin HEAD:main
+
+      - name: Build release ZIP
+        run: node scripts/release-zip.cjs
+
+      - name: Upload WAWIS 10.56 ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: klima-app-v10.56
+          path: releases/klima-app-v10.56.zip
+          if-no-files-found: error
+          retention-days: 7
