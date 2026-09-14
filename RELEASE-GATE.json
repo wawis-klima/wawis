@@ -1,0 +1,28 @@
+{
+  "policy_enforced_from": "10.60",
+  "version": "10.59",
+  "scope": "policy-bootstrap",
+  "baseline_diagnostics": {
+    "checked": false,
+    "last_24h": true,
+    "checked_at": null,
+    "result": "BOOTSTRAP",
+    "notes": "Polityka została dołączona po wydaniu 10.59. Od wersji 10.60 ten wpis musi być uzupełniony przed rozpoczęciem zmian."
+  },
+  "predeploy_diagnostics": {
+    "checked": false,
+    "last_24h": true,
+    "checked_at": null,
+    "result": "BOOTSTRAP",
+    "notes": "Od wersji 10.60 wymagane GO przed produkcyjnym buildem."
+  },
+  "postdeploy_diagnostics": {
+    "checked": false,
+    "last_24h": true,
+    "checked_at": null,
+    "result": "PENDING",
+    "production_version_verified": false,
+    "service_worker_verified": false,
+    "notes": "Po wdrożeniu każdej wersji od 10.60 należy uzupełnić i uruchomić: node scripts/release-policy-gate.cjs --post"
+  }
+}
