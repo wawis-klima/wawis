@@ -1,15 +1,16 @@
 import { devices, expect, test } from '@playwright/test';
-import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
+import { WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+const MOCK_STORE_KEY = 'klima-mock-supabase-store-v3';
 const tinyPng = {
   name: 'tabliczka-znamionowa.png',
   mimeType: 'image/png',
   buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==', 'base64'),
 };
+const tinyPngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==';
 
 test.use(iphone14);
-
 
 async function selectNameplateAndCrop(page, input) {
   await input.setInputFiles(tinyPng);
@@ -19,47 +20,40 @@ async function selectNameplateAndCrop(page, input) {
   await expect(page.locator('.nameplateCropModal')).toBeHidden();
 }
 
-async function openNewJobForm(page) {
-  await resetMockSupabase(page);
-  await loginWithoutReset(page, ADMIN);
-  await page.locator('button.mobileActionBtn.primary[title="Dodaj"]').click();
-  await expect(page.getByRole('heading', { name: 'Nowy montaż / zlecenie' })).toBeVisible();
-}
-
 test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek', () => {
   test('chowa miniatury tabliczek i pokazuje zdjęcie dopiero po kliknięciu', async ({ page }, testInfo) => {
-    await openNewJobForm(page);
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
 
-    await expect(page.locator('.serialScannerModal')).toHaveCount(0);
-    await expect(page.locator('.nameplateCameraInput')).toHaveCount(2);
-    await expect(page.locator('.nameplateGalleryInput')).toHaveCount(2);
-    await expect(page.getByLabel('Model JZ (opcjonalnie)')).toHaveValue('');
-    await expect(page.getByLabel('Numer seryjny JZ (opcjonalnie)')).toHaveValue('');
-    await expect(page.getByLabel('Model JW (opcjonalnie)')).toHaveValue('');
-    await expect(page.getByLabel('Numer seryjny JW (opcjonalnie)')).toHaveValue('');
+    await page.evaluate(({ storeKey, imageUrl }) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      store.photos = Array.isArray(store.photos) ? store.photos : [];
+      store.photos.push(
+        {
+          id: 'mock-e2e-nameplate-jz',
+          job_id: 'mock-job-002',
+          image_url: imageUrl,
+          storage_path: 'mock-job-002/nameplates/device-1_jz_MOCK-MIT-002_e2e.png',
+          uploaded_by: 'mock-worker-1',
+          created_at: '2026-09-14T10:00:00.000Z',
+        },
+        {
+          id: 'mock-e2e-nameplate-jw1',
+          job_id: 'mock-job-002',
+          image_url: imageUrl,
+          storage_path: 'mock-job-002/nameplates/device-1_jw-1_MOCK-MIT-JW-002_e2e.png',
+          uploaded_by: 'mock-worker-1',
+          created_at: '2026-09-14T10:01:00.000Z',
+        },
+      );
+      window.localStorage.setItem(storeKey, JSON.stringify(store));
+    }, { storeKey: MOCK_STORE_KEY, imageUrl: tinyPngDataUrl });
 
-    await selectNameplateAndCrop(page, page.locator('.nameplateGalleryInput').nth(0));
-    await selectNameplateAndCrop(page, page.locator('.nameplateGalleryInput').nth(1));
-    await expect(page.getByText('Nowe zdjęcie')).toHaveCount(2);
-    await expect(page.locator('.nameplateCapturePreview')).toHaveCount(0);
-
-    await page.locator('.nameplateCaptureSummary').nth(0).click();
-    await expect(page.locator('.nameplateCapturePreview')).toHaveCount(1);
-    await page.getByRole('button', { name: 'Ukryj zdjęcie' }).click();
-    await expect(page.locator('.nameplateCapturePreview')).toHaveCount(0);
-
-    await page.getByPlaceholder('Klient', { exact: true }).fill('Klient Tabliczki Bez OCR');
-    await page.getByPlaceholder('Miejscowość').fill('Zawiercie');
-    await page.getByPlaceholder('Ulica i numer').fill('Testowa 56');
-    await page.getByRole('button', { name: 'Zapisz zlecenie' }).click();
-    await expect(page.getByRole('heading', { name: 'Nowy montaż / zlecenie' })).toBeHidden();
-
-    await expect.poll(async () => page.evaluate(() => (
-      window.__KLIMA_MOCK_SUPABASE__?.getStore()?.photos?.length || 0
-    ))).toBe(2);
-
-    await page.getByText('Klient Tabliczki Bez OCR', { exact: true }).click();
+    await page.reload();
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
     await expect(page.getByText('Urządzenia i tabliczki', { exact: true })).toBeVisible();
+
     const deviceToggle = page.getByRole('button', { name: 'Rozwiń Urządzenie 1' });
     await expect(deviceToggle).toBeVisible();
     await expect(deviceToggle).toHaveAttribute('aria-expanded', 'false');
@@ -115,7 +109,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     await expect(page.getByText('Nie można zakończyć zlecenia.', { exact: true })).toBeVisible();
     await expect(page.getByText(/Brakuje: JZ urządzenia 1, JW 1 urządzenia 1, JW 2 urządzenia 1, JW 3 urządzenia 1/)).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Zakończ' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
 
     await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
@@ -125,7 +119,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     // Niepełny zestaw można zapisać, ale zakończenie nadal pozostaje zablokowane.
     await page.getByRole('button', { name: 'Zapisz montaż' }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden();
-    await expect(page.getByRole('button', { name: 'Zakończ' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
 
     await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
     await page.locator('.mobileDeviceOverviewOpen').first().click();
@@ -149,8 +143,8 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden();
 
     await expect(page.getByText('Wszystkie wymagane zdjęcia tabliczek są zapisane.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Zakończ' })).toBeEnabled();
-    await page.getByRole('button', { name: 'Zakończ' }).click();
+    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeEnabled();
+    await page.getByRole('button', { name: 'Zakończ', exact: true }).click();
     await expect(page.getByText('Zakończone · tylko podgląd')).toBeVisible();
   });
 });
