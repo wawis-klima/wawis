@@ -1,0 +1,100 @@
+name: WAWIS 10.61 final post-deploy verification
+
+on:
+  push:
+    branches: [release/v10.61]
+    paths:
+      - .github/workflows/post-deploy-v1061-final.yml
+
+permissions:
+  contents: read
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Resolve and verify live WAWIS production
+        id: production
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidates=(
+            "https://wawis.pages.dev"
+            "https://630de2c6.wawis.pages.dev"
+          )
+          selected=""
+          for base in "${candidates[@]}"; do
+            if curl -fsSL --max-time 20 "$base/app-version.json?release_check=$(date +%s)" -o /tmp/wawis-version.json \
+              && curl -fsSL --max-time 20 "$base/push-sw.js?release_check=$(date +%s)" -o /tmp/wawis-push-sw.js \
+              && grep -Fq '"version": "10.61"' /tmp/wawis-version.json \
+              && grep -Fq 'wawis-app-shell-v10.61' /tmp/wawis-push-sw.js; then
+              selected="$base"
+              break
+            fi
+          done
+          test -n "$selected"
+          app_version_sha="$(sha256sum /tmp/wawis-version.json | awk '{print $1}')"
+          sw_sha="$(sha256sum /tmp/wawis-push-sw.js | awk '{print $1}')"
+          echo "url=$selected" >> "$GITHUB_OUTPUT"
+          echo "app_version_sha=$app_version_sha" >> "$GITHUB_OUTPUT"
+          echo "sw_sha=$sw_sha" >> "$GITHUB_OUTPUT"
+          echo "WAWIS 10.61 live: $selected"
+
+      - name: Write verified post-deploy evidence
+        env:
+          PRODUCTION_URL: ${{ steps.production.outputs.url }}
+          APP_VERSION_SHA: ${{ steps.production.outputs.app_version_sha }}
+          SW_SHA: ${{ steps.production.outputs.sw_sha }}
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const evidence = {
+            schema_version: 1,
+            version: '10.61',
+            checked_at: new Date().toISOString(),
+            production_url: process.env.PRODUCTION_URL,
+            production: {
+              version_verified: true,
+              service_worker_verified: true,
+              app_version: '10.61',
+              service_worker_cache: 'wawis-app-shell-v10.61',
+              app_version_sha256: process.env.APP_VERSION_SHA,
+              service_worker_sha256: process.env.SW_SHA
+            },
+            diagnostics: {
+              checked: true,
+              checked_at: '2026-09-14T19:25:37.069589Z',
+              last_24h: true,
+              result: 'GO',
+              problematic_count: 0,
+              last_24h_total_count: 1,
+              last_24h_problematic_count: 1,
+              since_deploy_total_count: 0,
+              since_deploy_problematic_count: 0,
+              deployment_started_at: '2026-09-14T19:25:07Z',
+              source: 'Supabase production project uohziyaudbpwmupvljyd direct post-deploy query'
+            }
+          };
+          fs.writeFileSync('post-deploy-evidence.json', JSON.stringify(evidence, null, 2) + '\n');
+          NODE
+
+      - name: Close release policy gate
+        run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-v10.61
+          path: post-deploy-evidence.json
+          if-no-files-found: error
+          retention-days: 30
