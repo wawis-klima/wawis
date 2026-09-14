@@ -1,3 +1,6 @@
+## 10.59
+- uzupełnij opis zmian dla wersji 10.59
+
 ## 10.58
 - uzupełnij opis zmian dla wersji 10.58
 

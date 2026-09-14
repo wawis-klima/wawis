@@ -13,8 +13,6 @@ const PRINT_IMAGE_MIME_TYPE = "image/png";
 const PRINT_IMAGE_WIDTH = 1800;
 const PRINT_IMAGE_MAX_PIXELS = 24_000_000;
 const PRINT_IMAGE_PAGE_GAP = 24;
-const PRINT_COPY_COUNT = 2;
-const pendingProtocolPrintCopies = new Map();
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -236,9 +234,8 @@ function canvasToBlob(canvas, type) {
   });
 }
 
-function getPrintImageFileName(pdfFileName, copyNumber = null) {
+function getPrintImageFileName(pdfFileName) {
   const baseName = (normalizeText(pdfFileName) || "wawis-protokol.pdf").replace(/\.pdf$/i, "");
-  if (copyNumber) return `${baseName}-druk-egzemplarz-${copyNumber}.png`;
   return `${baseName}-druk.png`;
 }
 
@@ -326,30 +323,6 @@ export async function createProtocolPrintImage(pdfBlob, pdfFileName) {
   }
 }
 
-function createSeparatePrintCopy(file, pdfFileName, copyNumber) {
-  return new File(
-    [file],
-    getPrintImageFileName(pdfFileName, copyNumber),
-    { type: file.type || PRINT_IMAGE_MIME_TYPE },
-  );
-}
-
-function getProtocolPrintKey(record) {
-  return normalizeText(record?.id) || normalizeText(record?.storage_path);
-}
-
-async function shareSinglePrintCopy(file, pdfFileName, copyNumber) {
-  const copyFile = createSeparatePrintCopy(file, pdfFileName, copyNumber);
-  const payload = {
-    files: [copyFile],
-    title: `Protokół WAWIS – egzemplarz ${copyNumber} z ${PRINT_COPY_COUNT}`,
-  };
-  if (typeof navigator === "undefined" || !navigator.share || !navigator.canShare?.({ files: [copyFile] })) {
-    throw new Error("Ten telefon nie pozwala przekazać protokołu bezpośrednio do aplikacji Phomemo.");
-  }
-  await navigator.share(payload);
-}
-
 export async function shareStoredJobProtocol({
   supabase,
   record,
@@ -357,44 +330,18 @@ export async function shareStoredJobProtocol({
   createPrintImage = createProtocolPrintImage,
 }) {
   if (intent !== "print") throw new Error("Wysyłkę e-mail realizuje zabezpieczony serwer WAWIS.");
-
-  const printKey = getProtocolPrintKey(record);
-  const pending = printKey ? pendingProtocolPrintCopies.get(printKey) : null;
-
-  // Jeżeli iOS zablokował automatyczne otwarcie drugiego arkusza udostępniania,
-  // następne dotknięcie „Drukuj” wysyła już tylko drugi egzemplarz.
-  if (pending?.file) {
-    await shareSinglePrintCopy(pending.file, record.file_name, 2);
-    pendingProtocolPrintCopies.delete(printKey);
-    return { method: "share-image-second-job", copies: PRINT_COPY_COUNT, completedCopies: 2, separateJobs: true };
-  }
-
   const pdfBlob = await downloadProtocolBlob({ supabase, record });
   const file = await createPrintImage(pdfBlob, record.file_name);
-  if (!file) throw new Error("Nie udało się przygotować obrazu protokołu do wydruku.");
 
-  // Pierwszy egzemplarz zawsze trafia jako pojedynczy pełnowymiarowy obraz.
-  await shareSinglePrintCopy(file, record.file_name, 1);
-
-  if (printKey) pendingProtocolPrintCopies.set(printKey, { file });
-
-  try {
-    // Próba automatycznego uruchomienia drugiego osobnego zadania po powrocie z Phomemo.
-    await shareSinglePrintCopy(file, record.file_name, 2);
-    if (printKey) pendingProtocolPrintCopies.delete(printKey);
-    return { method: "share-images-sequential", copies: PRINT_COPY_COUNT, completedCopies: 2, separateJobs: true };
-  } catch (error) {
-    // Safari/iOS zwykle wymaga nowego gestu użytkownika dla kolejnego navigator.share().
-    // W takim przypadku nie wysyłamy dwóch plików razem; zachowujemy drugi egzemplarz
-    // i prosimy o jeszcze jedno dotknięcie przycisku Drukuj.
-    if (error?.name === "NotAllowedError" || error?.name === "AbortError") {
-      const nextTapError = new Error("Pierwszy pełny protokół został przekazany do Phomemo. Dotknij jeszcze raz „Drukuj”, aby wysłać drugi pełny protokół jako osobne zadanie.");
-      nextTapError.name = "SecondPrintNeedsTapError";
-      nextTapError.firstCopyShared = true;
-      throw nextTapError;
-    }
-    throw error;
+  if (file && typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
+    // Phomemo M832 dostaje dokładnie jeden pełnowymiarowy obraz protokołu.
+    // Kolejne egzemplarze trzeba uruchomić w Phomemo ręcznie, ponieważ ten model
+    // nie obsługuje niezawodnie automatycznych dwóch kolejnych zadań z iOS.
+    await navigator.share({ files: [file] });
+    return { method: "share-image", copies: 1, fullSize: true };
   }
+
+  throw new Error("Ten telefon nie pozwala przekazać obrazu protokołu bezpośrednio do aplikacji Phomemo.");
 }
 
 export async function printStoredJobProtocol({ supabase, record }) {
