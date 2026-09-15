@@ -93,7 +93,7 @@ const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone
 test.describe('@mobile release visual iPhone', () => {
   test.use(iphone14);
 
-  test('nagłówek mobilny ma realnie równy odstęp od lewej i prawej krawędzi', async ({ page }) => {
+  test('nagłówek mobilny ma mniejsze równe skrajne odstępy i więcej miejsca między kontrolkami', async ({ page }) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, ADMIN);
     await expect(page.locator('.wawisOneLineToolbar')).toBeVisible();
@@ -118,10 +118,13 @@ test.describe('@mobile release visual iPhone', () => {
 
     expect(geometry.display).toBe('grid');
     expect(geometry.columns.split(/\s+/)).toHaveLength(6);
-    expect(geometry.leftGap).toBeGreaterThanOrEqual(11);
-    expect(geometry.rightGap).toBeGreaterThanOrEqual(11);
+    expect(geometry.leftGap).toBeGreaterThanOrEqual(5);
+    expect(geometry.leftGap).toBeLessThanOrEqual(7.5);
+    expect(geometry.rightGap).toBeGreaterThanOrEqual(5);
+    expect(geometry.rightGap).toBeLessThanOrEqual(7.5);
     expect(Math.abs(geometry.leftGap - geometry.rightGap)).toBeLessThanOrEqual(1.5);
     expect(Math.max(...geometry.innerGaps) - Math.min(...geometry.innerGaps)).toBeLessThanOrEqual(1.5);
+    expect(Math.min(...geometry.innerGaps)).toBeGreaterThan(Math.max(geometry.leftGap, geometry.rightGap));
   });
 
   test('pełna aplikacja mobilna ma załadowany CSS, nie wychodzi poza ekran i zapisuje screenshot kontrolny', async ({ page }) => {
