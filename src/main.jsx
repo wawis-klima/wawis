@@ -1,5 +1,64 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { APP_VERSION } from './version.js'
+
+const VERSION_CHECK_COOLDOWN_MS = 5000
+let versionCheckInFlight = false
+let lastVersionCheckAt = 0
+
+async function checkLiveVersion(reason = 'resume') {
+  if (typeof window === 'undefined' || document.visibilityState === 'hidden') return
+  const now = Date.now()
+  if (versionCheckInFlight || now - lastVersionCheckAt < VERSION_CHECK_COOLDOWN_MS) return
+  versionCheckInFlight = true
+  lastVersionCheckAt = now
+
+  try {
+    const response = await fetch(`/app-version.json?wawis_version_check=${now}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
+    if (!response.ok) return
+    const payload = await response.json()
+    const liveVersion = String(payload?.version || '').trim()
+    if (!liveVersion || liveVersion === APP_VERSION) return
+
+    const markerKey = 'wawis-version-reload-marker'
+    let previousMarker = null
+    try {
+      previousMarker = JSON.parse(sessionStorage.getItem(markerKey) || 'null')
+    } catch {
+      previousMarker = null
+    }
+    if (previousMarker?.version === liveVersion && now - Number(previousMarker?.at || 0) < 15000) return
+    sessionStorage.setItem(markerKey, JSON.stringify({ version: liveVersion, at: now, reason }))
+
+    try {
+      const registration = await navigator.serviceWorker?.getRegistration?.()
+      await registration?.update?.()
+    } catch {
+      // Reload nadal pobierze najnowszy HTML i nowe hashowane assety.
+    }
+
+    window.setTimeout(() => window.location.reload(), 150)
+  } catch {
+    // Brak sieci nie może blokować pracy offline.
+  } finally {
+    versionCheckInFlight = false
+  }
+}
+
+function installVersionResumeGuard() {
+  if (typeof window === 'undefined') return
+  const run = (reason) => { checkLiveVersion(reason).catch(() => {}) }
+  window.addEventListener('pageshow', () => run('pageshow'))
+  window.addEventListener('focus', () => run('focus'))
+  window.addEventListener('online', () => run('online'))
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') run('visible')
+  })
+  window.setTimeout(() => run('startup'), 800)
+}
 
 function registerOfflineWorker() {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
@@ -78,3 +137,4 @@ boot().catch((error) => {
 })
 
 registerOfflineWorker()
+installVersionResumeGuard()
