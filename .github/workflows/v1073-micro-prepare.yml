@@ -22,7 +22,7 @@ jobs:
           ref: release/v10.73
           fetch-depth: 0
 
-      - name: Bump version and write MICRO UI metadata
+      - name: Prepare final MICRO UI candidate locally
         shell: bash
         run: |
           git fetch origin main:refs/remotes/origin/main --force
@@ -71,16 +71,14 @@ jobs:
           };
           fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
           NODE
-
-      - name: Verify MICRO UI classification
-        run: node scripts/micro-ui-policy.cjs --base-ref origin/main --json MICRO-UI-IMPACT.json
-
-      - name: Remove temporary workflow and commit prepared release
-        shell: bash
-        run: |
           rm -f .github/workflows/v1073-micro-prepare.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "WAWIS 10.73: finalny kandydat MICRO UI"
-          git push origin HEAD:release/v10.73
+
+      - name: Verify final MICRO UI classification
+        run: node scripts/micro-ui-policy.cjs --base-ref origin/main --json MICRO-UI-IMPACT.json
+
+      - name: Push prepared release
+        run: git push origin HEAD:release/v10.73
