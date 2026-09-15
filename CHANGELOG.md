@@ -1,5 +1,7 @@
 ## 10.64
-- uzupełnij opis zmian dla wersji 10.64
+- Mobile: odsunięto przycisk inicjałów użytkownika (np. PW) o dodatkowe 6 px od prawej krawędzi paska akcji.
+- Pozostałe przyciski, szerokości i układ jednej linii pozostają bez zmian.
+- Zmiana dotyczy wyłącznie CSS mobile i korzysta z profilu FAST UI; bez zmian w danych, Supabase i logice aplikacji.
 
 ## 10.63
 - Dodano automatyczny klasyfikator zmian porównujący gałąź release z produkcyjnym main.
