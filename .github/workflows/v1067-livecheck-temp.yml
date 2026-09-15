@@ -1,0 +1,48 @@
+name: WAWIS 10.67 live check temp
+
+on:
+  push:
+    branches:
+      - release/v10.67
+    paths:
+      - .github/workflows/v1067-livecheck-temp.yml
+
+permissions:
+  contents: write
+
+env:
+  TEMP_WORKFLOW: .github/workflows/v1067-livecheck-temp.yml
+
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove temp workflow from checked filesystem
+        run: rm -f "$TEMP_WORKFLOW"
+
+      - name: Verify live app version
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 --max-time 20 https://wawis-klima.vercel.app/app-version.json -o /tmp/app-version.json
+          cat /tmp/app-version.json
+          grep -q '"version"[[:space:]]*:[[:space:]]*"10.67"' /tmp/app-version.json
+
+      - name: Verify live service worker
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 --max-time 20 https://wawis-klima.vercel.app/push-sw.js -o /tmp/push-sw.js
+          grep -q 'wawis-app-shell-v10.67' /tmp/push-sw.js
+
+      - name: Commit temp workflow removal after successful verification
+        run: |
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add -u "$TEMP_WORKFLOW"
+          git commit -m 'WAWIS 10.67: usuń jednorazowy live-check workflow'
+          git push origin HEAD:release/v10.67
