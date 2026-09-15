@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   verify-and-prepare:
-    if: ${{ github.event.head_commit.message != 'WAWIS 10.70: przygotuj zweryfikowane wydanie' }}
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
