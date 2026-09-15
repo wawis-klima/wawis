@@ -27,8 +27,10 @@ assert.match(indexHtml, /viewport-fit=cover/, 'Viewport must expose iPhone safe-
 assert.match(css, /env\(safe-area-inset-top\)/, 'Mobile page must respect the iPhone top safe area.');
 assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\) !important;/, 'Admin module switcher must use four equal mobile columns.');
 assert.match(runtimeCss, /wawisOneLineToolbar\{[\s\S]*?display:flex!important;[\s\S]*?flex-wrap:nowrap!important;/, 'Mobile toolbar must stay in one flex row.');
+assert.match(runtimeCss, /wawisOneLineToolbar\{[\s\S]*?box-sizing:border-box!important;[\s\S]*?padding-inline:8px!important;/, 'Mobile toolbar must keep equal breathing room at the left and right edge.');
+assert.match(runtimeCss, /wawisOneLineVersion\{[\s\S]*?width:40px!important;[\s\S]*?min-width:40px!important;[\s\S]*?max-width:40px!important;/, 'Version slot must use the same compact width as standard toolbar actions.');
 assert.match(runtimeCss, /wawisOneLinePushSlot,[\s\S]*?width:54px!important;/, 'Compact PUSH width is missing.');
 assert.match(runtimeCss, /wawisUserInitialsBadge/, 'Initials badge styling is missing.');
 assert.match(css, /-webkit-text-size-adjust:100%/, 'Mobile UI must prevent Safari text auto-enlargement from breaking the toolbar.');
 
-console.log('Mobile admin header smoke OK: safe-area, aligned toolbar, user logout and offline-safe sync');
+console.log('Mobile admin header smoke OK: safe-area, equal edge spacing, aligned toolbar, user logout and offline-safe sync');
