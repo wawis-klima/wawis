@@ -1,3 +1,6 @@
+## 10.69
+- mobilny pasek akcji ma prawy odstęp wymuszony na ramce nagłówka; PW jest odsunięte od prawej krawędzi bez zmiany odstępu samym marginesem przycisku.
+
 ## 10.68
 - mobilny pasek akcji ma stabilny prawy margines; PW nie przylega do prawej krawędzi, a rozstaw elementów pozostaje równy.
 
