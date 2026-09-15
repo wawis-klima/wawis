@@ -16,6 +16,7 @@
     justify-content:space-between!important;
     align-items:center!important;
     column-gap:0!important;
+    padding-inline:2.5px!important;
     padding-left:1px!important;
     padding-right:2.5px!important;
   }
