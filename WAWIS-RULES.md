@@ -70,6 +70,8 @@ Każde wydanie ma finalny ZIP w `Aplikacja/Wersje`, folder ID `1eufcE1gnbfw7t2IM
 - `RELEASE-GATE.json.main_protection.ready_for_main` może być `true` dopiero po zielonym finalnym release i backupie Drive.
 - Vercel uruchamia `node scripts/release-policy-gate.cjs --deploy` przed buildem.
 - Deploy gate wymaga zweryfikowanego ZIP-a Drive, właściwej gałęzi release i ID finalnego zielonego runu.
+- Automatyczne deploye Vercela są wyłączone dla wszystkich gałęzi roboczych, także nazw zawierających `/` takich jak `release/vX` i `runner/vX`.
+- Jedyną gałęzią, która może automatycznie uruchomić Vercel, jest `main`; jeden merge/push gotowego wydania ma oznaczać jeden produkcyjny deploy.
 
 ## 8. POST-DEPLOY EVIDENCE
 
