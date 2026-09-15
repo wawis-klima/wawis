@@ -22,19 +22,19 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.62.zip",
-    "file_id": null,
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Do uzupełnienia po zielonym finalnym release run i wgraniu ZIP na Google Drive."
+    "file_id": "1rubkzKI-yE7fWnnp3z8AKkfww0P17IQj",
+    "size_bytes": 12163500,
+    "uploaded": true,
+    "uploaded_at": "2026-09-15T04:38:30.299331Z",
+    "verified": true,
+    "notes": "Finalny ZIP 10.62 z zielonego runu 34929422383 został wgrany do Aplikacja/Wersje i zweryfikowany po nazwie, folderze oraz rozmiarze."
   },
   "main_protection": {
     "source_branch": "release/v10.62",
-    "ready_for_main": false,
-    "final_release_run_id": null,
-    "final_release_commit": null,
-    "notes": "Oczekuje na zielony finalny mobile release i zweryfikowany ZIP na Google Drive."
+    "ready_for_main": true,
+    "final_release_run_id": "34929422383",
+    "final_release_commit": "4a41fa7827b3a546ff149e6d4269bc5550cfd63c",
+    "notes": "Finalny mobile release 10.62 zakończył się sukcesem; targeted PR checks również są zielone. Po aktualizacji samego RELEASE-GATE kod aplikacji nie uległ zmianie."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
