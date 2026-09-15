@@ -1,0 +1,114 @@
+name: WAWIS 10.64 metadata
+
+on:
+  push:
+    branches:
+      - release/v10.64
+    paths:
+      - .github/workflows/v1064-metadata-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/v10.64
+
+      - name: Update release metadata
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const version = '10.64';
+          const summary = 'Mobilny przycisk inicjałów użytkownika (PW) ma dodatkowy odstęp od prawej krawędzi paska, dzięki czemu nagłówek wygląda równiej i czytelniej.';
+
+          let readme = fs.readFileSync('README.md', 'utf8');
+          readme = readme.replace(/^Wersja 10\.62[^\n]*/m, `Wersja ${version} poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.`);
+          readme = readme.replace(/^# Wawis Klimatyzacja — wersja\s+[0-9]+\.[0-9]{2}/m, `# Wawis Klimatyzacja — wersja ${version}`);
+          const lastFixLine = `## Ostatnia poprawka\n- wersja \`${version}\` — ${summary}`;
+          if (/## Ostatnia poprawka\s*\r?\n- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m.test(readme)) {
+            readme = readme.replace(/## Ostatnia poprawka\s*\r?\n- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m, lastFixLine);
+          }
+          fs.writeFileSync('README.md', readme);
+
+          let changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          changelog = changelog.replace(
+            `## ${version}\n- uzupełnij opis zmian dla wersji ${version}`,
+            `## ${version}\n- Mobile: odsunięto przycisk inicjałów użytkownika (np. PW) o dodatkowe 6 px od prawej krawędzi paska akcji.\n- Pozostałe przyciski, szerokości i układ jednej linii pozostają bez zmian.\n- Zmiana dotyczy wyłącznie CSS mobile i korzysta z profilu FAST UI; bez zmian w danych, Supabase i logice aplikacji.`
+          );
+          fs.writeFileSync('CHANGELOG.md', changelog);
+
+          fs.writeFileSync('release-notes.json', JSON.stringify({
+            version,
+            summary,
+            changes: [
+              'PW ma dodatkowy 6 px odstęp od prawej krawędzi mobilnego paska.',
+              'Nie zmieniono rozmiaru przycisku ani pozostałych elementów nagłówka.',
+              'Zmiana jest wyłącznie prezentacyjna i kwalifikuje się do FAST UI.'
+            ]
+          }, null, 2) + '\n');
+
+          const gate = {
+            policy_enforced_from: '10.60',
+            version,
+            scope: 'mobile',
+            release_branch: `release/v${version}`,
+            baseline_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: '2026-09-15T06:18:43.034802Z',
+              result: 'GO',
+              notes: 'Baseline 24 h: 7 pojedynczych problematycznych zdarzeń. Cztery najnowsze z 10.63 to jeden izolowany app error mobile oraz jednorazowy klaster 3 desktopowych Failed to fetch (contractors/devices/network); trzy wcześniejsze pochodzą z 10.60/10.61. Brak serii. Zmiana 10.64 jest wyłącznie CSS i nie dotyka sieci ani logiki.'
+            },
+            predeploy_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: '2026-09-15T06:21:18.103146Z',
+              result: 'GO',
+              notes: 'Pre-deploy: nadal 7 zdarzeń w 24 h i 0 nowych od baseline. Brak wzrostu; GO dla izolowanej poprawki CSS FAST UI.'
+            },
+            drive_backup: {
+              required: true,
+              folder_path: 'Aplikacja/Wersje',
+              folder_id: '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S',
+              file_name: `klima-app-v${version}.zip`,
+              file_id: null,
+              size_bytes: 0,
+              uploaded: false,
+              uploaded_at: null,
+              verified: false,
+              notes: 'Oczekuje na finalny ZIP po zielonym FAST UI release.'
+            },
+            main_protection: {
+              source_branch: `release/v${version}`,
+              ready_for_main: false,
+              final_release_run_id: null,
+              final_release_commit: null,
+              notes: 'Oczekuje na zielony finalny FAST UI release i zweryfikowany backup Drive.'
+            },
+            postdeploy_diagnostics: {
+              evidence_required: true,
+              checked: false,
+              last_24h: true,
+              checked_at: null,
+              result: 'PENDING',
+              production_version_verified: false,
+              service_worker_verified: false,
+              evidence_file: 'post-deploy-evidence.json',
+              notes: 'Do wykonania po wdrożeniu produkcyjnym 10.64.'
+            }
+          };
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
+          NODE
+
+      - name: Commit metadata
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add README.md CHANGELOG.md release-notes.json RELEASE-GATE.json
+          git commit -m "WAWIS 10.64 — uzupełnij metadane FAST UI"
+          git push origin HEAD:release/v10.64
