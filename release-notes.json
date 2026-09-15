@@ -1,11 +1,12 @@
 {
-  "version": "10.62",
-  "summary": "Wyrównano odstępy w jednoliniowym nagłówku mobilnym: inicjały użytkownika mają taki sam boczny oddech jak lewa krawędź, a pole wersji ma szerokość standardowych akcji.",
+  "version": "10.63",
+  "summary": "System wydawania sam klasyfikuje zakres zmian i wybiera FAST UI, TARGETED albo CRITICAL, dzięki czemu drobne poprawki graficzne nie uruchamiają pełnej ciężkiej procedury.",
   "changes": [
-    "Dodano 8 px wewnętrznego odstępu po lewej i prawej stronie mobilnego toolbaru.",
-    "Zmniejszono slot numeru wersji z 48 px do 40 px, zgodnie z szerokością standardowych akcji.",
-    "Inicjały użytkownika są odsunięte od prawej krawędzi, a układ zachowuje jeden wiersz.",
-    "Dodano test regresyjny dla równych odstępów i szerokości pola wersji.",
-    "Desktop, Supabase i logika biznesowa pozostają bez zmian."
+    "Dodano automatyczny klasyfikator zmian porównujący gałąź release z produkcyjnym main.",
+    "FAST UI obsługuje bezpieczne zmiany CSS i statycznych assetów: tylko mały zestaw smoke testów, jeden build, weryfikacja paczki i bez Playwrighta.",
+    "TARGETED obsługuje zmiany funkcjonalne frontendu: uruchamia tylko powiązane grupy regresji i E2E dla właściwej platformy.",
+    "CRITICAL obejmuje backend, Supabase, bezpieczeństwo, synchronizację, push i samą infrastrukturę wydawania: zachowuje pełne testy oraz E2E mobile i desktop.",
+    "Finalny build, verify:bundle, verify:release, ZIP, backup Drive i kontrola produkcji pozostają obowiązkowe dla każdego produkcyjnego wydania.",
+    "PR checks korzystają z tego samego klasyfikatora, więc kolejne drobne poprawki będą sprawdzane znacznie szybciej bez obniżenia kontroli krytycznych zmian."
   ]
 }

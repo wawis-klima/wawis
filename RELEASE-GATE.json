@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.62",
-  "scope": "mobile",
-  "release_branch": "release/v10.62",
+  "version": "10.63",
+  "scope": "full",
+  "release_branch": "release/v10.63",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T04:29:39.056979Z",
+    "checked_at": "2026-09-15T04:48:55.012677Z",
     "result": "GO",
-    "notes": "Baseline 24 h przed 10.62: trzy pojedyncze istniejące zdarzenia bez serii ani wzrostu — 1 error app/console.error w 10.60, 1 warning data.refresh/console.warn w 10.60 (Load failed) oraz 1 warning auth/console.warn w 10.61. Brak sygnału regresji związanej z planowaną zmianą CSS."
+    "notes": "Baseline przed 10.63: trzy pojedyncze istniejące zdarzenia z poprzednich wersji (10.60 app error, 10.60 data.refresh warning, 10.61 auth warning), bez serii ani wzrostu. Zmiana 10.63 dotyczy automatyki wydawania, nie logiki produkcyjnej aplikacji."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T04:34:04.073959Z",
+    "checked_at": "2026-09-15T05:57:37.784268Z",
     "result": "GO",
-    "notes": "Kontrola pre-deploy 24 h: ten sam stabilny zestaw trzech pojedynczych zdarzeń (10.60 app error, 10.60 data.refresh warning, 10.61 auth warning), bez nowych powtórzeń i bez zdarzeń 10.62. GO dla zmiany wyłącznie layoutu mobile."
+    "notes": "Pre-deploy 24 h: nadal tylko trzy pojedyncze wcześniejsze zdarzenia; brak nowych warning/error z 10.62 i brak trendu regresji. GO dla wdrożenia automatycznego systemu FAST/TARGETED/CRITICAL."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.62.zip",
-    "file_id": "1rubkzKI-yE7fWnnp3z8AKkfww0P17IQj",
-    "size_bytes": 12163500,
+    "file_name": "klima-app-v10.63.zip",
+    "file_id": "1_zJiotMFmUCVNlHH4xXnt9FtPhqeMWnZ",
+    "size_bytes": 12169418,
     "uploaded": true,
-    "uploaded_at": "2026-09-15T04:38:30.299331Z",
+    "uploaded_at": "2026-09-15T06:08:41.895Z",
     "verified": true,
-    "notes": "Finalny ZIP 10.62 z zielonego runu 34929422383 został wgrany do Aplikacja/Wersje i zweryfikowany po nazwie, folderze oraz rozmiarze."
+    "notes": "Finalny ZIP 10.63 po zielonym release run 34935365900; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12169418 B. SHA256 lokalnej paczki: 3916247d21e2263f0d4380851dc1f2900f2203cd38b7d69c51d3a66eebff9dcb."
   },
   "main_protection": {
-    "source_branch": "release/v10.62",
+    "source_branch": "release/v10.63",
     "ready_for_main": true,
-    "final_release_run_id": "34929422383",
-    "final_release_commit": "4a41fa7827b3a546ff149e6d4269bc5550cfd63c",
-    "notes": "Finalny mobile release 10.62 zakończył się sukcesem; targeted PR checks również są zielone. Po aktualizacji samego RELEASE-GATE kod aplikacji nie uległ zmianie."
+    "final_release_run_id": "34935365900",
+    "final_release_commit": "b5aa639e1c1f397ecec01bdcee02e12cd157073d",
+    "notes": "Finalny automatyczny release zakończony GO: profil critical/full, 11 grup regresji, E2E mobile i desktop, jeden build, verify:bundle, verify:release oraz ZIP. Backup Drive zweryfikowany."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.62."
+    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.63."
   }
 }

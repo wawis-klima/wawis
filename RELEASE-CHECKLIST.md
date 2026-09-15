@@ -1,4 +1,4 @@
-# WAWIS — Release checklist 10.61+
+# WAWIS — Release checklist 10.63+
 
 Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHANGELOG.md`, a nie do checklisty.
 
@@ -6,44 +6,36 @@ Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHA
 
 - [ ] Punktem startowym jest aktualny, poprawny `main`.
 - [ ] Utworzono `release/v<WERSJA>`.
-- [ ] Zakres zapisano jako `mobile`, `desktop` albo `full`.
+- [ ] Domyślny tryb finalnego wydania to `auto`.
 - [ ] Sprawdzono `app_diagnostic_events` z ostatnich 24 h.
 - [ ] `RELEASE-GATE.json.baseline_diagnostics` ma `checked=true`, `last_24h=true`, czas i `GO`.
-- [ ] Jeśli baseline zawiera znany stary problem, został opisany w `notes`.
 
 ## 2. Praca nad zmianą
 
 - [ ] Zmiany robocze pozostają na gałęzi release, nie na `main`.
+- [ ] PR do `main` uruchamia `WAWIS PR checks`.
+- [ ] `scripts/release-impact.cjs` klasyfikuje zmianę jako `fast-ui`, `targeted` albo `critical`.
+- [ ] Pliki wygenerowane wyłącznie przez bump wersji i dokumentacja release nie podnoszą samodzielnie profilu ryzyka.
 - [ ] Nowa regresja ma test smoke albo scenariusz E2E, jeśli może wrócić.
-- [ ] Nie dodajemy meta-testu zależnego wyłącznie od literalnego tekstu przycisku lub nazwy scenariusza, chyba że ten tekst jest wymaganiem funkcjonalnym.
-- [ ] PR do `main` uruchamia `WAWIS PR checks` i tylko grupy wynikające ze zmienionych plików.
 
-## 3. Grupy regresji
+## 3. Profile automatyczne
 
-Grupy są zdefiniowane w `scripts/test-groups.cjs`:
+- `FAST UI` — CSS/statyczne assety: `ui-fast-*`, bez Playwrighta.
+- `TARGETED` — frontend funkcjonalny: tylko powiązane grupy domenowe + E2E właściwej platformy.
+- `CRITICAL` — backend, Supabase, auth/RLS, storage, synchronizacja, push, deployment lub release automation: pełne grupy + E2E mobile i desktop.
 
-- `core` — uruchomienie, wersja, lazy/suspense, synchronizacja, diagnostyka,
-- `jobs` — montaże, urządzenia, kontrahenci i wspólna edycja,
-- `photos` — prywatność, upload, miniatury, offline i synchronizacja zdjęć,
-- `protocol` — zapis, PDF, druk, e-mail, płatność,
-- `roles` — admin/pracownik, RLS i GRANT,
-- `push` — przypisania, komentarze i niezawodność powiadomień,
-- `fuel` — moduł Paliwo,
-- `nameplates` — tabliczki, modele, EAN/OCR i weryfikacja,
-- `mobile` / `desktop` — regresje specyficzne dla platformy,
-- `infra` — automatyka wydania i ograniczenia techniczne.
+Grupy domenowe pozostają zdefiniowane w `scripts/test-groups.cjs`: `core`, `jobs`, `photos`, `protocol`, `roles`, `push`, `fuel`, `nameplates`, `mobile`, `desktop`, `infra` oraz lekkie `ui-fast-*`.
 
-## 4. Pre-deploy
+## 4. Pre-deploy i finalny release
 
 - [ ] README pokazuje aktualną wersję i konkretny opis bez placeholdera.
 - [ ] CHANGELOG ma konkretną sekcję aktualnej wersji.
 - [ ] Ponownie sprawdzono diagnostykę z ostatnich 24 h.
 - [ ] `RELEASE-GATE.json.predeploy_diagnostics` ma `GO`.
-- [ ] Uruchomiono **WAWIS final release checks** dla właściwego scope.
-- [ ] Każda grupa regresji wykonała się jeden raz.
-- [ ] Playwright mobile wykonał się najwyżej raz, jeśli dotyczy zakresu.
-- [ ] Playwright desktop wykonał się najwyżej raz, jeśli dotyczy zakresu.
-- [ ] `npm run build` przeszedł raz (poza świadomym `desktop-sandbox`).
+- [ ] Uruchomiono **WAWIS final release checks** w trybie `auto`, chyba że świadomie wymuszono ręczny zakres.
+- [ ] Każda grupa wymagana przez wybrany profil wykonała się jeden raz.
+- [ ] Playwright uruchomił się tylko wtedy, gdy profil go wymagał, maksymalnie raz na platformę.
+- [ ] `npm run build` przeszedł raz.
 - [ ] `npm run verify:bundle` przeszedł raz.
 - [ ] `npm run verify:release` przeszedł raz.
 
@@ -60,7 +52,7 @@ Grupy są zdefiniowane w `scripts/test-groups.cjs`:
 ## 6. `main` i produkcja
 
 - [ ] Źródłem merge/pusha jest `release/v<WERSJA>`.
-- [ ] `main` nie zawiera żadnych dodatkowych roboczych zmian.
+- [ ] `main` nie zawiera dodatkowych roboczych zmian.
 - [ ] Vercel przed buildem uruchamia `node scripts/release-policy-gate.cjs --deploy`.
 - [ ] Deploy gate potwierdza Drive, release branch i gotowość do `main`.
 - [ ] Produkcyjny deployment zakończył się sukcesem.
@@ -76,13 +68,3 @@ Grupy są zdefiniowane w `scripts/test-groups.cjs`:
 - [ ] `node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json` ma GO.
 
 Dopiero wtedy wersję oznaczamy jako zakończoną.
-
-## 8. GitHub `main` — ustawienie jednorazowe
-
-Dodatkowo repozytorium powinno mieć Branch Protection / Ruleset dla `main` zgodnie z `MAIN-PROTECTION.md`:
-
-- [ ] wymagany Pull Request,
-- [ ] wymagane zielone kontrole,
-- [ ] blokada force-push,
-- [ ] blokada kasowania `main`,
-- [ ] wymagany Code Owner review, jeśli plan GitHuba na to pozwala.
