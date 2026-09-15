@@ -1,0 +1,87 @@
+name: WAWIS 10.69 fast UI retry
+
+on:
+  push:
+    branches:
+      - release/v10.69
+    paths:
+      - .github/workflows/v1069-final-retry.yml
+
+permissions:
+  contents: write
+
+env:
+  TEMP_WORKFLOW: .github/workflows/v1069-final-retry.yml
+
+jobs:
+  final-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove temp workflow and commit clean release tree
+        run: |
+          rm -f "$TEMP_WORKFLOW"
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add -u "$TEMP_WORKFLOW"
+          git commit -m 'WAWIS 10.69: usuń tymczasowy retry runner'
+          git push origin HEAD:release/v10.69
+
+      - name: Fetch production base
+        run: git fetch origin main:refs/remotes/origin/main --force
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Pre-release policy gate
+        run: node scripts/release-policy-gate.cjs
+
+      - name: Detect automatic release profile
+        id: impact
+        run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
+
+      - name: Require FAST-UI mobile profile
+        run: node -e "const i=require('./RELEASE-IMPACT.json'); if(i.profile!=='fast-ui'||i.scope!=='mobile'||i.needs_playwright) { console.error(i); process.exit(1); }"
+
+      - name: Run one automatic fast UI release pass
+        run: node scripts/run-release.cjs auto --base-ref origin/main --skip-version-bump
+
+      - name: Stamp final run id
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const gate = JSON.parse(fs.readFileSync('RELEASE-GATE.json','utf8'));
+          gate.main_protection.final_release_run_id = process.env.RUN_ID;
+          gate.main_protection.notes = 'Fast-UI final release zakończony; oczekuje wyłącznie na backup Drive i ready_for_main.';
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
+          NODE
+
+      - name: Upload final ZIP and release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.69
+          path: |
+            releases/klima-app-v10.69.zip
+            RELEASE-RESULT.md
+            RELEASE-IMPACT.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit final release evidence
+        run: |
+          git add RELEASE-GATE.json RELEASE-RESULT.md RELEASE-IMPACT.json
+          git commit -m 'WAWIS 10.69: zapisz finalny fast-UI release'
+          git push origin HEAD:release/v10.69
