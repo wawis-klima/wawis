@@ -1,3 +1,6 @@
+## 10.68
+- mobilny pasek akcji ma stabilny prawy margines; PW nie przylega do prawej krawędzi, a rozstaw elementów pozostaje równy.
+
 ## 10.67
 - Mobile: prawy odstęp paska akcji ma 24 px, dzięki czemu przycisk PW jest wyraźnie odsunięty od prawej krawędzi.
 - iPhone/PWA: aplikacja sprawdza produkcyjny app-version.json po powrocie z tła i automatycznie odświeża nowszą wersję.
