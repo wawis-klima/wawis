@@ -1,4 +1,16 @@
 const GROUPS = {
+  'ui-fast-core': [
+    'npm run test:smoke',
+    'npm run test:smoke:version',
+  ],
+  'ui-fast-mobile': [
+    'npm run test:smoke:mobile-style-bootstrap',
+    'npm run test:smoke:mobile-admin-header',
+  ],
+  'ui-fast-desktop': [
+    'npm run test:smoke:desktop-refresh',
+    'npm run test:smoke:desktop-only',
+  ],
   core: [
     'npm run test:smoke',
     'npm run test:smoke:version',
@@ -105,6 +117,7 @@ const GROUPS = {
   ],
   infra: [
     'node scripts/smoke-release-automation-v1061.cjs',
+    'node scripts/smoke-release-impact-v1063.cjs',
     'npm run test:smoke:e2e-mobile',
     'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',
