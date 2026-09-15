@@ -1,9 +1,10 @@
 {
-  "version": "10.65",
-  "summary": "Mobilny przycisk PW jest wyraźnie odsunięty od prawej krawędzi dzięki 24 px prawemu paddingowi całego paska akcji.",
+  "version": "10.66",
+  "summary": "Aplikacja na iPhonie sprawdza nową wersję także po powrocie z tła i sama odświeża się, gdy produkcja jest nowsza.",
   "changes": [
-    "PW odsunięte przez 24 px prawego paddingu toolbaru.",
-    "Usunięto subtelny margin PW z 10.64.",
-    "Bez zmian logiki, danych, Supabase i desktopu."
+    "Sprawdzanie app-version.json przy pageshow, focus, online i visibilitychange.",
+    "Odczyt wersji z cache: no-store i cache-bustingiem.",
+    "Przy wykryciu nowszej wersji Service Worker jest aktualizowany, a aplikacja automatycznie przeładowywana.",
+    "Zachowany 24 px prawy odstęp PW z 10.65."
   ]
 }

@@ -1,3 +1,8 @@
+## 10.66
+- iPhone/PWA: aplikacja sprawdza produkcyjne app-version.json po powrocie z tła i automatycznie przeładowuje nowszą wersję.
+- Dodano cache-busting i cache: no-store dla kontroli wersji.
+- Zachowano poprawkę 24 px prawego odstępu PW z 10.65.
+
 ## 10.65
 - Mobile: prawy odstęp całego paska akcji zwiększono do 24 px, dzięki czemu PW jest wyraźnie odsunięte od krawędzi.
 - Usunięto nieskuteczny dodatkowy margin samego PW; pozycję wymusza teraz padding kontenera.
