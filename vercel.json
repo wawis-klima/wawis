@@ -3,8 +3,9 @@
   "git": {
     "deploymentEnabled": {
       "*": false,
+      "**/*": false,
       "main": true
     }
   },
-  "buildCommand": "node scripts/release-policy-gate.cjs --deploy && npm run build"
+  "buildCommand": "node scripts/vercel-deploy-guard.cjs && node scripts/release-policy-gate.cjs --deploy && npm run build"
 }

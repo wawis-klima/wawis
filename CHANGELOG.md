@@ -1,3 +1,10 @@
+## 10.67
+- Mobile: prawy odstęp paska akcji ma 24 px, dzięki czemu przycisk PW jest wyraźnie odsunięty od prawej krawędzi.
+- iPhone/PWA: aplikacja sprawdza produkcyjny app-version.json po powrocie z tła i automatycznie odświeża nowszą wersję.
+- Vercel: automatyczne Preview są blokowane dla wszystkich gałęzi roboczych, także release/* i runner/*; automatyczny deploy pozostaje wyłącznie dla main.
+- Vercel: dodatkowy guard odrzuca build, jeśli środowisko nie jest production albo commit nie pochodzi z main.
+- Bezpieczeństwo wydania pozostaje wielowarstwowe: klasyfikacja FAST/TARGETED/CRITICAL, release gate, finalny ZIP, backup Drive i post-deploy evidence.
+
 ## 10.66
 - iPhone/PWA: aplikacja sprawdza produkcyjne app-version.json po powrocie z tła i automatycznie przeładowuje nowszą wersję.
 - Dodano cache-busting i cache: no-store dla kontroli wersji.

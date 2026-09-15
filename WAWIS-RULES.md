@@ -68,8 +68,13 @@ Każde wydanie ma finalny ZIP w `Aplikacja/Wersje`, folder ID `1eufcE1gnbfw7t2IM
 
 - `main` jest przeznaczony wyłącznie dla gotowych wydań.
 - `RELEASE-GATE.json.main_protection.ready_for_main` może być `true` dopiero po zielonym finalnym release i backupie Drive.
-- Vercel uruchamia `node scripts/release-policy-gate.cjs --deploy` przed buildem.
+- GitHub Ruleset musi wymuszać PR do `main`, zielony `WAWIS PR checks / targeted-checks`, blokadę force-push i blokadę usuwania `main`.
+- Vercel uruchamia `node scripts/vercel-deploy-guard.cjs` i dopiero potem `node scripts/release-policy-gate.cjs --deploy` przed buildem.
+- `vercel-deploy-guard.cjs` dopuszcza wyłącznie środowisko `production` i gałąź `main`.
 - Deploy gate wymaga zweryfikowanego ZIP-a Drive, właściwej gałęzi release i ID finalnego zielonego runu.
+- Automatyczne deploye Vercela są wyłączone dla wszystkich gałęzi roboczych, także nazw zawierających `/` takich jak `release/vX` i `runner/vX`.
+- Jedyną gałęzią, która może automatycznie uruchomić Vercel, jest `main`; jeden merge/push gotowego wydania ma oznaczać jeden produkcyjny deploy.
+- Testy na gałęziach release wykonuje GitHub Actions; do bezpieczeństwa release nie wymagamy Preview Vercela.
 
 ## 8. POST-DEPLOY EVIDENCE
 

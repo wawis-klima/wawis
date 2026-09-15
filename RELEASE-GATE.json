@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.66",
-  "scope": "mobile",
-  "release_branch": "release/v10.66",
+  "version": "10.67",
+  "scope": "full",
+  "release_branch": "release/v10.67",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T06:52:04.023840Z",
+    "checked_at": "2026-09-15T08:29:49.234913Z",
     "result": "GO",
-    "notes": "24 h: 7 wcześniejszych pojedynczych zdarzeń problematycznych; od produkcyjnego wdrożenia 10.65 o 06:39:33 UTC: 0 zdarzeń i 0 problemów."
+    "notes": "24 h: 7 wcześniejszych zdarzeń warning/error, wszystkie z wersji 10.60-10.63; brak nowych zdarzeń po 2026-09-15T06:17:13.637174Z i brak nowego trendu związanego z przygotowaniem 10.67."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T06:52:04.023840Z",
+    "checked_at": "2026-09-15T16:13:11.750738Z",
     "result": "GO",
-    "notes": "Zmiana 10.66 dotyczy mechanizmu odświeżania wersji PWA na wznowieniu aplikacji. Core, mobile, build, bundle i mobilny CSS przeszły poprawnie; brak nowych zdarzeń od 10.65."
+    "notes": "Świeża kontrola przed wdrożeniem: 3 błędy i 10 ostrzeżeń w 24 h. Dwa błędy app 10.64 z 15:50 UTC odpowiadają odtworzonemu problemowi przełączania kart klientów, naprawionemu w tym wydaniu; pojedynczy warning auth z 16:00 UTC wystąpił podczas testowego przelogowania kont. Ostatnie problematyczne zdarzenie 16:00:01 UTC, bez dalszej serii do czasu kontroli."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.66.zip",
-    "file_id": "16zm2_xTnx64onusUzcK0MEJ3irS_t3Y8",
-    "size_bytes": 12167984,
+    "file_name": "klima-app-v10.67.zip",
+    "file_id": "18R2qqBaJTGUXw50LwPZVa5C8XEhMLg_r",
+    "size_bytes": 12171686,
     "uploaded": true,
-    "uploaded_at": "2026-09-15T06:54:43.291Z",
+    "uploaded_at": "2026-09-15T16:12:27.129Z",
     "verified": true,
-    "notes": "Finalny ZIP 10.66 po zielonym release 34938683361; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12167984 B. SHA256 lokalnej paczki: fef1f26aaacecdd36726b2e04cb4a7df65849395d82406033599f90b2c4c8cd1."
+    "notes": "Świeży finalny ZIP po zielonym CRITICAL release 34993186809, zawierający poprawkę przełączania kart klientów. Plik na Google Drive został zastąpiony w tym samym ID; rozmiar 12171686 B. SHA256 lokalnej paczki: b49fad5675b451c72f6a26f7b523b6336d8de36499a377ec3acf902409f0692c."
   },
   "main_protection": {
-    "source_branch": "release/v10.66",
+    "source_branch": "release/v10.67",
     "ready_for_main": true,
-    "final_release_run_id": "34938683361",
-    "final_release_commit": "8553b6afc6fd8889e2112d2755fac2e57c62ccff",
-    "notes": "Finalny release 10.66 zakończony GO: runtime update guard, core, mobile, jeden build, bundle, mobile CSS, verify-release i ZIP. Backup Drive zweryfikowany."
+    "final_release_run_id": "34993186809",
+    "final_release_commit": "132efa298b68587875e378b0eb28e3444e74d076",
+    "notes": "Pełny CRITICAL final release po poprawce mobilnego przełączania klientów zakończył się GO: policy gate, klasyfikacja CRITICAL, pełny automatic release pass, build, testy, Playwright, ZIP i upload artefaktu. Jednorazowy workflow został usunięty z filesystemu przed testami/buildem/ZIP i po sukcesie usunięty także z gałęzi. Backup Drive został podmieniony i zweryfikowany; świeża diagnostyka pre-deploy ma GO."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do sprawdzenia po produkcyjnym wdrożeniu 10.66."
+    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.67 na Vercelu."
   }
 }
