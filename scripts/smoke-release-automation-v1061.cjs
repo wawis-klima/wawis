@@ -21,6 +21,7 @@ const impact = read('scripts', 'release-impact.cjs');
 const verifier = read('scripts', 'verify-release.cjs');
 const groups = read('scripts', 'test-groups.cjs');
 const deployGate = read('scripts', 'release-policy-gate.cjs');
+const vercelGuard = read('scripts', 'vercel-deploy-guard.cjs');
 const postCheck = read('scripts', 'post-deploy-check.mjs');
 const versionBump = read('version-bump.cjs');
 const vercel = JSON.parse(read('vercel.json'));
@@ -64,6 +65,7 @@ for (const name of ['jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'name
 }
 
 assert(exists('scripts', 'smoke-release-impact-v1063.cjs'), 'Brak testu klasyfikatora release-impact');
+assert(exists('scripts', 'vercel-deploy-guard.cjs'), 'Brak twardego guardu Vercel production/main');
 assert.doesNotMatch(verifier, /smokeMobile|smokeDesktop|desktopNameplateOcrComponentPath|releaseChecklist\.includes/);
 assert.match(verifier, /app-version\.json/);
 assert.match(verifier, /RELEASE-GATE\.json/);
@@ -75,10 +77,15 @@ assert.match(deployGate, /ready_for_main/);
 assert.match(deployGate, /final_release_run_id/);
 assert.match(deployGate, /--evidence/);
 assert.match(deployGate, /service_worker_verified/);
+assert.match(vercel.buildCommand || '', /vercel-deploy-guard\.cjs/);
 assert.match(vercel.buildCommand || '', /release-policy-gate\.cjs --deploy/);
 assert.equal(vercel.git?.deploymentEnabled?.['*'], false, 'Vercel powinien ignorować automatyczne deploye zwykłych gałęzi roboczych');
 assert.equal(vercel.git?.deploymentEnabled?.['**/*'], false, 'Vercel powinien ignorować automatyczne deploye gałęzi roboczych z ukośnikiem, np. release/vX i runner/vX');
 assert.equal(vercel.git?.deploymentEnabled?.main, true, 'Vercel powinien automatycznie wdrażać wyłącznie main');
+assert.match(vercelGuard, /VERCEL_ENV/);
+assert.match(vercelGuard, /production/);
+assert.match(vercelGuard, /VERCEL_GIT_COMMIT_REF/);
+assert.match(vercelGuard, /main/);
 
 assert.match(postWorkflow, /post-deploy-check\.mjs/);
 assert.match(postWorkflow, /release-policy-gate\.cjs --post --evidence/);
