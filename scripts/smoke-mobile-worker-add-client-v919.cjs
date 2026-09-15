@@ -17,7 +17,7 @@ assert.match(layout, /title=\{isAdmin \? "Dodaj zlecenie" : "Dodaj nowego klient
 assert.doesNotMatch(layout, /MobileDiagnosticButton/, 'Przycisk D nie powinien wracać do jednoliniowego nagłówka mobile.');
 assert.doesNotMatch(layout, /IconLogout/, 'Pracownik nie powinien mieć osobnego przycisku wylogowania w kompaktowym pasku.');
 assert.match(runtimeCss, /wawisOneLineToolbar\{[\s\S]*?display:grid!important;[\s\S]*?grid-template-columns:40px 40px 40px 54px 40px 40px!important;/, 'Nagłówek mobile nie zachowuje jednego deterministycznego wiersza sześciu kontrolek.');
-assert.match(runtimeCss, /wawisOneLineToolbar\{[\s\S]*?padding-inline:6px!important;/, 'Nagłówek mobile nie ma jawnego, równego odstępu 6 px od obu krawędzi.');
+assert.match(runtimeCss, /wawisOneLineToolbar\{[\s\S]*?padding-inline:2\.5px!important;/, 'Nagłówek mobile nie ma jawnego, równego odstępu 2.5 px od obu krawędzi.');
 assert.ok(layout.includes('className="wawisUserInitialsBadge"'), 'Worker nie ma kompaktowego badge z inicjałami.');
 assert.ok(layout.includes('onClick={logout}'), 'Badge pracownika nie wylogowuje użytkownika.');
 
