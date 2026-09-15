@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.67",
-  "scope": "full",
-  "release_branch": "release/v10.67",
+  "version": "10.68",
+  "scope": "mobile",
+  "release_branch": "release/v10.68",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T08:29:49.234913Z",
+    "checked_at": "2026-09-15T16:26:32.691120Z",
     "result": "GO",
-    "notes": "24 h: 7 wcześniejszych zdarzeń warning/error, wszystkie z wersji 10.60-10.63; brak nowych zdarzeń po 2026-09-15T06:17:13.637174Z i brak nowego trendu związanego z przygotowaniem 10.67."
+    "notes": "24 h: 3 error i 10 warning z wcześniejszych wersji; od wdrożenia 10.67 brak nowych warning/error (0)."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T16:13:11.750738Z",
+    "checked_at": "2026-09-15T16:30:23.376118Z",
     "result": "GO",
-    "notes": "Świeża kontrola przed wdrożeniem: 3 błędy i 10 ostrzeżeń w 24 h. Dwa błędy app 10.64 z 15:50 UTC odpowiadają odtworzonemu problemowi przełączania kart klientów, naprawionemu w tym wydaniu; pojedynczy warning auth z 16:00 UTC wystąpił podczas testowego przelogowania kont. Ostatnie problematyczne zdarzenie 16:00:01 UTC, bez dalszej serii do czasu kontroli."
+    "notes": "Świeża kontrola przed wdrożeniem 10.68: 3 error i 10 warning w ostatnich 24 h, wszystkie wcześniejsze; od wdrożenia 10.67 brak nowych warning/error (0)."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.67.zip",
-    "file_id": "18R2qqBaJTGUXw50LwPZVa5C8XEhMLg_r",
-    "size_bytes": 12171686,
+    "file_name": "klima-app-v10.68.zip",
+    "file_id": "1mgq3OgoZIliZGBLdxnpOmdiVv7GBVh6H",
+    "size_bytes": 12170867,
     "uploaded": true,
-    "uploaded_at": "2026-09-15T16:12:27.129Z",
+    "uploaded_at": "2026-09-15T16:30:09.733Z",
     "verified": true,
-    "notes": "Świeży finalny ZIP po zielonym CRITICAL release 34993186809, zawierający poprawkę przełączania kart klientów. Plik na Google Drive został zastąpiony w tym samym ID; rozmiar 12171686 B. SHA256 lokalnej paczki: b49fad5675b451c72f6a26f7b523b6336d8de36499a377ec3acf902409f0692c."
+    "notes": "Finalny ZIP po zielonym fast-UI release 34995237070; metadane Google Drive potwierdziły nazwę, folder i rozmiar 12170867 B."
   },
   "main_protection": {
-    "source_branch": "release/v10.67",
+    "source_branch": "release/v10.68",
     "ready_for_main": true,
-    "final_release_run_id": "34993186809",
-    "final_release_commit": "132efa298b68587875e378b0eb28e3444e74d076",
-    "notes": "Pełny CRITICAL final release po poprawce mobilnego przełączania klientów zakończył się GO: policy gate, klasyfikacja CRITICAL, pełny automatic release pass, build, testy, Playwright, ZIP i upload artefaktu. Jednorazowy workflow został usunięty z filesystemu przed testami/buildem/ZIP i po sukcesie usunięty także z gałęzi. Backup Drive został podmieniony i zweryfikowany; świeża diagnostyka pre-deploy ma GO."
+    "final_release_run_id": "34995237070",
+    "final_release_commit": "085ee8a60eca8762d3a89c22e31d2ec78b0ccf68",
+    "notes": "Fast-UI/mobile final release jest zielony, backup Drive zweryfikowany i świeża diagnostyka ma GO. Wersja gotowa do jednego merge do main i jednego produkcyjnego deployu Vercela."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.67 na Vercelu."
+    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.68."
   }
 }

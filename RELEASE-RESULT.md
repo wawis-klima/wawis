@@ -1,31 +1,32 @@
-# RELEASE RESULT - Wawis 10.26
+# RELEASE RESULT
 
 ## Wersja
-- 10.26
+- 10.68
 
-## Zakres
-- Mobile / Pracownik: w menu są „Montaże” i „Paliwo”; pracownicy mogą od razu dodawać tankowania samochodów.
-- Mobile / Administrator: usunięto „Urządzenia” z mobilnego menu. Moduł pozostaje bez zmian na desktopie.
-- Mobile / Paliwo: pozostaje prosty formularz tankowania i historia; bez tabel floty, raportów i edycji administracyjnej.
-- Paliwo: jeśli od poprzedniego tankowania minęło mniej niż 100 km, aplikacja pokazuje ostrzeżenie z kilometrami i litrami i wymaga potwierdzenia przed zapisem.
-- Desktop / Paliwo: dodano raport miesięczny floty z wyborem miesiąca, liczbą tankowań, litrami, kilometrami i średnim spalaniem dla aut i całej floty.
-- Desktop / Paliwo: administrator może poprawić błędnie wpisane litry i przebieg.
-- Historia zachowuje pierwotnego autora i czas dodania. Korekty mają osobny audyt: pierwotne wartości, czas ostatniej korekty, administrator korygujący i liczba korekt.
-- Serwerowa walidacja nie pozwala ustawić poprawionego przebiegu poza zakresem wynikającym z poprzedniego i następnego tankowania.
-- Zachowano pojemności baków, wykrywanie nietypowego spalania i push do administratora po tankowaniu pracownika.
+## Tryb
+- auto:fast-ui/mobile
 
-## Supabase
-- Dodano migrację `supabase/setup-fuel-production-v10.26.sql`.
-- `fuel_entries` otrzymało pola audytu korekt: `corrected_by`, `corrected_at`, `correction_count`, `original_liters`, `original_odometer_km`.
-- Dodano triggery `fuel_entries_audit_correction_v1026` oraz `fuel_entries_validate_edit_odometer_v1026`.
-- Nie zmieniano istniejących Edge Functions push.
+## Wygenerowano
+- 2026-09-15T16:29:03.817Z
 
-## Weryfikacja
-- `test:smoke:fuel-module` — PASS.
-- `test:smoke:admin-worker` — PASS.
-- `test:smoke:assignment-push` — PASS.
-- `test:smoke:mobile-ui-copy` — PASS.
-- `test:smoke:version` — PASS.
-- Test serwerowy audytu korekty i blokady złej kolejności przebiegów — PASS; dane testowe usunięte.
-- Składnia zmienionych plików JSX — PASS przez parser TypeScript.
-- Pełny build Vite nie został wykonany, ponieważ lokalny katalog `node_modules` nie zawiera pakietu `vite`; nie jest to błąd kodu wersji.
+## Podsumowanie
+- status release: OK
+- tryb: auto:fast-ui/mobile
+- grupy regresji: 2 zakończonych grup
+- Playwright E2E: 0 zakończonych przebiegów
+- build: OK
+- verify:bundle: OK
+- verify:release: OK
+- ZIP: OK
+
+## Kroki
+| Obszar | Komenda | Wynik |
+|---|---|---|
+| Tests:ui-fast-core | `node scripts/run-test-group.cjs ui-fast-core` | OK |
+| Tests:ui-fast-mobile | `node scripts/run-test-group.cjs ui-fast-mobile` | OK |
+| Build | `npm run build` | OK |
+| Build | `npm run verify:bundle` | OK |
+| Build | `npm run test:smoke:dist-mobile-css` | OK |
+| Verify | `npm run verify:release` | OK |
+| Package | `npm run zip:release` | OK |
+| Package | `node scripts/verify-release.cjs --require-zip` | OK |
