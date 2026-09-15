@@ -1,0 +1,61 @@
+name: WAWIS 10.67 post-deploy temp
+
+on:
+  push:
+    branches:
+      - release/v10.67
+    paths:
+      - .github/workflows/v1067-postdeploy-temp.yml
+
+permissions:
+  contents: write
+
+env:
+  TEMP_WORKFLOW: .github/workflows/v1067-postdeploy-temp.yml
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove temp workflow from checked filesystem
+        run: rm -f "$TEMP_WORKFLOW"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify live production and Supabase diagnostics
+        run: >-
+          node scripts/post-deploy-check.mjs
+          --url "https://wawis-klima.vercel.app"
+          --deployment-start "2026-09-15T16:15:36Z"
+
+      - name: Validate post-deploy release gate
+        run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
+
+      - name: Upload post-deploy evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-v10.67
+          path: post-deploy-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Commit temp workflow removal after successful verification
+        run: |
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add -u "$TEMP_WORKFLOW"
+          git commit -m 'WAWIS 10.67: usuń jednorazowy post-deploy workflow'
+          git push origin HEAD:release/v10.67
