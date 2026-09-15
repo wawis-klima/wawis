@@ -87,9 +87,13 @@ export default function MobileJobsLayout({
   }
 
   function toggleJobDetails(job) {
-    setSelectedJob((currentJob) => (
-      String(currentJob?.id || "") === String(job?.id || "") ? null : job
-    ));
+    const clickedJobId = String(job?.id || "");
+    const renderedSelectedJobId = String(selectedJob?.id || "");
+
+    // Decyzję o zwinięciu/otwarciu podejmujemy na podstawie karty widocznej
+    // w chwili kliknięcia. Nie używamy funkcjonalnego updatera, bo równoległy
+    // refresh listy mógł wcześniej podmienić selectedJob i zamknąć nową kartę.
+    setSelectedJob(renderedSelectedJobId === clickedJobId ? null : job);
   }
 
   return (
