@@ -102,6 +102,15 @@ jobs:
           fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
           NODE
 
+      - name: Commit release preparation and remove temp workflow from branch
+        run: |
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md RELEASE-GATE.json
+          git add -u "$TEMP_WORKFLOW"
+          git commit -m 'WAWIS 10.68: przygotuj fast-UI release'
+          git push origin HEAD:release/v10.68
+
       - name: Pre-release policy gate
         run: node scripts/release-policy-gate.cjs
 
@@ -138,11 +147,8 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Commit version and release evidence
+      - name: Commit final release evidence
         run: |
-          git config user.name 'wawis-klima'
-          git config user.email 'wasik@wawis.pl'
-          git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md RELEASE-GATE.json RELEASE-RESULT.md RELEASE-IMPACT.json
-          git add -u "$TEMP_WORKFLOW"
-          git commit -m 'WAWIS 10.68: finalny fast-UI release'
+          git add RELEASE-GATE.json RELEASE-RESULT.md RELEASE-IMPACT.json
+          git commit -m 'WAWIS 10.68: zapisz finalny fast-UI release'
           git push origin HEAD:release/v10.68
