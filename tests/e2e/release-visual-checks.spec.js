@@ -93,7 +93,7 @@ const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone
 test.describe('@mobile release visual iPhone', () => {
   test.use(iphone14);
 
-  test('nagłówek mobilny ma mniejsze równe skrajne odstępy i więcej miejsca między kontrolkami', async ({ page }) => {
+  test('nagłówek mobilny ma bardzo małe równe skrajne odstępy i większe przerwy między kontrolkami', async ({ page }) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, ADMIN);
     await expect(page.locator('.wawisOneLineToolbar')).toBeVisible();
@@ -118,11 +118,11 @@ test.describe('@mobile release visual iPhone', () => {
 
     expect(geometry.display).toBe('grid');
     expect(geometry.columns.split(/\s+/)).toHaveLength(6);
-    expect(geometry.leftGap).toBeGreaterThanOrEqual(5);
-    expect(geometry.leftGap).toBeLessThanOrEqual(7.5);
-    expect(geometry.rightGap).toBeGreaterThanOrEqual(5);
-    expect(geometry.rightGap).toBeLessThanOrEqual(7.5);
-    expect(Math.abs(geometry.leftGap - geometry.rightGap)).toBeLessThanOrEqual(1.5);
+    expect(geometry.leftGap).toBeGreaterThanOrEqual(2);
+    expect(geometry.leftGap).toBeLessThanOrEqual(3.5);
+    expect(geometry.rightGap).toBeGreaterThanOrEqual(2);
+    expect(geometry.rightGap).toBeLessThanOrEqual(3.5);
+    expect(Math.abs(geometry.leftGap - geometry.rightGap)).toBeLessThanOrEqual(1);
     expect(Math.max(...geometry.innerGaps) - Math.min(...geometry.innerGaps)).toBeLessThanOrEqual(1.5);
     expect(Math.min(...geometry.innerGaps)).toBeGreaterThan(Math.max(geometry.leftGap, geometry.rightGap));
   });
