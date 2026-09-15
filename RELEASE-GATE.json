@@ -38,13 +38,13 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "production_version_verified": false,
-    "service_worker_verified": false,
+    "checked_at": "2026-09-15T06:12:18.328Z",
+    "result": "GO",
+    "production_version_verified": true,
+    "service_worker_verified": true,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.63."
+    "notes": "Produkcja https://wawis.pages.dev potwierdziła app-version 10.63 i cache wawis-app-shell-v10.63. Od startu wdrożenia 2026-09-15T06:11:01Z do kontroli Supabase: 0 nowych zdarzeń i 0 nowych warning/error. Post-deploy run 34935903286, evidence artifact 10383540498."
   }
 }
