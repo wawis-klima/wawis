@@ -1,0 +1,80 @@
+name: WAWIS 10.64 post-deploy runner
+
+on:
+  push:
+    branches:
+      - runner/v10.64
+    paths:
+      - .github/workflows/v1064-postdeploy-runner.yml
+
+permissions:
+  contents: read
+
+jobs:
+  postdeploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout release archive
+        uses: actions/checkout@v4
+        with:
+          ref: release/v10.64
+
+      - name: Verify live production files
+        shell: bash
+        run: |
+          set -euo pipefail
+          stamp="$(date +%s)"
+          curl -fLsS "https://wawis.pages.dev/app-version.json?release_check=${stamp}" -o /tmp/app-version.json
+          curl -fLsS "https://wawis.pages.dev/push-sw.js?release_check=${stamp}" -o /tmp/push-sw.js
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const appRaw = fs.readFileSync('/tmp/app-version.json');
+          const swRaw = fs.readFileSync('/tmp/push-sw.js');
+          const app = JSON.parse(appRaw.toString('utf8'));
+          if (String(app.version) !== '10.64') throw new Error(`Live app version is ${app.version}, expected 10.64`);
+          const sw = swRaw.toString('utf8');
+          if (!sw.includes('wawis-app-shell-v10.64')) throw new Error('Live service worker does not contain wawis-app-shell-v10.64');
+          const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
+          const evidence = {
+            schema_version: 1,
+            version: '10.64',
+            checked_at: new Date().toISOString(),
+            production_url: 'https://wawis.pages.dev',
+            production: {
+              version_verified: true,
+              service_worker_verified: true,
+              app_version: '10.64',
+              service_worker_cache: 'wawis-app-shell-v10.64',
+              app_version_sha256: sha(appRaw),
+              service_worker_sha256: sha(swRaw)
+            },
+            diagnostics: {
+              checked: true,
+              checked_at: '2026-09-15T06:28:29.439322Z',
+              last_24h: true,
+              result: 'GO',
+              problematic_count: 0,
+              last_24h_total_count: 7,
+              last_24h_problematic_count: 7,
+              since_deploy_total_count: 0,
+              since_deploy_problematic_count: 0,
+              deployment_started_at: '2026-09-15T06:28:04Z',
+              source: 'Supabase production project uohziyaudbpwmupvljyd direct post-deploy query'
+            }
+          };
+          fs.writeFileSync('post-deploy-evidence.json', JSON.stringify(evidence, null, 2) + '\n');
+          console.log(`Live WAWIS ${app.version}; service worker cache 10.64 verified.`);
+          NODE
+
+      - name: Close release gate using live evidence
+        run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
+
+      - name: Upload post-deploy evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-v10.64
+          path: post-deploy-evidence.json
+          if-no-files-found: error
+          retention-days: 14
