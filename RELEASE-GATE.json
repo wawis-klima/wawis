@@ -22,19 +22,19 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.65.zip",
-    "file_id": null,
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Oczekuje na ZIP."
+    "file_id": "1LmdJzqrxME1eeeShQ7iC_QKGqk3nACXC",
+    "size_bytes": 12167679,
+    "uploaded": true,
+    "uploaded_at": "2026-09-15T06:37:27.446Z",
+    "verified": true,
+    "notes": "Finalny ZIP po zielonym FAST UI release 34937677614; Google Drive potwierdził nazwę, ID i rozmiar 12167679 B. SHA256 lokalnej paczki: 867be48bb6cc507087bc02a146ad23e3f5bfaf2faea4e094428dbf596e334baa."
   },
   "main_protection": {
     "source_branch": "release/v10.65",
-    "ready_for_main": false,
-    "final_release_run_id": null,
-    "final_release_commit": null,
-    "notes": "Oczekuje na zielony FAST UI release i backup Drive."
+    "ready_for_main": true,
+    "final_release_run_id": "34937677614",
+    "final_release_commit": "f019ef7a8d52c4dfdfa70f0d2ccc253fe6cae013",
+    "notes": "Finalny FAST UI release zakończony GO; jeden build, bez Playwrighta, ZIP zweryfikowany na Google Drive."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
