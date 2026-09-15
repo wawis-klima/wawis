@@ -34,17 +34,17 @@
     "ready_for_main": true,
     "final_release_run_id": "34929422383",
     "final_release_commit": "4a41fa7827b3a546ff149e6d4269bc5550cfd63c",
-    "notes": "Finalny mobile release 10.62 zakończył się sukcesem; targeted PR checks również są zielone. Po aktualizacji samego RELEASE-GATE kod aplikacji nie uległ zmianie."
+    "notes": "Finalny mobile release 10.62 zakończył się sukcesem; targeted PR checks również są zielone. PR #4 został scalony do main jako e22369d76db4bacc067e7f63378ba069f63baf8f."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "production_version_verified": false,
-    "service_worker_verified": false,
+    "checked_at": "2026-09-15T04:44:35.052Z",
+    "result": "GO",
+    "production_version_verified": true,
+    "service_worker_verified": true,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.62."
+    "notes": "Produkcja https://wawis.pages.dev zweryfikowana jako 10.62 z cache wawis-app-shell-v10.62. Diagnostyka Supabase o 04:44:13Z: 0 zdarzeń i 0 problemów od startu wdrożenia 04:40:22Z. Policy gate --post zakończył się GO w runie 34929985510; artifact 10381535968."
   }
 }
