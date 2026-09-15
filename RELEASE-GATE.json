@@ -13,9 +13,9 @@
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T08:29:49.234913Z",
+    "checked_at": "2026-09-15T16:13:11.750738Z",
     "result": "GO",
-    "notes": "10.67 nie została wdrożona. Diagnostyka przed finalnym CRITICAL release ma GO; jeśli merge do main nastąpi później, kontrolę diagnostyki należy odświeżyć bezpośrednio przed wdrożeniem."
+    "notes": "Świeża kontrola przed wdrożeniem: 3 błędy i 10 ostrzeżeń w 24 h. Dwa błędy app 10.64 z 15:50 UTC odpowiadają odtworzonemu problemowi przełączania kart klientów, naprawionemu w tym wydaniu; pojedynczy warning auth z 16:00 UTC wystąpił podczas testowego przelogowania kont. Ostatnie problematyczne zdarzenie 16:00:01 UTC, bez dalszej serii do czasu kontroli."
   },
   "drive_backup": {
     "required": true,
@@ -23,18 +23,18 @@
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.67.zip",
     "file_id": "18R2qqBaJTGUXw50LwPZVa5C8XEhMLg_r",
-    "size_bytes": 12171163,
+    "size_bytes": 12171686,
     "uploaded": true,
-    "uploaded_at": "2026-09-15T08:35:04.279Z",
+    "uploaded_at": "2026-09-15T16:12:27.129Z",
     "verified": true,
-    "notes": "Finalny ZIP po zielonym CRITICAL release 34947365847; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12171163 B. SHA256 lokalnej paczki: 54c8455bb634476043933571f19544800c408b2b28f0cab38f9c4a0f19104a5f."
+    "notes": "Świeży finalny ZIP po zielonym CRITICAL release 34993186809, zawierający poprawkę przełączania kart klientów. Plik na Google Drive został zastąpiony w tym samym ID; rozmiar 12171686 B. SHA256 lokalnej paczki: b49fad5675b451c72f6a26f7b523b6336d8de36499a377ec3acf902409f0692c."
   },
   "main_protection": {
     "source_branch": "release/v10.67",
-    "ready_for_main": false,
-    "final_release_run_id": "34947365847",
-    "final_release_commit": "acca25b9401911f06bad3bfcea0b08bef414849c",
-    "notes": "Pełny CRITICAL final release jest zielony: 11 grup regresji, Playwright mobile+desktop, build, bundle, verify-release i ZIP. Po runie usunięto wyłącznie jednorazowy workflow, który był już usunięty z filesystemu przed testami/buildem/ZIP. Celowo pozostaje NO-GO do main, aby nie uruchomić Vercela przed zwolnieniem limitu i świeżą kontrolą diagnostyki."
+    "ready_for_main": true,
+    "final_release_run_id": "34993186809",
+    "final_release_commit": "132efa298b68587875e378b0eb28e3444e74d076",
+    "notes": "Pełny CRITICAL final release po poprawce mobilnego przełączania klientów zakończył się GO: policy gate, klasyfikacja CRITICAL, pełny automatic release pass, build, testy, Playwright, ZIP i upload artefaktu. Jednorazowy workflow został usunięty z filesystemu przed testami/buildem/ZIP i po sukcesie usunięty także z gałęzi. Backup Drive został podmieniony i zweryfikowany; świeża diagnostyka pre-deploy ma GO."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania dopiero po późniejszym produkcyjnym wdrożeniu 10.67 na Vercelu."
+    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.67 na Vercelu."
   }
 }
