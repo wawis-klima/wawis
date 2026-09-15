@@ -2,7 +2,7 @@
 
 Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji WAWIS. Szczegóły operacyjne są w `RELEASE-CHECKLIST.md`.
 
-## 1. Źródło prawdy i gałąź release
+## 1. Źródło prawdy i GAŁĄŹ RELEASE
 
 - Punktem startowym jest ostatni poprawny `main`.
 - Dla każdej wersji tworzymy `release/v<WERSJA>` i wszystkie zmiany robocze wykonujemy tam.
@@ -71,7 +71,7 @@ Każde wydanie ma finalny ZIP w `Aplikacja/Wersje`, folder ID `1eufcE1gnbfw7t2IM
 - Vercel uruchamia `node scripts/release-policy-gate.cjs --deploy` przed buildem.
 - Deploy gate wymaga zweryfikowanego ZIP-a Drive, właściwej gałęzi release i ID finalnego zielonego runu.
 
-## 8. Post-deploy evidence
+## 8. POST-DEPLOY EVIDENCE
 
 Po wdrożeniu uruchamiamy `.github/workflows/post-deploy-checks.yml` albo równoważny `scripts/post-deploy-check.mjs`. Dowód musi potwierdzić rzeczywistym odczytem produkcyjną wersję, cache service workera oraz diagnostykę Supabase od chwili wdrożenia.
 
