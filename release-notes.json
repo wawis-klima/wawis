@@ -1,9 +1,9 @@
 {
-  "version": "10.64",
-  "summary": "Mobilny przycisk inicjałów użytkownika (PW) ma dodatkowy odstęp od prawej krawędzi paska, dzięki czemu nagłówek wygląda równiej i czytelniej.",
+  "version": "10.65",
+  "summary": "Mobilny przycisk PW jest wyraźnie odsunięty od prawej krawędzi dzięki 24 px prawemu paddingowi całego paska akcji.",
   "changes": [
-    "PW ma dodatkowy 6 px odstęp od prawej krawędzi mobilnego paska.",
-    "Nie zmieniono rozmiaru przycisku ani pozostałych elementów nagłówka.",
-    "Zmiana jest wyłącznie prezentacyjna i kwalifikuje się do FAST UI."
+    "PW odsunięte przez 24 px prawego paddingu toolbaru.",
+    "Usunięto subtelny margin PW z 10.64.",
+    "Bez zmian logiki, danych, Supabase i desktopu."
   ]
 }

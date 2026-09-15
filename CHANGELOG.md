@@ -1,3 +1,8 @@
+## 10.65
+- Mobile: prawy odstęp całego paska akcji zwiększono do 24 px, dzięki czemu PW jest wyraźnie odsunięte od krawędzi.
+- Usunięto nieskuteczny dodatkowy margin samego PW; pozycję wymusza teraz padding kontenera.
+- Zmiana wyłącznie CSS, profil FAST UI.
+
 ## 10.64
 - Mobile: odsunięto przycisk inicjałów użytkownika (np. PW) o dodatkowe 6 px od prawej krawędzi paska akcji.
 - Pozostałe przyciski, szerokości i układ jednej linii pozostają bez zmian.
