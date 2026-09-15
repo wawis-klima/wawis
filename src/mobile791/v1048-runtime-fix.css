@@ -1,6 +1,6 @@
 /* WAWIS 10.48 — runtime safety layer: critical mobile layout rules loaded last. */
 @media (max-width:700px){
-  /* 10.72 — skrajne odstępy zmniejszone o 60% względem 10.71; odzyskane miejsce trafia między kontrolki. */
+  /* 10.73 — lewy skrajny odstęp 1 px; odzyskane miejsce trafia między kontrolki, prawa krawędź pozostaje 2.5 px. */
   .mobileJobsShellV959 .mobileHeaderV2.wawisCompactHeader{
     padding:7px!important;
   }
@@ -16,7 +16,8 @@
     justify-content:space-between!important;
     align-items:center!important;
     column-gap:0!important;
-    padding-inline:2.5px!important;
+    padding-left:1px!important;
+    padding-right:2.5px!important;
   }
 
   .mobileJobsShellV959 .wawisOneLineVersion{
