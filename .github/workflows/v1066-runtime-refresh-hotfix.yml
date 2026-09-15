@@ -28,12 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Bump to 10.66 and document
+      - name: Ensure version 10.66 and documentation
         run: |
-          node version-bump.cjs
           node <<'NODE'
           const fs = require('fs')
-          const version = JSON.parse(fs.readFileSync('app-version.json', 'utf8')).version
+          let version = JSON.parse(fs.readFileSync('app-version.json', 'utf8')).version
+          if (version === '10.65') {
+            require('./version-bump.cjs').bumpVersion()
+            version = JSON.parse(fs.readFileSync('app-version.json', 'utf8')).version
+          }
           if (version !== '10.66') throw new Error(`Expected 10.66, got ${version}`)
           fs.writeFileSync('release-notes.json', JSON.stringify({
             version,
@@ -53,13 +56,15 @@ jobs:
           fs.writeFileSync('CHANGELOG.md', changelog)
           NODE
 
-      - name: Commit release metadata
+      - name: Commit release metadata when needed
         run: |
           git config user.name "wawis-klima"
           git config user.email "wasik@wawis.pl"
           git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md release-notes.json
-          git commit -m "WAWIS 10.66 — synchronizuj wersję i metadane"
-          git push origin HEAD:release/v10.66
+          if ! git diff --cached --quiet; then
+            git commit -m "WAWIS 10.66 — synchronizuj wersję i metadane"
+            git push origin HEAD:release/v10.66
+          fi
 
       - name: Verify resume update guard
         run: |
@@ -97,6 +102,9 @@ jobs:
 
       - name: Verify mobile CSS bundle
         run: npm run test:smoke:dist-mobile-css
+
+      - name: Write release result
+        run: node scripts/write-release-result.cjs --variant targeted
 
       - name: Verify release
         run: npm run verify:release
