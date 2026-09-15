@@ -61,4 +61,4 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-# one-time trigger refresh after release-gate marker fix
+# one-time trigger refresh after quoted fast-group assertion fix
