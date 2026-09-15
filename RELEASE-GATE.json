@@ -22,19 +22,19 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.69.zip",
-    "file_id": "",
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Do uzupełnienia po zielonym final release."
+    "file_id": "1g4hsWj2TFCQaNUdyBcIVhOsJYNO31YA_",
+    "size_bytes": 12063208,
+    "uploaded": true,
+    "uploaded_at": "2026-09-15T16:42:40.299Z",
+    "verified": true,
+    "notes": "ZIP po zielonym fast-UI release zweryfikowany na Google Drive."
   },
   "main_protection": {
     "source_branch": "release/v10.69",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "final_release_run_id": "34996593669",
-    "final_release_commit": "",
-    "notes": "Fast-UI final release zakończony; oczekuje wyłącznie na backup Drive i ready_for_main."
+    "final_release_commit": "feaf26d77fd4d02bf608a8f6106954a476a7a5c6",
+    "notes": "Fast-UI final release GO, backup Drive zweryfikowany; gotowe do merge na main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
