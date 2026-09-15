@@ -37,5 +37,8 @@ jobs:
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed-files.txt
           cat changed-files.txt
 
+      - name: Classify effective release impact
+        run: node scripts/release-impact.cjs --base-ref "origin/${{ github.base_ref }}" --json release-impact.json
+
       - name: Run targeted regression groups
-        run: node scripts/run-pr-checks.cjs changed-files.txt
+        run: node scripts/run-pr-checks.cjs changed-files.txt release-impact.json
