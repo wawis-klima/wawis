@@ -4,18 +4,18 @@
   "scope": "full",
   "release_branch": "release/v10.67",
   "baseline_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "notes": "Do wykonania przed finalnym wydaniem 10.67. Wersja jest przygotowana, ale celowo nie jest jeszcze gotowa do main ani Vercela."
+    "checked_at": "2026-09-15T08:29:49.234913Z",
+    "result": "GO",
+    "notes": "24 h: 7 wcześniejszych zdarzeń warning/error, wszystkie z wersji 10.60-10.63; brak nowych zdarzeń po 2026-09-15T06:17:13.637174Z i brak nowego trendu związanego z przygotowaniem 10.67."
   },
   "predeploy_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "notes": "Do wykonania po pełnym CRITICAL final release bezpośrednio przed merge do main."
+    "checked_at": "2026-09-15T08:29:49.234913Z",
+    "result": "GO",
+    "notes": "Przygotowanie 10.67 nie zostało wdrożone. PR checks dla zmian release/Vercel są zielone; diagnostyka produkcji nie pokazuje nowych zdarzeń od 06:17 UTC. Finalny pełny CRITICAL release pozostaje wymagany przed ready_for_main."
   },
   "drive_backup": {
     "required": true,
@@ -34,7 +34,7 @@
     "ready_for_main": false,
     "final_release_run_id": "",
     "final_release_commit": "",
-    "notes": "NO-GO do czasu pełnego CRITICAL final release, pre-deploy GO, ZIP/Drive GO i świadomego merge do main."
+    "notes": "NO-GO do czasu pełnego CRITICAL final release, ZIP/Drive GO i świadomego merge do main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
