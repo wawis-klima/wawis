@@ -15,26 +15,26 @@
     "last_24h": true,
     "checked_at": "2026-09-15T08:29:49.234913Z",
     "result": "GO",
-    "notes": "Przygotowanie 10.67 nie zostało wdrożone. PR checks dla zmian release/Vercel są zielone; diagnostyka produkcji nie pokazuje nowych zdarzeń od 06:17 UTC. Finalny pełny CRITICAL release pozostaje wymagany przed ready_for_main."
+    "notes": "10.67 nie została wdrożona. Diagnostyka przed finalnym CRITICAL release ma GO; jeśli merge do main nastąpi później, kontrolę diagnostyki należy odświeżyć bezpośrednio przed wdrożeniem."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.67.zip",
-    "file_id": "",
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Aktualny ZIP 10.67 ma powstać po zielonym pełnym CRITICAL final release i zostać ponownie zweryfikowany na Google Drive."
+    "file_id": "18R2qqBaJTGUXw50LwPZVa5C8XEhMLg_r",
+    "size_bytes": 12171163,
+    "uploaded": true,
+    "uploaded_at": "2026-09-15T08:35:04.279Z",
+    "verified": true,
+    "notes": "Finalny ZIP po zielonym CRITICAL release 34947365847; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12171163 B. SHA256 lokalnej paczki: 54c8455bb634476043933571f19544800c408b2b28f0cab38f9c4a0f19104a5f."
   },
   "main_protection": {
     "source_branch": "release/v10.67",
     "ready_for_main": false,
-    "final_release_run_id": "",
-    "final_release_commit": "",
-    "notes": "NO-GO do czasu pełnego CRITICAL final release, ZIP/Drive GO i świadomego merge do main."
+    "final_release_run_id": "34947365847",
+    "final_release_commit": "acca25b9401911f06bad3bfcea0b08bef414849c",
+    "notes": "Pełny CRITICAL final release jest zielony: 11 grup regresji, Playwright mobile+desktop, build, bundle, verify-release i ZIP. Po runie usunięto wyłącznie jednorazowy workflow, który był już usunięty z filesystemu przed testami/buildem/ZIP. Celowo pozostaje NO-GO do main, aby nie uruchomić Vercela przed zwolnieniem limitu i świeżą kontrolą diagnostyki."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
