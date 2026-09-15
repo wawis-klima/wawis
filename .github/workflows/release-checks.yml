@@ -4,11 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       scope:
-        description: Zakres finalnego wydania
+        description: Tryb wydania — AUTO sam dobiera zakres do zmian
         required: true
-        default: full
+        default: auto
         type: choice
         options:
+          - auto
           - full
           - mobile
           - desktop
@@ -30,6 +31,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch production base
+        run: git fetch origin main:refs/remotes/origin/main --force
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -42,11 +46,16 @@ jobs:
       - name: Pre-release policy gate
         run: node scripts/release-policy-gate.cjs
 
-      - name: Install Chromium for Playwright
+      - name: Detect automatic release profile
+        id: impact
+        run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
+
+      - name: Install Chromium for Playwright when needed
+        if: inputs.scope != 'auto' || steps.impact.outputs.needs_playwright == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run one final release pass
-        run: node scripts/run-release.cjs "${{ inputs.scope }}" --skip-version-bump
+        run: node scripts/run-release.cjs "${{ inputs.scope }}" --base-ref origin/main --skip-version-bump
 
       - name: Upload final ZIP and release report
         if: always()
@@ -56,6 +65,7 @@ jobs:
           path: |
             releases/klima-app-v*.zip
             RELEASE-RESULT.md
+            RELEASE-IMPACT.json
             playwright-report
             test-results
           if-no-files-found: warn
