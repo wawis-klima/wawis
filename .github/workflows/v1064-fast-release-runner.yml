@@ -1,0 +1,60 @@
+name: WAWIS 10.64 FAST UI release runner
+
+on:
+  push:
+    branches:
+      - runner/v10.64
+    paths:
+      - .github/workflows/v1064-fast-release-runner.yml
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/v10.64
+          fetch-depth: 0
+
+      - name: Fetch production base
+        run: git fetch origin main:refs/remotes/origin/main --force
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Pre-release policy gate
+        run: node scripts/release-policy-gate.cjs
+
+      - name: Detect FAST UI profile
+        id: impact
+        run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
+
+      - name: Confirm FAST UI
+        run: |
+          test "${{ steps.impact.outputs.profile }}" = "fast-ui"
+          test "${{ steps.impact.outputs.needs_playwright }}" = "false"
+
+      - name: Run one final automatic release pass
+        run: node scripts/run-release.cjs auto --base-ref origin/main --skip-version-bump
+
+      - name: Upload final release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.64
+          path: |
+            releases/klima-app-v10.64.zip
+            RELEASE-RESULT.md
+            RELEASE-IMPACT.json
+          if-no-files-found: error
+          retention-days: 14
