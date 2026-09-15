@@ -4,6 +4,8 @@
     display:flex!important;
     width:100%!important;
     min-width:0!important;
+    box-sizing:border-box!important;
+    padding-inline:8px!important;
     align-items:center!important;
     justify-content:space-between!important;
     gap:4px!important;
@@ -14,9 +16,9 @@
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
-    width:48px!important;
-    min-width:48px!important;
-    max-width:48px!important;
+    width:40px!important;
+    min-width:40px!important;
+    max-width:40px!important;
     height:40px!important;
     min-height:40px!important;
     padding:0!important;

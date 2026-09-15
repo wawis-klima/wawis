@@ -1,3 +1,10 @@
+## 10.62
+- Dodano po 8 px wewnętrznego odstępu po lewej i prawej stronie jednoliniowego nagłówka mobilnego.
+- Zmniejszono slot numeru wersji z 48 px do 40 px, czyli do szerokości standardowych przycisków paska.
+- Inicjały użytkownika (np. PW) nie przylegają już do prawej krawędzi i cały pasek ma bardziej równy rytm.
+- Dodano regresyjny smoke test pilnujący bocznych odstępów i szerokości pola wersji.
+- Desktop, dane, Supabase i logika aplikacji pozostają bez zmian.
+
 ## 10.61
 - Wprowadzono gałęzie release/v<WERSJA>; main jest przeznaczony wyłącznie dla gotowych wydań.
 - PR uruchamia szybkie grupy regresji dobrane do zmienionych plików zamiast pełnego zestawu testów.
