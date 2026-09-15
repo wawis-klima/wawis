@@ -1,12 +1,11 @@
-name: WAWIS 10.61 single final release
+name: WAWIS 10.62 single final mobile release
 
 on:
   pull_request:
     branches: [main]
 
-# Finalny przebieg po dodaniu public/app-version.json i kontroli jego zgodności w release gate.
 concurrency:
-  group: wawis-v1061-single-final
+  group: wawis-v1062-single-final
   cancel-in-progress: false
 
 permissions:
@@ -52,17 +51,17 @@ jobs:
         if: steps.trigger.outputs.run == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Run one final full release pass
+      - name: Run one final mobile release pass
         if: steps.trigger.outputs.run == 'true'
-        run: node scripts/run-release.cjs full --skip-version-bump
+        run: node scripts/run-release.cjs mobile --skip-version-bump
 
       - name: Upload final ZIP and release report
         if: ${{ always() && steps.trigger.outputs.run == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: wawis-final-release-v10.61
+          name: wawis-final-release-v10.62
           path: |
-            releases/klima-app-v10.61.zip
+            releases/klima-app-v10.62.zip
             RELEASE-RESULT.md
             playwright-report
             test-results
