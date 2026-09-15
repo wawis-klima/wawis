@@ -7,6 +7,6 @@
       "main": true
     }
   },
-  "ignoreCommand": "bash -lc 'FILES=\"$(git diff --name-only HEAD^1 HEAD 2>/dev/null)\" || exit 1; [ -n \"$FILES\" ] || exit 0; if printf \"%s\\n\" \"$FILES\" | grep -Eqv \"^(\\.github/workflows/|RELEASE-CHECKLIST\\.md$|WAWIS-RULES\\.md$|MICRO-UI-RELEASE-TEMPLATE\\.json$|RELEASE-GATE\\.json$|RELEASE-RESULT\\.md$|release-notes\\.json$|README\\.md$|CHANGELOG\\.md$|scripts/(release-|micro-ui-|deploy-gate-router\\.sh$|vercel-deploy-guard\\.cjs$|run-pr-checks\\.cjs$|run-release\\.cjs$|run-test-group\\.cjs$|smoke-release-|post-deploy-check)|vercel\\.json$)\"; then exit 1; else exit 0; fi'",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src public package.json package-lock.json index.html vite.config.js vite.config.mjs supabase api",
   "buildCommand": "node scripts/vercel-deploy-guard.cjs && WAWIS_STANDARD_DEPLOY_GATE='node scripts/release-policy-gate.cjs --deploy' bash scripts/deploy-gate-router.sh && npm run build"
 }
