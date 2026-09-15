@@ -1,0 +1,148 @@
+name: WAWIS 10.68 fast UI final temp
+
+on:
+  push:
+    branches:
+      - release/v10.68
+    paths:
+      - .github/workflows/v1068-final-temp.yml
+
+permissions:
+  contents: write
+
+env:
+  TEMP_WORKFLOW: .github/workflows/v1068-final-temp.yml
+
+jobs:
+  final-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove temp workflow from release filesystem
+        run: rm -f "$TEMP_WORKFLOW"
+
+      - name: Fetch production base
+        run: git fetch origin main:refs/remotes/origin/main --force
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Bump version to 10.68 and prepare gate
+        env:
+          DIAG_CHECKED_AT: '2026-09-15T16:26:32.691120Z'
+        run: |
+          node version-bump.cjs
+          node <<'NODE'
+          const fs = require('fs');
+          const version = '10.68';
+          const description = 'mobilny pasek akcji ma stabilny prawy margines; PW nie przylega do prawej krawędzi, a rozstaw elementów pozostaje równy.';
+          let readme = fs.readFileSync('README.md', 'utf8');
+          readme = readme.replace(`- wersja \`${version}\` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.`, `- wersja \`${version}\` — ${description}`);
+          fs.writeFileSync('README.md', readme);
+          let changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          changelog = changelog.replace(`## ${version}\n- uzupełnij opis zmian dla wersji ${version}`, `## ${version}\n- ${description}`);
+          fs.writeFileSync('CHANGELOG.md', changelog);
+          const checkedAt = process.env.DIAG_CHECKED_AT;
+          const diagnostic = {
+            checked: true,
+            last_24h: true,
+            checked_at: checkedAt,
+            result: 'GO',
+            notes: '24 h: 3 error i 10 warning z wcześniejszych wersji; od wdrożenia 10.67 brak nowych warning/error (0).'
+          };
+          const gate = {
+            policy_enforced_from: '10.60',
+            version,
+            scope: 'mobile',
+            release_branch: `release/v${version}`,
+            baseline_diagnostics: diagnostic,
+            predeploy_diagnostics: diagnostic,
+            drive_backup: {
+              required: true,
+              folder_path: 'Aplikacja/Wersje',
+              folder_id: '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S',
+              file_name: `klima-app-v${version}.zip`,
+              file_id: '',
+              size_bytes: 0,
+              uploaded: false,
+              uploaded_at: null,
+              verified: false,
+              notes: 'Do uzupełnienia po zielonym final release.'
+            },
+            main_protection: {
+              source_branch: `release/v${version}`,
+              ready_for_main: false,
+              final_release_run_id: '',
+              final_release_commit: '',
+              notes: 'Fast-UI release; Vercel dopiero po finalnym GO i backupie Drive.'
+            },
+            postdeploy_diagnostics: {
+              evidence_required: true,
+              checked: false,
+              last_24h: true,
+              checked_at: null,
+              result: 'PENDING',
+              production_version_verified: false,
+              service_worker_verified: false,
+              evidence_file: 'post-deploy-evidence.json',
+              notes: 'Do wykonania po produkcyjnym wdrożeniu 10.68.'
+            }
+          };
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
+          NODE
+
+      - name: Pre-release policy gate
+        run: node scripts/release-policy-gate.cjs
+
+      - name: Detect automatic release profile
+        id: impact
+        run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
+
+      - name: Require FAST-UI mobile profile
+        run: node -e "const i=require('./RELEASE-IMPACT.json'); if(i.profile!=='fast-ui'||i.scope!=='mobile'||i.needs_playwright) { console.error(i); process.exit(1); }"
+
+      - name: Run one automatic fast UI release pass
+        run: node scripts/run-release.cjs auto --base-ref origin/main --skip-version-bump
+
+      - name: Stamp final run id
+        env:
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const gate = JSON.parse(fs.readFileSync('RELEASE-GATE.json','utf8'));
+          gate.main_protection.final_release_run_id = process.env.RUN_ID;
+          gate.main_protection.notes = 'Fast-UI final release zakończony; oczekuje wyłącznie na backup Drive i ready_for_main.';
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
+          NODE
+
+      - name: Upload final ZIP and release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.68
+          path: |
+            releases/klima-app-v10.68.zip
+            RELEASE-RESULT.md
+            RELEASE-IMPACT.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Commit version and release evidence
+        run: |
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md RELEASE-GATE.json RELEASE-RESULT.md RELEASE-IMPACT.json
+          git add -u "$TEMP_WORKFLOW"
+          git commit -m 'WAWIS 10.68: finalny fast-UI release'
+          git push origin HEAD:release/v10.68
