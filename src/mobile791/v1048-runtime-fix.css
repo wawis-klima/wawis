@@ -12,7 +12,7 @@
     min-width:0!important;
     margin:0!important;
     box-sizing:border-box!important;
-    padding:0!important;
+    padding-inline:8px!important;
     align-items:center!important;
     justify-content:space-between!important;
     gap:4px!important;
