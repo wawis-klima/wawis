@@ -1,10 +1,11 @@
 {
-  "version": "10.66",
-  "summary": "Aplikacja na iPhonie sprawdza nową wersję także po powrocie z tła i sama odświeża się, gdy produkcja jest nowsza.",
+  "version": "10.67",
+  "summary": "Wydanie 10.67 przygotowuje poprawki mobilne z 10.65–10.66 i uszczelnia bezpieczny model GitHub → jeden produkcyjny deploy Vercela z main.",
   "changes": [
-    "Sprawdzanie app-version.json przy pageshow, focus, online i visibilitychange.",
-    "Odczyt wersji z cache: no-store i cache-bustingiem.",
-    "Przy wykryciu nowszej wersji Service Worker jest aktualizowany, a aplikacja automatycznie przeładowywana.",
-    "Zachowany 24 px prawy odstęp PW z 10.65."
+    "Mobile: prawy odstęp paska akcji ma 24 px, dzięki czemu przycisk PW jest wyraźnie odsunięty od prawej krawędzi.",
+    "iPhone/PWA: aplikacja sprawdza produkcyjny app-version.json po powrocie z tła i automatycznie odświeża nowszą wersję.",
+    "Vercel: automatyczne Preview są blokowane dla wszystkich gałęzi roboczych, także release/* i runner/*; automatyczny deploy pozostaje wyłącznie dla main.",
+    "Vercel: dodatkowy guard odrzuca build, jeśli środowisko nie jest production albo commit nie pochodzi z main.",
+    "Bezpieczeństwo wydania pozostaje wielowarstwowe: klasyfikacja FAST/TARGETED/CRITICAL, release gate, finalny ZIP, backup Drive i post-deploy evidence."
   ]
 }

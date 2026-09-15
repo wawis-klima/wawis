@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.66",
+  "version": "10.67",
   "scope": "full",
-  "release_branch": "release/v10.66",
+  "release_branch": "release/v10.67",
   "baseline_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": true,
-    "checked_at": "2026-09-15T06:52:04.023840Z",
-    "result": "GO",
-    "notes": "24 h: 7 wcześniejszych pojedynczych zdarzeń problematycznych; od produkcyjnego wdrożenia 10.65 o 06:39:33 UTC: 0 zdarzeń i 0 problemów."
+    "checked_at": null,
+    "result": "PENDING",
+    "notes": "Do wykonania przed finalnym wydaniem 10.67. Wersja jest przygotowana, ale celowo nie jest jeszcze gotowa do main ani Vercela."
   },
   "predeploy_diagnostics": {
     "checked": false,
     "last_24h": true,
     "checked_at": null,
     "result": "PENDING",
-    "notes": "Unieważnione po zmianie infrastruktury release/Vercel. Przed merge wymagany ponowny pre-deploy GO i pełny CRITICAL final release."
+    "notes": "Do wykonania po pełnym CRITICAL final release bezpośrednio przed merge do main."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.66.zip",
-    "file_id": "16zm2_xTnx64onusUzcK0MEJ3irS_t3Y8",
-    "size_bytes": 12167984,
-    "uploaded": true,
-    "uploaded_at": "2026-09-15T06:54:43.291Z",
+    "file_name": "klima-app-v10.67.zip",
+    "file_id": "",
+    "size_bytes": 0,
+    "uploaded": false,
+    "uploaded_at": null,
     "verified": false,
-    "notes": "Poprzedni ZIP 10.66 powstał przed zmianą infrastruktury release/Vercel i nie jest dowodem dla aktualnej gałęzi. Po pełnym CRITICAL final release trzeba wygenerować i ponownie zweryfikować aktualny ZIP 10.66."
+    "notes": "Aktualny ZIP 10.67 ma powstać po zielonym pełnym CRITICAL final release i zostać ponownie zweryfikowany na Google Drive."
   },
   "main_protection": {
-    "source_branch": "release/v10.66",
+    "source_branch": "release/v10.67",
     "ready_for_main": false,
     "final_release_run_id": "",
     "final_release_commit": "",
-    "notes": "NO-GO do czasu pełnego CRITICAL final release obejmującego blokadę Preview Vercela, twardy production/main guard, ponowny build/verify/ZIP i backup Drive."
+    "notes": "NO-GO do czasu pełnego CRITICAL final release, pre-deploy GO, ZIP/Drive GO i świadomego merge do main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do sprawdzenia dopiero po prawidłowym produkcyjnym wdrożeniu 10.66 z main."
+    "notes": "Do wykonania dopiero po późniejszym produkcyjnym wdrożeniu 10.67 na Vercelu."
   }
 }
