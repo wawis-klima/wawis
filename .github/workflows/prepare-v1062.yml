@@ -1,4 +1,4 @@
-name: WAWIS 10.62 prepare version
+name: WAWIS 10.62 prepare release metadata
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  bump-version:
+  prepare-metadata:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release branch
@@ -19,28 +19,106 @@ jobs:
         with:
           ref: release/v10.62
 
-      - name: Bump 10.61 to 10.62
+      - name: Update release documentation and gate
         shell: bash
         run: |
-          CURRENT="$(node -p "require('./app-version.json').version")"
-          if [ "$CURRENT" = "10.61" ]; then
-            node version-bump.cjs
-          elif [ "$CURRENT" = "10.62" ]; then
-            echo "Version already prepared: $CURRENT"
-          else
-            echo "Unexpected release version: $CURRENT" >&2
-            exit 1
-          fi
+          node <<'NODE'
+          const fs = require('fs');
+          const version = '10.62';
+          const summary = 'Wyrównano odstępy w jednoliniowym nagłówku mobilnym: inicjały użytkownika mają taki sam boczny oddech jak lewa krawędź, a pole wersji ma szerokość standardowych akcji.';
 
-      - name: Commit synchronized version files
+          let readme = fs.readFileSync('README.md', 'utf8');
+          readme = readme.replace(/^# Wawis Klimatyzacja — wersja\s+[0-9]+\.[0-9]{2}/m, `# Wawis Klimatyzacja — wersja ${version}`);
+          const lastFixLine = `## Ostatnia poprawka\n- wersja \`${version}\` — ${summary}`;
+          if (/## Ostatnia poprawka\s*\r?\n- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m.test(readme)) {
+            readme = readme.replace(/## Ostatnia poprawka\s*\r?\n- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m, lastFixLine);
+          } else {
+            readme += `\n\n${lastFixLine}\n`;
+          }
+          readme = readme.replace(/Wersja 10\.25 usuwa z mobilnego modułu Paliwo[^\n]*/,
+            'Wersja 10.62 porządkuje górny pasek aplikacji mobilnej: po obu bokach jest równy odstęp, pole wersji ma 40 px, a inicjały użytkownika nie przylegają do prawej krawędzi. Desktop pozostaje bez zmian.');
+          fs.writeFileSync('README.md', readme);
+
+          let changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          changelog = changelog.replace(
+            /^## 10\.62\r?\n[\s\S]*?(?=^## 10\.61)/m,
+            '## 10.62\n- Dodano po 8 px wewnętrznego odstępu po lewej i prawej stronie jednoliniowego nagłówka mobilnego.\n- Zmniejszono slot numeru wersji z 48 px do 40 px, czyli do szerokości standardowych przycisków paska.\n- Inicjały użytkownika (np. PW) nie przylegają już do prawej krawędzi i cały pasek ma bardziej równy rytm.\n- Dodano regresyjny smoke test pilnujący bocznych odstępów i szerokości pola wersji.\n- Desktop, dane, Supabase i logika aplikacji pozostają bez zmian.\n\n'
+          );
+          fs.writeFileSync('CHANGELOG.md', changelog);
+
+          fs.writeFileSync('release-notes.json', JSON.stringify({
+            version,
+            summary,
+            changes: [
+              'Dodano 8 px wewnętrznego odstępu po lewej i prawej stronie mobilnego toolbaru.',
+              'Zmniejszono slot numeru wersji z 48 px do 40 px, zgodnie z szerokością standardowych akcji.',
+              'Inicjały użytkownika są odsunięte od prawej krawędzi, a układ zachowuje jeden wiersz.',
+              'Dodano test regresyjny dla równych odstępów i szerokości pola wersji.',
+              'Desktop, Supabase i logika biznesowa pozostają bez zmian.'
+            ]
+          }, null, 2) + '\n');
+
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify({
+            policy_enforced_from: '10.60',
+            version,
+            scope: 'mobile',
+            release_branch: 'release/v10.62',
+            baseline_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: '2026-09-15T04:29:39.056979Z',
+              result: 'GO',
+              notes: 'Baseline 24 h przed 10.62: trzy pojedyncze istniejące zdarzenia bez serii ani wzrostu — 1 error app/console.error w 10.60, 1 warning data.refresh/console.warn w 10.60 (Load failed) oraz 1 warning auth/console.warn w 10.61. Brak sygnału regresji związanej z planowaną zmianą CSS.'
+            },
+            predeploy_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: '2026-09-15T04:34:04.073959Z',
+              result: 'GO',
+              notes: 'Kontrola pre-deploy 24 h: ten sam stabilny zestaw trzech pojedynczych zdarzeń (10.60 app error, 10.60 data.refresh warning, 10.61 auth warning), bez nowych powtórzeń i bez zdarzeń 10.62. GO dla zmiany wyłącznie layoutu mobile.'
+            },
+            drive_backup: {
+              required: true,
+              folder_path: 'Aplikacja/Wersje',
+              folder_id: '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S',
+              file_name: 'klima-app-v10.62.zip',
+              file_id: null,
+              size_bytes: 0,
+              uploaded: false,
+              uploaded_at: null,
+              verified: false,
+              notes: 'Do uzupełnienia po zielonym finalnym release run i wgraniu ZIP na Google Drive.'
+            },
+            main_protection: {
+              source_branch: 'release/v10.62',
+              ready_for_main: false,
+              final_release_run_id: null,
+              final_release_commit: null,
+              notes: 'Oczekuje na zielony finalny mobile release i zweryfikowany ZIP na Google Drive.'
+            },
+            postdeploy_diagnostics: {
+              evidence_required: true,
+              checked: false,
+              last_24h: true,
+              checked_at: null,
+              result: 'PENDING',
+              production_version_verified: false,
+              service_worker_verified: false,
+              evidence_file: 'post-deploy-evidence.json',
+              notes: 'Do wykonania po wdrożeniu produkcyjnym 10.62.'
+            }
+          }, null, 2) + '\n');
+          NODE
+
+      - name: Commit release metadata
         shell: bash
         run: |
-          if git diff --quiet; then
-            echo "No version changes to commit."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md
-          git commit -m "WAWIS 10.62 — synchronize release version"
+          git add README.md CHANGELOG.md release-notes.json RELEASE-GATE.json
+          if git diff --cached --quiet; then
+            echo "No metadata changes to commit."
+            exit 0
+          fi
+          git commit -m "WAWIS 10.62 — complete release metadata"
           git push origin HEAD:release/v10.62
