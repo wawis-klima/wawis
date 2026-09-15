@@ -1,0 +1,30 @@
+name: WAWIS 10.70 deploy gate temp
+
+on:
+  push:
+    branches:
+      - release/v10.70
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Exact Vercel deploy gate
+        run: node scripts/release-policy-gate.cjs --deploy
+
+      - name: Remove temporary workflow
+        run: |
+          rm -f .github/workflows/v1070-deploy-gate-temp.yml
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add -u .github/workflows/v1070-deploy-gate-temp.yml
+          git commit -m 'WAWIS 10.70: deploy gate GO'
+          git push origin HEAD:release/v10.70
