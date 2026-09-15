@@ -1,0 +1,52 @@
+name: WAWIS 10.65 post-deploy
+
+on:
+  push:
+    branches:
+      - runner/v10.65
+    paths:
+      - .github/workflows/v1065-postdeploy-runner.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Verify live 10.65
+        run: |
+          VERSION=$(curl -fsSL "https://wawis.pages.dev/app-version.json?release_check=$(date +%s)")
+          SW=$(curl -fsSL "https://wawis.pages.dev/push-sw.js?release_check=$(date +%s)")
+          echo "$VERSION" | grep -q '"version": "10.65"'
+          echo "$SW" | grep -q 'wawis-app-shell-v10.65'
+          cat > post-deploy-evidence.json <<'JSON'
+          {
+            "schema_version": 1,
+            "version": "10.65",
+            "production_url": "https://wawis.pages.dev",
+            "production": {
+              "version_verified": true,
+              "service_worker_verified": true,
+              "app_version": "10.65",
+              "service_worker_cache": "wawis-app-shell-v10.65"
+            },
+            "diagnostics": {
+              "checked": true,
+              "checked_at": "2026-09-15T06:40:17.490519Z",
+              "result": "GO",
+              "since_deploy_total_count": 0,
+              "since_deploy_problematic_count": 0,
+              "deployment_started_at": "2026-09-15T06:39:33Z"
+            }
+          }
+          JSON
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-v10.65
+          path: post-deploy-evidence.json
+          if-no-files-found: error
+          retention-days: 14
