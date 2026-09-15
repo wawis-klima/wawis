@@ -1,5 +1,10 @@
 ## 10.63
-- uzupełnij opis zmian dla wersji 10.63
+- Dodano automatyczny klasyfikator zmian porównujący gałąź release z produkcyjnym main.
+- FAST UI obsługuje bezpieczne zmiany CSS i statycznych assetów: tylko mały zestaw smoke testów, jeden build, weryfikacja paczki i bez Playwrighta.
+- TARGETED obsługuje zmiany funkcjonalne frontendu: uruchamia tylko powiązane grupy regresji i E2E dla właściwej platformy.
+- CRITICAL obejmuje backend, Supabase, bezpieczeństwo, synchronizację, push i samą infrastrukturę wydawania: zachowuje pełne testy oraz E2E mobile i desktop.
+- Finalny build, verify:bundle, verify:release, ZIP, backup Drive i kontrola produkcji pozostają obowiązkowe dla każdego produkcyjnego wydania.
+- PR checks korzystają z tego samego klasyfikatora, więc kolejne drobne poprawki będą sprawdzane znacznie szybciej bez obniżenia kontroli krytycznych zmian.
 
 ## 10.62
 - Dodano po 8 px wewnętrznego odstępu po lewej i prawej stronie jednoliniowego nagłówka mobilnego.
