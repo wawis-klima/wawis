@@ -19,7 +19,7 @@ Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHA
 
 ## 3. Profile automatyczne
 
-- `MICRO UI` — tylko CSS aplikacji: jeden szybki PR check, jeden merge, jeden Vercel, ZIP po merge.
+- `MICRO UI` — tylko CSS aplikacji: bez osobnego workflow przygotowawczego, jeden szybki PR check, jeden merge, jeden Vercel, ZIP po merge.
 - `FAST UI` — pozostała bezpieczna prezentacja, np. statyczne assety: lekkie grupy `ui-fast-*`.
 - `TARGETED` — frontend funkcjonalny: tylko powiązane grupy domenowe + E2E właściwej platformy.
 - `CRITICAL` — backend, Supabase, auth/RLS, storage, synchronizacja, push, deployment lub release automation: pełne grupy + E2E mobile i desktop.
@@ -42,12 +42,15 @@ Dla wydania innego niż MICRO UI:
 ## 5. MICRO UI — szybka ścieżka
 
 - [ ] Wszystkie istotne pliki są `.css` pod `src/` albo `public/`.
+- [ ] Nie tworzymy żadnego per-wersja workflow typu `micro prepare` ani `vXX-micro-prepare.yml`.
+- [ ] Wersja, README/CHANGELOG i `RELEASE-GATE.json` są aktualizowane bezpośrednio na `release/v<WERSJA>`.
 - [ ] `RELEASE-GATE.json.release_mode` ma `micro-ui`.
 - [ ] `RELEASE-GATE.json.micro_ui.css_only=true`.
 - [ ] `drive_backup.required=false` oraz `drive_backup.deferred=true`.
 - [ ] README i CHANGELOG opisują nową wersję bez placeholdera.
 - [ ] Otworzono PR z `release/v<WERSJA>` do `main`.
 - [ ] Wykonał się **jeden** `WAWIS PR checks / targeted-checks` i jest zielony.
+- [ ] PR check klasyfikuje efektywny diff, więc automatyczne pliki wersji nie uruchamiają grup `infra` ani `push`.
 - [ ] Nie uruchamiamy `WAWIS final release checks` przed merge.
 - [ ] Nie czekamy na ZIP/Drive przed merge.
 - [ ] Merge do `main` wykonujemy tylko raz.

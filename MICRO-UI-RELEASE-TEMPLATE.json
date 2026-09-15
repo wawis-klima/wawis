@@ -6,10 +6,12 @@
     "final_release_runner_required": false,
     "drive_zip_before_merge_required": false,
     "archive_after_merge": true,
-    "vercel_deploys": 1
+    "vercel_deploys": 1,
+    "temporary_prepare_workflow_allowed": false,
+    "preparation_mode": "direct-branch-update"
   },
   "flow": [
-    "release/vX + CSS change + version metadata",
+    "release/vX + direct CSS/version metadata update (no per-version prepare workflow)",
     "one WAWIS PR checks run",
     "merge to main",
     "one production Vercel deploy",
