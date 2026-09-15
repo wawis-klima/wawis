@@ -22,19 +22,19 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.63.zip",
-    "file_id": null,
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": null,
-    "verified": false,
-    "notes": "Oczekuje na finalny ZIP 10.63."
+    "file_id": "1_zJiotMFmUCVNlHH4xXnt9FtPhqeMWnZ",
+    "size_bytes": 12169418,
+    "uploaded": true,
+    "uploaded_at": "2026-09-15T06:08:41.895Z",
+    "verified": true,
+    "notes": "Finalny ZIP 10.63 po zielonym release run 34935365900; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12169418 B. SHA256 lokalnej paczki: 3916247d21e2263f0d4380851dc1f2900f2203cd38b7d69c51d3a66eebff9dcb."
   },
   "main_protection": {
     "source_branch": "release/v10.63",
-    "ready_for_main": false,
-    "final_release_run_id": null,
-    "final_release_commit": null,
-    "notes": "Oczekuje na zielony finalny release i zweryfikowany backup Drive."
+    "ready_for_main": true,
+    "final_release_run_id": "34935365900",
+    "final_release_commit": "b5aa639e1c1f397ecec01bdcee02e12cd157073d",
+    "notes": "Finalny automatyczny release zakończony GO: profil critical/full, 11 grup regresji, E2E mobile i desktop, jeden build, verify:bundle, verify:release oraz ZIP. Backup Drive zweryfikowany."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
