@@ -1,0 +1,72 @@
+name: WAWIS 10.72 fast release temp
+
+on:
+  push:
+    branches:
+      - release/v10.72
+    paths:
+      - .github/workflows/v1072-fast-release-temp.yml
+
+permissions:
+  contents: write
+
+env:
+  CI: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Remove temporary workflow from release tree
+        run: rm -f .github/workflows/v1072-fast-release-temp.yml
+
+      - name: Prepare version 10.72 metadata
+        run: node version-bump.cjs
+
+      - name: Targeted mobile header smokes
+        run: |
+          npm run test:smoke:mobile-admin-header
+          npm run test:smoke:mobile-worker-add-client
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Real iPhone spacing test
+        run: npx playwright test tests/e2e/release-visual-checks.spec.js --grep "nagłówek mobilny ma bardzo małe"
+
+      - name: Build
+        run: npm run build
+
+      - name: Create release ZIP
+        run: node scripts/release-zip.cjs
+
+      - name: Upload release ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.72
+          path: releases/klima-app-v10.72.zip
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Commit release metadata and remove temp workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "WAWIS 10.72: przygotuj zweryfikowane wydanie"
+          git push origin HEAD:release/v10.72
