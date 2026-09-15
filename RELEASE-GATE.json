@@ -34,17 +34,17 @@
     "ready_for_main": true,
     "final_release_run_id": "34938683361",
     "final_release_commit": "8553b6afc6fd8889e2112d2755fac2e57c62ccff",
-    "notes": "Finalny release 10.66 zakończony GO: runtime update guard, core, mobile, jeden build, bundle, mobile CSS, verify-release i ZIP. Backup Drive zweryfikowany."
+    "notes": "Finalny release 10.66 zakończony GO: runtime update guard, core, mobile, jeden build, bundle, mobile CSS, verify-release i ZIP. Backup Drive zweryfikowany. Merge produkcyjny: 78014c8a95f263040430dc6b522fa83f6d8395ce."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "production_version_verified": false,
-    "service_worker_verified": false,
+    "checked_at": "2026-09-15T06:58:11.572159Z",
+    "result": "GO",
+    "production_version_verified": true,
+    "service_worker_verified": true,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do sprawdzenia po produkcyjnym wdrożeniu 10.66."
+    "notes": "Cloudflare Pages wdrożył commit 78014c8 sukcesem. Szybka kontrola produkcji run 34939336657 potwierdziła app-version 10.66 i cache wawis-app-shell-v10.66. Od startu wdrożenia 06:56:25 UTC: 0 zdarzeń diagnostycznych i 0 problemów."
   }
 }
