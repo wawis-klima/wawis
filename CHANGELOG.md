@@ -1,5 +1,6 @@
 ## 10.70
-- uzupełnij opis zmian dla wersji 10.70
+- mobilny górny pasek akcji używa deterministycznej siatki sześciu kolumn zamiast flex/space-between; realny test geometrii iPhone potwierdza równy odstęp po lewej i prawej stronie, w tym przy PW.
+- Dodano rzeczywisty test Playwright na profilu iPhone 14, który mierzy lewy i prawy odstęp oraz równomierność przerw między elementami.
 
 ## 10.69
 - mobilny pasek akcji ma prawy odstęp wymuszony na ramce nagłówka; PW jest odsunięte od prawej krawędzi bez zmiany odstępu samym marginesem przycisku.
