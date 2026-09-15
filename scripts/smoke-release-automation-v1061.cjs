@@ -55,8 +55,12 @@ assert.match(impact, /critical/);
 assert.match(impact, /isPresentationOnly/);
 assert.match(impact, /isCriticalPath/);
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 for (const name of ['jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'ui-fast-core', 'ui-fast-mobile', 'ui-fast-desktop']) {
-  assert.match(groups, new RegExp(`${name}:\\s*\\[`), `Brak grupy regresji ${name}`);
+  assert.match(groups, new RegExp(`['\"]?${escapeRegex(name)}['\"]?\\s*:\\s*\\[`), `Brak grupy regresji ${name}`);
 }
 
 assert(exists('scripts', 'smoke-release-impact-v1063.cjs'), 'Brak testu klasyfikatora release-impact');
