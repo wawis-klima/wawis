@@ -1,3 +1,6 @@
+## 10.73
+- lewy skrajny odstęp mobilnego paska zmniejszono do 1 px; prawa krawędź pozostaje 2,5 px, a odzyskane miejsce zwiększa odstępy pomiędzy kontrolkami.
+
 ## 10.72
 - skrajne odstępy mobilnego paska zmniejszono z 6 px do 2,5 px (około 60%); rozmiary ikon pozostają bez zmian, a odzyskane miejsce trafia pomiędzy kontrolki.
 - realny test geometrii na profilu iPhone 14 potwierdza równe skrajne odstępy około 2,5 px oraz większe, równe przerwy wewnętrzne.

@@ -1,50 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.72",
+  "version": "10.73",
+  "release_mode": "micro-ui",
   "scope": "mobile",
-  "release_branch": "release/v10.72",
-  "baseline_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "checked_at": "2026-09-15T17:26:26.290617Z",
-    "result": "GO",
-    "notes": "24 h: 15 wcześniejszych warning/error; od wdrożenia 10.71 brak nowych problemów (0). Zmiana 10.72 dotyczy wyłącznie geometrii mobilnego paska."
-  },
-  "predeploy_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "checked_at": "2026-09-15T17:26:26.290617Z",
-    "result": "GO",
-    "notes": "Od wdrożenia 10.71 brak nowych warning/error (0). Realny test geometrii iPhone, targeted smokes i build 10.72 są zielone."
-  },
+  "release_branch": "release/v10.73",
   "drive_backup": {
-    "required": true,
+    "required": false,
+    "deferred": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.72.zip",
-    "file_id": "1JcoJoqfzPf7iCPr1-vop159tmwHVkiMV",
-    "size_bytes": 12063593,
-    "uploaded": true,
-    "uploaded_at": "2026-09-15T17:25:32.966Z",
-    "verified": true,
-    "notes": "ZIP po zielonym realnym teście iPhone, targeted smokes i buildzie 10.72 zweryfikowany na Google Drive."
+    "file_name": "klima-app-v10.73.zip"
   },
   "main_protection": {
-    "source_branch": "release/v10.72",
+    "source_branch": "release/v10.73",
     "ready_for_main": true,
-    "final_release_run_id": "35001016396",
-    "final_release_commit": "c32bc50d660dbb2d4f4056785e7595f06f22abc7",
-    "notes": "Targeted smokes + realny test iPhone + build GO; backup Drive zweryfikowany; gotowe do produkcyjnego deployu."
+    "required_check": "WAWIS PR checks / targeted-checks"
+  },
+  "micro_ui": {
+    "policy_version": 1,
+    "css_only": true,
+    "archive_deferred": true,
+    "effective_files": [
+      "src/mobile791/v1048-runtime-fix.css"
+    ]
   },
   "postdeploy_diagnostics": {
-    "evidence_required": true,
-    "checked": false,
-    "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "production_version_verified": false,
-    "service_worker_verified": false,
-    "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.72."
+    "evidence_required": false,
+    "result": "PENDING"
   }
 }
