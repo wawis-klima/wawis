@@ -7,5 +7,5 @@
       "main": true
     }
   },
-  "buildCommand": "node scripts/vercel-deploy-guard.cjs && node scripts/release-policy-gate.cjs --deploy && npm run build"
+  "buildCommand": "node scripts/vercel-deploy-guard.cjs && WAWIS_STANDARD_DEPLOY_GATE='node scripts/release-policy-gate.cjs --deploy' bash scripts/deploy-gate-router.sh && npm run build"
 }
