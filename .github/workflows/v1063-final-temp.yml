@@ -1,0 +1,62 @@
+name: WAWIS 10.63 final automatic release
+
+on:
+  push:
+    branches:
+      - release/v10.63
+    paths:
+      - .github/workflows/v1063-final-temp.yml
+
+permissions:
+  contents: read
+
+jobs:
+  final-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/v10.63
+          fetch-depth: 0
+
+      - name: Fetch production base
+        run: git fetch origin main:refs/remotes/origin/main --force
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Pre-release policy gate
+        run: node scripts/release-policy-gate.cjs
+
+      - name: Detect automatic release profile
+        id: impact
+        run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
+
+      - name: Install Chromium when required
+        if: steps.impact.outputs.needs_playwright == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run final automatic release once
+        run: node scripts/run-release.cjs auto --base-ref origin/main --skip-version-bump
+
+      - name: Upload final release artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.63
+          path: |
+            releases/klima-app-v10.63.zip
+            RELEASE-RESULT.md
+            RELEASE-IMPACT.json
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          retention-days: 14
