@@ -1,3 +1,6 @@
+## 10.70
+- uzupełnij opis zmian dla wersji 10.70
+
 ## 10.69
 - mobilny pasek akcji ma prawy odstęp wymuszony na ramce nagłówka; PW jest odsunięte od prawej krawędzi bez zmiany odstępu samym marginesem przycisku.
 
