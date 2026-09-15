@@ -34,12 +34,8 @@ function git(args, options = {}) {
 
 function normalizeJsonVersionOnly(file, source) {
   const json = JSON.parse(source);
-  if (file === 'app-version.json' || file === 'public/app-version.json') {
-    delete json.version;
-  }
-  if (file === 'package.json') {
-    delete json.version;
-  }
+  if (file === 'app-version.json' || file === 'public/app-version.json') delete json.version;
+  if (file === 'package.json') delete json.version;
   if (file === 'package-lock.json') {
     delete json.version;
     if (json.packages?.['']) delete json.packages[''].version;
@@ -158,10 +154,12 @@ function classifyEffectiveFiles(effectiveFiles) {
   const scope = scopeFromPlatforms(platforms);
 
   if (effectiveFiles.length === 0) {
+    const groups = ['ui-fast-core'];
     return {
       profile: 'fast-ui',
       reason: 'W diffie są wyłącznie automatyczne pliki wersji lub dokumentacja wydania.',
-      groups: ['ui-fast-core'],
+      groups,
+      pr_groups: groups,
       platforms,
       scope,
       e2e: [],
@@ -174,6 +172,7 @@ function classifyEffectiveFiles(effectiveFiles) {
       profile: 'critical',
       reason: 'Zmiana dotyka infrastruktury, backendu, bezpieczeństwa, synchronizacji albo konfiguracji wydania.',
       groups: getReleaseGroups('full'),
+      pr_groups: selectDomainGroups(effectiveFiles),
       platforms: ['mobile', 'desktop'],
       scope: 'full',
       e2e: ['mobile', 'desktop'],
@@ -189,6 +188,7 @@ function classifyEffectiveFiles(effectiveFiles) {
       profile: 'fast-ui',
       reason: 'Zmiana obejmuje wyłącznie warstwę prezentacji (CSS lub statyczne assety).',
       groups,
+      pr_groups: groups,
       platforms,
       scope,
       e2e: [],
@@ -204,6 +204,7 @@ function classifyEffectiveFiles(effectiveFiles) {
     profile: 'targeted',
     reason: 'Zmiana funkcjonalna frontendu bez plików krytycznych — uruchamiane są tylko powiązane regresje i właściwe E2E.',
     groups,
+    pr_groups: groups,
     platforms,
     scope,
     e2e: [...platforms],
@@ -256,6 +257,7 @@ function writeGithubOutput(file, impact) {
     `needs_playwright=${impact.needs_playwright ? 'true' : 'false'}`,
     `platforms=${impact.platforms.join(',')}`,
     `groups=${impact.groups.join(',')}`,
+    `pr_groups=${impact.pr_groups.join(',')}`,
   ];
   fs.appendFileSync(file, `${lines.join('\n')}\n`);
 }
@@ -268,7 +270,8 @@ if (require.main === module) {
   console.log(`WAWIS release impact: ${impact.profile} / ${impact.scope}`);
   console.log(`Powód: ${impact.reason}`);
   console.log(`Zmiany istotne: ${impact.effective_files.length}; pliki wersji/dokumentacji: ${impact.generated_only_files.length}`);
-  console.log(`Grupy: ${impact.groups.join(', ')}`);
+  console.log(`PR grupy: ${impact.pr_groups.join(', ')}`);
+  console.log(`Finalne grupy: ${impact.groups.join(', ')}`);
   console.log(`E2E: ${impact.e2e.length ? impact.e2e.join(', ') : 'pominięte'}`);
 }
 
