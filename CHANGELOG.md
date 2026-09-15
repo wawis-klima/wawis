@@ -1,3 +1,6 @@
+## 10.64
+- uzupełnij opis zmian dla wersji 10.64
+
 ## 10.63
 - Dodano automatyczny klasyfikator zmian porównujący gałąź release z produkcyjnym main.
 - FAST UI obsługuje bezpieczne zmiany CSS i statycznych assetów: tylko mały zestaw smoke testów, jeden build, weryfikacja paczki i bez Playwrighta.
