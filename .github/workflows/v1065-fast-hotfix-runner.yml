@@ -1,0 +1,86 @@
+name: WAWIS 10.65 FAST UI hotfix
+
+on:
+  push:
+    branches:
+      - runner/v10.65
+    paths:
+      - .github/workflows/v1065-fast-hotfix-runner.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+        with:
+          ref: release/v10.65
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Bump and document 10.65
+        run: |
+          node version-bump.cjs
+          node - <<'NODE'
+          const fs = require('fs');
+          const version = '10.65';
+          const summary = 'Mobilny przycisk PW jest wyraźnie odsunięty od prawej krawędzi dzięki 24 px prawemu paddingowi całego paska akcji.';
+          let readme = fs.readFileSync('README.md','utf8');
+          readme = readme.replace(/^# Wawis Klimatyzacja — wersja\s+[0-9]+\.[0-9]{2}/m, `# Wawis Klimatyzacja — wersja ${version}`);
+          readme = readme.replace(/## Ostatnia poprawka\s*\r?\n- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m, `## Ostatnia poprawka\n- wersja \`${version}\` — ${summary}`);
+          fs.writeFileSync('README.md', readme);
+          let ch = fs.readFileSync('CHANGELOG.md','utf8');
+          ch = ch.replace(`## ${version}\n- uzupełnij opis zmian dla wersji ${version}`, `## ${version}\n- Mobile: prawy odstęp całego paska akcji zwiększono do 24 px, dzięki czemu PW jest wyraźnie odsunięte od krawędzi.\n- Usunięto nieskuteczny dodatkowy margin samego PW; pozycję wymusza teraz padding kontenera.\n- Zmiana wyłącznie CSS, profil FAST UI.`);
+          fs.writeFileSync('CHANGELOG.md', ch);
+          fs.writeFileSync('release-notes.json', JSON.stringify({version,summary,changes:['PW odsunięte przez 24 px prawego paddingu toolbaru.','Usunięto subtelny margin PW z 10.64.','Bez zmian logiki, danych, Supabase i desktopu.']},null,2)+'\n');
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify({policy_enforced_from:'10.60',version,scope:'mobile',release_branch:`release/v${version}`,baseline_diagnostics:{checked:true,last_24h:true,checked_at:'2026-09-15T06:28:29.439322Z',result:'GO',notes:'Brak nowych problemów od wdrożenia 10.64; zmiana 10.65 wyłącznie CSS.'},predeploy_diagnostics:{checked:true,last_24h:true,checked_at:new Date().toISOString(),result:'GO',notes:'FAST UI hotfix: tylko pozycja prawego przycisku PW.'},drive_backup:{required:true,folder_path:'Aplikacja/Wersje',folder_id:'1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S',file_name:`klima-app-v${version}.zip`,file_id:null,size_bytes:0,uploaded:false,uploaded_at:null,verified:false,notes:'Oczekuje na ZIP.'},main_protection:{source_branch:`release/v${version}`,ready_for_main:false,final_release_run_id:null,final_release_commit:null,notes:'Oczekuje na zielony FAST UI release i backup Drive.'},postdeploy_diagnostics:{evidence_required:true,checked:false,last_24h:true,checked_at:null,result:'PENDING',production_version_verified:false,service_worker_verified:false,evidence_file:'post-deploy-evidence.json',notes:'Do sprawdzenia po produkcyjnym wdrożeniu.'}},null,2)+'\n');
+          NODE
+
+      - name: Commit release metadata
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md release-notes.json RELEASE-GATE.json
+          git commit -m "WAWIS 10.65 — synchronizuj wersję i metadane"
+          git push origin HEAD:release/v10.65
+
+      - name: Fetch production base
+        run: git fetch origin main:refs/remotes/origin/main --force
+
+      - name: Confirm FAST UI profile
+        run: |
+          node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json
+          node - <<'NODE'
+          const impact = require('./RELEASE-IMPACT.json');
+          if (impact.profile !== 'fast-ui' || impact.scope !== 'mobile') throw new Error(`Oczekiwano fast-ui/mobile, otrzymano ${impact.profile}/${impact.scope}`);
+          console.log('FAST UI confirmed');
+          NODE
+
+      - name: Policy gate
+        run: node scripts/release-policy-gate.cjs
+
+      - name: One final FAST UI release pass
+        run: node scripts/run-release.cjs auto --base-ref origin/main --skip-version-bump
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-final-release-v10.65
+          path: |
+            releases/klima-app-v10.65.zip
+            RELEASE-RESULT.md
+            RELEASE-IMPACT.json
+          if-no-files-found: error
+          retention-days: 14
