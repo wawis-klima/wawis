@@ -1,0 +1,43 @@
+name: WAWIS 10.66 quick post-deploy
+
+on:
+  push:
+    branches: [runner/v10.66]
+    paths:
+      - .github/workflows/v1066-postdeploy-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify production 10.66
+        run: |
+          set -euo pipefail
+          APP="$(curl -fsS --retry 3 --retry-delay 2 "https://wawis.pages.dev/app-version.json?release_check=${GITHUB_RUN_ID}")"
+          SW="$(curl -fsS --retry 3 --retry-delay 2 "https://wawis.pages.dev/push-sw.js?release_check=${GITHUB_RUN_ID}")"
+          echo "$APP" | grep -q '"version"[[:space:]]*:[[:space:]]*"10.66"'
+          echo "$SW" | grep -q 'wawis-app-shell-v10.66'
+          printf '%s\n' "$APP" > app-version-live.json
+          printf '%s\n' "$SW" > push-sw-live.js
+          cat > post-deploy-evidence.json <<'EOF'
+          {
+            "version": "10.66",
+            "production_url": "https://wawis.pages.dev",
+            "version_verified": true,
+            "service_worker_verified": true,
+            "service_worker_cache": "wawis-app-shell-v10.66"
+          }
+          EOF
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-post-deploy-evidence-v10.66
+          path: |
+            post-deploy-evidence.json
+            app-version-live.json
+            push-sw-live.js
+          retention-days: 14
