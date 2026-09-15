@@ -17,6 +17,7 @@ const release = read('.github', 'workflows', 'release-checks.yml');
 const policy = read('.github', 'workflows', 'release-policy-gate.yml');
 const postWorkflow = read('.github', 'workflows', 'post-deploy-checks.yml');
 const runner = read('scripts', 'run-release.cjs');
+const impact = read('scripts', 'release-impact.cjs');
 const verifier = read('scripts', 'verify-release.cjs');
 const groups = read('scripts', 'test-groups.cjs');
 const deployGate = read('scripts', 'release-policy-gate.cjs');
@@ -30,6 +31,9 @@ assert.match(pr, /cancel-in-progress:\s*true/);
 assert.doesNotMatch(pr, /playwright install/);
 
 assert.match(release, /workflow_dispatch/);
+assert.match(release, /default:\s*auto/);
+assert.match(release, /release-impact\.cjs/);
+assert.match(release, /needs_playwright/);
 assert.match(release, /run-release\.cjs/);
 assert.match(release, /playwright install/);
 assert.match(release, /release-policy-gate\.cjs/);
@@ -38,16 +42,24 @@ assert.match(policy, /workflow_dispatch/);
 assert.doesNotMatch(policy, /push:/);
 
 assert.doesNotMatch(runner, /pushTwice|pass\s*=\s*2|\/2 OK/);
-assert.match(runner, /test:e2e:desktop/);
-assert.match(runner, /test:e2e:mobile/);
+assert.match(runner, /classifyRelease/);
+assert.match(runner, /auto/);
+assert.match(runner, /test:e2e:\$\{platform\}/);
 assert.match(runner, /npm run build/);
 assert.match(runner, /npm run verify:bundle/);
 assert.match(runner, /npm run zip:release/);
 
-for (const name of ['jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates']) {
+assert.match(impact, /fast-ui/);
+assert.match(impact, /targeted/);
+assert.match(impact, /critical/);
+assert.match(impact, /isPresentationOnly/);
+assert.match(impact, /isCriticalPath/);
+
+for (const name of ['jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'ui-fast-core', 'ui-fast-mobile', 'ui-fast-desktop']) {
   assert.match(groups, new RegExp(`${name}:\\s*\\[`), `Brak grupy regresji ${name}`);
 }
 
+assert(exists('scripts', 'smoke-release-impact-v1063.cjs'), 'Brak testu klasyfikatora release-impact');
 assert.doesNotMatch(verifier, /smokeMobile|smokeDesktop|desktopNameplateOcrComponentPath|releaseChecklist\.includes/);
 assert.match(verifier, /app-version\.json/);
 assert.match(verifier, /RELEASE-GATE\.json/);
@@ -76,4 +88,4 @@ assert.match(versionBump, /wawis-app-shell-v/);
 assert(exists('.github', 'CODEOWNERS'), 'Brak CODEOWNERS');
 assert(exists('MAIN-PROTECTION.md'), 'Brak instrukcji ochrony main');
 
-console.log('WAWIS release automation 10.61 smoke OK');
+console.log('WAWIS release automation 10.63 smoke OK — automatic FAST/TARGETED/CRITICAL routing enabled');
