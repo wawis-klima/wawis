@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.70",
+  "version": "10.71",
   "scope": "mobile",
-  "release_branch": "release/v10.70",
+  "release_branch": "release/v10.71",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T17:00:57.442696Z",
+    "checked_at": "2026-09-15T17:13:17.191819Z",
     "result": "GO",
-    "notes": "Pre-deploy 10.70: 1 przejściowy warning sieciowy TypeError Load failed w module contractors na produkcyjnej 10.69; brak błędu związanego z układem 10.70. Realny test iPhone i build 10.70 są zielone."
+    "notes": "24 h: 15 wcześniejszych warning/error; od wdrożenia 10.70 brak nowych problemów (0). Zmiana 10.71 dotyczy wyłącznie geometrii mobilnego paska."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T17:00:57.442696Z",
+    "checked_at": "2026-09-15T17:13:17.191819Z",
     "result": "GO",
-    "notes": "Pre-deploy 10.70: 1 przejściowy warning sieciowy TypeError Load failed w module contractors na produkcyjnej 10.69; brak błędu związanego z układem 10.70. Realny test iPhone i build 10.70 są zielone."
+    "notes": "Od wdrożenia 10.70 brak nowych warning/error (0). Skrajne odstępy 10.71 są weryfikowane realnym testem iPhone."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.70.zip",
-    "file_id": "1PmeXXYtwcyb2YtO89uArxn1-OgOqtYrZ",
-    "size_bytes": 12063034,
-    "uploaded": true,
-    "uploaded_at": "2026-09-15T17:03:47.292Z",
-    "verified": true,
-    "notes": "ZIP po zielonym teście geometrii i buildzie 10.70 zweryfikowany na Google Drive."
+    "file_name": "klima-app-v10.71.zip",
+    "file_id": "",
+    "size_bytes": 0,
+    "uploaded": false,
+    "uploaded_at": null,
+    "verified": false,
+    "notes": "Do uzupełnienia po zielonym szybkim release i uploadzie ZIP na Google Drive."
   },
   "main_protection": {
-    "source_branch": "release/v10.70",
-    "ready_for_main": true,
-    "final_release_run_id": "34998787018",
-    "final_release_commit": "a4c93dbd74b4c300f5543150e33cf70d8865cbaf",
-    "notes": "Realny test geometrii iPhone + build GO; backup Drive zweryfikowany; gotowe do produkcyjnego deployu."
+    "source_branch": "release/v10.71",
+    "ready_for_main": false,
+    "final_release_run_id": "",
+    "final_release_commit": "",
+    "notes": "Oczekuje na zielony szybki release i backup Drive."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.70."
+    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.71."
   }
 }

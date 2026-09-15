@@ -1,3 +1,6 @@
+## 10.71
+- skrajne odstępy mobilnego paska zmniejszono z 12 px do 6 px; ikony zachowują dotychczasowy rozmiar, a dodatkowa przestrzeń trafia pomiędzy kontrolki.
+
 ## 10.70
 - mobilny górny pasek akcji używa deterministycznej siatki sześciu kolumn zamiast flex/space-between; realny test geometrii iPhone potwierdza równy odstęp po lewej i prawej stronie, w tym przy PW.
 - Dodano rzeczywisty test Playwright na profilu iPhone 14, który mierzy lewy i prawy odstęp oraz równomierność przerw między elementami.
