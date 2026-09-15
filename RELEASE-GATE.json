@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.68",
+  "version": "10.69",
   "scope": "mobile",
-  "release_branch": "release/v10.68",
+  "release_branch": "release/v10.69",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T16:26:32.691120Z",
+    "checked_at": "2026-09-15T16:39:49.706442Z",
     "result": "GO",
-    "notes": "24 h: 3 error i 10 warning z wcześniejszych wersji; od wdrożenia 10.67 brak nowych warning/error (0)."
+    "notes": "24 h: 3 error i 11 warning z wcześniejszych wersji; od wdrożenia 10.68 brak nowych warning/error (0)."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T16:30:23.376118Z",
+    "checked_at": "2026-09-15T16:39:49.706442Z",
     "result": "GO",
-    "notes": "Świeża kontrola przed wdrożeniem 10.68: 3 error i 10 warning w ostatnich 24 h, wszystkie wcześniejsze; od wdrożenia 10.67 brak nowych warning/error (0)."
+    "notes": "24 h: 3 error i 11 warning z wcześniejszych wersji; od wdrożenia 10.68 brak nowych warning/error (0)."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.68.zip",
-    "file_id": "1mgq3OgoZIliZGBLdxnpOmdiVv7GBVh6H",
-    "size_bytes": 12170867,
+    "file_name": "klima-app-v10.69.zip",
+    "file_id": "1g4hsWj2TFCQaNUdyBcIVhOsJYNO31YA_",
+    "size_bytes": 12063208,
     "uploaded": true,
-    "uploaded_at": "2026-09-15T16:30:09.733Z",
+    "uploaded_at": "2026-09-15T16:42:40.299Z",
     "verified": true,
-    "notes": "Finalny ZIP po zielonym fast-UI release 34995237070; metadane Google Drive potwierdziły nazwę, folder i rozmiar 12170867 B."
+    "notes": "ZIP po zielonym fast-UI release zweryfikowany na Google Drive."
   },
   "main_protection": {
-    "source_branch": "release/v10.68",
+    "source_branch": "release/v10.69",
     "ready_for_main": true,
-    "final_release_run_id": "34995237070",
-    "final_release_commit": "085ee8a60eca8762d3a89c22e31d2ec78b0ccf68",
-    "notes": "Fast-UI/mobile final release jest zielony, backup Drive zweryfikowany i świeża diagnostyka ma GO. Wersja gotowa do jednego merge do main i jednego produkcyjnego deployu Vercela."
+    "final_release_run_id": "34996593669",
+    "final_release_commit": "feaf26d77fd4d02bf608a8f6106954a476a7a5c6",
+    "notes": "Fast-UI final release GO, backup Drive zweryfikowany; gotowe do merge na main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.68."
+    "notes": "Do wykonania po produkcyjnym wdrożeniu 10.69."
   }
 }

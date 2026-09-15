@@ -1,15 +1,18 @@
 /* WAWIS 10.48 — runtime safety layer: critical mobile layout rules loaded last. */
 @media (max-width:700px){
+  /* 10.69 — prawy odstęp wymuszamy na rodzicu całego paska, nie na samym PW. */
+  .mobileJobsShellV959 .mobileHeaderV2.wawisCompactHeader{
+    padding:7px 16px 7px 7px!important;
+  }
+
   .mobileJobsShellV959 .wawisOneLineToolbar{
     display:flex!important;
-    width:calc(100% - 16px)!important;
-    max-width:calc(100% - 16px)!important;
+    width:100%!important;
+    max-width:100%!important;
     min-width:0!important;
-    margin-left:0!important;
-    margin-right:16px!important;
+    margin:0!important;
     box-sizing:border-box!important;
     padding-inline:8px!important;
-    padding-right:8px!important;
     align-items:center!important;
     justify-content:space-between!important;
     gap:4px!important;
