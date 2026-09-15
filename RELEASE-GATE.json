@@ -38,13 +38,13 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": null,
-    "result": "PENDING",
-    "production_version_verified": false,
-    "service_worker_verified": false,
+    "checked_at": "2026-09-15T06:29:10.955Z",
+    "result": "GO",
+    "production_version_verified": true,
+    "service_worker_verified": true,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.64."
+    "notes": "Produkcja https://wawis.pages.dev potwierdziła app_version 10.64 i cache Service Workera wawis-app-shell-v10.64. Od startu wdrożenia 2026-09-15T06:28:04Z diagnostyka Supabase: 0 nowych zdarzeń i 0 nowych problemów. Post-deploy run 34937127166, artifact 10384000611."
   }
 }
