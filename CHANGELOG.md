@@ -1,3 +1,6 @@
+## 10.63
+- uzupełnij opis zmian dla wersji 10.63
+
 ## 10.62
 - Dodano po 8 px wewnętrznego odstępu po lewej i prawej stronie jednoliniowego nagłówka mobilnego.
 - Zmniejszono slot numeru wersji z 48 px do 40 px, czyli do szerokości standardowych przycisków paska.
