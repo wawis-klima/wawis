@@ -93,6 +93,37 @@ const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone
 test.describe('@mobile release visual iPhone', () => {
   test.use(iphone14);
 
+  test('nagłówek mobilny ma realnie równy odstęp od lewej i prawej krawędzi', async ({ page }) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, ADMIN);
+    await expect(page.locator('.wawisOneLineToolbar')).toBeVisible();
+
+    const geometry = await page.evaluate(() => {
+      const toolbar = document.querySelector('.wawisOneLineToolbar');
+      const items = toolbar ? [...toolbar.children] : [];
+      const toolbarRect = toolbar?.getBoundingClientRect();
+      const rects = items.map((item) => item.getBoundingClientRect());
+      const style = toolbar ? getComputedStyle(toolbar) : null;
+      const leftGap = toolbarRect && rects[0] ? rects[0].left - toolbarRect.left : -1;
+      const rightGap = toolbarRect && rects.at(-1) ? toolbarRect.right - rects.at(-1).right : -1;
+      const innerGaps = rects.slice(1).map((rect, index) => rect.left - rects[index].right);
+      return {
+        display: style?.display,
+        columns: style?.gridTemplateColumns,
+        leftGap,
+        rightGap,
+        innerGaps,
+      };
+    });
+
+    expect(geometry.display).toBe('grid');
+    expect(geometry.columns.split(/\s+/)).toHaveLength(6);
+    expect(geometry.leftGap).toBeGreaterThanOrEqual(11);
+    expect(geometry.rightGap).toBeGreaterThanOrEqual(11);
+    expect(Math.abs(geometry.leftGap - geometry.rightGap)).toBeLessThanOrEqual(1.5);
+    expect(Math.max(...geometry.innerGaps) - Math.min(...geometry.innerGaps)).toBeLessThanOrEqual(1.5);
+  });
+
   test('pełna aplikacja mobilna ma załadowany CSS, nie wychodzi poza ekran i zapisuje screenshot kontrolny', async ({ page }) => {
     ensureArtifactsDir();
     await resetMockSupabase(page);
