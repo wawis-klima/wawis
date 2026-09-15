@@ -1,3 +1,6 @@
+## 10.72
+- uzupełnij opis zmian dla wersji 10.72
+
 ## 10.71
 - skrajne odstępy mobilnego paska zmniejszono z 12 px do 6 px; ikony zachowują dotychczasowy rozmiar, a dodatkowa przestrzeń trafia pomiędzy kontrolki.
 
