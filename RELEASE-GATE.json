@@ -1,40 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.63",
-  "scope": "full",
-  "release_branch": "release/v10.63",
+  "version": "10.64",
+  "scope": "mobile",
+  "release_branch": "release/v10.64",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T04:48:55.012677Z",
+    "checked_at": "2026-09-15T06:18:43.034802Z",
     "result": "GO",
-    "notes": "Baseline przed 10.63: trzy pojedyncze istniejące zdarzenia z poprzednich wersji (10.60 app error, 10.60 data.refresh warning, 10.61 auth warning), bez serii ani wzrostu. Zmiana 10.63 dotyczy automatyki wydawania, nie logiki produkcyjnej aplikacji."
+    "notes": "Baseline 24 h: 7 pojedynczych problematycznych zdarzeń. Cztery najnowsze z 10.63 to jeden izolowany app error mobile oraz jednorazowy klaster 3 desktopowych Failed to fetch (contractors/devices/network); trzy wcześniejsze pochodzą z 10.60/10.61. Brak serii. Zmiana 10.64 jest wyłącznie CSS i nie dotyka sieci ani logiki."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-15T05:57:37.784268Z",
+    "checked_at": "2026-09-15T06:21:18.103146Z",
     "result": "GO",
-    "notes": "Pre-deploy 24 h: nadal tylko trzy pojedyncze wcześniejsze zdarzenia; brak nowych warning/error z 10.62 i brak trendu regresji. GO dla wdrożenia automatycznego systemu FAST/TARGETED/CRITICAL."
+    "notes": "Pre-deploy: nadal 7 zdarzeń w 24 h i 0 nowych od baseline. Brak wzrostu; GO dla izolowanej poprawki CSS FAST UI."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.63.zip",
-    "file_id": "1_zJiotMFmUCVNlHH4xXnt9FtPhqeMWnZ",
-    "size_bytes": 12169418,
+    "file_name": "klima-app-v10.64.zip",
+    "file_id": "1z5eJ9u-xoFVImKdlpkL4n6X9kCnazNr5",
+    "size_bytes": 12167858,
     "uploaded": true,
-    "uploaded_at": "2026-09-15T06:08:41.895Z",
+    "uploaded_at": "2026-09-15T06:25:45.338Z",
     "verified": true,
-    "notes": "Finalny ZIP 10.63 po zielonym release run 34935365900; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12169418 B. SHA256 lokalnej paczki: 3916247d21e2263f0d4380851dc1f2900f2203cd38b7d69c51d3a66eebff9dcb."
+    "notes": "Finalny ZIP po zielonym FAST UI release 34936794293; ponowny odczyt Google Drive potwierdził nazwę, ID i rozmiar 12167858 B. SHA256 lokalnej paczki: e83f53ef425d1790793b54eb2b42ebfc76e0b6e45905cb03ddd7014b48cf2548."
   },
   "main_protection": {
-    "source_branch": "release/v10.63",
+    "source_branch": "release/v10.64",
     "ready_for_main": true,
-    "final_release_run_id": "34935365900",
-    "final_release_commit": "b5aa639e1c1f397ecec01bdcee02e12cd157073d",
-    "notes": "Finalny automatyczny release zakończony GO: profil critical/full, 11 grup regresji, E2E mobile i desktop, jeden build, verify:bundle, verify:release oraz ZIP. Backup Drive zweryfikowany."
+    "final_release_run_id": "34936794293",
+    "final_release_commit": "55405bbde6f4d324e53fc730bedf0acce94a17fe",
+    "notes": "Finalny automatyczny release zakończony GO w profilu fast-ui/mobile: 2 lekkie grupy regresji, 0 Playwright E2E, jeden build, verify:bundle, verify:release i ZIP. Backup Drive zweryfikowany."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
@@ -45,6 +45,6 @@
     "production_version_verified": false,
     "service_worker_verified": false,
     "evidence_file": "post-deploy-evidence.json",
-    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.63."
+    "notes": "Do wykonania po wdrożeniu produkcyjnym 10.64."
   }
 }

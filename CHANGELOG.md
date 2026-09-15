@@ -1,3 +1,8 @@
+## 10.64
+- Mobile: odsunięto przycisk inicjałów użytkownika (np. PW) o dodatkowe 6 px od prawej krawędzi paska akcji.
+- Pozostałe przyciski, szerokości i układ jednej linii pozostają bez zmian.
+- Zmiana dotyczy wyłącznie CSS mobile i korzysta z profilu FAST UI; bez zmian w danych, Supabase i logice aplikacji.
+
 ## 10.63
 - Dodano automatyczny klasyfikator zmian porównujący gałąź release z produkcyjnym main.
 - FAST UI obsługuje bezpieczne zmiany CSS i statycznych assetów: tylko mały zestaw smoke testów, jeden build, weryfikacja paczki i bez Playwrighta.
