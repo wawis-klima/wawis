@@ -32,9 +32,9 @@
   "main_protection": {
     "source_branch": "release/v10.68",
     "ready_for_main": false,
-    "final_release_run_id": "",
+    "final_release_run_id": "34995237070",
     "final_release_commit": "",
-    "notes": "Fast-UI release; Vercel dopiero po finalnym GO i backupie Drive."
+    "notes": "Fast-UI final release zakończony; oczekuje wyłącznie na backup Drive i ready_for_main."
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
