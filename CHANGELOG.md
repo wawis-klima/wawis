@@ -1,3 +1,6 @@
+## 10.62
+- uzupełnij opis zmian dla wersji 10.62
+
 ## 10.61
 - Wprowadzono gałęzie release/v<WERSJA>; main jest przeznaczony wyłącznie dla gotowych wydań.
 - PR uruchamia szybkie grupy regresji dobrane do zmienionych plików zamiast pełnego zestawu testów.
