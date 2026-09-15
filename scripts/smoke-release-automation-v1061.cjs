@@ -76,7 +76,8 @@ assert.match(deployGate, /final_release_run_id/);
 assert.match(deployGate, /--evidence/);
 assert.match(deployGate, /service_worker_verified/);
 assert.match(vercel.buildCommand || '', /release-policy-gate\.cjs --deploy/);
-assert.equal(vercel.git?.deploymentEnabled?.['*'], false, 'Vercel powinien ignorować automatyczne deploye innych gałęzi');
+assert.equal(vercel.git?.deploymentEnabled?.['*'], false, 'Vercel powinien ignorować automatyczne deploye zwykłych gałęzi roboczych');
+assert.equal(vercel.git?.deploymentEnabled?.['**/*'], false, 'Vercel powinien ignorować automatyczne deploye gałęzi roboczych z ukośnikiem, np. release/vX i runner/vX');
 assert.equal(vercel.git?.deploymentEnabled?.main, true, 'Vercel powinien automatycznie wdrażać wyłącznie main');
 
 assert.match(postWorkflow, /post-deploy-check\.mjs/);
