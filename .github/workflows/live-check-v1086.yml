@@ -1,0 +1,29 @@
+name: WAWIS live check 10.86
+
+on:
+  push:
+    branches:
+      - release/v10.86
+
+permissions:
+  contents: read
+
+jobs:
+  live-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live 10.86
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="https://wawis-klima.vercel.app"
+          curl -fsS --retry 3 --max-time 20 "$BASE_URL/app-version.json" -o /tmp/app-version.json
+          curl -fsS --retry 3 --max-time 20 "$BASE_URL/push-sw.js" -o /tmp/push-sw.js
+          curl -fsS --retry 3 --max-time 20 -o /dev/null "$BASE_URL/"
+          LIVE_VERSION="$(node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('/tmp/app-version.json','utf8'));process.stdout.write(String(j.version||''))")"
+          LIVE_SW_CACHE="$(grep -o 'wawis-app-shell-v10\.86' /tmp/push-sw.js | head -n1 || true)"
+          echo "LIVE_VERSION=$LIVE_VERSION"
+          echo "LIVE_SW_CACHE=$LIVE_SW_CACHE"
+          test "$LIVE_VERSION" = "10.86"
+          test "$LIVE_SW_CACHE" = "wawis-app-shell-v10.86"
+          echo "LIVE_ROOT_HTTP=OK"
