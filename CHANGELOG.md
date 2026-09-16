@@ -1,3 +1,10 @@
+## 10.75
+- Kolejka statusów i danych urządzeń zastępuje poprzednią operację w jednej transakcji IndexedDB; błąd zapisu wycofuje całość i pozostawia poprzedni wpis.
+- Mobilny klient Supabase ma realny AbortController timeout: 45 s dla zwykłych requestów i 90 s dla Storage.
+- Timeout i AbortError są traktowane jako przejściowy błąd sieciowy, więc synchronizacja oraz zdjęcia wracają do retry zamiast blokować sesję.
+- Niejednoznaczny commit po zerwanym requestcie jest bezpieczny dzięki istniejącej idempotencji synchronizacji i uzgadnianiu zdjęć po stałej ścieżce Storage.
+- Dodano regresję źródłową timeoutu oraz mobilny test Playwright z wymuszonym QuotaExceededError, który potwierdza rollback atomowej transakcji IndexedDB.
+
 ## 10.74
 - Naprawiono zapis protokołów PDF: przy utraconej lub niejednoznacznej odpowiedzi po INSERT/UPDATE aplikacja najpierw odczytuje rekord i nie usuwa nowego pliku, dopóki nie potwierdzi braku zapisu.
 - Przy zastępowaniu protokołu stary PDF jest usuwany dopiero po potwierdzeniu, że rekord wskazuje na nowy plik.

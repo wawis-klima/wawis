@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 10.74
+- 10.75
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
-# Wawis Klimatyzacja — wersja 10.67
+# Wawis Klimatyzacja — wersja 10.75
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.74` — zapis protokołów PDF i zdjęć licznika uzgadnia stan bazy po niejednoznacznej odpowiedzi; plik pozostaje w Storage, dopóki nie ma pewności, że rekord nie powstał.
+- wersja `10.75` — Wersja 10.75 zabezpiecza mobilną synchronizację offline przed utratą wpisu i przed requestami, które mogły pozostać zawieszone bez końca.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.

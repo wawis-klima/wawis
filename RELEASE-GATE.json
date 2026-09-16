@@ -1,39 +1,39 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.74",
-  "scope": "full",
-  "release_branch": "release/v10.74",
+  "version": "10.75",
+  "scope": "mobile",
+  "release_branch": "release/v10.75",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T05:28:26.818718Z",
-    "result": "GO",
-    "notes": "24 h: 3 błędy i 11 ostrzeżeń pochodzą ze starszych wersji. Od wdrożenia 10.73 (2026-09-15T18:29:04Z) brak nowych warning/error: 0."
+    "checked_at": "2026-09-16T06:17:03.557Z",
+    "result": "INFO",
+    "notes": "Start 10.75: wpisy warning/error z ostatnich 24 h dotyczą starszych wersji (10.73 i wcześniejszych); brak nowych wpisów przypisanych do 10.74. Diagnostyka jest informacyjna i nie blokuje release."
   },
   "predeploy_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": true,
-    "checked_at": "2026-09-16T05:28:26.818718Z",
-    "result": "GO",
-    "notes": "Brak nowych warning/error od produkcyjnej wersji 10.73. Poprawka 10.74 ma zielony PR check dla protokołów, paliwa i testu niejednoznacznego zapisu."
+    "checked_at": "",
+    "result": "PENDING",
+    "notes": "Kontrola informacyjna; nie jest bramką GO/NO-GO."
   },
   "drive_backup": {
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.74.zip",
-    "file_id": "17tKu0-dEUWY2g9avTZZDE-WUI-kHCbVx",
-    "size_bytes": 12184698,
-    "uploaded": true,
-    "uploaded_at": "2026-09-16T05:49:24.708Z",
-    "verified": true
+    "file_name": "klima-app-v10.75.zip",
+    "file_id": "",
+    "size_bytes": 0,
+    "uploaded": false,
+    "uploaded_at": "",
+    "verified": false
   },
   "main_protection": {
-    "source_branch": "release/v10.74",
-    "ready_for_main": true,
+    "source_branch": "release/v10.75",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks",
-    "final_release_run_id": "35060821449",
-    "final_release_head_sha": "60abf225ced8549b067404d874d482e0537ab760"
+    "final_release_run_id": "",
+    "final_release_head_sha": ""
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,

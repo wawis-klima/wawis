@@ -20,6 +20,7 @@ const GROUPS = {
     'npm run test:smoke:regex-compat',
     'npm run test:smoke:technical-refresh',
     'npm run test:smoke:reliable-sync',
+    'node scripts/smoke-mobile-offline-resilience-v1075.mjs',
     'npm run test:smoke:diagnostic-report',
     'npm run test:smoke:diagnostics-clarity',
     'npm run test:smoke:startup-chunk',
