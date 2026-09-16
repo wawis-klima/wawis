@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   targeted-checks:
@@ -19,7 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Setup Node
@@ -28,65 +27,8 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Finalize 10.83 release metadata
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const summary = 'domknięto bezpieczeństwo przełączania sesji A→B, lifecycle PUSH, bezpieczne powiadomienia paliwowe oraz obowiązkową rzeczywistą bramkę Playwright E2E.';
-          const changelog = [
-            '## 10.83',
-            '- F12: obowiązkowa bramka PR uruchamia teraz rzeczywiste testy Playwright wskazane przez klasyfikator ryzyka, zamiast ograniczać się do testów konfiguracji,',
-            '- F3/F4: przełączenie konta i spóźnione operacje Auth/PUSH nie mogą przywrócić kontekstu poprzedniego użytkownika ani jego generacji,',
-            '- F10: lifecycle PUSH ma ograniczony czas wykonania i nie blokuje bez końca restore ani logout,',
-            '- F11: unieważnione lifecycle PUSH są zachowywane w prywatnej historii tombstone, dzięki czemu bardzo spóźniony sync nie może reaktywować starego właściciela endpointu,',
-            '- F6: push po tankowaniu zawiera recipientUserId i subscriptionGeneration, ma neutralną treść oraz wyłącza wygasły endpoint wyłącznie przy zgodności właściciela i generacji,',
-            '- dodano regresje A→B, timeout lifecycle, historię tombstone oraz realny Playwright mobile/desktop; finalny build produkcyjny jest częścią kontroli wydania.'
-          ].join('\n');
-
-          let readme = fs.readFileSync('README.md', 'utf8');
-          const readmeNeedle = '- wersja `10.83` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.';
-          if (!readme.includes(readmeNeedle)) throw new Error('Brak oczekiwanego placeholdera README 10.83');
-          readme = readme.replace(readmeNeedle, `- wersja \`10.83\` — ${summary}`);
-          fs.writeFileSync('README.md', readme);
-
-          let changes = fs.readFileSync('CHANGELOG.md', 'utf8');
-          const changeNeedle = '## 10.83\n- uzupełnij opis zmian dla wersji 10.83';
-          if (!changes.includes(changeNeedle)) throw new Error('Brak oczekiwanego placeholdera CHANGELOG 10.83');
-          changes = changes.replace(changeNeedle, changelog);
-          fs.writeFileSync('CHANGELOG.md', changes);
-
-          let version = fs.readFileSync('src/version.js', 'utf8');
-          version = version.replace(/^\/\/ v10\.83:.*$/m, '// v10.83: finalny produkcyjny trigger po domknięciu README i CHANGELOG.');
-          fs.writeFileSync('src/version.js', version);
-          NODE
-          git diff --check
-          git diff -- README.md CHANGELOG.md src/version.js
-
       - name: Install dependencies
         run: npm ci --include=optional --registry=https://registry.npmjs.org/
-
-      - name: Reproduce Vercel deploy guard
-        env:
-          VERCEL: '1'
-          VERCEL_ENV: production
-          VERCEL_GIT_COMMIT_REF: main
-        run: node scripts/vercel-deploy-guard.cjs
-
-      - name: Reproduce Vercel standard deploy gate
-        run: bash scripts/deploy-gate-router.sh
-
-      - name: Reproduce Vercel production build
-        run: npm run build
-
-      - name: Commit finalized metadata to release branch
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add README.md CHANGELOG.md src/version.js
-          git commit -m 'release: finalize WAWIS 10.83 metadata'
-          git push origin HEAD:${{ github.head_ref }}
 
       - name: Detect changed files
         shell: bash
