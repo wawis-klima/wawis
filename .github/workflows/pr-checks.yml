@@ -35,11 +35,20 @@ jobs:
           from pathlib import Path
           path = Path('scripts/prepare-v1084.cjs')
           source = path.read_text()
+
           old = "patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', '\\n\\n  const scheduleBackgroundJobDetailsReload', (block) => {"
           new = "patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', mobile ? '\\n\\n  const scheduleBackgroundJobDetailsReload' : '\\n\\n  const reloadJobSummary', (block) => {"
           if old not in source:
               raise SystemExit('Nie znaleziono oczekiwanego wzorca patchera reloadJobDetails')
-          path.write_text(source.replace(old, new, 1))
+          source = source.replace(old, new, 1)
+
+          old = "  replaceOnce(path, `  }, [supabase]);\\n\\n  const reloadJobDetails`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);\\n\\n  const reloadJobDetails`, 'thumbnail dependencies');"
+          new = "  const thumbnailNext = mobile ? '\\n\\n  const recoverPhotoThumbnail' : '\\n\\n  const reloadJobDetails';\\n  replaceOnce(path, `  }, [supabase]);${thumbnailNext}`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);${thumbnailNext}`, 'thumbnail dependencies');"
+          if old not in source:
+              raise SystemExit('Nie znaleziono oczekiwanego wzorca zależności miniaturek')
+          source = source.replace(old, new, 1)
+
+          path.write_text(source)
           PY
           node scripts/prepare-v1084.cjs
 
