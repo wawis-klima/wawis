@@ -1,0 +1,37 @@
+name: WAWIS fix 10.87 fuel regression r2
+
+on:
+  push:
+    branches:
+      - release/v10.87
+    paths:
+      - .github/workflows/fix-v1087-fuel-smoke-r2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - run: node scripts/fix-v1087-fuel-smoke-once.cjs
+      - run: node scripts/smoke-audit-fixes-v1087.mjs
+      - run: node scripts/run-test-group.cjs push fuel
+      - run: npm run build
+      - run: rm scripts/fix-v1087-fuel-smoke-once.cjs .github/workflows/fix-v1087-fuel-smoke-r2.yml
+      - name: Commit verified alignment
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add -A
+          git commit -m "test: align fuel push regression with 10.87 tombstone cleanup"
+          git push origin HEAD:release/v10.87
