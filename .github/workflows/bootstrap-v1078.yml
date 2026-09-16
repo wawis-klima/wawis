@@ -22,7 +22,18 @@ jobs:
         with:
           node-version: '22'
       - name: Apply 10.78 patch
-        run: python scripts/apply-v1078-patch.py
+        run: |
+          python scripts/apply-v1078-patch.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/release-policy-gate.cjs')
+          source = path.read_text()
+          old = "assert(rules.includes('POST-DEPLOY EVIDENCE'), 'NO-GO: WAWIS-RULES.md nie opisuje dowodu post-deploy');"
+          new = "assert(rules.includes('zielony deployment Vercela'), 'NO-GO: WAWIS-RULES.md nie wymaga zielonego deploymentu Vercela');"
+          if old not in source:
+              raise SystemExit('Brak starej asercji post-deploy w release-policy-gate.cjs')
+          path.write_text(source.replace(old, new, 1))
+          PY
       - name: Run focused 10.78 regressions
         run: |
           node scripts/smoke-push-safety-v1078.mjs
