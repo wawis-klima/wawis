@@ -6,16 +6,21 @@ const root = path.resolve(__dirname, '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const exists = (...parts) => fs.existsSync(path.join(root, ...parts));
 
-for (const workflow of ['pr-checks.yml', 'release-checks.yml', 'release-policy-gate.yml', 'post-deploy-checks.yml']) {
+for (const workflow of ['pr-checks.yml', 'release-policy-gate.yml']) {
   assert(exists('.github', 'workflows', workflow), `Brak workflow ${workflow}`);
 }
-assert(!exists('.github', 'workflows', 'mobile-release-checks.yml'), 'Stary osobny mobile workflow nadal istnieje');
-assert(!exists('.github', 'workflows', 'desktop-release-checks.yml'), 'Stary osobny desktop workflow nadal istnieje');
+for (const obsoleteWorkflow of [
+  'release-checks.yml',
+  'post-deploy-checks.yml',
+  'micro-ui-archive.yml',
+  'mobile-release-checks.yml',
+  'desktop-release-checks.yml',
+]) {
+  assert(!exists('.github', 'workflows', obsoleteWorkflow), `Stary/dublujący workflow nadal istnieje: ${obsoleteWorkflow}`);
+}
 
 const pr = read('.github', 'workflows', 'pr-checks.yml');
-const release = read('.github', 'workflows', 'release-checks.yml');
 const policy = read('.github', 'workflows', 'release-policy-gate.yml');
-const postWorkflow = read('.github', 'workflows', 'post-deploy-checks.yml');
 const runner = read('scripts', 'run-release.cjs');
 const impact = read('scripts', 'release-impact.cjs');
 const verifier = read('scripts', 'verify-release.cjs');
@@ -24,22 +29,20 @@ const deployGate = read('scripts', 'release-policy-gate.cjs');
 const vercelGuard = read('scripts', 'vercel-deploy-guard.cjs');
 const postCheck = read('scripts', 'post-deploy-check.mjs');
 const versionBump = read('version-bump.cjs');
+const rules = read('WAWIS-RULES.md');
+const checklist = read('RELEASE-CHECKLIST.md');
 const vercel = JSON.parse(read('vercel.json'));
 
+// Jedyna automatyczna bramka przed merge.
+assert.match(pr, /name:\s*WAWIS PR checks/);
 assert.match(pr, /pull_request/);
 assert.match(pr, /run-pr-checks\.cjs/);
 assert.match(pr, /cancel-in-progress:\s*true/);
 assert.doesNotMatch(pr, /playwright install/);
 
-assert.match(release, /workflow_dispatch/);
-assert.match(release, /default:\s*auto/);
-assert.match(release, /release-impact\.cjs/);
-assert.match(release, /needs_playwright/);
-assert.match(release, /run-release\.cjs/);
-assert.match(release, /playwright install/);
-assert.match(release, /release-policy-gate\.cjs/);
-
+// Policy gate może zostać narzędziem ręcznym, ale nie dubluje automatycznego PR CI.
 assert.match(policy, /workflow_dispatch/);
+assert.doesNotMatch(policy, /pull_request:/);
 assert.doesNotMatch(policy, /push:/);
 
 assert.doesNotMatch(runner, /pushTwice|pass\s*=\s*2|\/2 OK/);
@@ -48,6 +51,7 @@ assert.match(runner, /auto/);
 assert.match(runner, /test:e2e:\$\{platform\}/);
 assert.match(runner, /npm run build/);
 assert.match(runner, /npm run verify:bundle/);
+assert.match(runner, /packageArtifact/);
 assert.match(runner, /npm run zip:release/);
 
 assert.match(impact, /fast-ui/);
@@ -72,11 +76,22 @@ assert.match(verifier, /RELEASE-GATE\.json/);
 assert.match(verifier, /dist\/index\.html|index\.html/);
 assert.match(verifier, /klima-app-v/);
 
+// Produkcyjny gate ma sprawdzać gotowość release, ale nie wymaga drugiego final runu,
+// Drive/ZIP ani osobnego dowodu post-deploy.
 assert.match(deployGate, /--deploy/);
 assert.match(deployGate, /ready_for_main/);
-assert.match(deployGate, /final_release_run_id/);
-assert.match(deployGate, /--evidence/);
-assert.match(deployGate, /service_worker_verified/);
+assert.doesNotMatch(deployGate, /final_release_run_id/);
+assert.doesNotMatch(deployGate, /--evidence/);
+assert.doesNotMatch(deployGate, /service_worker_verified/);
+assert.doesNotMatch(deployGate, /drive_backup|Google Drive/);
+
+assert.match(rules, /WAWIS PR checks \/ targeted-checks/);
+assert.match(rules, /Google Drive nie jest używany/);
+assert.match(rules, /ZIP jest opcjonalny/);
+assert.match(rules, /zielony deployment Vercela/);
+assert.match(checklist, /Jedyna obowiązkowa bramka CI/);
+assert.match(checklist, /Nie wymagamy `final_release_run_id`, ZIP-a ani Google Drive/);
+
 assert.match(vercel.buildCommand || '', /vercel-deploy-guard\.cjs/);
 assert.match(vercel.buildCommand || '', /release-policy-gate\.cjs --deploy/);
 assert.equal(vercel.git?.deploymentEnabled?.['*'], false, 'Vercel powinien ignorować automatyczne deploye zwykłych gałęzi roboczych');
@@ -87,12 +102,9 @@ assert.match(vercelGuard, /production/);
 assert.match(vercelGuard, /VERCEL_GIT_COMMIT_REF/);
 assert.match(vercelGuard, /main/);
 
-assert.match(postWorkflow, /post-deploy-check\.mjs/);
-assert.match(postWorkflow, /release-policy-gate\.cjs --post --evidence/);
+// Szybki live-check może istnieć jako ręczne narzędzie, ale bez automatycznego workflow.
 assert.match(postCheck, /app-version\.json/);
 assert.match(postCheck, /push-sw\.js/);
-assert.match(postCheck, /app_diagnostic_events/);
-assert.match(postCheck, /post-deploy-evidence\.json/);
 
 assert.match(versionBump, /SERVICE_WORKER_FILE/);
 assert.match(versionBump, /updateServiceWorkerVersion/);
@@ -100,4 +112,4 @@ assert.match(versionBump, /wawis-app-shell-v/);
 assert(exists('.github', 'CODEOWNERS'), 'Brak CODEOWNERS');
 assert(exists('MAIN-PROTECTION.md'), 'Brak instrukcji ochrony main');
 
-console.log('WAWIS release automation 10.63 smoke OK — automatic FAST/TARGETED/CRITICAL routing enabled');
+console.log('WAWIS release automation 10.78 smoke OK — single PR gate + one production Vercel; Drive/ZIP/post-deploy are non-blocking');
