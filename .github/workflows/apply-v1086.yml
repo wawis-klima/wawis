@@ -59,8 +59,17 @@ jobs:
           old = "assert.doesNotMatch(changedBlock, /updateOfflineSyncCursor(/);"
           new = "assert.equal(changedBlock.includes('updateOfflineSyncCursor('), false, 'refreshChanged must not advance cursor outside atomic snapshot commit');"
           if old not in t:
-              raise SystemExit('invalid regex assertion not found')
-          test.write_text(t.replace(old, new, 1))
+              raise SystemExit('invalid cursor regex assertion not found')
+          t = t.replace(old, new, 1)
+          lines = t.splitlines()
+          replaced = False
+          for i, line in enumerate(lines):
+              if 'late auth catch must be generation-guarded' in line and 'assert.match' in line:
+                  lines[i] = "  assert.equal(source.includes(\"} catch (error) {\\n      if (disposed || !isAuthOperationCurrent(verificationToken)) return;\"), true, file + ': late auth catch must be generation-guarded');"
+                  replaced = True
+          if not replaced:
+              raise SystemExit('auth assertion line not found')
+          test.write_text('\n'.join(lines) + '\n')
           PY
       - name: Run 10.86 regressions
         run: |
