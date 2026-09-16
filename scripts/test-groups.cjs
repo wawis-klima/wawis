@@ -104,6 +104,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-nameplate-automatic-fallback',
     'npm run test:smoke:desktop-nameplate-ean-separation',
     'npm run test:smoke:desktop-nameplate-verification-status',
+    'node scripts/smoke-nameplate-ai-auth-v1085.mjs',
   ],
   desktop: [
     'npm run test:smoke:sms-summary',
@@ -131,6 +132,9 @@ const GROUPS = {
   infra: [
     'node scripts/smoke-release-automation-v1061.cjs',
     'node scripts/smoke-release-impact-v1063.cjs',
+    'npm run test:smoke:release-runner',
+    'node scripts/smoke-playwright-runner-fail-closed-v1085.cjs',
+    'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
     'npm run test:smoke:e2e-mobile',
     'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',
