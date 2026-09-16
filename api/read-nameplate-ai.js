@@ -24,16 +24,16 @@ async function verifySupabaseUser(req) {
   });
   if (!response.ok) throw Object.assign(new Error('Sesja wygasła. Zaloguj się ponownie.'), { status: 401 });
   const user = await response.json();
-  let role = String(user?.user_metadata?.role || user?.app_metadata?.role || '').toLowerCase();
-  if (!['admin', 'administrator'].includes(role)) {
-    const profileResponse = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=role&limit=1`, {
-      headers: { Authorization: `Bearer ${token}`, apikey: anonKey, Accept: 'application/json' },
-    });
-    if (profileResponse.ok) {
-      const profiles = await profileResponse.json();
-      role = String(profiles?.[0]?.role || '').toLowerCase();
-    }
+  if (!user?.id) throw Object.assign(new Error('Nie udało się potwierdzić tożsamości użytkownika.'), { status: 401 });
+
+  const profileResponse = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=role&limit=1`, {
+    headers: { Authorization: `Bearer ${token}`, apikey: anonKey, Accept: 'application/json' },
+  });
+  if (!profileResponse.ok) {
+    throw Object.assign(new Error('Nie udało się potwierdzić uprawnień administratora.'), { status: 403 });
   }
+  const profiles = await profileResponse.json();
+  const role = String(profiles?.[0]?.role || '').trim().toLowerCase();
   if (!['admin', 'administrator'].includes(role)) {
     throw Object.assign(new Error('Odczyt AI jest dostępny wyłącznie dla administratora.'), { status: 403 });
   }
