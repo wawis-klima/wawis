@@ -6,6 +6,7 @@ on:
       - release/v10.86
     paths:
       - scripts/apply-v1086-once.cjs
+      - .github/workflows/apply-v1086.yml
 
 permissions:
   contents: write
