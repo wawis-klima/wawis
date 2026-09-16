@@ -3,7 +3,7 @@ import {
   constantTimeEqual,
   deriveSmsApiCallbackToken,
   normalizeSmsApiStatus,
-  shouldAdvanceSmsStatus,
+  planSmsCallbackUpdates,
 } from './security.mjs';
 
 const corsHeaders = {
@@ -96,10 +96,7 @@ async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>,
   if (fetchError) return { ok: false, status: 500, error: fetchError.message };
   if (!logRow) return { ok: false, status: 404, error: 'Nie znaleziono wpisu sms_log dla provider_message_id.' };
 
-  const logNeedsAdvance = shouldAdvanceSmsStatus(logRow.status, nextStatus);
   let jobRow: { id: string; last_sms_sent_at?: string | null; last_sms_status?: string | null } | null = null;
-  let jobNeedsAdvance = false;
-
   if (logRow.job_id) {
     const { data, error: jobFetchError } = await adminClient
       .from('jobs')
@@ -108,18 +105,22 @@ async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>,
       .maybeSingle();
     if (jobFetchError) return { ok: false, status: 500, error: jobFetchError.message };
     jobRow = data;
-
-    const logSentAt = logRow.sent_at ? Date.parse(String(logRow.sent_at)) : Number.NaN;
-    const jobSentAt = jobRow?.last_sms_sent_at ? Date.parse(String(jobRow.last_sms_sent_at)) : Number.NaN;
-    const callbackBelongsToLatestSend = !Number.isFinite(jobSentAt) || !Number.isFinite(logSentAt) || logSentAt >= jobSentAt;
-    jobNeedsAdvance = Boolean(jobRow && callbackBelongsToLatestSend && shouldAdvanceSmsStatus(jobRow.last_sms_status, nextStatus));
   }
 
-  if (!logNeedsAdvance && !jobNeedsAdvance) {
+  const plan = planSmsCallbackUpdates({
+    logStatus: logRow.status,
+    jobStatus: jobRow?.last_sms_status || null,
+    logSentAt: logRow.sent_at || null,
+    jobSentAt: jobRow?.last_sms_sent_at || null,
+    nextStatus,
+    hasJob: Boolean(jobRow),
+  });
+
+  if (!plan.logNeedsAdvance && !plan.jobNeedsAdvance) {
     return { ok: true, providerMessageId: entry.providerMessageId, nextStatus: logRow.status, ignoredOlderStatus: true };
   }
 
-  if (logNeedsAdvance) {
+  if (plan.logNeedsAdvance) {
     const patch: Record<string, unknown> = {
       status: nextStatus,
       error_message: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
@@ -130,7 +131,7 @@ async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>,
     if (logUpdateError) return { ok: false, status: 500, error: logUpdateError.message };
   }
 
-  if (jobRow && jobNeedsAdvance && logRow.job_id) {
+  if (jobRow && plan.jobNeedsAdvance && logRow.job_id) {
     const jobPatch: Record<string, unknown> = {
       last_sms_status: nextStatus,
       last_sms_error: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
