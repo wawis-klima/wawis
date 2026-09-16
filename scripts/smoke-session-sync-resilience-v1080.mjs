@@ -59,4 +59,4 @@ assert.doesNotMatch(updateSource, /withStore\(OPERATION_STORE, 'readonly'/);
 console.log('OK: 10.80 — session generation, pełny body-timeout i atomowa aktualizacja kolejki.');
 
 const mobileHook = fs.readFileSync('src/mobile791/hooks/useAppSession.js', 'utf8');
-assert.match(mobileHook, /stale-session-final-queue-guard-v1080/);
+assert.match(mobileHook, /stale-session-and-request-final-queue-guard-v1084/);

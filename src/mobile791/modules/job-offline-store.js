@@ -145,20 +145,38 @@ export async function updateOfflineSyncCursor(userId, changeCursor) {
   const normalizedUserId = String(userId || '').trim();
   const normalizedCursor = Math.max(0, Number(changeCursor) || 0);
   if (!normalizedUserId) return false;
+  let db;
   try {
-    const current = await withStore(SNAPSHOT_STORE, 'readonly', (store) => store.get(normalizedUserId));
-    if (!current) return false;
-    if (Number(current.change_cursor || 0) >= normalizedCursor) return true;
-    await withStore(SNAPSHOT_STORE, 'readwrite', (store) => store.put({
-      ...current,
-      user_id: normalizedUserId,
-      change_cursor: normalizedCursor,
-      saved_at: new Date().toISOString(),
-    }));
-    return true;
+    db = await openOfflineDb();
+    if (!db) return false;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(SNAPSHOT_STORE, 'readwrite');
+      const store = transaction.objectStore(SNAPSHOT_STORE);
+      const readRequest = store.get(normalizedUserId);
+      let found = false;
+
+      readRequest.onsuccess = () => {
+        const current = readRequest.result;
+        if (!current) return;
+        found = true;
+        if (Number(current.change_cursor || 0) >= normalizedCursor) return;
+        store.put({
+          ...current,
+          user_id: normalizedUserId,
+          change_cursor: normalizedCursor,
+          saved_at: new Date().toISOString(),
+        });
+      };
+      readRequest.onerror = () => reject(readRequest.error || new Error('Nie udało się odczytać punktu wznowienia synchronizacji.'));
+      transaction.oncomplete = () => resolve(found);
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zapisać punktu wznowienia synchronizacji.'));
+      transaction.onabort = transaction.onerror;
+    });
   } catch (error) {
     console.warn('Nie udało się zapisać punktu wznowienia synchronizacji.', error?.message || error);
     return false;
+  } finally {
+    db?.close();
   }
 }
 

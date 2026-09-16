@@ -30,7 +30,8 @@ for (const [label, photosSource, fetchSource, appSource, previewSource, detailsS
   assert(fetchSource.includes("image_url: ''"), `${label}: full image URL must stay empty until the user opens the image`);
   assert(fetchSource.includes('photo_url_mode: DETAILS_PHOTO_URL_MODE'), `${label}: loaded details must mark lazy full-photo mode`);
   assert(appSource.includes('const jobDetailsRequestsRef = useRef(new Map())'), `${label}: reloadJobDetails must deduplicate in-flight requests`);
-  assert(appSource.includes('jobDetailsRequestsRef.current.get(targetId)'), `${label}: reloadJobDetails must reuse an active request`);
+  assert(appSource.includes('const requestKey = `${sessionToken.generation}:${sessionToken.userId}:${targetId}`'), `${label}: reloadJobDetails dedupe key must be scoped to the active session`);
+  assert(appSource.includes('jobDetailsRequestsRef.current.get(requestKey)'), `${label}: reloadJobDetails must reuse an active request from the current session`);
   assert(appSource.includes('resolveFullPhotoUrl'), `${label}: App must expose a lazy full-photo resolver`);
   assert(previewSource.includes('await resolvePhotoUrl(photoOrUrl)') || previewSource.includes('await resolvePhotoUrl(photoOrUrl);'), `${label}: full photo resolver must run when preview is requested`);
   assert(detailsSource.includes('src={photo.thumbnail_image_url}') || detailsSource.includes('photo.thumbnail_image_url || photo.local_preview_url'), `${label}: gallery must render only the thumbnail (or local preview) before click`);

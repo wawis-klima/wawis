@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 10.83
+- 10.84
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.83` — domknięto bezpieczeństwo przełączania sesji A→B, lifecycle PUSH, bezpieczne powiadomienia paliwowe oraz obowiązkową rzeczywistą bramkę Playwright E2E.
+- wersja `10.84` — domknięto ostatnie F5/F7/F8/F9 audytu: stare loadery i refresh nie mogą nadpisywać nowszej sesji/stanu, fallback odświeża szczegóły, a kursor IndexedDB jest atomowy.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.

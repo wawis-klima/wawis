@@ -1,24 +1,24 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.83",
+  "version": "10.84",
   "scope": "full",
-  "release_branch": "release/v10.83",
+  "release_branch": "release/v10.84",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T11:20:00+02:00",
+    "checked_at": "2026-09-16T15:57:00+02:00",
     "result": "INFO",
-    "notes": "10.83: diagnostyka pozostaje informacyjna; wydanie domyka bezpieczeństwo sesji/PUSH oraz obowiązkową prawdziwą bramkę E2E."
+    "notes": "10.84 domyka F5/F7/F8/F9 ostatniego audytu: stale loadery, fallback szczegółów, kolejność refresh i atomowy kursor IndexedDB."
   },
   "predeploy_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": "",
+    "checked_at": "2026-09-16T16:58:00+02:00",
     "result": "INFO_ONLY",
-    "notes": "Informacyjne; nie blokuje release."
+    "notes": "10.84: F5/F7/F8/F9, atomowa kolejka zdjęć, dedykowane race E2E, pełny wymagany Playwright i build przeszły przed merge."
   },
   "main_protection": {
-    "source_branch": "release/v10.83",
+    "source_branch": "release/v10.84",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
