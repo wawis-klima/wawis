@@ -1,0 +1,73 @@
+name: Prepare v10.81 candidate
+
+on:
+  push:
+    branches:
+      - release/v10.81
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.81
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Detect prepared candidate
+        id: state
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./app-version.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Bump version and release metadata
+        if: steps.state.outputs.version == '10.80'
+        shell: bash
+        run: |
+          node version-bump.cjs
+          python3 <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          text = text.replace(
+              '- wersja `10.81` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.',
+              '- wersja `10.81` — bezpieczna aktualizacja bez utraty otwartego protokołu, podpisu ani formularza.'
+          )
+          readme.write_text(text, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          text = text.replace(
+              '## 10.81\n- uzupełnij opis zmian dla wersji 10.81',
+              '## 10.81\n- dodano wspólny guard wymuszonego reloadu po zmianie wersji i Service Workerze,\n- otwarty AppModal na mobile i desktop odracza aktualizację do bezpiecznego zamknięcia,\n- protokół z podpisem oraz formularze montażu są chronione przed utratą niezapisanej pracy,\n- po zamknięciu ostatniego modala oczekująca aktualizacja wykonuje dokładnie jeden reload,\n- dodano regresję v10.81 dla wielu blockerów, beforeunload i odroczonego reloadu.'
+          )
+          changelog.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Focused v10.81 regressions
+        shell: bash
+        run: |
+          node scripts/smoke-update-reload-guard-v1081.mjs
+          npm run test:smoke:technical-refresh
+          npm run test:smoke:mobile-protocol-layout
+          npm run test:smoke:mobile-protocol-save
+
+      - name: Commit candidate metadata
+        if: steps.state.outputs.version == '10.80'
+        shell: bash
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add app-version.json public/app-version.json package.json package-lock.json README.md CHANGELOG.md src/version.js src/mobile791/version.js public/push-sw.js
+          git commit -m "release: bump WAWIS to 10.81"
+          git push origin HEAD:release/v10.81
