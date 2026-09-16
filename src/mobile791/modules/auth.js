@@ -203,7 +203,7 @@ export function subscribeToAuthState({
         signedOutVerificationTimerId = null;
       }
       if (typeof setSessionUser === 'function') setSessionUser(user);
-      if (event === 'USER_UPDATED') {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         void refreshAll(user, { silent: true, preserveJobDetails: true });
       }
     } else if (event === 'SIGNED_OUT') {

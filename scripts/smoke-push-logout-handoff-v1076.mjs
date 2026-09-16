@@ -17,7 +17,7 @@ assert.match(auth, /reconcilePendingPushLogout\(\{ supabase, sessionUser: data\.
 const deactivate = auth.indexOf('await deactivatePushForLogout({ supabase })');
 const clearStorage = auth.indexOf('removeSupabaseStorageKeys();', deactivate);
 assert.ok(deactivate >= 0 && clearStorage > deactivate);
-assert.doesNotMatch(auth, /event === 'SIGNED_IN' \|\| event === 'USER_UPDATED'/);
+assert.match(auth, /event === 'SIGNED_IN' \|\| event === 'USER_UPDATED'/, '10.76 nie może zmieniać istniejącego odświeżenia danych po SIGNED_IN');
 assert.match(edge, /String\(existing\?\.p256dh \|\| ""\) !== p256dh/);
 assert.match(edge, /String\(existing\?\.auth \|\| ""\) !== auth/);
 assert.match(edge, /credentialsMatch[\s\S]*p256dh[\s\S]*auth/);
