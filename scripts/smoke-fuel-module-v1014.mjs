@@ -303,9 +303,11 @@ assert.match(pushEdge, /title: "Nowe tankowanie"/, 'Push paliwa 10.83 ma używa�
 assert.match(pushEdge, /body: "Dodano nowe tankowanie\. Otwórz aplikację Wawis, aby zobaczyć szczegóły\."/, 'Treść PUSH nie może ujawniać danych tankowania na ekranie blokady.');
 assert.match(pushEdge, /recipientUserId: String\(subscription\.user_id \|\| ""\)/, 'Payload musi wskazywać konkretnego odbiorcę.');
 assert.match(pushEdge, /subscriptionGeneration: Number\(subscription\.ownership_generation \|\| 0\)/, 'Payload musi być przypięty do generacji subskrypcji.');
-assert.match(pushEdge, /\.select\("id, user_id, endpoint, p256dh, auth, ownership_generation"\)/, 'Wysyłka musi odczytać generację własności endpointu.');
-assert.match(pushEdge, /\.eq\("user_id", subscription\.user_id\)/, 'Cleanup 404/410 musi być przypięty do odbiorcy.');
-assert.match(pushEdge, /\.eq\("ownership_generation", subscription\.ownership_generation\)/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');
+assert.match(pushEdge, /\.select\("id, user_id, endpoint, p256dh, auth, lifecycle_token, ownership_generation"\)/, 'Wysyłka musi odczytać generację i lifecycle własności endpointu.');
+assert.match(pushEdge, /rpc\("push_subscription_expire_atomic"/, 'Cleanup 404/410 musi używać atomowego expire z tombstone.');
+assert.match(pushEdge, /p_request_user_id: subscription\.user_id/, 'Cleanup 404/410 musi być przypięty do odbiorcy.');
+assert.match(pushEdge, /p_expected_generation: subscription\.ownership_generation/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');
+assert.match(pushEdge, /p_lifecycle_token: subscription\.lifecycle_token/, 'Cleanup 404/410 musi być przypięty do lifecycle wysyłki.');
 const payloadBlock = pushEdge.match(/const payload = JSON\.stringify\(\{[\s\S]*?\n      \}\);/)?.[0] || '';
 assert.doesNotMatch(payloadBlock, /vehicleLabel|litersLabel|odometerLabel|employee/, 'Payload PUSH paliwa nie może zawierać szczegółów tankowania ani nazwiska pracownika.');
 console.log('Fuel production access, monthly report, correction audit, rapid-refill warning and v10.26 regression checks passed.');

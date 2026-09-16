@@ -56,7 +56,8 @@ const fuel = fs.readFileSync('supabase/functions/send-fuel-entry-push/index.ts',
 assert.match(fuel, /recipientUserId/);
 assert.match(fuel, /subscriptionGeneration/);
 assert.match(fuel, /ownership_generation/);
-assert.match(fuel, /\.eq\("ownership_generation", subscription\.ownership_generation\)/);
+assert.match(fuel, /lifecycle_token/);
+assert.match(fuel, /rpc\("push_subscription_expire_atomic"/);
 const sql = fs.readFileSync('supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql', 'utf8');
 assert.match(sql, /private\.push_subscription_lifecycle_tombstones/);
 const workflow = fs.readFileSync('.github/workflows/pr-checks.yml', 'utf8');

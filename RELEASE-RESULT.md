@@ -1,20 +1,26 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.86
+- 10.87
 
 ## Zakres
-- F3 — ochrona nowej sesji przed spóźnionym wynikiem starej weryfikacji SIGNED_OUT w desktop i mobile.
-- F5 — izolacja restore/resume/upload kolejki zdjęć offline przez właściciela i generację sesji.
-- F8 — requestId przypisany do faktycznego fetchu.
-- F9 — kursor synchronizacji tylko po potwierdzonym snapshotcie.
+- F4 — trwałe porządkowanie kontekstu PUSH po stronie Service Workera na podstawie właściciela i ownership_generation; warunkowy SET/CLEAR odporny na reload, wiele kart i spóźnione komendy starej sesji.
+- F10 — timeout dla każdego bezpośredniego getSubscription/subscribe/unsubscribe na mobile i desktopie oraz guard późnych wyników desktopowej synchronizacji.
+- F11 — kontrolowane RPC dla zapisu klienta, atomowy expire z tombstone oraz końcowe odebranie bezpośredniego DML anon/authenticated.
 
-## Regresje focused
-- smoke-audit-fixes-v1086: PASS
-- smoke-audit-races-v1084: PASS
-- mobile-auth-resilience-v974: PASS
-- mobile-offline-photo-queue: PASS
-- production build: PASS
+## Dowód RED → GREEN
+- GitHub Actions run 35135597774: dokładny SHA 10.84 odtworzył RED F4/F10/F11 i następnie zatrzymał się na brakującym kontrakcie 10.87.
+- smoke-audit-fixes-v1087 po poprawce: PASS.
+- grupa PUSH: PASS.
+- production build: PASS.
+- pełna bramka PR wykryła historyczny test Paliwo oczekujący starego cleanupu bez lifecycle_token; assertion został zaktualizowany do mocniejszego kontraktu ownership_generation + lifecycle_token + push_subscription_expire_atomic.
+- po tej korekcie grupy PUSH + Paliwo oraz production build: PASS; żadna kontrola nie została wyłączona.
+
+## Wdrożenie F11
+1. migracja RPC,
+2. deploy obu Edge Functions używających push_subscription_expire_atomic,
+3. migracja ACL odbierająca klientom DML,
+4. read-back produkcji.
 
 ## Warunek zamknięcia
-Finalny targeted-checks + Playwright E2E + build, potem Vercel SUCCESS i live 10.86.
+Finalny targeted-checks + Playwright E2E + build, merge przez ruleset, Vercel SUCCESS/live 10.87 oraz produkcyjny read-back Supabase.

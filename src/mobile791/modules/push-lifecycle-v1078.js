@@ -6,11 +6,12 @@ const RETRY_BASE_MS = 15_000;
 const RETRY_MAX_MS = 30 * 60 * 1000;
 const PUSH_CONTEXT_ACK_TIMEOUT_MS = 700;
 const PUSH_CONTEXT_REGISTRATION_TIMEOUT_MS = 900;
+const PUSH_CONTEXT_PROTOCOL_VERSION = 2;
 
 const volatileLifecycleTokens = new Map();
 let pushSessionEpoch = 0;
 let pushSessionUserId = '';
-let pushContextRevision = 0;
+let pushSessionGeneration = 0;
 
 function randomToken() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -33,11 +34,6 @@ function normalizeSubscription(value) {
 
 function lifecycleStorageKey(userId) {
   return `${PUSH_LIFECYCLE_KEY_PREFIX}:${normalizeText(userId)}`;
-}
-
-function nextPushContextRevision() {
-  pushContextRevision = Math.max(0, Number(pushContextRevision) || 0) + 1;
-  return pushContextRevision;
 }
 
 function withTimeout(promise, timeoutMs, fallback = null) {
@@ -176,22 +172,23 @@ export function markPendingPushDisableRetry(item) {
 }
 
 async function postMessageWithAck(worker, message) {
-  if (!worker?.postMessage) return false;
+  if (!worker?.postMessage) return null;
   if (typeof MessageChannel === 'undefined') {
-    try { worker.postMessage(message); return true; } catch { return false; }
+    try { worker.postMessage(message); return { ok: true, applied: true, legacyNoAck: true }; }
+    catch { return null; }
   }
   return withTimeout(new Promise((resolve) => {
     const channel = new MessageChannel();
-    channel.port1.onmessage = (event) => resolve(Boolean(event.data?.ok));
+    channel.port1.onmessage = (event) => resolve(event.data || null);
     try { worker.postMessage(message, [channel.port2]); }
-    catch { resolve(false); }
-  }), PUSH_CONTEXT_ACK_TIMEOUT_MS, false);
+    catch { resolve(null); }
+  }), PUSH_CONTEXT_ACK_TIMEOUT_MS, null);
 }
 
-async function postToWorker(message) {
+async function getPushWorkers() {
   const targets = [];
   if (typeof navigator !== 'undefined' && navigator.serviceWorker?.controller) targets.push(navigator.serviceWorker.controller);
-  if (typeof navigator === 'undefined' || !navigator.serviceWorker) return false;
+  if (typeof navigator === 'undefined' || !navigator.serviceWorker) return targets;
   try {
     const registration = await withTimeout(
       navigator.serviceWorker.getRegistration('/push-sw.js'), PUSH_CONTEXT_REGISTRATION_TIMEOUT_MS, null,
@@ -200,24 +197,65 @@ async function postToWorker(message) {
       if (worker && !targets.includes(worker)) targets.push(worker);
     }
   } catch {}
-  if (!targets.length) return false;
-  const results = await Promise.allSettled(targets.map((worker) => postMessageWithAck(worker, message)));
-  return results.some((result) => result.status === 'fulfilled' && result.value === true);
+  return targets;
 }
 
-export async function setPushServiceWorkerContext({ userId, generation, contextRevision = 0 }) {
+async function postToWorkerAck(message) {
+  const targets = await getPushWorkers();
+  if (!targets.length) return null;
+  const results = await Promise.allSettled(targets.map((worker) => postMessageWithAck(worker, message)));
+  const acknowledgements = results
+    .filter((result) => result.status === 'fulfilled' && result.value?.ok)
+    .map((result) => result.value);
+  if (!acknowledgements.length) return null;
+  return acknowledgements.find((item) => item.applied !== false) || acknowledgements[0];
+}
+
+async function postToWorker(message) {
+  const acknowledgement = await postToWorkerAck(message);
+  return Boolean(acknowledgement?.ok && acknowledgement?.applied !== false);
+}
+
+export async function readPushServiceWorkerContext() {
+  const acknowledgement = await postToWorkerAck({ type: 'WAWIS_PUSH_CONTEXT_GET', protocolVersion: PUSH_CONTEXT_PROTOCOL_VERSION });
+  return acknowledgement?.context || null;
+}
+
+export async function setPushServiceWorkerContext({ userId, generation }) {
   const normalizedUserId = normalizeText(userId);
   const normalizedGeneration = Number(generation || 0);
-  const revision = Number(contextRevision || 0) || nextPushContextRevision();
-  if (!normalizedUserId || !Number.isInteger(normalizedGeneration) || normalizedGeneration <= 0) {
-    return clearPushServiceWorkerContext({ contextRevision: revision });
-  }
-  return postToWorker({ type: 'WAWIS_PUSH_CONTEXT_SET', userId: normalizedUserId, generation: normalizedGeneration, revision });
+  if (!normalizedUserId || !Number.isInteger(normalizedGeneration) || normalizedGeneration <= 0) return false;
+  return postToWorker({
+    type: 'WAWIS_PUSH_CONTEXT_SET',
+    protocolVersion: PUSH_CONTEXT_PROTOCOL_VERSION,
+    userId: normalizedUserId,
+    generation: normalizedGeneration,
+  });
 }
 
-export async function clearPushServiceWorkerContext({ contextRevision = 0 } = {}) {
-  const revision = Number(contextRevision || 0) || nextPushContextRevision();
-  return postToWorker({ type: 'WAWIS_PUSH_CONTEXT_CLEAR', revision });
+export async function clearPushServiceWorkerContext({ expectedUserId = '', expectedGeneration = 0, terminal = true } = {}) {
+  const normalizedExpectedUserId = normalizeText(expectedUserId);
+  let normalizedExpectedGeneration = Math.max(0, Number(expectedGeneration) || 0);
+  if (!normalizedExpectedUserId) return false;
+
+  // Startup/reload reconciliation: when the page does not know the generation,
+  // ask the durable SW before attempting a conditional CLEAR.
+  if (normalizedExpectedGeneration <= 0) {
+    const durableContext = await readPushServiceWorkerContext().catch(() => null);
+    const durableUserId = normalizeText(durableContext?.userId);
+    if (durableUserId && durableUserId !== normalizedExpectedUserId) return false;
+    if (durableUserId === normalizedExpectedUserId) {
+      normalizedExpectedGeneration = Math.max(0, Number(durableContext?.generation) || 0);
+    }
+  }
+
+  return postToWorker({
+    type: 'WAWIS_PUSH_CONTEXT_CLEAR',
+    protocolVersion: PUSH_CONTEXT_PROTOCOL_VERSION,
+    expectedUserId: normalizedExpectedUserId,
+    expectedGeneration: normalizedExpectedGeneration,
+    terminal: terminal !== false,
+  });
 }
 
 export function capturePushSessionContext(sessionUser = null) {
@@ -233,32 +271,50 @@ export function isPushSessionContextCurrent(token) {
 export function transitionPushSessionContext(sessionUser = null, { clearWriter = clearPushServiceWorkerContext } = {}) {
   const nextUserId = normalizeText(sessionUser?.id);
   if (nextUserId !== pushSessionUserId) {
+    const previousUserId = pushSessionUserId;
+    const previousGeneration = pushSessionGeneration;
     pushSessionEpoch += 1;
     pushSessionUserId = nextUserId;
-    const revision = nextPushContextRevision();
-    void Promise.resolve(clearWriter({ contextRevision: revision })).catch(() => null);
+    pushSessionGeneration = 0;
+    // Do not clear on a fresh module restore ('' -> A). When leaving A, CLEAR is
+    // conditional on A so a delayed old tab cannot erase B.
+    if (previousUserId) {
+      void Promise.resolve(clearWriter({
+        expectedUserId: previousUserId,
+        expectedGeneration: previousGeneration,
+        terminal: true,
+      })).catch(() => null);
+    }
   }
   return capturePushSessionContext(sessionUser);
 }
 
 export async function publishPushServiceWorkerContext({ token, generation, writer = setPushServiceWorkerContext }) {
   if (!isPushSessionContextCurrent(token)) return false;
-  const revision = nextPushContextRevision();
-  const written = await writer({ userId: token.userId, generation, contextRevision: revision });
+  const normalizedGeneration = Math.max(0, Number(generation) || 0);
+  if (!Number.isInteger(normalizedGeneration) || normalizedGeneration <= 0) return false;
+  const written = await writer({ userId: token.userId, generation: normalizedGeneration });
   if (!isPushSessionContextCurrent(token)) return false;
-  return written !== false;
+  if (written === false) return false;
+  pushSessionGeneration = normalizedGeneration;
+  return true;
 }
 
 export async function clearCurrentPushServiceWorkerContext({ token = null, writer = clearPushServiceWorkerContext } = {}) {
   if (token && !isPushSessionContextCurrent(token)) return false;
-  const revision = nextPushContextRevision();
-  const written = await writer({ contextRevision: revision });
+  const expectedUserId = normalizeText(token?.userId || pushSessionUserId);
+  if (!expectedUserId) return false;
+  const written = await writer({
+    expectedUserId,
+    expectedGeneration: pushSessionGeneration,
+    terminal: false,
+  });
   if (token && !isPushSessionContextCurrent(token)) return false;
   return written !== false;
 }
 
 export const PUSH_LIFECYCLE_TESTING = Object.freeze({
   PUSH_LOGOUT_PENDING_KEY, LEGACY_PUSH_LOGOUT_PENDING_KEY, RETRY_BASE_MS, RETRY_MAX_MS, normalizePendingItem,
-  resetSessionContext() { pushSessionEpoch = 0; pushSessionUserId = ''; pushContextRevision = 0; },
-  getSessionContext() { return { epoch: pushSessionEpoch, userId: pushSessionUserId, revision: pushContextRevision }; },
+  resetSessionContext() { pushSessionEpoch = 0; pushSessionUserId = ''; pushSessionGeneration = 0; },
+  getSessionContext() { return { epoch: pushSessionEpoch, userId: pushSessionUserId, generation: pushSessionGeneration }; },
 });

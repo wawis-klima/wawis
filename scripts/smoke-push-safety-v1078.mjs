@@ -47,7 +47,7 @@ import vm from 'node:vm';
   assert.equal(lifecycle.readPendingPushDisables().length, 1);
 }
 
-// 3) SQL naprawdę serializuje endpoint i nie udostępnia RPC klientom.
+// 3) SQL naprawdę serializuje endpoint i nie udostępnia wewnętrznych RPC klientom.
 {
   const sql = fs.readFileSync('supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql', 'utf8');
   assert.match(sql, /pg_advisory_xact_lock\(hashtextextended\(p_endpoint, 0\)\)/);
@@ -59,7 +59,7 @@ import vm from 'node:vm';
   assert.match(sql, /grant execute on function public\.push_subscription_sync_atomic[\s\S]*service_role/);
 }
 
-// 4) Źródła 10.78 muszą korzystać z atomowego RPC, kontekstu SW i tylko standalone.
+// 4) Źródła PUSH muszą korzystać z atomowych RPC i trwałego kontekstu SW.
 {
   const edge = fs.readFileSync('supabase/functions/send-assignment-push/index.ts', 'utf8');
   const push = fs.readFileSync('src/mobile791/modules/push-subscriptions.js', 'utf8');
@@ -72,8 +72,10 @@ import vm from 'node:vm';
   assert.match(edge, /subscriptionGeneration/);
   assert.doesNotMatch(edge.match(/async function handleSyncSubscription[\s\S]*?async function handleDisableSubscription/)?.[0] || '', /\.upsert\(/, 'Sync nie może wrócić do SELECT + bezwarunkowego UPSERT.');
   const expiredCleanup = edge.match(/if \(statusCode === 404 \|\| statusCode === 410\) \{[\s\S]*?\n      \}/)?.[0] || '';
-  assert.match(expiredCleanup, /\.eq\("user_id", subscription\.user_id\)/, 'Stara wysyłka nie może wyłączyć nowego właściciela endpointu.');
-  assert.match(expiredCleanup, /\.eq\("ownership_generation", subscription\.ownership_generation\)/, 'Cleanup 404\/410 musi być przypięty do generacji wysyłki.');
+  assert.match(expiredCleanup, /rpc\("push_subscription_expire_atomic"/, 'Cleanup 404/410 musi tworzyć tombstone przez atomowy RPC.');
+  assert.match(expiredCleanup, /p_request_user_id: subscription\.user_id/, 'Stara wysyłka musi być przypięta do właściciela, z którego wystartowała.');
+  assert.match(expiredCleanup, /p_expected_generation: subscription\.ownership_generation/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');
+  assert.match(expiredCleanup, /p_lifecycle_token: subscription\.lifecycle_token/, 'Cleanup musi sprawdzać lifecycle wysyłki.');
 
   assert.match(push, /getOrCreatePushLifecycleToken/);
   assert.match(push, /publishPushServiceWorkerContext/);
@@ -83,8 +85,10 @@ import vm from 'node:vm';
   assert.match(hook, /reconcilePendingPushLogout/);
   assert.match(hook, /force: true/);
   assert.match(sw, /WAWIS_PUSH_CONTEXT_SET/);
-  assert.match(sw, /WawisPushContextGuard\?\.shouldApplyContextCommand/);
-  assert.match(sw, /revision/);
+  assert.match(sw, /WAWIS_PUSH_CONTEXT_GET/);
+  assert.match(sw, /WawisPushContextGuard\?\.shouldApplySet/);
+  assert.match(sw, /WawisPushContextGuard\?\.shouldApplyClear/);
+  assert.match(sw, /terminalClear/);
   assert.match(sw, /WawisPushSafety\?\.shouldDisplayPush/);
 }
 
