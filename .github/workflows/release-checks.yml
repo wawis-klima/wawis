@@ -4,6 +4,18 @@ on:
   push:
     branches:
       - release/v10.74
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Tryb wydania — AUTO sam dobiera zakres do zmian
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - full
+          - mobile
+          - desktop
 
 concurrency:
   group: wawis-final-release-${{ github.ref }}
@@ -41,7 +53,8 @@ jobs:
         id: impact
         run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
 
-      - name: Install Chromium for Playwright
+      - name: Install Chromium for Playwright when needed
+        if: github.event_name == 'push' || inputs.scope != 'auto' || steps.impact.outputs.needs_playwright == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run one final release pass
