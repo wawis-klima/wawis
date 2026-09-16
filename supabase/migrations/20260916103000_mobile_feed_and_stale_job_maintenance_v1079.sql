@@ -1,11 +1,31 @@
 -- WAWIS 10.79 — wspólny feed zmian dla całego zespołu oraz
 -- serwerowe starzenie statusu Nowe -> Niezrealizowane po 30 dniach.
+-- Migracja jest samowystarczalna również wtedy, gdy historyczna infrastruktura
+-- mobile_change_feed z 10.10 nie została wcześniej wdrożona na danym środowisku.
 
 begin;
 
--- Od 10.60 każdy pracownik widzi wszystkie montaże. Feed 10.10 nadal
--- kierował globalny wpis wyłącznie do administratora, dlatego pracownik
--- nieprzypisany do zlecenia mógł ominąć przyrostową zmianę.
+create table if not exists public.mobile_change_feed (
+  change_seq bigint generated always as identity primary key,
+  audience_user_id uuid references public.profiles(id) on delete cascade,
+  job_id uuid not null,
+  change_kind text not null default 'job_changed',
+  changed_at timestamptz not null default now()
+);
+
+create index if not exists mobile_change_feed_audience_seq_idx
+  on public.mobile_change_feed (audience_user_id, change_seq);
+create index if not exists mobile_change_feed_global_seq_idx
+  on public.mobile_change_feed (change_seq)
+  where audience_user_id is null;
+
+alter table public.mobile_change_feed enable row level security;
+revoke all on table public.mobile_change_feed from anon, authenticated;
+grant select, insert, update, delete on table public.mobile_change_feed to service_role;
+
+-- Od 10.60 każdy pracownik widzi wszystkie montaże. Feed 10.10 kierował
+-- globalny wpis tylko do administratora, dlatego nieprzypisany pracownik mógł
+-- ominąć zmianę. Od 10.79 każde zdarzenie ma jeden globalny wpis dla zespołu.
 create or replace function public.record_mobile_job_change()
 returns trigger
 language plpgsql
@@ -31,6 +51,11 @@ $$;
 
 revoke all on function public.record_mobile_job_change() from public, anon, authenticated;
 
+drop trigger if exists jobs_record_mobile_change on public.jobs;
+create trigger jobs_record_mobile_change
+after insert or update or delete on public.jobs
+for each row execute function public.record_mobile_job_change();
+
 create or replace function public.record_mobile_job_access_change()
 returns trigger
 language plpgsql
@@ -53,6 +78,11 @@ end;
 $$;
 
 revoke all on function public.record_mobile_job_access_change() from public, anon, authenticated;
+
+drop trigger if exists job_access_record_mobile_change on public.job_access;
+create trigger job_access_record_mobile_change
+after insert or update or delete on public.job_access
+for each row execute function public.record_mobile_job_access_change();
 
 create or replace function public.get_mobile_change_batch(
   p_after_seq bigint default 0,
