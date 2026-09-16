@@ -732,9 +732,11 @@ export default function App() {
     const userId = offlineSyncUserId;
     if (!userId || !supabase) return undefined;
     let cancelled = false;
+    const sessionToken = captureCurrentSessionToken(userId);
+    const isQueueSessionCurrent = () => !cancelled && isSessionTokenCurrent(sessionToken);
 
     async function restoreAndResumeQueue() {
-      if (cancelled) return;
+      if (!isQueueSessionCurrent()) return;
       const currentProfile = offlineSyncContextRef.current.profile;
       if (!currentProfile) return;
       const currentJobs = offlineSyncContextRef.current.jobs;
@@ -748,6 +750,7 @@ export default function App() {
           supabase,
           supabaseUrl,
           profile: currentProfile,
+          isSessionCurrent: isQueueSessionCurrent,
           setJobs,
           setSelectedJob,
           onPhotoUploaded: (photo) => {
@@ -762,6 +765,7 @@ export default function App() {
       await resumePersistedPhotoUploads({
         supabase,
         profile: currentProfile,
+        isSessionCurrent: isQueueSessionCurrent,
         setJobs,
         setSelectedJob,
         supabaseUrl,
@@ -775,7 +779,7 @@ export default function App() {
         },
         onPhotoUploadError: photoSyncStatus.markPhotoSyncError,
       });
-      if (!cancelled) await performOfflineJobSync();
+      if (isQueueSessionCurrent()) await performOfflineJobSync();
     }
 
     void restoreAndResumeQueue();
@@ -791,7 +795,7 @@ export default function App() {
       window.removeEventListener('online', onlineHandler);
       if (intervalId !== null) window.clearInterval(intervalId);
     };
-  }, [offlineSyncUserId, offlineSyncProfileId, offlineSyncJobCount, hasPendingOfflineWork, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing]);
+  }, [offlineSyncUserId, offlineSyncProfileId, offlineSyncJobCount, hasPendingOfflineWork, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing, captureCurrentSessionToken, isSessionTokenCurrent]);
 
   useEffect(() => () => {
     if (typeof window === 'undefined') return;

@@ -10,7 +10,7 @@ const SIGNED_PHOTO_URL_SESSION_KEY = 'wawis:signed-photo-url-cache:v1';
 const SIGNED_PHOTO_URL_SESSION_MAX_ENTRIES = 250;
 const LOCAL_UPLOAD_PREFIX = 'local-photo-upload-';
 const activePhotoUploadPromises = new Map();
-let persistedQueueResumePromise = null;
+const persistedQueueResumePromises = new Map();
 const PHOTO_UPLOAD_LEASE_MS = 3 * 60 * 1000;
 const PHOTO_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
 
@@ -23,6 +23,11 @@ function getPhotoRetryDelayMs(retryCount) {
 function photoQueueItemIsDue(item, nowMs = Date.now()) {
   const nextAttempt = Date.parse(item?.next_attempt_at || '');
   return !Number.isFinite(nextAttempt) || nextAttempt <= nowMs;
+}
+
+function photoQueueRecordBelongsToProfile(record, profileId) {
+  const ownerId = String(record?.user_id || record?.uploaded_by || '').trim();
+  return Boolean(profileId && ownerId && ownerId === String(profileId));
 }
 
 function isHttpUrl(value = '') {
@@ -1377,12 +1382,18 @@ export async function restorePersistedJobPhotos({
   setJobs,
   setSelectedJob,
   onPhotoUploaded,
+  isSessionCurrent = () => true,
 } = {}) {
   const profileId = String(profile?.id || '').trim();
-  const records = (await listPhotoQueueItems()).filter((record) => !profileId || !record.uploaded_by || String(record.uploaded_by) === profileId);
+  if (!profileId || !isSessionCurrent()) return [];
+  const guardedSetJobs = (updater) => { if (isSessionCurrent()) setJobs?.(updater); };
+  const guardedSetSelectedJob = (updater) => { if (isSessionCurrent()) setSelectedJob?.(updater); };
+  const records = (await listPhotoQueueItems()).filter((record) => photoQueueRecordBelongsToProfile(record, profileId));
+  if (!isSessionCurrent()) return [];
   const hydratedPhotos = [];
 
   for (const record of records) {
+    if (!isSessionCurrent()) break;
     let photo = hydratePhotoQueueItem(record, createLocalPreviewUrl);
     if (!photo) continue;
 
@@ -1409,8 +1420,8 @@ export async function restorePersistedJobPhotos({
     }
 
     hydratedPhotos.push(photo);
-    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
-    setSelectedJob?.((prev) => (prev && String(prev.id) === String(photo.job_id) ? mergePhotoIntoJob(prev, photo) : prev));
+    guardedSetJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
+    guardedSetSelectedJob?.((prev) => (prev && String(prev.id) === String(photo.job_id) ? mergePhotoIntoJob(prev, photo) : prev));
   }
   return hydratedPhotos;
 }
@@ -1426,15 +1437,21 @@ async function runPersistedPhotoUploads({
   onQueueStart,
   onQueueIdle,
   includeErrors = false,
+  isSessionCurrent = () => true,
 } = {}) {
-  if (!supabase || !profile || isBrowserOffline()) return { processed: 0, uploaded: 0 };
+  if (!supabase || !profile || isBrowserOffline() || !isSessionCurrent()) return { processed: 0, uploaded: 0 };
   await recoverStalePhotoQueueItems();
+  if (!isSessionCurrent()) return { processed: 0, uploaded: 0 };
   const profileId = String(profile?.id || '').trim();
-  const records = (await listPhotoQueueItems()).filter((record) => (
-    !profileId || !record.uploaded_by || String(record.uploaded_by) === profileId
-  )).filter((record) => includeErrors || photoQueueItemIsDue(record));
+  const guardedSetJobs = (updater) => { if (isSessionCurrent()) setJobs?.(updater); };
+  const guardedSetSelectedJob = (updater) => { if (isSessionCurrent()) setSelectedJob?.(updater); };
+  const guardedOnPhotoUploaded = (...args) => { if (isSessionCurrent()) onPhotoUploaded?.(...args); };
+  const guardedOnPhotoUploadError = (...args) => { if (isSessionCurrent()) onPhotoUploadError?.(...args); };
+  const records = (await listPhotoQueueItems())
+    .filter((record) => photoQueueRecordBelongsToProfile(record, profileId))
+    .filter((record) => includeErrors || photoQueueItemIsDue(record));
   if (!records.length) {
-    onQueueIdle?.();
+    if (isSessionCurrent()) onQueueIdle?.();
     return { processed: 0, uploaded: 0 };
   }
 
@@ -1475,8 +1492,8 @@ async function runPersistedPhotoUploads({
       continue;
     }
 
-    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, queuedPhoto)));
-    setSelectedJob?.((prev) => (prev && String(prev.id) === String(queuedPhoto.job_id) ? mergePhotoIntoJob(prev, queuedPhoto) : prev));
+    guardedSetJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, queuedPhoto)));
+    guardedSetSelectedJob?.((prev) => (prev && String(prev.id) === String(queuedPhoto.job_id) ? mergePhotoIntoJob(prev, queuedPhoto) : prev));
     const compressImageFn = queuedPhoto.photo_kind === 'nameplate'
       ? prepareNameplatePhotoForUpload
       : preparePhotoForUpload;
@@ -1485,11 +1502,11 @@ async function runPersistedPhotoUploads({
       profile,
       queuedPhoto,
       compressImageFn,
-      setJobs,
-      setSelectedJob,
+      setJobs: guardedSetJobs,
+      setSelectedJob: guardedSetSelectedJob,
       supabaseUrl,
-      onPhotoUploaded,
-      onPhotoUploadError,
+      onPhotoUploaded: guardedOnPhotoUploaded,
+      onPhotoUploadError: guardedOnPhotoUploadError,
     });
     processed += 1;
     if (result) {
@@ -1500,28 +1517,35 @@ async function runPersistedPhotoUploads({
       if (String(latest?.upload_status || '').toLowerCase() === 'error') failed += 1;
     }
   }
-  if (failed > 0) onPhotoUploadError?.(new Error(`Nie udało się wysłać ${failed} zdjęć z kolejki.`));
-  else onQueueIdle?.();
+  if (failed > 0) guardedOnPhotoUploadError?.(new Error(`Nie udało się wysłać ${failed} zdjęć z kolejki.`));
+  else if (isSessionCurrent()) onQueueIdle?.();
   return { processed, uploaded, failed };
 }
 
 export function resumePersistedPhotoUploads(options = {}) {
-  if (persistedQueueResumePromise) return persistedQueueResumePromise;
-  persistedQueueResumePromise = runPersistedPhotoUploads(options)
+  const profileId = String(options?.profile?.id || '').trim();
+  if (!profileId || options?.isSessionCurrent?.() === false) return Promise.resolve({ processed: 0, uploaded: 0, ignoredStaleSession: true });
+  const existing = persistedQueueResumePromises.get(profileId);
+  if (existing) return existing;
+  const request = runPersistedPhotoUploads(options)
     .finally(() => {
-      persistedQueueResumePromise = null;
+      if (persistedQueueResumePromises.get(profileId) === request) persistedQueueResumePromises.delete(profileId);
     });
-  return persistedQueueResumePromise;
+  persistedQueueResumePromises.set(profileId, request);
+  return request;
 }
 
 export async function retryAllPersistedPhotoUploads(options = {}) {
-  if (persistedQueueResumePromise) {
+  const profileId = String(options?.profile?.id || '').trim();
+  const existing = profileId ? persistedQueueResumePromises.get(profileId) : null;
+  if (existing) {
     try {
-      await persistedQueueResumePromise;
+      await existing;
     } catch {
       // Nowa ręczna próba ma wystartować także po błędzie poprzedniej synchronizacji.
     }
   }
+  if (options?.isSessionCurrent?.() === false) return { processed: 0, uploaded: 0, ignoredStaleSession: true };
   return runPersistedPhotoUploads({ ...options, includeErrors: true });
 }
 
