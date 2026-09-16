@@ -1,6 +1,9 @@
 name: WAWIS final release checks
 
 on:
+  push:
+    branches:
+      - release/v10.74
   workflow_dispatch:
     inputs:
       scope:
