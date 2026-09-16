@@ -13,6 +13,8 @@
 - smoke-audit-fixes-v1087 po poprawce: PASS.
 - grupa PUSH: PASS.
 - production build: PASS.
+- pełna bramka PR wykryła historyczny test Paliwo oczekujący starego cleanupu bez lifecycle_token; assertion został zaktualizowany do mocniejszego kontraktu ownership_generation + lifecycle_token + push_subscription_expire_atomic.
+- po tej korekcie grupy PUSH + Paliwo oraz production build: PASS; żadna kontrola nie została wyłączona.
 
 ## Wdrożenie F11
 1. migracja RPC,
