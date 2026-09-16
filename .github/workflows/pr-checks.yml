@@ -28,7 +28,7 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Close final F8 post-await gap
+      - name: Close final 10.84 races
         shell: bash
         run: |
           python - <<'PY'
@@ -48,6 +48,17 @@ jobs:
           assertion = "assert.match(mobileSession, /const operations = await listOfflineJobOperations\\(userId\\);\\s*if \\(!isCurrentRefreshRequest\\(\\)\\) return \\{ ok: true, ignoredOlderResponse: true \\};/);\n"
           if assertion not in source:
               source = source.replace(marker, assertion + marker, 1)
+
+          queue_assertion = """const photoQueue = fs.readFileSync('src/mobile791/modules/photo-offline-queue.js', 'utf8');
+          const photoQueueUpdateBlock = photoQueue.slice(photoQueue.indexOf('export async function updatePhotoQueueItem'), photoQueue.indexOf('export async function deletePhotoQueueItem'));
+          assert.match(photoQueueUpdateBlock, /db\\.transaction\\(STORE_NAME, 'readwrite'\\)/);
+          assert.match(photoQueueUpdateBlock, /store\\.get\\(String\\(photoId\\)\\)/);
+          assert.match(photoQueueUpdateBlock, /store\\.put\\(/);
+          assert.doesNotMatch(photoQueueUpdateBlock, /withStore\\('readonly'/);
+          """
+          marker2 = "const cursorBlock = offline.slice(offline.indexOf('export async function updateOfflineSyncCursor')"
+          if "const photoQueueUpdateBlock" not in source:
+              source = source.replace(marker2, queue_assertion + marker2, 1)
           smoke.write_text(source)
 
           legacy = Path('scripts/smoke-session-sync-resilience-v1080.mjs')
@@ -57,6 +68,98 @@ jobs:
           if old not in source:
               raise SystemExit('Brak starego markera v10.80 do aktualizacji')
           legacy.write_text(source.replace(old, new, 1))
+
+          queue = Path('src/mobile791/modules/photo-offline-queue.js')
+          source = queue.read_text()
+          old = """export async function updatePhotoQueueItem(photoId, patch = {}) {
+            if (!photoId) return false;
+            try {
+              const current = await withStore('readonly', (store) => store.get(String(photoId)));
+              if (!current) return false;
+              await withStore('readwrite', (store) => store.put({ ...current, ...patch, id: String(photoId) }));
+              dispatchQueueChanged();
+              return true;
+            } catch (error) {
+              console.warn('Nie udało się zaktualizować lokalnego statusu zdjęcia.', error?.message || error);
+              return false;
+            }
+          }
+          """
+          new = """export async function updatePhotoQueueItem(photoId, patch = {}) {
+            if (!photoId) return false;
+            const db = await openQueueDb();
+            if (!db) return false;
+            try {
+              const updated = await new Promise((resolve, reject) => {
+                const transaction = db.transaction(STORE_NAME, 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(String(photoId));
+                let didUpdate = false;
+                request.onsuccess = () => {
+                  const current = request.result;
+                  if (!current) return;
+                  store.put({ ...current, ...patch, id: String(photoId) });
+                  didUpdate = true;
+                };
+                request.onerror = () => reject(request.error || new Error('Nie udało się odczytać zdjęcia do aktualizacji.'));
+                transaction.oncomplete = () => resolve(didUpdate);
+                transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zaktualizować lokalnego statusu zdjęcia.'));
+                transaction.onabort = transaction.onerror;
+              });
+              if (updated) dispatchQueueChanged();
+              return updated;
+            } catch (error) {
+              console.warn('Nie udało się zaktualizować lokalnego statusu zdjęcia.', error?.message || error);
+              return false;
+            } finally {
+              db.close();
+            }
+          }
+          """
+          if old not in source:
+              raise SystemExit('Brak starego nieatomowego updatePhotoQueueItem')
+          queue.write_text(source.replace(old, new, 1))
+
+          e2e = Path('tests/e2e/audit-races-v1084.spec.js')
+          source = e2e.read_text()
+          if "usunięty rekord kolejki zdjęć nie może zostać wskrzeszony" not in source:
+              insertion = r'''
+
+            test('usunięty rekord kolejki zdjęć nie może zostać wskrzeszony przez spóźniony update', async ({ page }) => {
+              await page.goto('/');
+              const result = await page.evaluate(async () => {
+                const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+                const id = 'local-photo-upload-v1084-delete-race';
+                let failures = 0;
+                for (let round = 0; round < 16; round += 1) {
+                  const file = new File([`v1084-${round}`], `v1084-${round}.jpg`, { type: 'image/jpeg' });
+                  await queue.savePhotoQueueItem({
+                    id,
+                    job_id: 'mock-job-002',
+                    uploaded_by: 'mock-worker-1',
+                    created_at: new Date(1000 + round).toISOString(),
+                    __localFile: file,
+                    upload_status: 'error',
+                  });
+                  const updates = Array.from({ length: 32 }, (_, index) => queue.updatePhotoQueueItem(id, {
+                    retry_count: index + 1,
+                    last_attempt_at: new Date(2000 + index).toISOString(),
+                  }));
+                  const deletion = queue.deletePhotoQueueItem(id);
+                  await Promise.allSettled([...updates, deletion]);
+                  const exists = (await queue.listPhotoQueueItems()).some((item) => String(item.id) === id);
+                  if (exists) {
+                    failures += 1;
+                    await queue.deletePhotoQueueItem(id);
+                  }
+                }
+                return { failures };
+              });
+              expect(result.failures).toBe(0);
+            });
+          '''
+              source = source.replace('\n});\n', insertion + '\n});\n', 1)
+          e2e.write_text(source)
           PY
           git diff --check
 
@@ -68,7 +171,7 @@ jobs:
         run: |
           git fetch origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed-files.txt
-          printf '%s\n' src/mobile791/hooks/useAppSession.js scripts/smoke-audit-races-v1084.mjs scripts/smoke-session-sync-resilience-v1080.mjs >> changed-files.txt
+          printf '%s\n' src/mobile791/hooks/useAppSession.js src/mobile791/modules/photo-offline-queue.js scripts/smoke-audit-races-v1084.mjs scripts/smoke-session-sync-resilience-v1080.mjs tests/e2e/audit-races-v1084.spec.js >> changed-files.txt
           sort -u changed-files.txt -o changed-files.txt
           cat changed-files.txt
 
@@ -89,6 +192,9 @@ jobs:
       - name: Run dedicated 10.84 browser race regression
         run: npx playwright test tests/e2e/audit-races-v1084.spec.js --reporter=line
 
+      - name: Repeat nameplate reconciliation scenario
+        run: npx playwright test tests/e2e/mobile-resilience.spec.js --grep "serwerowa tabliczka usuwa stary lokalny błąd" --repeat-each=3 --workers=1 --reporter=line
+
       - name: Run required Playwright E2E
         if: steps.impact.outputs.needs_playwright == 'true'
         run: node scripts/run-pr-playwright.cjs release-impact.json
@@ -106,9 +212,9 @@ jobs:
           gate.predeploy_diagnostics = {
             checked: true,
             last_24h: true,
-            checked_at: '2026-09-16T16:55:00+02:00',
+            checked_at: '2026-09-16T16:58:00+02:00',
             result: 'INFO_ONLY',
-            notes: '10.84: F5/F7/F8/F9, dedykowana regresja, Chromium E2E, pełny wymagany Playwright i build przeszły przed merge.'
+            notes: '10.84: F5/F7/F8/F9, atomowa kolejka zdjęć, dedykowane race E2E, pełny wymagany Playwright i build przeszły przed merge.'
           };
           fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
           NODE
