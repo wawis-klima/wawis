@@ -1,0 +1,71 @@
+name: Fix v10.83 real E2E findings
+
+on:
+  push:
+    branches:
+      - tmp-v1083-apply
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tmp-v1083-apply
+          fetch-depth: 0
+
+      - name: Preserve queued photos across summary refresh
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/mobile791/modules/jobs-fetch.js')
+          text = path.read_text()
+          old = """    return [String(job.id || ''), {\n      comments: Array.isArray(job.comments) ? job.comments : [],\n      photos,\n      detailsLoaded: Boolean(job.detailsLoaded) && photoModeCompatible,\n      detailsLoadedAt: job.detailsLoadedAt || null,\n      detailsLoadError: String(job.detailsLoadError || '').trim(),\n    }];\n"""
+          new = """    return [String(job.id || ''), {\n      comments: Array.isArray(job.comments) ? job.comments : [],\n      photos,\n      queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo)),\n      detailsLoaded: Boolean(job.detailsLoaded) && photoModeCompatible,\n      detailsLoadedAt: job.detailsLoadedAt || null,\n      detailsLoadError: String(job.detailsLoadError || '').trim(),\n    }];\n"""
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo))' not in text:
+              raise SystemExit('expected getExistingJobDetailsMap block not found')
+
+          old = """    const previousDetails = preserveJobDetails ? existingDetails.get(String(job.id)) : null;\n    return {\n      ...job,\n      viewers: (accessData || []).filter((item) => item.job_id === job.id),\n      comments: previousDetails?.detailsLoaded ? previousDetails.comments : [],\n      photos: previousDetails?.detailsLoaded ? previousDetails.photos : [],\n      detailsLoaded: previousDetails?.detailsLoaded || false,\n"""
+          new = """    const previousDetails = preserveJobDetails ? existingDetails.get(String(job.id)) : null;\n    const photosToPreserve = previousDetails?.detailsLoaded\n      ? previousDetails.photos\n      : (previousDetails?.queuedPhotos || []);\n    return {\n      ...job,\n      viewers: (accessData || []).filter((item) => item.job_id === job.id),\n      comments: previousDetails?.detailsLoaded ? previousDetails.comments : [],\n      photos: photosToPreserve,\n      detailsLoaded: previousDetails?.detailsLoaded || false,\n"""
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'const photosToPreserve = previousDetails?.detailsLoaded' not in text:
+              raise SystemExit('expected buildCombinedJobs block not found')
+          path.write_text(text)
+
+          smoke = Path('scripts/smoke-mobile-offline-photo-queue.cjs')
+          smoke_text = smoke.read_text()
+          if "const jobsFetch = fs.readFileSync(path.join(root, 'src/mobile791/modules/jobs-fetch.js'), 'utf8');" not in smoke_text:
+              smoke_text = smoke_text.replace(
+                  "const photos = fs.readFileSync(path.join(root, 'src/mobile791/modules/photos.js'), 'utf8');\n",
+                  "const photos = fs.readFileSync(path.join(root, 'src/mobile791/modules/photos.js'), 'utf8');\nconst jobsFetch = fs.readFileSync(path.join(root, 'src/mobile791/modules/jobs-fetch.js'), 'utf8');\n",
+                  1,
+              )
+          guard = "assert(jobsFetch.includes(\"queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo))\"), 'Pełny refresh nie może zgubić lokalnego zdjęcia odtworzonego z IndexedDB.');\n"
+          if guard not in smoke_text:
+              smoke_text = smoke_text.replace(
+                  "assert(app.includes('restorePersistedJobPhotos'), 'Brak odtwarzania kolejki po ponownym uruchomieniu aplikacji.');\n",
+                  "assert(app.includes('restorePersistedJobPhotos'), 'Brak odtwarzania kolejki po ponownym uruchomieniu aplikacji.');\n" + guard,
+                  1,
+              )
+          smoke.write_text(smoke_text)
+          PY
+          git diff --check
+
+      - name: Commit source fix when needed
+        run: |
+          if git diff --quiet; then
+            echo 'Source fix already present.'
+            exit 0
+          fi
+          git config user.name 'wawis-klima'
+          git config user.email 'wasik@wawis.pl'
+          git add src/mobile791/modules/jobs-fetch.js scripts/smoke-mobile-offline-photo-queue.cjs
+          git commit -m 'fix: preserve queued photos across mobile refresh'
+          git push origin HEAD:tmp-v1083-apply
