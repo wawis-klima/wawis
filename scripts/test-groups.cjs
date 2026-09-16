@@ -133,6 +133,8 @@ const GROUPS = {
     'node scripts/smoke-release-automation-v1061.cjs',
     'node scripts/smoke-release-impact-v1063.cjs',
     'npm run test:smoke:release-runner',
+    'npm run test:smoke:release-zip',
+    'npm run test:smoke:release-zip-clean',
     'node scripts/smoke-playwright-runner-fail-closed-v1085.cjs',
     'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
     'npm run test:smoke:e2e-mobile',
