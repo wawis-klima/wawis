@@ -1,14 +1,14 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.82",
+  "version": "10.83",
   "scope": "full",
-  "release_branch": "release/v10.82",
+  "release_branch": "release/v10.83",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "checked_at": "2026-09-16T11:20:00+02:00",
     "result": "INFO",
-    "notes": "10.82: diagnostyka startowa pozostaje informacyjna; wydanie domyka audyt F1/F2/F13 ochrony niezapisanej pracy."
+    "notes": "10.83: diagnostyka pozostaje informacyjna; wydanie domyka bezpieczeństwo sesji/PUSH oraz obowiązkową prawdziwą bramkę E2E."
   },
   "predeploy_diagnostics": {
     "checked": false,
@@ -18,7 +18,7 @@
     "notes": "Informacyjne; nie blokuje release."
   },
   "main_protection": {
-    "source_branch": "release/v10.82",
+    "source_branch": "release/v10.83",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
