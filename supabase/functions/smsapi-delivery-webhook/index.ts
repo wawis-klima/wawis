@@ -96,40 +96,48 @@ async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>,
   if (fetchError) return { ok: false, status: 500, error: fetchError.message };
   if (!logRow) return { ok: false, status: 404, error: 'Nie znaleziono wpisu sms_log dla provider_message_id.' };
 
-  if (!shouldAdvanceSmsStatus(logRow.status, nextStatus)) {
-    return { ok: true, providerMessageId: entry.providerMessageId, nextStatus: logRow.status, ignoredOlderStatus: true };
-  }
-
-  const patch: Record<string, unknown> = {
-    status: nextStatus,
-    error_message: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
-  };
-  if (nextStatus === 'delivered') patch.delivered_at = nowIso;
-
-  const { error: logUpdateError } = await adminClient.from('sms_log').update(patch).eq('id', logRow.id);
-  if (logUpdateError) return { ok: false, status: 500, error: logUpdateError.message };
+  const logNeedsAdvance = shouldAdvanceSmsStatus(logRow.status, nextStatus);
+  let jobRow: { id: string; last_sms_sent_at?: string | null; last_sms_status?: string | null } | null = null;
+  let jobNeedsAdvance = false;
 
   if (logRow.job_id) {
-    const { data: jobRow, error: jobFetchError } = await adminClient
+    const { data, error: jobFetchError } = await adminClient
       .from('jobs')
       .select('id, last_sms_sent_at, last_sms_status')
       .eq('id', logRow.job_id)
       .maybeSingle();
     if (jobFetchError) return { ok: false, status: 500, error: jobFetchError.message };
+    jobRow = data;
 
     const logSentAt = logRow.sent_at ? Date.parse(String(logRow.sent_at)) : Number.NaN;
     const jobSentAt = jobRow?.last_sms_sent_at ? Date.parse(String(jobRow.last_sms_sent_at)) : Number.NaN;
     const callbackBelongsToLatestSend = !Number.isFinite(jobSentAt) || !Number.isFinite(logSentAt) || logSentAt >= jobSentAt;
+    jobNeedsAdvance = Boolean(jobRow && callbackBelongsToLatestSend && shouldAdvanceSmsStatus(jobRow.last_sms_status, nextStatus));
+  }
 
-    if (jobRow && callbackBelongsToLatestSend && shouldAdvanceSmsStatus(jobRow.last_sms_status, nextStatus)) {
-      const jobPatch: Record<string, unknown> = {
-        last_sms_status: nextStatus,
-        last_sms_error: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
-      };
-      if (nextStatus === 'delivered') jobPatch.last_sms_sent_at = logRow.sent_at || nowIso;
-      const { error: jobUpdateError } = await adminClient.from('jobs').update(jobPatch).eq('id', logRow.job_id);
-      if (jobUpdateError) return { ok: false, status: 500, error: jobUpdateError.message };
-    }
+  if (!logNeedsAdvance && !jobNeedsAdvance) {
+    return { ok: true, providerMessageId: entry.providerMessageId, nextStatus: logRow.status, ignoredOlderStatus: true };
+  }
+
+  if (logNeedsAdvance) {
+    const patch: Record<string, unknown> = {
+      status: nextStatus,
+      error_message: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
+    };
+    if (nextStatus === 'delivered') patch.delivered_at = nowIso;
+
+    const { error: logUpdateError } = await adminClient.from('sms_log').update(patch).eq('id', logRow.id);
+    if (logUpdateError) return { ok: false, status: 500, error: logUpdateError.message };
+  }
+
+  if (jobRow && jobNeedsAdvance && logRow.job_id) {
+    const jobPatch: Record<string, unknown> = {
+      last_sms_status: nextStatus,
+      last_sms_error: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
+    };
+    if (nextStatus === 'delivered') jobPatch.last_sms_sent_at = logRow.sent_at || nowIso;
+    const { error: jobUpdateError } = await adminClient.from('jobs').update(jobPatch).eq('id', logRow.job_id);
+    if (jobUpdateError) return { ok: false, status: 500, error: jobUpdateError.message };
   }
 
   return { ok: true, providerMessageId: entry.providerMessageId, nextStatus };
