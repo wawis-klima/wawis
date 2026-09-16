@@ -1,30 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.84",
+  "version": "10.85",
   "scope": "full",
-  "release_branch": "release/v10.84",
+  "release_branch": "release/v10.85",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T15:57:00+02:00",
+    "checked_at": "2026-09-16T16:00:00+02:00",
     "result": "INFO",
-    "notes": "10.84 domyka F5/F7/F8/F9 ostatniego audytu: stale loadery, fallback szczegółów, kolejność refresh i atomowy kursor IndexedDB."
+    "notes": "10.85: pakiet po audycie 10.84 obejmuje F12/N9/N1/N6/N7-A; każdy kontrprzykład ma regresję i wymagany zielony przebieg przed merge."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T16:58:00+02:00",
-    "result": "INFO_ONLY",
-    "notes": "10.84: F5/F7/F8/F9, atomowa kolejka zdjęć, dedykowane race E2E, pełny wymagany Playwright i build przeszły przed merge."
+    "checked_at": "2026-09-16T19:27:00+02:00",
+    "result": "PASS",
+    "notes": "Finalny kandydat 10.85 przeszedł targeted regressions, wymagane Playwright E2E i production build na SHA bfc65bfc3de88d8abf9966c2a35b670a2b37ce89. Supabase po merge zweryfikowany read-only: baseline migracji, guardy/triggery, send-service-sms v24 i smsapi-delivery-webhook v4."
   },
   "main_protection": {
-    "source_branch": "release/v10.84",
+    "source_branch": "release/v10.85",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "evidence_required": false,
-    "result": "INFO_ONLY"
+    "evidence_required": true,
+    "result": "PENDING",
+    "notes": "Zamknięcie 10.85 wymaga zielonego Vercel dla finalnego SHA main oraz live checku wersji 10.85."
   },
   "archive": {
     "source_of_truth": "github-main",
