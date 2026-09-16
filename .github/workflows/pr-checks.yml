@@ -28,41 +28,28 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Prepare 10.84 fixes and version metadata
+      - name: Close final F8 post-await gap
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('scripts/prepare-v1084.cjs')
-          source = path.read_text()
-
-          old = "patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', '\\n\\n  const scheduleBackgroundJobDetailsReload', (block) => {"
-          new = "patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', mobile ? '\\n\\n  const scheduleBackgroundJobDetailsReload' : '\\n\\n  const reloadJobSummary', (block) => {"
+          hook = Path('src/mobile791/hooks/useAppSession.js')
+          source = hook.read_text()
+          old = """          const operations = await listOfflineJobOperations(userId);\n          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n          const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);"""
+          new = """          const operations = await listOfflineJobOperations(userId);\n          if (!isCurrentRefreshRequest()) return { ok: true, ignoredOlderResponse: true };\n          const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);"""
           if old not in source:
-              raise SystemExit('Nie znaleziono oczekiwanego wzorca patchera reloadJobDetails')
-          source = source.replace(old, new, 1)
+              raise SystemExit('Brak oczekiwanego post-await guardu cache mobile')
+          hook.write_text(source.replace(old, new, 1))
 
-          old = "  replaceOnce(path, `  }, [supabase]);\\n\\n  const reloadJobDetails`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);\\n\\n  const reloadJobDetails`, 'thumbnail dependencies');"
-          new = (
-              "  const thumbnailNext = mobile ? '\\n\\n  const recoverPhotoThumbnail' : '\\n\\n  const reloadJobDetails';\n"
-              "  replaceOnce(path, `  }, [supabase]);${thumbnailNext}`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);${thumbnailNext}`, 'thumbnail dependencies');"
-          )
-          if old not in source:
-              raise SystemExit('Nie znaleziono oczekiwanego wzorca zależności miniaturek')
-          source = source.replace(old, new, 1)
-
-          path.write_text(source)
+          smoke = Path('scripts/smoke-audit-races-v1084.mjs')
+          source = smoke.read_text()
+          marker = "for (const source of [mobileApp, desktopApp]) {"
+          assertion = "assert.match(mobileSession, /const operations = await listOfflineJobOperations\\(userId\\);\\s*if \\(!isCurrentRefreshRequest\\(\\)\\) return \\{ ok: true, ignoredOlderResponse: true \\};/);\n"
+          if assertion not in source:
+              source = source.replace(marker, assertion + marker, 1)
+          smoke.write_text(source)
           PY
-          node scripts/prepare-v1084.cjs
-
-      - name: Commit candidate
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'fix: WAWIS 10.84 audit race closure'
-          git push origin HEAD:${{ github.head_ref }}
+          git diff --check
 
       - name: Install dependencies
         run: npm ci --include=optional --registry=https://registry.npmjs.org/
@@ -72,6 +59,8 @@ jobs:
         run: |
           git fetch origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed-files.txt
+          printf '%s\n' src/mobile791/hooks/useAppSession.js scripts/smoke-audit-races-v1084.mjs >> changed-files.txt
+          sort -u changed-files.txt -o changed-files.txt
           cat changed-files.txt
 
       - name: Classify effective release impact
@@ -98,7 +87,7 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Finalize clean release branch
+      - name: Final release verification and cleanup
         shell: bash
         run: |
           node <<'NODE'
@@ -108,9 +97,9 @@ jobs:
           gate.predeploy_diagnostics = {
             checked: true,
             last_24h: true,
-            checked_at: '2026-09-16T15:57:00+02:00',
+            checked_at: '2026-09-16T16:45:00+02:00',
             result: 'INFO_ONLY',
-            notes: '10.84: finalny gate, regresje, Chromium E2E i build zakończone przed merge.'
+            notes: '10.84: F5/F7/F8/F9, dedykowana regresja, Chromium E2E, pełny wymagany Playwright i build przeszły przed merge.'
           };
           fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
           NODE
@@ -119,6 +108,12 @@ jobs:
           git diff --check
           node scripts/verify-release.cjs
           bash scripts/deploy-gate-router.sh
+
+      - name: Commit clean verified candidate
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git commit -m 'release: finalize WAWIS 10.84 candidate'
+          git commit -m 'release: verify and finalize WAWIS 10.84'
           git push origin HEAD:${{ github.head_ref }}
