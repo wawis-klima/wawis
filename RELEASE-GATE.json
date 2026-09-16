@@ -1,31 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.86",
+  "version": "10.87",
   "scope": "full",
-  "release_branch": "release/v10.86",
+  "release_branch": "release/v10.87",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T20:08:00+02:00",
+    "checked_at": "2026-09-16T20:47:00+02:00",
     "result": "INFO",
-    "notes": "10.86: F3/F5/F8/F9 z audytu 10.84; osobna gałąź release i kontrtesty."
+    "notes": "10.87: F4/F10/F11 z audytu 10.84; dokładne RED reprodukcje wykonane przed poprawką."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T20:12:00+02:00",
+    "checked_at": "2026-09-16T20:48:00+02:00",
     "result": "FOCUSED_PASS_FULL_PR_PENDING",
-    "notes": "Focused 10.86 regressions i production build przeszły. Finalny targeted-checks, Playwright E2E i build muszą przejść na SHA PR."
+    "notes": "Exact audit regression, grupa PUSH i production build przeszły. Finalny targeted-checks + Playwright E2E + build muszą przejść na SHA PR."
   },
   "main_protection": {
-    "source_branch": "release/v10.86",
+    "source_branch": "release/v10.87",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "result": "PENDING",
-    "notes": "Po merge wymagany Vercel SUCCESS i live 10.86."
+    "notes": "Po merge wymagane: Vercel SUCCESS, live 10.87/SW oraz odczyt żywych grantów, RPC i wersji Edge Functions."
   },
   "archive": {
     "source_of_truth": "github-main",

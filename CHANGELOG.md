@@ -1,3 +1,9 @@
+## 10.87
+- F4: Service Worker jest trwałym źródłem porządku kontekstu PUSH; SET/CLEAR używają właściciela i ownership_generation, a spóźnione komendy starego konta nie mogą przywrócić A ani usunąć B.
+- F10: getSubscription, subscribe i unsubscribe mają ograniczony czas zarówno na mobile, jak i desktopie; desktop ma dodatkowy guard generacji synchronizacji.
+- F11: bezpośredni zapis push_subscriptions przez anon/authenticated został zastąpiony kontrolowanymi RPC; cleanup 404/410 zapisuje tombstone i sprawdza owner/lifecycle/generation przed dezaktywacją.
+- N8: smoke-audit-fixes-v1087 najpierw odtwarza dokładne błędy z audytowanego SHA 10.84, a następnie wymaga kontraktu naprawionego 10.87.
+
 ## 10.86
 - F3: spóźniona weryfikacja SIGNED_OUT nie może wylogować nowszej sesji — desktop i mobile.
 - F5: restore/resume/upload kolejki zdjęć offline są izolowane właścicielem i generacją sesji.
