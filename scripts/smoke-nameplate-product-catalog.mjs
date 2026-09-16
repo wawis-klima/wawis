@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8').replace(/\r\n/g, '\n');
 
 const migration = read('nameplate-product-catalog-v8.92.sql');
 assert.match(migration, /create table if not exists public\.nameplate_product_catalog/i);
@@ -14,12 +14,12 @@ assert.match(migration, /current_user_is_admin\(\)/i);
 
 const seedMigration = read('nameplate-product-catalog-full-current-v9.02.sql');
 assert.match(seedMigration, /pełny aktualny katalog Rotenso 2026\/2027/i);
-assert.match(seedMigration, /5905567601170/); // Revio RO35Xo R14 zgłoszony przez użytkownika
-assert.match(seedMigration, /5905567600814/); // Imoto I50Xi R14
-assert.match(seedMigration, /5905567615139/); // Teta TO70Xo R17
-assert.match(seedMigration, /5905567608599/); // Luve Pro Black LBP26Xi R16
-assert.match(seedMigration, /5905567606182/); // Nevo N100Xi R15
-assert.match(seedMigration, /5905567606113/); // Hiro HP HHP70Xm3 R15
+assert.match(seedMigration, /5905567601170/);
+assert.match(seedMigration, /5905567600814/);
+assert.match(seedMigration, /5905567615139/);
+assert.match(seedMigration, /5905567608599/);
+assert.match(seedMigration, /5905567606182/);
+assert.match(seedMigration, /5905567606113/);
 assert.match(seedMigration, /on conflict \(ean\) do update/i);
 
 const component = read('src/components/desktop/DesktopNameplateOcrButton.jsx');
@@ -52,7 +52,6 @@ assert.equal(data.getBuiltInRotensoCatalogEntry('5905567601170')?.model_code, 'R
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567600777')?.model_code, 'I26Xi R14');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567615115')?.model_code, 'TO35Xo R17');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567608933')?.model_code, 'FH26Xo R16');
-
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567601668')?.model_code, 'H80Xm4 R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606540')?.model_code, 'HN40Xm2 R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606588')?.model_code, 'HN120Xm5 R15');
@@ -63,7 +62,6 @@ assert.equal(data.getBuiltInRotensoCatalogEntry('5905567608599')?.model_code, 'L
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606175')?.model_code, 'N90Xi R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606113')?.model_code, 'HHP70Xm3 R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606434')?.model_code, 'UO160Xo R15');
-
 assert.equal(data.getBuiltInRotensoCatalogEntry('0000000000000'), null);
 
 const csv = read('wawis-katalog-ean-rotenso-v9.02.csv').replace(/^\ufeff/, '').trim().split(/\r?\n/);
