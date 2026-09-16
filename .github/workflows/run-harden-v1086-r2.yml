@@ -1,0 +1,43 @@
+name: WAWIS 10.86 final hardening runner
+
+on:
+  push:
+    branches:
+      - release/v10.86
+    paths:
+      - .github/workflows/run-harden-v1086-r2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.86
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Apply final 10.86 hardening
+        run: python scripts/harden-v1086-once.py
+      - name: Run focused 10.86 regressions
+        run: |
+          node scripts/smoke-audit-fixes-v1086.mjs
+          node scripts/smoke-audit-races-v1084.mjs
+          node scripts/smoke-mobile-auth-resilience-v974.mjs
+          node scripts/smoke-mobile-offline-photo-queue.cjs
+      - name: Production build
+        run: npm run build
+      - name: Commit verified source only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/mobile791 scripts/smoke-audit-fixes-v1086.mjs
+          git commit -m '10.86: close stale-session photo and sync races'
+          git push origin HEAD:release/v10.86
