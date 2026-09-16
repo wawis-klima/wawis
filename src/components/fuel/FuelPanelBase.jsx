@@ -5,6 +5,7 @@ import {
   calculateFuelMonthlyReport,
   checkFuelOdometerProgression,
   checkRapidFuelRefill,
+  createFuelEntryAttemptId,
   deleteFuelEntry,
   getFuelOdometerPhotoUrl,
   loadFuelModuleData,
@@ -23,6 +24,36 @@ const WARSAW_DATE_TIME = new Intl.DateTimeFormat('pl-PL', {
 });
 
 const HISTORY_PAGE_SIZE = 5;
+const FUEL_ENTRY_ATTEMPT_STORAGE_KEY = 'fuel-entry-attempt-v1088';
+
+function loadFuelEntryAttempt() {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const parsed = JSON.parse(localStorage.getItem(FUEL_ENTRY_ATTEMPT_STORAGE_KEY) || 'null');
+    return parsed?.entryId && parsed?.fingerprint ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistFuelEntryAttempt(attempt) {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    if (attempt) localStorage.setItem(FUEL_ENTRY_ATTEMPT_STORAGE_KEY, JSON.stringify(attempt));
+    else localStorage.removeItem(FUEL_ENTRY_ATTEMPT_STORAGE_KEY);
+  } catch {
+    // Retry w tej samej sesji nadal korzysta ze stanu React.
+  }
+}
+
+function getFuelEntryAttemptFingerprint({ vehicleId, liters, odometerKm, odometerMode }) {
+  return JSON.stringify({
+    vehicleId: String(vehicleId || ''),
+    liters: String(liters || '').trim().replace(',', '.'),
+    odometerKm: String(odometerKm || '').replace(/\s/g, ''),
+    odometerMode: String(odometerMode || 'manual'),
+  });
+}
 
 function compactFuelHistoryDate(value) {
   const date = new Date(value);
@@ -138,6 +169,17 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [fuelEntryAttempt, setFuelEntryAttempt] = useState(() => loadFuelEntryAttempt());
+
+  const rememberFuelEntryAttempt = useCallback((attempt) => {
+    setFuelEntryAttempt(attempt || null);
+    persistFuelEntryAttempt(attempt || null);
+  }, []);
+
+  const clearFuelEntryAttempt = useCallback(() => {
+    setFuelEntryAttempt(null);
+    persistFuelEntryAttempt(null);
+  }, []);
 
   const activeVehicles = useMemo(() => vehicles.filter((vehicle) => vehicle.is_active), [vehicles]);
   const lastOdometerForVehicle = useMemo(() => {
@@ -218,6 +260,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     || odometerPhotoBlob
     || readingOdometer
     || entrySaveInProgress
+    || fuelEntryAttempt
   );
 
   const refresh = useCallback(async () => {
@@ -241,6 +284,13 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   }, [displayVehicleOverview, isAdmin, logDiagnostic, supabase]);
 
   useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    if (!fuelEntryAttempt) return;
+    setVehicleId((current) => current || String(fuelEntryAttempt.vehicleId || ''));
+    setLiters((current) => current || String(fuelEntryAttempt.liters || ''));
+    setOdometerKm((current) => current || String(fuelEntryAttempt.odometerKm || ''));
+    setOdometerMode((current) => current === 'manual' ? String(fuelEntryAttempt.odometerMode || current) : current);
+  }, []);
   useEffect(() => {
     if (compactMobileAdmin) setHistoryPage(1);
   }, [compactMobileAdmin, visibleEntries.length]);
@@ -268,6 +318,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
 
   function selectOdometerMode(nextMode) {
     if (nextMode === odometerMode) return;
+    clearFuelEntryAttempt();
     resetOdometerPhoto();
     setOdometerMode(nextMode);
   }
@@ -276,6 +327,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    clearFuelEntryAttempt();
     setReadingOdometer(true);
     setError('');
     setMessage('');
@@ -313,7 +365,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     setMessage('');
     try {
       if (!odometerKm) throw new Error('Wpisz prawidłowy stan licznika.');
-      if (odometerMode === 'photo' && !odometerPhotoBlob) throw new Error('Zrób zdjęcie licznika i potwierdź odczyt przed zapisem.');
+      if (odometerMode === 'photo' && !odometerPhotoBlob && !fuelEntryAttempt?.photoPath) throw new Error('Zrób zdjęcie licznika i potwierdź odczyt przed zapisem.');
       const parsedOdometer = Number(String(odometerKm).replace(/\s/g, ''));
       if (lastOdometerForVehicle !== null) {
         const progression = checkFuelOdometerProgression({
@@ -342,6 +394,20 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
           if (!confirmed) return;
         }
       }
+      const fingerprint = getFuelEntryAttemptFingerprint({ vehicleId, liters, odometerKm, odometerMode });
+      let activeAttempt = fuelEntryAttempt?.fingerprint === fingerprint
+        ? fuelEntryAttempt
+        : {
+          entryId: createFuelEntryAttemptId(),
+          fingerprint,
+          vehicleId,
+          liters,
+          odometerKm,
+          odometerMode,
+          photoPath: '',
+          createdAt: new Date().toISOString(),
+        };
+      rememberFuelEntryAttempt(activeAttempt);
       const saved = await addFuelEntry({
         supabase,
         isAdmin,
@@ -352,8 +418,15 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
         odometerPhotoBlob: odometerMode === 'photo' ? odometerPhotoBlob : null,
         odometerAiConfidence: odometerMode === 'photo' && !manualCorrection ? odometerConfidence : null,
         odometerReadSource: odometerMode === 'photo' && !manualCorrection ? odometerSource : 'manual',
+        entryId: activeAttempt.entryId,
+        existingPhotoPath: activeAttempt.photoPath || '',
+        onAttemptProgress: (patch) => {
+          activeAttempt = { ...activeAttempt, ...patch };
+          rememberFuelEntryAttempt(activeAttempt);
+        },
       });
-      setEntries((current) => [saved, ...current]);
+      clearFuelEntryAttempt();
+      setEntries((current) => [saved, ...current.filter((entry) => entry.id !== saved?.id)]);
       if (!isAdmin && saved?.id) {
         try {
           await sendFuelEntryPush({ supabase, fuelEntryId: saved.id });

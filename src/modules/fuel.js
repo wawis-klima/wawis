@@ -112,6 +112,20 @@ function makePhotoId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+export function createFuelEntryAttemptId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (character) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = character === "x" ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
+
+function normalizeFuelEntryId(value) {
+  const normalized = String(value || '').trim();
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized) ? normalized : '';
+}
+
 export function normalizeRegistrationNumber(value) {
   return String(value || '').trim().replace(/\s+/g, ' ').toUpperCase();
 }
@@ -274,6 +288,21 @@ function normalizeFuelEntryResult(data) {
   return Array.isArray(data) ? data[0] || null : data || null;
 }
 
+async function reconcileFuelEntryById({ supabase, entryId }) {
+  if (!entryId) return { confirmed: false, entry: null, error: null };
+  try {
+    const { data, error } = await supabase
+      .from('fuel_entries')
+      .select(FUEL_ENTRY_SELECT)
+      .eq('id', entryId)
+      .maybeSingle();
+    if (error) return { confirmed: false, entry: null, error };
+    return { confirmed: true, entry: normalizeFuelEntryResult(data), error: null };
+  } catch (error) {
+    return { confirmed: false, entry: null, error };
+  }
+}
+
 async function reconcileFuelEntryByPhotoPath({ supabase, photoPath }) {
   if (!photoPath) return { confirmed: false, entry: null, error: null };
   try {
@@ -289,6 +318,29 @@ async function reconcileFuelEntryByPhotoPath({ supabase, photoPath }) {
   }
 }
 
+function fuelEntryMatchesAttempt(entry, expected = {}) {
+  if (!entry) return false;
+  if (String(entry.id || '') !== String(expected.entryId || '')) return false;
+  if (String(entry.vehicle_id || '') !== String(expected.vehicleId || '')) return false;
+  if (Number(entry.liters) !== Number(expected.liters)) return false;
+  if (Number(entry.odometer_km) !== Number(expected.odometerKm)) return false;
+  if (expected.photoPath && String(entry.odometer_photo_path || '') !== String(expected.photoPath)) return false;
+  return true;
+}
+
+function fuelAttemptConflict(entryId) {
+  const error = new Error('Identyfikator tej próby tankowania jest już przypisany do innych danych. Formularz nie został zapisany ponownie.');
+  error.code = 'FUEL_ENTRY_ATTEMPT_CONFLICT';
+  error.entryId = entryId;
+  return error;
+}
+
+function isStorageAlreadyExistsError(error) {
+  const code = String(error?.statusCode || error?.status || error?.code || '');
+  const message = String(error?.message || '').toLowerCase();
+  return code === '409' || code === '23505' || message.includes('already exists') || message.includes('duplicate');
+}
+
 async function removeFuelOdometerPhotoBestEffort(supabase, photoPath) {
   if (!photoPath) return;
   try {
@@ -298,12 +350,19 @@ async function removeFuelOdometerPhotoBestEffort(supabase, photoPath) {
   }
 }
 
-async function resolveFuelEntryInsertFailure({ supabase, photoPath, error }) {
-  if (!photoPath) throw error;
-  const reconciliation = await reconcileFuelEntryByPhotoPath({ supabase, photoPath });
-  if (reconciliation.entry) return reconciliation.entry;
-  // 10.77: pusty readback po błędzie INSERT nie dowodzi, że wcześniejszy zapis nie zostanie zatwierdzony.
-  // Zachowujemy zdjęcie licznika; ewentualny orphan może zostać posprzątany później, bez ryzyka utraty danych.
+async function resolveFuelEntryInsertFailure({ supabase, entryId, photoPath, expected, error }) {
+  const byId = await reconcileFuelEntryById({ supabase, entryId });
+  if (byId.entry) {
+    if (fuelEntryMatchesAttempt(byId.entry, { ...expected, photoPath })) return byId.entry;
+    throw fuelAttemptConflict(entryId);
+  }
+  if (photoPath) {
+    const byPhoto = await reconcileFuelEntryByPhotoPath({ supabase, photoPath });
+    if (byPhoto.entry) {
+      if (fuelEntryMatchesAttempt(byPhoto.entry, { ...expected, entryId: byPhoto.entry.id, photoPath })) return byPhoto.entry;
+      throw fuelAttemptConflict(entryId);
+    }
+  }
   throw error;
 }
 
@@ -317,6 +376,9 @@ export async function addFuelEntry({
   odometerPhotoBlob,
   odometerAiConfidence,
   odometerReadSource,
+  entryId = '',
+  existingPhotoPath = '',
+  onAttemptProgress = null,
 }) {
   assertFuelAccess({ supabase });
   const parsedLiters = Number(String(liters).replace(',', '.'));
@@ -332,33 +394,49 @@ export async function addFuelEntry({
   if (!Number.isInteger(parsedOdometer) || parsedOdometer < 0 || parsedOdometer > 5000000) {
     throw new Error('Wpisz prawidłowy, pełny stan licznika.');
   }
-  const hasPhoto = odometerPhotoBlob !== null && odometerPhotoBlob !== undefined;
-  if (hasPhoto && (!(odometerPhotoBlob instanceof Blob) || !String(odometerPhotoBlob.type || '').startsWith('image/'))) {
+  const suppliedEntryId = normalizeFuelEntryId(entryId);
+  const normalizedEntryId = suppliedEntryId || createFuelEntryAttemptId();
+  const normalizedExistingPhotoPath = String(existingPhotoPath || '').trim();
+  const hasPhotoBlob = odometerPhotoBlob !== null && odometerPhotoBlob !== undefined;
+  if (hasPhotoBlob && (!(odometerPhotoBlob instanceof Blob) || !String(odometerPhotoBlob.type || '').startsWith('image/'))) {
     throw new Error('Wybrany plik nie jest prawidłowym zdjęciem licznika.');
   }
 
-  let photoPath = null;
-  if (hasPhoto) {
+  const expected = { entryId: normalizedEntryId, vehicleId, liters: parsedLiters, odometerKm: parsedOdometer };
+  if (suppliedEntryId) {
+    const existingAttempt = await reconcileFuelEntryById({ supabase, entryId: normalizedEntryId });
+    if (existingAttempt.entry) {
+      if (fuelEntryMatchesAttempt(existingAttempt.entry, { ...expected, photoPath: normalizedExistingPhotoPath })) return existingAttempt.entry;
+      throw fuelAttemptConflict(normalizedEntryId);
+    }
+  }
+
+  let photoPath = normalizedExistingPhotoPath || null;
+  if (hasPhotoBlob && !photoPath) {
     const sessionResult = await supabase.auth.getSession();
     const userId = String(sessionResult?.data?.session?.user?.id || '').trim();
     if (!userId) throw new Error('Sesja użytkownika wygasła. Zaloguj się ponownie.');
-    photoPath = `${userId}/${Date.now()}-${makePhotoId()}.jpg`;
+    photoPath = `${userId}/${normalizedEntryId}.jpg`;
     const uploadResult = await supabase.storage
       .from(FUEL_ODOMETER_BUCKET)
       .upload(photoPath, odometerPhotoBlob, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false });
-    if (uploadResult.error) throw uploadResult.error;
+    if (uploadResult.error && !isStorageAlreadyExistsError(uploadResult.error)) throw uploadResult.error;
+    onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'photo-uploaded' });
   }
 
+  const hasPhoto = Boolean(photoPath || hasPhotoBlob);
   const confidence = Math.max(0, Math.min(1, Number(odometerAiConfidence || 0)));
   const readSource = hasPhoto && ['local_ocr', 'openai', 'manual'].includes(odometerReadSource)
     ? odometerReadSource
     : hasPhoto ? 'openai' : 'manual';
 
+  onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'inserting' });
   let insertResult;
   try {
     insertResult = await supabase
       .from('fuel_entries')
       .insert({
+        id: normalizedEntryId,
         vehicle_id: vehicleId,
         liters: parsedLiters,
         odometer_km: parsedOdometer,
@@ -369,18 +447,19 @@ export async function addFuelEntry({
       .select(FUEL_ENTRY_SELECT)
       .single();
   } catch (error) {
-    return resolveFuelEntryInsertFailure({ supabase, photoPath, error });
+    return resolveFuelEntryInsertFailure({ supabase, entryId: normalizedEntryId, photoPath, expected, error });
   }
 
   if (insertResult.error) {
-    return resolveFuelEntryInsertFailure({ supabase, photoPath, error: insertResult.error });
+    return resolveFuelEntryInsertFailure({ supabase, entryId: normalizedEntryId, photoPath, expected, error: insertResult.error });
   }
 
   const savedEntry = normalizeFuelEntryResult(insertResult.data);
-  if (savedEntry) return savedEntry;
+  if (savedEntry && fuelEntryMatchesAttempt(savedEntry, { ...expected, photoPath })) return savedEntry;
+  if (savedEntry) throw fuelAttemptConflict(normalizedEntryId);
 
   const missingConfirmationError = new Error('Tankowanie zostało wysłane, ale baza nie zwróciła jednoznacznego potwierdzenia zapisu.');
-  return resolveFuelEntryInsertFailure({ supabase, photoPath, error: missingConfirmationError });
+  return resolveFuelEntryInsertFailure({ supabase, entryId: normalizedEntryId, photoPath, expected, error: missingConfirmationError });
 }
 
 export async function updateFuelEntry({

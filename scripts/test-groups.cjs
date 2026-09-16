@@ -64,6 +64,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-protocol-save',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
     'node scripts/smoke-storage-delayed-commit-v1077.mjs',
+    'node scripts/smoke-audit-fixes-v1088.mjs',
     'npm run test:smoke:mobile-protocol-print',
     'npm run test:smoke:mobile-protocol-layout',
     'npm run test:smoke:mobile-protocol-email',
@@ -91,6 +92,7 @@ const GROUPS = {
     'npm run test:smoke:fuel-module',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
     'node scripts/smoke-storage-delayed-commit-v1077.mjs',
+    'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   nameplates: [
     'npm run test:smoke:mobile-serial-scanner',
@@ -106,6 +108,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-nameplate-ean-separation',
     'npm run test:smoke:desktop-nameplate-verification-status',
     'node scripts/smoke-nameplate-ai-auth-v1085.mjs',
+    'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   desktop: [
     'npm run test:smoke:sms-summary',
@@ -140,6 +143,7 @@ const GROUPS = {
     'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
     'node scripts/smoke-audit-fixes-v1086.mjs',
     'node scripts/smoke-audit-fixes-v1087.mjs',
+    'node scripts/smoke-audit-fixes-v1088.mjs',
     'npm run test:smoke:e2e-mobile',
     'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',

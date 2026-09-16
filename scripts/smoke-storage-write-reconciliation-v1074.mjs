@@ -5,6 +5,7 @@ import { addFuelEntry } from '../src/modules/fuel.js';
 const LOST_RESPONSE = { code: 'FETCH_FAILED', message: 'Response lost after database write.' };
 const LOOKUP_FAILED = { code: 'FETCH_FAILED', message: 'Reconciliation read failed.' };
 const JOB_ID = '11111111-1111-4111-8111-111111111111';
+const FUEL_ATTEMPT_ID = '44444444-4444-4444-8444-444444444444';
 
 function assertLostResponse(error) {
   assert.match(String(error?.message || ''), /Response lost/i);
@@ -146,10 +147,12 @@ function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {
   let writeAttempted = false;
   const files = new Set();
   const removed = [];
+  const metrics = { insertCount: 0, uploadCount: 0 };
 
   return {
     files,
     removed,
+    metrics,
     auth: {
       async getSession() {
         return { data: { session: { user: { id: 'worker-1' } } }, error: null };
@@ -158,14 +161,15 @@ function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {
     from(table) {
       assert.equal(table, 'fuel_entries');
       let mode = 'read';
+      let idFilter = '';
       let photoFilter = '';
       return {
         insert(row) {
           mode = 'write';
           writeAttempted = true;
+          metrics.insertCount += 1;
           if (commitWrite) {
             record = {
-              id: 'fuel-1',
               fueled_at: '2026-09-16T05:00:00.000Z',
               created_at: '2026-09-16T05:00:00.000Z',
               created_by: 'worker-1',
@@ -181,7 +185,8 @@ function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {
         },
         select() { return this; },
         eq(column, value) {
-          if (column === 'odometer_photo_path') photoFilter = value;
+          if (column === 'id') idFilter = String(value);
+          if (column === 'odometer_photo_path') photoFilter = String(value);
           return this;
         },
         async single() {
@@ -189,10 +194,11 @@ function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {
           return { data: null, error: LOST_RESPONSE };
         },
         async maybeSingle() {
-          assert.equal(writeAttempted, true);
-          if (failReconciliation) return { data: null, error: LOOKUP_FAILED };
-          if (!record || record.odometer_photo_path !== photoFilter) return { data: null, error: null };
-          return { data: { ...record }, error: null };
+          if (writeAttempted && failReconciliation) return { data: null, error: LOOKUP_FAILED };
+          if (!record) return { data: null, error: null };
+          if (idFilter) return { data: String(record.id) === idFilter ? { ...record } : null, error: null };
+          if (photoFilter) return { data: String(record.odometer_photo_path || '') === photoFilter ? { ...record } : null, error: null };
+          return { data: null, error: null };
         },
       };
     },
@@ -201,6 +207,7 @@ function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {
         assert.equal(bucket, 'fuel-odometer-photos');
         return {
           async upload(path) {
+            metrics.uploadCount += 1;
             files.add(path);
             return { data: { path }, error: null };
           },
@@ -217,7 +224,7 @@ function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {
   };
 }
 
-async function saveFuelEntry(supabase) {
+async function saveFuelEntry(supabase, entryId = FUEL_ATTEMPT_ID) {
   return addFuelEntry({
     supabase,
     isAdmin: false,
@@ -227,15 +234,23 @@ async function saveFuelEntry(supabase) {
     odometerPhotoBlob: new Blob(['odometer'], { type: 'image/jpeg' }),
     odometerAiConfidence: 0.94,
     odometerReadSource: 'local_ocr',
+    entryId,
   });
 }
 
 {
   const supabase = makeFuelSupabase({ commitWrite: true });
   const saved = await saveFuelEntry(supabase);
-  assert.equal(saved.id, 'fuel-1');
+  assert.equal(saved.id, FUEL_ATTEMPT_ID, 'Baza i klient muszą zachować UUID tej samej logicznej próby.');
   assert.ok(supabase.files.has(saved.odometer_photo_path), 'Zdjęcie licznika musi zostać, gdy wpis DB istnieje.');
   assert.equal(supabase.removed.length, 0);
+  assert.equal(supabase.metrics.insertCount, 1);
+  assert.equal(supabase.metrics.uploadCount, 1);
+
+  const retried = await saveFuelEntry(supabase);
+  assert.equal(retried.id, FUEL_ATTEMPT_ID, 'Retry po utraconej odpowiedzi musi pojednać ten sam UUID.');
+  assert.equal(supabase.metrics.insertCount, 1, 'Retry tej samej próby nie może tworzyć drugiego INSERT-u.');
+  assert.equal(supabase.metrics.uploadCount, 1, 'Retry tej samej próby nie może wysyłać drugiego zdjęcia.');
 }
 
 {
