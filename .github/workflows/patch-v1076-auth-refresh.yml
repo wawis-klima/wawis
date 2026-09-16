@@ -1,0 +1,53 @@
+name: WAWIS patch 10.76 auth refresh
+
+on:
+  push:
+    branches:
+      - release/v10.76
+    paths:
+      - '.github/workflows/patch-v1076-auth-refresh.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.76
+          fetch-depth: 0
+      - name: Restore existing SIGNED_IN refresh behavior
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          auth_path = Path('src/mobile791/modules/auth.js')
+          auth = auth_path.read_text(encoding='utf-8')
+          old = "if (event === 'USER_UPDATED') {"
+          new = "if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {"
+          if old not in auth:
+              raise SystemExit('Auth refresh anchor not found')
+          auth_path.write_text(auth.replace(old, new, 1), encoding='utf-8')
+
+          test_path = Path('scripts/smoke-push-logout-handoff-v1076.mjs')
+          test = test_path.read_text(encoding='utf-8')
+          old_test = "assert.doesNotMatch(auth, /event === 'SIGNED_IN' \\|\\| event === 'USER_UPDATED'/);"
+          new_test = "assert.match(auth, /event === 'SIGNED_IN' \\|\\| event === 'USER_UPDATED'/, '10.76 nie może zmieniać istniejącego odświeżenia danych po SIGNED_IN');"
+          if old_test not in test:
+              raise SystemExit('Smoke anchor not found')
+          test_path.write_text(test.replace(old_test, new_test, 1), encoding='utf-8')
+          PY
+          node --check src/mobile791/modules/auth.js
+          npm run test:smoke:push-logout-handoff
+          npm run test:smoke:push-mobile-reassignment
+      - name: Remove temporary workflow and commit
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git rm .github/workflows/patch-v1076-auth-refresh.yml
+          git add src/mobile791/modules/auth.js scripts/smoke-push-logout-handoff-v1076.mjs
+          git commit -m "fix: keep existing mobile refresh while hardening push logout"
+          git push origin HEAD:release/v10.76
