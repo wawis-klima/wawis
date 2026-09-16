@@ -45,15 +45,20 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
   const [pushBusy, setPushBusy] = useState(false);
   const syncInFlightRef = useRef(null);
   const lastSuccessfulSyncAtRef = useRef(0);
+  const syncEpochRef = useRef(0);
 
   async function syncPushState({ force = false } = {}) {
     if (!sessionUser) return INITIAL_PUSH_STATE;
     if (syncInFlightRef.current) return syncInFlightRef.current;
+    const syncEpoch = syncEpochRef.current;
+    const isCurrentSync = () => syncEpoch === syncEpochRef.current;
 
     const pushModule = await loadPushModule();
+    if (!isCurrentSync()) return readStoredPushState(userId);
     await pushModule.reconcilePendingPushLogout({ supabase, sessionUser, force }).catch((error) => {
       console.warn("Nie udało się ponowić sprzątania starego PUSH:", error?.message || error);
     });
+    if (!isCurrentSync()) return readStoredPushState(userId);
 
     if (!force && Date.now() - lastSuccessfulSyncAtRef.current < PUSH_MIN_SYNC_INTERVAL_MS) {
       return readStoredPushState(userId);
@@ -61,6 +66,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
 
     const syncPromise = (async () => {
       const nextState = await pushModule.getPushStatus({ supabase, sessionUser });
+      if (!isCurrentSync() || nextState?.staleSession) return readStoredPushState(userId);
       setPushState(nextState);
       persistPushState(userId, nextState);
       if (!nextState?.syncError) lastSuccessfulSyncAtRef.current = Date.now();
@@ -100,6 +106,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
   }
 
   useEffect(() => {
+    syncEpochRef.current += 1;
     if (!sessionUser) {
       setPushState(INITIAL_PUSH_STATE);
       syncInFlightRef.current = null;
@@ -145,6 +152,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
     }, PUSH_HEALTHCHECK_MS);
 
     return () => {
+      syncEpochRef.current += 1;
       window.removeEventListener("focus", handleVisible);
       window.removeEventListener("pageshow", handleVisible);
       window.removeEventListener("online", handleOnline);

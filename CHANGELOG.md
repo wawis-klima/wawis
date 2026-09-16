@@ -1,3 +1,6 @@
+## 10.83
+- uzupełnij opis zmian dla wersji 10.83
+
 ## 10.82
 - F1: bloker otwartego modala jest stabilny między rerenderami Reacta, a callback reloadu ponownie sprawdza aktywne blokady przed przeładowaniem,
 - F2: formularz tankowania oraz komentarze desktop/mobile chronią realny draft i trwający zapis przed aktualizacją oraz zamknięciem karty,

@@ -281,6 +281,7 @@ export default function App() {
   offlineSyncContextRef.current = { profile, profiles, jobs, sessionUser };
   const offlineSyncUserId = String(profile?.id || sessionUser?.id || '').trim();
   const offlineSyncProfileId = String(profile?.id || '').trim();
+  const offlineSyncJobCount = Array.isArray(jobs) ? jobs.length : 0;
   const hasPendingOfflineWork = (
     photoSyncStatus.queueSummary.local
     + photoSyncStatus.queueSummary.uploading
@@ -709,7 +710,12 @@ export default function App() {
       if (cancelled) return;
       const currentProfile = offlineSyncContextRef.current.profile;
       if (!currentProfile) return;
-      if (offlinePhotoQueueUserRef.current !== userId) {
+      const currentJobs = offlineSyncContextRef.current.jobs;
+      const hasJobsReady = Array.isArray(currentJobs) && currentJobs.length > 0;
+      if (offlinePhotoQueueUserRef.current !== userId && hasJobsReady) {
+        // Nie oznaczamy kolejki jako odtworzonej, dopóki lista zleceń nie istnieje.
+        // Inaczej lokalne zdjęcie z IndexedDB nie ma jeszcze karty, do której można je podpiąć,
+        // a kolejny refresh nie podejmuje już drugiej próby.
         offlinePhotoQueueUserRef.current = userId;
         await restorePersistedJobPhotos({
           supabase,
@@ -758,7 +764,7 @@ export default function App() {
       window.removeEventListener('online', onlineHandler);
       if (intervalId !== null) window.clearInterval(intervalId);
     };
-  }, [offlineSyncUserId, offlineSyncProfileId, hasPendingOfflineWork, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing]);
+  }, [offlineSyncUserId, offlineSyncProfileId, offlineSyncJobCount, hasPendingOfflineWork, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing]);
 
   useEffect(() => () => {
     if (typeof window === 'undefined') return;

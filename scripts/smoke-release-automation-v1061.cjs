@@ -38,7 +38,10 @@ assert.match(pr, /name:\s*WAWIS PR checks/);
 assert.match(pr, /pull_request/);
 assert.match(pr, /run-pr-checks\.cjs/);
 assert.match(pr, /cancel-in-progress:\s*true/);
-assert.doesNotMatch(pr, /playwright install/);
+assert.match(pr, /id:\s*impact/, 'PR gate musi wystawiać wynik klasyfikacji release-impact.');
+assert.match(pr, /needs_playwright/, 'PR gate musi warunkować prawdziwe E2E wynikiem klasyfikatora.');
+assert.match(pr, /playwright install --with-deps chromium/, 'Krytyczny PR musi instalować prawdziwy Chromium Playwright.');
+assert.match(pr, /run-pr-playwright\.cjs release-impact\.json/, 'Krytyczny PR musi uruchamiać prawdziwe E2E, a nie tylko smoke konfiguracji.');
 
 // Policy gate może zostać narzędziem ręcznym, ale nie dubluje automatycznego PR CI.
 assert.match(policy, /workflow_dispatch/);

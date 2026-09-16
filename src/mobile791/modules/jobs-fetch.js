@@ -168,6 +168,7 @@ function getExistingJobDetailsMap(existingJobs = []) {
     return [String(job.id || ''), {
       comments: Array.isArray(job.comments) ? job.comments : [],
       photos,
+      queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo)),
       detailsLoaded: Boolean(job.detailsLoaded) && photoModeCompatible,
       detailsLoadedAt: job.detailsLoadedAt || null,
       detailsLoadError: String(job.detailsLoadError || '').trim(),
@@ -175,16 +176,34 @@ function getExistingJobDetailsMap(existingJobs = []) {
   }).filter(([id]) => id));
 }
 
+export function preserveLatestQueuedPhotos(incomingJobs = [], latestJobs = []) {
+  const latestQueuedByJob = new Map((latestJobs || []).map((job) => [
+    String(job?.id || ''),
+    (Array.isArray(job?.photos) ? job.photos : []).filter((photo) => isLocalQueuedPhoto(photo)),
+  ]).filter(([id, photos]) => id && photos.length));
+
+  return (incomingJobs || []).map((job) => {
+    const queuedPhotos = latestQueuedByJob.get(String(job?.id || '')) || [];
+    if (!queuedPhotos.length) return job;
+    const merged = new Map((Array.isArray(job?.photos) ? job.photos : []).map((photo) => [String(photo?.id || ''), photo]));
+    for (const photo of queuedPhotos) merged.set(String(photo.id), photo);
+    return { ...job, photos: [...merged.values()] };
+  });
+}
+
 function buildCombinedJobs({ jobsData, accessData, existingJobs = [], preserveJobDetails = true }) {
   const existingDetails = getExistingJobDetailsMap(existingJobs);
 
   return (jobsData || []).map((job) => {
     const previousDetails = preserveJobDetails ? existingDetails.get(String(job.id)) : null;
+    const photosToPreserve = previousDetails?.detailsLoaded
+      ? previousDetails.photos
+      : (previousDetails?.queuedPhotos || []);
     return {
       ...job,
       viewers: (accessData || []).filter((item) => item.job_id === job.id),
       comments: previousDetails?.detailsLoaded ? previousDetails.comments : [],
-      photos: previousDetails?.detailsLoaded ? previousDetails.photos : [],
+      photos: photosToPreserve,
       detailsLoaded: previousDetails?.detailsLoaded || false,
       detailsLoadedAt: previousDetails?.detailsLoadedAt || null,
       detailsLoadError: previousDetails?.detailsLoadError || '',

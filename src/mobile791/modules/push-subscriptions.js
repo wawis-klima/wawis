@@ -1,14 +1,17 @@
 import { supabaseAnonKey, supabaseUrl } from "../lib/supabase.js";
 import {
+  capturePushSessionContext,
+  clearCurrentPushServiceWorkerContext,
   clearPushLifecycleToken,
-  clearPushServiceWorkerContext,
   getDuePendingPushDisables,
   getOrCreatePushLifecycleToken,
+  isPushSessionContextCurrent,
   markPendingPushDisableRetry,
   persistPendingPushDisable,
+  publishPushServiceWorkerContext,
   readPendingPushDisables,
   removePendingPushDisable,
-  setPushServiceWorkerContext,
+  transitionPushSessionContext,
 } from "./push-lifecycle-v1078.js";
 
 const env = typeof import.meta !== "undefined" && import.meta?.env ? import.meta.env : {};
@@ -18,6 +21,7 @@ const PUSH_SAVE_COOLDOWN_MS = 15000;
 const PUSH_SERVER_TOUCH_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const PUSH_LOGOUT_REQUEST_TIMEOUT_MS = 3200;
 const PUSH_LOGOUT_UNSUBSCRIBE_TIMEOUT_MS = 900;
+const PUSH_LOCAL_STEP_TIMEOUT_MS = 900;
 
 let pushSaveInFlight = null;
 let pushSaveAbortControl = null;
@@ -57,6 +61,18 @@ function shouldTouchServerSubscription(lastSeenAt) {
 
 function waitForPushLifecycle(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function withPushLifecycleTimeout(promise, timeoutMs = PUSH_LOCAL_STEP_TIMEOUT_MS, label = 'push-lifecycle') {
+  let timerId;
+  const timeout = new Promise((_, reject) => {
+    timerId = setTimeout(() => {
+      const error = new Error(`Przekroczono limit czasu operacji PUSH: ${label}.`);
+      error.code = 'PUSH_LIFECYCLE_TIMEOUT';
+      reject(error);
+    }, Math.max(1, Number(timeoutMs) || PUSH_LOCAL_STEP_TIMEOUT_MS));
+  });
+  return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timerId));
 }
 
 function getPushDeviceMetadata() {
@@ -115,13 +131,15 @@ async function getExistingPushSubscription() {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
   try {
     const registration = typeof navigator.serviceWorker.getRegistration === "function"
-      ? await navigator.serviceWorker.getRegistration(PUSH_SW_PATH)
+      ? await withPushLifecycleTimeout(navigator.serviceWorker.getRegistration(PUSH_SW_PATH), PUSH_LOCAL_STEP_TIMEOUT_MS, 'service-worker-registration')
       : null;
-    if (registration?.pushManager?.getSubscription) return await registration.pushManager.getSubscription();
+    if (registration?.pushManager?.getSubscription) return await withPushLifecycleTimeout(registration.pushManager.getSubscription(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-subscription-read');
     const readyRegistration = navigator.serviceWorker.ready
-      ? await Promise.race([navigator.serviceWorker.ready, waitForPushLifecycle(400).then(() => null)])
+      ? await withPushLifecycleTimeout(navigator.serviceWorker.ready, PUSH_LOCAL_STEP_TIMEOUT_MS, 'service-worker-ready').catch(() => null)
       : null;
-    return readyRegistration?.pushManager?.getSubscription ? await readyRegistration.pushManager.getSubscription() : null;
+    return readyRegistration?.pushManager?.getSubscription
+      ? await withPushLifecycleTimeout(readyRegistration.pushManager.getSubscription(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-subscription-ready-read').catch(() => null)
+      : null;
   } catch { return null; }
 }
 
@@ -190,12 +208,14 @@ export function getPushPermission() {
 
 export async function registerPushServiceWorker() {
   if (!isPushSupported()) return null;
-  return navigator.serviceWorker.register(PUSH_SW_PATH);
+  return withPushLifecycleTimeout(navigator.serviceWorker.register(PUSH_SW_PATH), PUSH_LOCAL_STEP_TIMEOUT_MS * 2, 'service-worker-register');
 }
 
 export async function savePushSubscription({ supabase, sessionUser, subscription, force = false }) {
   if (!supabase || !sessionUser || !subscription) return { saved: false, skipped: true, reason: "missing-data" };
   if (pushLogoutInProgress) return { saved: false, skipped: true, reason: "logout-in-progress" };
+  const sessionContextToken = capturePushSessionContext(sessionUser);
+  if (!isPushSessionContextCurrent(sessionContextToken)) return { saved: false, skipped: true, reason: "stale-session" };
   const basePayload = getSubscriptionPayload(subscription);
   if (!basePayload?.endpoint) return { saved: false, skipped: true, reason: "missing-endpoint" };
   const lifecycleToken = getOrCreatePushLifecycleToken(sessionUser);
@@ -212,12 +232,13 @@ export async function savePushSubscription({ supabase, sessionUser, subscription
   pushSaveAbortControl = requestControl;
   const savePromise = (async () => {
     const result = await invokePushFunction({ supabase, body: buildSyncSubscriptionBody(payload), signal: requestControl.signal });
-    if (pushLogoutInProgress || epochAtStart !== pushLifecycleEpoch) {
+    if (pushLogoutInProgress || epochAtStart !== pushLifecycleEpoch || !isPushSessionContextCurrent(sessionContextToken)) {
       return { saved: false, skipped: true, reason: "stale-lifecycle" };
     }
     const generation = Number(result?.subscription?.ownership_generation || 0);
     if (generation > 0) {
-      await setPushServiceWorkerContext({ userId: sessionUser.id, generation });
+      const published = await publishPushServiceWorkerContext({ token: sessionContextToken, generation });
+      if (!published) return { saved: false, skipped: true, reason: "stale-session-context" };
     }
     lastSavedSignature = signature;
     return {
@@ -251,14 +272,17 @@ export async function disableSavedPushSubscription({ supabase, subscription }) {
   return { disabled: Boolean(result?.disabled), skipped: false, result };
 }
 
-export async function deactivatePushForLogout({ supabase }) {
+export async function deactivatePushForLogout({ supabase, sessionUser: suppliedSessionUser = null }) {
   pushLogoutInProgress = true;
   pushLifecycleEpoch += 1;
   pushSaveAbortControl?.abort?.();
-  await clearPushServiceWorkerContext().catch(() => null);
+  transitionPushSessionContext(null);
 
-  const { data: sessionData } = supabase ? await supabase.auth.getSession().catch(() => ({ data: null })) : { data: null };
-  const sessionUser = sessionData?.session?.user || null;
+  let sessionUser = suppliedSessionUser || null;
+  if (!sessionUser && supabase) {
+    const sessionResult = await withPushLifecycleTimeout(supabase.auth.getSession(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'logout-auth-session').catch(() => ({ data: null }));
+    sessionUser = sessionResult?.data?.session?.user || null;
+  }
   const lifecycleToken = getOrCreatePushLifecycleToken(sessionUser);
   const subscription = await getExistingPushSubscription();
   if (!subscription) {
@@ -303,6 +327,10 @@ export async function deactivatePushForLogout({ supabase }) {
 }
 
 export async function reconcilePendingPushLogout({ supabase, sessionUser, force = false }) {
+  const sessionContextToken = capturePushSessionContext(sessionUser);
+  if (!isPushSessionContextCurrent(sessionContextToken)) {
+    return { reconciled: false, pending: readPendingPushDisables().length > 0, reason: "stale-session" };
+  }
   const pendingItems = getDuePendingPushDisables({ force });
   if (!pendingItems.length || !supabase || !sessionUser) {
     return { reconciled: false, pending: readPendingPushDisables().length > 0, reason: pendingItems.length ? "missing-session" : "nothing-due" };
@@ -312,6 +340,7 @@ export async function reconcilePendingPushLogout({ supabase, sessionUser, force 
   let failed = 0;
   let touchedCurrentSubscription = false;
   const currentSubscription = await getExistingPushSubscription();
+  if (!isPushSessionContextCurrent(sessionContextToken)) return { reconciled: false, pending: readPendingPushDisables().length > 0, reason: "stale-session" };
   const currentPayload = getSubscriptionPayload(currentSubscription);
 
   for (const item of pendingItems) {
@@ -322,6 +351,7 @@ export async function reconcilePendingPushLogout({ supabase, sessionUser, force 
         lifecycleToken: item.lifecycleToken || "",
       }, "login-stale-cleanup");
       const result = await invokePushFunction({ supabase, body, signal: requestControl.signal });
+      if (!isPushSessionContextCurrent(sessionContextToken)) return { reconciled: false, pending: true, cleaned, failed, reassigned: false, reason: "stale-session" };
       removePendingPushDisable(item);
       cleaned += 1;
       if (currentPayload && pushCredentialsMatch(item.subscription, currentPayload)) touchedCurrentSubscription = true;
@@ -427,13 +457,20 @@ export async function disablePushNotifications({ supabase, sessionUser = null })
   return ensurePushNotifications({ supabase, sessionUser, requestPermission: false });
 }
 
+function buildStalePushStatus(diagnostics) {
+  return { supported: Boolean(diagnostics?.supported), permission: diagnostics?.permission || "unsupported", subscribed: false, serverRegistered: false, serverActive: false, lastSeenAt: null, syncError: null, vapidConfigured: Boolean(diagnostics?.vapidConfigured), ready: false, diagnostics, staleSession: true };
+}
+
 export async function getPushStatus({ supabase, sessionUser }) {
   const diagnostics = getPushDiagnostics();
+  const sessionContextToken = capturePushSessionContext(sessionUser);
+  const isCurrentPushSession = () => isPushSessionContextCurrent(sessionContextToken);
+  if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
   const permission = diagnostics.permission;
   const vapidConfigured = diagnostics.vapidConfigured;
 
   if (!diagnostics.supported) {
-    await clearPushServiceWorkerContext().catch(() => null);
+    await clearCurrentPushServiceWorkerContext({ token: sessionContextToken }).catch(() => null);
     return {
       supported: false,
       permission,
@@ -449,6 +486,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   }
 
   let subscription = await getCurrentPushSubscription();
+  if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
   let serverRegistered = false;
   let serverActive = false;
   let lastSeenAt = null;
@@ -482,6 +520,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
         .eq("endpoint", subscription.endpoint)
         .maybeSingle();
 
+      if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
       if (existingServerError) throw existingServerError;
       ownershipGeneration = Number(existingServerRow?.ownership_generation || 0);
 
@@ -519,9 +558,10 @@ export async function getPushStatus({ supabase, sessionUser }) {
     }
   }
 
-  if (serverActive && ownershipGeneration > 0) {
-    await setPushServiceWorkerContext({ userId: sessionUser?.id, generation: ownershipGeneration }).catch(() => null);
+  if (serverActive && ownershipGeneration > 0 && isCurrentPushSession()) {
+    await publishPushServiceWorkerContext({ token: sessionContextToken, generation: ownershipGeneration }).catch(() => false);
   }
+  if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
 
   return {
     supported: true,
@@ -542,7 +582,7 @@ async function invokePushFunction({ supabase, body, signal = undefined }) {
     throw new Error("Brakuje konfiguracji Supabase do wywołania funkcji push.");
   }
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  const { data: sessionData, error: sessionError } = await withPushLifecycleTimeout(supabase.auth.getSession(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'edge-auth-session');
   if (sessionError) throw sessionError;
 
   const accessToken = sessionData?.session?.access_token;

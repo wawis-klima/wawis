@@ -1,13 +1,15 @@
 importScripts("/push-safety.js");
+importScripts("/push-context-guard.js");
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v10.82");
+    const cache = await caches.open("wawis-app-shell-v10.83");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
       cache.add("/logo.png"),
       cache.add("/push-safety.js"),
+      cache.add("/push-context-guard.js"),
     ]);
     await self.skipWaiting();
   })());
@@ -17,7 +19,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v10.82")
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v10.83")
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
@@ -34,7 +36,7 @@ self.addEventListener("fetch", (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open("wawis-app-shell-v10.82");
+          const cache = await caches.open("wawis-app-shell-v10.83");
           await cache.put("/", response.clone());
         }
         return response;
@@ -50,7 +52,7 @@ self.addEventListener("fetch", (event) => {
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {
-      const cache = await caches.open("wawis-app-shell-v10.82");
+      const cache = await caches.open("wawis-app-shell-v10.83");
       await cache.put(request, response.clone());
     }
     return response;
@@ -76,10 +78,21 @@ function openPushContextDb() {
 async function writePushContext(value) {
   const db = await openPushContextDb();
   try {
-    await new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const tx = db.transaction(PUSH_CONTEXT_STORE, "readwrite");
-      tx.objectStore(PUSH_CONTEXT_STORE).put(value, "active");
-      tx.oncomplete = resolve;
+      const store = tx.objectStore(PUSH_CONTEXT_STORE);
+      const readRequest = store.get("active");
+      let applied = false;
+      let nextValue = null;
+      readRequest.onsuccess = () => {
+        const current = readRequest.result || { userId: "", generation: 0, revision: 0 };
+        const incoming = { userId: String(value?.userId || ""), generation: Number(value?.generation || 0), revision: Number(value?.revision || 0) };
+        if (self.WawisPushContextGuard?.shouldApplyContextCommand(current, incoming)) {
+          store.put(incoming, "active"); applied = true; nextValue = incoming;
+        } else { nextValue = current; }
+      };
+      readRequest.onerror = () => reject(readRequest.error);
+      tx.oncomplete = () => resolve({ applied, context: nextValue });
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error || new Error("push context transaction aborted"));
     });
@@ -99,21 +112,24 @@ async function readPushContext() {
 }
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type === "WAWIS_PUSH_CONTEXT_SET") {
-    event.waitUntil(writePushContext({
-      userId: String(event.data.userId || ""),
-      generation: Number(event.data.generation || 0),
-    }));
-    return;
-  }
-  if (event.data?.type === "WAWIS_PUSH_CONTEXT_CLEAR") {
-    event.waitUntil(writePushContext({ userId: "", generation: 0 }));
+  if (event.data?.type === "WAWIS_PUSH_CONTEXT_SET" || event.data?.type === "WAWIS_PUSH_CONTEXT_CLEAR") {
+    const value = event.data.type === "WAWIS_PUSH_CONTEXT_SET"
+      ? { userId: String(event.data.userId || ""), generation: Number(event.data.generation || 0), revision: Number(event.data.revision || 0) }
+      : { userId: "", generation: 0, revision: Number(event.data.revision || 0) };
+    event.waitUntil((async () => {
+      try {
+        const result = await writePushContext(value);
+        event.ports?.[0]?.postMessage({ ok: true, applied: Boolean(result?.applied), revision: Number(result?.context?.revision || 0) });
+      } catch (error) {
+        event.ports?.[0]?.postMessage({ ok: false, error: error?.message || String(error) });
+      }
+    })());
     return;
   }
   if (event.data?.type !== "WAWIS_CACHE_LOADED_ASSETS") return;
   const urls = Array.isArray(event.data.urls) ? event.data.urls : [];
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v10.82");
+    const cache = await caches.open("wawis-app-shell-v10.83");
     const safeUrls = urls.filter((value) => {
       try {
         return new URL(value, self.location.origin).origin === self.location.origin;

@@ -76,12 +76,15 @@ import vm from 'node:vm';
   assert.match(expiredCleanup, /\.eq\("ownership_generation", subscription\.ownership_generation\)/, 'Cleanup 404\/410 musi być przypięty do generacji wysyłki.');
 
   assert.match(push, /getOrCreatePushLifecycleToken/);
-  assert.match(push, /setPushServiceWorkerContext/);
-  assert.match(push, /clearPushServiceWorkerContext/);
+  assert.match(push, /publishPushServiceWorkerContext/);
+  assert.match(push, /clearCurrentPushServiceWorkerContext/);
+  assert.match(push, /isPushSessionContextCurrent/);
   assert.match(push, /const needsStandalone = true/);
   assert.match(hook, /reconcilePendingPushLogout/);
   assert.match(hook, /force: true/);
   assert.match(sw, /WAWIS_PUSH_CONTEXT_SET/);
+  assert.match(sw, /WawisPushContextGuard\?\.shouldApplyContextCommand/);
+  assert.match(sw, /revision/);
   assert.match(sw, /WawisPushSafety\?\.shouldDisplayPush/);
 }
 

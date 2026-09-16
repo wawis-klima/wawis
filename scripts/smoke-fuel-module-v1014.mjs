@@ -299,6 +299,13 @@ assert.match(panel, /Tankowanie zapisano, ale push do administratora nie został
 assert.match(fuelPushSource, /send-fuel-entry-push/);
 assert.match(pushEdge, /String\(entry\.created_by \|\| ""\) !== String\(authData\.user\.id\)/, 'Edge Function musi potwierdzić autora tankowania.');
 assert.match(pushEdge, /deliveryLogType = `fuel_entry:\$\{entry\.id\}`/, 'Push tankowania musi być idempotentny dla konkretnego wpisu.');
-assert.match(pushEdge, /title: "Zatankowano samochód"/);
-assert.match(pushEdge, /vehicleLabel[\s\S]*litersLabel[\s\S]*odometerLabel/, 'Treść push musi zawierać auto, litry i przebieg.');
+assert.match(pushEdge, /title: "Nowe tankowanie"/, 'Push paliwa 10.83 ma używać neutralnego tytułu.');
+assert.match(pushEdge, /body: "Dodano nowe tankowanie\. Otwórz aplikację Wawis, aby zobaczyć szczegóły\."/, 'Treść PUSH nie może ujawniać danych tankowania na ekranie blokady.');
+assert.match(pushEdge, /recipientUserId: String\(subscription\.user_id \|\| ""\)/, 'Payload musi wskazywać konkretnego odbiorcę.');
+assert.match(pushEdge, /subscriptionGeneration: Number\(subscription\.ownership_generation \|\| 0\)/, 'Payload musi być przypięty do generacji subskrypcji.');
+assert.match(pushEdge, /\.select\("id, user_id, endpoint, p256dh, auth, ownership_generation"\)/, 'Wysyłka musi odczytać generację własności endpointu.');
+assert.match(pushEdge, /\.eq\("user_id", subscription\.user_id\)/, 'Cleanup 404/410 musi być przypięty do odbiorcy.');
+assert.match(pushEdge, /\.eq\("ownership_generation", subscription\.ownership_generation\)/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');
+const payloadBlock = pushEdge.match(/const payload = JSON\.stringify\(\{[\s\S]*?\n      \}\);/)?.[0] || '';
+assert.doesNotMatch(payloadBlock, /vehicleLabel|litersLabel|odometerLabel|employee/, 'Payload PUSH paliwa nie może zawierać szczegółów tankowania ani nazwiska pracownika.');
 console.log('Fuel production access, monthly report, correction audit, rapid-refill warning and v10.26 regression checks passed.');
