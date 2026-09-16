@@ -8,6 +8,7 @@ Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHA
 - [ ] Utworzono `release/v<WERSJA>`.
 - [ ] Określono ścieżkę: standard albo `MICRO UI`.
 - [ ] MICRO UI jest dozwolone wyłącznie wtedy, gdy wszystkie istotne zmiany to CSS pod `src/` albo `public/`.
+- [ ] Na początku sprawdzono diagnostykę z ostatnich 24 h i zapisano ją jako informacyjny baseline. Diagnostyka nie blokuje wydania.
 
 ## 2. Praca nad zmianą
 
@@ -24,13 +25,12 @@ Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHA
 - `TARGETED` — frontend funkcjonalny: tylko powiązane grupy domenowe + E2E właściwej platformy.
 - `CRITICAL` — backend, Supabase, auth/RLS, storage, synchronizacja, push, deployment lub release automation: pełne grupy + E2E mobile i desktop.
 
-## 4. Standardowy pre-deploy i finalny release
+## 4. Standardowy finalny release
 
 Dla wydania innego niż MICRO UI:
 
 - [ ] README pokazuje aktualną wersję i konkretny opis bez placeholdera.
 - [ ] CHANGELOG ma konkretną sekcję aktualnej wersji.
-- [ ] Sprawdzono diagnostykę z ostatnich 24 h i `RELEASE-GATE.json.predeploy_diagnostics` ma `GO`.
 - [ ] Uruchomiono **WAWIS final release checks** w trybie `auto`.
 - [ ] Każda grupa wymagana przez profil wykonała się jeden raz.
 - [ ] Playwright uruchomił się tylko wtedy, gdy profil go wymagał.
@@ -38,6 +38,7 @@ Dla wydania innego niż MICRO UI:
 - [ ] Powstał ZIP, został zweryfikowany i wysłany na Drive.
 - [ ] `main_protection.final_release_run_id` zawiera ID zielonego finalnego workflow.
 - [ ] `main_protection.ready_for_main=true` ustawiono po wszystkich powyższych krokach.
+- [ ] Diagnostyka nie jest warunkiem `ready_for_main` ani GO/NO-GO.
 
 ## 5. MICRO UI — szybka ścieżka
 
@@ -72,9 +73,10 @@ Dla wydania innego niż MICRO UI:
 Standardowy release:
 
 - [ ] Uruchomiono `WAWIS post-deploy checks` albo `scripts/post-deploy-check.mjs`.
-- [ ] Produkcyjny `/app-version.json` odpowiada wersji wydania.
-- [ ] Produkcyjny `/push-sw.js` zawiera `wawis-app-shell-v<WERSJA>`.
-- [ ] Od chwili deploymentu nie ma nowych błędów/ostrzeżeń blokujących wydanie.
+- [ ] Produkcyjny `/app-version.json` odpowiada wersji wydania — to jest warunek twardy.
+- [ ] Produkcyjny `/push-sw.js` zawiera `wawis-app-shell-v<WERSJA>` — to jest warunek twardy.
+- [ ] Diagnostyka jest zapisana jako raport informacyjny; warning/error nie blokuje zakończenia wydania.
+- [ ] Jeśli runner nie ma sekretów Supabase, live-check wersji i Service Workera nadal może zakończyć się GO.
 
 MICRO UI:
 

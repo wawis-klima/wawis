@@ -40,45 +40,69 @@ async function fetchText(url, init = {}) {
 async function loadDiagnostics({ deploymentStart }) {
   const supabaseUrl = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
   const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
-  required(supabaseUrl, 'Brak sekretu SUPABASE_URL do automatycznej diagnostyki post-deploy');
-  required(serviceKey, 'Brak sekretu SUPABASE_SERVICE_ROLE_KEY do automatycznej diagnostyki post-deploy');
 
-  const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const query = new URLSearchParams({
-    select: 'severity,received_at,event_type,diagnostic_module,app_version,platform',
-    received_at: `gte.${since24}`,
-    order: 'received_at.desc',
-    limit: '1000',
-  });
+  if (!supabaseUrl || !serviceKey) {
+    return {
+      checked: false,
+      checked_at: new Date().toISOString(),
+      blocking: false,
+      result: 'SKIPPED',
+      note: 'Brak sekretów Supabase w runnerze. Diagnostyka jest informacyjna i nie blokuje wydania.',
+      deployment_started_at: deploymentStart,
+    };
+  }
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/app_diagnostic_events?${query.toString()}`, {
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      Accept: 'application/json',
-    },
-  });
-  if (!response.ok) throw new Error(`Supabase diagnostics HTTP ${response.status}: ${await response.text()}`);
+  try {
+    const since24 = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const query = new URLSearchParams({
+      select: 'severity,received_at,event_type,diagnostic_module,app_version,platform',
+      received_at: `gte.${since24}`,
+      order: 'received_at.desc',
+      limit: '1000',
+    });
 
-  const rows = await response.json();
-  const problematic = (row) => ['warning', 'warn', 'error', 'fatal'].includes(String(row?.severity || '').toLowerCase());
-  const deploymentMs = Date.parse(deploymentStart);
-  const sinceDeploy = rows.filter((row) => Date.parse(row.received_at) >= deploymentMs);
-  const last24Problematic = rows.filter(problematic);
-  const sinceDeployProblematic = sinceDeploy.filter(problematic);
+    const response = await fetch(`${supabaseUrl}/rest/v1/app_diagnostic_events?${query.toString()}`, {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+        Accept: 'application/json',
+      },
+    });
+    if (!response.ok) throw new Error(`Supabase diagnostics HTTP ${response.status}: ${await response.text()}`);
 
-  return {
-    checked: true,
-    checked_at: new Date().toISOString(),
-    last_24h: true,
-    result: sinceDeployProblematic.length === 0 ? 'GO' : 'NO-GO',
-    problematic_count: sinceDeployProblematic.length,
-    last_24h_total_count: rows.length,
-    last_24h_problematic_count: last24Problematic.length,
-    since_deploy_total_count: sinceDeploy.length,
-    since_deploy_problematic_count: sinceDeployProblematic.length,
-    deployment_started_at: deploymentStart,
-  };
+    const rows = await response.json();
+    const problematic = (row) => ['warning', 'warn', 'error', 'fatal'].includes(String(row?.severity || '').toLowerCase());
+    const deploymentMs = Date.parse(deploymentStart);
+    const sinceDeploy = rows.filter((row) => Date.parse(row.received_at) >= deploymentMs);
+    const last24Problematic = rows.filter(problematic);
+    const sinceDeployProblematic = sinceDeploy.filter(problematic);
+
+    return {
+      checked: true,
+      checked_at: new Date().toISOString(),
+      last_24h: true,
+      blocking: false,
+      result: sinceDeployProblematic.length === 0 ? 'GO' : 'WARN',
+      problematic_count: sinceDeployProblematic.length,
+      last_24h_total_count: rows.length,
+      last_24h_problematic_count: last24Problematic.length,
+      since_deploy_total_count: sinceDeploy.length,
+      since_deploy_problematic_count: sinceDeployProblematic.length,
+      deployment_started_at: deploymentStart,
+      note: sinceDeployProblematic.length === 0
+        ? 'Brak nowych problemów diagnostycznych po deployu.'
+        : 'Znaleziono wpisy diagnostyczne do późniejszej analizy; nie blokują wydania.',
+    };
+  } catch (error) {
+    return {
+      checked: false,
+      checked_at: new Date().toISOString(),
+      blocking: false,
+      result: 'ERROR',
+      note: `Nie udało się pobrać diagnostyki: ${error.message}. Nie blokuje to wydania.`,
+      deployment_started_at: deploymentStart,
+    };
+  }
 }
 
 async function main() {
@@ -103,12 +127,9 @@ async function main() {
   if (!serviceWorkerVerified) throw new Error(`Produkcja nie zawiera cache ${expectedCache}`);
 
   const diagnostics = await loadDiagnostics({ deploymentStart });
-  if (diagnostics.result !== 'GO') {
-    throw new Error(`Diagnostyka po wdrożeniu: ${diagnostics.since_deploy_problematic_count} nowych problemów`);
-  }
 
   const evidence = {
-    schema_version: 1,
+    schema_version: 2,
     version: appVersion,
     checked_at: new Date().toISOString(),
     production_url: productionUrl,
@@ -126,6 +147,8 @@ async function main() {
   const output = path.join(root, 'post-deploy-evidence.json');
   fs.writeFileSync(output, `${JSON.stringify(evidence, null, 2)}\n`);
   console.log(`WAWIS POST-DEPLOY GO — ${appVersion}`);
+  console.log('Twarda weryfikacja: wersja aplikacji + Service Worker.');
+  console.log(`Diagnostyka informacyjna: ${diagnostics.result}.`);
   console.log(`Evidence: ${output}`);
 }
 

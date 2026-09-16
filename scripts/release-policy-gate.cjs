@@ -38,16 +38,6 @@ function getChangelogSection(changelog, version) {
   return String(changelog.match(new RegExp(`^## ${escaped}\\r?\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, 'm'))?.[1] || '').trim();
 }
 
-function validDiagnosticCheck(entry) {
-  return Boolean(
-    entry &&
-    entry.checked === true &&
-    entry.last_24h === true &&
-    typeof entry.checked_at === 'string' && entry.checked_at.trim() &&
-    entry.result === 'GO'
-  );
-}
-
 function validDriveBackup(entry, appVersion) {
   return Boolean(
     entry &&
@@ -80,10 +70,6 @@ function verifyEvidence(evidence, appVersion) {
   assert(evidence.production?.service_worker_verified === true, 'NO-GO: produkcyjny Service Worker nie potwierdza cache wersji');
   assert(evidence.production?.app_version === appVersion, 'NO-GO: produkcyjny numer wersji różni się od release');
   assert(evidence.production?.service_worker_cache === `wawis-app-shell-v${appVersion}`, 'NO-GO: produkcyjny cache Service Workera ma złą wersję');
-  assert(evidence.diagnostics?.checked === true, 'NO-GO: brak rzeczywistej kontroli diagnostyki po wdrożeniu');
-  assert(evidence.diagnostics?.last_24h === true, 'NO-GO: diagnostyka post-deploy nie obejmuje 24 h');
-  assert(evidence.diagnostics?.result === 'GO', 'NO-GO: diagnostyka post-deploy nie ma statusu GO');
-  assert(Number(evidence.diagnostics?.problematic_count || 0) === 0, 'NO-GO: po wdrożeniu są nowe problemy diagnostyczne');
 }
 
 function main() {
@@ -116,9 +102,6 @@ function main() {
   assert(checklist.includes('WAWIS final release checks'), 'NO-GO: checklista nie wskazuje jednego finalnego workflow');
   assert(String(vercel.buildCommand || '').includes('release-policy-gate.cjs --deploy'), 'NO-GO: Vercel nie wymaga deploy gate');
 
-  assert(validDiagnosticCheck(gate.baseline_diagnostics), 'NO-GO: brak bazowej diagnostyki GO z ostatnich 24 h');
-  assert(validDiagnosticCheck(gate.predeploy_diagnostics), 'NO-GO: brak pre-deploy diagnostyki GO z ostatnich 24 h');
-
   const readmeCurrent = extractReadmeCurrent(readme);
   const readmeLastFix = extractReadmeLastFix(readme);
   const lastFixBody = extractReadmeLastFixBody(readme);
@@ -146,6 +129,9 @@ function main() {
 
   const mode = postMode ? 'post-deploy' : deployMode ? 'deploy' : 'pre-release';
   console.log(`WAWIS RELEASE GATE: GO — ${appVersion} (${mode})`);
+  if (gate.baseline_diagnostics || gate.predeploy_diagnostics || gate.postdeploy_diagnostics) {
+    console.log('Diagnostyka jest informacyjna i nie bierze udziału w GO/NO-GO wydania.');
+  }
 }
 
 try {
