@@ -1,31 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.87",
+  "version": "10.88",
   "scope": "full",
-  "release_branch": "release/v10.87",
+  "release_branch": "release/v10.88",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T20:47:00+02:00",
+    "checked_at": "2026-09-16T21:32:00+02:00",
     "result": "INFO",
-    "notes": "10.87: F4/F10/F11 z audytu 10.84; dokładne RED reprodukcje wykonane przed poprawką."
+    "notes": "10.88: N2/N3/N4/N5 z audytu 10.84; dokładne kontrprzykłady RED odtworzone na SHA 74b895c849cdb7644250acf0de7933fc9ef7f1a5 przed poprawkami."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T20:48:00+02:00",
+    "checked_at": "2026-09-16T21:32:00+02:00",
     "result": "FOCUSED_PASS_FULL_PR_PENDING",
-    "notes": "Exact audit regression, grupa PUSH i production build przeszły. Finalny targeted-checks + Playwright E2E + build muszą przejść na SHA PR."
+    "notes": "RED→GREEN N2/N3/N4/N5, 48 focused regression commands oraz production build przeszły po finalnym bumpie do 10.88. Finalny targeted-checks + Playwright E2E + build muszą przejść na SHA PR."
   },
   "main_protection": {
-    "source_branch": "release/v10.87",
+    "source_branch": "release/v10.88",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "result": "PENDING",
-    "notes": "Po merge wymagane: Vercel SUCCESS, live 10.87/SW oraz odczyt żywych grantów, RPC i wersji Edge Functions."
+    "notes": "Po merge wymagane: zastosowanie migracji N2, deploy/read-back send-job-protocol-email, Vercel SUCCESS na tym samym SHA oraz live 10.88/push-sw.js."
   },
   "archive": {
     "source_of_truth": "github-main",
