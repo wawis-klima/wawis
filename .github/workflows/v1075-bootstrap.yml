@@ -1,0 +1,479 @@
+name: WAWIS v10.75 bootstrap
+
+on:
+  push:
+    branches:
+      - release/v10.75
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.75
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Apply v10.75 resilience changes
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const root = process.cwd();
+          const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
+          const write = (p, value) => {
+            const full = path.join(root, p);
+            fs.mkdirSync(path.dirname(full), { recursive: true });
+            fs.writeFileSync(full, value.endsWith('\n') ? value : `${value}\n`);
+          };
+          const replaceOnce = (source, before, after, label) => {
+            if (!source.includes(before)) throw new Error(`Nie znaleziono fragmentu: ${label}`);
+            return source.replace(before, after);
+          };
+          const replaceRegexOnce = (source, pattern, replacement, label) => {
+            if (!pattern.test(source)) throw new Error(`Nie znaleziono wzorca: ${label}`);
+            return source.replace(pattern, replacement);
+          };
+
+          write('src/mobile791/modules/request-timeout.js', `export const MOBILE_SUPABASE_REQUEST_TIMEOUT_MS = 45 * 1000;
+          export const MOBILE_SUPABASE_STORAGE_TIMEOUT_MS = 90 * 1000;
+
+          function normalizeRequestUrl(input) {
+            if (typeof input === 'string') return input;
+            if (input && typeof input.url === 'string') return input.url;
+            return String(input || '');
+          }
+
+          export function resolveSupabaseRequestTimeoutMs(input) {
+            const url = normalizeRequestUrl(input);
+            return /\\/storage\\/v1\\/object\\//i.test(url)
+              ? MOBILE_SUPABASE_STORAGE_TIMEOUT_MS
+              : MOBILE_SUPABASE_REQUEST_TIMEOUT_MS;
+          }
+
+          export function createSupabaseRequestTimeoutError(timeoutMs) {
+            const error = new Error(\`Supabase request timeout after \${Math.max(1, Number(timeoutMs) || 0)} ms.\`);
+            error.name = 'AbortError';
+            error.code = 'SUPABASE_REQUEST_TIMEOUT';
+            error.timeout_ms = Math.max(1, Number(timeoutMs) || 0);
+            error.transient = true;
+            return error;
+          }
+
+          export async function fetchWithTimeout(input, init = {}, options = {}) {
+            const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
+            if (typeof fetchImpl !== 'function') throw new Error('Brak implementacji fetch dla Supabase.');
+
+            const resolvedTimeout = Math.max(
+              1,
+              Number(options.timeoutMs || resolveSupabaseRequestTimeoutMs(input)) || MOBILE_SUPABASE_REQUEST_TIMEOUT_MS,
+            );
+            if (typeof AbortController === 'undefined') return fetchImpl(input, init);
+
+            const controller = new AbortController();
+            const externalSignal = init?.signal || null;
+            let timeoutError = null;
+            let detachExternalAbort = null;
+
+            if (externalSignal) {
+              const abortFromExternalSignal = () => {
+                try {
+                  controller.abort(externalSignal.reason);
+                } catch {
+                  controller.abort();
+                }
+              };
+              if (externalSignal.aborted) abortFromExternalSignal();
+              else if (typeof externalSignal.addEventListener === 'function') {
+                externalSignal.addEventListener('abort', abortFromExternalSignal, { once: true });
+                detachExternalAbort = () => externalSignal.removeEventListener?.('abort', abortFromExternalSignal);
+              }
+            }
+
+            const timeoutId = setTimeout(() => {
+              timeoutError = createSupabaseRequestTimeoutError(resolvedTimeout);
+              try {
+                controller.abort(timeoutError);
+              } catch {
+                controller.abort();
+              }
+            }, resolvedTimeout);
+
+            try {
+              return await fetchImpl(input, { ...init, signal: controller.signal });
+            } catch (error) {
+              if (timeoutError) throw timeoutError;
+              throw error;
+            } finally {
+              clearTimeout(timeoutId);
+              detachExternalAbort?.();
+            }
+          }
+
+          export function createTimedSupabaseFetch(options = {}) {
+            return (input, init = {}) => fetchWithTimeout(input, init, options);
+          }
+          `);
+
+          write('src/mobile791/lib/supabase.js', `import { createClient } from '@supabase/supabase-js';
+          import { createMockSupabaseClient } from './mockSupabaseClient.js';
+          import { createTimedSupabaseFetch } from '../modules/request-timeout.js';
+
+          const env = typeof import.meta !== 'undefined' && import.meta?.env ? import.meta.env : {};
+
+          export const supabaseMode = String(env.VITE_SUPABASE_MODE || '').trim().toLowerCase();
+          export const isSupabaseMockEnabled = supabaseMode === 'mock' || String(env.VITE_SUPABASE_MOCK || '') === '1';
+          export const supabaseUrl = isSupabaseMockEnabled ? 'mock://supabase' : (env.VITE_SUPABASE_URL || '');
+          export const supabaseAnonKey = isSupabaseMockEnabled ? 'mock-anon-key' : (env.VITE_SUPABASE_ANON_KEY || '');
+          const timedSupabaseFetch = createTimedSupabaseFetch();
+          export const supabase = isSupabaseMockEnabled
+            ? createMockSupabaseClient()
+            : (supabaseUrl && supabaseAnonKey
+              ? createClient(supabaseUrl, supabaseAnonKey, { global: { fetch: timedSupabaseFetch } })
+              : null);
+          export const LOGOUT_FLAG_KEY = 'klima-force-logout';
+          export const isSupabaseConfigured = Boolean(supabase);
+          `);
+
+          let store = read('src/mobile791/modules/job-offline-store.js');
+          const atomicQueueFunction = `async function putOfflineJobOperationAtomically(record) {
+            let db;
+            try {
+              db = await openOfflineDb();
+              if (!db) return record;
+              return await new Promise((resolve, reject) => {
+                const transaction = db.transaction(OPERATION_STORE, 'readwrite');
+                const objectStore = transaction.objectStore(OPERATION_STORE);
+                let finalRecord = record;
+                let failure = null;
+                let settled = false;
+
+                const rejectOnce = (error) => {
+                  if (settled) return;
+                  settled = true;
+                  reject(error);
+                };
+                const abortWith = (error) => {
+                  failure = error || failure || new Error('Nie udało się atomowo zapisać zmiany offline.');
+                  try {
+                    transaction.abort();
+                  } catch {
+                    rejectOnce(failure);
+                  }
+                };
+                const putFinalRecord = () => {
+                  try {
+                    objectStore.put(finalRecord);
+                  } catch (error) {
+                    abortWith(error);
+                  }
+                };
+
+                if (record.type === 'comment') {
+                  putFinalRecord();
+                } else {
+                  const readRequest = objectStore.getAll();
+                  readRequest.onsuccess = () => {
+                    try {
+                      const superseded = (Array.isArray(readRequest.result) ? readRequest.result : [])
+                        .filter((item) => String(item.user_id) === record.user_id)
+                        .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
+                        .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
+                      if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
+                      for (const item of superseded) objectStore.delete(item.id);
+                      putFinalRecord();
+                    } catch (error) {
+                      abortWith(error);
+                    }
+                  };
+                  readRequest.onerror = () => abortWith(readRequest.error || new Error('Nie udało się odczytać poprzedniej zmiany offline.'));
+                }
+
+                transaction.oncomplete = () => {
+                  if (settled) return;
+                  settled = true;
+                  dispatchOfflineChanged();
+                  resolve(finalRecord);
+                };
+                transaction.onerror = () => rejectOnce(failure || transaction.error || new Error('Nie udało się atomowo zapisać zmiany offline.'));
+                transaction.onabort = () => rejectOnce(failure || transaction.error || new Error('Atomowy zapis zmiany offline został przerwany.'));
+              });
+            } finally {
+              db?.close();
+            }
+          }
+
+          export async function queueOfflineJobOperation(operation = {}) {
+            if (!operation.user_id || !operation.job_id || !operation.type) return null;
+            const record = {
+              id: String(operation.id || createOfflineOperationId(operation.type)),
+              user_id: String(operation.user_id),
+              job_id: String(operation.job_id),
+              type: String(operation.type),
+              payload: operation.payload || {},
+              base: operation.base || {},
+              status: 'pending',
+              error: '',
+              retry_count: 0,
+              created_at: operation.created_at || new Date().toISOString(),
+              last_attempt_at: '',
+              next_attempt_at: '',
+              lease_until: '',
+            };
+
+            try {
+              // Status i dane urządzenia zastępujemy w JEDNEJ transakcji IndexedDB.
+              // Jeśli put nowego wpisu nie powiedzie się (np. QuotaExceededError),
+              // cała transakcja jest wycofywana i poprzednia operacja pozostaje w kolejce.
+              return await putOfflineJobOperationAtomically(record);
+            } catch (error) {
+              console.warn('Nie udało się zapisać zmiany w kolejce offline.', error?.message || error);
+              throw error;
+            }
+          }
+
+          export async function recoverStaleOfflineJobOperations`;
+          store = replaceRegexOnce(
+            store,
+            /export async function queueOfflineJobOperation\(operation = \{\}\) \{[\s\S]*?\n\}\n\nexport async function recoverStaleOfflineJobOperations/,
+            atomicQueueFunction,
+            'atomowa queueOfflineJobOperation',
+          );
+          write('src/mobile791/modules/job-offline-store.js', store);
+
+          let transient = read('src/mobile791/modules/supabase-errors.js');
+          transient = replaceOnce(
+            transient,
+            "    'load failed',\n",
+            "    'load failed',\n    'aborterror',\n    'supabase_request_timeout',\n    'request aborted',\n    'operation was aborted',\n    'the operation was aborted',\n",
+            'markery timeout/abort jako transient',
+          );
+          write('src/mobile791/modules/supabase-errors.js', transient);
+
+          let photos = read('src/mobile791/modules/photos.js');
+          photos = replaceOnce(
+            photos,
+            "  return /failed to fetch|network|fetch|internet|offline|load failed|connection/i.test(rawMessage);",
+            "  return /failed to fetch|network|fetch|internet|offline|load failed|connection|abort|timed out|timeout/i.test(rawMessage);",
+            'timeout/abort zdjęć jako błąd sieciowy',
+          );
+          write('src/mobile791/modules/photos.js', photos);
+
+          write('scripts/smoke-mobile-offline-resilience-v1075.mjs', `import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { fileURLToPath } from 'node:url';
+          import { fetchWithTimeout, resolveSupabaseRequestTimeoutMs } from '../src/mobile791/modules/request-timeout.js';
+          import { isTransientSupabaseError } from '../src/mobile791/modules/supabase-errors.js';
+
+          const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+          const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
+
+          const hungFetch = (_input, init = {}) => new Promise((resolve, reject) => {
+            const rejectAbort = () => reject(init.signal?.reason || Object.assign(new Error('aborted'), { name: 'AbortError' }));
+            if (init.signal?.aborted) rejectAbort();
+            else init.signal?.addEventListener?.('abort', rejectAbort, { once: true });
+            void resolve;
+          });
+
+          const startedAt = Date.now();
+          let timeoutError = null;
+          try {
+            await fetchWithTimeout('https://example.test/rest/v1/jobs', {}, { timeoutMs: 25, fetchImpl: hungFetch });
+          } catch (error) {
+            timeoutError = error;
+          }
+          assert(timeoutError, 'Zawieszony fetch musi zakończyć się timeoutem.');
+          assert.equal(timeoutError.code, 'SUPABASE_REQUEST_TIMEOUT');
+          assert.equal(timeoutError.name, 'AbortError');
+          assert.equal(isTransientSupabaseError(timeoutError), true, 'Timeout/abort musi trafić do retry, nie do trwałego błędu.');
+          assert(Date.now() - startedAt < 1000, 'Testowy timeout nie może pozostawić nierozwiązanej obietnicy.');
+          assert(resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/job-photos/a.jpg') > resolveSupabaseRequestTimeoutMs('https://x.supabase.co/rest/v1/jobs'));
+
+          const storeSource = read('src', 'mobile791', 'modules', 'job-offline-store.js');
+          const queueMatch = storeSource.match(/async function putOfflineJobOperationAtomically[\\s\\S]*?export async function recoverStaleOfflineJobOperations/);
+          assert(queueMatch, 'Brak atomowego zapisu kolejki offline.');
+          const atomicSource = queueMatch[0];
+          assert.match(atomicSource, /db\\.transaction\\(OPERATION_STORE, 'readwrite'\\)/);
+          assert.match(atomicSource, /objectStore\\.getAll\\(\\)/);
+          assert.match(atomicSource, /transaction\\.abort\\(\\)/);
+          assert.match(atomicSource, /objectStore\\.delete\\(item\\.id\\)/);
+          assert.match(atomicSource, /objectStore\\.put\\(finalRecord\\)/);
+          assert.doesNotMatch(atomicSource, /await withStore\\(OPERATION_STORE, 'readwrite', \\(store\\) => store\\.delete/);
+
+          const mobileSupabase = read('src', 'mobile791', 'lib', 'supabase.js');
+          assert.match(mobileSupabase, /createTimedSupabaseFetch/);
+          assert.match(mobileSupabase, /global: \\{ fetch: timedSupabaseFetch \\}/);
+          const photosSource = read('src', 'mobile791', 'modules', 'photos.js');
+          assert.match(photosSource, /abort\\|timed out\\|timeout/);
+
+          console.log('OK: v10.75 ma atomową kolejkę offline i abortowalne timeouty requestów Supabase.');
+          `);
+
+          write('tests/e2e/mobile-offline-atomic-v1075.spec.js', `import { test, expect } from '@playwright/test';
+
+          test('@mobile v10.75 — wymiana operacji offline jest atomowa przy błędzie IndexedDB', async ({ page }) => {
+            await page.goto('/');
+            const result = await page.evaluate(async () => {
+              const deleteDatabase = () => new Promise((resolve) => {
+                const request = indexedDB.deleteDatabase('wawis-mobile-offline-data');
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => resolve(false);
+                request.onblocked = () => resolve(false);
+              });
+              await deleteDatabase();
+
+              const store = await import('/src/mobile791/modules/job-offline-store.js');
+              await store.queueOfflineJobOperation({
+                id: 'status-old',
+                user_id: 'worker-atomic',
+                job_id: 'job-atomic',
+                type: 'status',
+                base: { status: 'Nowe' },
+                payload: { status: 'W trakcie' },
+                created_at: '2026-09-16T06:00:00.000Z',
+              });
+
+              const originalPut = IDBObjectStore.prototype.put;
+              let failureName = '';
+              IDBObjectStore.prototype.put = function patchedPut(value, ...args) {
+                if (String(value?.id || '') === 'status-new-fail') {
+                  throw new DOMException('Wymuszony brak miejsca', 'QuotaExceededError');
+                }
+                return originalPut.call(this, value, ...args);
+              };
+              try {
+                await store.queueOfflineJobOperation({
+                  id: 'status-new-fail',
+                  user_id: 'worker-atomic',
+                  job_id: 'job-atomic',
+                  type: 'status',
+                  base: { status: 'W trakcie' },
+                  payload: { status: 'Zakończone' },
+                  created_at: '2026-09-16T06:01:00.000Z',
+                });
+              } catch (error) {
+                failureName = String(error?.name || '');
+              } finally {
+                IDBObjectStore.prototype.put = originalPut;
+              }
+
+              const afterFailure = await store.listOfflineJobOperations('worker-atomic');
+              const replacement = await store.queueOfflineJobOperation({
+                id: 'status-new-ok',
+                user_id: 'worker-atomic',
+                job_id: 'job-atomic',
+                type: 'status',
+                base: { status: 'W trakcie' },
+                payload: { status: 'Zakończone' },
+                created_at: '2026-09-16T06:02:00.000Z',
+              });
+              const afterSuccess = await store.listOfflineJobOperations('worker-atomic');
+              return {
+                failureName,
+                afterFailure: afterFailure.map((item) => ({ id: item.id, base: item.base, payload: item.payload })),
+                replacement: { id: replacement?.id, base: replacement?.base, payload: replacement?.payload },
+                afterSuccess: afterSuccess.map((item) => ({ id: item.id, base: item.base, payload: item.payload })),
+              };
+            });
+
+            expect(result.failureName).toBe('QuotaExceededError');
+            expect(result.afterFailure).toHaveLength(1);
+            expect(result.afterFailure[0].id).toBe('status-old');
+            expect(result.afterFailure[0].payload.status).toBe('W trakcie');
+            expect(result.replacement.id).toBe('status-new-ok');
+            expect(result.replacement.base.status).toBe('Nowe');
+            expect(result.afterSuccess).toHaveLength(1);
+            expect(result.afterSuccess[0].id).toBe('status-new-ok');
+            expect(result.afterSuccess[0].base.status).toBe('Nowe');
+            expect(result.afterSuccess[0].payload.status).toBe('Zakończone');
+          });
+          `);
+
+          let groups = read('scripts/test-groups.cjs');
+          groups = replaceOnce(
+            groups,
+            "    'npm run test:smoke:reliable-sync',\n",
+            "    'npm run test:smoke:reliable-sync',\n    'node scripts/smoke-mobile-offline-resilience-v1075.mjs',\n",
+            'test v10.75 w grupie core',
+          );
+          write('scripts/test-groups.cjs', groups);
+
+          write('release-notes.json', JSON.stringify({
+            version: '10.75',
+            summary: 'Wersja 10.75 zabezpiecza mobilną synchronizację offline przed utratą wpisu i przed requestami, które mogły pozostać zawieszone bez końca.',
+            changes: [
+              'Kolejka statusów i danych urządzeń zastępuje poprzednią operację w jednej transakcji IndexedDB; błąd zapisu wycofuje całość i pozostawia poprzedni wpis.',
+              'Mobilny klient Supabase ma realny AbortController timeout: 45 s dla zwykłych requestów i 90 s dla Storage.',
+              'Timeout i AbortError są traktowane jako przejściowy błąd sieciowy, więc synchronizacja oraz zdjęcia wracają do retry zamiast blokować sesję.',
+              'Niejednoznaczny commit po zerwanym requestcie jest bezpieczny dzięki istniejącej idempotencji synchronizacji i uzgadnianiu zdjęć po stałej ścieżce Storage.',
+              'Dodano regresję źródłową timeoutu oraz mobilny test Playwright z wymuszonym QuotaExceededError, który potwierdza rollback atomowej transakcji IndexedDB.'
+            ]
+          }, null, 2));
+
+          write('RELEASE-GATE.json', JSON.stringify({
+            policy_enforced_from: '10.60',
+            version: '10.75',
+            scope: 'mobile',
+            release_branch: 'release/v10.75',
+            baseline_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: new Date().toISOString(),
+              result: 'INFO',
+              notes: 'Start 10.75: wpisy warning/error z ostatnich 24 h dotyczą starszych wersji (10.73 i wcześniejszych); brak nowych wpisów przypisanych do 10.74. Diagnostyka jest informacyjna i nie blokuje release.'
+            },
+            predeploy_diagnostics: {
+              checked: false,
+              last_24h: true,
+              checked_at: '',
+              result: 'PENDING',
+              notes: 'Kontrola informacyjna; nie jest bramką GO/NO-GO.'
+            },
+            drive_backup: {
+              required: true,
+              folder_path: 'Aplikacja/Wersje',
+              folder_id: '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S',
+              file_name: 'klima-app-v10.75.zip',
+              file_id: '',
+              size_bytes: 0,
+              uploaded: false,
+              uploaded_at: '',
+              verified: false
+            },
+            main_protection: {
+              source_branch: 'release/v10.75',
+              ready_for_main: false,
+              required_check: 'WAWIS PR checks / targeted-checks',
+              final_release_run_id: '',
+              final_release_head_sha: ''
+            },
+            postdeploy_diagnostics: {
+              evidence_required: true,
+              result: 'PENDING'
+            }
+          }, null, 2));
+          NODE
+
+      - name: Bump version to 10.75
+        run: node version-bump.cjs
+
+      - name: Apply release notes
+        run: node scripts/update-release-docs.cjs
+
+      - name: Commit v10.75 changes and remove bootstrap
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git rm .github/workflows/v1075-bootstrap.yml
+          git add -A
+          git commit -m "release: prepare 10.75 offline atomicity and request timeouts"
+          git push origin HEAD:release/v10.75
