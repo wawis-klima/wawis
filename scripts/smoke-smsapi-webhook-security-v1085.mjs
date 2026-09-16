@@ -4,6 +4,7 @@ import {
   constantTimeEqual,
   deriveSmsApiCallbackToken,
   normalizeSmsApiStatus,
+  planSmsCallbackUpdates,
   shouldAdvanceSmsStatus,
 } from '../supabase/functions/smsapi-delivery-webhook/security.mjs';
 
@@ -30,12 +31,45 @@ assert.equal(shouldAdvanceSmsStatus('delivered', 'error'), false);
 assert.equal(shouldAdvanceSmsStatus('delivered', 'provider_sent'), false);
 assert.equal(shouldAdvanceSmsStatus('delivered', 'delivered'), false);
 
+const firstDelivery = planSmsCallbackUpdates({
+  logStatus: 'provider_sent',
+  jobStatus: 'provider_sent',
+  logSentAt: '2026-09-16T10:00:00Z',
+  jobSentAt: '2026-09-16T10:00:00Z',
+  nextStatus: 'delivered',
+  hasJob: true,
+});
+assert.deepEqual(firstDelivery, { logNeedsAdvance: true, jobNeedsAdvance: true, callbackBelongsToLatestSend: true });
+
+const retryAfterLogOnly = planSmsCallbackUpdates({
+  logStatus: 'delivered',
+  jobStatus: 'provider_sent',
+  logSentAt: '2026-09-16T10:00:00Z',
+  jobSentAt: '2026-09-16T10:00:00Z',
+  nextStatus: 'delivered',
+  hasJob: true,
+});
+assert.equal(retryAfterLogOnly.logNeedsAdvance, false);
+assert.equal(retryAfterLogOnly.jobNeedsAdvance, true, 'Retry musi domknąć jobs po wcześniejszym sukcesie sms_log.');
+
+const staleCallback = planSmsCallbackUpdates({
+  logStatus: 'provider_sent',
+  jobStatus: 'provider_sent',
+  logSentAt: '2026-09-16T09:00:00Z',
+  jobSentAt: '2026-09-16T10:00:00Z',
+  nextStatus: 'delivered',
+  hasJob: true,
+});
+assert.equal(staleCallback.logNeedsAdvance, true);
+assert.equal(staleCallback.jobNeedsAdvance, false, 'Stary SMS nie może nadpisać stanu nowszej wysyłki na jobs.');
+assert.equal(staleCallback.callbackBelongsToLatestSend, false);
+
 const webhook = fs.readFileSync('supabase/functions/smsapi-delivery-webhook/index.ts', 'utf8').replace(/\r\n/g, '\n');
 assert.match(webhook, /SMSAPI_ACCESS_TOKEN/);
 assert.match(webhook, /searchParams\.get\('auth'\)/);
 assert.match(webhook, /deriveSmsApiCallbackToken/);
 assert.match(webhook, /constantTimeEqual/);
-assert.match(webhook, /shouldAdvanceSmsStatus/);
+assert.match(webhook, /planSmsCallbackUpdates/);
 assert.match(webhook, /new Response\('OK'/);
 assert.match(webhook, /logUpdateError/);
 assert.match(webhook, /jobUpdateError/);
@@ -49,4 +83,4 @@ const delivery = fs.readFileSync('supabase/functions/send-service-sms/delivery.t
 assert.match(delivery, /claim_service_sms/);
 assert.match(delivery, /confirm_service_sms/);
 
-console.log('GO: 10.85 SMSAPI callback is authenticated, monotonic and source-sender compatible.');
+console.log('GO: 10.85 SMSAPI callback is authenticated, monotonic and retry-safe after partial DB updates.');
