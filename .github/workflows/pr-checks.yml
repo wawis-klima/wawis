@@ -33,6 +33,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+
           hook = Path('src/mobile791/hooks/useAppSession.js')
           source = hook.read_text()
           old = """          const operations = await listOfflineJobOperations(userId);\n          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n          const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);"""
@@ -48,6 +49,14 @@ jobs:
           if assertion not in source:
               source = source.replace(marker, assertion + marker, 1)
           smoke.write_text(source)
+
+          legacy = Path('scripts/smoke-session-sync-resilience-v1080.mjs')
+          source = legacy.read_text()
+          old = "assert.match(mobileHook, /stale-session-final-queue-guard-v1080/);"
+          new = "assert.match(mobileHook, /stale-session-and-request-final-queue-guard-v1084/);"
+          if old not in source:
+              raise SystemExit('Brak starego markera v10.80 do aktualizacji')
+          legacy.write_text(source.replace(old, new, 1))
           PY
           git diff --check
 
@@ -59,7 +68,7 @@ jobs:
         run: |
           git fetch origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed-files.txt
-          printf '%s\n' src/mobile791/hooks/useAppSession.js scripts/smoke-audit-races-v1084.mjs >> changed-files.txt
+          printf '%s\n' src/mobile791/hooks/useAppSession.js scripts/smoke-audit-races-v1084.mjs scripts/smoke-session-sync-resilience-v1080.mjs >> changed-files.txt
           sort -u changed-files.txt -o changed-files.txt
           cat changed-files.txt
 
@@ -97,7 +106,7 @@ jobs:
           gate.predeploy_diagnostics = {
             checked: true,
             last_24h: true,
-            checked_at: '2026-09-16T16:45:00+02:00',
+            checked_at: '2026-09-16T16:55:00+02:00',
             result: 'INFO_ONLY',
             notes: '10.84: F5/F7/F8/F9, dedykowana regresja, Chromium E2E, pełny wymagany Playwright i build przeszły przed merge.'
           };
