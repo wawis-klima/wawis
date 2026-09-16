@@ -1,0 +1,125 @@
+name: WAWIS bootstrap 10.77
+
+on:
+  push:
+    branches:
+      - release/v10.77
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.77
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply 10.77 hotfix
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          def replace(path, old, new, count=-1):
+              p = Path(path)
+              s = p.read_text()
+              if old not in s:
+                  raise SystemExit(f'missing target in {path}: {old[:80]!r}')
+              p.write_text(s.replace(old, new, count))
+
+          protocol = Path('src/mobile791/modules/job-protocol-storage.js')
+          s = protocol.read_text()
+          s = s.replace('''      if (reconciliation.confirmed) {\n        removeProtocolFilesBestEffort(supabase, [storagePath]);\n      }\n      throw writeResult.error;''', '''      // 10.77: po niejednoznacznym wyniku zapisu nie usuwamy nowego PDF.\n      // Pusty readback nie wyklucza późnego commitu wcześniejszego UPDATE.\n      throw writeResult.error;''', 1)
+          s = s.replace('''      if (reconciliation.confirmed) {\n        removeProtocolFilesBestEffort(supabase, [storagePath]);\n        if (reconciliation.record) return reconciliation.record;\n      }\n      throw writeResult.error;''', '''      // 10.77: po utraconej odpowiedzi INSERT pusty readback nie jest dowodem braku commitu.\n      // Zachowujemy plik; ewentualny orphan jest bezpieczniejszy niż rekord wskazujący usunięty PDF.\n      if (reconciliation.confirmed && reconciliation.record) return reconciliation.record;\n      throw writeResult.error;''', 1)
+          s = s.replace('''  if (reconciliation.confirmed) {\n    removeProtocolFilesBestEffort(supabase, [storagePath]);\n    if (!existing.record && reconciliation.record) return reconciliation.record;\n  }\n  throw new Error("Plik został wysłany, ale zapis protokołu nie zwrócił jednoznacznego potwierdzenia.");''', '''  if (reconciliation.confirmed && !existing.record && reconciliation.record) return reconciliation.record;\n  // 10.77: brak jednoznacznego potwierdzenia nigdy nie uruchamia kasowania nowego pliku.\n  throw new Error("Plik został wysłany, ale zapis protokołu nie zwrócił jednoznacznego potwierdzenia.");''', 1)
+          protocol.write_text(s)
+
+          fuel = Path('src/modules/fuel.js')
+          s = fuel.read_text()
+          old = '''async function resolveFuelEntryInsertFailure({ supabase, photoPath, error }) {\n  if (!photoPath) throw error;\n  const reconciliation = await reconcileFuelEntryByPhotoPath({ supabase, photoPath });\n  if (reconciliation.entry) return reconciliation.entry;\n  if (reconciliation.confirmed) {\n    await removeFuelOdometerPhotoBestEffort(supabase, photoPath);\n  }\n  throw error;\n}'''
+          new = '''async function resolveFuelEntryInsertFailure({ supabase, photoPath, error }) {\n  if (!photoPath) throw error;\n  const reconciliation = await reconcileFuelEntryByPhotoPath({ supabase, photoPath });\n  if (reconciliation.entry) return reconciliation.entry;\n  // 10.77: pusty readback po błędzie INSERT nie dowodzi, że wcześniejszy zapis nie zostanie zatwierdzony.\n  // Zachowujemy zdjęcie licznika; ewentualny orphan może zostać posprzątany później, bez ryzyka utraty danych.\n  throw error;\n}'''
+          if old not in s: raise SystemExit('missing fuel reconciliation block')
+          fuel.write_text(s.replace(old, new, 1))
+
+          test = Path('scripts/smoke-storage-write-reconciliation-v1074.mjs')
+          s = test.read_text()
+          s = s.replace("assert.equal(supabase.removed.length, 1, 'PDF wolno usunąć, gdy odczyt kontrolny potwierdzi brak rekordu.');\n  assert.equal(supabase.files.size, 0);", "assert.equal(supabase.removed.length, 0, 'Po błędzie zapisu pusty readback nie daje prawa usunąć PDF.');\n  assert.equal(supabase.files.size, 1);")
+          s = s.replace("assert.equal(supabase.removed.length, 1, 'Zdjęcie wolno usunąć po potwierdzonym braku wpisu DB.');\n  assert.equal(supabase.files.size, 0);", "assert.equal(supabase.removed.length, 0, 'Po błędzie zapisu pusty readback nie daje prawa usunąć zdjęcia licznika.');\n  assert.equal(supabase.files.size, 1);")
+          test.write_text(s)
+
+          groups = Path('scripts/test-groups.cjs')
+          s = groups.read_text()
+          needle = "'node scripts/smoke-storage-write-reconciliation-v1074.mjs',"
+          s = s.replace(needle, needle + "\n    'node scripts/smoke-storage-delayed-commit-v1077.mjs',")
+          groups.write_text(s)
+
+          # Podbij pełną wersję 10.76 -> 10.77 tym samym mechanizmem co wcześniejsze release.
+          import subprocess
+          subprocess.run(['node', 'version-bump.cjs'], check=True)
+
+          readme = Path('README.md')
+          s = readme.read_text().replace('wersja `10.77` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.', 'wersja `10.77` — zabezpiecza protokoły PDF i zdjęcia licznika przed usunięciem po niejednoznacznym wyniku zapisu do bazy; pusty readback nie jest już traktowany jako dowód braku commitu.')
+          readme.write_text(s)
+
+          changelog = Path('CHANGELOG.md')
+          s = changelog.read_text().replace('## 10.77\n- uzupełnij opis zmian dla wersji 10.77', '''## 10.77\n- P0: po utraconej odpowiedzi/timeout zapisu protokołu pusty readback nie powoduje już usunięcia nowego PDF.\n- P0: analogicznie zdjęcie licznika przy tankowaniu pozostaje w Storage przy niejednoznacznym wyniku INSERT.\n- Dodano regresję odtwarzającą commit DB następujący dopiero po pustym readbacku dla PDF i paliwa.\n- Zaktualizowano wcześniejszy test 10.74: bezpieczeństwo danych ma pierwszeństwo przed automatycznym cleanupem osieroconych plików.''')
+          changelog.write_text(s)
+
+          Path('release-notes.json').write_text(json.dumps({
+            'version':'10.77',
+            'summary':'P0 storage safety: nie usuwamy PDF protokołu ani zdjęcia licznika po niejednoznacznym wyniku zapisu DB.',
+            'changes':[
+              'Pusty readback po utraconej odpowiedzi nie jest dowodem braku commitu.',
+              'Nowy plik pozostaje w Storage przy wyniku niejednoznacznym; ewentualny orphan jest bezpieczniejszy niż utrata pliku wskazywanego przez DB.',
+              'Test 10.77 odtwarza późny commit po pustym readbacku dla protokołu i tankowania.'
+            ]
+          }, ensure_ascii=False, indent=2) + '\n')
+
+          rr = Path('RELEASE-RESULT.md')
+          rrs = rr.read_text()
+          import re
+          rrs = re.sub(r'(## Wersja\n- )\d+\.\d{2}', r'\g<1>10.77', rrs, count=1)
+          rr.write_text(rrs)
+
+          gate = json.loads(Path('RELEASE-GATE.json').read_text())
+          gate['version'] = '10.77'
+          gate['scope'] = 'full'
+          gate['release_branch'] = 'release/v10.77'
+          gate['baseline_diagnostics'] = {
+            'checked': True, 'last_24h': True, 'checked_at': '2026-09-16T08:58:00+02:00',
+            'result': 'INFO', 'notes': '10.77 P0 storage safety po niezależnym audycie Codex; diagnostyka informacyjna.'
+          }
+          gate['drive_backup'] = {
+            'required': True, 'folder_path':'Aplikacja/Wersje', 'folder_id':'1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S',
+            'file_name':'klima-app-v10.77.zip','file_id':'','size_bytes':0,'uploaded':False,'uploaded_at':'','verified':False
+          }
+          gate['main_protection'] = {
+            'source_branch':'release/v10.77','ready_for_main':False,'required_check':'WAWIS PR checks / targeted-checks',
+            'final_release_run_id':'','final_release_head_sha':''
+          }
+          gate['postdeploy_diagnostics'] = {'evidence_required': True, 'result':'PENDING'}
+          Path('RELEASE-GATE.json').write_text(json.dumps(gate, ensure_ascii=False, indent=2) + '\n')
+
+          wf = Path('.github/workflows/release-checks.yml')
+          s = wf.read_text().replace('release/v10.76','release/v10.77').replace('wawis-final-release-v10.76','wawis-final-release-v10.77')
+          wf.write_text(s)
+
+      - name: Run focused storage safety tests
+        run: |
+          node scripts/smoke-storage-write-reconciliation-v1074.mjs
+          node scripts/smoke-storage-delayed-commit-v1077.mjs
+
+      - name: Commit hotfix and remove bootstrap
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git rm .github/workflows/bootstrap-v1077.yml
+          git add src/mobile791/modules/job-protocol-storage.js src/modules/fuel.js scripts/smoke-storage-write-reconciliation-v1074.mjs scripts/smoke-storage-delayed-commit-v1077.mjs scripts/test-groups.cjs app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md release-notes.json RELEASE-RESULT.md RELEASE-GATE.json .github/workflows/release-checks.yml
+          git commit -m "fix: preserve storage files on ambiguous database writes"
+          git push origin HEAD:release/v10.77
