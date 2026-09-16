@@ -5,6 +5,10 @@ export const WEB_PUSH_PUBLIC_KEY = String(env.VITE_WEB_PUSH_PUBLIC_KEY || "").tr
 const PUSH_SW_PATH = "/push-sw.js";
 const PUSH_SAVE_COOLDOWN_MS = 15000;
 const PUSH_SERVER_TOUCH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const PUSH_LOGOUT_PENDING_KEY = "wawis_push_logout_pending_v1076";
+const PUSH_LOGOUT_REQUEST_TIMEOUT_MS = 1600;
+const PUSH_LOGOUT_UNSUBSCRIBE_TIMEOUT_MS = 900;
+const PUSH_LOGOUT_PENDING_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 let pushSaveInFlight = null;
 let lastSavedSignature = "";
@@ -37,6 +41,100 @@ function shouldTouchServerSubscription(lastSeenAt) {
     || Date.now() - lastSeenTimestamp >= PUSH_SERVER_TOUCH_INTERVAL_MS;
 }
 
+
+
+function waitForPushLifecycle(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getPushDeviceMetadata() {
+  return {
+    userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+    deviceLabel: typeof navigator !== "undefined"
+      ? `${navigator.platform || "Urządzenie"} / ${navigator.userAgentData?.platform || navigator.language || "przeglądarka"}`
+      : "Przeglądarka",
+  };
+}
+
+function buildSyncSubscriptionBody(payload, triggeredBy = "push-subscription-sync") {
+  const device = getPushDeviceMetadata();
+  return { eventType: "sync_subscription", triggeredBy, subscription: {
+    endpoint: payload.endpoint, p256dh: payload.p256dh, auth: payload.auth,
+    userAgent: device.userAgent, deviceLabel: device.deviceLabel,
+  }};
+}
+
+function buildDisableSubscriptionBody(payload, triggeredBy = "push-subscription-disable") {
+  return { eventType: "disable_subscription", triggeredBy, subscription: {
+    endpoint: payload.endpoint, p256dh: payload.p256dh, auth: payload.auth,
+  }};
+}
+
+function pushCredentialsMatch(left, right) {
+  return Boolean(left?.endpoint && right?.endpoint
+    && left.endpoint === right.endpoint
+    && left.p256dh === right.p256dh
+    && left.auth === right.auth);
+}
+
+function persistPendingPushDisable(payload) {
+  if (typeof window === "undefined" || !payload?.endpoint || !payload?.p256dh || !payload?.auth) return false;
+  try {
+    window.localStorage.setItem(PUSH_LOGOUT_PENDING_KEY, JSON.stringify({
+      queuedAt: Date.now(), subscription: { endpoint: payload.endpoint, p256dh: payload.p256dh, auth: payload.auth },
+    }));
+    return true;
+  } catch { return false; }
+}
+
+function readPendingPushDisable() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PUSH_LOGOUT_PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const queuedAt = Number(parsed?.queuedAt || 0);
+    const payload = parsed?.subscription || null;
+    if (!queuedAt || Date.now() - queuedAt > PUSH_LOGOUT_PENDING_MAX_AGE_MS
+      || !payload?.endpoint || !payload?.p256dh || !payload?.auth) {
+      window.localStorage.removeItem(PUSH_LOGOUT_PENDING_KEY);
+      return null;
+    }
+    return payload;
+  } catch {
+    try { window.localStorage.removeItem(PUSH_LOGOUT_PENDING_KEY); } catch {}
+    return null;
+  }
+}
+
+function clearPendingPushDisableIfMatches(payload) {
+  if (typeof window === "undefined") return;
+  const pending = readPendingPushDisable();
+  if (pending && pushCredentialsMatch(pending, payload)) {
+    try { window.localStorage.removeItem(PUSH_LOGOUT_PENDING_KEY); } catch {}
+  }
+}
+
+function createPushLifecycleAbort(timeoutMs = PUSH_LOGOUT_REQUEST_TIMEOUT_MS) {
+  if (typeof AbortController === "undefined") return { signal: undefined, cancel: () => {} };
+  const controller = new AbortController();
+  const timerId = setTimeout(() => controller.abort(new DOMException("Push lifecycle timeout", "AbortError")), timeoutMs);
+  return { signal: controller.signal, cancel: () => clearTimeout(timerId) };
+}
+
+async function getExistingPushSubscription() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
+  try {
+    const registration = typeof navigator.serviceWorker.getRegistration === "function"
+      ? await navigator.serviceWorker.getRegistration(PUSH_SW_PATH)
+      : null;
+    if (registration?.pushManager?.getSubscription) return await registration.pushManager.getSubscription();
+    const readyRegistration = navigator.serviceWorker.ready
+      ? await Promise.race([navigator.serviceWorker.ready, waitForPushLifecycle(400).then(() => null)])
+      : null;
+    return readyRegistration?.pushManager?.getSubscription ? await readyRegistration.pushManager.getSubscription() : null;
+  } catch { return null; }
+}
 
 export function isStandaloneMode() {
   if (typeof window === "undefined") return false;
@@ -110,71 +208,88 @@ export async function savePushSubscription({ supabase, sessionUser, subscription
   if (!supabase || !sessionUser || !subscription) return { saved: false, skipped: true, reason: "missing-data" };
   const payload = getSubscriptionPayload(subscription);
   if (!payload?.endpoint) return { saved: false, skipped: true, reason: "missing-endpoint" };
-
   const signature = buildSubscriptionSignature(sessionUser, payload);
   const now = Date.now();
-
   if (pushSaveInFlight) return pushSaveInFlight;
-
   if (!force && signature === lastSavedSignature && now - lastSaveAttemptAt < PUSH_SAVE_COOLDOWN_MS) {
     return { saved: false, skipped: true, reason: "cooldown" };
   }
-
   lastSaveAttemptAt = now;
-
   const savePromise = (async () => {
-    const result = await invokePushFunction({
-      supabase,
-      body: {
-        eventType: "sync_subscription",
-        triggeredBy: "push-subscription-sync",
-        subscription: {
-          endpoint: payload.endpoint,
-          p256dh: payload.p256dh,
-          auth: payload.auth,
-          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-          deviceLabel: typeof navigator !== "undefined"
-            ? `${navigator.platform || "Urządzenie"} / ${navigator.userAgentData?.platform || navigator.language || "przeglądarka"}`
-            : "Przeglądarka",
-        },
-      },
-    });
-
+    const result = await invokePushFunction({ supabase, body: buildSyncSubscriptionBody(payload) });
     lastSavedSignature = signature;
-    return {
-      saved: true,
-      skipped: false,
-      reason: result?.reassigned ? "reassigned" : "ok",
-      reassigned: Boolean(result?.reassigned),
-    };
+    clearPendingPushDisableIfMatches(payload);
+    return { saved: true, skipped: false, reason: result?.reassigned ? "reassigned" : "ok", reassigned: Boolean(result?.reassigned) };
   })();
-
   pushSaveInFlight = savePromise;
-
-  try {
-    return await savePromise;
-  } finally {
-    if (pushSaveInFlight === savePromise) pushSaveInFlight = null;
-  }
+  try { return await savePromise; }
+  finally { if (pushSaveInFlight === savePromise) pushSaveInFlight = null; }
 }
 
 export async function disableSavedPushSubscription({ supabase, subscription }) {
-  if (!supabase || !subscription) return;
+  if (!supabase || !subscription) return { disabled: false, skipped: true };
   const payload = getSubscriptionPayload(subscription);
-  if (!payload?.endpoint || !payload?.p256dh || !payload?.auth) return;
+  if (!payload?.endpoint || !payload?.p256dh || !payload?.auth) return { disabled: false, skipped: true };
+  const result = await invokePushFunction({ supabase, body: buildDisableSubscriptionBody(payload) });
+  clearPendingPushDisableIfMatches(payload);
+  return { disabled: Boolean(result?.disabled), skipped: false, result };
+}
 
-  await invokePushFunction({
-    supabase,
-    body: {
-      eventType: "disable_subscription",
-      triggeredBy: "push-subscription-disable",
-      subscription: {
-        endpoint: payload.endpoint,
-        p256dh: payload.p256dh,
-        auth: payload.auth,
-      },
-    },
-  });
+export async function deactivatePushForLogout({ supabase }) {
+  const subscription = await getExistingPushSubscription();
+  if (!subscription) return { found: false, serverDisabled: false, unsubscribed: false, pending: Boolean(readPendingPushDisable()) };
+  const payload = getSubscriptionPayload(subscription);
+  if (!payload?.endpoint || !payload?.p256dh || !payload?.auth) {
+    return { found: true, serverDisabled: false, unsubscribed: false, pending: Boolean(readPendingPushDisable()), reason: "missing-keys" };
+  }
+
+  persistPendingPushDisable(payload);
+  const requestControl = createPushLifecycleAbort();
+  let serverDisabled = false;
+  let serverError = "";
+  const disableTask = supabase
+    ? invokePushFunction({ supabase, body: buildDisableSubscriptionBody(payload, "logout"), signal: requestControl.signal })
+      .then(() => { serverDisabled = true; clearPendingPushDisableIfMatches(payload); })
+      .catch((error) => { serverError = error?.message || String(error); })
+    : Promise.resolve();
+  const unsubscribeTask = Promise.race([
+    Promise.resolve(subscription.unsubscribe()).then(Boolean).catch(() => false),
+    waitForPushLifecycle(PUSH_LOGOUT_UNSUBSCRIBE_TIMEOUT_MS).then(() => false),
+  ]);
+  const [, unsubscribed] = await Promise.all([disableTask, unsubscribeTask]);
+  requestControl.cancel();
+  pushSaveInFlight = null;
+  lastSavedSignature = "";
+  lastSaveAttemptAt = 0;
+  return { found: true, serverDisabled, unsubscribed: Boolean(unsubscribed), pending: Boolean(readPendingPushDisable()), error: serverError || null };
+}
+
+export async function reconcilePendingPushLogout({ supabase, sessionUser }) {
+  const pending = readPendingPushDisable();
+  if (!pending || !supabase || !sessionUser) {
+    return { reconciled: false, pending: Boolean(pending), reason: pending ? "missing-session" : "nothing-pending" };
+  }
+  const currentSubscription = await getExistingPushSubscription();
+  const currentPayload = getSubscriptionPayload(currentSubscription);
+  const sameSubscription = pushCredentialsMatch(pending, currentPayload);
+  const requestControl = createPushLifecycleAbort();
+  try {
+    const result = await invokePushFunction({
+      supabase,
+      body: sameSubscription
+        ? buildSyncSubscriptionBody(currentPayload, "login-account-handoff")
+        : buildDisableSubscriptionBody(pending, "login-stale-cleanup"),
+      signal: requestControl.signal,
+    });
+    clearPendingPushDisableIfMatches(pending);
+    if (sameSubscription && currentPayload?.endpoint) {
+      lastSavedSignature = buildSubscriptionSignature(sessionUser, currentPayload);
+      lastSaveAttemptAt = Date.now();
+    }
+    return { reconciled: true, pending: false, action: sameSubscription ? "reassigned" : "disabled-stale", reassigned: Boolean(result?.reassigned) };
+  } catch (error) {
+    return { reconciled: false, pending: true, action: sameSubscription ? "reassign-pending" : "disable-pending", error: error?.message || String(error) };
+  } finally { requestControl.cancel(); }
 }
 
 export async function getCurrentPushSubscription() {
@@ -356,7 +471,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   };
 }
 
-async function invokePushFunction({ supabase, body }) {
+async function invokePushFunction({ supabase, body, signal = undefined }) {
   if (!supabase || !supabaseUrl || !supabaseAnonKey) {
     throw new Error("Brakuje konfiguracji Supabase do wywołania funkcji push.");
   }
@@ -374,6 +489,7 @@ async function invokePushFunction({ supabase, body }) {
       Authorization: `Bearer ${accessToken}`,
       apikey: supabaseAnonKey,
     },
+    signal,
     body: JSON.stringify(body || {}),
   });
 
