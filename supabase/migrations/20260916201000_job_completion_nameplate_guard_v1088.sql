@@ -71,7 +71,7 @@ begin
 
   for v_device_index in 1..v_inferred_devices loop
     select greatest(
-      coalesce(max((pg_catalog.substring(p.unit_ref from '^jw-([0-9]+)$'))::integer), 0),
+      coalesce(max((pg_catalog.substring(p.unit_ref, '^jw-([0-9]+)$'))::integer), 0),
       1
     )
       into v_indoor_count
