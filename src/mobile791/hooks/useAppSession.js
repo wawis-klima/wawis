@@ -163,6 +163,7 @@ export function useAppSession({
           }
           const cachedProfiles = Array.isArray(cached.profiles) ? cached.profiles : [];
           const operations = await listOfflineJobOperations(userId);
+          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
           const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);
           profileRef.current = cached.profile;
           profilesRef.current = cachedProfiles;
@@ -249,11 +250,13 @@ export function useAppSession({
       try {
         payload = await loadServerPayloadOnce(activeUser);
       } catch (serverError) {
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
         if (!isJwtExpiredError(serverError)) throw serverError;
 
         console.info('JWT wygasł — odnawiam sesję i ponawiam pobranie danych.');
         const { data: refreshedSessionData, error: refreshSessionError } = await supabase.auth.refreshSession();
         const refreshedUser = refreshedSessionData?.session?.user || null;
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
 
         if (refreshSessionError && isTransientSupabaseError(refreshSessionError)) {
           // 500/502/503/504 z Auth nie oznacza wygaśniętej sesji. Zachowujemy widok
@@ -288,6 +291,7 @@ export function useAppSession({
         changeCursorRef.current = Math.max(Number(changeCursorRef.current) || 0, Number(changeCursorAtRefreshStart) || 0);
       }
       const operations = await listOfflineJobOperations(String(payload.sessionUser?.id || activeUser?.id || userId));
+      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied }; // stale-session-final-queue-guard-v1080
       const finalJobs = applyOfflineOperationsToJobs(payload.jobs || coreJobs || [], operations, payload.profile || getProfileFallback(activeUser));
       profileRef.current = payload.profile;
       profilesRef.current = payload.profiles;

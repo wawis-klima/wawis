@@ -221,10 +221,12 @@ export function useAppSession({
       try {
         payload = await loadServerPayloadOnce(activeUser);
       } catch (serverError) {
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
         if (!isJwtExpiredError(serverError)) throw serverError;
 
         const { data: refreshedSessionData, error: refreshSessionError } = await supabase.auth.refreshSession();
         const refreshedUser = refreshedSessionData?.session?.user || null;
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
 
         if (refreshSessionError && isTransientSupabaseError(refreshSessionError)) throw refreshSessionError;
         if (refreshSessionError || !refreshedUser) {

@@ -47,6 +47,8 @@ for (const path of ['src/hooks/useAppSession.js', 'src/mobile791/hooks/useAppSes
   assert.match(source, /setSessionUserForGeneration/);
   assert.match(source, /ignoredStaleSession/);
   assert.match(source, /sessionToken\.generation/);
+  assert.match(source, /catch \(serverError\) \{\n\s*if \(!isCurrentSession\(\)\)/);
+assert.match(source, /const refreshedUser = refreshedSessionData\?\.session\?\.user \|\| null;\n\s*if \(!isCurrentSession\(\)\)/);
 }
 const storeSource = fs.readFileSync('src/mobile791/modules/job-offline-store.js', 'utf8');
 const updateSource = storeSource.match(/export async function updateOfflineJobOperation[\s\S]*?export async function deleteOfflineJobOperation/)?.[0] || '';
@@ -55,3 +57,6 @@ assert.match(updateSource, /const request = store\.get/);
 assert.match(updateSource, /store\.put/);
 assert.doesNotMatch(updateSource, /withStore\(OPERATION_STORE, 'readonly'/);
 console.log('OK: 10.80 — session generation, pełny body-timeout i atomowa aktualizacja kolejki.');
+
+const mobileHook = fs.readFileSync('src/mobile791/hooks/useAppSession.js', 'utf8');
+assert.match(mobileHook, /stale-session-final-queue-guard-v1080/);
