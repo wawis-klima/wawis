@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
+const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/\r\n/g, '\n');
 
 for (const relativePath of [
   'src/hooks/useAppSession.js',
@@ -14,13 +14,20 @@ for (const relativePath of [
   const cacheReadIndex = source.indexOf('loadAppDataSnapshot') >= 0
     ? source.indexOf('await loadAppDataSnapshot')
     : source.indexOf('await loadOfflineAppSnapshot');
-  const serverReadIndex = Math.max(
-    source.indexOf('const payload = await refreshAppData'),
-    source.indexOf('payload = await loadServerPayloadOnce'),
-    source.indexOf('payload = await withRefreshTimeout(loadServerPayload'),
+  const cacheApplyIndex = Math.max(
+    source.indexOf('setJobs(cached.jobs)'),
+    source.indexOf('setJobs(restoredJobs)'),
   );
+  const serverRequestIndex = source.indexOf('loadServerPayloadOnce', cacheReadIndex);
+  const serverApplyIndex = Math.max(
+    source.indexOf('setJobs(payload.jobs)', serverRequestIndex),
+    source.indexOf('setJobs(finalJobs)', serverRequestIndex),
+  );
+
   assert(cacheReadIndex >= 0, `${relativePath}: brak odczytu lokalnej kopii przed serwerem.`);
-  assert(serverReadIndex > cacheReadIndex, `${relativePath}: Supabase musi podmienić wcześniej pokazany snapshot.`);
+  assert(cacheApplyIndex > cacheReadIndex, `${relativePath}: cache-first musi najpierw pokazać lokalny snapshot.`);
+  assert(serverRequestIndex > cacheApplyIndex, `${relativePath}: po snapshotcie musi rozpocząć się odczyt Supabase.`);
+  assert(serverApplyIndex > serverRequestIndex, `${relativePath}: Supabase musi podmienić wcześniej pokazany snapshot.`);
   assert.match(source, /lastAppliedServerRequestIdRef/);
   assert.match(source, /ignoredOlderResponse/);
   assert.match(source, /serverStateUnchanged/);
@@ -28,6 +35,11 @@ for (const relativePath of [
   assert.match(source, /setIsRefreshingData\(true\)/);
   assert.match(source, /setIsRefreshingData\(false\)/);
 }
+
+const mobileSession = read('src/mobile791/hooks/useAppSession.js');
+assert.match(mobileSession, /const payloadRequest = loadServerPayloadOnce\(activeUser\);/);
+assert.match(mobileSession, /payload = await payloadRequest\.request;/);
+assert.match(mobileSession, /payloadRequestId < lastAppliedServerRequestIdRef\.current/);
 
 const desktopSnapshot = read('src/modules/app-data-snapshot.js');
 assert.match(desktopSnapshot, /server_fetched_at_ms/);
