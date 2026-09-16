@@ -1,3 +1,9 @@
+## 10.80
+- Generacja sesji na mobile i desktop blokuje odpowiedzi wystartowane dla poprzedniego konta.
+- Timeout mobilnego Supabase obejmuje odczyt body po otrzymaniu nagłówków HTTP.
+- Aktualizacja operacji offline używa jednej transakcji IndexedDB `readwrite`.
+- Dodano behawioralne regresje A→B i body-timeout oraz test Chromium wyścigu IndexedDB.
+
 ## 10.79
 - Feed przyrostowy obejmuje wszystkie montaże widoczne dla każdego pracownika, także gdy nie jest przypisany do zlecenia.
 - Automatyczne Nowe → Niezrealizowane po 30 dniach wykonuje baza przez Supabase Cron, a nie telefon podczas odczytu.
