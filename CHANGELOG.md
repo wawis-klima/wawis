@@ -1,3 +1,6 @@
+## 10.88
+- uzupełnij opis zmian dla wersji 10.88
+
 ## 10.87
 - F4: Service Worker jest trwałym źródłem porządku kontekstu PUSH; SET/CLEAR używają właściciela i ownership_generation, a spóźnione komendy starego konta nie mogą przywrócić A ani usunąć B.
 - F10: getSubscription, subscribe i unsubscribe mają ograniczony czas zarówno na mobile, jak i desktopie; desktop ma dodatkowy guard generacji synchronizacji.
