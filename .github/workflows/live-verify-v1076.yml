@@ -1,0 +1,34 @@
+name: WAWIS live verify 10.76
+
+on:
+  push:
+    branches:
+      - verify/v10.76-live
+
+permissions:
+  contents: read
+
+jobs:
+  live-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify production version and Service Worker
+        run: >-
+          node scripts/post-deploy-check.mjs
+          --url "https://wawis-klima.vercel.app"
+          --deployment-start "2026-09-16T06:55:01Z"
+      - name: Verify post-deploy gate from live evidence
+        run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
+      - name: Upload live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-live-evidence-v10.76
+          path: post-deploy-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
