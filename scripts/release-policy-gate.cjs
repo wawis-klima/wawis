@@ -2,8 +2,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const DRIVE_RELEASE_FOLDER_ID = '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S';
-const DRIVE_RELEASE_FOLDER_PATH = 'Aplikacja/Wersje';
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), 'utf8');
@@ -38,20 +36,6 @@ function getChangelogSection(changelog, version) {
   return String(changelog.match(new RegExp(`^## ${escaped}\\r?\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, 'm'))?.[1] || '').trim();
 }
 
-function validDriveBackup(entry, appVersion) {
-  return Boolean(
-    entry &&
-    entry.required === true &&
-    entry.folder_id === DRIVE_RELEASE_FOLDER_ID &&
-    entry.folder_path === DRIVE_RELEASE_FOLDER_PATH &&
-    entry.file_name === `klima-app-v${appVersion}.zip` &&
-    typeof entry.file_id === 'string' && entry.file_id.trim() &&
-    Number(entry.size_bytes) > 0 &&
-    entry.uploaded === true &&
-    typeof entry.uploaded_at === 'string' && entry.uploaded_at.trim() &&
-    entry.verified === true
-  );
-}
 
 function readEvidence(args) {
   const index = args.indexOf('--evidence');
@@ -98,7 +82,7 @@ function main() {
   assert(String(gate.release_branch || '') === `release/v${appVersion}`, `NO-GO: release_branch musi być release/v${appVersion}`);
 
   assert(rules.includes('GAŁĄŹ RELEASE'), 'NO-GO: WAWIS-RULES.md nie wymaga gałęzi release');
-  assert(rules.includes('POST-DEPLOY EVIDENCE'), 'NO-GO: WAWIS-RULES.md nie opisuje dowodu post-deploy');
+  assert(rules.includes('zielony deployment Vercela'), 'NO-GO: WAWIS-RULES.md nie wymaga zielonego deploymentu Vercela');
   assert(checklist.includes('WAWIS final release checks'), 'NO-GO: checklista nie wskazuje jednego finalnego workflow');
   assert(String(vercel.buildCommand || '').includes('release-policy-gate.cjs --deploy'), 'NO-GO: Vercel nie wymaga deploy gate');
 
@@ -111,13 +95,7 @@ function main() {
   assert(lastFixBody && !/uzupełnij opis/i.test(lastFixBody), 'NO-GO: README ma placeholder aktualnej poprawki');
   assert(changelogSection && !/uzupełnij opis/i.test(changelogSection), 'NO-GO: CHANGELOG ma brak/placeholder aktualnej wersji');
 
-  const driveBackup = gate.drive_backup || {};
-  assert(driveBackup.required === true, 'NO-GO: RELEASE-GATE nie wymaga backupu Drive');
-  assert(driveBackup.folder_id === DRIVE_RELEASE_FOLDER_ID, 'NO-GO: zły folder ID Google Drive');
-  assert(driveBackup.folder_path === DRIVE_RELEASE_FOLDER_PATH, 'NO-GO: zła ścieżka Google Drive');
-
   if (deployMode || postMode) {
-    assert(validDriveBackup(driveBackup, appVersion), `NO-GO: brak zweryfikowanego klima-app-v${appVersion}.zip na Google Drive`);
     assert(gate.main_protection?.ready_for_main === true, 'NO-GO: release nie jest oznaczony jako gotowy do main');
     assert(String(gate.main_protection?.source_branch || '') === `release/v${appVersion}`, 'NO-GO: źródło wdrożenia nie jest właściwą gałęzią release');
     assert(typeof gate.main_protection?.final_release_run_id === 'string' && gate.main_protection.final_release_run_id.trim(), 'NO-GO: brak ID zielonego finalnego release run');

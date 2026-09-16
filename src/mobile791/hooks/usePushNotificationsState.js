@@ -49,13 +49,18 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
   async function syncPushState({ force = false } = {}) {
     if (!sessionUser) return INITIAL_PUSH_STATE;
     if (syncInFlightRef.current) return syncInFlightRef.current;
+
+    const pushModule = await loadPushModule();
+    await pushModule.reconcilePendingPushLogout({ supabase, sessionUser, force }).catch((error) => {
+      console.warn("Nie udało się ponowić sprzątania starego PUSH:", error?.message || error);
+    });
+
     if (!force && Date.now() - lastSuccessfulSyncAtRef.current < PUSH_MIN_SYNC_INTERVAL_MS) {
       return readStoredPushState(userId);
     }
 
     const syncPromise = (async () => {
-      const { getPushStatus } = await loadPushModule();
-      const nextState = await getPushStatus({ supabase, sessionUser });
+      const nextState = await pushModule.getPushStatus({ supabase, sessionUser });
       setPushState(nextState);
       persistPushState(userId, nextState);
       if (!nextState?.syncError) lastSuccessfulSyncAtRef.current = Date.now();
@@ -135,7 +140,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
 
     const healthcheckTimer = window.setInterval(() => {
       if (typeof document === "undefined" || document.visibilityState === "visible") {
-        void syncPushState();
+        void syncPushState({ force: true });
       }
     }, PUSH_HEALTHCHECK_MS);
 

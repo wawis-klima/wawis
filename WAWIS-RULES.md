@@ -8,8 +8,8 @@ Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji
 - Dla każdej wersji tworzymy `release/v<WERSJA>` i wszystkie zmiany robocze wykonujemy tam.
 - Nie robimy serii roboczych commitów bezpośrednio na `main`.
 - Domyślny tryb normalnego finalnego wydania to `auto`; ręczne `mobile`, `desktop` albo `full` pozostają trybem awaryjnym.
-- Normalne wydanie trafia do `main` dopiero po testach, finalnym ZIP i zweryfikowanym backupie Drive.
-- Wyjątek stanowi ściśle ograniczony tryb `MICRO UI`, opisany niżej: CSS-only, jeden PR check, jeden merge, jeden Vercel; ZIP powstaje po merge i nie blokuje produkcji.
+- Normalne wydanie trafia do `main` dopiero po wymaganych testach i zielonym finalnym runie. GitHub (`main` + historia commitów) jest źródłem archiwalnym; ZIP i Google Drive nie są zależnością wydania.
+- Wyjątek stanowi ściśle ograniczony tryb `MICRO UI`, opisany niżej: CSS-only, jeden PR check, jeden merge, jeden Vercel; archiwum nie blokuje produkcji.
 - Push/merge do `main` jest sygnałem produkcyjnego wdrożenia i powinien wystąpić zasadniczo raz dla gotowej wersji.
 
 ## 2. Automatyczna klasyfikacja zmian
@@ -66,7 +66,7 @@ Po produkcji diagnostykę nadal zbieramy i analizujemy jako raport. Realne nowe 
 
 ### Normalne wydanie
 
-Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, wymaganych testów, produkcyjnego builda, `verify:bundle`, `verify:release`, finalnego ZIP-a, zweryfikowanego backupu Drive oraz `ready_for_main=true`.
+Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, wymaganych testów, produkcyjnego builda, `verify:bundle`, `verify:release`, `ready_for_main=true` oraz zielonego finalnego runu przypiętego do gałęzi release.
 
 **Diagnostyka nie jest warunkiem bramki GO/NO-GO.**
 
@@ -77,7 +77,7 @@ Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, wymaganych testów,
 1. spójnej wersji we wszystkich aktywnych plikach,
 2. README i CHANGELOG bez placeholderów,
 3. `release_mode=micro-ui`,
-4. `drive_backup.required=false` i `deferred=true`,
+4. `archive.blocking=false`,
 5. właściwej gałęzi `release/v<WERSJA>`,
 6. wymagania zielonego `WAWIS PR checks / targeted-checks`,
 7. niezależnej ponownej klasyfikacji diffu produkcyjnego jako CSS-only,
@@ -85,17 +85,15 @@ Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, wymaganych testów,
 
 Jeżeli produkcyjny diff zawiera coś poza dozwolonym CSS, MICRO UI dostaje `NO-GO` i nie może ominąć standardowej bramki.
 
-## 6. Google Drive i archiwum
+## 6. GitHub i archiwum
 
-Normalne wydanie ma finalny ZIP w `Aplikacja/Wersje`, folder ID `1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S`, pod nazwą `klima-app-v<WERSJA>.zip`, zweryfikowany przed merge.
-
-Dla MICRO UI ZIP nie blokuje wdrożenia. Po merge workflow `WAWIS micro UI archive` tworzy `klima-app-v<WERSJA>.zip` jako GitHub Artifact. Kopię na Drive można uzupełnić później bez uruchamiania kolejnego deployu produkcyjnego.
+`main` wraz z historią commitów jest źródłem prawdy i archiwum każdej wersji. Google Drive nie jest używany w procesie release. ZIP jest opcjonalny i tworzony tylko na żądanie (`--package`); jego brak nie blokuje testów, merge ani Vercela.
 
 ## 7. Ochrona `main` i produkcji
 
 - `main` jest przeznaczony wyłącznie dla gotowych wydań.
-- Normalny release wymaga finalnego runu i backupu Drive.
-- MICRO UI wymaga CSS-only oraz zielonego `WAWIS PR checks / targeted-checks`; finalny runner i Drive nie są wymagane przed merge.
+- Normalny release wymaga zielonego finalnego runu; Drive/ZIP nie są warunkiem.
+- MICRO UI wymaga CSS-only oraz zielonego `WAWIS PR checks / targeted-checks`; finalny runner nie jest wymagany przed merge.
 - GitHub Ruleset powinien wymuszać PR do `main`, zielony `WAWIS PR checks / targeted-checks`, blokadę force-push i blokadę usuwania `main`.
 - Vercel uruchamia `node scripts/vercel-deploy-guard.cjs`, następnie `scripts/deploy-gate-router.sh`, a dopiero potem build.
 - Router wybiera standardowy `release-policy-gate.cjs --deploy` albo `micro-ui-deploy-gate.cjs` na podstawie `RELEASE-GATE.json.release_mode`.
@@ -103,27 +101,18 @@ Dla MICRO UI ZIP nie blokuje wdrożenia. Po merge workflow `WAWIS micro UI archi
 - Automatyczne deploye Vercela są wyłączone dla wszystkich gałęzi roboczych, także nazw zawierających `/` takich jak `release/vX`.
 - Jedyną gałęzią, która może automatycznie uruchomić Vercel, jest `main`; jeden merge gotowego wydania oznacza jeden produkcyjny deploy.
 
-## 8. POST-DEPLOY EVIDENCE
+## 8. Kontrola po wdrożeniu
 
-Dla normalnego wydania po wdrożeniu uruchamiamy `.github/workflows/post-deploy-checks.yml` albo równoważny `scripts/post-deploy-check.mjs`.
-
-Twarda weryfikacja post-deploy potwierdza wyłącznie:
-
-- produkcyjny `/app-version.json` ma właściwą wersję,
-- produkcyjny Service Worker zawiera właściwy cache `wawis-app-shell-v<WERSJA>`.
-
-Diagnostyka Supabase jest dołączana do dowodu jako **informacyjny raport** i nie może zmienić post-deploy z GO na NO-GO. Brak sekretów Supabase w runnerze również nie blokuje live-checku.
-
-Dla MICRO UI ten dowód pozostaje asynchroniczny i nie blokuje wejścia CSS-only na produkcję.
+Po merge wymagany jest zielony deployment Vercela dla commita `main`. Odczyt `/app-version.json` i cache Service Workera pozostaje szybkim testem pomocniczym, ale nie tworzy drugiej blokującej bramki release. Nie tworzymy per-wersja gałęzi/workflow tylko po to, aby powtórzyć kontrolę po poprawnym deployu. Diagnostyka pozostaje informacyjna.
 
 ## 9. Stała kolejność
 
 Normalny release:
 
-`DIAGNOSTYKA STARTOWA (INFO) -> RELEASE BRANCH -> ZMIANA -> PR CHECKS -> FINAL RELEASE -> BUILD/VERIFY/ZIP -> DRIVE -> MAIN -> VERCEL -> LIVE VERSION/SW -> DIAGNOSTYKA RAPORTOWA (INFO)`
+`DIAGNOSTYKA STARTOWA (INFO) -> RELEASE BRANCH -> ZMIANA -> PR CHECKS -> FINAL RELEASE -> BUILD/VERIFY -> MAIN -> VERCEL -> OPCJONALNY SZYBKI LIVE CHECK`
 
 MICRO UI:
 
-`RELEASE BRANCH -> CSS ONLY -> VERSION/GATE -> ONE PR CHECK -> MAIN -> ONE VERCEL -> DEFERRED ZIP/POST-CHECK`
+`RELEASE BRANCH -> CSS ONLY -> VERSION/GATE -> ONE PR CHECK -> MAIN -> ONE VERCEL`
 
 Nie używamy MICRO UI do zmian funkcjonalnych ani infrastrukturalnych.

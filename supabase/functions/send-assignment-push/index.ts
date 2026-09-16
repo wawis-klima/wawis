@@ -13,6 +13,8 @@ type PushRequest = {
     endpoint?: string;
     p256dh?: string;
     auth?: string;
+    lifecycleToken?: string;
+    clientMode?: string;
     userAgent?: string;
     deviceLabel?: string;
   };
@@ -91,6 +93,7 @@ Deno.serve(async (request) => {
       return await handleSyncSubscription({
         adminClient,
         authUserId: authData.user.id,
+        triggeredBy: String(body.triggeredBy || ""),
         subscription: body.subscription || null,
       });
     }
@@ -99,6 +102,7 @@ Deno.serve(async (request) => {
       return await handleDisableSubscription({
         adminClient,
         authUserId: authData.user.id,
+        triggeredBy: String(body.triggeredBy || ""),
         subscription: body.subscription || null,
       });
     }
@@ -174,101 +178,118 @@ Deno.serve(async (request) => {
   }
 });
 
-async function handleSyncSubscription({ adminClient, authUserId, subscription }: any) {
+function legacyLifecycleToken(userId: string, endpoint: string) {
+  return `legacy:${userId}:${endpoint}`;
+}
+
+function pushLifecycleErrorStatus(error: any) {
+  const message = String(error?.message || "");
+  if (message.includes("push_credentials_mismatch")) return 409;
+  if (message.includes("push_owner_active") || message.includes("push_lifecycle_disabled")) return 409;
+  if (message.includes("push_invalid_")) return 400;
+  return 500;
+}
+
+async function handleSyncSubscription({ adminClient, authUserId, triggeredBy, subscription }: any) {
   const endpoint = String(subscription?.endpoint || "").trim();
   const p256dh = String(subscription?.p256dh || "").trim();
   const auth = String(subscription?.auth || "").trim();
   const userAgent = String(subscription?.userAgent || "").slice(0, 1200);
   const deviceLabel = String(subscription?.deviceLabel || "Urządzenie").slice(0, 240);
+  const clientMode = String(subscription?.clientMode || "").trim().toLowerCase();
+  const suppliedLifecycleToken = String(subscription?.lifecycleToken || "").trim();
+  const lifecycleToken = suppliedLifecycleToken || legacyLifecycleToken(String(authUserId), endpoint);
 
-  if (!endpoint || !p256dh || !auth) {
-    return json({ error: "Brak kompletnej subskrypcji push." }, 400);
+  if (!endpoint || !p256dh || !auth) return json({ error: "Brak kompletnej subskrypcji push." }, 400);
+
+  const legacyMobileClient = !clientMode && /Android|iPhone|iPad|iPod/i.test(userAgent);
+  if (clientMode !== "standalone" && !legacyMobileClient) {
+    return json({ error: "PUSH działa wyłącznie w zainstalowanej aplikacji Wawis." }, 409);
   }
 
-  const { data: existing, error: existingError } = await adminClient
-    .from("push_subscriptions")
-    .select("id, user_id, p256dh, auth, is_active")
-    .eq("endpoint", endpoint)
-    .maybeSingle();
-
-  if (existingError) {
-    return json({ error: existingError.message }, 500);
+  // Kompatybilność 10.76: stary klient podczas login-account-handoff nie zna
+  // lifecycleToken A. Atomowo wyłączamy wyłącznie rekord legacy z identycznymi kluczami.
+  if (!suppliedLifecycleToken && triggeredBy === "login-account-handoff") {
+    const { error: cleanupError } = await adminClient.rpc("push_subscription_disable_atomic", {
+      p_request_user_id: authUserId,
+      p_endpoint: endpoint,
+      p_p256dh: p256dh,
+      p_auth: auth,
+      p_lifecycle_token: "",
+      p_allow_foreign_cleanup: true,
+      p_allow_legacy_cleanup: true,
+    });
+    if (cleanupError && !String(cleanupError.message || "").includes("not-found")) {
+      return json({ error: cleanupError.message }, pushLifecycleErrorStatus(cleanupError));
+    }
   }
 
-  const reassigned = Boolean(existing?.user_id && String(existing.user_id) !== String(authUserId));
-  if (reassigned && (String(existing?.p256dh || "") !== p256dh || String(existing?.auth || "") !== auth)) {
-    return json({ error: "Ta subskrypcja push należy do innego urządzenia lub ma inne klucze." }, 409);
-  }
-
-  const now = new Date().toISOString();
-  const payload = {
-    user_id: authUserId,
-    endpoint,
-    p256dh,
-    auth,
-    user_agent: userAgent,
-    device_label: deviceLabel,
-    is_active: true,
-    last_seen_at: now,
-    updated_at: now,
-  };
-
-  const { data, error } = await adminClient
-    .from("push_subscriptions")
-    .upsert(payload, { onConflict: "endpoint" })
-    .select("id, user_id, is_active, last_seen_at")
-    .single();
-
-  if (error) {
-    return json({ error: error.message }, 500);
-  }
-
-  console.log("push subscription synchronized", {
-    subscriptionId: data?.id || existing?.id || null,
-    authUserId,
-    reassigned,
+  const { data, error } = await adminClient.rpc("push_subscription_sync_atomic", {
+    p_user_id: authUserId,
+    p_endpoint: endpoint,
+    p_p256dh: p256dh,
+    p_auth: auth,
+    p_lifecycle_token: lifecycleToken,
+    p_user_agent: userAgent,
+    p_device_label: deviceLabel,
   });
+  if (error) return json({ error: error.message }, pushLifecycleErrorStatus(error));
 
-  return json({ ok: true, reassigned, subscription: data || null });
+  const row = Array.isArray(data) ? data[0] : data;
+  console.log("push subscription synchronized atomically", {
+    subscriptionId: row?.subscription_id || null,
+    authUserId,
+    reassigned: Boolean(row?.reassigned),
+    generation: Number(row?.ownership_generation || 0),
+  });
+  return json({
+    ok: true,
+    reassigned: Boolean(row?.reassigned),
+    reason: row?.reason || "ok",
+    subscription: row ? {
+      id: row.subscription_id,
+      user_id: row.owner_user_id,
+      is_active: row.is_active,
+      last_seen_at: row.last_seen_at,
+      ownership_generation: Number(row.ownership_generation || 0),
+    } : null,
+  });
 }
 
-async function handleDisableSubscription({ adminClient, authUserId, subscription }: any) {
+async function handleDisableSubscription({ adminClient, authUserId, triggeredBy, subscription }: any) {
   const endpoint = String(subscription?.endpoint || "").trim();
   const p256dh = String(subscription?.p256dh || "").trim();
   const auth = String(subscription?.auth || "").trim();
+  const suppliedLifecycleToken = String(subscription?.lifecycleToken || "").trim();
+  if (!endpoint || !p256dh || !auth) return json({ error: "Brak kompletnej subskrypcji push do wyłączenia." }, 400);
 
-  if (!endpoint || !p256dh || !auth) {
-    return json({ error: "Brak kompletnej subskrypcji push do wyłączenia." }, 400);
-  }
-
-  const { data: existing, error: existingError } = await adminClient
-    .from("push_subscriptions")
-    .select("id, user_id, p256dh, auth")
-    .eq("endpoint", endpoint)
-    .maybeSingle();
-
-  if (existingError) return json({ error: existingError.message }, 500);
-  if (!existing) return json({ ok: true, disabled: false, reason: "not-found" });
-
-  const credentialsMatch = String(existing.p256dh || "") === p256dh && String(existing.auth || "") === auth;
-  if (!credentialsMatch) {
-    return json({ error: "Klucze subskrypcji nie pasują do wskazanego urządzenia." }, 403);
-  }
-
-  const { error } = await adminClient
-    .from("push_subscriptions")
-    .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq("id", existing.id);
-
-  if (error) return json({ error: error.message }, 500);
-
-  console.log("push subscription disabled", {
-    subscriptionId: existing.id,
-    previousUserId: existing.user_id,
-    authUserId,
+  const staleCleanup = triggeredBy === "login-stale-cleanup";
+  const lifecycleToken = suppliedLifecycleToken || (staleCleanup ? "" : legacyLifecycleToken(String(authUserId), endpoint));
+  const { data, error } = await adminClient.rpc("push_subscription_disable_atomic", {
+    p_request_user_id: authUserId,
+    p_endpoint: endpoint,
+    p_p256dh: p256dh,
+    p_auth: auth,
+    p_lifecycle_token: lifecycleToken,
+    p_allow_foreign_cleanup: staleCleanup,
+    p_allow_legacy_cleanup: staleCleanup && !suppliedLifecycleToken,
   });
+  if (error) return json({ error: error.message }, pushLifecycleErrorStatus(error));
 
-  return json({ ok: true, disabled: true });
+  const row = Array.isArray(data) ? data[0] : data;
+  console.log("push subscription disabled atomically", {
+    subscriptionId: row?.subscription_id || null,
+    authUserId,
+    disabled: Boolean(row?.disabled),
+    reason: row?.reason || null,
+    generation: Number(row?.ownership_generation || 0),
+  });
+  return json({
+    ok: true,
+    disabled: Boolean(row?.disabled),
+    reason: row?.reason || "not-found",
+    ownership_generation: Number(row?.ownership_generation || 0),
+  });
 }
 
 async function handleJobAssigned({
@@ -578,7 +599,7 @@ async function sendPushToUsers({
 
   let subscriptionsQuery = adminClient
     .from("push_subscriptions")
-    .select("id, user_id, endpoint, p256dh, auth")
+    .select("id, user_id, endpoint, p256dh, auth, ownership_generation")
     .in("user_id", uniqueUserIds)
     .eq("is_active", true);
 
@@ -612,16 +633,21 @@ async function sendPushToUsers({
 
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
-  const payload = JSON.stringify({
-    type: deliveryType,
-    jobId: job?.id || null,
-    title,
-    body,
-    url: targetUrl || (job?.id ? `/?jobId=${encodeURIComponent(job.id)}` : "/"),
-    tag,
-  });
+  const safeBody = deliveryType === "push_test"
+    ? "Powiadomienia PUSH działają."
+    : "Masz nowe zdarzenie w aplikacji Wawis. Otwórz aplikację, aby zobaczyć szczegóły.";
 
   const results = await Promise.all(subscriptions.map(async (subscription: any) => {
+    const payload = JSON.stringify({
+      type: deliveryType,
+      jobId: job?.id || null,
+      title,
+      body: safeBody,
+      url: targetUrl || (job?.id ? `/?jobId=${encodeURIComponent(job.id)}` : "/"),
+      tag,
+      recipientUserId: String(subscription.user_id || ""),
+      subscriptionGeneration: Number(subscription.ownership_generation || 0),
+    });
     try {
       await webpush.sendNotification({
         endpoint: subscription.endpoint,

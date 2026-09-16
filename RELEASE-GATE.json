@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.77",
+  "version": "10.78",
   "scope": "full",
-  "release_branch": "release/v10.77",
+  "release_branch": "release/v10.78",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
@@ -17,26 +17,20 @@
     "result": "PENDING",
     "notes": "Informacyjne; nie blokuje release."
   },
-  "drive_backup": {
-    "required": true,
-    "folder_path": "Aplikacja/Wersje",
-    "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.77.zip",
-    "file_id": "1INK-Z512TM_8-SO6V3-HBgKqAOh7hEQo",
-    "size_bytes": 12196097,
-    "uploaded": true,
-    "uploaded_at": "2026-09-16T07:29:12.933Z",
-    "verified": true
-  },
   "main_protection": {
-    "source_branch": "release/v10.77",
-    "ready_for_main": true,
+    "source_branch": "release/v10.78",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks",
-    "final_release_run_id": "35068539335",
-    "final_release_head_sha": "9708b97ee7e190a2ba4fff5ac96cf1ec91395f44"
+    "final_release_run_id": "",
+    "final_release_head_sha": ""
   },
   "postdeploy_diagnostics": {
-    "evidence_required": true,
-    "result": "PENDING"
+    "evidence_required": false,
+    "result": "INFO_ONLY"
+  },
+  "archive": {
+    "source_of_truth": "github-main",
+    "zip_optional": true,
+    "blocking": false
   }
 }

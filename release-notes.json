@@ -1,9 +1,11 @@
 {
-  "version": "10.77",
-  "summary": "P0 storage safety: nie usuwamy PDF protokołu ani zdjęcia licznika po niejednoznacznym wyniku zapisu DB.",
+  "version": "10.78",
+  "summary": "Bezpieczny lifecycle PUSH A→B i szybszy release bez zależności Google Drive.",
   "changes": [
-    "Pusty readback po utraconej odpowiedzi nie jest dowodem braku commitu.",
-    "Nowy plik pozostaje w Storage przy wyniku niejednoznacznym.",
-    "Test 10.77 odtwarza późny commit po pustym readbacku dla protokołu i tankowania."
+    "Atomowy sync/disable endpointu z generacją własności i tombstone po logout.",
+    "Service Worker pokazuje push tylko właściwemu użytkownikowi i właściwej generacji endpointu.",
+    "Pending cleanup ponawia się po odzyskaniu sieci i healthchecku z backoffem.",
+    "PUSH tylko w zainstalowanej aplikacji/PWA.",
+    "GitHub jest źródłem archiwalnym; ZIP/Drive oraz osobna blokująca bramka post-deploy zostały usunięte."
   ]
 }

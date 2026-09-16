@@ -84,8 +84,8 @@ const microGateSource = fs.readFileSync('scripts/micro-ui-deploy-gate.cjs', 'utf
 new vm.Script(microGateSource, { filename: 'micro-ui-deploy-gate.cjs' });
 assert.match(microGateSource, /classifyMicroUi/);
 assert.match(microGateSource, /HEAD\^1/);
-assert.match(microGateSource, /drive_backup/);
-assert.match(microGateSource, /deferred/);
+assert.match(microGateSource, /archive/);
+assert.match(microGateSource, /blocking/);
 
 const router = fs.readFileSync('scripts/deploy-gate-router.sh', 'utf8');
 assert.match(router, /release_mode/);
