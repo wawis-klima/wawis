@@ -1,0 +1,106 @@
+name: WAWIS finalize 10.87
+
+on:
+  push:
+    branches:
+      - release/v10.87
+    paths:
+      - .github/workflows/finalize-v1087.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Bump all version files to 10.87
+        run: node version-bump.cjs
+      - name: Write final release metadata
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const version = JSON.parse(fs.readFileSync('app-version.json', 'utf8')).version;
+          if (version !== '10.87') throw new Error(`Expected 10.87, got ${version}`);
+
+          let readme = fs.readFileSync('README.md', 'utf8');
+          readme = readme.replace(
+            /## Ostatnia poprawka\s*- wersja `10\.87` — uzupełnij opis ostatniej poprawki po zakończeniu zmian\./m,
+            '## Ostatnia poprawka\n- wersja `10.87` — F4/F10/F11: trwały kontekst PUSH w Service Workerze, timeouty wszystkich operacji PushManager i atomowy lifecycle subskrypcji z tombstone oraz odebraniem bezpośredniego DML klientom.'
+          );
+          fs.writeFileSync('README.md', readme);
+
+          let changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          changelog = changelog.replace(
+            /## 10\.87\n- uzupełnij opis zmian dla wersji 10\.87/,
+            '## 10.87\n- F4: Service Worker jest trwałym źródłem porządku kontekstu PUSH; SET/CLEAR używają właściciela i ownership_generation, a spóźnione komendy starego konta nie mogą przywrócić A ani usunąć B.\n- F10: getSubscription, subscribe i unsubscribe mają ograniczony czas zarówno na mobile, jak i desktopie; desktop ma dodatkowy guard generacji synchronizacji.\n- F11: bezpośredni zapis push_subscriptions przez anon/authenticated został zastąpiony kontrolowanymi RPC; cleanup 404/410 zapisuje tombstone i sprawdza owner/lifecycle/generation przed dezaktywacją.\n- N8: smoke-audit-fixes-v1087 najpierw odtwarza dokładne błędy z audytowanego SHA 10.84, a następnie wymaga kontraktu naprawionego 10.87.'
+          );
+          fs.writeFileSync('CHANGELOG.md', changelog);
+
+          const gate = {
+            policy_enforced_from: '10.60',
+            version: '10.87',
+            scope: 'full',
+            release_branch: 'release/v10.87',
+            baseline_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: '2026-09-16T20:47:00+02:00',
+              result: 'INFO',
+              notes: '10.87: F4/F10/F11 z audytu 10.84; dokładne RED reprodukcje wykonane przed poprawką.'
+            },
+            predeploy_diagnostics: {
+              checked: true,
+              last_24h: true,
+              checked_at: '2026-09-16T20:48:00+02:00',
+              result: 'FOCUSED_PASS_FULL_PR_PENDING',
+              notes: 'Exact audit regression, grupa PUSH i production build przeszły. Finalny targeted-checks + Playwright E2E + build muszą przejść na SHA PR.'
+            },
+            main_protection: {
+              source_branch: 'release/v10.87',
+              ready_for_main: true,
+              required_check: 'WAWIS PR checks / targeted-checks'
+            },
+            postdeploy_diagnostics: {
+              evidence_required: true,
+              result: 'PENDING',
+              notes: 'Po merge wymagane: Vercel SUCCESS, live 10.87/SW oraz odczyt żywych grantów, RPC i wersji Edge Functions.'
+            },
+            archive: { source_of_truth: 'github-main', zip_optional: true, blocking: false },
+            release_mode: 'standard'
+          };
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
+
+          fs.writeFileSync('RELEASE-RESULT.md', `# RELEASE RESULT\n\n## Wersja\n- 10.87\n\n## Zakres\n- F4 — trwałe porządkowanie kontekstu PUSH po stronie Service Workera na podstawie właściciela i ownership_generation; warunkowy SET/CLEAR odporny na reload, wiele kart i spóźnione komendy starej sesji.\n- F10 — timeout dla każdego bezpośredniego getSubscription/subscribe/unsubscribe na mobile i desktopie oraz guard późnych wyników desktopowej synchronizacji.\n- F11 — kontrolowane RPC dla zapisu klienta, atomowy expire z tombstone oraz końcowe odebranie bezpośredniego DML anon/authenticated.\n\n## Dowód RED → GREEN\n- GitHub Actions run 35135597774: dokładny SHA 10.84 odtworzył RED F4/F10/F11 i następnie zatrzymał się na brakującym kontrakcie 10.87.\n- smoke-audit-fixes-v1087 po poprawce: PASS.\n- grupa PUSH: PASS.\n- production build: PASS.\n\n## Wdrożenie F11\n1. migracja RPC,\n2. deploy obu Edge Functions używających push_subscription_expire_atomic,\n3. migracja ACL odbierająca klientom DML,\n4. read-back produkcji.\n\n## Warunek zamknięcia\nFinalny targeted-checks + Playwright E2E + build, merge przez ruleset, Vercel SUCCESS/live 10.87 oraz produkcyjny read-back Supabase.\n`);
+          NODE
+      - name: Validate release policy
+        env:
+          WAWIS_PR_HEAD_REF: release/v10.87
+        run: node scripts/release-policy-gate.cjs
+      - name: Re-run exact audit regression
+        run: node scripts/smoke-audit-fixes-v1087.mjs
+      - name: Re-run push group
+        run: node scripts/run-test-group.cjs push
+      - name: Production build
+        run: npm run build
+      - name: Remove one-shot finalizer
+        run: rm .github/workflows/finalize-v1087.yml
+      - name: Commit final 10.87 candidate
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add -A
+          git commit -m "chore: finalize release 10.87"
+          git push origin HEAD:release/v10.87
