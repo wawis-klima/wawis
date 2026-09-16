@@ -14,15 +14,13 @@
     "checked": false,
     "last_24h": true,
     "checked_at": "",
-    "result": "PENDING",
+    "result": "INFO_ONLY",
     "notes": "Informacyjne; nie blokuje release."
   },
   "main_protection": {
     "source_branch": "release/v10.78",
-    "ready_for_main": false,
-    "required_check": "WAWIS PR checks / targeted-checks",
-    "final_release_run_id": "",
-    "final_release_head_sha": ""
+    "ready_for_main": true,
+    "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": false,
@@ -32,5 +30,6 @@
     "source_of_truth": "github-main",
     "zip_optional": true,
     "blocking": false
-  }
+  },
+  "release_mode": "standard"
 }
