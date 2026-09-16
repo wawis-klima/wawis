@@ -71,6 +71,9 @@ import vm from 'node:vm';
   assert.match(edge, /recipientUserId/);
   assert.match(edge, /subscriptionGeneration/);
   assert.doesNotMatch(edge.match(/async function handleSyncSubscription[\s\S]*?async function handleDisableSubscription/)?.[0] || '', /\.upsert\(/, 'Sync nie może wrócić do SELECT + bezwarunkowego UPSERT.');
+  const expiredCleanup = edge.match(/if \(statusCode === 404 \|\| statusCode === 410\) \{[\s\S]*?\n      \}/)?.[0] || '';
+  assert.match(expiredCleanup, /\.eq\("user_id", subscription\.user_id\)/, 'Stara wysyłka nie może wyłączyć nowego właściciela endpointu.');
+  assert.match(expiredCleanup, /\.eq\("ownership_generation", subscription\.ownership_generation\)/, 'Cleanup 404\/410 musi być przypięty do generacji wysyłki.');
 
   assert.match(push, /getOrCreatePushLifecycleToken/);
   assert.match(push, /setPushServiceWorkerContext/);

@@ -681,7 +681,15 @@ async function sendPushToUsers({
       }]);
 
       if (statusCode === 404 || statusCode === 410) {
-        await adminClient.from("push_subscriptions").update({ is_active: false }).eq("id", subscription.id);
+        // 10.78: odpowiedź starej wysyłki nie może wyłączyć endpointu po handoffie A→B.
+        // Dezaktywujemy tylko dokładnie tę własność/generację, z której wystartowała wysyłka.
+        await adminClient
+          .from("push_subscriptions")
+          .update({ is_active: false })
+          .eq("id", subscription.id)
+          .eq("user_id", subscription.user_id)
+          .eq("ownership_generation", subscription.ownership_generation)
+          .eq("is_active", true);
       }
 
       return { ok: false, subscriptionId: subscription.id, statusCode, errorMessage };
