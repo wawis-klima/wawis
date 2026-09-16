@@ -24,7 +24,29 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert(photosSource.includes('findLegacyServerNameplate'), 'Brak naprawy starych wpisów kolejki z wersji 8.81.');
   assert(photosSource.includes('new Map(queuedCandidates.map((photo) => [String(photo.id), photo]))'), 'Brak deduplikacji identycznych zdjęć przed zapisem kolejki.');
   assert(requirementsSource.includes('priority = isNameplatePhotoReady(photo)'), 'Poprawna tabliczka serwerowa nie ma pierwszeństwa nad lokalnym błędem.');
-  assert(appSource.includes('supabaseUrl,\n          profile: currentProfile,\n          setJobs'), 'Odtwarzanie kolejki nie uzgadnia już danych z Supabase.');
+
+  // 10.86 / F5: restore nadal musi uzgadniać kolejkę z Supabase, ale teraz
+  // dodatkowo ma obowiązkowy guard bieżącej generacji sesji. Testujemy kontrakt
+  // wywołania zamiast kruchej kolejności sąsiadujących linii argumentów.
+  const restoreStart = appSource.indexOf('await restorePersistedJobPhotos({');
+  const restoreEnd = appSource.indexOf('});', restoreStart);
+  const restoreCall = appSource.slice(restoreStart, restoreEnd + 3);
+  assert(restoreStart >= 0, 'Brak odtwarzania kolejki zdjęć.');
+  assert(restoreCall.includes('supabase,'), 'Odtwarzanie kolejki nie uzgadnia już danych z Supabase.');
+  assert(restoreCall.includes('supabaseUrl,'), 'Odtwarzanie kolejki nie ma adresu Supabase do uzgadniania zdjęć.');
+  assert(restoreCall.includes('profile: currentProfile,'), 'Odtwarzanie kolejki nie używa aktualnego właściciela sesji.');
+  assert(restoreCall.includes('isSessionCurrent: isQueueSessionCurrent,'), 'F5: odtwarzanie kolejki nie ma guardu generacji sesji.');
+  assert(restoreCall.includes('setJobs,'), 'Odtwarzanie kolejki nie aktualizuje listy zleceń po uzgodnieniu.');
+  assert(restoreCall.includes('setSelectedJob,'), 'Odtwarzanie kolejki nie aktualizuje otwartego zlecenia po uzgodnieniu.');
+
+  const resumeStart = appSource.indexOf('await resumePersistedPhotoUploads({');
+  const resumeEnd = appSource.indexOf('});', resumeStart);
+  const resumeCall = appSource.slice(resumeStart, resumeEnd + 3);
+  assert(resumeStart >= 0, 'Brak wznowienia wysyłki zdjęć.');
+  assert(resumeCall.includes('supabase,'), 'Wznawianie kolejki nie korzysta z Supabase.');
+  assert(resumeCall.includes('profile: currentProfile,'), 'Wznawianie kolejki nie używa aktualnego właściciela sesji.');
+  assert(resumeCall.includes('isSessionCurrent: isQueueSessionCurrent,'), 'F5: wznawianie kolejki nie ma guardu generacji sesji.');
+
   assert(migrationSource.includes('create unique index if not exists photos_storage_path_unique_v882'), 'Brak unikalności ścieżki zdjęcia po stronie Supabase.');
 
   const photosModule = await import(pathToFileURL(path.join(root, 'src/mobile791/modules/photos.js')).href);
