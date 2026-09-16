@@ -1,5 +1,5 @@
 name: WAWIS apply 10.88 audit fixes
-# rerun after protocol CAS regression update
+# rerun after stable fuel-attempt regression update
 
 on:
   push:
