@@ -21,6 +21,8 @@ assert(photos.includes("upload_status_label: 'Zapisano w systemie'"), 'Brak etyk
 assert(photos.includes('resumePersistedPhotoUploads'), 'Brak automatycznego wznowienia kolejki.');
 assert(app.includes("window.addEventListener('online', onlineHandler)"), 'Brak automatycznej reakcji na odzyskanie internetu.');
 assert(app.includes('restorePersistedJobPhotos'), 'Brak odtwarzania kolejki po ponownym uruchomieniu aplikacji.');
+assert(app.includes('const offlineSyncJobCount = Array.isArray(jobs) ? jobs.length : 0;'), 'Odtwarzanie kolejki musi ponowić się, gdy pojawi się lista zleceń.');
+assert(app.includes('offlinePhotoQueueUserRef.current !== userId && hasJobsReady'), 'Kolejka nie może zostać oznaczona jako odtworzona przed załadowaniem zleceń.');
 assert(jobsFetch.includes("queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo))"), 'Pełny refresh nie może zgubić lokalnego zdjęcia odtworzonego z IndexedDB.');
 assert(panel.includes('Wyślij ponownie'), 'Brak ręcznego ponowienia błędnego uploadu.');
 assert(requirements.includes("uploadStatus === 'local'"), 'Lokalna tabliczka błędnie pozwoliłaby zakończyć zlecenie przed synchronizacją.');
