@@ -6,6 +6,7 @@ on:
       - release/v10.76
     paths:
       - '.github/workflows/bootstrap-v1076.yml'
+      - 'scripts/bootstrap-v1076.py'
 
 permissions:
   contents: write
@@ -22,13 +23,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply 10.76 changes
+      - name: Apply mobile-only 10.76 changes
         run: python3 scripts/bootstrap-v1076.py
-      - name: Validate changed sources
+      - name: Validate changed mobile sources
         run: |
-          node --check src/modules/auth.js
           node --check src/mobile791/modules/auth.js
-          node --check src/modules/push-subscriptions.js
           node --check src/mobile791/modules/push-subscriptions.js
           npm run test:smoke:push-logout-handoff
           npm run test:smoke:push-mobile-reassignment
@@ -39,5 +38,5 @@ jobs:
           git config user.name "wawis-klima"
           git config user.email "wasik@wawis.pl"
           git add -A
-          git commit -m "release: prepare 10.76 push logout and account handoff"
+          git commit -m "release: prepare 10.76 mobile push logout and account handoff"
           git push origin HEAD:release/v10.76
