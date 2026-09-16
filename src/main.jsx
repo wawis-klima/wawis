@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { APP_VERSION } from './version.js'
+import { requestUpdateReload } from './modules/update-reload-guard.js'
 
 const VERSION_CHECK_COOLDOWN_MS = 5000
 let versionCheckInFlight = false
@@ -40,7 +41,7 @@ async function checkLiveVersion(reason = 'resume') {
       // Reload nadal pobierze najnowszy HTML i nowe hashowane assety.
     }
 
-    window.setTimeout(() => window.location.reload(), 150)
+    requestUpdateReload(`live-version:${liveVersion}`, { delayMs: 150 })
   } catch {
     // Brak sieci nie może blokować pracy offline.
   } finally {
@@ -67,7 +68,7 @@ function registerOfflineWorker() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloadingForWorkerUpdate) return
       reloadingForWorkerUpdate = true
-      window.location.reload()
+      requestUpdateReload('service-worker-controllerchange')
     })
   }
   window.addEventListener('load', () => {
