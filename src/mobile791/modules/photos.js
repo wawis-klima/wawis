@@ -441,7 +441,7 @@ function revokeLocalPreviewUrl(url) {
 
 function isNetworkUploadError(error) {
   const rawMessage = String(error?.message || error || '').toLowerCase();
-  return /failed to fetch|network|fetch|internet|offline|load failed|connection/i.test(rawMessage);
+  return /failed to fetch|network|fetch|internet|offline|load failed|connection|abort|timed out|timeout/i.test(rawMessage);
 }
 
 function isBrowserOffline() {

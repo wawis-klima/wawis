@@ -68,6 +68,11 @@ export function isTransientSupabaseError(error) {
     'failed to fetch',
     'fetch resource',
     'load failed',
+    'aborterror',
+    'supabase_request_timeout',
+    'request aborted',
+    'operation was aborted',
+    'the operation was aborted',
   ].some((marker) => text.includes(marker));
 }
 

@@ -1,11 +1,11 @@
 {
-  "version": "10.67",
-  "summary": "Wydanie 10.67 przygotowuje poprawki mobilne z 10.65–10.66 i uszczelnia bezpieczny model GitHub → jeden produkcyjny deploy Vercela z main.",
+  "version": "10.75",
+  "summary": "Wersja 10.75 zabezpiecza mobilną synchronizację offline przed utratą wpisu i przed requestami, które mogły pozostać zawieszone bez końca.",
   "changes": [
-    "Mobile: prawy odstęp paska akcji ma 24 px, dzięki czemu przycisk PW jest wyraźnie odsunięty od prawej krawędzi.",
-    "iPhone/PWA: aplikacja sprawdza produkcyjny app-version.json po powrocie z tła i automatycznie odświeża nowszą wersję.",
-    "Vercel: automatyczne Preview są blokowane dla wszystkich gałęzi roboczych, także release/* i runner/*; automatyczny deploy pozostaje wyłącznie dla main.",
-    "Vercel: dodatkowy guard odrzuca build, jeśli środowisko nie jest production albo commit nie pochodzi z main.",
-    "Bezpieczeństwo wydania pozostaje wielowarstwowe: klasyfikacja FAST/TARGETED/CRITICAL, release gate, finalny ZIP, backup Drive i post-deploy evidence."
+    "Kolejka statusów i danych urządzeń zastępuje poprzednią operację w jednej transakcji IndexedDB; błąd zapisu wycofuje całość i pozostawia poprzedni wpis.",
+    "Mobilny klient Supabase ma realny AbortController timeout: 45 s dla zwykłych requestów i 90 s dla Storage.",
+    "Timeout i AbortError są traktowane jako przejściowy błąd sieciowy, więc synchronizacja oraz zdjęcia wracają do retry zamiast blokować sesję.",
+    "Niejednoznaczny commit po zerwanym requestcie jest bezpieczny dzięki istniejącej idempotencji synchronizacji i uzgadnianiu zdjęć po stałej ścieżce Storage.",
+    "Dodano regresję źródłową timeoutu oraz mobilny test Playwright z wymuszonym QuotaExceededError, który potwierdza rollback atomowej transakcji IndexedDB."
   ]
 }

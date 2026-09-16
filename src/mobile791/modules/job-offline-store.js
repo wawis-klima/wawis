@@ -206,6 +206,73 @@ export function createOfflineUuid() {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+async function putOfflineJobOperationAtomically(record) {
+  let db;
+  try {
+    db = await openOfflineDb();
+    if (!db) return record;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(OPERATION_STORE, 'readwrite');
+      const objectStore = transaction.objectStore(OPERATION_STORE);
+      let finalRecord = record;
+      let failure = null;
+      let settled = false;
+
+      const rejectOnce = (error) => {
+        if (settled) return;
+        settled = true;
+        reject(error);
+      };
+      const abortWith = (error) => {
+        failure = error || failure || new Error('Nie udało się atomowo zapisać zmiany offline.');
+        try {
+          transaction.abort();
+        } catch {
+          rejectOnce(failure);
+        }
+      };
+      const putFinalRecord = () => {
+        try {
+          objectStore.put(finalRecord);
+        } catch (error) {
+          abortWith(error);
+        }
+      };
+
+      if (record.type === 'comment') {
+        putFinalRecord();
+      } else {
+        const readRequest = objectStore.getAll();
+        readRequest.onsuccess = () => {
+          try {
+            const superseded = (Array.isArray(readRequest.result) ? readRequest.result : [])
+              .filter((item) => String(item.user_id) === record.user_id)
+              .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
+              .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
+            if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
+            for (const item of superseded) objectStore.delete(item.id);
+            putFinalRecord();
+          } catch (error) {
+            abortWith(error);
+          }
+        };
+        readRequest.onerror = () => abortWith(readRequest.error || new Error('Nie udało się odczytać poprzedniej zmiany offline.'));
+      }
+
+      transaction.oncomplete = () => {
+        if (settled) return;
+        settled = true;
+        dispatchOfflineChanged();
+        resolve(finalRecord);
+      };
+      transaction.onerror = () => rejectOnce(failure || transaction.error || new Error('Nie udało się atomowo zapisać zmiany offline.'));
+      transaction.onabort = () => rejectOnce(failure || transaction.error || new Error('Atomowy zapis zmiany offline został przerwany.'));
+    });
+  } finally {
+    db?.close();
+  }
+}
+
 export async function queueOfflineJobOperation(operation = {}) {
   if (!operation.user_id || !operation.job_id || !operation.type) return null;
   const record = {
@@ -225,19 +292,10 @@ export async function queueOfflineJobOperation(operation = {}) {
   };
 
   try {
-    // Dla danych urządzenia i statusu liczy się ostatnia decyzja pracownika.
-    // Komentarzy nie łączymy, bo każdy jest osobnym wpisem.
-    if (record.type !== 'comment') {
-      const existing = await listOfflineJobOperations(record.user_id);
-      const superseded = existing.filter((item) => item.job_id === record.job_id && item.type === record.type);
-      if (superseded[0]?.base) record.base = superseded[0].base;
-      for (const item of superseded) {
-        await withStore(OPERATION_STORE, 'readwrite', (store) => store.delete(item.id));
-      }
-    }
-    await withStore(OPERATION_STORE, 'readwrite', (store) => store.put(record));
-    dispatchOfflineChanged();
-    return record;
+    // Status i dane urządzenia zastępujemy w JEDNEJ transakcji IndexedDB.
+    // Jeśli put nowego wpisu nie powiedzie się (np. QuotaExceededError),
+    // cała transakcja jest wycofywana i poprzednia operacja pozostaje w kolejce.
+    return await putOfflineJobOperationAtomically(record);
   } catch (error) {
     console.warn('Nie udało się zapisać zmiany w kolejce offline.', error?.message || error);
     throw error;

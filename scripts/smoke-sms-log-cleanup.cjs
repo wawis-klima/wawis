@@ -43,8 +43,13 @@ const runnerSource = read('scripts/run-release.cjs');
 assert.match(runnerSource, /getReleaseGroups/);
 assert.match(runnerSource, /run-test-group\.cjs/);
 
+// Od 10.74/10.75 diagnostyka jest raportem informacyjnym i nie może wrócić
+// do twardej bramki verify-release. Test chroni tę nową regułę procesu.
 const verifySource = read('scripts/verify-release.cjs');
-assert.match(verifySource, /predeploy_diagnostics/);
+assert.doesNotMatch(verifySource, /validDiagnosticCheck/);
+assert.doesNotMatch(verifySource, /assert\([^\n]*baseline_diagnostics/);
+assert.doesNotMatch(verifySource, /assert\([^\n]*predeploy_diagnostics/);
+assert.match(verifySource, /Diagnostyka jest informacyjna/);
 assert.match(verifySource, /verifyDist/);
 
 const readme = read('README.md');

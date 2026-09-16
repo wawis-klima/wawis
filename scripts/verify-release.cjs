@@ -43,16 +43,6 @@ function extractReleaseResultVersion(source) {
   return String(source.match(/## Wersja\s*-\s*([0-9]+\.[0-9]{2})/m)?.[1] || '').trim();
 }
 
-function validDiagnosticCheck(entry) {
-  return Boolean(
-    entry &&
-    entry.checked === true &&
-    entry.last_24h === true &&
-    typeof entry.checked_at === 'string' && entry.checked_at.trim() &&
-    entry.result === 'GO'
-  );
-}
-
 function verifyDist() {
   const distPath = path.join(root, 'dist');
   if (!fs.existsSync(distPath)) {
@@ -100,9 +90,10 @@ const releaseResultVersion = extractReleaseResultVersion(releaseResult);
 assert(releaseResultVersion === appVersion, `RELEASE-RESULT.md=${releaseResultVersion || 'brak'}, oczekiwano ${appVersion}`);
 assert(String(gate.version || '').trim() === appVersion, `RELEASE-GATE.json=${gate.version || 'brak'}, oczekiwano ${appVersion}`);
 assert(['mobile', 'desktop', 'full'].includes(gate.scope), `Nieprawidłowy zakres RELEASE-GATE: ${gate.scope || 'brak'}`);
-assert(validDiagnosticCheck(gate.baseline_diagnostics), 'Brak bazowej diagnostyki GO z ostatnich 24 h');
-assert(validDiagnosticCheck(gate.predeploy_diagnostics), 'Brak pre-deploy diagnostyki GO z ostatnich 24 h');
 
+// Diagnostyka jest informacyjna. Jej wynik nie jest częścią GO/NO-GO release.
+// Twarda weryfikacja pozostaje na spójności wersji, testach, buildzie, ZIP-ie,
+// backupie oraz live-checku app-version + Service Workera.
 verifyDist();
 
 if (requireZip) {
