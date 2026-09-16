@@ -14,6 +14,7 @@ import {
 } from '../../modules/fuel.js';
 import { sendFuelEntryPush } from '../../modules/fuel-push.js';
 import { readOdometerPhoto } from '../../modules/fuel-odometer-reader.js';
+import { blockUnsavedWork } from '../../modules/update-reload-guard.js';
 
 const WARSAW_DATE_TIME = new Intl.DateTimeFormat('pl-PL', {
   timeZone: 'Europe/Warsaw',
@@ -133,6 +134,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   const [entryFormExpanded, setEntryFormExpanded] = useState(() => !showVehicleOverview);
   const [now, setNow] = useState(() => new Date());
   const [busy, setBusy] = useState(false);
+  const [entrySaveInProgress, setEntrySaveInProgress] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -210,6 +212,13 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     () => calculateFuelMonthlyReport({ entries, vehicles, monthKey: reportMonth }),
     [entries, reportMonth, vehicles],
   );
+  const entryHasUnsavedWork = Boolean(
+    String(liters).trim()
+    || String(odometerKm).trim()
+    || odometerPhotoBlob
+    || readingOdometer
+    || entrySaveInProgress
+  );
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -242,6 +251,10 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     const timerId = window.setInterval(() => setNow(new Date()), 30000);
     return () => window.clearInterval(timerId);
   }, []);
+  useEffect(() => {
+    if (!entryHasUnsavedWork) return undefined;
+    return blockUnsavedWork('fuel-entry-draft');
+  }, [entryHasUnsavedWork]);
 
   function resetOdometerPhoto() {
     setOdometerKm('');
@@ -294,6 +307,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setEntrySaveInProgress(true);
     setBusy(true);
     setError('');
     setMessage('');
@@ -364,6 +378,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
       logDiagnostic('fuel.save.failed', { module: 'fuel', error: saveError });
     } finally {
       setBusy(false);
+      setEntrySaveInProgress(false);
     }
   }
 
