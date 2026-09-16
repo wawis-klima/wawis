@@ -1,4 +1,3 @@
-import { normalizeStatus as normalizeJobStatus } from "../utils/jobPermissions.js";
 import { getNameplatePhotoMetadata, getPhotoStoragePath, isLocalQueuedPhoto } from "./photos.js";
 
 const DETAILS_PHOTO_URL_MODE = 'lazy-full-v969';
@@ -118,31 +117,6 @@ export async function loadJobSummaryData({ supabase, jobId }) {
     viewers: accessResult.data || [],
     missing: false,
   };
-}
-
-async function syncStaleJobsStatus({ supabase, jobsData, jobsFields, normalizeStatus = normalizeJobStatus, isOlderThan30Days }) {
-  const staleNewJobs = (jobsData || []).filter((job) => normalizeStatus(job.status) === 'Nowe' && isOlderThan30Days(job.created_at));
-  if (!staleNewJobs.length) return jobsData || [];
-
-  const { error: staleJobsError } = await supabase
-    .from('jobs')
-    .update({ status: 'Niezrealizowane' })
-    .in('id', staleNewJobs.map((job) => job.id));
-  if (staleJobsError) {
-    if (isTransientReadError(staleJobsError)) return jobsData || [];
-    throw staleJobsError;
-  }
-
-  const refreshedJobsResponse = await supabase
-    .from('jobs')
-    .select(jobsFields)
-    .order('created_at', { ascending: false });
-  if (refreshedJobsResponse.error) {
-    if (isTransientReadError(refreshedJobsResponse.error)) return jobsData || [];
-    throw refreshedJobsResponse.error;
-  }
-
-  return refreshedJobsResponse.data || [];
 }
 
 function getExistingAccessData(existingJobs = []) {
@@ -334,8 +308,6 @@ export async function loadJobDetailsData({
 export async function refreshAppData({
   supabase,
   user,
-  normalizeStatus = normalizeJobStatus,
-  isOlderThan30Days,
   existingProfile = null,
   existingProfiles = [],
   existingNotifications = [],
@@ -354,14 +326,7 @@ export async function refreshAppData({
   const teamPromise = getTeamProfiles({ supabase, existingProfiles });
   const notificationsPromise = getNotificationsData({ supabase, user, existingNotifications });
 
-  const { jobsData: initialJobsData, jobsFields } = await jobsPromise;
-  const jobsData = await syncStaleJobsStatus({
-    supabase,
-    jobsData: initialJobsData,
-    jobsFields,
-    normalizeStatus,
-    isOlderThan30Days,
-  });
+  const { jobsData } = await jobsPromise;
 
   // Provisional list uses the viewers already cached on the phone. It is
   // applied immediately; fresh job_access follows independently below.

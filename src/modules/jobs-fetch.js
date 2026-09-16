@@ -1,4 +1,3 @@
-import { normalizeStatus as normalizeJobStatus } from "../utils/jobPermissions.js";
 import { getPhotoStoragePath } from "./photos.js";
 
 const DETAILS_PHOTO_URL_MODE = 'lazy-full-v975';
@@ -147,25 +146,6 @@ export async function loadJobSummaryData({ supabase, jobId }) {
   if (accessResult.error) throw accessResult.error;
 
   return { job: jobResult.data, viewers: accessResult.data || [], missing: false };
-}
-
-async function syncStaleJobsStatus({ supabase, jobsData, jobsFields, normalizeStatus = normalizeJobStatus, isOlderThan30Days }) {
-  const staleNewJobs = (jobsData || []).filter((job) => normalizeStatus(job.status) === 'Nowe' && isOlderThan30Days(job.created_at));
-  if (!staleNewJobs.length) return jobsData || [];
-
-  const { error: staleJobsError } = await supabase
-    .from('jobs')
-    .update({ status: 'Niezrealizowane' })
-    .in('id', staleNewJobs.map((job) => job.id));
-  if (staleJobsError) throw staleJobsError;
-
-  const refreshedJobsResponse = await supabase
-    .from('jobs')
-    .select(jobsFields)
-    .order('created_at', { ascending: false });
-  if (refreshedJobsResponse.error) throw refreshedJobsResponse.error;
-
-  return refreshedJobsResponse.data || [];
 }
 
 async function getAccessData({ supabase, existingJobs = [] }) {
@@ -370,8 +350,6 @@ export async function loadJobDetailsData({
 export async function refreshAppData({
   supabase,
   user,
-  normalizeStatus = normalizeJobStatus,
-  isOlderThan30Days,
   existingProfile = null,
   existingProfiles = [],
   existingNotifications = [],
@@ -399,14 +377,7 @@ export async function refreshAppData({
       };
     });
 
-  const { jobsData: initialJobsData, jobsFields } = await jobsPromise;
-  const jobsData = await syncStaleJobsStatus({
-    supabase,
-    jobsData: initialJobsData,
-    jobsFields,
-    normalizeStatus,
-    isOlderThan30Days,
-  });
+  const { jobsData } = await jobsPromise;
 
   const provisionalJobs = buildCombinedJobs({
     jobsData,

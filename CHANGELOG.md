@@ -1,3 +1,8 @@
+## 10.79
+- Feed przyrostowy obejmuje wszystkie montaże widoczne dla każdego pracownika, także gdy nie jest przypisany do zlecenia.
+- Automatyczne Nowe → Niezrealizowane po 30 dniach wykonuje baza przez Supabase Cron, a nie telefon podczas odczytu.
+- Desktop i mobile nie wykonują już zapisu statusu przy ładowaniu listy.
+
 ## 10.78
 - P0/F2: własność endpointu PUSH jest synchronizowana atomowo w PostgreSQL z advisory lock i blokadą aktywnego właściciela.
 - P0/F3: każdy push ma odbiorcę i generację endpointu; Service Worker odrzuca wiadomości starego konta/generacji, a treść systemowa nie zawiera adresu ani danych klienta.

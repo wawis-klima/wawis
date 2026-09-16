@@ -1,11 +1,10 @@
 {
-  "version": "10.78",
-  "summary": "Bezpieczny lifecycle PUSH A→B i szybszy release bez zależności Google Drive.",
+  "version": "10.79",
+  "summary": "Pewny feed zmian dla całego zespołu i serwerowe starzenie statusu Nowe.",
   "changes": [
-    "Atomowy sync/disable endpointu z generacją własności i tombstone po logout.",
-    "Service Worker pokazuje push tylko właściwemu użytkownikowi i właściwej generacji endpointu.",
-    "Pending cleanup ponawia się po odzyskaniu sieci i healthchecku z backoffem.",
-    "PUSH tylko w zainstalowanej aplikacji/PWA.",
-    "GitHub jest źródłem archiwalnym; ZIP/Drive oraz osobna blokująca bramka post-deploy zostały usunięte."
+    "Każdy pracownik odbiera zmiany wszystkich montaży, które i tak ma prawo widzieć.",
+    "Feed używa jednego globalnego strumienia zmian zamiast wpisów zależnych od przypisania.",
+    "Status Nowe przechodzi po 30 dniach do Niezrealizowane po stronie bazy przez Supabase Cron.",
+    "Telefon i desktop nie wykonują już UPDATE statusu podczas zwykłego pobierania listy."
   ]
 }
