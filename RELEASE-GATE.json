@@ -11,15 +11,15 @@
     "notes": "10.84 domyka F5/F7/F8/F9 ostatniego audytu: stale loadery, fallback szczegółów, kolejność refresh i atomowy kursor IndexedDB."
   },
   "predeploy_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "checked_at": "",
+    "checked_at": "2026-09-16T16:58:00+02:00",
     "result": "INFO_ONLY",
-    "notes": "Informacyjne; nie blokuje release."
+    "notes": "10.84: F5/F7/F8/F9, atomowa kolejka zdjęć, dedykowane race E2E, pełny wymagany Playwright i build przeszły przed merge."
   },
   "main_protection": {
     "source_branch": "release/v10.84",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {

@@ -177,7 +177,7 @@ export function useAppSession({
           }
           const cachedProfiles = Array.isArray(cached.profiles) ? cached.profiles : [];
           const operations = await listOfflineJobOperations(userId);
-          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
+          if (!isCurrentRefreshRequest()) return { ok: true, ignoredOlderResponse: true };
           const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);
           profileRef.current = cached.profile;
           profilesRef.current = cachedProfiles;

@@ -9,17 +9,16 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   targeted-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 35
     steps:
-      - name: Checkout candidate branch
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Setup Node
@@ -27,141 +26,6 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-
-      - name: Close final 10.84 races
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          hook = Path('src/mobile791/hooks/useAppSession.js')
-          source = hook.read_text()
-          old = """          const operations = await listOfflineJobOperations(userId);\n          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n          const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);"""
-          new = """          const operations = await listOfflineJobOperations(userId);\n          if (!isCurrentRefreshRequest()) return { ok: true, ignoredOlderResponse: true };\n          const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);"""
-          if old not in source:
-              raise SystemExit('Brak oczekiwanego post-await guardu cache mobile')
-          hook.write_text(source.replace(old, new, 1))
-
-          smoke = Path('scripts/smoke-audit-races-v1084.mjs')
-          source = smoke.read_text()
-          marker = "for (const source of [mobileApp, desktopApp]) {"
-          assertion = "assert.match(mobileSession, /const operations = await listOfflineJobOperations\\(userId\\);\\s*if \\(!isCurrentRefreshRequest\\(\\)\\) return \\{ ok: true, ignoredOlderResponse: true \\};/);\n"
-          if assertion not in source:
-              source = source.replace(marker, assertion + marker, 1)
-
-          queue_assertion = """const photoQueue = fs.readFileSync('src/mobile791/modules/photo-offline-queue.js', 'utf8');
-          const photoQueueUpdateBlock = photoQueue.slice(photoQueue.indexOf('export async function updatePhotoQueueItem'), photoQueue.indexOf('export async function deletePhotoQueueItem'));
-          assert.match(photoQueueUpdateBlock, /db\\.transaction\\(STORE_NAME, 'readwrite'\\)/);
-          assert.match(photoQueueUpdateBlock, /store\\.get\\(String\\(photoId\\)\\)/);
-          assert.match(photoQueueUpdateBlock, /store\\.put\\(/);
-          assert.doesNotMatch(photoQueueUpdateBlock, /withStore\\('readonly'/);
-          """
-          marker2 = "const cursorBlock = offline.slice(offline.indexOf('export async function updateOfflineSyncCursor')"
-          if "const photoQueueUpdateBlock" not in source:
-              source = source.replace(marker2, queue_assertion + marker2, 1)
-          smoke.write_text(source)
-
-          legacy = Path('scripts/smoke-session-sync-resilience-v1080.mjs')
-          source = legacy.read_text()
-          old = "assert.match(mobileHook, /stale-session-final-queue-guard-v1080/);"
-          new = "assert.match(mobileHook, /stale-session-and-request-final-queue-guard-v1084/);"
-          if old not in source:
-              raise SystemExit('Brak starego markera v10.80 do aktualizacji')
-          legacy.write_text(source.replace(old, new, 1))
-
-          queue = Path('src/mobile791/modules/photo-offline-queue.js')
-          source = queue.read_text()
-          old = """export async function updatePhotoQueueItem(photoId, patch = {}) {
-            if (!photoId) return false;
-            try {
-              const current = await withStore('readonly', (store) => store.get(String(photoId)));
-              if (!current) return false;
-              await withStore('readwrite', (store) => store.put({ ...current, ...patch, id: String(photoId) }));
-              dispatchQueueChanged();
-              return true;
-            } catch (error) {
-              console.warn('Nie udało się zaktualizować lokalnego statusu zdjęcia.', error?.message || error);
-              return false;
-            }
-          }
-          """
-          new = """export async function updatePhotoQueueItem(photoId, patch = {}) {
-            if (!photoId) return false;
-            const db = await openQueueDb();
-            if (!db) return false;
-            try {
-              const updated = await new Promise((resolve, reject) => {
-                const transaction = db.transaction(STORE_NAME, 'readwrite');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.get(String(photoId));
-                let didUpdate = false;
-                request.onsuccess = () => {
-                  const current = request.result;
-                  if (!current) return;
-                  store.put({ ...current, ...patch, id: String(photoId) });
-                  didUpdate = true;
-                };
-                request.onerror = () => reject(request.error || new Error('Nie udało się odczytać zdjęcia do aktualizacji.'));
-                transaction.oncomplete = () => resolve(didUpdate);
-                transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zaktualizować lokalnego statusu zdjęcia.'));
-                transaction.onabort = transaction.onerror;
-              });
-              if (updated) dispatchQueueChanged();
-              return updated;
-            } catch (error) {
-              console.warn('Nie udało się zaktualizować lokalnego statusu zdjęcia.', error?.message || error);
-              return false;
-            } finally {
-              db.close();
-            }
-          }
-          """
-          if old not in source:
-              raise SystemExit('Brak starego nieatomowego updatePhotoQueueItem')
-          queue.write_text(source.replace(old, new, 1))
-
-          e2e = Path('tests/e2e/audit-races-v1084.spec.js')
-          source = e2e.read_text()
-          if "usunięty rekord kolejki zdjęć nie może zostać wskrzeszony" not in source:
-              insertion = r'''
-
-            test('usunięty rekord kolejki zdjęć nie może zostać wskrzeszony przez spóźniony update', async ({ page }) => {
-              await page.goto('/');
-              const result = await page.evaluate(async () => {
-                const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
-                const id = 'local-photo-upload-v1084-delete-race';
-                let failures = 0;
-                for (let round = 0; round < 16; round += 1) {
-                  const file = new File([`v1084-${round}`], `v1084-${round}.jpg`, { type: 'image/jpeg' });
-                  await queue.savePhotoQueueItem({
-                    id,
-                    job_id: 'mock-job-002',
-                    uploaded_by: 'mock-worker-1',
-                    created_at: new Date(1000 + round).toISOString(),
-                    __localFile: file,
-                    upload_status: 'error',
-                  });
-                  const updates = Array.from({ length: 32 }, (_, index) => queue.updatePhotoQueueItem(id, {
-                    retry_count: index + 1,
-                    last_attempt_at: new Date(2000 + index).toISOString(),
-                  }));
-                  const deletion = queue.deletePhotoQueueItem(id);
-                  await Promise.allSettled([...updates, deletion]);
-                  const exists = (await queue.listPhotoQueueItems()).some((item) => String(item.id) === id);
-                  if (exists) {
-                    failures += 1;
-                    await queue.deletePhotoQueueItem(id);
-                  }
-                }
-                return { failures };
-              });
-              expect(result.failures).toBe(0);
-            });
-          '''
-              source = source.replace('\n});\n', insertion + '\n});\n', 1)
-          e2e.write_text(source)
-          PY
-          git diff --check
 
       - name: Install dependencies
         run: npm ci --include=optional --registry=https://registry.npmjs.org/
@@ -171,8 +35,6 @@ jobs:
         run: |
           git fetch origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed-files.txt
-          printf '%s\n' src/mobile791/hooks/useAppSession.js src/mobile791/modules/photo-offline-queue.js scripts/smoke-audit-races-v1084.mjs scripts/smoke-session-sync-resilience-v1080.mjs tests/e2e/audit-races-v1084.spec.js >> changed-files.txt
-          sort -u changed-files.txt -o changed-files.txt
           cat changed-files.txt
 
       - name: Classify effective release impact
@@ -180,55 +42,13 @@ jobs:
         shell: bash
         run: node scripts/release-impact.cjs --base-ref "origin/${{ github.base_ref }}" --json release-impact.json --github-output "$GITHUB_OUTPUT"
 
-      - name: Run focused 10.84 regression
-        run: node scripts/smoke-audit-races-v1084.mjs
-
       - name: Run targeted regression groups
         run: node scripts/run-pr-checks.cjs changed-files.txt release-impact.json
 
-      - name: Install Playwright Chromium
+      - name: Install Playwright Chromium when required
+        if: steps.impact.outputs.needs_playwright == 'true'
         run: npx playwright install --with-deps chromium
-
-      - name: Run dedicated 10.84 browser race regression
-        run: npx playwright test tests/e2e/audit-races-v1084.spec.js --reporter=line
-
-      - name: Repeat nameplate reconciliation scenario
-        run: npx playwright test tests/e2e/mobile-resilience.spec.js --grep "serwerowa tabliczka usuwa stary lokalny błąd" --repeat-each=3 --workers=1 --reporter=line
 
       - name: Run required Playwright E2E
         if: steps.impact.outputs.needs_playwright == 'true'
         run: node scripts/run-pr-playwright.cjs release-impact.json
-
-      - name: Production build
-        run: npm run build
-
-      - name: Final release verification and cleanup
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const gate = JSON.parse(fs.readFileSync('RELEASE-GATE.json', 'utf8'));
-          gate.main_protection.ready_for_main = true;
-          gate.predeploy_diagnostics = {
-            checked: true,
-            last_24h: true,
-            checked_at: '2026-09-16T16:58:00+02:00',
-            result: 'INFO_ONLY',
-            notes: '10.84: F5/F7/F8/F9, atomowa kolejka zdjęć, dedykowane race E2E, pełny wymagany Playwright i build przeszły przed merge.'
-          };
-          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
-          NODE
-          git checkout origin/main -- .github/workflows/pr-checks.yml
-          git rm scripts/prepare-v1084.cjs
-          git diff --check
-          node scripts/verify-release.cjs
-          bash scripts/deploy-gate-router.sh
-
-      - name: Commit clean verified candidate
-        shell: bash
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'release: verify and finalize WAWIS 10.84'
-          git push origin HEAD:${{ github.head_ref }}

@@ -16,6 +16,7 @@ for (const source of [mobileSession, desktopSession]) {
   assert.match(source, /isCurrentDataRequest/);
   assert.match(source, /lastAppliedServerRequestIdRef\.current = Math\.max/);
 }
+assert.match(mobileSession, /const operations = await listOfflineJobOperations\(userId\);\s*if \(!isCurrentRefreshRequest\(\)\) return \{ ok: true, ignoredOlderResponse: true \};/);
 for (const source of [mobileApp, desktopApp]) {
   assert.match(source, /sessionToken\.generation.*sessionToken\.userId.*targetId/s);
   assert.match(source, /if \(!isSessionTokenCurrent\(sessionToken\)\) return null/);
@@ -24,6 +25,12 @@ for (const source of [mobileApp, desktopApp]) {
 for (const source of [mobileRealtime, desktopRealtime]) {
   assert.match(source, /fallbackTimer[\s\S]*scheduleSelectedDetailsReload\(selectedId, \{ immediate: true \}\)[\s\S]*scheduleRefresh\(\)/);
 }
+const photoQueue = fs.readFileSync('src/mobile791/modules/photo-offline-queue.js', 'utf8');
+const photoQueueUpdateBlock = photoQueue.slice(photoQueue.indexOf('export async function updatePhotoQueueItem'), photoQueue.indexOf('export async function deletePhotoQueueItem'));
+assert.match(photoQueueUpdateBlock, /db\.transaction\(STORE_NAME, 'readwrite'\)/);
+assert.match(photoQueueUpdateBlock, /store\.get\(String\(photoId\)\)/);
+assert.match(photoQueueUpdateBlock, /store\.put\(/);
+assert.doesNotMatch(photoQueueUpdateBlock, /withStore\('readonly'/);
 const cursorBlock = offline.slice(offline.indexOf('export async function updateOfflineSyncCursor'), offline.indexOf('export async function loadOfflineAppSnapshot'));
 assert.match(cursorBlock, /db\.transaction\(SNAPSHOT_STORE, 'readwrite'\)/);
 assert.match(cursorBlock, /store\.get\(normalizedUserId\)/);

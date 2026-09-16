@@ -127,15 +127,32 @@ export async function savePhotoQueueItem(photo) {
 
 export async function updatePhotoQueueItem(photoId, patch = {}) {
   if (!photoId) return false;
+  const db = await openQueueDb();
+  if (!db) return false;
   try {
-    const current = await withStore('readonly', (store) => store.get(String(photoId)));
-    if (!current) return false;
-    await withStore('readwrite', (store) => store.put({ ...current, ...patch, id: String(photoId) }));
-    dispatchQueueChanged();
-    return true;
+    const updated = await new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(String(photoId));
+      let didUpdate = false;
+      request.onsuccess = () => {
+        const current = request.result;
+        if (!current) return;
+        store.put({ ...current, ...patch, id: String(photoId) });
+        didUpdate = true;
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się odczytać zdjęcia do aktualizacji.'));
+      transaction.oncomplete = () => resolve(didUpdate);
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zaktualizować lokalnego statusu zdjęcia.'));
+      transaction.onabort = transaction.onerror;
+    });
+    if (updated) dispatchQueueChanged();
+    return updated;
   } catch (error) {
     console.warn('Nie udało się zaktualizować lokalnego statusu zdjęcia.', error?.message || error);
     return false;
+  } finally {
+    db.close();
   }
 }
 
