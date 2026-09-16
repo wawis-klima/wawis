@@ -73,10 +73,10 @@ jobs:
           grep -q "wawis-app-shell-v10.83" public/push-sw.js
           git diff --check
 
-      - name: Commit prepared candidate
+      - name: Commit prepared application candidate
         shell: bash
         run: |
-          rm .github/workflows/prepare-v1083-security.yml
+          git checkout -- .github/workflows/pr-checks.yml .github/workflows/prepare-v1083-security.yml
           rm scripts/prepare-v1083.py
           rm scripts/prepare-v1083-fix1.py
           rm scripts/prepare-v1083-fix2.py
@@ -85,5 +85,5 @@ jobs:
           git config user.name "wawis-klima"
           git config user.email "wasik@wawis.pl"
           git add -A
-          git commit -m "fix: WAWIS 10.83 session push and real E2E gate"
+          git commit -m "fix: WAWIS 10.83 session push security"
           git push origin HEAD:tmp-v1083-apply
