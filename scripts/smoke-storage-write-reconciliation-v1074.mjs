@@ -6,6 +6,11 @@ const LOST_RESPONSE = { code: 'FETCH_FAILED', message: 'Response lost after data
 const LOOKUP_FAILED = { code: 'FETCH_FAILED', message: 'Reconciliation read failed.' };
 const JOB_ID = '11111111-1111-4111-8111-111111111111';
 
+function assertLostResponse(error) {
+  assert.match(String(error?.message || ''), /Response lost/i);
+  return true;
+}
+
 function makeProtocolSupabase({ existingRecord = null, commitWrite = true, failReconciliation = false } = {}) {
   let record = existingRecord ? { ...existingRecord } : null;
   let writeAttempted = false;
@@ -124,14 +129,14 @@ async function saveProtocol(supabase, replaceExisting = false) {
 
 {
   const supabase = makeProtocolSupabase({ commitWrite: true, failReconciliation: true });
-  await assert.rejects(() => saveProtocol(supabase), /Response lost/i);
+  await assert.rejects(() => saveProtocol(supabase), assertLostResponse);
   assert.equal(supabase.removed.length, 0, 'Przy niejednoznacznym wyniku PDF musi zostać w Storage.');
   assert.equal(supabase.files.size, 1);
 }
 
 {
   const supabase = makeProtocolSupabase({ commitWrite: false });
-  await assert.rejects(() => saveProtocol(supabase), /Response lost/i);
+  await assert.rejects(() => saveProtocol(supabase), assertLostResponse);
   assert.equal(supabase.removed.length, 1, 'PDF wolno usunąć, gdy odczyt kontrolny potwierdzi brak rekordu.');
   assert.equal(supabase.files.size, 0);
 }
@@ -235,14 +240,14 @@ async function saveFuelEntry(supabase) {
 
 {
   const supabase = makeFuelSupabase({ commitWrite: true, failReconciliation: true });
-  await assert.rejects(() => saveFuelEntry(supabase), /Response lost/i);
+  await assert.rejects(() => saveFuelEntry(supabase), assertLostResponse);
   assert.equal(supabase.removed.length, 0, 'Przy niejednoznacznym wyniku zdjęcia licznika nie wolno usuwać.');
   assert.equal(supabase.files.size, 1);
 }
 
 {
   const supabase = makeFuelSupabase({ commitWrite: false });
-  await assert.rejects(() => saveFuelEntry(supabase), /Response lost/i);
+  await assert.rejects(() => saveFuelEntry(supabase), assertLostResponse);
   assert.equal(supabase.removed.length, 1, 'Zdjęcie wolno usunąć po potwierdzonym braku wpisu DB.');
   assert.equal(supabase.files.size, 0);
 }
