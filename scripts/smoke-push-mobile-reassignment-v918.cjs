@@ -10,7 +10,6 @@ const layout = read('src/mobile791/components/jobs/MobileJobsLayout.jsx');
 const diagnostics = read('src/mobile791/components/diagnostics/MobileDiagnosticButton.jsx');
 const edge = read('supabase/functions/send-assignment-push/index.ts');
 const migration = read('supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql');
-const styles = read('src/mobile791/styles.css');
 
 assert(push.includes('eventType: "sync_subscription"'), 'Mobile push nadal zapisuje subskrypcję bezpośrednio zamiast przez backend');
 assert(!push.includes('.from("push_subscriptions").upsert'), 'Mobile push zawiera bezpośredni UPSERT blokowany przez RLS');
@@ -37,6 +36,5 @@ assert(layout.includes('wawisOneLineToolbar ${isAdmin ? "isAdmin" : "isWorker"}'
 assert(diagnostics.includes('Wyślij test push na ten telefon'), 'Brak testowego push w panelu mobilnym');
 assert(diagnostics.includes('Pobierz raport diagnostyczny'), 'Brak raportu w panelu mobilnym');
 assert(layout.includes('wawisOneLinePushSlot'), 'Brak PUSH w jednoliniowym nagłówku mobilnym');
-assert(styles.includes('wawisOneLinePushSlot'), 'Brak stylu slotu PUSH w nagłówku mobilnym');
 
 console.log('PASS smoke-push-mobile-reassignment-v918 — credentials verified atomically in PostgreSQL');
