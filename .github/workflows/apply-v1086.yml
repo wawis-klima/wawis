@@ -25,6 +25,18 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Correct one-shot marker for current hook layout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/apply-v1086-once.cjs')
+          s = p.read_text()
+          old = "`  const clearLocalState = useCallback(() => {`"
+          new = "`  async function login(credentials = {}) {`"
+          if old not in s:
+              raise SystemExit('expected old marker not found')
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: Apply 10.86 fixes
         run: node scripts/apply-v1086-once.cjs
       - name: Run 10.86 regressions
@@ -39,6 +51,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add src scripts
+          git add src scripts/test-groups.cjs scripts/smoke-audit-fixes-v1086.mjs
           git commit -m '10.86: guard session photos and atomic sync cursor'
           git push origin HEAD:release/v10.86
