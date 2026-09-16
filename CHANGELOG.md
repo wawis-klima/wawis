@@ -1,3 +1,6 @@
+## 10.74
+- uzupełnij opis zmian dla wersji 10.74
+
 ## 10.73
 - lewy skrajny odstęp mobilnego paska zmniejszono do 1 px; prawa krawędź pozostaje 2,5 px, a odzyskane miejsce zwiększa odstępy pomiędzy kontrolkami.
 
