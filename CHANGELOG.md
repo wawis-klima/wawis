@@ -1,5 +1,10 @@
 ## 10.83
-- uzupełnij opis zmian dla wersji 10.83
+- F12: obowiązkowa bramka PR uruchamia teraz rzeczywiste testy Playwright wskazane przez klasyfikator ryzyka, zamiast ograniczać się do testów konfiguracji,
+- F3/F4: przełączenie konta i spóźnione operacje Auth/PUSH nie mogą przywrócić kontekstu poprzedniego użytkownika ani jego generacji,
+- F10: lifecycle PUSH ma ograniczony czas wykonania i nie blokuje bez końca restore ani logout,
+- F11: unieważnione lifecycle PUSH są zachowywane w prywatnej historii tombstone, dzięki czemu bardzo spóźniony sync nie może reaktywować starego właściciela endpointu,
+- F6: push po tankowaniu zawiera recipientUserId i subscriptionGeneration, ma neutralną treść oraz wyłącza wygasły endpoint wyłącznie przy zgodności właściciela i generacji,
+- dodano regresje A→B, timeout lifecycle, historię tombstone oraz realny Playwright mobile/desktop; finalny build produkcyjny jest częścią kontroli wydania.
 
 ## 10.82
 - F1: bloker otwartego modala jest stabilny między rerenderami Reacta, a callback reloadu ponownie sprawdza aktywne blokady przed przeładowaniem,
