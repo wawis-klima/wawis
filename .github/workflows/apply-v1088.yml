@@ -1,0 +1,45 @@
+name: WAWIS apply 10.88 audit fixes
+
+on:
+  push:
+    branches:
+      - release/v10.88
+    paths:
+      - .github/workflows/apply-v1088.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Apply 10.88 patches
+        run: node scripts/apply-v1088-once.cjs
+      - name: Verify exact audit RED to GREEN contracts
+        run: node scripts/smoke-audit-fixes-v1088.mjs
+      - name: Verify affected regression groups
+        run: node scripts/run-test-group.cjs jobs photos protocol fuel nameplates
+      - name: Production build
+        run: npm run build
+      - name: Remove one-shot helpers
+        run: rm scripts/apply-v1088-once.cjs .github/workflows/apply-v1088.yml .github/workflows/repro-v1088-red.yml
+      - name: Commit verified 10.88 implementation
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add -A
+          git commit -m "fix: close 10.88 protocol fuel email and completion audit findings"
+          git push origin HEAD:release/v10.88
