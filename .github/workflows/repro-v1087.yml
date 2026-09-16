@@ -1,0 +1,25 @@
+name: WAWIS 10.87 audit RED reproduction
+
+on:
+  push:
+    branches:
+      - repro/v10.87-audit
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-audit-red:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reproduce exact 10.84 failures and require 10.87 green contract
+        run: node scripts/smoke-audit-fixes-v1087.mjs
