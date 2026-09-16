@@ -2,10 +2,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 const {
   collectReleaseFiles,
   createReleaseZip,
+  listReleaseZipEntries,
   shouldSkipDirectory,
   shouldSkipFile,
 } = require('./release-zip.cjs');
@@ -75,14 +75,14 @@ try {
   assertNoForbiddenFiles(releaseFiles, 'Release file list');
 
   const { zipPath } = createReleaseZip({ rootDir: tempRoot, silent: true });
-  const zipListing = execFileSync('unzip', ['-Z', '-1', zipPath], { encoding: 'utf8' });
-  const zipFiles = zipListing.split(/\r?\n/).filter(Boolean);
+  const zipFiles = listReleaseZipEntries(zipPath);
 
   assert(zipFiles.includes('src/App.jsx'), 'ZIP should include normal source files');
   assert(zipFiles.includes('README.md'), 'ZIP should include normal documentation files');
+  assert.deepEqual([...zipFiles].sort(), [...releaseFiles].sort(), 'ZIP must contain exactly the prepared release file list');
   assertNoForbiddenFiles(zipFiles, 'Release ZIP');
 
-  console.log('Smoke OK: release ZIP excludes logs*, cache, coverage and working files');
+  console.log('Smoke OK: release ZIP excludes logs*, cache, coverage and working files cross-platform');
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
