@@ -10,10 +10,17 @@ function makeRes() {
   };
 }
 
+function restoreEnv(name, value) {
+  if (value == null) delete process.env[name];
+  else process.env[name] = value;
+}
+
 async function runCase({ user, profileRole, profileOk = true }) {
   const calls = [];
   const originalFetch = globalThis.fetch;
-  const originalEnv = { ...process.env };
+  const originalSupabaseUrl = process.env.SUPABASE_URL;
+  const originalAnonKey = process.env.SUPABASE_ANON_KEY;
+  const originalOpenAiKey = process.env.OPENAI_API_KEY;
   process.env.SUPABASE_URL = 'https://example.supabase.co';
   process.env.SUPABASE_ANON_KEY = 'anon-test';
   process.env.OPENAI_API_KEY = 'openai-test';
@@ -51,7 +58,9 @@ async function runCase({ user, profileRole, profileOk = true }) {
     return { res, calls };
   } finally {
     globalThis.fetch = originalFetch;
-    process.env = originalEnv;
+    restoreEnv('SUPABASE_URL', originalSupabaseUrl);
+    restoreEnv('SUPABASE_ANON_KEY', originalAnonKey);
+    restoreEnv('OPENAI_API_KEY', originalOpenAiKey);
   }
 }
 
