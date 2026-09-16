@@ -41,3 +41,5 @@ jobs:
           git add src/mobile791 scripts/smoke-audit-fixes-v1086.mjs
           git commit -m '10.86: close stale-session photo and sync races'
           git push origin HEAD:release/v10.86
+
+# trigger: final audited run
