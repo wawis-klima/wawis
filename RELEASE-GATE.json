@@ -22,18 +22,18 @@
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
     "file_name": "klima-app-v10.75.zip",
-    "file_id": "",
-    "size_bytes": 0,
-    "uploaded": false,
-    "uploaded_at": "",
-    "verified": false
+    "file_id": "19eJA7tgzX61Myyy7D_tdIjVgkf46mA-7",
+    "size_bytes": 12189935,
+    "uploaded": true,
+    "uploaded_at": "2026-09-16T06:27:04.028Z",
+    "verified": true
   },
   "main_protection": {
     "source_branch": "release/v10.75",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks",
-    "final_release_run_id": "",
-    "final_release_head_sha": ""
+    "final_release_run_id": "35063535523",
+    "final_release_head_sha": "cd0ad6f391751f9f9f63117c94f92bc39c68a400"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
