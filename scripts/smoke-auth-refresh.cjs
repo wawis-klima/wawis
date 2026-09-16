@@ -321,7 +321,7 @@ async function runSmokeRefreshWithExplicitNormalizeStatus(refreshAppData) {
 
   assert.equal(payload.profile.role, 'Administrator');
   assert.equal(payload.jobs.length, 1);
-  assert.equal(payload.jobs[0].status, 'Niezrealizowane');
+  assert.equal(payload.jobs[0].status, 'Nowe zlecenie');
   assert.equal(payload.jobs[0].detailsLoaded, false);
   assert.equal(payload.jobs[0].comments.length, 0);
   assert.equal(payload.jobs[0].photos.length, 0);
@@ -347,7 +347,7 @@ async function runSmokeRefreshWithoutExplicitNormalizeStatus(refreshAppData) {
 
   assert.equal(payload.profile.role, 'Pracownik');
   assert.equal(payload.jobs.length, 1);
-  assert.equal(payload.jobs[0].status, 'Niezrealizowane');
+  assert.equal(payload.jobs[0].status, 'Nowe zlecenie');
 }
 
 function loadSmsFetchModule() {
