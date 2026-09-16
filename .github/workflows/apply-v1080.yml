@@ -28,12 +28,13 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import json, re
+          import json
+          import re
 
-          def replace_once(text, old, new, label):
+          def must_replace(text, old, new, label, count=1):
               if old not in text:
                   raise SystemExit(f'Brak wzorca: {label}')
-              return text.replace(old, new, 1)
+              return text.replace(old, new, count)
 
           helper = """function normalizeSessionUserId(value) {
             return String(value || '').trim();
@@ -72,20 +73,20 @@ jobs:
           def patch_hook(path):
               p = Path(path)
               s = p.read_text(encoding='utf-8')
-              s = replace_once(
+              s = must_replace(
                   s,
                   'import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";\n',
                   'import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";\nimport { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";\n',
-                  f'{path}: import session generation',
+                  f'{path}: import generation',
               )
-              s = replace_once(
+              s = must_replace(
                   s,
                   '  const incrementalRefreshInFlightRef = useRef(null);\n',
                   '  const incrementalRefreshInFlightRef = useRef(null);\n  const sessionGenerationStateRef = useRef(createSessionGenerationState());\n',
-                  f'{path}: session generation ref',
+                  f'{path}: generation ref',
               )
 
-              # Existing direct React state writes become generation-aware before helper insertion.
+              # Zamieniamy istniejące bezpośrednie zapisy użytkownika zanim wstawimy wrapper.
               s = re.sub(r'(?m)^(\s*)setSessionUser\(([^\n;]+)\);$', r'\1setSessionUserForGeneration(\2);', s)
 
               helper_block = """  const setSessionUserForGeneration = useCallback((nextUser) => {
@@ -104,73 +105,97 @@ jobs:
           }, []);
 
           """
-              s = replace_once(s, '  const applyLoggedOutState = useCallback(() => {\n', helper_block + '  const applyLoggedOutState = useCallback(() => {\n    setSessionUserForGeneration(null);\n', f'{path}: safe session setter')
+              s = must_replace(
+                  s,
+                  '  const applyLoggedOutState = useCallback(() => {\n',
+                  helper_block + '  const applyLoggedOutState = useCallback(() => {\n    setSessionUserForGeneration(null);\n',
+                  f'{path}: safe user setter',
+              )
               s = s.replace('      setSessionUser,\n', '      setSessionUser: setSessionUserForGeneration,\n')
-              s = s.replace('  }, [setSelectedJob]);\n\n  const refreshAll', '  }, [setSelectedJob, setSessionUserForGeneration]);\n\n  const refreshAll', 1)
+              s = must_replace(
+                  s,
+                  '  }, [setSelectedJob]);\n\n  const refreshAll',
+                  '  }, [setSelectedJob, setSessionUserForGeneration]);\n\n  const refreshAll',
+                  f'{path}: logout deps',
+              )
 
               refresh_start = """    const userId = String(user.id || '').trim();
               const sessionToken = captureSessionGeneration(sessionGenerationStateRef.current, userId);
               const isCurrentSession = () => isSessionGenerationCurrent(sessionGenerationStateRef.current, sessionToken);
               if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
           """
-              s = replace_once(s, "    const userId = String(user.id || '').trim();\n", refresh_start, f'{path}: refresh token')
-              s = s.replace("        const requestKey = `${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;", "        const requestKey = `${sessionToken.generation}:${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;", 1)
+              s = must_replace(s, "    const userId = String(user.id || '').trim();\n", refresh_start, f'{path}: refresh token')
+              s = must_replace(
+                  s,
+                  "        const requestKey = `${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;",
+                  "        const requestKey = `${sessionToken.generation}:${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;",
+                  f'{path}: request key',
+              )
 
-              # Cache reads must not apply after account transition.
-              s = s.replace('        const cached = await loadOfflineAppSnapshot(userId);\n', '        const cached = await loadOfflineAppSnapshot(userId);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              s = s.replace('        const cached = await loadAppDataSnapshot(userId);\n', '        const cached = await loadAppDataSnapshot(userId);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              s = s.replace('          const operations = await listOfflineJobOperations(userId);\n', '          const operations = await listOfflineJobOperations(userId);\n          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              s = s.replace('      changeCursorAtRefreshStart = await loadMobileChangeHead({ supabase }).catch(() => null);\n', '      changeCursorAtRefreshStart = await loadMobileChangeHead({ supabase }).catch(() => null);\n      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              s = s.replace('        if (!Array.isArray(freshJobs)) return;\n', '        if (!Array.isArray(freshJobs) || !isCurrentSession()) return;\n', 1)
-              s = s.replace("        const operations = await listOfflineJobOperations(String(activeUser?.id || userId));\n", "        const operations = await listOfflineJobOperations(String(activeUser?.id || userId));\n        if (!isCurrentSession()) return;\n", 1)
-              s = s.replace('        setSessionUserForGeneration(refreshedUser);\n        payload = await loadServerPayloadOnce(refreshedUser);', '        setSessionUserForGeneration(refreshedUser);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n        payload = await loadServerPayloadOnce(refreshedUser);', 1)
-              s = s.replace('      if (refreshRequestId < lastAppliedServerRequestIdRef.current) {', '      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };\n      if (refreshRequestId < lastAppliedServerRequestIdRef.current) {', 1)
-              s = s.replace("    } catch (error) {\n      console.error('refreshAll failed', error);", "    } catch (error) {\n      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };\n      console.error('refreshAll failed', error);", 1)
-              s = s.replace('    } finally {\n      if (!silent) {', '    } finally {\n      if (!silent && isCurrentSession()) {', 1)
-              s = s.replace('  }, [normalizeStatus, selectedJobIdRef, setSelectedJob, supabase]);', '  }, [normalizeStatus, selectedJobIdRef, setSelectedJob, setSessionUserForGeneration, supabase]);', 1)
+              # Guards po asynchronicznych punktach pełnego refreshu.
+              if '        const cached = await loadOfflineAppSnapshot(userId);\n' in s:
+                  s = s.replace('        const cached = await loadOfflineAppSnapshot(userId);\n', '        const cached = await loadOfflineAppSnapshot(userId);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
+              if '        const cached = await loadAppDataSnapshot(userId);\n' in s:
+                  s = s.replace('        const cached = await loadAppDataSnapshot(userId);\n', '        const cached = await loadAppDataSnapshot(userId);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
+              s = must_replace(
+                  s,
+                  '      changeCursorAtRefreshStart = await loadMobileChangeHead({ supabase }).catch(() => null);\n',
+                  '      changeCursorAtRefreshStart = await loadMobileChangeHead({ supabase }).catch(() => null);\n      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n',
+                  f'{path}: feed head guard',
+              )
+              s = must_replace(s, '        if (!Array.isArray(freshJobs)) return;\n', '        if (!Array.isArray(freshJobs) || !isCurrentSession()) return;\n', f'{path}: jobs-first guard')
+              if "        const operations = await listOfflineJobOperations(String(activeUser?.id || userId));\n" in s:
+                  s = s.replace("        const operations = await listOfflineJobOperations(String(activeUser?.id || userId));\n", "        const operations = await listOfflineJobOperations(String(activeUser?.id || userId));\n        if (!isCurrentSession()) return;\n", 1)
+              s = must_replace(
+                  s,
+                  '      if (refreshRequestId < lastAppliedServerRequestIdRef.current) {',
+                  '      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };\n      if (refreshRequestId < lastAppliedServerRequestIdRef.current) {',
+                  f'{path}: final guard',
+              )
+              s = must_replace(
+                  s,
+                  "    } catch (error) {\n      console.error('refreshAll failed', error);",
+                  "    } catch (error) {\n      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };\n      console.error('refreshAll failed', error);",
+                  f'{path}: error guard',
+              )
+              s = must_replace(s, '    } finally {\n      if (!silent) {', '    } finally {\n      if (!silent && isCurrentSession()) {', f'{path}: finally guard')
+              s = must_replace(
+                  s,
+                  '  }, [normalizeStatus, selectedJobIdRef, setSelectedJob, supabase]);',
+                  '  }, [normalizeStatus, selectedJobIdRef, setSelectedJob, setSessionUserForGeneration, supabase]);',
+                  f'{path}: refresh deps',
+              )
 
-              # Incremental refresh gets the same account-generation token.
-              old_changed = """  const refreshChanged = useCallback(async (user, options = {}) => {
-            if (!supabase || !user) return { ok: false, unavailable: true };
-            if (incrementalRefreshInFlightRef.current) return incrementalRefreshInFlightRef.current;
-
-            const request = (async () => {
-              const userId = String(user.id || '').trim();
-          """
-              new_changed = """  const refreshChanged = useCallback(async (user, options = {}) => {
-            if (!supabase || !user) return { ok: false, unavailable: true };
-            const userId = String(user.id || '').trim();
-            const sessionToken = captureSessionGeneration(sessionGenerationStateRef.current, userId);
-            const isCurrentSession = () => isSessionGenerationCurrent(sessionGenerationStateRef.current, sessionToken);
-            if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
-            if (incrementalRefreshInFlightRef.current) return incrementalRefreshInFlightRef.current;
-
-            const request = (async () => {
-          """
-              s = replace_once(s, old_changed, new_changed, f'{path}: incremental token')
+              # Incremental refresh: krótki, stabilny prefix zamiast zależności od formatowania całego bloku.
+              old_prefix = "  const refreshChanged = useCallback(async (user, options = {}) => {\n    if (!supabase || !user) return { ok: false, unavailable: true };\n    if (incrementalRefreshInFlightRef.current) return incrementalRefreshInFlightRef.current;\n\n    const request = (async () => {\n      const userId = String(user.id || '').trim();\n"
+              new_prefix = "  const refreshChanged = useCallback(async (user, options = {}) => {\n    if (!supabase || !user) return { ok: false, unavailable: true };\n    const userId = String(user.id || '').trim();\n    const sessionToken = captureSessionGeneration(sessionGenerationStateRef.current, userId);\n    const isCurrentSession = () => isSessionGenerationCurrent(sessionGenerationStateRef.current, sessionToken);\n    if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n    if (incrementalRefreshInFlightRef.current) return incrementalRefreshInFlightRef.current;\n\n    const request = (async () => {\n"
+              s = must_replace(s, old_prefix, new_prefix, f'{path}: incremental token')
               changed_idx = s.index('  const refreshChanged = useCallback')
               prefix, tail = s[:changed_idx], s[changed_idx:]
-              tail = tail.replace('        const operations = await listOfflineJobOperations(userId);\n', '        const operations = await listOfflineJobOperations(userId);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              tail = tail.replace('          const batch = await loadMobileChangeBatch({ supabase, afterCursor: cursor, limit: 100 });\n', '          const batch = await loadMobileChangeBatch({ supabase, afterCursor: cursor, limit: 100 });\n          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              tail = tail.replace('              summary = await loadJobSummaryData({ supabase, jobId: change.jobId });\n', '              summary = await loadJobSummaryData({ supabase, jobId: change.jobId });\n              if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
-              tail = tail.replace('            cursor = nextCursor;\n', '            if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n            cursor = nextCursor;\n', 1)
-              tail = tail.replace('        if (processed > 0) {\n', '        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n        if (processed > 0) {\n', 1)
-              # Desktop save block has the same cursor assignment; the replacement above covers it.
-              tail = tail.replace("      } catch (error) {\n        console.warn('Przyrostowe odświeżanie", "      } catch (error) {\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n        console.warn('Przyrostowe odświeżanie", 1)
+              if '        const operations = await listOfflineJobOperations(userId);\n' in tail:
+                  tail = tail.replace('        const operations = await listOfflineJobOperations(userId);\n', '        const operations = await listOfflineJobOperations(userId);\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', 1)
+              tail = must_replace(tail, '          const batch = await loadMobileChangeBatch({ supabase, afterCursor: cursor, limit: 100 });\n', '          const batch = await loadMobileChangeBatch({ supabase, afterCursor: cursor, limit: 100 });\n          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', f'{path}: batch guard')
+              tail = must_replace(tail, '              summary = await loadJobSummaryData({ supabase, jobId: change.jobId });\n', '              summary = await loadJobSummaryData({ supabase, jobId: change.jobId });\n              if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n', f'{path}: summary guard')
+              tail = must_replace(tail, '            cursor = nextCursor;\n', '            if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n            cursor = nextCursor;\n', f'{path}: cursor guard')
+              tail = must_replace(tail, '        if (processed > 0) {\n', '        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n        if (processed > 0) {\n', f'{path}: jobs apply guard')
+              tail = must_replace(tail, "      } catch (error) {\n        console.warn('Przyrostowe odświeżanie", "      } catch (error) {\n        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };\n        console.warn('Przyrostowe odświeżanie", f'{path}: incremental error guard')
               s = prefix + tail
 
-              # All Auth entry points update generation before any refresh can apply data.
+              # Wszystkie moduły Auth dostają setter zmieniający generację przed refreshAll.
               s = s.replace('      setSessionUser,\n', '      setSessionUser: setSessionUserForGeneration,\n')
               s = s.replace('          setSessionUser,\n', '          setSessionUser: setSessionUserForGeneration,\n')
-              s = s.replace('      setSessionUser,\n', '      setSessionUser: setSessionUserForGeneration,\n')
-              s = s.replace('  }, [applyLoggedOutState, logoutFlagKey, refreshAll, supabase]);', '  }, [applyLoggedOutState, logoutFlagKey, refreshAll, setSessionUserForGeneration, supabase]);', 1)
-
+              s = must_replace(
+                  s,
+                  '  }, [applyLoggedOutState, logoutFlagKey, refreshAll, supabase]);',
+                  '  }, [applyLoggedOutState, logoutFlagKey, refreshAll, setSessionUserForGeneration, supabase]);',
+                  f'{path}: auth effect deps',
+              )
               p.write_text(s, encoding='utf-8')
 
           patch_hook('src/hooks/useAppSession.js')
           patch_hook('src/mobile791/hooks/useAppSession.js')
 
-          # Full request timeout, including body consumption after headers arrive.
+          # Timeout trwa aż do konsumpcji body, nie tylko do nagłówków.
           request_timeout = """export const MOBILE_SUPABASE_REQUEST_TIMEOUT_MS = 45 * 1000;
           export const MOBILE_SUPABASE_STORAGE_TIMEOUT_MS = 90 * 1000;
 
@@ -208,6 +233,9 @@ jobs:
             const bodyMethods = new Set(['arrayBuffer', 'blob', 'formData', 'json', 'text']);
             return new Proxy(response, {
               get(target, property) {
+                if (property === 'clone' && typeof target.clone === 'function') {
+                  return () => wrapTimedResponse(target.clone(), { getTimeoutError, cleanup });
+                }
                 if (bodyMethods.has(property) && typeof target[property] === 'function') {
                   return async (...args) => {
                     const existingTimeout = getTimeoutError();
@@ -235,11 +263,7 @@ jobs:
           export async function fetchWithTimeout(input, init = {}, options = {}) {
             const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
             if (typeof fetchImpl !== 'function') throw new Error('Brak implementacji fetch dla Supabase.');
-
-            const resolvedTimeout = Math.max(
-              1,
-              Number(options.timeoutMs || resolveSupabaseRequestTimeoutMs(input)) || MOBILE_SUPABASE_REQUEST_TIMEOUT_MS,
-            );
+            const resolvedTimeout = Math.max(1, Number(options.timeoutMs || resolveSupabaseRequestTimeoutMs(input)) || MOBILE_SUPABASE_REQUEST_TIMEOUT_MS);
             if (typeof AbortController === 'undefined') return fetchImpl(input, init);
 
             const controller = new AbortController();
@@ -248,7 +272,6 @@ jobs:
             let detachExternalAbort = null;
             let timeoutId = null;
             let cleaned = false;
-
             const cleanup = () => {
               if (cleaned) return;
               cleaned = true;
@@ -258,11 +281,7 @@ jobs:
 
             if (externalSignal) {
               const abortFromExternalSignal = () => {
-                try {
-                  controller.abort(externalSignal.reason);
-                } catch {
-                  controller.abort();
-                }
+                try { controller.abort(externalSignal.reason); } catch { controller.abort(); }
               };
               if (externalSignal.aborted) abortFromExternalSignal();
               else if (typeof externalSignal.addEventListener === 'function') {
@@ -273,11 +292,7 @@ jobs:
 
             timeoutId = setTimeout(() => {
               timeoutError = createSupabaseRequestTimeoutError(resolvedTimeout);
-              try {
-                controller.abort(timeoutError);
-              } catch {
-                controller.abort();
-              }
+              try { controller.abort(timeoutError); } catch { controller.abort(); }
             }, resolvedTimeout);
 
             let response;
@@ -288,7 +303,6 @@ jobs:
               if (timeoutError) throw timeoutError;
               throw error;
             }
-
             if (timeoutError) {
               cleanup();
               throw timeoutError;
@@ -297,7 +311,6 @@ jobs:
               cleanup();
               return response;
             }
-
             return wrapTimedResponse(response, { getTimeoutError: () => timeoutError, cleanup });
           }
 
@@ -305,26 +318,15 @@ jobs:
             return (input, init = {}) => fetchWithTimeout(input, init, options);
           }
           """
-          Path('src/mobile791/modules/request-timeout.js').write_text(request_timeout.replace('          ', ''), encoding='utf-8')
+          request_timeout = re.sub(r'^          ', '', request_timeout, flags=re.M)
+          Path('src/mobile791/modules/request-timeout.js').write_text(request_timeout, encoding='utf-8')
 
-          # A late status/error update must never resurrect an operation already superseded/deleted.
+          # Atomowe get+put w jednej transakcji zapobiega wskrzeszeniu usuniętego wpisu.
           p = Path('src/mobile791/modules/job-offline-store.js')
           s = p.read_text(encoding='utf-8')
-          old = """export async function updateOfflineJobOperation(operationId, patch = {}) {
-            if (!operationId) return false;
-            try {
-              const current = await withStore(OPERATION_STORE, 'readonly', (store) => store.get(String(operationId)));
-              if (!current) return false;
-              await withStore(OPERATION_STORE, 'readwrite', (store) => store.put({ ...current, ...patch, id: String(operationId) }));
-              dispatchOfflineChanged();
-              return true;
-            } catch (error) {
-              console.warn('Nie udało się zaktualizować zmiany offline.', error?.message || error);
-              return false;
-            }
-          }
-          """.replace('            ', '')
-          new = """export async function updateOfflineJobOperation(operationId, patch = {}) {
+          start = s.index('export async function updateOfflineJobOperation')
+          end = s.index('export async function deleteOfflineJobOperation', start)
+          new_update = """export async function updateOfflineJobOperation(operationId, patch = {}) {
             if (!operationId) return false;
             let db;
             try {
@@ -335,7 +337,6 @@ jobs:
                 const store = transaction.objectStore(OPERATION_STORE);
                 const request = store.get(String(operationId));
                 let changed = false;
-
                 request.onsuccess = () => {
                   const current = request.result;
                   if (!current) return;
@@ -356,12 +357,11 @@ jobs:
               db?.close();
             }
           }
-          """.replace('            ', '')
-          if old not in s:
-              raise SystemExit('Brak starej implementacji updateOfflineJobOperation')
-          p.write_text(s.replace(old, new, 1), encoding='utf-8')
 
-          # Behavioral smoke: session generation + body timeout; integration assertions for both hooks and IDB update shape.
+          """
+          new_update = re.sub(r'^          ', '', new_update, flags=re.M)
+          p.write_text(s[:start] + new_update + s[end:], encoding='utf-8')
+
           smoke = r"""import assert from 'node:assert/strict';
           import fs from 'node:fs';
           import { createSessionGenerationState, transitionSessionGeneration, captureSessionGeneration, isSessionGenerationCurrent } from '../src/mobile791/modules/session-generation.js';
@@ -377,7 +377,7 @@ jobs:
           const valueA = await lateA;
           if (isSessionGenerationCurrent(state, tokenA)) applied = valueA;
           if (isSessionGenerationCurrent(state, tokenB)) applied = 'B';
-          assert.equal(applied, 'B', 'Późna odpowiedź konta A nie może zastosować stanu po przejściu na B.');
+          assert.equal(applied, 'B');
           assert.equal(isSessionGenerationCurrent(state, tokenA), false);
           assert.equal(isSessionGenerationCurrent(state, tokenB), true);
 
@@ -385,9 +385,7 @@ jobs:
             const stream = new ReadableStream({
               start(controller) {
                 controller.enqueue(new TextEncoder().encode('{"partial":'));
-                init.signal?.addEventListener?.('abort', () => {
-                  controller.error(init.signal?.reason || Object.assign(new Error('aborted'), { name: 'AbortError' }));
-                }, { once: true });
+                init.signal?.addEventListener?.('abort', () => controller.error(init.signal?.reason || Object.assign(new Error('aborted'), { name: 'AbortError' })), { once: true });
               },
             });
             return new Response(stream, { status: 200, headers: { 'content-type': 'application/json' } });
@@ -395,7 +393,7 @@ jobs:
           const response = await fetchWithTimeout('https://example.test/rest/v1/jobs', {}, { timeoutMs: 30, fetchImpl: bodyHungFetch });
           let bodyTimeout = null;
           try { await response.text(); } catch (error) { bodyTimeout = error; }
-          assert(bodyTimeout, 'Timeout musi obejmować także zawieszone body po otrzymaniu nagłówków.');
+          assert(bodyTimeout, 'Timeout musi obejmować body po nagłówkach.');
           assert.equal(bodyTimeout.code, 'SUPABASE_REQUEST_TIMEOUT');
           assert.equal(bodyTimeout.name, 'AbortError');
 
@@ -414,23 +412,22 @@ jobs:
             assert.match(source, /ignoredStaleSession/);
             assert.match(source, /sessionToken\.generation/);
           }
-
           const storeSource = fs.readFileSync('src/mobile791/modules/job-offline-store.js', 'utf8');
           const updateSource = storeSource.match(/export async function updateOfflineJobOperation[\s\S]*?export async function deleteOfflineJobOperation/)?.[0] || '';
           assert.match(updateSource, /db\.transaction\(OPERATION_STORE, 'readwrite'\)/);
           assert.match(updateSource, /const request = store\.get/);
           assert.match(updateSource, /store\.put/);
           assert.doesNotMatch(updateSource, /withStore\(OPERATION_STORE, 'readonly'/);
-
-          console.log('OK: 10.80 — generation guard, timeout całego response body i atomowa aktualizacja kolejki.');
-          """.replace('          ', '')
+          console.log('OK: 10.80 — session generation, pełny body-timeout i atomowa aktualizacja kolejki.');
+          """
+          smoke = re.sub(r'^          ', '', smoke, flags=re.M)
           Path('scripts/smoke-session-sync-resilience-v1080.mjs').write_text(smoke, encoding='utf-8')
 
-          # Extend the real Chromium IndexedDB regression with the stale-update race.
+          # Realny browser/IndexedDB regression: stary updater nie może odtworzyć starego rekordu.
           e2e = Path('tests/e2e/mobile-offline-atomic-v1075.spec.js')
           e2e_source = e2e.read_text(encoding='utf-8')
           if 'v10.80 — spóźniona aktualizacja nie wskrzesza' not in e2e_source:
-              e2e_source += r"""
+              addition = r"""
 
           test('@mobile v10.80 — spóźniona aktualizacja nie wskrzesza zastąpionej operacji', async ({ page }) => {
             await page.goto('/');
@@ -465,7 +462,6 @@ jobs:
                 }
                 return tx;
               };
-
               try {
                 const lateUpdate = store.updateOfflineJobOperation('status-race-old', { error: 'late-old-update' });
                 await new Promise((resolve) => setTimeout(resolve, 15));
@@ -477,28 +473,24 @@ jobs:
               } finally {
                 IDBDatabase.prototype.transaction = originalTransaction;
               }
-
               const rows = await store.listOfflineJobOperations('worker-race');
               return rows.map((row) => ({ id: row.id, payload: row.payload, error: row.error }));
             });
-
             expect(result).toHaveLength(1);
             expect(result[0].id).toBe('status-race-new');
             expect(result[0].payload.status).toBe('Zakończone');
           });
-          """.replace('          ', '')
-              e2e.write_text(e2e_source, encoding='utf-8')
+          """
+              addition = re.sub(r'^          ', '', addition, flags=re.M)
+              e2e.write_text(e2e_source + addition, encoding='utf-8')
 
-          # Make the new behavioral smoke part of the normal core PR group.
           tg = Path('scripts/test-groups.cjs')
           tgs = tg.read_text(encoding='utf-8')
           anchor = "    'node scripts/smoke-mobile-offline-resilience-v1075.mjs',\n"
-          if "smoke-session-sync-resilience-v1080.mjs" not in tgs:
-              if anchor not in tgs: raise SystemExit('Brak miejsca w core test group')
-              tgs = tgs.replace(anchor, anchor + "    'node scripts/smoke-session-sync-resilience-v1080.mjs',\n", 1)
+          if 'smoke-session-sync-resilience-v1080.mjs' not in tgs:
+              tgs = must_replace(tgs, anchor, anchor + "    'node scripts/smoke-session-sync-resilience-v1080.mjs',\n", 'core test group')
           tg.write_text(tgs, encoding='utf-8')
 
-          # Release metadata.
           gate_path = Path('RELEASE-GATE.json')
           gate = json.loads(gate_path.read_text(encoding='utf-8'))
           gate['version'] = '10.80'
@@ -506,12 +498,9 @@ jobs:
           gate['release_branch'] = 'release/v10.80'
           gate['baseline_diagnostics'] = {
             'checked': True, 'last_24h': True, 'checked_at': '2026-09-16T10:45:00+02:00', 'result': 'INFO',
-            'notes': '10.80: session generation + pełny body timeout + atomowa aktualizacja kolejki; diagnostyka informacyjna.'
+            'notes': '10.80: session generation + pełny body-timeout + atomowa aktualizacja kolejki; diagnostyka informacyjna.'
           }
-          gate['main_protection'] = {
-            'source_branch': 'release/v10.80', 'ready_for_main': True,
-            'required_check': 'WAWIS PR checks / targeted-checks'
-          }
+          gate['main_protection'] = {'source_branch': 'release/v10.80', 'ready_for_main': True, 'required_check': 'WAWIS PR checks / targeted-checks'}
           gate_path.write_text(json.dumps(gate, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
           Path('release-notes.json').write_text(json.dumps({
@@ -520,11 +509,10 @@ jobs:
             'changes': [
               'Generacja sesji blokuje spóźnione odpowiedzi starego konta na mobile i desktop.',
               'Timeout Supabase obejmuje również odczyt body po otrzymaniu nagłówków.',
-              'Aktualizacja wpisu kolejki offline odbywa się w jednej transakcji readwrite i nie może wskrzesić zastąpionej operacji.',
-              'Dodano test zachowania A→B, zawieszonego body oraz prawdziwy test IndexedDB w Chromium.'
+              'Aktualizacja wpisu kolejki offline odbywa się w jednej transakcji readwrite.',
+              'Regresje obejmują A→B, zawieszone body oraz prawdziwy IndexedDB w Chromium.'
             ]
           }, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-
           Path('RELEASE-RESULT.md').write_text("""# RELEASE RESULT
 
           ## Wersja
@@ -548,16 +536,15 @@ jobs:
           python3 <<'PY'
           from pathlib import Path
           r = Path('README.md')
-          s = r.read_text(encoding='utf-8')
-          s = s.replace('- wersja `10.80` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.', '- wersja `10.80` — ochrona sesji A→B, pełny timeout odpowiedzi i bezpieczna kolejka offline.')
+          s = r.read_text(encoding='utf-8').replace('- wersja `10.80` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.', '- wersja `10.80` — ochrona sesji A→B, pełny timeout odpowiedzi i bezpieczna kolejka offline.')
           r.write_text(s, encoding='utf-8')
           c = Path('CHANGELOG.md')
           s = c.read_text(encoding='utf-8')
           s = s.replace('## 10.80\n- uzupełnij opis zmian dla wersji 10.80', """## 10.80
-          - Dodano generację sesji na mobile i desktop: odpowiedzi wystartowane dla konta A są ignorowane po logout/przejściu na konto B.
-          - Timeout mobilnego klienta Supabase obejmuje teraz również odczyt body po otrzymaniu nagłówków HTTP.
-          - `updateOfflineJobOperation` używa jednej transakcji IndexedDB `readwrite`, więc spóźniona aktualizacja nie może wskrzesić zastąpionej operacji.
-          - Dodano behawioralne regresje A→B i body-timeout oraz test Chromium dla wyścigu IndexedDB.""".replace('          ', ''))
+          - Generacja sesji na mobile i desktop blokuje odpowiedzi wystartowane dla poprzedniego konta.
+          - Timeout mobilnego Supabase obejmuje odczyt body po otrzymaniu nagłówków HTTP.
+          - Aktualizacja operacji offline używa jednej transakcji IndexedDB `readwrite`.
+          - Dodano behawioralne regresje A→B i body-timeout oraz test Chromium wyścigu IndexedDB.""".replace('          ', ''))
           c.write_text(s, encoding='utf-8')
           PY
 
