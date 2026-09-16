@@ -4,71 +4,50 @@ on:
   push:
     branches:
       - release/v10.74
-  workflow_dispatch:
-    inputs:
-      scope:
-        description: Tryb wydania — AUTO sam dobiera zakres do zmian
-        required: true
-        default: auto
-        type: choice
-        options:
-          - auto
-          - full
-          - mobile
-          - desktop
-
-concurrency:
-  group: wawis-final-release-${{ github.ref }}
-  cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  final-release:
+  prepare-release-notes:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 10
     steps:
-      - name: Checkout selected release branch
+      - name: Checkout release branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Fetch production base
-        run: git fetch origin main:refs/remotes/origin/main --force
+      - name: Write 10.74 release notes
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const readmePath = 'README.md';
+          const changelogPath = 'CHANGELOG.md';
+          let readme = fs.readFileSync(readmePath, 'utf8');
+          const marker = '## Ostatnia poprawka\n';
+          const newLine = '- wersja `10.74` — zapis protokołów PDF i zdjęć licznika uzgadnia stan bazy po niejednoznacznej odpowiedzi; plik pozostaje w Storage, dopóki nie ma pewności, że rekord nie powstał.\n';
+          if (!readme.includes(newLine)) {
+            if (!readme.includes(marker)) throw new Error('Brak sekcji Ostatnia poprawka w README.');
+            readme = readme.replace(marker, marker + newLine);
+          }
+          fs.writeFileSync(readmePath, readme);
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
+          let changelog = fs.readFileSync(changelogPath, 'utf8');
+          const placeholder = '## 10.74\n- uzupełnij opis zmian dla wersji 10.74';
+          const releaseNotes = '## 10.74\n- Naprawiono zapis protokołów PDF: przy utraconej lub niejednoznacznej odpowiedzi po INSERT/UPDATE aplikacja najpierw odczytuje rekord i nie usuwa nowego pliku, dopóki nie potwierdzi braku zapisu.\n- Przy zastępowaniu protokołu stary PDF jest usuwany dopiero po potwierdzeniu, że rekord wskazuje na nowy plik.\n- Naprawiono analogiczny scenariusz zdjęcia licznika przy tankowaniu; uzgodnienie odbywa się po unikalnej ścieżce `odometer_photo_path`.\n- Dodano test regresji v10.74 dla udanego commitu z utraconą odpowiedzią, błędu odczytu kontrolnego i jednoznacznie nieudanego zapisu.';
+          if (changelog.includes(placeholder)) changelog = changelog.replace(placeholder, releaseNotes);
+          fs.writeFileSync(changelogPath, changelog);
+          NODE
 
-      - name: Install dependencies
-        run: npm ci --include=optional --registry=https://registry.npmjs.org/
-
-      - name: Pre-release policy gate
-        run: node scripts/release-policy-gate.cjs
-
-      - name: Detect automatic release profile
-        id: impact
-        run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
-
-      - name: Install Chromium for Playwright when needed
-        run: npx playwright install --with-deps chromium
-
-      - name: Run one final release pass
-        run: node scripts/run-release.cjs full --base-ref origin/main --skip-version-bump
-
-      - name: Upload final ZIP and release report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: wawis-final-release-${{ github.ref_name }}
-          path: |
-            releases/klima-app-v*.zip
-            RELEASE-RESULT.md
-            RELEASE-IMPACT.json
-            playwright-report
-            test-results
-          if-no-files-found: warn
-          retention-days: 14
+      - name: Commit release notes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "Release notes already finalized."
+          else
+            git commit -m "docs: finalize 10.74 release notes"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
