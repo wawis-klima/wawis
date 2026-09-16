@@ -1,10 +1,10 @@
 {
-  "version": "10.80",
-  "summary": "Ochrona sesji A→B i domknięcie odporności synchronizacji.",
+  "version": "10.81",
+  "summary": "Bezpieczna aktualizacja aplikacji bez utraty otwartego protokołu lub formularza.",
   "changes": [
-    "Generacja sesji blokuje spóźnione odpowiedzi starego konta na mobile i desktop.",
-    "Timeout Supabase obejmuje również odczyt body po otrzymaniu nagłówków.",
-    "Aktualizacja wpisu kolejki offline odbywa się w jednej transakcji readwrite.",
-    "Regresje obejmują A→B, zawieszone body oraz prawdziwy IndexedDB w Chromium."
+    "Automatyczny reload po zmianie wersji i Service Workerze przechodzi przez wspólny guard.",
+    "Otwarty modal na mobile lub desktop odracza reload do bezpiecznego zamknięcia.",
+    "Protokół z podpisem klienta i formularze montażu są chronione przez wspólny AppModal.",
+    "Po zamknięciu ostatniego modala oczekująca aktualizacja wykonuje jeden reload; aktywna praca korzysta też z beforeunload."
   ]
 }

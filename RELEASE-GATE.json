@@ -1,14 +1,14 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.80",
+  "version": "10.81",
   "scope": "full",
-  "release_branch": "release/v10.80",
+  "release_branch": "release/v10.81",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T10:45:00+02:00",
+    "checked_at": "2026-09-16T11:20:00+02:00",
     "result": "INFO",
-    "notes": "10.80: session generation + pełny body-timeout + atomowa aktualizacja kolejki; diagnostyka informacyjna."
+    "notes": "10.81: odroczenie wymuszonego reloadu przy otwartym protokole/formularzu; diagnostyka informacyjna."
   },
   "predeploy_diagnostics": {
     "checked": false,
@@ -18,7 +18,7 @@
     "notes": "Informacyjne; nie blokuje release."
   },
   "main_protection": {
-    "source_branch": "release/v10.80",
+    "source_branch": "release/v10.81",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
