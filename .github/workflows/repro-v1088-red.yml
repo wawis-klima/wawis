@@ -1,0 +1,27 @@
+name: WAWIS reproduce 10.88 RED
+
+on:
+  push:
+    branches:
+      - release/v10.88
+    paths:
+      - .github/workflows/repro-v1088-red.yml
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reproduce exact 10.84 findings and require current GREEN
+        run: node scripts/smoke-audit-fixes-v1088.mjs
