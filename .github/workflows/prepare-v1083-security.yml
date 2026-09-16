@@ -29,6 +29,7 @@ jobs:
           python3 scripts/prepare-v1083-fix1.py
           python3 scripts/prepare-v1083-fix2.py
           python3 scripts/prepare-v1083-fix3.py
+          python3 scripts/prepare-v1083-fix4.py
 
       - name: Bump version to 10.83
         shell: bash
@@ -80,6 +81,7 @@ jobs:
           rm scripts/prepare-v1083-fix1.py
           rm scripts/prepare-v1083-fix2.py
           rm scripts/prepare-v1083-fix3.py
+          rm scripts/prepare-v1083-fix4.py
           git config user.name "wawis-klima"
           git config user.email "wasik@wawis.pl"
           git add -A
