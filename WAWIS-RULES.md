@@ -8,7 +8,7 @@ Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji
 - Dla każdej wersji tworzymy `release/v<WERSJA>` i wszystkie zmiany robocze wykonujemy tam.
 - Nie robimy serii roboczych commitów bezpośrednio na `main`.
 - Domyślny tryb normalnego finalnego wydania to `auto`; ręczne `mobile`, `desktop` albo `full` pozostają trybem awaryjnym.
-- Normalne wydanie trafia do `main` dopiero po testach, pre-deploy GO, finalnym ZIP i zweryfikowanym backupie Drive.
+- Normalne wydanie trafia do `main` dopiero po testach, finalnym ZIP i zweryfikowanym backupie Drive.
 - Wyjątek stanowi ściśle ograniczony tryb `MICRO UI`, opisany niżej: CSS-only, jeden PR check, jeden merge, jeden Vercel; ZIP powstaje po merge i nie blokuje produkcji.
 - Push/merge do `main` jest sygnałem produkcyjnego wdrożenia i powinien wystąpić zasadniczo raz dla gotowej wersji.
 
@@ -56,15 +56,19 @@ Pliki wygenerowane wyłącznie przez podbicie wersji oraz dokumentacja wydania n
 
 ## 4. Diagnostyka
 
-Dla normalnych wydań przed zmianami sprawdzamy `app_diagnostic_events` z ostatnich 24 godzin i zapisujemy baseline w `RELEASE-GATE.json`. Przed finalnym release sprawdzamy ponownie ostatnie 24 h. Nowy niewyjaśniony problem oznacza `NO-GO`.
+Diagnostykę sprawdzamy **na początku pracy nad wersją**, żeby wiedzieć, czy produkcja ma już istniejące problemy zanim zaczniemy zmiany. Wynik można zapisać jako baseline w `RELEASE-GATE.json`.
 
-Dla MICRO UI diagnostyka nie blokuje samego deployu, ponieważ ścieżka dopuszcza wyłącznie CSS. Po produkcji nadal można wykonać kontrolę wersji i diagnostyki asynchronicznie.
+Diagnostyka jest od teraz **informacyjna**. Nie jest elementem GO/NO-GO finalnego release, nie blokuje merge do `main`, Vercela ani zamknięcia post-deploy. Powód: zdarzenia mogą zostać dosłane z opóźnieniem przez starszą wersję aplikacji i dawać fałszywy alarm po wdrożeniu.
+
+Po produkcji diagnostykę nadal zbieramy i analizujemy jako raport. Realne nowe błędy trafiają do kolejnej poprawki, ale sam raport nie zatrzymuje wydanej wersji.
 
 ## 5. Bramka GO / NO-GO
 
 ### Normalne wydanie
 
-Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, diagnostyki GO, wymaganych testów, produkcyjnego builda, `verify:bundle`, `verify:release`, finalnego ZIP-a, zweryfikowanego backupu Drive oraz `ready_for_main=true`.
+Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, wymaganych testów, produkcyjnego builda, `verify:bundle`, `verify:release`, finalnego ZIP-a, zweryfikowanego backupu Drive oraz `ready_for_main=true`.
+
+**Diagnostyka nie jest warunkiem bramki GO/NO-GO.**
 
 ### MICRO UI
 
@@ -101,15 +105,22 @@ Dla MICRO UI ZIP nie blokuje wdrożenia. Po merge workflow `WAWIS micro UI archi
 
 ## 8. POST-DEPLOY EVIDENCE
 
-Dla normalnego wydania po wdrożeniu uruchamiamy `.github/workflows/post-deploy-checks.yml` albo równoważny `scripts/post-deploy-check.mjs`. Dowód potwierdza produkcyjną wersję, cache service workera oraz diagnostykę Supabase.
+Dla normalnego wydania po wdrożeniu uruchamiamy `.github/workflows/post-deploy-checks.yml` albo równoważny `scripts/post-deploy-check.mjs`.
 
-Dla MICRO UI ten dowód jest asynchroniczny i nie blokuje wejścia CSS-only na produkcję.
+Twarda weryfikacja post-deploy potwierdza wyłącznie:
+
+- produkcyjny `/app-version.json` ma właściwą wersję,
+- produkcyjny Service Worker zawiera właściwy cache `wawis-app-shell-v<WERSJA>`.
+
+Diagnostyka Supabase jest dołączana do dowodu jako **informacyjny raport** i nie może zmienić post-deploy z GO na NO-GO. Brak sekretów Supabase w runnerze również nie blokuje live-checku.
+
+Dla MICRO UI ten dowód pozostaje asynchroniczny i nie blokuje wejścia CSS-only na produkcję.
 
 ## 9. Stała kolejność
 
 Normalny release:
 
-`BASELINE -> RELEASE BRANCH -> ZMIANA -> PR CHECKS -> PRE-DEPLOY -> FINAL RELEASE -> BUILD/VERIFY/ZIP -> DRIVE -> MAIN -> VERCEL -> POST-DEPLOY`
+`DIAGNOSTYKA STARTOWA (INFO) -> RELEASE BRANCH -> ZMIANA -> PR CHECKS -> FINAL RELEASE -> BUILD/VERIFY/ZIP -> DRIVE -> MAIN -> VERCEL -> LIVE VERSION/SW -> DIAGNOSTYKA RAPORTOWA (INFO)`
 
 MICRO UI:
 
