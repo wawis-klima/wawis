@@ -1,31 +1,37 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.73",
-  "release_mode": "micro-ui",
-  "scope": "mobile",
-  "release_branch": "release/v10.73",
+  "version": "10.74",
+  "scope": "full",
+  "release_branch": "release/v10.74",
+  "baseline_diagnostics": {
+    "checked": true,
+    "last_24h": true,
+    "checked_at": "2026-09-16T05:28:26.818718Z",
+    "result": "GO",
+    "notes": "24 h: 3 błędy i 11 ostrzeżeń pochodzą ze starszych wersji. Od wdrożenia 10.73 (2026-09-15T18:29:04Z) brak nowych warning/error: 0."
+  },
+  "predeploy_diagnostics": {
+    "checked": true,
+    "last_24h": true,
+    "checked_at": "2026-09-16T05:28:26.818718Z",
+    "result": "GO",
+    "notes": "Brak nowych warning/error od produkcyjnej wersji 10.73. Poprawka 10.74 ma zielony PR check dla protokołów, paliwa i testu niejednoznacznego zapisu."
+  },
   "drive_backup": {
-    "required": false,
-    "deferred": true,
+    "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.73.zip"
+    "file_name": "klima-app-v10.74.zip",
+    "uploaded": false,
+    "verified": false
   },
   "main_protection": {
-    "source_branch": "release/v10.73",
-    "ready_for_main": true,
+    "source_branch": "release/v10.74",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
-  "micro_ui": {
-    "policy_version": 1,
-    "css_only": true,
-    "archive_deferred": true,
-    "effective_files": [
-      "src/mobile791/v1048-runtime-fix.css"
-    ]
-  },
   "postdeploy_diagnostics": {
-    "evidence_required": false,
+    "evidence_required": true,
     "result": "PENDING"
   }
 }
