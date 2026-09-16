@@ -45,7 +45,8 @@ assert.match(n2Migration, /unit_ref/i);
 
 const protocol = read('src/mobile791/modules/job-protocol-storage.js');
 assert.match(protocol, /PROTOCOL_WRITE_CONFLICT/);
-assert.match(protocol, /\.eq\(["']storage_path["'],\s*existing\.record\.storage_path\)/);
+assert.match(protocol, /expectedStoragePath/);
+assert.match(protocol, /\.eq\(["']storage_path["'],\s*expectedExistingStoragePath\s*\|\|\s*existing\.record\.storage_path\)/);
 assert.doesNotMatch(protocol, /reconciliation\.confirmed\s*&&\s*!existing\.record\s*&&\s*reconciliation\.record\)\s*return reconciliation\.record/);
 assert.match(protocol, /protocolRecordUsesStoragePath\(reconciliation\.record, storagePath\)/);
 
