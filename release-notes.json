@@ -1,11 +1,11 @@
 {
-  "version": "10.82",
-  "summary": "Domknięcie audytu ochrony niezapisanej pracy podczas aktualizacji aplikacji.",
+  "version": "10.88",
+  "summary": "Domknięcie audytu N2–N5: integralność zakończenia montaży, CAS protokołów oraz idempotentne tankowania i e-maile.",
   "changes": [
-    "F1: bloker AppModal pozostaje stabilny między rerenderami Reacta, a opóźniony reload ponownie sprawdza aktywne blokady przed przeładowaniem.",
-    "F2: formularz tankowania oraz komentarze desktop/mobile chronią realny draft i trwający zapis przed aktualizacją oraz zamknięciem karty.",
-    "F13: beforeunload jest oddzielony od samego otwarcia modala i działa tylko przy rzeczywiście niezapisanej pracy lub trwającym zapisie.",
-    "Formularze montażu i protokół zachowują ochronę dirty/saving, natomiast czysty podgląd PDF nie wyświetla zbędnego ostrzeżenia.",
-    "Dodano regresję Node oraz test Playwright obejmujący rerender formularza, późny bloker, paliwo i komentarz inline."
+    "N2: backendowy guard blokuje zakończenie zlecenia bez kompletnego zestawu tabliczek JW/JZ, również dla multi-split, i serializuje mutacje zdjęć z przejściem do statusu Zakończone.",
+    "N3: zapis i zastępowanie protokołu używa własnej tożsamości operacji oraz CAS po oczekiwanym storage_path; konkurencyjna zmiana kończy się PROTOCOL_WRITE_CONFLICT zamiast fałszywego sukcesu.",
+    "N4: jedna logiczna próba tankowania ma trwały UUID używany przez INSERT, reconciliation i retry, co eliminuje duplikaty po utraconej odpowiedzi lub reloadzie.",
+    "N5: wysyłka protokołu e-mailem zachowuje trwały requestKey, stosuje timeout i Idempotency-Key oraz pojednuje niejednoznaczny wynik providera przed ponowieniem.",
+    "Dodano RED→GREEN regresję na audytowanym SHA 10.84 i zaktualizowano historyczne testy tak, aby wymagały mocniejszych kontraktów CAS/idempotencji zamiast starego zachowania."
   ]
 }
