@@ -1,0 +1,103 @@
+name: WAWIS live verify 10.74
+
+on:
+  push:
+    branches:
+      - verify/v10.74-live
+
+permissions:
+  contents: read
+
+jobs:
+  live-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify production 10.74 and service worker
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const crypto = require('node:crypto');
+          const base = 'https://wawis-klima.vercel.app';
+          const version = '10.74';
+          const deploymentStart = '2026-09-16T05:52:24Z';
+          const expectedCache = `wawis-app-shell-v${version}`;
+          const hash = (v) => crypto.createHash('sha256').update(String(v)).digest('hex');
+          async function get(url) {
+            const r = await fetch(`${url}?release_check=${Date.now()}`, { headers: { 'cache-control': 'no-cache' } });
+            if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+            return r.text();
+          }
+          async function main() {
+            const [versionText, swText] = await Promise.all([
+              get(`${base}/app-version.json`),
+              get(`${base}/push-sw.js`),
+            ]);
+            const liveVersion = String(JSON.parse(versionText).version || '').trim();
+            if (liveVersion !== version) throw new Error(`Live version ${liveVersion || 'brak'}, expected ${version}`);
+            if (!swText.includes(expectedCache)) throw new Error(`Service Worker missing ${expectedCache}`);
+
+            const supabaseUrl = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+            const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+            if (!supabaseUrl || !key) throw new Error('Missing Supabase diagnostics secrets');
+            const q = new URLSearchParams({
+              select: 'severity,received_at,event_type,diagnostic_module,app_version,platform',
+              received_at: `gte.${deploymentStart}`,
+              app_version: `eq.${version}`,
+              order: 'received_at.desc',
+              limit: '1000',
+            });
+            const dr = await fetch(`${supabaseUrl}/rest/v1/app_diagnostic_events?${q}`, {
+              headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' },
+            });
+            if (!dr.ok) throw new Error(`Supabase diagnostics HTTP ${dr.status}: ${await dr.text()}`);
+            const rows = await dr.json();
+            const bad = rows.filter((r) => ['warning','warn','error','fatal'].includes(String(r.severity || '').toLowerCase()));
+            if (bad.length) throw new Error(`10.74 diagnostics: ${bad.length} warning/error/fatal event(s)`);
+
+            const evidence = {
+              schema_version: 1,
+              version,
+              checked_at: new Date().toISOString(),
+              production_url: base,
+              deployment_started_at: deploymentStart,
+              production: {
+                version_verified: true,
+                service_worker_verified: true,
+                app_version: liveVersion,
+                service_worker_cache: expectedCache,
+                app_version_sha256: hash(versionText),
+                service_worker_sha256: hash(swText),
+              },
+              diagnostics: {
+                checked: true,
+                result: 'GO',
+                app_version: version,
+                since_deploy_total_count: rows.length,
+                since_deploy_problematic_count: bad.length,
+              },
+            };
+            fs.writeFileSync('live-evidence-v10.74.json', JSON.stringify(evidence, null, 2) + '\n');
+            console.log(`WAWIS LIVE VERIFY GO — ${version}`);
+            console.log(JSON.stringify(evidence, null, 2));
+          }
+          main().catch((e) => { console.error(`WAWIS LIVE VERIFY NO-GO — ${e.message}`); process.exit(1); });
+          NODE
+
+      - name: Upload live evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-live-evidence-v10.74
+          path: live-evidence-v10.74.json
+          if-no-files-found: warn
+          retention-days: 30
