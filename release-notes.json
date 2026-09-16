@@ -1,10 +1,10 @@
 {
-  "version": "10.79",
-  "summary": "Pewny feed zmian dla całego zespołu i serwerowe starzenie statusu Nowe.",
+  "version": "10.80",
+  "summary": "Ochrona sesji A→B i domknięcie odporności synchronizacji.",
   "changes": [
-    "Każdy pracownik odbiera zmiany wszystkich montaży, które i tak ma prawo widzieć.",
-    "Feed używa jednego globalnego strumienia zmian zamiast wpisów zależnych od przypisania.",
-    "Status Nowe przechodzi po 30 dniach do Niezrealizowane po stronie bazy przez Supabase Cron.",
-    "Telefon i desktop nie wykonują już UPDATE statusu podczas zwykłego pobierania listy."
+    "Generacja sesji blokuje spóźnione odpowiedzi starego konta na mobile i desktop.",
+    "Timeout Supabase obejmuje również odczyt body po otrzymaniu nagłówków.",
+    "Aktualizacja wpisu kolejki offline odbywa się w jednej transakcji readwrite.",
+    "Regresje obejmują A→B, zawieszone body oraz prawdziwy IndexedDB w Chromium."
   ]
 }

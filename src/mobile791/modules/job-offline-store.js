@@ -377,15 +377,33 @@ export async function listOfflineJobOperations(userId = '') {
 
 export async function updateOfflineJobOperation(operationId, patch = {}) {
   if (!operationId) return false;
+  let db;
   try {
-    const current = await withStore(OPERATION_STORE, 'readonly', (store) => store.get(String(operationId)));
-    if (!current) return false;
-    await withStore(OPERATION_STORE, 'readwrite', (store) => store.put({ ...current, ...patch, id: String(operationId) }));
-    dispatchOfflineChanged();
-    return true;
+    db = await openOfflineDb();
+    if (!db) return false;
+    const updated = await new Promise((resolve, reject) => {
+      const transaction = db.transaction(OPERATION_STORE, 'readwrite');
+      const store = transaction.objectStore(OPERATION_STORE);
+      const request = store.get(String(operationId));
+      let changed = false;
+      request.onsuccess = () => {
+        const current = request.result;
+        if (!current) return;
+        changed = true;
+        store.put({ ...current, ...patch, id: String(operationId) });
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się odczytać zmiany offline do aktualizacji.'));
+      transaction.oncomplete = () => resolve(changed);
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się atomowo zaktualizować zmiany offline.'));
+      transaction.onabort = transaction.onerror;
+    });
+    if (updated) dispatchOfflineChanged();
+    return updated;
   } catch (error) {
     console.warn('Nie udało się zaktualizować zmiany offline.', error?.message || error);
     return false;
+  } finally {
+    db?.close();
   }
 }
 

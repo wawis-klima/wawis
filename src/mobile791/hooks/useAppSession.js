@@ -12,6 +12,7 @@ import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } f
 import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
 import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOperations, loadOfflineAppSnapshot, saveOfflineAppSnapshot, updateOfflineSyncCursor } from "../modules/job-offline-store.js";
 import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";
+import { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";
 
 const APP_REFRESH_TIMEOUT_MS = 20000;
 const AUTH_RESTORE_RETRY_MS = 30000;
@@ -61,6 +62,7 @@ export function useAppSession({
   const refreshPayloadInFlightRef = useRef(new Map());
   const changeCursorRef = useRef(null);
   const incrementalRefreshInFlightRef = useRef(null);
+  const sessionGenerationStateRef = useRef(createSessionGenerationState());
 
   useEffect(() => {
     profileRef.current = profile;
@@ -82,14 +84,30 @@ export function useAppSession({
     errorMsgRef.current = errorMsg;
   }, [errorMsg]);
 
+  const setSessionUserForGeneration = useCallback((nextUser) => {
+  const nextUserId = String(nextUser?.id || '').trim();
+  const previousUserId = String(sessionGenerationStateRef.current.userId || '').trim();
+  transitionSessionGeneration(sessionGenerationStateRef.current, nextUserId);
+  if (previousUserId !== nextUserId) {
+    refreshPayloadInFlightRef.current.clear();
+    incrementalRefreshInFlightRef.current = null;
+    changeCursorRef.current = null;
+    cacheHydratedUserIdRef.current = '';
+    refreshRequestIdRef.current = 0;
+    lastAppliedServerRequestIdRef.current = 0;
+  }
+  setSessionUser(nextUser || null);
+}, []);
+
   const applyLoggedOutState = useCallback(() => {
+    setSessionUserForGeneration(null);
     changeCursorRef.current = null;
     profileRef.current = null;
     profilesRef.current = [];
     notificationsRef.current = [];
     jobsRef.current = [];
     clearAppClientState({
-      setSessionUser,
+      setSessionUser: setSessionUserForGeneration,
       setProfile,
       setProfiles,
       setJobs,
@@ -98,12 +116,15 @@ export function useAppSession({
       setShowAssignedJobsOnly,
       setAuthResolved,
     });
-  }, [setSelectedJob]);
+  }, [setSelectedJob, setSessionUserForGeneration]);
 
   const refreshAll = useCallback(async (user, options = {}) => {
     if (!supabase || !user) return;
     const { silent = false, preserveJobDetails = true } = options;
     const userId = String(user.id || '').trim();
+    const sessionToken = captureSessionGeneration(sessionGenerationStateRef.current, userId);
+    const isCurrentSession = () => isSessionGenerationCurrent(sessionGenerationStateRef.current, sessionToken);
+    if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
     const refreshRequestId = refreshRequestIdRef.current + 1;
     refreshRequestIdRef.current = refreshRequestId;
     let visibleRefreshRequestId = 0;
@@ -133,6 +154,7 @@ export function useAppSession({
         cacheHydratedUserIdRef.current = userId;
         const serverVersionBeforeCacheRead = lastAppliedServerRequestIdRef.current;
         const cached = await loadOfflineAppSnapshot(userId);
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
         const serverStateUnchanged = lastAppliedServerRequestIdRef.current === serverVersionBeforeCacheRead;
 
         if (cached?.profile && Array.isArray(cached.jobs) && serverStateUnchanged) {
@@ -145,7 +167,7 @@ export function useAppSession({
           profileRef.current = cached.profile;
           profilesRef.current = cachedProfiles;
           jobsRef.current = restoredJobs;
-          setSessionUser(user);
+          setSessionUserForGeneration(user);
           setProfile(cached.profile);
           setProfiles(cachedProfiles);
           setJobs(restoredJobs);
@@ -158,20 +180,22 @@ export function useAppSession({
       // Kursor pobieramy przed lista. Zmiana wykonana w trakcie pelnego odczytu
       // dostanie wyzszy numer i zostanie odebrana przy nastepnym delta refreshu.
       changeCursorAtRefreshStart = await loadMobileChangeHead({ supabase }).catch(() => null);
+      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
 
       const applyJobsFirst = async (freshJobs, activeUser = user) => {
-        if (!Array.isArray(freshJobs)) return;
+        if (!Array.isArray(freshJobs) || !isCurrentSession()) return;
         // Starsza odpowiedź nie może nadpisać nowszej, już zastosowanej odpowiedzi.
         if (refreshRequestId < lastAppliedServerRequestIdRef.current) return;
 
         const operations = await listOfflineJobOperations(String(activeUser?.id || userId));
+        if (!isCurrentSession()) return;
         const profileForOffline = getProfileFallback(activeUser);
         const nextJobs = applyOfflineOperationsToJobs(freshJobs, operations, profileForOffline);
         coreJobsApplied = true;
         coreJobs = nextJobs;
         lastAppliedServerRequestIdRef.current = Math.max(lastAppliedServerRequestIdRef.current, refreshRequestId);
         jobsRef.current = nextJobs;
-        setSessionUser(activeUser);
+        setSessionUserForGeneration(activeUser);
         setJobs(nextJobs);
         if (selectedJobIdRef?.current) {
           setSelectedJob(nextJobs.find((job) => String(job.id) === String(selectedJobIdRef.current)) || null);
@@ -207,7 +231,7 @@ export function useAppSession({
 
       const loadServerPayloadOnce = (activeUser) => {
         const activeUserId = String(activeUser?.id || '').trim();
-        const requestKey = `${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;
+        const requestKey = `${sessionToken.generation}:${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;
         const existingRequest = refreshPayloadInFlightRef.current.get(requestKey);
         if (existingRequest) return existingRequest;
 
@@ -244,7 +268,7 @@ export function useAppSession({
         }
 
         activeUser = refreshedUser;
-        setSessionUser(refreshedUser);
+        setSessionUserForGeneration(refreshedUser);
         payload = await loadServerPayloadOnce(refreshedUser);
       }
 
@@ -253,6 +277,7 @@ export function useAppSession({
           ? { ok: true, transient: false, partial: true, coreJobsApplied: true }
           : undefined;
       }
+      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
       if (refreshRequestId < lastAppliedServerRequestIdRef.current) {
         return { ok: true, transient: false, ignoredOlderResponse: true, coreJobsApplied };
       }
@@ -269,7 +294,7 @@ export function useAppSession({
       notificationsRef.current = payload.notifications;
       jobsRef.current = finalJobs;
 
-      setSessionUser(payload.sessionUser);
+      setSessionUserForGeneration(payload.sessionUser);
       setProfile(payload.profile);
       setProfiles(payload.profiles);
       setJobs(finalJobs);
@@ -290,6 +315,7 @@ export function useAppSession({
       }
       return { ok: true, transient: false, coreJobsApplied: coreJobsApplied || Boolean(finalJobs.length) };
     } catch (error) {
+      if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
       console.error('refreshAll failed', error);
       const transient = isTransientSupabaseError(error);
       const sessionExpired = isJwtExpiredError(error) || error?.code === 'SESSION_REFRESH_FAILED';
@@ -311,19 +337,22 @@ export function useAppSession({
       }
       return { ok: false, transient, sessionExpired, preservedExistingData: hasUsableJobs };
     } finally {
-      if (!silent) {
+      if (!silent && isCurrentSession()) {
         setBusy(false);
         if (visibleRefreshRequestId === visibleRefreshRequestIdRef.current) setIsRefreshingData(false);
       }
     }
-  }, [normalizeStatus, selectedJobIdRef, setSelectedJob, supabase]);
+  }, [normalizeStatus, selectedJobIdRef, setSelectedJob, setSessionUserForGeneration, supabase]);
 
   const refreshChanged = useCallback(async (user, options = {}) => {
     if (!supabase || !user) return { ok: false, unavailable: true };
+    const userId = String(user.id || '').trim();
+    const sessionToken = captureSessionGeneration(sessionGenerationStateRef.current, userId);
+    const isCurrentSession = () => isSessionGenerationCurrent(sessionGenerationStateRef.current, sessionToken);
+    if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
     if (incrementalRefreshInFlightRef.current) return incrementalRefreshInFlightRef.current;
 
     const request = (async () => {
-      const userId = String(user.id || '').trim();
       if (!userId || changeCursorRef.current === null) {
         return refreshAll(user, { ...options, silent: true, preserveJobDetails: true });
       }
@@ -335,9 +364,11 @@ export function useAppSession({
         const maxBatches = 5;
         const summaryCache = new Map();
         const operations = await listOfflineJobOperations(userId);
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
 
         for (let batchIndex = 0; batchIndex < maxBatches; batchIndex += 1) {
           const batch = await loadMobileChangeBatch({ supabase, afterCursor: cursor, limit: 100 });
+          if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
           if (!batch.available) {
             return refreshAll(user, { ...options, silent: true, preserveJobDetails: true });
           }
@@ -347,6 +378,7 @@ export function useAppSession({
             let summary = summaryCache.get(change.jobId);
             if (!summary) {
               summary = await loadJobSummaryData({ supabase, jobId: change.jobId });
+              if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
               summaryCache.set(change.jobId, summary);
             }
             const existing = workingJobs.find((job) => String(job.id) === change.jobId);
@@ -376,6 +408,7 @@ export function useAppSession({
               serverFetchedAtMs: Date.now(),
               changeCursor: nextCursor,
             });
+            if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
             cursor = nextCursor;
             changeCursorRef.current = nextCursor;
             await updateOfflineSyncCursor(userId, nextCursor);
@@ -385,6 +418,7 @@ export function useAppSession({
           if (batch.changes.length < 100) break;
         }
 
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
         if (processed > 0) {
           const finalJobs = applyOfflineOperationsToJobs(workingJobs, operations, profileRef.current || {});
           jobsRef.current = finalJobs;
@@ -394,6 +428,7 @@ export function useAppSession({
         }
         return { ok: true, incremental: true, processed, changeCursor: cursor };
       } catch (error) {
+        if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true };
         console.warn('Przyrostowe odświeżanie nie powiodło się.', error?.message || error);
         if (isTransientSupabaseError(error)) return { ok: false, incremental: true, transient: true };
         return refreshAll(user, { ...options, silent: true, preserveJobDetails: true });
@@ -411,7 +446,7 @@ export function useAppSession({
       credentials,
       loginForm,
       setLoginForm,
-      setSessionUser,
+      setSessionUser: setSessionUserForGeneration,
       setAuthResolved,
       setErrorMsg,
       setBusy,
@@ -444,7 +479,7 @@ export function useAppSession({
           supabase,
           logoutFlagKey,
           applyLoggedOutState,
-          setSessionUser,
+          setSessionUser: setSessionUserForGeneration,
           setErrorMsg,
           setAuthResolved,
           refreshAll,
@@ -469,7 +504,7 @@ export function useAppSession({
       supabase,
       logoutFlagKey,
       applyLoggedOutState,
-      setSessionUser,
+      setSessionUser: setSessionUserForGeneration,
       setAuthResolved,
       refreshAll,
     });
@@ -479,7 +514,7 @@ export function useAppSession({
       if (retryTimerId && typeof window !== "undefined") window.clearTimeout(retryTimerId);
       unsubscribe();
     };
-  }, [applyLoggedOutState, logoutFlagKey, refreshAll, supabase]);
+  }, [applyLoggedOutState, logoutFlagKey, refreshAll, setSessionUserForGeneration, supabase]);
 
   return {
     sessionUser,
