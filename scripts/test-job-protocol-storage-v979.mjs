@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   JOB_PROTOCOLS_BUCKET,
   JOB_PROTOCOLS_TABLE,
+  PROTOCOL_WRITE_CONFLICT,
   loadJobProtocolRecord,
   shareStoredJobProtocol,
   storeJobProtocol,
@@ -10,6 +11,9 @@ import {
 const rows = [];
 const objects = new Map();
 let protocolRecordReadCount = 0;
+let beforeUpdateSingle = null;
+let lastUpdateFilters = [];
+let lastUploadedPath = '';
 
 function createSelectQuery() {
   let jobId = '';
@@ -44,17 +48,22 @@ const supabase = {
       },
     });
     query.update = (row) => {
-      let recordId = '';
+      const filters = [];
       return {
         eq(field, value) {
-          assert.equal(field, 'id');
-          recordId = value;
+          filters.push([String(field), value]);
           return this;
         },
         select() { return this; },
         async single() {
-          const index = rows.findIndex((item) => item.id === recordId);
-          if (index < 0) return { data: null, error: new Error('Protocol not found') };
+          lastUpdateFilters = [...filters];
+          if (beforeUpdateSingle) {
+            const hook = beforeUpdateSingle;
+            beforeUpdateSingle = null;
+            await hook();
+          }
+          const index = rows.findIndex((item) => filters.every(([field, value]) => item?.[field] === value));
+          if (index < 0) return { data: null, error: new Error('Protocol CAS mismatch') };
           rows[index] = { ...rows[index], ...row };
           return { data: rows[index], error: null };
         },
@@ -69,6 +78,7 @@ const supabase = {
         async upload(path, blob, options) {
           assert.equal(options.contentType, 'application/pdf');
           assert.equal(options.upsert, false);
+          lastUploadedPath = path;
           objects.set(path, blob);
           return { data: { path }, error: null };
         },
@@ -115,12 +125,59 @@ const replaced = await storeJobProtocol({
   fileName: 'wawis-protokol-zmieniony.pdf',
   signedAt: new Date('2026-08-28T13:10:00.000Z'),
   replaceExisting: true,
+  expectedStoragePath: firstStoragePath,
 });
 assert.equal(replaced.id, 'protocol-1');
 assert.notEqual(replaced.storage_path, firstStoragePath);
+assert.deepEqual(lastUpdateFilters, [
+  ['id', 'protocol-1'],
+  ['storage_path', firstStoragePath],
+], 'Replacement must be CAS-bound to both record id and the exact protocol version the user edited.');
 assert.equal(objects.has(firstStoragePath), false);
 assert.equal(objects.get(replaced.storage_path), replacementBlob);
 assert.equal(protocolRecordReadCount, 3, 'Successful replacement must use only its initial protocol read.');
+
+// N3: another session replacing the active protocol between our initial read and UPDATE
+// must never be accepted as success for this signature/PDF attempt.
+const activeBeforeRace = replaced.storage_path;
+const competingStoragePath = `${completedJob.id}/protocol-competing-session.pdf`;
+const conflictBlob = new Blob(['%PDF-1.4 local conflicting attempt'], { type: 'application/pdf' });
+beforeUpdateSingle = async () => {
+  rows[0] = {
+    ...rows[0],
+    storage_path: competingStoragePath,
+    file_name: 'protokol-z-innej-sesji.pdf',
+  };
+  objects.set(competingStoragePath, new Blob(['%PDF-1.4 competing version'], { type: 'application/pdf' }));
+};
+let conflictError = null;
+try {
+  await storeJobProtocol({
+    supabase,
+    job: completedJob,
+    pdfBlob: conflictBlob,
+    fileName: 'moja-konkurencyjna-wersja.pdf',
+    signedAt: new Date('2026-08-28T13:20:00.000Z'),
+    replaceExisting: true,
+    expectedStoragePath: activeBeforeRace,
+  });
+} catch (error) {
+  conflictError = error;
+}
+assert.ok(conflictError, 'Concurrent replacement must surface a conflict.');
+assert.equal(conflictError.code, PROTOCOL_WRITE_CONFLICT);
+assert.equal(conflictError.activeRecord?.storage_path, competingStoragePath);
+assert.deepEqual(lastUpdateFilters, [
+  ['id', 'protocol-1'],
+  ['storage_path', activeBeforeRace],
+]);
+assert.equal(rows[0].storage_path, competingStoragePath, 'CAS failure must preserve the competing active protocol.');
+assert.notEqual(lastUploadedPath, competingStoragePath);
+assert.equal(objects.get(lastUploadedPath), conflictBlob, 'Ambiguous/conflicting write must not delete the local attempt PDF as if it never existed.');
+
+// Restore the successful record for the existing sharing assertions below.
+rows[0] = { ...replaced };
+objects.set(replaced.storage_path, replacementBlob);
 
 let sharedPayload = null;
 navigator.canShare = (payload) => Array.isArray(payload?.files) && payload.files.length === 1;
