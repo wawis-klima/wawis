@@ -1,5 +1,5 @@
 name: WAWIS apply 10.88 audit fixes
-# rerun after CAS contract correction
+# rerun after durable email-attempt assertion correction
 
 on:
   push:
