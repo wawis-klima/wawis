@@ -23,6 +23,7 @@ const GROUPS = {
     'npm run test:smoke:feed-stale-v1079',
     'node scripts/smoke-mobile-offline-resilience-v1075.mjs',
     'node scripts/smoke-session-sync-resilience-v1080.mjs',
+    'node scripts/smoke-update-reload-guard-v1081.mjs',
     'npm run test:smoke:diagnostic-report',
     'npm run test:smoke:diagnostics-clarity',
     'npm run test:smoke:startup-chunk',
