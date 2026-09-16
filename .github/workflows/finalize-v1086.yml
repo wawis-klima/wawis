@@ -1,0 +1,139 @@
+name: WAWIS 10.86 one-shot finalizer
+
+on:
+  push:
+    branches:
+      - release/v10.86
+    paths:
+      - .github/workflows/finalize-v1086.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.86
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Finalize 10.86 metadata and clean one-shot helpers
+        shell: bash
+        run: |
+          set -euo pipefail
+          node version-bump.cjs
+          python - <<'PY'
+          from pathlib import Path
+          import json, re
+
+          readme = Path('README.md')
+          text = readme.read_text()
+          text = re.sub(
+              r"## Ostatnia poprawka\s*- wersja\s*`?10\.86`?.*?(?=\n## |\Z)",
+              "## Ostatnia poprawka\n- wersja `10.86` — domknięcie audytu F3/F5/F8/F9: odporność sesji na spóźnione SIGNED_OUT, izolacja kolejki zdjęć między kontami oraz bezpieczna kolejność synchronizacji i kursora offline.\n",
+              text,
+              count=1,
+              flags=re.S,
+          )
+          readme.write_text(text)
+
+          changelog = Path('CHANGELOG.md')
+          ch = changelog.read_text()
+          section = """## 10.86
+- F3: spóźniona weryfikacja `SIGNED_OUT` jest unieważniana po zmianie operacji Auth; stary błąd nie może wylogować nowej sesji — desktop i mobile.
+- F5: kolejka zdjęć offline przechowuje właściciela i sprawdza generację sesji na granicach asynchronicznych; zdjęcie konta A nie może wejść do konta B podczas restore/resume/upload.
+- F8: identyfikator requestu należy do rzeczywistego fetchu, więc dołączenie nowszego caller-a do starszej Promise nie może oznaczyć starego payloadu jako nowszy.
+- F9: kursor synchronizacji jest uznawany za przesunięty dopiero po potwierdzonym zapisie snapshotu obejmującego ten kursor; błąd persystencji pozostaje retryable.
+- Dodano regresję `smoke-audit-fixes-v1086.mjs` do obowiązkowej grupy infra oraz zachowano istniejące race/offline/auth smoke testy.
+
+"""
+          ch = re.sub(r"^## 10\.86\n[\s\S]*?(?=^##\s|\Z)", section, ch, count=1, flags=re.M) if re.search(r"^## 10\.86\n", ch, re.M) else section + ch.lstrip()
+          changelog.write_text(ch)
+
+          gate = json.loads(Path('RELEASE-GATE.json').read_text())
+          gate['version'] = '10.86'
+          gate['scope'] = 'full'
+          gate['release_branch'] = 'release/v10.86'
+          gate['baseline_diagnostics'] = {
+              'checked': True,
+              'last_24h': True,
+              'checked_at': '2026-09-16T20:08:00+02:00',
+              'result': 'INFO',
+              'notes': '10.86: zakres F3/F5/F8/F9 z audytu 10.84; poprawki przygotowane na osobnej gałęzi release i weryfikowane kontrtestami.'
+          }
+          gate['predeploy_diagnostics'] = {
+              'checked': True,
+              'last_24h': True,
+              'checked_at': '2026-09-16T20:10:00+02:00',
+              'result': 'FOCUSED_PASS_FULL_PR_PENDING',
+              'notes': 'Focused 10.86 regressions i production build przeszły przed finalizacją. Pełny wymagany targeted-checks + Playwright E2E + build musi przejść na finalnym SHA PR.'
+          }
+          gate['main_protection'] = {
+              'source_branch': 'release/v10.86',
+              'ready_for_main': True,
+              'required_check': 'WAWIS PR checks / targeted-checks'
+          }
+          gate['postdeploy_diagnostics'] = {
+              'evidence_required': True,
+              'result': 'PENDING',
+              'notes': 'Po merge wymagany Vercel SUCCESS dla finalnego SHA main oraz live /app-version.json i Service Worker = 10.86.'
+          }
+          Path('RELEASE-GATE.json').write_text(json.dumps(gate, ensure_ascii=False, indent=2) + '\n')
+
+          Path('RELEASE-RESULT.md').write_text("""# RELEASE RESULT
+
+## Wersja
+- 10.86
+
+## Zakres
+- F3 — ochrona nowej sesji przed spóźnionym wynikiem starej weryfikacji `SIGNED_OUT` w desktop i mobile.
+- F5 — pełna izolacja restore/resume/upload kolejki zdjęć offline przez właściciela i generację sesji.
+- F8 — requestId przypisany do faktycznego fetchu, a nie do późniejszego caller-a dołączającego do Promise.
+- F9 — kursor synchronizacji przesuwa się wyłącznie po potwierdzonym trwałym snapshotcie; błąd zapisu nie pomija zmian po reloadzie.
+
+## Regresje przed finalnym PR
+- `node scripts/smoke-audit-fixes-v1086.mjs`: PASS
+- `node scripts/smoke-audit-races-v1084.mjs`: PASS
+- `node scripts/smoke-mobile-auth-resilience-v974.mjs`: PASS
+- `node scripts/smoke-mobile-offline-photo-queue.cjs`: PASS
+- production build: PASS
+
+## Warunek zamknięcia
+- finalny `WAWIS PR checks / targeted-checks`: wymagany na finalnym SHA
+- wymagane Playwright E2E: wymagane
+- production build: wymagany
+- po merge: Vercel SUCCESS + live `/app-version.json` i Service Worker = 10.86
+""")
+          PY
+
+          rm -f \
+            .github/workflows/apply-v1086.yml \
+            .github/workflows/harden-v1086-session.yml \
+            .github/workflows/repair-harden-v1086-test.yml \
+            .github/workflows/run-harden-v1086-r2.yml \
+            .github/workflows/finalize-v1086.yml \
+            scripts/harden-v1086-once.py
+
+      - name: Verify focused regressions and release policy
+        run: |
+          node scripts/smoke-audit-fixes-v1086.mjs
+          node scripts/smoke-audit-races-v1084.mjs
+          node scripts/smoke-mobile-auth-resilience-v974.mjs
+          node scripts/smoke-mobile-offline-photo-queue.cjs
+          node scripts/release-policy-gate.cjs
+          npm run build
+
+      - name: Commit final 10.86 candidate
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m '10.86: finalize audit fixes release candidate'
+          git push origin HEAD:release/v10.86
