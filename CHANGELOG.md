@@ -1,5 +1,9 @@
 ## 10.88
-- uzupełnij opis zmian dla wersji 10.88
+- N2: backendowy guard blokuje zakończenie zlecenia bez kompletnego zestawu tabliczek JW/JZ, również dla multi-split, i serializuje mutacje zdjęć z przejściem do statusu Zakończone.
+- N3: zapis i zastępowanie protokołu używa własnej tożsamości operacji oraz CAS po oczekiwanym storage_path; konkurencyjna zmiana kończy się PROTOCOL_WRITE_CONFLICT zamiast fałszywego sukcesu.
+- N4: jedna logiczna próba tankowania ma trwały UUID używany przez INSERT, reconciliation i retry, co eliminuje duplikaty po utraconej odpowiedzi lub reloadzie.
+- N5: wysyłka protokołu e-mailem zachowuje trwały requestKey, stosuje timeout i Idempotency-Key oraz pojednuje niejednoznaczny wynik providera przed ponowieniem.
+- Dodano RED→GREEN regresję na audytowanym SHA 10.84 i zaktualizowano historyczne testy tak, aby wymagały mocniejszych kontraktów CAS/idempotencji zamiast starego zachowania.
 
 ## 10.87
 - F4: Service Worker jest trwałym źródłem porządku kontekstu PUSH; SET/CLEAR używają właściciela i ownership_generation, a spóźnione komendy starego konta nie mogą przywrócić A ani usunąć B.
