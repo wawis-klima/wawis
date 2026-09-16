@@ -48,3 +48,25 @@ export function shouldAdvanceSmsStatus(currentStatus, nextStatus) {
   const next = STATUS_RANK.get(String(nextStatus || '').trim().toLowerCase()) ?? 0;
   return next > current;
 }
+
+export function planSmsCallbackUpdates({
+  logStatus,
+  jobStatus = null,
+  logSentAt = null,
+  jobSentAt = null,
+  nextStatus,
+  hasJob = false,
+}) {
+  const logNeedsAdvance = shouldAdvanceSmsStatus(logStatus, nextStatus);
+  const parsedLogSentAt = logSentAt ? Date.parse(String(logSentAt)) : Number.NaN;
+  const parsedJobSentAt = jobSentAt ? Date.parse(String(jobSentAt)) : Number.NaN;
+  const callbackBelongsToLatestSend = !Number.isFinite(parsedJobSentAt)
+    || !Number.isFinite(parsedLogSentAt)
+    || parsedLogSentAt >= parsedJobSentAt;
+  const jobNeedsAdvance = Boolean(
+    hasJob
+    && callbackBelongsToLatestSend
+    && shouldAdvanceSmsStatus(jobStatus, nextStatus)
+  );
+  return { logNeedsAdvance, jobNeedsAdvance, callbackBelongsToLatestSend };
+}
