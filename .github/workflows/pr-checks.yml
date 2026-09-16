@@ -33,7 +33,7 @@ jobs:
       - name: Detect changed files
         shell: bash
         run: |
-          git fetch origin "${{ github.base_ref }}" --depth=1
+          git fetch origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed-files.txt
           cat changed-files.txt
 
