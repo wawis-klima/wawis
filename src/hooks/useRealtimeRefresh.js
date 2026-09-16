@@ -162,7 +162,10 @@ export function useRealtimeRefresh({
 
     // Realtime jest podstawą dla zmian zleceń/zdjęć/komentarzy. Pełny refresh jest tylko rzadkim zabezpieczeniem.
     const fallbackTimer = window.setInterval(() => {
-      if (!document.hidden) scheduleRefresh();
+      if (document.hidden) return;
+      const selectedId = normalizeId(selectedJobIdRef.current);
+      if (selectedId) scheduleSelectedDetailsReload(selectedId, { immediate: true });
+      scheduleRefresh();
     }, FALLBACK_POLLING_MS);
 
     const refreshVisibleSelection = () => {

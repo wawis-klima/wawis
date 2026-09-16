@@ -25,6 +25,7 @@ const GROUPS = {
     'node scripts/smoke-session-sync-resilience-v1080.mjs',
     'node scripts/smoke-update-reload-guard-v1081.mjs',
     'node scripts/smoke-update-reload-guard-v1082.mjs',
+    'node scripts/smoke-audit-races-v1084.mjs',
     'npm run test:smoke:diagnostic-report',
     'npm run test:smoke:diagnostics-clarity',
     'npm run test:smoke:startup-chunk',
@@ -135,6 +136,7 @@ const GROUPS = {
     'npm run test:smoke:remove-resend-email',
     'npm run test:smoke:no-services-module',
     'node scripts/smoke-session-push-gate-v1083.mjs',
+    'node scripts/smoke-audit-races-v1084.mjs',
   ],
 };
 

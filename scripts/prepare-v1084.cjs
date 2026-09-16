@@ -162,9 +162,10 @@ function patchApp(path, mobile = false) {
     `    if (!isSessionTokenCurrent(sessionToken)) return;\n\n    const patches = new Map(\n      settled`,
     'thumbnail session token after await',
   );
-  replaceOnce(path, `  }, [supabase]);\n\n  const reloadJobDetails`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);\n\n  const reloadJobDetails`, 'thumbnail dependencies');
+  const thumbnailNext = mobile ? '\n\n  const recoverPhotoThumbnail' : '\n\n  const reloadJobDetails';
+  replaceOnce(path, `  }, [supabase]);${thumbnailNext}`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);${thumbnailNext}`, 'thumbnail dependencies');
 
-  patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', '\n\n  const scheduleBackgroundJobDetailsReload', (block) => {
+  patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', mobile ? '\n\n  const scheduleBackgroundJobDetailsReload' : '\n\n  const reloadJobSummary', (block) => {
     let next = block;
     next = next.replace(
       `    const targetId = String(jobId || '').trim();\n    if (!targetId || !supabase) return null;`,

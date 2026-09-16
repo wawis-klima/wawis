@@ -1,3 +1,10 @@
+## 10.84
+- F5: pojedyncze loadery summary/szczegółów i podpisywanie miniaturek używają tokenu generacji sesji; spóźniona odpowiedź konta A nie zmienia stanu konta B,
+- F7: fallback polling odświeża również otwarte szczegóły zlecenia, więc zgubione zdarzenie Realtime komentarza lub zdjęcia zostaje naprawione bez ponownego logowania,
+- F8: pełne i przyrostowe odświeżenia korzystają ze wspólnego monotonicznego numeru requestu; po każdym await starszy wynik jest odrzucany przed zmianą stanu lub kursora,
+- F9: update kursora app-snapshots wykonuje GET i warunkowy PUT w jednej transakcji IndexedDB readwrite i nie może odtworzyć starego snapshotu,
+- dodano regresję 10.84 oraz realny test Chromium wyścigu app-snapshots/kursora; wersja domyka F1–F13 ostatniego audytu.
+
 ## 10.83
 - F12: obowiązkowa bramka PR uruchamia teraz rzeczywiste testy Playwright wskazane przez klasyfikator ryzyka, zamiast ograniczać się do testów konfiguracji,
 - F3/F4: przełączenie konta i spóźnione operacje Auth/PUSH nie mogą przywrócić kontekstu poprzedniego użytkownika ani jego generacji,

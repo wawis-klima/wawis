@@ -180,6 +180,8 @@ export default function App() {
     setShowAssignedJobsOnly,
     refreshAll,
     refreshChanged,
+    captureCurrentSessionToken,
+    isSessionTokenCurrent,
     login,
     registerUser,
     logout,
@@ -192,6 +194,12 @@ export default function App() {
   });
 
   const isAdmin = profile?.role === "Administrator";
+
+  useEffect(() => {
+    jobDetailsRequestsRef.current.clear();
+    jobSummaryRequestsRef.current.clear();
+    setDetailsLoadingJobId(null);
+  }, [sessionUser?.id]);
 
   useEffect(() => startSilentDiagnosticSync({
     supabase,
@@ -277,9 +285,9 @@ export default function App() {
     jobId,
   });
 
-  const hydrateJobThumbnails = React.useCallback(async (jobId, photos = []) => {
+  const hydrateJobThumbnails = React.useCallback(async (jobId, photos = [], sessionToken = captureCurrentSessionToken()) => {
     const targetId = String(jobId || '').trim();
-    if (!targetId || !supabase || !Array.isArray(photos) || photos.length === 0) return;
+    if (!targetId || !supabase || !Array.isArray(photos) || photos.length === 0 || !isSessionTokenCurrent(sessionToken)) return;
 
     const settled = await Promise.allSettled(photos.map(async (photo) => {
       if (!photo || photo.thumbnail_image_url) return null;
@@ -293,6 +301,8 @@ export default function App() {
       });
       return thumbnailUrl ? { id: String(photo.id || ''), thumbnailUrl } : null;
     }));
+
+    if (!isSessionTokenCurrent(sessionToken)) return;
 
     const patches = new Map(
       settled
@@ -314,17 +324,19 @@ export default function App() {
 
     setJobs((prev) => prev.map(patchJob));
     setSelectedJob((prev) => patchJob(prev));
-  }, [supabase]);
+  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);
 
   const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {
     const targetId = String(jobId || '').trim();
-    if (!targetId || !supabase) return null;
+    const sessionToken = captureCurrentSessionToken();
+    if (!targetId || !supabase || !isSessionTokenCurrent(sessionToken)) return null;
 
     const targetJob = jobsRef.current.find((job) => String(job.id) === targetId);
     if (!targetJob) return null;
     if (targetJob.detailsLoaded && !options.force) return targetJob;
 
-    const existingRequest = jobDetailsRequestsRef.current.get(targetId);
+    const requestKey = `${sessionToken.generation}:${sessionToken.userId}:${targetId}`;
+    const existingRequest = jobDetailsRequestsRef.current.get(requestKey);
     if (existingRequest) return existingRequest;
 
     if (!options.background) setDetailsLoadingJobId(targetId);
@@ -343,6 +355,7 @@ export default function App() {
           signal: controller?.signal || null,
           deferThumbnailSigning: true,
         });
+        if (!isSessionTokenCurrent(sessionToken)) return null;
 
         const cleanDetails = { ...details, detailsLoadError: '' };
         let mergedJob = null;
@@ -355,9 +368,10 @@ export default function App() {
 
         // Metadane zdjęć/komentarzy są już na ekranie. Miniatury podpisujemy dopiero
         // w tle, żeby Storage nie blokował całych szczegółów montażu.
-        void hydrateJobThumbnails(targetId, cleanDetails.photos || []);
+        void hydrateJobThumbnails(targetId, cleanDetails.photos || [], sessionToken);
         return mergedJob;
       } catch (error) {
+        if (!isSessionTokenCurrent(sessionToken)) return null;
         // Odświeżenie w tle nie może schować już załadowanych danych.
         // Przy chwilowym 5xx/timeout zostawiamy ostatni poprawny stan na ekranie.
         if (options.background && targetJob.detailsLoaded) {
@@ -380,32 +394,35 @@ export default function App() {
         return null;
       } finally {
         if (timeoutId !== null && typeof window !== 'undefined') window.clearTimeout(timeoutId);
-        if (!options.background) {
+        if (!options.background && isSessionTokenCurrent(sessionToken)) {
           setDetailsLoadingJobId((current) => (current === targetId ? null : current));
         }
       }
     })();
 
-    jobDetailsRequestsRef.current.set(targetId, request);
+    jobDetailsRequestsRef.current.set(requestKey, request);
     try {
       return await request;
     } finally {
-      if (jobDetailsRequestsRef.current.get(targetId) === request) {
-        jobDetailsRequestsRef.current.delete(targetId);
+      if (jobDetailsRequestsRef.current.get(requestKey) === request) {
+        jobDetailsRequestsRef.current.delete(requestKey);
       }
     }
-  }, [hydrateJobThumbnails, supabase]);
+  }, [captureCurrentSessionToken, hydrateJobThumbnails, isSessionTokenCurrent, supabase]);
 
   const reloadJobSummary = React.useCallback(async (jobId) => {
     const targetId = String(jobId || '').trim();
-    if (!targetId || !supabase) return null;
+    const sessionToken = captureCurrentSessionToken();
+    if (!targetId || !supabase || !isSessionTokenCurrent(sessionToken)) return null;
 
-    const existingRequest = jobSummaryRequestsRef.current.get(targetId);
+    const requestKey = `${sessionToken.generation}:${sessionToken.userId}:${targetId}`;
+    const existingRequest = jobSummaryRequestsRef.current.get(requestKey);
     if (existingRequest) return existingRequest;
 
     const request = (async () => {
       try {
         const summary = await loadJobSummaryData({ supabase, jobId: targetId });
+        if (!isSessionTokenCurrent(sessionToken)) return null;
         if (summary?.missing || !summary?.job) {
           setJobs((prev) => prev.filter((job) => String(job.id) !== targetId));
           setSelectedJob((prev) => (prev && String(prev.id) === targetId ? null : prev));
@@ -427,20 +444,21 @@ export default function App() {
         ));
         return mergedJob;
       } catch (error) {
+        if (!isSessionTokenCurrent(sessionToken)) return null;
         console.warn('Nie udało się odświeżyć pojedynczego montażu.', error?.message || error);
         return null;
       }
     })();
 
-    jobSummaryRequestsRef.current.set(targetId, request);
+    jobSummaryRequestsRef.current.set(requestKey, request);
     try {
       return await request;
     } finally {
-      if (jobSummaryRequestsRef.current.get(targetId) === request) {
-        jobSummaryRequestsRef.current.delete(targetId);
+      if (jobSummaryRequestsRef.current.get(requestKey) === request) {
+        jobSummaryRequestsRef.current.delete(requestKey);
       }
     }
-  }, [supabase]);
+  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);
 
   const {
     deletingPhotoId,
