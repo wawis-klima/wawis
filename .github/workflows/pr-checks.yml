@@ -43,7 +43,10 @@ jobs:
           source = source.replace(old, new, 1)
 
           old = "  replaceOnce(path, `  }, [supabase]);\\n\\n  const reloadJobDetails`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);\\n\\n  const reloadJobDetails`, 'thumbnail dependencies');"
-          new = "  const thumbnailNext = mobile ? '\\n\\n  const recoverPhotoThumbnail' : '\\n\\n  const reloadJobDetails';\\n  replaceOnce(path, `  }, [supabase]);${thumbnailNext}`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);${thumbnailNext}`, 'thumbnail dependencies');"
+          new = (
+              "  const thumbnailNext = mobile ? '\\n\\n  const recoverPhotoThumbnail' : '\\n\\n  const reloadJobDetails';\n"
+              "  replaceOnce(path, `  }, [supabase]);${thumbnailNext}`, `  }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);${thumbnailNext}`, 'thumbnail dependencies');"
+          )
           if old not in source:
               raise SystemExit('Nie znaleziono oczekiwanego wzorca zależności miniaturek')
           source = source.replace(old, new, 1)
