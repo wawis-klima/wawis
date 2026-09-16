@@ -4,6 +4,7 @@ import { addFuelEntry } from '../src/modules/fuel.js';
 
 const LOST_RESPONSE = { code: 'FETCH_FAILED', message: 'Response lost after database write.' };
 const JOB_ID = '11111111-1111-4111-8111-111111111111';
+const FUEL_DELAYED_ATTEMPT_ID = '55555555-5555-4555-8555-555555555555';
 
 function nextTick() {
   return new Promise((resolve) => setTimeout(resolve, 0));
@@ -107,10 +108,12 @@ function makeDelayedFuelCommitSupabase() {
   let postWriteReadbacks = 0;
   const files = new Set();
   const removed = [];
+  const metrics = { insertCount: 0, uploadCount: 0 };
 
   return {
     files,
     removed,
+    metrics,
     getRecord: () => (record ? { ...record } : null),
     auth: {
       async getSession() {
@@ -120,17 +123,20 @@ function makeDelayedFuelCommitSupabase() {
     from(table) {
       assert.equal(table, 'fuel_entries');
       let mode = 'read';
+      let idFilter = '';
       let photoFilter = '';
       return {
         insert(row) {
           mode = 'write';
           pendingRow = { ...row };
           writeAttempted = true;
+          metrics.insertCount += 1;
           return this;
         },
         select() { return this; },
         eq(column, value) {
-          if (column === 'odometer_photo_path') photoFilter = value;
+          if (column === 'id') idFilter = String(value);
+          if (column === 'odometer_photo_path') photoFilter = String(value);
           return this;
         },
         async single() {
@@ -143,7 +149,6 @@ function makeDelayedFuelCommitSupabase() {
           if (postWriteReadbacks === 1) {
             queueMicrotask(() => {
               record = {
-                id: 'fuel-delayed-1',
                 fueled_at: '2026-09-16T07:00:00.000Z',
                 created_at: '2026-09-16T07:00:00.000Z',
                 created_by: 'worker-1',
@@ -157,8 +162,10 @@ function makeDelayedFuelCommitSupabase() {
             });
             return { data: null, error: null };
           }
-          if (!record || record.odometer_photo_path !== photoFilter) return { data: null, error: null };
-          return { data: { ...record }, error: null };
+          if (!record) return { data: null, error: null };
+          if (idFilter) return { data: String(record.id) === idFilter ? { ...record } : null, error: null };
+          if (photoFilter) return { data: String(record.odometer_photo_path || '') === photoFilter ? { ...record } : null, error: null };
+          return { data: null, error: null };
         },
       };
     },
@@ -167,6 +174,7 @@ function makeDelayedFuelCommitSupabase() {
         assert.equal(bucket, 'fuel-odometer-photos');
         return {
           async upload(path) {
+            metrics.uploadCount += 1;
             files.add(path);
             return { data: { path }, error: null };
           },
@@ -183,26 +191,37 @@ function makeDelayedFuelCommitSupabase() {
   };
 }
 
+async function saveDelayedFuelAttempt(supabase) {
+  return addFuelEntry({
+    supabase,
+    isAdmin: false,
+    vehicleId: 'vehicle-1',
+    liters: '48,5',
+    odometerKm: '125400',
+    odometerPhotoBlob: new Blob(['odometer'], { type: 'image/jpeg' }),
+    odometerAiConfidence: 0.94,
+    odometerReadSource: 'local_ocr',
+    entryId: FUEL_DELAYED_ATTEMPT_ID,
+  });
+}
+
 async function runFuelScenario() {
   const supabase = makeDelayedFuelCommitSupabase();
-  await assert.rejects(
-    () => addFuelEntry({
-      supabase,
-      isAdmin: false,
-      vehicleId: 'vehicle-1',
-      liters: '48,5',
-      odometerKm: '125400',
-      odometerPhotoBlob: new Blob(['odometer'], { type: 'image/jpeg' }),
-      odometerAiConfidence: 0.94,
-      odometerReadSource: 'local_ocr',
-    }),
-    (error) => /Response lost/i.test(String(error?.message || '')),
-  );
+  const firstResult = await saveDelayedFuelAttempt(supabase);
   await nextTick();
   const committed = supabase.getRecord();
-  assert.ok(committed, 'Symulowany commit tankowania powinien pojawić się dopiero po pustym readbacku.');
+  assert.ok(committed, 'Symulowany commit tankowania powinien pojawić się po pierwszym pustym readbacku.');
+  assert.equal(committed.id, FUEL_DELAYED_ATTEMPT_ID, 'Późny commit musi zachować UUID logicznej próby.');
+  assert.equal(firstResult.id, FUEL_DELAYED_ATTEMPT_ID, 'Jeśli reconciliation zdąży zobaczyć późny commit, pierwsza próba może bezpiecznie wrócić sukcesem.');
   assert.ok(supabase.files.has(committed.odometer_photo_path), 'Zdjęcie licznika musi pozostać po późnym commitcie DB.');
-  assert.equal(supabase.removed.length, 0, 'Nie wolno usuwać zdjęcia po pustym readbacku niejednoznacznego zapisu.');
+  assert.equal(supabase.removed.length, 0, 'Nie wolno usuwać zdjęcia po niejednoznacznym/późnym zapisie.');
+  assert.equal(supabase.metrics.insertCount, 1);
+  assert.equal(supabase.metrics.uploadCount, 1);
+
+  const retried = await saveDelayedFuelAttempt(supabase);
+  assert.equal(retried.id, FUEL_DELAYED_ATTEMPT_ID);
+  assert.equal(supabase.metrics.insertCount, 1, 'Retry po późnym commicie nie może tworzyć drugiego wpisu.');
+  assert.equal(supabase.metrics.uploadCount, 1, 'Retry po późnym commicie nie może wysyłać drugiego zdjęcia.');
 }
 
 await runProtocolScenario();
