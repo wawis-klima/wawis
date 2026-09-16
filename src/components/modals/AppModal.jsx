@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { blockUpdateReload } from "../../modules/update-reload-guard.js";
+import { blockBeforeUnload, blockUpdateReload } from "../../modules/update-reload-guard.js";
 
 export default function AppModal({
   open,
@@ -10,11 +10,21 @@ export default function AppModal({
   contentClassName = "card modal",
   closeOnOverlay = true,
   closeOnEscape = true,
+  warnBeforeUnload = false,
 }) {
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
+    return blockUpdateReload("desktop-app-modal");
+  }, [open]);
 
-    const releaseReloadBlocker = blockUpdateReload("desktop-app-modal");
+  useEffect(() => {
+    if (!open || !warnBeforeUnload || typeof document === "undefined") return undefined;
+    return blockBeforeUnload("desktop-app-modal-unsaved-work");
+  }, [open, warnBeforeUnload]);
+
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return undefined;
+
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -29,7 +39,6 @@ export default function AppModal({
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
-      releaseReloadBlocker();
     };
   }, [closeOnEscape, onClose, open]);
 

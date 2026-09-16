@@ -36,6 +36,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
   const [jobForm, setJobFormState] = useState(emptyJobForm);
   const jobFormRef = useRef(emptyJobForm);
   const jobFormInitialRef = useRef(emptyJobForm);
+  const jobFormDirty = getComparableJobForm(jobForm, normalizeStatus) !== getComparableJobForm(jobFormInitialRef.current, normalizeStatus);
 
   function setJobForm(nextValue) {
     setJobFormState((prev) => {
@@ -96,6 +97,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     editingJobId,
     serialOnlyMode,
     jobForm,
+    jobFormDirty,
     jobFormRef,
     setJobForm,
     resetJobModalState,

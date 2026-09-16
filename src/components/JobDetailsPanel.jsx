@@ -6,6 +6,7 @@ import DesktopJobDeviceCards from "./desktop/DesktopJobDeviceCards.jsx";
 import DesktopJobProtocolCard from "./desktop/DesktopJobProtocolCard.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getJobDeviceRows } from "../modules/job-devices.js";
+import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -92,6 +93,30 @@ export default function JobDetailsPanel({
   setJobs,
   setSelectedJobByUpdater,
 }) {
+  const selectedJobId = String(selectedJob?.id || '');
+  const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || '') : '';
+  const [commentSaving, setCommentSaving] = React.useState(false);
+  const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
+
+  React.useEffect(() => {
+    setCommentSaving(false);
+  }, [selectedJobId]);
+
+  React.useEffect(() => {
+    if (!commentHasUnsavedWork) return undefined;
+    return blockUnsavedWork(`desktop-job-comment:${selectedJobId}`);
+  }, [commentHasUnsavedWork, selectedJobId]);
+
+  async function handleAddComment() {
+    if (!selectedJobId || commentSaving) return;
+    setCommentSaving(true);
+    try {
+      await addComment?.(selectedJobId, 'Komentarz');
+    } finally {
+      setCommentSaving(false);
+    }
+  }
+
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
   }
@@ -110,8 +135,7 @@ export default function JobDetailsPanel({
   const canManageSelectedJobViewers = canManageJobViewers(selectedJob, isAdmin);
   const canManageSelectedAdminNote = canManageAdminNote(selectedJob, isAdmin);
   const canDeleteSelectedJob = canDeleteJob(selectedJob, isAdmin);
-  const currentCommentDraft = commentDrafts[selectedJob.id] || "";
-  const canSubmitComment = canAddSelectedJobComment && !busy && currentCommentDraft.trim().length > 0;
+  const canSubmitComment = canAddSelectedJobComment && !busy && !commentSaving && currentCommentDraft.trim().length > 0;
   const jobDevices = getSafeJobDeviceRows(selectedJob);
   const phoneHref = getPhoneHref(selectedJob.phone);
   const installationDateLabel = formatInstallationDate(selectedJob.installation_date);
@@ -468,7 +492,7 @@ export default function JobDetailsPanel({
             <>
               <textarea className="input textarea" placeholder="Napisz komentarz..." value={currentCommentDraft} onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [selectedJob.id]: e.target.value }))} />
               <div className="row">
-                <button className="btn premiumActionBtn commentAddBtn" onClick={() => addComment(selectedJob.id, "Komentarz")} disabled={!canSubmitComment}>Dodaj komentarz</button>
+                <button className="btn premiumActionBtn commentAddBtn" onClick={() => void handleAddComment()} disabled={!canSubmitComment}>Dodaj komentarz</button>
               </div>
             </>
           ) : (

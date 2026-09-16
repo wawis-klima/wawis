@@ -1,4 +1,5 @@
-const activeBlockers = new Set();
+const activeReloadBlockers = new Set();
+const activeBeforeUnloadWarnings = new Set();
 let pendingReload = null;
 let reloadTimerId = null;
 let beforeUnloadInstalled = false;
@@ -18,7 +19,7 @@ function dispatchGuardEvent(type, detail = {}) {
 }
 
 function handleBeforeUnload(event) {
-  if (!activeBlockers.size) return undefined;
+  if (!activeBeforeUnloadWarnings.size) return undefined;
   event?.preventDefault?.();
   if (event) event.returnValue = '';
   return '';
@@ -28,16 +29,26 @@ function syncBeforeUnloadGuard() {
   const windowRef = getWindow();
   if (!windowRef?.addEventListener || !windowRef?.removeEventListener) return;
 
-  if (activeBlockers.size > 0 && !beforeUnloadInstalled) {
+  if (activeBeforeUnloadWarnings.size > 0 && !beforeUnloadInstalled) {
     windowRef.addEventListener('beforeunload', handleBeforeUnload);
     beforeUnloadInstalled = true;
     return;
   }
 
-  if (activeBlockers.size === 0 && beforeUnloadInstalled) {
+  if (activeBeforeUnloadWarnings.size === 0 && beforeUnloadInstalled) {
     windowRef.removeEventListener('beforeunload', handleBeforeUnload);
     beforeUnloadInstalled = false;
   }
+}
+
+function rememberPendingReload(reason) {
+  if (!pendingReload) {
+    pendingReload = {
+      reason: String(reason || 'update'),
+      requestedAt: Date.now(),
+    };
+  }
+  return pendingReload;
 }
 
 function scheduleReload(reason, delayMs = 0) {
@@ -45,6 +56,7 @@ function scheduleReload(reason, delayMs = 0) {
   if (!windowRef?.location || typeof windowRef.location.reload !== 'function') return false;
   if (reloadTimerId !== null) return true;
 
+  const safeReason = String(reason || 'update');
   pendingReload = null;
   const safeDelay = Math.max(0, Number(delayMs) || 0);
   const schedule = typeof windowRef.setTimeout === 'function'
@@ -53,33 +65,51 @@ function scheduleReload(reason, delayMs = 0) {
 
   reloadTimerId = schedule(() => {
     reloadTimerId = null;
-    dispatchGuardEvent('wawis:update-reload-start', { reason });
+    if (activeReloadBlockers.size > 0) {
+      const deferred = rememberPendingReload(safeReason);
+      dispatchGuardEvent('wawis:update-reload-deferred', {
+        reason: deferred.reason,
+        blockers: activeReloadBlockers.size,
+      });
+      return;
+    }
+    pendingReload = null;
+    dispatchGuardEvent('wawis:update-reload-start', { reason: safeReason });
     windowRef.location.reload();
   }, safeDelay);
   return true;
 }
 
-export function blockUpdateReload(reason = 'unsaved-work') {
+function createToken(set, reason) {
   const token = Symbol(String(reason || 'unsaved-work'));
-  activeBlockers.add(token);
-  syncBeforeUnloadGuard();
+  set.add(token);
+  let released = false;
+  return {
+    token,
+    release() {
+      if (released) return false;
+      released = true;
+      set.delete(token);
+      return true;
+    },
+  };
+}
+
+export function blockUpdateReload(reason = 'unsaved-work') {
+  const blocker = createToken(activeReloadBlockers, reason);
   dispatchGuardEvent('wawis:update-reload-blocked', {
     reason,
-    blockers: activeBlockers.size,
+    blockers: activeReloadBlockers.size,
   });
 
-  let released = false;
   return () => {
-    if (released) return;
-    released = true;
-    activeBlockers.delete(token);
-    syncBeforeUnloadGuard();
+    if (!blocker.release()) return;
     dispatchGuardEvent('wawis:update-reload-unblocked', {
       reason,
-      blockers: activeBlockers.size,
+      blockers: activeReloadBlockers.size,
     });
 
-    if (activeBlockers.size === 0 && pendingReload) {
+    if (activeReloadBlockers.size === 0 && pendingReload && reloadTimerId === null) {
       const deferred = pendingReload;
       pendingReload = null;
       scheduleReload(deferred.reason, 0);
@@ -87,15 +117,33 @@ export function blockUpdateReload(reason = 'unsaved-work') {
   };
 }
 
+export function blockBeforeUnload(reason = 'unsaved-work') {
+  const warning = createToken(activeBeforeUnloadWarnings, reason);
+  syncBeforeUnloadGuard();
+  return () => {
+    if (!warning.release()) return;
+    syncBeforeUnloadGuard();
+  };
+}
+
+export function blockUnsavedWork(reason = 'unsaved-work') {
+  const releaseReload = blockUpdateReload(reason);
+  const releaseBeforeUnload = blockBeforeUnload(reason);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    releaseBeforeUnload();
+    releaseReload();
+  };
+}
+
 export function requestUpdateReload(reason = 'update', { delayMs = 0 } = {}) {
-  if (activeBlockers.size > 0) {
-    pendingReload = {
-      reason: String(reason || 'update'),
-      requestedAt: Date.now(),
-    };
+  if (activeReloadBlockers.size > 0) {
+    const deferred = rememberPendingReload(reason);
     dispatchGuardEvent('wawis:update-reload-deferred', {
-      reason: pendingReload.reason,
-      blockers: activeBlockers.size,
+      reason: deferred.reason,
+      blockers: activeReloadBlockers.size,
     });
     return false;
   }
@@ -104,12 +152,13 @@ export function requestUpdateReload(reason = 'update', { delayMs = 0 } = {}) {
 }
 
 export function hasUpdateReloadBlockers() {
-  return activeBlockers.size > 0;
+  return activeReloadBlockers.size > 0;
 }
 
 export function getUpdateReloadGuardState() {
   return {
-    blockers: activeBlockers.size,
+    blockers: activeReloadBlockers.size,
+    beforeUnloadWarnings: activeBeforeUnloadWarnings.size,
     pending: Boolean(pendingReload),
     pendingReason: pendingReload?.reason || '',
     reloadScheduled: reloadTimerId !== null,
@@ -117,7 +166,15 @@ export function getUpdateReloadGuardState() {
 }
 
 export function __resetUpdateReloadGuardForTests() {
-  activeBlockers.clear();
+  const windowRef = getWindow();
+  if (reloadTimerId !== null) {
+    const clear = typeof windowRef?.clearTimeout === 'function'
+      ? windowRef.clearTimeout.bind(windowRef)
+      : clearTimeout;
+    try { clear(reloadTimerId); } catch { /* tylko testy */ }
+  }
+  activeReloadBlockers.clear();
+  activeBeforeUnloadWarnings.clear();
   pendingReload = null;
   reloadTimerId = null;
   syncBeforeUnloadGuard();

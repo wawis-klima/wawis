@@ -8,6 +8,7 @@ import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from ".
 import { getNameplatePhotoMetadata } from "../modules/photos.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
+import { blockUnsavedWork } from "../../modules/update-reload-guard.js";
 import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
 
 function formatInstallationDate(dateStr = "") {
@@ -194,12 +195,21 @@ export default function JobDetailsPanel({
   const [protocolBackendAvailable, setProtocolBackendAvailable] = React.useState(true);
   const [protocolReloadKey, setProtocolReloadKey] = React.useState(0);
   const [expandedDeviceIndexes, setExpandedDeviceIndexes] = React.useState([]);
+  const [commentSaving, setCommentSaving] = React.useState(false);
   const selectedJobId = String(selectedJob?.id || "");
+  const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || "") : "";
+  const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobIsCompleted = String(selectedJob?.status || "") === "Zakończone";
 
   React.useEffect(() => {
     setExpandedDeviceIndexes([]);
+    setCommentSaving(false);
   }, [selectedJobId]);
+
+  React.useEffect(() => {
+    if (!commentHasUnsavedWork) return undefined;
+    return blockUnsavedWork(`mobile-job-comment:${selectedJobId}`);
+  }, [commentHasUnsavedWork, selectedJobId]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -257,8 +267,7 @@ export default function JobDetailsPanel({
   const canManageSelectedJobViewers = canManageJobViewers(selectedJob, isAdmin);
   const canManageSelectedAdminNote = canManageAdminNote(selectedJob, isAdmin);
   const canDeleteSelectedJob = canDeleteJob(selectedJob, isAdmin);
-  const currentCommentDraft = commentDrafts[selectedJob.id] || "";
-  const canSubmitComment = canAddSelectedJobComment && !busy && currentCommentDraft.trim().length > 0;
+  const canSubmitComment = canAddSelectedJobComment && !busy && !commentSaving && currentCommentDraft.trim().length > 0;
   const showCommentsSection = !isWorkerCompletedLock || showDetailsLoading || comments.length > 0;
   const jobDevices = getJobDeviceRows(selectedJob);
   const nameplateCompletion = getJobNameplateCompletion(selectedJob, { allowLocal: !isAdmin });
@@ -272,6 +281,15 @@ export default function JobDetailsPanel({
   const singleDeviceIndoorUnits = jobDevices.length === 1 ? getDeviceIndoorUnits(jobDevices[0], { keepEmpty: true }) : [];
   const singleDeviceTypeLabel = jobDevices.length === 1 ? (singleDeviceIndoorUnits.length > 1 ? 'Multi-split' : 'Single-split') : '';
 
+  async function handleAddComment() {
+    if (!selectedJobId || commentSaving) return;
+    setCommentSaving(true);
+    try {
+      await addComment?.(selectedJobId, 'Komentarz');
+    } finally {
+      setCommentSaving(false);
+    }
+  }
 
   return (
     <>
@@ -764,7 +782,7 @@ export default function JobDetailsPanel({
             <>
               <textarea className="input textarea" placeholder="Napisz komentarz..." value={currentCommentDraft} onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [selectedJob.id]: e.target.value }))} />
               <div className="row">
-                <button className="btn premiumActionBtn commentAddBtn" onClick={() => addComment(selectedJob.id, "Komentarz")} disabled={!canSubmitComment}>Dodaj komentarz</button>
+                <button className="btn premiumActionBtn commentAddBtn" onClick={() => void handleAddComment()} disabled={!canSubmitComment}>Dodaj komentarz</button>
               </div>
             </>
           ) : null}

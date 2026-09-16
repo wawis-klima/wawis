@@ -1,3 +1,11 @@
+## 10.82
+- F1: bloker otwartego modala jest stabilny między rerenderami Reacta, a callback reloadu ponownie sprawdza aktywne blokady przed przeładowaniem,
+- F2: formularz tankowania oraz komentarze desktop/mobile chronią realny draft i trwający zapis przed aktualizacją oraz zamknięciem karty,
+- F13: beforeunload jest oddzielony od samego faktu otwarcia modala i działa tylko przy dirty/saving state,
+- formularze montażu używają istniejącej detekcji zmian jako źródła warningu beforeunload, a czysty podgląd PDF nie ostrzega bez potrzeby,
+- protokół zachowuje ochronę podczas edycji/podpisu/zapisu i czyści stan dirty po udanym zapisie,
+- dodano regresję Node oraz rzeczywisty test Playwright obejmujący rerender formularza, późny bloker, paliwo i komentarz inline.
+
 ## 10.81
 - dodano wspólny guard wymuszonego reloadu po zmianie wersji i Service Workerze,
 - otwarty AppModal na mobile i desktop odracza aktualizację do bezpiecznego zamknięcia,

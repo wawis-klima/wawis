@@ -237,6 +237,7 @@ export default function App() {
     editingJobId,
     serialOnlyMode,
     jobForm,
+    jobFormDirty,
     jobFormRef,
     setJobForm,
     resetJobModalState,
@@ -1055,6 +1056,7 @@ export default function App() {
           editingJobId={editingJobId}
           serialOnlyMode={serialOnlyMode}
           jobForm={jobForm}
+          jobFormDirty={jobFormDirty}
           setJobForm={setJobForm}
           profiles={profiles}
           contractors={contractorsCatalog}

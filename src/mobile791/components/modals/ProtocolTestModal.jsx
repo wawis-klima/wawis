@@ -125,6 +125,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
   const openedAtRef = useRef(new Date());
+  const paymentDraftBaselineRef = useRef(JSON.stringify(getPaymentDraftFromJob(job)));
   const [savedRecord, setSavedRecord] = useState(protocolRecord);
   const [editing, setEditing] = useState(!protocolRecord);
   const [paymentDraft, setPaymentDraft] = useState(() => getPaymentDraftFromJob(job));
@@ -147,7 +148,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     openedAtRef.current = new Date();
     setSavedRecord(protocolRecord || null);
     setEditing(!protocolRecord);
-    setPaymentDraft(getPaymentDraftFromJob(job));
+    const nextPaymentDraft = getPaymentDraftFromJob(job);
+    paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
+    setPaymentDraft(nextPaymentDraft);
     setHasSignature(false);
     setSignatureOpen(false);
     setSignatureDataUrl("");
@@ -299,6 +302,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       const wasReplacement = Boolean(savedRecord);
       setSavedRecord(record);
       setEditing(false);
+      paymentDraftBaselineRef.current = JSON.stringify(paymentDraft);
+      setHasSignature(false);
+      setSignatureDataUrl("");
+      setDraftHasSignature(false);
       setActionMenuOpen(false);
       setMessage(wasReplacement ? "Protokół został zaktualizowany i podpisany ponownie." : "Protokół został zapisany przy zakończonym zleceniu.");
       onSaved?.(record, paymentPatch);
@@ -341,6 +348,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     }
   }
 
+  const paymentDraftDirty = JSON.stringify(paymentDraft) !== paymentDraftBaselineRef.current;
+  const protocolHasUnsavedWork = Boolean(open && (isGenerating || hasSignature || draftHasSignature || paymentDraftDirty));
   const storedPayment = getPaymentDraftFromJob(job);
   const paymentVisible = editing ? paymentDraft : storedPayment;
   const recipientEmail = getJobProtocolRecipientEmail(job);
@@ -350,6 +359,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     <>
       <AppModal
         open={open}
+        warnBeforeUnload={protocolHasUnsavedWork}
         onClose={isGenerating || signatureOpen ? undefined : onClose}
         overlayClassName="formOverlay mobileDeviceWizardOverlay"
         contentClassName="card modal mobileDeviceWizardModal protocolWizardModal"

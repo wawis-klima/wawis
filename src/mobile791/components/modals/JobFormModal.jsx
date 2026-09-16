@@ -19,6 +19,7 @@ export default function JobFormModal({
   editingJobId,
   serialOnlyMode = false,
   jobForm,
+  jobFormDirty = false,
   setJobForm,
   profiles,
   contractors = [],
@@ -386,6 +387,7 @@ export default function JobFormModal({
     return (
       <AppModal
         open={showModal}
+        warnBeforeUnload={Boolean(jobFormDirty || busy)}
         onClose={closeJobModal}
         overlayClassName="formOverlay mobileDeviceWizardOverlay"
         contentClassName="card modal mobileDeviceWizardModal"
@@ -413,6 +415,7 @@ export default function JobFormModal({
   return (
     <AppModal
       open={showModal}
+        warnBeforeUnload={Boolean(jobFormDirty || busy)}
       onClose={closeJobModal}
       overlayClassName="formOverlay"
       contentClassName="card modal formModal"

@@ -40,6 +40,7 @@ globalThis.window = {
 const guard = await import('../src/modules/update-reload-guard.js');
 const {
   blockUpdateReload,
+  blockUnsavedWork,
   requestUpdateReload,
   getUpdateReloadGuardState,
   __resetUpdateReloadGuardForTests,
@@ -53,8 +54,8 @@ __resetUpdateReloadGuardForTests();
 reloadCount = 0;
 scheduled.length = 0;
 
-const releaseProtocol = blockUpdateReload('protocol');
-const releaseNested = blockUpdateReload('signature');
+const releaseProtocol = blockUnsavedWork('protocol');
+const releaseNested = blockUnsavedWork('signature');
 assert.equal(getUpdateReloadGuardState().blockers, 2, 'Dwa otwarte workflow muszą tworzyć dwa niezależne blokery.');
 assert.ok(listeners.has('beforeunload'), 'Przy otwartej pracy musi być aktywna ochrona beforeunload.');
 
