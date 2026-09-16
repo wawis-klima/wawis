@@ -191,6 +191,7 @@ export function subscribeToAuthState({
       // oznacza rzeczywiste wylogowanie.
       applyLoggedOutState();
     } catch (error) {
+      if (disposed || !isAuthOperationCurrent(verificationToken)) return;
       if (isTransientSupabaseError(error)) {
         setAuthResolved(true);
         scheduleSignedOutVerification(SIGNED_OUT_TRANSIENT_RETRY_MS);

@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 10.85
+- 10.86
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.85` — bramka wydawania po audycie 10.84: fail-closed CI, wymagane E2E i build, twarda autoryzacja AI, zabezpieczony webhook SMSAPI oraz baseline produkcyjnego Supabase.
+- wersja `10.86` — F3/F5/F8/F9: ochrona sesji przed spóźnionym SIGNED_OUT, izolacja kolejki zdjęć między kontami oraz bezpieczna kolejność synchronizacji i kursora offline.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.

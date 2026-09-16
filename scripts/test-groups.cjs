@@ -137,6 +137,7 @@ const GROUPS = {
     'npm run test:smoke:release-zip-clean',
     'node scripts/smoke-playwright-runner-fail-closed-v1085.cjs',
     'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
+    'node scripts/smoke-audit-fixes-v1086.mjs',
     'npm run test:smoke:e2e-mobile',
     'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',

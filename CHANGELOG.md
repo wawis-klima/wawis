@@ -1,3 +1,12 @@
+## 10.86
+- F3: spóźniona weryfikacja SIGNED_OUT nie może wylogować nowszej sesji — desktop i mobile.
+- F5: restore/resume/upload kolejki zdjęć offline są izolowane właścicielem i generacją sesji.
+- F8: requestId należy do faktycznego fetchu, nie do późniejszego caller-a dołączającego do Promise.
+- F9: kursor synchronizacji przesuwa się dopiero po potwierdzonym trwałym snapshotcie; błąd zapisu pozostaje retryable.
+- Regresja smoke-audit-fixes-v1086.mjs jest częścią obowiązkowej grupy infra.
+
+
+
 ## 10.85
 - F12/N9: fail-closed Playwright runners, wymagany production build w PR gate, cross-platform ZIP i poprawki CRLF/Windows.
 - N1: OCR AI ufa wyłącznie chronionej roli `profiles.role`.

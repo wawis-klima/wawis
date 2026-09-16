@@ -10,10 +10,11 @@ import {
 import { loadJobSummaryData, preserveLatestQueuedPhotos, refreshAppData } from "../modules/jobs.js";
 import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
-import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOperations, loadOfflineAppSnapshot, saveOfflineAppSnapshot, updateOfflineSyncCursor } from "../modules/job-offline-store.js";
+import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOperations, loadOfflineAppSnapshot, saveOfflineAppSnapshot } from "../modules/job-offline-store.js";
 import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";
 import { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";
 import { transitionPushSessionContext } from "../modules/push-lifecycle-v1078.js";
+import { getOrCreateRefreshPayloadRequest, persistedSnapshotCoversCursor } from "../modules/sync-contract-v1086.js";
 
 const APP_REFRESH_TIMEOUT_MS = 20000;
 const AUTH_RESTORE_RETRY_MS = 30000;
@@ -250,22 +251,21 @@ export function useAppSession({
       const loadServerPayloadOnce = (activeUser) => {
         const activeUserId = String(activeUser?.id || '').trim();
         const requestKey = `${sessionToken.generation}:${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;
-        const existingRequest = refreshPayloadInFlightRef.current.get(requestKey);
-        if (existingRequest) return existingRequest;
-
-        const request = withRefreshTimeout(loadServerPayload(activeUser)).finally(() => {
-          if (refreshPayloadInFlightRef.current.get(requestKey) === request) {
-            refreshPayloadInFlightRef.current.delete(requestKey);
-          }
-        });
-        refreshPayloadInFlightRef.current.set(requestKey, request);
-        return request;
+        return getOrCreateRefreshPayloadRequest(
+          refreshPayloadInFlightRef.current,
+          requestKey,
+          refreshRequestId,
+          () => withRefreshTimeout(loadServerPayload(activeUser)),
+        );
       };
 
       let payload;
+      let payloadRequestId = refreshRequestId;
       let activeUser = user;
       try {
-        payload = await loadServerPayloadOnce(activeUser);
+        const payloadRequest = loadServerPayloadOnce(activeUser);
+        payloadRequestId = payloadRequest.requestId;
+        payload = await payloadRequest.request;
       } catch (serverError) {
         if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
         if (!isJwtExpiredError(serverError)) throw serverError;
@@ -289,7 +289,9 @@ export function useAppSession({
 
         activeUser = refreshedUser;
         setSessionUserForGeneration(refreshedUser);
-        payload = await loadServerPayloadOnce(refreshedUser);
+        const payloadRequest = loadServerPayloadOnce(refreshedUser);
+        payloadRequestId = payloadRequest.requestId;
+        payload = await payloadRequest.request;
       }
 
       if (!payload) {
@@ -298,18 +300,18 @@ export function useAppSession({
           : undefined;
       }
       if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
-      if (refreshRequestId < lastAppliedServerRequestIdRef.current) {
+      if (payloadRequestId < lastAppliedServerRequestIdRef.current) {
         return { ok: true, transient: false, ignoredOlderResponse: true, coreJobsApplied };
       }
 
-      lastAppliedServerRequestIdRef.current = refreshRequestId;
+      lastAppliedServerRequestIdRef.current = payloadRequestId;
       const serverFetchedAtMs = Date.now();
       if (changeCursorAtRefreshStart !== null) {
         changeCursorRef.current = Math.max(Number(changeCursorRef.current) || 0, Number(changeCursorAtRefreshStart) || 0);
       }
       const operations = await listOfflineJobOperations(String(payload.sessionUser?.id || activeUser?.id || userId));
       if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
-      if (refreshRequestId < lastAppliedServerRequestIdRef.current) {
+      if (payloadRequestId < lastAppliedServerRequestIdRef.current) {
         return { ok: true, transient: false, ignoredOlderResponse: true, coreJobsApplied };
       } // stale-session-and-request-final-queue-guard-v1084
       const payloadJobs = payload.jobs || coreJobs || [];
@@ -439,7 +441,7 @@ export function useAppSession({
             // powtorzy idempotentny odczyt, ale nigdy nie ominie zmiany.
             const nextCursor = change.changeSeq;
             const persistedJobs = applyOfflineOperationsToJobs(workingJobs, operations, profileRef.current || {});
-            await saveOfflineAppSnapshot({
+            const snapshotSaved = await saveOfflineAppSnapshot({
               userId,
               profile: profileRef.current,
               profiles: profilesRef.current,
@@ -448,9 +450,15 @@ export function useAppSession({
               changeCursor: nextCursor,
             });
             if (!isCurrentDataRequest()) return staleRefreshResult();
+            if (!snapshotSaved) {
+              const persistedSnapshot = await loadOfflineAppSnapshot(userId);
+              if (!isCurrentDataRequest()) return staleRefreshResult();
+              if (!persistedSnapshotCoversCursor(persistedSnapshot, nextCursor)) {
+                return { ok: false, transient: true, retryable: true, cachePersistFailed: true, processed };
+              }
+            }
             cursor = nextCursor;
             changeCursorRef.current = nextCursor;
-            await updateOfflineSyncCursor(userId, nextCursor);
             if (!isCurrentDataRequest()) return staleRefreshResult();
             processed += 1;
           }
