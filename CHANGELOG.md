@@ -1,3 +1,10 @@
+## 10.81
+- dodano wspólny guard wymuszonego reloadu po zmianie wersji i Service Workerze,
+- otwarty AppModal na mobile i desktop odracza aktualizację do bezpiecznego zamknięcia,
+- protokół z podpisem oraz formularze montażu są chronione przed utratą niezapisanej pracy,
+- po zamknięciu ostatniego modala oczekująca aktualizacja wykonuje dokładnie jeden reload,
+- dodano regresję v10.81 dla wielu blockerów, beforeunload i odroczonego reloadu.
+
 ## 10.80
 - Generacja sesji na mobile i desktop blokuje odpowiedzi wystartowane dla poprzedniego konta.
 - Timeout mobilnego Supabase obejmuje odczyt body po otrzymaniu nagłówków HTTP.
