@@ -39,7 +39,16 @@ assert.match(offlineSync, /next_attempt_at/);
 assert.match(incremental, /get_mobile_change_batch/);
 assert.match(incremental, /get_mobile_change_head/);
 assert.match(session, /refreshChanged/);
-assert.match(session, /updateOfflineSyncCursor\(userId, nextCursor\)/);
+// 10.86 / F9: trwały punkt synchronizacji nadal istnieje, ale nie wolno już
+// przesuwać kursora osobnym zapisem po snapshotcie. Snapshot + change_cursor są
+// jednym kontraktem trwałości, a nieudany zapis musi pozostać retryable.
+assert.match(session, /const snapshotSaved = await saveOfflineAppSnapshot\(\{/);
+assert.match(session, /persistedSnapshotCoversCursor\(snapshotSaved, nextCursor\)/);
+const refreshChangedStart = session.indexOf('const refreshChanged = useCallback');
+const refreshChangedEnd = session.indexOf('async function login(credentials = {})', refreshChangedStart);
+const refreshChangedBlock = session.slice(refreshChangedStart, refreshChangedEnd);
+assert.equal(refreshChangedBlock.includes('updateOfflineSyncCursor('), false, 'F9: refreshChanged nie może przesuwać kursora poza atomowym snapshotem');
+assert.match(refreshChangedBlock, /cachePersistFailed: true/);
 assert.match(realtime, /refreshChangedRef\.current/);
 assert.match(desktopSession, /const refreshChanged = useCallback/);
 assert.match(desktopRealtime, /refreshChangedRef\.current/);
