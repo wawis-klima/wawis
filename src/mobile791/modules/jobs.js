@@ -1,4 +1,4 @@
-export { refreshAppData, loadJobDetailsData, loadJobNameplatePhotosData, loadJobSummaryData } from './jobs-fetch.js';
+export { refreshAppData, loadJobDetailsData, loadJobNameplatePhotosData, loadJobSummaryData, preserveLatestQueuedPhotos } from './jobs-fetch.js';
 
 export {
   EMPTY_JOB_FORM,

@@ -7,7 +7,7 @@ import {
   restoreAuthSession,
   subscribeToAuthState,
 } from "../modules/auth.js";
-import { loadJobSummaryData, refreshAppData } from "../modules/jobs.js";
+import { loadJobSummaryData, preserveLatestQueuedPhotos, refreshAppData } from "../modules/jobs.js";
 import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
 import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOperations, loadOfflineAppSnapshot, saveOfflineAppSnapshot, updateOfflineSyncCursor } from "../modules/job-offline-store.js";
@@ -193,7 +193,10 @@ export function useAppSession({
         const operations = await listOfflineJobOperations(String(activeUser?.id || userId));
         if (!isCurrentSession()) return;
         const profileForOffline = getProfileFallback(activeUser);
-        const nextJobs = applyOfflineOperationsToJobs(freshJobs, operations, profileForOffline);
+        const freshJobsWithLatestQueue = preserveJobDetails
+          ? preserveLatestQueuedPhotos(freshJobs, jobsRef.current)
+          : freshJobs;
+        const nextJobs = applyOfflineOperationsToJobs(freshJobsWithLatestQueue, operations, profileForOffline);
         coreJobsApplied = true;
         coreJobs = nextJobs;
         lastAppliedServerRequestIdRef.current = Math.max(lastAppliedServerRequestIdRef.current, refreshRequestId);
@@ -294,7 +297,11 @@ export function useAppSession({
       }
       const operations = await listOfflineJobOperations(String(payload.sessionUser?.id || activeUser?.id || userId));
       if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied }; // stale-session-final-queue-guard-v1080
-      const finalJobs = applyOfflineOperationsToJobs(payload.jobs || coreJobs || [], operations, payload.profile || getProfileFallback(activeUser));
+      const payloadJobs = payload.jobs || coreJobs || [];
+      const payloadJobsWithLatestQueue = preserveJobDetails
+        ? preserveLatestQueuedPhotos(payloadJobs, jobsRef.current)
+        : payloadJobs;
+      const finalJobs = applyOfflineOperationsToJobs(payloadJobsWithLatestQueue, operations, payload.profile || getProfileFallback(activeUser));
       profileRef.current = payload.profile;
       profilesRef.current = payload.profiles;
       notificationsRef.current = payload.notifications;
