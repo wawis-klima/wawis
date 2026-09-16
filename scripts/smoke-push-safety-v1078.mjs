@@ -25,7 +25,6 @@ import vm from 'node:vm';
       removeItem(key) { map.delete(key); },
     },
   };
-  globalThis.navigator = {};
   globalThis.crypto = { randomUUID: () => '00000000-0000-4000-8000-000000000001' };
 
   const lifecycle = await import('../src/mobile791/modules/push-lifecycle-v1078.js?smoke-v1078');
