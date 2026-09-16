@@ -9,6 +9,7 @@ const PROTOCOLS_BUCKET = "job-protocols";
 const PDF_MIME_TYPE = "application/pdf";
 const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_bytes, signed_at, created_at, created_by";
 const PROTOCOL_CLEANUP_TIMEOUT_MS = 5_000;
+export const PROTOCOL_WRITE_CONFLICT = "PROTOCOL_WRITE_CONFLICT";
 const PRINT_IMAGE_MIME_TYPE = "image/png";
 const PRINT_IMAGE_WIDTH = 1800;
 const PRINT_IMAGE_MAX_PIXELS = 24_000_000;
@@ -117,6 +118,18 @@ function protocolRecordUsesStoragePath(record, storagePath) {
   return Boolean(record && normalizeText(record.storage_path) === normalizeText(storagePath));
 }
 
+function createProtocolWriteConflict({ activeRecord = null, attemptedStoragePath = "" } = {}) {
+  const error = new Error("W międzyczasie zapisano inną wersję protokołu. Twój podpis nie został uznany za zapisany — odśwież aktywny protokół i zdecyduj, czy chcesz go zastąpić.");
+  error.code = PROTOCOL_WRITE_CONFLICT;
+  error.activeRecord = activeRecord || null;
+  error.attemptedStoragePath = normalizeText(attemptedStoragePath);
+  return error;
+}
+
+export function isProtocolWriteConflictError(error) {
+  return normalizeText(error?.code) === PROTOCOL_WRITE_CONFLICT;
+}
+
 async function reconcileProtocolWrite({ supabase, jobId, timeoutMs }) {
   try {
     const result = await loadJobProtocolRecord({ supabase, jobId, timeoutMs });
@@ -136,6 +149,7 @@ export async function storeJobProtocol({
   fileName,
   signedAt = new Date(),
   replaceExisting = false,
+  expectedStoragePath = "",
   timeoutMs = PROTOCOL_SAVE_STEP_TIMEOUT_MS,
   uploadTimeoutMs = PROTOCOL_SAVE_UPLOAD_TIMEOUT_MS,
 }) {
@@ -151,6 +165,12 @@ export async function storeJobProtocol({
     throw new Error("Obsługa protokołów nie jest jeszcze włączona w bazie aplikacji.");
   }
   if (existing.record && !replaceExisting) return existing.record;
+
+  const expectedExistingStoragePath = normalizeText(expectedStoragePath);
+  if (existing.record && replaceExisting && expectedExistingStoragePath
+      && !protocolRecordUsesStoragePath(existing.record, expectedExistingStoragePath)) {
+    throw createProtocolWriteConflict({ activeRecord: existing.record, attemptedStoragePath: expectedExistingStoragePath });
+  }
 
   const createdBy = await getAuthenticatedUserId(supabase, timeoutMs);
   const storagePath = getProtocolStoragePath(job.id, signedAt);
@@ -181,6 +201,7 @@ export async function storeJobProtocol({
       .from(PROTOCOLS_TABLE)
       .update(row)
       .eq("id", existing.record.id)
+      .eq("storage_path", expectedExistingStoragePath || existing.record.storage_path)
       .select(PROTOCOL_RECORD_COLUMNS)
       .single();
     writeResult = await runTimedProtocolQuery(updateQuery, { phase: "update-record", timeoutMs });
@@ -192,7 +213,10 @@ export async function storeJobProtocol({
         }
         return reconciliation.record;
       }
-      // 10.77: po niejednoznacznym wyniku zapisu nie usuwamy nowego PDF.
+      if (reconciliation.confirmed && reconciliation.record) {
+        throw createProtocolWriteConflict({ activeRecord: reconciliation.record, attemptedStoragePath: storagePath });
+      }
+      // Po niejednoznacznym wyniku zapisu nie usuwamy nowego PDF.
       // Pusty readback nie wyklucza późnego commitu wcześniejszego UPDATE.
       throw writeResult.error;
     }
@@ -208,9 +232,11 @@ export async function storeJobProtocol({
       if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
         return reconciliation.record;
       }
-      // 10.77: po utraconej odpowiedzi INSERT pusty readback nie jest dowodem braku commitu.
-      // Zachowujemy plik; ewentualny orphan jest bezpieczniejszy niż rekord wskazujący usunięty PDF.
-      if (reconciliation.confirmed && reconciliation.record) return reconciliation.record;
+      // Po utraconej odpowiedzi INSERT sukces oznacza wyłącznie nasz storage_path.
+      // Obcy rekord jest konfliktem, a nie potwierdzeniem naszego podpisu.
+      if (reconciliation.confirmed && reconciliation.record) {
+        throw createProtocolWriteConflict({ activeRecord: reconciliation.record, attemptedStoragePath: storagePath });
+      }
       throw writeResult.error;
     }
   }
@@ -230,8 +256,10 @@ export async function storeJobProtocol({
     }
     return reconciliation.record;
   }
-  if (reconciliation.confirmed && !existing.record && reconciliation.record) return reconciliation.record;
-  // 10.77: brak jednoznacznego potwierdzenia nigdy nie uruchamia kasowania nowego pliku.
+  if (reconciliation.confirmed && reconciliation.record) {
+    throw createProtocolWriteConflict({ activeRecord: reconciliation.record, attemptedStoragePath: storagePath });
+  }
+  // Brak jednoznacznego potwierdzenia nigdy nie uruchamia kasowania nowego pliku.
   throw new Error("Plik został wysłany, ale zapis protokołu nie zwrócił jednoznacznego potwierdzenia.");
 }
 

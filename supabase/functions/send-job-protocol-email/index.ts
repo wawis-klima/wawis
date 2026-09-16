@@ -21,6 +21,7 @@ const FROM_HEADER = `WAWIS Klimatyzacja <${FROM_EMAIL}>`;
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const MAX_PROTOCOL_SIZE = 10 * 1024 * 1024;
 const RATE_LIMIT_SECONDS = 30;
+const PROVIDER_TIMEOUT_MS = 12_000;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -95,45 +96,88 @@ Deno.serve(async (request: Request) => {
       return json({ error: "Plik protokołu ma nieprawidłowy rozmiar." }, 400);
     }
 
-    const rateLimitAfter = new Date(Date.now() - RATE_LIMIT_SECONDS * 1000).toISOString();
-    const { data: recentSend } = await adminClient
+    const { data: existingLog, error: existingLogError } = await adminClient
       .from("job_protocol_email_log")
-      .select("id, status, recipient_email, created_at")
-      .eq("job_id", jobId)
-      .eq("sent_by", authData.user.id)
-      .gte("created_at", rateLimitAfter)
-      .in("status", ["sending", "sent"])
-      .order("created_at", { ascending: false })
-      .limit(1)
+      .select("id, request_key, job_id, protocol_id, recipient_email, sender_email, status, sent_by, provider_message_id, sent_at, error_message, created_at")
+      .eq("request_key", requestKey)
       .maybeSingle();
 
-    if (recentSend) {
-      return json({ error: "Protokół został właśnie wysłany. Odczekaj chwilę przed ponowną wysyłką." }, 429);
+    if (existingLogError) {
+      return json({ error: `Nie udało się sprawdzić poprzedniej próby wysyłki. ${existingLogError.message}` }, 500);
+    }
+    if (existingLog) {
+      const sameAttempt = String(existingLog.job_id) === jobId
+        && String(existingLog.protocol_id) === protocolId
+        && normalizeEmail(existingLog.recipient_email) === jobRecipient
+        && String(existingLog.sent_by || '') === String(authData.user.id);
+      if (!sameAttempt) {
+        return json({ error: "Klucz próby jest już przypisany do innej wysyłki.", definitive: true, requestKey }, 409);
+      }
+      if (existingLog.status === "sent") {
+        return json({
+          ok: true,
+          reconciled: true,
+          requestKey,
+          recipientEmail: jobRecipient,
+          senderEmail: FROM_EMAIL,
+          sentAt: existingLog.sent_at,
+          providerMessageId: existingLog.provider_message_id,
+        });
+      }
+      if (existingLog.status === "failed") {
+        return json({
+          error: existingLog.error_message || "Poprzednia próba została jednoznacznie odrzucona.",
+          definitive: true,
+          requestKey,
+        }, 409);
+      }
     }
 
-    const nowIso = new Date().toISOString();
-    const logRow = {
-      request_key: requestKey,
-      job_id: jobId,
-      protocol_id: protocolId,
-      recipient_email: jobRecipient,
-      sender_email: FROM_EMAIL,
-      provider: "resend",
-      status: "sending",
-      sent_by: authData.user.id,
-      created_at: nowIso,
-    };
-    const { data: emailLog, error: logError } = await adminClient
-      .from("job_protocol_email_log")
-      .insert(logRow)
-      .select("id")
-      .single();
+    if (!existingLog) {
+      const rateLimitAfter = new Date(Date.now() - RATE_LIMIT_SECONDS * 1000).toISOString();
+      const { data: recentSend } = await adminClient
+        .from("job_protocol_email_log")
+        .select("id, status, recipient_email, created_at")
+        .eq("job_id", jobId)
+        .eq("sent_by", authData.user.id)
+        .gte("created_at", rateLimitAfter)
+        .in("status", ["sending", "sent"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (logError || !emailLog) {
-      if (String(logError?.code || "") === "23505") {
-        return json({ error: "Ta wysyłka jest już przetwarzana." }, 409);
+      if (recentSend) {
+        return json({ error: "Protokół został właśnie wysłany. Odczekaj chwilę przed nową, świadomą wysyłką.", definitive: true }, 429);
       }
-      return json({ error: `Nie udało się rozpocząć wysyłki protokołu. ${logError?.message || ""}`.trim() }, 500);
+    }
+
+    let emailLog = existingLog;
+    if (!emailLog) {
+      const nowIso = new Date().toISOString();
+      const logRow = {
+        request_key: requestKey,
+        job_id: jobId,
+        protocol_id: protocolId,
+        recipient_email: jobRecipient,
+        sender_email: FROM_EMAIL,
+        provider: "resend",
+        status: "sending",
+        sent_by: authData.user.id,
+        created_at: nowIso,
+      };
+      const { data: insertedLog, error: logError } = await adminClient
+        .from("job_protocol_email_log")
+        .insert(logRow)
+        .select("id, request_key, job_id, protocol_id, recipient_email, status, sent_by")
+        .single();
+
+      if (logError || !insertedLog) {
+        if (String(logError?.code || "") === "23505") {
+          return json({ error: "Ta sama próba została rozpoczęta równolegle. Ponów z tym samym kluczem.", pending: true, requestKey }, 409);
+        }
+        return json({ error: `Nie udało się rozpocząć wysyłki protokołu. ${logError?.message || ""}`.trim() }, 500);
+      }
+      emailLog = insertedLog;
     }
 
     try {
@@ -148,40 +192,66 @@ Deno.serve(async (request: Request) => {
       const clientName = normalizeText(job.client || job.title) || "Klient";
       const address = [normalizeText(job.city), normalizeText(job.street)].filter(Boolean).join(", ");
       const subject = `Protokół montażu klimatyzacji – ${clientName}`;
-      const resendResponse = await fetch(RESEND_ENDPOINT, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          "Content-Type": "application/json",
-          "Idempotency-Key": `wawis-protocol-${requestKey}`,
-        },
-        body: JSON.stringify({
-          from: FROM_HEADER,
-          reply_to: FROM_EMAIL,
-          to: [jobRecipient],
-          subject,
-          html: buildHtml({ clientName, address, installationDate: job.installation_date }),
-          text: buildText({ clientName, address, installationDate: job.installation_date }),
-          attachments: [{
-            filename: safePdfFileName((protocol as ProtocolRow).file_name),
-            content: bytesToBase64(pdfBytes),
-          }],
-          tags: [
-            { name: "source", value: "wawis_protocol" },
-            { name: "job_id", value: jobId },
-            { name: "protocol_id", value: protocolId },
-          ],
-        }),
-      });
+      const providerController = new AbortController();
+      const providerTimeout = setTimeout(() => providerController.abort(), PROVIDER_TIMEOUT_MS);
+      let resendResponse: Response;
+      try {
+        resendResponse = await fetch(RESEND_ENDPOINT, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+            "Idempotency-Key": `wawis-protocol-${requestKey}`,
+          },
+          signal: providerController.signal,
+          body: JSON.stringify({
+            from: FROM_HEADER,
+            reply_to: FROM_EMAIL,
+            to: [jobRecipient],
+            subject,
+            html: buildHtml({ clientName, address, installationDate: job.installation_date }),
+            text: buildText({ clientName, address, installationDate: job.installation_date }),
+            attachments: [{
+              filename: safePdfFileName((protocol as ProtocolRow).file_name),
+              content: bytesToBase64(pdfBytes),
+            }],
+            tags: [
+              { name: "source", value: "wawis_protocol" },
+              { name: "job_id", value: jobId },
+              { name: "protocol_id", value: protocolId },
+            ],
+          }),
+        });
+      } catch (providerError) {
+        const providerUnknown = truncate(`provider_result_unknown: ${providerError instanceof Error ? providerError.message : String(providerError)}`, 1200);
+        await adminClient.from("job_protocol_email_log").update({
+          status: "sending",
+          error_message: providerUnknown,
+        }).eq("id", emailLog.id);
+        return json({
+          error: "Serwer pocztowy nie potwierdził wyniku. Ponów wysyłkę — zostanie użyty ten sam klucz próby.",
+          pending: true,
+          providerResultUnknown: true,
+          requestKey,
+        }, 504);
+      } finally {
+        clearTimeout(providerTimeout);
+      }
 
       const providerBody = await safeResponseJson(resendResponse);
       if (!resendResponse.ok) {
-        throw new Error(normalizeText((providerBody as Record<string, unknown>)?.message) || `Serwer pocztowy odrzucił wysyłkę (${resendResponse.status}).`);
+        const rejection = truncate(normalizeText((providerBody as Record<string, unknown>)?.message) || `Serwer pocztowy odrzucił wysyłkę (${resendResponse.status}).`, 1200);
+        await adminClient.from("job_protocol_email_log").update({
+          status: "failed",
+          provider_response: safeJson(providerBody),
+          error_message: rejection,
+        }).eq("id", emailLog.id);
+        return json({ error: rejection, definitive: true, requestKey }, 502);
       }
 
       const providerMessageId = normalizeText((providerBody as Record<string, unknown>)?.id) || null;
       const sentAt = new Date().toISOString();
-      await adminClient.from("job_protocol_email_log").update({
+      const { error: sentLogError } = await adminClient.from("job_protocol_email_log").update({
         status: "sent",
         provider_message_id: providerMessageId,
         provider_response: safeJson(providerBody),
@@ -189,8 +259,19 @@ Deno.serve(async (request: Request) => {
         sent_at: sentAt,
       }).eq("id", emailLog.id);
 
+      if (sentLogError) {
+        return json({
+          error: "Wiadomość została przyjęta przez dostawcę, ale zapis potwierdzenia nie powiódł się. Ponów — użyjemy tego samego klucza.",
+          pending: true,
+          providerResultUnknown: true,
+          requestKey,
+          providerMessageId,
+        }, 503);
+      }
+
       return json({
         ok: true,
+        requestKey,
         recipientEmail: jobRecipient,
         senderEmail: FROM_EMAIL,
         sentAt,
@@ -202,7 +283,7 @@ Deno.serve(async (request: Request) => {
         status: "failed",
         error_message: errorMessage,
       }).eq("id", emailLog.id);
-      return json({ error: errorMessage }, 502);
+      return json({ error: errorMessage, definitive: true, requestKey }, 502);
     }
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);

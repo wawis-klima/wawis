@@ -292,6 +292,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           fileName: result.fileName,
           signedAt,
           replaceExisting: Boolean(savedRecord),
+          expectedStoragePath: savedRecord?.storage_path || "",
         });
         return { paymentPatch, record };
       })();
@@ -317,6 +318,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           timeoutMs: Number(error?.timeoutMs || 0),
         });
         setMessage(PROTOCOL_SAVE_TIMEOUT_MESSAGE);
+      } else if (error?.code === "PROTOCOL_WRITE_CONFLICT") {
+        setMessage(error?.message || "Aktywny protokół zmienił się w trakcie zapisu. Twój podpis pozostał w formularzu — odśwież i zdecyduj o ponownym zastąpieniu.");
       } else if (error?.name !== "AbortError") {
         setMessage(error?.message || "Nie udało się utworzyć i zapisać protokołu PDF.");
       }
