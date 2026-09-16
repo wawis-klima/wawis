@@ -14,6 +14,7 @@ import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOp
 import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";
 import { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";
 import { transitionPushSessionContext } from "../modules/push-lifecycle-v1078.js";
+import { getOrCreateRefreshPayloadRequest, persistedSnapshotCoversCursor } from "../modules/sync-contract-v1086.js";
 
 const APP_REFRESH_TIMEOUT_MS = 20000;
 const AUTH_RESTORE_RETRY_MS = 30000;
@@ -250,18 +251,12 @@ export function useAppSession({
       const loadServerPayloadOnce = (activeUser) => {
         const activeUserId = String(activeUser?.id || '').trim();
         const requestKey = `${sessionToken.generation}:${activeUserId}:${preserveJobDetails ? 'preserve' : 'replace'}`;
-        const existingRequest = refreshPayloadInFlightRef.current.get(requestKey);
-        if (existingRequest) return existingRequest;
-
-        const requestId = refreshRequestId;
-        const request = withRefreshTimeout(loadServerPayload(activeUser)).finally(() => {
-          if (refreshPayloadInFlightRef.current.get(requestKey)?.request === request) {
-            refreshPayloadInFlightRef.current.delete(requestKey);
-          }
-        });
-        const requestEntry = { request, requestId };
-        refreshPayloadInFlightRef.current.set(requestKey, requestEntry);
-        return requestEntry;
+        return getOrCreateRefreshPayloadRequest(
+          refreshPayloadInFlightRef.current,
+          requestKey,
+          refreshRequestId,
+          () => withRefreshTimeout(loadServerPayload(activeUser)),
+        );
       };
 
       let payload;
@@ -458,7 +453,7 @@ export function useAppSession({
             if (!snapshotSaved) {
               const persistedSnapshot = await loadOfflineAppSnapshot(userId);
               if (!isCurrentDataRequest()) return staleRefreshResult();
-              if (Number(persistedSnapshot?.change_cursor || 0) < Number(nextCursor || 0)) {
+              if (!persistedSnapshotCoversCursor(persistedSnapshot, nextCursor)) {
                 return { ok: false, transient: true, retryable: true, cachePersistFailed: true, processed };
               }
             }

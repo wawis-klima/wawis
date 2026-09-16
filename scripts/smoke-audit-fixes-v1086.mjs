@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { getOrCreateRefreshPayloadRequest, persistedSnapshotCoversCursor } from '../src/mobile791/modules/sync-contract-v1086.js';
+import { PHOTO_OFFLINE_TESTING } from '../src/mobile791/modules/photos.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
@@ -25,7 +27,7 @@ assert.equal(app.includes('const sessionToken = captureCurrentSessionToken(userI
 assert.equal(app.includes('isSessionCurrent: isQueueSessionCurrent'), true, 'App must pass queue session guard');
 
 const session = read('src/mobile791/hooks/useAppSession.js');
-assert.equal(session.includes('const requestEntry = { request, requestId };'), true, 'actual fetch must own requestId');
+assert.equal(session.includes('return getOrCreateRefreshPayloadRequest('), true, 'refresh hook must use request-entry contract helper');
 assert.equal(session.includes('payloadRequestId = payloadRequest.requestId;'), true, 'payload must carry actual fetch requestId');
 assert.equal(session.includes('lastAppliedServerRequestIdRef.current = payloadRequestId;'), true, 'final apply must use fetch requestId');
 assert.equal(session.includes('const snapshotSaved = await saveOfflineAppSnapshot({'), true, 'delta sync must observe atomic snapshot result');
@@ -63,4 +65,35 @@ try {
   globalThis.sessionStorage = oldSessionStorage;
 }
 
-console.log('GO: 10.86 F3/F5/F8/F9 regressions are present and F3 counterexample is closed.');
+
+assert.equal(PHOTO_OFFLINE_TESTING.recordBelongsToProfile({ uploaded_by: 'A' }, 'A'), true);
+assert.equal(PHOTO_OFFLINE_TESTING.recordBelongsToProfile({ uploaded_by: 'A' }, 'B'), false);
+assert.equal(PHOTO_OFFLINE_TESTING.recordBelongsToProfile({}, 'B'), false);
+let currentPhotoSession = true;
+assert.equal(PHOTO_OFFLINE_TESTING.sessionIsCurrent(() => currentPhotoSession), true);
+currentPhotoSession = false;
+assert.equal(PHOTO_OFFLINE_TESTING.sessionIsCurrent(() => currentPhotoSession), false);
+
+const registry = new Map();
+let resolveOld;
+const oldPromise = new Promise((resolve) => { resolveOld = resolve; });
+const r1 = getOrCreateRefreshPayloadRequest(registry, 'same-fetch', 1, () => oldPromise);
+let unexpectedFactoryRuns = 0;
+const r3 = getOrCreateRefreshPayloadRequest(registry, 'same-fetch', 3, () => { unexpectedFactoryRuns += 1; return Promise.resolve('wrong'); });
+assert.equal(r3, r1, 'caller joining R1 must receive R1 entry');
+assert.equal(r3.requestId, 1, 'joined R1 payload must keep R1 requestId, not caller R3 id');
+assert.equal(unexpectedFactoryRuns, 0, 'joining an existing fetch must not start another fetch');
+resolveOld('old');
+await r1.request;
+
+assert.equal(persistedSnapshotCoversCursor({ change_cursor: 9 }, 10), false, 'older persisted cursor must not authorize advancing memory cursor');
+assert.equal(persistedSnapshotCoversCursor({ change_cursor: 10 }, 10), true, 'same persisted cursor confirms atomic commit');
+assert.equal(persistedSnapshotCoversCursor({ change_cursor: 11 }, 10), true, 'newer persisted cursor confirms atomic commit');
+
+const performBlock = photos.slice(photos.indexOf('async function performQueuedPhotoUpload'), photos.indexOf('async function uploadQueuedPhoto'));
+assert.equal((performBlock.match(/photoSessionIsCurrent\(isSessionCurrent\)/g) || []).length >= 8, true, 'upload must re-check session across async boundaries');
+assert.equal(performBlock.includes('if (!photoQueueRecordBelongsToProfile(queuedPhoto, profile?.id)) return null;'), true, 'upload must reject foreign/ownerless queue records');
+const resumeBlock = photos.slice(photos.indexOf('async function runPersistedPhotoUploads'), photos.indexOf('export function resumePersistedPhotoUploads'));
+assert.equal(resumeBlock.includes('isSessionCurrent,'), true, 'resume must propagate current-session predicate into upload/reconcile');
+
+console.log('GO: 10.86 F3/F5/F8/F9 behavioral contracts are closed.');

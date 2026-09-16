@@ -128,6 +128,13 @@ export function useSelectedJobActions({
 }) {
   const [deletingPhotoId, setDeletingPhotoId] = useState(null);
   const photoDetailsSyncTimersRef = useRef(new Map());
+  const photoSessionIdentityRef = useRef('');
+  photoSessionIdentityRef.current = `${String(sessionUser?.id || '')}:${String(profile?.id || '')}`;
+
+  function capturePhotoSessionGuard() {
+    const identity = photoSessionIdentityRef.current;
+    return () => Boolean(identity) && photoSessionIdentityRef.current === identity;
+  }
 
   function applyOptimisticJobPatch(jobId, patch) {
     const applyPatch = (job) => (String(job?.id) === String(jobId) ? { ...job, ...patch } : job);
@@ -141,6 +148,7 @@ export function useSelectedJobActions({
     const documentationResult = await uploadJobDocumentationPhotos({
       supabase,
       profile,
+      isSessionCurrent: capturePhotoSessionGuard(),
       jobId: editingJobId,
       documents: pendingDocuments,
       setJobs,
@@ -310,6 +318,7 @@ export function useSelectedJobActions({
       const documentationResult = await uploadJobDocumentationPhotos({
         supabase,
         profile,
+        isSessionCurrent: capturePhotoSessionGuard(),
         jobId: createdJob?.id,
         documents: form.pending_nameplate_photos || [],
         setJobs,
@@ -887,6 +896,7 @@ export function useSelectedJobActions({
         const result = await uploadJobPhotos({
           supabase,
           profile,
+          isSessionCurrent: capturePhotoSessionGuard(),
           jobId,
           event,
           setJobs,
@@ -913,6 +923,7 @@ export function useSelectedJobActions({
     return retryQueuedJobPhoto({
       supabase,
       profile,
+      isSessionCurrent: capturePhotoSessionGuard(),
       photo,
       setJobs,
       setSelectedJob,
