@@ -1,0 +1,61 @@
+name: WAWIS fix 10.87 fuel regression
+
+on:
+  push:
+    branches:
+      - release/v10.87
+    paths:
+      - .github/workflows/fix-v1087-fuel-smoke.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Align historical fuel PUSH assertions
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'scripts/smoke-fuel-module-v1014.mjs';
+          let source = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+          const oldBlock = `assert.match(pushEdge, /\\.select\\(\\"id, user_id, endpoint, p256dh, auth, ownership_generation\\"\\)/, 'Wysyłka musi odczytać generację własności endpointu.');
+assert.match(pushEdge, /\\.eq\\(\\"user_id\\", subscription\\.user_id\\)/, 'Cleanup 404/410 musi być przypięty do odbiorcy.');
+assert.match(pushEdge, /\\.eq\\(\\"ownership_generation\\", subscription\\.ownership_generation\\)/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');`;
+          const newBlock = `assert.match(pushEdge, /\\.select\\(\\"id, user_id, endpoint, p256dh, auth, lifecycle_token, ownership_generation\\"\\)/, 'Wysyłka musi odczytać generację i lifecycle własności endpointu.');
+assert.match(pushEdge, /rpc\\(\\"push_subscription_expire_atomic\\"/, 'Cleanup 404/410 musi używać atomowego expire z tombstone.');
+assert.match(pushEdge, /p_request_user_id: subscription\\.user_id/, 'Cleanup 404/410 musi być przypięty do odbiorcy.');
+assert.match(pushEdge, /p_expected_generation: subscription\\.ownership_generation/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');
+assert.match(pushEdge, /p_lifecycle_token: subscription\\.lifecycle_token/, 'Cleanup 404/410 musi być przypięty do lifecycle wysyłki.');`;
+          if (!source.includes(oldBlock)) throw new Error('Historical fuel assertion block not found exactly once');
+          source = source.replace(oldBlock, newBlock);
+          fs.writeFileSync(file, source, 'utf8');
+          NODE
+      - name: Verify exact audit regression
+        run: node scripts/smoke-audit-fixes-v1087.mjs
+      - name: Verify PUSH and fuel groups
+        run: node scripts/run-test-group.cjs push fuel
+      - name: Production build
+        run: npm run build
+      - name: Remove one-shot workflow
+        run: rm .github/workflows/fix-v1087-fuel-smoke.yml
+      - name: Commit verified regression alignment
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add -A
+          git commit -m "test: align fuel push regression with 10.87 tombstone cleanup"
+          git push origin HEAD:release/v10.87
