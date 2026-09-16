@@ -1,3 +1,4 @@
+import { sendServiceSmsOnce, SmsDeliveryBlockedError } from './delivery.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 type DeleteRow = {
@@ -120,7 +121,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
 
   const { data: logs, error } = await adminClient
     .from("sms_log")
-    .select("id, job_id, device_id, client, phone, message, status")
+    .select("id, job_id, device_id, client, phone, message, status, reminder_cycle")
     .in("id", cleanIds);
 
   if (error) return json({ error: error.message }, 400);
@@ -131,7 +132,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
   for (const log of logs || []) {
     if (log.status !== "pending_approval") continue;
     try {
-      const smsResult = await sendSmsWithSmsApi({ token, to: normalizePhone(log.phone || ""), message: log.message || "", from: sender });
+      const smsResult = await sendServiceSmsOnce({ adminClient, jobId: log.job_id, deviceId: log.device_id, cycle: log.reminder_cycle || 1, send: () => sendSmsWithSmsApi({ token, to: normalizePhone(log.phone || ""), message: log.message || "", from: sender }) });
       await updateSmsLog(adminClient, log.id, {
         status: "provider_sent",
         approved_at: nowIso,
@@ -149,13 +150,13 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       failures.push({ id: log.id, error: errorMessage });
+      if (e instanceof SmsDeliveryBlockedError) continue;
       await updateSmsLog(adminClient, log.id, { status: "error", approved_at: nowIso, approved_by: callerId, error_message: errorMessage });
     }
   }
 
   return json({ ok: failures.length === 0, sentCount, failures });
 }
-
 
 async function handleDeleteLogs({ adminClient, callerId, nowIso, rows }: { adminClient: ReturnType<typeof createClient>; callerId: string; nowIso: string; rows: DeleteRow[]; }) {
   const cleanRows = Array.isArray(rows) ? rows.filter((row) => row && (row.logId || row.deviceId || row.jobId)) : [];
@@ -221,7 +222,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
     .single();
 
   if (error || !job) return json({ error: "Nie znaleziono zlecenia do wysyłki SMS." }, 404);
-  if (!job.sms_consent) return json({ error: "Klient nie ma zaznaczonej zgody SMS." }, 400);
+  if (!job.sms_consent || !job.sms_reminder_enabled) return json({ error: "Zgoda SMS lub przypomnienia są wyłączone dla tej karty." }, 400);
 
   const recipientPhone = normalizePhone(job.sms_recipient_phone || job.phone || "");
   if (!recipientPhone) return json({ error: "Brak numeru telefonu do wysyłki SMS." }, 400);
@@ -231,7 +232,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
   const message = buildMessage({ ...job, service_due_date: effectiveDueDate, reminder_due_date: effectiveDueDate }, settings);
 
   try {
-    const smsResult = await sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender });
+    const smsResult = await sendServiceSmsOnce({ adminClient, jobId: job.id, cycle: effectiveCycle, send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }) });
     await upsertFinalizedCycleLog(adminClient, {
       job_id: job.id,
       client: job.client || job.title || null,
@@ -254,6 +255,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
     await adminClient.from("jobs").update({ last_sms_sent_at: nowIso, last_sms_status: "provider_sent", last_sms_error: null, sms_recipient_phone: smsResult.recipientPhone }).eq("id", job.id);
     return json({ ok: true, recipientPhone: smsResult.recipientPhone, providerMessageId: smsResult.providerMessageId, providerResponse: smsResult.responseBody });
   } catch (e) {
+    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message }, 409);
     const errorMessage = e instanceof Error ? e.message : String(e);
     await updateSmsLogInsert(adminClient, { job_id: job.id, client: job.client || job.title || null, phone: recipientPhone, message, sms_type: "service_reminder", provider: "smsapi", status: "error", planned_for: nowIso, approved_at: nowIso, approved_by: callerId, created_by: callerId, reminder_cycle: effectiveCycle, reminder_due_date: effectiveDueDate, error_message: errorMessage });
     await adminClient.from("jobs").update({ last_sms_status: "error", last_sms_error: errorMessage, sms_recipient_phone: recipientPhone }).eq("id", job.id);
@@ -279,8 +281,8 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
   const message = buildMessage({ client: contractor?.company_name || "Kliencie", installation_date: String(device.installation_date || ""), service_due_date: dueDate, reminder_due_date: dueDate, phone: recipientPhone }, settings);
 
   try {
-    const smsResult = await sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender });
-    const linkedJobId = isUuid(String(device.source_job_id || "")) ? String(device.source_job_id) : null;
+    const smsResult = await sendServiceSmsOnce({ adminClient, deviceId: device.id, cycle: effectiveCycle, send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }) });
+    const linkedJobId = isUuid(String(device.source_job_id || "").split("::")[0]) ? String(device.source_job_id).split("::")[0] : null;
     await upsertFinalizedCycleLog(adminClient, {
       device_id: device.id,
       job_id: linkedJobId,
@@ -306,8 +308,9 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
     }
     return json({ ok: true, recipientPhone: smsResult.recipientPhone, providerMessageId: smsResult.providerMessageId, providerResponse: smsResult.responseBody });
   } catch (e) {
+    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message }, 409);
     const errorMessage = e instanceof Error ? e.message : String(e);
-    const linkedJobId = isUuid(String(device.source_job_id || "")) ? String(device.source_job_id) : null;
+    const linkedJobId = isUuid(String(device.source_job_id || "").split("::")[0]) ? String(device.source_job_id).split("::")[0] : null;
     await updateSmsLogInsert(adminClient, {
       device_id: device.id,
       job_id: linkedJobId,
@@ -377,10 +380,25 @@ function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+async function deriveSmsApiCallbackToken(accessToken: string) {
+  const source = `wawis:smsapi-callback:v1:${String(accessToken || '')}`;
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
+  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
+}
+
 async function sendSmsWithSmsApi({ token, to, message, from }: { token: string; to: string; message: string; from?: string }): Promise<SmsApiResult> {
-  const payload = new URLSearchParams({ to, message, format: "json", encoding: "utf-8" });
+  const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+  if (!supabaseUrl) throw new Error('Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.');
+  const callbackToken = await deriveSmsApiCallbackToken(token);
+  const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
+  const payload = new URLSearchParams({ to, message, format: "json", encoding: "utf-8", notify_url: notifyUrl });
   if (from) payload.set("from", from);
-  const response = await fetch("https://api.smsapi.pl/sms.do", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" }, body: payload });
+  const response = await fetch("https://api.smsapi.pl/sms.do", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: payload,
+    signal: AbortSignal.timeout(20000),
+  });
   const text = await response.text();
   let parsed: unknown = null;
   try { parsed = text ? JSON.parse(text) : null; } catch { parsed = text; }
@@ -400,7 +418,6 @@ async function upsertFinalizedCycleLog(adminClient: ReturnType<typeof createClie
   const jobId = isUuid(String(payload.job_id || "")) ? String(payload.job_id) : null;
   const deviceId = isUuid(String(payload.device_id || "")) ? String(payload.device_id) : null;
   const cycle = Number.parseInt(String(payload.reminder_cycle ?? ""), 10) || 1;
-  const status = String(payload.status || "").trim().toLowerCase() || "sent";
 
   let query = adminClient
     .from("sms_log")

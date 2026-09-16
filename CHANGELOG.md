@@ -1,3 +1,9 @@
+## 10.85
+- F12/N9: fail-closed Playwright runners, wymagany production build w PR gate, cross-platform ZIP i poprawki CRLF/Windows.
+- N1: OCR AI ufa wyłącznie chronionej roli `profiles.role`.
+- N6: uwierzytelniony callback SMSAPI, monotoniczne statusy i kontrola błędów zapisu.
+- N7-A: repo zawiera baseline żywych guardów produkcyjnych oraz aktualny kod `send-service-sms`.
+
 ## 10.84
 - F5: pojedyncze loadery summary/szczegółów i podpisywanie miniaturek używają tokenu generacji sesji; spóźniona odpowiedź konta A nie zmienia stanu konta B,
 - F7: fallback polling odświeża również otwarte szczegóły zlecenia, więc zgubione zdarzenie Realtime komentarza lub zdjęcia zostaje naprawione bez ponownego logowania,

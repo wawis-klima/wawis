@@ -2,8 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
-const { collectReleaseFiles, createReleaseZip } = require('./release-zip.cjs');
+const { collectReleaseFiles, createReleaseZip, listReleaseZipEntries } = require('./release-zip.cjs');
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'klima-release-zip-smoke-'));
 
@@ -17,6 +16,7 @@ try {
   writeFile('app-version.json', JSON.stringify({ version: '9.99' }, null, 2));
   writeFile('package.json', JSON.stringify({ name: 'zip-smoke', version: '0.00' }, null, 2));
   writeFile('src/App.jsx', 'export default function App() { return null; }\n');
+  writeFile('src/zażółć.txt', 'UTF-8 filename smoke\n');
   writeFile('README.md', '# Smoke release zip\n');
 
   writeFile('node_modules/fake-package/index.js', 'throw new Error("must not be zipped");\n');
@@ -32,6 +32,7 @@ try {
 
   const releaseFiles = collectReleaseFiles(tempRoot, tempRoot);
   assert(releaseFiles.includes('src/App.jsx'), 'Release list should include normal source files');
+  assert(releaseFiles.includes('src/zażółć.txt'), 'Release list should preserve UTF-8 file names');
   assert(releaseFiles.includes('README.md'), 'Release list should include normal documentation files');
 
   const forbiddenListFragments = [
@@ -55,12 +56,13 @@ try {
   }
 
   const { zipPath, fileListPath } = createReleaseZip({ rootDir: tempRoot, silent: true });
-  const zipListing = execFileSync('unzip', ['-Z', '-1', zipPath], { encoding: 'utf8' });
-  const zipFiles = zipListing.split(/\r?\n/).filter(Boolean);
+  const zipFiles = listReleaseZipEntries(zipPath);
 
   assert(zipFiles.includes('src/App.jsx'), 'ZIP should include normal source files');
+  assert(zipFiles.includes('src/zażółć.txt'), 'ZIP should preserve UTF-8 file names');
   assert(zipFiles.includes('README.md'), 'ZIP should include normal documentation files');
   assert(fs.existsSync(fileListPath), 'release-zip should write a file list next to ZIP');
+  assert.deepEqual([...zipFiles].sort(), [...releaseFiles].sort(), 'ZIP central directory must match release file list exactly');
 
   const forbiddenZipFragments = [
     'node_modules/',
@@ -82,7 +84,7 @@ try {
     );
   }
 
-  console.log('Smoke OK: release-zip excludes fake node_modules, partial dist and working files');
+  console.log('Smoke OK: release-zip is pure Node, cross-platform and excludes working files');
 } finally {
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }

@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import { createSessionGenerationState, transitionSessionGeneration, captureSessionGeneration, isSessionGenerationCurrent } from '../src/mobile791/modules/session-generation.js';
 import { fetchWithTimeout } from '../src/mobile791/modules/request-timeout.js';
 
+const read = (path) => fs.readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
+
 const state = createSessionGenerationState();
 transitionSessionGeneration(state, 'user-a');
 const tokenA = captureSessionGeneration(state, 'user-a');
@@ -40,7 +42,7 @@ const fast = await fetchWithTimeout('https://example.test/rest/v1/jobs', {}, {
 assert.deepEqual(await fast.json(), { ok: true });
 
 for (const path of ['src/hooks/useAppSession.js', 'src/mobile791/hooks/useAppSession.js']) {
-  const source = fs.readFileSync(path, 'utf8');
+  const source = read(path);
   assert.match(source, /createSessionGenerationState/);
   assert.match(source, /captureSessionGeneration/);
   assert.match(source, /isCurrentSession/);
@@ -48,9 +50,9 @@ for (const path of ['src/hooks/useAppSession.js', 'src/mobile791/hooks/useAppSes
   assert.match(source, /ignoredStaleSession/);
   assert.match(source, /sessionToken\.generation/);
   assert.match(source, /catch \(serverError\) \{\n\s*if \(!isCurrentSession\(\)\)/);
-assert.match(source, /const refreshedUser = refreshedSessionData\?\.session\?\.user \|\| null;\n\s*if \(!isCurrentSession\(\)\)/);
+  assert.match(source, /const refreshedUser = refreshedSessionData\?\.session\?\.user \|\| null;\n\s*if \(!isCurrentSession\(\)\)/);
 }
-const storeSource = fs.readFileSync('src/mobile791/modules/job-offline-store.js', 'utf8');
+const storeSource = read('src/mobile791/modules/job-offline-store.js');
 const updateSource = storeSource.match(/export async function updateOfflineJobOperation[\s\S]*?export async function deleteOfflineJobOperation/)?.[0] || '';
 assert.match(updateSource, /db\.transaction\(OPERATION_STORE, 'readwrite'\)/);
 assert.match(updateSource, /const request = store\.get/);
@@ -58,5 +60,5 @@ assert.match(updateSource, /store\.put/);
 assert.doesNotMatch(updateSource, /withStore\(OPERATION_STORE, 'readonly'/);
 console.log('OK: 10.80 — session generation, pełny body-timeout i atomowa aktualizacja kolejki.');
 
-const mobileHook = fs.readFileSync('src/mobile791/hooks/useAppSession.js', 'utf8');
+const mobileHook = read('src/mobile791/hooks/useAppSession.js');
 assert.match(mobileHook, /stale-session-and-request-final-queue-guard-v1084/);

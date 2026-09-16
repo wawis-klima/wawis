@@ -4,7 +4,7 @@ const assert = require('assert');
 const { pathToFileURL } = require('url');
 
 const root = path.resolve(__dirname, '..');
-const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
+const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/\r\n/g, '\n');
 
 (async () => {
   const queueSource = read('src/mobile791/modules/photo-offline-queue.js');

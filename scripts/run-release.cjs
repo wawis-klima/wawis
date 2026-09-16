@@ -149,7 +149,23 @@ function runPlan(plan, options, release) {
   }
 }
 
-const options = parseOptions();
-const release = resolveRelease(options);
-const plan = buildPlan(options, release);
-runPlan(plan, options, release);
+function main(args = process.argv.slice(2)) {
+  const options = parseOptions(args);
+  const release = resolveRelease(options);
+  const plan = buildPlan(options, release);
+  runPlan(plan, options, release);
+}
+
+module.exports = {
+  SUPPORTED,
+  buildPlan,
+  main,
+  parseOptions,
+  releaseLabel,
+  resolveRelease,
+  runPlan,
+};
+
+if (require.main === module) {
+  main();
+}

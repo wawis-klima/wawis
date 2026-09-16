@@ -1,18 +1,21 @@
-const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { assertPlaywrightCli, childExitCode } = require('./playwright-runner-utils.cjs');
 
 const root = path.resolve(__dirname, '..');
 const extraArgs = process.argv.slice(2);
-const playwrightCli = path.join(root, 'node_modules', '.bin', process.platform === 'win32' ? 'playwright.cmd' : 'playwright');
 const configPath = path.join(root, 'playwright.config.js');
 
-if (!fs.existsSync(playwrightCli)) {
-  console.error('Brak Playwright w node_modules. Uruchom: npm install && npx playwright install chromium');
+let playwrightCli;
+try {
+  playwrightCli = assertPlaywrightCli(root);
+} catch (error) {
+  console.error(error.message);
   process.exit(1);
 }
 
-const result = spawnSync(playwrightCli, [
+const result = spawnSync(process.execPath, [
+  playwrightCli,
   'test',
   '--config',
   configPath,
@@ -30,9 +33,7 @@ const result = spawnSync(playwrightCli, [
   },
 });
 
-if (result.error) {
-  console.error(result.error.message);
-  process.exit(1);
-}
-
-process.exit(result.status ?? 0);
+const exitCode = childExitCode(result);
+if (result.error) console.error(result.error.message);
+if (result.signal) console.error(`Playwright mobile przerwany sygnałem ${result.signal}.`);
+process.exit(exitCode);

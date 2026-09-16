@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
+const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8').replace(/\r\n/g, '\n');
 
 const version = JSON.parse(read('app-version.json')).version;
 const offlineStore = read('src', 'mobile791', 'modules', 'job-offline-store.js');

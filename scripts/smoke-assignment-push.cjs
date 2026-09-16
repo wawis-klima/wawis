@@ -4,10 +4,10 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
+const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/\r\n/g, '\n');
 
 function assertServerSidePushDateGuard() {
-  const edgeFunctionPath = path.join(root, 'supabase', 'functions', 'send-assignment-push', 'index.ts');
-  const source = fs.readFileSync(edgeFunctionPath, 'utf8');
+  const source = read('supabase/functions/send-assignment-push/index.ts');
 
   assert(source.includes('installation_date'), 'Edge Function send-assignment-push musi pobierać installation_date z jobs');
   assert(source.includes('isInstallationDateInPast(job.installation_date)'), 'Edge Function musi blokować push dla historycznej daty montażu');
@@ -18,8 +18,7 @@ function assertServerSidePushDateGuard() {
 assertServerSidePushDateGuard();
 
 function loadAssignmentModule() {
-  const sourcePath = path.join(root, 'src', 'modules', 'jobs-assignment.js');
-  let source = fs.readFileSync(sourcePath, 'utf8');
+  let source = read('src/modules/jobs-assignment.js');
   source = source.replace(/import \{ supabaseAnonKey, supabaseUrl \} from "\.\.\/lib\/supabase\.js";\n/, "const supabaseAnonKey = 'mock-anon-key';\nconst supabaseUrl = 'mock://supabase';\n");
   source = source.replace(/export async function (\w+)\(/g, 'async function $1(');
   source = source.replace(/export function (\w+)\(/g, 'function $1(');
@@ -30,8 +29,7 @@ function loadAssignmentModule() {
 }
 
 function loadJobsFormModule(assignmentHelpers) {
-  const sourcePath = path.join(root, 'src', 'modules', 'jobs-form.js');
-  let source = fs.readFileSync(sourcePath, 'utf8');
+  let source = read('src/modules/jobs-form.js');
   source = source.replace(
     /import \{[\s\S]*?\} from '\.\/jobs-assignment\.js';/,
     `const { getAssignedUserIdsFromForm, getAssignedUserIdsFromJob, shouldSendAssignmentPushForInstallationDate } = assignmentHelpers;`
