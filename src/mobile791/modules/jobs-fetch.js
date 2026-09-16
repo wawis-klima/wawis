@@ -168,6 +168,7 @@ function getExistingJobDetailsMap(existingJobs = []) {
     return [String(job.id || ''), {
       comments: Array.isArray(job.comments) ? job.comments : [],
       photos,
+      queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo)),
       detailsLoaded: Boolean(job.detailsLoaded) && photoModeCompatible,
       detailsLoadedAt: job.detailsLoadedAt || null,
       detailsLoadError: String(job.detailsLoadError || '').trim(),
@@ -180,11 +181,14 @@ function buildCombinedJobs({ jobsData, accessData, existingJobs = [], preserveJo
 
   return (jobsData || []).map((job) => {
     const previousDetails = preserveJobDetails ? existingDetails.get(String(job.id)) : null;
+    const photosToPreserve = previousDetails?.detailsLoaded
+      ? previousDetails.photos
+      : (previousDetails?.queuedPhotos || []);
     return {
       ...job,
       viewers: (accessData || []).filter((item) => item.job_id === job.id),
       comments: previousDetails?.detailsLoaded ? previousDetails.comments : [],
-      photos: previousDetails?.detailsLoaded ? previousDetails.photos : [],
+      photos: photosToPreserve,
       detailsLoaded: previousDetails?.detailsLoaded || false,
       detailsLoadedAt: previousDetails?.detailsLoadedAt || null,
       detailsLoadError: previousDetails?.detailsLoadError || '',

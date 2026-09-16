@@ -5,6 +5,7 @@ const assert = require('assert');
 const root = path.resolve(__dirname, '..');
 const queue = fs.readFileSync(path.join(root, 'src/mobile791/modules/photo-offline-queue.js'), 'utf8');
 const photos = fs.readFileSync(path.join(root, 'src/mobile791/modules/photos.js'), 'utf8');
+const jobsFetch = fs.readFileSync(path.join(root, 'src/mobile791/modules/jobs-fetch.js'), 'utf8');
 const app = fs.readFileSync(path.join(root, 'src/mobile791/App.jsx'), 'utf8');
 const panel = fs.readFileSync(path.join(root, 'src/mobile791/components/JobDetailsPanel.jsx'), 'utf8');
 const requirements = fs.readFileSync(path.join(root, 'src/mobile791/modules/nameplate-requirements.js'), 'utf8');
@@ -20,6 +21,7 @@ assert(photos.includes("upload_status_label: 'Zapisano w systemie'"), 'Brak etyk
 assert(photos.includes('resumePersistedPhotoUploads'), 'Brak automatycznego wznowienia kolejki.');
 assert(app.includes("window.addEventListener('online', onlineHandler)"), 'Brak automatycznej reakcji na odzyskanie internetu.');
 assert(app.includes('restorePersistedJobPhotos'), 'Brak odtwarzania kolejki po ponownym uruchomieniu aplikacji.');
+assert(jobsFetch.includes("queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo))"), 'Pełny refresh nie może zgubić lokalnego zdjęcia odtworzonego z IndexedDB.');
 assert(panel.includes('Wyślij ponownie'), 'Brak ręcznego ponowienia błędnego uploadu.');
 assert(requirements.includes("uploadStatus === 'local'"), 'Lokalna tabliczka błędnie pozwoliłaby zakończyć zlecenie przed synchronizacją.');
 
