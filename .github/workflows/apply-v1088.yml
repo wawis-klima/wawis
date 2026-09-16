@@ -1,5 +1,5 @@
 name: WAWIS apply 10.88 audit fixes
-# rerun after stable fuel-attempt regression update
+# rerun after delayed stable-attempt reconciliation update
 
 on:
   push:
