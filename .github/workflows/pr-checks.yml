@@ -14,7 +14,7 @@ permissions:
 jobs:
   targeted-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +38,17 @@ jobs:
           cat changed-files.txt
 
       - name: Classify effective release impact
-        run: node scripts/release-impact.cjs --base-ref "origin/${{ github.base_ref }}" --json release-impact.json
+        id: impact
+        shell: bash
+        run: node scripts/release-impact.cjs --base-ref "origin/${{ github.base_ref }}" --json release-impact.json --github-output "$GITHUB_OUTPUT"
 
       - name: Run targeted regression groups
         run: node scripts/run-pr-checks.cjs changed-files.txt release-impact.json
+
+      - name: Install Playwright Chromium when required
+        if: steps.impact.outputs.needs_playwright == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run required Playwright E2E
+        if: steps.impact.outputs.needs_playwright == 'true'
+        run: node scripts/run-pr-playwright.cjs release-impact.json
