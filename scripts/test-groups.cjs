@@ -83,6 +83,7 @@ const GROUPS = {
     'npm run test:smoke:push-safety-v1078',
     'npm run test:smoke:comment-admin-push',
     'npm run test:smoke:push-mandatory',
+    'node scripts/smoke-session-push-gate-v1083.mjs',
   ],
   fuel: [
     'npm run test:smoke:fuel-module',
@@ -133,6 +134,7 @@ const GROUPS = {
     'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',
     'npm run test:smoke:no-services-module',
+    'node scripts/smoke-session-push-gate-v1083.mjs',
   ],
 };
 

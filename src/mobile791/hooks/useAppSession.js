@@ -13,6 +13,7 @@ import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
 import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOperations, loadOfflineAppSnapshot, saveOfflineAppSnapshot, updateOfflineSyncCursor } from "../modules/job-offline-store.js";
 import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";
 import { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";
+import { transitionPushSessionContext } from "../modules/push-lifecycle-v1078.js";
 
 const APP_REFRESH_TIMEOUT_MS = 20000;
 const AUTH_RESTORE_RETRY_MS = 30000;
@@ -85,6 +86,7 @@ export function useAppSession({
   }, [errorMsg]);
 
   const setSessionUserForGeneration = useCallback((nextUser) => {
+  transitionPushSessionContext(nextUser);
   const nextUserId = String(nextUser?.id || '').trim();
   const previousUserId = String(sessionGenerationStateRef.current.userId || '').trim();
   transitionSessionGeneration(sessionGenerationStateRef.current, nextUserId);
@@ -468,6 +470,7 @@ export function useAppSession({
     await logoutUser({
       supabase,
       logoutFlagKey,
+      sessionUser,
       clearLocalState: applyLoggedOutState,
     });
   }

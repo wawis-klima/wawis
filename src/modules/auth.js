@@ -39,6 +39,12 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+let authOperationEpoch = 0;
+function captureAuthOperation() { return authOperationEpoch; }
+function invalidateAuthOperations() { authOperationEpoch += 1; return authOperationEpoch; }
+function isAuthOperationCurrent(token) { return Number(token) === Number(authOperationEpoch); }
+export const AUTH_OPERATION_TESTING = Object.freeze({ reset() { authOperationEpoch = 0; }, current() { return authOperationEpoch; } });
+
 export async function restoreAuthSession({
   supabase,
   logoutFlagKey,
@@ -49,6 +55,7 @@ export async function restoreAuthSession({
   refreshAll,
 }) {
   if (!supabase) return;
+  const authOperationToken = captureAuthOperation();
 
   if (typeof window !== 'undefined' && sessionStorage.getItem(logoutFlagKey) === '1') {
     sessionStorage.removeItem(logoutFlagKey);
@@ -57,10 +64,12 @@ export async function restoreAuthSession({
   }
 
   let { data, error } = await supabase.auth.getSession();
+  if (!isAuthOperationCurrent(authOperationToken)) return { restored: false, ignoredStaleAuth: true };
   const cachedSession = data?.session || null;
 
   if (error && isJwtExpiredError(error)) {
     const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+    if (!isAuthOperationCurrent(authOperationToken)) return { restored: false, ignoredStaleAuth: true };
     if (!refreshError && refreshedData?.session) {
       data = refreshedData;
       error = null;
@@ -88,6 +97,7 @@ export async function restoreAuthSession({
 
   const user = data?.session?.user || null;
   if (user) {
+    if (!isAuthOperationCurrent(authOperationToken)) return { restored: false, ignoredStaleAuth: true };
     if (typeof setSessionUser === 'function') setSessionUser(user);
     setAuthResolved(true);
     const refreshResult = await refreshAll(user, { silent: true, preserveJobDetails: true });
@@ -133,8 +143,10 @@ export function subscribeToAuthState({
     if (typeof window !== 'undefined' && sessionStorage.getItem(logoutFlagKey) === '1') return;
 
     signedOutVerificationInFlight = true;
+    const verificationToken = captureAuthOperation();
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (disposed || !isAuthOperationCurrent(verificationToken)) return;
       const sessionUser = sessionData?.session?.user || null;
       if (sessionUser) {
         if (typeof setSessionUser === 'function') setSessionUser(sessionUser);
@@ -148,6 +160,7 @@ export function subscribeToAuthState({
       }
 
       const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+      if (disposed || !isAuthOperationCurrent(verificationToken)) return;
       const refreshedUser = refreshedData?.session?.user || null;
       if (refreshedUser) {
         if (typeof setSessionUser === 'function') setSessionUser(refreshedUser);
@@ -175,6 +188,7 @@ export function subscribeToAuthState({
   };
 
   const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') invalidateAuthOperations();
     if (typeof window !== 'undefined' && sessionStorage.getItem(logoutFlagKey) === '1') {
       setAuthResolved(true);
       return;
@@ -190,7 +204,7 @@ export function subscribeToAuthState({
       if (typeof setSessionUser === 'function') setSessionUser(user);
       // Logowanie i przywracanie sesji mają własne pojedyncze odświeżenie.
       // Listener nie uruchamia drugiego pełnego refreshu po SIGNED_IN.
-      if (event === 'USER_UPDATED') {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         void refreshAll(user, { silent: true, preserveJobDetails: true });
       }
     } else if (event === 'SIGNED_OUT') {
@@ -201,6 +215,7 @@ export function subscribeToAuthState({
 
   return () => {
     disposed = true;
+    invalidateAuthOperations();
     if (signedOutVerificationTimerId && typeof window !== 'undefined') {
       window.clearTimeout(signedOutVerificationTimerId);
     }

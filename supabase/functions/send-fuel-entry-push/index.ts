@@ -131,7 +131,7 @@ Deno.serve(async (request) => {
 
     const { data: subscriptions, error: subscriptionsError } = await adminClient
       .from("push_subscriptions")
-      .select("id, user_id, endpoint, p256dh, auth")
+      .select("id, user_id, endpoint, p256dh, auth, ownership_generation")
       .in("user_id", targetAdminIds)
       .eq("is_active", true);
 
@@ -157,16 +157,17 @@ Deno.serve(async (request) => {
 
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
-    const payload = JSON.stringify({
-      type: "fuel_entry_created",
-      jobId: null,
-      title: "Zatankowano samochód",
-      body: `${employee} • ${vehicleLabel} • ${litersLabel} • licznik ${odometerLabel}`,
-      url: "/",
-      tag: `fuel-entry-${entry.id}`,
-    });
-
     const results = await Promise.all(subscriptions.map(async (subscription: any) => {
+      const payload = JSON.stringify({
+        type: "fuel_entry_created",
+        jobId: null,
+        title: "Nowe tankowanie",
+        body: "Dodano nowe tankowanie. Otwórz aplikację Wawis, aby zobaczyć szczegóły.",
+        url: "/",
+        tag: `fuel-entry-${entry.id}`,
+        recipientUserId: String(subscription.user_id || ""),
+        subscriptionGeneration: Number(subscription.ownership_generation || 0),
+      });
       try {
         await webpush.sendNotification({
           endpoint: subscription.endpoint,
@@ -200,7 +201,11 @@ Deno.serve(async (request) => {
         }]);
 
         if (statusCode === 404 || statusCode === 410) {
-          await adminClient.from("push_subscriptions").update({ is_active: false }).eq("id", subscription.id);
+          await adminClient.from("push_subscriptions").update({ is_active: false })
+            .eq("id", subscription.id)
+            .eq("user_id", subscription.user_id)
+            .eq("ownership_generation", subscription.ownership_generation)
+            .eq("is_active", true);
         }
 
         return { ok: false, subscriptionId: subscription.id, statusCode, errorMessage };

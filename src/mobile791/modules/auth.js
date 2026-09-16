@@ -43,6 +43,12 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+let authOperationEpoch = 0;
+function captureAuthOperation() { return authOperationEpoch; }
+function invalidateAuthOperations() { authOperationEpoch += 1; return authOperationEpoch; }
+function isAuthOperationCurrent(token) { return Number(token) === Number(authOperationEpoch); }
+export const AUTH_OPERATION_TESTING = Object.freeze({ reset() { authOperationEpoch = 0; }, current() { return authOperationEpoch; } });
+
 export async function restoreAuthSession({
   supabase,
   logoutFlagKey,
@@ -53,6 +59,7 @@ export async function restoreAuthSession({
   refreshAll,
 }) {
   if (!supabase) return;
+  const authOperationToken = captureAuthOperation();
 
   if (typeof window !== 'undefined' && sessionStorage.getItem(logoutFlagKey) === '1') {
     sessionStorage.removeItem(logoutFlagKey);
@@ -62,9 +69,11 @@ export async function restoreAuthSession({
   }
 
   let { data, error } = await supabase.auth.getSession();
+  if (!isAuthOperationCurrent(authOperationToken)) return { restored: false, ignoredStaleAuth: true };
   const cachedSession = data?.session || null;
   if (error && isJwtExpiredError(error)) {
     const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+    if (!isAuthOperationCurrent(authOperationToken)) return { restored: false, ignoredStaleAuth: true };
     if (!refreshError && refreshedData?.session) {
       data = refreshedData;
       error = null;
@@ -96,11 +105,12 @@ export async function restoreAuthSession({
 
   const user = data.session?.user || null;
   if (user) {
-    await reconcilePendingPushLogout({ supabase, sessionUser: user, force: true }).catch((pushError) => {
-      console.warn('Nie udało się dokończyć poprzedniego wylogowania PUSH:', pushError?.message || pushError);
-    });
+    if (!isAuthOperationCurrent(authOperationToken)) return { restored: false, ignoredStaleAuth: true };
     if (typeof setSessionUser === 'function') setSessionUser(user);
     setAuthResolved(true);
+    void reconcilePendingPushLogout({ supabase, sessionUser: user, force: true }).catch((pushError) => {
+      console.warn('Nie udało się dokończyć poprzedniego wylogowania PUSH:', pushError?.message || pushError);
+    });
     const refreshResult = await refreshAll(user, { silent: true, preserveJobDetails: true });
     return { restored: true, retryable: Boolean(refreshResult?.transient) };
   }
@@ -144,8 +154,10 @@ export function subscribeToAuthState({
     if (typeof window !== 'undefined' && sessionStorage.getItem(logoutFlagKey) === '1') return;
 
     signedOutVerificationInFlight = true;
+    const verificationToken = captureAuthOperation();
     try {
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (disposed || !isAuthOperationCurrent(verificationToken)) return;
       const sessionUser = sessionData?.session?.user || null;
       if (sessionUser) {
         if (typeof setSessionUser === 'function') setSessionUser(sessionUser);
@@ -160,6 +172,7 @@ export function subscribeToAuthState({
       }
 
       const { data: refreshedData, error: refreshError } = await supabase.auth.refreshSession();
+      if (disposed || !isAuthOperationCurrent(verificationToken)) return;
       const refreshedUser = refreshedData?.session?.user || null;
       if (refreshedUser) {
         if (typeof setSessionUser === 'function') setSessionUser(refreshedUser);
@@ -190,6 +203,7 @@ export function subscribeToAuthState({
   };
 
   const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') invalidateAuthOperations();
     if (typeof window !== 'undefined' && sessionStorage.getItem(logoutFlagKey) === '1') {
       setAuthResolved(true);
       return;
@@ -216,6 +230,7 @@ export function subscribeToAuthState({
 
   return () => {
     disposed = true;
+    invalidateAuthOperations();
     if (signedOutVerificationTimerId && typeof window !== 'undefined') {
       window.clearTimeout(signedOutVerificationTimerId);
     }
@@ -249,13 +264,12 @@ export async function loginUser({
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
-    await reconcilePendingPushLogout({ supabase, sessionUser: data.user, force: true }).catch((pushError) => {
-      console.warn('Nie udało się uzgodnić PUSH po zmianie konta:', pushError?.message || pushError);
-    });
-
     setLoginForm({ email, password: '' });
     setSessionUser(data.user || null);
     setAuthResolved(true);
+    void reconcilePendingPushLogout({ supabase, sessionUser: data.user, force: true }).catch((pushError) => {
+      console.warn('Nie udało się uzgodnić PUSH po zmianie konta:', pushError?.message || pushError);
+    });
 
     // Jedno lekkie odświeżenie po zalogowaniu. Auth listener nie dubluje już INITIAL_SESSION.
     void refreshAll(data.user, { silent: true, preserveJobDetails: true }).then((refreshResult) => {
@@ -293,13 +307,14 @@ export async function registerAppUser({ supabase, registerForm, setBusy, setErro
 export async function logoutUser({
   supabase,
   logoutFlagKey,
+  sessionUser = null,
   clearLocalState,
 }) {
   if (typeof window !== 'undefined') {
     sessionStorage.setItem(logoutFlagKey, '1');
   }
 
-  await deactivatePushForLogout({ supabase }).catch((pushError) => {
+  await deactivatePushForLogout({ supabase, sessionUser }).catch((pushError) => {
     console.warn('Nie udało się wyłączyć PUSH przed wylogowaniem:', pushError?.message || pushError);
   });
 

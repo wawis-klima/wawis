@@ -21,9 +21,10 @@ assert.match(push, /pushLogoutInProgress\s*=\s*true/);
 
 assert.match(auth, /deactivatePushForLogout, reconcilePendingPushLogout/);
 assert.match(auth, /reconcilePendingPushLogout\(\{ supabase, sessionUser: data\.user, force: true \}\)/);
-const deactivate = auth.indexOf('await deactivatePushForLogout({ supabase })');
+const deactivate = auth.indexOf('await deactivatePushForLogout({ supabase, sessionUser })');
 const clearStorage = auth.indexOf('removeSupabaseStorageKeys();', deactivate);
 assert.ok(deactivate >= 0 && clearStorage > deactivate, 'PUSH nadal musi być dezaktywowany przed czyszczeniem sesji');
+assert.match(auth, /deactivatePushForLogout\(\{ supabase, sessionUser \}\)/, 'Logout 10.83 musi przekazać bieżącego użytkownika bez dodatkowego getSession.');
 assert.match(auth, /event === 'SIGNED_IN' \|\| event === 'USER_UPDATED'/, 'Nie wolno zmieniać istniejącego odświeżenia danych po SIGNED_IN');
 
 // 10.78 wzmacnia 10.76: własność/klucze są sprawdzane atomowo po stronie DB zamiast SELECT+UPSERT.
