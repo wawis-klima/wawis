@@ -1,0 +1,83 @@
+name: Debug v10.83 offline photo restore
+
+on:
+  push:
+    branches:
+      - tmp-v1083-apply
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: tmp-v1083-apply
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - run: npx playwright install --with-deps chromium
+      - name: Create focused diagnostic spec
+        run: |
+          cat > tests/e2e/debug-v1083-photo-restore.spec.js <<'EOF'
+          import { devices, test } from '@playwright/test';
+          import { WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
+          const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+          const ONLINE_FLAG = 'klima-e2e-network-state';
+          const tinyPng = { name: 'debug-offline.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==', 'base64') };
+          test.use(iphone14);
+          async function install(page) {
+            await page.addInitScript(({ flag }) => {
+              Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get() { return window.localStorage.getItem(flag) !== 'offline'; } });
+            }, { flag: ONLINE_FLAG });
+          }
+          async function offline(page) {
+            await page.evaluate(({ flag }) => { localStorage.setItem(flag, 'offline'); window.dispatchEvent(new Event('offline')); }, { flag: ONLINE_FLAG });
+          }
+          async function queue(page) {
+            return page.evaluate(() => new Promise((resolve, reject) => {
+              const req = indexedDB.open('wawis-mobile-photo-queue');
+              req.onerror = () => reject(req.error);
+              req.onsuccess = () => {
+                const db = req.result; const tx = db.transaction('queued-photos','readonly');
+                const all = tx.objectStore('queued-photos').getAll();
+                all.onsuccess = () => resolve(all.result.map((r) => ({ id:r.id, job_id:r.job_id, uploaded_by:r.uploaded_by, status:r.upload_status, hasFile:Boolean(r.local_file), fileType:r.local_file?.constructor?.name, fileSize:r.local_file?.size || 0 })));
+              };
+            }));
+          }
+          test('diagnose restore', async ({ page }) => {
+            await install(page); await resetMockSupabase(page); await offline(page); await loginWithoutReset(page, WORKER);
+            await page.locator('.statusActionButton[title="W trakcie"]').click();
+            await page.getByText('Klient Testowy B', { exact: true }).click();
+            await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
+            console.log('BEFORE_RELOAD_QUEUE', JSON.stringify(await queue(page)));
+            console.log('BEFORE_RELOAD_THUMBS', await page.locator('.thumbCard').count());
+            await page.reload();
+            await page.waitForTimeout(2500);
+            console.log('AFTER_RELOAD_QUEUE', JSON.stringify(await queue(page)));
+            console.log('AFTER_RELOAD_CLIENT_COUNT', await page.getByText('Klient Testowy B', { exact: true }).count());
+            const manual = await page.evaluate(async () => {
+              const photos = await import('/src/mobile791/modules/photos.js');
+              let syntheticJobs = [{ id: 'mock-job-002', photos: [], detailsLoaded: false }];
+              const setJobs = (updater) => { syntheticJobs = typeof updater === 'function' ? updater(syntheticJobs) : updater; };
+              let syntheticSelected = null;
+              const setSelectedJob = (updater) => { syntheticSelected = typeof updater === 'function' ? updater(syntheticSelected) : updater; };
+              const hydrated = await photos.restorePersistedJobPhotos({ profile: { id: 'mock-worker-1', full_name: 'Pracownik Testowy' }, setJobs, setSelectedJob });
+              return { hydrated: hydrated.map((p) => ({ id:p.id, job_id:p.job_id, uploaded_by:p.uploaded_by, status:p.upload_status, image:p.image_url, hasLocalFile:Boolean(p.__localFile) })), syntheticJobs };
+            });
+            console.log('MANUAL_RESTORE', JSON.stringify(manual));
+            await page.locator('.statusActionButton[title="W trakcie"]').click();
+            await page.getByText('Klient Testowy B', { exact: true }).click();
+            await page.waitForTimeout(2500);
+            console.log('AFTER_CLICK_THUMBS', await page.locator('.thumbCard').count());
+            console.log('AFTER_CLICK_QUEUE', JSON.stringify(await queue(page)));
+          });
+          EOF
+      - name: Run focused diagnostic
+        run: npx playwright test tests/e2e/debug-v1083-photo-restore.spec.js --workers=1 --reporter=line
