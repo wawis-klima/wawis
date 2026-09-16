@@ -1,0 +1,31 @@
+name: WAWIS 10.86 one-shot live verification
+
+on:
+  push:
+    branches:
+      - release/v10.86
+    paths:
+      - .github/workflows/live-verify-v1086.yml
+
+permissions:
+  contents: read
+
+jobs:
+  live-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify production app-version and service worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://wawis-klima.vercel.app'
+          CACHE_BUST="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          curl -fsS --retry 5 --retry-delay 2 --max-time 20 -H 'Cache-Control: no-cache' "${BASE}/app-version.json?verify=${CACHE_BUST}" -o /tmp/app-version.json
+          cat /tmp/app-version.json
+          node -e "const fs=require('fs'); const v=JSON.parse(fs.readFileSync('/tmp/app-version.json','utf8')).version; if(v!=='10.86') throw new Error('Expected live 10.86, got '+v); console.log('LIVE_VERSION='+v)"
+          curl -fsS --retry 5 --retry-delay 2 --max-time 20 -H 'Cache-Control: no-cache' "${BASE}/push-sw.js?verify=${CACHE_BUST}" -o /tmp/push-sw.js
+          grep -q 'wawis-app-shell-v10\.86' /tmp/push-sw.js
+          echo 'LIVE_SW_CACHE=wawis-app-shell-v10.86'
+          curl -fsS --retry 5 --retry-delay 2 --max-time 20 -o /dev/null "${BASE}/"
+          echo 'LIVE_HOME=HTTP_OK'
