@@ -39,6 +39,29 @@ jobs:
           PY
       - name: Apply 10.86 fixes
         run: node scripts/apply-v1086-once.cjs
+      - name: Normalize generated guards and regression test
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          photos = Path('src/mobile791/modules/photos.js')
+          s = photos.read_text()
+          repairs = {
+            "const guardedSetJobs = (updater) => { if (isSessionCurrent()) guardedSetJobs?.(updater); };": "const guardedSetJobs = (updater) => { if (isSessionCurrent()) setJobs?.(updater); };",
+            "const guardedSetSelectedJob = (updater) => { if (isSessionCurrent()) guardedSetSelectedJob?.(updater); };": "const guardedSetSelectedJob = (updater) => { if (isSessionCurrent()) setSelectedJob?.(updater); };",
+            "const guardedOnPhotoUploadError = (...args) => { if (isSessionCurrent()) guardedOnPhotoUploadError?.(...args); };": "const guardedOnPhotoUploadError = (...args) => { if (isSessionCurrent()) onPhotoUploadError?.(...args); };",
+          }
+          for old, new in repairs.items():
+              s = s.replace(old, new)
+          photos.write_text(s)
+
+          test = Path('scripts/smoke-audit-fixes-v1086.mjs')
+          t = test.read_text()
+          old = "assert.doesNotMatch(changedBlock, /updateOfflineSyncCursor(/);"
+          new = "assert.equal(changedBlock.includes('updateOfflineSyncCursor('), false, 'refreshChanged must not advance cursor outside atomic snapshot commit');"
+          if old not in t:
+              raise SystemExit('invalid regex assertion not found')
+          test.write_text(t.replace(old, new, 1))
+          PY
       - name: Run 10.86 regressions
         run: |
           node scripts/smoke-audit-fixes-v1086.mjs
