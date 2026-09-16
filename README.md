@@ -810,6 +810,89 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 
 ## Ostatnia poprawka
 - wersja `10.86` — F3/F5/F8/F9: ochrona sesji przed spóźnionym SIGNED_OUT, izolacja kolejki zdjęć między kontami oraz bezpieczna kolejność synchronizacji i kursora offline.
+- wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
+- wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
+- wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.
+- wersja `9.98` — data i wykonawca zakończenia są odsunięci oraz wyśrodkowani, a karty urządzeń na telefonie są domyślnie zwinięte i rozwijane osobno.
+- wersja `9.97` — nagłówek i tabele protokołu powykonawczego są zwarte i wyrównane, REGON usunięto, a informacje i ustalenia mają większą czcionkę.
+- wersja `9.96` — administrator może na desktopie podejrzeć, wydrukować i wysłać zapisany protokół zakończonego zlecenia.
+- wersja `9.84` — protokół mobilny ma uporządkowane wiersze danych i karty urządzeń, a podpis klienta otwiera się na osobnym, nieruchomym ekranie z osobnym zatwierdzeniem.
+- wersja `9.83` — protokół mobilny korzysta z tej samej pełnoekranowej obudowy i pojedynczego głównego elementu co działające okno „Dodaj urządzenie”.
+- test `npm run test:smoke:technical-refresh` pilnuje, aby pełne odświeżenia nie wróciły do pojedynczych akcji, PUSH pozostał ograniczony, Centrum 360 używało cache, a timer offline nie działał przy pustej kolejce.
+- wersja `9.75` — desktop i mobile mają odseparowane, ograniczone czasowo pobieranie szczegółów zlecenia; Realtime odświeża konkretne zlecenia, miniatury ładują się w tle, a chwilowy 500/504 nie zapętla spinnera ani nie usuwa ostatnich poprawnych danych.
+- wersja `9.73` — usuwanie błędnego urządzenia nie rusza już fizycznych plików tabliczek pozostałych urządzeń; przypisanie tabliczki do urządzenia jest osobnym polem w bazie, a współdzielony plik jest chroniony przed usunięciem.
+- wersja `9.72` — administrator może usunąć błędnie zapisane urządzenie bezpośrednio z tabeli urządzeń; usuwane są też jego tabliczki, a kolejne urządzenia są przenumerowywane.
+- wersja `9.70` — PUSH jest obowiązkowy i bez możliwości wyłączenia w aplikacji; aplikacja sama naprawia brakującą subskrypcję oraz wymienia endpoint wygasły po 404/410.
+- wersja `9.36` — strzałki galerii zdjęć montażu nie pokazują już tabliczek znamionowych; obie galerie są od siebie odseparowane.
+- wersja `9.35` — desktopowy kreator urządzeń jest węższy, wypełnia swoją powierzchnię bez bocznych pasów i ma neutralny grafitowy wygląd premium.
+- wersja `9.34` — desktopowe okno urządzeń administratora jest zwarte, profesjonalnie uporządkowane i pozbawione dużej pustej powierzchni.
+- wersja `9.33` — przeciążenie Supabase pokazuje czytelny komunikat, nie udaje błędu autoryzacji i nie wylogowuje użytkownika.
+- wersja `9.32` — `Odczytaj kody` korzysta z pełnego katalogu modeli Rotenso; `ES50Xi R17` daje Rotenso, Elis Silver, 5,0 kW i JW bez AI.
+- wersja `9.30` — AI rozpoznaje dokładny kod Rotenso także z pełnej transkrypcji; `EO50Xo R17` uzupełnia Rotenso, Elis 5,0 kW i jednostkę zewnętrzną.
+- wersja `9.29` — administrator może dodawać i edytować urządzenia oraz zdjęcia tabliczek na desktopie i mobile.
+- wersja `9.26` — desktop i mobile: kolejne nagrania komentarza administratora są dopisywane do istniejącej treści zamiast ją zastępować.
+- wersja `9.24` — desktop Montaże: niezależne przewijanie lewej listy i prawego panelu szczegółów po otwarciu zlecenia; kółko myszy nad tabelą przewija lewą listę.
+- wersja `9.18` — mobile administratora: jawna Diagnostyka oraz bezpieczne przenoszenie zweryfikowanej subskrypcji push między kontami na tym samym iPhonie bez poluzowania RLS.
+- wersja `9.17` — push administratora: automatyczna synchronizacja subskrypcji z Supabase, test push bez zamykania zlecenia oraz kontrolowany retry dla zakończeń.
+- wersja `9.09` — desktop: rozdzielenie PC/EAN od SN, naprawa klasyfikacji Xi/Xo/JW/JZ i ochrona oficjalnego katalogu Rotenso przed błędnym nadpisaniem.
+- wersja `9.06` — historyczna próba fallbacku MediaRecorder/OpenAI dla Firefox, wycofana w 9.07.
+- wersja `9.05` — naturalne dyktowanie danych klienta bez nazw pól; telefon jest izolowany od cyfr adresu, Safari wybiera lepszą alternatywę rozpoznania, a niepełny e-mail nie jest zgadywany.
+- wersja `9.00` — mobilny zapis tabliczek zamyka modal po potwierdzeniu, odświeża dane w tle i zapisuje etapy do diagnostyki.
+- wersja `8.99` — po odczycie EAN/Code 128 brakujący numer seryjny jest automatycznie uzupełniany przez lokalny OCR tylko obszaru SN.
+- wersja `8.98` — dodano mobilne Centrum synchronizacji zdjęć z listą kolejki, ponawianiem pojedynczym i zbiorczym oraz przejściem do zlecenia.
+- wersja `8.94` — naprawiono znikanie zdjęcia i anulowanie wyniku po odświeżeniu podpisanego URL; numer seryjny z Code 128 trafia do formularza przed sprawdzaniem katalogu EAN.
+- wersja `8.93` — rozdzielono odczyt EAN/Code 128, lokalny OCR i AI na osobne operacje z limitami czasu oraz anulowaniem.
+- wersja `8.92` — dodano centralny katalog EAN/GTIN w Supabase i import CSV/XLSX; wymaga `nameplate-product-catalog-v8.92.sql`.
+- wersja `8.91` — dodano brakujące mapowanie EAN starszego Imoto, lokalny OCR awaryjny dla nadruku modelu/SN oraz blokadę zapisania tabliczki JZ do JW lub odwrotnie.
+- wersja `8.89` — poszerzono kolumnę statusu, usunięto osobną kolumnę akcji i umożliwiono otwieranie tabliczki po dotknięciu całego wiersza JZ/JW.
+- wersja `8.88` — na stabilnej bazie 8.86 wdrożono pięciokolumnową mobilną tabelę urządzeń; jej krytyczne style są osadzane razem z komponentem JS, aby iPhone nie mógł użyć starego CSS dla nowego układu.
+- wersja `8.86` — awaryjnie przywrócono stabilny interfejs 8.82, zachowując wiele adresów i naprawę zdjęć; dodano ochronę przed wydaniem aplikacji bez mobilnego CSS.
+- wersja `8.81` — dodano wiele adresów jednego klienta, wybór lokalizacji przy tworzeniu montażu oraz zachowanie historycznego adresu na każdym zleceniu. Przed wdrożeniem uruchom w Supabase SQL Editor plik `contractor-addresses-v8.81.sql`.
+- wersja `8.78` — dodano projektowy `.npmrc`, wymuszenie publicznego rejestru npm w `prepare:deps` oraz test chroniący konfigurację i obecność pliku w ZIP-ie.
+- wersja `8.68` — wyłącznie desktop administratora: osobny kolorowy status pewności dla producenta, modelu i numeru seryjnego; mobile bez OCR-u i bez zmian.
+- wersja `8.67` — wyłącznie desktop administratora: spójne karty JZ/JW z modelem, numerem seryjnym, tabliczką i zapisanym statusem OCR.
+- wersja `8.66` — wyłącznie desktop administratora: globalne wyszukiwanie po klientach, telefonach, adresach, modelach, numerach seryjnych, numerach zleceń i monterach, z bezpośrednim otwieraniem właściwego rekordu; mobile bez zmian.
+- wersja `8.65` — wyłącznie desktop administratora: ręczny OCR zapisanych tabliczek JZ/JW, edycja wyniku przed zatwierdzeniem oraz zapis do montażu i modułu Urządzenia; mobile bez OCR.
+- wersja `8.64` — wyłącznie mobile: trwała kolejka zdjęć w IndexedDB z automatycznym ponawianiem po odzyskaniu internetu, czytelne statusy `Zapisano na telefonie / Wysyłanie / Zapisano w systemie`, ręczny przycisk `Wyślij ponownie`, lokalna kontrola jakości tabliczki bez OCR oraz sekcje `Ostatnio używane` i `Najczęściej wybierane` nad pełnym katalogiem Rotenso.
+- wersja `8.62` — naprawiono przesunięty kadr tabliczek na iPhonie oraz wyświetlanie całego zdjęcia w mobile i desktopie. Usunięto globalny styl `img`, który rozdzielał pozycję ramki od obrazu; dodano pomiar rzeczywistego prostokąta obrazu, tryb `contain` dla podglądów tabliczek oraz zachowanie jakości wykadrowanego pliku bez drugiej stratnej kompresji.
+- wersja `8.61` — pełny bieżący katalog Rotenso w kreatorze mobilnym, wyszukiwarka modeli, kategorie i moce dopasowane do wybranej rodziny.
+- wersja `8.60` — hotfix bazy dla montaży bez numerów seryjnych. Uruchom w Supabase SQL Editor plik `devices-empty-serial-hotfix-v8.60.sql`; pozwala on zapisywać wiele urządzeń z pustym numerem seryjnym, zachowując unikalność numerów faktycznie wpisanych. Aplikacja mobilna rozpoznaje ten błąd i podaje czytelną instrukcję zamiast surowego komunikatu PostgreSQL.
+- wersja `8.59` — wyłącznie mobile: po wykonaniu zdjęcia tabliczki otwiera się ekran kadrowania; pracownik może przesunąć i zmienić ramkę, ponowić zdjęcie oraz zapisać tylko wykadrowaną tabliczkę. OCR pozostaje wyłączony.
+- wersja `8.58` — wyłącznie mobile: przebudowano widok `Urządzenia i tabliczki` w szczegółach montażu. Każda jednostka JZ/JW ma teraz jeden pełnoszeroki wiersz z oznaczeniem, modelem i prostą akcją `Dodaj` lub `Otwórz`. Usunięto z listy duże pola tabliczek, przyciski usuwania i historyczny numer seryjny; dodano czytelny status kompletu tabliczek dla każdego urządzenia.
+- wersja `8.45` — dodano blokadę skanowania `Xi` do pola `JZ` i `Xo` do pola `JW` oraz testowego klienta Multi-Split z trzema JW.
+- wersja `8.44` — naprawiono pełny odczyt SN `540V4020005A6130130004` z trudnej fotografii `RO50Xi R14`, ustabilizowano małą ikonę i jasny modal skanera oraz dodano pracownikowi ograniczoną akcję `Numery seryjne`.
+- wersja `8.43` — rozszerzono mobilny słownik kodów Rotenso o serie, których nie było na przekazanych zdjęciach, w tym Luve Pro Black. `I35Xo R14` jest rozpoznawane jako `Imoto 3,5 kW`, `R…` oznacza Roni, a `RO…` oznacza Revio. Parser zachowuje moc, wariant `Xi/Xo` i rewizję `Rxx` oraz odrzuca nieznane moce.
+- wersja `8.38` — dodano skanowanie numerów seryjnych z tabliczki znamionowej aparatem w mobilnym formularzu montażu. Przycisk `Skanuj` działa przy jednostce zewnętrznej i każdej jednostce wewnętrznej single/multi-split. Zdjęcie jest analizowane lokalnie na telefonie przez OCR, bez przesyłania tabliczki do zewnętrznej usługi; pracownik widzi podgląd, postęp, możliwe wyniki oraz edytowalne pole z przypomnieniem o sprawdzeniu znaków `0/O`, `1/I` i `5/S`. Dodano rzeczywisty E2E na profilu iPhone 14, obejmujący OCR tabliczki oraz wpisanie numerów JW/JZ. Desktop pozostaje bez zmian.
+- wersja `8.37` — pracownik widzi jakość połączenia oraz stan synchronizacji zdjęć; upload, ponowienie, odświeżenie i usunięcie aktualizują wskaźnik. Dodano mobilny E2E Playwright imitujący iPhone 14 i dwie osobne sesje pracownika/administratora, który automatycznie dodaje zdjęcie, potwierdza jego pojawienie się na drugim ekranie, usuwa je i potwierdza zniknięcie w obu sesjach. Mobilny numer wersji jest teraz podbijany i weryfikowany razem z wersją główną. Desktop pozostaje bez zmian.
+- wersja `8.36` — techniczne zabezpieczenie wydań mobilnych: dodano osobny `release:mobile`, włączono komplet aktualnych testów zdjęć, naprawiono test prywatnych zdjęć, dodano kontrolę numeru wersji w `RELEASE-RESULT.md` i zapis finalnego raportu przed spakowaniem ZIP-a. Funkcje oraz wygląd aplikacji mobilnej i desktopowej pozostały bez zmian.
+- wersja `8.35` — synchronizacja zdjęć między urządzeniami: realtime i awaryjny polling co 10 sekund wymuszają ciche przeładowanie otwartej karty montażu po zmianach w `photos`, `comments`, `job_access` i `jobs`, więc zdjęcie dodane/usunięte na telefonie powinno pojawić się albo zniknąć na desktopie i drugiej mobilce bez wylogowania.
+- wersja `8.34` — hotfix mobilnych zdjęć: po udanym uploadzie miniatura nie znika z karty montażu; aplikacja zachowuje lokalny podgląd do czasu cichej synchronizacji z signed URL z Supabase i nie nadpisuje świeżych zdjęć pustym stanem cache.
+- wersja `8.33` — mobilne zdjęcia: usunięto techniczny napis `zmniejszone o ...% przed wysłaniem` z karty zdjęcia po uploadzie; kompresja dalej działa w tle, ale pracownik widzi tylko potrzebne statusy wysyłki.
+- wersja `8.32` — hotfix mobilnego uploadu zdjęć: aplikacja zapisuje `uploaded_by` na podstawie aktualnej sesji `auth.uid()`, a w paczce jest SQL `mobile-photo-upload-rls-v8.32.sql` do odtworzenia polityk RLS dla zdjęć, gdyby produkcyjna baza nadal blokowała zapis.
+- wersja `8.31` — mobilna kompresja zdjęć przed uploadem: aplikacja zmniejsza zdjęcia do maksymalnie 1800 px na dłuższym boku, zapisuje JPG w jakości 78% i wysyła mniejszy plik przez istniejącą kolejkę zdjęć.
+- wersja `8.30` — mobilna kolejka zdjęć: po dodaniu zdjęcia od razu widać lokalną miniaturę, wysyłka działa w tle ze statusem `wysyłanie / wysłano / błąd`, a nieudane zdjęcie można ponowić bez przeładowania całej karty.
+- wersja `8.29` — przyspieszenie wersji mobilnej: lekkie odświeżanie listy, doczytywanie zdjęć/komentarzy tylko dla otwartej karty, natychmiastowe podświetlanie montera oraz szybsze lokalne wylogowanie.
+- wersja `8.27` — desktop-only: zamrożono mobile, opisano strukturę projektu i ujednolicono desktopowy layout administratora w modułach Montaże, Kontrahenci i Urządzenia.
+- wersja `8.26` — desktopowy formularz Montaże wykrywa istniejącego klienta po telefonie/e-mailu/nazwie i pokazuje okno decyzji: podłącz istniejącego klienta do montażu albo nadpisz jego kartotekę danymi z formularza; mobile bez zmian.
+- wersja `8.20` — desktopowy prawy panel szczegółów montażu ma przyklejoną górną belkę, szybkie akcje, wyraźnie zaznaczony wiersz w tabeli oraz szczegóły uporządkowane w karty; mobile i baza bez zmian.
+- wersja `8.19` — desktopowy moduł `Montaże` ma niezależne przewijanie lewej tabeli i prawego panelu szczegółów po kliknięciu klienta; mobile bez zmian.
+- wersja `8.13` — poprawiono szerokość desktopowego modułu `Kalendarz`, żeby prawy panel `Wybrany dzień` oraz przycisk `Następny` nie wychodziły poza ekran i żeby było widać prawą krawędź oraz zaokrąglenie.
+- wersja `8.12` — w Centrum 360 poszerzono kolumnę monterów w `Nadchodzących montażach`, żeby mieściły się 4 badge’e 32x32px w jednej linii; nagłówek modułu `Montaże` na desktopie został skrócony do wysokości paska Kalendarza.
+- wersja `8.11` — poprawiono badge’e monterów w Centrum 360 tak, żeby globalny CSS nie zmniejszał ich do 24px; kółka są wymuszone na 32x32px jak w tabeli Montaże.
+- wersja `8.09` — w `Centrum 360` wyrównano szerokość badge’y monterów w `Nadchodzących montażach` do szerokości badge’y statusów montaży.
+- wersja `8.08` — uporządkowano desktopowe nagłówki modułów: usunięto opisy pod tytułami w `Montaże`, `Urządzenia`, `SMS` i `Szablony SMS`, bez zmiany `Kalendarza` i `Kontrahentów`.
+- wersja `8.07` — poprawiono Centrum 360: `SMS do wysłania` liczy dokładnie tę samą kolejkę klientów co moduł SMS, a kafelek `Montaże 7 dni` zmieniono na `Montaże bieżący tydzień` liczony od poniedziałku do niedzieli.
+- wersja `8.06` — techniczne wzmocnienie bezpieczeństwa i szybkości: zdjęcia montaży przechodzą na prywatny bucket `job-photos` z czasowymi signed URL, `Centrum 360` może używać centralnego RPC `admin_get_dashboard_metrics()`, szczegóły montażu ładują zdjęcia/komentarze dopiero po kliknięciu, a migracja dodaje indeksy pod najczęstsze widoki.
+- wersja `8.04` — utwardzono zabezpieczenia: Edge Function `send-assignment-push` sprawdza teraz `installation_date` po stronie serwera i pomija push dla historycznych montaży, a polityki RLS dla kasowania montaży, zdjęć i powiadomień nie używają już szerokiego `using (true)`.
+- wersja `8.02` — w desktopowym module `Montaże` poszerzono całą lewą tabelę oraz kolumnę `Klient` o około 1/3 względem wersji 8.01, bez zmiany szerokości kolumny `Status` i bez cofania szerszego panelu szczegółów.
+- wersja `8.00` — w desktopowym module `Montaże` zwężono kolumnę `Klient`, zmniejszono minimalną szerokość listy i poszerzono prawy panel szczegółów.
+- wersja `7.99` — w desktopowej tabeli `Montaże` usunięto osobną kolumnę `Adres`; adres jest teraz pokazany pod nazwą klienta w kolumnie `Klient`, dzięki czemu tabela jest węższa i czytelniejsza.
+- wersja `7.98` — poprawiono `Centrum 360`: kafelek `SMS do wysłania` liczy teraz dokładnie kolejkę klientów z modułu SMS, a w `Nadchodzące montaże` usunięto niepotrzebną godzinę z lewego badge, zostawiając samą datę.
+- wersja `7.96` — poprawiono `Centrum 360`: nazwa klienta jest brana z `client/title` albo z powiązanego kontrahenta, monterzy są pobierani z przypisań/profili, a z górnych kafelków usunięto `Urządzenia`, zostawiając `Montaże dziś`, `Montaże 7 dni` i `SMS do wysłania`.
+- wersja `7.95` — dodano desktopowe `Centrum 360` jako pierwszy ekran administratora oraz przeprojektowano biały sidebar zgodnie z projektem referencyjnym: większe, czytelniejsze ikony liniowe, mocniejsza typografia, aktywny kafelek i oryginalne logo Wawis.
+- wersja `7.57` — w module `Montaże` dodano paginację po 10 zleceń na stronę w widoku desktopowym i mobilnym, z przyciskami przechodzenia między stronami.
+- wersja `7.56` — moduły administratora `SMS`, `Kontrahenci`, `Urządzenia` i `Kalendarz` są teraz ładowane lazy loadingiem, żeby zmniejszyć główny chunk startowy aplikacji.
+
 
 ## Kolorowa pewność OCR 8.68
 - każde pole `Producent`, `Model` i `Numer seryjny` ma osobną ocenę,
