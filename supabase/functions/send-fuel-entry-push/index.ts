@@ -131,7 +131,7 @@ Deno.serve(async (request) => {
 
     const { data: subscriptions, error: subscriptionsError } = await adminClient
       .from("push_subscriptions")
-      .select("id, user_id, endpoint, p256dh, auth, ownership_generation")
+      .select("id, user_id, endpoint, p256dh, auth, lifecycle_token, ownership_generation")
       .in("user_id", targetAdminIds)
       .eq("is_active", true);
 
@@ -201,11 +201,14 @@ Deno.serve(async (request) => {
         }]);
 
         if (statusCode === 404 || statusCode === 410) {
-          await adminClient.from("push_subscriptions").update({ is_active: false })
-            .eq("id", subscription.id)
-            .eq("user_id", subscription.user_id)
-            .eq("ownership_generation", subscription.ownership_generation)
-            .eq("is_active", true);
+          await adminClient.rpc("push_subscription_expire_atomic", {
+          p_request_user_id: subscription.user_id,
+          p_endpoint: subscription.endpoint,
+          p_p256dh: subscription.p256dh,
+          p_auth: subscription.auth,
+          p_lifecycle_token: subscription.lifecycle_token || "",
+          p_expected_generation: subscription.ownership_generation,
+        });
         }
 
         return { ok: false, subscriptionId: subscription.id, statusCode, errorMessage };

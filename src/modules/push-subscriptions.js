@@ -5,11 +5,46 @@ export const WEB_PUSH_PUBLIC_KEY = String(env.VITE_WEB_PUSH_PUBLIC_KEY || "").tr
 const PUSH_SW_PATH = "/push-sw.js";
 const PUSH_SAVE_COOLDOWN_MS = 15000;
 const PUSH_SERVER_TOUCH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const PUSH_LOCAL_STEP_TIMEOUT_MS = 900;
+const PUSH_LIFECYCLE_KEY_PREFIX = 'wawis_push_lifecycle_v1078';
 
 let pushSaveInFlight = null;
 let lastSavedSignature = "";
 let lastSaveAttemptAt = 0;
 let lastForbiddenAt = 0;
+const desktopLifecycleTokens = new Map();
+
+export function withPushLifecycleTimeout(promise, timeoutMs = PUSH_LOCAL_STEP_TIMEOUT_MS, label = 'push-lifecycle') {
+  let timerId;
+  const timeout = new Promise((_, reject) => {
+    timerId = setTimeout(() => {
+      const error = new Error(`Przekroczono limit czasu operacji PUSH: ${label}.`);
+      error.code = 'PUSH_LIFECYCLE_TIMEOUT';
+      reject(error);
+    }, Math.max(1, Number(timeoutMs) || PUSH_LOCAL_STEP_TIMEOUT_MS));
+  });
+  return Promise.race([Promise.resolve(promise), timeout]).finally(() => clearTimeout(timerId));
+}
+
+function randomLifecycleToken() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return `v1078:${crypto.randomUUID()}`;
+  return `v1078:${Date.now().toString(36)}:${Math.random().toString(36).slice(2)}`;
+}
+
+function getOrCreateDesktopPushLifecycleToken(sessionUser) {
+  const userId = String(sessionUser?.id || '').trim();
+  if (!userId) return '';
+  if (desktopLifecycleTokens.has(userId)) return desktopLifecycleTokens.get(userId);
+  const key = `${PUSH_LIFECYCLE_KEY_PREFIX}:${userId}`;
+  let token = '';
+  try { token = String(window.localStorage.getItem(key) || '').trim(); } catch {}
+  if (!token) {
+    token = randomLifecycleToken();
+    try { window.localStorage.setItem(key, token); } catch {}
+  }
+  desktopLifecycleTokens.set(userId, token);
+  return token;
+}
 
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -108,7 +143,7 @@ export function getPushPermission() {
 
 export async function registerPushServiceWorker() {
   if (!isPushSupported()) return null;
-  return navigator.serviceWorker.register(PUSH_SW_PATH);
+  return withPushLifecycleTimeout(navigator.serviceWorker.register(PUSH_SW_PATH), PUSH_LOCAL_STEP_TIMEOUT_MS * 2, 'service-worker-register');
 }
 
 export async function savePushSubscription({ supabase, sessionUser, subscription, force = false }) {
@@ -132,27 +167,31 @@ export async function savePushSubscription({ supabase, sessionUser, subscription
 
   lastSaveAttemptAt = now;
 
+  const lifecycleToken = getOrCreateDesktopPushLifecycleToken(sessionUser);
   const savePromise = (async () => {
-    const { error } = await supabase.from("push_subscriptions").upsert({
-      user_id: sessionUser.id,
-      endpoint: payload.endpoint,
-      p256dh: payload.p256dh,
-      auth: payload.auth,
-      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
-      device_label: typeof navigator !== "undefined" ? `${navigator.platform || "Urządzenie"} / ${navigator.userAgentData?.platform || navigator.language || "przeglądarka"}` : "Przeglądarka",
-      is_active: true,
-      last_seen_at: new Date().toISOString(),
-    }, { onConflict: "endpoint" });
+    const { data, error } = await supabase.rpc("push_subscription_sync_self", {
+      p_endpoint: payload.endpoint,
+      p_p256dh: payload.p256dh,
+      p_auth: payload.auth,
+      p_lifecycle_token: lifecycleToken,
+      p_user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+      p_device_label: typeof navigator !== "undefined" ? `${navigator.platform || "Urządzenie"} / ${navigator.userAgentData?.platform || navigator.language || "przeglądarka"}` : "Przeglądarka",
+    });
 
     if (error) {
-      if (isForbiddenStatus(error)) {
-        lastForbiddenAt = Date.now();
-      }
+      if (isForbiddenStatus(error)) lastForbiddenAt = Date.now();
       throw error;
     }
 
+    const row = Array.isArray(data) ? data[0] : data;
     lastSavedSignature = signature;
-    return { saved: true, skipped: false, reason: "ok" };
+    return {
+      saved: true,
+      skipped: false,
+      reason: row?.reason || "ok",
+      generation: Number(row?.ownership_generation || 0),
+      reassigned: Boolean(row?.reassigned),
+    };
   })();
 
   pushSaveInFlight = savePromise;
@@ -165,19 +204,35 @@ export async function savePushSubscription({ supabase, sessionUser, subscription
 }
 
 export async function disableSavedPushSubscription({ supabase, endpoint }) {
-  if (!supabase || !endpoint) return;
-  const { error } = await supabase
+  if (!supabase || !endpoint) return { disabled: false, skipped: true };
+  const { data: sessionData } = await supabase.auth.getSession();
+  const sessionUser = sessionData?.session?.user || null;
+  if (!sessionUser) return { disabled: false, skipped: true };
+  const lifecycleToken = getOrCreateDesktopPushLifecycleToken(sessionUser);
+  const { data: row, error: rowError } = await supabase
     .from("push_subscriptions")
-    .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq("endpoint", endpoint);
-
+    .select("p256dh, auth")
+    .eq("user_id", sessionUser.id)
+    .eq("endpoint", endpoint)
+    .maybeSingle();
+  if (rowError) throw rowError;
+  if (!row?.p256dh || !row?.auth) return { disabled: false, skipped: true };
+  const { data, error } = await supabase.rpc("push_subscription_disable_self", {
+    p_endpoint: endpoint,
+    p_p256dh: row.p256dh,
+    p_auth: row.auth,
+    p_lifecycle_token: lifecycleToken,
+  });
   if (error) throw error;
+  const result = Array.isArray(data) ? data[0] : data;
+  return { disabled: Boolean(result?.disabled), skipped: false, result };
 }
 
 export async function getCurrentPushSubscription() {
   if (!isPushSupported()) return null;
   const registration = await registerPushServiceWorker();
-  return registration?.pushManager.getSubscription() || null;
+  if (!registration?.pushManager?.getSubscription) return null;
+  return withPushLifecycleTimeout(registration.pushManager.getSubscription(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-current-subscription');
 }
 
 async function replaceExpiredPushSubscription({ supabase, sessionUser, subscription }) {
@@ -185,13 +240,13 @@ async function replaceExpiredPushSubscription({ supabase, sessionUser, subscript
   if (!registration?.pushManager) return null;
 
   if (subscription) {
-    await subscription.unsubscribe().catch(() => false);
+    await withPushLifecycleTimeout(subscription.unsubscribe(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-expired-unsubscribe').catch(() => false);
   }
 
-  const replacement = await registration.pushManager.subscribe({
+  const replacement = await withPushLifecycleTimeout(registration.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(WEB_PUSH_PUBLIC_KEY),
-  });
+  }), PUSH_LOCAL_STEP_TIMEOUT_MS * 2, 'push-expired-subscribe');
 
   await savePushSubscription({ supabase, sessionUser, subscription: replacement, force: true });
   return replacement;
@@ -215,12 +270,12 @@ export async function ensurePushNotifications({ supabase, sessionUser, requestPe
   const registration = await registerPushServiceWorker();
   if (!registration?.pushManager) return null;
 
-  let subscription = await registration.pushManager.getSubscription();
+  let subscription = await withPushLifecycleTimeout(registration.pushManager.getSubscription(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-ensure-read');
   if (!subscription) {
-    subscription = await registration.pushManager.subscribe({
+    subscription = await withPushLifecycleTimeout(registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(WEB_PUSH_PUBLIC_KEY),
-    });
+    }), PUSH_LOCAL_STEP_TIMEOUT_MS * 2, 'push-ensure-subscribe');
   }
 
   await savePushSubscription({ supabase, sessionUser, subscription, force: true });

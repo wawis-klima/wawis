@@ -85,6 +85,7 @@ const GROUPS = {
     'npm run test:smoke:comment-admin-push',
     'npm run test:smoke:push-mandatory',
     'node scripts/smoke-session-push-gate-v1083.mjs',
+    'node scripts/smoke-audit-fixes-v1087.mjs',
   ],
   fuel: [
     'npm run test:smoke:fuel-module',
@@ -138,6 +139,7 @@ const GROUPS = {
     'node scripts/smoke-playwright-runner-fail-closed-v1085.cjs',
     'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
     'node scripts/smoke-audit-fixes-v1086.mjs',
+    'node scripts/smoke-audit-fixes-v1087.mjs',
     'npm run test:smoke:e2e-mobile',
     'npm run test:smoke:e2e-desktop',
     'npm run test:smoke:remove-resend-email',

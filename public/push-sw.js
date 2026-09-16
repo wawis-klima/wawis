@@ -75,7 +75,7 @@ function openPushContextDb() {
   });
 }
 
-async function writePushContext(value) {
+async function writePushContextCommand(command) {
   const db = await openPushContextDb();
   try {
     return await new Promise((resolve, reject) => {
@@ -85,11 +85,40 @@ async function writePushContext(value) {
       let applied = false;
       let nextValue = null;
       readRequest.onsuccess = () => {
-        const current = readRequest.result || { userId: "", generation: 0, revision: 0 };
-        const incoming = { userId: String(value?.userId || ""), generation: Number(value?.generation || 0), revision: Number(value?.revision || 0) };
-        if (self.WawisPushContextGuard?.shouldApplyContextCommand(current, incoming)) {
-          store.put(incoming, "active"); applied = true; nextValue = incoming;
-        } else { nextValue = current; }
+        const current = readRequest.result || { userId: "", generation: 0, revision: 0, protocolVersion: 1 };
+        if (command?.type === "WAWIS_PUSH_CONTEXT_SET") {
+          const incoming = {
+            userId: String(command.userId || ""),
+            generation: Number(command.generation || 0),
+            revision: Number(command.revision || 0),
+            protocolVersion: Number(command.protocolVersion || 1),
+          };
+          if (self.WawisPushContextGuard?.shouldApplySet(current, incoming)) {
+            nextValue = { ...incoming, terminalClear: false, clearedUserId: "" };
+            store.put(nextValue, "active");
+            applied = true;
+          } else nextValue = current;
+        } else if (command?.type === "WAWIS_PUSH_CONTEXT_CLEAR") {
+          const incoming = {
+            expectedUserId: String(command.expectedUserId || ""),
+            expectedGeneration: Number(command.expectedGeneration || 0),
+            revision: Number(command.revision || 0),
+            protocolVersion: Number(command.protocolVersion || 1),
+            terminal: command.terminal !== false,
+          };
+          if (self.WawisPushContextGuard?.shouldApplyClear(current, incoming)) {
+            nextValue = {
+              userId: "",
+              generation: Number(current.generation || 0),
+              revision: Math.max(Number(current.revision || 0), Number(incoming.revision || 0)),
+              protocolVersion: Math.max(2, Number(incoming.protocolVersion || 1)),
+              terminalClear: incoming.terminal !== false,
+              clearedUserId: String(current.userId || ""),
+            };
+            store.put(nextValue, "active");
+            applied = true;
+          } else nextValue = current;
+        }
       };
       readRequest.onerror = () => reject(readRequest.error);
       tx.oncomplete = () => resolve({ applied, context: nextValue });
@@ -112,14 +141,22 @@ async function readPushContext() {
 }
 
 self.addEventListener("message", (event) => {
-  if (event.data?.type === "WAWIS_PUSH_CONTEXT_SET" || event.data?.type === "WAWIS_PUSH_CONTEXT_CLEAR") {
-    const value = event.data.type === "WAWIS_PUSH_CONTEXT_SET"
-      ? { userId: String(event.data.userId || ""), generation: Number(event.data.generation || 0), revision: Number(event.data.revision || 0) }
-      : { userId: "", generation: 0, revision: Number(event.data.revision || 0) };
+  if (event.data?.type === "WAWIS_PUSH_CONTEXT_GET") {
     event.waitUntil((async () => {
       try {
-        const result = await writePushContext(value);
-        event.ports?.[0]?.postMessage({ ok: true, applied: Boolean(result?.applied), revision: Number(result?.context?.revision || 0) });
+        const context = await readPushContext();
+        event.ports?.[0]?.postMessage({ ok: true, applied: true, context });
+      } catch (error) {
+        event.ports?.[0]?.postMessage({ ok: false, error: error?.message || String(error) });
+      }
+    })());
+    return;
+  }
+  if (event.data?.type === "WAWIS_PUSH_CONTEXT_SET" || event.data?.type === "WAWIS_PUSH_CONTEXT_CLEAR") {
+    event.waitUntil((async () => {
+      try {
+        const result = await writePushContextCommand(event.data);
+        event.ports?.[0]?.postMessage({ ok: true, applied: Boolean(result?.applied), context: result?.context || null });
       } catch (error) {
         event.ports?.[0]?.postMessage({ ok: false, error: error?.message || String(error) });
       }

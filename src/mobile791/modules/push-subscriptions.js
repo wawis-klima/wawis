@@ -382,7 +382,8 @@ export async function reconcilePendingPushLogout({ supabase, sessionUser, force 
 export async function getCurrentPushSubscription() {
   if (!isPushSupported()) return null;
   const registration = await registerPushServiceWorker();
-  return registration?.pushManager.getSubscription() || null;
+  if (!registration?.pushManager?.getSubscription) return null;
+  return withPushLifecycleTimeout(registration.pushManager.getSubscription(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-current-subscription');
 }
 
 async function replaceExpiredPushSubscription({ supabase, sessionUser, subscription }) {
@@ -390,13 +391,13 @@ async function replaceExpiredPushSubscription({ supabase, sessionUser, subscript
   if (!registration?.pushManager) return null;
 
   if (subscription) {
-    await subscription.unsubscribe().catch(() => false);
+    await withPushLifecycleTimeout(subscription.unsubscribe(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-expired-unsubscribe').catch(() => false);
   }
 
-  const replacement = await registration.pushManager.subscribe({
+  const replacement = await withPushLifecycleTimeout(registration.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(WEB_PUSH_PUBLIC_KEY),
-  });
+  }), PUSH_LOCAL_STEP_TIMEOUT_MS * 2, 'push-expired-subscribe');
 
   await savePushSubscription({ supabase, sessionUser, subscription: replacement, force: true });
   return replacement;
@@ -420,12 +421,12 @@ export async function ensurePushNotifications({ supabase, sessionUser, requestPe
   const registration = await registerPushServiceWorker();
   if (!registration?.pushManager) return null;
 
-  let subscription = await registration.pushManager.getSubscription();
+  let subscription = await withPushLifecycleTimeout(registration.pushManager.getSubscription(), PUSH_LOCAL_STEP_TIMEOUT_MS, 'push-ensure-read');
   if (!subscription) {
-    subscription = await registration.pushManager.subscribe({
+    subscription = await withPushLifecycleTimeout(registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(WEB_PUSH_PUBLIC_KEY),
-    });
+    }), PUSH_LOCAL_STEP_TIMEOUT_MS * 2, 'push-ensure-subscribe');
   }
 
   await savePushSubscription({ supabase, sessionUser, subscription, force: true });
