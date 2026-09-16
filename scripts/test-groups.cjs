@@ -74,6 +74,7 @@ const GROUPS = {
     'npm run test:smoke:assignment-push',
     'npm run test:smoke:push-reliability',
     'npm run test:smoke:push-mobile-reassignment',
+    'npm run test:smoke:push-logout-handoff',
     'npm run test:smoke:comment-admin-push',
     'npm run test:smoke:push-mandatory',
   ],

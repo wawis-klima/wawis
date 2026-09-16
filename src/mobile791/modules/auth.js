@@ -1,4 +1,5 @@
 import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError, TRANSIENT_SUPABASE_MESSAGE } from './supabase-errors.js';
+import { deactivatePushForLogout, reconcilePendingPushLogout } from './push-subscriptions.js';
 
 export function clearAppClientState({
   setSessionUser,
@@ -95,6 +96,9 @@ export async function restoreAuthSession({
 
   const user = data.session?.user || null;
   if (user) {
+    await reconcilePendingPushLogout({ supabase, sessionUser: user }).catch((pushError) => {
+      console.warn('Nie udało się dokończyć poprzedniego wylogowania PUSH:', pushError?.message || pushError);
+    });
     if (typeof setSessionUser === 'function') setSessionUser(user);
     setAuthResolved(true);
     const refreshResult = await refreshAll(user, { silent: true, preserveJobDetails: true });
@@ -245,6 +249,10 @@ export async function loginUser({
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
+    await reconcilePendingPushLogout({ supabase, sessionUser: data.user }).catch((pushError) => {
+      console.warn('Nie udało się uzgodnić PUSH po zmianie konta:', pushError?.message || pushError);
+    });
+
     setLoginForm({ email, password: '' });
     setSessionUser(data.user || null);
     setAuthResolved(true);
@@ -290,6 +298,10 @@ export async function logoutUser({
   if (typeof window !== 'undefined') {
     sessionStorage.setItem(logoutFlagKey, '1');
   }
+
+  await deactivatePushForLogout({ supabase }).catch((pushError) => {
+    console.warn('Nie udało się wyłączyć PUSH przed wylogowaniem:', pushError?.message || pushError);
+  });
 
   removeSupabaseStorageKeys();
   clearLocalState();

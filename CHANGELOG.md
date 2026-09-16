@@ -1,3 +1,10 @@
+## 10.76
+- aplikacja mobilna dezaktywuje endpoint PUSH przed usunięciem sesji Auth i wykonuje lokalne `PushSubscription.unsubscribe()`,
+- awaria sieci przy logout zapisuje minimalny retry w `localStorage`; po następnym logowaniu ten sam endpoint może przejść z konta A na B tylko przy zgodności endpointu, `p256dh` i `auth`,
+- jeśli lokalny unsubscribe się udał, stare konto jest czyszczone po sieci zamiast przypisywania starego endpointu do nowego konta,
+- desktop/przeglądarka nie są częścią tej zmiany,
+- dodano test źródłowy i Playwright dla awarii sieci oraz przejścia A→B.
+
 ## 10.75
 - Kolejka statusów i danych urządzeń zastępuje poprzednią operację w jednej transakcji IndexedDB; błąd zapisu wycofuje całość i pozostawia poprzedni wpis.
 - Mobilny klient Supabase ma realny AbortController timeout: 45 s dla zwykłych requestów i 90 s dla Storage.
