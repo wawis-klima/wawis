@@ -24,7 +24,9 @@ jobs:
           cache: npm
 
       - name: Apply v10.83 implementation
-        run: python3 scripts/prepare-v1083.py
+        run: |
+          python3 scripts/prepare-v1083.py
+          python3 scripts/prepare-v1083-fix1.py
 
       - name: Bump version to 10.83
         shell: bash
@@ -73,6 +75,7 @@ jobs:
         run: |
           rm .github/workflows/prepare-v1083-security.yml
           rm scripts/prepare-v1083.py
+          rm scripts/prepare-v1083-fix1.py
           git config user.name "wawis-klima"
           git config user.email "wasik@wawis.pl"
           git add -A
