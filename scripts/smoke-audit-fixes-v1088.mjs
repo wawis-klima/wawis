@@ -42,6 +42,8 @@ assert.match(n2Migration, /before insert or update or delete on public\.photos/i
 assert.match(n2Migration, /new\.status\s*=\s*'Zakończone'/i);
 assert.match(n2Migration, /photo_kind\s*=\s*'nameplate'/i);
 assert.match(n2Migration, /unit_ref/i);
+assert.match(n2Migration, /pg_catalog\.substring\(p\.unit_ref,\s*'\^jw-\(\[0-9\]\+\)\$'\)/, 'N2 migration must use the PostgreSQL function-call form of substring when schema-qualified.');
+assert.doesNotMatch(n2Migration, /pg_catalog\.substring\([^\n]*\sfrom\s/i, 'Schema-qualified substring(... from ...) is invalid PostgreSQL syntax.');
 
 const protocol = read('src/mobile791/modules/job-protocol-storage.js');
 assert.match(protocol, /PROTOCOL_WRITE_CONFLICT/);
