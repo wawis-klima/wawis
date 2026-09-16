@@ -1,5 +1,8 @@
 ## 10.74
-- uzupełnij opis zmian dla wersji 10.74
+- Naprawiono zapis protokołów PDF: przy utraconej lub niejednoznacznej odpowiedzi po INSERT/UPDATE aplikacja najpierw odczytuje rekord i nie usuwa nowego pliku, dopóki nie potwierdzi braku zapisu.
+- Przy zastępowaniu protokołu stary PDF jest usuwany dopiero po potwierdzeniu, że rekord wskazuje na nowy plik.
+- Naprawiono analogiczny scenariusz zdjęcia licznika przy tankowaniu; uzgodnienie odbywa się po unikalnej ścieżce `odometer_photo_path`.
+- Dodano test regresji v10.74 dla udanego commitu z utraconą odpowiedzią, błędu odczytu kontrolnego i jednoznacznie nieudanego zapisu.
 
 ## 10.73
 - lewy skrajny odstęp mobilnego paska zmniejszono do 1 px; prawa krawędź pozostaje 2,5 px, a odzyskane miejsce zwiększa odstępy pomiędzy kontrolkami.
