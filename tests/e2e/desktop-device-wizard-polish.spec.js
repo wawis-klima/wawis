@@ -11,8 +11,8 @@ test.describe('desktop administrator — wąski kreator urządzeń premium', () 
   test('okno urządzeń jest wąskie, zwarte i pozbawione szerokich bocznych pasów', async ({ page }, testInfo) => {
     await login(page, ADMIN);
     await page.getByRole('button', { name: /^Montaże$/ }).click();
-    await page.getByRole('button', { name: /Niezrealizowane:/ }).click();
-    await page.getByRole('table').getByText('Klient Testowy A', { exact: true }).first().click();
+    await page.getByRole('button', { name: /W trakcie:/ }).click();
+    await page.getByRole('table').getByText('Klient Testowy B', { exact: true }).first().click();
     await page.getByRole('button', { name: 'Dodaj / edytuj urządzenia i tabliczki' }).click();
 
     const modal = page.locator('.desktopAdminDeviceWizardModal');
