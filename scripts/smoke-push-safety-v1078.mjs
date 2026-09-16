@@ -79,7 +79,7 @@ import vm from 'node:vm';
   assert.match(hook, /reconcilePendingPushLogout/);
   assert.match(hook, /force: true/);
   assert.match(sw, /WAWIS_PUSH_CONTEXT_SET/);
-  assert.match(sw, /WawisPushSafety\.shouldDisplayPush/);
+  assert.match(sw, /WawisPushSafety\?\.shouldDisplayPush/);
 }
 
 console.log('PASS smoke-push-safety-v1078');
