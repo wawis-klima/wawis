@@ -3,8 +3,6 @@ const path = require('node:path');
 const { classifyMicroUi } = require('./micro-ui-policy.cjs');
 
 const root = path.resolve(__dirname, '..');
-const DRIVE_RELEASE_FOLDER_ID = '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S';
-const DRIVE_RELEASE_FOLDER_PATH = 'Aplikacja/Wersje';
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), 'utf8');
@@ -76,10 +74,7 @@ function main() {
   const section = changelogSection(changelog, appVersion);
   assert(section && !/uzupełnij opis/i.test(section), 'NO-GO: CHANGELOG ma placeholder');
 
-  assert(gate.drive_backup?.required === false, 'NO-GO: micro-ui nie może blokować deployu ZIP-em');
-  assert(gate.drive_backup?.deferred === true, 'NO-GO: micro-ui musi oznaczać ZIP jako deferred');
-  assert(gate.drive_backup?.folder_id === DRIVE_RELEASE_FOLDER_ID, 'NO-GO: zły docelowy folder Drive');
-  assert(gate.drive_backup?.folder_path === DRIVE_RELEASE_FOLDER_PATH, 'NO-GO: zła ścieżka Drive');
+  assert(gate.archive?.blocking === false, 'NO-GO: archiwum GitHub nie może blokować micro-ui');
   assert(gate.drive_backup?.file_name === `klima-app-v${appVersion}.zip`, 'NO-GO: zła nazwa przyszłego ZIP-a');
 
   assert(gate.main_protection?.ready_for_main === true, 'NO-GO: micro-ui nie jest gotowe do main');

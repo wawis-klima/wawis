@@ -84,8 +84,8 @@ const microGateSource = fs.readFileSync('scripts/micro-ui-deploy-gate.cjs', 'utf
 new vm.Script(microGateSource, { filename: 'micro-ui-deploy-gate.cjs' });
 assert.match(microGateSource, /classifyMicroUi/);
 assert.match(microGateSource, /HEAD\^1/);
-assert.match(microGateSource, /drive_backup/);
-assert.match(microGateSource, /deferred/);
+assert.match(microGateSource, /archive/);
+assert.match(microGateSource, /blocking/);
 
 const router = fs.readFileSync('scripts/deploy-gate-router.sh', 'utf8');
 assert.match(router, /release_mode/);
@@ -96,9 +96,8 @@ const vercel = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
 assert.match(vercel.buildCommand || '', /deploy-gate-router\.sh/);
 assert.match(vercel.buildCommand || '', /release-policy-gate\.cjs --deploy/);
 
-const archive = fs.readFileSync('.github/workflows/micro-ui-archive.yml', 'utf8');
-assert.match(archive, /branches:\s*\[main\]/);
-assert.match(archive, /micro-ui-policy\.cjs/);
-assert.match(archive, /upload-artifact/);
+assert.equal(fs.existsSync('.github/workflows/micro-ui-archive.yml'), false, 'MICRO UI nie może ponownie wymagać osobnego workflow ZIP/archive');
+assert.equal(fs.existsSync('.github/workflows/post-deploy-checks.yml'), false, 'Nie może wrócić osobny blokujący post-deploy workflow');
+assert.equal(fs.existsSync('.github/workflows/release-checks.yml'), false, 'Nie może wrócić dublujący final release workflow');
 
-console.log('WAWIS release impact smoke OK: fast-ui, targeted, critical + strict MICRO UI CSS-only path');
+console.log('WAWIS release impact smoke OK: fast-ui, targeted, critical + strict MICRO UI CSS-only path, without duplicate archive/post-deploy runners');

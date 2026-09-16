@@ -1,6 +1,6 @@
-# WAWIS — Release checklist 10.63+
+# WAWIS — Release checklist 10.78+
 
-Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHANGELOG.md`, a nie do checklisty.
+Ta checklista dotyczy aktualnego uproszczonego procesu wydania. Historia zmian należy do `CHANGELOG.md`.
 
 ## 1. Start wersji
 
@@ -8,77 +8,56 @@ Ta checklista dotyczy aktualnego procesu wydania. Historia zmian należy do `CHA
 - [ ] Utworzono `release/v<WERSJA>`.
 - [ ] Określono ścieżkę: standard albo `MICRO UI`.
 - [ ] MICRO UI jest dozwolone wyłącznie wtedy, gdy wszystkie istotne zmiany to CSS pod `src/` albo `public/`.
-- [ ] Na początku sprawdzono diagnostykę z ostatnich 24 h i zapisano ją jako informacyjny baseline. Diagnostyka nie blokuje wydania.
+- [ ] Na początku sprawdzono diagnostykę z ostatnich 24 h jako informacyjny baseline; diagnostyka nie blokuje wydania.
 
 ## 2. Praca nad zmianą
 
 - [ ] Zmiany robocze pozostają na gałęzi release, nie na `main`.
-- [ ] PR do `main` uruchamia `WAWIS PR checks`.
-- [ ] `scripts/release-impact.cjs` klasyfikuje zmianę jako `fast-ui`, `targeted` albo `critical`.
-- [ ] Dla kandydata MICRO UI `scripts/micro-ui-policy.cjs` potwierdza CSS-only.
-- [ ] Pliki wygenerowane wyłącznie przez bump wersji i dokumentacja release nie podnoszą samodzielnie profilu ryzyka.
-
-## 3. Profile automatyczne
-
-- `MICRO UI` — tylko CSS aplikacji: bez osobnego workflow przygotowawczego, jeden szybki PR check, jeden merge, jeden Vercel, ZIP po merge.
-- `FAST UI` — pozostała bezpieczna prezentacja, np. statyczne assety: lekkie grupy `ui-fast-*`.
-- `TARGETED` — frontend funkcjonalny: tylko powiązane grupy domenowe + E2E właściwej platformy.
-- `CRITICAL` — backend, Supabase, auth/RLS, storage, synchronizacja, push, deployment lub release automation: pełne grupy + E2E mobile i desktop.
-
-## 4. Standardowy finalny release
-
-Dla wydania innego niż MICRO UI:
-
 - [ ] README pokazuje aktualną wersję i konkretny opis bez placeholdera.
 - [ ] CHANGELOG ma konkretną sekcję aktualnej wersji.
-- [ ] Uruchomiono **WAWIS final release checks** w trybie `auto`.
-- [ ] Każda grupa wymagana przez profil wykonała się jeden raz.
-- [ ] Playwright uruchomił się tylko wtedy, gdy profil go wymagał.
-- [ ] `npm run build`, `verify:bundle`, `verify:release` przeszły.
-- [ ] Powstał ZIP, został zweryfikowany i wysłany na Drive.
-- [ ] `main_protection.final_release_run_id` zawiera ID zielonego finalnego workflow.
-- [ ] `main_protection.ready_for_main=true` ustawiono po wszystkich powyższych krokach.
-- [ ] Diagnostyka nie jest warunkiem `ready_for_main` ani GO/NO-GO.
+- [ ] `RELEASE-GATE.json` wskazuje właściwą wersję i gałąź release.
+- [ ] `scripts/release-impact.cjs` klasyfikuje zmianę jako `fast-ui`, `targeted` albo `critical`.
+- [ ] Dla kandydata MICRO UI `scripts/micro-ui-policy.cjs` potwierdza CSS-only.
+
+## 3. Jedyna obowiązkowa bramka CI
+
+- [ ] Otworzono PR z `release/v<WERSJA>` do `main`.
+- [ ] PR uruchomił `WAWIS PR checks / targeted-checks`.
+- [ ] Zakres testów został dobrany automatycznie do realnego ryzyka zmian.
+- [ ] `FAST UI` uruchomił lekkie regresje UI.
+- [ ] `TARGETED` uruchomił powiązane grupy domenowe i potrzebne E2E.
+- [ ] `CRITICAL` uruchomił rozszerzone grupy krytyczne i wymagane E2E.
+- [ ] `WAWIS PR checks / targeted-checks` jest zielony.
+- [ ] Nie uruchamiamy drugiego obowiązkowego workflow powtarzającego te same kontrole.
+
+## 4. Gotowość do `main`
+
+- [ ] `main_protection.ready_for_main=true`.
+- [ ] `main_protection.source_branch` wskazuje `release/v<WERSJA>`.
+- [ ] Nie wymagamy `final_release_run_id`, ZIP-a ani Google Drive.
+- [ ] GitHub `main` + historia commitów są archiwum wersji.
+- [ ] Merge do `main` wykonujemy jeden raz.
 
 ## 5. MICRO UI — szybka ścieżka
 
 - [ ] Wszystkie istotne pliki są `.css` pod `src/` albo `public/`.
-- [ ] Nie tworzymy żadnego per-wersja workflow typu `micro prepare` ani `vXX-micro-prepare.yml`.
-- [ ] Wersja, README/CHANGELOG i `RELEASE-GATE.json` są aktualizowane bezpośrednio na `release/v<WERSJA>`.
-- [ ] `RELEASE-GATE.json.release_mode` ma `micro-ui`.
-- [ ] `RELEASE-GATE.json.micro_ui.css_only=true`.
-- [ ] `drive_backup.required=false` oraz `drive_backup.deferred=true`.
-- [ ] README i CHANGELOG opisują nową wersję bez placeholdera.
-- [ ] Otworzono PR z `release/v<WERSJA>` do `main`.
-- [ ] Wykonał się **jeden** `WAWIS PR checks / targeted-checks` i jest zielony.
-- [ ] PR check klasyfikuje efektywny diff, więc automatyczne pliki wersji nie uruchamiają grup `infra` ani `push`.
-- [ ] Nie uruchamiamy `WAWIS final release checks` przed merge.
-- [ ] Nie czekamy na ZIP/Drive przed merge.
-- [ ] Merge do `main` wykonujemy tylko raz.
-- [ ] Vercel wykonuje jeden produkcyjny deploy.
-- [ ] `micro-ui-deploy-gate.cjs` ponownie potwierdza CSS-only na realnym diffie produkcyjnym.
-- [ ] Po merge `WAWIS micro UI archive` tworzy ZIP jako GitHub Artifact; Drive można uzupełnić później bez kolejnego deployu.
+- [ ] Nie ma zmian JS/TS/JSX, Supabase, push, auth, storage ani konfiguracji runtime.
+- [ ] Wersja, README/CHANGELOG i `RELEASE-GATE.json` są aktualne.
+- [ ] `archive.blocking=false`.
+- [ ] Wykonał się jeden zielony `WAWIS PR checks / targeted-checks`.
+- [ ] Nie czekamy na ZIP, Drive ani osobny workflow archiwizujący.
+- [ ] `micro-ui-deploy-gate.cjs` ponownie potwierdza CSS-only podczas produkcyjnego deployu.
 
-## 6. `main` i produkcja
+## 6. Produkcja
 
-- [ ] Źródłem merge/pusha jest `release/v<WERSJA>`.
-- [ ] `main` nie zawiera dodatkowych roboczych zmian.
 - [ ] Vercel przed buildem uruchamia `vercel-deploy-guard.cjs` i `deploy-gate-router.sh`.
 - [ ] Dla standardu router wybiera `release-policy-gate.cjs --deploy`.
 - [ ] Dla MICRO UI router wybiera `micro-ui-deploy-gate.cjs`.
-- [ ] Produkcyjny deployment zakończył się sukcesem.
+- [ ] Deployment Vercela dla commita `main` zakończył się sukcesem.
 
-## 7. Post-deploy
+## 7. Po wdrożeniu
 
-Standardowy release:
-
-- [ ] Uruchomiono `WAWIS post-deploy checks` albo `scripts/post-deploy-check.mjs`.
-- [ ] Produkcyjny `/app-version.json` odpowiada wersji wydania — to jest warunek twardy.
-- [ ] Produkcyjny `/push-sw.js` zawiera `wawis-app-shell-v<WERSJA>` — to jest warunek twardy.
-- [ ] Diagnostyka jest zapisana jako raport informacyjny; warning/error nie blokuje zakończenia wydania.
-- [ ] Jeśli runner nie ma sekretów Supabase, live-check wersji i Service Workera nadal może zakończyć się GO.
-
-MICRO UI:
-
-- [ ] Weryfikacja live i diagnostyki może odbyć się asynchronicznie i nie blokuje CSS-only deployu.
-- [ ] Odroczony ZIP nie wywołuje kolejnego merge ani Vercela.
+- [ ] Zielony deployment Vercela zamyka obowiązkową ścieżkę release.
+- [ ] Opcjonalny szybki odczyt `/app-version.json` i Service Workera może potwierdzić wersję, ale nie tworzy osobnej bramki.
+- [ ] Nie tworzymy per-wersja workflow/gałęzi do post-deploy checku.
+- [ ] Diagnostyka pozostaje raportem informacyjnym.

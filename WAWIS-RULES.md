@@ -7,10 +7,10 @@ Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji
 - Punktem startowym jest ostatni poprawny `main`.
 - Dla każdej wersji tworzymy `release/v<WERSJA>` i wszystkie zmiany robocze wykonujemy tam.
 - Nie robimy serii roboczych commitów bezpośrednio na `main`.
-- Domyślny tryb normalnego finalnego wydania to `auto`; ręczne `mobile`, `desktop` albo `full` pozostają trybem awaryjnym.
-- Normalne wydanie trafia do `main` dopiero po testach, finalnym ZIP i zweryfikowanym backupie Drive.
-- Wyjątek stanowi ściśle ograniczony tryb `MICRO UI`, opisany niżej: CSS-only, jeden PR check, jeden merge, jeden Vercel; ZIP powstaje po merge i nie blokuje produkcji.
-- Push/merge do `main` jest sygnałem produkcyjnego wdrożenia i powinien wystąpić zasadniczo raz dla gotowej wersji.
+- GitHub (`main` + historia commitów) jest źródłem prawdy i archiwum każdej wersji.
+- Google Drive nie jest używany w procesie release.
+- ZIP jest opcjonalny i tworzony wyłącznie na żądanie; brak ZIP-a nie blokuje testów, merge ani wdrożenia.
+- Merge do `main` wykonujemy raz dla gotowej wersji i jest on sygnałem produkcyjnego wdrożenia Vercela.
 
 ## 2. Automatyczna klasyfikacja zmian
 
@@ -18,112 +18,80 @@ Ten plik jest nadrzędnym źródłem zasad dla każdej kolejnej wersji aplikacji
 
 - `FAST UI` — bezpieczna warstwa prezentacji, np. CSS i statyczne assety.
 - `TARGETED` — zmiana funkcjonalna frontendu bez obszarów krytycznych.
-- `CRITICAL` — backend, Supabase, RLS/uprawnienia, auth, storage, synchronizacja, push, konfiguracja wdrożenia albo sama automatyka release.
+- `CRITICAL` — backend, Supabase, RLS/uprawnienia, auth, storage, synchronizacja, push, konfiguracja wdrożenia albo automatyka release.
 
-Dodatkowo `scripts/micro-ui-policy.cjs` wyodrębnia z `FAST UI` jeszcze węższy profil `MICRO UI`:
+`scripts/micro-ui-policy.cjs` wyodrębnia z `FAST UI` jeszcze węższy profil `MICRO UI`:
 
-- wszystkie istotne pliki muszą być plikami `.css` pod `src/` albo `public/`,
+- wszystkie istotne pliki muszą być `.css` pod `src/` albo `public/`,
 - nie wolno zmieniać JSX/JS/TS, logiki, Supabase, push, konfiguracji runtime ani backendu,
-- jeśli choć jeden istotny plik nie spełnia reguły CSS-only, wydanie automatycznie wraca do standardowej ścieżki.
+- jeżeli choć jeden istotny plik nie spełnia reguły CSS-only, wydanie wraca do standardowej ścieżki.
 
 Pliki wygenerowane wyłącznie przez podbicie wersji oraz dokumentacja wydania nie podnoszą samodzielnie profilu ryzyka.
 
-## 3. Testy — mniej, ale znaczące
+## 3. Testy — jedna bramka przed merge
 
-### PR / praca nad wersją
-
-- `.github/workflows/pr-checks.yml` wykrywa zmienione pliki.
+- PR z `release/v<WERSJA>` do `main` uruchamia `.github/workflows/pr-checks.yml`.
+- `WAWIS PR checks / targeted-checks` jest podstawową i obowiązkową bramką CI przed merge.
+- `scripts/release-impact.cjs` dobiera zakres testów do realnego ryzyka zmian.
+- `FAST UI` uruchamia lekkie regresje UI.
+- `TARGETED` uruchamia powiązane grupy domenowe i E2E tylko tam, gdzie są potrzebne.
+- `CRITICAL` uruchamia rozszerzone grupy dla obszarów krytycznych oraz wymagane E2E.
 - Nowy commit anuluje starszy przebieg tego samego PR (`cancel-in-progress`).
-- PR-check nie wykonuje finalnego produkcyjnego builda ani pełnego Playwrighta.
-- Dla MICRO UI uruchamiany jest tylko jeden szybki zestaw regresji UI; nie uruchamiamy osobno finalnego runnera release.
-
-### Normalne finalne wydanie
-
-- `.github/workflows/release-checks.yml` domyślnie działa w trybie `auto`.
-- Każda wybrana grupa regresji wykonuje się jeden raz.
-- Playwright uruchamia się wyłącznie wtedy, gdy wymaga tego profil; maksymalnie raz na platformę.
-- Produkcyjny `build`, `verify:bundle`, `verify:release`, utworzenie ZIP-a i kontrola ZIP-a wykonują się po jednym razie.
-- Regresje są grupowane m.in. jako `jobs`, `photos`, `protocol`, `roles`, `push`, `fuel`, `nameplates`, `mobile`, `desktop` oraz lekkie grupy `ui-fast-*`.
+- Nie uruchamiamy drugiego obowiązkowego workflow „final release” powtarzającego te same testy.
+- Dodatkowy pełny test można uruchomić świadomie przy nietypowej zmianie, ale nie jest standardową zależnością release.
 
 ### MICRO UI
 
-- brak `WAWIS final release checks` przed merge,
-- brak Playwrighta, chyba że konkretna poprawka ma osobny test wizualny dodany świadomie,
-- brak blokującego ZIP/Drive przed merge,
-- po zielonym `WAWIS PR checks / targeted-checks` następuje jeden merge do `main`,
-- Vercel wykonuje jeden produkcyjny build,
-- `.github/workflows/micro-ui-archive.yml` tworzy ZIP asynchronicznie po merge jako GitHub Artifact.
+- CSS-only,
+- jeden szybki `WAWIS PR checks / targeted-checks`,
+- jeden merge do `main`,
+- jeden produkcyjny Vercel,
+- bez Playwrighta, chyba że dana poprawka ma świadomie dodany test wizualny,
+- bez ZIP/Drive i bez osobnego workflow archiwizującego.
 
 ## 4. Diagnostyka
 
-Diagnostykę sprawdzamy **na początku pracy nad wersją**, żeby wiedzieć, czy produkcja ma już istniejące problemy zanim zaczniemy zmiany. Wynik można zapisać jako baseline w `RELEASE-GATE.json`.
+Diagnostykę sprawdzamy na początku pracy nad wersją jako informacyjny baseline. Nie jest elementem GO/NO-GO i nie blokuje PR, merge, Vercela ani zamknięcia wersji.
 
-Diagnostyka jest od teraz **informacyjna**. Nie jest elementem GO/NO-GO finalnego release, nie blokuje merge do `main`, Vercela ani zamknięcia post-deploy. Powód: zdarzenia mogą zostać dosłane z opóźnieniem przez starszą wersję aplikacji i dawać fałszywy alarm po wdrożeniu.
-
-Po produkcji diagnostykę nadal zbieramy i analizujemy jako raport. Realne nowe błędy trafiają do kolejnej poprawki, ale sam raport nie zatrzymuje wydanej wersji.
+Po wdrożeniu diagnostyka może zostać przejrzana jako raport. Realne nowe błędy trafiają do kolejnej poprawki, ale raport nie zatrzymuje już wydanej wersji.
 
 ## 5. Bramka GO / NO-GO
 
-### Normalne wydanie
+Dla standardowego wydania wymagamy:
 
-Wymaga spójnej wersji, README/CHANGELOG bez placeholderów, wymaganych testów, produkcyjnego builda, `verify:bundle`, `verify:release`, finalnego ZIP-a, zweryfikowanego backupu Drive oraz `ready_for_main=true`.
+- spójnej wersji w aktywnych plikach,
+- README i CHANGELOG bez placeholderów,
+- właściwej gałęzi `release/v<WERSJA>`,
+- `main_protection.ready_for_main=true`,
+- zielonego `WAWIS PR checks / targeted-checks` przed merge,
+- poprawnego produkcyjnego deploy gate Vercela.
 
-**Diagnostyka nie jest warunkiem bramki GO/NO-GO.**
+Nie wymagamy `final_release_run_id`, ZIP-a, Google Drive ani osobnego dowodu post-deploy.
 
-### MICRO UI
+Dla `MICRO UI` `scripts/micro-ui-deploy-gate.cjs` dodatkowo ponownie potwierdza CSS-only na realnym diffie produkcyjnym.
 
-`scripts/micro-ui-deploy-gate.cjs` przed buildem Vercela wymaga:
-
-1. spójnej wersji we wszystkich aktywnych plikach,
-2. README i CHANGELOG bez placeholderów,
-3. `release_mode=micro-ui`,
-4. `drive_backup.required=false` i `deferred=true`,
-5. właściwej gałęzi `release/v<WERSJA>`,
-6. wymagania zielonego `WAWIS PR checks / targeted-checks`,
-7. niezależnej ponownej klasyfikacji diffu produkcyjnego jako CSS-only,
-8. identycznej listy plików CSS w diffie i `RELEASE-GATE.json`.
-
-Jeżeli produkcyjny diff zawiera coś poza dozwolonym CSS, MICRO UI dostaje `NO-GO` i nie może ominąć standardowej bramki.
-
-## 6. Google Drive i archiwum
-
-Normalne wydanie ma finalny ZIP w `Aplikacja/Wersje`, folder ID `1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S`, pod nazwą `klima-app-v<WERSJA>.zip`, zweryfikowany przed merge.
-
-Dla MICRO UI ZIP nie blokuje wdrożenia. Po merge workflow `WAWIS micro UI archive` tworzy `klima-app-v<WERSJA>.zip` jako GitHub Artifact. Kopię na Drive można uzupełnić później bez uruchamiania kolejnego deployu produkcyjnego.
-
-## 7. Ochrona `main` i produkcji
+## 6. Ochrona `main` i produkcji
 
 - `main` jest przeznaczony wyłącznie dla gotowych wydań.
-- Normalny release wymaga finalnego runu i backupu Drive.
-- MICRO UI wymaga CSS-only oraz zielonego `WAWIS PR checks / targeted-checks`; finalny runner i Drive nie są wymagane przed merge.
 - GitHub Ruleset powinien wymuszać PR do `main`, zielony `WAWIS PR checks / targeted-checks`, blokadę force-push i blokadę usuwania `main`.
 - Vercel uruchamia `node scripts/vercel-deploy-guard.cjs`, następnie `scripts/deploy-gate-router.sh`, a dopiero potem build.
 - Router wybiera standardowy `release-policy-gate.cjs --deploy` albo `micro-ui-deploy-gate.cjs` na podstawie `RELEASE-GATE.json.release_mode`.
-- `vercel-deploy-guard.cjs` dopuszcza wyłącznie środowisko `production` i gałąź `main`.
-- Automatyczne deploye Vercela są wyłączone dla wszystkich gałęzi roboczych, także nazw zawierających `/` takich jak `release/vX`.
-- Jedyną gałęzią, która może automatycznie uruchomić Vercel, jest `main`; jeden merge gotowego wydania oznacza jeden produkcyjny deploy.
+- Automatyczne deploye Vercela dla gałęzi roboczych są wyłączone; produkcję uruchamia `main`.
 
-## 8. POST-DEPLOY EVIDENCE
+## 7. Kontrola po wdrożeniu
 
-Dla normalnego wydania po wdrożeniu uruchamiamy `.github/workflows/post-deploy-checks.yml` albo równoważny `scripts/post-deploy-check.mjs`.
+Po merge wymagany jest zielony deployment Vercela dla commita `main`.
 
-Twarda weryfikacja post-deploy potwierdza wyłącznie:
+Odczyt `/app-version.json` i cache Service Workera może zostać wykonany jako szybki test pomocniczy, ale nie tworzy drugiej blokującej bramki release. Nie tworzymy per-wersja workflow ani gałęzi tylko po to, żeby powtórzyć kontrolę po poprawnym deployu.
 
-- produkcyjny `/app-version.json` ma właściwą wersję,
-- produkcyjny Service Worker zawiera właściwy cache `wawis-app-shell-v<WERSJA>`.
+## 8. Stała kolejność
 
-Diagnostyka Supabase jest dołączana do dowodu jako **informacyjny raport** i nie może zmienić post-deploy z GO na NO-GO. Brak sekretów Supabase w runnerze również nie blokuje live-checku.
+Standard:
 
-Dla MICRO UI ten dowód pozostaje asynchroniczny i nie blokuje wejścia CSS-only na produkcję.
-
-## 9. Stała kolejność
-
-Normalny release:
-
-`DIAGNOSTYKA STARTOWA (INFO) -> RELEASE BRANCH -> ZMIANA -> PR CHECKS -> FINAL RELEASE -> BUILD/VERIFY/ZIP -> DRIVE -> MAIN -> VERCEL -> LIVE VERSION/SW -> DIAGNOSTYKA RAPORTOWA (INFO)`
+`DIAGNOSTYKA STARTOWA (INFO) -> RELEASE BRANCH -> ZMIANA -> PR -> TARGETED PR CHECK -> MAIN -> VERCEL -> OPCJONALNY SZYBKI LIVE CHECK`
 
 MICRO UI:
 
-`RELEASE BRANCH -> CSS ONLY -> VERSION/GATE -> ONE PR CHECK -> MAIN -> ONE VERCEL -> DEFERRED ZIP/POST-CHECK`
+`RELEASE BRANCH -> CSS ONLY -> VERSION/GATE -> ONE PR CHECK -> MAIN -> ONE VERCEL`
 
 Nie używamy MICRO UI do zmian funkcjonalnych ani infrastrukturalnych.

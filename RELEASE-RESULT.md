@@ -1,7 +1,7 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.77
+- 10.78
 
 ## Tryb
 - auto:fast-ui/mobile

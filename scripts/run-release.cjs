@@ -17,6 +17,7 @@ function parseOptions(args = process.argv.slice(2)) {
     dryRun: args.includes('--dry-run'),
     bumpVersion: args.includes('--bump-version') && !args.includes('--skip-version-bump'),
     baseRef: valueAfter(args, '--base-ref', process.env.WAWIS_RELEASE_BASE_REF || 'origin/main'),
+    packageArtifact: args.includes('--package'),
   };
 }
 
@@ -80,13 +81,15 @@ function buildPlan(options, release) {
     plan.push({ label: 'Verify', command: 'npm run verify:release' });
   }
 
-  plan.push({ label: 'Package', command: 'npm run zip:release' });
-  plan.push({
-    label: 'Package',
-    command: isSandbox
-      ? 'node scripts/verify-release.cjs --require-zip --allow-no-build'
-      : 'node scripts/verify-release.cjs --require-zip',
-  });
+  if (options.packageArtifact) {
+    plan.push({ label: 'Package', command: 'npm run zip:release' });
+    plan.push({
+      label: 'Package',
+      command: isSandbox
+        ? 'node scripts/verify-release.cjs --require-zip --allow-no-build'
+        : 'node scripts/verify-release.cjs --require-zip',
+    });
+  }
 
   return plan;
 }

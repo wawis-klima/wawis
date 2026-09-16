@@ -2,8 +2,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const DRIVE_RELEASE_FOLDER_ID = '1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S';
-const DRIVE_RELEASE_FOLDER_PATH = 'Aplikacja/Wersje';
 
 function read(file) {
   return fs.readFileSync(path.join(root, file), 'utf8');
@@ -38,44 +36,9 @@ function getChangelogSection(changelog, version) {
   return String(changelog.match(new RegExp(`^## ${escaped}\\r?\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, 'm'))?.[1] || '').trim();
 }
 
-function validDriveBackup(entry, appVersion) {
-  return Boolean(
-    entry &&
-    entry.required === true &&
-    entry.folder_id === DRIVE_RELEASE_FOLDER_ID &&
-    entry.folder_path === DRIVE_RELEASE_FOLDER_PATH &&
-    entry.file_name === `klima-app-v${appVersion}.zip` &&
-    typeof entry.file_id === 'string' && entry.file_id.trim() &&
-    Number(entry.size_bytes) > 0 &&
-    entry.uploaded === true &&
-    typeof entry.uploaded_at === 'string' && entry.uploaded_at.trim() &&
-    entry.verified === true
-  );
-}
-
-function readEvidence(args) {
-  const index = args.indexOf('--evidence');
-  const value = index >= 0 ? args[index + 1] : '';
-  assert(value, 'NO-GO: --post wymaga --evidence <plik.json>');
-  const evidencePath = path.resolve(root, value);
-  assert(fs.existsSync(evidencePath), `NO-GO: brak pliku dowodowego ${value}`);
-  return JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
-}
-
-function verifyEvidence(evidence, appVersion) {
-  assert(String(evidence.version || '') === appVersion, `NO-GO: dowód post-deploy dotyczy ${evidence.version || 'brak'}, oczekiwano ${appVersion}`);
-  assert(typeof evidence.checked_at === 'string' && evidence.checked_at.trim(), 'NO-GO: dowód post-deploy nie ma czasu kontroli');
-  assert(typeof evidence.production_url === 'string' && /^https:\/\//.test(evidence.production_url), 'NO-GO: dowód post-deploy nie ma produkcyjnego URL');
-  assert(evidence.production?.version_verified === true, 'NO-GO: produkcyjny app-version.json nie potwierdza wersji');
-  assert(evidence.production?.service_worker_verified === true, 'NO-GO: produkcyjny Service Worker nie potwierdza cache wersji');
-  assert(evidence.production?.app_version === appVersion, 'NO-GO: produkcyjny numer wersji różni się od release');
-  assert(evidence.production?.service_worker_cache === `wawis-app-shell-v${appVersion}`, 'NO-GO: produkcyjny cache Service Workera ma złą wersję');
-}
-
 function main() {
   const args = process.argv.slice(2);
   const deployMode = args.includes('--deploy');
-  const postMode = args.includes('--post');
 
   const appVersion = String(readJson('app-version.json').version || '').trim();
   const publicAppVersion = String(readJson('public/app-version.json').version || '').trim();
@@ -98,8 +61,9 @@ function main() {
   assert(String(gate.release_branch || '') === `release/v${appVersion}`, `NO-GO: release_branch musi być release/v${appVersion}`);
 
   assert(rules.includes('GAŁĄŹ RELEASE'), 'NO-GO: WAWIS-RULES.md nie wymaga gałęzi release');
-  assert(rules.includes('POST-DEPLOY EVIDENCE'), 'NO-GO: WAWIS-RULES.md nie opisuje dowodu post-deploy');
-  assert(checklist.includes('WAWIS final release checks'), 'NO-GO: checklista nie wskazuje jednego finalnego workflow');
+  assert(rules.includes('WAWIS PR checks / targeted-checks'), 'NO-GO: WAWIS-RULES.md nie wskazuje obowiązkowej bramki PR');
+  assert(rules.includes('zielony deployment Vercela'), 'NO-GO: WAWIS-RULES.md nie wymaga zielonego deploymentu Vercela');
+  assert(checklist.includes('Jedyna obowiązkowa bramka CI'), 'NO-GO: checklista nie opisuje uproszczonej bramki CI');
   assert(String(vercel.buildCommand || '').includes('release-policy-gate.cjs --deploy'), 'NO-GO: Vercel nie wymaga deploy gate');
 
   const readmeCurrent = extractReadmeCurrent(readme);
@@ -111,23 +75,12 @@ function main() {
   assert(lastFixBody && !/uzupełnij opis/i.test(lastFixBody), 'NO-GO: README ma placeholder aktualnej poprawki');
   assert(changelogSection && !/uzupełnij opis/i.test(changelogSection), 'NO-GO: CHANGELOG ma brak/placeholder aktualnej wersji');
 
-  const driveBackup = gate.drive_backup || {};
-  assert(driveBackup.required === true, 'NO-GO: RELEASE-GATE nie wymaga backupu Drive');
-  assert(driveBackup.folder_id === DRIVE_RELEASE_FOLDER_ID, 'NO-GO: zły folder ID Google Drive');
-  assert(driveBackup.folder_path === DRIVE_RELEASE_FOLDER_PATH, 'NO-GO: zła ścieżka Google Drive');
-
-  if (deployMode || postMode) {
-    assert(validDriveBackup(driveBackup, appVersion), `NO-GO: brak zweryfikowanego klima-app-v${appVersion}.zip na Google Drive`);
+  if (deployMode) {
     assert(gate.main_protection?.ready_for_main === true, 'NO-GO: release nie jest oznaczony jako gotowy do main');
     assert(String(gate.main_protection?.source_branch || '') === `release/v${appVersion}`, 'NO-GO: źródło wdrożenia nie jest właściwą gałęzią release');
-    assert(typeof gate.main_protection?.final_release_run_id === 'string' && gate.main_protection.final_release_run_id.trim(), 'NO-GO: brak ID zielonego finalnego release run');
   }
 
-  if (postMode) {
-    verifyEvidence(readEvidence(args), appVersion);
-  }
-
-  const mode = postMode ? 'post-deploy' : deployMode ? 'deploy' : 'pre-release';
+  const mode = deployMode ? 'deploy' : 'pre-release';
   console.log(`WAWIS RELEASE GATE: GO — ${appVersion} (${mode})`);
   if (gate.baseline_diagnostics || gate.predeploy_diagnostics || gate.postdeploy_diagnostics) {
     console.log('Diagnostyka jest informacyjna i nie bierze udziału w GO/NO-GO wydania.');

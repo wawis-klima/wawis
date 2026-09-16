@@ -7,6 +7,12 @@ const assert = (condition, message) => {
   if (!condition) throw new Error(message);
 };
 const count = (source, pattern) => (source.match(pattern) || []).length;
+const exportedAsyncFunctionBody = (source, name) => {
+  const start = source.indexOf(`export async function ${name}`);
+  if (start < 0) return '';
+  const next = source.indexOf('\nexport async function ', start + 1);
+  return source.slice(start, next < 0 ? source.length : next);
+};
 
 const desktopApp = read('src/App.jsx');
 const mobileApp = read('src/mobile791/App.jsx');
@@ -37,7 +43,10 @@ for (const [label, hook] of [['desktop', desktopPushHook], ['mobile', mobilePush
 
 for (const [label, push] of [['desktop', desktopPush], ['mobile', mobilePush]]) {
   assert(push.includes('PUSH_SERVER_TOUCH_INTERVAL_MS = 6 * 60 * 60 * 1000'), `${label}: brak ograniczenia zapisu last_seen_at`);
-  assert(count(push, /\.select\("id, is_active, last_seen_at"\)/g) === 1, `${label}: kontrola PUSH nadal wykonuje drugi odczyt tego samego rekordu`);
+  const statusBody = exportedAsyncFunctionBody(push, 'getPushStatus');
+  assert(statusBody, `${label}: brak getPushStatus`);
+  assert(count(statusBody, /\.from\("push_subscriptions"\)/g) === 1, `${label}: kontrola PUSH wykonuje więcej niż jeden odczyt push_subscriptions`);
+  assert(count(statusBody, /\.select\("id, is_active, last_seen_at(?:, ownership_generation)?"\)/g) === 1, `${label}: kontrola PUSH ma nieoczekiwany zestaw pól odczytu stanu endpointu`);
 }
 
 assert(desktopApp.includes('DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000'), 'Centrum 360: brak pięciominutowego cache liczników');

@@ -1,3 +1,12 @@
+## 10.78
+- P0/F2: własność endpointu PUSH jest synchronizowana atomowo w PostgreSQL z advisory lock i blokadą aktywnego właściciela.
+- P0/F3: każdy push ma odbiorcę i generację endpointu; Service Worker odrzuca wiadomości starego konta/generacji, a treść systemowa nie zawiera adresu ani danych klienta.
+- P1/F4: logout unieważnia trwający sync, tworzy tombstone i spóźnione sync/disable nie mogą reaktywować ani wyłączyć endpointu nowego konta.
+- P2/F9: pending cleanup ma trwałą kolejkę, backoff i retry przy loginie, online oraz healthcheck.
+- P2/F10: dodano regresję 10.78 dla recipient/generation guard, durable retry oraz źródeł atomowego RPC; atomowy model DB został dodatkowo sprawdzony na produkcyjnym PostgreSQL w transakcji ROLLBACK.
+- PUSH jest rejestrowany tylko w zainstalowanej aplikacji/PWA; zwykła przeglądarka nie tworzy nowych subskrypcji.
+- Release: Google Drive i obowiązkowy ZIP usunięto z bramki; po merge blokuje wyłącznie zielony deployment Vercela, a live version/SW jest kontrolą pomocniczą.
+
 ## 10.77
 - P0: po utraconej odpowiedzi/timeout zapisu protokołu pusty readback nie powoduje już usunięcia nowego PDF.
 - P0: analogicznie zdjęcie licznika przy tankowaniu pozostaje w Storage przy niejednoznacznym wyniku INSERT.

@@ -96,7 +96,7 @@ export async function restoreAuthSession({
 
   const user = data.session?.user || null;
   if (user) {
-    await reconcilePendingPushLogout({ supabase, sessionUser: user }).catch((pushError) => {
+    await reconcilePendingPushLogout({ supabase, sessionUser: user, force: true }).catch((pushError) => {
       console.warn('Nie udało się dokończyć poprzedniego wylogowania PUSH:', pushError?.message || pushError);
     });
     if (typeof setSessionUser === 'function') setSessionUser(user);
@@ -249,7 +249,7 @@ export async function loginUser({
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
 
-    await reconcilePendingPushLogout({ supabase, sessionUser: data.user }).catch((pushError) => {
+    await reconcilePendingPushLogout({ supabase, sessionUser: data.user, force: true }).catch((pushError) => {
       console.warn('Nie udało się uzgodnić PUSH po zmianie konta:', pushError?.message || pushError);
     });
 
