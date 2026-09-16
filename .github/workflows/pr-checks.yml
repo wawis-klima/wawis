@@ -29,7 +29,19 @@ jobs:
           cache: npm
 
       - name: Prepare 10.84 fixes and version metadata
-        run: node scripts/prepare-v1084.cjs
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/prepare-v1084.cjs')
+          source = path.read_text()
+          old = "patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', '\\n\\n  const scheduleBackgroundJobDetailsReload', (block) => {"
+          new = "patchBlock(path, '  const reloadJobDetails = React.useCallback(async (jobId, options = {}) => {', mobile ? '\\n\\n  const scheduleBackgroundJobDetailsReload' : '\\n\\n  const reloadJobSummary', (block) => {"
+          if old not in source:
+              raise SystemExit('Nie znaleziono oczekiwanego wzorca patchera reloadJobDetails')
+          path.write_text(source.replace(old, new, 1))
+          PY
+          node scripts/prepare-v1084.cjs
 
       - name: Commit candidate
         shell: bash
