@@ -1,0 +1,61 @@
+name: WAWIS apply 10.87 push fixes r2
+
+on:
+  push:
+    branches:
+      - release/v10.87
+    paths:
+      - .github/workflows/apply-v1087-r2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Remove superseded smoke patch from one-shot helper
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'scripts/apply-v1087-once.cjs';
+          let source = fs.readFileSync(file, 'utf8');
+          const start = source.indexOf('// Existing v10.83 smoke expected');
+          const end = source.indexOf('// 10.87 regression must run', start);
+          if (start < 0 || end <= start) throw new Error('Cannot locate superseded helper block');
+          source = source.slice(0, start) + source.slice(end);
+          fs.writeFileSync(file, source, 'utf8');
+          NODE
+      - name: Apply deterministic fixes
+        run: node scripts/apply-v1087-once.cjs
+      - name: Exact audit regression
+        run: node scripts/smoke-audit-fixes-v1087.mjs
+      - name: Push regression group
+        run: node scripts/run-test-group.cjs push
+      - name: Production build
+        run: npm run build
+      - name: Remove one-shot helpers
+        run: rm scripts/apply-v1087-once.cjs .github/workflows/apply-v1087.yml .github/workflows/apply-v1087-r2.yml
+      - name: Commit verified candidate
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 1
+          fi
+          git commit -m "fix: close 10.87 push lifecycle audit findings"
+          git push origin HEAD:release/v10.87
