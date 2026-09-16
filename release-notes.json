@@ -1,11 +1,9 @@
 {
-  "version": "10.75",
-  "summary": "Wersja 10.75 zabezpiecza mobilną synchronizację offline przed utratą wpisu i przed requestami, które mogły pozostać zawieszone bez końca.",
+  "version": "10.77",
+  "summary": "P0 storage safety: nie usuwamy PDF protokołu ani zdjęcia licznika po niejednoznacznym wyniku zapisu DB.",
   "changes": [
-    "Kolejka statusów i danych urządzeń zastępuje poprzednią operację w jednej transakcji IndexedDB; błąd zapisu wycofuje całość i pozostawia poprzedni wpis.",
-    "Mobilny klient Supabase ma realny AbortController timeout: 45 s dla zwykłych requestów i 90 s dla Storage.",
-    "Timeout i AbortError są traktowane jako przejściowy błąd sieciowy, więc synchronizacja oraz zdjęcia wracają do retry zamiast blokować sesję.",
-    "Niejednoznaczny commit po zerwanym requestcie jest bezpieczny dzięki istniejącej idempotencji synchronizacji i uzgadnianiu zdjęć po stałej ścieżce Storage.",
-    "Dodano regresję źródłową timeoutu oraz mobilny test Playwright z wymuszonym QuotaExceededError, który potwierdza rollback atomowej transakcji IndexedDB."
+    "Pusty readback po utraconej odpowiedzi nie jest dowodem braku commitu.",
+    "Nowy plik pozostaje w Storage przy wyniku niejednoznacznym.",
+    "Test 10.77 odtwarza późny commit po pustym readbacku dla protokołu i tankowania."
   ]
 }

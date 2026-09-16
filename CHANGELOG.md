@@ -1,3 +1,9 @@
+## 10.77
+- P0: po utraconej odpowiedzi/timeout zapisu protokołu pusty readback nie powoduje już usunięcia nowego PDF.
+- P0: analogicznie zdjęcie licznika przy tankowaniu pozostaje w Storage przy niejednoznacznym wyniku INSERT.
+- Dodano regresję odtwarzającą commit DB następujący dopiero po pustym readbacku dla PDF i paliwa.
+- Zaktualizowano wcześniejszy test 10.74: bezpieczeństwo danych ma pierwszeństwo przed automatycznym cleanupem osieroconych plików.
+
 ## 10.76
 - aplikacja mobilna dezaktywuje endpoint PUSH przed usunięciem sesji Auth i wykonuje lokalne `PushSubscription.unsubscribe()`,
 - awaria sieci przy logout zapisuje minimalny retry w `localStorage`; po następnym logowaniu ten sam endpoint może przejść z konta A na B tylko przy zgodności endpointu, `p256dh` i `auth`,

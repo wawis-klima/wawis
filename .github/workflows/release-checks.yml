@@ -3,7 +3,7 @@ name: WAWIS final release checks
 on:
   push:
     branches:
-      - release/v10.76
+      - release/v10.77
   workflow_dispatch:
     inputs:
       scope:
@@ -64,7 +64,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: wawis-final-release-v10.76
+          name: wawis-final-release-v10.77
           path: |
             releases/klima-app-v*.zip
             RELEASE-RESULT.md

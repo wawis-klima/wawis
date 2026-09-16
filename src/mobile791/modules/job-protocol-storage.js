@@ -192,9 +192,8 @@ export async function storeJobProtocol({
         }
         return reconciliation.record;
       }
-      if (reconciliation.confirmed) {
-        removeProtocolFilesBestEffort(supabase, [storagePath]);
-      }
+      // 10.77: po niejednoznacznym wyniku zapisu nie usuwamy nowego PDF.
+      // Pusty readback nie wyklucza późnego commitu wcześniejszego UPDATE.
       throw writeResult.error;
     }
   } else {
@@ -209,10 +208,9 @@ export async function storeJobProtocol({
       if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
         return reconciliation.record;
       }
-      if (reconciliation.confirmed) {
-        removeProtocolFilesBestEffort(supabase, [storagePath]);
-        if (reconciliation.record) return reconciliation.record;
-      }
+      // 10.77: po utraconej odpowiedzi INSERT pusty readback nie jest dowodem braku commitu.
+      // Zachowujemy plik; ewentualny orphan jest bezpieczniejszy niż rekord wskazujący usunięty PDF.
+      if (reconciliation.confirmed && reconciliation.record) return reconciliation.record;
       throw writeResult.error;
     }
   }
@@ -232,10 +230,8 @@ export async function storeJobProtocol({
     }
     return reconciliation.record;
   }
-  if (reconciliation.confirmed) {
-    removeProtocolFilesBestEffort(supabase, [storagePath]);
-    if (!existing.record && reconciliation.record) return reconciliation.record;
-  }
+  if (reconciliation.confirmed && !existing.record && reconciliation.record) return reconciliation.record;
+  // 10.77: brak jednoznacznego potwierdzenia nigdy nie uruchamia kasowania nowego pliku.
   throw new Error("Plik został wysłany, ale zapis protokołu nie zwrócił jednoznacznego potwierdzenia.");
 }
 

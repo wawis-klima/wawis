@@ -1,14 +1,14 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.76",
-  "scope": "mobile",
-  "release_branch": "release/v10.76",
+  "version": "10.77",
+  "scope": "full",
+  "release_branch": "release/v10.77",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-16T06:43:37.272454Z",
+    "checked_at": "2026-09-16T08:58:00+02:00",
     "result": "INFO",
-    "notes": "Start 10.76: 10.75 ma 3 warningi Failed to fetch (contractors/devices/network), bez błędu push. Diagnostyka jest informacyjna."
+    "notes": "10.77 P0 storage safety po niezależnym audycie Codex; diagnostyka informacyjna."
   },
   "predeploy_diagnostics": {
     "checked": false,
@@ -21,19 +21,19 @@
     "required": true,
     "folder_path": "Aplikacja/Wersje",
     "folder_id": "1eufcE1gnbfw7t2IMmJwbcicrkaiaqu0S",
-    "file_name": "klima-app-v10.76.zip",
-    "file_id": "1IXNFDbeuPaPeQ12ZXJz4U17DzmvBnBCA",
-    "size_bytes": 12194067,
+    "file_name": "klima-app-v10.77.zip",
+    "file_id": "1INK-Z512TM_8-SO6V3-HBgKqAOh7hEQo",
+    "size_bytes": 12196097,
     "uploaded": true,
-    "uploaded_at": "2026-09-16T06:53:43.479Z",
+    "uploaded_at": "2026-09-16T07:29:12.933Z",
     "verified": true
   },
   "main_protection": {
-    "source_branch": "release/v10.76",
+    "source_branch": "release/v10.77",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks",
-    "final_release_run_id": "35065575883",
-    "final_release_head_sha": "0f70b8254efe8cab61479dd593a31cb4f1c01607"
+    "final_release_run_id": "35068539335",
+    "final_release_head_sha": "9708b97ee7e190a2ba4fff5ac96cf1ec91395f44"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
