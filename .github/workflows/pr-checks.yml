@@ -30,6 +30,21 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=optional --registry=https://registry.npmjs.org/
 
+      - name: Reproduce Vercel deploy guard
+        env:
+          VERCEL: '1'
+          VERCEL_ENV: production
+          VERCEL_GIT_COMMIT_REF: main
+        run: node scripts/vercel-deploy-guard.cjs
+
+      - name: Reproduce Vercel standard deploy gate
+        env:
+          WAWIS_STANDARD_DEPLOY_GATE: node scripts/release-policy-gate.cjs --deploy
+        run: bash scripts/deploy-gate-router.sh
+
+      - name: Reproduce Vercel production build
+        run: npm run build
+
       - name: Detect changed files
         shell: bash
         run: |
