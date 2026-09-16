@@ -302,9 +302,8 @@ async function resolveFuelEntryInsertFailure({ supabase, photoPath, error }) {
   if (!photoPath) throw error;
   const reconciliation = await reconcileFuelEntryByPhotoPath({ supabase, photoPath });
   if (reconciliation.entry) return reconciliation.entry;
-  if (reconciliation.confirmed) {
-    await removeFuelOdometerPhotoBestEffort(supabase, photoPath);
-  }
+  // 10.77: pusty readback po błędzie INSERT nie dowodzi, że wcześniejszy zapis nie zostanie zatwierdzony.
+  // Zachowujemy zdjęcie licznika; ewentualny orphan może zostać posprzątany później, bez ryzyka utraty danych.
   throw error;
 }
 

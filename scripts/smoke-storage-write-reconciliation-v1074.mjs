@@ -137,8 +137,8 @@ async function saveProtocol(supabase, replaceExisting = false) {
 {
   const supabase = makeProtocolSupabase({ commitWrite: false });
   await assert.rejects(() => saveProtocol(supabase), assertLostResponse);
-  assert.equal(supabase.removed.length, 1, 'PDF wolno usunąć, gdy odczyt kontrolny potwierdzi brak rekordu.');
-  assert.equal(supabase.files.size, 0);
+  assert.equal(supabase.removed.length, 0, 'Po błędzie zapisu pusty readback nie daje prawa usunąć PDF.');
+  assert.equal(supabase.files.size, 1);
 }
 
 function makeFuelSupabase({ commitWrite = true, failReconciliation = false } = {}) {
@@ -248,8 +248,8 @@ async function saveFuelEntry(supabase) {
 {
   const supabase = makeFuelSupabase({ commitWrite: false });
   await assert.rejects(() => saveFuelEntry(supabase), assertLostResponse);
-  assert.equal(supabase.removed.length, 1, 'Zdjęcie wolno usunąć po potwierdzonym braku wpisu DB.');
-  assert.equal(supabase.files.size, 0);
+  assert.equal(supabase.removed.length, 0, 'Po błędzie zapisu pusty readback nie daje prawa usunąć zdjęcia licznika.');
+  assert.equal(supabase.files.size, 1);
 }
 
 console.log('PASS smoke-storage-write-reconciliation-v1074');

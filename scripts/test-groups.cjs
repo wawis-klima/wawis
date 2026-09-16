@@ -58,6 +58,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-protocol',
     'npm run test:smoke:mobile-protocol-save',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
+    'node scripts/smoke-storage-delayed-commit-v1077.mjs',
     'npm run test:smoke:mobile-protocol-print',
     'npm run test:smoke:mobile-protocol-layout',
     'npm run test:smoke:mobile-protocol-email',
@@ -81,6 +82,7 @@ const GROUPS = {
   fuel: [
     'npm run test:smoke:fuel-module',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
+    'node scripts/smoke-storage-delayed-commit-v1077.mjs',
   ],
   nameplates: [
     'npm run test:smoke:mobile-serial-scanner',
