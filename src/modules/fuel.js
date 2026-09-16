@@ -8,6 +8,7 @@ function assertAdminAccess({ supabase, isAdmin }) {
 }
 
 const FUEL_ODOMETER_BUCKET = 'fuel-odometer-photos';
+const FUEL_ENTRY_SELECT = 'id, vehicle_id, fueled_at, liters, odometer_km, odometer_photo_path, odometer_ai_confidence, odometer_read_source, created_by, created_at, corrected_by, corrected_at, correction_count, original_liters, original_odometer_km, fuel_vehicles(vehicle_name, registration_number, tank_capacity_liters), creator:profiles!fuel_entries_created_by_fkey(full_name), corrector:profiles!fuel_entries_corrected_by_fkey(full_name)';
 export const FUEL_ODOMETER_WARNING_DELTA_KM = 2000;
 export const FUEL_ODOMETER_PHOTO_REQUIRED_DELTA_KM = 5000;
 export const FUEL_CONSUMPTION_ANOMALY_MIN_PRIOR_INTERVALS = 2;
@@ -211,7 +212,7 @@ export async function loadFuelModuleData({ supabase, isAdmin, entryLimit = 100 }
       .order('registration_number', { ascending: true }),
     supabase
       .from('fuel_entries')
-      .select('id, vehicle_id, fueled_at, liters, odometer_km, odometer_photo_path, odometer_ai_confidence, odometer_read_source, created_by, created_at, corrected_by, corrected_at, correction_count, original_liters, original_odometer_km, fuel_vehicles(vehicle_name, registration_number, tank_capacity_liters), creator:profiles!fuel_entries_created_by_fkey(full_name), corrector:profiles!fuel_entries_corrected_by_fkey(full_name)')
+      .select(FUEL_ENTRY_SELECT)
       .order('fueled_at', { ascending: false })
       .limit(safeEntryLimit),
   ]);
@@ -269,6 +270,44 @@ export async function setFuelVehicleActive({ supabase, isAdmin, vehicleId, isAct
   return Array.isArray(data) ? data[0] : data;
 }
 
+function normalizeFuelEntryResult(data) {
+  return Array.isArray(data) ? data[0] || null : data || null;
+}
+
+async function reconcileFuelEntryByPhotoPath({ supabase, photoPath }) {
+  if (!photoPath) return { confirmed: false, entry: null, error: null };
+  try {
+    const { data, error } = await supabase
+      .from('fuel_entries')
+      .select(FUEL_ENTRY_SELECT)
+      .eq('odometer_photo_path', photoPath)
+      .maybeSingle();
+    if (error) return { confirmed: false, entry: null, error };
+    return { confirmed: true, entry: normalizeFuelEntryResult(data), error: null };
+  } catch (error) {
+    return { confirmed: false, entry: null, error };
+  }
+}
+
+async function removeFuelOdometerPhotoBestEffort(supabase, photoPath) {
+  if (!photoPath) return;
+  try {
+    await supabase.storage.from(FUEL_ODOMETER_BUCKET).remove([photoPath]);
+  } catch {
+    // Sprzątanie osieroconego zdjęcia nie może zmieniać wyniku zapisu tankowania.
+  }
+}
+
+async function resolveFuelEntryInsertFailure({ supabase, photoPath, error }) {
+  if (!photoPath) throw error;
+  const reconciliation = await reconcileFuelEntryByPhotoPath({ supabase, photoPath });
+  if (reconciliation.entry) return reconciliation.entry;
+  if (reconciliation.confirmed) {
+    await removeFuelOdometerPhotoBestEffort(supabase, photoPath);
+  }
+  throw error;
+}
+
 export async function addFuelEntry({
   supabase,
   isAdmin,
@@ -311,12 +350,14 @@ export async function addFuelEntry({
     if (uploadResult.error) throw uploadResult.error;
   }
 
+  const confidence = Math.max(0, Math.min(1, Number(odometerAiConfidence || 0)));
+  const readSource = hasPhoto && ['local_ocr', 'openai', 'manual'].includes(odometerReadSource)
+    ? odometerReadSource
+    : hasPhoto ? 'openai' : 'manual';
+
+  let insertResult;
   try {
-    const confidence = Math.max(0, Math.min(1, Number(odometerAiConfidence || 0)));
-    const readSource = hasPhoto && ['local_ocr', 'openai', 'manual'].includes(odometerReadSource)
-      ? odometerReadSource
-      : hasPhoto ? 'openai' : 'manual';
-    const { data, error } = await supabase
+    insertResult = await supabase
       .from('fuel_entries')
       .insert({
         vehicle_id: vehicleId,
@@ -326,14 +367,21 @@ export async function addFuelEntry({
         odometer_ai_confidence: hasPhoto ? confidence : null,
         odometer_read_source: readSource,
       })
-      .select('id, vehicle_id, fueled_at, liters, odometer_km, odometer_photo_path, odometer_ai_confidence, odometer_read_source, created_by, created_at, corrected_by, corrected_at, correction_count, original_liters, original_odometer_km, fuel_vehicles(vehicle_name, registration_number, tank_capacity_liters), creator:profiles!fuel_entries_created_by_fkey(full_name), corrector:profiles!fuel_entries_corrected_by_fkey(full_name)')
+      .select(FUEL_ENTRY_SELECT)
       .single();
-    if (error) throw error;
-    return Array.isArray(data) ? data[0] : data;
   } catch (error) {
-    if (photoPath) await supabase.storage.from(FUEL_ODOMETER_BUCKET).remove([photoPath]).catch(() => {});
-    throw error;
+    return resolveFuelEntryInsertFailure({ supabase, photoPath, error });
   }
+
+  if (insertResult.error) {
+    return resolveFuelEntryInsertFailure({ supabase, photoPath, error: insertResult.error });
+  }
+
+  const savedEntry = normalizeFuelEntryResult(insertResult.data);
+  if (savedEntry) return savedEntry;
+
+  const missingConfirmationError = new Error('Tankowanie zostało wysłane, ale baza nie zwróciła jednoznacznego potwierdzenia zapisu.');
+  return resolveFuelEntryInsertFailure({ supabase, photoPath, error: missingConfirmationError });
 }
 
 export async function updateFuelEntry({
@@ -363,10 +411,10 @@ export async function updateFuelEntry({
     .from('fuel_entries')
     .update({ liters: parsedLiters, odometer_km: parsedOdometer })
     .eq('id', entryId)
-    .select('id, vehicle_id, fueled_at, liters, odometer_km, odometer_photo_path, odometer_ai_confidence, odometer_read_source, created_by, created_at, corrected_by, corrected_at, correction_count, original_liters, original_odometer_km, fuel_vehicles(vehicle_name, registration_number, tank_capacity_liters), creator:profiles!fuel_entries_created_by_fkey(full_name), corrector:profiles!fuel_entries_corrected_by_fkey(full_name)')
+    .select(FUEL_ENTRY_SELECT)
     .single();
   if (error) throw error;
-  return Array.isArray(data) ? data[0] : data;
+  return normalizeFuelEntryResult(data);
 }
 
 export async function deleteFuelEntry({ supabase, isAdmin, entryId, photoPath = '' }) {

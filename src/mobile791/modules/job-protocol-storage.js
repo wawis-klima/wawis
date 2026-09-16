@@ -113,6 +113,22 @@ export async function loadJobProtocolRecord({ supabase, jobId, timeoutMs = PROTO
   return { record: normalizeRecord(data), backendAvailable: true };
 }
 
+function protocolRecordUsesStoragePath(record, storagePath) {
+  return Boolean(record && normalizeText(record.storage_path) === normalizeText(storagePath));
+}
+
+async function reconcileProtocolWrite({ supabase, jobId, timeoutMs }) {
+  try {
+    const result = await loadJobProtocolRecord({ supabase, jobId, timeoutMs });
+    if (!result.backendAvailable) {
+      return { confirmed: false, record: null, error: result.error || null };
+    }
+    return { confirmed: true, record: result.record || null, error: null };
+  } catch (error) {
+    return { confirmed: false, record: null, error };
+  }
+}
+
 export async function storeJobProtocol({
   supabase,
   job,
@@ -169,11 +185,17 @@ export async function storeJobProtocol({
       .single();
     writeResult = await runTimedProtocolQuery(updateQuery, { phase: "update-record", timeoutMs });
     if (writeResult.error) {
-      removeProtocolFilesBestEffort(supabase, [storagePath]);
+      const reconciliation = await reconcileProtocolWrite({ supabase, jobId: job.id, timeoutMs });
+      if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
+        if (existing.record.storage_path !== storagePath) {
+          removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
+        }
+        return reconciliation.record;
+      }
+      if (reconciliation.confirmed) {
+        removeProtocolFilesBestEffort(supabase, [storagePath]);
+      }
       throw writeResult.error;
-    }
-    if (existing.record.storage_path !== storagePath) {
-      removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
     }
   } else {
     const insertQuery = supabase
@@ -183,16 +205,38 @@ export async function storeJobProtocol({
       .single();
     writeResult = await runTimedProtocolQuery(insertQuery, { phase: "insert-record", timeoutMs });
     if (writeResult.error) {
-      removeProtocolFilesBestEffort(supabase, [storagePath]);
-      const racedRecord = await loadJobProtocolRecord({ supabase, jobId: job.id, timeoutMs }).catch(() => ({ record: null }));
-      if (racedRecord.record) return racedRecord.record;
+      const reconciliation = await reconcileProtocolWrite({ supabase, jobId: job.id, timeoutMs });
+      if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
+        return reconciliation.record;
+      }
+      if (reconciliation.confirmed) {
+        removeProtocolFilesBestEffort(supabase, [storagePath]);
+        if (reconciliation.record) return reconciliation.record;
+      }
       throw writeResult.error;
     }
   }
 
   const savedRecord = normalizeRecord(writeResult?.data);
-  if (!savedRecord) throw new Error("Plik został wysłany, ale zapis protokołu nie zwrócił potwierdzenia.");
-  return savedRecord;
+  if (protocolRecordUsesStoragePath(savedRecord, storagePath)) {
+    if (existing.record && existing.record.storage_path !== storagePath) {
+      removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
+    }
+    return savedRecord;
+  }
+
+  const reconciliation = await reconcileProtocolWrite({ supabase, jobId: job.id, timeoutMs });
+  if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
+    if (existing.record && existing.record.storage_path !== storagePath) {
+      removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
+    }
+    return reconciliation.record;
+  }
+  if (reconciliation.confirmed) {
+    removeProtocolFilesBestEffort(supabase, [storagePath]);
+    if (!existing.record && reconciliation.record) return reconciliation.record;
+  }
+  throw new Error("Plik został wysłany, ale zapis protokołu nie zwrócił jednoznacznego potwierdzenia.");
 }
 
 async function downloadProtocolBlob({ supabase, record }) {

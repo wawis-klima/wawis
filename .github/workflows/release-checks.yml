@@ -1,6 +1,9 @@
 name: WAWIS final release checks
 
 on:
+  push:
+    branches:
+      - release/v10.74
   workflow_dispatch:
     inputs:
       scope:
@@ -51,17 +54,17 @@ jobs:
         run: node scripts/release-impact.cjs --base-ref origin/main --json RELEASE-IMPACT.json --github-output "$GITHUB_OUTPUT"
 
       - name: Install Chromium for Playwright when needed
-        if: inputs.scope != 'auto' || steps.impact.outputs.needs_playwright == 'true'
+        if: github.event_name == 'push' || inputs.scope != 'auto' || steps.impact.outputs.needs_playwright == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run one final release pass
-        run: node scripts/run-release.cjs "${{ inputs.scope }}" --base-ref origin/main --skip-version-bump
+        run: node scripts/run-release.cjs full --base-ref origin/main --skip-version-bump
 
       - name: Upload final ZIP and release report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: wawis-final-release-${{ github.ref_name }}
+          name: wawis-final-release-v10.74
           path: |
             releases/klima-app-v*.zip
             RELEASE-RESULT.md
