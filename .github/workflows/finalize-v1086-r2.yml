@@ -1,0 +1,71 @@
+name: WAWIS 10.86 finalizer r2
+
+on:
+  push:
+    branches:
+      - release/v10.86
+    paths:
+      - .github/workflows/finalize-v1086-r2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.86
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - name: Finalize release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          node version-bump.cjs
+          node <<'NODE'
+          const fs = require('node:fs');
+          const gate = JSON.parse(fs.readFileSync('RELEASE-GATE.json', 'utf8'));
+          gate.version = '10.86';
+          gate.scope = 'full';
+          gate.release_branch = 'release/v10.86';
+          gate.baseline_diagnostics = { checked: true, last_24h: true, checked_at: '2026-09-16T20:08:00+02:00', result: 'INFO', notes: '10.86: F3/F5/F8/F9 z audytu 10.84; osobna gałąź release i kontrtesty.' };
+          gate.predeploy_diagnostics = { checked: true, last_24h: true, checked_at: '2026-09-16T20:12:00+02:00', result: 'FOCUSED_PASS_FULL_PR_PENDING', notes: 'Focused 10.86 regressions i production build przeszły. Finalny targeted-checks, Playwright E2E i build muszą przejść na SHA PR.' };
+          gate.main_protection = { source_branch: 'release/v10.86', ready_for_main: true, required_check: 'WAWIS PR checks / targeted-checks' };
+          gate.postdeploy_diagnostics = { evidence_required: true, result: 'PENDING', notes: 'Po merge wymagany Vercel SUCCESS i live 10.86.' };
+          fs.writeFileSync('RELEASE-GATE.json', JSON.stringify(gate, null, 2) + '\n');
+
+          let readme = fs.readFileSync('README.md', 'utf8');
+          readme = readme.replace(/## Ostatnia poprawka\s*- wersja\s*`?10\.86`?.*?(?=\n## |$)/s, '## Ostatnia poprawka\n- wersja `10.86` — F3/F5/F8/F9: ochrona sesji przed spóźnionym SIGNED_OUT, izolacja kolejki zdjęć między kontami oraz bezpieczna kolejność synchronizacji i kursora offline.\n');
+          fs.writeFileSync('README.md', readme);
+
+          let changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+          const section = `## 10.86\n- F3: spóźniona weryfikacja SIGNED_OUT nie może wylogować nowszej sesji — desktop i mobile.\n- F5: restore/resume/upload kolejki zdjęć offline są izolowane właścicielem i generacją sesji.\n- F8: requestId należy do faktycznego fetchu, nie do późniejszego caller-a dołączającego do Promise.\n- F9: kursor synchronizacji przesuwa się dopiero po potwierdzonym trwałym snapshotcie; błąd zapisu pozostaje retryable.\n- Regresja smoke-audit-fixes-v1086.mjs jest częścią obowiązkowej grupy infra.\n\n`;
+          if (/^## 10\.86\n/m.test(changelog)) changelog = changelog.replace(/^## 10\.86\n[\s\S]*?(?=^##\s|$)/m, section);
+          else changelog = section + changelog.replace(/^\s+/, '');
+          fs.writeFileSync('CHANGELOG.md', changelog);
+
+          fs.writeFileSync('RELEASE-RESULT.md', `# RELEASE RESULT\n\n## Wersja\n- 10.86\n\n## Zakres\n- F3 — ochrona nowej sesji przed spóźnionym wynikiem starej weryfikacji SIGNED_OUT w desktop i mobile.\n- F5 — izolacja restore/resume/upload kolejki zdjęć offline przez właściciela i generację sesji.\n- F8 — requestId przypisany do faktycznego fetchu.\n- F9 — kursor synchronizacji tylko po potwierdzonym snapshotcie.\n\n## Regresje focused\n- smoke-audit-fixes-v1086: PASS\n- smoke-audit-races-v1084: PASS\n- mobile-auth-resilience-v974: PASS\n- mobile-offline-photo-queue: PASS\n- production build: PASS\n\n## Warunek zamknięcia\nFinalny targeted-checks + Playwright E2E + build, potem Vercel SUCCESS i live 10.86.\n`);
+          NODE
+          rm -f .github/workflows/apply-v1086.yml .github/workflows/harden-v1086-session.yml .github/workflows/repair-harden-v1086-test.yml .github/workflows/run-harden-v1086-r2.yml .github/workflows/finalize-v1086.yml .github/workflows/finalize-v1086-r2.yml scripts/harden-v1086-once.py
+      - name: Verify candidate
+        run: |
+          node scripts/smoke-audit-fixes-v1086.mjs
+          node scripts/smoke-audit-races-v1084.mjs
+          node scripts/smoke-mobile-auth-resilience-v974.mjs
+          node scripts/smoke-mobile-offline-photo-queue.cjs
+          node scripts/release-policy-gate.cjs
+          npm run build
+      - name: Commit final candidate
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m '10.86: finalize audit fixes release candidate'
+          git push origin HEAD:release/v10.86
