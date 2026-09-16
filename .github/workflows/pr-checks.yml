@@ -43,6 +43,14 @@ jobs:
         shell: bash
         run: node scripts/release-impact.cjs --base-ref "origin/${{ github.base_ref }}" --json release-impact.json --github-output "$GITHUB_OUTPUT"
 
+      - name: Validate release policy before merge
+        env:
+          WAWIS_PR_HEAD_REF: ${{ github.head_ref }}
+        run: node scripts/release-policy-gate.cjs
+
+      - name: Reproduce release gate fail-closed cases
+        run: node scripts/smoke-release-policy-pr-head-v1085.cjs
+
       - name: Run targeted regression groups
         run: node scripts/run-pr-checks.cjs changed-files.txt release-impact.json
 

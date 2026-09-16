@@ -58,7 +58,13 @@ function main() {
   assert(appVersion === mobileVersion, `NO-GO: mobile version=${mobileVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(String(gate.version || '').trim() === appVersion, `NO-GO: RELEASE-GATE.json=${gate.version || 'brak'}, oczekiwano ${appVersion}`);
   assert(['mobile', 'desktop', 'full'].includes(gate.scope), `NO-GO: nieprawidłowy zakres ${gate.scope || 'brak'}`);
-  assert(String(gate.release_branch || '') === `release/v${appVersion}`, `NO-GO: release_branch musi być release/v${appVersion}`);
+
+  const configuredReleaseBranch = String(gate.release_branch || '').trim();
+  assert(configuredReleaseBranch === `release/v${appVersion}`, `NO-GO: release_branch musi być release/v${appVersion}`);
+  const prHeadRef = String(process.env.WAWIS_PR_HEAD_REF || '').trim();
+  if (prHeadRef) {
+    assert(prHeadRef === configuredReleaseBranch, `NO-GO: PR pochodzi z ${prHeadRef}, oczekiwano ${configuredReleaseBranch}`);
+  }
 
   assert(rules.includes('GAŁĄŹ RELEASE'), 'NO-GO: WAWIS-RULES.md nie wymaga gałęzi release');
   assert(rules.includes('WAWIS PR checks / targeted-checks'), 'NO-GO: WAWIS-RULES.md nie wskazuje obowiązkowej bramki PR');
@@ -77,7 +83,7 @@ function main() {
 
   if (deployMode) {
     assert(gate.main_protection?.ready_for_main === true, 'NO-GO: release nie jest oznaczony jako gotowy do main');
-    assert(String(gate.main_protection?.source_branch || '') === `release/v${appVersion}`, 'NO-GO: źródło wdrożenia nie jest właściwą gałęzią release');
+    assert(String(gate.main_protection?.source_branch || '').trim() === configuredReleaseBranch, 'NO-GO: źródło wdrożenia nie jest właściwą gałęzią release');
   }
 
   const mode = deployMode ? 'deploy' : 'pre-release';

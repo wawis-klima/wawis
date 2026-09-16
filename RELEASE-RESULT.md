@@ -1,17 +1,35 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.84
+- 10.85
 
 ## Proces
-- jedna obowiązkowa bramka: `WAWIS PR checks / targeted-checks`
-- po zielonym PR: merge do `main` i jeden produkcyjny Vercel
-- Google Drive / ZIP / osobny final runner / blokujący post-deploy: niewymagane
+- obowiązkowa bramka GitHub: `WAWIS PR checks / targeted-checks`
+- wymagane kontrprzykłady regresyjne, Playwright E2E i produkcyjny build przed merge
+- `main` chroniony przez Ruleset: PR, aktualna gałąź, wymagany `targeted-checks`, brak bypassu
+- po zielonym PR: merge do `main`, produkcyjny Vercel i kontrola rzeczywistego stanu backendu
 
 ## Zakres
-- F5: spóźnione loadery szczegółów, zdjęć i miniaturek nie mogą już zapisać danych po zmianie sesji lub kontekstu
-- F7: fallback polling odświeża także otwarte szczegóły montażu, więc zgubiony event Realtime nie pozostawia starego komentarza ani zdjęcia na ekranie
-- F8: pełne i przyrostowe odświeżenia mają wspólną ochronę kolejności; starsza odpowiedź nie nadpisuje nowszego stanu, również po asynchronicznej hydracji cache mobile
-- F9: aktualizacja kursora synchronizacji IndexedDB jest atomowa i nie może przywrócić starszego snapshotu po nowszym zapisie
-- dodatkowo: aktualizacja lokalnej kolejki zdjęć jest atomowa, więc równoległy restore/resume nie może wskrzesić rekordu usuniętego po uzgodnieniu tabliczki z serwerem
-- dodano dedykowane regresje Node i rzeczywiste testy Playwright dla wyścigów requestów, kursora IndexedDB i kolejki zdjęć; scenariusz uzgodnienia tabliczki został powtórzony trzykrotnie przed pełnym E2E
+- F12/N9: fail-closed Playwright runners, cross-platform uruchamianie na Windows, CRLF-safe testy, produkcyjny build w PR gate, deploy-affecting `scripts/`, `vercel.json` i `.github` uwzględnione w deploy triggerze oraz ZIP bez systemowego programu `zip`
+- N1: endpoint OCR/AI nie ufa `user_metadata.role`; rolę administratora potwierdza wyłącznie przez chronione `profiles.role`
+- N6: callback SMSAPI wymaga sekretu wyprowadzonego z tokenu SMSAPI, obsługuje rzeczywisty format callbacków, monotoniczne statusy i błędy zapisu DB
+- N7-A: repo zawiera idempotentny baseline żywych guardów produkcyjnych oraz kod `send-service-sms` zgodny z produkcją
+
+## Dowody przed produkcją
+- finalny kandydat zmian audytowych: `bfc65bfc3de88d8abf9966c2a35b670a2b37ce89`
+- `targeted-checks`: SUCCESS
+- targeted regression groups: SUCCESS
+- wymagane Playwright E2E: SUCCESS
+- production build: SUCCESS
+- Ruleset `Wawis`: ACTIVE, wymagany PR i `targeted-checks`, strict up-to-date, brak bypassu
+
+## Supabase po wdrożeniu
+- migracja `production_security_baseline_v1085` obecna w historii produkcyjnej
+- `send-service-sms`: ACTIVE v24
+- `smsapi-delivery-webhook`: ACTIVE v4
+- read-only verification potwierdził żywe `private.guard_profile_role`, `private.guard_job_fields`, `public.handle_new_user` i ich triggery
+
+## Vercel
+- pierwszy deploy po merge 10.85 został prawidłowo odrzucony przez deploy gate, ponieważ `RELEASE-GATE.json` i `RELEASE-RESULT.md` nadal wskazywały 10.84
+- finalny kandydat `release/v10.85` aktualizuje te metadane zamiast omijać lub osłabiać bramkę
+- zamknięcie wersji wymaga zielonego Vercel dla finalnego SHA `main` i live checku `/app-version.json`
