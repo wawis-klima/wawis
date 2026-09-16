@@ -35,13 +35,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Verify live production and Supabase diagnostics
+      - name: Verify live version and Service Worker; collect diagnostics as info
         run: >-
           node scripts/post-deploy-check.mjs
           --url "${{ inputs.production_url }}"
           --deployment-start "${{ inputs.deployment_started_at }}"
 
-      - name: Close release gate using live evidence
+      - name: Close release gate using live version evidence
         run: node scripts/release-policy-gate.cjs --post --evidence post-deploy-evidence.json
 
       - name: Upload post-deploy evidence
