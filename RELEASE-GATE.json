@@ -8,14 +8,14 @@
     "last_24h": true,
     "checked_at": "2026-09-17T08:01:03.247Z",
     "result": "INFO",
-    "notes": "10.90: poprawka mobilnego overflow oraz admin-only manual nameplate completion; finalne CI PR pozostaje obowiązkową bramką."
+    "notes": "10.90: poprawka mobilnego overflow, admin-only manual nameplate completion oraz Supabase security hardening po audycie 10.89. Baseline hardeningu: 2 anon-executable SECURITY DEFINER, 15 mutable search_path; prywatna tombstone table bez direct grants zaakceptowana jako INFO."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
     "checked_at": "2026-09-17T08:01:03.247Z",
-    "result": "PR_GATE_PENDING",
-    "notes": "Zmiany i regresje przygotowane na release/v10.90; wymagany zielony WAWIS PR checks / targeted-checks przed merge."
+    "result": "STAGING_RUNTIME_PENDING",
+    "notes": "Lokalny test hardeningu i mutation controls 4/4 przechodzą. Przed ready_for_main wymagane runtime staging: ACL/PostgREST, Storage policies, Advisor po migracji oraz pełny WAWIS PR checks / targeted-checks."
   },
   "main_protection": {
     "source_branch": "release/v10.90",
