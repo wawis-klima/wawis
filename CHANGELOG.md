@@ -1,3 +1,9 @@
+## 10.90
+- Mobilne szczegóły montażu nie rozszerzają już ekranu przy długim adresie, e-mailu lub innych wartościach; treść zawija się wewnątrz karty.
+- Administrator może z widoku mobilnego i desktopowego zakończyć aktywny montaż po ręcznym potwierdzeniu każdej brakującej tabliczki JZ/JW.
+- Backend uznaje ręczne potwierdzenia wyłącznie dla administratora; pracownik nadal musi mieć rzeczywiste, zapisane zdjęcia wymaganych tabliczek.
+- Dodano regresje blokujące powrót mobilnego overflow oraz obejście wymogu tabliczek przez pracownika.
+
 ## 10.89
 - N7: repozytorium zawiera deterministyczny zestaw plików rebuild Supabase odtwarzający zweryfikowany backend stagingowy.
 - Pracownik może odczytywać dane kontrahenta potrzebne do obsługi montaży.
