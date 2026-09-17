@@ -51,6 +51,8 @@
     "supabase/migrations/20260917101825_audit_restore.sql",
     "supabase/migrations/20260917102820_audit_push_context.sql",
     "supabase/migrations/20260917103411_audit_delivery_atomic.sql",
+    "supabase/migrations/20260917174140_audit_staging_view_guard.sql",
+    "supabase/migrations/20260917175255_audit_protocol_retention.sql",
     "supabase/rebuild/audit_final_acl.sql"
   ]
 }

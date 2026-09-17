@@ -7,6 +7,7 @@ create table if not exists private.job_recycle_bin (
  deleted_at timestamptz not null default now(), deleted_by uuid,
  snapshot jsonb not null, restored_at timestamptz
 );
+create index if not exists job_recycle_bin_job_idx on private.job_recycle_bin(job_id) where restored_at is null;
 create table if not exists private.sms_delivery_claims (
  delivery_key text primary key, claim_id uuid not null unique default gen_random_uuid(),
  claimed_at timestamptz not null default now(), provider_message_id text, confirmed_at timestamptz

@@ -6,8 +6,10 @@ begin
   if has_function_privilege('anon',signature,'EXECUTE') then raise exception 'unexpected anon execute %',signature; end if;
  end loop;
  if has_schema_privilege('authenticated','private','USAGE') then raise exception 'private schema exposed'; end if;
+ if to_regclass('private.job_recycle_bin_job_idx') is null then raise exception 'missing archive job index';end if;
  if has_function_privilege('authenticated','public.apply_sms_delivery_atomic(text,text,text)','EXECUTE') then raise exception 'callback RPC exposed'; end if;
  if exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and not c.relrowsecurity) then raise exception 'public table without RLS'; end if;
  if not exists(select 1 from pg_trigger where tgname='archive_job_before_delete') then raise exception 'missing archive trigger';end if;
  if not exists(select 1 from pg_policies where schemaname='storage' and policyname='retained_job_files_delete') then raise exception 'missing retained file policy';end if;
+ if exists(select 1 from pg_policies where schemaname='storage' and policyname='job_protocols_storage_delete_admin_or_owner') then raise exception 'legacy policy bypasses PDF retention';end if;
 end $$;
