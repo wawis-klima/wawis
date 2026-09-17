@@ -11,13 +11,15 @@
     "notes": "10.91: poprawka mobilnego overflow oraz mobilne ręczne potwierdzanie tabliczek przez administratora. Bez nowych zmian schematu Supabase; używa istniejącej tabeli nameplate_manual_verifications i guardu 10.90."
   },
   "predeploy_diagnostics": {
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Wymagane zielone testy regresyjne, Playwright mobile oraz production build przed merge."
+    "checked": true,
+    "last_24h": true,
+    "checked_at": "2026-09-17T20:07:37.434Z",
+    "result": "PASS",
+    "notes": "10.91 precheck PASS: spójność wersji, istniejący smoke wymogu tabliczek, nowe Playwright regresje overflow + mobilne ręczne potwierdzenia oraz production build."
   },
   "main_protection": {
     "source_branch": "release/v10.91",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
