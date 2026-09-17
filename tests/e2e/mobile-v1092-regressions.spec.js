@@ -15,6 +15,7 @@ test.describe('@mobile 10.92 regressions', () => {
   test('produkcyjny mobilny entrypoint ładuje hardening szerokości 10.90/10.91', async () => {
     expect(productionEntrySource).toContain("import('./mobile791/v1090-details-width.css')");
     expect(productionEntrySource).toContain("import('./mobile791/v1091-mobile-details-hardening.css')");
+    expect(productionEntrySource).toContain("import('./mobile791/v1092-inline-width.css')");
   });
 
   test('administrator może zakończyć bez tabliczek, pracownik nadal nie może', async () => {
