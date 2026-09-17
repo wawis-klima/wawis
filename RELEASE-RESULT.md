@@ -1,29 +1,30 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.88
+- 10.91
 
 ## Zakres
-- N2 — backendowy guard kompletności wymaganych tabliczek JW/JZ, również dla multi-split, z serializacją mutacji zdjęć względem zakończenia zlecenia.
-- N3 — własna tożsamość zapisu protokołu i replace oparty o CAS po oczekiwanym `storage_path`; konkurencyjny zapis kończy się `PROTOCOL_WRITE_CONFLICT`.
-- N4 — trwały UUID jednej logicznej próby tankowania używany przez INSERT, reconciliation i retry/reload.
-- N5 — trwały `requestKey` jednej logicznej próby e-maila, timeout providera, `Idempotency-Key` oraz reconciliation wyniku niejednoznacznego.
+- Mobile — rozwinięta karta montażu nie może poszerzać viewportu nawet przy długim e-mailu, adresie ani zagnieżdżonych sekcjach szczegółów.
+- Mobile admin — każda wymagana JZ/JW może zostać jawnie potwierdzona ręcznie bez zdjęcia; potwierdzenie można cofnąć.
+- Zakończenie zlecenia przez administratora wymaga dla każdej wymaganej JZ/JW fizycznego zdjęcia albo istniejącego ręcznego potwierdzenia; pracownik nadal wymaga fizycznych zdjęć.
+- Desktop — istniejące ręczne potwierdzanie tabliczek pozostaje bez zmian.
+- Supabase — bez nowego schematu i bez nowego stagingu; 10.91 korzysta z istniejącej tabeli `nameplate_manual_verifications` i backendowego guardu wdrożonego w 10.90.
 
 ## Dowód RED → GREEN
-- audytowany SHA 10.84: `74b895c849cdb7644250acf0de7933fc9ef7f1a5` odtworzył kolejno RED N2, RED N3, RED N4 i RED N5 przed poprawkami.
-- `smoke-audit-fixes-v1088.mjs` po poprawkach: PASS dla wszystkich czterech kontraktów.
-- affected regression groups Jobs/Photos/Protocol/Fuel/Nameplates: 48 unikalnych komend — PASS.
-- historyczne testy protokołu i paliwa zostały zaostrzone do CAS i stabilnego UUID; nie wyłączono ani nie osłabiono zabezpieczeń.
-- production build po implementacji: PASS.
-- po kanonicznym bumpie `version-bump.cjs` do 10.88 ponownie przeszły RED→GREEN, affected groups i production build.
+- błąd produkcyjny 10.90 został zgłoszony na realnych kartach mobilnych, które po rozwinięciu wychodziły poza szerokość ekranu.
+- 10.90 miała backendową obsługę ręcznych potwierdzeń, ale mobilny administrator nie miał kontrolek `Potwierdź ręcznie / Cofnij ręczne`, więc ścieżka nie była kompletna.
+- `tests/e2e/mobile-v1091-regressions.spec.js`: PASS — długi e-mail/adres nie powoduje poziomego overflow na profilu iPhone 14.
+- `tests/e2e/mobile-v1091-regressions.spec.js`: PASS — mobile zawiera jawne ręczne potwierdzanie JZ/JW oraz blokadę zakończenia do czasu zdjęcia albo potwierdzenia.
+- istniejący `test:smoke:nameplate-finish-verification`: PASS — pracownik nadal nie może ominąć wymogu zdjęć, a backendowy guard administratora pozostaje aktywny.
+- production build 10.91: PASS.
 
 ## Wdrożenie produkcyjne
-1. finalny PR z obowiązkowym `WAWIS PR checks / targeted-checks`, Playwright E2E i production build,
-2. merge przez ruleset,
-3. zastosowanie migracji `20260916201000_job_completion_nameplate_guard_v1088.sql`,
-4. deploy `send-job-protocol-email` i produkcyjny read-back,
-5. Vercel SUCCESS na SHA z `main`,
-6. live-check `app-version.json=10.88` i cache Service Workera `wawis-app-shell-v10.88`.
+1. finalny PR `release/v10.91` → `main` z obowiązkowym `WAWIS PR checks / targeted-checks`,
+2. wymagane regresje i Playwright mobile muszą przejść na finalnym SHA,
+3. production build musi przejść na finalnym SHA,
+4. merge przez chroniony `main`,
+5. Vercel SUCCESS dla dokładnego merge SHA,
+6. post-deploy: potwierdzić `app-version.json=10.91`, cache Service Workera `wawis-app-shell-v10.91` i brak nowych błędów diagnostycznych.
 
 ## Warunek zamknięcia
-N2/N3/N4/N5 są zamykane dopiero po zielonym finalnym PR, produkcyjnym wdrożeniu Supabase/Vercel i read-backu live. Na etapie tego dokumentu finalny PR pozostaje do wykonania.
+10.91 zostaje zamknięta dopiero po zielonym finalnym PR, wdrożeniu Vercela i post-deploy read-backu. Na etapie tego dokumentu produkcja nadal pozostaje na 10.90.

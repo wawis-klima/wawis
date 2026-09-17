@@ -7,6 +7,7 @@ import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canMan
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
 import { getNameplatePhotoMetadata } from "../modules/photos.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
+import { getManualNameplateVerification, setManualNameplateVerification } from "../../modules/nameplate-verification.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { blockUnsavedWork } from "../../modules/update-reload-guard.js";
 import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
@@ -42,7 +43,6 @@ function formatViewerChipName(fullName = "") {
   return `${firstName.charAt(0)}. ${rest.join(" ")}`;
 }
 
-
 function DeviceUnitDocumentationRow({
   unitCode,
   unitLabel,
@@ -54,6 +54,10 @@ function DeviceUnitDocumentationRow({
   openEditor,
   busy,
   retryPhotoUpload,
+  isAdmin = false,
+  manualVerification = null,
+  manualVerificationBusy = false,
+  onToggleManualVerification,
 }) {
   const photoUrl = photo?.thumbnail_image_url || photo?.local_preview_url || photo?.image_url || photo?.signed_url || photo?.original_image_url || '';
   const uploadStatus = String(photo?.upload_status || '').trim();
@@ -61,6 +65,8 @@ function DeviceUnitDocumentationRow({
   const isUploading = uploadStatus === 'uploading';
   const isFailed = uploadStatus === 'error';
   const isReady = isNameplatePhotoReady(photo);
+  const isManuallyVerified = Boolean(manualVerification) && !isReady;
+  const effectiveReady = isReady || isManuallyVerified;
   const modelLabel = String(model || '').trim() || 'Model nieuzupełniony';
   const isOutdoor = unitCode === 'JZ';
 
@@ -91,29 +97,33 @@ function DeviceUnitDocumentationRow({
         ? 'Otwórz tabliczkę znamionową'
         : 'Dodaj tabliczkę znamionową';
 
-  const statusLabel = uploadStatus === 'local'
-    ? 'Zapisano na telefonie'
-    : uploadStatus === 'uploading'
-      ? 'Wysyłanie'
-      : uploadStatus === 'error'
-        ? 'Błąd wysyłania'
-        : photo
-          ? 'Zapisano w systemie'
-          : 'Brak tabliczki';
+  const statusLabel = isManuallyVerified
+    ? 'Potwierdzono ręcznie'
+    : uploadStatus === 'local'
+      ? 'Zapisano na telefonie'
+      : uploadStatus === 'uploading'
+        ? 'Wysyłanie'
+        : uploadStatus === 'error'
+          ? 'Błąd wysyłania'
+          : photo
+            ? 'Zapisano w systemie'
+            : 'Brak tabliczki';
 
   const stateLabel = isReady
     ? 'Tabliczka zapisana'
-    : isUploading
-      ? 'Wysyłanie tabliczki'
-      : isFailed
-        ? 'Błąd wysyłania tabliczki'
-        : isLocal
-          ? 'Tabliczka zapisana na telefonie'
-          : 'Brak tabliczki';
+    : isManuallyVerified
+      ? 'Tabliczka potwierdzona ręcznie przez administratora'
+      : isUploading
+        ? 'Wysyłanie tabliczki'
+        : isFailed
+          ? 'Błąd wysyłania tabliczki'
+          : isLocal
+            ? 'Tabliczka zapisana na telefonie'
+            : 'Brak tabliczki';
 
   return (
     <div
-      className={`deviceUnitDocumentationRow${isReady ? ' hasNameplate' : ' missingNameplate'}`}
+      className={`deviceUnitDocumentationRow${effectiveReady ? ' hasNameplate' : ' missingNameplate'}${isManuallyVerified ? ' manualNameplate' : ''}`}
       role="button"
       tabIndex={busy || isUploading ? -1 : 0}
       aria-disabled={busy || isUploading}
@@ -131,16 +141,35 @@ function DeviceUnitDocumentationRow({
       </div>
       <div className="deviceUnitDocumentationStatus" aria-label={`Tabliczka ${unitCode}: ${statusLabel}`}>
         <IconFileText />
-        <span className={`deviceUnitDocumentationSync sync-${photo ? (uploadStatus || 'uploaded') : 'missing'}`}>{statusLabel}</span>
+        <span className={`deviceUnitDocumentationSync sync-${isManuallyVerified ? 'manual' : (photo ? (uploadStatus || 'uploaded') : 'missing')}`}>{statusLabel}</span>
       </div>
       <div
-        className={`deviceUnitDocumentationState ${isReady ? 'ready' : isFailed ? 'error' : isUploading ? 'uploading' : isLocal ? 'local' : 'missing'}`}
+        className={`deviceUnitDocumentationState ${isReady ? 'ready' : isManuallyVerified ? 'manual' : isFailed ? 'error' : isUploading ? 'uploading' : isLocal ? 'local' : 'missing'}`}
         role="img"
         aria-label={stateLabel}
         title={stateLabel}
       >
-        <span aria-hidden="true">{isReady ? '✓' : isFailed ? '!' : isUploading ? '↻' : isLocal ? '•' : '—'}</span>
+        <span aria-hidden="true">{effectiveReady ? '✓' : isFailed ? '!' : isUploading ? '↻' : isLocal ? '•' : '—'}</span>
       </div>
+      {isAdmin && !isReady ? (
+        <button
+          type="button"
+          className={`deviceUnitManualVerifyBtn${isManuallyVerified ? ' revoke' : ''}`}
+          disabled={Boolean(busy || manualVerificationBusy || isUploading)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleManualVerification?.(!isManuallyVerified);
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
+          title={isManuallyVerified
+            ? `Cofnij ręczne potwierdzenie ${unitCode}`
+            : `Potwierdź ręcznie ${unitCode} bez zdjęcia`}
+        >
+          {manualVerificationBusy
+            ? 'Zapisywanie...'
+            : (isManuallyVerified ? 'Cofnij ręczne' : 'Potwierdź ręcznie')}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -196,6 +225,7 @@ export default function JobDetailsPanel({
   const [protocolReloadKey, setProtocolReloadKey] = React.useState(0);
   const [expandedDeviceIndexes, setExpandedDeviceIndexes] = React.useState([]);
   const [commentSaving, setCommentSaving] = React.useState(false);
+  const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
   const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || "") : "";
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
@@ -204,6 +234,7 @@ export default function JobDetailsPanel({
   React.useEffect(() => {
     setExpandedDeviceIndexes([]);
     setCommentSaving(false);
+    setManualVerificationBusyKey('');
   }, [selectedJobId]);
 
   React.useEffect(() => {
@@ -253,6 +284,7 @@ export default function JobDetailsPanel({
   const showDetailsLoading = !detailsLoaded && !detailsLoadError;
   const viewers = Array.isArray(selectedJob.viewers) ? selectedJob.viewers : [];
   const comments = Array.isArray(selectedJob.comments) ? selectedJob.comments : [];
+  const manualVerifications = Array.isArray(selectedJob.nameplateVerifications) ? selectedJob.nameplateVerifications : [];
   const completionDateTimeLabel = formatCompletionDateTime(selectedJob.completed_at);
   const completedByProfile = (profiles || []).find((person) => String(person?.id || '') === String(selectedJob.completed_by || ''));
   const completedByLabel = completedByProfile?.full_name || completedByProfile?.email || '';
@@ -271,11 +303,21 @@ export default function JobDetailsPanel({
   const showCommentsSection = !isWorkerCompletedLock || showDetailsLoading || comments.length > 0;
   const jobDevices = getJobDeviceRows(selectedJob);
   const nameplateCompletion = getJobNameplateCompletion(selectedJob, { allowLocal: !isAdmin });
+  const effectiveMissingNameplateUnits = isAdmin
+    ? nameplateCompletion.units.filter((unit) => (
+      !unit.ready && !getManualNameplateVerification(manualVerifications, unit.deviceIndex, unit.unitRef)
+    ))
+    : nameplateCompletion.missingUnits;
+  const effectiveNameplateComplete = isAdmin
+    ? nameplateCompletion.units.length > 0 && effectiveMissingNameplateUnits.length === 0
+    : nameplateCompletion.isComplete;
   const hasLocallySavedNameplates = nameplateCompletion.units.some((unit) => {
     const status = String(unit.photo?.upload_status || '').toLowerCase();
     return status === 'local' || status === 'uploading';
   });
-  const missingNameplatesLabel = formatMissingNameplateMessage(nameplateCompletion);
+  const missingNameplatesLabel = isAdmin
+    ? effectiveMissingNameplateUnits.map((unit) => unit.shortLabel).join(', ')
+    : formatMissingNameplateMessage(nameplateCompletion);
   const nameplatePhotos = photos.filter((photo) => getNameplatePhotoMetadata(photo).photo_kind === 'nameplate');
   const regularPhotos = photos.filter((photo) => getNameplatePhotoMetadata(photo).photo_kind !== 'nameplate');
   const singleDeviceIndoorUnits = jobDevices.length === 1 ? getDeviceIndoorUnits(jobDevices[0], { keepEmpty: true }) : [];
@@ -288,6 +330,42 @@ export default function JobDetailsPanel({
       await addComment?.(selectedJobId, 'Komentarz');
     } finally {
       setCommentSaving(false);
+    }
+  }
+
+  async function handleToggleManualVerification(deviceIndex, unitRef, approved) {
+    if (!isAdmin || !selectedJobId || !supabase) return;
+    const busyKey = `${deviceIndex}:${unitRef}`;
+    setManualVerificationBusyKey(busyKey);
+    try {
+      const result = await setManualNameplateVerification({
+        supabase,
+        jobId: selectedJobId,
+        deviceIndex,
+        unitRef,
+        approved,
+      });
+      const targetDeviceIndex = Number(result?.deviceIndex || 0);
+      const targetUnitRef = String(result?.unitRef || '').trim().toLowerCase();
+      setSelectedJob((current) => {
+        if (!current || String(current.id) !== selectedJobId) return current;
+        const existing = Array.isArray(current.nameplateVerifications) ? current.nameplateVerifications : [];
+        const filtered = existing.filter((item) => !(
+          Number(item?.device_index || 0) === targetDeviceIndex
+          && String(item?.unit_ref || '').trim().toLowerCase() === targetUnitRef
+        ));
+        return {
+          ...current,
+          nameplateVerifications: result?.removed || !result?.verification
+            ? filtered
+            : [...filtered, result.verification],
+          nameplateVerificationTableMissing: false,
+        };
+      });
+    } catch (error) {
+      alert(error?.message || 'Nie udało się zmienić ręcznego potwierdzenia tabliczki.');
+    } finally {
+      setManualVerificationBusyKey('');
     }
   }
 
@@ -381,13 +459,18 @@ export default function JobDetailsPanel({
                   const isMultiSplit = indoorUnits.length > 1;
                   const outdoorModel = getDeviceOutdoorModel(device) || (!isMultiSplit ? indoorUnits[0]?.model : '') || String(device?.model || '').trim();
                   const outdoorPhoto = getLatestNameplatePhotoForUnit(nameplatePhotos, deviceIndex, 'jz');
+                  const outdoorManualVerification = getManualNameplateVerification(manualVerifications, deviceIndex, 'jz');
                   const indoorRows = indoorUnits.map((unit) => {
                     const unitRef = `jw-${unit.unitNumber}`;
                     const photo = getLatestNameplatePhotoForUnit(nameplatePhotos, deviceIndex, unitRef);
-                    return { ...unit, model: unit.model || (!isMultiSplit ? outdoorModel : ''), unitRef, photo };
+                    const manualVerification = getManualNameplateVerification(manualVerifications, deviceIndex, unitRef);
+                    return { ...unit, model: unit.model || (!isMultiSplit ? outdoorModel : ''), unitRef, photo, manualVerification };
                   });
-                  const requiredPhotos = [outdoorPhoto, ...indoorRows.map((unit) => unit.photo)];
-                  const missingCount = requiredPhotos.filter((photo) => !isNameplatePhotoReady(photo)).length;
+                  const requiredUnits = [
+                    { photo: outdoorPhoto, manualVerification: outdoorManualVerification },
+                    ...indoorRows.map((unit) => ({ photo: unit.photo, manualVerification: unit.manualVerification })),
+                  ];
+                  const missingCount = requiredUnits.filter((unit) => !isNameplatePhotoReady(unit.photo) && !unit.manualVerification).length;
                   return (
                     <section className={`jobDeviceDocumentationCard ${isExpanded ? 'isExpanded' : 'isCollapsed'}`} key={`selected-job-device-${deviceOffset}`}>
                       <div className="jobDeviceDocumentationTitle">
@@ -441,6 +524,10 @@ export default function JobDetailsPanel({
                             openEditor={() => openSerialNumbersJob(selectedJob)}
                             busy={busy}
                             retryPhotoUpload={retryPhotoUpload}
+                            isAdmin={isAdmin}
+                            manualVerification={outdoorManualVerification}
+                            manualVerificationBusy={manualVerificationBusyKey === `${deviceIndex}:jz`}
+                            onToggleManualVerification={(approved) => handleToggleManualVerification(deviceIndex, 'jz', approved)}
                           />
                           {indoorRows.map((unit) => (
                             <DeviceUnitDocumentationRow
@@ -455,12 +542,16 @@ export default function JobDetailsPanel({
                               openEditor={() => openSerialNumbersJob(selectedJob)}
                               busy={busy}
                               retryPhotoUpload={retryPhotoUpload}
+                              isAdmin={isAdmin}
+                              manualVerification={unit.manualVerification}
+                              manualVerificationBusy={manualVerificationBusyKey === `${deviceIndex}:${unit.unitRef}`}
+                              onToggleManualVerification={(approved) => handleToggleManualVerification(deviceIndex, unit.unitRef, approved)}
                             />
                           ))}
                         </div>
                         <div className={`jobDeviceDocumentationCompletion${missingCount ? ' missing' : ' ready'}`}>
                           <span aria-hidden="true">{missingCount ? '●' : '✓'}</span>
-                          <span>{missingCount ? `Brakuje ${missingCount} ${missingCount === 1 ? 'tabliczki' : 'tabliczek'}` : 'Komplet tabliczek dodany'}</span>
+                          <span>{missingCount ? `Brakuje ${missingCount} ${missingCount === 1 ? 'tabliczki lub potwierdzenia' : 'tabliczek lub potwierdzeń'}` : 'Komplet tabliczek potwierdzony'}</span>
                         </div>
                       </div>
                     </section>
@@ -520,8 +611,8 @@ export default function JobDetailsPanel({
               <button
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
-                disabled={busy || showDetailsLoading || !nameplateCompletion.isComplete}
-                title={!nameplateCompletion.isComplete ? `Brakuje tabliczek: ${missingNameplatesLabel}` : 'Zakończ zlecenie'}
+                disabled={busy || showDetailsLoading || !effectiveNameplateComplete}
+                title={!effectiveNameplateComplete ? `Brakuje tabliczek lub potwierdzeń: ${missingNameplatesLabel}` : 'Zakończ zlecenie'}
               >
                 <span className="desktopLabel">Zakończone zlecenie</span>
                 <span className="mobileLabel">Zakończ</span>
@@ -572,20 +663,22 @@ export default function JobDetailsPanel({
             </button>
           </div>
           {canFinishJob && showDetailsLoading ? (
-            <div className="finishNameplateRequirement checking">Sprawdzam wymagane zdjęcia tabliczek…</div>
+            <div className="finishNameplateRequirement checking">Sprawdzam wymagane zdjęcia i potwierdzenia tabliczek…</div>
           ) : null}
-          {canFinishJob && !showDetailsLoading && !nameplateCompletion.isComplete ? (
+          {canFinishJob && !showDetailsLoading && !effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement missing">
               <strong>Nie można zakończyć zlecenia.</strong>
               <span>Brakuje: {missingNameplatesLabel}.</span>
-              <button type="button" className="btn secondary" onClick={() => openSerialNumbersJob(selectedJob)}>Dodaj brakujące tabliczki</button>
+              <button type="button" className="btn secondary" onClick={() => openSerialNumbersJob(selectedJob)}>{isAdmin ? 'Dodaj zdjęcie lub potwierdź przy JZ/JW' : 'Dodaj brakujące tabliczki'}</button>
             </div>
           ) : null}
-          {canFinishJob && !showDetailsLoading && nameplateCompletion.isComplete ? (
+          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement ready">
-              {hasLocallySavedNameplates
-                ? 'Wszystkie wymagane tabliczki są zapisane na telefonie. Zakończenie poczeka na ich synchronizację.'
-                : 'Wszystkie wymagane zdjęcia tabliczek są zapisane.'}
+              {isAdmin
+                ? 'Wszystkie wymagane tabliczki mają zdjęcie albo ręczne potwierdzenie administratora.'
+                : hasLocallySavedNameplates
+                  ? 'Wszystkie wymagane tabliczki są zapisane na telefonie. Zakończenie poczeka na ich synchronizację.'
+                  : 'Wszystkie wymagane zdjęcia tabliczek są zapisane.'}
             </div>
           ) : null}
           {isWorkerCompletedLock ? (

@@ -1,36 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.90",
-  "scope": "full",
-  "release_branch": "release/v10.90",
+  "version": "10.91",
+  "scope": "mobile",
+  "release_branch": "release/v10.91",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-17T08:01:03.247Z",
+    "checked_at": "2026-09-17T20:02:33.322Z",
     "result": "INFO",
-    "notes": "10.90: poprawka mobilnego overflow, admin-only manual nameplate completion oraz Supabase security hardening po audycie 10.89. Baseline hardeningu: 2 anon-executable SECURITY DEFINER, 15 mutable search_path; prywatna tombstone table bez direct grants zaakceptowana jako INFO."
+    "notes": "10.91: poprawka mobilnego overflow oraz mobilne ręczne potwierdzanie tabliczek przez administratora. Bez nowych zmian schematu Supabase; używa istniejącej tabeli nameplate_manual_verifications i guardu 10.90."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-17T19:25:00Z",
+    "checked_at": "2026-09-17T20:07:37.434Z",
     "result": "PASS",
-    "notes": "Lokalny test hardeningu + mutation controls 4/4 PASS. Realny Supabase staging sailtkxxyvcalcndrpyh: dokładna migracja 10.90 PASS; anon zablokowany dla obu docelowych SECURITY DEFINER RPC; authenticated path PASS; storage_object_job_id jako SECURITY INVOKER; 15/15 search_path przypięte; Advisor bez anon SECURITY DEFINER i mutable search_path w zakresie hardeningu. Finalny WAWIS PR checks run #200 na head 5be32518c9a923eabf06c77999fe25361441a40d: SUCCESS, razem z regresjami, Playwright E2E i production build."
+    "notes": "10.91 precheck PASS: spójność wersji, istniejący smoke wymogu tabliczek, nowe Playwright regresje overflow + mobilne ręczne potwierdzenia oraz production build."
   },
   "main_protection": {
-    "source_branch": "release/v10.90",
+    "source_branch": "release/v10.91",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "checked_at": "2026-09-17T19:34:19.684Z",
-    "result": "PASS",
-    "release_head": "5be32518c9a923eabf06c77999fe25361441a40d",
-    "production_main_sha": "91124943faded193c16ec532500a2b4afcc93b7c",
-    "production_supabase_ref": "uohziyaudbpwmupvljyd",
-    "notes": "PR #52 zmergowany po zielonym finalnym WAWIS PR checks. Vercel dla dokładnego merge SHA zgłosił SUCCESS. Drzewo wdrożonego SHA zawiera app-version 10.90 oraz Service Worker cache wawis-app-shell-v10.90. Produkcyjny Supabase zawiera admin_manual_nameplate_completion_v1090 i security_hardening_v1090. Read-back: oba docelowe SECURITY DEFINER mają anon EXECUTE=false i authenticated=true, storage_object_job_id jest SECURITY INVOKER, 15/15 search_path przypięte. Security Advisor nie zgłasza już anon SECURITY DEFINER ani mutable search_path; pozostają świadomie zaakceptowane authenticated SECURITY DEFINER oraz INFO prywatnej tombstone table. Od momentu merge 2026-09-17T19:33:25Z nie pojawiły się nowe app_diagnostic_events. Tymczasowy branch wawis-10-90-security-staging został usunięty; na projekcie pozostał tylko main. Bezpośredni odczyt produkcyjnego URL przez używany konektor Vercel był blokowany 403, dlatego identyfikację live oparto na SUCCESS deploymentu przypiętym do dokładnego SHA main i zawartości tego samego SHA."
+    "result": "PENDING",
+    "notes": "Po merge wymagany Vercel SUCCESS, live app-version 10.91 oraz kontrola diagnostyki."
   },
   "archive": {
     "source_of_truth": "github-main",
