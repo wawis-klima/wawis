@@ -92,11 +92,32 @@ async function main() {
   assert.match(sql, /for insert[\s\S]*with check \(public\.current_user_is_admin\(\)\)/i);
   assert.match(sql, /for delete[\s\S]*using \(public\.current_user_is_admin\(\)\)/i);
 
-  const mobileSources = [
+  const mobileRequirementsSource = fs.readFileSync(
     path.join(root, 'src', 'mobile791', 'modules', 'nameplate-requirements.js'),
+    'utf8',
+  );
+  const mobilePanelSource = fs.readFileSync(
     path.join(root, 'src', 'mobile791', 'components', 'JobDetailsPanel.jsx'),
-  ].map((filePath) => fs.readFileSync(filePath, 'utf8')).join('\n');
-  assert.doesNotMatch(mobileSources, /nameplate_manual_verifications|Potwierdź ręcznie/);
+    'utf8',
+  );
+  const v1090Sql = fs.readFileSync(
+    path.join(root, 'supabase', 'migrations', '20260917093000_admin_manual_nameplate_completion_v1090.sql'),
+    'utf8',
+  );
+
+  // 10.90: administrator może przejść do serwerowego guardu bez kompletu zdjęć,
+  // ale pracownik nadal ma allowLocal=true i nie dostaje tego bypassu.
+  assert.match(mobilePanelSource, /getJobNameplateCompletion\(selectedJob,\s*\{\s*allowLocal:\s*!isAdmin\s*\}\)/);
+  assert.match(mobileRequirementsSource, /adminServerGuard\s*=\s*Object\.prototype\.hasOwnProperty\.call\(options,\s*['"]allowLocal['"]\)[\s\S]*options\.allowLocal\s*===\s*false/);
+  assert.match(mobileRequirementsSource, /serverGuardRequired:\s*adminServerGuard\s*&&\s*!photosComplete/);
+  assert.match(mobileRequirementsSource, /isComplete:\s*photosComplete\s*\|\|\s*adminServerGuard/);
+
+  // Mobilny ekran nie tworzy sam ręcznego potwierdzenia — decyzja ma pozostać po stronie
+  // jawnego wpisu administratora i serwerowego assert_job_nameplates_complete().
+  assert.doesNotMatch(mobilePanelSource, /Potwierdź ręcznie/);
+  assert.match(v1090Sql, /v_allow_manual\s+boolean\s*:=\s*\([\s\S]*auth\.role\(\)[\s\S]*service_role[\s\S]*public\.current_user_is_admin\(\)/i);
+  assert.match(v1090Sql, /v_allow_manual[\s\S]*public\.nameplate_manual_verifications\s+mv[\s\S]*mv\.job_id\s*=\s*p_job_id[\s\S]*mv\.device_index\s*=\s*v_required\.device_index[\s\S]*mv\.unit_ref/i);
+  assert.match(v1090Sql, /raise exception 'job_nameplates_incomplete:/i);
 
   console.log('desktop nameplate verification status smoke: OK');
 }
