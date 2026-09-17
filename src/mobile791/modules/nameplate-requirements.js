@@ -98,13 +98,24 @@ export function getJobNameplateCompletion(job = {}, options = {}) {
     };
   });
   const missingUnits = units.filter((unit) => !unit.ready);
+  const photosComplete = units.length > 0 && missingUnits.length === 0;
+
+  // JobDetailsPanel przekazuje allowLocal:false wyłącznie administratorowi.
+  // W 10.90 admin może nacisnąć „Zakończ” mimo braku fizycznych zdjęć;
+  // ostateczną decyzję podejmuje backend, który wymaga wtedy ręcznych
+  // potwierdzeń nameplate_manual_verifications dla każdej brakującej JZ/JW.
+  // Pracownik nadal przechodzi wyłącznie ścieżką rzeczywistych zdjęć.
+  const adminServerGuard = Object.prototype.hasOwnProperty.call(options, 'allowLocal')
+    && options.allowLocal === false;
 
   return {
     units,
     missingUnits,
     requiredCount: units.length,
     readyCount: units.length - missingUnits.length,
-    isComplete: units.length > 0 && missingUnits.length === 0,
+    photosComplete,
+    serverGuardRequired: adminServerGuard && !photosComplete,
+    isComplete: photosComplete || adminServerGuard,
   };
 }
 
