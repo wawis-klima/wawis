@@ -1,3 +1,9 @@
+## 10.91
+- Mobilna karta szczegółów nie może poszerzać viewportu nawet przy długim adresie/e-mailu.
+- Administrator na mobile może jawnie potwierdzić ręcznie każdą JZ/JW bez zdjęcia i cofnąć potwierdzenie.
+- Zakończenie zlecenia przez administratora wymaga dla każdej JZ/JW zdjęcia albo ręcznego potwierdzenia; pracownik nadal wymaga zdjęć.
+- Dodano regresję Playwright dla overflow i kontraktu ręcznych potwierdzeń.
+
 ## 10.90
 - Mobilne szczegóły montażu nie rozszerzają już ekranu przy długim adresie, e-mailu lub innych wartościach; treść zawija się wewnątrz karty.
 - Administrator może z widoku mobilnego i desktopowego zakończyć aktywny montaż po ręcznym potwierdzeniu każdej brakującej tabliczki JZ/JW.
