@@ -115,6 +115,9 @@ async function boot() {
     await import('./mobile791/v1057-new-job-form-fix.css')
     await import('./mobile791/v1062-contractors-mobile.css')
     await import('./mobile791/v1064-contractors-compact.css')
+    await import('./mobile791/v1090-details-width.css')
+    await import('./mobile791/v1091-mobile-details-hardening.css')
+    await import('./mobile791/v1092-inline-width.css')
   }
 
   diagnosticsModule.installDiagnosticConsoleCapture()
