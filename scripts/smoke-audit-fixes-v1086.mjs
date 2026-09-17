@@ -6,7 +6,7 @@ import { getOrCreateRefreshPayloadRequest, persistedSnapshotCoversCursor } from 
 import { PHOTO_OFFLINE_TESTING } from '../src/mobile791/modules/photos.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
 
 for (const file of ['src/modules/auth.js', 'src/mobile791/modules/auth.js']) {
   const source = read(file);

@@ -7,3 +7,7 @@ const first=getOrCreateProtocolEmailAttempt(a);getOrCreateProtocolEmailAttempt(b
 assert.equal(first.requestKey,retry.requestKey,'A/B/A must retain logical attempt');
 assert.notEqual(first.requestKey,getOrCreateProtocolEmailAttempt({...a,userId:'user-B'}).requestKey);
 console.log('A04 email attempt A/B/A and owner isolation PASS');
+
+const reloaded=await import('../../src/mobile791/modules/job-protocol-email.js?reload');
+assert.equal(reloaded.getOrCreateProtocolEmailAttempt(a).requestKey,first.requestKey,'reload retains pending operation');
+console.log('A04 fresh module reload PASS');

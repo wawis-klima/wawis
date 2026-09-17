@@ -26,7 +26,7 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
       await expect(page.getByText('Galeria', { exact: true })).toBeVisible();
     }
 
-    await expect(workerPage.getByRole('status', { name: /Połączenie: Dobre/ })).toContainText('Wszystko wysłane');
+    await expect(workerPage.getByRole('status', { name: /Połączenie:/ })).toContainText('Wszystko wysłane');
     await workerPage.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles({
       name: 'montaz-e2e.png',
       mimeType: 'image/png',

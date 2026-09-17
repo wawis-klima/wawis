@@ -1,16 +1,23 @@
-# WAWIS 10.89 — N7 rebuild-only baseline
+# WAWIS 10.89 isolated backend rebuild
 
-These files are **rebuild-only**. They must never be applied as normal production migrations.
+**Staging only. Never apply this baseline to production or as a regular migration.**
 
-Canonical order for a fresh isolated Supabase rebuild:
+The authoritative order is `manifest-v1089.json`. It includes prerequisite protocol/fuel definitions, historical migrations, dependency-ordered legacy service/archive definitions, baseline policies/triggers/ACL and all audit repair migrations. It deliberately loads worker visibility before the dependent comment policy despite timestamp order. Final ACL removes inherited anonymous execution of privileged legacy RPCs.
 
-1. `legacy_schema_bootstrap_v1089.sql`
-2. `legacy_helpers_bootstrap_v1089.sql`
-3. replay the tracked historical `supabase/migrations` through the production baseline (10.88)
-4. apply every timestamped `20260917*_n7_v1089_*.sql` file in this directory in ascending filename order
-5. deploy tracked Edge Functions from `supabase/functions`
-6. run catalog parity, role matrix and real Storage file restore tests
+Prepare SQL without connecting to a database:
 
-The normal production migration `supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql` is intentionally separate: it changes the WAWIS role model so approved employees can read contractor data while contractor writes remain administrator-only.
+```sh
+node scripts/audit-v1089/emit-rebuild.mjs wnctellcoznmgwcpzztm /temporary/path/rebuild.sql
+```
 
-N7 is CLOSED only when a clean rebuild from these repo files reproduces the required production catalog (plus intentional 10.89 deltas) and all release evidence is green.
+On an EMPTY, authorized Supabase staging database, run the generated file with `psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f /temporary/path/rebuild.sql`. Verify that the connection is to `wnctellcoznmgwcpzztm` before running. `verify_audit_v1089.sql` is included. Repeat the same script to check replay behavior. The process does not drop or reset databases and does not deploy Edge Functions. Edge handler deployment/testing, actual Auth/REST/Storage, cron and multiple-connection races require separate staging verification.
+
+Local dependency rehearsal:
+
+```sh
+node scripts/audit-v1089/rebuild-rehearsal.mjs --replay
+```
+
+This uses real PostgreSQL WASM for application SQL but substitutes platform auth/storage/cron shells and omits unsupported pgcrypto/pg_cron extension creation. It is explicitly NOT evidence of a complete Supabase rebuild. It checks dependency order, two full replays and selected catalog/ACL invariants.
+
+At implementation time the requested project returned `Project not found`; the connected account listed only production. No staging reset, rebuild, deployment or deletion was performed. Full staging verification remains NOT VERIFIED. Keep the staging project for independent review once access is restored.

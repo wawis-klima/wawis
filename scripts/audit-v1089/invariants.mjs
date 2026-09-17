@@ -35,6 +35,12 @@ if (finding === 'A01') {
  const patched=(await db.query('select * from contractors')).rows[0];
  assert.equal(patched.street,'Main'); assert.equal(patched.addresses[1].street,'Branch changed');
  assert.equal(patched.phone,'333');
+ await db.exec(`insert into contractors(id,company_name,phone,city,street) values('00000000-0000-4000-8000-000000000004','Other','444','Other HQ','Other Main');
+ update jobs set contractor_id='00000000-0000-4000-8000-000000000004',phone='777',client='Old snapshot';`);
+ const reassigned=(await db.query("select company_name,phone from contractors where id='00000000-0000-4000-8000-000000000004'")).rows[0];
+ assert.equal(reassigned.company_name,'Other');assert.equal(reassigned.phone,'444','reassignment cannot copy old contact');
+ await db.exec(`update jobs set phone='555'`);
+ assert.equal((await db.query("select phone from contractors where id='00000000-0000-4000-8000-000000000004'")).rows[0].phone,'555');
 } else {
  await db.exec(`create or replace function public.current_user_is_admin() returns boolean language sql as $$select true$$;
  insert into photos(job_id,photo_kind,device_index,unit_ref,storage_path) values
@@ -63,5 +69,3 @@ if (finding === 'A01') {
 }
 console.log(`${finding} PASS behavioral SQL`);
 } catch (error) { console.error(finding, error.name, error.message); process.exitCode = 1; } finally { await db.close(); }
-
-
