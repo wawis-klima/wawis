@@ -1,3 +1,12 @@
+## 10.89
+- N7: repozytorium zawiera deterministyczny zestaw plików rebuild Supabase odtwarzający zweryfikowany backend stagingowy.
+- Pracownik może odczytywać dane kontrahenta potrzebne do obsługi montaży.
+- Pracownik może przez kontrolowaną ścieżkę montażu aktualizować nazwę klienta, telefon, e-mail oraz adres główny; dodatkowe adresy i pola administracyjne pozostają zachowane.
+- Bezpośredni INSERT/UPDATE/DELETE tabeli contractors nie został otwarty dla pracownika; usuwanie kontrahenta pozostaje wyłącznie administracyjne.
+- Dodano regresję pilnującą zakresu worker update i blokady bezpośrednich zapisów.
+
+
+
 ## 10.88
 - N2: backendowy guard blokuje zakończenie zlecenia bez kompletnego zestawu tabliczek JW/JZ, również dla multi-split, i serializuje mutacje zdjęć z przejściem do statusu Zakończone.
 - N3: zapis i zastępowanie protokołu używa własnej tożsamości operacji oraz CAS po oczekiwanym storage_path; konkurencyjna zmiana kończy się PROTOCOL_WRITE_CONFLICT zamiast fałszywego sukcesu.
