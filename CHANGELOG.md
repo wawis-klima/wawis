@@ -1,3 +1,6 @@
+## 10.92
+- uzupełnij opis zmian dla wersji 10.92
+
 ## 10.91
 - Mobilna karta szczegółów nie może poszerzać viewportu nawet przy długim adresie/e-mailu.
 - Administrator na mobile może jawnie potwierdzić ręcznie każdą JZ/JW bez zdjęcia i cofnąć potwierdzenie.
