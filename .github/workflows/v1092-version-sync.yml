@@ -1,0 +1,33 @@
+name: WAWIS 10.92 one-shot version sync
+
+on:
+  push:
+    branches: [release/v10.92]
+    paths:
+      - '.github/workflows/v1092-version-sync.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.92
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Bump 10.91 to 10.92
+        run: node version-bump.cjs
+      - name: Remove one-shot workflow
+        run: rm .github/workflows/v1092-version-sync.yml
+      - name: Commit synchronized version metadata
+        run: |
+          git config user.name "wawis-klima"
+          git config user.email "wasik@wawis.pl"
+          git add -A
+          git commit -m "chore(v10.92): synchronize version metadata"
+          git push origin HEAD:release/v10.92
