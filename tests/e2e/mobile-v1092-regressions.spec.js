@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { devices, expect, test } from '@playwright/test';
+import { devices, expect, test, webkit } from '@playwright/test';
 
 const root = process.cwd();
 const mobileStyles = [
@@ -15,50 +15,59 @@ const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone
 test.describe('@mobile 10.92 regressions', () => {
   test.use(iphone14);
 
-  test('link Google Maps w komentarzu administratora nie rozszerza realnego gridu listy montaży', async ({ page }) => {
-    await page.setContent(`
-      <style>${mobileStyles}</style>
-      <div id="root">
-        <main class="page">
-          <div class="stack">
-            <div class="mobileJobList">
-              <div class="mobileJobCard">
-                <button class="mobileJobCardButton">
-                  <div class="mobileJobTop"><strong class="mobileJobClient">KOROŚ PAWEŁ</strong></div>
-                </button>
-              </div>
-              <div class="mobileInlineJobDetails">
-                <div class="card premiumCard">
-                  <section class="detailsSection">
-                    <h4 class="sectionHeadingWithIcon"><span>Komentarz administratora</span></h4>
-                    <div class="muted">Dojazd i ustalenia: https://maps.app.goo.gl/pYtbjZTkYRLFqtYa7?g_st=ic</div>
-                  </section>
+  test('link Google Maps w komentarzu administratora nie rozszerza realnego gridu listy montaży na WebKit/iPhone', async () => {
+    const browser = await webkit.launch();
+    const context = await browser.newContext(iphone14);
+    const page = await context.newPage();
+    try {
+      const longNote = 'Montaż i ustalenia '.repeat(28) + 'mapka dojazdu https://maps.app.goo.gl/pYtbjZTkYRLFqtYa7?g_st=ic';
+      await page.setContent(`
+        <style>${mobileStyles}</style>
+        <div id="root">
+          <main class="page">
+            <div class="stack">
+              <div class="mobileJobList">
+                <div class="mobileJobCard">
+                  <button class="mobileJobCardButton">
+                    <div class="mobileJobTop"><strong class="mobileJobClient">KOROŚ PAWEŁ</strong></div>
+                  </button>
+                </div>
+                <div class="mobileInlineJobDetails">
+                  <div class="card premiumCard">
+                    <section class="detailsSection">
+                      <h4 class="sectionHeadingWithIcon"><span>Komentarz administratora</span></h4>
+                      <div class="muted">${longNote}</div>
+                    </section>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
-    `);
+          </main>
+        </div>
+      `);
 
-    const geometry = await page.evaluate(() => {
-      const viewport = document.documentElement.clientWidth;
-      const list = document.querySelector('.mobileJobList').getBoundingClientRect();
-      const inline = document.querySelector('.mobileInlineJobDetails').getBoundingClientRect();
-      const card = document.querySelector('.premiumCard').getBoundingClientRect();
-      return {
-        viewport,
-        scrollWidth: document.documentElement.scrollWidth,
-        listRight: list.right,
-        inlineRight: inline.right,
-        cardRight: card.right,
-      };
-    });
+      const geometry = await page.evaluate(() => {
+        const viewport = document.documentElement.clientWidth;
+        const list = document.querySelector('.mobileJobList').getBoundingClientRect();
+        const inline = document.querySelector('.mobileInlineJobDetails').getBoundingClientRect();
+        const card = document.querySelector('.premiumCard').getBoundingClientRect();
+        return {
+          viewport,
+          scrollWidth: document.documentElement.scrollWidth,
+          listRight: list.right,
+          inlineRight: inline.right,
+          cardRight: card.right,
+        };
+      });
 
-    expect(geometry.scrollWidth - geometry.viewport).toBeLessThanOrEqual(2);
-    expect(geometry.listRight).toBeLessThanOrEqual(geometry.viewport + 2);
-    expect(geometry.inlineRight).toBeLessThanOrEqual(geometry.viewport + 2);
-    expect(geometry.cardRight).toBeLessThanOrEqual(geometry.viewport + 2);
+      expect(geometry.scrollWidth - geometry.viewport).toBeLessThanOrEqual(2);
+      expect(geometry.listRight).toBeLessThanOrEqual(geometry.viewport + 2);
+      expect(geometry.inlineRight).toBeLessThanOrEqual(geometry.viewport + 2);
+      expect(geometry.cardRight).toBeLessThanOrEqual(geometry.viewport + 2);
+    } finally {
+      await context.close();
+      await browser.close();
+    }
   });
 
   test('administrator może zakończyć bez tabliczek, pracownik nadal nie może', async () => {
