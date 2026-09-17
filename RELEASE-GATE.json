@@ -1,36 +1,30 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.91",
-  "scope": "mobile",
-  "release_branch": "release/v10.91",
+  "version": "10.92",
+  "scope": "mobile+supabase",
+  "release_branch": "release/v10.92",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-17T20:02:33.322Z",
-    "result": "INFO",
-    "notes": "10.91: poprawka mobilnego overflow oraz mobilne ręczne potwierdzanie tabliczek przez administratora. Bez nowych zmian schematu Supabase; używa istniejącej tabeli nameplate_manual_verifications i guardu 10.90."
+    "checked_at": "2026-09-17T23:53:26Z",
+    "result": "RED_REPRODUCED",
+    "notes": "10.91 baseline: 2/2 kontrprzykłady RED — produkcyjny src/main.jsx nie ładował v1090/v1091 width hardeningu; administrator nie miał bezpośredniego bypassu tabliczek."
   },
   "predeploy_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": true,
-    "checked_at": "2026-09-17T20:07:37.434Z",
-    "result": "PASS",
-    "notes": "10.91 precheck PASS: spójność wersji, istniejący smoke wymogu tabliczek, nowe Playwright regresje overflow + mobilne ręczne potwierdzenia oraz production build. Finalny WAWIS PR checks run #202 dla head f2b079a369a77cc785d24a76b2d8ddace02af267: SUCCESS."
+    "result": "PENDING",
+    "notes": "Wymagane GREEN: runtime import width hardening, mobile width regression, admin direct finish vs worker photo guard, staging Supabase, production build."
   },
   "main_protection": {
-    "source_branch": "release/v10.91",
-    "ready_for_main": true,
+    "source_branch": "release/v10.92",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "checked_at": "2026-09-17T20:12:00Z",
-    "result": "PASS",
-    "release_head": "f2b079a369a77cc785d24a76b2d8ddace02af267",
-    "production_main_sha": "faae096e73030553680b83a2469a8de687907e27",
-    "production_supabase_ref": "uohziyaudbpwmupvljyd",
-    "notes": "PR #58 zmergowany po zielonym WAWIS PR checks. Vercel dla dokładnego merge SHA zgłosił SUCCESS. Wdrożone drzewo zawiera app-version 10.91 i Service Worker cache wawis-app-shell-v10.91. 10.91 nie wymaga nowych migracji Supabase; używa istniejącego nameplate_manual_verifications i backendowego guardu 10.90. Od merge 2026-09-17T20:11:11Z do kontroli post-deploy: 0 nowych app_diagnostic_events i 0 error/fatal."
+    "result": "PENDING",
+    "notes": "Po merge: zastosować migrację 10.92, Vercel SUCCESS, app-version/SW 10.92, kontrola diagnostyki i usunięcie stagingu."
   },
   "archive": {
     "source_of_truth": "github-main",
