@@ -8,8 +8,8 @@ Branch: fix/v10.89-audit-red. No production deployment or mutation authorized/pe
 | A01 | Executed, evidence/baseline-A01.log | SQL migration | Local PostgreSQL WASM PASS | --baseline fails again | Group 1 | PARTIALLY VERIFIED | Name-only edit must preserve HQ/Main, secondary Branch/Other and phone 222; explicit field patches only |
 | A02 | Executed, evidence/baseline-A02.log | SQL migration | Local PostgreSQL WASM PASS | --baseline fails again | Group 1 | PARTIALLY VERIFIED | Revalidate model/serial changes of completed jobs, including multi-split |
 | A03 | Executed, evidence/baseline-A03.log | Group 2 implementation | Local counterexample PASS | Pending | Group 2 | PARTIALLY VERIFIED | E1 generation 1 → CLEAR → E2 generation 1; reject stale E1 SET/CLEAR/410 |
-| A04 | Pending | Pending | Pending | Pending | — | NOT VERIFIED | A/B/A registry; lost provider response and retry 25h; immutable PDF and body timeout |
-| A05 | Pending | Pending | Pending | Pending | — | NOT VERIFIED | Delayed SENT after DELIVERED; new send between callbacks |
+| A04 | Executed, logs in evidence | Group 3 | Local handler/SQL PASS | Pending broader controls | Group 3 | PARTIALLY VERIFIED | A/B/A registry; lost provider response and retry 25h; immutable PDF and body timeout |
+| A05 | Executed, logs in evidence | Group 3 | Local handler/SQL PASS | Pending broader controls | Group 3 | PARTIALLY VERIFIED | Delayed SENT after DELIVERED; new send between callbacks |
 | A06 | Executed, evidence/baseline-A06.log | Group 2 implementation | Local counterexample PASS | Pending | Group 2 | PARTIALLY VERIFIED | A pending → B; owner at restore/retry/save/cleanup; stable retry, distinct identical fills, tabs |
 | A07 | Pending | Pending | Pending | Pending | — | NOT VERIFIED | Empty DB → repo-only rebuild; inventory, replay, roles and storage |
 | A08 | Pending | Pending | Pending | Pending | — | NOT VERIFIED | Replace unsupported behavioral claims with executable counterexamples |
@@ -47,3 +47,11 @@ Current limitation: staging access absent. Required live concurrency/rebuild/rol
 `node scripts/audit-v1089/loaders.mjs`: all five actual extracted loaders reproduced OLD overwriting NEW before changes (desktop/mobile Devices, desktop/mobile Contractors, Fuel). Current loaders use actual async-scope module; NEW/OLD, late rejection, close/unmount/logout/account invalidation pass. This executes loaders with controlled transport/setters; React hook wiring and cache internals still need browser evidence.
 
 `npm run build`: PASS after group 2 on Node 24.14.1, existing chunk-size/dynamic-import warnings only. No deployment.
+
+## Group 3
+
+`node scripts/audit-v1089/email-attempts.mjs`: real module A/B/A and owner namespace, RED before edit then PASS. `node scripts/audit-v1089/email-edge.mjs`: full TS handler (types stripped), controlled provider with 24h retention, accept/lost response then 25h retry: baseline 2 deliveries, repaired 1. No actual e-mail sent. Uncertain sending is reconciliation-only, never another provider POST; sent logs reconcile successfully. Provider uncertainty may require operator/provider confirmation; automatic eventual delivery is not claimed. PDF storage path and signing version recorded, old attempt cannot silently switch path; no provider retry can reload a changed PDF. Deadline includes response body. Unique pending version prevents competing request keys and returns winner identity. Body/replacement/browser reload and true parallel PostgreSQL tests still pending.
+
+`node scripts/audit-v1089/sms-race.mjs`: baseline exact handler READ→barrier→DELIVERED→late SENT regressed. Corrected handler delegates to actual SQL RPC; delayed request runs after DELIVERED without regression; old callback cannot update jobs after insertion of a new send. SQL locks log and job in one transaction; job points to exact sms_log identity. PGlite serializes SQL calls, so this is not a multi-connection PostgreSQL lock proof. Staging concurrency required.
+
+Staging access independently checked again: list_projects exposes only production; list_branches only main. No staging deletion or creation performed.

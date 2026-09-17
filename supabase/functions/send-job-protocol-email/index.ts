@@ -5,6 +5,7 @@ type ProtocolEmailRequest = {
   protocolId?: string;
   recipientEmail?: string;
   requestKey?: string;
+  protocolStoragePath?: string;
 };
 
 type ProtocolRow = {
@@ -92,6 +93,7 @@ Deno.serve(async (request: Request) => {
       .maybeSingle();
 
     if (protocolError || !protocol) return json({ error: "Nie znaleziono podpisanego protokołu do wysłania." }, 404);
+    if (body.protocolStoragePath && body.protocolStoragePath !== protocol.storage_path) return json({error:'Wersja PDF uległa zmianie; istniejąca próba nie może zmienić treści.',pending:true,requestKey},409);
     if (Number(protocol.file_size_bytes || 0) <= 0 || Number(protocol.file_size_bytes) > MAX_PROTOCOL_SIZE) {
       return json({ error: "Plik protokołu ma nieprawidłowy rozmiar." }, 400);
     }
@@ -133,6 +135,10 @@ Deno.serve(async (request: Request) => {
       }
     }
 
+    // Once claimed, an uncertain operation is reconciliation-only. Never issue
+    // another provider POST, including after its idempotency retention expires.
+    if (existingLog) return json({error:'Wynik poprzedniej wysyłki wymaga potwierdzenia dostawcy. Nie wysłano ponownie.',pending:true,providerResultUnknown:true,requestKey},409);
+
     if (!existingLog) {
       const rateLimitAfter = new Date(Date.now() - RATE_LIMIT_SECONDS * 1000).toISOString();
       const { data: recentSend } = await adminClient
@@ -156,6 +162,8 @@ Deno.serve(async (request: Request) => {
       const nowIso = new Date().toISOString();
       const logRow = {
         request_key: requestKey,
+        protocol_storage_path: protocol.storage_path,
+        protocol_signed_at: protocol.signed_at || null,
         job_id: jobId,
         protocol_id: protocolId,
         recipient_email: jobRecipient,
@@ -173,13 +181,17 @@ Deno.serve(async (request: Request) => {
 
       if (logError || !insertedLog) {
         if (String(logError?.code || "") === "23505") {
-          return json({ error: "Ta sama próba została rozpoczęta równolegle. Ponów z tym samym kluczem.", pending: true, requestKey }, 409);
+          const {data: winner} = await adminClient.from('job_protocol_email_log').select('request_key')
+            .eq('sent_by',authData.user.id).eq('protocol_id',protocolId).eq('recipient_email',jobRecipient)
+            .eq('protocol_storage_path',protocol.storage_path).eq('status','sending').maybeSingle();
+          return json({ error: "Ta sama operacja jest już przetwarzana.", pending: true, requestKey: winner?.request_key || requestKey }, 409);
         }
         return json({ error: `Nie udało się rozpocząć wysyłki protokołu. ${logError?.message || ""}`.trim() }, 500);
       }
       emailLog = insertedLog;
     }
 
+    let providerStarted = false;
     try {
       const { data: pdfBlob, error: downloadError } = await adminClient.storage
         .from("job-protocols")
@@ -195,7 +207,9 @@ Deno.serve(async (request: Request) => {
       const providerController = new AbortController();
       const providerTimeout = setTimeout(() => providerController.abort(), PROVIDER_TIMEOUT_MS);
       let resendResponse: Response;
+      let providerBody: unknown;
       try {
+        providerStarted = true;
         resendResponse = await fetch(RESEND_ENDPOINT, {
           method: "POST",
           headers: {
@@ -222,6 +236,15 @@ Deno.serve(async (request: Request) => {
             ],
           }),
         });
+        // The deadline covers body consumption too, including transports that
+        // return headers but never finish the response stream.
+        providerBody = await Promise.race([
+          resendResponse.json(),
+          new Promise((_, reject) => {
+            if (providerController.signal.aborted) reject(new Error('provider body timeout'));
+            else providerController.signal.addEventListener('abort', () => reject(new Error('provider body timeout')), { once: true });
+          }),
+        ]);
       } catch (providerError) {
         const providerUnknown = truncate(`provider_result_unknown: ${providerError instanceof Error ? providerError.message : String(providerError)}`, 1200);
         await adminClient.from("job_protocol_email_log").update({
@@ -229,7 +252,7 @@ Deno.serve(async (request: Request) => {
           error_message: providerUnknown,
         }).eq("id", emailLog.id);
         return json({
-          error: "Serwer pocztowy nie potwierdził wyniku. Ponów wysyłkę — zostanie użyty ten sam klucz próby.",
+          error: "Serwer pocztowy nie potwierdził wyniku. Sprawdź stan ponownie; wiadomość nie zostanie wysłana drugi raz.",
           pending: true,
           providerResultUnknown: true,
           requestKey,
@@ -238,7 +261,9 @@ Deno.serve(async (request: Request) => {
         clearTimeout(providerTimeout);
       }
 
-      const providerBody = await safeResponseJson(resendResponse);
+      if (!resendResponse.ok && (resendResponse.status >= 500 || resendResponse.status === 429)) {
+        return json({error:'Dostawca nie potwierdził doręczenia. Wymagane uzgodnienie wyniku.',pending:true,providerResultUnknown:true,requestKey},503);
+      }
       if (!resendResponse.ok) {
         const rejection = truncate(normalizeText((providerBody as Record<string, unknown>)?.message) || `Serwer pocztowy odrzucił wysyłkę (${resendResponse.status}).`, 1200);
         await adminClient.from("job_protocol_email_log").update({
@@ -279,6 +304,7 @@ Deno.serve(async (request: Request) => {
       });
     } catch (error) {
       const errorMessage = truncate(error instanceof Error ? error.message : String(error), 1200);
+      if (providerStarted) return json({error:errorMessage,pending:true,providerResultUnknown:true,requestKey},503);
       await adminClient.from("job_protocol_email_log").update({
         status: "failed",
         error_message: errorMessage,
