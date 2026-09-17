@@ -7,10 +7,10 @@ The authoritative order is `manifest-v1089.json`. It includes prerequisite proto
 Prepare SQL without connecting to a database:
 
 ```sh
-node scripts/audit-v1089/emit-rebuild.mjs wnctellcoznmgwcpzztm /temporary/path/rebuild.sql
+node scripts/audit-v1089/emit-rebuild.mjs hlfvjbidopyraycwkbfg /temporary/path/rebuild.sql
 ```
 
-On an EMPTY, authorized Supabase staging database, run the generated file with `psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f /temporary/path/rebuild.sql`. Verify that the connection is to `wnctellcoznmgwcpzztm` before running. `verify_audit_v1089.sql` is included. Repeat the same script to check replay behavior. The process does not drop or reset databases and does not deploy Edge Functions. Edge handler deployment/testing, actual Auth/REST/Storage, cron and multiple-connection races require separate staging verification.
+On an EMPTY, authorized Supabase staging database, run the generated file with `psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f /temporary/path/rebuild.sql`. Verify that the connection is to `hlfvjbidopyraycwkbfg` before running. `verify_audit_v1089.sql` is included. Repeat the same script to check replay behavior. The process does not drop or reset databases and does not deploy Edge Functions. Edge handler deployment/testing, actual Auth/REST/Storage, cron and multiple-connection races require separate staging verification.
 
 Local dependency rehearsal:
 

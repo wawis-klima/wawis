@@ -1,6 +1,6 @@
 {
   "baseline": "ab3a3ad5eb2a3b346800307370f136e5d8b52c43",
-  "stagingOnly": "wnctellcoznmgwcpzztm",
+  "stagingOnly": "hlfvjbidopyraycwkbfg",
   "files": [
     "supabase/rebuild/legacy_schema_bootstrap_v1089.sql",
     "supabase/rebuild/legacy_helpers_bootstrap_v1089.sql",
