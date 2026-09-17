@@ -35,11 +35,11 @@ Pozostałe ostrzeżenia `authenticated SECURITY DEFINER` pozostają do świadome
 
 ## 15 mutable search_path
 
-Wskazane funkcje to triggery/normalizatory i nie są `SECURITY DEFINER`. Ich odwołania do obiektów aplikacji są już schema-qualified albo korzystają z funkcji `pg_catalog`, dlatego 10.90 przypina `search_path = ''` bez zmiany logiki biznesowej.
+Wskazane funkcje to triggery/normalizatory i nie są `SECURITY DEFINER`. Ich odwołania do obiektów aplikacji są schema-qualified albo korzystają z wbudowanych funkcji PostgreSQL, dlatego 10.90 przypina `search_path = ''` bez zmiany logiki biznesowej.
 
 ## Private tombstone INFO
 
-Dla `private.push_subscription_lifecycle_tombstones` potwierdzono:
+Dla `private.push_subscription_lifecycle_tombstones` potwierdzono na produkcji read-only:
 
 - `anon` nie ma `USAGE` na schema `private`;
 - `authenticated` nie ma `USAGE` na schema `private`;
@@ -83,9 +83,59 @@ Mutation controls celowo przywracają kolejno:
 
 Każda mutacja musi zostać odrzucona przez test.
 
+## Realny staging 10.90
+
+Tymczasowy Supabase branch:
+
+- nazwa: `wawis-10-90-security-staging`;
+- branch id: `fe7e0006-6e8e-42e3-a3c2-7d12708704cf`;
+- project ref: `sailtkxxyvcalcndrpyh`;
+- parent produkcyjny: `uohziyaudbpwmupvljyd`;
+- koszt przy utworzeniu: `0.01344 USD/h`;
+- produkcja nie była modyfikowana.
+
+Automatyczny replay historycznych migracji Supabase nie odtworzył pełnego schematu (po resecie branch miał tylko dwa najstarsze wpisy i brak kluczowych tabel/funkcji). Nie potraktowano takiego stanu jako wiarygodnego stagingu aplikacji.
+
+Ponieważ migracja 10.90 jest wyłącznie hardeningiem `ALTER FUNCTION` + ACL, wykonano na realnym Supabase kontrolowany fixture runtime obejmujący dokładne podpisy funkcji. Dla trzech kluczowych funkcji (`admin_list_deleted_jobs`, `job_file_can_be_deleted`, `storage_object_job_id`) użyto następnie dokładnych definicji odczytanych read-only z produkcji i ponownie zastosowano tę samą migrację 10.90.
+
+### Wynik katalogu po migracji
+
+- `admin_list_deleted_jobs()` — `SECURITY DEFINER`, `search_path=''`, `anon EXECUTE=false`, `authenticated/service_role=true` — PASS;
+- `job_file_can_be_deleted(text,text)` — `SECURITY DEFINER`, `search_path=''`, `anon EXECUTE=false`, `authenticated/service_role=true` — PASS;
+- `storage_object_job_id(text)` — `SECURITY INVOKER`, `search_path=''` — PASS;
+- wszystkie 15 funkcji z lintu mutable search_path — `search_path=''` — PASS.
+
+### Negatywne i dodatnie wywołania ról
+
+- `anon -> admin_list_deleted_jobs()` — `42501 permission denied` — PASS;
+- `anon -> job_file_can_be_deleted(...)` — `42501 permission denied` — PASS;
+- `authenticated -> admin_list_deleted_jobs()` na dokładnej definicji produkcyjnej — wykonuje się, 0 rekordów fixture — PASS;
+- `authenticated -> job_file_can_be_deleted(...)` na dokładnej definicji produkcyjnej — wykonuje się, wynik `false` bez JWT fixture — PASS;
+- `authenticated -> storage_object_job_id('00000000-0000-4000-8000-000000000001/test.jpg')` — zwraca `00000000-0000-4000-8000-000000000001` po zmianie na INVOKER — PASS.
+
+### Supabase Security Advisor po migracji
+
+Na stagingu po wyrównaniu ACL helperów do produkcji:
+
+- `anon_security_definer_function_executable` dla zakresu 10.90 — brak — PASS;
+- `function_search_path_mutable` dla zakresu 10.90 — brak — PASS;
+- pozostały wyłącznie ostrzeżenia `authenticated_security_definer_function_executable` dla świadomie dostępnych RPC/helperów; nie są wyciszane masowym REVOKE.
+
+Remediation reference dla lintu `anon SECURITY DEFINER`: https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable
+
+Remediation reference dla mutable search_path: https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable
+
+## Ograniczenia evidence
+
+- To jest realny test runtime PostgreSQL/ACL/Advisor na branchu Supabase, ale nie pełny rebuild całej aplikacyjnej bazy 10.89, ponieważ automatyczny branch replay historycznych migracji nadal nie jest wiarygodny.
+- Nie wykonano osobnego HTTP requestu przez PostgREST; uprawnienia ról i realne wywołania funkcji sprawdzono bezpośrednio w PostgreSQL na rzeczywistych rolach `anon`/`authenticated`.
+- Nie zmieniono polityk Storage; zweryfikowano funkcję parsera używaną przez Storage jako `SECURITY INVOKER` oraz jej wykonanie dla `authenticated`.
+- Pełne CI, E2E i build pozostają obowiązkową końcową bramką release.
+
 ## Status
 
-- Repo/local: GREEN dla testu statycznego + mutation controls.
-- Staging runtime / PostgREST / Storage / Advisor: PENDING.
+- Repo/local: GREEN dla testu statycznego + mutation controls 4/4.
+- Realny Supabase staging — ACL/search_path/actual production function definitions/Advisor: GREEN w zakresie hardeningu 10.90.
 - Produkcja zmodyfikowana: **NO**.
-- 10.90 gotowe do `main`: **NO** do czasu runtime staging i zielonej bramki wydania.
+- Staging pozostaje aktywny do finalnego domknięcia 10.90, potem musi zostać usunięty.
+- 10.90 gotowe do `main`: **NO** do czasu zielonego finalnego `WAWIS PR checks / targeted-checks`.
