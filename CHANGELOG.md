@@ -1,5 +1,10 @@
 ## 10.92
-- uzupełnij opis zmian dla wersji 10.92
+- Produkcyjny mobilny entrypoint ładuje teraz faktyczne arkusze hardeningu szerokości 10.90/10.91 oraz końcowy guard 10.92; wcześniej poprawka 10.91 istniała w repo, ale nie była dołączona przez używany na telefonie `src/main.jsx`.
+- Mobilna lista montaży ma wymuszoną kolumnę `minmax(0, 1fr)`, a rozwinięte szczegóły i komentarz administratora nie mogą zwiększyć szerokości viewportu.
+- Administrator może zakończyć aktywne zlecenie bez zdjęć tabliczek znamionowych i bez ręcznego potwierdzania JZ/JW.
+- Pracownik nadal musi posiadać komplet rzeczywistych zdjęć wymaganych tabliczek; backend egzekwuje ten warunek.
+- Ręczne potwierdzanie tabliczek pozostaje opcjonalną funkcją administracyjną, ale nie jest warunkiem zakończenia przez administratora.
+- Dodano kontrprzykłady RED 10.91 dla brakującego produkcyjnego importu CSS i admin-bypassu.
 
 ## 10.91
 - Mobilna karta szczegółów nie może poszerzać viewportu nawet przy długim adresie/e-mailu.
