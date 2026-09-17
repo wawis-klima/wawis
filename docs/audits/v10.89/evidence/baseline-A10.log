@@ -1,0 +1,45 @@
+LF exit 0
+CRLF exit 1
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: src/modules/auth.js: late SIGNED_OUT catch must be generation-guarded
+
+false !== true
+
+    at file:///C:/Users/wasik/Documents/Codex/2026-09-17/files-pasted-by-the-user-wawis/work/wawis-fix/scripts/smoke-audit-fixes-v1086.mjs:13:10
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: CRLF source inputs must pass same real smoke
+
+1 !== 0
+
+    at file:///C:/Users/wasik/Documents/Codex/2026-09-17/files-pasted-by-the-user-wawis/work/wawis-fix/scripts/audit-v1089/eol.mjs:5:81
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

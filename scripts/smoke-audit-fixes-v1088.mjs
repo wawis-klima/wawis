@@ -9,30 +9,30 @@ const AUDIT_SHA = '74b895c849cdb7644250acf0de7933fc9ef7f1a5';
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8').replace(/\r\n/g, '\n');
 const auditRead = (relative) => execFileSync('git', ['show', `${AUDIT_SHA}:${relative}`], { cwd: root, encoding: 'utf8' }).replace(/\r\n/g, '\n');
 
-// RED — exact audited 10.84 behavior must be reproducible before accepting the fixes.
+// Auxiliary historical SOURCE checks. These do not execute historical behavior.
 const oldGuard = auditRead('supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql');
 assert.match(oldGuard, /old\.status='W trakcie'\s+and new\.status='Zakończone'/i);
 assert.doesNotMatch(oldGuard, /photos|nameplate|tabliczk/i, '10.84 guard unexpectedly validates nameplates');
-console.log('RED N2 reproduced on 10.84: DB job completion guard does not validate JW/JZ nameplates.');
+console.log('SOURCE N2 on 10.84: DB job completion guard does not validate JW/JZ nameplates.');
 
 const oldProtocol = auditRead('src/mobile791/modules/job-protocol-storage.js');
 assert.match(oldProtocol, /reconciliation\.confirmed\s*&&\s*!existing\.record\s*&&\s*reconciliation\.record\)\s*return reconciliation\.record/);
 assert.doesNotMatch(oldProtocol, /PROTOCOL_WRITE_CONFLICT|expectedStoragePath|\.eq\(["']storage_path["']/);
-console.log('RED N3 reproduced on 10.84: a competing protocol record can be accepted as own success and replace is not CAS-bound.');
+console.log('SOURCE N3 on 10.84: a competing protocol record can be accepted as own success and replace is not CAS-bound.');
 
 const oldFuel = auditRead('src/modules/fuel.js');
 const oldFuelFn = oldFuel.slice(oldFuel.indexOf('export async function addFuelEntry'), oldFuel.indexOf('export async function updateFuelEntry'));
 assert.doesNotMatch(oldFuelFn, /entryId|attemptId|operationId/);
 assert.match(oldFuelFn, /\.insert\(\{\s*vehicle_id:/s);
-console.log('RED N4 reproduced on 10.84: fuel retry has no stable operation UUID in the INSERT.');
+console.log('SOURCE N4 on 10.84: fuel retry has no stable operation UUID in the INSERT.');
 
 const oldEmailClient = auditRead('src/mobile791/modules/job-protocol-email.js');
 assert.match(oldEmailClient, /requestKey:\s*createRequestKey\(\)/);
 const oldEmailEdge = auditRead('supabase/functions/send-job-protocol-email/index.ts');
 assert.doesNotMatch(oldEmailEdge, /AbortController|provider_result_unknown|existingSend|existingLog/);
-console.log('RED N5 reproduced on 10.84: every retry gets a new request key and provider uncertainty is not reconciled.');
+console.log('SOURCE N5 on 10.84: every retry gets a new request key and provider uncertainty is not reconciled.');
 
-// GREEN — current candidate must implement the stronger contracts.
+// Auxiliary current SOURCE checks. Behavior is executed by the audit gate below.
 const n2MigrationPath = 'supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql';
 assert.ok(fs.existsSync(path.join(root, n2MigrationPath)), 'N2 migration is missing');
 const n2Migration = read(n2MigrationPath);
@@ -81,4 +81,5 @@ assert.match(emailEdge, /Idempotency-Key/);
 const groups = read('scripts/test-groups.cjs');
 assert.match(groups, /smoke-audit-fixes-v1088\.mjs/);
 
-console.log('GO: 10.88 N2/N3/N4/N5 behavioral contracts are closed.');
+console.log('10.88 auxiliary source checks passed; running executable audit scenarios.');
+execFileSync(process.execPath, ['scripts/audit-v1089/run.mjs'], { cwd: root, stdio: 'inherit' });

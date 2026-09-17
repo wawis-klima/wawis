@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePanelLoadGuard } from '../../hooks/usePanelLoadGuard.js';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   addFuelEntry,
   calculateFuelConsumptionStats,
@@ -26,24 +27,51 @@ const WARSAW_DATE_TIME = new Intl.DateTimeFormat('pl-PL', {
 const HISTORY_PAGE_SIZE = 5;
 const FUEL_ENTRY_ATTEMPT_STORAGE_KEY = 'fuel-entry-attempt-v1088';
 
-function loadFuelEntryAttempt() {
-  if (typeof localStorage === 'undefined') return null;
+function loadFuelEntryAttempt(userId) {
+  if (!userId || typeof localStorage === 'undefined') return null;
   try {
-    const parsed = JSON.parse(localStorage.getItem(FUEL_ENTRY_ATTEMPT_STORAGE_KEY) || 'null');
-    return parsed?.entryId && parsed?.fingerprint ? parsed : null;
-  } catch {
-    return null;
-  }
+    const key = `${FUEL_ENTRY_ATTEMPT_STORAGE_KEY}:${userId}`;
+    let entryId = null;
+    try { entryId = sessionStorage.getItem(key); } catch {}
+    if (entryId === '') return null; // explicit new form in this tab
+    const raw = entryId ? localStorage.getItem(`${key}:${entryId}`) : localStorage.getItem(key);
+    const parsed = JSON.parse(raw || 'null');
+    return parsed?.ownerUserId === userId && parsed?.entryId && parsed?.fingerprint ? parsed : null;
+  } catch { return null; }
 }
-
-function persistFuelEntryAttempt(attempt) {
-  if (typeof localStorage === 'undefined') return;
+function listFuelEntryAttempts(userId) {
+  if (!userId || typeof localStorage === 'undefined') return [];
+  const prefix = `${FUEL_ENTRY_ATTEMPT_STORAGE_KEY}:${userId}:`;
+  const entries = [];
   try {
-    if (attempt) localStorage.setItem(FUEL_ENTRY_ATTEMPT_STORAGE_KEY, JSON.stringify(attempt));
-    else localStorage.removeItem(FUEL_ENTRY_ATTEMPT_STORAGE_KEY);
-  } catch {
-    // Retry w tej samej sesji nadal korzysta ze stanu React.
-  }
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith(prefix)) continue;
+      const attempt = JSON.parse(localStorage.getItem(key) || 'null');
+      if (attempt?.ownerUserId === userId && attempt?.entryId) entries.push(attempt);
+    }
+  } catch {}
+  return entries;
+}
+function persistFuelEntryAttempt(attempt, userId, expectedEntryId = '') {
+  if (!userId || typeof localStorage === 'undefined') return false;
+  if (attempt && attempt.ownerUserId !== userId) return false;
+  try {
+    const key = `${FUEL_ENTRY_ATTEMPT_STORAGE_KEY}:${userId}`;
+    if (attempt) {
+      // Separate operation keys avoid cross-tab read/modify/write of a shared map.
+      localStorage.setItem(`${key}:${attempt.entryId}`, JSON.stringify(attempt));
+      localStorage.setItem(key, JSON.stringify(attempt));
+      try { sessionStorage.setItem(key, attempt.entryId); } catch {}
+    } else {
+      if (!expectedEntryId) return false;
+      localStorage.removeItem(`${key}:${expectedEntryId}`);
+      const pointer = JSON.parse(localStorage.getItem(key) || 'null');
+      if (pointer?.ownerUserId === userId && pointer.entryId === expectedEntryId) localStorage.removeItem(key);
+      try { if (sessionStorage.getItem(key) === expectedEntryId) sessionStorage.setItem(key, ''); } catch {}
+    }
+    return true;
+  } catch { return false; }
 }
 
 function getFuelEntryAttemptFingerprint({ vehicleId, liters, odometerKm, odometerMode }) {
@@ -139,7 +167,9 @@ function formatMonthLabel(monthKey) {
   return label ? label[0].toUpperCase() + label.slice(1) : monthKey;
 }
 
-export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = false, logDiagnostic = () => {} }) {
+export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOverview = false, logDiagnostic = () => {} }) {
+  const loadGuard = usePanelLoadGuard(supabase, userId);
+  const saveGuard = usePanelLoadGuard(supabase, userId);
   const [vehicles, setVehicles] = useState([]);
   const [entries, setEntries] = useState([]);
   const [vehicleId, setVehicleId] = useState('');
@@ -169,17 +199,30 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [fuelEntryAttempt, setFuelEntryAttempt] = useState(() => loadFuelEntryAttempt());
+  const [fuelEntryAttempt, setFuelEntryAttempt] = useState(() => loadFuelEntryAttempt(userId));
 
+  const [pendingAttempts, setPendingAttempts] = useState(() => listFuelEntryAttempts(userId));
+  const savingRef = useRef(false);
+  const attemptRef = useRef(fuelEntryAttempt);
   const rememberFuelEntryAttempt = useCallback((attempt) => {
-    setFuelEntryAttempt(attempt || null);
-    persistFuelEntryAttempt(attempt || null);
-  }, []);
+    if (attempt?.ownerUserId !== userId) return;
+    attemptRef.current = attempt;
+    setFuelEntryAttempt(attempt);
+    persistFuelEntryAttempt(attempt, userId);
+    setPendingAttempts(listFuelEntryAttempts(userId));
+  }, [userId]);
 
   const clearFuelEntryAttempt = useCallback(() => {
+    persistFuelEntryAttempt(null, userId, attemptRef.current?.entryId);
+    attemptRef.current = null;
     setFuelEntryAttempt(null);
-    persistFuelEntryAttempt(null);
-  }, []);
+    setPendingAttempts(listFuelEntryAttempts(userId));
+  }, [userId]);
+
+  function detachFuelEntryAttempt() {
+    attemptRef.current = null; setFuelEntryAttempt(null);
+    try { sessionStorage.setItem(`${FUEL_ENTRY_ATTEMPT_STORAGE_KEY}:${userId}`, ""); } catch {}
+  }
 
   const activeVehicles = useMemo(() => vehicles.filter((vehicle) => vehicle.is_active), [vehicles]);
   const lastOdometerForVehicle = useMemo(() => {
@@ -264,10 +307,12 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
   );
 
   const refresh = useCallback(async () => {
+    const isCurrent = loadGuard.begin();
     setLoading(true);
     setError('');
     try {
       const data = await loadFuelModuleData({ supabase, isAdmin, entryLimit: displayVehicleOverview ? 1000 : 100 });
+      if (!isCurrent()) return;
       setVehicles(data.vehicles);
       setEntries(data.entries);
       setHistoryVehicleId((current) => data.vehicles.some((vehicle) => vehicle.id === current) ? current : '');
@@ -276,16 +321,17 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
         return data.vehicles.find((vehicle) => vehicle.is_active)?.id || '';
       });
     } catch (loadError) {
+      if (!isCurrent()) return;
       setError(loadError?.message || 'Nie udało się pobrać danych tankowań.');
       logDiagnostic('fuel.load.failed', { module: 'fuel', error: loadError });
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [displayVehicleOverview, isAdmin, logDiagnostic, supabase]);
+  }, [loadGuard, displayVehicleOverview, isAdmin, logDiagnostic, supabase]);
 
   useEffect(() => { void refresh(); }, [refresh]);
   useEffect(() => {
-    if (!fuelEntryAttempt) return;
+    if (!fuelEntryAttempt || fuelEntryAttempt.ownerUserId !== userId) return;
     setVehicleId((current) => current || String(fuelEntryAttempt.vehicleId || ''));
     setLiters((current) => current || String(fuelEntryAttempt.liters || ''));
     setOdometerKm((current) => current || String(fuelEntryAttempt.odometerKm || ''));
@@ -318,7 +364,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
 
   function selectOdometerMode(nextMode) {
     if (nextMode === odometerMode) return;
-    clearFuelEntryAttempt();
+    detachFuelEntryAttempt();
     resetOdometerPhoto();
     setOdometerMode(nextMode);
   }
@@ -327,7 +373,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
-    clearFuelEntryAttempt();
+    detachFuelEntryAttempt();
     setReadingOdometer(true);
     setError('');
     setMessage('');
@@ -359,6 +405,9 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (savingRef.current || !userId) return;
+    savingRef.current = true;
+    const isCurrent = saveGuard.begin();
     setEntrySaveInProgress(true);
     setBusy(true);
     setError('');
@@ -395,9 +444,10 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
         }
       }
       const fingerprint = getFuelEntryAttemptFingerprint({ vehicleId, liters, odometerKm, odometerMode });
-      let activeAttempt = fuelEntryAttempt?.fingerprint === fingerprint
+      let activeAttempt = fuelEntryAttempt?.ownerUserId === userId && fuelEntryAttempt?.fingerprint === fingerprint
         ? fuelEntryAttempt
         : {
+          ownerUserId: userId,
           entryId: createFuelEntryAttemptId(),
           fingerprint,
           vehicleId,
@@ -418,13 +468,17 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
         odometerPhotoBlob: odometerMode === 'photo' ? odometerPhotoBlob : null,
         odometerAiConfidence: odometerMode === 'photo' && !manualCorrection ? odometerConfidence : null,
         odometerReadSource: odometerMode === 'photo' && !manualCorrection ? odometerSource : 'manual',
+        ownerUserId: userId,
+        isAttemptCurrent: isCurrent,
         entryId: activeAttempt.entryId,
         existingPhotoPath: activeAttempt.photoPath || '',
         onAttemptProgress: (patch) => {
+          if (!isCurrent()) return;
           activeAttempt = { ...activeAttempt, ...patch };
           rememberFuelEntryAttempt(activeAttempt);
         },
       });
+      if (!isCurrent()) return;
       clearFuelEntryAttempt();
       setEntries((current) => [saved, ...current.filter((entry) => entry.id !== saved?.id)]);
       if (!isAdmin && saved?.id) {
@@ -436,6 +490,7 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
           logDiagnostic('fuel.push.failed', { module: 'fuel', fuelEntryId: saved.id, error: pushError });
         }
       }
+      if (!isCurrent()) return;
       setLiters('');
       resetOdometerPhoto();
       setMessage(odometerMode === 'photo'
@@ -447,11 +502,12 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
         odometerCorrected: odometerMode === 'photo' && manualCorrection,
       });
     } catch (saveError) {
+      if (!isCurrent()) return;
       setError(saveError?.message || 'Nie udało się zapisać tankowania.');
       logDiagnostic('fuel.save.failed', { module: 'fuel', error: saveError });
     } finally {
-      setBusy(false);
-      setEntrySaveInProgress(false);
+      savingRef.current = false;
+      if (isCurrent()) { setBusy(false); setEntrySaveInProgress(false); }
     }
   }
 
@@ -614,6 +670,15 @@ export default function FuelPanel({ supabase, isAdmin, showVehicleOverview = fal
 
           {isEntryFormExpanded ? (
             <div id="fuel-entry-form-body" className="fuelEntryFormBody">
+          {pendingAttempts.length ? <div role="status">
+            <p>Niepotwierdzone próby tankowania</p>
+            {pendingAttempts.map((attempt) => <button type="button" key={attempt.entryId} disabled={busy} onClick={() => {
+              if (attempt.ownerUserId !== userId) return;
+              rememberFuelEntryAttempt(attempt); setVehicleId(attempt.vehicleId || '');
+              setLiters(attempt.liters || ''); setOdometerKm(attempt.odometerKm || ''); setOdometerMode(attempt.odometerMode || 'manual');
+            }}>Wznów: {attempt.liters} l / {attempt.odometerKm} km</button>)}
+            <button type="button" disabled={busy} onClick={() => { detachFuelEntryAttempt(); setLiters(''); resetOdometerPhoto(); }}>Osobne nowe tankowanie</button>
+          </div> : null}
           <label className="fuelField">
             <span>Numer rejestracyjny</span>
             <select value={vehicleId} onChange={(event) => setVehicleId(event.target.value)} disabled={busy || !activeVehicles.length} required>

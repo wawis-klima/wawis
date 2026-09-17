@@ -1,0 +1,16 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at async file:///C:/Users/wasik/Documents/Codex/2026-09-17/files-pasted-by-the-user-wawis/work/wawis-fix/scripts/audit-v1089/invariants.mjs:43:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: /job_nameplates_incomplete/,
+  operator: 'rejects',
+  diff: 'simple'
+}
+
+Node.js v24.14.1
+Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76

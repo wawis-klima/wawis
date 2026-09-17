@@ -1,3 +1,4 @@
+import { usePanelLoadGuard } from '../../hooks/usePanelLoadGuard.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import AppModal from '../modals/AppModal.jsx';
 import ClientVoiceInput, { VoiceFieldButton } from '../voice/ClientVoiceInput.jsx';
@@ -113,7 +114,8 @@ function formatImportReasons(reasons = []) {
   return reasons.join(' / ');
 }
 
-export default function ContractorsPanel({ supabase, isAdmin, refreshAll, jobs = [], requestedContractorId = null }) {
+export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll, jobs = [], requestedContractorId = null }) {
+  const loadGuard = usePanelLoadGuard(supabase, userId);
   const [contractors, setContractors] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [form, setForm] = useState(getEmptyContractorForm());
@@ -136,22 +138,25 @@ export default function ContractorsPanel({ supabase, isAdmin, refreshAll, jobs =
   const importInputRef = useRef(null);
 
   async function reloadContractors() {
+    const isCurrent = loadGuard.begin();
     setLoading(true);
     setErrorMessage('');
     try {
       const data = await loadContractors({ supabase, isAdmin });
+      if (!isCurrent()) return;
       setContractors(data);
       setSelectedId((prev) => (prev && data.some((item) => item.id === prev) ? prev : null));
     } catch (error) {
+      if (!isCurrent()) return;
       setErrorMessage(getFriendlyError(error));
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }
 
   useEffect(() => {
     void reloadContractors();
-  }, [supabase, isAdmin]);
+  }, [supabase, isAdmin, userId]);
 
   const jobsForContractorFallback = useMemo(() => {
     if (!deletedFallbackJobIds.length) return jobs;

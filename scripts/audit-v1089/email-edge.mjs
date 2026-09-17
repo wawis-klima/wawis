@@ -1,0 +1,20 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';import {stripTypeScriptTypes} from 'node:module';
+const U='00000000-0000-4000-8000-000000000001',J='00000000-0000-4000-8000-000000000002',P='00000000-0000-4000-8000-000000000003',K='00000000-0000-4000-8000-000000000004';
+const bodyTimeout=process.argv.includes('--body-timeout');
+let clock=Date.now(),lost=!bodyTimeout,deliveries=0;const logs=[];const provider=new Map();
+const job={id:J,status:'Zakończone',email:'test@example.invalid',client:'fixture'};
+const protocol={id:P,job_id:J,file_size_bytes:3,storage_path:'fixture.pdf',file_name:'fixture.pdf'};
+const client={auth:{getUser:async()=>({data:{user:{id:U}}})},storage:{from:()=>({download:async()=>({data:new Blob(['pdf'])})})},from(table){let filters=[],patch=null,insert=null;const query={select(){return this},eq(k,v){filters.push(r=>r[k]===v);return this},gte(k,v){filters.push(r=>r[k]>=v);return this},in(k,v){filters.push(r=>v.includes(r[k]));return this},order(){return this},limit(){return this},insert(r){insert=r;return this},update(p){patch=p;return this},single(){return this},maybeSingle(){return this},then(resolve){let rows=table==='jobs'?[job]:table==='job_protocols'?[protocol]:logs;if(insert){const r={id:'log-'+logs.length,...insert};logs.push(r);return resolve({data:{...r},error:null});}let matches=rows.filter(r=>filters.every(f=>f(r)));if(patch)matches.forEach(r=>Object.assign(r,patch));resolve({data:matches[0]?{...matches[0]}:null,error:null});}};return query;}};
+class FakeDate extends Date{constructor(...a){super(...(a.length?a:[clock]));}static now(){return clock;}}
+let handler;const ctx={createClient:()=>client,Deno:{env:{get:()=> 'fixture'},serve:f=>handler=f},Response,Request,Blob,Uint8Array,AbortController,setTimeout:bodyTimeout?(fn)=>setTimeout(fn,10):setTimeout,clearTimeout,btoa,Date:FakeDate,console,fetch:async(url,opts)=>{const key=opts.headers['Idempotency-Key'];if(!provider.has(key)||clock-provider.get(key)>24*60*60*1000){deliveries++;provider.set(key,clock);}if(lost){lost=false;throw new Error('response lost AFTER provider accepted');}if(bodyTimeout)return {ok:true,json:()=>new Promise(()=>{})};return new Response(JSON.stringify({id:'mail'}),{status:200});}};
+vm.createContext(ctx);const src=fs.readFileSync(new URL('../../supabase/functions/send-job-protocol-email/index.ts',import.meta.url),'utf8').replace(/^import[^\n]+\n/,'');vm.runInContext(stripTypeScriptTypes(src),ctx);
+const request=()=>new Request('https://local.invalid',{method:'POST',headers:{Authorization:'Bearer fixture','Content-Type':'application/json'},body:JSON.stringify({jobId:J,protocolId:P,recipientEmail:job.email,requestKey:K,protocolStoragePath:'fixture.pdf'})});
+assert.equal((await handler(request())).status,504);assert.equal(deliveries,1);assert.equal(logs[0].status,'sending');
+clock+=25*60*60*1000;const retry=await handler(request());assert.equal(deliveries,1,'25h retry must not send a second copy');assert.ok([200,409,503,504].includes(retry.status));
+console.log('A04 full Edge handler: lost response + 25h retry delivers exactly once PASS');
+
+
+console.log(bodyTimeout?'A04 headers received, body never completes: bounded pending response PASS':'A04 replacement PDF does not change existing attempt PASS');
+
+protocol.storage_path='replacement.pdf';assert.equal((await handler(request())).status,409);assert.equal(deliveries,1);
+

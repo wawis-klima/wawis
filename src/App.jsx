@@ -976,7 +976,7 @@ export default function App() {
         ) : (
           <Suspense fallback={adminModuleFallback}>
             {activeModule === "contractors" ? (
-              <ContractorsPanel
+              <ContractorsPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}
                 isAdmin={isAdmin}
                 refreshAll={refreshAll}
@@ -984,7 +984,7 @@ export default function App() {
                 requestedContractorId={requestedContractorId}
               />
             ) : activeModule === "devices" ? (
-              <DevicesPanel
+              <DevicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}
                 jobs={jobs}
                 contractors={contractorsCatalog}
@@ -1004,7 +1004,7 @@ export default function App() {
                 selectedJobId={selectedJob?.id || ''}
               />
             ) : activeModule === "fuel" ? (
-              <FuelPanel
+              <FuelPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}
                 isAdmin={isAdmin}
                 showVehicleOverview={!isMobile}

@@ -1,0 +1,57 @@
+{
+  "columns": {
+    "missing": [],
+    "extra": [
+      "public.storage_backup_queue.id:bigint",
+      "public.mobile_sync_receipts.completed_at:timestamp with time zone",
+      "public.mobile_sync_receipts.job_id:uuid",
+      "public.storage_backup_queue.source_version:integer",
+      "public.storage_backup_queue.attempt_count:integer",
+      "public.storage_backup_queue.next_attempt_at:timestamp with time zone",
+      "public.storage_backup_queue.last_attempt_at:timestamp with time zone",
+      "public.storage_backup_queue.completed_at:timestamp with time zone",
+      "public.storage_backup_queue.created_at:timestamp with time zone",
+      "public.job_protocol_email_log.protocol_signed_at:timestamp with time zone",
+      "public.storage_backup_queue.updated_at:timestamp with time zone",
+      "public.push_subscriptions.context_epoch:bigint",
+      "public.mobile_sync_receipts.user_id:uuid",
+      "public.jobs.last_sms_log_id:uuid",
+      "public.mobile_sync_receipts.operation_type:text",
+      "public.storage_backup_queue.source_bucket:text",
+      "public.storage_backup_queue.source_path:text",
+      "public.storage_backup_queue.source_kind:text",
+      "public.storage_backup_queue.status:text",
+      "public.storage_backup_queue.destination_path:text",
+      "public.storage_backup_queue.last_error:text",
+      "public.mobile_sync_receipts.operation_id:text",
+      "public.job_protocol_email_log.protocol_storage_path:text"
+    ]
+  },
+  "indexes": {
+    "missing": [
+      "private.job_recycle_bin.job_recycle_bin_job_idx"
+    ],
+    "extra": [
+      "public.mobile_sync_receipts.mobile_sync_receipts_pkey",
+      "public.mobile_sync_receipts.mobile_sync_receipts_user_completed_idx",
+      "public.storage_backup_queue.storage_backup_queue_pkey",
+      "public.storage_backup_queue.storage_backup_queue_source_unique",
+      "public.storage_backup_queue.storage_backup_queue_work_idx",
+      "public.job_protocol_email_log.protocol_email_pending_version"
+    ]
+  },
+  "policies": {
+    "missing": [],
+    "extra": []
+  },
+  "constraints": {
+    "missing": [],
+    "extra": [
+      "public.mobile_sync_receipts.mobile_sync_receipts_operation_id_length",
+      "public.mobile_sync_receipts.mobile_sync_receipts_pkey",
+      "public.storage_backup_queue.storage_backup_queue_status_check",
+      "public.storage_backup_queue.storage_backup_queue_pkey",
+      "public.storage_backup_queue.storage_backup_queue_source_unique"
+    ]
+  }
+}

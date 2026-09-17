@@ -236,6 +236,10 @@ async function handleSyncSubscription({ adminClient, authUserId, triggeredBy, su
   if (error) return json({ error: error.message }, pushLifecycleErrorStatus(error));
 
   const row = Array.isArray(data) ? data[0] : data;
+  const { data: contextRow, error: contextError } = await adminClient.from('push_subscriptions')
+    .select('context_epoch').eq('id', row?.subscription_id).eq('user_id', authUserId)
+    .eq('ownership_generation', row?.ownership_generation).eq('is_active', true).single();
+  if (contextError || !contextRow?.context_epoch) return json({ error: 'push_stale_context' }, 409);
   console.log("push subscription synchronized atomically", {
     subscriptionId: row?.subscription_id || null,
     authUserId,
@@ -252,6 +256,7 @@ async function handleSyncSubscription({ adminClient, authUserId, triggeredBy, su
       is_active: row.is_active,
       last_seen_at: row.last_seen_at,
       ownership_generation: Number(row.ownership_generation || 0),
+      context_epoch: Number(contextRow.context_epoch),
     } : null,
   });
 }
