@@ -77,6 +77,7 @@ const GROUPS = {
     'npm run test:smoke:supabase-grants',
     'npm run test:smoke:destructive-rls',
     'node scripts/smoke-worker-contractor-update-v1089.cjs',
+    'node scripts/smoke-supabase-security-hardening-v1090.mjs',
   ],
   push: [
     'npm run test:smoke:assignment-push',
