@@ -19,6 +19,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --include=optional --registry=https://registry.npmjs.org/
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - name: Expected RED on 10.91 baseline
         run: npx playwright test tests/e2e/mobile-v1092-regressions.spec.js --reporter=line
