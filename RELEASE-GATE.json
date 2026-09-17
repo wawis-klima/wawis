@@ -1,36 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.89",
+  "version": "10.90",
   "scope": "full",
-  "release_branch": "release/v10.89",
+  "release_branch": "release/v10.90",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-17T07:03:28.664Z",
+    "checked_at": "2026-09-17T08:01:03.247Z",
     "result": "INFO",
-    "notes": "10.89 N7: staging rebuild doprowadzony do zweryfikowanej zgodności semantycznej; runtime RLS pracownika i kontrolowana aktualizacja danych kontrahenta sprawdzone z rollback."
+    "notes": "10.90: poprawka mobilnego overflow, admin-only manual nameplate completion oraz Supabase security hardening po audycie 10.89. Baseline hardeningu: 2 anon-executable SECURITY DEFINER, 15 mutable search_path; prywatna tombstone table bez direct grants zaakceptowana jako INFO."
   },
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-17T07:03:28.669Z",
-    "result": "FOCUSED_PASS_FULL_PR_PENDING",
-    "notes": "Worker contractor read + contact update przeszły na stagingu; finalny WAWIS PR checks / targeted-checks pozostaje obowiązkowy przed merge."
+    "checked_at": "2026-09-17T19:17:33.633Z",
+    "result": "STAGING_SECURITY_PASS_PR_GATE_PENDING",
+    "notes": "Lokalny test hardeningu + mutation controls 4/4 PASS. Realny Supabase staging sailtkxxyvcalcndrpyh: dokładna migracja 10.90 PASS; anon dostaje 42501 dla obu docelowych SECURITY DEFINER RPC; authenticated wykonuje dokładne definicje produkcyjne; storage_object_job_id działa jako SECURITY INVOKER; 15/15 search_path przypięte; Advisor nie zgłasza już anon SECURITY DEFINER ani mutable search_path w zakresie hardeningu. Automatyczny historyczny branch replay nadal nie odtwarza pełnej bazy, dlatego evidence runtime jest celowo ograniczone do bezpieczeństwa tej migracji. Pełny WAWIS PR checks / targeted-checks pozostaje obowiązkowy."
   },
   "main_protection": {
-    "source_branch": "release/v10.89",
+    "source_branch": "release/v10.90",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "checked_at": "2026-09-17T18:48:50.850Z",
-    "result": "PASS",
-    "release_head": "a348f8b2cdb9b7be2ce3d346270481adaa12a2a4",
-    "production_main_sha": "ee7aed94c37ea2ae37497787c70ea92d3a5d386e",
-    "production_supabase_ref": "uohziyaudbpwmupvljyd",
-    "notes": "PR #54 został zmergowany po zielonym WAWIS PR checks / targeted-checks. Vercel dla dokładnego SHA main zgłosił SUCCESS / Deployment has completed. Drzewo wdrożonego SHA zawiera app-version 10.89. Produkcja Supabase ma komplet sześciu migracji audytowych 10.89, a cron private.refresh_stale_new_jobs() jest aktywny na 17 * * * *. Od momentu merge nie pojawiły się nowe app_diagnostic_events. Staging wawis-10-89-audit-staging nie występuje już na liście branchy Supabase. Bezpośredni anonimowy odczyt URL produkcyjnego z używanego konektora był blokowany 403 przez zakres Vercel, dlatego identyfikację live oparto na statusie deploymentu przypiętym do dokładnego SHA main i zawartości tego SHA."
+    "result": "PENDING",
+    "notes": "Po merge wymagany zielony deployment Vercela, zastosowanie obu migracji 10.90 w produkcji, read-back ACL/search_path/Advisor i live-check wersji 10.90."
   },
   "archive": {
     "source_of_truth": "github-main",

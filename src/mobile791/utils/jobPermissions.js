@@ -20,7 +20,10 @@ export function isWorkerReadOnlyJob(_job, _isAdmin) {
 }
 
 export function canWorkerFinishJob(job, isAdmin) {
-  if (isAdmin || isWorkerReadOnlyJob(job, isAdmin)) return false;
+  if (isWorkerReadOnlyJob(job, isAdmin)) return false;
+  // 10.90: administrator może zakończyć zlecenie z widoku mobile/desktop.
+  // Backend nadal egzekwuje komplet zdjęć dla pracownika i pozwala adminowi
+  // użyć wyłącznie jawnych ręcznych potwierdzeń tabliczek.
   return normalizeStatus(job?.status) === "W trakcie";
 }
 

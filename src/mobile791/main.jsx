@@ -6,4 +6,5 @@ import './styles/desktop-jobs-table.css'
 import './v1056-new-job-spacing.css'
 import './v1062-contractors-mobile.css'
 import './v1064-contractors-compact.css'
+import './v1090-details-width.css'
 ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>)

@@ -6,9 +6,13 @@ const root = path.resolve(__dirname, '..');
 const componentPath = path.join(root, 'src/mobile791/components/JobDetailsPanel.jsx');
 const styleModulePath = path.join(root, 'src/mobile791/components/mobile-device-table-v889.css.js');
 const globalCssPath = path.join(root, 'src/mobile791/styles.css');
+const mainPath = path.join(root, 'src/mobile791/main.jsx');
+const widthGuardPath = path.join(root, 'src/mobile791/v1090-details-width.css');
 const component = fs.readFileSync(componentPath, 'utf8');
 const styleModule = fs.readFileSync(styleModulePath, 'utf8');
 const globalCss = fs.readFileSync(globalCssPath, 'utf8');
+const mainSource = fs.readFileSync(mainPath, 'utf8');
+const widthGuard = fs.readFileSync(widthGuardPath, 'utf8');
 
 assert.match(component, /import MOBILE_DEVICE_TABLE_V889_CSS from "\.\/mobile-device-table-v889\.css\.js";/, 'Krytyczne style tabeli muszą być importowane razem z komponentem JS.');
 assert.match(component, /<style data-wawis-mobile-device-table="8\.89">\{MOBILE_DEVICE_TABLE_V889_CSS\}<\/style>/, 'Komponent musi osadzać styl tabeli bezpośrednio w DOM.');
@@ -42,6 +46,15 @@ assert.match(styleModule, /jobDeviceDocumentationToggle\[aria-expanded="true"\]/
 assert.match(styleModule, /jobDeviceDocumentationBody\[hidden\][\s\S]*display:\s*none\s*!important;/, 'Zwinięta karta nie może zajmować miejsca szczegółami.');
 assert.doesNotMatch(globalCss, /mobile-device-table-v889|data-mobile-device-table="8\.89"/, 'Krytyczny układ 8.89 nie może zależeć od cache’owanego styles.css.');
 
+// 10.90: regresja dla kart Kumor/Koroś i innych rekordów z długimi wartościami.
+assert.match(mainSource, /import ['"]\.\/v1090-details-width\.css['"]/, 'Mobilny bootstrap musi ładować osłonę szerokości 10.90.');
+assert.match(widthGuard, /@media\s*\(max-width:\s*700px\)/, 'Osłona szerokości ma działać na telefonach.');
+assert.match(widthGuard, /\.infoValue[\s\S]*min-width:\s*0\s*!important;/, 'Wartości szczegółów muszą móc się zwężać.');
+assert.match(widthGuard, /\.infoValue \.addressLink[\s\S]*overflow-wrap:\s*anywhere\s*!important;/, 'Długi adres musi zawijać się wewnątrz karty.');
+assert.match(widthGuard, /\.infoValue \.emailLink[\s\S]*word-break:\s*break-word\s*!important;/, 'Długi e-mail nie może poszerzać viewportu.');
+assert.match(widthGuard, /html,[\s\S]*body,[\s\S]*#root[\s\S]*overflow-x:\s*hidden\s*!important;/, 'Viewport nie może dostać poziomego scrolla od szczegółów montażu.');
+assert.match(widthGuard, /\.premiumCard[\s\S]*max-width:\s*100%\s*!important;/, 'Karta montażu musi pozostać w szerokości ekranu.');
+
 const cssBody = styleModule.match(/String\.raw`([\s\S]*)`;\s*\n\s*export default/)?.[1] || '';
 assert.ok(cssBody.length > 4500, 'Osadzony arkusz tabeli wygląda na niepełny.');
 let depth = 0;
@@ -52,4 +65,4 @@ for (const char of cssBody) {
 }
 assert.equal(depth, 0, 'Osadzony CSS ma niezbilansowane nawiasy.');
 
-console.log('OK: tabela 8.89 jest szersza, ma pełny nagłówek Status i otwiera tabliczkę po kliknięciu wiersza.');
+console.log('OK: tabela 8.89 i osłona szerokości 10.90 mieszczą szczegóły montażu w mobilnym viewportcie.');

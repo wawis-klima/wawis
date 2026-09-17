@@ -1,11 +1,10 @@
 {
-  "version": "10.88",
-  "summary": "Domknięcie audytu N2–N5: integralność zakończenia montaży, CAS protokołów oraz idempotentne tankowania i e-maile.",
+  "version": "10.90",
+  "summary": "Naprawa szerokości kart montaży na telefonach i administracyjne zakończenie po ręcznym potwierdzeniu brakujących tabliczek.",
   "changes": [
-    "N2: backendowy guard blokuje zakończenie zlecenia bez kompletnego zestawu tabliczek JW/JZ, również dla multi-split, i serializuje mutacje zdjęć z przejściem do statusu Zakończone.",
-    "N3: zapis i zastępowanie protokołu używa własnej tożsamości operacji oraz CAS po oczekiwanym storage_path; konkurencyjna zmiana kończy się PROTOCOL_WRITE_CONFLICT zamiast fałszywego sukcesu.",
-    "N4: jedna logiczna próba tankowania ma trwały UUID używany przez INSERT, reconciliation i retry, co eliminuje duplikaty po utraconej odpowiedzi lub reloadzie.",
-    "N5: wysyłka protokołu e-mailem zachowuje trwały requestKey, stosuje timeout i Idempotency-Key oraz pojednuje niejednoznaczny wynik providera przed ponowieniem.",
-    "Dodano RED→GREEN regresję na audytowanym SHA 10.84 i zaktualizowano historyczne testy tak, aby wymagały mocniejszych kontraktów CAS/idempotencji zamiast starego zachowania."
+    "Mobilne szczegóły montażu nie rozszerzają już ekranu przy długim adresie, e-mailu lub innych wartościach; treść zawija się wewnątrz karty.",
+    "Administrator może z widoku mobilnego i desktopowego zakończyć aktywny montaż po ręcznym potwierdzeniu każdej brakującej tabliczki JZ/JW.",
+    "Backend uznaje ręczne potwierdzenia wyłącznie dla administratora; pracownik nadal musi mieć rzeczywiste, zapisane zdjęcia wymaganych tabliczek.",
+    "Dodano regresje blokujące powrót mobilnego overflow oraz obejście wymogu tabliczek przez pracownika."
   ]
 }
