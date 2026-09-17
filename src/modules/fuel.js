@@ -438,8 +438,7 @@ export async function addFuelEntry({
       .upload(photoPath, odometerPhotoBlob, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false });
     if (uploadResult.error && !isStorageAlreadyExistsError(uploadResult.error)) throw uploadResult.error;
     await assertOwner();
-    await assertOwner();
-  onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'photo-uploaded' });
+    onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'photo-uploaded' });
   }
 
   const hasPhoto = Boolean(photoPath || hasPhotoBlob);
@@ -449,6 +448,7 @@ export async function addFuelEntry({
     : hasPhoto ? 'openai' : 'manual';
 
   onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'inserting' });
+  await assertOwner();
   let insertResult;
   try {
     insertResult = await supabase

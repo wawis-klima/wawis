@@ -490,6 +490,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
           logDiagnostic('fuel.push.failed', { module: 'fuel', fuelEntryId: saved.id, error: pushError });
         }
       }
+      if (!isCurrent()) return;
       setLiters('');
       resetOdometerPhoto();
       setMessage(odometerMode === 'photo'
