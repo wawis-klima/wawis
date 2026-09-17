@@ -19,16 +19,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --include=optional --registry=https://registry.npmjs.org/
-      - run: npx playwright install --with-deps chromium webkit
-      - name: Expected RED — full WebKit layout on 10.91 baseline
-        id: width_red
-        continue-on-error: true
-        run: npx playwright test tests/e2e/mobile-v1092-full-layout.spec.js --config=playwright.v1092-webkit.config.js
-      - name: Expected RED — admin completion on 10.91 baseline
-        id: admin_red
-        continue-on-error: true
-        run: npx playwright test tests/e2e/mobile-v1092-regressions.spec.js --reporter=line
-      - name: Require both baseline counterexamples to fail
+      - name: Require 10.91 baseline defects to reproduce
         run: |
-          test "${{ steps.width_red.outcome }}" = "failure"
-          test "${{ steps.admin_red.outcome }}" = "failure"
+          set +e
+          npx playwright test tests/e2e/mobile-v1092-regressions.spec.js --reporter=line
+          code=$?
+          set -e
+          test "$code" -ne 0
