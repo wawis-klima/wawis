@@ -17,6 +17,8 @@ insert into job_access(job_id,user_id) values('00000000-0000-4000-8000-000000000
 update jobs set status='Zakończone' where id='00000000-0000-4000-8000-000000000003';
 update jobs set completed_at='2025-01-02T03:04:05Z' where id='00000000-0000-4000-8000-000000000003';
 insert into job_protocols(job_id,storage_path,file_name,file_size_bytes,signed_at,created_by) values('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000003/protocol.pdf','protocol.pdf',3,now(),'00000000-0000-4000-8000-000000000001');
+insert into devices(contractor_id,model,serial_number,source_job_id) values('00000000-0000-4000-8000-000000000002','Audit','AUDIT-HISTORY','00000000-0000-4000-8000-000000000003::device-1');
+insert into sms_log(job_id,phone,message) values('00000000-0000-4000-8000-000000000003','000','audit history');
 select public.admin_delete_jobs_recoverable(array['00000000-0000-4000-8000-000000000003'::uuid],false);
 select public.admin_restore_deleted_job(archive_id) from private.job_recycle_bin where job_id='00000000-0000-4000-8000-000000000003';
 do $$begin
@@ -24,6 +26,9 @@ do $$begin
  if (select count(*) from photos where job_id='00000000-0000-4000-8000-000000000003') <> 2 then raise exception 'restore photos';end if;
  if (select count(*) from comments where job_id='00000000-0000-4000-8000-000000000003') <> 1 then raise exception 'restore comments';end if;
  if (select count(*) from job_protocols where job_id='00000000-0000-4000-8000-000000000003') <> 1 then raise exception 'restore protocol';end if;
+ if (select count(*) from job_access where job_id='00000000-0000-4000-8000-000000000003') <> 1 then raise exception 'restore access history';end if;
+ if (select count(*) from devices where source_job_id='00000000-0000-4000-8000-000000000003::device-1') <> 1 then raise exception 'restore device history';end if;
+ if (select count(*) from sms_log where job_id='00000000-0000-4000-8000-000000000003') <> 1 then raise exception 'restore SMS history';end if;
  if (select completed_at from jobs where id='00000000-0000-4000-8000-000000000003') <> '2025-01-02T03:04:05Z'::timestamptz then raise exception 'restore historical timestamp';end if;
 end$$;
 select public.admin_delete_jobs_recoverable(array['00000000-0000-4000-8000-000000000003'::uuid],false);

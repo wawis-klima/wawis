@@ -1,0 +1,17 @@
+{
+  "staging": "hlfvjbidopyraycwkbfg",
+  "at": "2026-09-17T18:01:21.301Z",
+  "checks": [
+    "Deployed Edge Auth→atomic DB lifecycle→returned epoch→actual Chrome Service Worker/IndexedDB",
+    "E1 generation1→CLEAR→E2 generation1 accepted; late SET/CLEAR/410 rejected; logout B cannot resurrect A"
+  ],
+  "A": {
+    "generation": 1,
+    "epoch": 1
+  },
+  "B": {
+    "generation": 1,
+    "epoch": 2
+  },
+  "limits": "Synthetic endpoints; no real OS notification/provider delivery requested"
+}
