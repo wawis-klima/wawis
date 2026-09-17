@@ -34,4 +34,21 @@ assert(notificationsPolicy.includes('notifications_update_owner_or_admin'), 'not
 assert(notificationsPolicy.includes('notifications_delete_owner_or_admin'), 'notifications.sql: brak polityki delete owner-or-admin');
 assert(/user_id\s*=\s*auth\.uid\s*\(\s*\)/i.test(notificationsPolicy), 'notifications.sql: użytkownik powinien widzieć/zmieniać tylko swoje powiadomienia, poza administratorem');
 
+// 10.89 / N7: pracownik ma read-only dostęp do danych kontrahentów.
+// Ten kontrprzykład blokuje powrót do polityki SELECT tylko dla administratora.
+const workerContractorMigrationPath = path.join(
+  root,
+  'supabase',
+  'migrations',
+  '20260917053548_n7_v1089_worker_contractor_read.sql',
+);
+assert(fs.existsSync(workerContractorMigrationPath), '10.89: brak migracji read-only kontrahentów dla pracowników');
+const workerContractorMigration = fs.readFileSync(workerContractorMigrationPath, 'utf8');
+assert(/create\s+policy\s+contractors_staff_select/i.test(workerContractorMigration), '10.89: brak kanonicznej polityki contractors_staff_select');
+assert(/for\s+select/i.test(workerContractorMigration), '10.89: contractors_staff_select musi być polityką SELECT');
+assert(/to\s+authenticated/i.test(workerContractorMigration), '10.89: odczyt kontrahentów ma dotyczyć zalogowanych użytkowników');
+assert(/using\s*\(\s*public\.current_user_is_staff\s*\(\s*\)\s*\)/i.test(workerContractorMigration), '10.89: odczyt kontrahentów musi wymagać zatwierdzonego pracownika/admina');
+assert(!/for\s+(insert|update|delete)/i.test(workerContractorMigration), '10.89: migracja read-only nie może przyznawać pracownikowi zapisu kontrahentów');
+assert(!/using\s*\(\s*public\.current_user_is_admin\s*\(\s*\)\s*\)[\s\S]*for\s+select/i.test(workerContractorMigration), '10.89: SELECT kontrahentów nie może wrócić do admin-only');
+
 console.log('Destructive RLS smoke OK');
