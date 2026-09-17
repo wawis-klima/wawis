@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { devices, expect, test, webkit } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
+import { webkit } from 'playwright';
 
 const root = process.cwd();
 const mobileStyles = [
