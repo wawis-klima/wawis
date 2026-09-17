@@ -24,8 +24,13 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "result": "PENDING",
-    "notes": "Po merge wymagane zastosowanie wyłącznie standardowych migracji 10.89 do produkcji, Vercel SUCCESS na SHA main i live-check wersji 10.89."
+    "checked": true,
+    "checked_at": "2026-09-17T18:48:50.850Z",
+    "result": "PASS",
+    "release_head": "a348f8b2cdb9b7be2ce3d346270481adaa12a2a4",
+    "production_main_sha": "ee7aed94c37ea2ae37497787c70ea92d3a5d386e",
+    "production_supabase_ref": "uohziyaudbpwmupvljyd",
+    "notes": "PR #54 został zmergowany po zielonym WAWIS PR checks / targeted-checks. Vercel dla dokładnego SHA main zgłosił SUCCESS / Deployment has completed. Drzewo wdrożonego SHA zawiera app-version 10.89. Produkcja Supabase ma komplet sześciu migracji audytowych 10.89, a cron private.refresh_stale_new_jobs() jest aktywny na 17 * * * *. Od momentu merge nie pojawiły się nowe app_diagnostic_events. Staging wawis-10-89-audit-staging nie występuje już na liście branchy Supabase. Bezpośredni anonimowy odczyt URL produkcyjnego z używanego konektora był blokowany 403 przez zakres Vercel, dlatego identyfikację live oparto na statusie deploymentu przypiętym do dokładnego SHA main i zawartości tego SHA."
   },
   "archive": {
     "source_of_truth": "github-main",
