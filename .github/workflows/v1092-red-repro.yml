@@ -1,0 +1,24 @@
+name: WAWIS 10.92 RED reproduction
+
+on:
+  push:
+    branches: [release/v10.92]
+
+permissions:
+  contents: read
+
+jobs:
+  red-repro:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.92
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - run: npx playwright install --with-deps chromium
+      - name: Expected RED on 10.91 baseline
+        run: npx playwright test tests/e2e/mobile-v1092-regressions.spec.js --reporter=line
