@@ -6,12 +6,14 @@ const RETRY_BASE_MS = 15_000;
 const RETRY_MAX_MS = 30 * 60 * 1000;
 const PUSH_CONTEXT_ACK_TIMEOUT_MS = 700;
 const PUSH_CONTEXT_REGISTRATION_TIMEOUT_MS = 900;
-const PUSH_CONTEXT_PROTOCOL_VERSION = 2;
+const PUSH_CONTEXT_PROTOCOL_VERSION = 3;
 
 const volatileLifecycleTokens = new Map();
 let pushSessionEpoch = 0;
 let pushSessionUserId = '';
 let pushSessionGeneration = 0;
+let pushSessionEndpoint = '';
+let pushContextEpoch = 0;
 
 function randomToken() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -221,30 +223,33 @@ export async function readPushServiceWorkerContext() {
   return acknowledgement?.context || null;
 }
 
-export async function setPushServiceWorkerContext({ userId, generation }) {
+export async function setPushServiceWorkerContext({ userId, generation, endpoint, contextEpoch }) {
   const normalizedUserId = normalizeText(userId);
   const normalizedGeneration = Number(generation || 0);
   if (!normalizedUserId || !Number.isInteger(normalizedGeneration) || normalizedGeneration <= 0) return false;
   return postToWorker({
     type: 'WAWIS_PUSH_CONTEXT_SET',
     protocolVersion: PUSH_CONTEXT_PROTOCOL_VERSION,
+    endpoint, contextEpoch,
     userId: normalizedUserId,
     generation: normalizedGeneration,
   });
 }
 
-export async function clearPushServiceWorkerContext({ expectedUserId = '', expectedGeneration = 0, terminal = true } = {}) {
+export async function clearPushServiceWorkerContext({ expectedUserId = '', expectedGeneration = 0, expectedEndpoint = '', expectedContextEpoch = 0, terminal = true } = {}) {
   const normalizedExpectedUserId = normalizeText(expectedUserId);
   let normalizedExpectedGeneration = Math.max(0, Number(expectedGeneration) || 0);
   if (!normalizedExpectedUserId) return false;
 
   // Startup/reload reconciliation: when the page does not know the generation,
   // ask the durable SW before attempting a conditional CLEAR.
-  if (normalizedExpectedGeneration <= 0) {
+  if (normalizedExpectedGeneration <= 0 || !expectedEndpoint || !expectedContextEpoch) {
     const durableContext = await readPushServiceWorkerContext().catch(() => null);
     const durableUserId = normalizeText(durableContext?.userId);
     if (durableUserId && durableUserId !== normalizedExpectedUserId) return false;
     if (durableUserId === normalizedExpectedUserId) {
+      expectedEndpoint = durableContext.endpoint || expectedEndpoint;
+      expectedContextEpoch = durableContext.contextEpoch || expectedContextEpoch;
       normalizedExpectedGeneration = Math.max(0, Number(durableContext?.generation) || 0);
     }
   }
@@ -252,6 +257,7 @@ export async function clearPushServiceWorkerContext({ expectedUserId = '', expec
   return postToWorker({
     type: 'WAWIS_PUSH_CONTEXT_CLEAR',
     protocolVersion: PUSH_CONTEXT_PROTOCOL_VERSION,
+    expectedEndpoint, expectedContextEpoch,
     expectedUserId: normalizedExpectedUserId,
     expectedGeneration: normalizedExpectedGeneration,
     terminal: terminal !== false,
@@ -273,15 +279,18 @@ export function transitionPushSessionContext(sessionUser = null, { clearWriter =
   if (nextUserId !== pushSessionUserId) {
     const previousUserId = pushSessionUserId;
     const previousGeneration = pushSessionGeneration;
+    const previousEndpoint = pushSessionEndpoint;
+    const previousContextEpoch = pushContextEpoch;
     pushSessionEpoch += 1;
     pushSessionUserId = nextUserId;
-    pushSessionGeneration = 0;
+    pushSessionGeneration = 0; pushSessionEndpoint = ''; pushContextEpoch = 0;
     // Do not clear on a fresh module restore ('' -> A). When leaving A, CLEAR is
     // conditional on A so a delayed old tab cannot erase B.
     if (previousUserId) {
       void Promise.resolve(clearWriter({
         expectedUserId: previousUserId,
         expectedGeneration: previousGeneration,
+        expectedEndpoint: previousEndpoint, expectedContextEpoch: previousContextEpoch,
         terminal: true,
       })).catch(() => null);
     }
@@ -289,14 +298,15 @@ export function transitionPushSessionContext(sessionUser = null, { clearWriter =
   return capturePushSessionContext(sessionUser);
 }
 
-export async function publishPushServiceWorkerContext({ token, generation, writer = setPushServiceWorkerContext }) {
+export async function publishPushServiceWorkerContext({ token, generation, endpoint, contextEpoch, writer = setPushServiceWorkerContext }) {
   if (!isPushSessionContextCurrent(token)) return false;
   const normalizedGeneration = Math.max(0, Number(generation) || 0);
   if (!Number.isInteger(normalizedGeneration) || normalizedGeneration <= 0) return false;
-  const written = await writer({ userId: token.userId, generation: normalizedGeneration });
+  const written = await writer({ userId: token.userId, generation: normalizedGeneration, endpoint, contextEpoch });
   if (!isPushSessionContextCurrent(token)) return false;
   if (written === false) return false;
   pushSessionGeneration = normalizedGeneration;
+  pushSessionEndpoint = endpoint; pushContextEpoch = contextEpoch;
   return true;
 }
 
@@ -307,6 +317,7 @@ export async function clearCurrentPushServiceWorkerContext({ token = null, write
   const written = await writer({
     expectedUserId,
     expectedGeneration: pushSessionGeneration,
+    expectedEndpoint: pushSessionEndpoint, expectedContextEpoch: pushContextEpoch,
     terminal: false,
   });
   if (token && !isPushSessionContextCurrent(token)) return false;

@@ -1,5 +1,5 @@
 (function attachWawisPushContextGuard(root) {
-  const PROTOCOL_VERSION = 2;
+  const PROTOCOL_VERSION = 3;
 
   function normalizeRevision(value) {
     const number = Number(value);
@@ -26,17 +26,28 @@
   }
 
   function shouldApplySet(current = {}, incoming = {}) {
+    if (normalizeProtocolVersion(current.protocolVersion) >= 3 && normalizeProtocolVersion(incoming.protocolVersion) < 3) return false;
+    if (normalizeProtocolVersion(incoming.protocolVersion) >= 3) {
+      const epoch = normalizeGeneration(incoming.contextEpoch);
+      const currentEpoch = normalizeGeneration(current.contextEpoch);
+      if (!epoch || !incoming.endpoint || !incoming.userId || !normalizeGeneration(incoming.generation)) return false;
+      if (epoch > currentEpoch) return true;
+      if (epoch < currentEpoch || incoming.endpoint !== current.endpoint) return false;
+      if (current.terminalClear) return false;
+      return (current.userId || current.clearedUserId) === incoming.userId
+        && normalizeGeneration(incoming.generation) >= normalizeGeneration(current.generation);
+    }
     const incomingUserId = String(incoming.userId || '').trim();
     const incomingGeneration = normalizeGeneration(incoming.generation);
     if (!incomingUserId || incomingGeneration <= 0) return false;
 
     const currentProtocol = normalizeProtocolVersion(current.protocolVersion);
     const incomingProtocol = normalizeProtocolVersion(incoming.protocolVersion);
-    if (incomingProtocol < PROTOCOL_VERSION) {
-      if (currentProtocol >= PROTOCOL_VERSION) return false;
+    if (incomingProtocol < 2) {
+      if (currentProtocol >= 2) return false;
       return shouldApplyContextCommand(current, incoming);
     }
-    if (currentProtocol < PROTOCOL_VERSION) return true;
+    if (currentProtocol < 2) return true;
 
     const currentUserId = String(current.userId || '').trim();
     const currentGeneration = normalizeGeneration(current.generation);
@@ -51,10 +62,17 @@
   }
 
   function shouldApplyClear(current = {}, incoming = {}) {
+    if (normalizeProtocolVersion(current.protocolVersion) >= 3) {
+      if (normalizeProtocolVersion(incoming.protocolVersion) < 3) return false;
+      return Boolean(current.userId) && incoming.expectedUserId === current.userId
+        && incoming.expectedEndpoint === current.endpoint
+        && normalizeGeneration(incoming.expectedContextEpoch) === normalizeGeneration(current.contextEpoch)
+        && normalizeGeneration(incoming.expectedGeneration) === normalizeGeneration(current.generation);
+    }
     const currentProtocol = normalizeProtocolVersion(current.protocolVersion);
     const incomingProtocol = normalizeProtocolVersion(incoming.protocolVersion);
-    if (incomingProtocol < PROTOCOL_VERSION) {
-      if (currentProtocol >= PROTOCOL_VERSION) return false;
+    if (incomingProtocol < 2) {
+      if (currentProtocol >= 2) return false;
       return shouldApplyContextCommand(current, incoming);
     }
 

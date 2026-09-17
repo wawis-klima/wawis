@@ -320,6 +320,7 @@ async function reconcileFuelEntryByPhotoPath({ supabase, photoPath }) {
 
 function fuelEntryMatchesAttempt(entry, expected = {}) {
   if (!entry) return false;
+  if (expected.ownerUserId && entry.created_by !== expected.ownerUserId) return false;
   if (String(entry.id || '') !== String(expected.entryId || '')) return false;
   if (String(entry.vehicle_id || '') !== String(expected.vehicleId || '')) return false;
   if (Number(entry.liters) !== Number(expected.liters)) return false;
@@ -379,8 +380,20 @@ export async function addFuelEntry({
   entryId = '',
   existingPhotoPath = '',
   onAttemptProgress = null,
+  ownerUserId = '',
+  isAttemptCurrent = () => true,
 }) {
   assertFuelAccess({ supabase });
+  async function assertOwner() {
+    if (!isAttemptCurrent()) throw new Error('Sesja próby tankowania wygasła.');
+    if (ownerUserId) {
+      const session = await supabase.auth.getSession();
+      if (!isAttemptCurrent() || session?.data?.session?.user?.id !== ownerUserId) {
+        throw new Error('Zmienił się właściciel sesji próby tankowania.');
+      }
+    }
+  }
+  await assertOwner();
   const parsedLiters = Number(String(liters).replace(',', '.'));
   const parsedOdometer = Number(String(odometerKm).replace(/\s/g, ''));
   if (!vehicleId) throw new Error('Wybierz numer rejestracyjny.');
@@ -397,14 +410,16 @@ export async function addFuelEntry({
   const suppliedEntryId = normalizeFuelEntryId(entryId);
   const normalizedEntryId = suppliedEntryId || createFuelEntryAttemptId();
   const normalizedExistingPhotoPath = String(existingPhotoPath || '').trim();
+  if (ownerUserId && normalizedExistingPhotoPath && !normalizedExistingPhotoPath.startsWith(`${ownerUserId}/`)) throw new Error('Nieprawidłowy właściciel zdjęcia próby.');
   const hasPhotoBlob = odometerPhotoBlob !== null && odometerPhotoBlob !== undefined;
   if (hasPhotoBlob && (!(odometerPhotoBlob instanceof Blob) || !String(odometerPhotoBlob.type || '').startsWith('image/'))) {
     throw new Error('Wybrany plik nie jest prawidłowym zdjęciem licznika.');
   }
 
-  const expected = { entryId: normalizedEntryId, vehicleId, liters: parsedLiters, odometerKm: parsedOdometer };
+  const expected = { ownerUserId, entryId: normalizedEntryId, vehicleId, liters: parsedLiters, odometerKm: parsedOdometer };
   if (suppliedEntryId) {
     const existingAttempt = await reconcileFuelEntryById({ supabase, entryId: normalizedEntryId });
+    await assertOwner();
     if (existingAttempt.entry) {
       if (fuelEntryMatchesAttempt(existingAttempt.entry, { ...expected, photoPath: normalizedExistingPhotoPath })) return existingAttempt.entry;
       throw fuelAttemptConflict(normalizedEntryId);
@@ -417,11 +432,14 @@ export async function addFuelEntry({
     const userId = String(sessionResult?.data?.session?.user?.id || '').trim();
     if (!userId) throw new Error('Sesja użytkownika wygasła. Zaloguj się ponownie.');
     photoPath = `${userId}/${normalizedEntryId}.jpg`;
+    await assertOwner();
     const uploadResult = await supabase.storage
       .from(FUEL_ODOMETER_BUCKET)
       .upload(photoPath, odometerPhotoBlob, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false });
     if (uploadResult.error && !isStorageAlreadyExistsError(uploadResult.error)) throw uploadResult.error;
-    onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'photo-uploaded' });
+    await assertOwner();
+    await assertOwner();
+  onAttemptProgress?.({ entryId: normalizedEntryId, photoPath, phase: 'photo-uploaded' });
   }
 
   const hasPhoto = Boolean(photoPath || hasPhotoBlob);
@@ -437,6 +455,7 @@ export async function addFuelEntry({
       .from('fuel_entries')
       .insert({
         id: normalizedEntryId,
+        ...(ownerUserId ? { created_by: ownerUserId } : {}),
         vehicle_id: vehicleId,
         liters: parsedLiters,
         odometer_km: parsedOdometer,

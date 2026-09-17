@@ -237,7 +237,7 @@ export async function savePushSubscription({ supabase, sessionUser, subscription
     }
     const generation = Number(result?.subscription?.ownership_generation || 0);
     if (generation > 0) {
-      const published = await publishPushServiceWorkerContext({ token: sessionContextToken, generation });
+      const published = await publishPushServiceWorkerContext({ token: sessionContextToken, generation, endpoint: payload.endpoint, contextEpoch: Number(result?.subscription?.context_epoch || 0) });
       if (!published) return { saved: false, skipped: true, reason: "stale-session-context" };
     }
     lastSavedSignature = signature;
@@ -247,6 +247,7 @@ export async function savePushSubscription({ supabase, sessionUser, subscription
       reason: result?.reassigned ? "reassigned" : (result?.reason || "ok"),
       reassigned: Boolean(result?.reassigned),
       generation,
+      contextEpoch: Number(result?.subscription?.context_epoch || 0),
     };
   })();
   pushSaveInFlight = savePromise;
@@ -493,6 +494,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   let lastSeenAt = null;
   let syncError = null;
   let ownershipGeneration = 0;
+    let contextEpoch = 0;
 
   if (!subscription && permission === "granted" && supabase && sessionUser) {
     try {
@@ -516,13 +518,14 @@ export async function getPushStatus({ supabase, sessionUser }) {
       // Zamiast tego tworzymy nową subskrypcję przeglądarki.
       const { data: existingServerRow, error: existingServerError } = await supabase
         .from("push_subscriptions")
-        .select("id, is_active, last_seen_at, ownership_generation")
+        .select("id, is_active, last_seen_at, ownership_generation, context_epoch")
         .eq("user_id", sessionUser.id)
         .eq("endpoint", subscription.endpoint)
         .maybeSingle();
 
       if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
       if (existingServerError) throw existingServerError;
+      contextEpoch = Number(existingServerRow?.context_epoch || 0);
       ownershipGeneration = Number(existingServerRow?.ownership_generation || 0);
 
       if (existingServerRow?.id && existingServerRow.is_active === false) {
@@ -538,6 +541,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
         }
       } else if (!existingServerRow?.id) {
         const saveResult = await savePushSubscription({ supabase, sessionUser, subscription, force: true });
+        contextEpoch = Number(saveResult?.contextEpoch || contextEpoch || 0);
         ownershipGeneration = Number(saveResult?.generation || 0);
         serverRegistered = true;
         serverActive = true;
@@ -560,7 +564,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   }
 
   if (serverActive && ownershipGeneration > 0 && isCurrentPushSession()) {
-    await publishPushServiceWorkerContext({ token: sessionContextToken, generation: ownershipGeneration }).catch(() => false);
+    await publishPushServiceWorkerContext({ token: sessionContextToken, generation: ownershipGeneration, endpoint: subscription.endpoint, contextEpoch }).catch(() => false);
   }
   if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
 
