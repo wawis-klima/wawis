@@ -494,7 +494,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   let lastSeenAt = null;
   let syncError = null;
   let ownershipGeneration = 0;
-    let contextEpoch = 0;
+  let contextEpoch = 0;
 
   if (!subscription && permission === "granted" && supabase && sessionUser) {
     try {
@@ -535,6 +535,8 @@ export async function getPushStatus({ supabase, sessionUser }) {
           subscription,
         });
         if (subscription) {
+          // Replacement save already published its own verified context.
+          ownershipGeneration = 0; contextEpoch = 0;
           serverRegistered = true;
           serverActive = true;
           lastSeenAt = new Date().toISOString();
@@ -552,6 +554,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
         lastSeenAt = existingServerRow.last_seen_at || null;
         if (!serverActive || shouldTouchServerSubscription(lastSeenAt)) {
           const saveResult = await savePushSubscription({ supabase, sessionUser, subscription, force: true });
+          contextEpoch = Number(saveResult?.contextEpoch || contextEpoch || 0);
           ownershipGeneration = Number(saveResult?.generation || ownershipGeneration || 0);
           serverActive = true;
           lastSeenAt = new Date().toISOString();
