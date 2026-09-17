@@ -1,0 +1,95 @@
+name: WAWIS 10.91 one-shot version sync
+
+on:
+  push:
+    branches:
+      - release/v10.91
+
+permissions:
+  contents: write
+
+jobs:
+  sync-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: release/v10.91
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Sync 10.91 metadata exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT="$(node -p "require('./app-version.json').version")"
+          if [ "$CURRENT" != "10.90" ]; then
+            echo "Expected 10.90 before bump, got $CURRENT"
+            exit 1
+          fi
+
+          node version-bump.cjs
+
+          node <<'NODE'
+          const fs = require('fs');
+
+          const readmePath = 'README.md';
+          let readme = fs.readFileSync(readmePath, 'utf8');
+          readme = readme.replace(
+            /## Ostatnia poprawka\s*- wersja `10\.91` — uzupełnij opis ostatniej poprawki po zakończeniu zmian\./m,
+            '## Ostatnia poprawka\n- wersja `10.91` — poprawiono rozszerzanie mobilnej karty montażu poza ekran oraz dodano mobilnemu administratorowi jawne ręczne potwierdzanie JZ/JW przed zakończeniem zlecenia.'
+          );
+          fs.writeFileSync(readmePath, readme);
+
+          const changelogPath = 'CHANGELOG.md';
+          let changelog = fs.readFileSync(changelogPath, 'utf8');
+          changelog = changelog.replace(
+            /## 10\.91\n- uzupełnij opis zmian dla wersji 10\.91\n/,
+            '## 10.91\n- Mobilna karta szczegółów nie może poszerzać viewportu nawet przy długim adresie/e-mailu.\n- Administrator na mobile może jawnie potwierdzić ręcznie każdą JZ/JW bez zdjęcia i cofnąć potwierdzenie.\n- Zakończenie zlecenia przez administratora wymaga dla każdej JZ/JW zdjęcia albo ręcznego potwierdzenia; pracownik nadal wymaga zdjęć.\n- Dodano regresję Playwright dla overflow i kontraktu ręcznych potwierdzeń.\n'
+          );
+          fs.writeFileSync(changelogPath, changelog);
+
+          const gatePath = 'RELEASE-GATE.json';
+          const gate = JSON.parse(fs.readFileSync(gatePath, 'utf8'));
+          gate.version = '10.91';
+          gate.scope = 'mobile';
+          gate.release_branch = 'release/v10.91';
+          gate.baseline_diagnostics = {
+            checked: true,
+            last_24h: true,
+            checked_at: new Date().toISOString(),
+            result: 'INFO',
+            notes: '10.91: poprawka mobilnego overflow oraz mobilne ręczne potwierdzanie tabliczek przez administratora. Bez nowych zmian schematu Supabase; używa istniejącej tabeli nameplate_manual_verifications i guardu 10.90.'
+          };
+          gate.predeploy_diagnostics = {
+            checked: false,
+            result: 'PENDING',
+            notes: 'Wymagane zielone testy regresyjne, Playwright mobile oraz production build przed merge.'
+          };
+          gate.main_protection = {
+            source_branch: 'release/v10.91',
+            ready_for_main: false,
+            required_check: 'WAWIS PR checks / targeted-checks'
+          };
+          gate.postdeploy_diagnostics = {
+            evidence_required: true,
+            result: 'PENDING',
+            notes: 'Po merge wymagany Vercel SUCCESS, live app-version 10.91 oraz kontrola diagnostyki.'
+          };
+          gate.release_mode = 'standard';
+          fs.writeFileSync(gatePath, JSON.stringify(gate, null, 2) + '\n');
+
+          const resultPath = 'RELEASE-RESULT.md';
+          let result = fs.readFileSync(resultPath, 'utf8');
+          result = result.replace(/(## Wersja\s*-\s*)10\.90/m, '$110.91');
+          fs.writeFileSync(resultPath, result);
+          NODE
+
+          rm .github/workflows/v1091-version-sync.yml
+
+          git config user.name "wawis-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "release(v10.91): sync version metadata"
+          git push origin HEAD:release/v10.91
