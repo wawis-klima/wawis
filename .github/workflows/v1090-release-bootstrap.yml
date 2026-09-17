@@ -1,0 +1,92 @@
+name: WAWIS 10.90 release metadata bootstrap
+
+on:
+  push:
+    branches: [release/v10.90]
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release/v10.90
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare 10.90 release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT="$(node -p "require('./app-version.json').version")"
+          if [ "$CURRENT" = "10.89" ]; then
+            node version-bump.cjs
+          elif [ "$CURRENT" != "10.90" ]; then
+            echo "Unexpected current version: $CURRENT" >&2
+            exit 1
+          fi
+          cat > release-notes.json <<'JSON'
+          {
+            "version": "10.90",
+            "summary": "Naprawa szerokości kart montaży na telefonach i administracyjne zakończenie po ręcznym potwierdzeniu brakujących tabliczek.",
+            "changes": [
+              "Mobilne szczegóły montażu nie rozszerzają już ekranu przy długim adresie, e-mailu lub innych wartościach; treść zawija się wewnątrz karty.",
+              "Administrator może z widoku mobilnego i desktopowego zakończyć aktywny montaż po ręcznym potwierdzeniu każdej brakującej tabliczki JZ/JW.",
+              "Backend uznaje ręczne potwierdzenia wyłącznie dla administratora; pracownik nadal musi mieć rzeczywiste, zapisane zdjęcia wymaganych tabliczek.",
+              "Dodano regresje blokujące powrót mobilnego overflow oraz obejście wymogu tabliczek przez pracownika."
+            ]
+          }
+          JSON
+          node scripts/update-release-docs.cjs
+          node <<'NODE'
+          const fs = require('fs');
+          const path = 'RELEASE-GATE.json';
+          const gate = JSON.parse(fs.readFileSync(path, 'utf8'));
+          gate.version = '10.90';
+          gate.scope = 'full';
+          gate.release_branch = 'release/v10.90';
+          gate.baseline_diagnostics = {
+            checked: true,
+            last_24h: true,
+            checked_at: new Date().toISOString(),
+            result: 'INFO',
+            notes: '10.90: poprawka mobilnego overflow oraz admin-only manual nameplate completion; finalne CI PR pozostaje obowiązkową bramką.'
+          };
+          gate.predeploy_diagnostics = {
+            checked: true,
+            last_24h: true,
+            checked_at: new Date().toISOString(),
+            result: 'PR_GATE_PENDING',
+            notes: 'Zmiany i regresje przygotowane na release/v10.90; wymagany zielony WAWIS PR checks / targeted-checks przed merge.'
+          };
+          gate.main_protection = {
+            source_branch: 'release/v10.90',
+            ready_for_main: false,
+            required_check: 'WAWIS PR checks / targeted-checks'
+          };
+          gate.postdeploy_diagnostics = {
+            evidence_required: true,
+            result: 'PENDING',
+            notes: 'Po merge wymagany zielony deployment Vercela, zastosowanie migracji 10.90 i live-check wersji 10.90.'
+          };
+          gate.release_mode = 'standard';
+          fs.writeFileSync(path, JSON.stringify(gate, null, 2) + '\n');
+          NODE
+      - name: Commit metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "wawis-release-bot"
+          git config user.email "wasik@wawis.pl"
+          git add app-version.json public/app-version.json package.json package-lock.json src/version.js src/mobile791/version.js public/push-sw.js README.md CHANGELOG.md release-notes.json RELEASE-GATE.json
+          if git diff --cached --quiet; then
+            echo "Release metadata already current."
+            exit 0
+          fi
+          git commit -m "chore(release): prepare WAWIS 10.90 metadata"
+          git push origin HEAD:release/v10.90
