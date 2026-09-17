@@ -9,9 +9,13 @@ const mobileStyles = [
   'src/mobile791/v1091-mobile-details-hardening.css',
 ].map((file) => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
 const mobileDetailsSource = fs.readFileSync(path.join(root, 'src/mobile791/components/JobDetailsPanel.jsx'), 'utf8');
+const productionEntrySource = fs.readFileSync(path.join(root, 'src/main.jsx'), 'utf8');
 
 test.describe('@mobile 10.92 regressions', () => {
-  test.use(iphone14);
+  test('produkcyjny mobilny entrypoint ładuje hardening szerokości 10.90/10.91', async () => {
+    expect(productionEntrySource).toContain("import('./mobile791/v1090-details-width.css')");
+    expect(productionEntrySource).toContain("import('./mobile791/v1091-mobile-details-hardening.css')");
+  });
 
   test('administrator może zakończyć bez tabliczek, pracownik nadal nie może', async () => {
     expect(mobileDetailsSource).toContain('const effectiveNameplateComplete = isAdmin ? true : nameplateCompletion.isComplete;');
