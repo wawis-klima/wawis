@@ -1,3 +1,5 @@
+import vm from 'node:vm';
+import {stripTypeScriptTypes} from 'node:module';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
@@ -71,8 +73,13 @@ assert.match(webhook, /deriveSmsApiCallbackToken/);
 assert.match(webhook, /constantTimeEqual/);
 assert.match(webhook, /planSmsCallbackUpdates/);
 assert.match(webhook, /new Response\('OK'/);
-assert.match(webhook, /logUpdateError/);
-assert.match(webhook, /jobUpdateError/);
+const callbackCode=webhook.slice(webhook.indexOf('async function applyDeliveryStatus('),webhook.indexOf('function firstValue('));
+const context={normalizeSmsApiStatus,JSON};vm.createContext(context);
+vm.runInContext(stripTypeScriptTypes(callbackCode.replace('ReturnType<typeof createClient>','any'))+';globalThis.apply=applyDeliveryStatus;',context);
+const failed=await context.apply({rpc:async()=>({data:null,error:{message:'transaction failed'}})},{providerMessageId:'fixture',status:'DELIVERED',raw:{}});
+assert.equal(failed.ok,false);assert.equal(failed.status,500);assert.equal(failed.error,'transaction failed');
+const missing=await context.apply({rpc:async()=>({data:null,error:null})},{providerMessageId:'fixture',status:'DELIVERED',raw:{}});
+assert.equal(missing.ok,false);assert.equal(missing.status,500);
 
 const sender = fs.readFileSync('supabase/functions/send-service-sms/index.ts', 'utf8').replace(/\r\n/g, '\n');
 assert.match(sender, /notify_url: notifyUrl/);
@@ -83,4 +90,4 @@ const delivery = fs.readFileSync('supabase/functions/send-service-sms/delivery.t
 assert.match(delivery, /claim_service_sms/);
 assert.match(delivery, /confirm_service_sms/);
 
-console.log('GO: 10.85 SMSAPI callback is authenticated, monotonic and retry-safe after partial DB updates.');
+console.log('PASS: callback authentication helpers and RPC failure propagation; atomic ordering is tested by audit-v1089/sms-race.mjs.');

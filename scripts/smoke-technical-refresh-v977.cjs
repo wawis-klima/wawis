@@ -46,7 +46,7 @@ for (const [label, push] of [['desktop', desktopPush], ['mobile', mobilePush]]) 
   const statusBody = exportedAsyncFunctionBody(push, 'getPushStatus');
   assert(statusBody, `${label}: brak getPushStatus`);
   assert(count(statusBody, /\.from\("push_subscriptions"\)/g) === 1, `${label}: kontrola PUSH wykonuje więcej niż jeden odczyt push_subscriptions`);
-  assert(count(statusBody, /\.select\("id, is_active, last_seen_at(?:, ownership_generation)?"\)/g) === 1, `${label}: kontrola PUSH ma nieoczekiwany zestaw pól odczytu stanu endpointu`);
+  assert(count(statusBody, /\.select\("id, is_active, last_seen_at(?:, ownership_generation(?:, context_epoch)?)?"\)/g) === 1, `${label}: kontrola PUSH ma nieoczekiwany zestaw pól odczytu stanu endpointu`);
 }
 
 assert(desktopApp.includes('DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000'), 'Centrum 360: brak pięciominutowego cache liczników');

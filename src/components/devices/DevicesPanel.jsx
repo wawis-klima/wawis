@@ -1,3 +1,4 @@
+import { usePanelLoadGuard } from '../../hooks/usePanelLoadGuard.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import AppModal from '../modals/AppModal.jsx';
 import { IconCalendar, IconCheckCircle, IconMail, IconMapPin, IconPhone, IconUsers } from '../ui.jsx';
@@ -261,7 +262,8 @@ function analyzeDeviceImportRows({ contractors = [], existingDevices = [], impor
   };
 }
 
-export default function DevicesPanel({ supabase, jobs = [], isAdmin, refreshAll, contractors = [], requestedDeviceId = null }) {
+export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, refreshAll, contractors = [], requestedDeviceId = null }) {
+  const loadGuard = usePanelLoadGuard(supabase, userId);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [devices, setDevices] = useState([]);
@@ -284,24 +286,27 @@ export default function DevicesPanel({ supabase, jobs = [], isAdmin, refreshAll,
   const hasActiveFilters = Boolean(String(search || '').trim()) || statusFilter !== 'all';
 
   async function loadDevices({ silent = false, trySync = true } = {}) {
+    const isCurrent = loadGuard.begin();
     if (!isAdmin) return;
     if (!silent) setLoading(true);
     setErrorMessage('');
     try {
       const result = await fetchAdminDevices({ supabase, isAdmin, jobs, trySync });
+      if (!isCurrent()) return;
       setDevices(result.devices || []);
       setSourceMode(result.source || 'devices-rpc');
       setInfoMessage(result.staleReason || '');
     } catch (error) {
+      if (!isCurrent()) return;
       setErrorMessage(getFriendlyError(error));
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }
 
   useEffect(() => {
     void loadDevices({ trySync: true });
-  }, [isAdmin, supabase]);
+  }, [isAdmin, supabase, userId]);
 
   useEffect(() => {
     void loadDevices({ silent: true, trySync: false });

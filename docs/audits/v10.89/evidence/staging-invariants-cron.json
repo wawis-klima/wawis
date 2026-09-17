@@ -1,0 +1,25 @@
+{
+  "staging": "hlfvjbidopyraycwkbfg",
+  "at": "2026-09-17T18:01:06.862Z",
+  "checks": [
+    "Catalog signature/RLS/private ACL/Storage retention verification",
+    "Actual full schema delete/archive/restore: photos, comments, protocol, access, devices, SMS, timestamp; missing-photo rollback",
+    "A01 real authenticated worker: name-only preserves 222/HQ/Branch, explicit phone/secondary street patch",
+    "Actual pg_cron worker executed maintenance; 31-day fixture moved to Niezrealizowane; hourly production-equivalent schedule unique"
+  ],
+  "configured": [
+    {
+      "schedule": "17 * * * *",
+      "command": "select private.refresh_stale_new_jobs();",
+      "active": true
+    }
+  ],
+  "runs": [
+    {
+      "status": "succeeded",
+      "return_message": "1 row",
+      "start_time": "2026-09-17T18:01:06.022Z",
+      "end_time": "2026-09-17T18:01:06.030Z"
+    }
+  ]
+}

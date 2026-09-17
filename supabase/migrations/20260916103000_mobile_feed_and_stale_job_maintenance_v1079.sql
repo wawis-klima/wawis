@@ -167,9 +167,15 @@ $$;
 revoke all on function private.refresh_stale_new_jobs() from public, anon, authenticated;
 grant execute on function private.refresh_stale_new_jobs() to service_role;
 
-create extension if not exists pg_cron with schema pg_catalog;
-grant usage on schema cron to postgres;
-grant all privileges on all tables in schema cron to postgres;
+-- Supabase's CREATE EXTENSION event trigger re-applies cron ACLs even for
+-- IF NOT EXISTS. Avoid firing it on replay; platform-owned grants suffice.
+do $extension$
+begin
+  if not exists (select 1 from pg_extension where extname = 'pg_cron') then
+    create extension if not exists pg_cron with schema pg_catalog;
+  end if;
+end
+$extension$;
 
 select cron.unschedule(jobid)
 from cron.job

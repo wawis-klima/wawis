@@ -88,6 +88,8 @@ async function writePushContextCommand(command) {
         const current = readRequest.result || { userId: "", generation: 0, revision: 0, protocolVersion: 1 };
         if (command?.type === "WAWIS_PUSH_CONTEXT_SET") {
           const incoming = {
+            endpoint: String(command.endpoint || ""),
+            contextEpoch: Number(command.contextEpoch || 0),
             userId: String(command.userId || ""),
             generation: Number(command.generation || 0),
             revision: Number(command.revision || 0),
@@ -100,6 +102,8 @@ async function writePushContextCommand(command) {
           } else nextValue = current;
         } else if (command?.type === "WAWIS_PUSH_CONTEXT_CLEAR") {
           const incoming = {
+            expectedEndpoint: String(command.expectedEndpoint || ""),
+            expectedContextEpoch: Number(command.expectedContextEpoch || 0),
             expectedUserId: String(command.expectedUserId || ""),
             expectedGeneration: Number(command.expectedGeneration || 0),
             revision: Number(command.revision || 0),
@@ -108,6 +112,8 @@ async function writePushContextCommand(command) {
           };
           if (self.WawisPushContextGuard?.shouldApplyClear(current, incoming)) {
             nextValue = {
+              endpoint: current.endpoint,
+              contextEpoch: current.contextEpoch,
               userId: "",
               generation: Number(current.generation || 0),
               revision: Math.max(Number(current.revision || 0), Number(incoming.revision || 0)),

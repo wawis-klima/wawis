@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const box={};
+vm.runInNewContext(fs.readFileSync(new URL('../../public/push-context-guard.js',import.meta.url),'utf8'),box);
+const g=box.WawisPushContextGuard;
+const a={userId:'A',generation:1,endpoint:'E1',contextEpoch:1,protocolVersion:g.PROTOCOL_VERSION};
+const cleared={...a,userId:'',clearedUserId:'A',terminalClear:true};
+const b={userId:'B',generation:1,endpoint:'E2',contextEpoch:2,protocolVersion:g.PROTOCOL_VERSION};
+assert.equal(g.shouldApplySet(cleared,b),true,'fresh E2 generation 1 must be accepted after E1 CLEAR');
+assert.equal(g.shouldApplySet(b,a),false,'late E1 SET cannot replace E2');
+assert.equal(g.shouldApplyClear(b,{expectedUserId:'A',expectedGeneration:1,expectedEndpoint:'E1',expectedContextEpoch:1,protocolVersion:g.PROTOCOL_VERSION}),false);
+assert.equal(g.shouldApplySet({...b,userId:'',clearedUserId:'B',terminalClear:true},a),false,'logout B cannot resurrect A');
+assert.equal(g.shouldApplySet({...b,userId:'',clearedUserId:'B',terminalClear:true},b),false,'terminal CLEAR must remain terminal');
+console.log('A03 SW endpoint/context epoch behavior PASS');

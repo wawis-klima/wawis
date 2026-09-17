@@ -1,0 +1,122 @@
+[
+  {
+    "cmd": "SELECT",
+    "qual": "current_user_is_staff()",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "contractors",
+    "permissive": "PERMISSIVE",
+    "policyname": "contractors_staff_select",
+    "schemaname": "public",
+    "with_check": null
+  },
+  {
+    "cmd": "INSERT",
+    "qual": null,
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "contractors",
+    "permissive": "PERMISSIVE",
+    "policyname": "contractors_admin_insert",
+    "schemaname": "public",
+    "with_check": "current_user_is_admin()"
+  },
+  {
+    "cmd": "UPDATE",
+    "qual": "current_user_is_admin()",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "contractors",
+    "permissive": "PERMISSIVE",
+    "policyname": "contractors_admin_update",
+    "schemaname": "public",
+    "with_check": "current_user_is_admin()"
+  },
+  {
+    "cmd": "DELETE",
+    "qual": "current_user_is_admin()",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "contractors",
+    "permissive": "PERMISSIVE",
+    "policyname": "contractors_admin_delete",
+    "schemaname": "public",
+    "with_check": null
+  },
+  {
+    "cmd": "SELECT",
+    "qual": "current_user_is_staff()",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "jobs",
+    "permissive": "PERMISSIVE",
+    "policyname": "jobs_read_access",
+    "schemaname": "public",
+    "with_check": null
+  },
+  {
+    "cmd": "UPDATE",
+    "qual": "current_user_can_edit_job(id)",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "jobs",
+    "permissive": "PERMISSIVE",
+    "policyname": "jobs_update_access",
+    "schemaname": "public",
+    "with_check": "current_user_can_edit_job(id)"
+  },
+  {
+    "cmd": "INSERT",
+    "qual": null,
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "jobs",
+    "permissive": "PERMISSIVE",
+    "policyname": "jobs_create_own",
+    "schemaname": "public",
+    "with_check": "(current_user_is_staff() AND ((created_by = auth.uid()) OR current_user_is_admin()))"
+  },
+  {
+    "cmd": "UPDATE",
+    "qual": "((id = auth.uid()) OR current_user_is_admin())",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "profiles",
+    "permissive": "PERMISSIVE",
+    "policyname": "profiles_update_self_or_admin",
+    "schemaname": "public",
+    "with_check": "((id = auth.uid()) OR current_user_is_admin())"
+  },
+  {
+    "cmd": "DELETE",
+    "qual": "current_user_is_admin()",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "jobs",
+    "permissive": "PERMISSIVE",
+    "policyname": "jobs_delete_admin",
+    "schemaname": "public",
+    "with_check": null
+  },
+  {
+    "cmd": "SELECT",
+    "qual": "((id = ( SELECT auth.uid() AS uid)) OR ( SELECT current_user_is_staff() AS current_user_is_staff))",
+    "roles": [
+      "authenticated"
+    ],
+    "tablename": "profiles",
+    "permissive": "PERMISSIVE",
+    "policyname": "profiles_read_team",
+    "schemaname": "public",
+    "with_check": null
+  }
+]

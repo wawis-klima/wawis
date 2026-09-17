@@ -1,0 +1,10 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {admin,client,evidence} from './staging-common.mjs';
+const actors=JSON.parse(fs.readFileSync(process.env.WAWIS_STAGING_ACTORS));const a=client(actors.admin.token);const bytes=new TextEncoder().encode('%PDF-1.4 audit retention');
+const job=await admin.from('jobs').insert({client:'Staging audit retention '+randomUUID(),status:'Zakończone',created_by:actors.admin.id}).select().single();assert.equal(job.error,null);
+const path=`${job.data.id}/${randomUUID()}.pdf`;
+assert.equal((await a.storage.from('job-protocols').upload(path,bytes,{contentType:'application/pdf'})).error,null);
+const row=await a.from('job_protocols').insert({job_id:job.data.id,storage_path:path,file_name:'retention.pdf',file_size_bytes:bytes.length,signed_at:new Date().toISOString(),created_by:actors.admin.id}).select().single();assert.equal(row.error,null);
+const removal=await a.storage.from('job-protocols').remove([path]);const removed=!removal.error&&removal.data.length>0;
+if(removed)await a.storage.from('job-protocols').upload(path,bytes,{contentType:'application/pdf'});
+evidence(removed?'staging-red-protocol-retention':'staging-protocol-retention',{removedWhileReferenced:removed,jobId:job.data.id});assert.equal(removed,false,'referenced PDF must survive admin deletion request');
+assert.equal((await a.storage.from('job-protocols').download(path)).error,null);console.log('STAGING referenced protocol retention PASS');

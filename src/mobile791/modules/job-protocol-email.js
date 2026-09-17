@@ -2,7 +2,7 @@ export const JOB_PROTOCOL_EMAIL_FUNCTION = "send-job-protocol-email";
 export const JOB_PROTOCOL_EMAIL_SENDER = "biuro@wawis.pl";
 export const PROTOCOL_EMAIL_ATTEMPT_STORAGE_KEY = "protocol-email-attempt-v1088";
 
-let memoryProtocolEmailAttempt = null;
+const memoryProtocolEmailAttempts = new Map();
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -32,8 +32,9 @@ function createRequestKey() {
   });
 }
 
-function getAttemptIdentity({ job, record, recipientEmail }) {
+function getAttemptIdentity({ userId, job, record, recipientEmail }) {
   return [
+    normalizeText(userId),
     normalizeText(job?.id),
     normalizeText(record?.id),
     normalizeText(record?.storage_path),
@@ -43,48 +44,37 @@ function getAttemptIdentity({ job, record, recipientEmail }) {
   ].join("|");
 }
 
-function loadStoredProtocolEmailAttempt() {
-  if (typeof localStorage === "undefined") return memoryProtocolEmailAttempt;
-  try {
-    const parsed = JSON.parse(localStorage.getItem(PROTOCOL_EMAIL_ATTEMPT_STORAGE_KEY) || "null");
-    return parsed && parsed.identity && parsed.requestKey ? parsed : null;
-  } catch {
-    return null;
-  }
+function attemptStorageKey(identity) {
+  return `${PROTOCOL_EMAIL_ATTEMPT_STORAGE_KEY}:${encodeURIComponent(identity)}`;
 }
-
+function loadStoredProtocolEmailAttempt(identity) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(attemptStorageKey(identity)) || 'null');
+    return parsed?.identity === identity && parsed?.requestKey ? parsed : memoryProtocolEmailAttempts.get(identity) || null;
+  } catch { return memoryProtocolEmailAttempts.get(identity) || null; }
+}
 function persistProtocolEmailAttempt(attempt) {
-  memoryProtocolEmailAttempt = attempt || null;
-  if (typeof localStorage === "undefined") return;
-  try {
-    if (attempt) localStorage.setItem(PROTOCOL_EMAIL_ATTEMPT_STORAGE_KEY, JSON.stringify(attempt));
-    else localStorage.removeItem(PROTOCOL_EMAIL_ATTEMPT_STORAGE_KEY);
-  } catch {
-    // Brak localStorage nie może tworzyć nowej próby w trakcie tego samego wywołania.
-  }
+  memoryProtocolEmailAttempts.set(attempt.identity, attempt);
+  try { localStorage.setItem(attemptStorageKey(attempt.identity), JSON.stringify(attempt)); } catch {}
 }
-
-export function getOrCreateProtocolEmailAttempt({ job, record, recipientEmail, forceNew = false }) {
-  const identity = getAttemptIdentity({ job, record, recipientEmail });
-  const stored = forceNew ? null : loadStoredProtocolEmailAttempt();
-  if (stored?.identity === identity && normalizeText(stored.requestKey)) return stored;
-  const attempt = {
-    identity,
-    requestKey: createRequestKey(),
-    jobId: normalizeText(job?.id),
-    protocolId: normalizeText(record?.id),
-    protocolStoragePath: normalizeText(record?.storage_path),
-    recipientEmail: normalizeProtocolEmail(recipientEmail),
-    createdAt: new Date().toISOString(),
-  };
+export function getOrCreateProtocolEmailAttempt({ userId = '', job, record, recipientEmail, forceNew = false }) {
+  const identity = getAttemptIdentity({ userId, job, record, recipientEmail });
+  const stored = loadStoredProtocolEmailAttempt(identity);
+  // A pending operation cannot be discarded by a second click or forceNew.
+  if (stored?.requestKey && (!forceNew || !stored.completed)) return stored;
+  const attempt = { identity, ownerUserId: userId, requestKey: createRequestKey(),
+    jobId: normalizeText(job?.id), protocolId: normalizeText(record?.id),
+    protocolStoragePath: normalizeText(record?.storage_path), recipientEmail: normalizeProtocolEmail(recipientEmail),
+    createdAt: new Date().toISOString() };
   persistProtocolEmailAttempt(attempt);
   return attempt;
 }
-
-export function clearProtocolEmailAttempt(requestKey = "") {
-  const stored = loadStoredProtocolEmailAttempt();
-  if (requestKey && stored?.requestKey && stored.requestKey !== requestKey) return;
-  persistProtocolEmailAttempt(null);
+export function clearProtocolEmailAttempt(requestKey = '') {
+  // Retain successful identity for reconciliation after a reload; a deliberate
+  // new send must request forceNew. Each operation has its own storage key.
+  for (const attempt of memoryProtocolEmailAttempts.values()) {
+    if (attempt.requestKey === requestKey) persistProtocolEmailAttempt({ ...attempt, completed: true });
+  }
 }
 
 async function getInvokeErrorPayload(error) {
@@ -127,7 +117,10 @@ export async function sendJobProtocolEmail({ supabase, job, record, forceNewAtte
     throw new Error("Do wysłania protokołu potrzebne jest połączenie z internetem.");
   }
 
-  const attempt = getOrCreateProtocolEmailAttempt({ job, record, recipientEmail, forceNew: forceNewAttempt });
+  const session = await supabase.auth.getSession();
+  const userId = normalizeText(session?.data?.session?.user?.id);
+  if (!userId) throw new Error('Sesja wygasła. Zaloguj się ponownie.');
+  const attempt = getOrCreateProtocolEmailAttempt({ userId, job, record, recipientEmail, forceNew: forceNewAttempt });
   const requestKey = attempt.requestKey;
   const { data, error } = await supabase.functions.invoke(JOB_PROTOCOL_EMAIL_FUNCTION, {
     body: {
@@ -135,11 +128,13 @@ export async function sendJobProtocolEmail({ supabase, job, record, forceNewAtte
       protocolId: record.id,
       recipientEmail,
       requestKey,
+      protocolStoragePath: attempt.protocolStoragePath,
     },
   });
 
   if (error) {
     const payload = await getInvokeErrorPayload(error);
+    if (payload?.requestKey && payload.requestKey !== requestKey) persistProtocolEmailAttempt({...attempt,requestKey:payload.requestKey});
     if (payload?.definitive) clearProtocolEmailAttempt(requestKey);
     const message = await getInvokeErrorMessage(error, payload);
     if (payload?.pending || payload?.providerResultUnknown) {
@@ -147,6 +142,7 @@ export async function sendJobProtocolEmail({ supabase, job, record, forceNewAtte
     }
     throw new Error(message);
   }
+  if (data?.requestKey && data.requestKey !== requestKey) persistProtocolEmailAttempt({...attempt,requestKey:data.requestKey});
   if (data?.pending || data?.providerResultUnknown) {
     throw createProtocolEmailPendingError(normalizeText(data?.error || data?.message), requestKey);
   }

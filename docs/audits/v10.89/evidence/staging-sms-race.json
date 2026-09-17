@@ -1,0 +1,27 @@
+{
+  "staging": "hlfvjbidopyraycwkbfg",
+  "at": "2026-09-17T18:01:10.076Z",
+  "checks": [
+    "SENT read paused, DELIVERED committed, resumed SENT cannot regress",
+    "delivered lock holder, provider_sent blocked and resumed: both rows delivered",
+    "provider_sent lock holder, delivered blocked and resumed: both rows delivered",
+    "new send pointer unchanged by old callback"
+  ],
+  "waits": [
+    {
+      "wait_event_type": "Lock",
+      "wait_event": "transactionid",
+      "blockers": [
+        10922
+      ]
+    },
+    {
+      "wait_event_type": "Lock",
+      "wait_event": "transactionid",
+      "blockers": [
+        10922
+      ]
+    }
+  ],
+  "independentConnections": 3
+}
