@@ -13,19 +13,19 @@
   "predeploy_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "checked_at": "2026-09-17T08:01:03.247Z",
-    "result": "STAGING_RUNTIME_PENDING",
-    "notes": "Lokalny test hardeningu i mutation controls 4/4 przechodzą. Przed ready_for_main wymagane runtime staging: ACL/PostgREST, Storage policies, Advisor po migracji oraz pełny WAWIS PR checks / targeted-checks."
+    "checked_at": "2026-09-17T19:17:33.633Z",
+    "result": "STAGING_SECURITY_PASS_PR_GATE_PENDING",
+    "notes": "Lokalny test hardeningu + mutation controls 4/4 PASS. Realny Supabase staging sailtkxxyvcalcndrpyh: dokładna migracja 10.90 PASS; anon dostaje 42501 dla obu docelowych SECURITY DEFINER RPC; authenticated wykonuje dokładne definicje produkcyjne; storage_object_job_id działa jako SECURITY INVOKER; 15/15 search_path przypięte; Advisor nie zgłasza już anon SECURITY DEFINER ani mutable search_path w zakresie hardeningu. Automatyczny historyczny branch replay nadal nie odtwarza pełnej bazy, dlatego evidence runtime jest celowo ograniczone do bezpieczeństwa tej migracji. Pełny WAWIS PR checks / targeted-checks pozostaje obowiązkowy."
   },
   "main_protection": {
     "source_branch": "release/v10.90",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "result": "PENDING",
-    "notes": "Po merge wymagany zielony deployment Vercela, zastosowanie migracji 10.90 i live-check wersji 10.90."
+    "notes": "Po merge wymagany zielony deployment Vercela, zastosowanie obu migracji 10.90 w produkcji, read-back ACL/search_path/Advisor i live-check wersji 10.90."
   },
   "archive": {
     "source_of_truth": "github-main",
