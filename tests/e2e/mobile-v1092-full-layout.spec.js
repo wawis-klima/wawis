@@ -37,7 +37,7 @@ async function seedOverflowJob(page) {
       created_at: '2026-09-09T06:00:00.000Z',
     });
     window.localStorage.setItem(storeKey, JSON.stringify(store));
-  }, storeKey);
+  }, STORE_KEY);
 }
 
 test.describe('@mobile 10.92 full WebKit layout', () => {
