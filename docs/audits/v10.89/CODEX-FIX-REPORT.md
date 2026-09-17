@@ -1,167 +1,111 @@
-# WAWIS 10.89 — repair evidence and remaining verification
+# WAWIS 10.89 — completed staging verification
 
-Audit file: **Wklejony kod markdown(3).md**, title **WAWIS 10.89 — niezależny audyt regresyjny READ-ONLY**. Read in full before runtime edits, including reproductions, F1–F13, N1–N9, the 54-scenario matrix, regressions, production/repository differences and repair groups. Copy: [SOURCE-AUDIT.md](SOURCE-AUDIT.md). Its read-only instructions describe the earlier audit; the current user explicitly authorized these repairs, commits, push and draft PR.
+Continuation from `645d3bcd2b824b5acbbb0a46057b5f0d9bcf84b7` on `fix/v10.89-audit-red`, draft PR #53. Original audited baseline remains `ab3a3ad5eb2a3b346800307370f136e5d8b52c43`; no rebase or version change. The entire audit **Wklejony kod markdown(3).md**, title **WAWIS 10.89 — niezależny audyt regresyjny READ-ONLY**, was read before the original repairs. Original counterexamples, repair explanations, full commit mapping and RED logs are preserved in [the pre-staging report](CODEX-FIX-REPORT-PRE-STAGING.md) and [source audit](SOURCE-AUDIT.md). The current report supersedes its inaccessible-staging statuses.
 
-Baseline: `ab3a3ad5eb2a3b346800307370f136e5d8b52c43`. Historical comparison: `74b895c849cdb7644250acf0de7933fc9ef7f1a5`. Branch: `fix/v10.89-audit-red`, created directly from baseline, without rebase. Version remains 10.89. Tested implementation head: `56d7302908b76b62e47460dfb98e1afb83e6ab10`; subsequent report-only commit does not alter tested code. Final head and all commits are in the draft PR.
+**All required test groups below passed on the stated environments.** Real staging is `wawis-10-89-audit-staging`, ref `hlfvjbidopyraycwkbfg`, branch `8dff2c11-d451-4f65-8f0f-94a12d739613`, parent `uohziyaudbpwmupvljyd`. Production was used only for read-only catalog comparisons. No production deployment/mutation, merge, release or Ready transition occurred. PR #53 remains draft for independent review.
 
-**The audit is NOT closed.** Local counterexamples, full smoke, E2E and build pass. Requested staging is inaccessible. Fresh Supabase rebuild, live roles/ACL/Storage verification and multi-connection PostgreSQL races have NOT run. PostgreSQL WASM and controlled transports do not replace those checks.
+## New commits
 
-## Checklist
+- `26d16d75bbe5add018df1a6365fbe4621e23f2ab` — `chore(v10.89): pin rebuild to authorized audit staging`
+- `066aac463663d457a621657525106360664fe7c9` — `fix(v10.89): close real staging rebuild and retention gaps`
+- `1e1740be6f1f233abb57ba4ee1cc038d0c8c903f` — `test(v10.89): verify real staging APIs races storage and worker lifecycle`
 
-Evidence paths are relative to this directory. GREEN means the specified counterexample was executed, not complete platform certification. Commit aliases resolve to full SHAs below.
+This report is committed separately after those tested implementation commits. The final report commit/head is recorded in PR metadata and the final response.
+
+## A01–A11
+
+GREEN certifies the audited counterexamples and stated tests, not live customer delivery or every possible application behavior. Existing baseline RED evidence is retained; staging was not replaced with mocks.
 
 | Finding | Baseline RED | Fix | GREEN | Mutation/control | Commit | Status | Uwagi |
 |---|---|---|---|---|---|---|---|
-| A01 | [baseline-A01](evidence/baseline-A01.log): phone 222 overwritten | OLD/NEW patch; selected address; reassignment boundary | Actual SQL preserves phone/HQ/Branch, explicit edits work | Baseline SQL fails same assertion | G1 | BEHAVIORALLY VERIFIED GREEN | Selected local RLS matrix passes; live roles unverified |
-| A02 | [baseline-A02](evidence/baseline-A02.log): completed edit accepted | Revalidate model/serial changes | SQL rejects second split/JW2 and required-photo deletion | Baseline misses expected rejection | G1 | BEHAVIORALLY VERIFIED GREEN | Staging trigger parity unverified |
-| A03 | [baseline-A03](evidence/baseline-A03.log): new E2 rejected | Separate epoch, endpoint, generation | Guard + SQL lifecycle/stale events pass | Old guard rejects legal E2 | G2, G2b | PARTIALLY VERIFIED | New full deployed Edge/SW/OS flow unverified |
-| A04 | [registry](evidence/baseline-email-attempts.log), [25h](evidence/baseline-email-edge.log) | Durable owner registry; reconcile pending; PDF identity; body timeout | A/B/A, reload, lost response, 25h, replacement, stalled body | Old registry and full handler fail separately | G3 | PARTIALLY VERIFIED | Live provider and multi-connection competing INSERTs unverified |
-| A05 | [baseline-A05](evidence/baseline-A05.log): late SENT regresses | Atomic RPC and exact send pointer | Handler barrier + SQL, both orders/new send | Old handler regresses | G3 | PARTIALLY VERIFIED | Real PostgreSQL lock contention unverified |
-| A06 | [owner](evidence/baseline-A06.log), [save](evidence/baseline-A06-save.log) | Owner/operation keys; tab pointer; stable retry; auth checks | Real module and real React two-tab/account flow | Baseline leaks A; first-repair tab regression detected and fixed | G2, G2b, G2c | BEHAVIORALLY VERIFIED GREEN | Controlled backend; actual photo Storage/RLS unverified |
-| A07 | [baseline-A07](evidence/baseline-A07.log): missing archive function | 50-file manifest, missing sources, final ACL, catalog verification | Two local replays, delete/restore/rollback | Missing source fails CREATE TRIGGER | G4 | PARTIALLY VERIFIED | Complete Supabase rebuild NOT VERIFIED |
-| A08 | [false-green](evidence/baseline-A08-false-green.log): old script claims closure | Label source checks; execute counterexamples in smoke | 18/18; aggregate gate rejects faults | 11 detected faults; negative gate exit 1 | G4 | PARTIALLY VERIFIED | Baseline evidence is a false PASS, not an exit-1 test; external contracts remain unverified |
-| A09 | [baseline-A09](evidence/baseline-A09.log): job_nameplates_incomplete | Transitional restore, dependencies, validated completion, history | Full local schema delete/restore/history and rollback | Baseline restore fails before photos exist | G1, G4 | BEHAVIORALLY VERIFIED GREEN | Actual Storage/Supabase unverified |
-| A10 | [LF/CRLF](evidence/baseline-A10.log), [E2E baseline](evidence/baseline-e2e-original-audit.log) | Normalize input; network quality independent locator | LF/CRLF both pass; 38/38 E2E | Old smoke fails CRLF | G4 | BEHAVIORALLY VERIFIED GREEN | Queue/upload/delete assertions retained |
-| A11 | [baseline-A11](evidence/baseline-A11.log): five loaders stale | Request/session scope and post-await guards | Five real loaders + actual Devices React test | Old Devices loader fails NEW/OLD | G2, G4 | BEHAVIORALLY VERIFIED GREEN | Controlled RPC transport |
+| A01 | [name-only overwrite](evidence/baseline-A01.log) | Explicit OLD/NEW contact patches | [Real authenticated worker SQL](evidence/staging-invariants-cron.json): preserves phone 222/HQ/Branch; explicit phone/secondary street works | Baseline invariant fails; worker direct contractor UPDATE denied through REST | Original G1; staging tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Original reassignment controls retained |
+| A02 | [completed edit accepted](evidence/baseline-A02.log) | Revalidate model/serial edits | [PostgREST](evidence/staging-api.json): second model line/JW2 rejected, required photo deletion rejected | Baseline missing rejection detected | Original G1; tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Real Storage files and photo rows |
+| A03 | [E2 rejected](evidence/baseline-A03.log) | Epoch separate from endpoint/generation | [Deployed Edge→DB→real SW](evidence/staging-push.json): E1/CLEAR/E2 generation1 succeeds | Late SET/CLEAR/410 and resurrection rejected; baseline guard mutation fails | Original G2/G2b; tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Synthetic endpoints; no OS delivery claim |
+| A04 | [A/B/A](evidence/baseline-email-attempts.log), [25h duplicate](evidence/baseline-email-edge.log) | Durable identity, reconciliation, PDF version, bounded body | [Real Auth/REST/Storage + PostgreSQL](evidence/staging-email.json): A/B/A/reload/lost response/25h/concurrent handler and INSERT/replacement | Unique-index Lock observed; loser 23505; baseline registry/handler fail | Original G3; tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Provider adapter controlled; no real mail sent |
+| A05 | [SENT regresses](evidence/baseline-A05.log) | Atomic RPC locks and exact send pointer | [Three PostgreSQL sessions](evidence/staging-sms-race.json): read barrier, both lock orders, newer send; sms_log and jobs verified | Observed pg_stat_activity Lock/blocking PIDs; baseline handler fails | Original G3; tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Callback SQL executed as service_role |
+| A06 | [foreign draft](evidence/baseline-A06.log), [wrong session save](evidence/baseline-A06-save.log) | Owner/operation/tab isolation and save checks | [Actual module against Storage/REST](evidence/staging-api.json): upload/INSERT/retry one row; cross-owner photo denied; real two-tab React E2E remains green | Baseline owner fault and first-repair tab regression captured | Original G2/G2b/G2c; tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Browser tests and real backend tests are distinguished |
+| A07 | [missing archive function](evidence/baseline-A07.log), additional staging REDs below | Complete ordered sources, cron replay, staff view guard, retained PDF ACL/index | [Two identical full staging replays](evidence/staging-final-replays.json), [catalog](evidence/staging-catalog-final.json), [API](evidence/staging-api.json), [restore/cron](evidence/staging-invariants-cron.json), [devices](evidence/staging-devices.json) | Missing dependency fails; original cron replay/pending read/PDF delete failures retained | `26d16d7`, `066aac4`, `1e1740b` | BEHAVIORALLY VERIFIED GREEN | 52 files after two required corrections |
+| A08 | [old false closure](evidence/baseline-A08-false-green.log) | Local executable gate plus separate external gate | [Same injected fault](evidence/gate-quality.json): old gate accepts, new rejects; [staging 7/7](evidence/staging-gate-final.log) | Historical gate exit0 vs current exit1 for same bad PUSH code | Original G4; tests `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Local results never substituted for external evidence |
+| A09 | [restore before photos](evidence/baseline-A09.log) | Transitional job, dependencies, validated completion/history | [Actual rebuilt backend](evidence/staging-invariants-cron.json): photos/comments/access/protocol/devices/SMS/history restored; corrupt missing-photo archive rolls back | Baseline fails; failed restore leaves no partial job or consumed archive | Original G1; extended fixture `1e1740b` | BEHAVIORALLY VERIFIED GREEN | Auth helper functions were NOT replaced in staging test |
+| A10 | [LF/CRLF](evidence/baseline-A10.log), original E2E label failure | Normalize source input; queue-specific locator | [18/18 gate](evidence/post-staging-audit-gate.log), [38/38 E2E](evidence/post-staging-e2e.log) | Old smoke fails CRLF | Original G4 | BEHAVIORALLY VERIFIED GREEN | Queue/upload/delete guarantees retained |
+| A11 | [five stale loaders](evidence/baseline-A11.log) | Request/session guards | [Latest gate](evidence/post-staging-audit-gate.log) and [real React E2E](evidence/post-staging-e2e.log): NEW/OLD, stale reject, account/logout/unmount | Baseline Devices mutation fails | Original G2/G4 | BEHAVIORALLY VERIFIED GREEN | Controlled transport for ordering, real components |
 
-## Commit mapping
+## Rebuild: actual failures, repairs and final proof
 
-- G1 `9e59c80cad460c90e884ab73611f2923610acc4e` — `fix(v10.89): protect contractor and completed-job invariants`
-- G2 `feed3fef5514a327fc7347383050e1b7596e6b07` — `fix(v10.89): isolate user lifecycle and stale async state`
-- G3 `c7d5c38334f2bc0a256583f6d0388af78368eaf7` — `fix(v10.89): make protocol email and SMS delivery idempotent`
-- G2b `b738d5bfa1ff1d2775a7742cc5724f083f120191` — `fix(v10.89): preserve fuel operations across concurrent tabs`
-- G2c `da2b090ee46e6c5025ff8176ed9a9b28d905917d` — `fix(v10.89): recheck fuel ownership at final save boundary`
-- G4 `56d7302908b76b62e47460dfb98e1afb83e6ab10` — `test(v10.89): make rebuild and audit gate executable`
+1. Minimal retarget changed only generator, manifest and README in its own commit. Authorized new ref succeeds; production, old ref and arbitrary ref were all rejected. Branch listing confirmed the exact new branch ID/project ref, ACTIVE_HEALTHY; SQL identity and empty application catalog were checked before mutation. Metadata get_project still returned not-found, but branch metadata and actual SQL/API connections worked.
+2. Initial full rebuild succeeded; second failed with `dependent privileges exist` while Supabase's CREATE EXTENSION event trigger reapplied pg_cron grants. [Original response](evidence/staging-initial-replay.json). Avoid redundant extension creation on replay and remove postgres self-grants. No platform event trigger was disabled.
+3. Populated Data API role test discovered pending users could read photos. Rebuild retained an older `current_user_can_view_job` definition. Read-only production definition required staff. [RED](evidence/staging-red-pending-read.json). New migration restores the staff check with an empty search_path and explicit ACL. Authenticated staff access remains intact.
+4. Catalog comparison found an extra legacy permissive Storage DELETE policy. Actual Storage API deleted a referenced PDF; the test restored the test file before failing. [RED](evidence/staging-red-protocol-retention.json). New migration removes that legacy policy; the retained-file policy remains enforced. [Same test GREEN](evidence/staging-protocol-retention.json).
+5. Final catalog comparison found a missing partial archive job index. Added `private.job_recycle_bin_job_idx` and verification. [Before](evidence/staging-catalog-comparison-before-index.json), [final comparison](evidence/staging-catalog-comparison-final.json).
 
-## Per-finding reproduction and changes
+The final clean application rebuild and replay used identical SQL SHA-256:
 
-Commands run from repository root. For source-driven cases, baseline commands were executed before editing the corresponding runtime files. `mutation-controls.mjs` reproduces them after repair by obtaining individual baseline files with `git show ab3a3ad5eb2a3b346800307370f136e5d8b52c43:<path>`, checking the expected failure reason, and restoring current bytes in `finally`. Run it alone on an idle worktree, not concurrently with tests/builds/edits. SQL controls use the recorded baseline definitions or omit repair migrations.
+`a75ba98a17082c9159ed621e3cd707c4309fdc3611343c8cefa23e37313ef3cd`
 
-### A01 — contact snapshot overwrite (P1)
+**Pass 1 PASS; pass 2 PASS.** [Proof with connection identity/hash](evidence/staging-final-replays.json), [log](evidence/staging-rebuild-final.log). The runner generated all 52 files, removed only psql's client meta-command and sent SQL to real PostgreSQL fail-fast; any thrown SQL error stops further passes. After each repair requiring a fresh application state, reset was limited to the authorized staging public/private application schemas and owned audit Storage fixtures. It first rejected non-audit users/jobs/Storage owners. Auth/platform schemas and the project were not deleted. The final gate ran after the last clean rebuild/replay.
 
-Counterexample: contractor HQ/Main, secondary Branch/Other, current phone 222; job points to Branch with stale phone 111; name-only update overwrites contractor data. Baseline command `node scripts/audit-v1089/invariants.mjs A01` exited 1 (`name-only must preserve`). Repeat historical control with `--baseline`.
+Catalog evidence includes tables, owners, RLS, function signatures/definer/search_path/ACL, constraints, indexes, triggers, schema grants and policies. No production table, column, function signature, constraint, index or policy is missing from the final catalog comparison. Expected additions include audit epoch/delivery columns/functions/index and historical repository `mobile_sync_receipts`/`storage_backup_queue` objects, all with RLS. These additions are listed explicitly; exact schema equality with production is not claimed. Replay plus real dependent operations verify dependency order.
 
-Responsible/changed source: contact-sync function replaced by `supabase/migrations/20260917101824_audit_invariants.sql`. Compare OLD/NEW, lock contractor, patch only explicit changes, distinguish primary/secondary addresses. Reassignment skips copying the previous contractor snapshot. No expanded worker grants.
+## Real staging evidence
 
-GREEN: same command; phone 222 and both addresses preserved, explicit phone/street edits affect only intended fields, reassignment followed by explicit edit works. `node scripts/audit-v1089/roles.mjs` executes selected recorded production RLS/functions: admin retained; worker direct update denied; pending/no-profile/anon denied. Baseline control fails again. G1. Live Supabase role matrix remains unverified.
+| Area | Executed result |
+|---|---|
+| Auth | Five real Auth accounts/sign-ins per final run. Forged user metadata Administrator still creates Oczekujący profile. Pending self-role escalation rejected. Missing-profile account remains denied. |
+| PostgREST/RLS/ACL | Admin, worker, pending, missing profile and anon tested through Data API. Nonstaff cannot read protected data; worker direct contractor update denied. All app roles denied service-only SMS callback RPC. Private schema and public-table RLS assertions pass. |
+| Storage | Real JW/JZ and Fuel uploads/downloads; nonstaff uploads rejected; cross-owner fuel read/write rejected; actual addFuelEntry retry reconciles one row. Required photos and referenced protocol PDFs survive deletion attempts. |
+| Devices | Real delete-device RPC shifts remaining photo indexes while retaining surviving Storage paths; only unreferenced files removed via Storage API; surviving device completes with JW/JZ. |
+| Restore | Actual delete/archive/restore including photos, comments, access, PDF record, devices, SMS and historical completed_at. Incomplete-photo archive rollback leaves no job and no restored marker, then valid archive restores. |
+| Cron | Actual pg_cron worker executed private.refresh_stale_new_jobs, with succeeded job_run_details; a 31-day-old Nowe fixture became Niezrealizowane. Expected hourly job remains unique/active at `17 * * * *`. Temporary 1-second verification job was unscheduled. |
+| SMS | Independent session-mode connections; SENT pre-read barrier; DELIVERED/SENT and SENT/DELIVERED lock orders; actual wait_event_type=Lock with blocker PIDs; both tables remain monotonic; old callback cannot modify newer-send pointer. |
+| E-mail | Full repository Edge handler with real Auth/PostgREST/Storage and PostgreSQL, only provider transport controlled. A/B/A, reload, lost response, DB record aged 25h and advanced handler clock, concurrent requests, unique-index contention, replacement conflict. Each logical operation invokes provider once. |
+| PUSH | Repository send-assignment-push deployed ONLY to this staging, verify_jwt=true, version 17. Staging-only VAPID keys. Actual authenticated Edge calls → DB epoch/generation → real Chrome Service Worker/IndexedDB. Fresh E2 generation1 accepted; stale SET/CLEAR/410 and old-account resurrection rejected. |
 
-### A02 — completed device edit (P2)
+Evidence lives in `staging-api.json`, `staging-devices.json`, `staging-protocol-retention.json`, `staging-invariants-cron.json`, `staging-sms-race.json`, `staging-email.json`, `staging-push.json`. [External aggregate gate](evidence/staging-gate-final.log): **7/7 PASS**.
 
-Counterexample: complete valid JW/JZ job, then change device fields to require another split/JW2; baseline permits an invalid completed job. Baseline `node scripts/audit-v1089/invariants.mjs A02` failed `Missing expected rejection`; use `--baseline` to repeat.
+Fixture corrections were not application failures: uploader ID required by RLS; unique contractor name/phone; actual newline/JW2 device serialization; valid vehicle registration; Supabase client session initialization; session pooler instead of transaction pooler for GUC/role persistence; bigint overload for cron cleanup; PUSH standalone client mode. Recorded intermediate failure files are historical, superseded by final successful runs. No policy/assertion was weakened to accommodate a fixture, and no failing test was disabled.
 
-Responsible/changed source: completion guard in `20260917101824_audit_invariants.sql`. Revalidate completed jobs on model/serial changes using the existing requirement parser, retaining global N2. GREEN same command rejects second split, additional JW2 and deleting required JZ. Baseline control fails. G1. Actual SQL, not text matching; no staging parity claim.
+## Final local regressions, after staging
 
-### A03 — PUSH context (P1)
+- [Audit gate](evidence/post-staging-audit-gate.log): **18/18 PASS**.
+- [Full smoke](evidence/post-staging-smoke.log): **111/111 PASS**.
+- [Mutation controls](evidence/post-staging-mutation-controls.log): **11/11 detected baseline faults**; source bytes restored.
+- [A08 same-fault gate control](evidence/gate-quality.json): old gate exit **0** (false acceptance); new gate exit **1** (correct rejection). Supplemental control, not counted as a failed application test.
+- [E2E](evidence/post-staging-e2e.log): **38/38 PASS**, real Chrome, existing mock suite plus real React component tests.
+- [Production build](evidence/post-staging-build.log): **PASS**, existing chunk-size/dynamic-import warnings. Build is not proof of behavioral repair.
 
-Counterexample: A/E1 generation 1 → logout/CLEAR → B/E2 generation 1; baseline global terminal floor rejects E2. Baseline/GREEN command `node scripts/audit-v1089/push-context.mjs`; baseline fails `fresh E2 generation 1`.
-
-Changed sources: `public/push-context-guard.js`, `public/push-sw.js`, `src/mobile791/modules/push-lifecycle-v1078.js`, `push-subscriptions.js`, `supabase/functions/send-assignment-push/index.ts`, `20260917102820_audit_push_context.sql`. A private sequence assigns ordered context epochs independently of endpoint generations. SET/CLEAR carries endpoint/epoch/generation; terminal tombstones prevent resurrection. Edge verifies active owner/generation before returning epoch. Expired endpoint replacement does not reuse old context metadata.
-
-GREEN also `node scripts/audit-v1089/push-db.mjs`: real SQL creates separate contexts at generation 1; old 410 leaves E2 active; disabled context cannot revive. Guard rejects late SET/CLEAR and old-account resurrection. Baseline guard mutation fails. G2/G2b. Existing browser session/PUSH tests passed; the newly coordinated database→Edge→SW→OS path has not been deployed or verified end to end.
-
-### A04 — protocol e-mail operation (P1)
-
-Counterexamples: pending A/B/A loses A's UUID; provider accepts, response is lost, retry after 25h sends a second copy after provider retention expires. Baseline `node scripts/audit-v1089/email-attempts.mjs` and `node scripts/audit-v1089/email-edge.mjs` both failed their corresponding assertions before repair.
-
-Changed sources: `src/mobile791/modules/job-protocol-email.js`, `supabase/functions/send-job-protocol-email/index.ts`, `20260917103411_audit_delivery_atomic.sql`. Durable registry is namespaced by owner and logical version. Pending operation cannot be discarded by force-new. Server records PDF path/signing version and uses a pending-version unique index to coordinate keys. Existing sending operation only reconciles; it NEVER repeats provider POST. Errors after provider start stay uncertain. Timeout includes response body. Replacement PDF conflicts with an existing attempt.
-
-GREEN: both commands plus `node scripts/audit-v1089/email-edge.mjs --body-timeout`. Real module reload preserves identity. Full handler runs with types stripped and controlled 24h-TTL provider; lost response followed by 25h retry yields one delivery. Changed PDF returns conflict; non-terminating body returns bounded pending response (test timer shortened, runtime timeout unchanged). Baseline registry and handler controls independently fail. G3.
-
-Limitations: Edge database/provider transports controlled, no real mail sent. Unique index executes in SQL rebuild but competing multi-connection INSERTs have not run. Unknown provider acceptance can require operator/provider confirmation indefinitely; no automatic eventual-delivery claim.
-
-### A05 — SMS monotonic callback (P1)
-
-Counterexample: SENT reads and pauses, DELIVERED writes, resumed SENT regresses. Baseline `node scripts/audit-v1089/sms-race.mjs` executes actual extracted handler and fails `delayed SENT cannot regress DELIVERED`.
-
-Changed sources: `supabase/functions/smsapi-delivery-webhook/index.ts`, `20260917103411_audit_delivery_atomic.sql`. Service-only `apply_sms_delivery_atomic` locks log/job, applies rank under lock and updates job only when `last_sms_log_id` matches the exact send. New sends change pointer; stale callback cannot modify them. RPC failure/missing result returns failure, covered behaviorally in `smoke-smsapi-webhook-security-v1085.mjs`.
-
-GREEN same race command: barrier delays SENT while DELIVERED executes actual SQL, then resumes; both serial orders, new-send pointer and sms_log/jobs are checked. Baseline handler mutation fails. G3. PGlite serializes SQL; real multi-session lock contention/deadlock behavior remains NOT VERIFIED.
-
-### A06 — fuel ownership and identity (P1)
-
-Counterexample: A leaves pending attempt, logout, B opens Fuel on same origin and receives A's entryId/photoPath/liters/odometer. Baseline commands `node scripts/audit-v1089/fuel-owner.mjs` and `node scripts/audit-v1089/fuel-save-owner.mjs` failed because B restored A and save accepted A with session B.
-
-Changed sources: `src/components/fuel/FuelPanelBase.jsx`, `src/modules/fuel.js`, both App callers. Store owner and operation-specific localStorage keys, per-tab sessionStorage pointer, expected-operation cleanup. UI distinguishes resume from separate new fill, preserving uncertain operations. Owner checked before restore/retry/upload/INSERT; result owner and photo path checked. React keyed by user; stale progress/completion guarded. G2c adds final INSERT owner check and post-PUSH guard.
-
-GREEN: `node scripts/audit-v1089/fuel-owner.mjs`, `fuel-save-owner.mjs`, `fuel-tabs.mjs`, `fuel-retry.mjs` (all in the same directory). Actual module retry/concurrent same-ID calls reconcile one logical INSERT; separate identical fills use two IDs/rows in controlled store. First repair's shared pointer failed two-tab test; [red-A06-tabs-after-group2](evidence/red-A06-tabs-after-group2.log) records it, G2b fixes it. Actual React/Chrome test uses two tabs, identical separate fills, reload/retry, account B empty fields/no resume, account A pending recovery. See `tests/e2e/audit-v1089.spec.js`. Baseline owner control fails. G2/G2b/G2c; live RLS/photo Storage still unverified.
-
-### A07 — complete repository sources (P1)
-
-Counterexample: CREATE TRIGGER references missing `private.archive_job_before_delete()`. Baseline `node scripts/audit-v1089/rebuild-dependency.mjs --baseline` exits 1. Other listed service/archive sources and private dependencies compared through read-only production catalog/definition queries.
-
-Changed files: `supabase/rebuild/legacy_service_archive_v1089.sql`, `manifest-v1089.json`, `audit_final_acl.sql`, `verify_audit_v1089.sql`, `README_v1089.md`; generator/rehearsal scripts. Added claim/confirm SMS, private claims/recycle tables, archive/list/restore/file-retention functions and dependencies discovered during SQL replay: access/save/delete RPCs, device list RPCs, photo audit and signup trigger. Reviewed search_path/qualification, definer/invoker, owners, ACL/dependencies. Final ACL revokes anonymous privileged RPC and private app-role access. Signup ignores forged admin metadata; no worker contractor access expansion.
-
-GREEN: `node scripts/audit-v1089/rebuild-dependency.mjs`; `node scripts/audit-v1089/rebuild-rehearsal.mjs --replay`. All 50 ordered repository SQL files including audit migrations execute twice. Catalog checks cover required signatures, RLS/ACL, archive trigger and retained storage policy. Backend fixture performs delete→archive→restore photos/comments/protocol/history and rollback on missing photos. Missing-source control fails actual CREATE TRIGGER. Generator `node scripts/audit-v1089/emit-rebuild.mjs wnctellcoznmgwcpzztm ../staging-rebuild-v1089.sql` succeeded without DB connection; another ref is rejected.
-
-G4. This is NOT complete Supabase rebuild evidence: real SQL uses platform auth/storage/cron shells and omits extension creation. HTTP Auth/REST, actual Storage, cron workers, multi-session execution and full live catalog parity require staging. README gives the fresh authorized process; no destructive reset/manual application DDL was performed.
-
-### A08 — test-quality false assurance (P2)
-
-Baseline `node scripts/smoke-audit-fixes-v1088.mjs` returned 0 and claimed behavioral closure while executable counterexamples failed. Preserved false PASS is not mislabeled an exit-1 baseline. Changed script labels source checks auxiliary and invokes `scripts/audit-v1089/run.mjs`; root lockfile pins PGlite 0.5.8.
-
-GREEN: 18/18 executable local scenarios. `node scripts/audit-v1089/mutation-controls.mjs` detects 11 faults at expected assertions. `node scripts/audit-v1089/run.mjs --control` returns **1**, 15/18 pass with three invariant faults detected. No disabled tests or broad closure claim. G4. PARTIALLY VERIFIED records the original false-PASS evidence form and unverified external contracts.
-
-### A09 — completed-job restore ordering (P1)
-
-Counterexample: baseline inserts completed job before photos, BEFORE INSERT raises `job_nameplates_incomplete`. Baseline `node scripts/audit-v1089/invariants.mjs A09` fails; `--baseline` repeats using recorded exact live baseline restore.
-
-Changed source: `20260917101825_audit_restore.sql`, included by manifest. Temporary W trakcie job, dependencies/photos, validated completion, separate historical metadata update so normal trigger does not overwrite history. RPC transaction retained; N2 never globally disabled.
-
-GREEN same invariant command plus `rebuild-rehearsal.mjs --replay`: actual delete/restore, photos/comments/protocol/status/history; repeated restore rejects. Incomplete archive failure leaves no partial job and does not consume archive; repaired archive subsequently restores. Baseline control fails. G1/G4. Actual Storage/Supabase role matrix remains unverified.
-
-### A10 — CRLF and queue locator (P2)
-
-Baseline `node scripts/audit-v1089/eol.mjs` runs actual 10.86 smoke with LF then CRLF: exit 0 then exit 1. `scripts/smoke-audit-fixes-v1086.mjs` now normalizes inputs before source assertions, without runtime workaround. GREEN same command: both 0; baseline file mutation fails CRLF.
-
-`tests/e2e/mobile-photo-two-sessions.spec.js` matches connection label independently of Dobre/Średnie and retains Wszystko wysłane, upload, admin visibility, deletion and cross-session synchronization assertions. Original audit evidence: 35/36 with exactly the label failure; current full suite: 38/38 (two new tests). G4.
-
-### A11 — stale Devices and adjacent loaders (P1)
-
-Counterexample: OLD starts, NEW starts/resolves, OLD overwrites NEW. Baseline `node scripts/audit-v1089/loaders.mjs` reproduced in desktop/mobile Devices, desktop/mobile Contractors and Fuel before fixes.
-
-Changed files: both DevicesPanels, both ContractorsPanels, FuelPanelBase, App callers, `src/modules/async-scope.js`, `src/hooks/usePanelLoadGuard.js`. Request predicates tied to session; account/auth/unmount invalidate scope; await/error/final setters reject stale requests. GREEN same command checks old resolve/reject and closed scopes/loading/error; actual React Devices E2E covers NEW/OLD, account switch with stale reject, logout/unmount. Baseline Devices mutation fails. G2/G4. Controlled RPC/setter evidence is not live backend testing.
-
-## Final commands/results
-
-Windows, Node 24.14.1, npm 11.11, Chrome. CI uses Node 22; CI results not claimed. Installed from lockfile with `npm ci --ignore-scripts --include=optional`; no version/release-policy/workflow changes.
+Windows/Node 24.14.1; pg 8.23.0 added as pinned test devDependency, lockfile committed. CI Node 22 execution is not inferred from local results.
 
 ```powershell
-# Only for known sandbox/host ownership mismatch; no global Git setting changed.
-$env:GIT_CONFIG_COUNT='1'
-$env:GIT_CONFIG_KEY_0='safe.directory'
-$env:GIT_CONFIG_VALUE_0='C:/Users/wasik/Documents/Codex/2026-09-17/files-pasted-by-the-user-wawis/work/wawis-fix'
-node scripts/audit-v1089/run.mjs
+# Exact staging is asserted by the scripts. Keep these files outside git.
+$env:WAWIS_STAGING_CREDENTIALS='C:/private/staging-credentials.json'
+$env:WAWIS_STAGING_ACTORS='C:/private/staging-actors.json'
+node scripts/audit-v1089/staging-rebuild.mjs --reset-audit-fixtures
+node scripts/audit-v1089/staging-gate.mjs
+
+# Local regressions; no external credentials required.
 node scripts/audit-v1089/mutation-controls.mjs
-node scripts/audit-v1089/run.mjs --control # EXPECT exit 1
+node scripts/audit-v1089/run.mjs
 node scripts/audit-v1089/full-smoke.mjs
 $env:PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH='C:/Program Files/Google/Chrome/Application/chrome.exe'
 $env:VITE_SUPABASE_MODE='mock'
 node node_modules/@playwright/test/cli.js test --workers=1 --reporter=line
 npm run build
+node scripts/audit-v1089/gate-quality.mjs
 ```
 
-- [Gate](evidence/green-audit-gate.log): **18/18 PASS**; final full smoke executes latest gate too.
-- [Mutation controls](evidence/mutation-controls.log): **11/11 faults detected**, bytes restored; [negative gate](evidence/mutation-gate.log): expected **exit 1**, 15/18.
-- [Full smoke](evidence/full-smoke-final.log): **111/111 PASS**, every unique existing full release-group command, no early termination; [JSON results](evidence/full-smoke-results.json).
-- [E2E](evidence/e2e-final.log): **38/38 PASS**, Chrome, one worker, mock backend.
-- [Build](evidence/build-final.log): **PASS**, existing chunk-size/dynamic-import warnings. Not behavioral proof.
-- Latest local rebuild/restore/replay evidence is inside final gate/full-smoke logs. Supabase staging rebuild: **NOT VERIFIED**.
+For the Windows sandbox/host Git ownership mismatch, the previous per-process exact-worktree `safe.directory` environment override was used; no global Git trust change. Mutation/gate-quality runners must run alone because they temporarily restore historical files. Staging credentials/JWTs/private VAPID keys were kept outside the repository and are not included in evidence.
 
-Intermediate failures retained: initial smoke 107/111 (old PUSH select assertion, missing mock e-mail auth, old SMS implementation assertions); updated tests preserve guarantees, including executed RPC error handling. A later 109/111 hit Git ownership; 110/111 found missing auth.users platform shell in small dependency fixture. Both addressed, all 111 rerun. New Fuel browser fixture initially recreated a diagnostic callback each render and timed out; stable callback fixed fixture, followed by two-test and full-suite PASS. No failing test disabled. Raw logs retain formatting/trailing whitespace. No claim that all 54 original audit scenarios were fully executed.
+## Remaining RED / NOT VERIFIED and preservation
 
-## Staging blocker and remaining review
+**Required audited counterexamples and requested test groups: no remaining RED or blocked verification.** Explicit limits retained:
 
-Requested `wawis-10-89-rebuild`, ref `wnctellcoznmgwcpzztm`, branch `73b1e422-b2de-4eed-8a2c-bfd275eb7ab6`. Repeated read-only get_project returned **Project not found**; connected list_projects exposed only production, parent list_branches only main. User asked for access/correct ref. No replacement staging, reset/rebuild/deployment/deletion, or production substitution performed.
-
-Required remaining work after access restoration:
-
-1. Fresh Supabase rebuild and second replay; actual inventory/owners/search_path/grants/triggers/policies/RLS/Storage parity.
-2. Live Auth/PostgREST role matrix (admin/worker/pending/no-profile/anon), restore/history/rollback, Storage dependencies and cron behavior.
-3. Multi-connection SMS callback barriers/locks/new-send isolation; competing e-mail operation/version INSERTs and reconciliation.
-4. Staging deployed Edge→DB→SW PUSH lifecycle/410/logout, remaining live Fuel/loader/provider transport checks. No real SMS/e-mail/PUSH sent by these tests.
+- Actual Resend delivery was not sent/tested. The user-required safe controlled provider was used while database/Auth/REST/Storage were real.
+- Native OS PUSH notification delivery and real provider 410 network response were not exercised. Synthetic endpoints and the actual expiry RPC tested the required lifecycle/CLEAR/late-410 invariant through the deployed Edge/real SW path as far as this staging test permits.
+- This is not certification of every historical 54-scenario matrix item or live customer deployment; CI status is separate from the recorded local/staging results.
+- Supabase Branching's old automatic MIGRATIONS_FAILED metadata is not the result of these manual replays; this task verified the expressly requested manual repository rebuild. No claim of repairing the automatic Branching pipeline.
 
 NO PRODUCTION DEPLOYMENT PERFORMED
 
-STAGING wawis-10-89-rebuild LEFT IN PLACE FOR INDEPENDENT REVIEW
+STAGING wawis-10-89-audit-staging LEFT IN PLACE FOR INDEPENDENT REVIEW
 
-The preservation statement means no deletion was performed. Inaccessibility prevents asserting existence/availability or successful rebuild. Production modified: **NO**, including no rollback mutation tests. Staging deleted: **NO**. No merge, Ready transition, release or production deployment.
+PRODUCTION MODIFIED: NO. STAGING DELETED: NO. Version remains 10.89. PR #53 remains OPEN and DRAFT; no merge, release or Ready transition. Test users/data remain on staging for independent inspection; transient cron verification job was removed.
