@@ -24,4 +24,14 @@ Na bazie 10.91 test `tests/e2e/mobile-v1092-regressions.spec.js` odtworzył 2/2 
 - po produkcji wymagane Vercel SUCCESS i post-deploy diagnostics.
 
 ## Status
-W toku — brak zgody na merge do `main` przed pełnym GREEN.
+**ZAMKNIĘTA — 10.92 wdrożona produkcyjnie.**
+
+- PR #60: merged,
+- finalny WAWIS PR checks: SUCCESS,
+- production main: `35ec4e038c5ce59fdd34c3a5edee4608e4d15912`,
+- Vercel: SUCCESS,
+- Supabase migration `admin_finish_without_nameplates_v1092`: applied,
+- backend po migracji: administrator PASS bez tabliczek; pracownik nadal blokowany `23514 job_nameplates_incomplete`,
+- app-version i Service Worker: 10.92,
+- diagnostyka od merge: 0 zdarzeń, 0 error/fatal,
+- tymczasowy staging Supabase: usunięty.
