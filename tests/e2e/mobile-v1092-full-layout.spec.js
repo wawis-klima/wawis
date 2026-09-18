@@ -41,7 +41,8 @@ async function seedOverflowJob(page) {
 }
 
 test.describe('@mobile 10.92 full WebKit layout', () => {
-  test('pełny widok Koroś nie może poszerzyć ekranu iPhone', async ({ page }) => {
+  test('pełny widok Koroś nie może poszerzyć ekranu iPhone', async ({ page, browserName }) => {
+    test.skip(browserName !== 'webkit', 'Pełny layout 10.92 jest testem WebKit/iPhone; Chromium ma osobne regresje mobilne.');
     await seedOverflowJob(page);
     await loginWithoutReset(page, ADMIN);
 
