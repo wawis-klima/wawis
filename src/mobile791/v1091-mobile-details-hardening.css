@@ -121,15 +121,23 @@
     max-width: 100% !important;
   }
 
+  /* 10.93: ręczne potwierdzenie ma być kompaktowym przyciskiem,
+     dopasowanym do napisu, a nie pełnej szerokości karty. */
   .deviceUnitManualVerifyBtn {
     grid-column: 1 / -1 !important;
-    width: 100% !important;
+    justify-self: center !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content !important;
+    max-width: calc(100% - 16px) !important;
     min-width: 0 !important;
-    min-height: 34px;
-    margin-top: 7px;
-    padding: 7px 10px;
+    min-height: 32px;
+    margin: 7px auto 0;
+    padding: 6px 12px;
+    box-sizing: border-box;
     border: 1px solid #93c5fd;
-    border-radius: 11px;
+    border-radius: 10px;
     background: #eff6ff;
     color: #1d4ed8;
     font: inherit;
@@ -137,7 +145,7 @@
     font-weight: 800;
     line-height: 1.15;
     cursor: pointer;
-    white-space: normal;
+    white-space: nowrap;
   }
 
   .deviceUnitManualVerifyBtn.revoke {
