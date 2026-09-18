@@ -35,7 +35,7 @@ jobs:
         run: npx playwright test tests/e2e/mobile-v1091-regressions.spec.js tests/e2e/mobile-v1092-regressions.spec.js --reporter=line
       - name: Full mobile WebKit layout
         run: npx playwright test tests/e2e/mobile-v1092-full-layout.spec.js --config=playwright.v1092-webkit.config.js
-      - name: Verify release metadata
-        run: node scripts/verify-release.cjs
       - name: Production build
         run: npm run build
+      - name: Verify release metadata and built dist
+        run: node scripts/verify-release.cjs
