@@ -1,18 +1,26 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.93
+- 10.94
 
 ## Zakres
-- Mobile: przycisk **Potwierdź ręcznie** przy JZ/JW nie zajmuje już pełnej szerokości karty.
-- Przycisk ma szerokość dopasowaną do napisu, jest wyśrodkowany i ma bezpieczny limit szerokości dla małych ekranów.
-- Brak zmian w logice ręcznego potwierdzania, Supabase, danych, rolach i uprawnieniach.
+- Przywrócenie szczegółowej treści PUSH dla zdarzeń związanych ze zleceniami.
+- Zakończenie zlecenia: tytuł wskazuje wykonawcę, a treść klienta, adres i godzinę.
+- Przydzielenie montażu oraz komentarz zachowują przygotowaną przez backend szczegółową treść zamiast stałego komunikatu ogólnego.
+- Bez zmian schematu bazy, RLS i logiki uprawnień.
+- Ochrona PUSH po stronie Service Workera nadal sprawdza odbiorcę i generację subskrypcji przed pokazaniem powiadomienia.
 
-## Profil wydania
-- `MICRO UI`
-- efektywny diff: `src/mobile791/v1091-mobile-details-hardening.css`
-- jedna obowiązkowa bramka: `WAWIS PR checks / targeted-checks`
-- po zielonym PR: jeden merge do `main` i jeden produkcyjny deploy Vercela.
+## Dowód problemu
+Backend przygotowywał poprawną szczegółową treść, ale `sendPushToUsers` zastępował ją stałym komunikatem:
+`Masz nowe zdarzenie w aplikacji Wawis. Otwórz aplikację, aby zobaczyć szczegóły.`
+
+## Warunek GREEN
+- smoke zakończenia zlecenia potwierdza, że payload używa szczegółowej treści,
+- regresje PUSH i bezpieczeństwa muszą przejść,
+- produkcyjny build musi przejść,
+- wymagany `WAWIS PR checks / targeted-checks` musi być zielony,
+- po merge Edge Function `send-assignment-push` musi zostać wdrożona do produkcyjnego Supabase,
+- produkcyjny Vercel dla commita `main` musi zakończyć się sukcesem.
 
 ## Status
-Kandydat 10.93 przygotowany do pojedynczej bramki PR i wdrożenia produkcyjnego.
+Kandydat 10.94 przygotowany do bramki PR.
