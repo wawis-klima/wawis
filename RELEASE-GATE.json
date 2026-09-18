@@ -1,40 +1,28 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.93",
-  "release_mode": "micro-ui",
-  "scope": "mobile",
-  "release_branch": "release/v10.93",
+  "version": "10.94",
+  "scope": "full",
+  "release_branch": "release/v10.94",
   "baseline_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
-    "result": "INFO_PENDING",
-    "notes": "Diagnostyka startowa jest informacyjna i nie blokuje ścieżki MICRO UI."
-  },
-  "drive_backup": {
-    "required": false,
-    "deferred": true,
-    "file_name": "klima-app-v10.93.zip"
+    "result": "INFO",
+    "notes": "push_delivery_log z ostatnich 24 h: job_completed sent=6, expired=2. Diagnostyka informacyjna; zmiana 10.94 dotyczy treści payloadu PUSH."
   },
   "main_protection": {
-    "source_branch": "release/v10.93",
+    "source_branch": "release/v10.94",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
-  "micro_ui": {
-    "policy_version": 1,
-    "css_only": true,
-    "archive_deferred": true,
-    "effective_files": [
-      "src/mobile791/v1091-mobile-details-hardening.css"
-    ]
-  },
   "postdeploy_diagnostics": {
     "evidence_required": false,
+    "checked": false,
     "result": "NOT_BLOCKING"
   },
   "archive": {
     "source_of_truth": "github-main",
     "zip_optional": true,
     "blocking": false
-  }
+  },
+  "release_mode": "standard"
 }
