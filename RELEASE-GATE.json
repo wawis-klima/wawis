@@ -24,8 +24,13 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "result": "PENDING",
-    "notes": "Po merge: zastosować migrację 10.92 na produkcji, potwierdzić Vercel SUCCESS dla merge SHA, app-version/SW 10.92, zweryfikować role po migracji i sprawdzić diagnostykę od czasu wdrożenia."
+    "checked": true,
+    "checked_at": "2026-09-18T01:29:22.868368Z",
+    "result": "PASS",
+    "release_head": "5a902538c21b9f2dc622812f3d5a7bab320fadc4",
+    "production_main_sha": "35ec4e038c5ce59fdd34c3a5edee4608e4d15912",
+    "production_supabase_ref": "uohziyaudbpwmupvljyd",
+    "notes": "PR #60 merged after WAWIS PR checks run 35295224318 SUCCESS. Vercel status for exact merge SHA is SUCCESS. Production migration 20260918012815 admin_finish_without_nameplates_v1092 applied. Live backend role test after migration: admin PASS without nameplates; worker blocked with SQLSTATE 23514 job_nameplates_incomplete. main contains app-version 10.92 and Service Worker cache wawis-app-shell-v10.92. Since merge 2026-09-18T01:27:55Z: 0 diagnostic events and 0 error/fatal. Security Advisor shows only existing earlier warnings; no new 10.92 finding. Supabase preview staging was removed."
   },
   "archive": {
     "source_of_truth": "github-main",
