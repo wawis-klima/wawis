@@ -1,3 +1,7 @@
+## 10.93
+- Mobile: przycisk `Potwierdź ręcznie` pod JZ/JW ma szerokość dopasowaną do treści, jest wyśrodkowany i zachowuje maksymalny limit szerokości ekranu.
+- Zmiana jest CSS-only i korzysta ze ścieżki wydania MICRO UI; bez zmian logiki, Supabase, uprawnień ani danych.
+
 ## 10.92
 - Produkcyjny mobilny entrypoint ładuje teraz faktyczne arkusze hardeningu szerokości 10.90/10.91 oraz końcowy guard 10.92; wcześniej poprawka 10.91 istniała w repo, ale nie była dołączona przez używany na telefonie `src/main.jsx`.
 - Mobilna lista montaży ma wymuszoną kolumnę `minmax(0, 1fr)`, a rozwinięte szczegóły i komentarz administratora nie mogą zwiększyć szerokości viewportu.
