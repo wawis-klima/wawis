@@ -1,4 +1,5 @@
 name: WAWIS 10.92 focused pre-release
+# rerun after release metadata fix
 
 on:
   push:
