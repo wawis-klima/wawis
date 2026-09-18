@@ -1,7 +1,7 @@
 {
   "policy_enforced_from": "10.60",
   "version": "10.92",
-  "scope": "mobile+supabase",
+  "scope": "full",
   "release_branch": "release/v10.92",
   "baseline_diagnostics": {
     "checked": true,
@@ -14,7 +14,7 @@
     "checked": false,
     "last_24h": true,
     "result": "PENDING",
-    "notes": "Wymagane GREEN: runtime import width hardening, mobile width regression, admin direct finish vs worker photo guard, staging Supabase, production build."
+    "notes": "GREEN funkcjonalny w toku: smoke wersji, worker/admin nameplate, desktop/manual, regresje 10.91/10.92 i pełny WebKit iPhone przeszły; wymagane jeszcze verify-release, production build i staging Supabase."
   },
   "main_protection": {
     "source_branch": "release/v10.92",
