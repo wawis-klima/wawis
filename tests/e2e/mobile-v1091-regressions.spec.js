@@ -9,7 +9,7 @@ const mobileStyles = [
   'src/mobile791/v1091-mobile-details-hardening.css',
 ].map((file) => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
 const mobileDetailsSource = fs.readFileSync(path.join(root, 'src/mobile791/components/JobDetailsPanel.jsx'), 'utf8');
-const backendGuardSource = fs.readFileSync(path.join(root, 'supabase/migrations/20260917093000_admin_manual_nameplate_completion_v1090.sql'), 'utf8');
+const backendGuardSource = fs.readFileSync(path.join(root, 'supabase/migrations/20260917235600_admin_finish_without_nameplates_v1092.sql'), 'utf8');
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
 
@@ -67,18 +67,17 @@ test.describe('@mobile 10.91 regressions', () => {
     expect(geometry.addressRight).toBeLessThanOrEqual(geometry.viewport + 2);
   });
 
-  test('mobilny administrator ma jawne ręczne potwierdzenie JZ/JW, a zakończenie wymaga zdjęcia albo potwierdzenia', async () => {
+  test('ręczne potwierdzenie pozostaje opcjonalne, ale admin może zakończyć także bez niego', async () => {
     expect(mobileDetailsSource).toContain('setManualNameplateVerification');
     expect(mobileDetailsSource).toContain('Potwierdź ręcznie');
     expect(mobileDetailsSource).toContain('Cofnij ręczne');
-    expect(mobileDetailsSource).toContain('manualVerificationBusyKey');
-    expect(mobileDetailsSource).toContain('effectiveMissingNameplateUnits');
-    expect(mobileDetailsSource).toContain('effectiveNameplateComplete');
-    expect(mobileDetailsSource).toContain('!unit.ready && !getManualNameplateVerification');
+    expect(mobileDetailsSource).toContain('const effectiveNameplateComplete = isAdmin ? true : nameplateCompletion.isComplete;');
     expect(mobileDetailsSource).toContain('disabled={busy || showDetailsLoading || !effectiveNameplateComplete}');
 
     expect(backendGuardSource).toContain('public.current_user_is_admin()');
-    expect(backendGuardSource).toContain('public.nameplate_manual_verifications');
+    expect(backendGuardSource).toContain('v_admin_bypass');
+    expect(backendGuardSource).toMatch(/if\s+v_admin_bypass\s+then[\s\S]*return;/i);
+    expect(backendGuardSource).not.toContain('from public.nameplate_manual_verifications mv');
     expect(backendGuardSource).toContain("raise exception 'job_nameplates_incomplete:");
   });
 });

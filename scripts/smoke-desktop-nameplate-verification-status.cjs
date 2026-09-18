@@ -100,8 +100,8 @@ async function main() {
     path.join(root, 'src', 'mobile791', 'components', 'JobDetailsPanel.jsx'),
     'utf8',
   );
-  const v1090Sql = fs.readFileSync(
-    path.join(root, 'supabase', 'migrations', '20260917093000_admin_manual_nameplate_completion_v1090.sql'),
+  const v1092Sql = fs.readFileSync(
+    path.join(root, 'supabase', 'migrations', '20260917235600_admin_finish_without_nameplates_v1092.sql'),
     'utf8',
   );
 
@@ -112,12 +112,14 @@ async function main() {
   assert.match(mobileRequirementsSource, /serverGuardRequired:\s*adminServerGuard\s*&&\s*!photosComplete/);
   assert.match(mobileRequirementsSource, /isComplete:\s*photosComplete\s*\|\|\s*adminServerGuard/);
 
-  // Mobilny ekran nie tworzy sam ręcznego potwierdzenia — decyzja ma pozostać po stronie
-  // jawnego wpisu administratora i serwerowego assert_job_nameplates_complete().
-  assert.doesNotMatch(mobilePanelSource, /Potwierdź ręcznie/);
-  assert.match(v1090Sql, /v_allow_manual\s+boolean\s*:=\s*\([\s\S]*auth\.role\(\)[\s\S]*service_role[\s\S]*public\.current_user_is_admin\(\)/i);
-  assert.match(v1090Sql, /v_allow_manual[\s\S]*public\.nameplate_manual_verifications\s+mv[\s\S]*mv\.job_id\s*=\s*p_job_id[\s\S]*mv\.device_index\s*=\s*v_required\.device_index[\s\S]*mv\.unit_ref/i);
-  assert.match(v1090Sql, /raise exception 'job_nameplates_incomplete:/i);
+  // 10.92: ręczne potwierdzenia mogą pozostać dostępne administracyjnie,
+  // ale zakończenie przez administratora nie zależy już od nich.
+  assert.match(mobilePanelSource, /Potwierdź ręcznie/);
+  assert.match(mobilePanelSource, /const effectiveNameplateComplete = isAdmin \? true : nameplateCompletion\.isComplete;/);
+  assert.match(v1092Sql, /v_admin_bypass\s+boolean\s*:=\s*\([\s\S]*auth\.role\(\)[\s\S]*service_role[\s\S]*public\.current_user_is_admin\(\)/i);
+  assert.match(v1092Sql, /if\s+v_admin_bypass\s+then[\s\S]*return;/i);
+  assert.doesNotMatch(v1092Sql, /from public\.nameplate_manual_verifications\s+mv/i);
+  assert.match(v1092Sql, /raise exception 'job_nameplates_incomplete:/i);
 
   console.log('desktop nameplate verification status smoke: OK');
 }

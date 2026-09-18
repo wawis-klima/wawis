@@ -308,9 +308,7 @@ export default function JobDetailsPanel({
       !unit.ready && !getManualNameplateVerification(manualVerifications, unit.deviceIndex, unit.unitRef)
     ))
     : nameplateCompletion.missingUnits;
-  const effectiveNameplateComplete = isAdmin
-    ? nameplateCompletion.units.length > 0 && effectiveMissingNameplateUnits.length === 0
-    : nameplateCompletion.isComplete;
+  const effectiveNameplateComplete = isAdmin ? true : nameplateCompletion.isComplete;
   const hasLocallySavedNameplates = nameplateCompletion.units.some((unit) => {
     const status = String(unit.photo?.upload_status || '').toLowerCase();
     return status === 'local' || status === 'uploading';
@@ -695,7 +693,7 @@ export default function JobDetailsPanel({
 
       <section className="detailsSection">
         <h4 className="sectionHeadingWithIcon"><IconFileText /><span>Komentarz administratora</span></h4>
-        <div className="muted">{selectedJob.admin_note || "Brak komentarza."}</div>
+        <div className="muted adminNoteText">{selectedJob.admin_note || "Brak komentarza."}</div>
         {canManageSelectedAdminNote ? (
           <div className="row leftAlign adminNoteActions">
             <button
