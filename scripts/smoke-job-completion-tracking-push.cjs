@@ -51,7 +51,9 @@ assert(edge.includes('String(job.status || "") !== "Zakończone"'), 'Edge Functi
 assert(edge.includes("['employee', 'pracownik', 'admin', 'administrator'].includes(normalizedCallerRole)"), 'Completion push może wysłać tylko pracownik lub administrator');
 assert(!edge.includes('.from("job_access")'), 'Od 10.60 przypisanie montera nie może blokować completion push dla wspólnie dostępnego montażu');
 assert(edge.includes('deliveryType: "job_completed"'), 'Log push musi rozróżniać job_completed');
-assert(edge.includes('Zlecenie zakończone'), 'Push musi mieć czytelny tytuł');
+assert(edge.includes('title: `${completedBy} zakończył zlecenie`'), 'Push zakończenia musi wskazywać wykonawcę w tytule');
 assert(edge.includes('completed_at'), 'Push musi korzystać z zapisanego czasu zakończenia');
+assert(edge.includes('body: notificationBody'), 'Payload PUSH musi zachowywać przygotowaną szczegółową treść');
+assert(!edge.includes('Masz nowe zdarzenie w aplikacji Wawis. Otwórz aplikację, aby zobaczyć szczegóły.'), 'Szczegółowa treść PUSH nie może być nadpisywana ogólnym komunikatem');
 
 console.log('Job completion tracking + admin push smoke OK');
