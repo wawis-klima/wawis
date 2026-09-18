@@ -1,3 +1,9 @@
+## 10.94
+- PUSH zakończenia zlecenia pokazuje w tytule osobę, która je zakończyła, np. `Kacper Wydmański zakończył zlecenie`.
+- Treść powiadomienia zawiera klienta, adres i godzinę zamiast ogólnego komunikatu „Masz nowe zdarzenie...”.
+- Przydzielenia montaży i komentarze również zachowują przygotowaną szczegółową treść.
+- Nadal działa ochrona odbiorcy oraz generacji subskrypcji w Service Workerze; nie zmieniono modelu uprawnień ani bazy danych.
+
 ## 10.93
 - Mobile: przycisk `Potwierdź ręcznie` pod JZ/JW ma szerokość dopasowaną do treści, jest wyśrodkowany i zachowuje maksymalny limit szerokości ekranu.
 - Zmiana jest CSS-only i korzysta ze ścieżki wydania MICRO UI; bez zmian logiki, Supabase, uprawnień ani danych.
