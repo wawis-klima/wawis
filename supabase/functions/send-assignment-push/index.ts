@@ -438,16 +438,16 @@ async function handleJobCompleted({
 
   const subject = job.client || job.title || [job.city, job.street].filter(Boolean).join(", ") || "Montaż";
   const address = [job.city, job.street].filter(Boolean).join(", ");
-  const completedBy = callerProfile.full_name || "Pracownik";
+  const completedBy = String(callerProfile.full_name || "Pracownik").trim() || "Pracownik";
   const completedTime = formatWarsawDateTime(job.completed_at);
-  const bodyParts = [subject, address, `zakończył: ${completedBy}`, completedTime ? `godz. ${completedTime}` : ""].filter(Boolean);
+  const bodyParts = [subject, address, completedTime ? `godz. ${completedTime}` : ""].filter(Boolean);
 
   return await sendPushToUsers({
     adminClient,
     userIds: targetAdminIds,
     job,
     deliveryType: "job_completed",
-    title: "Zlecenie zakończone",
+    title: `${completedBy} zakończył zlecenie`,
     body: bodyParts.join(" • "),
     tag: `job-completed-${job.id}-${job.completed_at || "now"}`,
     vapidPublicKey,
@@ -638,16 +638,17 @@ async function sendPushToUsers({
 
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
-  const safeBody = deliveryType === "push_test"
-    ? "Powiadomienia PUSH działają."
-    : "Masz nowe zdarzenie w aplikacji Wawis. Otwórz aplikację, aby zobaczyć szczegóły.";
+  const notificationBody = String(body || "").trim()
+    || (deliveryType === "push_test"
+      ? "Powiadomienia PUSH działają."
+      : "Masz nowe zdarzenie w aplikacji Wawis.");
 
   const results = await Promise.all(subscriptions.map(async (subscription: any) => {
     const payload = JSON.stringify({
       type: deliveryType,
       jobId: job?.id || null,
       title,
-      body: safeBody,
+      body: notificationBody,
       url: targetUrl || (job?.id ? `/?jobId=${encodeURIComponent(job.id)}` : "/"),
       tag,
       recipientUserId: String(subscription.user_id || ""),
