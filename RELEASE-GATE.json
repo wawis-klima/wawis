@@ -1,41 +1,40 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.92",
-  "scope": "full",
-  "release_branch": "release/v10.92",
+  "version": "10.93",
+  "release_mode": "micro-ui",
+  "scope": "mobile",
+  "release_branch": "release/v10.93",
   "baseline_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": true,
-    "checked_at": "2026-09-17T23:53:26Z",
-    "result": "RED_REPRODUCED",
-    "notes": "10.91 baseline: 2/2 kontrprzykłady RED — produkcyjny src/main.jsx nie ładował v1090/v1091 width hardeningu; administrator nie miał bezpośredniego bypassu tabliczek."
+    "result": "INFO_PENDING",
+    "notes": "Diagnostyka startowa jest informacyjna i nie blokuje ścieżki MICRO UI."
   },
-  "predeploy_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "checked_at": "2026-09-18T01:21:02Z",
-    "result": "PASS",
-    "notes": "Focused pre-release run 35294836687 SUCCESS on head b94dd230a40a105467c5056b3f790acbf84af06f: version smoke, worker/admin nameplate smoke, desktop/manual smoke, 10.91+10.92 regressions, full WebKit iPhone, production build and verify-release all PASS. Supabase preview branch wawis-10-92-staging failed in the known historical Branching pipeline after the second old migration and was deleted. Backend 10.92 was therefore verified on the current production schema with a session-temporary pg_temp copy of the exact migration logic: admin passed without nameplates; worker was blocked with SQLSTATE 23514 job_nameplates_incomplete; no persistent production change was made. Last-24h diagnostics contain existing 10.91 thumbnail-load errors and older 10.90 console errors; informational and outside 10.92 runtime."
+  "drive_backup": {
+    "required": false,
+    "deferred": true,
+    "file_name": "klima-app-v10.93.zip"
   },
   "main_protection": {
-    "source_branch": "release/v10.92",
+    "source_branch": "release/v10.93",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
+  "micro_ui": {
+    "policy_version": 1,
+    "css_only": true,
+    "archive_deferred": true,
+    "effective_files": [
+      "src/mobile791/v1091-mobile-details-hardening.css"
+    ]
+  },
   "postdeploy_diagnostics": {
-    "evidence_required": true,
-    "checked": true,
-    "checked_at": "2026-09-18T01:29:22.868368Z",
-    "result": "PASS",
-    "release_head": "5a902538c21b9f2dc622812f3d5a7bab320fadc4",
-    "production_main_sha": "35ec4e038c5ce59fdd34c3a5edee4608e4d15912",
-    "production_supabase_ref": "uohziyaudbpwmupvljyd",
-    "notes": "PR #60 merged after WAWIS PR checks run 35295224318 SUCCESS. Vercel status for exact merge SHA is SUCCESS. Production migration 20260918012815 admin_finish_without_nameplates_v1092 applied. Live backend role test after migration: admin PASS without nameplates; worker blocked with SQLSTATE 23514 job_nameplates_incomplete. main contains app-version 10.92 and Service Worker cache wawis-app-shell-v10.92. Since merge 2026-09-18T01:27:55Z: 0 diagnostic events and 0 error/fatal. Security Advisor shows only existing earlier warnings; no new 10.92 finding. Supabase preview staging was removed."
+    "evidence_required": false,
+    "result": "NOT_BLOCKING"
   },
   "archive": {
     "source_of_truth": "github-main",
     "zip_optional": true,
     "blocking": false
-  },
-  "release_mode": "standard"
+  }
 }
