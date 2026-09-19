@@ -122,6 +122,7 @@ function getTrimmedSignatureDataUrl(canvas) {
 
 export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved }) {
   const canvasRef = useRef(null);
+  const outputActionsRef = useRef(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
   const openedAtRef = useRef(new Date());
@@ -183,6 +184,14 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     });
     return () => window.cancelAnimationFrame(frameId);
   }, [signatureOpen, signatureDataUrl]);
+
+  useEffect(() => {
+    if (!actionMenuOpen || !savedRecord || editing) return undefined;
+    const frameId = window.requestAnimationFrame(() => {
+      outputActionsRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [actionMenuOpen, savedRecord?.id, editing]);
 
   function invalidateSignature() {
     if (!hasSignature && !signatureDataUrl) return;
@@ -460,7 +469,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             </section>
 
             {actionMenuOpen && savedRecord && !editing ? (
-              <section className="protocolOutputActions" aria-label="Drukowanie i wysyłka protokołu">
+              <section ref={outputActionsRef} className="protocolOutputActions" aria-label="Drukowanie i wysyłka protokołu">
                 <h3>Drukuj lub wyślij</h3>
                 <button type="button" className="btn primary" onClick={() => runSavedAction("print")} disabled={Boolean(actionBusy)}>{actionBusy === "print" ? "Przygotowuję..." : "Drukuj protokół"}</button>
                 <div className="protocolEmailAction">

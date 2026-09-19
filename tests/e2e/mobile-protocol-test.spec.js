@@ -87,6 +87,11 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
 
     await page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Drukuj protokół', exact: true })).toBeVisible();
+    await expect.poll(async () => page.locator('.protocolOutputActions').evaluate((section) => {
+      const sectionRect = section.getBoundingClientRect();
+      const footerRect = document.querySelector('.mobileProtocolWizard .mobileDeviceWizardFooter')?.getBoundingClientRect();
+      return sectionRect.bottom <= (footerRect?.top ?? window.innerHeight) + 2;
+    })).toBe(true);
     await expect(page.getByRole('button', { name: 'Wyślij z biuro@wawis.pl', exact: true })).toBeVisible();
     await expect(page.getByText('Do: klient.c@example.test', { exact: true })).toBeVisible();
 

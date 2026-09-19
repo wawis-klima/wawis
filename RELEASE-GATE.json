@@ -1,16 +1,16 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.94",
-  "scope": "full",
-  "release_branch": "release/v10.94",
+  "version": "10.95",
+  "scope": "mobile",
+  "release_branch": "release/v10.95",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "push_delivery_log z ostatnich 24 h: job_completed sent=6, expired=2. Diagnostyka informacyjna; zmiana 10.94 dotyczy treści payloadu PUSH."
+    "notes": "Ostatnie 24 h: 45 zdarzeń diagnostycznych (43 error, 2 warning). Dominują photo.thumbnail.load.failed z wersji 10.92–10.94; dodatkowo po 1 console.warn (contractors) i console.error (app) na 10.94. Baseline informacyjny, niezwiązany z poprawką przewijania protokołu i nieblokujący wydania."
   },
   "main_protection": {
-    "source_branch": "release/v10.94",
+    "source_branch": "release/v10.95",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
