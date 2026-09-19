@@ -1,17 +1,17 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.94",
-  "scope": "full",
-  "release_branch": "release/v10.94",
+  "version": "10.95",
+  "scope": "mobile",
+  "release_branch": "release/v10.95",
   "baseline_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": true,
     "result": "INFO",
-    "notes": "push_delivery_log z ostatnich 24 h: job_completed sent=6, expired=2. Diagnostyka informacyjna; zmiana 10.94 dotyczy treści payloadu PUSH."
+    "notes": "Diagnostyka startowa do odczytu jako informacyjny baseline; nie blokuje wydania. Zmiana 10.95 dotyczy wyłącznie zachowania przewijania w mobilnym protokole."
   },
   "main_protection": {
-    "source_branch": "release/v10.94",
-    "ready_for_main": true,
+    "source_branch": "release/v10.95",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
