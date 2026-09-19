@@ -1,6 +1,7 @@
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
+export const PHOTO_ZERO_BYTES_ERROR_CODE = 'PHOTO_ZERO_BYTES';
 
 const signedPhotoUrlCache = new Map();
 const signedPhotoUrlInFlight = new Map();
@@ -210,7 +211,24 @@ export function getPublicPhotoUrl({ fallbackUrl = '' }) {
   return isHttpUrl(fallbackUrl) ? fallbackUrl : '';
 }
 
+export function assertNonEmptyPhotoFile(file) {
+  if (!file) throw new Error('Brak zdjęcia do wysłania.');
+  if (!Number.isFinite(Number(file.size)) || Number(file.size) <= 0) {
+    const error = new Error('Zdjęcie ma 0 B. Zrób zdjęcie ponownie i spróbuj jeszcze raz.');
+    error.code = PHOTO_ZERO_BYTES_ERROR_CODE;
+    throw error;
+  }
+  return file;
+}
+
+function isZeroBytePhotoError(error) {
+  const code = String(error?.code || '').toUpperCase();
+  const message = String(error?.message || error || '').toUpperCase();
+  return code === PHOTO_ZERO_BYTES_ERROR_CODE || message.includes(PHOTO_ZERO_BYTES_ERROR_CODE);
+}
+
 export async function compressImage(file) {
+  assertNonEmptyPhotoFile(file);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -330,6 +348,7 @@ export async function uploadJobPhotos({
   for (const file of files) {
     try {
       const compressedFile = await compressImageFn(file);
+      assertNonEmptyPhotoFile(compressedFile);
       const path = `${jobId}/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
       const { error: uploadError } = await supabase.storage.from(PHOTO_BUCKET).upload(path, compressedFile, { cacheControl: '3600', upsert: false });
       if (uploadError) {
@@ -342,7 +361,14 @@ export async function uploadJobPhotos({
         storage_path: path,
         uploaded_by: profile.id,
       });
-      if (photoError) alert(photoError.message);
+      if (photoError) {
+        if (isZeroBytePhotoError(photoError)) {
+          await supabase.storage.from(PHOTO_BUCKET).remove([path]).catch(() => null);
+          alert('Zdjęcie dotarło do serwera jako pusty plik 0 B. Zrób zdjęcie ponownie.');
+        } else {
+          alert(photoError.message);
+        }
+      }
     } catch (error) {
       alert(error.message || 'Błąd kompresji zdjęcia.');
     }
@@ -371,6 +397,7 @@ export async function uploadJobDocumentationPhotos({
   for (const document of validDocuments) {
     try {
       const compressedFile = await compressImageFn(document.file);
+      assertNonEmptyPhotoFile(compressedFile);
       const deviceIndex = Math.max(1, Number(document.deviceIndex || 0) + 1);
       const unitRef = sanitizeStorageSegment(document.unitRef || 'unit', 'unit').toLowerCase();
       const serial = sanitizeStorageSegment(document.serialNumber || '', 'bez-numeru');
@@ -392,7 +419,15 @@ export async function uploadJobDocumentationPhotos({
         })
         .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref')
         .single();
-      if (photoError) throw photoError;
+      if (photoError) {
+        if (isZeroBytePhotoError(photoError)) {
+          await supabase.storage.from(PHOTO_BUCKET).remove([path]).catch(() => null);
+          const zeroByteError = new Error('Tabliczka dotarła do serwera jako pusty plik 0 B. Zrób zdjęcie ponownie.');
+          zeroByteError.code = PHOTO_ZERO_BYTES_ERROR_CODE;
+          throw zeroByteError;
+        }
+        throw photoError;
+      }
       uploadedPhotos.push({ ...inserted, ...getNameplatePhotoMetadata(inserted) });
     } catch (error) {
       failedCount += 1;

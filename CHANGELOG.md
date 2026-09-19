@@ -1,3 +1,11 @@
+## 10.96
+- Zdjęcia i tabliczki o rozmiarze 0 B są odrzucane po stronie aplikacji mobilnej i desktopowej przed zapisem rekordu.
+- Dodano bazowy trigger, który blokuje INSERT/UPDATE `photos`, jeśli wskazany obiekt `job-photos` istnieje, ale ma 0 bajtów.
+- Jeśli serwer wykryje pusty obiekt po uploadzie mobilnym, aplikacja próbuje usunąć uszkodzony obiekt i nie uznaje zdjęcia za zapisane.
+- Oczyszczono 7 pustych rekordów, które miały prawidłowe zamienniki; pozostałe 6 pustych tabliczek w 5 zleceniach oznaczono do ponownego wgrania.
+- Dodano regresję `smoke-photo-zero-byte-v1096.mjs` do grupy testów zdjęć.
+- Bez zmian w RLS, rolach użytkowników i logice protokołów.
+
 ## 10.95
 - Mobile, protokół klienta: po naciśnięciu `Drukuj lub wyślij` ekran automatycznie przewija się do rozwiniętej sekcji akcji, zamiast pozostawać w poprzednim miejscu.
 - Sekcja `Drukuj lub wyślij` zachowuje odstęp nad przyklejonym dolnym paskiem, dzięki czemu `Drukuj protokół`, wysyłka e-mail i `Zapisz PDF w telefonie` są od razu widoczne.
