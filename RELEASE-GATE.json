@@ -4,10 +4,10 @@
   "scope": "mobile",
   "release_branch": "release/v10.95",
   "baseline_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Diagnostyka startowa do odczytu jako informacyjny baseline; nie blokuje wydania. Zmiana 10.95 dotyczy wyłącznie zachowania przewijania w mobilnym protokole."
+    "notes": "Ostatnie 24 h: 45 zdarzeń diagnostycznych (43 error, 2 warning). Dominują photo.thumbnail.load.failed z wersji 10.92–10.94; dodatkowo po 1 console.warn (contractors) i console.error (app) na 10.94. Baseline informacyjny, niezwiązany z poprawką przewijania protokołu i nieblokujący wydania."
   },
   "main_protection": {
     "source_branch": "release/v10.95",
