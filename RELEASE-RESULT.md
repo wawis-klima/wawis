@@ -1,22 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.95
+- 10.96
 
 ## Zakres
-- Mobilny protokół klienta: automatyczne przewinięcie do sekcji `Drukuj lub wyślij` po jej rozwinięciu.
-- Sekcja akcji pozostaje nad przyklejonym dolnym paskiem, żeby od razu było widać druk, e-mail i zapis PDF.
-- Bez zmian logiki generowania PDF, podpisu, wysyłki e-mail, Supabase, RLS i uprawnień.
-
-## Dowód problemu
-Po naciśnięciu dolnego przycisku `Drukuj lub wyślij` sekcja akcji była renderowana niżej, ale pozycja przewijania pozostawała bez zmian. Na telefonie wyglądało to tak, jakby przycisk nie zadziałał.
+- Ochrona przed pustymi zdjęciami 0 B na mobile i desktopie.
+- Baza blokuje zapis rekordu `photos` wskazującego pusty obiekt w `job-photos`.
+- Mobile usuwa wykryty pusty obiekt po serwerowej blokadzie i pozostawia zdjęcie jako błąd do ponowienia.
+- 7 starych pustych rekordów z poprawnymi zamiennikami usunięto.
+- 6 pustych tabliczek w 5 zleceniach pozostawiono i oznaczono do ponownego wgrania.
 
 ## Warunek GREEN
-- po rozwinięciu sekcji widoczne są akcje protokołu nad sticky footerem,
-- regresja mobilnego protokołu przechodzi,
-- wymagany `WAWIS PR checks / targeted-checks` jest zielony,
+- regresja 0 B przechodzi,
+- grupa zdjęć i testy krytyczne przechodzą,
+- wymagane E2E mobile i desktop przechodzą,
 - produkcyjny build przechodzi,
-- po merge produkcyjny Vercel dla commita `main` kończy się sukcesem.
+- migracja `20260919080000_photo_zero_byte_guard_v1096.sql` zostaje zastosowana do produkcji,
+- po merge produkcyjny Vercel dla `main` kończy się sukcesem.
 
 ## Status
-PR #64 przeszedł bramkę `WAWIS PR checks / targeted-checks`; kandydat 10.95 jest gotowy do `main`.
+Kandydat 10.96 przygotowany do bramki PR.
