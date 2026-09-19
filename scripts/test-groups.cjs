@@ -58,6 +58,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-photo-idempotency',
     'npm run test:smoke:photo-preview-gallery-separation',
     'npm run test:smoke:desktop-photo-thumbnails',
+    'node scripts/smoke-photo-zero-byte-v1096.mjs',
   ],
   protocol: [
     'npm run test:smoke:mobile-protocol',
