@@ -2,6 +2,7 @@ import { claimPhotoQueueItem, deletePhotoQueueItem, hydratePhotoQueueItem, listP
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
+export const PHOTO_ZERO_BYTES_ERROR_CODE = 'PHOTO_ZERO_BYTES';
 
 const signedPhotoUrlCache = new Map();
 const signedPhotoUrlInFlight = new Map();
@@ -314,10 +315,20 @@ function createCompressionResult({ file, sourceFile, originalWidth = 0, original
   };
 }
 
-export async function preparePhotoForUpload(file) {
+export function assertNonEmptyPhotoFile(file) {
   if (!file) {
     throw new Error('Brak zdjęcia do wysłania.');
   }
+  if (!Number.isFinite(Number(file.size)) || Number(file.size) <= 0) {
+    const error = new Error('Zdjęcie ma 0 B. Zrób zdjęcie ponownie i spróbuj jeszcze raz.');
+    error.code = PHOTO_ZERO_BYTES_ERROR_CODE;
+    throw error;
+  }
+  return file;
+}
+
+export async function preparePhotoForUpload(file) {
+  assertNonEmptyPhotoFile(file);
 
   const mimeType = String(file.type || '').toLowerCase();
   if (mimeType && !mimeType.startsWith('image/')) {
@@ -400,9 +411,7 @@ export async function preparePhotoForUpload(file) {
 }
 
 export async function prepareNameplatePhotoForUpload(file) {
-  if (!file) {
-    throw new Error('Brak zdjęcia tabliczki do wysłania.');
-  }
+  assertNonEmptyPhotoFile(file);
 
   // Zdjęcie tabliczki zostało już wykadrowane i zapisane jako JPG wysokiej jakości
   // w NameplatePhotoCapture. Ponowna kompresja 0.78 obniżała czytelność drobnego druku.
@@ -719,6 +728,12 @@ function isDuplicateStorageError(error) {
   return /already exists|duplicate|409|conflict|unique/i.test(message);
 }
 
+function isZeroBytePhotoError(error) {
+  const code = String(error?.code || '').toUpperCase();
+  const message = String(error?.message || error || '').toUpperCase();
+  return code === PHOTO_ZERO_BYTES_ERROR_CODE || message.includes(PHOTO_ZERO_BYTES_ERROR_CODE);
+}
+
 async function findServerPhotoByStoragePath({ supabase, jobId, storagePath }) {
   if (!supabase || !jobId || !storagePath) return null;
   try {
@@ -939,6 +954,7 @@ async function performQueuedPhotoUpload({
     if (!uploadFile) {
       throw new Error('Nie udało się przygotować zdjęcia do wysłania.');
     }
+    assertNonEmptyPhotoFile(uploadFile);
 
     const preparedPatch = {
       upload_stage: 'prepared',
@@ -1017,6 +1033,18 @@ async function performQueuedPhotoUpload({
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     if (insertResult.error) {
+      if (isZeroBytePhotoError(insertResult.error)) {
+        const { error: removeCorruptStorageError } = await supabase.storage.from(PHOTO_BUCKET).remove([storagePath]);
+        if (removeCorruptStorageError && !/not\s*found/i.test(removeCorruptStorageError.message || '')) {
+          console.warn('Nie udało się usunąć pustego pliku 0 B ze storage.', removeCorruptStorageError.message);
+        } else {
+          storageExists = false;
+          await updatePhotoQueueItem(localPhotoId, { upload_stage: 'prepared' });
+        }
+        const zeroByteError = new Error('Zdjęcie dotarło do serwera jako pusty plik 0 B. Spróbuj ponownie albo zrób zdjęcie jeszcze raz.');
+        zeroByteError.code = PHOTO_ZERO_BYTES_ERROR_CODE;
+        throw zeroByteError;
+      }
       if (isDuplicateStorageError(insertResult.error)) {
         const existingAfterInsertConflict = await findServerPhotoByStoragePath({ supabase, jobId, storagePath });
         if (existingAfterInsertConflict) {
