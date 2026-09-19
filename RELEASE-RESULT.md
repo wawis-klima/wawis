@@ -19,4 +19,4 @@ Po naciśnięciu dolnego przycisku `Drukuj lub wyślij` sekcja akcji była rende
 - po merge produkcyjny Vercel dla commita `main` kończy się sukcesem.
 
 ## Status
-Kandydat 10.95 przygotowany do bramki PR.
+PR #64 przeszedł bramkę `WAWIS PR checks / targeted-checks`; kandydat 10.95 jest gotowy do `main`.
