@@ -1,17 +1,17 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.95",
-  "scope": "mobile",
-  "release_branch": "release/v10.95",
+  "version": "10.96",
+  "scope": "full",
+  "release_branch": "release/v10.96",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Ostatnie 24 h: 45 zdarzeń diagnostycznych (43 error, 2 warning). Dominują photo.thumbnail.load.failed z wersji 10.92–10.94; dodatkowo po 1 console.warn (contractors) i console.error (app) na 10.94. Baseline informacyjny, niezwiązany z poprawką przewijania protokołu i nieblokujący wydania."
+    "notes": "Ostatnie 24 h: 45 zdarzeń (43 error, 2 warning), głównie starsze photo.thumbnail.load.failed z 10.92–10.94. Po analizie znaleziono 13 rekordów wskazujących obiekty 0 B; 7 bezpiecznie usunięto, 6 w 5 zleceniach oznaczono do ponownego wgrania. Diagnostyka informacyjna."
   },
   "main_protection": {
-    "source_branch": "release/v10.95",
-    "ready_for_main": true,
+    "source_branch": "release/v10.96",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
