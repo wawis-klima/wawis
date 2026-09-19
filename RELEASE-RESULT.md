@@ -19,4 +19,4 @@
 - po merge produkcyjny Vercel dla `main` kończy się sukcesem.
 
 ## Status
-Kandydat 10.96 przygotowany do bramki PR.
+Kandydat 10.96 oznaczony jako `ready_for_main`; merge nastąpi wyłącznie po zielonej bramce PR.
