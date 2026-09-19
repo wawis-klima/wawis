@@ -1,3 +1,9 @@
+## 10.95
+- Mobile, protokół klienta: po naciśnięciu `Drukuj lub wyślij` ekran automatycznie przewija się do rozwiniętej sekcji akcji, zamiast pozostawać w poprzednim miejscu.
+- Sekcja `Drukuj lub wyślij` zachowuje odstęp nad przyklejonym dolnym paskiem, dzięki czemu `Drukuj protokół`, wysyłka e-mail i `Zapisz PDF w telefonie` są od razu widoczne.
+- Dodano regresję E2E sprawdzającą, że po rozwinięciu sekcja akcji znajduje się nad dolnym paskiem.
+- Bez zmian logiki generowania PDF, podpisu klienta, wysyłki e-mail, Supabase i uprawnień.
+
 ## 10.94
 - PUSH zakończenia zlecenia pokazuje w tytule osobę, która je zakończyła, np. `Kacper Wydmański zakończył zlecenie`.
 - Treść powiadomienia zawiera klienta, adres i godzinę zamiast ogólnego komunikatu „Masz nowe zdarzenie...”.
