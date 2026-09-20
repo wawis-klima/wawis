@@ -20,7 +20,7 @@ for (const [name, source] of [['desktop push', desktopPush], ['mobile push', mob
   assert(source.includes('last_seen_at'), `${name}: brak odświeżania last_seen_at`);
   assert(source.includes('savePushSubscription({ supabase, sessionUser, subscription, force: true })'), `${name}: brak automatycznej synchronizacji subskrypcji`);
   assert(source.includes('ensurePushNotifications'), `${name}: brak samonaprawy obowiązkowego PUSH`);
-  assert(source.includes('if (!subscription && permission === "granted"'), `${name}: brak automatycznego odtworzenia utraconej subskrypcji`);
+  assert(source.includes('allowAutoRepair && !subscription && permission === "granted"'), `${name}: samonaprawa utraconej subskrypcji nie respektuje przełącznika użytkownika`);
   assert(source.includes('ready: Boolean(subscription) && permission === "granted" && serverActive'), `${name}: status Push aktywne nadal nie zależy od Supabase`);
   assert(source.includes('eventType: "push_test"'), `${name}: brak wywołania testowego push`);
 }
