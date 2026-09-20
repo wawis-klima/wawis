@@ -1,3 +1,10 @@
+## 10.98
+- Naprawiono mylący stan PUSH przy starcie aplikacji: aktywna subskrypcja nie jest już chwilowo pokazywana jako OFF tylko dlatego, że trwa pierwsza synchronizacja.
+- Ostatni potwierdzony stan PUSH jest zapisywany per użytkownik i urządzenie w trwałym cache, więc po ponownym uruchomieniu aplikacji znany stan ON/OFF pojawia się od razu.
+- Jeżeli urządzenie nie ma jeszcze żadnego potwierdzonego stanu, kontrolka pokazuje neutralne „…” / „PUSH · sprawdzanie” i jest chwilowo nieaktywna zamiast udawać OFF.
+- Ręczne OFF z 10.97 nadal ma pierwszeństwo i jest pokazywane od razu; po każdej synchronizacji cache jest aktualizowany rzeczywistym stanem subskrypcji.
+- Dodano regresję `smoke-push-initial-state-v1098.cjs`; bez zmian w Supabase, RLS i Edge Functions.
+
 ## 10.97
 - Przycisk PUSH jest ponownie rzeczywistym przełącznikiem ON/OFF na telefonie i desktopie.
 - Włączenie PUSH odbywa się wyłącznie po świadomym dotknięciu przycisku; usunięto automatyczne wymuszanie zgody przy pierwszym geście użytkownika.
