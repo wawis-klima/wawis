@@ -834,7 +834,8 @@ async function runConfirmationSmoke() {
   assert.match(jobAddressLinkSource, /ariaLabel \|\| `Otwórz adres w Google Maps: \$\{address\}`/);
   assert.match(appSource, /useConfirmDialog/);
   assert.match(appSource, /useRealtimeRefresh/);
-  assert.match(appSource, /usePushNotificationsState/);
+  assert.doesNotMatch(appSource, /usePushNotificationsState/);
+  assert.match(appSource, /pushControl=\{null\}/);
   assert.match(appSource, /useAppSession/);
   assert.match(appSource, /useSelectedJobActions/);
   assert.match(appSessionHookSource, /const refreshAll = useCallback\(async \(user, options = \{\}\) =>/);
