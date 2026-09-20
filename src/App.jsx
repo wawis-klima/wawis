@@ -23,12 +23,10 @@ import {
 import { createNotification } from "./modules/notifications.js";
 import { getPhotoStoragePath, getSignedPhotoUrl } from "./modules/photos.js";
 import { sendAssignmentPush, sendJobCompletionPush } from "./modules/jobs-assignment.js";
-import PushNotificationsControl from "./components/PushNotificationsControl.jsx";
 import { usePhotoPreview } from "./hooks/usePhotoPreview.js";
 import { useJobFormModal } from "./hooks/useJobFormModal.js";
 import { useConfirmDialog } from "./hooks/useConfirmDialog.js";
 import { useRealtimeRefresh } from "./hooks/useRealtimeRefresh.js";
-import { usePushNotificationsState } from "./hooks/usePushNotificationsState.js";
 import { useAppSession } from "./hooks/useAppSession.js";
 import { useSelectedJobActions } from "./hooks/useSelectedJobActions.js";
 import { getRequestedJobIdFromLocation } from "./utils/jobSelectionState.js";
@@ -234,12 +232,6 @@ export default function App() {
     openConfirmDialog,
     runConfirmAction,
   } = useConfirmDialog();
-
-  const {
-    pushState,
-    pushBusy,
-    togglePush,
-  } = usePushNotificationsState({ supabase, sessionUser });
 
   const {
     showModal,
@@ -954,14 +946,7 @@ export default function App() {
             toggleSort={toggleSort}
             getSortLabel={getSortLabel}
             profiles={profiles}
-            pushControl={(
-              <PushNotificationsControl
-                pushState={pushState}
-                busy={pushBusy}
-                compact={isMobile}
-                onToggle={togglePush}
-              />
-            )}
+            pushControl={null}
           />
         ) : activeModule === "center360" ? (
           <Suspense fallback={adminModuleFallback}>

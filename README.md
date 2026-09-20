@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 10.98
+- 10.99
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
-# Wawis Klimatyzacja — wersja 10.98
+# Wawis Klimatyzacja — wersja 10.99
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.98` — przy starcie aplikacji aktywny PUSH nie pokazuje już fałszywego OFF; ostatni zweryfikowany stan jest pamiętany między uruchomieniami, a pierwszy odczyt pokazuje neutralne „…”.
+- wersja `10.99` — PUSH działa wyłącznie w aplikacji mobilnej; desktop nie tworzy ani nie odnawia subskrypcji Windows.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.

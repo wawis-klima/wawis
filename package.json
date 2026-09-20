@@ -1,7 +1,7 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "10.98",
+  "version": "10.99",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",
@@ -165,7 +165,8 @@
     "postdeploy:check": "node scripts/post-deploy-check.mjs",
     "test:smoke:push-logout-handoff": "node scripts/smoke-push-logout-handoff-v1076.mjs",
     "test:smoke:push-safety-v1078": "node scripts/smoke-push-safety-v1078.mjs",
-    "test:smoke:feed-stale-v1079": "node scripts/smoke-mobile-feed-stale-v1079.mjs"
+    "test:smoke:feed-stale-v1079": "node scripts/smoke-mobile-feed-stale-v1079.mjs",
+    "test:smoke:desktop-push-disabled": "node scripts/smoke-desktop-push-disabled-v1099.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
