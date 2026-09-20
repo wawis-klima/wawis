@@ -7,5 +7,5 @@ export const INITIAL_PUSH_STATE = {
   lastSeenAt: null,
   syncError: null,
   vapidConfigured: false,
-  ready: false,
+  ready: false,\n  userEnabled: true,
 };
