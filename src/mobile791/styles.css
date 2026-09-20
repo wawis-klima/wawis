@@ -8507,3 +8507,8 @@ img.previewImage{
 
 /* WAWIS 10.26 — mobilne menu produkcyjnego paliwa */
 @media(max-width:700px){.moduleSwitcherWrap .moduleSwitcher{align-items:stretch}.moduleSwitcherWrap .moduleSwitcherBtn{min-width:0}}
+
+
+/* v10.97 — PUSH jako rzeczywisty przełącznik użytkownika */
+.wawisPushMini{cursor:pointer;}
+.wawisPushMini:disabled{cursor:wait !important;opacity:.65;}
