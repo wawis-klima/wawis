@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { INITIAL_PUSH_STATE } from "../utils/pushState.js";
 
-const PUSH_STATE_STORAGE_PREFIX = "wawis:push-state:v2";
+const PUSH_STATE_STORAGE_PREFIX = "wawis:push-state:v3";
+const LEGACY_PUSH_STATE_SESSION_STORAGE_PREFIX = "wawis:push-state:v2";
 const PUSH_ENABLED_STORAGE_PREFIX = "wawis:push-enabled:v1097";
 const PUSH_HEALTHCHECK_MS = 5 * 60 * 1000;
 const PUSH_MIN_SYNC_INTERVAL_MS = 10 * 60 * 1000;
 
-function getPushStateStorageKey(userId = "") {
+function getPushStateStorageKey(userId = "", prefix = PUSH_STATE_STORAGE_PREFIX) {
   const normalizedUserId = String(userId || "anonymous").trim() || "anonymous";
-  return `${PUSH_STATE_STORAGE_PREFIX}:${normalizedUserId}`;
+  return `${prefix}:${normalizedUserId}`;
 }
 
 function getPushEnabledStorageKey(userId = "") {
@@ -38,27 +39,51 @@ function persistPushEnabledPreference(userId = "", enabled = true) {
 
 function readStoredPushState(userId = "") {
   const userEnabled = readPushEnabledPreference(userId);
-  if (typeof window === "undefined") return { ...INITIAL_PUSH_STATE, userEnabled };
+  const fallbackState = {
+    ...INITIAL_PUSH_STATE,
+    userEnabled,
+    statusKnown: userEnabled === false,
+  };
+  if (typeof window === "undefined") return fallbackState;
   try {
-    const raw = window.sessionStorage.getItem(getPushStateStorageKey(userId));
-    if (!raw) return { ...INITIAL_PUSH_STATE, userEnabled };
+    const persistentRaw = window.localStorage.getItem(getPushStateStorageKey(userId));
+    const legacyRaw = window.sessionStorage.getItem(
+      getPushStateStorageKey(userId, LEGACY_PUSH_STATE_SESSION_STORAGE_PREFIX),
+    );
+    const raw = persistentRaw || legacyRaw;
+    if (!raw) return fallbackState;
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return { ...INITIAL_PUSH_STATE, userEnabled };
-    return { ...INITIAL_PUSH_STATE, ...parsed, userEnabled };
+    if (!parsed || typeof parsed !== "object") return fallbackState;
+    return {
+      ...INITIAL_PUSH_STATE,
+      ...parsed,
+      userEnabled,
+      statusKnown: parsed.statusKnown !== false,
+    };
   } catch {
-    return { ...INITIAL_PUSH_STATE, userEnabled };
+    return fallbackState;
   }
 }
 
 function persistPushState(userId = "", nextState = INITIAL_PUSH_STATE) {
   if (typeof window === "undefined") return;
+  const serialized = JSON.stringify({
+    ...INITIAL_PUSH_STATE,
+    ...nextState,
+    statusKnown: true,
+  });
+  try {
+    window.localStorage.setItem(getPushStateStorageKey(userId), serialized);
+  } catch {
+    // Brak localStorage nie może blokować synchronizacji PUSH.
+  }
   try {
     window.sessionStorage.setItem(
-      getPushStateStorageKey(userId),
-      JSON.stringify({ ...INITIAL_PUSH_STATE, ...nextState }),
+      getPushStateStorageKey(userId, LEGACY_PUSH_STATE_SESSION_STORAGE_PREFIX),
+      serialized,
     );
   } catch {
-    // sessionStorage jest wyłącznie cache'em stanu PUSH.
+    // sessionStorage pozostaje tylko cache'em kompatybilności.
   }
 }
 
@@ -97,7 +122,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
       if (!isCurrentSync()) return readStoredPushState(userId);
       const status = await pushModule.getPushStatus({ supabase, sessionUser, allowAutoRepair: userEnabled });
       if (!isCurrentSync()) return readStoredPushState(userId);
-      const nextState = { ...status, userEnabled };
+      const nextState = { ...status, userEnabled, statusKnown: true };
       setPushState(nextState);
       persistPushState(userId, nextState);
       if (!nextState?.syncError) lastSuccessfulSyncAtRef.current = Date.now();

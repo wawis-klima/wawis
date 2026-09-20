@@ -9,4 +9,5 @@ export const INITIAL_PUSH_STATE = {
   vapidConfigured: false,
   ready: false,
   userEnabled: true,
+  statusKnown: false,
 };

@@ -1,6 +1,8 @@
 import React from "react";
 
 function getPushStatusLabel(pushState) {
+  const statusKnown = pushState?.statusKnown === true || pushState?.userEnabled === false;
+  if (!statusKnown) return "PUSH · sprawdzanie";
   if (!pushState?.vapidConfigured) return "PUSH · brak konfiguracji";
   if (!pushState?.supported) return pushState?.diagnostics?.reason || "PUSH · niedostępny na tym urządzeniu";
   if (pushState.permission === "denied") return "PUSH · zablokowany w ustawieniach systemowych";
@@ -16,27 +18,29 @@ export default function PushNotificationsControl({
   compact = false,
   onToggle,
 }) {
-  const isOn = Boolean(pushState?.ready && pushState?.userEnabled !== false);
+  const statusKnown = pushState?.statusKnown === true || pushState?.userEnabled === false;
+  const isOn = Boolean(statusKnown && pushState?.ready && pushState?.userEnabled !== false);
+  const isChecking = !statusKnown;
   const label = busy ? "PUSH · synchronizacja" : getPushStatusLabel(pushState);
-  const actionLabel = isOn ? "Wyłącz PUSH" : "Włącz PUSH";
+  const actionLabel = isChecking ? "Sprawdzanie PUSH" : isOn ? "Wyłącz PUSH" : "Włącz PUSH";
 
   if (compact) {
     return (
       <button
         type="button"
-        className={`wawisPushMini ${isOn ? "isOn" : "isOff"}`}
+        className={`wawisPushMini ${isChecking ? "isChecking" : isOn ? "isOn" : "isOff"}`}
         title={label}
         aria-label={`${label}. ${actionLabel}.`}
         aria-pressed={isOn}
         onClick={onToggle}
-        disabled={busy || typeof onToggle !== "function"}
+        disabled={busy || isChecking || typeof onToggle !== "function"}
       >
         <span className="wawisPushMiniTitle">PUSH</span>
         <span className="wawisPushMiniRow">
           <span className="wawisPushMiniSwitch" aria-hidden="true">
             <span className="wawisPushMiniKnob" aria-hidden="true" />
           </span>
-          <span className="wawisPushMiniState">{busy ? "…" : isOn ? "ON" : "OFF"}</span>
+          <span className="wawisPushMiniState">{busy || isChecking ? "…" : isOn ? "ON" : "OFF"}</span>
         </span>
       </button>
     );
@@ -53,10 +57,10 @@ export default function PushNotificationsControl({
           type="button"
           className={`pushControlButton ${isOn ? "secondary" : ""}`}
           onClick={onToggle}
-          disabled={busy || typeof onToggle !== "function"}
+          disabled={busy || isChecking || typeof onToggle !== "function"}
           aria-pressed={isOn}
         >
-          {busy ? "…" : isOn ? "Wyłącz" : "Włącz"}
+          {busy || isChecking ? "…" : isOn ? "Wyłącz" : "Włącz"}
         </button>
       </div>
     </div>
