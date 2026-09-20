@@ -1,21 +1,20 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.98
+- 10.99
 
 ## Zakres
-- Naprawa mylącego OFF przy pierwszym renderze kontrolki PUSH.
-- Ostatni zweryfikowany stan PUSH jest zapisywany w trwałym cache per użytkownik i urządzenie.
-- Brak cache oznacza neutralne „sprawdzanie”, a nie OFF; kontrolka jest wtedy chwilowo zablokowana.
-- Ręczne ON/OFF z 10.97 pozostaje bez zmian i po synchronizacji aktualizuje trwały cache.
+- PUSH pozostaje aktywny wyłącznie w aplikacji mobilnej.
+- Desktop nie inicjalizuje `usePushNotificationsState` i nie renderuje kontrolki PUSH.
+- Aktywne subskrypcje Windows zostały bezpiecznie dezaktywowane na produkcji.
+- iPhone i Android oraz szczegółowe powiadomienia mobilne pozostają bez zmian.
 - Bez migracji SQL, zmian RLS i zmian Edge Function.
 
 ## Warunek GREEN
-- regresje `smoke-push-toggle-v1097.cjs` oraz `smoke-push-initial-state-v1098.cjs` przechodzą,
-- grupa PUSH i testy krytyczne przechodzą,
-- wymagane E2E mobile i desktop przechodzą,
-- produkcyjny build przechodzi,
+- regresje PUSH 10.97/10.98 nadal przechodzą po zmianie kontraktu desktopowego,
+- `smoke-desktop-push-disabled-v1099.cjs` potwierdza brak inicjalizacji PUSH na desktopie i zachowanie PUSH mobile,
+- grupa PUSH, wymagane E2E i produkcyjny build przechodzą,
 - po merge produkcyjny Vercel dla `main` kończy się sukcesem.
 
 ## Status
-Kandydat 10.98 oznaczony jako `ready_for_main`; merge nastąpi wyłącznie po zielonej bramce PR.
+Kandydat 10.99 oznaczony jako `ready_for_main`; merge nastąpi wyłącznie po zielonej bramce PR.
