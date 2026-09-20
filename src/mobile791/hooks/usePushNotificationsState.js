@@ -115,10 +115,17 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
     }
   }
 
+  async function waitForCurrentPushSync() {
+    const pendingSync = syncInFlightRef.current;
+    if (!pendingSync) return;
+    await pendingSync.catch(() => null);
+  }
+
   async function enablePush({ silent = false } = {}) {
     if (!sessionUser) return false;
     setPushBusy(true);
     try {
+      await waitForCurrentPushSync();
       const { enablePushNotifications } = await loadPushModule();
       await enablePushNotifications({ supabase, sessionUser });
       persistPushEnabledPreference(userId, true);
@@ -139,16 +146,23 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
 
   async function disablePush({ silent = false } = {}) {
     if (!sessionUser) return false;
+    const previousPreference = readPushEnabledPreference(userId);
     setPushBusy(true);
+    persistPushEnabledPreference(userId, false);
     try {
+      // OFF ma pierwszeństwo nad synchronizacją, która mogła wystartować chwilę wcześniej.
+      // Najpierw pozwalamy jej się zakończyć, a dopiero potem wyłączamy endpoint.
+      await waitForCurrentPushSync();
       const { disablePushNotifications } = await loadPushModule();
       await disablePushNotifications({ supabase, sessionUser });
-      persistPushEnabledPreference(userId, false);
+      lastSuccessfulSyncAtRef.current = 0;
       await syncPushState({ force: true });
       return true;
     } catch (error) {
+      persistPushEnabledPreference(userId, previousPreference);
       if (!silent) alert(error.message || "Nie udało się wyłączyć powiadomień PUSH.");
       else console.warn("Nie udało się wyłączyć PUSH:", error?.message || error);
+      lastSuccessfulSyncAtRef.current = 0;
       await syncPushState({ force: true });
       return false;
     } finally {
