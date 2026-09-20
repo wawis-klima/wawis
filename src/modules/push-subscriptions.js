@@ -301,13 +301,39 @@ export async function enablePushNotifications({ supabase, sessionUser }) {
 }
 
 export async function disablePushNotifications({ supabase, sessionUser = null }) {
-  // PUSH jest obowiązkowy w aplikacji Wawis. Funkcja zostaje wyłącznie dla
-  // zgodności ze starszymi, już otwartymi wersjami aplikacji. Nie wyłącza
-  // subskrypcji; jeśli system pozwala, zamiast tego ponownie ją aktywuje.
-  return ensurePushNotifications({ supabase, sessionUser, requestPermission: false });
+  const subscription = await getCurrentPushSubscription();
+  if (!subscription) {
+    lastSavedSignature = "";
+    lastSaveAttemptAt = 0;
+    return { disabled: true, unsubscribed: false, skipped: true, reason: "no-local-subscription" };
+  }
+
+  const serverResult = await disableSavedPushSubscription({
+    supabase,
+    endpoint: subscription.endpoint,
+  });
+  const reason = String(serverResult?.result?.reason || "");
+  const serverDisabled = Boolean(
+    serverResult?.disabled
+      || serverResult?.skipped
+      || ["already-disabled", "not-found", "stale-lifecycle"].includes(reason)
+  );
+  if (!serverDisabled) {
+    throw new Error("Serwer nie potwierdził wyłączenia powiadomień PUSH.");
+  }
+
+  const unsubscribed = await withPushLifecycleTimeout(
+    subscription.unsubscribe(),
+    PUSH_LOCAL_STEP_TIMEOUT_MS,
+    "push-user-disable-unsubscribe",
+  ).catch(() => false);
+
+  lastSavedSignature = "";
+  lastSaveAttemptAt = 0;
+  return { disabled: true, unsubscribed: Boolean(unsubscribed), skipped: false, reason: reason || "disabled" };
 }
 
-export async function getPushStatus({ supabase, sessionUser }) {
+export async function getPushStatus({ supabase, sessionUser, allowAutoRepair = true }) {
   const diagnostics = getPushDiagnostics();
   const permission = diagnostics.permission;
   const vapidConfigured = diagnostics.vapidConfigured;
@@ -333,7 +359,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   let lastSeenAt = null;
   let syncError = null;
 
-  if (!subscription && permission === "granted" && supabase && sessionUser) {
+  if (allowAutoRepair && !subscription && permission === "granted" && supabase && sessionUser) {
     try {
       // Samonaprawa v9.70: jeśli przeglądarka zgubiła subskrypcję, ale zgoda
       // systemowa nadal jest aktywna, odtwarzamy endpoint bez pytania użytkownika.
@@ -363,26 +389,32 @@ export async function getPushStatus({ supabase, sessionUser }) {
       if (existingServerError) throw existingServerError;
 
       if (existingServerRow?.id && existingServerRow.is_active === false) {
-        subscription = await replaceExpiredPushSubscription({
-          supabase,
-          sessionUser,
-          subscription,
-        });
-        if (subscription) {
+        serverRegistered = true;
+        serverActive = false;
+        lastSeenAt = existingServerRow.last_seen_at || null;
+        if (allowAutoRepair) {
+          subscription = await replaceExpiredPushSubscription({
+            supabase,
+            sessionUser,
+            subscription,
+          });
+          if (subscription) {
+            serverActive = true;
+            lastSeenAt = new Date().toISOString();
+          }
+        }
+      } else if (!existingServerRow?.id) {
+        if (allowAutoRepair) {
+          await savePushSubscription({ supabase, sessionUser, subscription, force: true });
           serverRegistered = true;
           serverActive = true;
           lastSeenAt = new Date().toISOString();
         }
-      } else if (!existingServerRow?.id) {
-        await savePushSubscription({ supabase, sessionUser, subscription, force: true });
-        serverRegistered = true;
-        serverActive = true;
-        lastSeenAt = new Date().toISOString();
       } else {
         serverRegistered = true;
         serverActive = Boolean(existingServerRow.is_active);
         lastSeenAt = existingServerRow.last_seen_at || null;
-        if (!serverActive || shouldTouchServerSubscription(lastSeenAt)) {
+        if (allowAutoRepair && (!serverActive || shouldTouchServerSubscription(lastSeenAt))) {
           await savePushSubscription({ supabase, sessionUser, subscription, force: true });
           serverActive = true;
           lastSeenAt = new Date().toISOString();
