@@ -1,3 +1,11 @@
+## 10.97
+- Przycisk PUSH jest ponownie rzeczywistym przełącznikiem ON/OFF na telefonie i desktopie.
+- Włączenie PUSH odbywa się wyłącznie po świadomym dotknięciu przycisku; usunięto automatyczne wymuszanie zgody przy pierwszym geście użytkownika.
+- Wyłączenie dezaktywuje subskrypcję po stronie serwera oraz próbuje usunąć lokalną subskrypcję przeglądarki.
+- Preferencja OFF jest zapisywana osobno dla użytkownika na danym urządzeniu i blokuje automatyczną samonaprawę PUSH po odświeżeniu.
+- Ponowne ON tworzy lub synchronizuje subskrypcję i zachowuje dotychczasowe zabezpieczenia własności endpointu.
+- Dodano regresję `smoke-push-toggle-v1097.cjs`; bez zmian w schemacie bazy, RLS i Edge Functions.
+
 ## 10.96
 - Zdjęcia i tabliczki o rozmiarze 0 B są odrzucane po stronie aplikacji mobilnej i desktopowej przed zapisem rekordu.
 - Dodano bazowy trigger, który blokuje INSERT/UPDATE `photos`, jeśli wskazany obiekt `job-photos` istnieje, ale ma 0 bajtów.
