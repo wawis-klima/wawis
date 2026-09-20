@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 10.97
+- 10.98
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
-# Wawis Klimatyzacja — wersja 10.97
+# Wawis Klimatyzacja — wersja 10.98
 
 
 ## Push po tankowaniu pracownika — 10.23
