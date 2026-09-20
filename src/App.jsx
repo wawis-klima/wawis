@@ -238,6 +238,7 @@ export default function App() {
   const {
     pushState,
     pushBusy,
+    togglePush,
   } = usePushNotificationsState({ supabase, sessionUser });
 
   const {
@@ -958,6 +959,7 @@ export default function App() {
                 pushState={pushState}
                 busy={pushBusy}
                 compact={isMobile}
+                onToggle={togglePush}
               />
             )}
           />
