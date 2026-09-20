@@ -29,7 +29,7 @@ for (const [name, source] of [['desktop hook', desktopHook], ['mobile hook', mob
   assert(source.includes('visibilitychange'), `${name}: brak synchronizacji po powrocie do aplikacji`);
   assert(source.includes('pageshow'), `${name}: brak synchronizacji przy ponownym pokazaniu PWA`);
   assert(source.includes('PUSH_HEALTHCHECK_MS'), `${name}: brak cyklicznej kontroli obowiązkowego PUSH`);
-  assert(!source.includes('disablePushNotifications'), `${name}: hook nadal umożliwia wyłączenie PUSH`);
+  assert(source.includes('disablePushNotifications'), `${name}: hook nie obsługuje ręcznego wyłączenia PUSH`);\n  assert(source.includes('allowAutoRepair: userEnabled'), `${name}: healthcheck może reaktywować ręcznie wyłączony PUSH`);
 }
 
 assert(edge.includes('eventType?: "job_assigned" | "job_completed" | "job_comment" | "push_test"'), 'Edge: kontrakt musi zachować job_comment i push_test');
