@@ -26,6 +26,8 @@ for (const [label, hook] of [["desktop", desktopHook], ["mobile", mobileHook]]) 
   assert(hook.includes("disablePushNotifications"), `${label}: hook nie wyłącza PUSH`);
   assert(hook.includes("togglePush"), `${label}: brak akcji togglePush`);
   assert(hook.includes("allowAutoRepair: userEnabled"), `${label}: samonaprawa nie respektuje OFF`);
+  assert(hook.includes("waitForCurrentPushSync"), `${label}: ręczne OFF może przegrać wyścig z synchronizacją`);
+  assert(hook.includes("persistPushEnabledPreference(userId, false)"), `${label}: OFF nie jest zapisywane przed domknięciem synchronizacji`);
   assert(!hook.includes("handleMandatoryPermissionGesture"), `${label}: pozostało wymuszanie zgody z pierwszego gestu`);
 }
 
