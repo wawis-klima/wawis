@@ -8,4 +8,5 @@ export const INITIAL_PUSH_STATE = {
   syncError: null,
   vapidConfigured: false,
   ready: false,
+  userEnabled: true,
 };

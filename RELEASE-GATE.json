@@ -1,16 +1,16 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.96",
+  "version": "10.97",
   "scope": "full",
-  "release_branch": "release/v10.96",
+  "release_branch": "release/v10.97",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Ostatnie 24 h: 45 zdarzeń (43 error, 2 warning), głównie starsze photo.thumbnail.load.failed z 10.92–10.94. Po analizie znaleziono 13 rekordów wskazujących obiekty 0 B; 7 bezpiecznie usunięto, 6 w 5 zleceniach oznaczono do ponownego wgrania. Diagnostyka informacyjna."
+    "notes": "Ostatnie 24 h: 23 zdarzenia diagnostyczne (18 error, 5 warning). Dwa ostrzeżenia PUSH na 10.96 dotyczą przerwanego fetch/timeout podczas synchronizacji; poprawka 10.97 zmienia sterowanie ON/OFF i ma osobną regresję. Dominują błędy miniaturek zdjęć, niezwiązane z zakresem tej poprawki."
   },
   "main_protection": {
-    "source_branch": "release/v10.96",
+    "source_branch": "release/v10.97",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },

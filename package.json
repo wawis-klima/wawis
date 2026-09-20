@@ -1,7 +1,7 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "10.96",
+  "version": "10.97",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",
@@ -143,6 +143,7 @@
     "test:smoke:cache-first-refresh": "node scripts/smoke-cache-first-refresh-v939.mjs",
     "test:smoke:desktop-photo-thumbnails": "node scripts/smoke-desktop-photo-performance-v968.cjs",
     "test:smoke:push-mandatory": "node scripts/smoke-push-mandatory-v970.cjs",
+    "test:smoke:push-toggle": "node scripts/smoke-push-toggle-v1097.cjs",
     "test:smoke:desktop-resilience": "node scripts/smoke-desktop-resilience-v975.cjs",
     "test:smoke:worker-create-status": "node scripts/smoke-worker-create-status-v976.cjs",
     "test:smoke:technical-refresh": "node scripts/smoke-technical-refresh-v977.cjs",

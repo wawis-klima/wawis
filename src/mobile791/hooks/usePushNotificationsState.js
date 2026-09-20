@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { INITIAL_PUSH_STATE } from "../utils/pushState.js";
 
 const PUSH_STATE_STORAGE_PREFIX = "wawis:push-state:v2";
+const PUSH_ENABLED_STORAGE_PREFIX = "wawis:push-enabled:v1097";
 const PUSH_HEALTHCHECK_MS = 5 * 60 * 1000;
 const PUSH_MIN_SYNC_INTERVAL_MS = 10 * 60 * 1000;
 
@@ -10,16 +11,42 @@ function getPushStateStorageKey(userId = "") {
   return `${PUSH_STATE_STORAGE_PREFIX}:${normalizedUserId}`;
 }
 
+function getPushEnabledStorageKey(userId = "") {
+  const normalizedUserId = String(userId || "anonymous").trim() || "anonymous";
+  return `${PUSH_ENABLED_STORAGE_PREFIX}:${normalizedUserId}`;
+}
+
+function readPushEnabledPreference(userId = "") {
+  if (typeof window === "undefined") return true;
+  try {
+    const stored = window.localStorage.getItem(getPushEnabledStorageKey(userId));
+    if (stored === null) return true;
+    return stored !== "0" && stored !== "false";
+  } catch {
+    return true;
+  }
+}
+
+function persistPushEnabledPreference(userId = "", enabled = true) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(getPushEnabledStorageKey(userId), enabled ? "1" : "0");
+  } catch {
+    // Brak localStorage nie może blokować samej obsługi PUSH.
+  }
+}
+
 function readStoredPushState(userId = "") {
-  if (typeof window === "undefined") return INITIAL_PUSH_STATE;
+  const userEnabled = readPushEnabledPreference(userId);
+  if (typeof window === "undefined") return { ...INITIAL_PUSH_STATE, userEnabled };
   try {
     const raw = window.sessionStorage.getItem(getPushStateStorageKey(userId));
-    if (!raw) return INITIAL_PUSH_STATE;
+    if (!raw) return { ...INITIAL_PUSH_STATE, userEnabled };
     const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== "object") return INITIAL_PUSH_STATE;
-    return { ...INITIAL_PUSH_STATE, ...parsed };
+    if (!parsed || typeof parsed !== "object") return { ...INITIAL_PUSH_STATE, userEnabled };
+    return { ...INITIAL_PUSH_STATE, ...parsed, userEnabled };
   } catch {
-    return INITIAL_PUSH_STATE;
+    return { ...INITIAL_PUSH_STATE, userEnabled };
   }
 }
 
@@ -52,21 +79,25 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
     if (syncInFlightRef.current) return syncInFlightRef.current;
     const syncEpoch = syncEpochRef.current;
     const isCurrentSync = () => syncEpoch === syncEpochRef.current;
-
-    const pushModule = await loadPushModule();
-    if (!isCurrentSync()) return readStoredPushState(userId);
-    await pushModule.reconcilePendingPushLogout({ supabase, sessionUser, force }).catch((error) => {
-      console.warn("Nie udało się ponowić sprzątania starego PUSH:", error?.message || error);
-    });
-    if (!isCurrentSync()) return readStoredPushState(userId);
-
     if (!force && Date.now() - lastSuccessfulSyncAtRef.current < PUSH_MIN_SYNC_INTERVAL_MS) {
       return readStoredPushState(userId);
     }
 
     const syncPromise = (async () => {
-      const nextState = await pushModule.getPushStatus({ supabase, sessionUser });
-      if (!isCurrentSync() || nextState?.staleSession) return readStoredPushState(userId);
+      const pushModule = await loadPushModule();
+      const userEnabled = readPushEnabledPreference(userId);
+      await pushModule.reconcilePendingPushLogout({
+        supabase,
+        sessionUser,
+        force,
+        allowReassign: userEnabled,
+      }).catch((error) => {
+        console.warn("Nie udało się ponowić sprzątania starego PUSH:", error?.message || error);
+      });
+      if (!isCurrentSync()) return readStoredPushState(userId);
+      const status = await pushModule.getPushStatus({ supabase, sessionUser, allowAutoRepair: userEnabled });
+      if (!isCurrentSync()) return readStoredPushState(userId);
+      const nextState = { ...status, userEnabled };
       setPushState(nextState);
       persistPushState(userId, nextState);
       if (!nextState?.syncError) lastSuccessfulSyncAtRef.current = Date.now();
@@ -77,26 +108,34 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
     try {
       return await syncPromise;
     } catch (error) {
-      console.warn("Nie udało się sprawdzić obowiązkowego PUSH:", error?.message || error);
+      console.warn("Nie udało się sprawdzić stanu PUSH:", error?.message || error);
       return readStoredPushState(userId);
     } finally {
       if (syncInFlightRef.current === syncPromise) syncInFlightRef.current = null;
     }
   }
 
+  async function waitForCurrentPushSync() {
+    const pendingSync = syncInFlightRef.current;
+    if (!pendingSync) return;
+    await pendingSync.catch(() => null);
+  }
+
   async function enablePush({ silent = false } = {}) {
     if (!sessionUser) return false;
     setPushBusy(true);
     try {
+      await waitForCurrentPushSync();
       const { enablePushNotifications } = await loadPushModule();
       await enablePushNotifications({ supabase, sessionUser });
+      persistPushEnabledPreference(userId, true);
       await syncPushState({ force: true });
       return true;
     } catch (error) {
       if (!silent) {
-        alert(error.message || "Nie udało się aktywować obowiązkowych powiadomień PUSH.");
+        alert(error.message || "Nie udało się włączyć powiadomień PUSH.");
       } else {
-        console.warn("Obowiązkowy PUSH wymaga działania użytkownika lub ustawień systemowych:", error?.message || error);
+        console.warn("PUSH wymaga działania użytkownika lub ustawień systemowych:", error?.message || error);
       }
       await syncPushState({ force: true });
       return false;
@@ -105,11 +144,43 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
     }
   }
 
+  async function disablePush({ silent = false } = {}) {
+    if (!sessionUser) return false;
+    const previousPreference = readPushEnabledPreference(userId);
+    setPushBusy(true);
+    persistPushEnabledPreference(userId, false);
+    try {
+      // OFF ma pierwszeństwo nad synchronizacją, która mogła wystartować chwilę wcześniej.
+      // Najpierw pozwalamy jej się zakończyć, a dopiero potem wyłączamy endpoint.
+      await waitForCurrentPushSync();
+      const { disablePushNotifications } = await loadPushModule();
+      await disablePushNotifications({ supabase, sessionUser });
+      lastSuccessfulSyncAtRef.current = 0;
+      await syncPushState({ force: true });
+      return true;
+    } catch (error) {
+      persistPushEnabledPreference(userId, previousPreference);
+      if (!silent) alert(error.message || "Nie udało się wyłączyć powiadomień PUSH.");
+      else console.warn("Nie udało się wyłączyć PUSH:", error?.message || error);
+      lastSuccessfulSyncAtRef.current = 0;
+      await syncPushState({ force: true });
+      return false;
+    } finally {
+      setPushBusy(false);
+    }
+  }
+
+  async function togglePush() {
+    if (pushBusy) return false;
+    const isOn = Boolean(pushState?.ready && pushState?.userEnabled !== false);
+    return isOn ? disablePush() : enablePush();
+  }
+
   useEffect(() => {
     syncEpochRef.current += 1;
+    syncInFlightRef.current = null;
     if (!sessionUser) {
       setPushState(INITIAL_PUSH_STATE);
-      syncInFlightRef.current = null;
       lastSuccessfulSyncAtRef.current = 0;
       return undefined;
     }
@@ -128,22 +199,10 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
       void syncPushState({ force: true });
     };
 
-    const handleMandatoryPermissionGesture = () => {
-      if (typeof Notification === "undefined" || Notification.permission !== "default") return;
-      window.removeEventListener("pointerdown", handleMandatoryPermissionGesture);
-      window.removeEventListener("keydown", handleMandatoryPermissionGesture);
-      window.removeEventListener("touchend", handleMandatoryPermissionGesture);
-      // iOS wymaga wywołania prośby o zgodę bezpośrednio z gestu użytkownika.
-      void enablePush({ silent: true });
-    };
-
     window.addEventListener("focus", handleVisible);
     window.addEventListener("pageshow", handleVisible);
     window.addEventListener("online", handleOnline);
     document.addEventListener("visibilitychange", handleVisible);
-    window.addEventListener("pointerdown", handleMandatoryPermissionGesture, { passive: true });
-    window.addEventListener("keydown", handleMandatoryPermissionGesture);
-    window.addEventListener("touchend", handleMandatoryPermissionGesture, { passive: true });
 
     const healthcheckTimer = window.setInterval(() => {
       if (typeof document === "undefined" || document.visibilityState === "visible") {
@@ -157,9 +216,6 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
       window.removeEventListener("pageshow", handleVisible);
       window.removeEventListener("online", handleOnline);
       document.removeEventListener("visibilitychange", handleVisible);
-      window.removeEventListener("pointerdown", handleMandatoryPermissionGesture);
-      window.removeEventListener("keydown", handleMandatoryPermissionGesture);
-      window.removeEventListener("touchend", handleMandatoryPermissionGesture);
       window.clearInterval(healthcheckTimer);
     };
   }, [sessionUser?.id]);
@@ -169,5 +225,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
     pushBusy,
     syncPushState,
     enablePush,
+    disablePush,
+    togglePush,
   };
 }

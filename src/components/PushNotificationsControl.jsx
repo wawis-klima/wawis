@@ -1,39 +1,63 @@
 import React from "react";
 
-function getMandatoryStatusLabel(pushState) {
-  if (!pushState?.vapidConfigured) return "PUSH obowiązkowy · brak konfiguracji";
-  if (!pushState?.supported) return "PUSH obowiązkowy · niedostępny na tym urządzeniu";
-  if (pushState.permission === "denied") return "PUSH obowiązkowy · zablokowany w systemie";
-  if (pushState.ready) return "PUSH włączony na stałe";
-  if (pushState.permission === "granted") return "PUSH włączony · trwa samonaprawa";
-  return "PUSH włączony · oczekuje na zgodę systemu";
+function getPushStatusLabel(pushState) {
+  if (!pushState?.vapidConfigured) return "PUSH · brak konfiguracji";
+  if (!pushState?.supported) return pushState?.diagnostics?.reason || "PUSH · niedostępny na tym urządzeniu";
+  if (pushState.permission === "denied") return "PUSH · zablokowany w ustawieniach systemowych";
+  if (pushState?.userEnabled === false) return "PUSH wyłączony";
+  if (pushState.ready) return "PUSH włączony";
+  if (pushState.permission === "granted") return "PUSH · wymaga synchronizacji";
+  return "PUSH wyłączony · dotknij, aby włączyć";
 }
 
-export default function PushNotificationsControl({ pushState, busy, compact = false }) {
-  const label = busy ? "PUSH włączony · synchronizacja" : getMandatoryStatusLabel(pushState);
+export default function PushNotificationsControl({
+  pushState,
+  busy,
+  compact = false,
+  onToggle,
+}) {
+  const isOn = Boolean(pushState?.ready && pushState?.userEnabled !== false);
+  const label = busy ? "PUSH · synchronizacja" : getPushStatusLabel(pushState);
+  const actionLabel = isOn ? "Wyłącz PUSH" : "Włącz PUSH";
 
   if (compact) {
     return (
-      <div className="wawisPushMini isOn isMandatory" title={label} role="status" aria-label={label}>
+      <button
+        type="button"
+        className={`wawisPushMini ${isOn ? "isOn" : "isOff"}`}
+        title={label}
+        aria-label={`${label}. ${actionLabel}.`}
+        aria-pressed={isOn}
+        onClick={onToggle}
+        disabled={busy || typeof onToggle !== "function"}
+      >
         <span className="wawisPushMiniTitle">PUSH</span>
-        <div className="wawisPushMiniRow">
-          <span className="wawisPushMiniSwitch wawisPushMiniSwitchLocked" aria-hidden="true">
+        <span className="wawisPushMiniRow">
+          <span className="wawisPushMiniSwitch" aria-hidden="true">
             <span className="wawisPushMiniKnob" aria-hidden="true" />
           </span>
-          <span className="wawisPushMiniState">ON</span>
-        </div>
-      </div>
+          <span className="wawisPushMiniState">{busy ? "…" : isOn ? "ON" : "OFF"}</span>
+        </span>
+      </button>
     );
   }
 
   return (
-    <div className="pushControl pushControlMandatory" title={label}>
+    <div className="pushControl" title={label}>
       <div className="pushControlMain">
         <div className="pushControlText">
           <div className="pushControlTitle">Push</div>
           <div className="pushControlStatus">{label}</div>
         </div>
-        <span className="pushMandatoryBadge" aria-label="PUSH włączony na stałe">ON</span>
+        <button
+          type="button"
+          className={`pushControlButton ${isOn ? "secondary" : ""}`}
+          onClick={onToggle}
+          disabled={busy || typeof onToggle !== "function"}
+          aria-pressed={isOn}
+        >
+          {busy ? "…" : isOn ? "Wyłącz" : "Włącz"}
+        </button>
       </div>
     </div>
   );

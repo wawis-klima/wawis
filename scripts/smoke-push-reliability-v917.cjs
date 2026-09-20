@@ -20,7 +20,7 @@ for (const [name, source] of [['desktop push', desktopPush], ['mobile push', mob
   assert(source.includes('last_seen_at'), `${name}: brak odświeżania last_seen_at`);
   assert(source.includes('savePushSubscription({ supabase, sessionUser, subscription, force: true })'), `${name}: brak automatycznej synchronizacji subskrypcji`);
   assert(source.includes('ensurePushNotifications'), `${name}: brak samonaprawy obowiązkowego PUSH`);
-  assert(source.includes('if (!subscription && permission === "granted"'), `${name}: brak automatycznego odtworzenia utraconej subskrypcji`);
+  assert(source.includes('allowAutoRepair && !subscription && permission === "granted"'), `${name}: samonaprawa utraconej subskrypcji nie respektuje przełącznika użytkownika`);
   assert(source.includes('ready: Boolean(subscription) && permission === "granted" && serverActive'), `${name}: status Push aktywne nadal nie zależy od Supabase`);
   assert(source.includes('eventType: "push_test"'), `${name}: brak wywołania testowego push`);
 }
@@ -29,7 +29,8 @@ for (const [name, source] of [['desktop hook', desktopHook], ['mobile hook', mob
   assert(source.includes('visibilitychange'), `${name}: brak synchronizacji po powrocie do aplikacji`);
   assert(source.includes('pageshow'), `${name}: brak synchronizacji przy ponownym pokazaniu PWA`);
   assert(source.includes('PUSH_HEALTHCHECK_MS'), `${name}: brak cyklicznej kontroli obowiązkowego PUSH`);
-  assert(!source.includes('disablePushNotifications'), `${name}: hook nadal umożliwia wyłączenie PUSH`);
+  assert(source.includes('disablePushNotifications'), `${name}: hook nie obsługuje ręcznego wyłączenia PUSH`);
+  assert(source.includes('allowAutoRepair: userEnabled'), `${name}: healthcheck może reaktywować ręcznie wyłączony PUSH`);
 }
 
 assert(edge.includes('eventType?: "job_assigned" | "job_completed" | "job_comment" | "push_test"'), 'Edge: kontrakt musi zachować job_comment i push_test');
