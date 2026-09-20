@@ -41,8 +41,9 @@ for (const [label, push] of [["desktop", desktopPush], ["mobile", mobilePush]]) 
 assert(mobilePush.includes("allowReassign = true"), "mobile: cleanup logout nie respektuje ręcznego OFF");
 assert(mobilePush.includes("if (allowReassign && touchedCurrentSubscription"), "mobile: cleanup może reaktywować ręcznie wyłączony PUSH");
 
-assert(desktopApp.includes("togglePush,"), "desktop App nie pobiera togglePush");
-assert(desktopApp.includes("onToggle={togglePush}"), "desktop App nie przekazuje togglePush");
+assert(!desktopApp.includes("usePushNotificationsState"), "desktop App nie może inicjalizować PUSH");
+assert(!desktopApp.includes("PushNotificationsControl"), "desktop App nie może renderować kontrolki PUSH");
+assert(desktopApp.includes("pushControl={null}"), "desktop App powinien jawnie wyłączyć kontrolkę PUSH");
 assert(mobileApp.includes("togglePush,"), "mobile App nie pobiera togglePush");
 assert(mobileApp.includes("onToggle={togglePush}"), "mobile App nie przekazuje togglePush");
 
