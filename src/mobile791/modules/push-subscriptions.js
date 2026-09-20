@@ -327,7 +327,7 @@ export async function deactivatePushForLogout({ supabase, sessionUser: suppliedS
   return { found: true, serverDisabled, unsubscribed: Boolean(unsubscribed), pending: readPendingPushDisables().length > 0, error: serverError || null };
 }
 
-export async function reconcilePendingPushLogout({ supabase, sessionUser, force = false }) {
+export async function reconcilePendingPushLogout({ supabase, sessionUser, force = false, allowReassign = true }) {
   const sessionContextToken = capturePushSessionContext(sessionUser);
   if (!isPushSessionContextCurrent(sessionContextToken)) {
     return { reconciled: false, pending: readPendingPushDisables().length > 0, reason: "stale-session" };
@@ -366,7 +366,7 @@ export async function reconcilePendingPushLogout({ supabase, sessionUser, force 
   }
 
   let reassigned = false;
-  if (touchedCurrentSubscription && currentSubscription && !failed) {
+  if (allowReassign && touchedCurrentSubscription && currentSubscription && !failed) {
     const saveResult = await savePushSubscription({ supabase, sessionUser, subscription: currentSubscription, force: true });
     reassigned = Boolean(saveResult?.reassigned || saveResult?.saved);
   }
@@ -453,17 +453,43 @@ export async function enablePushNotifications({ supabase, sessionUser }) {
 }
 
 export async function disablePushNotifications({ supabase, sessionUser = null }) {
-  // PUSH jest obowiązkowy w aplikacji Wawis. Funkcja zostaje wyłącznie dla
-  // zgodności ze starszymi, już otwartymi wersjami aplikacji. Nie wyłącza
-  // subskrypcji; jeśli system pozwala, zamiast tego ponownie ją aktywuje.
-  return ensurePushNotifications({ supabase, sessionUser, requestPermission: false });
+  const sessionContextToken = capturePushSessionContext(sessionUser);
+  const subscription = await getCurrentPushSubscription();
+  if (!subscription) {
+    await clearCurrentPushServiceWorkerContext({ token: sessionContextToken }).catch(() => null);
+    lastSavedSignature = "";
+    lastSaveAttemptAt = 0;
+    return { disabled: true, unsubscribed: false, skipped: true, reason: "no-local-subscription" };
+  }
+
+  const serverResult = await disableSavedPushSubscription({ supabase, subscription });
+  const reason = String(serverResult?.result?.reason || "");
+  const serverDisabled = Boolean(
+    serverResult?.disabled
+      || serverResult?.skipped
+      || ["already-disabled", "not-found", "stale-lifecycle"].includes(reason)
+  );
+  if (!serverDisabled) {
+    throw new Error("Serwer nie potwierdził wyłączenia powiadomień PUSH.");
+  }
+
+  const unsubscribed = await withPushLifecycleTimeout(
+    subscription.unsubscribe(),
+    PUSH_LOCAL_STEP_TIMEOUT_MS,
+    "push-user-disable-unsubscribe",
+  ).catch(() => false);
+  await clearCurrentPushServiceWorkerContext({ token: sessionContextToken }).catch(() => null);
+
+  lastSavedSignature = "";
+  lastSaveAttemptAt = 0;
+  return { disabled: true, unsubscribed: Boolean(unsubscribed), skipped: false, reason: reason || "disabled" };
 }
 
 function buildStalePushStatus(diagnostics) {
   return { supported: Boolean(diagnostics?.supported), permission: diagnostics?.permission || "unsupported", subscribed: false, serverRegistered: false, serverActive: false, lastSeenAt: null, syncError: null, vapidConfigured: Boolean(diagnostics?.vapidConfigured), ready: false, diagnostics, staleSession: true };
 }
 
-export async function getPushStatus({ supabase, sessionUser }) {
+export async function getPushStatus({ supabase, sessionUser, allowAutoRepair = true }) {
   const diagnostics = getPushDiagnostics();
   const sessionContextToken = capturePushSessionContext(sessionUser);
   const isCurrentPushSession = () => isPushSessionContextCurrent(sessionContextToken);
@@ -496,7 +522,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
   let ownershipGeneration = 0;
   let contextEpoch = 0;
 
-  if (!subscription && permission === "granted" && supabase && sessionUser) {
+  if (allowAutoRepair && !subscription && permission === "granted" && supabase && sessionUser) {
     try {
       // Samonaprawa v9.70: jeśli przeglądarka zgubiła subskrypcję, ale zgoda
       // systemowa nadal jest aktywna, odtwarzamy endpoint bez pytania użytkownika.
@@ -529,30 +555,36 @@ export async function getPushStatus({ supabase, sessionUser }) {
       ownershipGeneration = Number(existingServerRow?.ownership_generation || 0);
 
       if (existingServerRow?.id && existingServerRow.is_active === false) {
-        subscription = await replaceExpiredPushSubscription({
-          supabase,
-          sessionUser,
-          subscription,
-        });
-        if (subscription) {
-          // Replacement save already published its own verified context.
-          ownershipGeneration = 0; contextEpoch = 0;
+        serverRegistered = true;
+        serverActive = false;
+        lastSeenAt = existingServerRow.last_seen_at || null;
+        if (allowAutoRepair) {
+          subscription = await replaceExpiredPushSubscription({
+            supabase,
+            sessionUser,
+            subscription,
+          });
+          if (subscription) {
+            // Replacement save already published its own verified context.
+            ownershipGeneration = 0; contextEpoch = 0;
+            serverActive = true;
+            lastSeenAt = new Date().toISOString();
+          }
+        }
+      } else if (!existingServerRow?.id) {
+        if (allowAutoRepair) {
+          const saveResult = await savePushSubscription({ supabase, sessionUser, subscription, force: true });
+          contextEpoch = Number(saveResult?.contextEpoch || contextEpoch || 0);
+          ownershipGeneration = Number(saveResult?.generation || 0);
           serverRegistered = true;
           serverActive = true;
           lastSeenAt = new Date().toISOString();
         }
-      } else if (!existingServerRow?.id) {
-        const saveResult = await savePushSubscription({ supabase, sessionUser, subscription, force: true });
-        contextEpoch = Number(saveResult?.contextEpoch || contextEpoch || 0);
-        ownershipGeneration = Number(saveResult?.generation || 0);
-        serverRegistered = true;
-        serverActive = true;
-        lastSeenAt = new Date().toISOString();
       } else {
         serverRegistered = true;
         serverActive = Boolean(existingServerRow.is_active);
         lastSeenAt = existingServerRow.last_seen_at || null;
-        if (!serverActive || shouldTouchServerSubscription(lastSeenAt)) {
+        if (allowAutoRepair && (!serverActive || shouldTouchServerSubscription(lastSeenAt))) {
           const saveResult = await savePushSubscription({ supabase, sessionUser, subscription, force: true });
           contextEpoch = Number(saveResult?.contextEpoch || contextEpoch || 0);
           ownershipGeneration = Number(saveResult?.generation || ownershipGeneration || 0);
@@ -566,7 +598,7 @@ export async function getPushStatus({ supabase, sessionUser }) {
     }
   }
 
-  if (serverActive && ownershipGeneration > 0 && isCurrentPushSession()) {
+  if (allowAutoRepair && serverActive && ownershipGeneration > 0 && isCurrentPushSession()) {
     await publishPushServiceWorkerContext({ token: sessionContextToken, generation: ownershipGeneration, endpoint: subscription.endpoint, contextEpoch }).catch(() => false);
   }
   if (!isCurrentPushSession()) return buildStalePushStatus(diagnostics);
