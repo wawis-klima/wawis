@@ -1,21 +1,21 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.97
+- 10.98
 
 ## Zakres
-- Przycisk PUSH na mobile i desktopie działa jako przełącznik ON/OFF.
-- OFF dezaktywuje bieżącą subskrypcję na serwerze i lokalnie oraz zapisuje preferencję użytkownika na urządzeniu.
-- Automatyczna naprawa subskrypcji respektuje ręczne OFF i nie włącza PUSH ponownie po odświeżeniu.
-- ON ponownie prosi o zgodę systemową, jeśli jest potrzebna, i rejestruje aktualny endpoint.
+- Naprawa mylącego OFF przy pierwszym renderze kontrolki PUSH.
+- Ostatni zweryfikowany stan PUSH jest zapisywany w trwałym cache per użytkownik i urządzenie.
+- Brak cache oznacza neutralne „sprawdzanie”, a nie OFF; kontrolka jest wtedy chwilowo zablokowana.
+- Ręczne ON/OFF z 10.97 pozostaje bez zmian i po synchronizacji aktualizuje trwały cache.
 - Bez migracji SQL, zmian RLS i zmian Edge Function.
 
 ## Warunek GREEN
-- regresja `smoke-push-toggle-v1097.cjs` przechodzi,
+- regresje `smoke-push-toggle-v1097.cjs` oraz `smoke-push-initial-state-v1098.cjs` przechodzą,
 - grupa PUSH i testy krytyczne przechodzą,
 - wymagane E2E mobile i desktop przechodzą,
 - produkcyjny build przechodzi,
 - po merge produkcyjny Vercel dla `main` kończy się sukcesem.
 
 ## Status
-Kandydat 10.97 oznaczony jako `ready_for_main`; merge nastąpi wyłącznie po zielonej bramce PR.
+Kandydat 10.98 oznaczony jako `ready_for_main`; merge nastąpi wyłącznie po zielonej bramce PR.
