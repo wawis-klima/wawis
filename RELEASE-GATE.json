@@ -1,16 +1,16 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "10.98",
+  "version": "10.99",
   "scope": "full",
-  "release_branch": "release/v10.98",
+  "release_branch": "release/v10.99",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Ostatnie 24 h: 26 zdarzeń diagnostycznych (18 error, 8 warning). Zdarzenia PUSH pochodzą wyłącznie ze starszych wersji 10.96/10.94 (aborted fetch/timeout); brak wpisów PUSH z 10.97 w badanym oknie. Dominują błędy miniaturek zdjęć, niezwiązane z poprawką stanu startowego PUSH 10.98."
+    "notes": "Przed 10.99 potwierdzono 0 aktywnych subskrypcji Windows po bezpiecznej dezaktywacji. Mobilne aktywne endpointy pozostają bez zmian. W ostatniej kontroli brak nowych błędów/ostrzeżeń PUSH z wersji 10.98."
   },
   "main_protection": {
-    "source_branch": "release/v10.98",
+    "source_branch": "release/v10.99",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
