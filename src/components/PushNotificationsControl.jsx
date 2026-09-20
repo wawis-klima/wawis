@@ -57,7 +57,7 @@ export default function PushNotificationsControl({
           type="button"
           className={`pushControlButton ${isOn ? "secondary" : ""}`}
           onClick={onToggle}
-          disabled={busy || typeof onToggle !== "function"}
+          disabled={busy || isChecking || typeof onToggle !== "function"}
           aria-pressed={isOn}
         >
           {busy || isChecking ? "…" : isOn ? "Wyłącz" : "Włącz"}
