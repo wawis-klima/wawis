@@ -16,7 +16,8 @@ assert(!push.includes('.from("push_subscriptions").upsert'), 'Mobile push zawier
 assert(push.includes('eventType: "disable_subscription"'), 'Backend nadal musi rozumieć żądania wyłączenia');
 assert(hook.includes('PUSH_HEALTHCHECK_MS'), 'Hook nie pilnuje obowiązkowego PUSH cyklicznie');
 assert(hook.includes('disablePushNotifications'), 'Hook musi obsługiwać ręczne wyłączenie PUSH');
-assert(!hook.includes('handleMandatoryPermissionGesture'), 'Hook nadal wymusza zgodę PUSH przy pierwszym geście');\nassert(hook.includes('allowAutoRepair: userEnabled'), 'Hook nie przekazuje preferencji użytkownika do samonaprawy');
+assert(!hook.includes('handleMandatoryPermissionGesture'), 'Hook nadal wymusza zgodę PUSH przy pierwszym geście');
+assert(hook.includes('allowAutoRepair: userEnabled'), 'Hook nie przekazuje preferencji użytkownika do samonaprawy');
 
 // 10.78: Edge nie robi już SELECT + bezwarunkowego UPSERT. Przekazuje komplet
 // poświadczeń do serializowanego RPC, a PostgreSQL porównuje p256dh+auth pod lockiem.
