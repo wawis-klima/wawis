@@ -1,3 +1,10 @@
+## 10.99
+- Wyłączono PUSH w wersji desktopowej: desktop nie inicjalizuje już hooka PUSH ani nie pokazuje przełącznika.
+- Wszystkie aktywne subskrypcje Windows na produkcji zostały bezpiecznie dezaktywowane; mobilne subskrypcje iPhone/Android pozostają bez zmian.
+- Testowe powiadomienie z Diagnostyki desktopowej nadal może wysłać test do aktywnych urządzeń administratora, ale nie tworzy subskrypcji na komputerze.
+- Dodano regresję `smoke-desktop-push-disabled-v1099.cjs` i zachowano mobilne ON/OFF z wersji 10.98.
+- Bez zmian w RLS, schemacie danych i Edge Functions.
+
 ## 10.98
 - Naprawiono mylący stan PUSH przy starcie aplikacji: aktywna subskrypcja nie jest już chwilowo pokazywana jako OFF tylko dlatego, że trwa pierwsza synchronizacja.
 - Ostatni potwierdzony stan PUSH jest zapisywany per użytkownik i urządzenie w trwałym cache, więc po ponownym uruchomieniu aplikacji znany stan ON/OFF pojawia się od razu.
