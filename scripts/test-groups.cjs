@@ -88,6 +88,7 @@ const GROUPS = {
     'npm run test:smoke:push-safety-v1078',
     'npm run test:smoke:comment-admin-push',
     'npm run test:smoke:push-toggle',
+    'npm run test:smoke:push-initial-state',
     'node scripts/smoke-session-push-gate-v1083.mjs',
     'node scripts/smoke-audit-fixes-v1087.mjs',
   ],
