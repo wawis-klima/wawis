@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.97` — przycisk PUSH działa jako rzeczywisty przełącznik ON/OFF; ręczne wyłączenie dezaktywuje subskrypcję i nie jest cofane przez automatyczną samonaprawę.
+- wersja `10.98` — przy starcie aplikacji aktywny PUSH nie pokazuje już fałszywego OFF; ostatni zweryfikowany stan jest pamiętany między uruchomieniami, a pierwszy odczyt pokazuje neutralne „…”.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.
