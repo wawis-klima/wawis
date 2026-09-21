@@ -1,5 +1,7 @@
 @import './v1100-mobile-details-compact.css';
 
+/* WAWIS 11.00 production rebuild after deploy-gate metadata repair. */
+
 /* WAWIS 10.92 — production mobile inline job width guard.
    This file is imported by the real src/main.jsx mobile runtime. */
 @media (max-width: 700px) {

@@ -1,6 +1,7 @@
 /* WAWIS 11.00 — czytelna, zwarta karta montażu na telefonie.
    Zmniejszamy wyłącznie pionowe odstępy. Dane kontaktowe oraz nagłówki
    urządzeń pozostają w pojedynczych wierszach na typowych ekranach iPhone. */
+/* Production rebuild marker after deploy-gate metadata repair. */
 @media (max-width: 700px) {
   .mobileInlineJobDetails > .premiumCard {
     gap: 0 !important;
