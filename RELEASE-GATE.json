@@ -9,10 +9,24 @@
     "result": "INFO",
     "notes": "Dla 11.00 wykorzystano aktualny informacyjny baseline po 10.99. Zmiana jest wyłącznie prezentacyjna i nie dotyka PUSH, Supabase ani danych produkcyjnych."
   },
+  "drive_backup": {
+    "required": false,
+    "deferred": true,
+    "file_name": "klima-app-v11.00.zip"
+  },
   "main_protection": {
     "source_branch": "release/v11.00",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
+  },
+  "micro_ui": {
+    "policy_version": 1,
+    "css_only": true,
+    "archive_deferred": true,
+    "effective_files": [
+      "src/mobile791/v1092-inline-width.css",
+      "src/mobile791/v1100-mobile-details-compact.css"
+    ]
   },
   "postdeploy_diagnostics": {
     "evidence_required": false,
