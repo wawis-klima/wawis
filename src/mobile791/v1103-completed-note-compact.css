@@ -1,13 +1,13 @@
 /* WAWIS 11.03 — niższe wiersze danych i zwijany komentarz zakończonego montażu. */
 @media (max-width: 700px) {
-  .mobileInlineJobDetails .detailMeta > .contactInfoItem {
+  .mobileInlineJobDetails .detailMeta > .infoItem.contactInfoItem {
     height: 28px !important;
     min-height: 28px !important;
     max-height: 28px !important;
     padding: 0 !important;
   }
 
-  .mobileInlineJobDetails .detailMeta > .jobDateInfoItemV995 {
+  .mobileInlineJobDetails .detailMeta > .infoItem.jobDateInfoItemV995 {
     height: 29px !important;
     min-height: 29px !important;
     max-height: 29px !important;
