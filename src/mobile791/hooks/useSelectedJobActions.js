@@ -450,6 +450,25 @@ export function useSelectedJobActions({
         jobId: editingJobId, operationId, uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount, failedCount: documentationResult.failedCount,
       });
 
+      const pendingNameplateCount = getPendingNameplateKeys(pendingDocuments).size;
+      if (serialOnlyMode && pendingNameplateCount) {
+        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-completed');
+        if (!confirmed) {
+          logDiagnostic('nameplate.save.modal.kept-open', {
+            jobId: editingJobId,
+            operationId,
+            reason: 'server-verification-incomplete',
+            pendingCount: pendingNameplateCount,
+            uploadedCount: documentationResult.uploadedCount,
+            queuedCount: documentationResult.queuedCount,
+            failedCount: documentationResult.failedCount,
+          });
+          refreshAfterNameplateSave(editingJobId, 'server-verification-incomplete');
+          alert('Nie wszystkie tabliczki zostały potwierdzone na serwerze. Okno pozostaje otwarte — sprawdź brakujące zdjęcia i zapisz ponownie.');
+          return;
+        }
+      }
+
       if (serialOnlyMode && documentationResult.failedCount) {
         const confirmed = await verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'reported-failure');
         if (!confirmed) {
