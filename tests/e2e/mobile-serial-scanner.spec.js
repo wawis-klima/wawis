@@ -137,7 +137,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.getByText('Multi', { exact: true })).toBeVisible();
 
     // Niepełny zestaw można zapisać, ale zakończenie nadal pozostaje zablokowane.
-    await page.getByRole('button', { name: 'Zapisz montaż' }).click();
+    await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
 
@@ -157,9 +157,9 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     }
 
     await expect(page.getByText('Tabliczka dodana', { exact: true })).toHaveCount(4);
-    await page.getByRole('button', { name: 'Zapisz urządzenie' }).click();
+    await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
     await expect(page.getByText('Wszystkie tabliczki dodane', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Zapisz montaż' }).click();
+    await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden();
 
     await expect(page.getByText('Wszystkie wymagane zdjęcia tabliczek są zapisane.')).toBeVisible();

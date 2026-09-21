@@ -1,20 +1,43 @@
 # RELEASE RESULT
 
 ## Wersja
-- 10.99
+- 11.06
 
-## Zakres
-- PUSH pozostaje aktywny wyłącznie w aplikacji mobilnej.
-- Desktop nie inicjalizuje `usePushNotificationsState` i nie renderuje kontrolki PUSH.
-- Aktywne subskrypcje Windows zostały bezpiecznie dezaktywowane na produkcji.
-- iPhone i Android oraz szczegółowe powiadomienia mobilne pozostają bez zmian.
-- Bez migracji SQL, zmian RLS i zmian Edge Function.
+## Tryb
+- mobile
 
-## Warunek GREEN
-- regresje PUSH 10.97/10.98 nadal przechodzą po zmianie kontraktu desktopowego,
-- `smoke-desktop-push-disabled-v1099.cjs` potwierdza brak inicjalizacji PUSH na desktopie i zachowanie PUSH mobile,
-- grupa PUSH, wymagane E2E i produkcyjny build przechodzą,
-- po merge produkcyjny Vercel dla `main` kończy się sukcesem.
+## Wygenerowano
+- 2026-09-21T12:23:06.239Z
 
-## Status
-Kandydat 10.99 oznaczony jako `ready_for_main`; merge nastąpi wyłącznie po zielonej bramce PR.
+## Podsumowanie
+- status lokalny: CZĘŚCIOWY — oczekuje na CI
+- tryb: mobile
+- grupy regresji: 10 zakończonych grup
+- Playwright E2E: 0 zakończonych przebiegów
+- build: OK
+- verify:bundle: OK
+- verify:release: OK
+- CSS dystrybucji: OK
+
+## Kroki
+| Obszar | Komenda | Wynik |
+|---|---|---|
+| Tests:core | `node scripts/run-test-group.cjs core` | OK |
+| Tests:jobs | `node scripts/run-test-group.cjs jobs` | OK |
+| Tests:photos | `node scripts/run-test-group.cjs photos` | OK |
+| Tests:protocol | `node scripts/run-test-group.cjs protocol` | OK |
+| Tests:roles | `node scripts/run-test-group.cjs roles` | OK |
+| Tests:push | `node scripts/run-test-group.cjs push` | OK |
+| Tests:fuel | `node scripts/run-test-group.cjs fuel` | OK |
+| Tests:nameplates | `node scripts/run-test-group.cjs nameplates` | OK |
+| Tests:mobile | `node scripts/run-test-group.cjs mobile` | OK |
+| Tests:infra | `node scripts/run-test-group.cjs infra` | OK |
+| E2E:mobile | `npm run test:e2e:mobile` | OCZEKUJE NA CI — lokalnie brak Chromium |
+| Build | `npm run build` | OK |
+| Bundle | `npm run verify:bundle` | OK |
+| CSS dystrybucji | `npm run test:smoke:dist-mobile-css` | OK |
+| Spójność wydania | `npm run verify:release` | OK |
+
+
+## Kontrola CI
+Lokalny Playwright nie uruchomił przeglądarki, ponieważ obraz roboczy nie zawiera pliku wykonywalnego Chromium. Nie jest to błąd aplikacji; pełny przebieg E2E jest obowiązkowym warunkiem scalenia gałęzi w GitHub Actions.

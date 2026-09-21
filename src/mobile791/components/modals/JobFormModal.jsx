@@ -61,6 +61,10 @@ export default function JobFormModal({
 
   const existingNameplatePhotos = Array.isArray(jobForm.existing_nameplate_photos) ? jobForm.existing_nameplate_photos : [];
 
+  function handleClose() {
+    closeJobModal({ busy });
+  }
+
   function getExistingNameplatePhoto(deviceIndex, unitRef) {
     return existingNameplatePhotos.find((item) => (
       Number(item.deviceIndex) === Number(deviceIndex) && String(item.unitRef) === String(unitRef)
@@ -388,7 +392,7 @@ export default function JobFormModal({
       <AppModal
         open={showModal}
         warnBeforeUnload={Boolean(jobFormDirty || busy)}
-        onClose={closeJobModal}
+        onClose={handleClose}
         overlayClassName="formOverlay mobileDeviceWizardOverlay"
         contentClassName="card modal mobileDeviceWizardModal"
       >
@@ -397,8 +401,9 @@ export default function JobFormModal({
           pendingPhotos={Array.isArray(jobForm.pending_nameplate_photos) ? jobForm.pending_nameplate_photos : []}
           existingPhotos={existingNameplatePhotos}
           busy={busy}
-          onClose={closeJobModal}
+          onClose={handleClose}
           onSubmit={() => handleSubmit()}
+          submitLabel="Zapisz urządzenia i tabliczki"
           onAddDevice={addDeviceRow}
           onRemoveDevice={removeDeviceRow}
           onChangeDeviceType={updateDeviceType}
@@ -416,20 +421,20 @@ export default function JobFormModal({
     <AppModal
       open={showModal}
         warnBeforeUnload={Boolean(jobFormDirty || busy)}
-      onClose={closeJobModal}
+      onClose={handleClose}
       overlayClassName="formOverlay"
       contentClassName="card modal formModal"
     >
       <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>
         <div className="jobHead">
           <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
-{editingJobId ? <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button> : null}
+          {editingJobId ? <button type="button" className="btn" onClick={handleClose}>Zamknij</button> : null}
         </div>
         {!editingJobId ? (
-<div className="jobFormQuickActions">
-  <button type="button" className="btn jobFormCloseBtn" onClick={closeJobModal}>Zamknij</button>
-  <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
-</div>
+          <div className="jobFormQuickActions">
+            <button type="button" className="btn jobFormCloseBtn" onClick={handleClose}>Zamknij</button>
+            <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
+          </div>
         ) : null}
         {serialOnlyMode ? (
           <div className="jobSerialOnlyIntro">

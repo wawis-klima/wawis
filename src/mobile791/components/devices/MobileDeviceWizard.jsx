@@ -503,7 +503,7 @@ export default function MobileDeviceWizard({
             </div>
           </div>
         </div>
-        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Zapisz urządzenie</button></div>
+        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
         <PickerSheet picker={picker} descriptor={activeDescriptor} deviceType={activeDevice ? getDeviceType(activeDevice) : selectedType} unitRef={activeUnitRef} onApply={applyPicker} onClose={() => setPicker(null)} />
       </div>
     );
@@ -573,7 +573,7 @@ export default function MobileDeviceWizard({
             <button type="button" className="mobileDeviceWizardRemoveUnit" onClick={() => onRemoveIndoorUnit?.(activeDeviceIndex, indoorSerials.length - 1)}>Usuń ostatnią JW</button>
           ) : null}
         </div>
-        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Zapisz urządzenie</button></div>
+        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
       </div>
     );
   }

@@ -1,3 +1,9 @@
+## 11.06
+- W kreatorze urządzeń krok pośredni ma teraz nazwę `Dalej do podsumowania`, a właściwy zapis `Zapisz urządzenia i tabliczki`, żeby pracownik nie pomylił przejścia między ekranami z zapisaniem zdjęć.
+- Po udanym zapisie pojawia się jednoznaczne potwierdzenie, a kreatora nie można ręcznie zamknąć w trakcie zapisywania danych i tabliczek.
+- Tabliczki nadal można zapisywać przy statusie `Nowe`; status `W trakcie` pozostaje wymagany dopiero do zakończenia montażu.
+- Rozszerzono regresję kreatora mobilnego; bez zmian w Supabase, RLS, mechanizmie uploadu zdjęć i danych produkcyjnych.
+
 ## 11.05
 - Mobilny przełącznik PUSH pokazuje zielone `ON` zgodnie z preferencją użytkownika, gdy iPhone ma przyznaną zgodę systemową, także podczas chwilowej synchronizacji lub automatycznej naprawy subskrypcji.
 - Chwilowy brak pełnego stanu technicznego `ready` nie jest już błędnie przedstawiany jako ręczne `OFF`.

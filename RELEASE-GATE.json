@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.05",
+  "version": "11.06",
   "scope": "mobile",
-  "release_branch": "release/v11.05",
+  "release_branch": "release/v11.06",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Dla 11.05 wykorzystano aktualny informacyjny baseline po 11.04. Zmiana koryguje wyłącznie interpretację stanu mobilnej kontrolki PUSH: zgoda systemowa i brak ręcznego OFF pozostają zielonym ON także podczas synchronizacji. Bez zmian w Supabase, RLS, Edge Functions i danych produkcyjnych."
+    "notes": "Dla 11.06 wykorzystano aktualny informacyjny baseline po 11.05. Zmiana porządkuje etykiety i zamykanie mobilnego kreatora urządzeń oraz potwierdza udany zapis. Bez zmian w Supabase, RLS, uploadzie zdjęć i danych produkcyjnych."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.05.zip"
+    "file_name": "klima-app-v11.06.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.05",
+    "source_branch": "release/v11.06",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
