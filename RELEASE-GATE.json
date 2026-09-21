@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.09",
+  "version": "11.10",
   "scope": "mobile",
-  "release_branch": "release/v11.09",
+  "release_branch": "release/v11.10",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Dla 11.09 zweryfikowano mobilny widok zakończonego montażu Żurawia: dolna nazwa klienta wymagała wyśrodkowania, a napis Dodaj komentarz był wizualnie zbyt duży. Nagłówek Urządzenia i tabliczki pozostaje bez zmian."
+    "notes": "Dla 11.10 odtworzono przełączanie klienta z dołu rozwiniętych szczegółów: usunięcie poprzedniego panelu zmieniało wysokość listy, ale przeglądarka zachowywała starą pozycję i pokazywała dół nowego montażu. Poprawka przewija nową kartę po zakończeniu zmiany układu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.09.zip"
+    "file_name": "klima-app-v11.10.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.09",
+    "source_branch": "release/v11.10",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },

@@ -1,3 +1,9 @@
+## 11.10
+- Po kliknięciu innego klienta na mobilnej liście ekran automatycznie przewija się do początku nowo otwartej karty.
+- Przewinięcie następuje dopiero po zamknięciu poprzednich szczegółów i zakończeniu zmiany układu, więc użytkownik nie trafia już w środek lub na dół nowego montażu.
+- Ponowne kliknięcie aktualnie otwartej karty nadal wyłącznie ją zamyka i nie zmienia pozycji ekranu.
+- Bez zmian w danych, Supabase, PUSH, zdjęciach oraz logice zapisu montażu.
+
 ## 11.09
 - Dolna nazwa klienta w mobilnych szczegółach montażu jest wyśrodkowana na szerokości karty.
 - Zmniejszono napis i wysokość przycisku `Dodaj komentarz`, aby nie dominował nad komentarzami pracowników.

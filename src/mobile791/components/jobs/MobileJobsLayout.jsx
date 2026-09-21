@@ -55,6 +55,8 @@ export default function MobileJobsLayout({
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
   const [filterOpen, setFilterOpen] = useState(Boolean(query));
   const filterInputRef = useRef(null);
+  const jobCardRefs = useRef(new Map());
+  const pendingScrollJobIdRef = useRef("");
 
   useEffect(() => {
     if (query) setFilterOpen(true);
@@ -65,6 +67,28 @@ export default function MobileJobsLayout({
     const timer = window.setTimeout(() => filterInputRef.current?.focus?.(), 40);
     return () => window.clearTimeout(timer);
   }, [filterOpen]);
+
+  useEffect(() => {
+    const selectedJobId = String(selectedJob?.id || "");
+    if (!selectedJobId || pendingScrollJobIdRef.current !== selectedJobId) return undefined;
+
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        const selectedCard = jobCardRefs.current.get(selectedJobId);
+        pendingScrollJobIdRef.current = "";
+        if (!selectedCard?.scrollIntoView) return;
+
+        const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+        selectedCard.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [selectedJob?.id]);
 
   async function handleManualReload() {
     const isOnline = typeof navigator === "undefined" || navigator.onLine !== false;
@@ -93,7 +117,14 @@ export default function MobileJobsLayout({
     // Decyzję o zwinięciu/otwarciu podejmujemy na podstawie karty widocznej
     // w chwili kliknięcia. Nie używamy funkcjonalnego updatera, bo równoległy
     // refresh listy mógł wcześniej podmienić selectedJob i zamknąć nową kartę.
-    setSelectedJob(renderedSelectedJobId === clickedJobId ? null : job);
+    if (renderedSelectedJobId === clickedJobId) {
+      pendingScrollJobIdRef.current = "";
+      setSelectedJob(null);
+      return;
+    }
+
+    pendingScrollJobIdRef.current = clickedJobId;
+    setSelectedJob(job);
   }
 
   return (
@@ -211,7 +242,14 @@ export default function MobileJobsLayout({
           const isSelected = String(selectedJob?.id || "") === String(job?.id || "");
           return (
             <React.Fragment key={job.id}>
-              <div className={`mobileJobCard ${isSelected ? "activeMobileJobCard" : ""}`}>
+              <div
+                ref={(node) => {
+                  const jobId = String(job?.id || "");
+                  if (node) jobCardRefs.current.set(jobId, node);
+                  else jobCardRefs.current.delete(jobId);
+                }}
+                className={`mobileJobCard ${isSelected ? "activeMobileJobCard" : ""}`}
+              >
                 <button type="button" className="mobileJobCardButton" onClick={() => toggleJobDetails(job)} aria-expanded={isSelected}>
                   <div className="mobileJobTop">
                     <strong className="mobileJobClient">{job.client || job.title}</strong>
