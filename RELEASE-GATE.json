@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.07",
+  "version": "11.08",
   "scope": "mobile",
-  "release_branch": "release/v11.07",
+  "release_branch": "release/v11.08",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Dla 11.07 sprawdzono produkcyjny przypadek Żurawia 4: pierwszy zapis wysłał tylko dwie JZ, a UI pokazał lokalny sukces. Zmiana wymaga teraz ponownego potwierdzenia na serwerze każdej dodanej tabliczki przed zamknięciem kreatora. Bez zmian w Supabase, RLS i danych produkcyjnych."
+    "notes": "Dla 11.08 porównano dwa zrzuty mobilnego widoku Żurawia: nagłówek szczegółów był większy od nazwy na karcie, adres nie był optycznie wyśrodkowany, a typ komentarza oraz duży przycisk powodowały niepotrzebne łamanie nagłówka. Poprawka dotyczy wyłącznie mobilnego układu i tekstu prezentacyjnego."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.07.zip"
+    "file_name": "klima-app-v11.08.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.07",
+    "source_branch": "release/v11.08",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
