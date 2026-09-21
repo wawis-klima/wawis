@@ -11,7 +11,7 @@ async function seedAutoFitJob(page) {
   await page.evaluate((storeKey) => {
     const store = window.__KLIMA_MOCK_SUPABASE__.getStore();
     const job = store.jobs.find((item) => item.id === 'mock-job-003');
-    job.email = 'pawel.gruca.paderewskiego@onet.pl';
+    job.email = 'pawel.gruca.zawiercie.paderewskiego112a@onet.pl';
     job.city = 'Zawiercie';
     job.street = 'Aleja Generała Władysława Sikorskiego 112a';
     job.location = 'Zawiercie, Aleja Generała Władysława Sikorskiego 112a';
@@ -58,5 +58,12 @@ test.describe('@mobile 11.04 automatyczne dopasowanie kontaktu', () => {
       expect(item.height).toBeLessThan(item.lineHeight * 1.6);
       expect(item.clientWidth).toBeLessThanOrEqual(item.containerWidth + 1);
     }
+
+    await page.getByRole('button', { name: 'Zamknij', exact: true }).click();
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
+    const regularEmail = page.locator('.contactEmailInfoItem .emailLink');
+    await expect(regularEmail).toHaveAttribute('data-auto-fit', 'default');
+    await expect(regularEmail).toHaveCSS('font-size', '12.5px');
   });
 });
