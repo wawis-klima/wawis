@@ -1,0 +1,42 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.resolve(__dirname, '..');
+const appSource = fs.readFileSync(path.join(root, 'src', 'App.jsx'), 'utf8');
+const layoutSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AppAuthenticatedLayout.jsx'), 'utf8');
+const shellSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AdminDesktopShell.jsx'), 'utf8');
+const smsPanelSource = fs.readFileSync(path.join(root, 'src', 'components', 'sms', 'SmsPanel.jsx'), 'utf8');
+const smsSettingsCardSource = fs.readFileSync(path.join(root, 'src', 'components', 'sms', 'SmsSettingsCard.jsx'), 'utf8');
+const stylesSource = fs.readFileSync(path.join(root, 'src', 'styles.css'), 'utf8');
+
+assert.match(appSource, /desktopNavKey/);
+assert.match(appSource, /handleDesktopNavigation/);
+assert.match(appSource, /requestedSection=\{desktopNavKey\}/);
+assert.match(layoutSource, /activeNavKey/);
+assert.match(layoutSource, /onDesktopNavigate/);
+assert.match(shellSource, /sms_templates/);
+assert.doesNotMatch(shellSource, /key:\s*'settings'/);
+assert.doesNotMatch(shellSource, /key:\s*'users'/);
+assert.doesNotMatch(shellSource, /Użytkownicy/);
+assert.match(stylesSource, /font-family:\s*"Inter"/);
+assert.match(stylesSource, /adminDesktopNavItem\.active::before/);
+assert.match(shellSource, /activeNavKey/);
+assert.match(shellSource, /onNavigate/);
+assert.match(smsPanelSource, /requestedSection = 'sms'/);
+assert.match(smsPanelSource, /requestedSection === 'settings'/);
+assert.match(smsPanelSource, /requestedSection === 'sms_templates'/);
+assert.match(smsPanelSource, /isSettingsOnlyView/);
+assert.match(smsPanelSource, /settingsOnlyTitle/);
+assert.match(smsPanelSource, /setShowSettings\(true\)/);
+assert.match(smsPanelSource, /SmsSettingsCard/);
+assert.match(stylesSource, /smsSettingsOnlyPage/);
+assert.match(stylesSource, /smsSettingsOnlyPage \.smsDesktopTableCard/);
+assert.match(stylesSource, /v8\.28 desktop-only wider left sidebar/);
+assert.match(stylesSource, /--wawisDesktopSidebarWidth:324px/);
+assert.match(stylesSource, /grid-template-columns:var\(--wawisDesktopSidebarWidth\) minmax\(0,1fr\) !important/);
+assert.match(stylesSource, /adminDesktopProfileCopy strong,[\s\S]*?adminDesktopProfileCopy span\{[\s\S]*?white-space:nowrap !important/);
+assert.match(smsSettingsCardSource, /template_service_reminder/);
+
+console.log('Sidebar settings cleanup smoke OK');
+process.exit(0);

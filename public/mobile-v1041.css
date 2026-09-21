@@ -1,0 +1,60 @@
+/* WAWIS 10.41 — mobile Montaże: clearly smaller status artwork and counters */
+@media (max-width:700px){
+  html body .mobileJobsShellV959 .mobileJobClient{
+    font-size:15px !important;
+    line-height:1.08 !important;
+  }
+
+  html body .mobileJobsShellV959 .mobileJobTop{
+    margin-bottom:4px !important;
+  }
+
+  html body .mobileJobsShellV959 .statusButtonsBar{
+    gap:16px !important;
+    margin-bottom:-2px !important;
+    padding-top:0 !important;
+  }
+
+  html body .mobileJobsShellV959 .statusActionButton,
+  html body .mobileJobsShellV959 .statusActionShape{
+    min-height:56px !important;
+  }
+
+  html body .mobileJobsShellV959 .statusActionImage{
+    width:min(15.5vw,64px) !important;
+    max-width:64px !important;
+    height:auto !important;
+  }
+
+  html body .mobileJobsShellV959 .statusActionBadge{
+    bottom:8px !important;
+    transform:translateY(-20px) !important;
+    min-width:16px !important;
+    height:16px !important;
+    min-height:16px !important;
+    padding:0 4px !important;
+    font-size:9px !important;
+    line-height:1 !important;
+  }
+
+  html body .mobileJobsShellV959 .mobileJobBadges{
+    margin-top:1px !important;
+    min-height:20px !important;
+  }
+
+  html body .mobileJobsShellV959 .mobileJobBadges .initialsRow{
+    gap:5px !important;
+  }
+
+  html body .mobileJobsShellV959 .mobileJobBadges .initialBadge{
+    width:20px !important;
+    min-width:20px !important;
+    max-width:20px !important;
+    height:20px !important;
+    min-height:20px !important;
+    max-height:20px !important;
+    padding:0 !important;
+    font-size:8.5px !important;
+    line-height:1 !important;
+  }
+}

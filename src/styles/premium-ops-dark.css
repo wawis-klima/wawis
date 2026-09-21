@@ -1,0 +1,905 @@
+/* --- v7.92 premium dark operations dashboard --- */
+@media (min-width: 701px) {
+  :root {
+    --ops-bg: #050b13;
+    --ops-panel: rgba(10, 20, 33, .86);
+    --ops-panel-strong: rgba(13, 27, 44, .94);
+    --ops-border: rgba(126, 166, 216, .16);
+    --ops-border-strong: rgba(63, 151, 255, .45);
+    --ops-text: #f4f8ff;
+    --ops-muted: #98a8bd;
+    --ops-muted-2: #6f7f93;
+    --ops-blue: #2f83ff;
+    --ops-blue-2: #20aaff;
+    --ops-green: #28d36b;
+    --ops-amber: #f6a824;
+    --ops-red: #ef5555;
+    --ops-shadow: 0 26px 70px rgba(0, 0, 0, .46);
+    --ops-radius: 16px;
+  }
+
+  body:has(.adminDesktopShell) {
+    background:
+      radial-gradient(circle at 18% -10%, rgba(36, 105, 181, .22) 0, transparent 32%),
+      radial-gradient(circle at 88% 10%, rgba(14, 128, 255, .16) 0, transparent 34%),
+      linear-gradient(135deg, #040911 0%, #07111d 46%, #050a12 100%) !important;
+  }
+
+  .adminDesktopShell {
+    grid-template-columns: 270px minmax(0, 1fr) !important;
+    min-height: 100vh;
+    background:
+      linear-gradient(90deg, rgba(4, 11, 19, .98) 0 270px, transparent 270px),
+      radial-gradient(circle at 24% 4%, rgba(24, 116, 216, .18), transparent 31%),
+      linear-gradient(135deg, #050b13 0%, #07111d 48%, #050a12 100%) !important;
+    color: var(--ops-text);
+    overflow: hidden;
+  }
+
+  .adminDesktopSidebar {
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+    padding: 28px 22px 24px !important;
+    border-right: 1px solid rgba(58, 94, 132, .32) !important;
+    background:
+      linear-gradient(180deg, rgba(7, 16, 27, .98), rgba(4, 11, 19, .98) 54%, rgba(7, 16, 27, .98)),
+      radial-gradient(circle at 20% 18%, rgba(0, 155, 255, .18), transparent 32%) !important;
+    box-shadow: inset -1px 0 0 rgba(255,255,255,.03), 24px 0 70px rgba(0,0,0,.34);
+    gap: 28px !important;
+    overflow: hidden !important;
+  }
+
+  .adminDesktopSidebar::after {
+    content: "";
+    position: absolute;
+    left: -28px;
+    right: -28px;
+    bottom: 104px;
+    height: 230px;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(4, 11, 19, .82) 96%),
+      radial-gradient(ellipse at 50% 100%, rgba(27, 70, 111, .46) 0, transparent 72%);
+    opacity: .86;
+  }
+
+  .adminDesktopBrand.adminDesktopBrandWawis {
+    position: relative;
+    z-index: 2;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px 14px 32px !important;
+    display: flex !important;
+    justify-content: center !important;
+    border-bottom: 1px solid rgba(126, 166, 216, .12);
+  }
+
+  .adminDesktopBrandLogo {
+    width: 100% !important;
+    max-width: 216px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 0 18px rgba(25, 170, 255, .22));
+  }
+
+  .adminDesktopNav {
+    position: relative;
+    z-index: 2;
+    display: block !important;
+    flex: 1;
+  }
+
+  .adminDesktopNavList {
+    display: grid;
+    gap: 11px !important;
+  }
+
+  .adminDesktopNavHeading { display: none !important; }
+
+  .adminDesktopNavItem {
+    min-height: 54px !important;
+    padding: 0 20px !important;
+    border: 1px solid transparent !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    color: rgba(224, 235, 250, .78) !important;
+    font-size: 16px !important;
+    font-weight: 650 !important;
+    letter-spacing: .01em;
+    gap: 14px !important;
+    transition: transform .18s ease, background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+
+  .adminDesktopNavItem:hover {
+    transform: translateX(2px) !important;
+    color: #ffffff !important;
+    background: rgba(28, 57, 91, .42) !important;
+    border-color: rgba(110, 156, 212, .18) !important;
+  }
+
+  .adminDesktopNavItem.active {
+    color: #ffffff !important;
+    background: linear-gradient(90deg, rgba(28, 116, 232, .76) 0%, rgba(20, 52, 91, .42) 100%) !important;
+    border-color: rgba(56, 159, 255, .54) !important;
+    box-shadow: 0 0 0 1px rgba(23, 123, 255, .12), 0 18px 45px rgba(23, 123, 255, .22), inset 0 1px 0 rgba(255,255,255,.08) !important;
+  }
+
+  .adminDesktopNavItem.active::before {
+    content: "";
+    width: 3px;
+    align-self: stretch;
+    margin-left: -18px;
+    border-radius: 999px;
+    background: #23aaff;
+    box-shadow: 0 0 16px rgba(35,170,255,.96);
+  }
+
+  .adminDesktopNavItemIcon,
+  .adminShellIcon {
+    color: currentColor;
+  }
+
+  .adminDesktopSidebarFooter {
+    position: relative;
+    z-index: 2;
+    margin-top: auto !important;
+    padding-top: 18px !important;
+  }
+
+  .adminDesktopSidebarVersion {
+    width: fit-content !important;
+    margin: 0 0 12px !important;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(17, 31, 49, .82);
+    border: 1px solid rgba(126, 166, 216, .14);
+    color: #9fb4cd !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: .08em !important;
+    text-transform: none !important;
+  }
+
+  .adminDesktopSidebarProfileCard {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    padding: 14px 12px !important;
+    border-radius: 16px !important;
+    background: rgba(11, 25, 42, .86) !important;
+    border: 1px solid rgba(126, 166, 216, .14) !important;
+    box-shadow: 0 12px 36px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04) !important;
+  }
+
+  .adminDesktopProfileAvatar {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 999px !important;
+    background: linear-gradient(180deg, rgba(74, 99, 130, .76), rgba(30, 49, 73, .86)) !important;
+    color: #eaf3ff !important;
+    position: relative;
+  }
+
+  .adminDesktopProfileAvatar::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    bottom: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #31d666;
+    box-shadow: 0 0 0 2px #0a1625;
+  }
+
+  .adminDesktopProfileCopy strong { color: #f3f8ff !important; font-size: 14px !important; }
+  .adminDesktopProfileCopy span { color: #9aaabe !important; font-size: 12px !important; }
+
+  .adminDesktopLogoutButton {
+    grid-column: auto !important;
+    width: 32px;
+    min-height: 32px !important;
+    padding: 0 !important;
+    overflow: hidden;
+    color: transparent !important;
+    border: 1px solid rgba(126, 166, 216, .16) !important;
+    border-radius: 10px !important;
+    background: rgba(12, 27, 45, .9) !important;
+  }
+
+  .adminDesktopLogoutButton::before {
+    content: "⌄";
+    color: #d6e6fb;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .adminDesktopMain,
+  .adminDesktopWorkspace,
+  .adminDesktopPage {
+    min-width: 0;
+    background: transparent !important;
+  }
+
+  .adminDesktopWorkspace {
+    padding: 18px 14px 18px 22px !important;
+  }
+
+  .adminDesktopPage.pageDesktopStatusLeft {
+    padding: 0 !important;
+  }
+
+  .adminDesktopPage .twoColDesktopStatusLeft {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 358px !important;
+    gap: 0 !important;
+    align-items: stretch !important;
+    min-height: calc(100vh - 36px);
+    margin: 0 !important;
+    border: 1px solid rgba(126, 166, 216, .14);
+    border-radius: 10px;
+    background: rgba(6, 14, 24, .58);
+    box-shadow: var(--ops-shadow), inset 0 1px 0 rgba(255,255,255,.04);
+    overflow: hidden;
+  }
+
+  .adminDesktopPage .twoColDesktopStatusLeft > div:first-child {
+    min-width: 0;
+    padding: 48px 48px 26px 46px;
+  }
+
+  .adminDesktopPage .desktopDetailColumnTight {
+    min-width: 0;
+    border-left: 1px solid rgba(126, 166, 216, .13);
+    background: rgba(5, 13, 23, .58);
+  }
+
+  .premiumOpsJobsModule,
+  .premiumOpsLayout {
+    display: grid;
+    gap: 28px !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .premiumOpsHero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .premiumOpsHeroCopy h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(34px, 2.15vw, 44px);
+    font-weight: 750;
+    letter-spacing: -.035em;
+    line-height: 1.02;
+    text-shadow: 0 14px 34px rgba(0,0,0,.34);
+  }
+
+  .premiumOpsHeroCopy p {
+    margin: 12px 0 0;
+    color: #9eabbc;
+    font-size: 17px;
+    letter-spacing: .01em;
+  }
+
+  .premiumOpsHeroActions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .premiumOpsDateControl,
+  .premiumOpsBell {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    border: 1px solid rgba(126, 166, 216, .15);
+    border-radius: 9px;
+    background: rgba(8, 18, 31, .74);
+    color: #d9e5f4;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  .premiumOpsDateControl {
+    min-width: 218px;
+    padding: 0 16px;
+    justify-content: space-between;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .premiumOpsDateIcon { color: #9eb2ca; font-size: 15px; }
+  .premiumOpsChevron { color: #8190a4; font-size: 17px; }
+  .premiumOpsBell { position: relative; width: 52px; justify-content: center; background: rgba(8, 19, 32, .82); cursor: pointer; }
+  .premiumOpsBell strong { position: absolute; top: -10px; right: -10px; min-width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; background: #2e7ee4; color: #fff; font-size: 12px; box-shadow: 0 8px 18px rgba(46,126,228,.32); }
+
+  .premiumOpsMetrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .premiumOpsMetricCard {
+    position: relative;
+    min-height: 126px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 20px;
+    border: 1px solid rgba(126, 166, 216, .16);
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(16, 31, 51, .78), rgba(8, 18, 31, .76));
+    box-shadow: 0 18px 44px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+    text-align: left;
+    cursor: pointer;
+    color: var(--ops-text);
+    overflow: hidden;
+  }
+
+  .premiumOpsMetricCard::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(47, 131, 255, .18), transparent 44%);
+    opacity: .72;
+    pointer-events: none;
+  }
+
+  .premiumOpsMetricCard:hover { transform: translateY(-1px); border-color: rgba(76, 156, 255, .35); box-shadow: 0 24px 55px rgba(0,0,0,.31); }
+  .premiumOpsMetricCard.tone-amber::after { background: radial-gradient(circle at 22% 28%, rgba(246, 168, 36, .20), transparent 45%); }
+  .premiumOpsMetricCard.tone-violet::after { background: radial-gradient(circle at 22% 28%, rgba(116, 116, 255, .18), transparent 45%); }
+  .premiumOpsMetricCard.tone-cyan::after { background: radial-gradient(circle at 22% 28%, rgba(28, 184, 255, .18), transparent 45%); }
+
+  .premiumOpsMetricIcon {
+    position: relative;
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    color: #a8d7ff;
+    font-size: 28px;
+    background: radial-gradient(circle, rgba(29, 110, 223, .48) 0%, rgba(16, 53, 104, .56) 72%);
+    border: 1px solid rgba(69, 151, 255, .20);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 26px rgba(0, 90, 255, .12);
+  }
+
+  .premiumOpsMetricBody { position: relative; z-index: 1; display: grid; gap: 6px; min-width: 0; }
+  .premiumOpsMetricBody > span { color: #c9d4e2; font-size: 13px; font-weight: 650; letter-spacing: .01em; }
+  .premiumOpsMetricBody strong { color: #fff; font-size: 34px; line-height: .95; letter-spacing: -.045em; font-weight: 760; }
+  .premiumOpsMetricBody small { color: #8fa2b8; font-size: 13px; }
+  .premiumOpsMetricCard.tone-amber .premiumOpsMetricIcon { color: #ffd27a; background: radial-gradient(circle, rgba(138, 83, 19, .58) 0%, rgba(70, 47, 23, .58) 72%); border-color: rgba(255, 178, 55, .20); }
+
+  .premiumOpsTablePanel {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .premiumOpsTableHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .premiumOpsTableHeader h2 {
+    margin: 0;
+    color: #f7fbff;
+    font-size: 20px;
+    line-height: 1.1;
+    font-weight: 760;
+    letter-spacing: -.02em;
+  }
+
+  .premiumOpsTableHeader h2 span {
+    display: inline-flex;
+    margin-left: 7px;
+    padding: 4px 9px;
+    border: 1px solid rgba(126, 166, 216, .14);
+    border-radius: 7px;
+    background: rgba(16, 32, 52, .82);
+    color: #b8cce3;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .premiumOpsTableControls { display: flex; align-items: center; gap: 12px; }
+  .premiumOpsSearchField,
+  .premiumOpsGhostButton,
+  .premiumOpsPrimaryIconButton,
+  .premiumOpsGhostIconButton {
+    height: 48px;
+    border: 1px solid rgba(126, 166, 216, .15);
+    border-radius: 8px;
+    background: rgba(8, 18, 31, .76);
+    color: #cbd8e8;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+
+  .premiumOpsSearchField {
+    min-width: 290px;
+    padding: 0 12px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .premiumOpsSearchField input {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #eff6ff;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .premiumOpsSearchField input::placeholder { color: #66778e; }
+  .premiumOpsGhostButton { min-width: 126px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 700; cursor: pointer; }
+  .premiumOpsPrimaryIconButton,
+  .premiumOpsGhostIconButton { width: 48px; display: grid; place-items: center; cursor: pointer; }
+  .premiumOpsPrimaryIconButton { background: linear-gradient(180deg, #126bd2 0%, #0d4389 100%); border-color: rgba(67, 156, 255, .50); color: #fff; box-shadow: 0 16px 32px rgba(23, 111, 232, .24); }
+  .premiumOpsGhostButton:hover,
+  .premiumOpsGhostIconButton:hover { border-color: rgba(77, 149, 233, .34); background: rgba(16, 32, 53, .88); }
+
+  .premiumOpsStatusStrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 0 2px;
+  }
+
+  .premiumOpsStatusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    padding: 0 12px 0 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(126, 166, 216, .12);
+    background: rgba(11, 24, 40, .72);
+    color: #94a8bf;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .premiumOpsStatusPill strong {
+    min-width: 24px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(125, 155, 193, .10);
+    color: #b7c8dc;
+    font-size: 12px;
+  }
+
+  .premiumOpsStatusPill.active {
+    color: #dcecff;
+    background: rgba(23, 88, 166, .48);
+    border-color: rgba(72, 152, 255, .34);
+    box-shadow: 0 12px 28px rgba(21, 98, 205, .17);
+  }
+
+  .premiumOpsTableWrap {
+    border: 1px solid rgba(126, 166, 216, .13) !important;
+    border-radius: 10px !important;
+    background: rgba(8, 17, 29, .60) !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+
+  .premiumOpsTable,
+  .premiumOpsTable.jobTable,
+  .desktopJobsTable.premiumOpsTable {
+    min-width: 920px !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    color: #e8f0fa;
+    background: transparent !important;
+  }
+
+  .premiumOpsTable thead th {
+    padding: 15px 22px !important;
+    border-bottom: 1px solid rgba(126, 166, 216, .15) !important;
+    background: rgba(11, 25, 42, .66) !important;
+    color: #aebdd0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: .01em !important;
+    text-transform: none !important;
+  }
+
+  .premiumOpsTable .sortBtn {
+    color: #aebdd0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: .01em !important;
+  }
+
+  .premiumOpsTable tbody tr {
+    background: rgba(8, 18, 30, .32) !important;
+    cursor: pointer;
+    transition: background .16s ease, box-shadow .16s ease, outline-color .16s ease;
+  }
+
+  .premiumOpsTable tbody tr:hover {
+    background: rgba(16, 39, 65, .58) !important;
+  }
+
+  .premiumOpsTable tbody tr.activeRow {
+    background: rgba(19, 72, 124, .34) !important;
+    box-shadow: inset 2px 0 0 #1ca4ff, inset -2px 0 0 #1ca4ff, 0 0 0 1px rgba(28, 164, 255, .25);
+  }
+
+  .premiumOpsTable tbody td {
+    padding: 13px 22px !important;
+    border-bottom: 1px solid rgba(126, 166, 216, .10) !important;
+    color: #dbe6f2 !important;
+    background: transparent !important;
+    vertical-align: middle !important;
+    font-size: 14px !important;
+  }
+
+  .premiumOpsTable tbody tr:last-child td { border-bottom: 0 !important; }
+  .premiumOpsTable .desktopClientName { color: #ffffff !important; font-size: 15px !important; font-weight: 720 !important; letter-spacing: -.01em; }
+  .premiumOpsTable .desktopAddressCombined { color: #9eacbe !important; font-size: 13px !important; line-height: 1.35; }
+  .premiumOpsTable .desktopDateCell { color: #e9f2ff !important; font-size: 14px !important; }
+
+  .premiumOpsTable .desktopJobTypeTag {
+    min-height: 26px !important;
+    padding: 4px 11px !important;
+    border-radius: 7px !important;
+    font-size: 12px !important;
+    font-weight: 760 !important;
+    box-shadow: none !important;
+    gap: 6px;
+  }
+
+  .premiumOpsTable .desktopJobTypeTag::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: .9;
+  }
+
+  .premiumOpsTable .jobTypeNew { background: rgba(28, 106, 212, .28) !important; border-color: rgba(75, 151, 255, .22) !important; color: #73b8ff !important; }
+  .premiumOpsTable .jobTypeProgress { background: rgba(31, 106, 211, .28) !important; border-color: rgba(75, 151, 255, .18) !important; color: #77bfff !important; }
+  .premiumOpsTable .jobTypeArchive { background: rgba(28, 132, 76, .28) !important; border-color: rgba(59, 213, 111, .20) !important; color: #6ee789 !important; }
+  .premiumOpsTable .jobTypeFailed { background: rgba(162, 107, 28, .30) !important; border-color: rgba(255, 185, 74, .22) !important; color: #ffc15c !important; }
+
+  .premiumOpsTable .initialBadge {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    border-radius: 999px !important;
+    background: rgba(66, 87, 113, .62) !important;
+    border-color: rgba(126, 166, 216, .10) !important;
+    color: #dce9f8 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06) !important;
+  }
+
+  .jobsPaginationFooter {
+    margin-top: 13px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #6e8097 !important;
+    box-shadow: none !important;
+  }
+
+  .jobsPaginationSummary { color: #7f91a8 !important; font-weight: 500 !important; }
+  .jobsPaginationBtn {
+    min-width: 42px !important;
+    height: 42px !important;
+    border-radius: 8px !important;
+    border-color: rgba(126, 166, 216, .12) !important;
+    background: rgba(8, 18, 31, .55) !important;
+    color: #9baec5 !important;
+  }
+  .jobsPaginationBtn.active { background: rgba(31, 102, 201, .42) !important; border-color: rgba(51, 146, 255, .32) !important; color: #eaf4ff !important; }
+
+  .premiumOpsPushControl {
+    display: none;
+  }
+
+  .premiumOpsEmptyState {
+    padding: 18px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(126, 166, 216, .14);
+    background: rgba(9, 20, 34, .72);
+    color: #9fb0c5 !important;
+  }
+
+  .desktopDetailColumnTight > .premiumOpsDetailsCard,
+  .premiumOpsDetailsCard {
+    height: 100%;
+    min-height: calc(100vh - 36px);
+    margin: 0 !important;
+    padding: 22px 24px 24px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background:
+      linear-gradient(180deg, rgba(8, 18, 31, .88), rgba(5, 13, 23, .88)) !important;
+    box-shadow: none !important;
+    color: #e8f1fb !important;
+    overflow-y: auto;
+  }
+
+  .premiumOpsDetailsTopbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 20px;
+    color: #dfe9f6;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .premiumOpsDetailsTopbar button {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    color: #c5d3e4;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .premiumOpsDetailsTopbar button:hover { background: rgba(126, 166, 216, .09); }
+
+  .premiumOpsDetailsEmpty {
+    display: grid;
+    place-items: center;
+    text-align: center;
+  }
+
+  .premiumOpsDetailsCard .detailHeader {
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .premiumOpsDetailsCard .detailIdentity {
+    width: 100%;
+  }
+
+  .premiumOpsDetailsCard .detailTitle {
+    margin: 0 0 6px !important;
+    color: #ffffff !important;
+    font-size: 18px !important;
+    font-weight: 760 !important;
+    letter-spacing: -.02em !important;
+  }
+
+  .premiumOpsDetailsCard .detailMeta {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-top: 18px !important;
+  }
+
+  .premiumOpsDetailsCard .infoItem,
+  .premiumOpsDetailsCard .detailsSection,
+  .premiumOpsDetailsCard .comment,
+  .premiumOpsDetailsCard .thumbCard,
+  .premiumOpsDetailsCard .workerReadOnlyNote {
+    border: 1px solid rgba(126, 166, 216, .12) !important;
+    border-radius: 11px !important;
+    background: rgba(12, 26, 43, .66) !important;
+    color: #dbe7f5 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035) !important;
+  }
+
+  .premiumOpsDetailsCard .infoItem {
+    padding: 13px 14px !important;
+  }
+
+  .premiumOpsDetailsCard .infoLabel,
+  .premiumOpsDetailsCard .sectionHeadingWithIcon,
+  .premiumOpsDetailsCard .detailsSection > h4 {
+    color: #94a7bd !important;
+    font-size: 12px !important;
+    font-weight: 780 !important;
+    letter-spacing: .02em;
+    text-transform: none;
+  }
+
+  .premiumOpsDetailsCard .infoLabel .inlineIcon,
+  .premiumOpsDetailsCard .sectionHeadingWithIcon .inlineIcon { color: #5faeff !important; }
+
+  .premiumOpsDetailsCard .infoValue,
+  .premiumOpsDetailsCard .muted,
+  .premiumOpsDetailsCard .addressLink,
+  .premiumOpsDetailsCard .emailLink,
+  .premiumOpsDetailsCard .phoneLink {
+    color: #e2edf9 !important;
+    font-size: 14px !important;
+    line-height: 1.45;
+  }
+
+  .premiumOpsDetailsCard .emailLink,
+  .premiumOpsDetailsCard .phoneLink { color: #82c5ff !important; }
+
+  .premiumOpsDetailsCard .detailsSection {
+    margin-top: 16px !important;
+    padding: 14px !important;
+    display: grid;
+    gap: 10px;
+  }
+
+  .premiumOpsDetailsCard .detailActionsBottom {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px !important;
+    margin-top: 20px !important;
+  }
+
+  .premiumOpsDetailsCard .detailActionsBottom .btn,
+  .premiumOpsDetailsCard .premiumActionBtn,
+  .premiumOpsDetailsCard .photoUploadBtn {
+    min-height: 44px !important;
+    border-radius: 9px !important;
+    border: 1px solid rgba(126, 166, 216, .15) !important;
+    background: rgba(8, 18, 31, .72) !important;
+    color: #dce8f6 !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+    font-weight: 760 !important;
+  }
+
+  .premiumOpsDetailsCard .detailActionsBottom .btn:first-child {
+    background: linear-gradient(180deg, #136fd8 0%, #0d4f9c 100%) !important;
+    border-color: rgba(72, 159, 255, .42) !important;
+    color: #ffffff !important;
+    box-shadow: 0 14px 28px rgba(20, 105, 217, .25) !important;
+  }
+
+  .premiumOpsDetailsCard .premiumDangerBtn {
+    color: #ff9c9c !important;
+    background: rgba(70, 24, 26, .52) !important;
+    border-color: rgba(255, 113, 113, .18) !important;
+  }
+
+  .premiumOpsDetailsCard select.input,
+  .premiumOpsDetailsCard textarea.input {
+    background: rgba(8, 18, 31, .78) !important;
+    border-color: rgba(126, 166, 216, .14) !important;
+    color: #e7f0fa !important;
+    border-radius: 10px !important;
+  }
+
+  .premiumOpsDetailsCard .thumbGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .premiumOpsDetailsCard .thumbCard { padding: 8px !important; }
+  .premiumOpsDetailsCard .thumbBtn { border: 0 !important; border-radius: 10px !important; background: rgba(8, 18, 31, .8) !important; }
+  .premiumOpsDetailsCard .thumb { height: 82px; border-radius: 10px; }
+  .premiumOpsDetailsCard .photoMeta { color: #93a5ba !important; }
+
+  .premiumOpsDetailsCard .viewerDot {
+    background: rgba(22, 48, 76, .72) !important;
+    border-color: rgba(126, 166, 216, .15) !important;
+    color: #cfe1f7 !important;
+  }
+  .premiumOpsDetailsCard .viewerDot.active { background: rgba(24, 100, 199, .36) !important; border-color: rgba(79, 157, 255, .34) !important; color: #fff !important; }
+
+  .premiumOpsDetailsCard .comment { padding: 12px !important; }
+
+  .singleModuleColumn {
+    border-radius: 10px !important;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 1320px) {
+  .adminDesktopPage .twoColDesktopStatusLeft { grid-template-columns: minmax(0, 1fr) 340px !important; }
+  .adminDesktopPage .twoColDesktopStatusLeft > div:first-child { padding: 34px 28px 24px 30px; }
+  .premiumOpsMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .premiumOpsTableHeader { align-items: flex-start; flex-direction: column; }
+  .premiumOpsTableControls { width: 100%; flex-wrap: wrap; }
+  .premiumOpsSearchField { flex: 1 1 280px; }
+}
+@media (min-width: 701px) {
+  .premiumOpsVersionBadge {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(126, 166, 216, .12);
+    background: rgba(8, 18, 31, .58);
+    color: #8498af;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+  }
+}
+
+/* v8.66 — globalne wyszukiwanie administratora w ciemnym desktopie. */
+@media (min-width: 701px) {
+  .adminDesktopGlobalSearchTopbar {
+    padding: 18px 14px 0 22px !important;
+    background: transparent !important;
+  }
+
+  .globalDesktopSearch {
+    width: min(940px, calc(100vw - 330px));
+  }
+
+  .globalDesktopSearchField {
+    min-height: 54px;
+    border-color: rgba(126, 166, 216, .2) !important;
+    background: rgba(8, 19, 32, .88) !important;
+    box-shadow: 0 18px 54px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255,255,255,.035) !important;
+  }
+
+  .globalDesktopSearchField.isOpen,
+  .globalDesktopSearchField:focus-within {
+    border-color: rgba(53, 151, 255, .72) !important;
+    box-shadow: 0 0 0 3px rgba(36, 132, 255, .12), 0 24px 70px rgba(0,0,0,.38) !important;
+  }
+
+  .globalDesktopSearchIcon { color: #7fa9d6 !important; }
+  .globalDesktopSearchField input { color: #eef6ff !important; }
+  .globalDesktopSearchField input::placeholder { color: #71849b !important; }
+  .globalDesktopSearchField kbd {
+    border-color: rgba(126, 166, 216, .18) !important;
+    background: rgba(18, 38, 62, .9) !important;
+    color: #9bb2cb !important;
+  }
+
+  .globalDesktopSearchDropdown {
+    border-color: rgba(126, 166, 216, .24) !important;
+    background: rgba(7, 17, 29, .98) !important;
+    box-shadow: 0 34px 90px rgba(0,0,0,.58) !important;
+    backdrop-filter: blur(18px);
+  }
+
+  .globalDesktopSearchDropdownHeader {
+    border-bottom-color: rgba(126, 166, 216, .13) !important;
+    background: rgba(13, 29, 47, .94) !important;
+  }
+  .globalDesktopSearchDropdownHeader strong { color: #eaf3ff !important; }
+  .globalDesktopSearchDropdownHeader span { color: #8498b0 !important; }
+
+  .globalDesktopSearchResult { color: #dcecff !important; }
+  .globalDesktopSearchResult:hover,
+  .globalDesktopSearchResult.active {
+    border-color: rgba(54, 151, 255, .28) !important;
+    background: rgba(25, 73, 125, .34) !important;
+  }
+  .globalDesktopSearchResultIcon {
+    color: #70b4ff !important;
+    background: rgba(36, 117, 213, .22) !important;
+  }
+  .globalDesktopSearchResultIcon.type-contractor { color: #5be4c3 !important; background: rgba(20, 139, 113, .2) !important; }
+  .globalDesktopSearchResultIcon.type-device { color: #c099ff !important; background: rgba(111, 66, 177, .22) !important; }
+  .globalDesktopSearchResultTitleRow strong { color: #eef6ff !important; }
+  .globalDesktopSearchResultCopy>span:not(.globalDesktopSearchResultTitleRow) { color: #9eb0c6 !important; }
+  .globalDesktopSearchResultCopy small { color: #73869d !important; }
+  .globalDesktopSearchBadge { background: rgba(40, 118, 216, .2) !important; color: #83bcff !important; }
+  .globalDesktopSearchBadge.type-contractor { background: rgba(19, 131, 105, .2) !important; color: #60dfc2 !important; }
+  .globalDesktopSearchBadge.type-device { background: rgba(104, 65, 166, .24) !important; color: #c29bff !important; }
+  .globalDesktopSearchArrow { color: #687d95 !important; }
+  .globalDesktopSearchEmpty strong { color: #e8f2ff !important; }
+  .globalDesktopSearchEmpty span { color: #899db5 !important; }
+
+  .adminDesktopWorkspace {
+    padding-top: 14px !important;
+  }
+}

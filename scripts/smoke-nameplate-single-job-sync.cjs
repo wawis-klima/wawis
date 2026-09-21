@@ -1,0 +1,13 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const save = fs.readFileSync(path.join(root, 'src/modules/desktop-nameplate-ocr-save.js'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql'), 'utf8');
+assert(!save.includes("supabase.rpc('admin_sync_device_from_job'"), 'Zapis tabliczki nie powinien wykonywać dodatkowego RPC po aktualizacji jobs');
+assert(save.includes('jobs_sync_device_after_change'), 'Kod nie dokumentuje automatycznej synchronizacji przez trigger');
+assert(!save.includes("supabase.rpc('admin_sync_devices_from_jobs')"), 'Zapis tabliczki nadal uruchamia pełną synchronizację wszystkich zleceń');
+assert(migration.includes('create or replace function public.admin_sync_device_from_job(p_job_id uuid)'), 'Brak szybkiego RPC jednego zlecenia');
+assert(migration.includes('source_job_uuid'), 'Dashboard nie ma bezpiecznego UUID');
+assert(migration.includes('left join public.jobs j on j.id = d.source_job_uuid'), 'Dashboard nadal wykonuje ryzykowny cast w JOIN');
+console.log('Smoke OK: nameplate save syncs one job and dashboard uses safe UUID');

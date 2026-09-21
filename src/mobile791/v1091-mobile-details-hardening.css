@@ -1,0 +1,166 @@
+/* WAWIS 10.91 — rozwinięta karta montażu nigdy nie może poszerzyć viewportu.
+   10.90 zabezpieczała głównie teksty; 10.91 domyka również siatki, akcje i sekcje. */
+@media (max-width: 700px) {
+  html,
+  body,
+  #root {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  .page,
+  .stack,
+  .premiumCard,
+  .detailHeader,
+  .detailIdentity,
+  .detailMeta,
+  .detailsSection,
+  .detailActions,
+  .jobDevicesDetailsItem,
+  .jobDeviceDocumentationList,
+  .jobDeviceDocumentationCard,
+  .jobDeviceDocumentationBody,
+  .jobDeviceDocumentationUnits,
+  .thumbGrid,
+  .comments,
+  .viewerInlineRow {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .page,
+  .stack,
+  .premiumCard,
+  .detailHeader,
+  .detailIdentity,
+  .detailMeta,
+  .detailsSection,
+  .jobDevicesDetailsItem,
+  .jobDeviceDocumentationCard {
+    overflow-x: hidden !important;
+  }
+
+  .detailHeader {
+    display: block !important;
+  }
+
+  .detailMeta {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .detailMeta > .infoItem,
+  .infoItem {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    grid-template-columns: minmax(0, 98px) minmax(0, 1fr) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  .infoLabel,
+  .infoLabelWithIcon,
+  .infoValue,
+  .infoValueActions,
+  .detailTitle,
+  .jobCompletionBy,
+  .jobDeviceDocumentationTitle,
+  .jobDeviceDocumentationToggle,
+  .jobDeviceDocumentationTitleActions,
+  .deviceUnitDocumentationIdentity,
+  .deviceUnitDocumentationModel,
+  .deviceUnitDocumentationStatus {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .infoValue,
+  .infoValueActions {
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .infoValue a,
+  .infoValueActions a,
+  .emailLink,
+  .phoneLink,
+  .addressLink {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .detailTitle,
+  .infoLabel,
+  .infoValue,
+  .muted,
+  .jobCompletionBy,
+  .deviceUnitDocumentationModel,
+  .deviceUnitDocumentationStatus,
+  .deviceUnitDocumentationSync {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .detailActions,
+  .mobileFourButtons {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .detailActions > *,
+  .mobileFourButtons > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* 10.93: ręczne potwierdzenie ma być kompaktowym przyciskiem,
+     dopasowanym do napisu, a nie pełnej szerokości karty. */
+  .deviceUnitManualVerifyBtn {
+    grid-column: 1 / -1 !important;
+    justify-self: center !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content !important;
+    max-width: calc(100% - 16px) !important;
+    min-width: 0 !important;
+    min-height: 32px;
+    margin: 7px auto 0;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    border: 1px solid #93c5fd;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.15;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .deviceUnitManualVerifyBtn.revoke {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+  }
+
+  .deviceUnitManualVerifyBtn:disabled {
+    opacity: .6;
+    cursor: default;
+  }
+
+  .deviceUnitDocumentationRow.manualNameplate .deviceUnitDocumentationSync,
+  .deviceUnitDocumentationState.manual {
+    color: #1d4ed8 !important;
+  }
+}

@@ -1,0 +1,312 @@
+/* Desktop jobs table layout */
+@media (min-width: 701px) {
+  .desktopJobsTable {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  .desktopJobsTable th,
+  .desktopJobsTable td {
+    vertical-align: middle;
+  }
+
+  .desktopJobsTable [data-column="client"] {
+    width: var(--desktop-jobs-col-client-width, auto) !important;
+    min-width: 176px !important;
+    max-width: 224px !important;
+    text-align: var(--desktop-jobs-col-client-text-align, left);
+    white-space: var(--desktop-jobs-col-client-white-space, normal) !important;
+    padding-inline-start: var(--desktop-jobs-col-client-padding-inline-start, 16px) !important;
+    padding-inline-end: var(--desktop-jobs-col-client-padding-inline-end, 16px) !important;
+  }
+
+  .desktopJobsTable [data-column="status"] {
+    width: var(--desktop-jobs-col-status-width, 128px) !important;
+    min-width: var(--desktop-jobs-col-status-width, 128px) !important;
+    max-width: var(--desktop-jobs-col-status-width, 128px) !important;
+    text-align: var(--desktop-jobs-col-status-text-align, left);
+    white-space: var(--desktop-jobs-col-status-white-space, normal) !important;
+    padding-inline-start: var(--desktop-jobs-col-status-padding-inline-start, 10px) !important;
+    padding-inline-end: var(--desktop-jobs-col-status-padding-inline-end, 10px) !important;
+  }
+
+
+  .desktopJobsTable [data-column="installer"] {
+    width: var(--desktop-jobs-col-installer-width, 92px) !important;
+    min-width: var(--desktop-jobs-col-installer-width, 92px) !important;
+    max-width: var(--desktop-jobs-col-installer-width, 92px) !important;
+    text-align: var(--desktop-jobs-col-installer-text-align, left);
+    white-space: var(--desktop-jobs-col-installer-white-space, normal) !important;
+    padding-inline-start: var(--desktop-jobs-col-installer-padding-inline-start, 16px) !important;
+    padding-inline-end: var(--desktop-jobs-col-installer-padding-inline-end, 16px) !important;
+  }
+
+  .desktopJobsTable [data-column="date"] {
+    width: var(--desktop-jobs-col-date-width, 82px) !important;
+    min-width: var(--desktop-jobs-col-date-width, 82px) !important;
+    max-width: var(--desktop-jobs-col-date-width, 82px) !important;
+    text-align: var(--desktop-jobs-col-date-text-align, center);
+    white-space: var(--desktop-jobs-col-date-white-space, nowrap) !important;
+    padding-inline-start: var(--desktop-jobs-col-date-padding-inline-start, 6px) !important;
+    padding-inline-end: var(--desktop-jobs-col-date-padding-inline-end, 6px) !important;
+  }
+
+  .desktopJobsTable tbody td {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .desktopJobsHeaderCell {
+    vertical-align: middle;
+  }
+
+  .desktopJobsHeaderCellStatus,
+  .desktopJobsHeaderCellInstaller,
+  .desktopJobsHeaderCellDate {
+    white-space: nowrap;
+  }
+
+  .desktopJobsTable td.desktopDateCell {
+    display: table-cell !important;
+  }
+
+  .desktopJobsTable td[data-column] > .desktopCellContent {
+    display: flex;
+    justify-content: var(--desktop-jobs-col-content-justify-content, flex-start);
+    align-items: var(--desktop-jobs-col-content-align-items, center);
+    width: var(--desktop-jobs-col-content-width, 100%);
+    min-width: var(--desktop-jobs-col-content-min-width, 0);
+    max-width: var(--desktop-jobs-col-content-max-width, 100%);
+    min-height: var(--desktop-jobs-col-content-min-height, 36px);
+    text-align: var(--desktop-jobs-col-content-text-align, left);
+    margin-inline: auto;
+  }
+
+  .desktopJobsTable td[data-column="client"] > .desktopCellContent {
+    justify-content: var(--desktop-jobs-col-client-content-justify-content, flex-start);
+    align-items: var(--desktop-jobs-col-client-content-align-items, center);
+    width: var(--desktop-jobs-col-client-content-width, 100%);
+    min-width: var(--desktop-jobs-col-client-content-min-width, 0);
+    max-width: var(--desktop-jobs-col-client-content-max-width, 100%);
+    min-height: var(--desktop-jobs-col-client-content-min-height, 36px);
+    text-align: var(--desktop-jobs-col-client-content-text-align, left);
+  }
+
+  .desktopJobsTable td[data-column="status"] > .desktopCellContent {
+    justify-content: var(--desktop-jobs-col-status-content-justify-content, flex-start);
+    align-items: var(--desktop-jobs-col-status-content-align-items, center);
+    width: var(--desktop-jobs-col-status-content-width, 100%);
+    min-width: var(--desktop-jobs-col-status-content-min-width, 0);
+    max-width: var(--desktop-jobs-col-status-content-max-width, 100%);
+    min-height: var(--desktop-jobs-col-status-content-min-height, 36px);
+    text-align: var(--desktop-jobs-col-status-content-text-align, left);
+  }
+
+
+  .desktopJobsTable td[data-column="installer"] > .desktopCellContent {
+    justify-content: var(--desktop-jobs-col-installer-content-justify-content, flex-start);
+    align-items: var(--desktop-jobs-col-installer-content-align-items, center);
+    width: var(--desktop-jobs-col-installer-content-width, 100%);
+    min-width: var(--desktop-jobs-col-installer-content-min-width, 0);
+    max-width: var(--desktop-jobs-col-installer-content-max-width, 100%);
+    min-height: var(--desktop-jobs-col-installer-content-min-height, 36px);
+    text-align: var(--desktop-jobs-col-installer-content-text-align, left);
+  }
+
+  .desktopJobsTable td[data-column="date"] > .desktopCellContent {
+    justify-content: var(--desktop-jobs-col-date-content-justify-content, center);
+    align-items: var(--desktop-jobs-col-date-content-align-items, center);
+    width: var(--desktop-jobs-col-date-content-width, 100%);
+    min-width: var(--desktop-jobs-col-date-content-min-width, 0);
+    max-width: var(--desktop-jobs-col-date-content-max-width, 100%);
+    min-height: var(--desktop-jobs-col-date-content-min-height, 36px);
+    text-align: var(--desktop-jobs-col-date-content-text-align, center);
+  }
+
+  .desktopClientCell,
+  .desktopStatusCell,
+  .desktopInstallersCell,
+  .desktopDateCell {
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
+  }
+
+  .desktopClientCell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .desktopClientName {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.28;
+  }
+
+  .desktopClientAddress {
+    min-width: 0;
+    max-width: 100%;
+    color: var(--text-muted, #64748b);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .desktopStatusCell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: inherit !important;
+    margin-block: auto !important;
+    white-space: nowrap;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .desktopJobTypeTag {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center;
+    margin: 0;
+    width: fit-content !important;
+    min-width: fit-content !important;
+    max-width: max-content !important;
+    min-height: 32px !important;
+    padding: 4px 12px !important;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.1;
+    word-break: normal;
+  }
+
+
+  .desktopInstallersCell,
+  .desktopDateCell {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .desktopInstallersCell {
+    justify-content: inherit !important;
+  }
+
+  .desktopInstallersCell .initialsRow {
+    display: flex !important;
+    gap: var(--desktop-jobs-col-installer-badges-gap, 5px) !important;
+    flex-wrap: var(--desktop-jobs-col-installer-badges-wrap, wrap) !important;
+    align-items: var(--desktop-jobs-col-installer-badges-align-items, center) !important;
+    justify-content: var(--desktop-jobs-col-installer-badges-justify-content, flex-start) !important;
+    width: var(--desktop-jobs-col-installer-badges-row-width, 65px) !important;
+    max-width: var(--desktop-jobs-col-installer-badges-row-max-width, 65px) !important;
+    min-width: var(--desktop-jobs-col-installer-badges-row-min-width, 65px) !important;
+    min-height: var(--desktop-jobs-col-installer-badges-row-min-height, 30px) !important;
+  }
+
+  .desktopInstallersCell .initialBadge {
+    width: var(--desktop-jobs-col-installer-badge-size, 30px) !important;
+    height: var(--desktop-jobs-col-installer-badge-size, 30px) !important;
+    min-width: var(--desktop-jobs-col-installer-badge-min-size, 30px) !important;
+    min-height: var(--desktop-jobs-col-installer-badge-min-size, 30px) !important;
+    font-size: var(--desktop-jobs-col-installer-badge-font-size, 11px) !important;
+  }
+
+  .desktopDateCell {
+    justify-content: inherit !important;
+    white-space: nowrap;
+    font-size: 13px;
+    text-align: inherit;
+  }
+}
+
+/* v9.13 — status weryfikacji tabliczek w tabeli montaży */
+@media (min-width: 701px) {
+  .desktopJobsTable [data-column="nameplates"] {
+    width: var(--desktop-jobs-col-nameplates-width, 146px) !important;
+    min-width: var(--desktop-jobs-col-nameplates-width, 146px) !important;
+    max-width: var(--desktop-jobs-col-nameplates-width, 146px) !important;
+    text-align: var(--desktop-jobs-col-nameplates-text-align, left);
+    white-space: var(--desktop-jobs-col-nameplates-white-space, nowrap) !important;
+    padding-inline-start: var(--desktop-jobs-col-nameplates-padding-inline-start, 8px) !important;
+    padding-inline-end: var(--desktop-jobs-col-nameplates-padding-inline-end, 8px) !important;
+  }
+
+  .desktopJobsTable td[data-column="nameplates"] > .desktopCellContent {
+    justify-content: var(--desktop-jobs-col-nameplates-content-justify-content, flex-start);
+    align-items: var(--desktop-jobs-col-nameplates-content-align-items, center);
+    width: var(--desktop-jobs-col-nameplates-content-width, 100%);
+    min-width: var(--desktop-jobs-col-nameplates-content-min-width, 0);
+    max-width: var(--desktop-jobs-col-nameplates-content-max-width, 100%);
+    min-height: var(--desktop-jobs-col-nameplates-content-min-height, 36px);
+    text-align: var(--desktop-jobs-col-nameplates-content-text-align, left);
+  }
+
+  .desktopJobsHeaderCellNameplates {
+    white-space: nowrap;
+  }
+
+  .desktopNameplateSummaryBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    min-height: 28px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 10.5px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .desktopNameplateSummaryBadge small {
+    font-size: 9.5px;
+    font-weight: 900;
+    opacity: .78;
+  }
+
+  .desktopNameplateSummaryDot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .desktopNameplateSummaryBadge.approved {
+    color: #166534;
+    background: #dcfce7;
+    border-color: #86efac;
+  }
+
+  .desktopNameplateSummaryBadge.pending {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  .desktopNameplateSummaryBadge.none {
+    color: #64748b;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+}

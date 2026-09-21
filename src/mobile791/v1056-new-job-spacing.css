@@ -1,0 +1,23 @@
+/* WAWIS 10.56 — mobile new-job spacing polish */
+@media (max-width:700px){
+  /* Krótsza etykieta daty — więcej miejsca na pole daty i Wyczyść. */
+  .formModal .jobFormCreateMode .installationDateLabelRow > span{
+    font-size:0 !important;
+    white-space:nowrap !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateLabelRow > span::after{
+    content:"Data";
+    font-size:16px;
+    font-weight:700;
+    line-height:1.2;
+    color:#334155;
+  }
+
+  /* Wykorzystujemy wolne miejsce na dole modala na większy komentarz. */
+  .formModal .jobFormCreateMode .workerNewClientCommentTextarea{
+    height:96px !important;
+    min-height:96px !important;
+    max-height:124px !important;
+  }
+}

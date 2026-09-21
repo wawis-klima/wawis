@@ -1,0 +1,20 @@
+{
+  "release_mode": "micro-ui",
+  "rules": {
+    "allowed_changes": "CSS only under src/ or public/",
+    "required_check": "WAWIS PR checks / targeted-checks",
+    "final_release_runner_required": false,
+    "drive_zip_before_merge_required": false,
+    "archive_after_merge": true,
+    "vercel_deploys": 1,
+    "temporary_prepare_workflow_allowed": false,
+    "preparation_mode": "direct-branch-update"
+  },
+  "flow": [
+    "release/vX + direct CSS/version metadata update (no per-version prepare workflow)",
+    "one WAWIS PR checks run",
+    "merge to main",
+    "one production Vercel deploy",
+    "deferred ZIP artifact after merge"
+  ]
+}

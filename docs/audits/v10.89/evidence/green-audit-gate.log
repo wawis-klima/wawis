@@ -1,0 +1,138 @@
+A01 PASS behavioral SQL
+A02 PASS behavioral SQL
+A09 PASS behavioral SQL
+LOCAL PROD-DEFINITION RLS PASS admin read= 1 direct update= 1
+LOCAL PROD-DEFINITION RLS PASS worker read= 1 direct update= 0
+LOCAL PROD-DEFINITION RLS PASS pending read= 0 direct update= 0
+LOCAL PROD-DEFINITION RLS PASS no-profile read= 0 direct update= 0
+LOCAL ANON direct contractor access denied. Scope: selected exact production policies/functions, not entire Supabase.
+A03 SW endpoint/context epoch behavior PASS
+A03 SQL real lifecycle: fresh epoch, endpoint generation1, stale410, tombstone PASS
+A06 owner and conditional cleanup PASS
+A06 two tabs preserve distinct identical fill identities PASS
+A06 real module retry/concurrent same ID and distinct identical fills PASS
+Fuel switched account rejects before INSERT PASS
+devices PASS
+mobile-devices PASS
+contractors PASS
+mobile-contractors PASS
+fuel PASS
+A04 email attempt A/B/A and owner isolation PASS
+A04 fresh module reload PASS
+A04 full Edge handler: lost response + 25h retry delivers exactly once PASS
+A04 replacement PDF does not change existing attempt PASS
+(node:11500) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29804) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+A04 full Edge handler: lost response + 25h retry delivers exactly once PASS
+A04 headers received, body never completes: bounded pending response PASS
+(node:10676) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+A05 concurrent handler PASS
+A05 actual RPC SQL: both orders and new send identity PASS
+A07 archive trigger dependency present
+PASS supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS supabase/setup-job-protocols-v9.79.sql
+PASS supabase/setup-fuel-module-v10.14.sql
+PASS supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS supabase/setup-fuel-odometer-source-v10.16.sql
+PASS supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS supabase/setup-fuel-production-v10.26.sql
+PASS supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS supabase/rebuild/legacy_service_archive_v1089.sql
+PASS supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS supabase/migrations/20260917101824_audit_invariants.sql
+PASS supabase/migrations/20260917101825_audit_restore.sql
+PASS supabase/migrations/20260917102820_audit_push_context.sql
+PASS supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS supabase/rebuild/audit_final_acl.sql
+PASS supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS supabase/setup-job-protocols-v9.79.sql
+PASS supabase/setup-fuel-module-v10.14.sql
+PASS supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS supabase/setup-fuel-odometer-source-v10.16.sql
+PASS supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS supabase/setup-fuel-production-v10.26.sql
+PASS supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS supabase/rebuild/legacy_service_archive_v1089.sql
+PASS supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS supabase/migrations/20260917101824_audit_invariants.sql
+PASS supabase/migrations/20260917101825_audit_restore.sql
+PASS supabase/migrations/20260917102820_audit_push_context.sql
+PASS supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS supabase/rebuild/audit_final_acl.sql
+Local dependency rehearsal + catalog checks + delete/restore history PASS; staging remains unverified
+LF exit 0
+CRLF exit 0
+Audit executable gate: 18/18 local scenarios passed. Staging/browser evidence is separate.

@@ -1,0 +1,25 @@
+import fs from 'node:fs';import http from 'node:http';import assert from 'node:assert/strict';import {createECDH,randomBytes,randomUUID} from 'node:crypto';import {chromium} from '@playwright/test';
+import {credentials,url,admin,evidence} from './staging-common.mjs';
+if(process.argv.includes('--prepare')){const k=createECDH('prime256v1');k.generateKeys();fs.writeFileSync(new URL('../../../staging-push.env',import.meta.url),`WEB_PUSH_VAPID_PUBLIC_KEY=${k.getPublicKey().toString('base64url')}\nWEB_PUSH_VAPID_PRIVATE_KEY=${k.getPrivateKey().toString('base64url')}\nWEB_PUSH_VAPID_SUBJECT=mailto:audit@example.invalid\n`);console.log('Staging-only VAPID file prepared outside repo');process.exit(0);}
+const actors=JSON.parse(fs.readFileSync(process.env.WAWIS_STAGING_ACTORS));const k=createECDH('prime256v1');k.generateKeys();
+const sub=()=>({clientMode:'standalone',endpoint:`https://push.example.invalid/audit/${randomUUID()}`,p256dh:k.getPublicKey().toString('base64url'),auth:randomBytes(16).toString('base64url'),lifecycleToken:randomUUID()});
+const E1=sub(),E2=sub();const checks=[];
+async function edge(actor,eventType,subscription){const r=await fetch(`${url}/functions/v1/send-assignment-push`,{method:'POST',headers:{apikey:credentials.SUPABASE_ANON_KEY,Authorization:`Bearer ${actor.token}`,'Content-Type':'application/json'},body:JSON.stringify({eventType,subscription,triggeredBy:'audit-staging'})});const body=await r.json();assert.equal(r.status,200,JSON.stringify(body));return body;}
+const server=http.createServer((req,res)=>{const name=req.url.split('?')[0];if(['/push-sw.js','/push-safety.js','/push-context-guard.js'].includes(name)){res.setHeader('Content-Type','application/javascript');res.end(fs.readFileSync(new URL('../../public'+name,import.meta.url)));}else {res.setHeader('Content-Type','text/html');res.end('<!doctype html><title>Staging SW audit</title>');}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--no-sandbox']});
+try{
+ const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}`);await page.evaluate(async()=>{await navigator.serviceWorker.register('/push-sw.js');await navigator.serviceWorker.ready;});
+ const message=body=>page.evaluate(async body=>{const registration=await navigator.serviceWorker.ready;return await new Promise((resolve,reject)=>{const channel=new MessageChannel();const timer=setTimeout(()=>reject(new Error('SW timeout')),5000);channel.port1.onmessage=e=>{clearTimeout(timer);resolve(e.data);};registration.active.postMessage(body,[channel.port2]);});},body);
+ const syncA=await edge(actors.worker,'sync_subscription',E1);const A=syncA.subscription;assert.equal(A.ownership_generation,1);
+ const set=(row,ep)=>({type:'WAWIS_PUSH_CONTEXT_SET',protocolVersion:3,userId:row.user_id,endpoint:ep.endpoint,generation:row.ownership_generation,contextEpoch:row.context_epoch});
+ const clear=(row,ep)=>({type:'WAWIS_PUSH_CONTEXT_CLEAR',protocolVersion:3,expectedUserId:row.user_id,expectedEndpoint:ep.endpoint,expectedGeneration:row.ownership_generation,expectedContextEpoch:row.context_epoch,terminal:true});
+ assert.equal((await message(set(A,E1))).applied,true);await edge(actors.worker,'disable_subscription',E1);assert.equal((await message(clear(A,E1))).applied,true);
+ const B=(await edge(actors.other,'sync_subscription',E2)).subscription;assert.equal(B.ownership_generation,1);assert.ok(B.context_epoch>A.context_epoch);assert.equal((await message(set(B,E2))).applied,true);
+ assert.equal((await message(set(A,E1))).applied,false);assert.equal((await message(clear(A,E1))).applied,false);
+ const expired=await admin.rpc('push_subscription_expire_atomic',{p_request_user_id:actors.worker.id,p_endpoint:E1.endpoint,p_p256dh:E1.p256dh,p_auth:E1.auth,p_lifecycle_token:E1.lifecycleToken,p_expected_generation:1});assert.equal(expired.error,null,expired.error?.message);
+ const current=await admin.from('push_subscriptions').select('is_active').eq('id',B.id).single();assert.equal(current.data.is_active,true);
+ const sw=await message({type:'WAWIS_PUSH_CONTEXT_GET'});assert.equal(sw.context.userId,actors.other.id);
+ await edge(actors.other,'disable_subscription',E2);assert.equal((await message(clear(B,E2))).applied,true);assert.equal((await message(set(A,E1))).applied,false);
+ checks.push('Deployed Edge Auth→atomic DB lifecycle→returned epoch→actual Chrome Service Worker/IndexedDB');checks.push('E1 generation1→CLEAR→E2 generation1 accepted; late SET/CLEAR/410 rejected; logout B cannot resurrect A');
+ evidence('staging-push',{checks,A:{generation:A.ownership_generation,epoch:A.context_epoch},B:{generation:B.ownership_generation,epoch:B.context_epoch},limits:'Synthetic endpoints; no real OS notification/provider delivery requested'});console.log('STAGING PUSH PASS',checks);
+}catch(e){evidence('staging-push-failure',{checks,error:e.message});throw e;}finally{await browser.close();await new Promise(r=>server.close(r));}

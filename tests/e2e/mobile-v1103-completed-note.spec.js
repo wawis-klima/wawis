@@ -77,4 +77,3 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     expect(Math.max(...geometry.rowHeights)).toBeLessThanOrEqual(32);
   });
 });
-4bf6c1736e70749f725efdd5c68125a8b365177b

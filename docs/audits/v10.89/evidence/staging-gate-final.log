@@ -1,0 +1,33 @@
+STAGING API PASS [
+  'Real Auth createUser trigger ignores forged metadata, real password sign-in for five roles',
+  'PostgREST admin/worker/pending/missing/anon reads; worker direct contractor UPDATE denied; profile escalation denied; callback ACL denied',
+  'Actual job-photo upload/download, denied nonstaff uploads, completed nameplate revalidation and required-row/file retention',
+  'Actual Fuel module upload/INSERT/retry through Storage+PostgREST; one row; cross-owner read/write denied'
+]
+STAGING referenced protocol retention PASS
+STAGING device/nameplate Storage PASS
+STAGING INVARIANTS/CRON PASS [
+  'Catalog signature/RLS/private ACL/Storage retention verification',
+  'Actual full schema delete/archive/restore: photos, comments, protocol, access, devices, SMS, timestamp; missing-photo rollback',
+  'A01 real authenticated worker: name-only preserves 222/HQ/Branch, explicit phone/secondary street patch',
+  'Actual pg_cron worker executed maintenance; 31-day fixture moved to Niezrealizowane; hourly production-equivalent schedule unique'
+]
+STAGING SMS PASS [
+  'SENT read paused, DELIVERED committed, resumed SENT cannot regress',
+  'delivered lock holder, provider_sent blocked and resumed: both rows delivered',
+  'provider_sent lock holder, delivered blocked and resumed: both rows delivered',
+  'new send pointer unchanged by old callback'
+]
+(node:15796) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+STAGING EMAIL PASS [
+  'A/B/A, module reload, lost accepted response, durable DB pending aged 25h: one provider invocation per logical operation',
+  'Concurrent full Edge handler requests through real Auth/PostgREST/Storage: one log and provider invocation',
+  'Actual Storage replacement and changed protocol version conflict with old attempt',
+  'Independent SQL INSERT sessions: observed unique-index contention, loser 23505, one durable version'
+]
+STAGING PUSH PASS [
+  'Deployed Edge Auth→atomic DB lifecycle→returned epoch→actual Chrome Service Worker/IndexedDB',
+  'E1 generation1→CLEAR→E2 generation1 accepted; late SET/CLEAR/410 rejected; logout B cannot resurrect A'
+]
+External staging gate: 7/7 passed; provider email transport controlled; no OS push delivery claim.

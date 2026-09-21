@@ -1,0 +1,71 @@
+/* WAWIS 10.90 — mobilna karta montażu nie może rozszerzać viewportu.
+   Długie e-maile, telefony i adresy mają zawijać się wewnątrz karty. */
+@media (max-width: 700px) {
+  html,
+  body,
+  #root,
+  .page,
+  .stack,
+  .premiumCard,
+  .detailHeader,
+  .detailIdentity,
+  .detailMeta,
+  .detailMeta > *,
+  .infoItem,
+  .infoValue,
+  .infoValueActions {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .page,
+  .stack,
+  .premiumCard,
+  .detailHeader,
+  .detailIdentity,
+  .detailMeta {
+    width: 100% !important;
+  }
+
+  .premiumCard,
+  .detailMeta,
+  .infoItem {
+    overflow-x: hidden !important;
+  }
+
+  .infoValue,
+  .infoValueActions {
+    overflow: hidden !important;
+  }
+
+  .infoValue .emailLink,
+  .infoValue .phoneLink,
+  .infoValue .addressLink,
+  .infoValueActions .emailLink,
+  .infoValueActions .phoneLink,
+  .infoValueActions .addressLink {
+    display: inline-block !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .detailTitle,
+  .infoLabel,
+  .infoValue,
+  .jobCompletionBy,
+  .muted {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}

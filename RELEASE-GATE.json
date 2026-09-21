@@ -1,0 +1,33 @@
+{
+  "policy_enforced_from": "10.60",
+  "version": "11.03",
+  "scope": "mobile",
+  "release_branch": "release/v11.03",
+  "baseline_diagnostics": {
+    "checked": true,
+    "last_24h": true,
+    "result": "INFO",
+    "notes": "Dla 11.03 wykorzystano aktualny informacyjny baseline po 11.02. Zmiana zwija komentarz administratora wyłącznie w zakończonych montażach oraz zagęszcza mobilne wiersze danych; nie dotyka PUSH, Supabase ani danych produkcyjnych."
+  },
+  "drive_backup": {
+    "required": false,
+    "deferred": true,
+    "file_name": "klima-app-v11.03.zip"
+  },
+  "main_protection": {
+    "source_branch": "release/v11.03",
+    "ready_for_main": true,
+    "required_check": "WAWIS PR checks / targeted-checks"
+  },
+  "postdeploy_diagnostics": {
+    "evidence_required": false,
+    "checked": false,
+    "result": "NOT_BLOCKING"
+  },
+  "archive": {
+    "source_of_truth": "github-main",
+    "zip_optional": true,
+    "blocking": false
+  },
+  "release_mode": "standard"
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "**/*": false,
+      "main": true
+    }
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src public package.json package-lock.json index.html vite.config.js vite.config.mjs supabase api scripts vercel.json .github",
+  "buildCommand": "node scripts/vercel-deploy-guard.cjs && WAWIS_STANDARD_DEPLOY_GATE='node scripts/release-policy-gate.cjs --deploy' bash scripts/deploy-gate-router.sh && npm run build"
+}

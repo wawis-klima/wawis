@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Local environment and deployment secrets
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs and test artifacts
+logs*/
+*.log
+npm-debug.log*
+playwright-report/
+test-results/
+
+# Release/temporary working files
+releases/
+.cache/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+
+# Supabase local state
+supabase/.temp/

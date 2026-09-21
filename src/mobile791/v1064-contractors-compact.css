@@ -1,0 +1,288 @@
+/* WAWIS 10.64 — Kontrahenci mobile: pełne dopasowanie do szerokości ekranu + kompaktowy układ */
+@media (max-width: 700px) {
+  .contractorsV1062Page,
+  .contractorsV1062Page *,
+  .contractorsV1062Page *::before,
+  .contractorsV1062Page *::after {
+    box-sizing: border-box;
+  }
+
+  .contractorsV1062Page {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden;
+    gap: 8px;
+    padding: 0 8px 18px;
+  }
+
+  .contractorsV1062Page > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .contractorsV1062SearchWrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 0 12px 0 42px;
+    border-radius: 16px;
+  }
+
+  .contractorsV1062SearchIcon {
+    left: 14px;
+    font-size: 25px;
+  }
+
+  .contractorsV1062Search {
+    width: 100%;
+    min-width: 0;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .contractorsV1062Actions {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .contractorsV1062StatCard,
+  .contractorsV1062ActionCard {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 60px;
+    border-radius: 14px;
+    padding: 7px 6px;
+    overflow: hidden;
+  }
+
+  .contractorsV1062StatCard {
+    gap: 3px;
+  }
+
+  .contractorsV1062StatCard > span {
+    font-size: 8.5px;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .contractorsV1062StatCard > div {
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .contractorsV1062StatCard svg {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+  }
+
+  .contractorsV1062StatCard strong {
+    min-width: 0;
+    font-size: 18px;
+  }
+
+  .contractorsV1062ActionCard {
+    gap: 3px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .contractorsV1062ActionCard strong {
+    flex: 0 0 auto;
+    font-size: 20px;
+  }
+
+  .contractorsV1062ActionCard span {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 8.5px;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .contractorsV1062List {
+    width: 100%;
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .contractorsV1062Card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-radius: 15px;
+  }
+
+  .contractorsV1062CardMain {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    grid-template-columns: 40px minmax(0, 1fr) 16px;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .contractorsV1062Avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .contractorsV1062CardContent {
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .contractorsV1062Name {
+    min-width: 0;
+    font-size: 13.5px;
+    line-height: 1.16;
+  }
+
+  .contractorsV1062Meta {
+    min-width: 0;
+    gap: 4px;
+    font-size: 10.5px;
+    line-height: 1.18;
+  }
+
+  .contractorsV1062Meta svg {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 13px;
+  }
+
+  .contractorsV1062ContactRow {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    gap: 6px;
+  }
+
+  .contractorsV1062Chevron {
+    min-width: 0;
+    font-size: 20px;
+  }
+
+  .contractorsV1062Expanded {
+    min-width: 0;
+    padding: 10px 11px 12px;
+    gap: 9px;
+  }
+
+  .contractorsV1062DetailsGrid {
+    min-width: 0;
+    gap: 6px 9px;
+  }
+
+  .contractorsV1062DetailItem span,
+  .contractorsV1062ExtraLabel {
+    font-size: 9.5px;
+  }
+
+  .contractorsV1062DetailItem strong,
+  .contractorsV1062ExtraBlock {
+    font-size: 11.5px;
+  }
+
+  .contractorsV1062ExtraBlock {
+    min-width: 0;
+    padding-top: 7px;
+  }
+
+  .contractorsV1062Footer {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 5px;
+  }
+
+  .contractorsV1062PerPage,
+  .contractorsV1062Range {
+    font-size: 8.5px;
+  }
+
+  .contractorsV1062Pagination,
+  .contractorsV1062PageNumbers {
+    min-width: 0;
+    gap: 3px;
+  }
+
+  .contractorsV1062PageButton {
+    min-width: 27px;
+    height: 29px;
+    padding: 0 5px;
+    border-radius: 9px;
+    font-size: 10px;
+  }
+
+  .contractorsV1062PageGap {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 390px) {
+  .contractorsV1062Page {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .contractorsV1062Actions {
+    gap: 4px;
+  }
+
+  .contractorsV1062StatCard,
+  .contractorsV1062ActionCard {
+    min-height: 56px;
+    padding: 6px 4px;
+    border-radius: 12px;
+  }
+
+  .contractorsV1062StatCard > span,
+  .contractorsV1062ActionCard span {
+    font-size: 8px;
+  }
+
+  .contractorsV1062StatCard strong {
+    font-size: 17px;
+  }
+
+  .contractorsV1062ActionCard strong {
+    font-size: 18px;
+  }
+
+  .contractorsV1062CardMain {
+    grid-template-columns: 36px minmax(0, 1fr) 14px;
+    gap: 7px;
+    padding: 8px 9px;
+  }
+
+  .contractorsV1062Avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .contractorsV1062Name {
+    font-size: 13px;
+  }
+
+  .contractorsV1062Meta {
+    font-size: 10px;
+  }
+
+  .contractorsV1062Range {
+    display: none;
+  }
+
+  .contractorsV1062Footer {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}

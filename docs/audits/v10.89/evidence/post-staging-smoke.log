@@ -1,0 +1,1083 @@
+
+COMMAND npm run test:smoke
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke
+> node scripts/smoke-auth-refresh.cjs
+
+Smoke auth+refresh+permissions+lookup+confirmations+sms+contractors+devices+stage10 OK
+
+
+COMMAND npm run test:smoke:version
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:version
+> node scripts/smoke-version-ui.cjs
+
+Version UI + public metadata smoke OK (10.89)
+
+
+COMMAND npm run test:smoke:lazy
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:lazy
+> node scripts/smoke-lazy-modules.cjs
+
+Lazy loading smoke OK
+
+
+COMMAND npm run test:smoke:suspense
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:suspense
+> node scripts/smoke-suspense-fallbacks.cjs
+
+Suspense fallback smoke OK
+
+
+COMMAND npm run test:smoke:selection
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:selection
+> node scripts/smoke-job-selection.cjs
+
+Job selection smoke OK
+
+
+COMMAND npm run test:smoke:regex-compat
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:regex-compat
+> node scripts/smoke-regex-compat.cjs
+
+Smoke regex compatibility OK
+
+
+COMMAND npm run test:smoke:technical-refresh
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:technical-refresh
+> node scripts/smoke-technical-refresh-v977.cjs
+
+PASS smoke-technical-refresh-v977
+
+
+COMMAND npm run test:smoke:reliable-sync
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:reliable-sync
+> node scripts/smoke-reliable-sync-backup-v1010.mjs
+
+OK: 10.89 zachowuje mechanizmy v10.10 — trwały punkt synchronizacji, przyrostowe odświeżanie, cichą diagnostykę, wznowienia zdjęć i zewnętrzną kopię.
+
+
+COMMAND npm run test:smoke:feed-stale-v1079
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:feed-stale-v1079
+> node scripts/smoke-mobile-feed-stale-v1079.mjs
+
+OK: 10.79 — wspólny feed całego zespołu z RLS/invoker i serwerowe starzenie statusu bez UPDATE podczas odczytu.
+
+
+COMMAND node scripts/smoke-mobile-offline-resilience-v1075.mjs
+EXIT 0
+OK: v10.75 ma atomową kolejkę offline i abortowalne timeouty requestów Supabase.
+
+
+COMMAND node scripts/smoke-session-sync-resilience-v1080.mjs
+EXIT 0
+OK: 10.80 — session generation, pełny body-timeout i atomowa aktualizacja kolejki.
+
+
+COMMAND node scripts/smoke-update-reload-guard-v1081.mjs
+EXIT 0
+PASS v10.81 update reload guard: modal/protocol work defers SW/version reload until safe close.
+
+
+COMMAND node scripts/smoke-update-reload-guard-v1082.mjs
+EXIT 0
+PASS v10.82 F1/F2/F13: stable reload blockers, real dirty beforeunload, fuel/comment protection, timer recheck.
+
+
+COMMAND node scripts/smoke-audit-races-v1084.mjs
+EXIT 0
+GO: 10.84 stale loaders, polling, request order and cursor transaction are guarded.
+
+
+COMMAND npm run test:smoke:diagnostic-report
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:diagnostic-report
+> node scripts/smoke-diagnostic-report.cjs
+
+OK: raport diagnostyczny jest dostępny na desktopie i telefonie, maskuje dane i zawiera stan kolejki zdjęć.
+
+
+COMMAND npm run test:smoke:diagnostics-clarity
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:diagnostics-clarity
+> node scripts/smoke-diagnostics-clarity-v1013.mjs
+
+OK: v10.13 grupuje identyczne zdarzenia, pokazuje 24 h i historię, przypisuje moduły oraz usuwa podwójne i fałszywe alarmy.
+
+
+COMMAND npm run test:smoke:startup-chunk
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:startup-chunk
+> node scripts/smoke-startup-chunk.cjs
+
+Startup chunk smoke OK
+
+
+COMMAND npm run test:smoke:realtime-lite
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:realtime-lite
+> node scripts/smoke-realtime-refresh-lite.cjs
+
+Realtime refresh lite smoke OK: desktop and mobile use job-scoped realtime and rare global fallback
+
+
+COMMAND npm run test:smoke:delete
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:delete
+> node scripts/smoke-job-delete.cjs
+
+Job delete smoke OK
+
+
+COMMAND npm run test:smoke:device-save
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:device-save
+> node scripts/smoke-job-device-save.cjs
+
+Job device save smoke OK
+
+
+COMMAND npm run test:smoke:job-multi-indoor
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:job-multi-indoor
+> node scripts/smoke-job-multi-indoor-units.cjs
+
+Smoke OK: multi-split indoor units are serialized, parsed and wired
+
+
+COMMAND npm run test:smoke:job-device-type-switch
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:job-device-type-switch
+> node scripts/smoke-job-device-type-switch.cjs
+
+Smoke OK: device type switch single-split/multi-split is wired and preserves multi placeholders
+
+
+COMMAND npm run test:smoke:device-delete
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:device-delete
+> node scripts/smoke-device-delete.cjs
+
+Device delete smoke OK
+
+
+COMMAND npm run test:smoke:job-auto-contractor
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:job-auto-contractor
+> node scripts/smoke-job-auto-contractor-create.cjs
+
+Job auto contractor create smoke OK
+
+
+COMMAND npm run test:smoke:contractor-addresses
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:contractor-addresses
+> node scripts/smoke-contractor-addresses.cjs
+
+OK: wielu adresów klienta, wybór adresu montażu i zachowanie historycznego snapshotu są zabezpieczone.
+
+
+COMMAND npm run test:smoke:worker-shared-job-edit
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:worker-shared-job-edit
+> node scripts/smoke-worker-shared-job-edit-v1060.cjs
+
+PASS smoke-worker-shared-job-edit-v1060
+
+
+COMMAND npm run test:smoke:worker-create-status
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:worker-create-status
+> node scripts/smoke-worker-create-status-v976.cjs
+
+PASS smoke-worker-create-status-v976
+
+
+COMMAND npm run test:smoke:job-completion
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:job-completion
+> node scripts/smoke-job-completion-tracking-push.cjs
+
+Job completion tracking + admin push smoke OK
+
+
+COMMAND npm run test:smoke:new-job-author-comment
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:new-job-author-comment
+> node scripts/smoke-new-job-author-comment-v1053.cjs
+
+PASS smoke-new-job-author-comment-v1053
+
+
+COMMAND npm run test:smoke:private-photos
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:private-photos
+> node scripts/smoke-private-photos.cjs
+
+Smoke OK: prywatne zdjęcia + signed URL + RLS storage
+
+
+COMMAND npm run test:smoke:mobile-private-photos
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-private-photos
+> node scripts/smoke-mobile-private-photos.cjs
+
+OK mobile private photos smoke
+
+
+COMMAND npm run test:smoke:mobile-photo-compression
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-photo-compression
+> node scripts/smoke-mobile-photo-compression.cjs
+
+Mobile photo compression smoke OK
+
+
+COMMAND npm run test:smoke:mobile-photo-upload-rls
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-photo-upload-rls
+> node scripts/smoke-mobile-photo-upload-rls.cjs
+
+Mobile photo upload RLS smoke OK
+
+
+COMMAND npm run test:smoke:mobile-photo-visibility-sync
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-photo-visibility-sync
+> node scripts/smoke-mobile-photo-visibility-sync.cjs
+
+Mobile photo visibility sync smoke OK
+
+
+COMMAND npm run test:smoke:mobile-thumbnail-recovery
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-thumbnail-recovery
+> node scripts/smoke-mobile-thumbnail-recovery-v1012.mjs
+
+OK: 10.12 automatycznie odświeża miniaturę, omija wadliwy cache i ma fallback do oryginału.
+
+
+COMMAND npm run test:smoke:photo-cross-device-sync
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:photo-cross-device-sync
+> node scripts/smoke-photo-cross-device-sync.cjs
+
+Photo cross-device sync smoke OK
+
+
+COMMAND npm run test:smoke:mobile-photo-sync-indicator
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-photo-sync-indicator
+> node scripts/smoke-mobile-photo-sync-indicator.cjs
+
+Mobile photo sync indicator smoke OK
+
+
+COMMAND npm run test:smoke:mobile-photo-sync-center
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-photo-sync-center
+> node scripts/smoke-mobile-photo-sync-center.cjs
+
+Mobile photo sync center smoke OK
+
+
+COMMAND npm run test:smoke:mobile-offline-photo-queue
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-offline-photo-queue
+> node scripts/smoke-mobile-offline-photo-queue.cjs
+
+OK smoke-mobile-offline-photo-queue
+
+
+COMMAND npm run test:smoke:mobile-photo-idempotency
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-photo-idempotency
+> node scripts/smoke-mobile-photo-idempotency.cjs
+
+OK smoke-mobile-photo-idempotency
+
+
+COMMAND npm run test:smoke:photo-preview-gallery-separation
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:photo-preview-gallery-separation
+> node scripts/smoke-photo-preview-gallery-separation-v936.cjs
+
+OK: zdjęcia montażu i tabliczki znamionowe mają oddzielne galerie strzałek na desktopie i mobile.
+
+
+COMMAND npm run test:smoke:desktop-photo-thumbnails
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-photo-thumbnails
+> node scripts/smoke-desktop-photo-performance-v968.cjs
+
+Smoke OK: v9.68/v9.69 photo loading is lazy, deduplicated, session-cached and realtime-decoupled on desktop and mobile
+
+
+COMMAND npm run test:smoke:mobile-protocol
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-protocol
+> node scripts/smoke-mobile-protocol-v979.cjs
+
+PASS smoke-mobile-protocol-v979
+
+
+COMMAND npm run test:smoke:mobile-protocol-save
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-protocol-save
+> node scripts/smoke-mobile-protocol-save-v1011.mjs
+
+PASS smoke-mobile-protocol-save-v1011
+
+
+COMMAND node scripts/smoke-storage-write-reconciliation-v1074.mjs
+EXIT 0
+PASS smoke-storage-write-reconciliation-v1074
+
+
+COMMAND node scripts/smoke-storage-delayed-commit-v1077.mjs
+EXIT 0
+PASS smoke-storage-delayed-commit-v1077
+
+
+COMMAND node scripts/smoke-audit-fixes-v1088.mjs
+EXIT 0
+SOURCE N2 on 10.84: DB job completion guard does not validate JW/JZ nameplates.
+SOURCE N3 on 10.84: a competing protocol record can be accepted as own success and replace is not CAS-bound.
+SOURCE N4 on 10.84: fuel retry has no stable operation UUID in the INSERT.
+SOURCE N5 on 10.84: every retry gets a new request key and provider uncertainty is not reconciled.
+10.88 auxiliary source checks passed; running executable audit scenarios.
+A01 PASS behavioral SQL
+A02 PASS behavioral SQL
+A09 PASS behavioral SQL
+LOCAL PROD-DEFINITION RLS PASS admin read= 1 direct update= 1
+LOCAL PROD-DEFINITION RLS PASS worker read= 1 direct update= 0
+LOCAL PROD-DEFINITION RLS PASS pending read= 0 direct update= 0
+LOCAL PROD-DEFINITION RLS PASS no-profile read= 0 direct update= 0
+LOCAL ANON direct contractor access denied. Scope: selected exact production policies/functions, not entire Supabase.
+A03 SW endpoint/context epoch behavior PASS
+A03 SQL real lifecycle: fresh epoch, endpoint generation1, stale410, tombstone PASS
+A06 owner and conditional cleanup PASS
+A06 two tabs preserve distinct identical fill identities PASS
+A06 real module retry/concurrent same ID and distinct identical fills PASS
+Fuel switched account rejects before INSERT PASS
+devices PASS
+mobile-devices PASS
+contractors PASS
+mobile-contractors PASS
+fuel PASS
+A04 email attempt A/B/A and owner isolation PASS
+A04 fresh module reload PASS
+A04 full Edge handler: lost response + 25h retry delivers exactly once PASS
+A04 replacement PDF does not change existing attempt PASS
+A04 full Edge handler: lost response + 25h retry delivers exactly once PASS
+A04 headers received, body never completes: bounded pending response PASS
+A05 concurrent handler PASS
+A05 actual RPC SQL: both orders and new send identity PASS
+A07 archive trigger dependency present
+PASS supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS supabase/setup-job-protocols-v9.79.sql
+PASS supabase/setup-fuel-module-v10.14.sql
+PASS supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS supabase/setup-fuel-odometer-source-v10.16.sql
+PASS supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS supabase/setup-fuel-production-v10.26.sql
+PASS supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS supabase/rebuild/legacy_service_archive_v1089.sql
+PASS supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS supabase/migrations/20260917101824_audit_invariants.sql
+PASS supabase/migrations/20260917101825_audit_restore.sql
+PASS supabase/migrations/20260917102820_audit_push_context.sql
+PASS supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS supabase/migrations/20260917174140_audit_staging_view_guard.sql
+PASS supabase/migrations/20260917175255_audit_protocol_retention.sql
+PASS supabase/rebuild/audit_final_acl.sql
+PASS supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS supabase/setup-job-protocols-v9.79.sql
+PASS supabase/setup-fuel-module-v10.14.sql
+PASS supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS supabase/setup-fuel-odometer-source-v10.16.sql
+PASS supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS supabase/setup-fuel-production-v10.26.sql
+PASS supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS supabase/rebuild/legacy_service_archive_v1089.sql
+PASS supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS supabase/migrations/20260917101824_audit_invariants.sql
+PASS supabase/migrations/20260917101825_audit_restore.sql
+PASS supabase/migrations/20260917102820_audit_push_context.sql
+PASS supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS supabase/migrations/20260917174140_audit_staging_view_guard.sql
+PASS supabase/migrations/20260917175255_audit_protocol_retention.sql
+PASS supabase/rebuild/audit_final_acl.sql
+Local dependency rehearsal + catalog checks + delete/restore history PASS; this local run alone does not verify staging; see separate staging evidence
+LF exit 0
+CRLF exit 0
+Audit executable gate: 18/18 local scenarios passed. Staging/browser evidence is separate.
+(node:35600) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:35288) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14260) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+COMMAND npm run test:smoke:mobile-protocol-print
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-protocol-print
+> node scripts/test-job-protocol-print-image-v1002.mjs
+
+PASS protocol PDF->PNG 1800x2546, 65551 B
+
+
+COMMAND npm run test:smoke:mobile-protocol-layout
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-protocol-layout
+> node scripts/smoke-mobile-protocol-layout-v984.cjs
+
+OK: protokół ma uporządkowane dane oraz osobny, nieruchomy ekran podpisu klienta.
+
+
+COMMAND npm run test:smoke:mobile-protocol-email
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-protocol-email
+> node scripts/test-job-protocol-email-v987.mjs
+
+PASS test-job-protocol-email-v987
+
+
+COMMAND npm run test:smoke:mobile-payment
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-payment
+> node scripts/test-job-payment-confirmation-v986.mjs
+
+PASS test-job-payment-confirmation-v986
+
+
+COMMAND npm run test:smoke:desktop-protocol
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-protocol
+> node scripts/smoke-desktop-protocol-v996.cjs
+
+Desktop saved protocol smoke OK
+
+
+COMMAND npm run test:smoke:admin-worker
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:admin-worker
+> node scripts/smoke-role-access.cjs
+
+Role access smoke OK
+
+
+COMMAND npm run test:smoke:desktop-only
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-only
+> node scripts/smoke-desktop-only.cjs
+
+Desktop-only mobile guard smoke OK
+
+
+COMMAND npm run test:smoke:supabase-grants
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:supabase-grants
+> node scripts/smoke-supabase-grants.cjs
+
+Smoke OK: jawne GRANT i RLS sprawdzone dla 50 public table creation(s) w plikach SQL (17 w rebuild bundle)
+
+
+COMMAND npm run test:smoke:destructive-rls
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:destructive-rls
+> node scripts/smoke-destructive-rls.cjs
+
+Destructive RLS smoke OK
+
+
+COMMAND node scripts/smoke-worker-contractor-update-v1089.cjs
+EXIT 0
+PASS smoke-worker-contractor-update-v1089
+
+
+COMMAND npm run test:smoke:assignment-push
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:assignment-push
+> node scripts/smoke-assignment-push.cjs
+
+Assignment push smoke OK
+
+
+COMMAND npm run test:smoke:push-reliability
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:push-reliability
+> node scripts/smoke-push-reliability-v917.cjs
+
+PASS smoke-push-reliability-v917
+
+
+COMMAND npm run test:smoke:push-mobile-reassignment
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:push-mobile-reassignment
+> node scripts/smoke-push-mobile-reassignment-v918.cjs
+
+PASS smoke-push-mobile-reassignment-v918 — credentials verified atomically in PostgreSQL
+
+
+COMMAND npm run test:smoke:push-logout-handoff
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:push-logout-handoff
+> node scripts/smoke-push-logout-handoff-v1076.mjs
+
+PASS smoke-push-logout-handoff-v1076
+
+
+COMMAND npm run test:smoke:push-safety-v1078
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:push-safety-v1078
+> node scripts/smoke-push-safety-v1078.mjs
+
+PASS smoke-push-safety-v1078
+
+
+COMMAND npm run test:smoke:comment-admin-push
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:comment-admin-push
+> node scripts/smoke-comment-admin-push-v937.mjs
+
+OK: komentarz każdego pracownika wysyła bezpieczny, idempotentny push administratorowi i nie cofa zapisu przy awarii push.
+
+
+COMMAND npm run test:smoke:push-mandatory
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:push-mandatory
+> node scripts/smoke-push-mandatory-v970.cjs
+
+PASS smoke-push-mandatory-v970
+
+
+COMMAND node scripts/smoke-session-push-gate-v1083.mjs
+EXIT 0
+PASS v10.83 session/push/E2E gate regression.
+
+
+COMMAND node scripts/smoke-audit-fixes-v1087.mjs
+EXIT 0
+RED F4 reproduced on 10.84: persisted SW revision=20 rejects fresh-page CLEAR revision=1.
+RED F10 reproduced on 10.84: PushManager operations can wait forever.
+RED F11 reproduced on 10.84: 404/410 cleanup bypasses tombstone.
+GO: 10.87 closes F4/F10/F11 after reproducing exact 10.84 failures.
+
+
+COMMAND npm run test:smoke:fuel-module
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:fuel-module
+> node scripts/smoke-fuel-module-v1014.mjs
+
+Fuel production access, monthly report, correction audit, rapid-refill warning and v10.26 regression checks passed.
+
+
+COMMAND npm run test:smoke:mobile-serial-scanner
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-serial-scanner
+> node scripts/smoke-mobile-serial-scanner.cjs
+
+Mobile device wizard smoke OK: Single/Multi, full Rotenso catalog with contextual powers, manual nameplate crop, multiple devices, required nameplates before completion
+
+
+COMMAND npm run test:smoke:nameplate-rendering
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:nameplate-rendering
+> node scripts/smoke-nameplate-image-rendering.cjs
+
+Nameplate rendering smoke OK: crop overlay matches rendered image, previews use contain, desktop nameplates open from their JZ/JW row, upload preserves cropped-label quality
+
+
+COMMAND npm run test:smoke:nameplate-finish-verification
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:nameplate-finish-verification
+> node scripts/smoke-nameplate-finish-verification.cjs
+
+Smoke OK: zakończenie używa lekkiej, ponawianej kontroli samych tabliczek.
+
+
+COMMAND npm run test:smoke:nameplate-quality
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:nameplate-quality
+> node scripts/smoke-nameplate-quality.cjs
+
+OK smoke-nameplate-quality
+
+
+COMMAND npm run test:smoke:nameplate-product-catalog
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:nameplate-product-catalog
+> node scripts/smoke-nameplate-product-catalog.mjs
+
+Smoke OK: 183 aktualne EAN-y Rotenso + 31 kodów historycznych/aliasów, centralny katalog, import i typy JW/JZ
+
+
+COMMAND npm run test:smoke:rotenso-model-history
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:rotenso-model-history
+> node scripts/smoke-rotenso-model-history.cjs
+
+OK smoke-rotenso-model-history
+
+
+COMMAND npm run test:smoke:desktop-nameplate-ocr
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-nameplate-ocr
+> node scripts/smoke-desktop-nameplate-ocr.cjs
+
+Smoke OK: desktop reader uses barcode + focused model OCR + optional AI and keeps compatible persistence
+
+
+COMMAND npm run test:smoke:desktop-nameplate-ai-barcode
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-nameplate-ai-barcode
+> node scripts/smoke-desktop-nameplate-ai-barcode.cjs
+
+Smoke OK: hard barcodes win, AI reads print, and Rotenso models require exact catalog confirmation
+
+
+COMMAND npm run test:smoke:desktop-nameplate-read-resilience
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-nameplate-read-resilience
+> node scripts/smoke-desktop-nameplate-read-resilience.cjs
+
+Smoke OK: nameplate reader opens fast and blue scan has bounded model-only OCR
+
+
+COMMAND npm run test:smoke:desktop-nameplate-automatic-fallback
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-nameplate-automatic-fallback
+> node scripts/smoke-desktop-nameplate-automatic-fallback.cjs
+
+Smoke OK: barcodes stay authoritative and blue scan adds model-only local recognition
+
+
+COMMAND npm run test:smoke:desktop-nameplate-ean-separation
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-nameplate-ean-separation
+> node scripts/smoke-desktop-nameplate-ean-separation.cjs
+
+Smoke OK: EAN and SN stay separate and all Rotenso catalog entries preserve JW/JZ
+
+
+COMMAND npm run test:smoke:desktop-nameplate-verification-status
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-nameplate-verification-status
+> node scripts/smoke-desktop-nameplate-verification-status.cjs
+
+desktop nameplate verification status smoke: OK
+
+
+COMMAND node scripts/smoke-nameplate-ai-auth-v1085.mjs
+EXIT 0
+GO: 10.85 AI authorization ignores editable metadata and trusts only profiles.role.
+
+
+COMMAND npm run test:smoke:sms-summary
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:sms-summary
+> node scripts/smoke-sms-summary.cjs
+
+SMS summary smoke OK
+
+
+COMMAND npm run test:smoke:sms-job-grouping
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:sms-job-grouping
+> node scripts/smoke-sms-job-grouping.cjs
+
+SMS job grouping smoke OK
+
+
+COMMAND npm run test:smoke:sms-log-cleanup
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:sms-log-cleanup
+> node scripts/smoke-sms-log-cleanup.cjs
+
+SMS log cleanup smoke OK
+
+
+COMMAND npm run test:smoke:center360
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:center360
+> node scripts/smoke-center360-data.cjs
+
+Centrum 360 data smoke OK
+
+
+COMMAND npm run test:smoke:center360-personalization
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:center360-personalization
+> node scripts/smoke-center360-personalization.cjs
+
+Center 360 personalization smoke OK
+
+
+COMMAND npm run test:smoke:dashboard-metrics
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:dashboard-metrics
+> node scripts/smoke-dashboard-metrics-rpc.cjs
+
+Smoke OK: centralne liczniki Centrum 360 przez RPC
+
+
+COMMAND npm run test:smoke:desktop-refresh
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-refresh
+> node scripts/smoke-desktop-refresh.cjs
+
+Desktop refresh smoke OK
+
+
+COMMAND npm run test:smoke:desktop-jobs-layout-width
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-jobs-layout-width
+> node scripts/smoke-desktop-jobs-layout-width.cjs
+
+Desktop jobs layout width smoke OK
+
+
+COMMAND npm run test:smoke:desktop-job-details-polish
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-job-details-polish
+> node scripts/smoke-desktop-job-details-polish.cjs
+
+Desktop job details polish smoke OK
+
+
+COMMAND npm run test:smoke:desktop-global-search
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-global-search
+> node scripts/smoke-desktop-global-search.cjs
+
+OK: desktopowe globalne wyszukiwanie obejmuje klienta, telefon, adres, model, numer seryjny, zlecenie i montera.
+
+
+COMMAND npm run test:smoke:desktop-cross-module-panels
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:desktop-cross-module-panels
+> node scripts/smoke-desktop-cross-module-split-panels.cjs
+
+Desktop cross-module split panels smoke OK
+
+
+COMMAND npm run test:smoke:calendar-width
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:calendar-width
+> node scripts/smoke-calendar-width.cjs
+
+Calendar width smoke OK
+
+
+COMMAND npm run test:smoke:mobile-ui-copy
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-ui-copy
+> node scripts/smoke-mobile-ui-copy.cjs
+
+Mobile UI copy smoke OK
+
+
+COMMAND npm run test:smoke:mobile-style-bootstrap
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-style-bootstrap
+> node scripts/smoke-mobile-style-bootstrap.cjs
+
+OK: mobilne style są ładowane przed aplikacją, a index ma bezpieczny fallback.
+
+
+COMMAND npm run test:smoke:mobile-admin-header
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-admin-header
+> node scripts/smoke-mobile-admin-header-v915.cjs
+
+Mobile admin header smoke OK: safe-area, deterministic grid, 2.5 px equal edge spacing, user logout and offline-safe sync
+
+
+COMMAND npm run test:smoke:mobile-new-job-no-devices
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-new-job-no-devices
+> node scripts/smoke-mobile-new-job-no-devices-v916.cjs
+
+Mobile new-job 10.60 smoke OK: create without devices; worker installer selection and post-create device/nameplate flow preserved
+
+
+COMMAND npm run test:smoke:mobile-worker-add-client
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-worker-add-client
+> node scripts/smoke-mobile-worker-add-client-v919.cjs
+
+PASS smoke-mobile-worker-add-client-v919
+
+
+COMMAND npm run test:smoke:mobile-default-installation-date
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:mobile-default-installation-date
+> node scripts/test-mobile-default-installation-date-v980.mjs
+
+OK: nowy formularz mobilny domyślnie otrzymuje lokalną datę utworzenia.
+
+
+COMMAND npm run test:smoke:cache-first-refresh
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:cache-first-refresh
+> node scripts/smoke-cache-first-refresh-v939.mjs
+
+OK: cache-first pokazuje snapshot, odświeża z Supabase i blokuje nadpisanie nowszego stanu starszą odpowiedzią.
+
+
+COMMAND node scripts/smoke-release-automation-v1061.cjs
+EXIT 0
+WAWIS release automation 10.78 smoke OK — single PR gate + one production Vercel; Drive/ZIP/post-deploy are non-blocking
+
+
+COMMAND node scripts/smoke-release-impact-v1063.cjs
+EXIT 0
+WAWIS release impact smoke OK: fast-ui, targeted, critical + strict MICRO UI CSS-only path, without duplicate archive/post-deploy runners
+
+
+COMMAND npm run test:smoke:release-runner
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:release-runner
+> node scripts/smoke-release-runner.cjs
+
+GO: 10.85 release runner smoke matches the current single-pass release contract without side effects.
+
+
+COMMAND npm run test:smoke:release-zip
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:release-zip
+> node scripts/smoke-release-zip.cjs
+
+Smoke OK: release-zip is pure Node, cross-platform and excludes working files
+
+
+COMMAND npm run test:smoke:release-zip-clean
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:release-zip-clean
+> node scripts/smoke-release-zip-clean.cjs
+
+Smoke OK: release ZIP excludes logs*, cache, coverage and working files cross-platform
+
+
+COMMAND node scripts/smoke-playwright-runner-fail-closed-v1085.cjs
+EXIT 0
+GO: 10.85 Playwright runners are cross-platform and fail closed on signals/spawn errors.
+
+
+COMMAND node scripts/smoke-smsapi-webhook-security-v1085.mjs
+EXIT 0
+PASS: callback authentication helpers and RPC failure propagation; atomic ordering is tested by audit-v1089/sms-race.mjs.
+(node:37396) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+COMMAND node scripts/smoke-audit-fixes-v1086.mjs
+EXIT 0
+GO: 10.86 F3/F5/F8/F9 behavioral contracts are closed.
+
+
+COMMAND npm run test:smoke:e2e-mobile
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:e2e-mobile
+> node scripts/smoke-e2e-mobile.cjs
+
+Mobile E2E wiring smoke OK — runner, mock i wymagane scenariusze istnieją bez sprawdzania tekstów UI
+
+
+COMMAND npm run test:smoke:e2e-desktop
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:e2e-desktop
+> node scripts/smoke-e2e-desktop.cjs
+
+Desktop E2E wiring smoke OK — runner, mock i scenariusze istnieją bez sprawdzania tekstów UI
+
+
+COMMAND npm run test:smoke:remove-resend-email
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:remove-resend-email
+> node scripts/smoke-remove-resend-email.cjs
+
+Remove Resend email smoke OK
+
+
+COMMAND npm run test:smoke:no-services-module
+EXIT 0
+
+> klima-app-table-v2@10.89 test:smoke:no-services-module
+> node scripts/smoke-no-services-module.cjs
+
+No services module smoke OK
+
+SUMMARY 111 / 111

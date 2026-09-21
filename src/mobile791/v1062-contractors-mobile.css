@@ -1,0 +1,84 @@
+/* WAWIS 10.62 — przebudowa zakładki Kontrahenci na mobile */
+@media (max-width: 900px) {
+  .contractorsV1062Page {display:grid;gap:12px;padding:0 12px 28px}
+  .contractorsV1062SearchWrap {position:relative;display:flex;align-items:center;min-height:58px;padding:0 16px 0 54px;border:1px solid #d9e5f3;border-radius:22px;background:#fff;box-shadow:0 8px 24px rgba(15,35,69,.05)}
+  .contractorsV1062SearchIcon {position:absolute;left:18px;top:50%;transform:translateY(-52%);color:#102348;font-size:34px;line-height:1;font-family:Arial,sans-serif}
+  .contractorsV1062Search {width:100%;border:0;outline:0;background:transparent;color:#102348;font:inherit;font-size:16px;min-width:0}
+  .contractorsV1062Search::placeholder {color:#7b8ea8}
+  .contractorsV1062Actions {display:grid;grid-template-columns:1.2fr repeat(3,.92fr);gap:8px}
+  .contractorsV1062StatCard,.contractorsV1062ActionCard {min-height:78px;border:1px solid #d9e5f3;border-radius:18px;background:#fff;color:#102348;box-shadow:0 6px 18px rgba(15,35,69,.04)}
+  .contractorsV1062StatCard {display:grid;align-content:center;gap:5px;padding:10px 12px}
+  .contractorsV1062StatCard>span {font-size:11px;line-height:1.15;color:#60748c;font-weight:700}
+  .contractorsV1062StatCard>div {display:flex;align-items:center;gap:7px}
+  .contractorsV1062StatCard svg {width:18px;height:18px;color:#57739b}
+  .contractorsV1062StatCard strong {font-size:24px;line-height:1;color:#153568}
+  .contractorsV1062ActionCard {appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;cursor:pointer;font:inherit;text-align:left}
+  .contractorsV1062ActionCard strong {flex:0 0 auto;font-size:25px;line-height:1;font-weight:500}
+  .contractorsV1062ActionCard span {font-size:11px;line-height:1.15;font-weight:800}
+  .contractorsV1062ActionCard:disabled {opacity:.5;cursor:default}
+  .contractorsV1062Message {margin:0}
+  .contractorsV1062List {display:grid;gap:9px}
+  .contractorsV1062Card {overflow:hidden;border:1px solid #d8e4f2;border-radius:20px;background:#fff;box-shadow:0 7px 22px rgba(15,35,69,.045)}
+  .contractorsV1062Card.isExpanded {border-color:#b9d7ff;box-shadow:0 9px 24px rgba(37,99,235,.08)}
+  .contractorsV1062CardMain {width:100%;display:grid;grid-template-columns:54px minmax(0,1fr) 24px;gap:12px;align-items:center;padding:14px 14px 13px;border:0;background:transparent;color:#102348;text-align:left;font:inherit;cursor:pointer}
+  .contractorsV1062Avatar {width:54px;height:54px;display:grid;place-items:center;border-radius:50%;background:#edf4fd;color:#45658d;font-size:20px;font-weight:800}
+  .contractorsV1062CardContent {min-width:0;display:grid;gap:4px}
+  .contractorsV1062Name {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;line-height:1.25;color:#102348}
+  .contractorsV1062Meta {min-width:0;display:flex;align-items:center;gap:6px;color:#60748c;font-size:12px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .contractorsV1062Meta svg {flex:0 0 15px;width:15px;height:15px;color:#4f6f98}
+  .contractorsV1062ContactRow {display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.25fr);gap:10px;min-width:0}
+  .contractorsV1062Chevron {justify-self:end;font-size:30px;line-height:1;color:#12325f}
+  .contractorsV1062Expanded {display:grid;gap:12px;padding:13px 15px 15px;border-top:1px solid #e1eaf5;background:#fbfdff}
+  .contractorsV1062DetailsGrid {display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+  .contractorsV1062DetailItem {display:grid;gap:2px;min-width:0}
+  .contractorsV1062DetailItem span,.contractorsV1062ExtraLabel {color:#72839a;font-size:11px;font-weight:700}
+  .contractorsV1062DetailItem strong {color:#102348;font-size:13px;overflow-wrap:anywhere}
+  .contractorsV1062ExtraBlock {display:grid;gap:5px;padding-top:9px;border-top:1px solid #e6edf6;color:#102348;font-size:13px}
+  .contractorsV1062ExtraBlock p {margin:0;line-height:1.45;color:#415a78}
+  .contractorsV1062ExtraLine,.contractorsV1062DeviceLine {display:flex;align-items:center;gap:7px;min-width:0}
+  .contractorsV1062ExtraLine svg {width:14px;height:14px;flex:0 0 14px}
+  .contractorsV1062DeviceLine {justify-content:space-between}
+  .contractorsV1062DeviceLine span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .contractorsV1062DeviceLine small {color:#718199;overflow-wrap:anywhere;text-align:right}
+  .contractorsV1062Muted {color:#718199}
+  .contractorsV1062FallbackNote {padding:9px 10px;border-radius:12px;background:#fff7db;color:#7a5a00;font-size:12px;line-height:1.35}
+  .contractorsV1062ExpandedActions,.contractorsV1062EditorActions {display:flex;gap:8px;flex-wrap:wrap}
+  .contractorsV1062SmallBtn {min-height:36px;padding:8px 12px;font-size:12px}
+  .contractorsV1062Empty {padding:30px 18px;border:1px dashed #cbd9e9;border-radius:18px;background:#fff;color:#687b94;text-align:center;font-size:14px}
+  .contractorsV1062Footer {display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:4px 1px 0}
+  .contractorsV1062PerPage,.contractorsV1062Range {color:#687b94;font-size:10px;white-space:nowrap}
+  .contractorsV1062Pagination {min-width:0;display:flex;align-items:center;justify-content:center;gap:5px}
+  .contractorsV1062PageNumbers {display:flex;align-items:center;gap:4px;min-width:0}
+  .contractorsV1062PageButton {min-width:32px;height:34px;padding:0 8px;border:1px solid #d5e1ef;border-radius:11px;background:#fff;color:#153568;font:inherit;font-size:12px;font-weight:800}
+  .contractorsV1062PageButton.isActive {border-color:#153568;background:#153568;color:#fff}
+  .contractorsV1062PageButton:disabled {opacity:.35}
+  .contractorsV1062PageGap {color:#8190a4;font-size:12px}
+  .contractorsV1062Editor {display:grid;gap:14px;padding:16px;border-radius:22px}
+  .contractorsV1062EditorHead {display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .contractorsV1062EditorHead h2,.contractorsV1062EditorHead h3 {margin:6px 0 0}
+  .contractorsV1062FormGrid {display:grid;grid-template-columns:1fr;gap:11px}
+  .contractorsV1062Full {grid-column:1/-1}
+  .contractorsV1062Editor .contractorsTextarea {min-height:100px}
+  .contractorsV1062ImportReview {display:grid;gap:14px}
+  .contractorsV1062ImportStats {display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .contractorsV1062ImportStats>div {display:grid;gap:4px;padding:12px;border:1px solid #dce6f2;border-radius:14px;background:#f8fbff}
+  .contractorsV1062ImportStats span {font-size:11px;color:#6d8098}
+  .contractorsV1062ImportStats strong {font-size:20px;color:#153568}
+}
+@media (max-width:390px) {
+  .contractorsV1062Page {padding-left:9px;padding-right:9px}
+  .contractorsV1062Actions {grid-template-columns:1.15fr repeat(3,.92fr);gap:6px}
+  .contractorsV1062StatCard,.contractorsV1062ActionCard {min-height:72px;border-radius:16px}
+  .contractorsV1062StatCard {padding:8px 9px}
+  .contractorsV1062StatCard>span {font-size:10px}
+  .contractorsV1062StatCard strong {font-size:21px}
+  .contractorsV1062ActionCard {padding:7px 5px;gap:3px}
+  .contractorsV1062ActionCard strong {font-size:21px}
+  .contractorsV1062ActionCard span {font-size:9px}
+  .contractorsV1062CardMain {grid-template-columns:48px minmax(0,1fr) 20px;gap:9px;padding:12px}
+  .contractorsV1062Avatar {width:48px;height:48px;font-size:18px}
+  .contractorsV1062Name {font-size:15px}
+  .contractorsV1062Meta {font-size:11px}
+  .contractorsV1062Footer {grid-template-columns:1fr;justify-items:center;gap:7px}
+  .contractorsV1062Range {display:none}
+}

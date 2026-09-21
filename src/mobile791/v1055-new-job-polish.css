@@ -1,0 +1,78 @@
+/* WAWIS 10.55 — final polish of compact new-job form on mobile */
+@media (max-width:700px){
+  .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn > span[aria-hidden="true"]{
+    display:none !important;
+  }
+
+  .formModal .jobFormCreateMode .jobFormQuickActions .voiceClientMainBtn{
+    justify-content:center !important;
+    gap:0 !important;
+  }
+
+  .formModal .jobFormCreateMode .workerNewClientCommentTextarea{
+    height:78px !important;
+    min-height:78px !important;
+    max-height:104px !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateField{
+    grid-template-columns:auto minmax(126px,150px) auto !important;
+    justify-content:space-between !important;
+    column-gap:8px !important;
+    margin-top:6px !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateInputShell{
+    width:100% !important;
+    max-width:150px !important;
+    height:32px !important;
+    min-height:32px !important;
+    border-radius:11px !important;
+    overflow:hidden !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateNativeInput{
+    -webkit-appearance:none !important;
+    appearance:none !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    height:32px !important;
+    min-height:32px !important;
+    margin:0 !important;
+    padding:0 5px !important;
+    border:0 !important;
+    line-height:32px !important;
+    font-size:13px !important;
+    text-align:center !important;
+    text-align-last:center !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateNativeInput::-webkit-date-and-time-value{
+    margin:0 !important;
+    padding:0 !important;
+    min-height:32px !important;
+    line-height:32px !important;
+    text-align:center !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateNativeInput::-webkit-datetime-edit{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    height:32px !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  .formModal .jobFormCreateMode .installationDateNativeInput::-webkit-datetime-edit-fields-wrapper{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    height:32px !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+}

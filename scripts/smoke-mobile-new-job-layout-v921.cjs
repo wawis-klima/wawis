@@ -1,0 +1,20 @@
+const fs = require('fs');
+function need(text, needle, label){ if(!text.includes(needle)) throw new Error(`Brak: ${label}`); }
+const modal = fs.readFileSync('src/mobile791/components/modals/JobFormModal.jsx','utf8');
+const css = fs.readFileSync('src/mobile791/styles.css','utf8');
+need(modal, 'className="inputLabel installationDateField"', 'osobny blok daty');
+need(modal, 'className="input installationDateInput" type="date"', 'klasa inputu daty');
+need(modal, 'className="inputLabel adminNoteInputBlock"', 'blok komentarza admina');
+need(modal, '<div className="voiceAdminNoteRow">', 'wiersz komentarz + mikrofon');
+need(modal, '<textarea rows={2}', 'kompaktowy komentarz');
+need(modal, '<VoiceNoteButton label="Komentarz administratora"', 'mikrofon komentarza');
+need(modal, '{editingJobId ? (', 'instalatorzy tylko w edycji');
+need(css, '/* Wawis 9.21 — kompaktowa data + mikrofon komentarza zawsze po prawej */', 'blok CSS 9.21');
+need(css, '.formModal .voiceAdminNoteRow{', 'twardy układ komentarza');
+need(css, 'display:flex!important;', 'flex komentarza');
+need(css, '.formModal .voiceAdminNoteRow>.voiceFieldMicBtn{', 'mikrofon po prawej');
+need(css, 'flex:0 0 48px!important;', 'stała szerokość mikrofonu');
+need(css, '.formModal .installationDateInput{', 'CSS daty');
+need(css, 'max-inline-size:100%!important;', 'blokada overflow daty iOS');
+need(css, '-webkit-appearance:none!important;', 'stabilizacja date input iOS');
+console.log('PASS smoke-mobile-new-job-layout-v921');

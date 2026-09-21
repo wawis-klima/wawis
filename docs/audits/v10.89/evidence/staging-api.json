@@ -1,0 +1,23 @@
+{
+  "staging": "hlfvjbidopyraycwkbfg",
+  "at": "2026-09-17T18:00:58.434Z",
+  "checks": [
+    "Real Auth createUser trigger ignores forged metadata, real password sign-in for five roles",
+    "PostgREST admin/worker/pending/missing/anon reads; worker direct contractor UPDATE denied; profile escalation denied; callback ACL denied",
+    "Actual job-photo upload/download, denied nonstaff uploads, completed nameplate revalidation and required-row/file retention",
+    "Actual Fuel module upload/INSERT/retry through Storage+PostgREST; one row; cross-owner read/write denied"
+  ],
+  "ids": {
+    "job": "746bd571-3167-4a5e-b1e9-2cc3574d9adf",
+    "contractor": "6a0d92b1-5066-4f4f-943f-f99d7f97d62d",
+    "vehicle": "523de708-03ad-4a8b-a168-3a39a19b05c7",
+    "fuel": "c1d932f8-b952-433e-b544-f8b05032ba9c"
+  },
+  "roles": {
+    "admin": "ad754a6a-9cb1-4031-8b42-7dc15f6b3dcc",
+    "worker": "a7bbd7f9-70fe-4954-867d-d2ede1f5c606",
+    "other": "92e4706f-0963-40ee-9f16-a060c7240712",
+    "pending": "cb549bf3-d73a-4434-b026-dbde638b92b5",
+    "missing": "efa2e29f-2c7c-4c5e-851a-ad1d7b292bed"
+  }
+}

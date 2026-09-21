@@ -1,0 +1,10 @@
+{
+  "staging": "hlfvjbidopyraycwkbfg",
+  "at": "2026-09-17T17:43:42.823Z",
+  "checks": [
+    "Real Auth createUser trigger ignores forged metadata, real password sign-in for five roles",
+    "PostgREST admin/worker/pending/missing/anon reads; worker direct contractor UPDATE denied; profile escalation denied; callback ACL denied",
+    "Actual job-photo upload/download, denied nonstaff uploads, completed nameplate revalidation and required-row/file retention"
+  ],
+  "error": "Zmienił się właściciel sesji próby tankowania."
+}

@@ -1,0 +1,3 @@
+-- Wawis Klima App v8.20
+-- Zmiana wyłącznie frontend/CSS: desktopowy prawy panel szczegółów montażu ma sticky belkę, szybkie akcje, karty/sekcje i mocniejsze zaznaczenie wybranego wiersza.
+-- Brak zmian struktury bazy danych.

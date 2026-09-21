@@ -1,0 +1,15 @@
+[functions.send-assignment-push]
+verify_jwt = false
+
+
+[functions.send-service-sms]
+verify_jwt = false
+
+[functions.generate-service-sms-queue]
+verify_jwt = false
+
+[functions.send-job-protocol-email]
+verify_jwt = true
+[functions.send-fuel-entry-push]
+verify_jwt = false
+

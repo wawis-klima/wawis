@@ -1,0 +1,21 @@
+const fs = require('fs');
+const assert = require('assert');
+function read(path){ return fs.readFileSync(path,'utf8'); }
+const form = read('src/mobile791/components/modals/JobFormModal.jsx');
+const jobsForm = read('src/mobile791/modules/jobs-form.js');
+const perms = read('src/mobile791/utils/jobPermissions.js');
+const details = read('src/mobile791/components/JobDetailsPanel.jsx');
+const actions = read('src/mobile791/hooks/useSelectedJobActions.js');
+const app = read('src/mobile791/App.jsx');
+assert(form.includes('Zakończ od razu'), 'worker create form must offer immediate completion');
+assert(form.includes('value="W trakcie"'), 'worker create form must offer W trakcie');
+assert(jobsForm.includes("normalized === 'W trakcie' || normalized === 'Zakończone'"), 'worker create status must stage completion as W trakcie');
+assert(jobsForm.includes("normalizeWorkerCreateStatus(form.status)"), 'worker insert must preserve allowed worker status');
+assert(perms.includes('["Nowe", "Niezrealizowane"].includes'), 'worker must be able to start Nowe and restart Niezrealizowane');
+assert(details.includes("workerStartLabel"), 'worker start button must distinguish start vs restart');
+assert(actions.includes('getNewJobLocalNameplateCompletion'), 'immediate completion must validate required nameplates before save');
+assert(actions.includes("base: { status: 'W trakcie' }"), 'immediate completion must queue transition from W trakcie');
+assert(actions.includes("payload: { status: 'Zakończone' }"), 'immediate completion must queue Zakończone');
+assert(actions.includes('performOfflineJobSync?.()'), 'photo completion should trigger status sync');
+assert(app.includes('performOfflineJobSync,'), 'App must pass sync callback into actions');
+console.log('PASS smoke-worker-create-status-v976');

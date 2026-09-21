@@ -1,0 +1,462 @@
+.nameplateCapture {
+  display: grid;
+  gap: 7px;
+  margin-top: 4px;
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.nameplateCapture.hasPhoto {
+  border-color: #86efac;
+  background: #f7fff9;
+}
+
+.nameplateCaptureSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 3px 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nameplateCaptureSummaryText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nameplateCaptureSummaryText strong {
+  color: #0f172a;
+  font-size: 12px;
+}
+
+.nameplateCaptureSummaryText span {
+  color: #475569;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.nameplateCaptureStatus {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.nameplateCaptureStatus.ready {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.nameplateCaptureStatus.missing {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.nameplateCapturePreview {
+  overflow: hidden;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.nameplateCapturePreview img {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  background: #fff;
+}
+
+.nameplateCaptureActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.nameplateCaptureBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 36px;
+  padding: 0 9px;
+  font-size: 10px;
+}
+
+.nameplateCaptureRemoveBtn {
+  margin-left: auto;
+}
+
+@media (max-width: 430px) {
+  .nameplateCaptureActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .nameplateCaptureActions .nameplateCaptureBtn:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .nameplateCaptureRemoveBtn {
+    grid-column: 1 / -1;
+    justify-self: end;
+    margin-left: 0;
+  }
+}
+
+.nameplateCapture.compact {
+  gap: 6px;
+  margin-top: 0;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: #fbfcfe;
+}
+
+.nameplateCapture.compact.hasPhoto {
+  background: #f7fff9;
+}
+
+.nameplateCapture.compact .nameplateCaptureSummary {
+  min-height: 36px;
+}
+
+.nameplateCapture.compact .nameplateCaptureSummaryText strong {
+  font-size: 12px;
+}
+
+.nameplateCapture.compact .nameplateCaptureSummaryText span {
+  font-size: 10px;
+}
+
+.nameplateCapture.compact .nameplateCaptureStatus {
+  font-size: 9px;
+}
+
+.nameplateCapture.compact .nameplateCaptureActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.nameplateCapture.compact .nameplateCaptureCameraBtn {
+  min-height: 42px;
+  border-radius: 13px;
+  background: #1464f4;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.nameplateCapture.compact .nameplateCaptureGalleryBtn {
+  min-height: 42px;
+  border-radius: 13px;
+  font-size: 10px;
+}
+
+.nameplateCapture.compact .nameplateCaptureRemoveBtn {
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin-left: 0;
+  font-size: 9px;
+}
+
+/* Mobilne kadrowanie tabliczki po wykonaniu zdjęcia. */
+.nameplateCropModal {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  min-height: 100dvh;
+  color: #f8fafc;
+  background: #020617;
+  overscroll-behavior: contain;
+}
+
+.nameplateCropHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: max(14px, env(safe-area-inset-top)) 16px 10px;
+  background: rgba(2, 6, 23, 0.96);
+}
+
+.nameplateCropHeader > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nameplateCropHeader strong {
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.nameplateCropHeader span {
+  overflow: hidden;
+  color: #cbd5e1;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameplateCropClose {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+}
+
+.nameplateCropHelp {
+  padding: 8px 18px 12px;
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.nameplateCropStage {
+  display: grid;
+  min-height: 0;
+  padding: 0 12px;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.nameplateCropImageWrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  line-height: 0;
+  background: #000;
+}
+
+.nameplateCropImageWrap > img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 230px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.nameplateCropBox {
+  position: absolute;
+  z-index: 2;
+  border: 2px solid #38bdf8;
+  border-radius: 3px;
+  box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.67), 0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+  cursor: move;
+  touch-action: none;
+}
+
+.nameplateCropGrid {
+  position: absolute;
+  display: block;
+  background: rgba(255, 255, 255, 0.44);
+  pointer-events: none;
+}
+
+.nameplateCropGrid.horizontal {
+  right: 0;
+  left: 0;
+  height: 1px;
+}
+
+.nameplateCropGrid.horizontal.one { top: 33.333%; }
+.nameplateCropGrid.horizontal.two { top: 66.666%; }
+
+.nameplateCropGrid.vertical {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.nameplateCropGrid.vertical.one { left: 33.333%; }
+.nameplateCropGrid.vertical.two { left: 66.666%; }
+
+.nameplateCropHandle {
+  position: absolute;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  touch-action: none;
+}
+
+.nameplateCropHandle::after {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: #fff;
+  border-style: solid;
+  content: "";
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+
+.nameplateCropHandle.topLeft { top: -15px; left: -15px; }
+.nameplateCropHandle.topRight { top: -15px; right: -15px; }
+.nameplateCropHandle.bottomLeft { bottom: -15px; left: -15px; }
+.nameplateCropHandle.bottomRight { right: -15px; bottom: -15px; }
+
+.nameplateCropHandle.topLeft::after { right: 0; bottom: 0; border-width: 3px 0 0 3px; }
+.nameplateCropHandle.topRight::after { bottom: 0; left: 0; border-width: 3px 3px 0 0; }
+.nameplateCropHandle.bottomLeft::after { top: 0; right: 0; border-width: 0 0 3px 3px; }
+.nameplateCropHandle.bottomRight::after { top: 0; left: 0; border-width: 0 3px 3px 0; }
+
+.nameplateCropError {
+  margin: 8px 14px 0;
+  padding: 9px 11px;
+  border: 1px solid #f87171;
+  border-radius: 10px;
+  background: rgba(127, 29, 29, 0.72);
+  color: #fee2e2;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.nameplateCropFooter {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 10px;
+  padding: 12px 14px max(14px, env(safe-area-inset-bottom));
+  background: rgba(2, 6, 23, 0.96);
+}
+
+.nameplateCropFooter .btn {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.nameplateCropFooter .btn.secondary {
+  border-color: #475569;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .nameplateCropModal {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .nameplateCropHeader,
+  .nameplateCropHelp,
+  .nameplateCropStage {
+    grid-column: 1;
+  }
+
+  .nameplateCropFooter {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    align-content: end;
+    grid-template-columns: 1fr;
+  }
+
+  .nameplateCropError {
+    position: fixed;
+    right: 14px;
+    bottom: 130px;
+    width: 230px;
+  }
+
+  .nameplateCropImageWrap > img {
+    max-height: calc(100dvh - 105px);
+  }
+}
+
+/* v8.62 — kadr musi być liczony dokładnie względem widocznego obrazu.
+   Starsza globalna reguła `img { width: 40% !important; }` rozdzielała
+   rozmiar obrazu i ramki, przez co zapisywał się inny fragment zdjęcia. */
+.nameplateCropImageWrap {
+  flex: 0 1 auto;
+  width: fit-content;
+  height: fit-content;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.nameplateCropImageWrap > img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 230px) !important;
+  object-fit: contain !important;
+}
+
+/* Podgląd tabliczki zawsze pokazuje cały zapisany kadr, bez ponownego obcinania. */
+.nameplateCapturePreview img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 70dvh !important;
+  object-fit: contain !important;
+}
+
+/* v8.64 — lokalna kontrola jakości tabliczki bez OCR. */
+.nameplateQualityWarning {
+  margin: 8px 14px 0;
+  padding: 10px 12px;
+  border: 1px solid #fbbf24;
+  border-radius: 12px;
+  background: rgba(120, 53, 15, 0.76);
+  color: #fef3c7;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.nameplateQualityWarningTitle {
+  margin-bottom: 5px;
+  color: #fff7ed;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.nameplateQualityWarning ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.nameplateQualityAdjustBtn {
+  margin-top: 8px;
+  padding: 6px 9px;
+  border: 1px solid #fcd34d;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+}

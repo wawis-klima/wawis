@@ -1,0 +1,14 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
+const modal = read('src','mobile791','components','modals','JobFormModal.jsx');
+const actions = read('src','mobile791','hooks','useSelectedJobActions.js');
+assert.ok(modal.includes('{!editingJobId ? (') && modal.includes('workerNewClientCommentBlock'), 'Nowy montaż powinien mieć zwykły komentarz autora niezależnie od roli.');
+assert.ok(modal.includes('{isAdmin && editingJobId ? (') && modal.includes('jobFormAdminFields'), 'Komentarz administratora ma pozostać tylko przy edycji istniejącego montażu.');
+assert.ok(modal.includes('placeholder="Komentarz do montażu"'), 'Brak zwykłego pola komentarza nowego montażu.');
+assert.ok(actions.includes("if (String(form.worker_comment || '').trim() && createdJob?.id)"), 'Komentarz nowego montażu nie zapisuje się dla każdego autora.');
+assert.ok(!actions.includes("if (!isAdmin && String(form.worker_comment || '').trim() && createdJob?.id)"), 'Komentarz nadal jest ograniczony do pracownika.');
+assert.ok(actions.includes("type: 'Komentarz'"), 'Komentarz autora powinien być zwykłym komentarzem.');
+console.log('PASS smoke-new-job-author-comment-v1053');

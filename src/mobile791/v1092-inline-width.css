@@ -1,0 +1,50 @@
+@import './v1100-mobile-details-compact.css';
+@import './v1101-mobile-details-real-compact.css';
+@import './v1102-mobile-details-line-fit.css';
+@import './v1103-completed-note-compact.css';
+
+/* WAWIS 11.00 production rebuild after deploy-gate metadata repair. */
+
+/* WAWIS 10.92 — production mobile inline job width guard.
+   This file is imported by the real src/main.jsx mobile runtime. */
+@media (max-width: 700px) {
+  .mobileJobsShellV959,
+  .mobileJobList,
+  .mobileJobList > *,
+  .mobileJobCard,
+  .mobileJobCardButton,
+  .mobileInlineJobDetails,
+  .mobileInlineJobDetails > *,
+  .mobileInlineJobDetails .premiumCard {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobileJobsShellV959,
+  .mobileJobList,
+  .mobileJobCard,
+  .mobileJobCardButton,
+  .mobileInlineJobDetails,
+  .mobileInlineJobDetails .premiumCard {
+    width: 100% !important;
+  }
+
+  .mobileJobList {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .mobileInlineJobDetails,
+  .mobileInlineJobDetails .premiumCard {
+    overflow-x: hidden !important;
+  }
+
+  .adminNoteText {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+}

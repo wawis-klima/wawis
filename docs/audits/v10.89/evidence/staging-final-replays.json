@@ -1,0 +1,21 @@
+{
+  "staging": "hlfvjbidopyraycwkbfg",
+  "at": "2026-09-17T18:00:46.642Z",
+  "identity": {
+    "current_database": "postgres",
+    "server": "2a05:d014:7c9:4e00:26c2:7286:1831:d5e7/128"
+  },
+  "results": [
+    {
+      "pass": 1,
+      "sha256": "a75ba98a17082c9159ed621e3cd707c4309fdc3611343c8cefa23e37313ef3cd",
+      "success": true
+    },
+    {
+      "pass": 2,
+      "sha256": "a75ba98a17082c9159ed621e3cd707c4309fdc3611343c8cefa23e37313ef3cd",
+      "success": true
+    }
+  ],
+  "resetApplicationSchemas": true
+}

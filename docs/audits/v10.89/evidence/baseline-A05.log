@@ -1,0 +1,20 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: delayed SENT cannot regress DELIVERED
++ actual - expected
+
++ 'provider_sent'
+- 'delivered'
+
+    at file:///C:/Users/wasik/Documents/Codex/2026-09-17/files-pasted-by-the-user-wawis/work/wawis-fix/scripts/audit-v1089/sms-race.mjs:12:29 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'provider_sent',
+  expected: 'delivered',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.1

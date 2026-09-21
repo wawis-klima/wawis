@@ -1,0 +1,43 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.resolve(__dirname, '..');
+const layoutSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AppAuthenticatedLayout.jsx'), 'utf8');
+const calendarSource = fs.readFileSync(path.join(root, 'src', 'components', 'calendar', 'CalendarPanel.jsx'), 'utf8');
+const stylesSource = fs.readFileSync(path.join(root, 'src', 'styles.css'), 'utf8');
+
+assert.match(layoutSource, /activeModule === "calendar" \? "adminDesktopPage calendarDesktopPageWide" : "page pageDesktopStatusLeft adminDesktopPage"/);
+assert.match(calendarSource, /calendarModulePageWide/);
+assert.match(calendarSource, /calendarDesktopWideSection/);
+assert.doesNotMatch(calendarSource, /Kalendarz montaży/);
+assert.doesNotMatch(calendarSource, /Sprawdzaj montaże przypisane/);
+assert.doesNotMatch(calendarSource, /Aktualny miesiąc/);
+assert.match(calendarSource, /calendarToolbarCompact/);
+assert.match(calendarSource, /calendarMonthTitle/);
+assert.doesNotMatch(calendarSource, /calendarHeroCard/);
+assert.doesNotMatch(stylesSource, /\.calendarHeroCard/);
+const wideSectionMatches = calendarSource.match(/calendarDesktopWideSection/g) || [];
+assert.ok(wideSectionMatches.length >= 2, 'CalendarPanel powinien rozszerzać toolbar i siatkę kalendarza');
+assert.match(stylesSource, /\.adminDesktopPage\{max-width:none;width:100%;margin:0;padding:0;background:transparent\}/);
+assert.match(stylesSource, /\.calendarDesktopPageWide\{padding-top:0;background:transparent;display:block;width:100%;max-width:none;margin:0\}/);
+assert.match(stylesSource, /\.calendarToolbarCompact\{min-height:70px\}/);
+assert.match(stylesSource, /\.calendarToolbar \.desktopToolbarActionBtn\{min-height:42px;min-width:136px/);
+assert.match(stylesSource, /\.calendarDay\{[^}]*min-height:132px/);
+assert.match(stylesSource, /calendarDesktopPageWide \.twoCol,\.calendarDesktopPageWide \.twoCol > div,\.calendarDesktopPageWide \.calendarModulePageWide,\.calendarDesktopPageWide \.calendarDesktopWideSection\{width:100%;max-width:none\}/);
+assert.match(stylesSource, /v8\.13 calendar right edge fit/);
+assert.match(stylesSource, /\.calendarDesktopPageWide\{[\s\S]*width:100% !important;[\s\S]*max-width:100% !important;[\s\S]*min-width:0 !important;/);
+assert.doesNotMatch(stylesSource, /calendarDesktopPageWide\{width:calc\(100vw - 236px - 58px\);max-width:calc\(100vw - 236px - 58px\)\}/);
+assert.match(stylesSource, /@media\(min-width:1400px\)\{\.calendarContentGrid\{grid-template-columns:minmax\(0,1\.8fr\) minmax\(400px,\.78fr\);gap:20px\}\.calendarDay\{min-height:140px\}/);
+assert.match(stylesSource, /@media \(min-width:1400px\)\{[\s\S]*\.calendarContentGrid\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(320px,360px\);/);
+assert.match(stylesSource, /@media\(min-width:1600px\)\{\.calendarContentGrid\{grid-template-columns:minmax\(0,2\.05fr\) minmax\(440px,\.86fr\)\}\.calendarDay\{min-height:146px\}\}/);
+assert.match(stylesSource, /@media \(min-width:1600px\)\{[\s\S]*\.calendarContentGrid\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(340px,380px\);/);
+assert.match(stylesSource, /\.adminDesktopPage \.twoColDesktopStatusLeft\.singleModuleColumn\{\s*grid-template-columns:minmax\(0,1fr\) !important;\s*\}/);
+assert.match(stylesSource, /\.adminDesktopPage \.twoColDesktopStatusLeft\.singleModuleColumn > div:first-child\{[\s\S]*grid-column:1 \/ -1;[\s\S]*width:100%;/);
+const broadTwoColumnRuleIndex = stylesSource.indexOf('.adminDesktopPage .twoColDesktopStatusLeft{grid-template-columns:minmax(0,.92fr) minmax(500px,1.08fr);align-items:start}');
+const singleColumnOverrideIndex = stylesSource.indexOf('.adminDesktopPage .twoColDesktopStatusLeft.singleModuleColumn');
+assert.ok(broadTwoColumnRuleIndex >= 0, 'Brak szerokiej reguły dwukolumnowej, smoke nie wykrywa konfliktu');
+assert.ok(singleColumnOverrideIndex > broadTwoColumnRuleIndex, 'Override singleModuleColumn musi być po regule dwukolumnowej, inaczej prawa pusta kolumna wróci');
+
+console.log('Calendar width smoke OK');
+process.exit(0);
