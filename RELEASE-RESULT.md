@@ -1,13 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.07
+- 11.08
 
 ## Tryb
 - mobile
 
 ## Wygenerowano
-- 2026-09-21T12:23:06.239Z
+- 2026-09-21T15:17:09.367Z
 
 ## Podsumowanie
 - status lokalny: CZĘŚCIOWY — oczekuje na CI
@@ -40,4 +40,4 @@
 
 
 ## Kontrola CI
-Lokalny Playwright nie uruchomił przeglądarki, ponieważ obraz roboczy nie zawiera pliku wykonywalnego Chromium. Nie jest to błąd aplikacji; pełny przebieg E2E jest obowiązkowym warunkiem scalenia gałęzi w GitHub Actions. Dla 11.07 lokalnie przeszły regresje zapisu tabliczek, kreatora urządzeń i zapisu danych urządzeń.
+Lokalny Playwright nie uruchomił przeglądarki, ponieważ obraz roboczy nie zawiera pliku wykonywalnego Chromium. To ograniczenie środowiska, a nie błąd aplikacji. Pełny mobilny E2E pozostaje obowiązkową bramką w GitHub Actions przed scaleniem. Lokalnie przeszły wszystkie 10 grup regresji, build, kontrola pakietu, CSS dystrybucji oraz test 11.08 nagłówka, adresu i komentarzy.

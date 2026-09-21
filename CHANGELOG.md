@@ -1,3 +1,10 @@
+## 11.08
+- Nazwa klienta w mobilnych szczegółach ma teraz taką samą wielkość jak nazwa na karcie montażu na liście.
+- Adres jest wyśrodkowany w kolumnie wartości tak samo jak e-mail i numer telefonu.
+- W komentarzach usunięto zbędny napis `Komentarz`; autor pozostaje po lewej, a mniejszy przycisk `Usuń` znajduje się w tym samym wierszu po prawej.
+- Zmniejszono czcionkę treści, padding i wysokość kafelków komentarzy bez zmiany ich danych ani działania.
+- Bez zmian w Supabase, danych produkcyjnych, rolach, PUSH, zdjęciach i logice zapisu.
+
 ## 11.07
 - Po zapisie tabliczek aplikacja zawsze odczytuje ich rekordy ponownie z serwera i porównuje każdą właśnie dodaną tabliczkę JZ/JW.
 - Zielony stan lokalny ani zakończony upload pliku nie zamykają już kreatora, jeśli w bazie brakuje choć jednego oczekiwanego rekordu zdjęcia.

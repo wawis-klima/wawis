@@ -932,9 +932,9 @@ export default function JobDetailsPanel({
           {comments.map((comment) => (
             <div key={comment.id} className="comment">
               <div className="commentHeader">
-                <div>
-                  <strong>{comment.author_name}</strong> — {comment.type}
-                  {comment.offline_pending ? <span className="muted"> · zapisano na telefonie</span> : null}
+                <div className="commentAuthor">
+                  <strong>{comment.author_name}</strong>
+                  {comment.offline_pending ? <span className="muted commentPendingLabel">zapisano na telefonie</span> : null}
                 </div>
                 {canDeleteJobComment(comment, isAdmin) ? (
                   <button
@@ -947,7 +947,7 @@ export default function JobDetailsPanel({
                   </button>
                 ) : null}
               </div>
-              <div>{comment.text}</div>
+              <div className="commentText">{comment.text}</div>
             </div>
           ))}
           {comments.length === 0 && showDetailsLoading ? <div className="muted">Ładowanie komentarzy…</div> : null}
