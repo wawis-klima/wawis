@@ -1,3 +1,9 @@
+## 11.09
+- Dolna nazwa klienta w mobilnych szczegółach montażu jest wyśrodkowana na szerokości karty.
+- Zmniejszono napis i wysokość przycisku `Dodaj komentarz`, aby nie dominował nad komentarzami pracowników.
+- Nagłówek `Urządzenia i tabliczki` zachowuje dotychczasowy rozmiar.
+- Zmiana dotyczy wyłącznie mobilnego wyglądu; bez zmian w danych, Supabase, PUSH i logice zapisu.
+
 ## 11.08
 - Nazwa klienta w mobilnych szczegółach ma teraz taką samą wielkość jak nazwa na karcie montażu na liście.
 - Adres jest wyśrodkowany w kolumnie wartości tak samo jak e-mail i numer telefonu.
