@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { INITIAL_PUSH_STATE } from "../utils/pushState.js";
+import { INITIAL_PUSH_STATE, isPushDisplayOn } from "../utils/pushState.js";
 
 const PUSH_STATE_STORAGE_PREFIX = "wawis:push-state:v3";
 const LEGACY_PUSH_STATE_SESSION_STORAGE_PREFIX = "wawis:push-state:v2";
@@ -197,7 +197,7 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
 
   async function togglePush() {
     if (pushBusy) return false;
-    const isOn = Boolean(pushState?.ready && pushState?.userEnabled !== false);
+    const isOn = isPushDisplayOn(pushState);
     return isOn ? disablePush() : enablePush();
   }
 
