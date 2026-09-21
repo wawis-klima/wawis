@@ -1,3 +1,10 @@
+## 11.01
+- Poprawiono realny układ mobilnych szczegółów na szerokości iPhone'a po weryfikacji zrzutów z produkcji.
+- Pełny adres e-mail mieści się w jednym wierszu zamiast kończyć wielokropkiem; zwężono kolumnę etykiet i dopasowano wielkość danych.
+- Zmniejszono wysokość wierszy danych, kart urządzeń, odstępy między urządzeniami oraz przyciski akcji pod listą.
+- Zagęszczono nagłówek i treść komentarza administratora bez zmiany danych ani logiki aplikacji.
+- Zmiana jest CSS-only; bez zmian w Supabase, rolach, PUSH, protokołach i logice biznesowej.
+
 ## 11.00
 - Zmniejszono pionowe odstępy i paddingi w mobilnych szczegółach montażu, aby karta zajmowała mniej miejsca bez utraty czytelności.
 - E-mail, telefon i adres pozostają w jednym wierszu; przy skrajnie małej szerokości dłuższa wartość jest bezpiecznie skracana wielokropkiem zamiast łamać układ.

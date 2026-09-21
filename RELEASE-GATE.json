@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.00",
+  "version": "11.01",
   "scope": "mobile",
-  "release_branch": "release/v11.00",
+  "release_branch": "release/v11.01",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Dla 11.00 wykorzystano aktualny informacyjny baseline po 10.99. Zmiana jest wyłącznie prezentacyjna i nie dotyka PUSH, Supabase ani danych produkcyjnych."
+    "notes": "Dla 11.01 wykorzystano aktualny informacyjny baseline po 11.00. Zmiana naprawia wyłącznie mobilny układ szczegółów i nie dotyka PUSH, Supabase ani danych produkcyjnych."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.00.zip"
+    "file_name": "klima-app-v11.01.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.00",
+    "source_branch": "release/v11.01",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -25,7 +25,7 @@
     "archive_deferred": true,
     "effective_files": [
       "src/mobile791/v1092-inline-width.css",
-      "src/mobile791/v1100-mobile-details-compact.css"
+      "src/mobile791/v1101-mobile-details-real-compact.css"
     ]
   },
   "postdeploy_diagnostics": {
