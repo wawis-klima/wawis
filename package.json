@@ -166,8 +166,7 @@
     "test:smoke:push-logout-handoff": "node scripts/smoke-push-logout-handoff-v1076.mjs",
     "test:smoke:push-safety-v1078": "node scripts/smoke-push-safety-v1078.mjs",
     "test:smoke:feed-stale-v1079": "node scripts/smoke-mobile-feed-stale-v1079.mjs",
-    "test:smoke:desktop-push-disabled": "node scripts/smoke-desktop-push-disabled-v1099.cjs",
-    "test:smoke:mobile-details-compact": "node scripts/smoke-mobile-details-compact-v1100.cjs"
+    "test:smoke:desktop-push-disabled": "node scripts/smoke-desktop-push-disabled-v1099.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
