@@ -1,2 +1,0 @@
--- v8.21: zmiany wyłącznie w UI desktopowego panelu szczegółów montażu.
--- Brak zmian w strukturze bazy danych.

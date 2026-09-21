@@ -1,3 +1,0 @@
--- Wawis Klimatyzacja v8.23
--- Korekta wizualna desktopowych paneli Kontrahenci/Urządzenia.
--- Brak zmian w bazie danych.

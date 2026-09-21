@@ -1,6 +1,0 @@
--- Wawis Klimatyzacja v8.22
--- Zmiany w tej wersji dotyczą wyłącznie frontendu desktopowego:
--- - panel boczny Kontrahenci,
--- - panel boczny Urządzenia,
--- - stabilny układ Kalendarza z osobnym przewijaniem prawego panelu.
--- Migracja bazy danych nie jest wymagana.

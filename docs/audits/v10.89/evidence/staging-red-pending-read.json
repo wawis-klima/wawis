@@ -1,8 +1,0 @@
-{
-  "staging": "hlfvjbidopyraycwkbfg",
-  "at": "2026-09-17T17:41:06.590Z",
-  "checks": [
-    "Real Auth createUser trigger ignores forged metadata, real password sign-in for five roles"
-  ],
-  "error": "pending leaked photos"
-}

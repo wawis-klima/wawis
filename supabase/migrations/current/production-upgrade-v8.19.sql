@@ -1,3 +1,0 @@
--- Wawis Klima App v8.19
--- Zmiana wyłącznie frontend/CSS: desktopowy moduł Montaże ma niezależne przewijanie lewej tabeli i prawego panelu szczegółów.
--- Brak zmian struktury bazy danych.

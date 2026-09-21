@@ -1,1 +1,0 @@
-GitHub Actions release workflows removed. Production deployment is handled by Vercel from main.

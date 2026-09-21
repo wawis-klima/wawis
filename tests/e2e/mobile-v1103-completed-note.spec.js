@@ -49,6 +49,10 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
 
+    await expect(page.locator('.contactEmailInfoItem .emailLink')).toBeVisible();
+    await expect(page.locator('.contactPhoneInfoItem .phoneLink')).toBeVisible();
+    await expect(page.locator('.contactAddressInfoItem .addressLink')).toBeVisible();
+
     const geometry = await page.locator('.mobileInlineJobDetails').evaluate((root) => {
       const centerDifference = (rowSelector, linkSelector) => {
         const value = root.querySelector(`${rowSelector} .infoValue`).getBoundingClientRect();
@@ -73,3 +77,4 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     expect(Math.max(...geometry.rowHeights)).toBeLessThanOrEqual(32);
   });
 });
+4bf6c1736e70749f725efdd5c68125a8b365177b

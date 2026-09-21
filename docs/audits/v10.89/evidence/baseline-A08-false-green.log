@@ -1,5 +1,0 @@
-RED N2 reproduced on 10.84: DB job completion guard does not validate JW/JZ nameplates.
-RED N3 reproduced on 10.84: a competing protocol record can be accepted as own success and replace is not CAS-bound.
-RED N4 reproduced on 10.84: fuel retry has no stable operation UUID in the INSERT.
-RED N5 reproduced on 10.84: every retry gets a new request key and provider uncertainty is not reconciled.
-GO: 10.88 N2/N3/N4/N5 behavioral contracts are closed.

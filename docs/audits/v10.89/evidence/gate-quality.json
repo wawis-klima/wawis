@@ -1,9 +1,0 @@
-{
-  "finding": "A08",
-  "fault": "baseline PUSH E1 CLEAR E2 generation1",
-  "baselineGateExit": 0,
-  "baselineResult": "RED quality: accepted known runtime regression",
-  "currentGateExit": 1,
-  "currentResult": "GREEN quality: rejected same behavioral regression",
-  "sourceRestored": true
-}

@@ -1,5 +1,0 @@
-LOCAL PROD-DEFINITION RLS PASS admin read= 1 direct update= 1
-LOCAL PROD-DEFINITION RLS PASS worker read= 1 direct update= 0
-LOCAL PROD-DEFINITION RLS PASS pending read= 0 direct update= 0
-LOCAL PROD-DEFINITION RLS PASS no-profile read= 0 direct update= 0
-LOCAL ANON direct contractor access denied. Scope: selected exact production policies/functions, not entire Supabase.
