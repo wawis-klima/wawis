@@ -484,6 +484,8 @@ export function useSelectedJobActions({
         alert(`Zmiany zapisano, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.`);
       } else if (documentationResult.queuedCount) {
         alert(`${documentationResult.queuedCount} ${documentationResult.queuedCount === 1 ? 'zdjęcie zapisano' : 'zdjęcia zapisano'} na telefonie. Aplikacja wyśle je automatycznie.`);
+      } else if (serialOnlyMode) {
+        alert('Urządzenia i tabliczki zostały zapisane.');
       }
     } catch (error) {
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
