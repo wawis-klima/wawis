@@ -1,0 +1,17 @@
+/* WAWIS 11.09 — mniejsza akcja komentarza i wyśrodkowany tytuł szczegółów. */
+@media (max-width: 700px) {
+  /* Dolna nazwa klienta, nad danymi kontaktowymi, jest wyśrodkowana. */
+  .mobileInlineJobDetails .detailTitle {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Przycisk pozostaje wygodny do dotknięcia, ale jego napis nie dominuje sekcji. */
+  .mobileInlineJobDetails .commentAddBtn {
+    min-width: 150px !important;
+    min-height: 38px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+  }
+}

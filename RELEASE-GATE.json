@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.08",
+  "version": "11.09",
   "scope": "mobile",
-  "release_branch": "release/v11.08",
+  "release_branch": "release/v11.09",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Dla 11.08 porównano dwa zrzuty mobilnego widoku Żurawia: nagłówek szczegółów był większy od nazwy na karcie, adres nie był optycznie wyśrodkowany, a typ komentarza oraz duży przycisk powodowały niepotrzebne łamanie nagłówka. Poprawka dotyczy wyłącznie mobilnego układu i tekstu prezentacyjnego."
+    "notes": "Dla 11.09 zweryfikowano mobilny widok zakończonego montażu Żurawia: dolna nazwa klienta wymagała wyśrodkowania, a napis Dodaj komentarz był wizualnie zbyt duży. Nagłówek Urządzenia i tabliczki pozostaje bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.08.zip"
+    "file_name": "klima-app-v11.09.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.08",
+    "source_branch": "release/v11.09",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
