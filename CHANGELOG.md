@@ -1,3 +1,10 @@
+## 11.02
+- Rozdzielono mobilny układ danych kontaktowych od układu dat, zamiast wymuszać jedną szerokość etykiety na wszystkich wierszach.
+- Pełny adres e-mail otrzymał własną szerokość i rozmiar tekstu dopasowany do ekranu iPhone'a; pozostaje w jednej linii bez ucięcia.
+- Etykietę `Data montażu` skrócono do `Data`, dzięki czemu nie łamie się na dwa wiersze.
+- Zmniejszono wysokość i odstępy wierszy danych, pięciu kart urządzeń oraz przycisków pod listą.
+- Bez zmian w Supabase, danych klientów, rolach, PUSH, zdjęciach i logice urządzeń.
+
 ## 11.01
 - Poprawiono realny układ mobilnych szczegółów na szerokości iPhone'a po weryfikacji zrzutów z produkcji.
 - Pełny adres e-mail mieści się w jednym wierszu zamiast kończyć wielokropkiem; zwężono kolumnę etykiet i dopasowano wielkość danych.

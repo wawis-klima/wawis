@@ -379,7 +379,7 @@ export default function JobDetailsPanel({
           <h2 className="detailTitle">{selectedJob.client || selectedJob.title}</h2>
 
           <div className="detailMeta">
-            <div className="infoItem">
+            <div className="infoItem contactInfoItem contactEmailInfoItem">
               <span className="infoLabel infoLabelWithIcon"><IconMail /><span>Email</span></span>
               <div className="infoValue">
                 {selectedJob.email ? (
@@ -397,7 +397,7 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            <div className="infoItem">
+            <div className="infoItem contactInfoItem contactPhoneInfoItem">
               <span className="infoLabel infoLabelWithIcon"><IconPhone /><span>Telefon</span></span>
               <div className="infoValue">
                 {selectedJob.phone ? (
@@ -415,7 +415,7 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            <div className="infoItem">
+            <div className="infoItem contactInfoItem contactAddressInfoItem">
               <span className="infoLabel infoLabelWithIcon"><IconMapPin /><span>Adres</span></span>
               <div className="infoValue">
                 <JobAddressLink
@@ -428,7 +428,7 @@ export default function JobDetailsPanel({
             </div>
 
             <div className="infoItem jobDateInfoItem jobDateInfoItemV995" data-date-layout="9.95">
-              <span className="infoLabel infoLabelWithIcon"><IconCalendar /><span>Data montażu</span></span>
+              <span className="infoLabel infoLabelWithIcon"><IconCalendar /><span>Data</span></span>
               <div className="infoValue jobDateInfoValue jobDateInfoValueV995">{formatInstallationDate(selectedJob.installation_date)}</div>
             </div>
 
