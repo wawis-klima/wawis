@@ -1,4 +1,5 @@
 import React from "react";
+import { isPushDisplayOn } from "../utils/pushState.js";
 
 function getPushStatusLabel(pushState) {
   const statusKnown = pushState?.statusKnown === true || pushState?.userEnabled === false;
@@ -8,6 +9,7 @@ function getPushStatusLabel(pushState) {
   if (pushState.permission === "denied") return "PUSH · zablokowany w ustawieniach systemowych";
   if (pushState?.userEnabled === false) return "PUSH wyłączony";
   if (pushState.ready) return "PUSH włączony";
+  if (isPushDisplayOn(pushState)) return "PUSH włączony · synchronizacja w tle";
   if (pushState.permission === "granted") return "PUSH · wymaga synchronizacji";
   return "PUSH wyłączony · dotknij, aby włączyć";
 }
@@ -19,7 +21,7 @@ export default function PushNotificationsControl({
   onToggle,
 }) {
   const statusKnown = pushState?.statusKnown === true || pushState?.userEnabled === false;
-  const isOn = Boolean(statusKnown && pushState?.ready && pushState?.userEnabled !== false);
+  const isOn = Boolean(statusKnown && isPushDisplayOn(pushState));
   const isChecking = !statusKnown;
   const label = busy ? "PUSH · synchronizacja" : getPushStatusLabel(pushState);
   const actionLabel = isChecking ? "Sprawdzanie PUSH" : isOn ? "Wyłącz PUSH" : "Włącz PUSH";

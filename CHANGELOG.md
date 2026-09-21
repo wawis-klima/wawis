@@ -1,3 +1,10 @@
+## 11.05
+- Mobilny przełącznik PUSH pokazuje zielone `ON` zgodnie z preferencją użytkownika, gdy iPhone ma przyznaną zgodę systemową, także podczas chwilowej synchronizacji lub automatycznej naprawy subskrypcji.
+- Chwilowy brak pełnego stanu technicznego `ready` nie jest już błędnie przedstawiany jako ręczne `OFF`.
+- Ręczne wyłączenie, brak konfiguracji, brak obsługi oraz systemowa blokada powiadomień nadal pokazują rzeczywisty stan `OFF`.
+- Akcja przełącznika korzysta z tej samej interpretacji co jego wygląd, więc zielone `ON` wyłącza PUSH zamiast ponownie próbować go włączać.
+- Dodano regresję `smoke-push-display-v1105.cjs`; bez zmian w Supabase, RLS, Edge Functions i danych produkcyjnych.
+
 ## 11.04
 - E-mail i adres w mobilnych szczegółach są mierzone względem faktycznej szerokości kolumny danych.
 - Czcionka pozostaje w normalnym rozmiarze, gdy wartość mieści się w jednym wierszu, i zmniejsza się płynnie wyłącznie przy przepełnieniu.
