@@ -1,3 +1,9 @@
+## 11.07
+- Po zapisie tabliczek aplikacja zawsze odczytuje ich rekordy ponownie z serwera i porównuje każdą właśnie dodaną tabliczkę JZ/JW.
+- Zielony stan lokalny ani zakończony upload pliku nie zamykają już kreatora, jeśli w bazie brakuje choć jednego oczekiwanego rekordu zdjęcia.
+- Przy niepełnym potwierdzeniu kreator pozostaje otwarty, pokazuje jednoznaczny komunikat i pozwala ponowić zapis bez utraty wybranych zdjęć.
+- Poprawka wynika z analizy montażu Żurawia 4; nie zmienia danych, RLS ani schematu Supabase.
+
 ## 11.06
 - W kreatorze urządzeń krok pośredni ma teraz nazwę `Dalej do podsumowania`, a właściwy zapis `Zapisz urządzenia i tabliczki`, żeby pracownik nie pomylił przejścia między ekranami z zapisaniem zdjęć.
 - Po udanym zapisie pojawia się jednoznaczne potwierdzenie, a kreatora nie można ręcznie zamknąć w trakcie zapisywania danych i tabliczek.
