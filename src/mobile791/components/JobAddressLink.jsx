@@ -8,16 +8,18 @@ export default function JobAddressLink({
   onClick,
   title = "Otwórz adres w Google Maps",
   ariaLabel,
+  linkRef,
 }) {
   const address = getJobAddress(job);
   const mapsUrl = getGoogleMapsUrl(address);
 
   if (!mapsUrl) {
-    return <span className={className}>{emptyLabel}</span>;
+    return <span ref={linkRef} className={className}>{emptyLabel}</span>;
   }
 
   return (
     <a
+      ref={linkRef}
       href={mapsUrl}
       target="_blank"
       rel="noreferrer"
