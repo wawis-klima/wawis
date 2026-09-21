@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.01
+- 11.02
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.01
+# Wawis Klimatyzacja — wersja 11.02
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,6 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.02` — osobne szerokości wierszy kontaktu i dat mieszczą pełny e-mail oraz etykiety w jednej linii, a dane, urządzenia i przyciski są wyraźnie niższe i ciaśniej ułożone.
 - wersja `11.01` — mobilne szczegóły montażu są realnie zagęszczone na szerokości iPhone'a, pełny e-mail pozostaje widoczny, a wiersze urządzeń i przyciski zajmują mniej miejsca.
 - wersja `11.00` — mobilne szczegóły montażu są bardziej zwarte, a e-mail, telefon, adres i nagłówki urządzeń pozostają w jednym wierszu na ekranie telefonu.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
