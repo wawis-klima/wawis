@@ -8,6 +8,4 @@ import './v1062-contractors-mobile.css'
 import './v1064-contractors-compact.css'
 import './v1090-details-width.css'
 import './v1091-mobile-details-hardening.css'
-import './v1092-inline-width.css'
-import './v1100-mobile-details-compact.css'
 ReactDOM.createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>)
