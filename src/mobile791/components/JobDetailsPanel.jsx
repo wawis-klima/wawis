@@ -1,7 +1,7 @@
 import React from "react";
 import MOBILE_DEVICE_TABLE_V889_CSS from "./mobile-device-table-v889.css.js";
 import { IconCalendar, IconCamera, IconCheckCircle, IconClock, IconFileText, IconImage, IconMail, IconMapPin, IconMessageCircle, IconPhone, IconUsers } from "./ui.jsx";
-import { getInitials, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
+import { getInitials, getJobAddress, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
 import JobAddressLink from "./JobAddressLink.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, canWorkerRestartJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
@@ -41,6 +41,61 @@ function formatViewerChipName(fullName = "") {
   if (parts.length === 1) return parts[0];
   const [firstName, ...rest] = parts;
   return `${firstName.charAt(0)}. ${rest.join(" ")}`;
+}
+
+function useAutoFitSingleLineText(text, { maxFontSize, minFontSize = 10.5 }) {
+  const elementRef = React.useRef(null);
+
+  React.useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!element) return undefined;
+
+    const container = element.parentElement;
+    if (!container) return undefined;
+
+    let animationFrame = 0;
+    let cancelled = false;
+
+    const fitText = () => {
+      if (cancelled) return;
+
+      element.style.setProperty('font-size', `${maxFontSize}px`, 'important');
+      element.dataset.autoFit = 'default';
+      element.dataset.autoFitFont = maxFontSize.toFixed(1);
+
+      const availableWidth = Math.max(0, container.clientWidth - 2);
+      const naturalWidth = element.scrollWidth;
+      if (!availableWidth || naturalWidth <= availableWidth) return;
+
+      const proportionalSize = maxFontSize * (availableWidth / naturalWidth) * 0.98;
+      const fittedSize = Math.max(minFontSize, Math.floor(proportionalSize * 10) / 10);
+      element.style.setProperty('font-size', `${fittedSize}px`, 'important');
+      element.dataset.autoFit = 'reduced';
+      element.dataset.autoFitFont = fittedSize.toFixed(1);
+    };
+
+    const scheduleFit = () => {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(fitText);
+    };
+
+    scheduleFit();
+    const resizeObserver = typeof ResizeObserver === 'function'
+      ? new ResizeObserver(scheduleFit)
+      : null;
+    resizeObserver?.observe(container);
+    if (document.fonts?.ready) {
+      void document.fonts.ready.then(scheduleFit).catch(() => {});
+    }
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(animationFrame);
+      resizeObserver?.disconnect();
+    };
+  }, [maxFontSize, minFontSize, text]);
+
+  return elementRef;
 }
 
 function DeviceUnitDocumentationRow({
@@ -231,6 +286,8 @@ export default function JobDetailsPanel({
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobIsCompleted = String(selectedJob?.status || "") === "Zakończone";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
+  const emailAutoFitRef = useAutoFitSingleLineText(String(selectedJob?.email || ''), { maxFontSize: 12.5 });
+  const addressAutoFitRef = useAutoFitSingleLineText(getJobAddress(selectedJob || {}), { maxFontSize: 13.5 });
 
   React.useEffect(() => {
     setExpandedDeviceIndexes([]);
@@ -391,8 +448,9 @@ export default function JobDetailsPanel({
                 {selectedJob.email ? (
                   <div className="infoValueActions">
                     <a
+                      ref={emailAutoFitRef}
                       href={`mailto:${selectedJob.email}`}
-                      className="emailLink"
+                      className="emailLink autoFitSingleLineText"
                       title="Kliknij, aby otworzyć klienta poczty"
                       aria-label={`Wyślij email do ${selectedJob.email}`}
                     >
@@ -426,7 +484,8 @@ export default function JobDetailsPanel({
               <div className="infoValue">
                 <JobAddressLink
                   job={selectedJob}
-                  className="addressLink"
+                  className="addressLink autoFitSingleLineText"
+                  linkRef={addressAutoFitRef}
                   emptyLabel="Brak adresu"
                   title="Kliknij, aby otworzyć adres w Google Maps"
                 />

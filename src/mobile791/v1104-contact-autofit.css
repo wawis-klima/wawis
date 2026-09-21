@@ -1,0 +1,17 @@
+/* WAWIS 11.04 — automatyczne dopasowanie e-maila i adresu do jednego wiersza. */
+@media (max-width: 700px) {
+  .mobileInlineJobDetails .contactEmailInfoItem .emailLink.autoFitSingleLineText,
+  .mobileInlineJobDetails .contactAddressInfoItem .addressLink.autoFitSingleLineText {
+    display: block !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}

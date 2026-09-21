@@ -1,3 +1,11 @@
+## 11.04
+- E-mail i adres w mobilnych szczegółach są mierzone względem faktycznej szerokości kolumny danych.
+- Czcionka pozostaje w normalnym rozmiarze, gdy wartość mieści się w jednym wierszu, i zmniejsza się płynnie wyłącznie przy przepełnieniu.
+- Minimalny czytelny rozmiar wynosi 10,5 px; dopiero skrajnie długa wartość jest skracana wielokropkiem.
+- Dopasowanie jest przeliczane po zmianie danych, załadowaniu fontów oraz zmianie szerokości ekranu.
+- Dodano mobilny test Playwright weryfikujący zachowanie na profilu iPhone 14.
+- Bez zmian w Supabase, danych klientów, rolach, PUSH i logice urządzeń.
+
 ## 11.03
 - W zakończonym montażu komentarz administratora jest domyślnie zwinięty i można go rozwinąć jednym dotknięciem nagłówka.
 - W aktywnych montażach komentarz administratora pozostaje od razu otwarty.
