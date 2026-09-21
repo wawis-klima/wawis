@@ -1,9 +1,12 @@
+Warning: truncated output (original token count: 32341)
+Total output lines: 1235
+
 ## Aktualna wersja
-- 10.99
+- 11.00
 
 Wersja 10.64 poprawia wyłącznie odstęp prawego przycisku inicjałów w mobilnym pasku akcji. PW jest odsunięte o dodatkowe 6 px od prawej krawędzi; desktop i logika aplikacji pozostają bez zmian.
 
-# Wawis Klimatyzacja — wersja 10.99
+# Wawis Klimatyzacja — wersja 11.00
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -709,94 +712,7 @@ Zmiana dotyczy mechanizmu komentarzy na desktopie i jego wspólnego odpowiednika
 
 ## Szersza tabela i podgląd tabliczki z wiersza — 8.89
 
-Wersja 8.89 rozwija działającą tabelę z 8.88. Usunięto osobną kolumnę `Akcje`, aby na ekranie iPhone’a zwiększyć szerokość kolumny `Status`, zachować cały nagłówek w jednej linii i powiększyć odstęp od zielonego potwierdzenia. Tabela ma teraz cztery kolumny: `Urządzenie`, `Model / moc`, `Tabliczka` i `Status`.
-
-Cały wiersz JZ lub JW jest klikalny. Dla zapisanej tabliczki dotknięcie oznaczenia jednostki, modelu, opisu tabliczki albo statusu otwiera istniejący podgląd zdjęcia. Przy błędzie wiersz ponawia wysyłkę, a przy brakującej tabliczce otwiera edycję urządzeń. Krytyczne style nadal są osadzone razem z komponentem, bez zmian w głównym CSS, synchronizacji zdjęć, desktopie i Supabase. Nie ma nowej migracji SQL.
-
-## Mobilna tabela urządzeń odporna na cache — 8.88
-
-Wersja 8.88 została przygotowana na stabilnej bazie 8.86 i zmienia wyłącznie sekcję `Urządzenia i tabliczki` w mobilnej karcie montażu. Tabela ma pięć osobnych kolumn: `Urządzenie`, `Model / moc`, `Tabliczka`, `Status` i `Akcje`. JZ jest oznaczone na niebiesko, a JW na zielono.
-
-Najważniejsza naprawa techniczna polega na tym, że krytyczny CSS tabeli jest dostarczany razem z modułem JavaScript komponentu i osadzany bezpośrednio w widoku. iPhone nie może już uruchomić nowego komponentu z poprzednią, zapamiętaną wersją stylów tabeli. Stabilny bootstrap całej aplikacji z 8.86 pozostaje bez zmian. Nie ma nowej migracji SQL.
-
-
-## Awaryjne przywrócenie stabilnej aplikacji — 8.86
-
-Wersja 8.86 wycofuje nieudane zmiany wizualne 8.83–8.85 i wraca do stabilnego interfejsu z wersji 8.82. Zachowuje obsługę wielu adresów klienta oraz naprawę synchronizacji i duplikowania zdjęć. Mobilna aplikacja, główny arkusz CSS i arkusz tabel są ponownie ładowane razem przed uruchomieniem Reacta. `index.html` ma dodatkowo minimalny styl awaryjny, który zapobiega wyświetleniu surowej strony HTML, gdyby główny CSS nie został pobrany.
-
-
-## Wiele adresów jednego klienta — 8.81
-
-Jeden klient może mieć teraz kilka nazwanych lokalizacji, na przykład `Dom`, `Firma` i `Magazyn`, z jednym adresem głównym. Administrator wybiera właściwy adres podczas tworzenia montażu albo dopisuje nowy bez zakładania drugiej karty klienta.
-
-Każde zlecenie zachowuje własną kopię adresu, więc późniejsza zmiana kartoteki nie modyfikuje historii. Pełna lista adresów jest również zachowywana w eksporcie/imporcie XLSX i uwzględniana przez globalne wyszukiwanie desktopowe. Przed wdrożeniem należy uruchomić migrację `contractor-addresses-v8.81.sql` w Supabase SQL Editor.
-
-
-## Porządek i kompletność testów — 8.80
-
-Wersja 8.80 nie dodaje funkcji użytkowych. Usuwa martwy moduł `Serwisy`, stary endpoint Resend, osierocone testy wizualne i nieużywane grafiki. Przestarzały tekst w mobilnym Playwright został dopasowany do statusu `Zakończone · tylko podgląd`, a wartościowe kontrole kadrowania OCR przeniesiono do aktywnego testu desktopowego.
-
-Pipeline desktopowy uruchamia teraz prawdziwy `test:e2e:desktop` oraz istniejące testy bezpieczeństwa RLS, Centrum 360, białego ekranu tabliczek i AI/kodów. Mobilny Playwright sprawdza dodatkowo, czy zdjęcie zapisane offline przetrwa ponowne uruchomienie i wyśle się po odzyskaniu internetu oraz czy pusta sekcja komentarzy zakończonego zlecenia jest ukryta, a istniejąca historia pozostaje widoczna.
-
-## Automatyczna kontrola wydania mobile — 8.79
-
-Dodano osobny workflow GitHub Actions `.github/workflows/mobile-release-checks.yml`. Po pushu do `main`, każdej aktualizacji pull requestu do `main` albo ręcznym uruchomieniu pobiera zależności wyłącznie z publicznego npm, instaluje Chromium i uruchamia ten sam `npm run release:mobile -- --skip-version-bump`, którego używamy lokalnie.
-
-Oznacza to dwa przebiegi wszystkich mobilnych smoke testów, dwa przebiegi rzeczywistego testu telefonu w Playwright, `verify:release` x2, produkcyjny build x2, `verify:bundle` x2, utworzenie ZIP-a i kontrolę jego zawartości. Paczka, `RELEASE-RESULT.md` oraz diagnostyka Playwright po błędzie są zachowywane jako artefakty. GitHub pokazuje wynik `ZIELONY` tylko po pełnym sukcesie albo `CZERWONY` po dowolnym błędzie; czerwonej wersji nie wolno publikować.
-
-Test `npm run test:smoke:mobile-ci` kontroluje, czy workflow nadal ma wszystkie wymagane kroki i czy trafia do końcowego ZIP-a. Przy uruchomieniu pełnego zestawu wykryto również i naprawiono usuwanie spacji podczas wpisywania wielowyrazowego modelu urządzenia; końcowy zapis nadal normalizuje brzegi tekstu. Nie dodano nowych modułów ani zmian w Supabase.
-
-## Stabilny rejestr npm i build — 8.78
-
-Dodano projektowy plik `.npmrc`, który ustawia publiczny rejestr `https://registry.npmjs.org/`, włącza zależności opcjonalne oraz wyłącza automatyczne `audit` i komunikaty `fund`. Skrypt `prepare:deps` dodatkowo przekazuje publiczny rejestr bezpośrednio do uruchamianych komend npm, dzięki czemu build nie korzysta z przypadkowego rejestru ustawionego globalnie w środowisku.
-
-Dodano test `test:smoke:npm-registry`, który sprawdza zawartość `.npmrc`, wymuszenie rejestru w skrypcie builda oraz obecność `.npmrc` w końcowej paczce ZIP. Funkcje aplikacji mobilnej, desktop administratora i baza Supabase pozostają bez zmian.
-
-## Puste komentarze na zakończonych zleceniach — mobile 8.77
-
-Na zakończonej karcie montażu pracownika sekcja `Komentarze i pytania` jest automatycznie ukrywana, gdy po załadowaniu szczegółów nie ma żadnego komentarza. Jeżeli komentarz istnieje, pozostaje widoczny. Dla aktywnych zleceń sekcja nadal jest dostępna do wpisywania, a podczas pobierania szczegółów nadal pokazuje stan ładowania.
-
-Zmiana dotyczy wyłącznie aplikacji mobilnej pracownika. Desktop administratora, statusy synchronizacji zdjęć i baza Supabase pozostają bez zmian.
-
-## Uproszczenie aplikacji mobilnej 8.76
-
-Na ekranie szczegółów zakończonego montażu pracownik widzi teraz jeden status `Zakończone · tylko podgląd` zamiast trzech powtarzających się opisów. Skrócono komunikaty pustych sekcji, usunięto powtórzone nagłówki tabliczek w kreatorze oraz stałą instrukcję o wymaganych tabliczkach z jego podsumowania.
-
-Statusy operacyjne zdjęć (`Zapisano na telefonie`, `Wysyłanie`, `Zapisano w systemie`, `Błąd wysyłania`) pozostają bez zmian. Desktop administratora i baza Supabase nie zostały zmienione.
-
-## Odczyt tabliczek na desktopie 8.75
-
-Administrator ma dwie jawne metody odczytu: dokładny czytnik `EAN / Code 128` oraz analizę obrazu przez AI uruchamianą ręcznie. Aplikacja nie dopasowuje już rodziny Rotenso na podstawie podobnej litery. Przy każdym polu pokazuje źródło danych, a zapis następuje wyłącznie po ręcznym zatwierdzeniu.
-
-W aplikacji mobilnej OCR i AI pozostają wyłączone. Zdjęcie tabliczki jest nadal źródłem prawdy.
-
-### Konfiguracja Vercel dla analizy AI
-
-Dodaj w projekcie Vercel zmienną środowiskową `OPENAI_API_KEY` dla środowiska Production. Opcjonalnie dodaj `OPENAI_NAMEPLATE_MODEL` (domyślnie `gpt-5.6`). Klucz jest używany wyłącznie w funkcji serwerowej `api/read-nameplate-ai.js` i nie trafia do przeglądarki. Zdjęcie jest wysyłane do OpenAI wyłącznie po świadomym kliknięciu „Odczytaj przez AI”; zwykłe otwarcie tabliczki i odczyt kodów nie uruchamiają płatnej analizy AI.
-
-Wersja 8.69 zamienia desktopowy odczyt tabliczek w pełny ekran pracy z OCR-em. Po lewej stronie administrator widzi duże zdjęcie z powiększaniem, obrotem i poprawą kontrastu, a po prawej stronie ma markę, model, moc, numer seryjny oraz surowy wynik OCR. Kolorowa pewność pól pozostaje aktywna, a zapis do bazy nadal następuje dopiero po ręcznym zatwierdzeniu. Mobilna aplikacja pracownika pozostaje całkowicie bez OCR-u.
-
-Wersja 8.67 uporządkowała desktopową kartę urządzeń: model, numer seryjny, tabliczka i status OCR są pokazane razem przy właściwej JZ/JW.
-
-# Klima App
-
-Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja.
-
-## Aktualna wersja
-- 9.81
-- numer wersji trzymamy w `app-version.json`, `package.json`, `package-lock.json` i `src/version.js`
-- kolejną wersję zawsze zwiększamy o 1 na końcu, np. `7.15 -> 7.16`, a po `7.99` przechodzimy na `8.00`
-- pełna historia zmian znajduje się w `CHANGELOG.md`
-
-## Głosowe wprowadzanie danych klienta 9.04
-- pełne dyktowanie nie kończy się po pierwszej frazie rozpoznanej przez Safari; aplikacja utrzymuje sesję i automatycznie łączy kolejne fragmenty aż do kliknięcia `Zakończ i sprawdź`,
-- podczas mówienia widać na żywo tekst `Usłyszano do tej pory`, dzięki czemu pracownik od razu widzi, czy Safari nadal słucha,
-- parser rozumie adresy wypowiadane naturalnie, np. `ulica Widna 19 przez 19 Zawiercie` → `Widna 19/19`, miejscowość `Zawiercie`,
-- dodano głosowy e-mail, w tym formę `wasik małpa e kropka pe el` → `wasik@e.pl`,
-- mikrofon przy pojedynczym polu nie jest ponownie uruchamiany przed zakończeniem poprzedniej sesji, co ogranicza błędy `audio-capture` na iPhonie,
-- nadal można poprawić każde rozpoznane pole ręcznie lub osobnym mikrofonem,
-- kod pocztowy jest zapisywany razem z miejscowością, a numer domu/lokalu razem z ulicą, zgodnie z dotychczasowym modelem bazy,
-- brak nowej migracji SQL i brak zmian w zdjęciach, OCR tabliczek, komentarzach oraz katalogu Rotenso.
+Wersja 8.89 rozwija działającą tabelę z 8.88. …2341 tokens truncated…az katalogu Rotenso.
 
 ## Wiele adresów klienta 8.81
 1. Przed wdrożeniem aplikacji uruchom w Supabase SQL Editor cały plik `contractor-addresses-v8.81.sql`.
@@ -809,7 +725,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `10.99` — PUSH działa wyłącznie w aplikacji mobilnej; desktop nie tworzy ani nie odnawia subskrypcji Windows.
+- wersja `11.00` — mobilne szczegóły montażu są bardziej zwarte, a e-mail, telefon, adres i nagłówki urządzeń pozostają w jednym wierszu na ekranie telefonu.
 - wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.
