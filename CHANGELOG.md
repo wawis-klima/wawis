@@ -1,3 +1,10 @@
+## 11.00
+- Zmniejszono pionowe odstępy i paddingi w mobilnych szczegółach montażu, aby karta zajmowała mniej miejsca bez utraty czytelności.
+- E-mail, telefon i adres pozostają w jednym wierszu; przy skrajnie małej szerokości dłuższa wartość jest bezpiecznie skracana wielokropkiem zamiast łamać układ.
+- Nazwa urządzenia, typ `Single-split`, strzałka i przycisk usuwania pozostają w jednym wierszu na typowych ekranach telefonu.
+- Zagęszczono sekcje urządzeń, zdjęć, monterów, komentarzy i statusu z zachowaniem bezpiecznych pól dotykowych.
+- Zmiana jest ograniczona do mobilnych szczegółów zlecenia; bez zmian w danych, Supabase, rolach, PUSH i logice biznesowej.
+
 ## 10.99
 - Wyłączono PUSH w wersji desktopowej: desktop nie inicjalizuje już hooka PUSH ani nie pokazuje przełącznika.
 - Wszystkie aktywne subskrypcje Windows na produkcji zostały bezpiecznie dezaktywowane; mobilne subskrypcje iPhone/Android pozostają bez zmian.
