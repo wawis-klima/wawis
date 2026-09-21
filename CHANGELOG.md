@@ -1,3 +1,11 @@
+## 11.03
+- W zakończonym montażu komentarz administratora jest domyślnie zwinięty i można go rozwinąć jednym dotknięciem nagłówka.
+- W aktywnych montażach komentarz administratora pozostaje od razu otwarty.
+- E-mail i telefon są wyśrodkowane w prawej kolumnie danych.
+- Dodatkowo zmniejszono wysokość wierszy e-mail, telefon, adres i data bez łamania wartości na kolejne linie.
+- Dodano mobilną regresję Playwright sprawdzającą stan komentarza, wyśrodkowanie oraz rzeczywistą wysokość wierszy na profilu iPhone 14.
+- Bez zmian w Supabase, danych klientów, rolach, PUSH, zdjęciach i logice urządzeń.
+
 ## 11.02
 - Rozdzielono mobilny układ danych kontaktowych od układu dat, zamiast wymuszać jedną szerokość etykiety na wszystkich wierszach.
 - Pełny adres e-mail otrzymał własną szerokość i rozmiar tekstu dopasowany do ekranu iPhone'a; pozostaje w jednej linii bez ucięcia.

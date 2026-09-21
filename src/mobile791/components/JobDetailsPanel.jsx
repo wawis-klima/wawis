@@ -230,12 +230,17 @@ export default function JobDetailsPanel({
   const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || "") : "";
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobIsCompleted = String(selectedJob?.status || "") === "Zakończone";
+  const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
 
   React.useEffect(() => {
     setExpandedDeviceIndexes([]);
     setCommentSaving(false);
     setManualVerificationBusyKey('');
   }, [selectedJobId]);
+
+  React.useEffect(() => {
+    setAdminNoteExpanded(!selectedJobIsCompleted);
+  }, [selectedJobId, selectedJobIsCompleted]);
 
   React.useEffect(() => {
     if (!commentHasUnsavedWork) return undefined;
@@ -289,6 +294,7 @@ export default function JobDetailsPanel({
   const completedByProfile = (profiles || []).find((person) => String(person?.id || '') === String(selectedJob.completed_by || ''));
   const completedByLabel = completedByProfile?.full_name || completedByProfile?.email || '';
   const isCompletedJob = selectedJobIsCompleted;
+  const showAdminNoteContents = !isCompletedJob || adminNoteExpanded;
   const isWorkerCompletedLock = isWorkerLockedCompletedJob(selectedJob, isAdmin);
   const canFinishJob = canWorkerFinishJob(selectedJob, isAdmin);
   const canRestartJob = canWorkerRestartJob(selectedJob, isAdmin);
@@ -691,19 +697,38 @@ export default function JobDetailsPanel({
         </div>
       </div>
 
-      <section className="detailsSection">
-        <h4 className="sectionHeadingWithIcon"><IconFileText /><span>Komentarz administratora</span></h4>
-        <div className="muted adminNoteText">{selectedJob.admin_note || "Brak komentarza."}</div>
-        {canManageSelectedAdminNote ? (
-          <div className="row leftAlign adminNoteActions">
-            <button
-              type="button"
-              className="btn premiumActionBtn premiumDangerBtn adminNoteDeleteBtn compactDangerBtn"
-              onClick={() => requestClearAdminNote(selectedJob)}
-              disabled={busy || !selectedJob.admin_note}
-            >
-              Usuń
-            </button>
+      <section className={`detailsSection adminNoteSection${isCompletedJob ? ' adminNoteSectionCollapsible' : ''}`}>
+        {isCompletedJob ? (
+          <button
+            type="button"
+            className="adminNoteToggle sectionHeadingWithIcon"
+            aria-expanded={adminNoteExpanded}
+            aria-controls={`admin-note-content-${selectedJobId}`}
+            aria-label={`${adminNoteExpanded ? 'Zwiń' : 'Rozwiń'} komentarz administratora`}
+            onClick={() => setAdminNoteExpanded((expanded) => !expanded)}
+          >
+            <IconFileText />
+            <span>Komentarz administratora</span>
+            <span className="adminNoteToggleChevron" aria-hidden="true">⌄</span>
+          </button>
+        ) : (
+          <h4 className="sectionHeadingWithIcon"><IconFileText /><span>Komentarz administratora</span></h4>
+        )}
+        {showAdminNoteContents ? (
+          <div className="adminNoteContent" id={`admin-note-content-${selectedJobId}`}>
+            <div className="muted adminNoteText">{selectedJob.admin_note || "Brak komentarza."}</div>
+            {canManageSelectedAdminNote ? (
+              <div className="row leftAlign adminNoteActions">
+                <button
+                  type="button"
+                  className="btn premiumActionBtn premiumDangerBtn adminNoteDeleteBtn compactDangerBtn"
+                  onClick={() => requestClearAdminNote(selectedJob)}
+                  disabled={busy || !selectedJob.admin_note}
+                >
+                  Usuń
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </section>

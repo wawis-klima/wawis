@@ -1,0 +1,83 @@
+/* WAWIS 11.03 — niższe wiersze danych i zwijany komentarz zakończonego montażu. */
+@media (max-width: 700px) {
+  .mobileInlineJobDetails .detailMeta > .infoItem.contactInfoItem {
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    padding: 0 !important;
+  }
+
+  .mobileInlineJobDetails .detailMeta > .infoItem.jobDateInfoItemV995 {
+    height: 29px !important;
+    min-height: 29px !important;
+    max-height: 29px !important;
+    padding: 0 !important;
+  }
+
+  .mobileInlineJobDetails .contactInfoItem .infoValue,
+  .mobileInlineJobDetails .contactInfoItem .infoValueActions {
+    min-height: 0 !important;
+  }
+
+  .mobileInlineJobDetails .contactEmailInfoItem .infoValue,
+  .mobileInlineJobDetails .contactEmailInfoItem .infoValueActions,
+  .mobileInlineJobDetails .contactPhoneInfoItem .infoValue,
+  .mobileInlineJobDetails .contactPhoneInfoItem .infoValueActions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .mobileInlineJobDetails .contactEmailInfoItem .emailLink,
+  .mobileInlineJobDetails .contactPhoneInfoItem .phoneLink {
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    text-align: center !important;
+  }
+
+  .mobileInlineJobDetails .contactAddressInfoItem .addressLink {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  .mobileInlineJobDetails .adminNoteSectionCollapsible {
+    gap: 0 !important;
+    margin-top: 6px !important;
+  }
+
+  .mobileInlineJobDetails .adminNoteToggle {
+    width: 100% !important;
+    min-height: 34px !important;
+    padding: 3px 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #10203a !important;
+    font: inherit !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+  }
+
+  .mobileInlineJobDetails .adminNoteToggle .adminNoteToggleChevron {
+    margin-left: auto !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    transform: rotate(-90deg);
+    transition: transform 120ms ease;
+  }
+
+  .mobileInlineJobDetails .adminNoteToggle[aria-expanded="true"] .adminNoteToggleChevron {
+    transform: rotate(0deg);
+  }
+
+  .mobileInlineJobDetails .adminNoteContent {
+    display: grid;
+    gap: 5px;
+    padding-top: 4px;
+  }
+}
