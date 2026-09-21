@@ -10,15 +10,19 @@ const required = [
   "logDiagnostic('nameplate.save.modal.closed.after-timeout-confirmation'",
   "logDiagnostic('nameplate.save.refresh.timeout'",
   'verifyPendingNameplatesOnServer',
+  "verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-completed')",
+  "reason: 'server-verification-incomplete'",
+  'Nie wszystkie tabliczki zostały potwierdzone na serwerze.',
   'resetJobModalState();',
   "refreshAfterNameplateSave(editingJobId, 'save-confirmed')",
 ];
 for (const marker of required) {
   if (!source.includes(marker)) throw new Error(`Brak zabezpieczenia zapisu tabliczek: ${marker}`);
 }
+const finalVerificationIndex = source.indexOf("verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-completed')");
 const closeIndex = source.indexOf("logDiagnostic('nameplate.save.modal.closed', { jobId: editingJobId");
 const refreshIndex = source.indexOf("refreshAfterNameplateSave(editingJobId, 'save-confirmed')", closeIndex);
-if (closeIndex < 0 || refreshIndex < 0 || closeIndex > refreshIndex) {
+if (finalVerificationIndex < 0 || closeIndex < 0 || refreshIndex < 0 || finalVerificationIndex > closeIndex || closeIndex > refreshIndex) {
   throw new Error('Modal musi zostać zamknięty przed odświeżeniem danych w tle.');
 }
 console.log('OK: mobilny zapis tabliczek zamyka modal po potwierdzeniu i odświeża w tle z timeoutem.');

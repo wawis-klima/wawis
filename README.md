@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.06
+- 11.07
 
-Wersja 11.06 porządkuje mobilny zapis urządzeń i tabliczek: krok pośredni prowadzi do podsumowania, a właściwy zapis ma jednoznaczną nazwę i potwierdzenie.
+Wersja 11.07 nie uznaje mobilnego zapisu tabliczek za zakończony, dopóki każda właśnie dodana tabliczka JZ/JW nie zostanie ponownie potwierdzona w bazie.
 
-# Wawis Klimatyzacja — wersja 11.06
+# Wawis Klimatyzacja — wersja 11.07
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,8 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.06` — mobilny kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
+- wersja `11.07` — po zapisie każda dodana tabliczka JZ/JW jest ponownie potwierdzana na serwerze; przy braku rekordu kreator pozostaje otwarty i nie pokazuje fałszywego sukcesu.
+- wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.
 - wersja `11.01` — mobilne szczegóły montażu są realnie zagęszczone na szerokości iPhone'a, pełny e-mail pozostaje widoczny, a wiersze urządzeń i przyciski zajmują mniej miejsca.
