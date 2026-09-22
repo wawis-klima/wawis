@@ -1,10 +1,10 @@
 {
-  "version": "11.14",
-  "summary": "Czytelna pełna data i inicjały instalatora pod mobilnymi miniaturami.",
+  "version": "11.15",
+  "summary": "Pełna data pod miniaturą i inicjały instalatora jako znacznik na zdjęciu.",
   "changes": [
-    "Metadane zdjęcia mają mniejszą czcionkę i ciaśniejszy układ.",
-    "Data DD.MM.RR oraz dwuliterowe inicjały nie są już skracane wielokropkiem.",
-    "Rozmiar zdjęć i cztery kolumny pozostają bez zmian.",
+    "Data DD.MM.RR jest wyśrodkowana i ma całą szerokość kafelka.",
+    "Dwuliterowe inicjały instalatora są widoczne w prawym górnym rogu miniatury.",
+    "Układ czterech zdjęć w rzędzie i rozmiar miniaturek pozostają bez zmian.",
     "Brak zmian w danych, Supabase, RLS i Storage."
   ]
 }
