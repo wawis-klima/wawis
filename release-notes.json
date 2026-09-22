@@ -1,10 +1,10 @@
 {
-  "version": "11.13",
-  "summary": "Zwijana sekcja zdjęć w zakończonych i niezrealizowanych zleceniach mobilnych.",
+  "version": "11.14",
+  "summary": "Czytelna pełna data i inicjały instalatora pod mobilnymi miniaturami.",
   "changes": [
-    "Zakończone i niezrealizowane zlecenia pokazują domyślnie zwinięty nagłówek Zdjęcia z licznikiem.",
-    "Kliknięcie nagłówka rozwija miniatury i wszystkie dotychczasowe akcje zdjęć.",
-    "Nowe i trwające zlecenia pozostają domyślnie rozwinięte.",
-    "Brak zmian w danych, RLS, Storage i synchronizacji zdjęć."
+    "Metadane zdjęcia mają mniejszą czcionkę i ciaśniejszy układ.",
+    "Data DD.MM.RR oraz dwuliterowe inicjały nie są już skracane wielokropkiem.",
+    "Rozmiar zdjęć i cztery kolumny pozostają bez zmian.",
+    "Brak zmian w danych, Supabase, RLS i Storage."
   ]
 }
