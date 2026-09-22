@@ -16,7 +16,7 @@
   },
   "main_protection": {
     "source_branch": "release/v11.15",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
