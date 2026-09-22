@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.13
+- 11.14
 
-Wersja 11.13 zwija sekcję zdjęć w zleceniach zakończonych i niezrealizowanych, z możliwością rozwinięcia jednym kliknięciem.
+Wersja 11.14 pokazuje pełną krótką datę i dwuliterowe inicjały instalatora pod każdą mobilną miniaturą zdjęcia.
 
-# Wawis Klimatyzacja — wersja 11.13
+# Wawis Klimatyzacja — wersja 11.14
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.13` — zdjęcia są domyślnie zwinięte w zakończonych i niezrealizowanych zleceniach, z licznikiem zdjęć i możliwością rozwinięcia; aktywne zlecenia pozostają bez zmian.
+- wersja `11.14` — pod mobilnymi miniaturami widać pełną datę `DD.MM.RR` oraz dwuliterowe inicjały instalatora, bez wielokropków i zawijania.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.
