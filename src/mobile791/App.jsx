@@ -34,6 +34,7 @@ import { deleteOfflineJobOperation, saveOfflineAppSnapshot, updateOfflineJobOper
 import { deletePhotoQueueItem, getPhotoQueueSummary } from "./modules/photo-offline-queue.js";
 import { syncOfflineJobOperations } from "./modules/job-offline-sync.js";
 import { logDiagnostic, startSilentDiagnosticSync } from "./modules/diagnostics.js";
+import { isTransientSupabaseError } from "./modules/supabase-errors.js";
 import { APP_VERSION } from "./version.js";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
@@ -62,7 +63,8 @@ const jobFormModalFallback = (
 );
 
 const JOBS_PAGE_SIZE = 10;
-const JOB_DETAILS_TIMEOUT_MS = 7000;
+const JOB_DETAILS_TIMEOUT_MS = 3200;
+const JOB_DETAILS_RETRY_DELAYS_MS = Object.freeze([0, 500]);
 const MOBILE_THUMBNAIL_TRANSFORM = Object.freeze({ width: 400, quality: 72, resize: 'contain' });
 const MOBILE_THUMBNAIL_RECOVERY_LIMIT = 2;
 
@@ -587,47 +589,81 @@ export default function App() {
 
     if (!options.background) setDetailsLoadingJobId(targetId);
     const request = (async () => {
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timeoutId = typeof window !== 'undefined'
-        ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_TIMEOUT_MS)
-        : null;
+      let lastError = null;
+
       try {
-        const details = await loadJobDetailsData({
-          supabase,
-          jobId: targetId,
-          team: profilesRef.current,
-          getSignedPhotoUrl,
-          supabaseUrl,
-          signal: controller?.signal || null,
-          deferThumbnailSigning: true,
-        });
-        if (!isSessionTokenCurrent(sessionToken)) return null;
+        for (let attemptIndex = 0; attemptIndex < JOB_DETAILS_RETRY_DELAYS_MS.length; attemptIndex += 1) {
+          const delayMs = JOB_DETAILS_RETRY_DELAYS_MS[attemptIndex];
+          if (delayMs && typeof window !== 'undefined') {
+            await new Promise((resolve) => window.setTimeout(resolve, delayMs));
+          }
+          if (!isSessionTokenCurrent(sessionToken)) return null;
 
-        const cleanDetails = { ...details, detailsLoadError: '' };
-        let mergedJob = null;
-        setJobs((prev) => prev.map((job) => {
-          if (String(job.id) !== targetId) return job;
-          mergedJob = mergeJobDetailsForMobile(job, cleanDetails);
-          return mergedJob;
-        }));
-        setSelectedJob((prev) => (prev && String(prev.id) === targetId ? mergeJobDetailsForMobile(prev, cleanDetails) : prev));
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const timeoutId = typeof window !== 'undefined'
+            ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_TIMEOUT_MS)
+            : null;
 
-        // Tak samo jak na desktopie: szczegóły są gotowe od razu, a miniatury
-        // podpisują się w tle i nie blokują komentarzy ani całej karty.
-        void hydrateJobThumbnails(targetId, cleanDetails.photos || [], sessionToken);
-        return mergedJob;
+          try {
+            const details = await loadJobDetailsData({
+              supabase,
+              jobId: targetId,
+              team: profilesRef.current,
+              getSignedPhotoUrl,
+              supabaseUrl,
+              signal: controller?.signal || null,
+              deferThumbnailSigning: true,
+            });
+            if (!isSessionTokenCurrent(sessionToken)) return null;
+
+            const cleanDetails = { ...details, detailsLoadError: '' };
+            let mergedJob = null;
+            setJobs((prev) => prev.map((job) => {
+              if (String(job.id) !== targetId) return job;
+              mergedJob = mergeJobDetailsForMobile(job, cleanDetails);
+              return mergedJob;
+            }));
+            setSelectedJob((prev) => (prev && String(prev.id) === targetId ? mergeJobDetailsForMobile(prev, cleanDetails) : prev));
+
+            // Szczegóły są gotowe od razu, a podpisy miniatur robią się dopiero
+            // w tle. Dzięki temu chwilowa awaria Storage nie blokuje całej karty.
+            void hydrateJobThumbnails(targetId, cleanDetails.photos || [], sessionToken);
+            return mergedJob;
+          } catch (error) {
+            lastError = error;
+            if (!isSessionTokenCurrent(sessionToken)) return null;
+
+            const transient = controller?.signal?.aborted || isTransientSupabaseError(error);
+            const hasNextAttempt = attemptIndex + 1 < JOB_DETAILS_RETRY_DELAYS_MS.length;
+            if (!transient || !hasNextAttempt) throw error;
+
+            logDiagnostic('job.details.retry', {
+              retry_count: attemptIndex + 1,
+              phase: 'mobile_details_read',
+              error: {
+                code: error?.code || (controller?.signal?.aborted ? 'DETAILS_TIMEOUT' : 'DETAILS_TRANSIENT'),
+                message: 'Mobile job details transient read failed; retrying automatically.',
+              },
+            });
+            console.warn('Chwilowy błąd szczegółów montażu — ponawiam automatycznie.', error?.message || error);
+          } finally {
+            if (timeoutId !== null && typeof window !== 'undefined') window.clearTimeout(timeoutId);
+          }
+        }
+
+        throw lastError || new Error('Nie udało się pobrać szczegółów montażu.');
       } catch (error) {
         if (!isSessionTokenCurrent(sessionToken)) return null;
+
         // Odświeżenie w tle nie może schować już załadowanych danych.
-        // Przy chwilowym 5xx/timeout zostawiamy ostatni poprawny stan na ekranie.
         if (options.background && targetJob.detailsLoaded) {
           console.warn('Tło szczegółów montażu nie odświeżyło się — zachowuję poprzednie dane.', error?.message || error);
           return targetJob;
         }
 
-        const aborted = error?.name === 'AbortError' || controller?.signal?.aborted;
-        const message = aborted
-          ? 'Serwer nie odpowiedział na szczegóły w 7 s. Kliknij „Ponów”.'
+        const transient = isTransientSupabaseError(error) || error?.name === 'AbortError';
+        const message = transient
+          ? 'Połączenie z serwerem zostało przerwane. Aplikacja spróbowała ponownie. Kliknij „Ponów”.'
           : 'Nie udało się pobrać zdjęć i komentarzy. Kliknij „Ponów”.';
         const patchError = (job) => (
           job && String(job.id) === targetId
@@ -639,7 +675,6 @@ export default function App() {
         console.warn('Nie udało się pobrać szczegółów montażu w wersji mobilnej.', error?.message || error);
         return null;
       } finally {
-        if (timeoutId !== null && typeof window !== 'undefined') window.clearTimeout(timeoutId);
         if (!options.background && isSessionTokenCurrent(sessionToken)) {
           setDetailsLoadingJobId((current) => (current === targetId ? null : current));
         }

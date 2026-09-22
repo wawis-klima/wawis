@@ -21,6 +21,16 @@ assert.match(appSource, /transform:\s*useOriginal \? null : MOBILE_THUMBNAIL_TRA
 assert.match(detailsSource, /onError=\{\(\) => \{ void onThumbnailLoadError\?\.\(photo\); \}\}/);
 assert.match(detailsSource, /thumbnail_load_failed/);
 assert.match(detailsSource, /Otwórz zdjęcie/);
+assert.match(appSource, /const JOB_DETAILS_TIMEOUT_MS = 3200;/);
+assert.match(appSource, /JOB_DETAILS_RETRY_DELAYS_MS = Object\.freeze\(\[0, 500\]\)/);
+assert.match(appSource, /for \(let attemptIndex = 0; attemptIndex < JOB_DETAILS_RETRY_DELAYS_MS\.length; attemptIndex \+= 1\)/);
+assert.match(appSource, /job\.details\.retry/);
+assert.match(appSource, /Aplikacja spróbowała ponownie/);
+assert.doesNotMatch(appSource, /Serwer nie odpowiedział na szczegóły w 7 s/);
+assert.match(detailsSource, /PROTOCOL_READ_TIMEOUT_MS = 3200/);
+assert.match(detailsSource, /PROTOCOL_READ_RETRY_DELAYS_MS = Object\.freeze\(\[0, 500\]\)/);
+assert.match(detailsSource, /if \(!selectedJob\?\.detailsLoaded\)/);
+assert.match(detailsSource, /Nie udało się teraz sprawdzić protokołu\. Kliknij „Sprawdź”\./);
 
 const { getSignedPhotoUrl } = await import(pathToFileURL(photosModulePath).href);
 const requestTimeoutModulePath = path.join(root, 'src/mobile791/modules/request-timeout.js');
@@ -89,4 +99,4 @@ const originalUrl = await getSignedPhotoUrl({
 assert.match(originalUrl, /mode=original/);
 assert.equal(signingCalls, 3, 'oryginał musi mieć osobny podpis od transformacji miniatury');
 
-console.log('OK: 11.11 miniatury szybko kończą zawieszony signing, mają fallback do oryginału i nie wymagają ponownego logowania.');
+console.log('OK: 11.12 szczegóły montażu retryują się automatycznie, protokół nie konkuruje z nimi o połączenie, a miniatury zachowują fallback do oryginału.');

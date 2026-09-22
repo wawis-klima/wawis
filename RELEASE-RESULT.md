@@ -1,7 +1,7 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.11
+- 11.12
 
 ## Tryb
 - mobile
@@ -11,14 +11,12 @@
 
 ## Podsumowanie
 - status: OCZEKUJE NA CI
-- zakres: mobilna odporność Supabase i ładowanie zdjęć
-- diagnoza produkcji 11.10: potwierdzone timeouty 90 s dla Storage signing oraz błędy THUMBNAIL_SIGNING_FAILED
-- dane zdjęć: bez utraty; pliki montażu Żurawia 4 istnieją w job-photos
+- zakres: odporność mobilnych szczegółów montażu na chwilowe błędy transportu
+- diagnoza: dane zdjęć istnieją, indeksy są obecne, odczyt SQL jest natychmiastowy; problem występuje po stronie klient/transport Supabase
 - zmiana danych/RLS: brak
 
 ## Kryteria wydania
-- zwykły request Supabase: limit 12 s
-- podpis prywatnego zdjęcia: limit 6 s
-- realny transfer Storage: limit 30 s
-- nieudane pierwsze podpisanie miniatury: automatyczny fallback do świeżego podpisu oryginału
+- szczegóły montażu: dwie automatyczne próby, 3,2 s na próbę
+- protokół: odczyt dopiero po gotowych szczegółach, dwie automatyczne próby
+- brak surowego AbortError w interfejsie
 - wymagane: zielony WAWIS PR checks / targeted-checks, wymagany E2E i build produkcyjny

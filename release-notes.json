@@ -1,10 +1,10 @@
 {
-  "version": "11.11",
-  "summary": "Szybsze odzyskiwanie zdjęć i krótsze zawieszenia Supabase w aplikacji mobilnej.",
+  "version": "11.12",
+  "summary": "Automatyczne odzyskiwanie szczegółów montażu przy chwilowym zerwaniu połączenia z Supabase.",
   "changes": [
-    "Podpisywanie prywatnych zdjęć kończy zawieszony request po 6 sekundach zamiast po 90 sekundach.",
-    "Zwykłe requesty mobilne mają limit 12 sekund, a realne transfery plików Storage 30 sekund.",
-    "Po nieudanym podpisaniu miniatury aplikacja automatycznie próbuje świeżego linku do oryginalnego zdjęcia.",
-    "Zmiana nie modyfikuje danych, RLS ani istniejących plików zdjęć."
+    "Zdjęcia i komentarze są automatycznie pobierane ponownie po pierwszym chwilowym błędzie lub timeoutcie.",
+    "Sprawdzanie protokołu czeka na zakończenie pobierania podstawowych szczegółów montażu.",
+    "Protokół również ma ponowienie i nie pokazuje użytkownikowi surowego AbortError.",
+    "Zmiana nie modyfikuje danych, RLS ani plików w Storage."
   ]
 }
