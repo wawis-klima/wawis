@@ -1,3 +1,9 @@
+## 11.15
+- W mobilnym kafelku zdjęcia pełna data `DD.MM.RR` zajmuje cały wiersz pod miniaturą i jest wyśrodkowana.
+- Dwuliterowe inicjały instalatora zostały przeniesione do małego znacznika w prawym górnym rogu zdjęcia, dzięki czemu data i inicjały nie konkurują już o szerokość.
+- Na desktopie dotychczasowy układ metadanych pozostaje bez zmian.
+- Bez zmian w danych, Supabase, RLS, Storage i logice zdjęć.
+
 ## 11.14
 - Pod mobilnymi miniaturami zdjęć pełna krótka data `DD.MM.RR` i dwuliterowe inicjały instalatora mieszczą się w jednym wierszu.
 - Zmniejszono czcionkę metadanych zdjęcia do 10,5 px, ograniczono odstęp między datą i inicjałami oraz usunięto wielokropki z tych dwóch pól.

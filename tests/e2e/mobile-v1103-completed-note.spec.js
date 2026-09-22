@@ -68,21 +68,37 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     await expect(page.getByRole('button', { name: 'Zwiń zdjęcia' })).toHaveAttribute('aria-expanded', 'true');
     await expect(page.locator('.thumbCard')).toHaveCount(2);
 
-    const firstPhotoMeta = page.locator('.thumbCard .photoMeta').first();
-    await expect(firstPhotoMeta.locator('.photoMetaText').first()).toHaveText('22.04.26');
-    await expect(firstPhotoMeta.locator('.photoMetaText').last()).toHaveText('AT');
-    const photoMetaGeometry = await firstPhotoMeta.evaluate((row) => {
-      const card = row.closest('.thumbCard').getBoundingClientRect();
-      const parts = Array.from(row.querySelectorAll('.photoMetaText')).map((part) => {
-        const rect = part.getBoundingClientRect();
-        const style = getComputedStyle(part);
-        return { left: rect.left, right: rect.right, overflow: style.overflow, textOverflow: style.textOverflow };
-      });
-      return { cardLeft: card.left, cardRight: card.right, parts };
+    const firstPhotoCard = page.locator('.thumbCard').first();
+    const firstPhotoMeta = firstPhotoCard.locator('.photoMeta');
+    await expect(firstPhotoMeta.locator('.photoDateMeta')).toHaveText('22.04.26');
+    await expect(firstPhotoMeta.locator('.photoInstallerMeta')).toBeHidden();
+    await expect(firstPhotoCard.locator('.photoUploaderBadge')).toHaveText('AT');
+
+    const photoMetaGeometry = await firstPhotoCard.evaluate((card) => {
+      const cardRect = card.getBoundingClientRect();
+      const date = card.querySelector('.photoDateMeta').getBoundingClientRect();
+      const badge = card.querySelector('.photoUploaderBadge').getBoundingClientRect();
+      const dateStyle = getComputedStyle(card.querySelector('.photoDateMeta'));
+      const installerStyle = getComputedStyle(card.querySelector('.photoInstallerMeta'));
+      return {
+        cardLeft: cardRect.left,
+        cardRight: cardRect.right,
+        dateLeft: date.left,
+        dateRight: date.right,
+        badgeLeft: badge.left,
+        badgeRight: badge.right,
+        dateOverflow: dateStyle.overflow,
+        dateTextOverflow: dateStyle.textOverflow,
+        installerDisplay: installerStyle.display,
+      };
     });
-    expect(photoMetaGeometry.parts[0].left).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft - 1);
-    expect(photoMetaGeometry.parts[1].right).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
-    expect(photoMetaGeometry.parts.every((part) => part.overflow === 'visible' && part.textOverflow === 'clip')).toBe(true);
+    expect(photoMetaGeometry.dateLeft).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft - 1);
+    expect(photoMetaGeometry.dateRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
+    expect(photoMetaGeometry.badgeLeft).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft);
+    expect(photoMetaGeometry.badgeRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
+    expect(photoMetaGeometry.dateOverflow).toBe('visible');
+    expect(photoMetaGeometry.dateTextOverflow).toBe('clip');
+    expect(photoMetaGeometry.installerDisplay).toBe('none');
 
     await page.getByRole('button', { name: 'Zamknij', exact: true }).click();
     await page.locator('.statusActionButton[title="Niezrealizowane"]').click();

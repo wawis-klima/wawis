@@ -1,7 +1,7 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.14
+- 11.15
 
 ## Tryb
 - mobile
@@ -11,13 +11,13 @@
 
 ## Podsumowanie
 - status: OCZEKUJE NA CI
-- zakres: czytelność metadanych pod mobilnymi miniaturami zdjęć
-- data: pełne DD.MM.RR
-- instalator: dwuliterowe inicjały
-- miniatury: bez zmiany rozmiaru i układu
+- data zdjęcia: pełne DD.MM.RR pod miniaturą
+- instalator: dwuliterowe inicjały jako znacznik na miniaturze
+- układ 4 kolumn: bez zmiany
 - zmiana danych/RLS/Storage: brak
 
 ## Kryteria wydania
-- brak wielokropków w dacie i inicjałach
-- data i inicjały mieszczą się w szerokości pojedynczego kafelka iPhone
+- pełna data mieści się w kafelku bez wielokropka
+- inicjały mieszczą się w obrębie miniatury
+- desktop bez zmiany zachowania
 - wymagane: zielony WAWIS PR checks / targeted-checks
