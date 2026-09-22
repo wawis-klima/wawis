@@ -14,6 +14,7 @@ export default function AppModal({
   overlayStyle = undefined,
   contentStyle = undefined,
   warnBeforeUnload = false,
+  lockPagePosition = false,
 }) {
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
@@ -28,8 +29,33 @@ export default function AppModal({
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const body = document.body;
+    const root = document.documentElement;
+    const previousBodyStyles = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+    };
+    const previousRootStyles = {
+      overflow: root.style.overflow,
+      overscrollBehavior: root.style.overscrollBehavior,
+    };
+    const scrollX = typeof window !== "undefined" ? window.scrollX : 0;
+    const scrollY = typeof window !== "undefined" ? window.scrollY : 0;
+
+    body.style.overflow = "hidden";
+    if (lockPagePosition) {
+      root.style.overflow = "hidden";
+      root.style.overscrollBehavior = "none";
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = `-${scrollX}px`;
+      body.style.right = "0";
+      body.style.width = "100%";
+    }
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && closeOnEscape) {
@@ -40,10 +66,21 @@ export default function AppModal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      body.style.overflow = previousBodyStyles.overflow;
+      body.style.position = previousBodyStyles.position;
+      body.style.top = previousBodyStyles.top;
+      body.style.left = previousBodyStyles.left;
+      body.style.right = previousBodyStyles.right;
+      body.style.width = previousBodyStyles.width;
+      root.style.overflow = previousRootStyles.overflow;
+      root.style.overscrollBehavior = previousRootStyles.overscrollBehavior;
       document.removeEventListener("keydown", handleKeyDown);
+
+      if (lockPagePosition && typeof window !== "undefined") {
+        window.scrollTo(scrollX, scrollY);
+      }
     };
-  }, [closeOnEscape, onClose, open]);
+  }, [closeOnEscape, lockPagePosition, onClose, open]);
 
   if (!open) return null;
 
