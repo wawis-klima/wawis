@@ -1,3 +1,10 @@
+## 11.12
+- Pobieranie mobilnych szczegółów montażu ma dwie automatyczne próby zamiast natychmiastowego przejścia do przycisku `Ponów` po pierwszym zerwaniu połączenia.
+- Każda próba odczytu zdjęć i komentarzy ma krótki limit 3,2 s; chwilowy `Load failed`/timeout uruchamia świeży request po 0,5 s.
+- Automatyczne sprawdzanie protokołu nie startuje już równolegle z pobieraniem zdjęć i komentarzy, więc nie dokłada trzeciego requestu do Supabase podczas otwierania karty.
+- Odczyt protokołu również ma automatyczne ponowienie, a techniczny `AbortError: Supabase request timeout...` jest zastąpiony czytelnym komunikatem i bezpiecznym przyciskiem ponowienia.
+- Dane montażów, zdjęcia, RLS i Storage pozostają bez zmian.
+
 ## 11.11
 - Mobilny klient Supabase kończy zwykłe zawieszone żądania po 12 s zamiast po 45 s, a lekkie podpisywanie prywatnych zdjęć po 6 s zamiast po 90 s.
 - Realny transfer plików Storage zachowuje osobny limit 30 s, żeby wolniejsze LTE nie przerywało poprawnych uploadów.
