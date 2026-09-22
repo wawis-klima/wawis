@@ -100,9 +100,9 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     expect(photoMetaGeometry.dateRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
     expect(photoMetaGeometry.badgeLeft).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft);
     expect(photoMetaGeometry.badgeRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
-    expect(photoMetaGeometry.badgeTopOffset).toBeGreaterThanOrEqual(7);
-    expect(photoMetaGeometry.badgeWidth).toBeLessThanOrEqual(24);
-    expect(photoMetaGeometry.badgeHeight).toBeLessThanOrEqual(17);
+    expect(photoMetaGeometry.badgeTopOffset).toBeGreaterThanOrEqual(8);
+    expect(photoMetaGeometry.badgeWidth).toBeLessThanOrEqual(23);
+    expect(photoMetaGeometry.badgeHeight).toBeLessThanOrEqual(16);
     expect(photoMetaGeometry.dateOverflow).toBe('visible');
     expect(photoMetaGeometry.dateTextOverflow).toBe('clip');
     expect(photoMetaGeometry.installerDisplay).toBe('none');
