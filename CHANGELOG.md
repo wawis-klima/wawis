@@ -1,3 +1,9 @@
+## 11.16
+- Zmniejszono znacznik inicjałów instalatora na mobilnej miniaturze: mniejsza wysokość, szerokość, padding i czcionka.
+- Znacznik został przesunięty niżej od górnej krawędzi zdjęcia, żeby wyglądał proporcjonalniej.
+- Pełna data pod zdjęciem i układ 4 kolumn pozostają bez zmian.
+- Bez zmian w danych, Supabase, RLS i Storage.
+
 ## 11.15
 - W mobilnym kafelku zdjęcia pełna data `DD.MM.RR` zajmuje cały wiersz pod miniaturą i jest wyśrodkowana.
 - Dwuliterowe inicjały instalatora zostały przeniesione do małego znacznika w prawym górnym rogu zdjęcia, dzięki czemu data i inicjały nie konkurują już o szerokość.
