@@ -37,6 +37,34 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
     await expect(workerPage.getByRole('status', { name: /Połączenie:/ })).toContainText('Wszystko wysłane');
     await expect(adminPage.locator('.thumbCard')).toHaveCount(1, { timeout: 15_000 });
 
+    await adminPage.locator('.thumbCard .thumbBtn').click();
+    await expect(adminPage.locator('.previewOverlay')).toBeVisible();
+    const previewScrollLock = await adminPage.evaluate(() => {
+      const overlay = document.querySelector('.previewOverlay');
+      const style = overlay ? getComputedStyle(overlay) : null;
+      return {
+        bodyPosition: document.body.style.position,
+        bodyOverflow: document.body.style.overflow,
+        bodyTop: document.body.style.top,
+        rootOverflow: document.documentElement.style.overflow,
+        rootOverscroll: document.documentElement.style.overscrollBehavior,
+        overlayTouchAction: style?.touchAction || '',
+        overlayOverscroll: style?.overscrollBehavior || '',
+      };
+    });
+    expect(previewScrollLock.bodyPosition).toBe('fixed');
+    expect(previewScrollLock.bodyOverflow).toBe('hidden');
+    expect(previewScrollLock.rootOverflow).toBe('hidden');
+    expect(previewScrollLock.rootOverscroll).toBe('none');
+    expect(previewScrollLock.overlayTouchAction).toBe('none');
+    expect(previewScrollLock.overlayOverscroll).toBe('none');
+
+    await adminPage.mouse.wheel(0, 500);
+    await expect.poll(() => adminPage.evaluate(() => document.body.style.top)).toBe(previewScrollLock.bodyTop);
+    await adminPage.keyboard.press('Escape');
+    await expect(adminPage.locator('.previewOverlay')).toHaveCount(0);
+    await expect.poll(() => adminPage.evaluate(() => document.body.style.position)).not.toBe('fixed');
+
     await workerPage.locator('.thumbCard').getByRole('button', { name: 'Usuń' }).click();
     await expect(workerPage.getByRole('heading', { name: 'Usunąć zdjęcie?' })).toBeVisible();
     await workerPage.getByRole('dialog').getByRole('button', { name: 'Usuń', exact: true }).click();
