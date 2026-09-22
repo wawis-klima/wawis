@@ -1,3 +1,10 @@
+## 11.19
+- Mobilny podgląd pełnego zdjęcia blokuje pozycję strony na czas otwarcia modalu.
+- Na iPhone/iOS blokowane są jednocześnie przewijanie `body`, przewijanie elementu głównego oraz overscroll/rubber-band tła.
+- Przesunięcie palcem po zdjęciu lub ciemnym tle podglądu nie przesuwa już karty montażu pod spodem.
+- Po zamknięciu podglądu aplikacja wraca dokładnie do poprzedniej pozycji przewinięcia.
+- Zmiana dotyczy wyłącznie podglądu zdjęć; dane, Supabase, RLS i Storage pozostają bez zmian.
+
 ## 11.18
 - Zachowano rozmiar białego badge inicjałów instalatora z 11.17.
 - Zmniejszono wyłącznie rozmiar liter inicjałów.
