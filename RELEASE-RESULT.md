@@ -1,7 +1,7 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.13
+- 11.14
 
 ## Tryb
 - mobile
@@ -11,14 +11,13 @@
 
 ## Podsumowanie
 - status: OCZEKUJE NA CI
-- zakres: zwijana sekcja zdjęć w mobilnych zleceniach archiwalnych
-- Zakończone: zdjęcia domyślnie zwinięte
-- Niezrealizowane: zdjęcia domyślnie zwinięte
-- Nowe / W trakcie: bez zmiany zachowania
+- zakres: czytelność metadanych pod mobilnymi miniaturami zdjęć
+- data: pełne DD.MM.RR
+- instalator: dwuliterowe inicjały
+- miniatury: bez zmiany rozmiaru i układu
 - zmiana danych/RLS/Storage: brak
 
 ## Kryteria wydania
-- licznik zdjęć w nagłówku sekcji
-- poprawne rozwijanie i zwijanie
-- brak wpływu na aktywne montaże
+- brak wielokropków w dacie i inicjałach
+- data i inicjały mieszczą się w szerokości pojedynczego kafelka iPhone
 - wymagane: zielony WAWIS PR checks / targeted-checks

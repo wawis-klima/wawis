@@ -1,3 +1,9 @@
+## 11.14
+- Pod mobilnymi miniaturami zdjęć pełna krótka data `DD.MM.RR` i dwuliterowe inicjały instalatora mieszczą się w jednym wierszu.
+- Zmniejszono czcionkę metadanych zdjęcia do 10,5 px, ograniczono odstęp między datą i inicjałami oraz usunięto wielokropki z tych dwóch pól.
+- Rozmiar miniaturek i układ czterech zdjęć w rzędzie pozostają bez zmian.
+- Bez zmian w danych, Supabase, RLS, Storage i logice zdjęć.
+
 ## 11.13
 - W mobilnych zleceniach o statusie `Zakończone` i `Niezrealizowane` sekcja `Zdjęcia` jest domyślnie zwinięta.
 - Nagłówek pokazuje liczbę zwykłych zdjęć, np. `Zdjęcia (4)`, oraz przycisk rozwijania i ponownego zwijania.

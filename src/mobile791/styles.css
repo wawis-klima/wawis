@@ -8512,3 +8512,30 @@ img.previewImage{
 /* v10.97 — PUSH jako rzeczywisty przełącznik użytkownika */
 .wawisPushMini{cursor:pointer;}
 .wawisPushMini:disabled{cursor:wait !important;opacity:.65;}
+
+
+/* 11.14 — czytelna data i inicjały pod mobilnymi miniaturami */
+@media(max-width:700px){
+  .mobileInlineJobDetails .photoMeta{
+    width:100% !important;
+    padding:0 2px !important;
+    gap:2px !important;
+    font-size:10.5px !important;
+    line-height:1.2 !important;
+    justify-content:space-between !important;
+    white-space:nowrap !important;
+  }
+
+  .mobileInlineJobDetails .photoMetaText{
+    flex:0 0 auto !important;
+    min-width:auto !important;
+    max-width:none !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:nowrap !important;
+  }
+
+  .mobileInlineJobDetails .photoMetaText:last-child{
+    font-weight:600 !important;
+  }
+}
