@@ -94,6 +94,7 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
         badgeHeight: badge.height,
         badgeBackground: badgeStyle.backgroundColor,
         badgeColor: badgeStyle.color,
+        badgeFontSize: badgeStyle.fontSize,
         dateOverflow: dateStyle.overflow,
         dateTextOverflow: dateStyle.textOverflow,
         installerDisplay: installerStyle.display,
@@ -103,11 +104,14 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     expect(photoMetaGeometry.dateRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
     expect(photoMetaGeometry.badgeLeft).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft);
     expect(photoMetaGeometry.badgeRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
-    expect(photoMetaGeometry.badgeBottomOffset).toBeGreaterThanOrEqual(4);
+    expect(photoMetaGeometry.badgeBottomOffset).toBeGreaterThanOrEqual(7);
+    expect(photoMetaGeometry.badgeWidth).toBeGreaterThanOrEqual(15);
     expect(photoMetaGeometry.badgeWidth).toBeLessThanOrEqual(21);
+    expect(photoMetaGeometry.badgeHeight).toBeGreaterThanOrEqual(12);
     expect(photoMetaGeometry.badgeHeight).toBeLessThanOrEqual(14);
     expect(photoMetaGeometry.badgeBackground).toBe('rgb(255, 255, 255)');
     expect(photoMetaGeometry.badgeColor).toBe('rgb(17, 24, 39)');
+    expect(photoMetaGeometry.badgeFontSize).toBe('5.5px');
     expect(photoMetaGeometry.dateOverflow).toBe('visible');
     expect(photoMetaGeometry.dateTextOverflow).toBe('clip');
     expect(photoMetaGeometry.installerDisplay).toBe('none');
