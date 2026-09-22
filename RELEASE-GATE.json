@@ -1,22 +1,22 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.14",
+  "version": "11.15",
   "scope": "mobile",
-  "release_branch": "release/v11.14",
+  "release_branch": "release/v11.15",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Zmiana 11.14 dotyczy wyłącznie mobilnego CSS metadanych pod miniaturami zdjęć. Format daty już był DD.MM.RR; problemem było obcinanie tekstu przy czterech kolumnach."
+    "notes": "Zmiana 11.15 jest wyłącznie mobilną zmianą prezentacji metadanych zdjęcia: data pod miniaturą, inicjały jako nakładka na miniaturze. Bez zmian w Supabase, RLS, Storage i synchronizacji."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.14.zip"
+    "file_name": "klima-app-v11.15.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.14",
-    "ready_for_main": true,
+    "source_branch": "release/v11.15",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
