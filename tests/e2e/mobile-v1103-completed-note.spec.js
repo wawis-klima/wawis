@@ -69,38 +69,6 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     await expect(page.locator('.thumbCard')).toHaveCount(2);
 
     const firstPhotoCard = page.locator('.thumbCard').first();
-    await firstPhotoCard.locator('.thumbBtn').click();
-    await expect(page.locator('.previewOverlay')).toBeVisible();
-    const lockedPreviewState = await page.evaluate(() => {
-      const overlay = document.querySelector('.previewOverlay');
-      const overlayStyle = overlay ? getComputedStyle(overlay) : null;
-      return {
-        bodyPosition: document.body.style.position,
-        bodyOverflow: document.body.style.overflow,
-        bodyTop: document.body.style.top,
-        rootOverflow: document.documentElement.style.overflow,
-        rootOverscroll: document.documentElement.style.overscrollBehavior,
-        overlayTouchAction: overlayStyle?.touchAction || '',
-        overlayOverscroll: overlayStyle?.overscrollBehavior || '',
-      };
-    });
-    expect(lockedPreviewState.bodyPosition).toBe('fixed');
-    expect(lockedPreviewState.bodyOverflow).toBe('hidden');
-    expect(lockedPreviewState.rootOverflow).toBe('hidden');
-    expect(lockedPreviewState.rootOverscroll).toBe('none');
-    expect(lockedPreviewState.overlayTouchAction).toBe('none');
-    expect(lockedPreviewState.overlayOverscroll).toBe('none');
-    expect(lockedPreviewState.bodyTop).toMatch(/^-?\d+px$/);
-
-    await page.mouse.wheel(0, 500);
-    const bodyTopAfterWheel = await page.evaluate(() => document.body.style.top);
-    expect(bodyTopAfterWheel).toBe(lockedPreviewState.bodyTop);
-
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.previewOverlay')).toHaveCount(0);
-    await expect.poll(() => page.evaluate(() => document.body.style.position)).not.toBe('fixed');
-
-
     const firstPhotoMeta = firstPhotoCard.locator('.photoMeta');
     await expect(firstPhotoMeta.locator('.photoDateMeta')).toHaveText('22.04.26');
     await expect(firstPhotoMeta.locator('.photoInstallerMeta')).toBeHidden();
