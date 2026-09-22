@@ -23,6 +23,25 @@ assert.match(detailsSource, /thumbnail_load_failed/);
 assert.match(detailsSource, /Otwórz zdjęcie/);
 
 const { getSignedPhotoUrl } = await import(pathToFileURL(photosModulePath).href);
+const requestTimeoutModulePath = path.join(root, 'src/mobile791/modules/request-timeout.js');
+const {
+  MOBILE_SUPABASE_REQUEST_TIMEOUT_MS,
+  MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS,
+  MOBILE_SUPABASE_STORAGE_TIMEOUT_MS,
+  resolveSupabaseRequestTimeoutMs,
+} = await import(pathToFileURL(requestTimeoutModulePath).href);
+
+assert(MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS < MOBILE_SUPABASE_REQUEST_TIMEOUT_MS, 'podpis zdjęcia musi kończyć się szybciej niż zwykły request');
+assert(MOBILE_SUPABASE_REQUEST_TIMEOUT_MS < MOBILE_SUPABASE_STORAGE_TIMEOUT_MS, 'realny transfer pliku może mieć dłuższy limit');
+assert.equal(
+  resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/sign/job-photos/a.jpg', { method: 'POST' }),
+  MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS,
+);
+assert.equal(
+  resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/job-photos/a.jpg', { method: 'POST' }),
+  MOBILE_SUPABASE_STORAGE_TIMEOUT_MS,
+);
+assert.match(appSource, /if \(!thumbnailUrl && storagePath && isSessionTokenCurrent\(sessionToken\)\)[\s\S]*transform:\s*null,[\s\S]*forceRefresh:\s*true/);
 let signingCalls = 0;
 const fakeSupabase = {
   storage: {
@@ -70,4 +89,4 @@ const originalUrl = await getSignedPhotoUrl({
 assert.match(originalUrl, /mode=original/);
 assert.equal(signingCalls, 3, 'oryginał musi mieć osobny podpis od transformacji miniatury');
 
-console.log('OK: 10.12 automatycznie odświeża miniaturę, omija wadliwy cache i ma fallback do oryginału.');
+console.log('OK: 11.11 miniatury szybko kończą zawieszony signing, mają fallback do oryginału i nie wymagają ponownego logowania.');
