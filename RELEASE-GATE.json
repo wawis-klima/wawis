@@ -1,22 +1,22 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.11",
+  "version": "11.12",
   "scope": "mobile",
-  "release_branch": "release/v11.11",
+  "release_branch": "release/v11.12",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Produkcja 11.10 zarejestrowała na iPhonie błędy photo.thumbnail.load.failed, THUMBNAIL_SIGNING_FAILED oraz Supabase request timeout after 90000 ms. Zdjęcia montażu Żurawia 4 istnieją w job-photos; problem dotyczył zawieszonego transportu i zbyt długich timeoutów po stronie klienta."
+    "notes": "Na montażu Sylwia Jędrusik produkcja pokazała dwa niezależne problemy transportowe: szczegóły montażu zostały przerwane po 7 s, a równoległy odczyt protokołu zakończył się timeoutem Supabase. Sześć rekordów zdjęć i wszystkie obiekty job-photos istnieją, a zapytanie photos po job_id wykonuje się w bazie poniżej 1 ms; problem nie leży w danych ani indeksach."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.11.zip"
+    "file_name": "klima-app-v11.12.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.11",
-    "ready_for_main": true,
+    "source_branch": "release/v11.12",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
