@@ -76,6 +76,7 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
 
     const photoMetaGeometry = await firstPhotoCard.evaluate((card) => {
       const cardRect = card.getBoundingClientRect();
+      const thumb = card.querySelector('.thumbBtn').getBoundingClientRect();
       const date = card.querySelector('.photoDateMeta').getBoundingClientRect();
       const badge = card.querySelector('.photoUploaderBadge').getBoundingClientRect();
       const dateStyle = getComputedStyle(card.querySelector('.photoDateMeta'));
@@ -87,6 +88,9 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
         dateRight: date.right,
         badgeLeft: badge.left,
         badgeRight: badge.right,
+        badgeTopOffset: badge.top - thumb.top,
+        badgeWidth: badge.width,
+        badgeHeight: badge.height,
         dateOverflow: dateStyle.overflow,
         dateTextOverflow: dateStyle.textOverflow,
         installerDisplay: installerStyle.display,
@@ -96,6 +100,9 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     expect(photoMetaGeometry.dateRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
     expect(photoMetaGeometry.badgeLeft).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft);
     expect(photoMetaGeometry.badgeRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
+    expect(photoMetaGeometry.badgeTopOffset).toBeGreaterThanOrEqual(7);
+    expect(photoMetaGeometry.badgeWidth).toBeLessThanOrEqual(24);
+    expect(photoMetaGeometry.badgeHeight).toBeLessThanOrEqual(17);
     expect(photoMetaGeometry.dateOverflow).toBe('visible');
     expect(photoMetaGeometry.dateTextOverflow).toBe('clip');
     expect(photoMetaGeometry.installerDisplay).toBe('none');
