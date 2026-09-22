@@ -1,3 +1,10 @@
+## 11.18
+- Zachowano rozmiar białego badge inicjałów instalatora z 11.17.
+- Zmniejszono wyłącznie rozmiar liter inicjałów.
+- Badge został lekko podniesiony w prawym dolnym rogu miniatury.
+- Pełna data pod zdjęciem oraz układ 4 miniaturek w rzędzie pozostają bez zmian.
+- Bez zmian w danych, Supabase, RLS i Storage.
+
 ## 11.17
 - Znacznik inicjałów instalatora na mobilnej miniaturze został przeniesiony do prawego dolnego rogu zdjęcia.
 - Badge jest jeszcze mniejszy niż w 11.16.
