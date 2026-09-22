@@ -900,11 +900,18 @@ export default function JobDetailsPanel({
                 ) : (
                   <span className="photoThumbPlaceholder">{canOpenPhotoPreview ? 'Otwórz zdjęcie' : 'Zdjęcie'}</span>
                 )}
+                <span
+                  className="photoUploaderBadge"
+                  title={photo.uploader_name || "Pracownik"}
+                  aria-label={`Instalator: ${photo.uploader_name || "Pracownik"}`}
+                >
+                  {getInitials(photo.uploader_name || "Pracownik")}
+                </span>
                 {isUploadingPhoto ? <span className="photoUploadOverlay">{uploadStatusLabel || "Wysyłanie"}...</span> : null}
               </button>
               <div className="photoMeta">
-                <span className="photoMetaText">{formatDate(photo.created_at)}</span>
-                <span className="photoMetaText" title={photo.uploader_name || "Pracownik"}>{getInitials(photo.uploader_name || "Pracownik")}</span>
+                <span className="photoMetaText photoDateMeta">{formatDate(photo.created_at)}</span>
+                <span className="photoMetaText photoInstallerMeta" title={photo.uploader_name || "Pracownik"}>{getInitials(photo.uploader_name || "Pracownik")}</span>
               </div>
               {uploadStatusLabel ? (
                 <div className={`photoUploadStatus photoUploadStatus-${uploadStatus}`} title={photo.upload_error || uploadStatusLabel}>
