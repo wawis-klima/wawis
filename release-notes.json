@@ -1,9 +1,10 @@
 {
-  "version": "11.16",
-  "summary": "Mniejszy i niżej ustawiony znacznik inicjałów instalatora na zdjęciu.",
+  "version": "11.17",
+  "summary": "Mniejszy biały znacznik inicjałów instalatora w prawym dolnym rogu miniatury.",
   "changes": [
-    "Zmniejszono znacznik inicjałów instalatora.",
-    "Przesunięto go niżej od górnej krawędzi miniatury.",
-    "Pełna data pod zdjęciem i układ miniaturek bez zmian."
+    "Przeniesiono inicjały instalatora do prawego dolnego rogu zdjęcia.",
+    "Znacznik jest jeszcze mniejszy niż wcześniej.",
+    "Tło jest białe, a litery czarne.",
+    "Pełna data pod zdjęciem i układ miniaturek pozostają bez zmian."
   ]
 }
