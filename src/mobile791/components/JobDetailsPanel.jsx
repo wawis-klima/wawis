@@ -9,8 +9,12 @@ import { getNameplatePhotoMetadata } from "../modules/photos.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
 import { getManualNameplateVerification, setManualNameplateVerification } from "../../modules/nameplate-verification.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
+import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { blockUnsavedWork } from "../../modules/update-reload-guard.js";
 import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
+
+const PROTOCOL_READ_TIMEOUT_MS = 3200;
+const PROTOCOL_READ_RETRY_DELAYS_MS = Object.freeze([0, 500]);
 
 function formatInstallationDate(dateStr = "") {
   if (!dateStr) return "-";
@@ -310,31 +314,66 @@ export default function JobDetailsPanel({
     setProtocolRecord(null);
     setProtocolMessage("");
     setProtocolBackendAvailable(true);
+
     if (!supabase || !selectedJobId || !selectedJobIsCompleted) {
       setProtocolLoading(false);
       return () => { cancelled = true; };
     }
 
+    // Protokół jest poboczny wobec zdjęć i komentarzy. Nie dokładamy kolejnego
+    // requestu do Supabase, dopóki podstawowe szczegóły montażu nie są gotowe.
+    if (!selectedJob?.detailsLoaded) {
+      setProtocolLoading(false);
+      return () => { cancelled = true; };
+    }
+
     setProtocolLoading(true);
-    void loadJobProtocolRecord({ supabase, jobId: selectedJobId })
-      .then((result) => {
+    void (async () => {
+      let lastError = null;
+
+      for (let attemptIndex = 0; attemptIndex < PROTOCOL_READ_RETRY_DELAYS_MS.length; attemptIndex += 1) {
+        const delayMs = PROTOCOL_READ_RETRY_DELAYS_MS[attemptIndex];
+        if (delayMs) await new Promise((resolve) => window.setTimeout(resolve, delayMs));
         if (cancelled) return;
-        setProtocolRecord(result.record);
-        setProtocolBackendAvailable(result.backendAvailable);
-        if (!result.backendAvailable) {
-          setProtocolMessage("Obsługa zapisu protokołów wymaga aktualizacji bazy aplikacji.");
+
+        try {
+          const result = await loadJobProtocolRecord({
+            supabase,
+            jobId: selectedJobId,
+            timeoutMs: PROTOCOL_READ_TIMEOUT_MS,
+          });
+          if (cancelled) return;
+
+          setProtocolRecord(result.record);
+          setProtocolBackendAvailable(result.backendAvailable);
+          if (!result.backendAvailable) {
+            setProtocolMessage("Obsługa zapisu protokołów wymaga aktualizacji bazy aplikacji.");
+          }
+          return;
+        } catch (error) {
+          lastError = error;
+          if (cancelled) return;
+
+          const hasNextAttempt = attemptIndex + 1 < PROTOCOL_READ_RETRY_DELAYS_MS.length;
+          if (!isTransientSupabaseError(error) || !hasNextAttempt) break;
         }
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        setProtocolMessage(error?.message || "Nie udało się sprawdzić protokołu.");
-      })
-      .finally(() => {
-        if (!cancelled) setProtocolLoading(false);
-      });
+      }
+
+      if (cancelled) return;
+      if (isTransientSupabaseError(lastError)) {
+        // Nie pokazujemy użytkownikowi AbortError/timeoutu. Protokół jest funkcją
+        // dodatkową, więc po chwilowej awarii zostawiamy bezpieczny przycisk retry.
+        setProtocolBackendAvailable(false);
+        setProtocolMessage("Nie udało się teraz sprawdzić protokołu. Kliknij „Sprawdź”.");
+      } else {
+        setProtocolMessage(lastError?.message || "Nie udało się sprawdzić protokołu.");
+      }
+    })().finally(() => {
+      if (!cancelled) setProtocolLoading(false);
+    });
 
     return () => { cancelled = true; };
-  }, [protocolReloadKey, selectedJobId, selectedJobIsCompleted, supabase]);
+  }, [protocolReloadKey, selectedJobId, selectedJobIsCompleted, selectedJob?.detailsLoaded, supabase]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
