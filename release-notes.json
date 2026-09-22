@@ -1,10 +1,9 @@
 {
-  "version": "11.15",
-  "summary": "Pełna data pod miniaturą i inicjały instalatora jako znacznik na zdjęciu.",
+  "version": "11.16",
+  "summary": "Mniejszy i niżej ustawiony znacznik inicjałów instalatora na zdjęciu.",
   "changes": [
-    "Data DD.MM.RR jest wyśrodkowana i ma całą szerokość kafelka.",
-    "Dwuliterowe inicjały instalatora są widoczne w prawym górnym rogu miniatury.",
-    "Układ czterech zdjęć w rzędzie i rozmiar miniaturek pozostają bez zmian.",
-    "Brak zmian w danych, Supabase, RLS i Storage."
+    "Zmniejszono znacznik inicjałów instalatora.",
+    "Przesunięto go niżej od górnej krawędzi miniatury.",
+    "Pełna data pod zdjęciem i układ miniaturek bez zmian."
   ]
 }
