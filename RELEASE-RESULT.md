@@ -1,7 +1,7 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.12
+- 11.13
 
 ## Tryb
 - mobile
@@ -11,12 +11,14 @@
 
 ## Podsumowanie
 - status: OCZEKUJE NA CI
-- zakres: odporność mobilnych szczegółów montażu na chwilowe błędy transportu
-- diagnoza: dane zdjęć istnieją, indeksy są obecne, odczyt SQL jest natychmiastowy; problem występuje po stronie klient/transport Supabase
-- zmiana danych/RLS: brak
+- zakres: zwijana sekcja zdjęć w mobilnych zleceniach archiwalnych
+- Zakończone: zdjęcia domyślnie zwinięte
+- Niezrealizowane: zdjęcia domyślnie zwinięte
+- Nowe / W trakcie: bez zmiany zachowania
+- zmiana danych/RLS/Storage: brak
 
 ## Kryteria wydania
-- szczegóły montażu: dwie automatyczne próby, 3,2 s na próbę
-- protokół: odczyt dopiero po gotowych szczegółach, dwie automatyczne próby
-- brak surowego AbortError w interfejsie
-- wymagane: zielony WAWIS PR checks / targeted-checks, wymagany E2E i build produkcyjny
+- licznik zdjęć w nagłówku sekcji
+- poprawne rozwijanie i zwijanie
+- brak wpływu na aktywne montaże
+- wymagane: zielony WAWIS PR checks / targeted-checks
