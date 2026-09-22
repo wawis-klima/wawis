@@ -1,10 +1,10 @@
 {
-  "version": "11.17",
-  "summary": "Mniejszy biały znacznik inicjałów instalatora w prawym dolnym rogu miniatury.",
+  "version": "11.18",
+  "summary": "Mniejsze inicjały i lekko wyżej ustawiony badge instalatora bez zmiany rozmiaru samego badge.",
   "changes": [
-    "Przeniesiono inicjały instalatora do prawego dolnego rogu zdjęcia.",
-    "Znacznik jest jeszcze mniejszy niż wcześniej.",
-    "Tło jest białe, a litery czarne.",
+    "Rozmiar badge pozostaje bez zmian.",
+    "Zmniejszono tylko czcionkę inicjałów.",
+    "Badge został lekko podniesiony w prawym dolnym rogu.",
     "Pełna data pod zdjęciem i układ miniaturek pozostają bez zmian."
   ]
 }
