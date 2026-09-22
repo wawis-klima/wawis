@@ -288,8 +288,11 @@ export default function JobDetailsPanel({
   const selectedJobId = String(selectedJob?.id || "");
   const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || "") : "";
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
-  const selectedJobIsCompleted = String(selectedJob?.status || "") === "Zakończone";
+  const selectedJobStatus = String(selectedJob?.status || "");
+  const selectedJobIsCompleted = selectedJobStatus === "Zakończone";
+  const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
+  const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
   const emailAutoFitRef = useAutoFitSingleLineText(String(selectedJob?.email || ''), { maxFontSize: 12.5 });
   const addressAutoFitRef = useAutoFitSingleLineText(getJobAddress(selectedJob || {}), { maxFontSize: 13.5 });
 
@@ -302,6 +305,10 @@ export default function JobDetailsPanel({
   React.useEffect(() => {
     setAdminNoteExpanded(!selectedJobIsCompleted);
   }, [selectedJobId, selectedJobIsCompleted]);
+
+  React.useEffect(() => {
+    setPhotosExpanded(!photosCollapsible);
+  }, [selectedJobId, photosCollapsible]);
 
   React.useEffect(() => {
     if (!commentHasUnsavedWork) return undefined;
@@ -844,9 +851,26 @@ export default function JobDetailsPanel({
         </div>
       ) : null}
 
-      <section className="detailsSection">
-        <h4 className="sectionHeadingWithIcon"><IconCamera /><span>Zdjęcia</span></h4>
-        <div className="thumbGrid">
+      <section className={`detailsSection${photosCollapsible ? ' photosSectionCollapsible' : ''}`}>
+        {photosCollapsible ? (
+          <button
+            type="button"
+            className="adminNoteToggle sectionHeadingWithIcon photosSectionToggle"
+            aria-expanded={photosExpanded}
+            aria-controls={`photos-content-${selectedJobId}`}
+            aria-label={`${photosExpanded ? 'Zwiń' : 'Rozwiń'} zdjęcia`}
+            onClick={() => setPhotosExpanded((expanded) => !expanded)}
+          >
+            <IconCamera />
+            <span>Zdjęcia ({regularPhotos.length})</span>
+            <span className="adminNoteToggleChevron" aria-hidden="true">⌄</span>
+          </button>
+        ) : (
+          <h4 className="sectionHeadingWithIcon"><IconCamera /><span>Zdjęcia</span></h4>
+        )}
+        {(!photosCollapsible || photosExpanded) ? (
+          <div id={`photos-content-${selectedJobId}`}>
+          <div className="thumbGrid">
         {regularPhotos.map((photo, index) => {
           const uploadStatus = String(photo.upload_status || "").trim();
           const uploadStatusLabel = getPhotoUploadStatusLabel(photo);
@@ -937,6 +961,8 @@ export default function JobDetailsPanel({
               <span className="photoUploadBtnLabel">Galeria</span>
               <input type="file" accept="image/*" multiple hidden onChange={(e) => handlePhotoUpload(selectedJob.id, e)} />
             </label>
+          </div>
+        ) : null}
           </div>
         ) : null}
       </section>
