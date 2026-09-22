@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.16
+- 11.17
 
-Wersja 11.16 zmniejsza znacznik inicjałów instalatora na zdjęciu i przesuwa go trochę niżej.
+Wersja 11.17 przenosi inicjały instalatora do prawego dolnego rogu miniatury, zmniejsza znacznik i zmienia go na biały z czarnym tekstem.
 
-# Wawis Klimatyzacja — wersja 11.16
+# Wawis Klimatyzacja — wersja 11.17
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.16` — znacznik inicjałów instalatora na mobilnej miniaturze jest mniejszy i odsunięty niżej od górnej krawędzi zdjęcia.
+- wersja `11.17` — inicjały instalatora są w prawym dolnym rogu zdjęcia, w mniejszym białym znaczniku z czarnymi literami.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.

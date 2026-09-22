@@ -81,6 +81,7 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
       const badge = card.querySelector('.photoUploaderBadge').getBoundingClientRect();
       const dateStyle = getComputedStyle(card.querySelector('.photoDateMeta'));
       const installerStyle = getComputedStyle(card.querySelector('.photoInstallerMeta'));
+      const badgeStyle = getComputedStyle(card.querySelector('.photoUploaderBadge'));
       return {
         cardLeft: cardRect.left,
         cardRight: cardRect.right,
@@ -88,9 +89,11 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
         dateRight: date.right,
         badgeLeft: badge.left,
         badgeRight: badge.right,
-        badgeTopOffset: badge.top - thumb.top,
+        badgeBottomOffset: thumb.bottom - badge.bottom,
         badgeWidth: badge.width,
         badgeHeight: badge.height,
+        badgeBackground: badgeStyle.backgroundColor,
+        badgeColor: badgeStyle.color,
         dateOverflow: dateStyle.overflow,
         dateTextOverflow: dateStyle.textOverflow,
         installerDisplay: installerStyle.display,
@@ -100,9 +103,11 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     expect(photoMetaGeometry.dateRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
     expect(photoMetaGeometry.badgeLeft).toBeGreaterThanOrEqual(photoMetaGeometry.cardLeft);
     expect(photoMetaGeometry.badgeRight).toBeLessThanOrEqual(photoMetaGeometry.cardRight + 1);
-    expect(photoMetaGeometry.badgeTopOffset).toBeGreaterThanOrEqual(8);
-    expect(photoMetaGeometry.badgeWidth).toBeLessThanOrEqual(23);
-    expect(photoMetaGeometry.badgeHeight).toBeLessThanOrEqual(16);
+    expect(photoMetaGeometry.badgeBottomOffset).toBeGreaterThanOrEqual(4);
+    expect(photoMetaGeometry.badgeWidth).toBeLessThanOrEqual(21);
+    expect(photoMetaGeometry.badgeHeight).toBeLessThanOrEqual(14);
+    expect(photoMetaGeometry.badgeBackground).toBe('rgb(255, 255, 255)');
+    expect(photoMetaGeometry.badgeColor).toBe('rgb(17, 24, 39)');
     expect(photoMetaGeometry.dateOverflow).toBe('visible');
     expect(photoMetaGeometry.dateTextOverflow).toBe('clip');
     expect(photoMetaGeometry.installerDisplay).toBe('none');
