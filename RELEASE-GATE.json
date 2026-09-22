@@ -1,22 +1,22 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.13",
+  "version": "11.14",
   "scope": "mobile",
-  "release_branch": "release/v11.13",
+  "release_branch": "release/v11.14",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Zmiana 11.13 jest wyłącznie mobilną zmianą prezentacji sekcji zdjęć. Nie modyfikuje Supabase, RLS, Storage ani synchronizacji; istniejące mechanizmy ładowania zdjęć pozostają bez zmian."
+    "notes": "Zmiana 11.14 dotyczy wyłącznie mobilnego CSS metadanych pod miniaturami zdjęć. Format daty już był DD.MM.RR; problemem było obcinanie tekstu przy czterech kolumnach."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.13.zip"
+    "file_name": "klima-app-v11.14.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.13",
-    "ready_for_main": true,
+    "source_branch": "release/v11.14",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
