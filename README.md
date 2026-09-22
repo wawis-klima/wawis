@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.10
+- 11.11
 
-Wersja 11.10 przewija mobilną listę do początku nowo otwartego montażu po przełączeniu klienta.
+Wersja 11.11 skraca zawieszone połączenia Supabase na telefonie i automatycznie odzyskuje zdjęcia bez wylogowania.
 
-# Wawis Klimatyzacja — wersja 11.10
+# Wawis Klimatyzacja — wersja 11.11
 
 
 ## Push po tankowaniu pracownika — 10.23
