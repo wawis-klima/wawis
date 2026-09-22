@@ -13,8 +13,16 @@ async function seedAdminNotes(page) {
     const store = api.getStore();
     const completedJob = store.jobs.find((job) => job.id === 'mock-job-003');
     const activeJob = store.jobs.find((job) => job.id === 'mock-job-002');
+    const unrealizedJob = store.jobs.find((job) => job.id === 'mock-job-001');
     completedJob.admin_note = 'Długi komentarz zakończonego montażu, który ma być domyślnie zwinięty.';
     activeJob.admin_note = 'Komentarz aktywnego montażu pozostaje od razu widoczny.';
+    unrealizedJob.status = 'Niezrealizowane';
+    store.photos = [
+      ...store.photos,
+      { id: 'photo-completed-1', job_id: completedJob.id, image_url: 'data:image/png;base64,iVBORw0KGgo=', uploaded_by: completedJob.created_by, created_at: '2026-04-22T10:20:00.000Z', photo_kind: '' },
+      { id: 'photo-completed-2', job_id: completedJob.id, image_url: 'data:image/png;base64,iVBORw0KGgo=', uploaded_by: completedJob.created_by, created_at: '2026-04-22T10:21:00.000Z', photo_kind: '' },
+      { id: 'photo-unrealized-1', job_id: unrealizedJob.id, image_url: 'data:image/png;base64,iVBORw0KGgo=', uploaded_by: unrealizedJob.created_by, created_at: '2026-04-20T08:35:00.000Z', photo_kind: '' },
+    ];
     window.localStorage.setItem(storeKey, JSON.stringify(store));
   }, STORE_KEY);
 }
@@ -41,6 +49,40 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     await page.getByText('Klient Testowy B', { exact: true }).click();
     await expect(page.locator('.adminNoteToggle')).toHaveCount(0);
     await expect(page.getByText('Komentarz aktywnego montażu pozostaje od razu widoczny.', { exact: true })).toBeVisible();
+  });
+
+  test('zdjęcia są domyślnie zwinięte w zakończonych i niezrealizowanych, a w aktywnym pozostają otwarte', async ({ page }) => {
+    await seedAdminNotes(page);
+    await loginWithoutReset(page, ADMIN);
+
+    await page.locator('.statusActionButton[title="Zakończone"]').click();
+    await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
+
+    const completedToggle = page.getByRole('button', { name: 'Rozwiń zdjęcia' });
+    await expect(completedToggle).toBeVisible();
+    await expect(completedToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(completedToggle).toContainText('Zdjęcia (2)');
+    await expect(page.locator('.thumbCard')).toHaveCount(0);
+
+    await completedToggle.click();
+    await expect(page.getByRole('button', { name: 'Zwiń zdjęcia' })).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.thumbCard')).toHaveCount(2);
+
+    await page.getByRole('button', { name: 'Zamknij', exact: true }).click();
+    await page.locator('.statusActionButton[title="Niezrealizowane"]').click();
+    await page.getByText('Klient Testowy A', { exact: true }).click();
+
+    const unrealizedToggle = page.getByRole('button', { name: 'Rozwiń zdjęcia' });
+    await expect(unrealizedToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(unrealizedToggle).toContainText('Zdjęcia (1)');
+    await expect(page.locator('.thumbCard')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Zamknij', exact: true }).click();
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
+
+    await expect(page.locator('.photosSectionToggle')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Zdjęcia' })).toBeVisible();
   });
 
   test('e-mail i telefon są wyśrodkowane, a cztery podstawowe wiersze są niższe', async ({ page }) => {
