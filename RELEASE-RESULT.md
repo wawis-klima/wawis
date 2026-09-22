@@ -1,21 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.17
+- 11.18
 
 ## Tryb
 - mobile
 
 ## Podsumowanie
-- inicjały instalatora: prawy dolny róg miniatury
-- badge: mniejszy
-- tło: białe
-- tekst: czarny
+- badge inicjałów: rozmiar bez zmian względem 11.17
+- inicjały: mniejsza czcionka
+- położenie: lekko wyżej
+- pozycja: prawy dolny róg
+- tło/tekst: białe tło, czarne litery
 - data pod zdjęciem: bez zmian
 - zmiana danych/RLS/Storage: brak
 
 ## Kryteria wydania
-- badge mieści się w obrębie miniatury
-- badge ma białe tło i ciemny tekst
-- pozycja jest przy prawym dolnym rogu
+- badge zachowuje obecny rozmiar
+- czcionka inicjałów jest mniejsza
+- badge ma większy odstęp od dolnej krawędzi
 - wymagane: zielony WAWIS PR checks / targeted-checks
