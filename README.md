@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.10
+- 11.11
 
-Wersja 11.10 przewija mobilną listę do początku nowo otwartego montażu po przełączeniu klienta.
+Wersja 11.11 skraca zawieszone połączenia Supabase na telefonie i automatycznie odzyskuje zdjęcia bez wylogowania.
 
-# Wawis Klimatyzacja — wersja 11.10
+# Wawis Klimatyzacja — wersja 11.11
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.10` — po przełączeniu klienta mobilna lista czeka na zmianę układu i przewija nowo otwartą kartę do jej początku; zamknięcie bieżącej karty nie uruchamia przewijania.
+- wersja `11.11` — mobilne requesty Supabase szybciej kończą zawieszone połączenia, a miniatury automatycznie przechodzą na świeży link do oryginalnego zdjęcia bez ponownego logowania.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.

@@ -388,12 +388,40 @@ export default function App() {
       if (!photo || photo.thumbnail_image_url || isLocalQueuedPhoto(photo)) return null;
       const storagePath = getPhotoStoragePath({ photo, supabaseUrl });
       if (!storagePath && !photo.original_image_url) return null;
-      const thumbnailUrl = await getSignedPhotoUrl({
+
+      let thumbnailUrl = await getSignedPhotoUrl({
         storagePath,
         fallbackUrl: storagePath ? '' : (photo.original_image_url || ''),
         supabase,
         transform: MOBILE_THUMBNAIL_TRANSFORM,
       });
+
+      // Gdy podpis miniatury utknie lub transformacja chwilowo nie odpowiada,
+      // nie zostawiamy pustego kafelka do kolejnego logowania. Od razu próbujemy
+      // świeżego podpisu do oryginału; karta montażu pozostaje interaktywna,
+      // bo cały proces działa w tle.
+      if (!thumbnailUrl && storagePath && isSessionTokenCurrent(sessionToken)) {
+        thumbnailUrl = await getSignedPhotoUrl({
+          storagePath,
+          fallbackUrl: photo.original_image_url || '',
+          supabase,
+          expiresIn: 3598,
+          transform: null,
+          forceRefresh: true,
+        });
+      }
+
+      if (!thumbnailUrl && storagePath && isSessionTokenCurrent(sessionToken)) {
+        logDiagnostic('photo.thumbnail.load.failed', {
+          retry_count: 2,
+          phase: 'initial_signing_fallback',
+          error: {
+            code: 'THUMBNAIL_SIGNING_FAILED',
+            message: 'Mobile thumbnail and original signing failed during initial hydration.',
+          },
+        });
+      }
+
       return thumbnailUrl ? { id: String(photo.id || ''), thumbnailUrl } : null;
     }));
 

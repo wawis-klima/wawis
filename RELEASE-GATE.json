@@ -1,28 +1,28 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.10",
+  "version": "11.11",
   "scope": "mobile",
-  "release_branch": "release/v11.10",
+  "release_branch": "release/v11.11",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Dla 11.10 odtworzono przełączanie klienta z dołu rozwiniętych szczegółów: usunięcie poprzedniego panelu zmieniało wysokość listy, ale przeglądarka zachowywała starą pozycję i pokazywała dół nowego montażu. Poprawka przewija nową kartę po zakończeniu zmiany układu."
+    "notes": "Produkcja 11.10 zarejestrowała na iPhonie błędy photo.thumbnail.load.failed, THUMBNAIL_SIGNING_FAILED oraz Supabase request timeout after 90000 ms. Zdjęcia montażu Żurawia 4 istnieją w job-photos; problem dotyczył zawieszonego transportu i zbyt długich timeoutów po stronie klienta."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.10.zip"
+    "file_name": "klima-app-v11.11.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.10",
+    "source_branch": "release/v11.11",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "evidence_required": false,
+    "evidence_required": true,
     "checked": false,
-    "result": "NOT_BLOCKING"
+    "result": "PENDING"
   },
   "archive": {
     "source_of_truth": "github-main",
