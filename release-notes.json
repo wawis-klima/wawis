@@ -1,10 +1,10 @@
 {
-  "version": "11.12",
-  "summary": "Automatyczne odzyskiwanie szczegółów montażu przy chwilowym zerwaniu połączenia z Supabase.",
+  "version": "11.13",
+  "summary": "Zwijana sekcja zdjęć w zakończonych i niezrealizowanych zleceniach mobilnych.",
   "changes": [
-    "Zdjęcia i komentarze są automatycznie pobierane ponownie po pierwszym chwilowym błędzie lub timeoutcie.",
-    "Sprawdzanie protokołu czeka na zakończenie pobierania podstawowych szczegółów montażu.",
-    "Protokół również ma ponowienie i nie pokazuje użytkownikowi surowego AbortError.",
-    "Zmiana nie modyfikuje danych, RLS ani plików w Storage."
+    "Zakończone i niezrealizowane zlecenia pokazują domyślnie zwinięty nagłówek Zdjęcia z licznikiem.",
+    "Kliknięcie nagłówka rozwija miniatury i wszystkie dotychczasowe akcje zdjęć.",
+    "Nowe i trwające zlecenia pozostają domyślnie rozwinięte.",
+    "Brak zmian w danych, RLS, Storage i synchronizacji zdjęć."
   ]
 }

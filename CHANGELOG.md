@@ -1,3 +1,10 @@
+## 11.13
+- W mobilnych zleceniach o statusie `Zakończone` i `Niezrealizowane` sekcja `Zdjęcia` jest domyślnie zwinięta.
+- Nagłówek pokazuje liczbę zwykłych zdjęć, np. `Zdjęcia (4)`, oraz przycisk rozwijania i ponownego zwijania.
+- Po rozwinięciu działają te same miniatury, podgląd, usuwanie i przyciski Aparat/Galeria co dotychczas.
+- W statusach `Nowe` i `W trakcie` zdjęcia pozostają domyślnie rozwinięte.
+- Bez zmian w bazie danych, RLS, Storage, PUSH i logice synchronizacji zdjęć.
+
 ## 11.12
 - Pobieranie mobilnych szczegółów montażu ma dwie automatyczne próby zamiast natychmiastowego przejścia do przycisku `Ponów` po pierwszym zerwaniu połączenia.
 - Każda próba odczytu zdjęć i komentarzy ma krótki limit 3,2 s; chwilowy `Load failed`/timeout uruchamia świeży request po 0,5 s.

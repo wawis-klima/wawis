@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.12",
+  "version": "11.13",
   "scope": "mobile",
-  "release_branch": "release/v11.12",
+  "release_branch": "release/v11.13",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Na montażu Sylwia Jędrusik produkcja pokazała dwa niezależne problemy transportowe: szczegóły montażu zostały przerwane po 7 s, a równoległy odczyt protokołu zakończył się timeoutem Supabase. Sześć rekordów zdjęć i wszystkie obiekty job-photos istnieją, a zapytanie photos po job_id wykonuje się w bazie poniżej 1 ms; problem nie leży w danych ani indeksach."
+    "notes": "Zmiana 11.13 jest wyłącznie mobilną zmianą prezentacji sekcji zdjęć. Nie modyfikuje Supabase, RLS, Storage ani synchronizacji; istniejące mechanizmy ładowania zdjęć pozostają bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.12.zip"
+    "file_name": "klima-app-v11.13.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.12",
+    "source_branch": "release/v11.13",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
