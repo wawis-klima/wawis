@@ -1,23 +1,19 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.15
+- 11.16
 
 ## Tryb
 - mobile
 
-## Wygenerowano
-- 2026-09-22
-
 ## Podsumowanie
-- status: OCZEKUJE NA CI
-- data zdjęcia: pełne DD.MM.RR pod miniaturą
-- instalator: dwuliterowe inicjały jako znacznik na miniaturze
-- układ 4 kolumn: bez zmiany
+- zakres: znacznik inicjałów instalatora na miniaturze
+- rozmiar: mniejszy
+- położenie: niżej
+- data pod zdjęciem: bez zmian
 - zmiana danych/RLS/Storage: brak
 
 ## Kryteria wydania
-- pełna data mieści się w kafelku bez wielokropka
-- inicjały mieszczą się w obrębie miniatury
-- desktop bez zmiany zachowania
+- badge mieści się w miniaturze
+- badge jest niższy i mniejszy niż w 11.15
 - wymagane: zielony WAWIS PR checks / targeted-checks
