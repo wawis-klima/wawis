@@ -1,3 +1,10 @@
+## 11.17
+- Znacznik inicjałów instalatora na mobilnej miniaturze został przeniesiony do prawego dolnego rogu zdjęcia.
+- Badge jest jeszcze mniejszy niż w 11.16.
+- Tło badge jest białe, a litery czarne; pozostawiono delikatną obwódkę i cień dla czytelności.
+- Pełna data pod zdjęciem oraz układ 4 miniaturek w rzędzie pozostają bez zmian.
+- Bez zmian w danych, Supabase, RLS i Storage.
+
 ## 11.16
 - Zmniejszono znacznik inicjałów instalatora na mobilnej miniaturze: mniejsza wysokość, szerokość, padding i czcionka.
 - Znacznik został przesunięty niżej od górnej krawędzi zdjęcia, żeby wyglądał proporcjonalniej.
