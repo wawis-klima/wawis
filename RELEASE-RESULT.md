@@ -1,22 +1,20 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.18
+- 11.19
 
 ## Tryb
 - mobile
 
 ## Podsumowanie
-- badge inicjałów: rozmiar bez zmian względem 11.17
-- inicjały: mniejsza czcionka
-- położenie: lekko wyżej
-- pozycja: prawy dolny róg
-- tło/tekst: białe tło, czarne litery
-- data pod zdjęciem: bez zmian
+- podgląd zdjęcia: blokuje przewijanie karty pod spodem
+- iOS: body jest zamrażane w bieżącej pozycji
+- overscroll/rubber-band tła: zablokowany
+- po zamknięciu: powrót do poprzedniej pozycji
 - zmiana danych/RLS/Storage: brak
 
 ## Kryteria wydania
-- badge zachowuje obecny rozmiar
-- czcionka inicjałów jest mniejsza
-- badge ma większy odstęp od dolnej krawędzi
+- otwarty preview ustawia blokadę przewijania strony
+- touch/wheel nie zmienia pozycji karty pod overlayem
+- zamknięcie preview przywraca normalne przewijanie
 - wymagane: zielony WAWIS PR checks / targeted-checks

@@ -119,6 +119,35 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     await page.getByRole('button', { name: 'Otwórz tabliczkę znamionową JZ' }).click();
     await expect(page.locator('.previewImageWrap .fullPreview')).toBeVisible();
+
+    const lockedPreviewState = await page.evaluate(() => {
+      const overlay = document.querySelector('.previewOverlay');
+      const overlayStyle = overlay ? getComputedStyle(overlay) : null;
+      return {
+        bodyPosition: document.body.style.position,
+        bodyOverflow: document.body.style.overflow,
+        bodyTop: document.body.style.top,
+        rootOverflow: document.documentElement.style.overflow,
+        rootOverscroll: document.documentElement.style.overscrollBehavior,
+        overlayTouchAction: overlayStyle?.touchAction || '',
+        overlayOverscroll: overlayStyle?.overscrollBehavior || '',
+      };
+    });
+    expect(lockedPreviewState.bodyPosition).toBe('fixed');
+    expect(lockedPreviewState.bodyOverflow).toBe('hidden');
+    expect(lockedPreviewState.rootOverflow).toBe('hidden');
+    expect(lockedPreviewState.rootOverscroll).toBe('none');
+    expect(lockedPreviewState.overlayTouchAction).toBe('none');
+    expect(lockedPreviewState.overlayOverscroll).toBe('none');
+    expect(lockedPreviewState.bodyTop).toMatch(/^-?\d+px$/);
+
+    await page.mouse.wheel(0, 500);
+    const bodyTopAfterWheel = await page.evaluate(() => document.body.style.top);
+    expect(bodyTopAfterWheel).toBe(lockedPreviewState.bodyTop);
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.previewOverlay')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => document.body.style.position)).not.toBe('fixed');
   });
 
   test('nie pozwala pracownikowi zakończyć zlecenia bez tabliczki JZ i każdej JW', async ({ page }) => {

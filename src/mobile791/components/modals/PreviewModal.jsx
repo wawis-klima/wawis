@@ -8,6 +8,7 @@ export default function PreviewModal({ previewImage, setPreviewImage, previewNex
       onClose={() => setPreviewImage(null)}
       overlayClassName="previewOverlay"
       contentClassName="cleanPreviewModal previewModalSurface"
+      lockPagePosition
     >
       <div
         className="previewImageWrap"

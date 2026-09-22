@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.18
+- 11.19
 
-Wersja 11.18 zachowuje rozmiar badge inicjałów instalatora, zmniejsza tylko same litery i przesuwa badge trochę wyżej.
+Wersja 11.19 blokuje przewijanie zawartości aplikacji pod pełnoekranowym podglądem zdjęcia na telefonie.
 
-# Wawis Klimatyzacja — wersja 11.18
+# Wawis Klimatyzacja — wersja 11.19
 
 
 ## Push po tankowaniu pracownika — 10.23
@@ -809,7 +809,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.18` — badge inicjałów instalatora pozostaje tej samej wielkości, ma mniejsze litery i jest lekko podniesiony w prawym dolnym rogu miniatury.
+- wersja `11.19` — podczas otwartego podglądu zdjęcia tło aplikacji jest całkowicie zamrożone i po zamknięciu wraca dokładnie do poprzedniej pozycji.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.

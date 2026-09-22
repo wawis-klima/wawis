@@ -1,10 +1,10 @@
 {
-  "version": "11.18",
-  "summary": "Mniejsze inicjały i lekko wyżej ustawiony badge instalatora bez zmiany rozmiaru samego badge.",
+  "version": "11.19",
+  "summary": "Zablokowane przewijanie montażu pod otwartym podglądem zdjęcia.",
   "changes": [
-    "Rozmiar badge pozostaje bez zmian.",
-    "Zmniejszono tylko czcionkę inicjałów.",
-    "Badge został lekko podniesiony w prawym dolnym rogu.",
-    "Pełna data pod zdjęciem i układ miniaturek pozostają bez zmian."
+    "Podczas podglądu zdjęcia karta montażu pod spodem pozostaje nieruchoma.",
+    "Blokada obejmuje przewijanie i overscroll na iPhone/iOS.",
+    "Po zamknięciu zdjęcia wraca poprzednia pozycja strony.",
+    "Brak zmian w danych, Supabase, RLS i Storage."
   ]
 }

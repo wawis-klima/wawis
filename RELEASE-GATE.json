@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.18",
+  "version": "11.19",
   "scope": "mobile",
-  "release_branch": "release/v11.18",
+  "release_branch": "release/v11.19",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Zmiana 11.18 dotyczy wyłącznie wizualnego dostrojenia badge inicjałów instalatora: bez zmiany jego rozmiaru, mniejsza czcionka i większy odstęp od dolnej krawędzi miniatury."
+    "notes": "Zmiana 11.19 dotyczy wyłącznie interakcji z mobilnym podglądem zdjęcia. Podczas otwartego preview zamrażana jest pozycja strony i blokowany overscroll tła; po zamknięciu wraca poprzednia pozycja."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.18.zip"
+    "file_name": "klima-app-v11.19.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.18",
+    "source_branch": "release/v11.19",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
