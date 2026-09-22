@@ -1,22 +1,22 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.17",
+  "version": "11.18",
   "scope": "mobile",
-  "release_branch": "release/v11.17",
+  "release_branch": "release/v11.18",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Zmiana 11.17 jest wyłącznie mobilną zmianą wizualną znacznika inicjałów instalatora na miniaturze: prawy dolny róg, mniejszy rozmiar, białe tło i czarne litery."
+    "notes": "Zmiana 11.18 dotyczy wyłącznie wizualnego dostrojenia badge inicjałów instalatora: bez zmiany jego rozmiaru, mniejsza czcionka i większy odstęp od dolnej krawędzi miniatury."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.17.zip"
+    "file_name": "klima-app-v11.18.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.17",
-    "ready_for_main": true,
+    "source_branch": "release/v11.18",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
