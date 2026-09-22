@@ -1,3 +1,10 @@
+## 11.11
+- Mobilny klient Supabase kończy zwykłe zawieszone żądania po 12 s zamiast po 45 s, a lekkie podpisywanie prywatnych zdjęć po 6 s zamiast po 90 s.
+- Realny transfer plików Storage zachowuje osobny limit 30 s, żeby wolniejsze LTE nie przerywało poprawnych uploadów.
+- Jeżeli pierwsze podpisanie miniatury nie powiedzie się, aplikacja w tle od razu próbuje świeżego linku do oryginalnego zdjęcia zamiast zostawiać pusty kafelek do ponownego logowania.
+- Dotychczasowy mechanizm odświeżania uszkodzonej lub wygasłej miniatury nadal działa, ale jego najgorszy czas oczekiwania został skrócony z dziesiątek sekund do kilku sekund na próbę.
+- Zmiana nie modyfikuje danych, RLS ani plików zdjęć w Supabase.
+
 ## 11.10
 - Po kliknięciu innego klienta na mobilnej liście ekran automatycznie przewija się do początku nowo otwartej karty.
 - Przewinięcie następuje dopiero po zamknięciu poprzednich szczegółów i zakończeniu zmiany układu, więc użytkownik nie trafia już w środek lub na dół nowego montażu.
