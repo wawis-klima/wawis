@@ -1,5 +1,6 @@
-export const MOBILE_SUPABASE_REQUEST_TIMEOUT_MS = 45 * 1000;
-export const MOBILE_SUPABASE_STORAGE_TIMEOUT_MS = 90 * 1000;
+export const MOBILE_SUPABASE_REQUEST_TIMEOUT_MS = 12 * 1000;
+export const MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS = 6 * 1000;
+export const MOBILE_SUPABASE_STORAGE_TIMEOUT_MS = 30 * 1000;
 
 function normalizeRequestUrl(input) {
   if (typeof input === 'string') return input;
@@ -11,11 +12,23 @@ function normalizeRequestMethod(input, init = {}) {
   return String(init?.method || input?.method || 'GET').trim().toUpperCase();
 }
 
-export function resolveSupabaseRequestTimeoutMs(input) {
+export function resolveSupabaseRequestTimeoutMs(input, init = {}) {
   const url = normalizeRequestUrl(input);
-  return /\/storage\/v1\/object\//i.test(url)
-    ? MOBILE_SUPABASE_STORAGE_TIMEOUT_MS
-    : MOBILE_SUPABASE_REQUEST_TIMEOUT_MS;
+  const method = normalizeRequestMethod(input, init);
+
+  // Podpisywanie prywatnych zdjęć jest lekką operacją API i nie może blokować
+  // ekranu przez dziesiątki sekund. Długi limit zostawiamy tylko dla realnego
+  // transferu pliku (upload/download), który na LTE może potrzebować więcej czasu.
+  if (/\/storage\/v1\/object\/sign\//i.test(url)) {
+    return MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS;
+  }
+  if (/\/storage\/v1\/object\//i.test(url)) {
+    return MOBILE_SUPABASE_STORAGE_TIMEOUT_MS;
+  }
+  if (/\/auth\/v1\//i.test(url) && method === 'POST') {
+    return MOBILE_SUPABASE_REQUEST_TIMEOUT_MS;
+  }
+  return MOBILE_SUPABASE_REQUEST_TIMEOUT_MS;
 }
 
 export function createSupabaseRequestTimeoutError(timeoutMs) {
@@ -65,7 +78,7 @@ try {
 export async function fetchWithTimeout(input, init = {}, options = {}) {
   const fetchImpl = options.fetchImpl || globalThis.fetch?.bind(globalThis);
   if (typeof fetchImpl !== 'function') throw new Error('Brak implementacji fetch dla Supabase.');
-  const resolvedTimeout = Math.max(1, Number(options.timeoutMs || resolveSupabaseRequestTimeoutMs(input)) || MOBILE_SUPABASE_REQUEST_TIMEOUT_MS);
+  const resolvedTimeout = Math.max(1, Number(options.timeoutMs || resolveSupabaseRequestTimeoutMs(input, init)) || MOBILE_SUPABASE_REQUEST_TIMEOUT_MS);
   if (typeof AbortController === 'undefined') return fetchImpl(input, init);
 
   const controller = new AbortController();
