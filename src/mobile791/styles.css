@@ -8598,3 +8598,18 @@ img.previewImage{
     display:none !important;
   }
 }
+
+
+/* 11.19 — podgląd zdjęcia blokuje przewijanie karty pod spodem */
+@media(max-width:700px){
+  .previewOverlay{
+    overflow:hidden !important;
+    overscroll-behavior:none !important;
+    touch-action:none !important;
+  }
+
+  .previewModalSurface,
+  .previewImageWrap{
+    overscroll-behavior:none !important;
+  }
+}
