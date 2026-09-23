@@ -20,11 +20,14 @@
 - Playwright mobile i desktop oraz produkcyjny build muszą przejść
 
 ## Wynik wdrożenia
-- WAWIS PR checks: PENDING
-- targeted regressions: PENDING
-- Playwright mobile: PENDING
-- Playwright desktop: PENDING
-- produkcyjny build: PENDING
-- Vercel deployment: PENDING
-- centralna diagnostyka po wdrożeniu: PENDING
-- merge produkcyjny: PENDING
+- WAWIS PR checks: PASS
+- targeted regressions: PASS
+- regresja `test:smoke:push-job-deeplink`: PASS
+- Playwright mobile: PASS
+- Playwright desktop: PASS
+- produkcyjny build: PASS
+- Supabase / RLS / Storage: N/A — brak zmian
+- Vercel deployment: SUCCESS dla merge `5c5e8213b6c74cad94f29b6ef3a1fb0840020d5d`
+- centralna diagnostyka po wdrożeniu: brak nowych `error`/`warning` w `app_diagnostic_events` w kontroli ostatnich 30 minut
+- bezpośredni odczyt deploymentu przez konektor Vercela: niedostępny z powodu braku autoryzacji scope `wawis`; status wdrożenia potwierdzony przez integrację Vercel w GitHub
+- merge produkcyjny: `5c5e8213b6c74cad94f29b6ef3a1fb0840020d5d`
