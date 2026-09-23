@@ -851,7 +851,12 @@ export default function App() {
     const requestedJob = jobs.find((job) => String(job.id) === String(requestedJobId));
     if (!requestedJob) return;
 
-    setSelectedJob(requestedJob);
+    openJobInJobsModule(requestedJob);
+
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("jobId");
+    const cleanHref = `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`;
+    window.history.replaceState(window.history.state, "", cleanHref);
   }, [jobs]);
 
   if (!isConfigured) {
