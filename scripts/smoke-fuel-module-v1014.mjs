@@ -300,7 +300,8 @@ assert.match(fuelPushSource, /send-fuel-entry-push/);
 assert.match(pushEdge, /String\(entry\.created_by \|\| ""\) !== String\(authData\.user\.id\)/, 'Edge Function musi potwierdzić autora tankowania.');
 assert.match(pushEdge, /deliveryLogType = `fuel_entry:\$\{entry\.id\}`/, 'Push tankowania musi być idempotentny dla konkretnego wpisu.');
 assert.match(pushEdge, /title: "Nowe tankowanie"/, 'Push paliwa 10.83 ma używać neutralnego tytułu.');
-assert.match(pushEdge, /body: "Dodano nowe tankowanie\. Otwórz aplikację Wawis, aby zobaczyć szczegóły\."/, 'Treść PUSH nie może ujawniać danych tankowania na ekranie blokady.');
+assert.match(pushEdge, /const pushVehicleLabel = vehicleName \|\| registration \|\| "samochód";/, 'Push ma używać krótkiej nazwy auta z rejestracją tylko jako fallback.');
+assert.match(pushEdge, /body: `\$\{employee\} zatankował \$\{pushVehicleLabel\} — \$\{litersLabel\} paliwa\.`/, 'Push ma od razu pokazywać pracownika, auto i ilość paliwa.');
 assert.match(pushEdge, /recipientUserId: String\(subscription\.user_id \|\| ""\)/, 'Payload musi wskazywać konkretnego odbiorcę.');
 assert.match(pushEdge, /subscriptionGeneration: Number\(subscription\.ownership_generation \|\| 0\)/, 'Payload musi być przypięty do generacji subskrypcji.');
 assert.match(pushEdge, /\.select\("id, user_id, endpoint, p256dh, auth, lifecycle_token, ownership_generation"\)/, 'Wysyłka musi odczytać generację i lifecycle własności endpointu.');
@@ -309,5 +310,7 @@ assert.match(pushEdge, /p_request_user_id: subscription\.user_id/, 'Cleanup 404/
 assert.match(pushEdge, /p_expected_generation: subscription\.ownership_generation/, 'Cleanup 404/410 musi być przypięty do generacji wysyłki.');
 assert.match(pushEdge, /p_lifecycle_token: subscription\.lifecycle_token/, 'Cleanup 404/410 musi być przypięty do lifecycle wysyłki.');
 const payloadBlock = pushEdge.match(/const payload = JSON\.stringify\(\{[\s\S]*?\n      \}\);/)?.[0] || '';
-assert.doesNotMatch(payloadBlock, /vehicleLabel|litersLabel|odometerLabel|employee/, 'Payload PUSH paliwa nie może zawierać szczegółów tankowania ani nazwiska pracownika.');
+assert.match(payloadBlock, /employee/, 'Payload PUSH paliwa ma zawierać nazwę pracownika.');
+assert.match(payloadBlock, /pushVehicleLabel/, 'Payload PUSH paliwa ma zawierać nazwę auta.');
+assert.match(payloadBlock, /litersLabel/, 'Payload PUSH paliwa ma zawierać ilość paliwa.');
 console.log('Fuel production access, monthly report, correction audit, rapid-refill warning and v10.26 regression checks passed.');
