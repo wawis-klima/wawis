@@ -21,13 +21,22 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING"
+    "checked": true,
+    "result": "PASS",
+    "notes": "Po merge 11.20 Vercel zgłosił SUCCESS. W pierwszej kontroli po wdrożeniu centralna diagnostyka nie zawierała nowych zdarzeń error/warning dla 11.20."
   },
   "archive": {
     "source_of_truth": "github-main",
     "zip_optional": true,
     "blocking": false
   },
-  "release_mode": "standard"
+  "release_mode": "standard",
+  "production_verification": {
+    "supabase_migration_applied": true,
+    "rls_role_matrix": "PASS",
+    "performance_advisor": "PASS — brak auth_rls_initplan i duplicate_index",
+    "trigger_grants": "PASS — anon/authenticated bez EXECUTE dla trzech funkcji triggerowych",
+    "vercel_deployment": "SUCCESS",
+    "merge_commit": "502b81812c82f73e18751dcda467760fdadd7363"
+  }
 }
