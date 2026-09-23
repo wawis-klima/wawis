@@ -1,20 +1,21 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.19
+- 11.20
 
 ## Tryb
-- mobile
+- full / stability
 
-## Podsumowanie
-- podgląd zdjęcia: blokuje przewijanie karty pod spodem
-- iOS: body jest zamrażane w bieżącej pozycji
-- overscroll/rubber-band tła: zablokowany
-- po zamknięciu: powrót do poprzedniej pozycji
-- zmiana danych/RLS/Storage: brak
+## Zakres
+- mobile: prawidłowa klasyfikacja retry/sukces/błąd miniaturek
+- desktop admin: status PUSH całego zespołu w Diagnostyce
+- Supabase: 13 optymalizacji RLS, 3 usunięte duplikaty indeksów, ograniczone granty funkcji triggerowych
+- dokumentacja: stan 11.20 i bieżąca treść PUSH po tankowaniu
 
 ## Kryteria wydania
-- otwarty preview ustawia blokadę przewijania strony
-- touch/wheel nie zmienia pozycji karty pod overlayem
-- zamknięcie preview przywraca normalne przewijanie
-- wymagane: zielony WAWIS PR checks / targeted-checks
+- retry miniatury nie może być raportowany jako końcowy ERROR
+- końcowy ERROR miniatury dopiero po nieudanym fallbacku do oryginału
+- administrator widzi stan PUSH zespołu, pracownik nadal tylko własne rekordy subskrypcji
+- Supabase Advisor: brak `auth_rls_initplan` i brak `duplicate_index`
+- `reject_zero_byte_photo_storage()` nie jest wykonywalna przez anon/authenticated
+- wymagane: zielony WAWIS PR checks / targeted-checks oraz produkcyjny build
