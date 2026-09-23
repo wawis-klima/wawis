@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.20",
+  "version": "11.21",
   "scope": "full",
-  "release_branch": "release/v11.20",
+  "release_branch": "release/v11.21",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.20 produkcja raportowała fałszywie zawyżone błędy photo.thumbnail.load.failed podczas odzyskiwalnych retry oraz pojedyncze timeouty push/data.refresh. 11.20 rozdziela retry/success/final failure i nie zmienia danych zdjęć."
+    "notes": "11.21 naprawia wyłącznie nawigację po kliknięciu PUSH. Brak zmian Supabase, RLS, Storage i danych."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.20.zip"
+    "file_name": "klima-app-v11.21.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.20",
+    "source_branch": "release/v11.21",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po merge 11.20 Vercel zgłosił SUCCESS. W pierwszej kontroli po wdrożeniu centralna diagnostyka nie zawierała nowych zdarzeń error/warning dla 11.20."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do weryfikacji po wdrożeniu 11.21."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": true,
-    "rls_role_matrix": "PASS",
-    "performance_advisor": "PASS — brak auth_rls_initplan i duplicate_index",
-    "trigger_grants": "PASS — anon/authenticated bez EXECUTE dla trzech funkcji triggerowych",
-    "vercel_deployment": "SUCCESS",
-    "merge_commit": "502b81812c82f73e18751dcda467760fdadd7363"
+    "supabase_migration_applied": "N/A — brak zmian Supabase",
+    "rls_role_matrix": "N/A — brak zmian RLS",
+    "performance_advisor": "N/A — brak zmian bazy",
+    "trigger_grants": "N/A — brak zmian grantów",
+    "vercel_deployment": "PENDING",
+    "merge_commit": ""
   }
 }
