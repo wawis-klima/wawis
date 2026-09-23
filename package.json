@@ -170,7 +170,8 @@
     "test:smoke:feed-stale-v1079": "node scripts/smoke-mobile-feed-stale-v1079.mjs",
     "test:smoke:desktop-push-disabled": "node scripts/smoke-desktop-push-disabled-v1099.cjs",
     "test:smoke:mobile-comment-title": "node scripts/smoke-mobile-comment-title-v1109.cjs",
-    "test:smoke:mobile-job-switch-scroll": "node scripts/smoke-mobile-job-switch-scroll-v1110.cjs"
+    "test:smoke:mobile-job-switch-scroll": "node scripts/smoke-mobile-job-switch-scroll-v1110.cjs",
+    "test:smoke:v1120-stability": "node scripts/smoke-v1120-stability.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
