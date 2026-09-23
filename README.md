@@ -1,7 +1,7 @@
 ## Aktualna wersja
-- 11.20
+- 11.21
 
-Wersja 11.20 porządkuje diagnostykę miniaturek, pokazuje administratorowi stan PUSH całego zespołu oraz optymalizuje RLS, granty i zdublowane indeksy Supabase.
+Wersja 11.21 naprawia otwieranie konkretnego montażu po kliknięciu w powiadomienie PUSH: aplikacja ustawia właściwy status, stronę listy i kartę zlecenia.
 
 # Wawis Klimatyzacja — wersja 11.20
 
