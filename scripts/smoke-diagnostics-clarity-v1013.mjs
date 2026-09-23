@@ -23,6 +23,8 @@ assert.equal(
   'udany zapis z failedCount: 0 nie może tworzyć fałszywego alarmu'
 );
 assert.equal(getDiagnosticSeverity({ type: 'photo.thumbnail.load.failed' }), 'error');
+assert.equal(getDiagnosticSeverity({ type: 'photo.thumbnail.load.retry' }), 'warning');
+assert.equal(getDiagnosticSeverity({ type: 'photo.thumbnail.load.succeeded' }), '');
 assert.equal(getDiagnosticSeverity({ type: 'protocol.save.timeout' }), 'warning');
 assert.equal(getDiagnosticSeverity({ event_type: 'console.warn', severity: 'error' }), 'warning');
 
