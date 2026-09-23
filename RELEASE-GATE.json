@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.19",
-  "scope": "mobile",
-  "release_branch": "release/v11.19",
+  "version": "11.20",
+  "scope": "full",
+  "release_branch": "release/v11.20",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Zmiana 11.19 dotyczy wyłącznie interakcji z mobilnym podglądem zdjęcia. Podczas otwartego preview zamrażana jest pozycja strony i blokowany overscroll tła; po zamknięciu wraca poprzednia pozycja."
+    "notes": "Przed 11.20 produkcja raportowała fałszywie zawyżone błędy photo.thumbnail.load.failed podczas odzyskiwalnych retry oraz pojedyncze timeouty push/data.refresh. 11.20 rozdziela retry/success/final failure i nie zmienia danych zdjęć."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.19.zip"
+    "file_name": "klima-app-v11.20.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.19",
+    "source_branch": "release/v11.20",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },

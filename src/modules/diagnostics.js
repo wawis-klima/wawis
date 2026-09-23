@@ -279,6 +279,54 @@ export async function loadStorageBackupOverview({ supabase } = {}) {
   };
 }
 
+export async function loadPushSubscriptionOverview({ supabase } = {}) {
+  if (!supabase) return [];
+
+  const [profilesResult, subscriptionsResult] = await Promise.all([
+    supabase.from('profiles').select('id, full_name, role').order('full_name', { ascending: true }),
+    supabase.from('push_subscriptions').select('user_id, is_active, device_label, last_seen_at, updated_at'),
+  ]);
+
+  if (profilesResult.error) throw profilesResult.error;
+  if (subscriptionsResult.error) throw subscriptionsResult.error;
+
+  const rowsByUser = new Map((profilesResult.data || []).map((profile) => [String(profile.id || ''), {
+    userId: String(profile.id || ''),
+    fullName: String(profile.full_name || '').trim() || 'Użytkownik',
+    role: String(profile.role || '').trim() || '—',
+    activeSubscriptions: 0,
+    inactiveSubscriptions: 0,
+    activeDevices: [],
+    lastSeenAt: '',
+  }]));
+
+  for (const subscription of subscriptionsResult.data || []) {
+    const userId = String(subscription.user_id || '');
+    const row = rowsByUser.get(userId);
+    if (!row) continue;
+
+    if (subscription.is_active) {
+      row.activeSubscriptions += 1;
+      const label = String(subscription.device_label || '').trim();
+      if (label && !row.activeDevices.includes(label)) row.activeDevices.push(label);
+    } else {
+      row.inactiveSubscriptions += 1;
+    }
+
+    const lastSeenAt = subscription.last_seen_at || subscription.updated_at || '';
+    if (lastSeenAt && (!row.lastSeenAt || new Date(lastSeenAt) > new Date(row.lastSeenAt))) {
+      row.lastSeenAt = lastSeenAt;
+    }
+  }
+
+  return Array.from(rowsByUser.values()).sort((left, right) => {
+    const leftAdmin = left.role === 'Administrator' ? 0 : 1;
+    const rightAdmin = right.role === 'Administrator' ? 0 : 1;
+    if (leftAdmin !== rightAdmin) return leftAdmin - rightAdmin;
+    return left.fullName.localeCompare(right.fullName, 'pl');
+  });
+}
+
 export function clearDiagnosticLog() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(DIAGNOSTIC_STORAGE_KEY);

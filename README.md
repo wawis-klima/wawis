@@ -1,15 +1,25 @@
 ## Aktualna wersja
-- 11.19
+- 11.20
 
-Wersja 11.19 blokuje przewijanie zawartości aplikacji pod pełnoekranowym podglądem zdjęcia na telefonie.
+Wersja 11.20 porządkuje diagnostykę miniaturek, pokazuje administratorowi stan PUSH całego zespołu oraz optymalizuje RLS, granty i zdublowane indeksy Supabase.
 
-# Wawis Klimatyzacja — wersja 11.19
+# Wawis Klimatyzacja — wersja 11.20
+
+## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
+
+- ponawianie ładowania miniatury jest ostrzeżeniem; błąd powstaje dopiero, gdy zawiedzie również odczyt oryginalnego zdjęcia,
+- odzyskana miniatura zapisuje techniczny sukces i nie zaśmieca centralnej listy błędów,
+- desktopowa Diagnostyka administratora pokazuje dla każdego profilu stan PUSH, liczbę aktywnych i historycznych subskrypcji, urządzenie oraz ostatnią aktywność,
+- administrator może odczytać techniczny status subskrypcji zespołu; pracownik nadal widzi wyłącznie własne rekordy PUSH,
+- 13 polityk RLS używa stabilnych wywołań `(select auth.uid())` / `(select helper())`, zgodnie z zaleceniami Supabase,
+- usunięto trzy zdublowane indeksy bez zmiany danych,
+- odebrano rolom aplikacji możliwość bezpośredniego wywoływania trzech funkcji używanych wyłącznie przez triggery.
 
 
 ## Push po tankowaniu pracownika — 10.23
 
 - po udanym zapisie tankowania przez pracownika aplikacja wywołuje osobną funkcję `send-fuel-entry-push`,
-- administrator otrzymuje push „Zatankowano samochód” z pracownikiem, samochodem, ilością paliwa i przebiegiem,
+- administrator otrzymuje push „Nowe tankowanie” z pracownikiem, samochodem i ilością paliwa,
 - tankowanie wpisane przez administratora nie generuje powiadomienia,
 - funkcja serwerowa sprawdza aktywną sesję oraz czy wskazany wpis rzeczywiście należy do zalogowanego pracownika,
 - `push_delivery_log` używa klucza `fuel_entry:<id>` do ochrony przed ponownym wysłaniem tego samego tankowania,
@@ -809,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.19` — podczas otwartego podglądu zdjęcia tło aplikacji jest całkowicie zamrożone i po zamknięciu wraca dokładnie do poprzedniej pozycji.
+- wersja `11.20` — diagnostyka miniaturek rozróżnia retry od końcowego błędu, administrator widzi stan PUSH zespołu, a Supabase ma uporządkowane RLS, granty i zdublowane indeksy.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.

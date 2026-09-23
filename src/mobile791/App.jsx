@@ -484,13 +484,13 @@ export default function App() {
     thumbnailRecoveryAttemptsRef.current.set(recoveryKey, nextAttempt);
     const useOriginal = nextAttempt === MOBILE_THUMBNAIL_RECOVERY_LIMIT;
 
-    logDiagnostic('photo.thumbnail.load.failed', {
+    logDiagnostic('photo.thumbnail.load.retry', {
       retry_count: nextAttempt,
       phase: useOriginal ? 'original_fallback' : 'thumbnail_retry',
       error: {
-        code: useOriginal ? 'THUMBNAIL_RETRY_FAILED' : 'THUMBNAIL_LOAD_FAILED',
+        code: useOriginal ? 'THUMBNAIL_ORIGINAL_FALLBACK' : 'THUMBNAIL_LOAD_RETRY',
         message: useOriginal
-          ? 'Mobile photo thumbnail retry failed; using original image.'
+          ? 'Mobile thumbnail still failed; trying the original image.'
           : 'Mobile photo thumbnail failed to load; refreshing signed URL.',
       },
     });
@@ -512,12 +512,12 @@ export default function App() {
       if (!recoveredUrl && !useOriginal) {
         resolvedAttempt = MOBILE_THUMBNAIL_RECOVERY_LIMIT;
         thumbnailRecoveryAttemptsRef.current.set(recoveryKey, resolvedAttempt);
-        logDiagnostic('photo.thumbnail.load.failed', {
+        logDiagnostic('photo.thumbnail.load.retry', {
           retry_count: resolvedAttempt,
           phase: 'original_fallback',
           error: {
             code: 'THUMBNAIL_SIGNING_FAILED',
-            message: 'Mobile thumbnail signing failed; using original image.',
+            message: 'Mobile thumbnail signing failed; trying the original image.',
           },
         });
         recoveredUrl = await getSignedPhotoUrl({
@@ -533,6 +533,23 @@ export default function App() {
 
       if (!isSessionTokenCurrent(sessionToken)) return '';
       const markedUrl = markThumbnailRecoveryUrl(recoveredUrl, resolvedAttempt);
+
+      if (markedUrl) {
+        logDiagnostic('photo.thumbnail.load.succeeded', {
+          retry_count: resolvedAttempt,
+          phase: resolvedAttempt >= MOBILE_THUMBNAIL_RECOVERY_LIMIT ? 'original_fallback' : 'thumbnail_retry',
+        });
+      } else if (resolvedAttempt >= MOBILE_THUMBNAIL_RECOVERY_LIMIT) {
+        logDiagnostic('photo.thumbnail.load.failed', {
+          retry_count: resolvedAttempt,
+          phase: 'recovery_exhausted',
+          error: {
+            code: 'THUMBNAIL_RECOVERY_FAILED',
+            message: 'Mobile thumbnail and original image recovery both failed.',
+          },
+        });
+        thumbnailRecoveryAttemptsRef.current.set(recoveryKey, MOBILE_THUMBNAIL_RECOVERY_LIMIT + 1);
+      }
 
       const patchPhoto = (job) => {
         if (!job || String(job.id) !== jobId || !Array.isArray(job.photos)) return job;

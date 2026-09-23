@@ -1,3 +1,13 @@
+## 11.20
+- Mobilne odzyskiwanie miniaturek zapisuje zwykłe próby i fallback do oryginału jako ostrzeżenia; `photo.thumbnail.load.failed` pozostaje wyłącznie dla rzeczywistej porażki po wyczerpaniu odzyskiwania.
+- Po skutecznym odzyskaniu zapisywane jest informacyjne `photo.thumbnail.load.succeeded`, więc centralna Diagnostyka nie zawyża liczby błędów.
+- Desktopowa Diagnostyka administratora pokazuje stan PUSH wszystkich profili: ON/brak, liczbę aktywnych i historycznych subskrypcji, etykiety urządzeń i ostatnią aktywność.
+- Polityka odczytu `push_subscriptions` pozwala administratorowi na techniczny odczyt zespołu, zachowując pracownikowi dostęp wyłącznie do własnych rekordów.
+- Zoptymalizowano 13 polityk RLS wskazanych przez Supabase Advisor przez initPlan dla `auth.uid()` i stałych helperów.
+- Usunięto trzy identyczne indeksy: `idx_devices_contractor_id`, `idx_devices_installation_date` i `idx_jobs_contractor_id`; pozostawiono odpowiadające im indeksy `*_idx`.
+- Odebrano `anon` i `authenticated` bezpośrednie EXECUTE do funkcji triggerowych `reject_zero_byte_photo_storage`, `guard_completed_job_nameplates_after_photo_mutation` i `lock_job_for_photo_mutation`.
+- Uporządkowano dokumentację bieżącego PUSH po tankowaniu i dodano regresję `test:smoke:v1120-stability`.
+
 ## 11.19
 - Mobilny podgląd pełnego zdjęcia blokuje pozycję strony na czas otwarcia modalu.
 - Na iPhone/iOS blokowane są jednocześnie przewijanie `body`, przewijanie elementu głównego oraz overscroll/rubber-band tła.

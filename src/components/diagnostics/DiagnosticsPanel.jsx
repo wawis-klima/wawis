@@ -7,6 +7,7 @@ import {
   getDiagnosticOverview,
   loadRemoteDiagnosticEvents,
   loadStorageBackupOverview,
+  loadPushSubscriptionOverview,
   logDiagnostic,
 } from '../../modules/diagnostics.js';
 import {
@@ -44,6 +45,7 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
   const [remoteRecentEvents, setRemoteRecentEvents] = useState([]);
   const [remoteHistoryEvents, setRemoteHistoryEvents] = useState([]);
   const [backupOverview, setBackupOverview] = useState({ total: 0, pending: 0, errors: 0, completed: 0, lastCompletedAt: '' });
+  const [pushSubscriptionOverview, setPushSubscriptionOverview] = useState([]);
 
   function refresh() {
     setOverview(getDiagnosticOverview());
@@ -52,14 +54,16 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
 
   async function refreshServerData() {
     if (profile?.role !== 'Administrator') return;
-    const [recentEvents, historyEvents, backup] = await Promise.all([
+    const [recentEvents, historyEvents, backup, pushOverview] = await Promise.all([
       loadRemoteDiagnosticEvents({ supabase, limit: 100, sinceHours: DIAGNOSTIC_RECENT_HOURS }).catch(() => []),
       loadRemoteDiagnosticEvents({ supabase, limit: 100, olderThanHours: DIAGNOSTIC_RECENT_HOURS }).catch(() => []),
       loadStorageBackupOverview({ supabase }).catch(() => ({ total: 0, pending: 0, errors: 0, completed: 0, lastCompletedAt: '' })),
+      loadPushSubscriptionOverview({ supabase }).catch(() => []),
     ]);
     setRemoteRecentEvents(recentEvents);
     setRemoteHistoryEvents(historyEvents);
     setBackupOverview(backup);
+    setPushSubscriptionOverview(pushOverview);
   }
 
   function refreshEverything() {
@@ -227,6 +231,31 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
         </div>
         {message ? <div className="diagnosticsMessage" role="status">{message}</div> : null}
       </section>
+
+      {profile?.role === 'Administrator' ? (
+        <section className="diagnosticsEventsCard">
+          <div className="diagnosticsEventsHeader">
+            <h2>Status PUSH zespołu</h2>
+            <span>Aktywne urządzenia: {pushSubscriptionOverview.reduce((sum, row) => sum + row.activeSubscriptions, 0)}</span>
+          </div>
+          <div className="diagnosticsEventList">
+            {pushSubscriptionOverview.length ? pushSubscriptionOverview.map((row) => (
+              <div className="diagnosticsEventRow" key={row.userId}>
+                <strong className={row.activeSubscriptions > 0 ? 'diagnosticsOk' : 'diagnosticsError'}>
+                  {row.fullName} · {row.activeSubscriptions > 0 ? 'PUSH ON' : 'BRAK PUSH'}
+                </strong>
+                <span>
+                  {row.role}
+                  {row.activeSubscriptions > 0 ? ` · aktywne: ${row.activeSubscriptions}` : ''}
+                  {row.inactiveSubscriptions > 0 ? ` · historyczne: ${row.inactiveSubscriptions}` : ''}
+                  {row.activeDevices.length ? ` · ${row.activeDevices.join(', ')}` : ''}
+                  {row.lastSeenAt ? ` · ostatnio: ${formatDateTime(row.lastSeenAt)}` : ''}
+                </span>
+              </div>
+            )) : <div className="muted">Brak danych o subskrypcjach PUSH.</div>}
+          </div>
+        </section>
+      ) : null}
 
       <section className="diagnosticsEventsCard">
         <div className="diagnosticsEventsHeader">

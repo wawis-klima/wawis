@@ -1,10 +1,11 @@
 {
-  "version": "11.19",
-  "summary": "Zablokowane przewijanie montażu pod otwartym podglądem zdjęcia.",
+  "version": "11.20",
+  "summary": "Stabilizacja diagnostyki miniaturek, statusu PUSH zespołu oraz konfiguracji Supabase.",
   "changes": [
-    "Podczas podglądu zdjęcia karta montażu pod spodem pozostaje nieruchoma.",
-    "Blokada obejmuje przewijanie i overscroll na iPhone/iOS.",
-    "Po zamknięciu zdjęcia wraca poprzednia pozycja strony.",
-    "Brak zmian w danych, Supabase, RLS i Storage."
+    "Retry miniaturek jest ostrzeżeniem; błąd jest zapisywany dopiero po nieudanym fallbacku do oryginału.",
+    "Diagnostyka administratora pokazuje stan PUSH wszystkich użytkowników bez pobierania kluczy subskrypcji.",
+    "13 polityk RLS zostało zoptymalizowanych zgodnie z zaleceniami Supabase.",
+    "Usunięto trzy zdublowane indeksy i odebrano publiczne EXECUTE funkcjom triggerowym.",
+    "Dokumentacja wydania i aktualna treść PUSH po tankowaniu zostały ujednolicone."
   ]
 }

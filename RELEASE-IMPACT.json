@@ -5,44 +5,80 @@
     "CHANGELOG.md",
     "README.md",
     "RELEASE-GATE.json",
+    "RELEASE-IMPACT.json",
+    "RELEASE-RESULT.md",
     "app-version.json",
     "package-lock.json",
     "package.json",
     "public/app-version.json",
     "public/push-sw.js",
-    "src/mobile791/v1048-runtime-fix.css",
+    "release-notes.json",
+    "scripts/smoke-diagnostics-clarity-v1013.mjs",
+    "scripts/smoke-photo-push-stability-v1120.cjs",
+    "scripts/test-groups.cjs",
+    "src/components/diagnostics/DiagnosticsPanel.jsx",
+    "src/mobile791/App.jsx",
     "src/mobile791/version.js",
-    "src/version.js"
+    "src/modules/diagnostics.js",
+    "src/version.js",
+    "supabase/migrations/current/stability-hardening-v11.20.sql"
   ],
   "generated_only_files": [
     "CHANGELOG.md",
     "README.md",
     "RELEASE-GATE.json",
+    "RELEASE-RESULT.md",
     "app-version.json",
     "package-lock.json",
-    "package.json",
     "public/app-version.json",
     "public/push-sw.js",
+    "release-notes.json",
     "src/mobile791/version.js",
     "src/version.js"
   ],
   "effective_files": [
-    "src/mobile791/v1048-runtime-fix.css"
+    "RELEASE-IMPACT.json",
+    "package.json",
+    "scripts/smoke-diagnostics-clarity-v1013.mjs",
+    "scripts/smoke-photo-push-stability-v1120.cjs",
+    "scripts/test-groups.cjs",
+    "src/components/diagnostics/DiagnosticsPanel.jsx",
+    "src/mobile791/App.jsx",
+    "src/modules/diagnostics.js",
+    "supabase/migrations/current/stability-hardening-v11.20.sql"
   ],
-  "profile": "fast-ui",
-  "reason": "Zmiana obejmuje wyłącznie warstwę prezentacji (CSS lub statyczne assety).",
+  "profile": "critical",
+  "reason": "Zmiana dotyka backendu Supabase, RLS/grantów, PUSH, diagnostyki i krytycznej konfiguracji wydania.",
   "groups": [
-    "ui-fast-core",
-    "ui-fast-mobile"
+    "core",
+    "jobs",
+    "photos",
+    "protocol",
+    "roles",
+    "push",
+    "fuel",
+    "nameplates",
+    "desktop",
+    "mobile",
+    "infra"
   ],
   "pr_groups": [
-    "ui-fast-core",
-    "ui-fast-mobile"
-  ],
-  "platforms": [
+    "core",
+    "infra",
+    "photos",
+    "roles",
+    "push",
+    "desktop",
     "mobile"
   ],
-  "scope": "mobile",
-  "e2e": [],
-  "needs_playwright": false
+  "platforms": [
+    "mobile",
+    "desktop"
+  ],
+  "scope": "full",
+  "e2e": [
+    "mobile",
+    "desktop"
+  ],
+  "needs_playwright": true
 }

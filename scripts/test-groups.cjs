@@ -28,6 +28,7 @@ const GROUPS = {
     'node scripts/smoke-audit-races-v1084.mjs',
     'npm run test:smoke:diagnostic-report',
     'npm run test:smoke:diagnostics-clarity',
+    'npm run test:smoke:v1120-stability',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],
