@@ -1,3 +1,9 @@
+## 11.21
+- Kliknięcie w powiadomienie PUSH dotyczące montażu otwiera teraz bezpośrednio właściwe zlecenie, zamiast kończyć na ekranie startowym.
+- Deep-link `?jobId=...` przechodzi przez wspólną nawigację zleceń: czyści wyszukiwanie, ustawia status zlecenia (np. `Zakończone`), wybiera właściwą stronę listy i otwiera szczegóły.
+- Po obsłużeniu linku parametr `jobId` jest usuwany z adresu, więc późniejsze odświeżenia danych nie resetują filtrów ani nie otwierają ponownie tej samej karty.
+- Dodano regresję `test:smoke:push-job-deeplink`; bez zmian w bazie, RLS, danych klientów i Edge Function PUSH.
+
 ## 11.20
 - Mobilne odzyskiwanie miniaturek zapisuje zwykłe próby i fallback do oryginału jako ostrzeżenia; `photo.thumbnail.load.failed` pozostaje wyłącznie dla rzeczywistej porażki po wyczerpaniu odzyskiwania.
 - Po skutecznym odzyskaniu zapisywane jest informacyjne `photo.thumbnail.load.succeeded`, więc centralna Diagnostyka nie zawyża liczby błędów.
