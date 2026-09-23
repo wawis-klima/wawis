@@ -82,6 +82,7 @@ const GROUPS = {
     'node scripts/smoke-supabase-security-hardening-v1090.mjs',
   ],
   push: [
+    'npm run test:smoke:push-job-deeplink',
     'npm run test:smoke:assignment-push',
     'npm run test:smoke:push-reliability',
     'npm run test:smoke:push-mobile-reassignment',
