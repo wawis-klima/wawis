@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Do weryfikacji po wdrożeniu 11.21."
+    "checked": true,
+    "result": "PASS",
+    "notes": "Po merge 11.21 status Vercel dla dokładnego merge jest SUCCESS. Kontrola app_diagnostic_events po wdrożeniu: brak nowych zdarzeń error/warning w ostatnich 30 minutach."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -36,7 +36,7 @@
     "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian bazy",
     "trigger_grants": "N/A — brak zmian grantów",
-    "vercel_deployment": "PENDING",
-    "merge_commit": ""
+    "vercel_deployment": "SUCCESS — GitHub Vercel status dla merge 5c5e8213b6c74cad94f29b6ef3a1fb0840020d5d",
+    "merge_commit": "5c5e8213b6c74cad94f29b6ef3a1fb0840020d5d"
   }
 }
