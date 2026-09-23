@@ -1,11 +1,11 @@
 {
-  "version": "11.20",
-  "summary": "Stabilizacja diagnostyki miniaturek, statusu PUSH zespołu oraz konfiguracji Supabase.",
+  "version": "11.21",
+  "summary": "Kliknięcie w powiadomienie PUSH otwiera bezpośrednio właściwy montaż.",
   "changes": [
-    "Retry miniaturek jest ostrzeżeniem; błąd jest zapisywany dopiero po nieudanym fallbacku do oryginału.",
-    "Diagnostyka administratora pokazuje stan PUSH wszystkich użytkowników bez pobierania kluczy subskrypcji.",
-    "13 polityk RLS zostało zoptymalizowanych zgodnie z zaleceniami Supabase.",
-    "Usunięto trzy zdublowane indeksy i odebrano publiczne EXECUTE funkcjom triggerowym.",
-    "Dokumentacja wydania i aktualna treść PUSH po tankowaniu zostały ujednolicone."
+    "Deep-link z jobId przechodzi przez wspólną nawigację modułu Montaże.",
+    "Aplikacja ustawia status wskazanego zlecenia, właściwą stronę listy i otwiera jego szczegóły.",
+    "Po obsłużeniu jobId parametr jest usuwany z adresu, aby odświeżenia nie resetowały widoku.",
+    "Poprawka obejmuje desktop i mobile791 oraz ma osobny test regresyjny.",
+    "Brak zmian w Supabase, RLS, Storage i Edge Function wysyłającej PUSH."
   ]
 }
