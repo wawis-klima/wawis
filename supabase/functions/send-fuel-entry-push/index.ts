@@ -128,6 +128,7 @@ Deno.serve(async (request) => {
       ? `${odometer.toLocaleString("pl-PL")} km`
       : "— km";
     const employee = String(callerProfile.full_name || "Pracownik").trim() || "Pracownik";
+    const pushVehicleLabel = vehicleName || registration || "samochód";
 
     const { data: subscriptions, error: subscriptionsError } = await adminClient
       .from("push_subscriptions")
@@ -162,7 +163,7 @@ Deno.serve(async (request) => {
         type: "fuel_entry_created",
         jobId: null,
         title: "Nowe tankowanie",
-        body: "Dodano nowe tankowanie. Otwórz aplikację Wawis, aby zobaczyć szczegóły.",
+        body: `${employee} zatankował ${pushVehicleLabel} — ${litersLabel} paliwa.`,
         url: "/",
         tag: `fuel-entry-${entry.id}`,
         recipientUserId: String(subscription.user_id || ""),
