@@ -57,6 +57,8 @@ function getExistingNameplatePhotos(job = {}) {
         unitRef: String(metadata.unit_ref),
         url: photo.image_url || photo.signed_url || photo.original_image_url || '',
         uploadStatus: String(photo.upload_status || ''),
+        ocrStatus: String(photo.ocr_status || ''),
+        ocrCheckedAt: photo.ocr_checked_at || null,
       });
     }
   });
