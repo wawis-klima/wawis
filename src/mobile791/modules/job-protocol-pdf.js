@@ -1,7 +1,7 @@
 import regularFontUrl from "dejavu-fonts-ttf/ttf/DejaVuSans.ttf?url";
 import boldFontUrl from "dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows, parseDeviceSerialLine } from "./job-devices.js";
-import { getJobNameplateCompletion, isNameplatePhotoReady } from "./nameplate-requirements.js";
+import { getJobNameplateCompletion } from "./nameplate-requirements.js";
 import { getNameplatePhotoMetadata } from "./photos.js";
 import { getJobAddress } from "../utils/jobHelpers.jsx";
 import { getPaymentDraftFromJob, normalizePaymentConfirmation } from "./job-payment-confirmation.js";
@@ -75,16 +75,6 @@ function getAssignedTechnicians(job = {}, profiles = []) {
   return names.length ? names : ["Brak przypisanych monterów"];
 }
 
-function getNameplateStatus(photo = null) {
-  if (!photo) return "Brak tabliczki";
-  const uploadStatus = String(photo?.upload_status || "").trim().toLowerCase();
-  if (uploadStatus === "local") return "Zapisana na telefonie";
-  if (uploadStatus === "uploading") return "Wysyłanie";
-  if (uploadStatus === "error") return "Błąd wysyłania";
-  if (isNameplatePhotoReady(photo)) return "Zapisana w systemie";
-  return "Brak tabliczki";
-}
-
 export function getProtocolModelRevision(model = "") {
   const match = String(model || "").match(/\bR\s*([0-9]{1,2})\b/i);
   return match ? `R${match[1]}` : "-";
@@ -92,8 +82,6 @@ export function getProtocolModelRevision(model = "") {
 
 function getProtocolDeviceRows(job = {}) {
   const devices = getJobDeviceRows(job);
-  const completion = getJobNameplateCompletion(job, { allowLocal: true });
-  const nameplateByUnit = new Map(completion.units.map((unit) => [`${unit.deviceIndex}:${unit.unitRef}`, unit.photo || null]));
   const rows = [];
 
   devices.forEach((device, deviceOffset) => {
@@ -119,7 +107,6 @@ function getProtocolDeviceRows(job = {}) {
       model: normalizeText(outdoorModel, "Model nieuzupełniony"),
       revision: getProtocolModelRevision(outdoorModel),
       serialNumber: normalizeText(outdoorSerial, "Brak numeru seryjnego"),
-      nameplate: getNameplateStatus(nameplateByUnit.get(`${deviceIndex}:jz`)),
     });
 
     const safeIndoorUnits = indoorUnits.length ? indoorUnits : [{ unitNumber: 1, model: "", serialNumber: "" }];
@@ -133,7 +120,6 @@ function getProtocolDeviceRows(job = {}) {
         model: normalizeText(unitModel, "Model nieuzupełniony"),
         revision: getProtocolModelRevision(unitModel),
         serialNumber: normalizeText(unit.serialNumber, "Brak numeru seryjnego"),
-        nameplate: getNameplateStatus(nameplateByUnit.get(`${deviceIndex}:${unitRef}`)),
       });
     });
   });
@@ -400,7 +386,6 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     model: "Brak urządzeń",
     revision: "-",
     serialNumber: "-",
-    nameplate: "Brak tabliczki",
   }];
   const tableHeight = 32 + Math.max(1, rows.length) * deviceRowHeight;
   y = addPageIfNeeded(doc, y, tableHeight + 28);
@@ -411,7 +396,6 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   doc.setTextColor(0, 0, 0);
   doc.text("JEDNOSTKA", CONTENT_LEFT, y + 27);
   doc.text("DANE Z TABLICZKI", 118, y + 27);
-  doc.text("STATUS", 478, y + 27);
   doc.setDrawColor(212, 224, 230);
   doc.line(CONTENT_LEFT, y + 35, CONTENT_RIGHT, y + 35);
 
@@ -437,10 +421,6 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     doc.setFontSize(6.8);
     const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
     doc.text(doc.splitTextToSize(technicalLine, 360), 100, secondaryY);
-
-    doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(6.5);
-    doc.text(doc.splitTextToSize(row.nameplate, 82), 490, primaryY);
 
     if (index < rows.length - 1) {
       doc.setDrawColor(230, 236, 240);
