@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.23",
+  "version": "11.24",
   "scope": "full",
-  "release_branch": "release/v11.23",
+  "release_branch": "release/v11.24",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.23: w ostatnich 24 h 3 error i 7 warning; 0 zdarzeń nameplate/OCR. Baseline zapisany do porównania po wdrożeniu poprawki S/N i ochrony przed starymi wartościami."
+    "notes": "Przed 11.24: 3 error, 10 warning, 0 zdarzeń nameplate/photo/OCR w ostatnich 24 h. Zmiana dotyczy wyłącznie bramki przed AI dla zdjęć bez śladów tabliczki."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.23.zip"
+    "file_name": "klima-app-v11.24.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.23",
+    "source_branch": "release/v11.24",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.23 od 2026-09-24 10:19:10Z: 0 nowych error, 0 warning i 0 zdarzeń nameplate/photo/OCR w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Po deployu 11.24 sprawdzić nowe error/warning oraz nameplate/photo/OCR."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.23 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.22",
+    "supabase_migration_applied": "N/A — 11.24 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.23",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
-    "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages; Vercel connector nie ma podłączonego zespołu.",
-    "merge_commit": "3e71e4dfbaa4f702f67f147ca3d81283d2c3116c",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107590354743, commit 3e71e4d, Deploy successful."
+    "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
+    "cloudflare_deployment": "PENDING",
+    "merge_commit": "PENDING"
   }
 }
