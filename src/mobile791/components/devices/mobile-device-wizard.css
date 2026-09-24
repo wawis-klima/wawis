@@ -967,3 +967,48 @@
     line-height: 1.15;
   }
 }
+
+/* v11.34 — rzeczywista kompaktowość: grid nie rozciąga kafli do wysokości ekranu. */
+@media (max-width: 700px) {
+  .mobileDeviceWizardBody {
+    align-content: start !important;
+    grid-auto-rows: max-content !important;
+  }
+
+  .mobileDeviceWizardSelectors,
+  .mobileDeviceOverviewList,
+  .mobileDeviceWizardPhotoGroup {
+    align-content: start !important;
+    grid-auto-rows: max-content !important;
+  }
+
+  .mobileDeviceTypeCard {
+    height: auto !important;
+    min-height: 72px !important;
+    max-height: none !important;
+  }
+
+  .mobileDeviceWizardSelection {
+    height: auto !important;
+    min-height: 58px !important;
+    max-height: none !important;
+  }
+
+  .mobileDeviceOverviewOpen {
+    height: auto !important;
+    min-height: 76px !important;
+    max-height: none !important;
+  }
+
+  .mobileDeviceAddAnother {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    justify-self: center !important;
+    width: max-content !important;
+    max-width: calc(100% - 24px) !important;
+    min-height: 38px !important;
+    padding: 7px 14px !important;
+    line-height: 1.15 !important;
+  }
+}
