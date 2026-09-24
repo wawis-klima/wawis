@@ -1,3 +1,10 @@
+## 11.32
+- Mobilny nagłówek „Dodaj urządzenie” jest mniejszy i zawsze pozostaje w jednym wierszu.
+- Karty wyboru Single/Multi zostały obniżone, a ich tytuły, opisy, ikony i kontrolki zmniejszone.
+- W kroku danych urządzenia zmniejszono wysokość i padding pól Marka/Model/Moc oraz ich typografię i ikony.
+- Zmniejszono także chip trybu i odstępy w mobilnym kreatorze, bez zmiany logiki wyboru urządzeń, tabliczek ani zapisu.
+- Test smoke pilnuje jednoliniowego nagłówka i nowych kompaktowych wymiarów.
+
 ## 11.31
 - Naprawiono fałszywe przejście do AI dla zwykłych produktów z poprawnym kodem EAN, np. butelki lub opakowania.
 - Sam EAN nie jest już uznawany za dowód tabliczki znamionowej.
