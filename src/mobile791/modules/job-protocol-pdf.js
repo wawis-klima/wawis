@@ -1,6 +1,6 @@
 import regularFontUrl from "dejavu-fonts-ttf/ttf/DejaVuSans.ttf?url";
 import boldFontUrl from "dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url";
-import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "./job-devices.js";
+import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows, parseDeviceSerialLine } from "./job-devices.js";
 import { getJobNameplateCompletion, isNameplatePhotoReady } from "./nameplate-requirements.js";
 import { getNameplatePhotoMetadata } from "./photos.js";
 import { getJobAddress } from "../utils/jobHelpers.jsx";
@@ -85,6 +85,11 @@ function getNameplateStatus(photo = null) {
   return "Brak tabliczki";
 }
 
+export function getProtocolModelRevision(model = "") {
+  const match = String(model || "").match(/\bR\s*([0-9]{1,2})\b/i);
+  return match ? `R${match[1]}` : "-";
+}
+
 function getProtocolDeviceRows(job = {}) {
   const devices = getJobDeviceRows(job);
   const completion = getJobNameplateCompletion(job, { allowLocal: true });
@@ -95,23 +100,37 @@ function getProtocolDeviceRows(job = {}) {
     const deviceIndex = deviceOffset + 1;
     const indoorUnits = getDeviceIndoorUnits(device, { keepEmpty: true });
     const isMultiSplit = indoorUnits.length > 1;
+    const parsedSerial = parseDeviceSerialLine(device?.serial_number ?? device?.device_serial_number);
     const outdoorModel = getDeviceOutdoorModel(device)
       || (!isMultiSplit ? indoorUnits[0]?.model : "")
       || String(device?.model || "").trim();
-    const deviceSuffix = devices.length > 1 ? ` (urządzenie ${deviceIndex})` : "";
+    const outdoorSerial = String(
+      device?.outdoor_serial_number
+      ?? device?.outdoorSerialNumber
+      ?? parsedSerial?.outdoor_serial_number
+      ?? "",
+    ).trim();
+    const deviceContext = devices.length > 1 ? ` · urządzenie ${deviceIndex}` : "";
 
     rows.push({
-      unit: `JZ${deviceSuffix}`,
+      unit: "JZ",
+      unitType: `Jednostka zewnętrzna${deviceContext}`,
       model: normalizeText(outdoorModel, "Model nieuzupełniony"),
+      revision: getProtocolModelRevision(outdoorModel),
+      serialNumber: normalizeText(outdoorSerial, "Brak numeru seryjnego"),
       nameplate: getNameplateStatus(nameplateByUnit.get(`${deviceIndex}:jz`)),
     });
 
-    const safeIndoorUnits = indoorUnits.length ? indoorUnits : [{ unitNumber: 1, model: "" }];
+    const safeIndoorUnits = indoorUnits.length ? indoorUnits : [{ unitNumber: 1, model: "", serialNumber: "" }];
     safeIndoorUnits.forEach((unit) => {
       const unitRef = `jw-${unit.unitNumber}`;
+      const unitModel = unit.model || (!isMultiSplit ? outdoorModel : "");
       rows.push({
-        unit: `JW${unit.unitNumber}${deviceSuffix}`,
-        model: normalizeText(unit.model || (!isMultiSplit ? outdoorModel : ""), "Model nieuzupełniony"),
+        unit: `JW${unit.unitNumber}`,
+        unitType: `Jednostka wewnętrzna${deviceContext}`,
+        model: normalizeText(unitModel, "Model nieuzupełniony"),
+        revision: getProtocolModelRevision(unitModel),
+        serialNumber: normalizeText(unit.serialNumber, "Brak numeru seryjnego"),
         nameplate: getNameplateStatus(nameplateByUnit.get(`${deviceIndex}:${unitRef}`)),
       });
     });
@@ -371,31 +390,60 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   if (data.completedAt !== "-") drawField(doc, "Zakończono", data.completedAt, CONTENT_LEFT, y + 61, 82);
 
   y += 84;
-  y = addPageIfNeeded(doc, y, 85 + data.deviceRows.length * 25);
+  const deviceRowHeight = 30;
+  const rows = data.deviceRows.length ? data.deviceRows : [{
+    unit: "-",
+    unitType: "-",
+    model: "Brak urządzeń",
+    revision: "-",
+    serialNumber: "-",
+    nameplate: "Brak tabliczki",
+  }];
+  const tableHeight = 32 + Math.max(1, rows.length) * deviceRowHeight;
+  y = addPageIfNeeded(doc, y, tableHeight + 28);
   drawSectionTitle(doc, "Urządzenia i tabliczki", y);
-  const tableHeight = 32 + Math.max(1, data.deviceRows.length) * 21;
   drawCard(doc, y + 8, tableHeight);
   doc.setFont(FONT_FAMILY, "bold");
   doc.setFontSize(7.6);
   doc.setTextColor(0, 0, 0);
-  doc.text("URZĄDZENIE", CONTENT_LEFT, y + 27);
-  doc.text("MODEL / MOC", 146, y + 27);
-  doc.text("TABLICZKA", 412, y + 27);
+  doc.text("JEDNOSTKA", CONTENT_LEFT, y + 27);
+  doc.text("DANE Z TABLICZKI", 118, y + 27);
+  doc.text("STATUS", 478, y + 27);
   doc.setDrawColor(212, 224, 230);
   doc.line(CONTENT_LEFT, y + 35, CONTENT_RIGHT, y + 35);
-  const rows = data.deviceRows.length ? data.deviceRows : [{ unit: "-", model: "Brak urządzeń", nameplate: "Brak tabliczki" }];
+
   rows.forEach((row, index) => {
-    const rowY = y + 53 + index * 21;
+    const rowTop = y + 37 + index * deviceRowHeight;
+    const primaryY = rowTop + 11;
+    const secondaryY = rowTop + 22;
+
     doc.setFont(FONT_FAMILY, "bold");
-    doc.setFontSize(9.2);
+    doc.setFontSize(8.8);
     doc.setTextColor(0, 0, 0);
-    doc.text(row.unit, CONTENT_LEFT, rowY);
-    doc.text(doc.splitTextToSize(row.model, 250), 146, rowY);
-    const ready = row.nameplate === "Zapisana w systemie" || row.nameplate === "Zapisana na telefonie";
+    doc.text(row.unit, CONTENT_LEFT, primaryY);
+
     doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(8.6);
-    doc.setTextColor(0, 0, 0);
-    doc.text(row.nameplate, 412, rowY);
+    doc.setFontSize(6.8);
+    doc.text(doc.splitTextToSize(row.unitType, 88), CONTENT_LEFT, secondaryY);
+
+    doc.setFont(FONT_FAMILY, "bold");
+    doc.setFontSize(8.4);
+    doc.text(doc.splitTextToSize(row.model, 340), 118, primaryY);
+
+    doc.setFont(FONT_FAMILY, "normal");
+    doc.setFontSize(7.2);
+    const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
+    doc.text(doc.splitTextToSize(technicalLine, 340), 118, secondaryY);
+
+    doc.setFont(FONT_FAMILY, "normal");
+    doc.setFontSize(7.2);
+    doc.text(doc.splitTextToSize(row.nameplate, 90), 478, primaryY);
+
+    if (index < rows.length - 1) {
+      doc.setDrawColor(230, 236, 240);
+      doc.setLineWidth(0.4);
+      doc.line(CONTENT_LEFT, rowTop + deviceRowHeight, CONTENT_RIGHT, rowTop + deviceRowHeight);
+    }
   });
 
   y += tableHeight + 20;
