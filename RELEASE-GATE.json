@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.28: 3 error, 18 warning, 0 zdarzeń protocol w ostatnich 24 h. Zmiana dotyczy wyłącznie kompaktowego układu sekcji płatności i dopasowania pola daty."
+    "notes": "Przed 11.28: 3 error, 18 warning, 0 zdarzeń protocol w ostatnich 24 h. Zmiana dotyczy kompaktowego układu płatności oraz fail-safe odtwarzania kolejki zdjęć po starcie."
   },
   "drive_backup": {
     "required": false,
