@@ -60,6 +60,11 @@ assert.match(wizardStyles, /\.mobileDeviceTypeCard \{[\s\S]*?min-height: 72px;/)
 assert.match(wizardStyles, /\.mobileDeviceTypeCard strong \{[\s\S]*?font-size: 13px;/);
 assert.match(wizardStyles, /\.mobileDeviceWizardSelection \{[\s\S]*?min-height: 58px;/);
 assert.match(wizardStyles, /\.mobileDeviceWizardSelectionText strong \{[\s\S]*?font-size: 13px;/);
+assert.match(wizardStyles, /v11\.33 — kompaktowe podsumowanie urządzeń/);
+assert.match(wizardStyles, /\.mobileDeviceOverviewOpen \{[\s\S]*?min-height: 76px;[\s\S]*?padding: 9px 11px;/);
+assert.match(wizardStyles, /\.mobileDeviceAddAnother \{[\s\S]*?width: max-content;[\s\S]*?min-height: 36px;/);
+assert.match(captureStyles, /v11\.33 — niższe przyciski zdjęcia/);
+assert.match(captureStyles, /\.nameplateCapture\.compact \.nameplateCaptureCameraBtn,[\s\S]*?\.nameplateCapture\.compact \.nameplateCaptureGalleryBtn \{[\s\S]*?min-height: 34px;/);
 
 for (const modelName of ['Luve Pro Black', 'Mirai', 'Fresh', 'Roni', 'Versu Mirror', 'Versu Pure', 'Versu Cloth Stone', 'Versu Cloth Caramel', 'Luve Black', 'Luve', 'Revio', 'Imoto', 'Teta Mirror', 'Teta', 'Ukura', 'Elis', 'Elis Silver', 'Aneru', 'Tenji CC', 'Tenji CS', 'Nevo', 'Jato', 'Hiro N', 'Hiro S', 'Hiro HP']) {
   assert.match(rotensoCatalogSource, new RegExp(modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
