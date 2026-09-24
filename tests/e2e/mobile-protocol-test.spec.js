@@ -73,6 +73,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
     await expect(page.getByText(/Protokół jest opcjonalny/)).toBeVisible();
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
+    await expect(protocolModal.getByText(/S\/N: Brak numeru seryjnego/).first()).toBeVisible();
     await expect(page.getByText('MOCK-LG-003', { exact: true })).toHaveCount(0);
     await drawSignature(page);
 
