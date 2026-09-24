@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.28",
+  "version": "11.29",
   "scope": "full",
-  "release_branch": "release/v11.28",
+  "release_branch": "release/v11.29",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.28: 3 error, 18 warning, 0 zdarzeń protocol w ostatnich 24 h. Zmiana dotyczy kompaktowego układu płatności oraz fail-safe odtwarzania kolejki zdjęć po starcie."
+    "notes": "Przed 11.29: 3 error, 19 warning, 0 zdarzeń protocol/photo w ostatnich 24 h. Zmiana dotyczy wyłącznie mobilnego układu pola Data zapłaty."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.28.zip"
+    "file_name": "klima-app-v11.29.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.28",
+    "source_branch": "release/v11.29",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.28 od 2026-09-24 14:12:01Z: 0 nowych error, 0 warning i 0 zdarzeń protocol/photo w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Po deployu 11.29 sprawdzić nowe error/warning oraz protocol/photo."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.28 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.27",
+    "supabase_migration_applied": "N/A — 11.29 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.28",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107671521847, commit f81bb30, Deploy successful.",
-    "merge_commit": "f81bb3028dac130940a166484c7e0a11056afc16"
+    "cloudflare_deployment": "PENDING",
+    "merge_commit": "PENDING"
   }
 }
