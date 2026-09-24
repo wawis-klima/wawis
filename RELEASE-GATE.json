@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.22",
+  "version": "11.23",
   "scope": "full",
-  "release_branch": "release/v11.22",
+  "release_branch": "release/v11.23",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.22: w 24 h 20 error i 8 warning, głównie historyczne 11.20; w 11.21 jeden ogólny console.error oraz przejściowe Failed to fetch. Brak zdarzeń nameplate/tabliczka. Stan zapisany jako baseline do porównania po wdrożeniu."
+    "notes": "Przed 11.23: w ostatnich 24 h 3 error i 7 warning; 0 zdarzeń nameplate/OCR. Baseline zapisany do porównania po wdrożeniu poprawki S/N i ochrony przed starymi wartościami."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.22.zip"
+    "file_name": "klima-app-v11.23.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.22",
+    "source_branch": "release/v11.23",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Do wykonania po wdrożeniu 11.22: kontrola Vercel oraz nowych error/warning, ze szczególnym uwzględnieniem nameplate/AI/photos."
+    "notes": "Do wykonania po wdrożeniu 11.23: kontrola nowych error/warning oraz nameplate/OCR/AI/photos."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.22 wykorzystuje istniejące kolumny ocr_status/ocr_checked_at",
-    "rls_role_matrix": "PASS — istniejące photos RLS pozwala uwierzytelnionemu pracownikowi zapisać własną tabliczkę w dostępnym, niezakończonym montażu",
-    "performance_advisor": "N/A — brak zmian schematu i zapytań SQL wymagających nowych indeksów",
+    "supabase_migration_applied": "N/A — 11.23 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.22",
+    "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "PENDING",
     "merge_commit": "PENDING"

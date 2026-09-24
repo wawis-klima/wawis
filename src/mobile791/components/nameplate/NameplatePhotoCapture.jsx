@@ -432,9 +432,9 @@ function NameplateVerificationReview({
         <button
           type="button"
           className="btn secondary nameplateVerifyManualBtn"
-          onClick={verification.busy ? onManual : onRetake}
+          onClick={verification.busy || !modelReady || !serialReady ? onManual : onRetake}
         >
-          {verification.busy ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie"}
+          {verification.busy || !modelReady || !serialReady ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie"}
         </button>
         <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>Potwierdź</button>
       </div>
@@ -524,8 +524,8 @@ export default function NameplatePhotoCapture({
       busy: true,
       progress: { progress: 2, label: "Przygotowuję odczyt…", method: "local" },
       reading: null,
-      modelValue: String(currentModel || "").trim(),
-      serialNumber: String(currentSerial || "").trim().toUpperCase(),
+      modelValue: "",
+      serialNumber: "",
     };
     setVerification(initialVerification);
 
@@ -544,8 +544,8 @@ export default function NameplatePhotoCapture({
         busy: false,
         progress: { progress: 100, label: "Odczyt zakończony", method: reading.method || "local" },
         reading,
-        modelValue: String(reading.modelValue || current.modelValue || currentModel || "").trim(),
-        serialNumber: String(reading.serialNumber || current.serialNumber || currentSerial || "").trim().toUpperCase(),
+        modelValue: String(reading.modelValue || current.modelValue || "").trim(),
+        serialNumber: String(reading.serialNumber || current.serialNumber || "").trim().toUpperCase(),
       } : current);
     } catch (readError) {
       setVerification((current) => current?.file === croppedFile && !current.manualOverride ? {

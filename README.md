@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.22
+- 11.23
 
-Wersja 11.22 dodaje mobilne potwierdzanie tabliczek znamionowych: po kadrowaniu aplikacja najpierw używa istniejącego lokalnego czytnika z desktopu, przy niepełnym wyniku automatycznie uruchamia AI, a po potwierdzeniu montera zapisuje model, numer seryjny i status OCR. Desktopowy sposób odczytu pozostaje bez zmian.
+Wersja 11.23 domyka mobilny odczyt tabliczek po teście realistycznej etykiety: lokalny OCR rozpoznaje oznaczenie numeru seryjnego S/N (także typowe warianty OCR), a nowe zdjęcie nie dziedziczy starego modelu ani numeru seryjnego z urządzenia. Wynik musi pochodzić z nowego zdjęcia lub zostać ręcznie wpisany przez instalatora.
 
-# Wawis Klimatyzacja — wersja 11.22
+# Wawis Klimatyzacja — wersja 11.23
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.22` — mobilne tabliczki są odczytywane najpierw lokalnie, AI działa tylko jako fallback, a instalator potwierdza model i numer seryjny przed zapisaniem zdjęcia.
+- wersja `11.23` — mobilny OCR rozpoznaje także oznaczenie S/N, a nowe zdjęcie tabliczki nie dziedziczy starego modelu ani numeru seryjnego; AI pozostaje fallbackiem, a instalator potwierdza wynik przed zapisem.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.
