@@ -1,3 +1,10 @@
+## 11.33
+- Na mobilnym ekranie podsumowania zmniejszono wysokość karty „Urządzenie 1”, jej padding, ikonę, typografię i badge Single/Multi.
+- „Dodaj kolejne urządzenie” jest teraz kompaktowym przyciskiem dopasowanym do treści zamiast szerokiego, wysokiego panelu.
+- W sekcjach tabliczek obniżono wysokość przycisków „Zrób zdjęcie” i „Galeria” do 34 px oraz zmniejszono ich padding.
+- Zmniejszono także padding i wysokość nagłówka kompaktowej sekcji tabliczki.
+- Logika urządzeń, zdjęć, OCR i zapisu pozostaje bez zmian.
+
 ## 11.32
 - Mobilny nagłówek „Dodaj urządzenie” jest mniejszy i zawsze pozostaje w jednym wierszu.
 - Karty wyboru Single/Multi zostały obniżone, a ich tytuły, opisy, ikony i kontrolki zmniejszone.
