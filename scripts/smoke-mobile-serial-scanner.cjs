@@ -54,6 +54,12 @@ assert.match(wizardStyles, /\.mobileDevicePickerSheet/);
 assert.match(wizardStyles, /\.mobileDeviceOverviewCard/);
 assert.match(wizardStyles, /\.mobileDevicePickerModelCatalog/);
 assert.match(wizardStyles, /\.mobileDevicePickerSearch/);
+assert.match(wizardStyles, /v11\.32 — bardziej kompaktowy kreator urządzeń/);
+assert.match(wizardStyles, /\.mobileDeviceWizardHeader h2 \{[\s\S]*?font-size: 15px;[\s\S]*?white-space: nowrap;/);
+assert.match(wizardStyles, /\.mobileDeviceTypeCard \{[\s\S]*?min-height: 72px;/);
+assert.match(wizardStyles, /\.mobileDeviceTypeCard strong \{[\s\S]*?font-size: 13px;/);
+assert.match(wizardStyles, /\.mobileDeviceWizardSelection \{[\s\S]*?min-height: 58px;/);
+assert.match(wizardStyles, /\.mobileDeviceWizardSelectionText strong \{[\s\S]*?font-size: 13px;/);
 
 for (const modelName of ['Luve Pro Black', 'Mirai', 'Fresh', 'Roni', 'Versu Mirror', 'Versu Pure', 'Versu Cloth Stone', 'Versu Cloth Caramel', 'Luve Black', 'Luve', 'Revio', 'Imoto', 'Teta Mirror', 'Teta', 'Ukura', 'Elis', 'Elis Silver', 'Aneru', 'Tenji CC', 'Tenji CS', 'Nevo', 'Jato', 'Hiro N', 'Hiro S', 'Hiro HP']) {
   assert.match(rotensoCatalogSource, new RegExp(modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
