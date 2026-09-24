@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.21",
+  "version": "11.22",
   "scope": "full",
-  "release_branch": "release/v11.21",
+  "release_branch": "release/v11.22",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "11.21 naprawia wyłącznie nawigację po kliknięciu PUSH. Brak zmian Supabase, RLS, Storage i danych."
+    "notes": "Przed 11.22: w 24 h 20 error i 8 warning, głównie historyczne 11.20; w 11.21 jeden ogólny console.error oraz przejściowe Failed to fetch. Brak zdarzeń nameplate/tabliczka. Stan zapisany jako baseline do porównania po wdrożeniu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.21.zip"
+    "file_name": "klima-app-v11.22.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.21",
+    "source_branch": "release/v11.22",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po merge 11.21 status Vercel dla dokładnego merge jest SUCCESS. Kontrola app_diagnostic_events po wdrożeniu: brak nowych zdarzeń error/warning w ostatnich 30 minutach."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do wykonania po wdrożeniu 11.22: kontrola Vercel oraz nowych error/warning, ze szczególnym uwzględnieniem nameplate/AI/photos."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian Supabase",
-    "rls_role_matrix": "N/A — brak zmian RLS",
-    "performance_advisor": "N/A — brak zmian bazy",
-    "trigger_grants": "N/A — brak zmian grantów",
-    "vercel_deployment": "SUCCESS — GitHub Vercel status dla merge 5c5e8213b6c74cad94f29b6ef3a1fb0840020d5d",
-    "merge_commit": "5c5e8213b6c74cad94f29b6ef3a1fb0840020d5d"
+    "supabase_migration_applied": "N/A — 11.22 wykorzystuje istniejące kolumny ocr_status/ocr_checked_at",
+    "rls_role_matrix": "PASS — istniejące photos RLS pozwala uwierzytelnionemu pracownikowi zapisać własną tabliczkę w dostępnym, niezakończonym montażu",
+    "performance_advisor": "N/A — brak zmian schematu i zapytań SQL wymagających nowych indeksów",
+    "trigger_grants": "N/A — brak zmian triggerów i grantów",
+    "vercel_deployment": "PENDING",
+    "merge_commit": "PENDING"
   }
 }
