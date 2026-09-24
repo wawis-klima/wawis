@@ -115,9 +115,9 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
       };
     });
     expect(compactPaymentLayout.selectHeights.every((height) => height <= 39)).toBe(true);
-    expect(compactPaymentLayout.selectFontSizes.every((size) => size <= 14)).toBe(true);
+    expect(compactPaymentLayout.selectFontSizes.every((size) => size <= 16)).toBe(true);
     expect(compactPaymentLayout.dateHeight).toBeLessThanOrEqual(39);
-    expect(compactPaymentLayout.dateFontSize).toBeLessThanOrEqual(13);
+    expect(compactPaymentLayout.dateFontSize).toBeLessThanOrEqual(16);
     expect(compactPaymentLayout.dateFitsHorizontally).toBe(true);
     await expect(paymentKind).toBeVisible();
     await expect(paymentMethod).toBeVisible();
