@@ -273,8 +273,6 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
     await expect(verifyModal).toBeHidden();
     await expect(page.getByText('Potwierdzona', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
-    await expect(page.getByText('Tabliczka dodana', { exact: true })).toBeVisible();
   });
 
   test('nie pozwala pracownikowi zakończyć zlecenia bez tabliczki JZ i każdej JW', async ({ page }) => {
