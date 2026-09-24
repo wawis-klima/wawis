@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.23
+- 11.24
 
-Wersja 11.23 domyka mobilny odczyt tabliczek po teście realistycznej etykiety: lokalny OCR rozpoznaje oznaczenie numeru seryjnego S/N (także typowe warianty OCR), a nowe zdjęcie nie dziedziczy starego modelu ani numeru seryjnego z urządzenia. Wynik musi pochodzić z nowego zdjęcia lub zostać ręcznie wpisany przez instalatora.
+Wersja 11.24 dodaje bramkę przed AI w mobilnym odczycie tabliczek: jeżeli lokalny czytnik nie znajdzie żadnego wiarygodnego śladu tabliczki (kodu, modelu, numeru seryjnego lub charakterystycznego tekstu technicznego), AI nie jest uruchamiane. Takiego zdjęcia nie można potwierdzić ręcznie jako tabliczki — instalator musi zrobić nowe zdjęcie.
 
-# Wawis Klimatyzacja — wersja 11.23
+# Wawis Klimatyzacja — wersja 11.24
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.23` — mobilny OCR rozpoznaje także oznaczenie S/N, a nowe zdjęcie tabliczki nie dziedziczy starego modelu ani numeru seryjnego; AI pozostaje fallbackiem, a instalator potwierdza wynik przed zapisem.
+- wersja `11.24` — przypadkowe zdjęcie bez śladów tabliczki kończy się lokalnie komunikatem „Nie wykryto tabliczki”; AI nie jest wtedy uruchamiane, pola są zablokowane i instalator musi zrobić nowe zdjęcie.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.

@@ -11,6 +11,23 @@ const tinyPng = {
 const tinyPngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==';
 let manualVerificationCounter = 0;
 
+const genericNameplateEvidence = {
+  name: 'tabliczka-testowa-techniczna.svg',
+  mimeType: 'image/svg+xml',
+  buffer: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+    <rect width="1600" height="900" fill="#fff"/>
+    <rect x="45" y="45" width="1510" height="810" fill="none" stroke="#000" stroke-width="6"/>
+    <g fill="#000" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+      <text x="110" y="160" font-size="72">TABLICZKA TECHNICZNA</text>
+      <text x="110" y="280" font-size="58">MODEL: TEST UNIT</text>
+      <text x="110" y="390" font-size="50">230V ~ 50Hz</text>
+      <text x="110" y="500" font-size="50">REFRIGERANT R32</text>
+      <text x="110" y="610" font-size="50">COOLING CAPACITY 3.5 kW</text>
+      <text x="110" y="735" font-size="44">MADE IN P.R.C.</text>
+    </g>
+  </svg>`),
+};
+
 const SYNTHETIC_ROTENSO_EAN = '5905567600791';
 const SYNTHETIC_ROTENSO_SERIAL = 'IMOTO35XI2400012345';
 
@@ -67,7 +84,7 @@ const syntheticRotensoNameplate = {
 test.use(iphone14);
 
 async function selectNameplateAndCrop(page, input) {
-  await input.setInputFiles(tinyPng);
+  await input.setInputFiles(genericNameplateEvidence);
   const cropModal = page.locator('.nameplateCropModal');
   await expect(cropModal).toBeVisible();
   await expect(page.getByText('Dopasuj kadr', { exact: true })).toBeVisible();

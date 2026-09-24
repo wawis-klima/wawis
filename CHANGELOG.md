@@ -1,3 +1,10 @@
+## 11.24
+- Mobile przed uruchomieniem AI sprawdza, czy lokalny odczyt znalazł jakiekolwiek wiarygodne ślady tabliczki znamionowej.
+- Brak kodu/EAN, modelu, sensownego SN i charakterystycznego tekstu technicznego kończy odczyt lokalnie komunikatem „Nie wykryto tabliczki”.
+- Dla zdjęcia bez śladów tabliczki endpoint AI nie jest wywoływany.
+- Takiego zdjęcia nie można zaakceptować przez ręczne wpisanie modelu/SN; instalator musi wykonać nowe zdjęcie tabliczki.
+- Dodano E2E ze zdjęciem „czegokolwiek”, które potwierdza 0 wywołań /api/read-nameplate-ai.
+
 ## 11.23
 - Lokalny OCR numeru seryjnego rozpoznaje teraz etykiety `S/N`, `SN` oraz typowy wariant OCR `5/N`.
 - Nowy odczyt tabliczki na mobile startuje z pustym modelem i numerem seryjnym; nie pokazuje starych danych urządzenia jako wyniku nowego zdjęcia.

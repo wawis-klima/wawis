@@ -32,6 +32,55 @@ function normalizeSerial(value = '') {
   return normalizeText(value).toUpperCase();
 }
 
+const NAMEPLATE_KEYWORD_RE = /\b(?:ROTENSO|MODEL|SERIAL|S\s*[/.-]?\s*N|EAN|REFRIGERANT|R32|R410A|R290|VOLTAGE|INPUT|OUTPUT|CAPACITY|COOLING|HEATING|INDOOR|OUTDOOR|UNIT|MADE\s+IN)\b/gi;
+const NAMEPLATE_TECHNICAL_VALUE_RE = /\b(?:\d{2,3}\s*V|\d{2,3}\s*HZ|\d+(?:[.,]\d+)?\s*KW|\d{3,6}\s*BTU|R(?:32|410A|290))\b/i;
+const NAMEPLATE_MODELISH_TOKEN_RE = /\b[A-Z]{1,8}[-_/]?\d{2,}[A-Z0-9._/-]*\b/i;
+
+export function getMobileNameplateEvidence({
+  barcodeInfo = {},
+  serialTextResult = null,
+  modelTextResult = null,
+  exactModel = null,
+  serialNumber = '',
+} = {}) {
+  const strongSignals = [];
+  if (normalizeText(barcodeInfo?.ean)) strongSignals.push('ean');
+  if (normalizeSerial(barcodeInfo?.serialNumber || serialNumber)) strongSignals.push('serial');
+  if (exactModel?.code || exactModel?.model) strongSignals.push('exact_model');
+  if (Array.isArray(barcodeInfo?.detections) && barcodeInfo.detections.length) strongSignals.push('barcode');
+
+  const rawText = [
+    serialTextResult?.rawText,
+    modelTextResult?.rawText,
+  ].filter(Boolean).join('\n').toUpperCase();
+
+  const keywordMatches = rawText.match(NAMEPLATE_KEYWORD_RE) || [];
+  const distinctKeywords = new Set(keywordMatches.map((value) => value.replace(/\s+/g, '').toUpperCase()));
+  const digitCount = (rawText.match(/\d/g) || []).length;
+  const lineCount = rawText.split(/\n+/).map((line) => line.trim()).filter(Boolean).length;
+  const hasTechnicalValue = NAMEPLATE_TECHNICAL_VALUE_RE.test(rawText);
+  const hasModelishToken = NAMEPLATE_MODELISH_TOKEN_RE.test(rawText);
+
+  let score = strongSignals.length ? 10 : 0;
+  score += Math.min(4, distinctKeywords.size * 2);
+  if (hasTechnicalValue) score += 2;
+  if (hasModelishToken) score += 2;
+  if (digitCount >= 6) score += 1;
+  if (lineCount >= 2) score += 1;
+
+  return {
+    hasEvidence: strongSignals.length > 0 || score >= 4,
+    score,
+    strongSignals,
+    keywordCount: distinctKeywords.size,
+    digitCount,
+    lineCount,
+    hasTechnicalValue,
+    hasModelishToken,
+    rawText,
+  };
+}
+
 function getTargetLabel(unitRef = '') {
   const normalized = String(unitRef || '').toLowerCase();
   if (normalized === 'jz') return 'JZ';
@@ -166,6 +215,15 @@ export async function readMobileNameplate({
     barcodeError,
   };
 
+  const evidence = getMobileNameplateEvidence({
+    barcodeInfo,
+    serialTextResult,
+    modelTextResult,
+    exactModel,
+    serialNumber,
+  });
+  localReading.evidence = evidence;
+
   if (isMobileNameplateReadingComplete(localReading) || localMismatch) {
     onProgress?.({
       progress: 100,
@@ -175,7 +233,21 @@ export async function readMobileNameplate({
     return localReading;
   }
 
-  onProgress?.({ progress: 8, label: 'Lokalny odczyt jest niepełny — uruchamiam AI…', method: 'ai' });
+  if (!evidence.hasEvidence) {
+    onProgress?.({
+      progress: 100,
+      label: 'Nie wykryto tabliczki znamionowej — zrób zdjęcie ponownie',
+      method: 'local',
+    });
+    return {
+      ...localReading,
+      noNameplateEvidence: true,
+      aiSkipped: true,
+      aiSkipReason: 'no_nameplate_evidence',
+    };
+  }
+
+  onProgress?.({ progress: 8, label: 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…', method: 'ai' });
   try {
     const aiResult = await withTimeout(
       readDesktopNameplateWithAi({
