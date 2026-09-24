@@ -626,7 +626,7 @@
 .mobileProtocolWizard .protocolTestDeviceRow {
   display: grid !important;
   grid-template-columns: 48px minmax(0, 1fr) !important;
-  grid-template-rows: auto auto auto;
+  grid-template-rows: auto auto;
   align-items: center;
   gap: 3px 10px !important;
   min-height: 68px;
@@ -641,7 +641,7 @@
 
 .mobileProtocolWizard .protocolTestDeviceRow > strong {
   display: flex;
-  grid-row: 1 / 4;
+  grid-row: 1 / 3;
   align-items: center;
   justify-content: center;
   width: 44px;
@@ -671,16 +671,6 @@
   font-size: 11px !important;
   font-weight: 750 !important;
 }
-.mobileProtocolWizard .protocolTestDeviceStatus {
-  color: #17865e !important;
-  font-size: 11px !important;
-}
-.mobileProtocolWizard .protocolTestDeviceStatus::before {
-  content: "Tabliczka: ";
-  color: #647783;
-  font-weight: 750;
-}
-
 .mobileProtocolWizard .protocolTestPhotoSummary {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
