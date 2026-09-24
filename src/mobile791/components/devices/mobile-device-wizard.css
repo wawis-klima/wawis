@@ -807,3 +807,104 @@
   .protocolSignatureCanvas { min-height: 190px; }
   .protocolSignatureActions .btn { min-height: 46px; }
 }
+
+/* v11.32 — bardziej kompaktowy kreator urządzeń na iPhonie. */
+@media (max-width: 700px) {
+  .mobileDeviceWizardHeader {
+    grid-template-columns: 54px minmax(0, 1fr) 54px;
+    min-height: 48px;
+  }
+
+  .mobileDeviceWizardHeader h2 {
+    overflow: visible;
+    font-size: 15px;
+    line-height: 1.1;
+    letter-spacing: -.015em;
+    white-space: nowrap;
+  }
+
+  .mobileDeviceWizardClose {
+    font-size: 10px;
+  }
+
+  .mobileDeviceWizardBody {
+    gap: 9px;
+    padding-bottom: 14px;
+  }
+
+  .mobileDeviceTypeCard {
+    grid-template-columns: 38px minmax(0, 1fr) 28px;
+    gap: 10px;
+    min-height: 72px;
+    padding: 10px 14px;
+    border-radius: 16px;
+  }
+
+  .mobileDeviceTypeIcon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .mobileDeviceTypeCard strong {
+    font-size: 13px;
+  }
+
+  .mobileDeviceTypeCard small {
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .mobileDeviceTypeRadio {
+    width: 26px;
+    height: 26px;
+  }
+
+  .mobileDeviceModeChip {
+    gap: 6px;
+    min-height: 32px;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .mobileDeviceModeChip svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .mobileDeviceWizardSelectors {
+    gap: 7px;
+  }
+
+  .mobileDeviceWizardSelection {
+    grid-template-columns: 34px minmax(0, 1fr) 18px;
+    gap: 9px;
+    min-height: 58px;
+    padding: 8px 12px;
+    border-radius: 15px;
+  }
+
+  .mobileDeviceWizardSelectionIcon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .mobileDeviceWizardSelection > svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .mobileDeviceWizardSelectionText strong {
+    font-size: 13px;
+  }
+
+  .mobileDeviceWizardSelectionText span {
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .mobileDeviceWizardPhotoGroup {
+    gap: 7px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+}
