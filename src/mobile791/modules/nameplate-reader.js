@@ -60,7 +60,7 @@ export function getMobileNameplateEvidence({
   const hasModelishToken = NAMEPLATE_MODELISH_TOKEN_RE.test(rawText);
   const hasSerialLabel = NAMEPLATE_SERIAL_LABEL_RE.test(rawText);
 
-  const trustedEan = Boolean(normalizeText(barcodeInfo?.ean));
+  const hasRawEan = Boolean(normalizeText(barcodeInfo?.ean));
   const trustedExactModel = Boolean(exactModel?.code || exactModel?.model);
 
   const barcodeSerial = normalizeSerial(barcodeInfo?.serialNumber);
@@ -107,22 +107,32 @@ export function getMobileNameplateEvidence({
     && hasIndependentSerialContext,
   );
 
+  // Sam poprawny EAN nie jest dowodem tabliczki — taki kod ma praktycznie każdy produkt,
+  // w tym butelki, żywność i opakowania. EAN może pomóc tylko wtedy, gdy:
+  // 1) został rozwiązany do dokładnego modelu z katalogu, albo
+  // 2) na zdjęciu są niezależne cechy tabliczki.
+  const supportedEanSignal = Boolean(
+    hasRawEan
+    && (trustedExactModel || textSignature || supportedSerialSignal),
+  );
+
   const strongSignals = [];
-  if (trustedEan) strongSignals.push('ean');
+  if (supportedEanSignal) strongSignals.push('ean_with_context');
   if (trustedExactModel) strongSignals.push('exact_model');
   if (textSignature) strongSignals.push('technical_text');
   if (supportedSerialSignal) strongSignals.push('supported_serial');
 
   let score = 0;
-  if (trustedEan || trustedExactModel) score += 10;
+  if (trustedExactModel) score += 10;
   if (textSignature) score += 6;
   if (supportedSerialSignal) score += 4;
+  if (supportedEanSignal) score += 3;
   score += Math.min(4, primaryKeywords.size * 2);
   if (hasTechnicalValue) score += 1;
   if (hasModelishToken) score += 1;
 
   return {
-    hasEvidence: trustedEan || trustedExactModel || textSignature || supportedSerialSignal,
+    hasEvidence: trustedExactModel || textSignature || supportedSerialSignal || supportedEanSignal,
     score,
     strongSignals,
     keywordCount: primaryKeywords.size,
@@ -132,6 +142,8 @@ export function getMobileNameplateEvidence({
     hasTechnicalValue,
     hasModelishToken,
     hasSerialLabel,
+    hasRawEan,
+    supportedEanSignal,
     trustedBarcodeSerial,
     trustedFocusedSerial,
     ignoredGenericSerial: Boolean(normalizeSerial(serialNumber) && !supportedSerialSignal),
