@@ -1,3 +1,10 @@
+## 11.30
+- Zaostrzono mobilną bramkę wykrywania tabliczki przed uruchomieniem AI.
+- Surowy wynik dekodera, pojedynczy numer seryjny oraz ogólne słowa typu UNIT/INPUT/OUTPUT nie są już samodzielnym dowodem obecności tabliczki.
+- Numer seryjny może otworzyć fallback AI tylko wtedy, gdy pochodzi z zaufanego dekodera lub wielokrotnego, pewnego OCR i jednocześnie ma niezależny kontekst tabliczki (np. MODEL, wartość techniczna lub kod modelu).
+- Zachowano szybkie przejście dla poprawnego EAN-u, dokładnego modelu z katalogu i charakterystycznego tekstu tabliczki.
+- Rozszerzono regresję o fałszywy barcode/SN i technicznie wyglądający szum, żeby zdjęcie „byle czego” nie mogło ponownie przejść do AI.
+
 ## 11.29
 - Pole „Data zapłaty” w mobilnym protokole nie używa już ogólnej klasy `.input`, która na iOS pozwalała natywnemu kontrolkowi rozszerzyć się poza kartę.
 - Dodano własną ramkę `protocolPaymentDateShell` o wysokości 38 px i szerokości 100%, identycznej z polem „Gotówka”.
