@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.32
+- 11.33
 
-Wersja 11.32 zagęszcza mobilny kreator „Dodaj urządzenie”: nagłówek jest mniejszy i mieści się w jednym wierszu, karty Single/Multi są niższe i mają mniejszą typografię, a pola Marka/Model/Moc zajmują wyraźnie mniej miejsca na iPhonie.
+Wersja 11.33 dalej zagęszcza mobilny kreator urządzeń: karta „Urządzenie 1” i przycisk „Dodaj kolejne urządzenie” są dużo mniejsze, a przyciski „Zrób zdjęcie” i „Galeria” w tabliczkach mają obniżoną wysokość, żeby zaoszczędzić miejsce na ekranie.
 
-# Wawis Klimatyzacja — wersja 11.32
+# Wawis Klimatyzacja — wersja 11.33
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.33` — mniejsze podsumowanie urządzenia, kompaktowy przycisk dodania kolejnego urządzenia i niższe przyciski zdjęcia/galerii w tabliczkach.
 - wersja `11.32` — mobilny kreator urządzeń ma mniejszy jednoliniowy nagłówek oraz bardziej kompaktowe karty Single/Multi i pola Marka/Model/Moc.
 - wersja `11.31` — sam EAN z butelki/opakowania nie jest już traktowany jako dowód tabliczki; AI wymaga modelu z katalogu lub niezależnych danych technicznych tabliczki.
 - wersja `11.30` — mobilna bramka tabliczek odrzuca słabe fałszywe trafienia OCR/dekodera i nie uruchamia AI dla zdjęcia bez niezależnych cech tabliczki znamionowej.

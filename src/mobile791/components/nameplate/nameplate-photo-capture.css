@@ -630,3 +630,39 @@
   font-size: 12px;
   font-weight: 900;
 }
+
+/* v11.33 — niższe przyciski zdjęcia i galerii w kompaktowej tabliczce. */
+@media (max-width: 700px) {
+  .nameplateCapture.compact {
+    gap: 4px;
+    padding: 7px 8px;
+  }
+
+  .nameplateCapture.compact .nameplateCaptureSummary {
+    min-height: 30px;
+  }
+
+  .nameplateCapture.compact .nameplateCaptureActions {
+    gap: 5px;
+  }
+
+  .nameplateCapture.compact .nameplateCaptureCameraBtn,
+  .nameplateCapture.compact .nameplateCaptureGalleryBtn {
+    min-height: 34px;
+    padding: 0 8px;
+    border-radius: 11px;
+  }
+
+  .nameplateCapture.compact .nameplateCaptureCameraBtn {
+    font-size: 11px;
+  }
+
+  .nameplateCapture.compact .nameplateCaptureGalleryBtn {
+    font-size: 10px;
+  }
+
+  .nameplateCapture.compact .nameplateCaptureBtn svg {
+    width: 18px;
+    height: 18px;
+  }
+}

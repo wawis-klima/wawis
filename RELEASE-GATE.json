@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.32",
+  "version": "11.33",
   "scope": "mobile",
-  "release_branch": "release/v11.32",
+  "release_branch": "release/v11.33",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.32: 4 error, 23 warning w ostatnich 24 h. Zmiana dotyczy wyłącznie mobilnego układu kreatora Dodaj urządzenie."
+    "notes": "Przed 11.33: 10 error, 36 warning w ostatnich 24 h. Zmiana dotyczy wyłącznie mobilnego układu podsumowania urządzeń i przycisków tabliczek."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.32.zip"
+    "file_name": "klima-app-v11.33.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.32",
+    "source_branch": "release/v11.33",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.32 od 2026-09-24 19:21:31Z: 0 nowych error i 0 warning w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do uzupełnienia po wdrożeniu 11.33."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.32 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.31",
+    "supabase_migration_applied": "N/A — 11.33 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.32",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107794878323, commit 4483301, Deploy successful.",
-    "merge_commit": "4483301dd708a7c219718a734fcc6a1e939701f2"
+    "cloudflare_deployment": "PENDING — do potwierdzenia po merge do main.",
+    "merge_commit": "PENDING"
   }
 }
