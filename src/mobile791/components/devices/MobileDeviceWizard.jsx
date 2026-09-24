@@ -140,7 +140,19 @@ function getPhotoState({ pendingPhotos, existingPhotos, deviceIndex, unitRef }) 
     file: pending?.file || null,
     existingUrl,
     hasPhoto: Boolean(pending?.file || existingUrl),
+    verified: Boolean(
+      pending?.verified
+      || String(pending?.ocrStatus || '').toLowerCase() === 'approved'
+      || String(existing?.ocrStatus || '').toLowerCase() === 'approved'
+    ),
   };
+}
+
+function getUnitSerial(device, unitRef) {
+  if (!device) return '';
+  if (unitRef === 'jz') return String(device.outdoor_serial_number || '').trim();
+  const indoorIndex = Math.max(0, Number(String(unitRef).split('-')[1] || 1) - 1);
+  return String(getDeviceIndoorSerials(device, { keepEmpty: true })[indoorIndex] || '').trim();
 }
 
 function getRequiredUnitRefs(device) {
@@ -329,6 +341,7 @@ function PickerSheet({ picker, descriptor, deviceType, unitRef, onApply, onClose
 }
 
 export default function MobileDeviceWizard({
+  jobId = '',
   devices,
   pendingPhotos = [],
   existingPhotos = [],
@@ -448,7 +461,12 @@ export default function MobileDeviceWizard({
         fieldLabel={label}
         file={photoState.file}
         existingPhotoUrl={photoState.existingUrl}
-        onSelect={(file) => onPhotoSelect?.(activeDeviceIndex, unitRef, file)}
+        jobId={jobId}
+        unitRef={unitRef}
+        currentModel={activeDevice ? getUnitModel(activeDevice, unitRef) : ''}
+        currentSerial={activeDevice ? getUnitSerial(activeDevice, unitRef) : ''}
+        verified={photoState.verified}
+        onSelect={(file, reading) => onPhotoSelect?.(activeDeviceIndex, unitRef, file, reading)}
         onRemove={() => onPhotoRemove?.(activeDeviceIndex, unitRef)}
       />
     );

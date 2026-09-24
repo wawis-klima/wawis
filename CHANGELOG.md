@@ -1,3 +1,11 @@
+## 11.22
+- Mobilne zdjęcie tabliczki po kadrowaniu jest automatycznie odczytywane tym samym lokalnym mechanizmem, którego używa desktop.
+- Jeżeli lokalny odczyt nie daje kompletnego modelu i numeru seryjnego, aplikacja automatycznie uruchamia istniejący odczyt AI.
+- Instalator porównuje model i numer seryjny ze zdjęciem; dopiero „Potwierdź” dołącza tabliczkę do zlecenia.
+- Potwierdzony odczyt aktualizuje właściwą JZ/JW oraz zapisuje na zdjęciu ocr_status=approved i ocr_checked_at.
+- Odczyt AI dla roli Pracownik jest ograniczony do konkretnego, dostępnego i niezakończonego montażu.
+- Desktopowy czytnik tabliczek i jego ręczny przycisk AI pozostają bez zmian.
+
 ## 11.21
 - Kliknięcie w powiadomienie PUSH dotyczące montażu otwiera teraz bezpośrednio właściwe zlecenie, zamiast kończyć na ekranie startowym.
 - Deep-link `?jobId=...` przechodzi przez wspólną nawigację zleceń: czyści wyszukiwanie, ustawia status zlecenia (np. `Zakończone`), wybiera właściwą stronę listy i otwiera szczegóły.

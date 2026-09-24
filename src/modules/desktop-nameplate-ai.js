@@ -164,7 +164,7 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
   };
 }
 
-export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo = {}, targetUnit = '', onProgress } = {}) {
+export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo = {}, targetUnit = '', jobId = '', onProgress } = {}) {
   if (!file) throw new Error('Brakuje wykadrowanego zdjęcia tabliczki.');
   onProgress?.({ progress: 10, label: 'Przygotowanie kadru do AI…' });
   const imageDataUrl = await fileToDataUrl(file);
@@ -188,6 +188,7 @@ export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo =
         roleHint: item.roleHint || '',
       })),
       targetUnit,
+      jobId,
     }),
   });
   const payload = await response.json().catch(() => ({}));

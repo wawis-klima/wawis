@@ -75,13 +75,21 @@ function getPendingNameplateKeys(documents = []) {
 }
 
 function serverHasPendingNameplates(photos = [], documents = []) {
-  const pendingKeys = getPendingNameplateKeys(documents);
-  if (!pendingKeys.size) return true;
-  const serverKeys = new Set((photos || []).map((photo) => {
+  const pendingDocuments = (documents || []).filter((item) => item?.file);
+  if (!pendingDocuments.length) return true;
+  const serverByKey = new Map((photos || []).map((photo) => {
     const metadata = getNameplatePhotoMetadata(photo);
-    return `${Number(metadata.device_index || 0)}:${String(metadata.unit_ref || '').toLowerCase()}`;
+    const key = `${Number(metadata.device_index || 0)}:${String(metadata.unit_ref || '').toLowerCase()}`;
+    return [key, photo];
   }));
-  return [...pendingKeys].every((key) => serverKeys.has(key));
+  return pendingDocuments.every((document) => {
+    const key = `${Number(document.deviceIndex || 0) + 1}:${String(document.unitRef || '').toLowerCase()}`;
+    const serverPhoto = serverByKey.get(key);
+    if (!serverPhoto) return false;
+    if (!document.verified && String(document.ocrStatus || '').toLowerCase() !== 'approved') return true;
+    return String(serverPhoto.ocr_status || '').toLowerCase() === 'approved'
+      && Boolean(serverPhoto.ocr_checked_at);
+  });
 }
 
 export function useSelectedJobActions({

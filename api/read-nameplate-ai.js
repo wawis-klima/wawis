@@ -15,7 +15,7 @@ function extractOutputText(payload = {}) {
 async function verifySupabaseUser(req) {
   const authHeader = String(req.headers.authorization || '');
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-  if (!token) throw Object.assign(new Error('Brak aktywnej sesji administratora.'), { status: 401 });
+  if (!token) throw Object.assign(new Error('Brak aktywnej sesji użytkownika.'), { status: 401 });
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !anonKey) throw Object.assign(new Error('Brak konfiguracji Supabase po stronie serwera.'), { status: 500 });
@@ -30,14 +30,48 @@ async function verifySupabaseUser(req) {
     headers: { Authorization: `Bearer ${token}`, apikey: anonKey, Accept: 'application/json' },
   });
   if (!profileResponse.ok) {
-    throw Object.assign(new Error('Nie udało się potwierdzić uprawnień administratora.'), { status: 403 });
+    throw Object.assign(new Error('Nie udało się potwierdzić uprawnień użytkownika.'), { status: 403 });
   }
   const profiles = await profileResponse.json();
   const role = String(profiles?.[0]?.role || '').trim().toLowerCase();
-  if (!['admin', 'administrator'].includes(role)) {
-    throw Object.assign(new Error('Odczyt AI jest dostępny wyłącznie dla administratora.'), { status: 403 });
+  if (!['admin', 'administrator', 'pracownik', 'worker'].includes(role)) {
+    throw Object.assign(new Error('Brak uprawnień do odczytu tabliczki przez AI.'), { status: 403 });
   }
-  return user;
+  return { user, role, token, supabaseUrl, anonKey };
+}
+
+function isAdminRole(role = '') {
+  return ['admin', 'administrator'].includes(String(role || '').trim().toLowerCase());
+}
+
+async function verifyNameplateJobAccess({ authContext, jobId }) {
+  if (isAdminRole(authContext?.role)) return;
+  const normalizedJobId = String(jobId || '').trim();
+  if (!normalizedJobId) {
+    throw Object.assign(new Error('Brak montażu powiązanego z odczytem AI.'), { status: 403 });
+  }
+
+  const response = await fetch(
+    `${authContext.supabaseUrl.replace(/\/$/, '')}/rest/v1/jobs?id=eq.${encodeURIComponent(normalizedJobId)}&select=id,status&limit=1`,
+    {
+      headers: {
+        Authorization: `Bearer ${authContext.token}`,
+        apikey: authContext.anonKey,
+        Accept: 'application/json',
+      },
+    },
+  );
+  if (!response.ok) {
+    throw Object.assign(new Error('Nie udało się potwierdzić dostępu do tego montażu.'), { status: 403 });
+  }
+  const jobs = await response.json();
+  const job = jobs?.[0] || null;
+  if (!job?.id) {
+    throw Object.assign(new Error('Nie masz dostępu do tego montażu.'), { status: 403 });
+  }
+  if (String(job.status || '').trim() === 'Zakończone') {
+    throw Object.assign(new Error('Odczyt AI jest dostępny podczas realizacji montażu.'), { status: 409 });
+  }
 }
 
 const resultSchema = {
@@ -80,13 +114,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    await verifySupabaseUser(req);
+    const authContext = await verifySupabaseUser(req);
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       send(res, 503, { error: 'Brak OPENAI_API_KEY w ustawieniach Vercel.' });
       return;
     }
-    const { imageDataUrl, barcodeValues = [], barcodeDetections = [], targetUnit = '' } = req.body || {};
+    const { imageDataUrl, barcodeValues = [], barcodeDetections = [], targetUnit = '', jobId = '' } = req.body || {};
+    await verifyNameplateJobAccess({ authContext, jobId });
     if (!/^data:image\/(?:jpeg|jpg|png|webp);base64,/i.test(String(imageDataUrl || ''))) {
       send(res, 400, { error: 'Brakuje prawidłowego obrazu tabliczki.' });
       return;

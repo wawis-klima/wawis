@@ -230,7 +230,7 @@ export async function loadJobNameplatePhotosData({
 
     const result = await supabase
       .from('photos')
-      .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref')
+      .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at')
       .eq('job_id', jobId)
       .order('created_at', { ascending: true });
 
@@ -272,7 +272,7 @@ export async function loadJobDetailsData({
 
   let photosPromise = supabase
     .from('photos')
-    .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref')
+    .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at')
     .eq('job_id', jobId)
     .order('created_at', { ascending: true });
   if (signal && typeof photosPromise.abortSignal === 'function') photosPromise = photosPromise.abortSignal(signal);

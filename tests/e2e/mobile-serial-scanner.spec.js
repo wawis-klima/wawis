@@ -9,6 +9,7 @@ const tinyPng = {
   buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==', 'base64'),
 };
 const tinyPngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==';
+let manualVerificationCounter = 0;
 
 test.use(iphone14);
 
@@ -28,6 +29,26 @@ async function selectNameplateAndCrop(page, input) {
     await saveAnyway.click();
   }
   await expect(cropModal).toBeHidden();
+
+  const verifyModal = page.locator('.nameplateVerifyModal');
+  await expect(verifyModal).toBeVisible();
+  const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
+  const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
+
+  await expect.poll(async () => {
+    if (await modelInput.isVisible().catch(() => false)) return true;
+    const manualButton = page.getByRole('button', { name: 'Wpisz ręcznie', exact: true });
+    if (await manualButton.isVisible().catch(() => false)) {
+      await manualButton.evaluate((element) => element.click()).catch(() => {});
+    }
+    return modelInput.isVisible().catch(() => false);
+  }, { timeout: 10_000, intervals: [100, 200, 300, 500] }).toBe(true);
+
+  manualVerificationCounter += 1;
+  await modelInput.fill(`Rotenso E2E ${manualVerificationCounter}`);
+  await serialInput.fill(`E2ESERIAL${String(manualVerificationCounter).padStart(4, '0')}`);
+  await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
+  await expect(verifyModal).toBeHidden();
 }
 
 test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek', () => {
@@ -176,7 +197,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     await page.locator('.mobileMultiOutdoorCard').click();
     await selectNameplateAndCrop(page, page.locator('.nameplateGalleryInput'));
-    await expect(page.getByText('Nowe zdjęcie', { exact: true })).toBeVisible();
+    await expect(page.getByText('Potwierdzona', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
 
     for (let index = 0; index < 3; index += 1) {
@@ -189,7 +210,16 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
     await expect(page.getByText('Wszystkie tabliczki dodane', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
-    await expect(page.locator('.mobileDeviceWizard')).toBeHidden();
+    await expect.poll(async () => page.evaluate((storeKey) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      return (store.photos || []).filter((photo) => (
+        photo.job_id === 'mock-job-005'
+        && photo.photo_kind === 'nameplate'
+        && String(photo.ocr_status || '').toLowerCase() === 'approved'
+        && Boolean(photo.ocr_checked_at)
+      )).length;
+    }, MOCK_STORE_KEY), { timeout: 20_000, intervals: [200, 400, 800] }).toBe(4);
+    await expect(page.locator('.mobileDeviceWizard')).toBeHidden({ timeout: 20_000 });
 
     await expect(page.getByText('Wszystkie wymagane zdjęcia tabliczek są zapisane.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeEnabled();
