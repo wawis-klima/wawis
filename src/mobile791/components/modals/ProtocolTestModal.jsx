@@ -412,10 +412,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             <section className="protocolTestSection">
               <h3>Urządzenia i tabliczki</h3>
               <div className="protocolTestDevices">
-                <div className="protocolTestDeviceHeader"><span>Urządzenie</span><span>Model / moc</span><span>Tabliczka</span></div>
+                <div className="protocolTestDeviceHeader"><span>Urządzenie</span><span>Dane z tabliczki</span><span>Status</span></div>
                 {protocolData.deviceRows.length ? protocolData.deviceRows.map((row, index) => (
                   <div className="protocolTestDeviceRow" key={`${row.unit}-${index}`}>
-                    <strong>{row.unit}</strong><span>{row.model}</span><span>{row.nameplate}</span>
+                    <strong>{row.unit}</strong>
+                    <span className="protocolTestDeviceModel">{row.model}</span>
+                    <span className="protocolTestDeviceMeta">{row.unitType} · Rewizja: {row.revision} · S/N: {row.serialNumber}</span>
+                    <span className="protocolTestDeviceStatus">{row.nameplate}</span>
                   </div>
                 )) : <div className="protocolTestEmpty">Brak urządzeń w karcie zlecenia.</div>}
               </div>
