@@ -122,6 +122,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(paymentKind).toBeVisible();
     await expect(paymentMethod).toBeVisible();
     await expect(paymentDate).toBeVisible();
+    await paymentForm.locator('input[inputmode="decimal"]').fill('1000');
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
     await expect(protocolModal.getByText('Zapisana w systemie', { exact: true })).toHaveCount(0);
     await expect(protocolModal.getByText('STATUS', { exact: true })).toHaveCount(0);
