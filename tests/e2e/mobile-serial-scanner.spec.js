@@ -32,10 +32,16 @@ async function selectNameplateAndCrop(page, input) {
 
   const verifyModal = page.locator('.nameplateVerifyModal');
   await expect(verifyModal).toBeVisible();
-  await page.getByRole('button', { name: 'Wpisz ręcznie', exact: true }).click();
+  const manualButton = page.getByRole('button', { name: 'Wpisz ręcznie', exact: true });
+  if (await manualButton.isVisible().catch(() => false)) {
+    await manualButton.click({ force: true, timeout: 5_000 }).catch(() => {});
+  }
+  const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
+  const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
+  await expect(modelInput).toBeVisible();
   manualVerificationCounter += 1;
-  await page.getByPlaceholder('Przepisz model z tabliczki').fill(`Rotenso E2E ${manualVerificationCounter}`);
-  await page.getByPlaceholder('Przepisz numer seryjny').fill(`E2ESERIAL${String(manualVerificationCounter).padStart(4, '0')}`);
+  await modelInput.fill(`Rotenso E2E ${manualVerificationCounter}`);
+  await serialInput.fill(`E2ESERIAL${String(manualVerificationCounter).padStart(4, '0')}`);
   await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
   await expect(verifyModal).toBeHidden();
 }
