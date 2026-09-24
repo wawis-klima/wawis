@@ -242,6 +242,77 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
   });
 
 
+  test('v11.34 — kreator urządzeń ma kompaktowe wysokości jak zaakceptowany wzorzec', async ({ page }, testInfo) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+
+    const wizard = page.locator('.mobileDeviceWizard');
+    await expect(wizard).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
+
+    const overviewLayout = await page.evaluate(() => {
+      const body = document.querySelector('.mobileDeviceWizardBody');
+      const card = document.querySelector('.mobileDeviceOverviewOpen');
+      const add = document.querySelector('.mobileDeviceAddAnother');
+      const bodyStyle = body ? getComputedStyle(body) : null;
+      const cardRect = card?.getBoundingClientRect();
+      const addRect = add?.getBoundingClientRect();
+      return {
+        alignContent: bodyStyle?.alignContent || '',
+        gridAutoRows: bodyStyle?.gridAutoRows || '',
+        cardHeight: cardRect?.height || 0,
+        addHeight: addRect?.height || 0,
+        addWidth: addRect?.width || 0,
+      };
+    });
+    expect(overviewLayout.alignContent).toBe('start');
+    expect(overviewLayout.gridAutoRows).toBe('max-content');
+    expect(overviewLayout.cardHeight).toBeGreaterThanOrEqual(68);
+    expect(overviewLayout.cardHeight).toBeLessThanOrEqual(84);
+    expect(overviewLayout.addHeight).toBeGreaterThanOrEqual(34);
+    expect(overviewLayout.addHeight).toBeLessThanOrEqual(44);
+    expect(overviewLayout.addWidth).toBeLessThanOrEqual(300);
+    await page.screenshot({ path: testInfo.outputPath('v11.34-step4-compact.png'), fullPage: true });
+
+    await page.getByRole('button', { name: /Dodaj kolejne urządzenie/ }).click();
+    await expect(page.getByRole('heading', { name: 'Dodaj urządzenie', exact: true })).toBeVisible();
+
+    const typeHeights = await page.locator('.mobileDeviceTypeCard').evaluateAll((nodes) => (
+      nodes.map((node) => node.getBoundingClientRect().height)
+    ));
+    expect(typeHeights).toHaveLength(2);
+    for (const height of typeHeights) {
+      expect(height).toBeGreaterThanOrEqual(66);
+      expect(height).toBeLessThanOrEqual(80);
+    }
+    await page.screenshot({ path: testInfo.outputPath('v11.34-step1-compact.png'), fullPage: true });
+
+    await page.getByRole('button', { name: 'Dalej', exact: true }).click();
+    await expect(page.getByText('Tryb: Single', { exact: true })).toBeVisible();
+
+    const selectionHeights = await page.locator('.mobileDeviceWizardSelection').evaluateAll((nodes) => (
+      nodes.map((node) => node.getBoundingClientRect().height)
+    ));
+    expect(selectionHeights).toHaveLength(3);
+    for (const height of selectionHeights) {
+      expect(height).toBeGreaterThanOrEqual(54);
+      expect(height).toBeLessThanOrEqual(64);
+    }
+
+    const actionHeights = await page.locator('.nameplateCapture.compact .nameplateCaptureCameraBtn, .nameplateCapture.compact .nameplateCaptureGalleryBtn').evaluateAll((nodes) => (
+      nodes.map((node) => node.getBoundingClientRect().height)
+    ));
+    expect(actionHeights.length).toBeGreaterThanOrEqual(4);
+    for (const height of actionHeights) {
+      expect(height).toBeGreaterThanOrEqual(32);
+      expect(height).toBeLessThanOrEqual(40);
+    }
+    await page.screenshot({ path: testInfo.outputPath('v11.34-step2-compact.png'), fullPage: true });
+  });
+
   test('automatycznie odczytuje prawdziwe pola modelu i SN z czytelnej tabliczki Rotenso', async ({ page }) => {
     test.setTimeout(150_000);
     await resetMockSupabase(page);
