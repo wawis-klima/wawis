@@ -17,7 +17,7 @@ const migrationSource = fs.readFileSync(migrationPath, 'utf8');
 
 assert.match(fetchSource, /export async function loadJobNameplatePhotosData/);
 assert.match(fetchSource, /retryDelaysMs = \[0, 350, 900\]/);
-assert.match(fetchSource, /select\('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref'\)/);
+assert.match(fetchSource, /select\('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at'\)/);
 assert.doesNotMatch(
   fetchSource.slice(fetchSource.indexOf('export async function loadJobNameplatePhotosData'), fetchSource.indexOf('export async function loadJobDetailsData')),
   /comments|createSignedUrl|getSignedPhotoUrl/,
@@ -91,7 +91,7 @@ assert.match(migrationSource, /raise exception 'job_nameplates_incomplete:/, 'Br
       assert.equal(table, 'photos');
       return {
         select(fields) {
-          assert.equal(fields, 'id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref');
+          assert.equal(fields, 'id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at');
           return {
             eq(column, value) {
               assert.equal(column, 'job_id');
