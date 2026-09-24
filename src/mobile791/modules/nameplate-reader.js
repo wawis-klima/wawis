@@ -32,7 +32,9 @@ function normalizeSerial(value = '') {
   return normalizeText(value).toUpperCase();
 }
 
-const NAMEPLATE_KEYWORD_RE = /\b(?:ROTENSO|MODEL|SERIAL|S\s*[/.-]?\s*N|EAN|REFRIGERANT|R32|R410A|R290|VOLTAGE|INPUT|OUTPUT|CAPACITY|COOLING|HEATING|INDOOR|OUTDOOR|UNIT|MADE\s+IN)\b/gi;
+const NAMEPLATE_PRIMARY_KEYWORD_RE = /\b(?:ROTENSO|MODEL|EAN|REFRIGERANT|VOLTAGE|CAPACITY|COOLING|HEATING)\b/gi;
+const NAMEPLATE_SECONDARY_KEYWORD_RE = /\b(?:INPUT|OUTPUT|INDOOR|OUTDOOR|UNIT|MADE\s+IN)\b/gi;
+const NAMEPLATE_SERIAL_LABEL_RE = /(?:^|\b)(?:S\s*[/.-]?\s*N|SERIAL)\s*[:;=._-]?/i;
 const NAMEPLATE_TECHNICAL_VALUE_RE = /\b(?:\d{2,3}\s*V|\d{2,3}\s*HZ|\d+(?:[.,]\d+)?\s*KW|\d{3,6}\s*BTU|R(?:32|410A|290))\b/i;
 const NAMEPLATE_MODELISH_TOKEN_RE = /\b[A-Z]{1,8}[-_/]?\d{2,}[A-Z0-9._/-]*\b/i;
 
@@ -43,40 +45,96 @@ export function getMobileNameplateEvidence({
   exactModel = null,
   serialNumber = '',
 } = {}) {
-  const strongSignals = [];
-  if (normalizeText(barcodeInfo?.ean)) strongSignals.push('ean');
-  if (normalizeSerial(barcodeInfo?.serialNumber || serialNumber)) strongSignals.push('serial');
-  if (exactModel?.code || exactModel?.model) strongSignals.push('exact_model');
-  if (Array.isArray(barcodeInfo?.detections) && barcodeInfo.detections.length) strongSignals.push('barcode');
-
   const rawText = [
     serialTextResult?.rawText,
     modelTextResult?.rawText,
   ].filter(Boolean).join('\n').toUpperCase();
 
-  const keywordMatches = rawText.match(NAMEPLATE_KEYWORD_RE) || [];
-  const distinctKeywords = new Set(keywordMatches.map((value) => value.replace(/\s+/g, '').toUpperCase()));
+  const primaryMatches = rawText.match(NAMEPLATE_PRIMARY_KEYWORD_RE) || [];
+  const secondaryMatches = rawText.match(NAMEPLATE_SECONDARY_KEYWORD_RE) || [];
+  const primaryKeywords = new Set(primaryMatches.map((value) => value.replace(/\s+/g, '').toUpperCase()));
+  const secondaryKeywords = new Set(secondaryMatches.map((value) => value.replace(/\s+/g, '').toUpperCase()));
   const digitCount = (rawText.match(/\d/g) || []).length;
   const lineCount = rawText.split(/\n+/).map((line) => line.trim()).filter(Boolean).length;
   const hasTechnicalValue = NAMEPLATE_TECHNICAL_VALUE_RE.test(rawText);
   const hasModelishToken = NAMEPLATE_MODELISH_TOKEN_RE.test(rawText);
+  const hasSerialLabel = NAMEPLATE_SERIAL_LABEL_RE.test(rawText);
 
-  let score = strongSignals.length ? 10 : 0;
-  score += Math.min(4, distinctKeywords.size * 2);
-  if (hasTechnicalValue) score += 2;
-  if (hasModelishToken) score += 2;
-  if (digitCount >= 6) score += 1;
-  if (lineCount >= 2) score += 1;
+  const trustedEan = Boolean(normalizeText(barcodeInfo?.ean));
+  const trustedExactModel = Boolean(exactModel?.code || exactModel?.model);
+
+  const barcodeSerial = normalizeSerial(barcodeInfo?.serialNumber);
+  const barcodeSerialSource = String(barcodeInfo?.serialSource || '').toLowerCase();
+  const trustedBarcodeSerial = Boolean(
+    barcodeSerial
+    && ['universal_barcode', 'native_barcode'].includes(barcodeSerialSource),
+  );
+
+  const focusedSerial = normalizeSerial(serialTextResult?.serialNumber);
+  const focusedSerialVotes = Number(serialTextResult?.votes || 0);
+  const focusedSerialConfidence = Number(serialTextResult?.confidence || 0);
+  const trustedFocusedSerial = Boolean(
+    focusedSerial
+    && hasSerialLabel
+    && focusedSerialVotes >= 2
+    && focusedSerialConfidence >= 45,
+  );
+
+  // Tekst musi zawierać co najmniej dwa niezależne ślady tabliczki albo
+  // jeden charakterystyczny nagłówek wsparty wartością techniczną/kodem modelu.
+  // Ogólne słowa typu UNIT / INPUT / OUTPUT nie wystarczają samodzielnie.
+  const textSignature = Boolean(
+    primaryKeywords.size >= 2
+    || (primaryKeywords.size >= 1 && (hasTechnicalValue || hasModelishToken))
+    || (
+      primaryKeywords.size >= 1
+      && secondaryKeywords.size >= 1
+      && digitCount >= 6
+      && lineCount >= 2
+    ),
+  );
+
+  // Pojedynczy, przypadkowy "kod" lub halucynowany SN nie może już otwierać AI.
+  // Numer seryjny musi pochodzić z zaufanego dekodera / wielokrotnego OCR
+  // i mieć niezależny kontekst tabliczki.
+  const hasIndependentSerialContext = Boolean(
+    primaryKeywords.size >= 1
+    || hasTechnicalValue
+    || hasModelishToken,
+  );
+  const supportedSerialSignal = Boolean(
+    (trustedBarcodeSerial || trustedFocusedSerial)
+    && hasIndependentSerialContext,
+  );
+
+  const strongSignals = [];
+  if (trustedEan) strongSignals.push('ean');
+  if (trustedExactModel) strongSignals.push('exact_model');
+  if (textSignature) strongSignals.push('technical_text');
+  if (supportedSerialSignal) strongSignals.push('supported_serial');
+
+  let score = 0;
+  if (trustedEan || trustedExactModel) score += 10;
+  if (textSignature) score += 6;
+  if (supportedSerialSignal) score += 4;
+  score += Math.min(4, primaryKeywords.size * 2);
+  if (hasTechnicalValue) score += 1;
+  if (hasModelishToken) score += 1;
 
   return {
-    hasEvidence: strongSignals.length > 0 || score >= 4,
+    hasEvidence: trustedEan || trustedExactModel || textSignature || supportedSerialSignal,
     score,
     strongSignals,
-    keywordCount: distinctKeywords.size,
+    keywordCount: primaryKeywords.size,
+    secondaryKeywordCount: secondaryKeywords.size,
     digitCount,
     lineCount,
     hasTechnicalValue,
     hasModelishToken,
+    hasSerialLabel,
+    trustedBarcodeSerial,
+    trustedFocusedSerial,
+    ignoredGenericSerial: Boolean(normalizeSerial(serialNumber) && !supportedSerialSignal),
     rawText,
   };
 }

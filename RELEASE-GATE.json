@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.29",
+  "version": "11.30",
   "scope": "full",
-  "release_branch": "release/v11.29",
+  "release_branch": "release/v11.30",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.29: 3 error, 19 warning, 0 zdarzeń protocol/photo w ostatnich 24 h. Zmiana dotyczy wyłącznie mobilnego układu pola Data zapłaty."
+    "notes": "Przed 11.30: 4 error, 21 warning, 0 zdarzeń nameplate/tabliczka w ostatnich 24 h. Zmiana dotyczy mobilnej bramki dowodów tabliczki przed AI."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.29.zip"
+    "file_name": "klima-app-v11.30.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.29",
+    "source_branch": "release/v11.30",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.29 od 2026-09-24 14:41:23Z: 0 nowych error, 0 warning i 0 zdarzeń protocol/photo w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do uzupełnienia po wdrożeniu 11.30."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.29 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.28",
+    "supabase_migration_applied": "N/A — 11.30 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.29",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107683741673, commit 0624b6a, Deploy successful.",
-    "merge_commit": "0624b6acca48595b4e3f3b7e59c937f03cd16416"
+    "cloudflare_deployment": "PENDING — do potwierdzenia po merge do main.",
+    "merge_commit": "PENDING"
   }
 }
