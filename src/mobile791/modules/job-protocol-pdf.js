@@ -411,7 +411,6 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   doc.setTextColor(0, 0, 0);
   doc.text("JEDNOSTKA", CONTENT_LEFT, y + 27);
   doc.text("DANE Z TABLICZKI", 118, y + 27);
-  doc.text("STATUS", 478, y + 27);
   doc.setDrawColor(212, 224, 230);
   doc.line(CONTENT_LEFT, y + 35, CONTENT_RIGHT, y + 35);
 
@@ -437,10 +436,6 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     doc.setFontSize(6.8);
     const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
     doc.text(doc.splitTextToSize(technicalLine, 360), 100, secondaryY);
-
-    doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(6.5);
-    doc.text(doc.splitTextToSize(row.nameplate, 82), 490, primaryY);
 
     if (index < rows.length - 1) {
       doc.setDrawColor(230, 236, 240);
