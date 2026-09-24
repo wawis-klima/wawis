@@ -77,10 +77,22 @@ const realPlateText = getMobileNameplateEvidence({
 });
 assert.equal(realPlateText.hasEvidence, true, 'Technical nameplate text must unlock AI fallback when needed');
 
-const barcodeEvidence = getMobileNameplateEvidence({
+const retailEanOnly = getMobileNameplateEvidence({
   barcodeInfo: { ean: '5905567600791', detections: [{ value: '5905567600791' }] },
 });
-assert.equal(barcodeEvidence.hasEvidence, true, 'A valid local barcode/EAN signal must unlock AI fallback');
+assert.equal(retailEanOnly.hasEvidence, false, 'EAN alone must not unlock AI because ordinary retail products also have valid EAN codes');
+
+const catalogResolvedEan = getMobileNameplateEvidence({
+  barcodeInfo: { ean: '5905567600791', detections: [{ value: '5905567600791' }] },
+  exactModel: { code: 'I35Xi R14', model: 'Imoto', manufacturer: 'Rotenso' },
+});
+assert.equal(catalogResolvedEan.hasEvidence, true, 'EAN resolved to an exact catalog model must remain trusted');
+
+const contextualEan = getMobileNameplateEvidence({
+  barcodeInfo: { ean: '5905567600791', detections: [{ value: '5905567600791' }] },
+  modelTextResult: { rawText: 'ROTENSO\\nMODEL I35Xi R14\\n230V 50Hz\\nR32' },
+});
+assert.equal(contextualEan.hasEvidence, true, 'EAN with independent nameplate text must remain valid evidence');
 
 const reader = read('src/mobile791/modules/nameplate-reader.js');
 assert(reader.includes("aiSkipReason: 'no_nameplate_evidence'"), 'No-evidence path must skip AI explicitly');
@@ -92,4 +104,4 @@ assert(capture.includes('AI nie zostało uruchomione. Zrób zdjęcie tabliczki p
 assert(capture.includes('disabled={noNameplateEvidence}'), 'Fields must be disabled for a non-nameplate photo');
 assert(capture.includes('noNameplateEvidence ? "Zrób zdjęcie ponownie"'), 'Non-nameplate photo must force a retake instead of manual bypass');
 
-console.log('Smoke OK: 11.30 rejects weak false-positive evidence and never calls AI blindly.');
+console.log('Smoke OK: 11.31 rejects ordinary retail EAN codes unless independent nameplate context exists.');
