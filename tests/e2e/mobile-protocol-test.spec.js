@@ -72,6 +72,27 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     const protocolModal = page.locator('.mobileProtocolWizard');
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
     await expect(page.getByText(/Protokół jest opcjonalny/)).toBeVisible();
+
+    const protocolScrollState = await page.locator('.protocolWizardModal').evaluate((modal) => {
+      const paymentSection = modal.querySelector('.protocolPaymentSection');
+      const modalRect = modal.getBoundingClientRect();
+      const paymentRect = paymentSection?.getBoundingClientRect();
+      return {
+        scrollTop: modal.scrollTop,
+        paymentVisible: Boolean(paymentRect && paymentRect.top < modalRect.bottom && paymentRect.bottom > modalRect.top),
+      };
+    });
+    expect(protocolScrollState.scrollTop).toBeGreaterThan(0);
+    expect(protocolScrollState.paymentVisible).toBe(true);
+
+    const paymentToggle = page.locator('.protocolPaymentToggle');
+    await expect(paymentToggle).toContainText('Dodaj');
+    const paymentToggleStyle = await paymentToggle.evaluate((element) => ({
+      whiteSpace: getComputedStyle(element).whiteSpace,
+      spanWhiteSpace: getComputedStyle(element.querySelector('span')).whiteSpace,
+    }));
+    expect(paymentToggleStyle.whiteSpace).toBe('nowrap');
+    expect(paymentToggleStyle.spanWhiteSpace).toBe('nowrap');
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
     await expect(protocolModal.getByText('Zapisana w systemie', { exact: true })).toHaveCount(0);
     await expect(protocolModal.getByText('STATUS', { exact: true })).toHaveCount(0);
