@@ -355,16 +355,19 @@ function NameplateVerificationReview({
 
   const progressValue = Math.max(0, Math.min(100, Number(verification.progress?.progress || 0)));
   const mismatchMessage = verification.reading?.mismatch?.message || "";
+  const noNameplateEvidence = Boolean(verification.reading?.noNameplateEvidence);
   const modelReady = Boolean(String(verification.modelValue || "").trim());
   const serialReady = Boolean(String(verification.serialNumber || "").trim());
-  const canConfirm = !verification.busy && !mismatchMessage && modelReady && serialReady;
-  const methodLabel = verification.reading?.method === "ai"
-    ? "Odczyt lokalny + AI"
-    : verification.reading?.method === "manual"
-      ? "Weryfikacja ręczna"
-      : verification.reading
-        ? "Odczyt lokalny"
-        : "Weryfikacja ręczna";
+  const canConfirm = !verification.busy && !mismatchMessage && !noNameplateEvidence && modelReady && serialReady;
+  const methodLabel = noNameplateEvidence
+    ? "Nie wykryto tabliczki"
+    : verification.reading?.method === "ai"
+      ? "Odczyt lokalny + AI"
+      : verification.reading?.method === "manual"
+        ? "Weryfikacja ręczna"
+        : verification.reading
+          ? "Odczyt lokalny"
+          : "Weryfikacja ręczna";
 
   return (
     <div className="nameplateVerifyModal" role="dialog" aria-modal="true" aria-label={`Potwierdzenie tabliczki: ${fieldLabel}`}>
@@ -390,6 +393,11 @@ function NameplateVerificationReview({
         ) : (
           <>
             <div className="nameplateVerifyMethod">{methodLabel}</div>
+            {noNameplateEvidence ? (
+              <div className="nameplateVerifyMismatch" role="alert">
+                Nie wykryto tabliczki znamionowej ani żadnych jej charakterystycznych danych. AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.
+              </div>
+            ) : null}
             {verification.reading?.aiAttempted && verification.reading?.aiError ? (
               <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
             ) : null}
@@ -405,6 +413,7 @@ function NameplateVerificationReview({
             onChange={(event) => onModelChange(event.target.value)}
             placeholder="Przepisz model z tabliczki"
             autoComplete="off"
+            disabled={noNameplateEvidence}
           />
         </label>
         <label className="nameplateVerifyField">
@@ -415,10 +424,13 @@ function NameplateVerificationReview({
             onChange={(event) => onSerialChange(event.target.value.toUpperCase())}
             placeholder="Przepisz numer seryjny"
             autoComplete="off"
+            disabled={noNameplateEvidence}
           />
         </label>
         {!verification.busy ? (
-          !modelReady || !serialReady ? (
+          noNameplateEvidence ? (
+            <div className="nameplateVerifyHint">To zdjęcie nie może zostać zaakceptowane jako tabliczka. Zrób nowe zdjęcie urządzenia z widoczną tabliczką znamionową.</div>
+          ) : !modelReady || !serialReady ? (
             <div className="nameplateVerifyHint">Przed potwierdzeniem uzupełnij model i numer seryjny dokładnie tak, jak na zdjęciu.</div>
           ) : (
             <div className="nameplateVerifyReady">Porównaj dane ze zdjęciem i potwierdź.</div>
@@ -432,9 +444,9 @@ function NameplateVerificationReview({
         <button
           type="button"
           className="btn secondary nameplateVerifyManualBtn"
-          onClick={verification.busy || !modelReady || !serialReady ? onManual : onRetake}
+          onClick={noNameplateEvidence ? onRetake : (verification.busy || !modelReady || !serialReady ? onManual : onRetake)}
         >
-          {verification.busy || !modelReady || !serialReady ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie"}
+          {noNameplateEvidence ? "Zrób zdjęcie ponownie" : (verification.busy || !modelReady || !serialReady ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie")}
         </button>
         <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>Potwierdź</button>
       </div>
