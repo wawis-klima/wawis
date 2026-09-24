@@ -230,7 +230,7 @@ export function extractSerialNumberFromOcrText(rawText = '') {
 
   for (const originalLine of lines) {
     const line = originalLine.toUpperCase().replace(/[|]/g, 'I');
-    const markerMatch = line.match(/(?:^|\b)(?:S\s*N|5\s*N|S\s*M)\s*[:;=._-]*\s*(.*)$/i);
+    const markerMatch = line.match(/(?:^|\b)(?:[S5]\s*[/.-]?\s*N|S\s*M)\s*[:;=._-]*\s*(.*)$/i);
     if (!markerMatch) continue;
     const tail = String(markerMatch[1] || '')
       .split(/\b(?:MADE|CHINA|PRC|REFRIGERANT|MODEL|PC\s*\/?\s*EAN|EAN)\b/i)[0]
