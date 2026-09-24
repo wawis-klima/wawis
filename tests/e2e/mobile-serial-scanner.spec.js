@@ -210,6 +210,15 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
     await expect(page.getByText('Wszystkie tabliczki dodane', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
+    await expect.poll(async () => page.evaluate((storeKey) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      return (store.photos || []).filter((photo) => (
+        photo.job_id === 'mock-job-005'
+        && photo.photo_kind === 'nameplate'
+        && String(photo.ocr_status || '').toLowerCase() === 'approved'
+        && Boolean(photo.ocr_checked_at)
+      )).length;
+    }, MOCK_STORE_KEY), { timeout: 20_000, intervals: [200, 400, 800] }).toBe(4);
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden({ timeout: 20_000 });
 
     await expect(page.getByText('Wszystkie wymagane zdjęcia tabliczek są zapisane.')).toBeVisible();
