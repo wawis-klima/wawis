@@ -86,13 +86,19 @@ export async function readMobileNameplate({
   }
 
   onProgress?.({ progress: 4, label: 'Uruchamiam lokalny odczyt tabliczki…', method: 'local' });
-  const barcodeInfo = await withTimeout(
-    scanDesktopNameplateBarcodes(file, {
-      onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
-    }),
-    BARCODE_SCAN_TIMEOUT_MS,
-    'Lokalny odczyt kodów trwał zbyt długo. Spróbuję użyć AI.',
-  );
+  let barcodeInfo = { detections: [], values: [], ean: '', serialNumber: '', rotensoModel: null };
+  let barcodeError = '';
+  try {
+    barcodeInfo = await withTimeout(
+      scanDesktopNameplateBarcodes(file, {
+        onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
+      }),
+      BARCODE_SCAN_TIMEOUT_MS,
+      'Lokalny odczyt kodów trwał zbyt długo.',
+    );
+  } catch (error) {
+    barcodeError = error?.message || 'Lokalny czytnik kodów nie zwrócił wyniku.';
+  }
 
   let exactModel = barcodeInfo.rotensoModel || null;
   let serialNumber = normalizeSerial(barcodeInfo.serialNumber);
@@ -157,6 +163,7 @@ export async function readMobileNameplate({
     modelTextResult,
     aiAttempted: false,
     aiError: '',
+    barcodeError,
   };
 
   if (isMobileNameplateReadingComplete(localReading) || localMismatch) {
@@ -206,6 +213,7 @@ export async function readMobileNameplate({
       modelTextResult,
       aiAttempted: true,
       aiError: '',
+      barcodeError,
       aiResult,
     };
   } catch (error) {
