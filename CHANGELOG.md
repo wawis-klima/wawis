@@ -1,3 +1,9 @@
+## 11.29
+- Pole „Data zapłaty” w mobilnym protokole nie używa już ogólnej klasy `.input`, która na iOS pozwalała natywnemu kontrolkowi rozszerzyć się poza kartę.
+- Dodano własną ramkę `protocolPaymentDateShell` o wysokości 38 px i szerokości 100%, identycznej z polem „Gotówka”.
+- Natywny `input[type=date]` jest zamknięty wewnątrz ramki, ma wyzerowany natywny appearance i nie może przekroczyć jej szerokości ani wysokości.
+- E2E na iPhone 14 porównuje teraz bezpośrednio szerokość i wysokość daty z polem „Gotówka” oraz sprawdza, że natywny input mieści się w ramce.
+
 ## 11.28
 - Zmniejszono wysokość i odstępy pól w sekcji potwierdzenia zapłaty.
 - Selecty „Rodzaj” i „Sposób płatności” mają mniejszy font i bardziej kompaktową ramkę.
