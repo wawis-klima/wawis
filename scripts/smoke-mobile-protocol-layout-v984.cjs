@@ -31,6 +31,8 @@ assert.match(wizardCss, /\.protocolPaymentForm \.input\s*\{[^}]*height:\s*38px;[
 assert.match(wizardCss, /input\[type="date"\]::\-webkit-date-and-time-value\s*\{[^}]*transform:\s*scale\(\.82\);/, 'Widoczna data na iOS powinna być wizualnie zmniejszona bez obniżania bezpiecznego font-size inputa.');
 assert.match(wizardCss, /\.protocolPaymentForm > label\s*\{[^}]*min-width:\s*0;/, 'Pola płatności muszą pozwalać zawartości zwęzić się do szerokości karty.');
 assert.match(wizardCss, /\.protocolPaymentForm \.input\s*\{[^}]*min-width:\s*0;[^}]*max-width:\s*100%;[^}]*box-sizing:\s*border-box;/, 'Input płatności nie może przekraczać szerokości swojej kolumny.');
-assert.match(wizardCss, /\.protocolPaymentForm input\[type="date"\]\s*\{[^}]*inline-size:\s*100%;[^}]*min-inline-size:\s*0;[^}]*max-inline-size:\s*100%;/, 'Natywne pole daty iPhone musi mieścić się wewnątrz karty płatności.');
+assert.match(modal, /className="protocolPaymentDateShell"[\s\S]*className="protocolPaymentDateInput"/, 'Data zapłaty musi mieć osobną ramkę zamiast dziedziczyć ogólną klasę .input.');
+assert.match(wizardCss, /\.protocolPaymentDateShell\s*\{[^}]*height:\s*38px;[^}]*max-height:\s*38px;[^}]*overflow:\s*hidden;/, 'Ramka daty musi mieć dokładnie wysokość pola Gotówka i ucinać natywne overflow iOS.');
+assert.match(wizardCss, /\.protocolPaymentForm input\[type="date"\]\s*\{[^}]*-webkit-appearance:\s*none\s*!important;[^}]*inline-size:\s*100%\s*!important;[^}]*max-inline-size:\s*100%\s*!important;[^}]*height:\s*100%\s*!important;[^}]*max-height:\s*100%\s*!important;/, 'Natywny input daty iPhone musi być całkowicie zamknięty wewnątrz własnej ramki.');
 
 console.log('OK: protokół ma uporządkowane dane oraz osobny, nieruchomy ekran podpisu klienta.');
