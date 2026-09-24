@@ -26,7 +26,8 @@ assert.equal(packageJson.dependencies['dejavu-fonts-ttf'], '2.37.3', 'PDF font p
 assert.equal(packageJson.scripts['test:smoke:mobile-protocol'], 'node scripts/smoke-mobile-protocol-v979.cjs');
 assert.equal(packageJson.scripts['test:smoke:mobile-protocol-print'], 'node scripts/test-job-protocol-print-image-v1002.mjs');
 
-assert.match(jobDetails, /selectedJobIsCompleted = String\(selectedJob\?\.status \|\| ""\) === "Zakończone"/);
+assert.match(jobDetails, /const selectedJobStatus = String\(selectedJob\?\.status \|\| ""\);/);
+assert.match(jobDetails, /const selectedJobIsCompleted = selectedJobStatus === "Zakończone";/);
 assert.match(jobDetails, /\{isCompletedJob && !protocolLoading && protocolBackendAvailable \? \(/);
 assert.match(jobDetails, /<span className="mobileLabel">Protokół<\/span>/);
 assert.match(jobDetails, /loadJobProtocolRecord/);
