@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { analyzeNameplatePhotoQuality } from "../../modules/nameplate-quality.js";
+import { readMobileNameplate } from "../../modules/nameplate-reader.js";
+import { supabase } from "../../lib/supabase.js";
 import "./nameplate-photo-capture.css";
 
 const MIN_CROP_SIZE = 0.12;
@@ -326,6 +328,107 @@ function CropEditor({ source, fieldLabel, onCancel, onRetake, onConfirm }) {
   );
 }
 
+
+function NameplateVerificationReview({
+  verification,
+  fieldLabel,
+  onModelChange,
+  onSerialChange,
+  onConfirm,
+  onRetake,
+  onCancel,
+}) {
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    if (!verification?.file) {
+      setPreviewUrl("");
+      return undefined;
+    }
+    const url = URL.createObjectURL(verification.file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [verification?.file]);
+
+  if (!verification) return null;
+
+  const progressValue = Math.max(0, Math.min(100, Number(verification.progress?.progress || 0)));
+  const mismatchMessage = verification.reading?.mismatch?.message || "";
+  const modelReady = Boolean(String(verification.modelValue || "").trim());
+  const serialReady = Boolean(String(verification.serialNumber || "").trim());
+  const canConfirm = !verification.busy && !mismatchMessage && modelReady && serialReady;
+  const methodLabel = verification.reading?.method === "ai"
+    ? "Odczyt lokalny + AI"
+    : verification.reading
+      ? "Odczyt lokalny"
+      : "Weryfikacja ręczna";
+
+  return (
+    <div className="nameplateVerifyModal" role="dialog" aria-modal="true" aria-label={`Potwierdzenie tabliczki: ${fieldLabel}`}>
+      <div className="nameplateVerifyHeader">
+        <div>
+          <strong>Sprawdź tabliczkę</strong>
+          <span>{fieldLabel}</span>
+        </div>
+        {!verification.busy ? (
+          <button type="button" className="nameplateCropClose" onClick={onCancel} aria-label="Anuluj potwierdzanie"><CloseIcon /></button>
+        ) : null}
+      </div>
+
+      <div className="nameplateVerifyBody">
+        {previewUrl ? <img className="nameplateVerifyImage" src={previewUrl} alt={`Tabliczka do potwierdzenia: ${fieldLabel}`} /> : null}
+
+        {verification.busy ? (
+          <div className="nameplateVerifyProgress" aria-live="polite">
+            <div className="nameplateVerifyProgressTrack"><span style={{ width: `${progressValue}%` }} /></div>
+            <strong>{verification.progress?.label || "Odczytuję tabliczkę…"}</strong>
+            <small>{verification.progress?.method === "ai" ? "Lokalny odczyt był niepełny — sprawdzam przez AI." : "Najpierw używam lokalnego, darmowego czytnika."}</small>
+          </div>
+        ) : (
+          <>
+            <div className="nameplateVerifyMethod">{methodLabel}</div>
+            {verification.reading?.aiAttempted && verification.reading?.aiError ? (
+              <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
+            ) : null}
+            {mismatchMessage ? <div className="nameplateVerifyMismatch" role="alert">{mismatchMessage}</div> : null}
+
+            <label className="nameplateVerifyField">
+              <span>Model</span>
+              <input
+                className="input"
+                value={verification.modelValue}
+                onChange={(event) => onModelChange(event.target.value)}
+                placeholder="Przepisz model z tabliczki"
+                autoComplete="off"
+              />
+            </label>
+            <label className="nameplateVerifyField">
+              <span>Numer seryjny</span>
+              <input
+                className="input"
+                value={verification.serialNumber}
+                onChange={(event) => onSerialChange(event.target.value.toUpperCase())}
+                placeholder="Przepisz numer seryjny"
+                autoComplete="off"
+              />
+            </label>
+            {!modelReady || !serialReady ? (
+              <div className="nameplateVerifyHint">Przed potwierdzeniem uzupełnij model i numer seryjny dokładnie tak, jak na zdjęciu.</div>
+            ) : (
+              <div className="nameplateVerifyReady">Porównaj dane ze zdjęciem i potwierdź.</div>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="nameplateVerifyFooter">
+        <button type="button" className="btn secondary" disabled={verification.busy} onClick={onRetake}>Zrób zdjęcie ponownie</button>
+        <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>Potwierdź</button>
+      </div>
+    </div>
+  );
+}
+
 export default function NameplatePhotoCapture({
   fieldLabel,
   file = null,
@@ -333,6 +436,11 @@ export default function NameplatePhotoCapture({
   onSelect,
   onRemove,
   compact = false,
+  jobId = "",
+  unitRef = "",
+  currentModel = "",
+  currentSerial = "",
+  verified = false,
 }) {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
@@ -340,6 +448,7 @@ export default function NameplatePhotoCapture({
   const [localPreviewUrl, setLocalPreviewUrl] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [cropSource, setCropSource] = useState(null);
+  const [verification, setVerification] = useState(null);
 
   useEffect(() => {
     if (!file) {
@@ -395,9 +504,70 @@ export default function NameplatePhotoCapture({
     if (selectedFile) openCropEditor(selectedFile, sourceKind);
   }
 
-  function handleCropConfirm(croppedFile) {
+  async function handleCropConfirm(croppedFile) {
     clearCropSource();
-    onSelect?.(croppedFile);
+    const initialVerification = {
+      file: croppedFile,
+      busy: true,
+      progress: { progress: 2, label: "Przygotowuję odczyt…", method: "local" },
+      reading: null,
+      modelValue: String(currentModel || "").trim(),
+      serialNumber: String(currentSerial || "").trim().toUpperCase(),
+    };
+    setVerification(initialVerification);
+
+    try {
+      const reading = await readMobileNameplate({
+        file: croppedFile,
+        supabase,
+        jobId,
+        targetUnit: unitRef,
+        onProgress: (progress) => {
+          setVerification((current) => current?.file === croppedFile ? { ...current, progress } : current);
+        },
+      });
+      setVerification((current) => current?.file === croppedFile ? {
+        ...current,
+        busy: false,
+        progress: { progress: 100, label: "Odczyt zakończony", method: reading.method || "local" },
+        reading,
+        modelValue: String(reading.modelValue || current.modelValue || currentModel || "").trim(),
+        serialNumber: String(reading.serialNumber || current.serialNumber || currentSerial || "").trim().toUpperCase(),
+      } : current);
+    } catch (readError) {
+      setVerification((current) => current?.file === croppedFile ? {
+        ...current,
+        busy: false,
+        reading: {
+          method: "manual",
+          aiAttempted: false,
+          aiError: readError?.message || "Automatyczny odczyt nie zwrócił wyniku.",
+          mismatch: null,
+        },
+      } : current);
+    }
+  }
+
+  function confirmVerification() {
+    if (!verification?.file || verification.busy || verification.reading?.mismatch) return;
+    const modelValue = String(verification.modelValue || "").replace(/\s+/g, " ").trim();
+    const serialNumber = String(verification.serialNumber || "").replace(/\s+/g, "").trim().toUpperCase();
+    if (!modelValue || !serialNumber) return;
+    const checkedAt = new Date().toISOString();
+    onSelect?.(verification.file, {
+      verified: true,
+      modelValue,
+      serialNumber,
+      verificationMethod: verification.reading?.method || "manual",
+      ocrStatus: "approved",
+      ocrCheckedAt: checkedAt,
+    });
+    setVerification(null);
+  }
+
+  function retakeVerificationPhoto() {
+    setVerification(null);
+    cameraInputRef.current?.click();
   }
 
   function handleRetake() {
@@ -411,8 +581,8 @@ export default function NameplatePhotoCapture({
   const previewUrl = localPreviewUrl || existingPhotoUrl;
   const hasPhoto = Boolean(file || existingPhotoUrl);
   const statusLabel = compact
-    ? (file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zapisana" : "Brak")
-    : (file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zdjęcie zapisane" : "Brak zdjęcia");
+    ? (verified ? "Potwierdzona" : file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zapisana" : "Brak")
+    : (verified ? "Tabliczka potwierdzona" : file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zdjęcie zapisane" : "Brak zdjęcia");
 
   return (
     <>
@@ -479,6 +649,18 @@ export default function NameplatePhotoCapture({
           aria-label={`Wybierz zdjęcie tabliczki z galerii: ${fieldLabel}`}
         />
       </div>
+
+      {verification ? (
+        <NameplateVerificationReview
+          verification={verification}
+          fieldLabel={fieldLabel}
+          onModelChange={(modelValue) => setVerification((current) => ({ ...current, modelValue }))}
+          onSerialChange={(serialNumber) => setVerification((current) => ({ ...current, serialNumber }))}
+          onConfirm={confirmVerification}
+          onRetake={retakeVerificationPhoto}
+          onCancel={() => setVerification(null)}
+        />
+      ) : null}
 
       {cropSource ? (
         <CropEditor
