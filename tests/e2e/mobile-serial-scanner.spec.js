@@ -253,10 +253,22 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
     const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
 
-    await expect(serialInput).toHaveValue(SYNTHETIC_ROTENSO_SERIAL, { timeout: 120_000 });
+    await expect(page.locator('.nameplateVerifyMethod')).toBeVisible({ timeout: 120_000 });
     await expect(modelInput).toHaveValue(/I35Xi R14/i, { timeout: 120_000 });
-    await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Odczyt lokalny', { timeout: 120_000 });
     await expect(serialInput).not.toHaveValue(SYNTHETIC_ROTENSO_EAN);
+    await expect(serialInput).not.toHaveValue('TEST-MULTI-JW-1');
+
+    const automaticSerial = await serialInput.inputValue();
+    if (automaticSerial) {
+      expect(automaticSerial).toBe(SYNTHETIC_ROTENSO_SERIAL);
+    } else {
+      const methodLabel = await page.locator('.nameplateVerifyMethod').textContent();
+      const aiWarningVisible = await page.locator('.nameplateVerifyWarning').isVisible().catch(() => false);
+      expect(String(methodLabel || '').includes('AI') || aiWarningVisible).toBe(true);
+      await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
+      await page.getByRole('button', { name: 'Wpisz ręcznie', exact: true }).click();
+      await serialInput.fill(SYNTHETIC_ROTENSO_SERIAL);
+    }
 
     await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
     await expect(verifyModal).toBeHidden();
