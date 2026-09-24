@@ -823,10 +823,9 @@ export default function App() {
       const currentJobs = offlineSyncContextRef.current.jobs;
       const hasJobsReady = Array.isArray(currentJobs) && currentJobs.length > 0;
       if (offlinePhotoQueueUserRef.current !== userId && hasJobsReady) {
-        // Nie oznaczamy kolejki jako odtworzonej, dopóki lista zleceń nie istnieje.
-        // Inaczej lokalne zdjęcie z IndexedDB nie ma jeszcze karty, do której można je podpiąć,
-        // a kolejny refresh nie podejmuje już drugiej próby.
-        offlinePhotoQueueUserRef.current = userId;
+        // Kolejkę oznaczamy jako odtworzoną dopiero po zakończonym restore.
+        // Jeśli efekt zostanie anulowany w trakcie startu (np. gdy właśnie dochodzi lista zleceń),
+        // następna instancja efektu musi dostać pełną szansę na ponowne uzgodnienie IndexedDB z serwerem.
         await restorePersistedJobPhotos({
           supabase,
           supabaseUrl,
@@ -841,6 +840,8 @@ export default function App() {
             }
           },
         });
+        if (!isQueueSessionCurrent()) return;
+        offlinePhotoQueueUserRef.current = userId;
       }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
       await resumePersistedPhotoUploads({
