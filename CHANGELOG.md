@@ -1,3 +1,9 @@
+## 11.26
+- Usunięto z protokołu PDF kolumnę STATUS oraz wartości „Zapisana w systemie”, „Zapisana na telefonie” i podobne.
+- Mobilny podgląd protokołu również nie pokazuje statusu przechowywania tabliczki.
+- W sekcji urządzeń pozostają wyłącznie: JW/JZ, typ jednostki, dokładny model, rewizja Rxx i numer seryjny S/N.
+- Status tabliczki pozostaje wewnętrzną informacją aplikacji i nie trafia do dokumentu klienta.
+
 ## 11.25
 - Protokół klienta pokazuje przy każdej jednostce jej rodzaj: JW/JZ oraz opis „jednostka wewnętrzna/zewnętrzna”.
 - Do protokołu trafia dokładny model zapisany po weryfikacji tabliczki, w tym rewizja R14/R15/Rxx.
