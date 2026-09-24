@@ -336,6 +336,7 @@ function NameplateVerificationReview({
   onSerialChange,
   onConfirm,
   onRetake,
+  onManual,
   onCancel,
 }) {
   const [previewUrl, setPreviewUrl] = useState("");
@@ -383,6 +384,7 @@ function NameplateVerificationReview({
             <div className="nameplateVerifyProgressTrack"><span style={{ width: `${progressValue}%` }} /></div>
             <strong>{verification.progress?.label || "Odczytuję tabliczkę…"}</strong>
             <small>{verification.progress?.method === "ai" ? "Lokalny odczyt był niepełny — sprawdzam przez AI." : "Najpierw używam lokalnego, darmowego czytnika."}</small>
+            <button type="button" className="btn secondary nameplateVerifyManualBtn" onClick={onManual}>Wpisz ręcznie</button>
           </div>
         ) : (
           <>
@@ -523,10 +525,10 @@ export default function NameplatePhotoCapture({
         jobId,
         targetUnit: unitRef,
         onProgress: (progress) => {
-          setVerification((current) => current?.file === croppedFile ? { ...current, progress } : current);
+          setVerification((current) => current?.file === croppedFile && !current.manualOverride ? { ...current, progress } : current);
         },
       });
-      setVerification((current) => current?.file === croppedFile ? {
+      setVerification((current) => current?.file === croppedFile && !current.manualOverride ? {
         ...current,
         busy: false,
         progress: { progress: 100, label: "Odczyt zakończony", method: reading.method || "local" },
@@ -535,7 +537,7 @@ export default function NameplatePhotoCapture({
         serialNumber: String(reading.serialNumber || current.serialNumber || currentSerial || "").trim().toUpperCase(),
       } : current);
     } catch (readError) {
-      setVerification((current) => current?.file === croppedFile ? {
+      setVerification((current) => current?.file === croppedFile && !current.manualOverride ? {
         ...current,
         busy: false,
         reading: {
@@ -546,6 +548,21 @@ export default function NameplatePhotoCapture({
         },
       } : current);
     }
+  }
+
+  function switchVerificationToManual() {
+    setVerification((current) => current ? {
+      ...current,
+      busy: false,
+      manualOverride: true,
+      progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
+      reading: {
+        method: "manual",
+        aiAttempted: false,
+        aiError: "",
+        mismatch: null,
+      },
+    } : current);
   }
 
   function confirmVerification() {
@@ -658,6 +675,7 @@ export default function NameplatePhotoCapture({
           onSerialChange={(serialNumber) => setVerification((current) => ({ ...current, serialNumber }))}
           onConfirm={confirmVerification}
           onRetake={retakeVerificationPhoto}
+          onManual={switchVerificationToManual}
           onCancel={() => setVerification(null)}
         />
       ) : null}
