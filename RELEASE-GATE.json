@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Po deployu 11.24 sprawdzić nowe error/warning oraz nameplate/photo/OCR."
+    "checked": true,
+    "result": "PASS",
+    "notes": "Po produkcyjnym deployu 11.24 od 2026-09-24 11:36:46Z: 0 nowych error, 0 warning i 0 zdarzeń nameplate/photo/OCR w app_diagnostic_events."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -37,7 +37,7 @@
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PENDING",
-    "merge_commit": "PENDING"
+    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107614603570, commit 6c2dd45, Deploy successful.",
+    "merge_commit": "6c2dd45235635fb96026c63a7d492b891f90098d"
   }
 }
