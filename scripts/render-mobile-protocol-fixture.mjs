@@ -53,8 +53,8 @@ const fixtureJob = {
   completed_at: '2026-08-28T12:30:00.000Z',
   completed_by: 'worker-1',
   installation_date: '2026-08-28',
-  device_model: 'JW: Rotenso Imoto 3,5 kW | JZ: Rotenso Imoto 3,5 kW',
-  device_serial_number: 'JW: NIE-MOZE-BYC-W-PDF | JZ: NIE-MOZE-BYC-W-PDF',
+  device_model: 'JW: Rotenso Imoto 3,5 kW I35Xi R14 | JZ: Rotenso Imoto 3,5 kW I35Xo R14',
+  device_serial_number: 'JW: 540S25420034B110171916 | JZ: 540S25420034B110171917',
   main_technician_id: 'worker-1',
   viewers: [{ user_id: 'worker-2' }],
   photos: [
@@ -76,8 +76,13 @@ const payment = {
   paidDate: '2026-08-28',
 };
 const data = protocol.buildJobProtocolData({ job: fixtureJob, profiles, signedAt, payment });
-if (JSON.stringify(data).includes('NIE-MOZE-BYC-W-PDF')) {
-  throw new Error('Numer seryjny trafił do danych protokołu.');
+const outdoorRow = data.deviceRows.find((row) => row.unit === 'JZ');
+const indoorRow = data.deviceRows.find((row) => row.unit === 'JW1');
+if (outdoorRow?.serialNumber !== '540S25420034B110171917' || outdoorRow?.revision !== 'R14' || outdoorRow?.unitType !== 'Jednostka zewnętrzna') {
+  throw new Error(`Błędne dane JZ w protokole: ${JSON.stringify(outdoorRow)}`);
+}
+if (indoorRow?.serialNumber !== '540S25420034B110171916' || indoorRow?.revision !== 'R14' || indoorRow?.unitType !== 'Jednostka wewnętrzna') {
+  throw new Error(`Błędne dane JW w protokole: ${JSON.stringify(indoorRow)}`);
 }
 const containedSignature = protocol.getContainedSignatureSize(300, 80, 236, 64);
 if (Math.abs(containedSignature.width - 236) > 0.01 || Math.abs(containedSignature.height - 62.9333333333) > 0.01) {

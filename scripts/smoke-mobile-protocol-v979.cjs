@@ -26,7 +26,8 @@ assert.equal(packageJson.dependencies['dejavu-fonts-ttf'], '2.37.3', 'PDF font p
 assert.equal(packageJson.scripts['test:smoke:mobile-protocol'], 'node scripts/smoke-mobile-protocol-v979.cjs');
 assert.equal(packageJson.scripts['test:smoke:mobile-protocol-print'], 'node scripts/test-job-protocol-print-image-v1002.mjs');
 
-assert.match(jobDetails, /selectedJobIsCompleted = String\(selectedJob\?\.status \|\| ""\) === "Zakończone"/);
+assert.match(jobDetails, /const selectedJobStatus = String\(selectedJob\?\.status \|\| ""\);/);
+assert.match(jobDetails, /const selectedJobIsCompleted = selectedJobStatus === "Zakończone";/);
 assert.match(jobDetails, /\{isCompletedJob && !protocolLoading && protocolBackendAvailable \? \(/);
 assert.match(jobDetails, /<span className="mobileLabel">Protokół<\/span>/);
 assert.match(jobDetails, /loadJobProtocolRecord/);
@@ -147,7 +148,13 @@ const protocolTextColors = [...pdfModule.matchAll(/doc\.setTextColor\(([^)]+)\)/
 assert.ok(protocolTextColors.length > 0, 'Protocol must set text colors explicitly.');
 assert.ok(protocolTextColors.every((color) => color === '0, 0, 0'), 'Every protocol text element must be black for thermal printing.');
 assert.match(pdfModule, /getJobNameplateCompletion\(job, \{ allowLocal: true \}\)/);
-assert.doesNotMatch(pdfModule, /device_serial_number|serial_number|Numer seryjny/i, 'Protocol must not expose serial numbers.');
+assert.match(pdfModule, /serialNumber/, 'Protocol must expose the verified serial number per unit.');
+assert.match(pdfModule, /getProtocolModelRevision/, 'Protocol must expose model revision such as R14/R15.');
+assert.match(pdfModule, /Rewizja:/);
+assert.match(pdfModule, /S\/N:/);
+assert.match(modal, /row\.unitType/);
+assert.match(modal, /row\.revision/);
+assert.match(modal, /row\.serialNumber/);
 assert.match(mockSupabase, /job_protocols: \[\]/);
 assert.match(mockSupabase, /async download\(path\)/);
 assert.match(styles, /\.protocolTestSignatureCanvas[\s\S]*?touch-action:none/);

@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.24
+- 11.25
 
-Wersja 11.24 dodaje bramkę przed AI w mobilnym odczycie tabliczek: jeżeli lokalny czytnik nie znajdzie żadnego wiarygodnego śladu tabliczki (kodu, modelu, numeru seryjnego lub charakterystycznego tekstu technicznego), AI nie jest uruchamiane. Takiego zdjęcia nie można potwierdzić ręcznie jako tabliczki — instalator musi zrobić nowe zdjęcie.
+Wersja 11.25 rozszerza protokół klienta o zweryfikowane dane z tabliczek znamionowych: rodzaj jednostki JW/JZ, dokładny model, rewizję Rxx oraz numer seryjny każdej jednostki. Dane pochodzą z zapisanych pól urządzenia, więc protokół nie uruchamia ponownego OCR i nie zgaduje brakujących numerów.
 
-# Wawis Klimatyzacja — wersja 11.24
+# Wawis Klimatyzacja — wersja 11.25
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.24` — przypadkowe zdjęcie bez śladów tabliczki kończy się lokalnie komunikatem „Nie wykryto tabliczki”; AI nie jest wtedy uruchamiane, pola są zablokowane i instalator musi zrobić nowe zdjęcie.
+- wersja `11.25` — protokół PDF pokazuje przy każdej JW/JZ dokładny model, rewizję Rxx i numer seryjny zapisany po potwierdzeniu tabliczki; stare nieustrukturyzowane numery nie są przypisywane na siłę do konkretnej jednostki.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.
