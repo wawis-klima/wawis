@@ -705,8 +705,11 @@
 .protocolPaymentSection { display: grid; gap: 11px; }
 .protocolPaymentHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .mobileProtocolWizard .protocolPaymentHeading h3 { margin: 0 !important; }
-.protocolPaymentToggle { display: inline-flex; align-items: center; min-height: 38px; padding: 5px 10px; border: 1px solid #b7c7d1; border-radius: 999px; background: #fff; color: #243746; font-size: 11px !important; font-weight: 900; cursor: pointer; }
+.protocolPaymentToggle { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 88px; min-height: 38px; padding: 5px 10px; border: 1px solid #b7c7d1; border-radius: 999px; background: #fff; color: #243746; font-size: 11px !important; font-weight: 900; white-space: nowrap; cursor: pointer; }
 .protocolPaymentToggle input { width: 18px; height: 18px; margin: 0 7px 0 0; accent-color: #176b4d; }
+.protocolPaymentToggle span { display: inline-block; white-space: nowrap; }
+.protocolBottomStartAnchor { height: 0; scroll-margin-top: 10px; }
+
 .protocolPaymentForm { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; padding: 12px; border: 1px solid #dfe7ec; border-radius: 13px; background: #fff; box-sizing: border-box; }
 .protocolPaymentForm > label { display: grid; gap: 5px; min-width: 0; color: #465a68; font-size: 11px !important; font-weight: 850; }
 .protocolPaymentForm .input { width: 100%; min-width: 0; max-width: 100%; min-height: 43px; padding: 9px 10px; border-radius: 11px; box-sizing: border-box; font-size: 16px !important; }
