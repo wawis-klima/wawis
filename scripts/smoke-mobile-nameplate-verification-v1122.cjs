@@ -10,6 +10,7 @@ const capture = read('src/mobile791/components/nameplate/NameplatePhotoCapture.j
 const wizard = read('src/mobile791/components/devices/MobileDeviceWizard.jsx');
 const form = read('src/mobile791/components/modals/JobFormModal.jsx');
 const photos = read('src/mobile791/modules/photos.js');
+const photoQueue = read('src/mobile791/modules/photo-offline-queue.js');
 const jobsFetch = read('src/mobile791/modules/jobs-fetch.js');
 const actions = read('src/mobile791/hooks/useSelectedJobActions.js');
 const desktopAi = read('src/modules/desktop-nameplate-ai.js');
@@ -37,6 +38,8 @@ assert(form.includes("indoor_serial_numbers: indoorSerials"), 'Verified JW seria
 
 assert(photos.includes("ocr_status: queuedPhoto.ocr_status || null"), 'Photo INSERT must persist OCR approval');
 assert(photos.includes("ocr_checked_at: queuedPhoto.ocr_checked_at || null"), 'Photo INSERT must persist approval timestamp');
+assert(photoQueue.includes("ocr_status: photo.ocr_status || ''"), 'Offline queue must persist OCR approval');
+assert(photoQueue.includes("ocr_checked_at: record.ocr_checked_at || null"), 'Offline restore must preserve approval timestamp');
 assert(jobsFetch.includes("ocr_status, ocr_checked_at"), 'Mobile reads must load verification status');
 assert(actions.includes("String(serverPhoto.ocr_status || '').toLowerCase() === 'approved'"),
   'Save flow must confirm the approval reached the server');
