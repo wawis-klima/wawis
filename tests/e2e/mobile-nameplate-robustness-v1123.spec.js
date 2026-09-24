@@ -83,6 +83,22 @@ function svgFile(name, options) {
   };
 }
 
+function buildNonNameplateSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000">
+    <rect width="1800" height="1000" fill="#dfe7ee"/>
+    <rect x="90" y="90" width="520" height="330" rx="70" fill="#4f86a8"/>
+    <circle cx="1320" cy="300" r="190" fill="#85b66f"/>
+    <path d="M120 870 C420 540 650 960 930 650 S1450 520 1720 820" fill="none" stroke="#7a6a9a" stroke-width="70"/>
+    <rect x="720" y="160" width="300" height="250" rx="30" fill="#c58b6b"/>
+  </svg>`;
+}
+
+const syntheticNonNameplatePhoto = {
+  name: 'to-nie-jest-tabliczka.svg',
+  mimeType: 'image/svg+xml',
+  buffer: Buffer.from(buildNonNameplateSvg()),
+};
+
 async function openFirstIndoorNameplate(page) {
   await resetMockSupabase(page);
   await loginWithoutReset(page, WORKER);
@@ -119,6 +135,27 @@ async function waitForVerificationDone(page, timeout = 130_000) {
 }
 
 test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach terenowych', () => {
+  test('zdjęcie bez żadnych śladów tabliczki kończy lokalnie i nie uruchamia AI', async ({ page }) => {
+    test.setTimeout(180_000);
+    let aiRequests = 0;
+    page.on('request', (request) => {
+      if (request.url().includes('/api/read-nameplate-ai')) aiRequests += 1;
+    });
+
+    await openFirstIndoorNameplate(page);
+    await cropAndContinue(page, syntheticNonNameplatePhoto);
+    await waitForVerificationDone(page);
+
+    await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Nie wykryto tabliczki');
+    await expect(page.locator('.nameplateVerifyMismatch')).toContainText('AI nie zostało uruchomione');
+    await expect(page.getByPlaceholder('Przepisz model z tabliczki')).toBeDisabled();
+    await expect(page.getByPlaceholder('Przepisz numer seryjny')).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Wpisz ręcznie', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Zrób zdjęcie ponownie', exact: true })).toBeVisible();
+    expect(aiRequests).toBe(0);
+  });
+
   test('krzywa tabliczka +12° nadal korzysta z desktopowego prostowania i nie myli EAN z SN', async ({ page }) => {
     test.setTimeout(180_000);
     await openFirstIndoorNameplate(page);
