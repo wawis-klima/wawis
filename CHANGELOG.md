@@ -1,3 +1,10 @@
+## 11.34
+- Naprawiono przyczynę zbyt wysokich kafli w mobilnym kreatorze: `.mobileDeviceWizardBody` nie rozciąga już automatycznych wierszy siatki na całą wolną wysokość ekranu.
+- Krok 1 zachowuje kompaktowe karty Single/Multi zamiast rozciągać je pionowo.
+- Krok 2 zachowuje docelowe wysokości pól Marka/Model/Moc oraz niskich przycisków zdjęcia i galerii.
+- Krok 4 zachowuje kompaktową kartę urządzenia, a „Dodaj kolejne urządzenie” pozostaje małym przyciskiem dopasowanym do treści.
+- Dodano test Playwright na profilu iPhone 14, który mierzy rzeczywiste wymiary elementów i blokuje wydanie, jeśli kafle/przyciski ponownie się rozciągną.
+
 ## 11.33
 - Na mobilnym ekranie podsumowania zmniejszono wysokość karty „Urządzenie 1”, jej padding, ikonę, typografię i badge Single/Multi.
 - „Dodaj kolejne urządzenie” jest teraz kompaktowym przyciskiem dopasowanym do treści zamiast szerokiego, wysokiego panelu.
