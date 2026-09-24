@@ -228,20 +228,38 @@ export function extractSerialNumberFromOcrText(rawText = '') {
     .filter(Boolean);
   const candidates = [];
 
-  for (const originalLine of lines) {
-    const line = originalLine.toUpperCase().replace(/[|]/g, 'I');
-    const markerMatch = line.match(/(?:^|\b)(?:[S5]\s*[/.-]?\s*N|S\s*M)\s*[:;=._-]*\s*(.*)$/i);
-    if (!markerMatch) continue;
-    const tail = String(markerMatch[1] || '')
+  function collectCandidates(value = '') {
+    const source = String(value || '')
+      .toUpperCase()
+      .replace(/[|]/g, 'I')
       .split(/\b(?:MADE|CHINA|PRC|REFRIGERANT|MODEL|PC\s*\/?\s*EAN|EAN)\b/i)[0]
       .trim();
-    if (!tail) continue;
+    if (!source) return 0;
 
-    const tokenMatches = tail.match(/[A-Z0-9][A-Z0-9 ._/-]{8,45}/g) || [];
+    let added = 0;
+    const tokenMatches = source.match(/[A-Z0-9][A-Z0-9 ._/-]{8,45}/g) || [];
     for (const tokenMatch of tokenMatches) {
       const candidate = normalizeFocusedSerialCandidate(tokenMatch);
       if (!plausibleFocusedSerial(candidate)) continue;
       candidates.push(candidate);
+      added += 1;
+    }
+    return added;
+  }
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].toUpperCase().replace(/[|]/g, 'I');
+    const markerMatch = line.match(/(?:^|\b)(?:[S5]\s*[/.-]?\s*N|S\s*M)\s*[:;=._-]*\s*(.*)$/i);
+    if (!markerMatch) continue;
+
+    const sameLineCount = collectCandidates(markerMatch[1] || '');
+    if (sameLineCount) continue;
+
+    // Na wielu tabliczkach „S/N:” jest osobnym podpisem, a właściwy numer
+    // znajduje się w następnym wierszu. Sprawdzamy maksymalnie dwa kolejne
+    // wiersze; EAN-13 i kody modelu nadal odrzuca plausibleFocusedSerial().
+    for (let offset = 1; offset <= 2 && index + offset < lines.length; offset += 1) {
+      if (collectCandidates(lines[index + offset])) break;
     }
   }
 
