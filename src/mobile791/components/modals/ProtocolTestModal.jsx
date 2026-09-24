@@ -460,7 +460,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                   <label><span>Kwota</span><div className="protocolPaymentAmount"><input className="input" inputMode="decimal" placeholder="0,00" value={paymentDraft.amount} onChange={(event) => updatePaymentDraft({ amount: event.target.value })} disabled={isGenerating} /><b>zł</b></div></label>
                   <label><span>Rodzaj</span><select className="input" value={paymentDraft.kind} onChange={(event) => updatePaymentDraft({ kind: event.target.value })} disabled={isGenerating}>{PAYMENT_KINDS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
                   <label><span>Sposób płatności</span><select className="input" value={paymentDraft.method} onChange={(event) => updatePaymentDraft({ method: event.target.value })} disabled={isGenerating}>{PAYMENT_METHODS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-                  <label><span>Data zapłaty</span><input className="input" type="date" value={paymentDraft.paidDate} onChange={(event) => updatePaymentDraft({ paidDate: event.target.value })} disabled={isGenerating} /></label>
+                  <label><span>Data zapłaty</span><div className="protocolPaymentDateShell"><input className="protocolPaymentDateInput" type="date" value={paymentDraft.paidDate} onChange={(event) => updatePaymentDraft({ paidDate: event.target.value })} disabled={isGenerating} /></div></label>
                 </div>
               ) : null}
               {paymentVisible.enabled && !editing ? (
