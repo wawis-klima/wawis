@@ -115,6 +115,7 @@ function getProtocolDeviceRows(job = {}) {
     rows.push({
       unit: "JZ",
       unitType: `Jednostka zewnętrzna${deviceContext}`,
+      unitTypeShort: `zewnętrzna${devices.length > 1 ? ` · urz. ${deviceIndex}` : ""}`,
       model: normalizeText(outdoorModel, "Model nieuzupełniony"),
       revision: getProtocolModelRevision(outdoorModel),
       serialNumber: normalizeText(outdoorSerial, "Brak numeru seryjnego"),
@@ -128,6 +129,7 @@ function getProtocolDeviceRows(job = {}) {
       rows.push({
         unit: `JW${unit.unitNumber}`,
         unitType: `Jednostka wewnętrzna${deviceContext}`,
+        unitTypeShort: `wewnętrzna${devices.length > 1 ? ` · urz. ${deviceIndex}` : ""}`,
         model: normalizeText(unitModel, "Model nieuzupełniony"),
         revision: getProtocolModelRevision(unitModel),
         serialNumber: normalizeText(unit.serialNumber, "Brak numeru seryjnego"),
@@ -390,10 +392,11 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   if (data.completedAt !== "-") drawField(doc, "Zakończono", data.completedAt, CONTENT_LEFT, y + 61, 82);
 
   y += 84;
-  const deviceRowHeight = 30;
+  const deviceRowHeight = 22;
   const rows = data.deviceRows.length ? data.deviceRows : [{
     unit: "-",
     unitType: "-",
+    unitTypeShort: "-",
     model: "Brak urządzeń",
     revision: "-",
     serialNumber: "-",
@@ -414,30 +417,30 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
 
   rows.forEach((row, index) => {
     const rowTop = y + 37 + index * deviceRowHeight;
-    const primaryY = rowTop + 11;
-    const secondaryY = rowTop + 22;
+    const primaryY = rowTop + 8.5;
+    const secondaryY = rowTop + 17.5;
 
     doc.setFont(FONT_FAMILY, "bold");
-    doc.setFontSize(8.8);
+    doc.setFontSize(8.1);
     doc.setTextColor(0, 0, 0);
     doc.text(row.unit, CONTENT_LEFT, primaryY);
 
     doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(6.8);
-    doc.text(doc.splitTextToSize(row.unitType, 88), CONTENT_LEFT, secondaryY);
+    doc.setFontSize(6.3);
+    doc.text(doc.splitTextToSize(row.unitTypeShort || row.unitType, 78), CONTENT_LEFT, secondaryY);
 
     doc.setFont(FONT_FAMILY, "bold");
-    doc.setFontSize(8.4);
-    doc.text(doc.splitTextToSize(row.model, 340), 118, primaryY);
+    doc.setFontSize(7.8);
+    doc.text(doc.splitTextToSize(row.model, 360), 100, primaryY);
 
     doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(7.2);
+    doc.setFontSize(6.8);
     const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
-    doc.text(doc.splitTextToSize(technicalLine, 340), 118, secondaryY);
+    doc.text(doc.splitTextToSize(technicalLine, 360), 100, secondaryY);
 
     doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(7.2);
-    doc.text(doc.splitTextToSize(row.nameplate, 90), 478, primaryY);
+    doc.setFontSize(6.5);
+    doc.text(doc.splitTextToSize(row.nameplate, 82), 490, primaryY);
 
     if (index < rows.length - 1) {
       doc.setDrawColor(230, 236, 240);
