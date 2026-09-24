@@ -1,7 +1,9 @@
 ## Aktualna wersja
 - 11.22
 
-Wersja 11.22 dodaje mobilne potwierdzanie tabliczek znamionowych: po kadrowaniu aplikacja najpierw używa istniejącego lokalnego czytnika z desktopu, przy niepełnym wyniku automatycznie uruchamia AI, a po potwierdzeniu montera zapisuje model, numer seryjny i status OCR. Desktopowy sposób odczytu pozostaje bez zmian.\n\n# Wawis Klimatyzacja — wersja 11.22
+Wersja 11.22 dodaje mobilne potwierdzanie tabliczek znamionowych: po kadrowaniu aplikacja najpierw używa istniejącego lokalnego czytnika z desktopu, przy niepełnym wyniku automatycznie uruchamia AI, a po potwierdzeniu montera zapisuje model, numer seryjny i status OCR. Desktopowy sposób odczytu pozostaje bez zmian.
+
+# Wawis Klimatyzacja — wersja 11.22
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
