@@ -23,6 +23,11 @@ assert.equal(
   'legacy SN form must remain supported',
 );
 assert.equal(
+  extractSerialNumberFromOcrText('S/N:\nIMOTO35XI2400012345\nPC/EAN: 5905567600791'),
+  'IMOTO35XI2400012345',
+  'Serial must be read from the line below a standalone S/N label',
+);
+assert.equal(
   extractSerialNumberFromOcrText('PC/EAN: 5905567600791'),
   '',
   'EAN must never be accepted as a serial number',
