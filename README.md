@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.31
+- 11.32
 
-Wersja 11.31 poprawia konkretny fałszywy przypadek z kodem EAN na zwykłym produkcie. Sam poprawny EAN nie jest już dowodem tabliczki znamionowej i nie uruchamia AI. EAN przechodzi tylko wtedy, gdy rozwiązuje się do modelu z katalogu albo ma niezależny techniczny kontekst tabliczki.
+Wersja 11.32 zagęszcza mobilny kreator „Dodaj urządzenie”: nagłówek jest mniejszy i mieści się w jednym wierszu, karty Single/Multi są niższe i mają mniejszą typografię, a pola Marka/Model/Moc zajmują wyraźnie mniej miejsca na iPhonie.
 
-# Wawis Klimatyzacja — wersja 11.31
+# Wawis Klimatyzacja — wersja 11.32
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.32` — mobilny kreator urządzeń ma mniejszy jednoliniowy nagłówek oraz bardziej kompaktowe karty Single/Multi i pola Marka/Model/Moc.
 - wersja `11.31` — sam EAN z butelki/opakowania nie jest już traktowany jako dowód tabliczki; AI wymaga modelu z katalogu lub niezależnych danych technicznych tabliczki.
 - wersja `11.30` — mobilna bramka tabliczek odrzuca słabe fałszywe trafienia OCR/dekodera i nie uruchamia AI dla zdjęcia bez niezależnych cech tabliczki znamionowej.
 - wersja `11.29` — pole „Data zapłaty” ma osobną, stałą ramkę 38 px i na iPhonie odpowiada rozmiarem polu „Gotówka”, bez wystawania poza sekcję.
