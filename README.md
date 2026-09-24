@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.29
+- 11.30
 
-Wersja 11.29 naprawia natywne pole „Data zapłaty” na iPhonie: data ma własną ramkę o dokładnie tej samej szerokości i wysokości co pole „Gotówka”, a natywny input jest zamknięty wewnątrz tej ramki i nie może wystawać poza kartę.
+Wersja 11.30 zaostrza mobilną walidację zdjęcia tabliczki: przypadkowy wynik dekodera, samotny numer seryjny ani ogólne słowa techniczne nie uruchamiają już AI. Zdjęcie bez niezależnych, charakterystycznych śladów tabliczki jest odrzucane i wymaga ponownego wykonania zdjęcia.
 
-# Wawis Klimatyzacja — wersja 11.29
+# Wawis Klimatyzacja — wersja 11.30
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.30` — mobilna bramka tabliczek odrzuca słabe fałszywe trafienia OCR/dekodera i nie uruchamia AI dla zdjęcia bez niezależnych cech tabliczki znamionowej.
 - wersja `11.29` — pole „Data zapłaty” ma osobną, stałą ramkę 38 px i na iPhonie odpowiada rozmiarem polu „Gotówka”, bez wystawania poza sekcję.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
