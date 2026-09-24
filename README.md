@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 11.28
 
-Wersja 11.28 zagęszcza sekcję potwierdzenia zapłaty na iPhonie: pola „Rodzaj”, „Sposób płatności” i „Data zapłaty” są niższe, mają mniejsze fonty, a data jest wycentrowana i ograniczona do szerokości swojej ramki.
+Wersja 11.28 zagęszcza sekcję potwierdzenia zapłaty na iPhonie: pola „Rodzaj”, „Sposób płatności” i „Data zapłaty” są niższe, a data jest wizualnie zmniejszona i ograniczona do szerokości swojej ramki bez wywoływania auto-zoomu iOS. Dodatkowo domyka wyścig startowy odtwarzania kolejki zdjęć.
 
 # Wawis Klimatyzacja — wersja 11.28
 
