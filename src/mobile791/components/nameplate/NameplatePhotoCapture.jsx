@@ -360,9 +360,11 @@ function NameplateVerificationReview({
   const canConfirm = !verification.busy && !mismatchMessage && modelReady && serialReady;
   const methodLabel = verification.reading?.method === "ai"
     ? "Odczyt lokalny + AI"
-    : verification.reading
-      ? "Odczyt lokalny"
-      : "Weryfikacja ręczna";
+    : verification.reading?.method === "manual"
+      ? "Weryfikacja ręczna"
+      : verification.reading
+        ? "Odczyt lokalny"
+        : "Weryfikacja ręczna";
 
   return (
     <div className="nameplateVerifyModal" role="dialog" aria-modal="true" aria-label={`Potwierdzenie tabliczki: ${fieldLabel}`}>
