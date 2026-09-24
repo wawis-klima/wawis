@@ -122,6 +122,8 @@ function getTrimmedSignatureDataUrl(canvas) {
 
 export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved }) {
   const canvasRef = useRef(null);
+  const protocolModalRef = useRef(null);
+  const protocolBottomStartRef = useRef(null);
   const outputActionsRef = useRef(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
@@ -162,6 +164,20 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setActionBusy("");
     setMessage("");
     return undefined;
+  }, [open, job?.id, protocolRecord?.id]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    let secondFrameId = 0;
+    const firstFrameId = window.requestAnimationFrame(() => {
+      secondFrameId = window.requestAnimationFrame(() => {
+        protocolBottomStartRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrameId);
+      if (secondFrameId) window.cancelAnimationFrame(secondFrameId);
+    };
   }, [open, job?.id, protocolRecord?.id]);
 
   useEffect(() => {
@@ -375,6 +391,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         onClose={isGenerating || signatureOpen ? undefined : onClose}
         overlayClassName="formOverlay mobileDeviceWizardOverlay"
         contentClassName="card modal mobileDeviceWizardModal protocolWizardModal"
+        contentRef={protocolModalRef}
         closeOnOverlay={!isGenerating && !signatureOpen}
         closeOnEscape={!isGenerating && !signatureOpen}
       >
@@ -427,6 +444,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               </div>
             </section>
 
+            <div ref={protocolBottomStartRef} className="protocolBottomStartAnchor" aria-hidden="true" />
             {editing || paymentVisible.enabled ? <section className="protocolTestSection protocolPaymentSection">
               <div className="protocolPaymentHeading">
                 <h3>Potwierdzenie zapłaty</h3>

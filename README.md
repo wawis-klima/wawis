@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.26
+- 11.27
 
-Wersja 11.26 upraszcza sekcję urządzeń w protokole: usuwa techniczny status przechowywania tabliczki („Zapisana w systemie” itp.). Na protokole pozostają tylko dane istotne dokumentacyjnie: JW/JZ, dokładny model, rewizja Rxx i numer seryjny.
+Wersja 11.27 poprawia mobilną obsługę protokołu: po wejściu dokument automatycznie przewija się do sekcji potwierdzenia zapłaty i podpisu klienta, a przełącznik „Dodaj” przy płatności nie łamie się na dwie linie.
 
-# Wawis Klimatyzacja — wersja 11.26
+# Wawis Klimatyzacja — wersja 11.27
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.26` — z protokołu PDF i podglądu usunięto kolumnę/status tabliczki „Zapisana w systemie”; pozostają JW/JZ, model, rewizja i S/N.
+- wersja `11.27` — protokół po otwarciu od razu pokazuje dolną część z potwierdzeniem zapłaty i podpisem klienta; „Dodaj” przy płatności pozostaje w jednej linii.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.

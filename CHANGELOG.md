@@ -1,3 +1,9 @@
+## 11.27
+- Po wejściu w mobilny protokół widok automatycznie przewija się do dolnej części formularza, gdzie znajdują się potwierdzenie zapłaty i podpis klienta.
+- Automatyczne przewinięcie działa przy każdym nowym otwarciu protokołu i nie zmienia danych zlecenia ani PDF.
+- Przełącznik „Dodaj” przy potwierdzeniu zapłaty ma stałą szerokość minimalną i nie łamie tekstu na dwie linie.
+- Dodano E2E na iPhone 14 sprawdzający początkową pozycję protokołu oraz nowrap przycisku „Dodaj”.
+
 ## 11.26
 - Usunięto z protokołu PDF kolumnę STATUS oraz wartości „Zapisana w systemie”, „Zapisana na telefonie” i podobne.
 - Mobilny podgląd protokołu również nie pokazuje statusu przechowywania tabliczki.
