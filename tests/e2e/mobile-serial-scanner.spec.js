@@ -324,3 +324,5 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.getByText('Zakończone · tylko podgląd', { exact: true })).toBeVisible();
   });
 });
+
+// TEST-ONLY: real-nameplate verification trigger
