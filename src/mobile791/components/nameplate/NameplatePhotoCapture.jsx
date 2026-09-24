@@ -386,7 +386,6 @@ function NameplateVerificationReview({
             <div className="nameplateVerifyProgressTrack"><span style={{ width: `${progressValue}%` }} /></div>
             <strong>{verification.progress?.label || "Odczytuję tabliczkę…"}</strong>
             <small>{verification.progress?.method === "ai" ? "Lokalny odczyt był niepełny — sprawdzam przez AI." : "Najpierw używam lokalnego, darmowego czytnika."}</small>
-            <button type="button" className="btn secondary nameplateVerifyManualBtn" onClick={onManual}>Wpisz ręcznie</button>
           </div>
         ) : (
           <>
@@ -426,7 +425,13 @@ function NameplateVerificationReview({
       </div>
 
       <div className="nameplateVerifyFooter">
-        <button type="button" className="btn secondary" disabled={verification.busy} onClick={onRetake}>Zrób zdjęcie ponownie</button>
+        <button
+          type="button"
+          className="btn secondary nameplateVerifyManualBtn"
+          onClick={verification.busy ? onManual : onRetake}
+        >
+          {verification.busy ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie"}
+        </button>
         <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>Potwierdź</button>
       </div>
     </div>
