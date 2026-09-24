@@ -432,9 +432,9 @@ function NameplateVerificationReview({
         <button
           type="button"
           className="btn secondary nameplateVerifyManualBtn"
-          onClick={verification.busy ? onManual : onRetake}
+          onClick={verification.busy || !modelReady || !serialReady ? onManual : onRetake}
         >
-          {verification.busy ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie"}
+          {verification.busy || !modelReady || !serialReady ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie"}
         </button>
         <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>Potwierdź</button>
       </div>
