@@ -394,33 +394,37 @@ function NameplateVerificationReview({
               <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
             ) : null}
             {mismatchMessage ? <div className="nameplateVerifyMismatch" role="alert">{mismatchMessage}</div> : null}
-
-            <label className="nameplateVerifyField">
-              <span>Model</span>
-              <input
-                className="input"
-                value={verification.modelValue}
-                onChange={(event) => onModelChange(event.target.value)}
-                placeholder="Przepisz model z tabliczki"
-                autoComplete="off"
-              />
-            </label>
-            <label className="nameplateVerifyField">
-              <span>Numer seryjny</span>
-              <input
-                className="input"
-                value={verification.serialNumber}
-                onChange={(event) => onSerialChange(event.target.value.toUpperCase())}
-                placeholder="Przepisz numer seryjny"
-                autoComplete="off"
-              />
-            </label>
-            {!modelReady || !serialReady ? (
-              <div className="nameplateVerifyHint">Przed potwierdzeniem uzupełnij model i numer seryjny dokładnie tak, jak na zdjęciu.</div>
-            ) : (
-              <div className="nameplateVerifyReady">Porównaj dane ze zdjęciem i potwierdź.</div>
-            )}
           </>
+        )}
+
+        <label className="nameplateVerifyField">
+          <span>Model</span>
+          <input
+            className="input"
+            value={verification.modelValue}
+            onChange={(event) => onModelChange(event.target.value)}
+            placeholder="Przepisz model z tabliczki"
+            autoComplete="off"
+          />
+        </label>
+        <label className="nameplateVerifyField">
+          <span>Numer seryjny</span>
+          <input
+            className="input"
+            value={verification.serialNumber}
+            onChange={(event) => onSerialChange(event.target.value.toUpperCase())}
+            placeholder="Przepisz numer seryjny"
+            autoComplete="off"
+          />
+        </label>
+        {!verification.busy ? (
+          !modelReady || !serialReady ? (
+            <div className="nameplateVerifyHint">Przed potwierdzeniem uzupełnij model i numer seryjny dokładnie tak, jak na zdjęciu.</div>
+          ) : (
+            <div className="nameplateVerifyReady">Porównaj dane ze zdjęciem i potwierdź.</div>
+          )
+        ) : (
+          <div className="nameplateVerifyHint">Możesz od razu poprawić model lub numer seryjny — ręczna edycja zatrzyma automatyczny odczyt.</div>
         )}
       </div>
 
@@ -678,8 +682,22 @@ export default function NameplatePhotoCapture({
         <NameplateVerificationReview
           verification={verification}
           fieldLabel={fieldLabel}
-          onModelChange={(modelValue) => setVerification((current) => ({ ...current, modelValue }))}
-          onSerialChange={(serialNumber) => setVerification((current) => ({ ...current, serialNumber }))}
+          onModelChange={(modelValue) => setVerification((current) => current ? {
+            ...current,
+            modelValue,
+            busy: false,
+            manualOverride: true,
+            progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
+            reading: { method: "manual", aiAttempted: false, aiError: "", mismatch: null },
+          } : current)}
+          onSerialChange={(serialNumber) => setVerification((current) => current ? {
+            ...current,
+            serialNumber,
+            busy: false,
+            manualOverride: true,
+            progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
+            reading: { method: "manual", aiAttempted: false, aiError: "", mismatch: null },
+          } : current)}
           onConfirm={confirmVerification}
           onRetake={retakeVerificationPhoto}
           onManual={switchVerificationToManual}
