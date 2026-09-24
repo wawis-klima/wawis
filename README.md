@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.28
+- 11.29
 
-Wersja 11.28 zagęszcza sekcję potwierdzenia zapłaty na iPhonie: pola „Rodzaj”, „Sposób płatności” i „Data zapłaty” są niższe, a data jest wizualnie zmniejszona i ograniczona do szerokości swojej ramki bez wywoływania auto-zoomu iOS. Dodatkowo domyka wyścig startowy odtwarzania kolejki zdjęć.
+Wersja 11.29 naprawia natywne pole „Data zapłaty” na iPhonie: data ma własną ramkę o dokładnie tej samej szerokości i wysokości co pole „Gotówka”, a natywny input jest zamknięty wewnątrz tej ramki i nie może wystawać poza kartę.
 
-# Wawis Klimatyzacja — wersja 11.28
+# Wawis Klimatyzacja — wersja 11.29
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.28` — sekcja płatności w protokole jest bardziej kompaktowa; data ma mniejszy font, niższe pole i nie wychodzi poza ramkę, a „Zapłacono całość” i „Gotówka” są mniejsze.
+- wersja `11.29` — pole „Data zapłaty” ma osobną, stałą ramkę 38 px i na iPhonie odpowiada rozmiarem polu „Gotówka”, bez wystawania poza sekcję.
 - wersja `11.06` — kreator rozróżnia przejście do podsumowania od właściwego zapisu urządzeń i tabliczek, potwierdza udany zapis i blokuje zamknięcie podczas zapisywania.
 - wersja `11.05` — mobilny wskaźnik PUSH pokazuje zielone ON zgodnie z aktywną preferencją i zgodą systemową, także podczas naprawy synchronizacji; ręczne OFF nadal ma pierwszeństwo.
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.
