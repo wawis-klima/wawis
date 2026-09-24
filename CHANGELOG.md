@@ -1,3 +1,9 @@
+## 11.23
+- Lokalny OCR numeru seryjnego rozpoznaje teraz etykiety `S/N`, `SN` oraz typowy wariant OCR `5/N`.
+- Nowy odczyt tabliczki na mobile startuje z pustym modelem i numerem seryjnym; nie pokazuje starych danych urządzenia jako wyniku nowego zdjęcia.
+- Jeżeli lokalny OCR i AI nie odczytają pola, instalator musi wpisać je ręcznie przed potwierdzeniem.
+- Dodano regresję, która odrzuca EAN jako numer seryjny i testuje realistyczną tabliczkę Rotenso I35Xi R14.
+
 ## 11.22
 - Mobilne zdjęcie tabliczki po kadrowaniu jest automatycznie odczytywane tym samym lokalnym mechanizmem, którego używa desktop.
 - Jeżeli lokalny odczyt nie daje kompletnego modelu i numeru seryjnego, aplikacja automatycznie uruchamia istniejący odczyt AI.
