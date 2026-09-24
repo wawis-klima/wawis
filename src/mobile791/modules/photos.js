@@ -682,6 +682,8 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
     device_ref: metadata.device_ref || '',
     serial_number: metadata.serial_number || '',
     documentation_label: metadata.documentation_label || '',
+    ocr_status: metadata.ocr_status || '',
+    ocr_checked_at: metadata.ocr_checked_at || null,
   };
   queuedPhoto.planned_storage_path = buildPhotoStoragePath(jobId, queuedPhoto);
   queuedPhoto.storage_path = queuedPhoto.planned_storage_path;
@@ -721,7 +723,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
   return normalized;
 }
 
-const PHOTO_RECONCILIATION_SELECT = 'id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref';
+const PHOTO_RECONCILIATION_SELECT = 'id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at';
 
 function isDuplicateStorageError(error) {
   const message = String(error?.message || error || '').toLowerCase();
@@ -1027,8 +1029,10 @@ async function performQueuedPhotoUpload({
         photo_kind: queuedPhoto.photo_kind || '',
         device_index: Number(queuedPhoto.device_index || 0),
         unit_ref: String(queuedPhoto.unit_ref || '').toLowerCase(),
+        ocr_status: queuedPhoto.ocr_status || null,
+        ocr_checked_at: queuedPhoto.ocr_checked_at || null,
       })
-      .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref')
+      .select('id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at')
       .single();
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
@@ -1366,6 +1370,8 @@ export async function uploadJobDocumentationPhotos({
       device_ref: document.deviceRef || '',
       serial_number: document.serialNumber || '',
       documentation_label: document.documentationLabel || '',
+      ocr_status: document.verified || String(document.ocrStatus || '').toLowerCase() === 'approved' ? 'approved' : '',
+      ocr_checked_at: document.ocrCheckedAt || (document.verified ? new Date().toISOString() : null),
     },
   })));
   if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
