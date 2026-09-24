@@ -1,3 +1,11 @@
+## 11.25
+- Protokół klienta pokazuje przy każdej jednostce jej rodzaj: JW/JZ oraz opis „jednostka wewnętrzna/zewnętrzna”.
+- Do protokołu trafia dokładny model zapisany po weryfikacji tabliczki, w tym rewizja R14/R15/Rxx.
+- Każda JW/JZ ma na protokole własny numer seryjny S/N z ustrukturyzowanych danych urządzenia.
+- Stary nieustrukturyzowany numer seryjny nie jest przypisywany automatycznie do JW ani JZ, żeby uniknąć błędnego protokołu.
+- Zmieniono układ sekcji „Urządzenia i tabliczki” w PDF i mobilnym podglądzie, aby długie S/N pozostały czytelne.
+- Render fixture PDF wymaga poprawnego przypisania SN i rewizji do właściwej jednostki.
+
 ## 11.24
 - Mobile przed uruchomieniem AI sprawdza, czy lokalny odczyt znalazł jakiekolwiek wiarygodne ślady tabliczki znamionowej.
 - Brak kodu/EAN, modelu, sensownego SN i charakterystycznego tekstu technicznego kończy odczyt lokalnie komunikatem „Nie wykryto tabliczki”.
