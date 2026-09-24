@@ -9,6 +9,7 @@ const tinyPng = {
   buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==', 'base64'),
 };
 const tinyPngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==';
+let manualVerificationCounter = 0;
 
 test.use(iphone14);
 
@@ -28,6 +29,15 @@ async function selectNameplateAndCrop(page, input) {
     await saveAnyway.click();
   }
   await expect(cropModal).toBeHidden();
+
+  const verifyModal = page.locator('.nameplateVerifyModal');
+  await expect(verifyModal).toBeVisible();
+  await page.getByRole('button', { name: 'Wpisz ręcznie', exact: true }).click();
+  manualVerificationCounter += 1;
+  await page.getByPlaceholder('Przepisz model z tabliczki').fill(`Rotenso E2E ${manualVerificationCounter}`);
+  await page.getByPlaceholder('Przepisz numer seryjny').fill(`E2ESERIAL${String(manualVerificationCounter).padStart(4, '0')}`);
+  await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
+  await expect(verifyModal).toBeHidden();
 }
 
 test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek', () => {
@@ -176,7 +186,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     await page.locator('.mobileMultiOutdoorCard').click();
     await selectNameplateAndCrop(page, page.locator('.nameplateGalleryInput'));
-    await expect(page.getByText('Nowe zdjęcie', { exact: true })).toBeVisible();
+    await expect(page.getByText('Potwierdzona', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
 
     for (let index = 0; index < 3; index += 1) {
