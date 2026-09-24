@@ -1,3 +1,9 @@
+## 11.31
+- Naprawiono fałszywe przejście do AI dla zwykłych produktów z poprawnym kodem EAN, np. butelki lub opakowania.
+- Sam EAN nie jest już uznawany za dowód tabliczki znamionowej.
+- EAN pozostaje wiarygodnym sygnałem tylko wtedy, gdy rozwiązuje się do dokładnego modelu z katalogu albo towarzyszą mu niezależne cechy tabliczki, np. MODEL, ROTENSO, napięcie, czynnik chłodniczy lub kod modelu.
+- Dodano regresję sprawdzającą, że sam EAN nie otwiera fallbacku AI, a EAN rozwiązany do modelu nadal działa prawidłowo.
+
 ## 11.30
 - Zaostrzono mobilną bramkę wykrywania tabliczki przed uruchomieniem AI.
 - Surowy wynik dekodera, pojedynczy numer seryjny oraz ogólne słowa typu UNIT/INPUT/OUTPUT nie są już samodzielnym dowodem obecności tabliczki.
