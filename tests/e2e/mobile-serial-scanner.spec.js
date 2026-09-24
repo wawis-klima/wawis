@@ -11,6 +11,59 @@ const tinyPng = {
 const tinyPngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAF/gL+3MxZ5wAAAABJRU5ErkJggg==';
 let manualVerificationCounter = 0;
 
+const SYNTHETIC_ROTENSO_EAN = '5905567600791';
+const SYNTHETIC_ROTENSO_SERIAL = 'IMOTO35XI2400012345';
+
+function buildEan13Bits(value) {
+  const L = { 0:'0001101', 1:'0011001', 2:'0010011', 3:'0111101', 4:'0100011', 5:'0110001', 6:'0101111', 7:'0111011', 8:'0110111', 9:'0001011' };
+  const G = { 0:'0100111', 1:'0110011', 2:'0011011', 3:'0100001', 4:'0011101', 5:'0111001', 6:'0000101', 7:'0010001', 8:'0001001', 9:'0010111' };
+  const R = Object.fromEntries(Object.entries(L).map(([digit, bits]) => [digit, bits.replace(/[01]/g, (bit) => bit === '0' ? '1' : '0')]));
+  const parity = {
+    0:'LLLLLL', 1:'LLGLGG', 2:'LLGGLG', 3:'LLGGGL', 4:'LGLLGG',
+    5:'LGGLLG', 6:'LGGGLL', 7:'LGLGLG', 8:'LGLGGL', 9:'LGGLGL',
+  };
+  let bits = '101';
+  for (let index = 1; index <= 6; index += 1) {
+    bits += (parity[value[0]][index - 1] === 'L' ? L : G)[value[index]];
+  }
+  bits += '01010';
+  for (let index = 7; index <= 12; index += 1) bits += R[value[index]];
+  return bits + '101';
+}
+
+function buildSyntheticRotensoNameplateSvg() {
+  const bits = buildEan13Bits(SYNTHETIC_ROTENSO_EAN);
+  const moduleWidth = 7;
+  const xStart = 75;
+  const bars = [...bits].map((bit, index) => (
+    bit === '1'
+      ? `<rect x="${xStart + (index * moduleWidth)}" y="410" width="${moduleWidth}" height="220" fill="#000"/>`
+      : ''
+  )).join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000">
+    <rect width="1800" height="1000" fill="#fff"/>
+    <rect x="20" y="20" width="1760" height="960" fill="none" stroke="#000" stroke-width="6"/>
+    <g fill="#000" font-family="Arial, Helvetica, sans-serif" font-weight="700">
+      <text x="70" y="125" font-size="76">ROTENSO</text>
+      <text x="70" y="220" font-size="56">MODEL: I35Xi R14</text>
+      <text x="70" y="285" font-size="40">INDOOR UNIT   230V ~ 50Hz</text>
+      <text x="70" y="350" font-size="40">Cooling capacity: 3.5 kW   Refrigerant: R32</text>
+      ${bars}
+      <text x="75" y="690" font-size="42">${SYNTHETIC_ROTENSO_EAN}</text>
+      <text x="860" y="530" font-size="56">S/N:</text>
+      <text x="860" y="615" font-size="62">${SYNTHETIC_ROTENSO_SERIAL}</text>
+      <text x="860" y="690" font-size="40">PC/EAN: ${SYNTHETIC_ROTENSO_EAN}</text>
+      <text x="70" y="875" font-size="42">MADE IN P.R.C.</text>
+    </g>
+  </svg>`;
+}
+
+const syntheticRotensoNameplate = {
+  name: 'rotenso-i35xi-r14.svg',
+  mimeType: 'image/svg+xml',
+  buffer: Buffer.from(buildSyntheticRotensoNameplateSvg()),
+};
+
 test.use(iphone14);
 
 async function selectNameplateAndCrop(page, input) {
@@ -169,6 +222,47 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.keyboard.press('Escape');
     await expect(page.locator('.previewOverlay')).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => document.body.style.position)).not.toBe('fixed');
+  });
+
+
+  test('automatycznie odczytuje prawdziwe pola modelu i SN z czytelnej tabliczki Rotenso', async ({ page }) => {
+    test.setTimeout(150_000);
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.locator('.mobileDeviceOverviewOpen').first().click();
+    await page.locator('.mobileMultiIndoorCard').first().click();
+
+    await page.locator('.nameplateGalleryInput').setInputFiles(syntheticRotensoNameplate);
+    const cropModal = page.locator('.nameplateCropModal');
+    await expect(cropModal).toBeVisible();
+    await page.getByRole('button', { name: 'Zapisz kadr' }).click();
+
+    const saveAnyway = page.getByRole('button', { name: 'Zapisz mimo to', exact: true });
+    const cropOutcome = await Promise.race([
+      cropModal.waitFor({ state: 'hidden', timeout: 12_000 }).then(() => 'hidden'),
+      saveAnyway.waitFor({ state: 'visible', timeout: 12_000 }).then(() => 'override'),
+    ]);
+    if (cropOutcome === 'override') await saveAnyway.click();
+    await expect(cropModal).toBeHidden();
+
+    const verifyModal = page.locator('.nameplateVerifyModal');
+    await expect(verifyModal).toBeVisible();
+    const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
+    const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
+
+    await expect(serialInput).toHaveValue(SYNTHETIC_ROTENSO_SERIAL, { timeout: 120_000 });
+    await expect(modelInput).toHaveValue(/I35Xi R14/i, { timeout: 120_000 });
+    await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Odczyt lokalny', { timeout: 120_000 });
+    await expect(serialInput).not.toHaveValue(SYNTHETIC_ROTENSO_EAN);
+
+    await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
+    await expect(verifyModal).toBeHidden();
+    await expect(page.getByText('Potwierdzona', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
+    await expect(page.getByText('Tabliczka dodana', { exact: true })).toBeVisible();
   });
 
   test('nie pozwala pracownikowi zakończyć zlecenia bez tabliczki JZ i każdej JW', async ({ page }) => {
