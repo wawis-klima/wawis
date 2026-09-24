@@ -1,3 +1,11 @@
+## 11.28
+- Zmniejszono wysokość i odstępy pól w sekcji potwierdzenia zapłaty.
+- Selecty „Rodzaj” i „Sposób płatności” mają mniejszy font i bardziej kompaktową ramkę.
+- Pole „Data zapłaty” ma mniejszy font, wysokość 38 px, wycentrowaną wartość i zabezpieczenie przed wyjściem poza ramkę na iOS.
+- Zmniejszono odstępy i padding całej sekcji płatności.
+- E2E na iPhone 14 sprawdza wysokości/fonty oraz to, że pole daty mieści się poziomo w formularzu.
+- Naprawiono wyścig startowy kolejki zdjęć: użytkownik jest oznaczany jako „kolejka odtworzona” dopiero po zakończonym restore i ponownym sprawdzeniu aktualności sesji.
+
 ## 11.27
 - Po wejściu w mobilny protokół widok automatycznie przewija się do dolnej części formularza, gdzie znajdują się potwierdzenie zapłaty i podpis klienta.
 - Automatyczne przewinięcie działa przy każdym nowym otwarciu protokołu i nie zmienia danych zlecenia ani PDF.

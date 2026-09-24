@@ -24,6 +24,11 @@ assert(app.includes("window.addEventListener('online', onlineHandler)"), 'Brak a
 assert(app.includes('restorePersistedJobPhotos'), 'Brak odtwarzania kolejki po ponownym uruchomieniu aplikacji.');
 assert(app.includes('const offlineSyncJobCount = Array.isArray(jobs) ? jobs.length : 0;'), 'Odtwarzanie kolejki musi ponowić się, gdy pojawi się lista zleceń.');
 assert(app.includes('offlinePhotoQueueUserRef.current !== userId && hasJobsReady'), 'Kolejka nie może zostać oznaczona jako odtworzona przed załadowaniem zleceń.');
+const restoreCallIndex = app.indexOf('await restorePersistedJobPhotos({');
+const restoreCommitIndex = app.indexOf('offlinePhotoQueueUserRef.current = userId;', restoreCallIndex);
+assert(restoreCallIndex >= 0 && restoreCommitIndex > restoreCallIndex, 'Flaga odtworzonej kolejki musi być ustawiana dopiero po await restorePersistedJobPhotos().');
+const sessionGuardIndex = app.indexOf('if (!isQueueSessionCurrent()) return;', restoreCallIndex);
+assert(sessionGuardIndex > restoreCallIndex && sessionGuardIndex < restoreCommitIndex, 'Po restore trzeba ponownie sprawdzić aktualność sesji przed ustawieniem flagi odtworzenia.');
 assert(jobsFetch.includes('export function preserveLatestQueuedPhotos'), 'Brak ochrony lokalnej kolejki przed spóźnionym pełnym refreshem.');
 assert(sessionHook.includes('preserveLatestQueuedPhotos(freshJobs, jobsRef.current)'), 'Pierwsza odpowiedź serwera musi scalić najnowszą kolejkę zdjęć.');
 assert(sessionHook.includes('preserveLatestQueuedPhotos(payloadJobs, jobsRef.current)'), 'Końcowa odpowiedź serwera nie może nadpisać zdjęcia odtworzonego po starcie requestu.');

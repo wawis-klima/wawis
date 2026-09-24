@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.27",
+  "version": "11.28",
   "scope": "full",
-  "release_branch": "release/v11.27",
+  "release_branch": "release/v11.28",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.27: 3 error, 17 warning, 0 zdarzeń protocol w ostatnich 24 h. Zmiana dotyczy tylko początkowej pozycji przewinięcia protokołu i układu przycisku Dodaj."
+    "notes": "Przed 11.28: 3 error, 18 warning, 0 zdarzeń protocol w ostatnich 24 h. Zmiana dotyczy kompaktowego układu płatności oraz fail-safe odtwarzania kolejki zdjęć po starcie."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.27.zip"
+    "file_name": "klima-app-v11.28.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.27",
+    "source_branch": "release/v11.28",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu 11.27 sprawdzić nowe error/warning oraz protocol."
+    "notes": "Po deployu 11.28 sprawdzić nowe error/warning oraz protocol."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.27 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.26",
+    "supabase_migration_applied": "N/A — 11.28 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.27",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",

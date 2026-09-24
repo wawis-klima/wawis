@@ -93,6 +93,36 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     }));
     expect(paymentToggleStyle.whiteSpace).toBe('nowrap');
     expect(paymentToggleStyle.spanWhiteSpace).toBe('nowrap');
+
+    await paymentToggle.click();
+    const paymentForm = page.locator('.protocolPaymentForm');
+    await expect(paymentForm).toBeVisible();
+
+    const paymentKind = paymentForm.locator('select').nth(0);
+    const paymentMethod = paymentForm.locator('select').nth(1);
+    const paymentDate = paymentForm.locator('input[type="date"]');
+    const compactPaymentLayout = await paymentForm.evaluate((form) => {
+      const selects = [...form.querySelectorAll('select.input')];
+      const date = form.querySelector('input[type="date"]');
+      const formRect = form.getBoundingClientRect();
+      const dateRect = date?.getBoundingClientRect();
+      return {
+        selectHeights: selects.map((element) => element.getBoundingClientRect().height),
+        selectFontSizes: selects.map((element) => parseFloat(getComputedStyle(element).fontSize)),
+        dateHeight: dateRect?.height ?? 0,
+        dateFontSize: date ? parseFloat(getComputedStyle(date).fontSize) : 0,
+        dateFitsHorizontally: Boolean(dateRect && dateRect.left >= formRect.left - 1 && dateRect.right <= formRect.right + 1),
+      };
+    });
+    expect(compactPaymentLayout.selectHeights.every((height) => height <= 39)).toBe(true);
+    expect(compactPaymentLayout.selectFontSizes.every((size) => size <= 16)).toBe(true);
+    expect(compactPaymentLayout.dateHeight).toBeLessThanOrEqual(39);
+    expect(compactPaymentLayout.dateFontSize).toBeLessThanOrEqual(16);
+    expect(compactPaymentLayout.dateFitsHorizontally).toBe(true);
+    await expect(paymentKind).toBeVisible();
+    await expect(paymentMethod).toBeVisible();
+    await expect(paymentDate).toBeVisible();
+    await paymentForm.locator('input[inputmode="decimal"]').fill('1000');
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
     await expect(protocolModal.getByText('Zapisana w systemie', { exact: true })).toHaveCount(0);
     await expect(protocolModal.getByText('STATUS', { exact: true })).toHaveCount(0);
