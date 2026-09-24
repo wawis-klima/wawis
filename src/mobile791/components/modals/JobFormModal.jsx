@@ -96,7 +96,7 @@ export default function JobFormModal({
     });
   }
 
-  function applyNameplatePhoto(deviceIndex, unitRef, file, serialNumber = '') {
+  function applyNameplatePhoto(deviceIndex, unitRef, file, reading = {}) {
     setJobForm((prev) => {
       const existingDocuments = Array.isArray(prev.pending_nameplate_photos) ? prev.pending_nameplate_photos : [];
       const remainingDocuments = existingDocuments.filter((item) => (
@@ -104,14 +104,51 @@ export default function JobFormModal({
       ));
       const unitNumber = unitRef.startsWith('jw-') ? Number(unitRef.split('-')[1] || 1) : 0;
       const unitLabel = unitRef === 'jz' ? 'JZ' : `JW ${unitNumber}`;
+      const modelValue = String(reading.modelValue || '').replace(/\s+/g, ' ').trim();
+      const serialNumber = String(reading.serialNumber || '').replace(/\s+/g, '').trim().toUpperCase();
+
+      const rows = normalizeJobDevices(prev, { keepEmptyRow: true, keepEmptyIndoor: true });
+      const nextRows = rows.map((device, rowIndex) => {
+        if (rowIndex !== Number(deviceIndex)) return device;
+        if (unitRef === 'jz') {
+          return {
+            ...device,
+            outdoor_model: modelValue || device.outdoor_model || '',
+            outdoor_serial_number: serialNumber || device.outdoor_serial_number || '',
+          };
+        }
+
+        const indoorIndex = Math.max(0, unitNumber - 1);
+        const indoorSerials = getDeviceIndoorSerials(device, { keepEmpty: true });
+        const indoorModels = getDeviceIndoorModels(device, {
+          keepEmpty: true,
+          minimumLength: Math.max(indoorSerials.length, indoorIndex + 1),
+        });
+        while (indoorModels.length <= indoorIndex) indoorModels.push('');
+        while (indoorSerials.length <= indoorIndex) indoorSerials.push('');
+        if (modelValue) indoorModels[indoorIndex] = modelValue;
+        if (serialNumber) indoorSerials[indoorIndex] = serialNumber;
+        return {
+          ...device,
+          indoor_model: indoorModels[0] || '',
+          indoor_models: indoorModels,
+          indoor_serial_number: indoorSerials[0] || '',
+          indoor_serial_numbers: indoorSerials,
+        };
+      });
+
       return {
-        ...prev,
+        ...applyDeviceRows(prev, nextRows),
         pending_nameplate_photos: [...remainingDocuments, {
           file,
           deviceIndex,
           unitRef,
           deviceRef: `device-${deviceIndex + 1}-${unitRef}`,
-          serialNumber: String(serialNumber || ''),
+          serialNumber,
+          verified: Boolean(reading.verified),
+          verificationMethod: String(reading.verificationMethod || ''),
+          ocrStatus: String(reading.ocrStatus || ''),
+          ocrCheckedAt: reading.ocrCheckedAt || null,
           documentationLabel: `Tabliczka ${unitLabel} • urządzenie ${deviceIndex + 1}`,
         }],
       };
@@ -397,6 +434,7 @@ export default function JobFormModal({
         contentClassName="card modal mobileDeviceWizardModal"
       >
         <MobileDeviceWizard
+          jobId={editingJobId}
           devices={jobDevices}
           pendingPhotos={Array.isArray(jobForm.pending_nameplate_photos) ? jobForm.pending_nameplate_photos : []}
           existingPhotos={existingNameplatePhotos}
@@ -410,7 +448,7 @@ export default function JobFormModal({
           onSetUnitDescriptor={setUnitDescriptor}
           onAddIndoorUnit={addIndoorUnit}
           onRemoveIndoorUnit={removeIndoorUnit}
-          onPhotoSelect={(deviceIndex, unitRef, file) => applyNameplatePhoto(deviceIndex, unitRef, file)}
+          onPhotoSelect={(deviceIndex, unitRef, file, reading) => applyNameplatePhoto(deviceIndex, unitRef, file, reading)}
           onPhotoRemove={removePendingNameplatePhoto}
         />
       </AppModal>
@@ -657,7 +695,12 @@ export default function JobFormModal({
                         fieldLabel={`Jednostka zewnętrzna JZ — urządzenie ${index + 1}`}
                         file={outdoorNameplateDocument?.file || null}
                         existingPhotoUrl={String(outdoorExistingNameplate?.uploadStatus || '').toLowerCase() === 'error' ? '' : (outdoorExistingNameplate?.url || '')}
-                        onSelect={(file) => applyNameplatePhoto(index, 'jz', file, device.outdoor_serial_number)}
+                        jobId={editingJobId}
+                        unitRef="jz"
+                        currentModel={getDeviceOutdoorModel(device)}
+                        currentSerial={device.outdoor_serial_number || ''}
+                        verified={Boolean(outdoorNameplateDocument?.verified || String(outdoorExistingNameplate?.ocrStatus || '').toLowerCase() === 'approved')}
+                        onSelect={(file, reading) => applyNameplatePhoto(index, 'jz', file, reading)}
                         onRemove={() => removePendingNameplatePhoto(index, 'jz')}
                       />
                     </div>
@@ -725,7 +768,12 @@ export default function JobFormModal({
                                 fieldLabel={`${isMultiSplit ? `Jednostka wewnętrzna JW ${indoorIndex + 1}` : 'Jednostka wewnętrzna JW'} — urządzenie ${index + 1}`}
                                 file={nameplateDocument?.file || null}
                                 existingPhotoUrl={String(existingNameplate?.uploadStatus || '').toLowerCase() === 'error' ? '' : (existingNameplate?.url || '')}
-                                onSelect={(file) => applyNameplatePhoto(index, unitRef, file, serial)}
+                                jobId={editingJobId}
+                                unitRef={unitRef}
+                                currentModel={indoorModels[indoorIndex] || ''}
+                                currentSerial={serial || ''}
+                                verified={Boolean(nameplateDocument?.verified || String(existingNameplate?.ocrStatus || '').toLowerCase() === 'approved')}
+                                onSelect={(file, reading) => applyNameplatePhoto(index, unitRef, file, reading)}
                                 onRemove={() => removePendingNameplatePhoto(index, unitRef)}
                               />
                             </div>
