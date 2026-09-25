@@ -4,7 +4,7 @@ import { buildJobProtocolData, createJobProtocolPdfFile } from "../../modules/jo
 import {
   downloadStoredJobProtocol,
   formatStoredProtocolDate,
-  shareStoredJobProtocol,
+  openStoredJobProtocolPdfPreview,
   storeJobProtocol,
 } from "../../modules/job-protocol-storage.js";
 import {
@@ -369,8 +369,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         const result = await sendJobProtocolEmail({ supabase, record: savedRecord, job });
         setMessage(`Protokół został wysłany z ${result.senderEmail} do ${result.recipientEmail}.`);
       } else {
-        await shareStoredJobProtocol({ supabase, record: savedRecord, intent: "print" });
-        setMessage("Obraz protokołu został przekazany do drukowania bez zapisywania w telefonie.");
+        await openStoredJobProtocolPdfPreview({ supabase, record: savedRecord });
+        setMessage("PDF został otwarty w podglądzie iOS. Użyj Udostępnij i wybierz Phomemo.");
       }
     } catch (error) {
       if (error?.name !== "AbortError") setMessage(error?.message || "Nie udało się wykonać operacji na protokole.");

@@ -1,3 +1,11 @@
+## 11.48
+- Zmieniono mobilną akcję `Drukuj protokół`: zamiast konwertować PDF do PNG i wysyłać obraz przez Web Share, aplikacja otwiera zapisany protokół jako prawdziwy plik PDF w osobnym podglądzie iOS/Safari.
+- PDF jest otwierany przez krótko ważny podpisany adres prywatnego pliku z bucketu `job-protocols`; plik nie staje się publiczny.
+- Okno podglądu otwierane jest bezpośrednio po kliknięciu, zanim aplikacja pobierze podpisany URL, dzięki czemu iOS nie powinien blokować go jako popupu.
+- Celem testu jest uzyskanie tego samego systemowego arkusza udostępniania, w którym Phomemo pojawia się dla PDF otwartego z aplikacji Pliki.
+- `Zapisz PDF w telefonie` i wysyłka e-mail pozostają bez zmian. Stary renderer PNG pozostaje w kodzie jako funkcja techniczna, ale `Drukuj protokół` go nie wywołuje.
+- Bez zmian w Supabase schema/RLS, samym PDF-ie i danych klienta.
+
 ## 11.47
 - Naprawiono ponowne podpisanie istniejącego protokołu przez innego pracownika zespołu.
 - RLS wcześniej pozwalał zapisać protokół tylko administratorowi albo pracownikowi zapisanym w `jobs.completed_by`; UI jednocześnie pozwalał wszystkim pracownikom otwierać zakończone montaże i wejść w ponowny podpis.

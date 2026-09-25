@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.47
+- 11.48
 
-Wersja 11.47 naprawia ponowne podpisanie istniejącego protokołu przez innego pracownika zespołu: zakończony montaż może ponownie zapisać każdy pracownik z dostępem do aplikacji, a Storage i tabela job_protocols używają spójnego RLS.
+Wersja 11.48 zmienia mobilne `Drukuj protokół`: zapisany PDF otwiera się jako rzeczywisty dokument w podglądzie iOS/Safari, aby systemowy arkusz Udostępnij mógł przekazać go do Phomemo tak jak PDF otwierany z aplikacji Pliki.
 
-# Wawis Klimatyzacja — wersja 11.47
+# Wawis Klimatyzacja — wersja 11.48
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.47` — naprawiono ponowny podpis protokołu przez innego pracownika; RLS Storage i job_protocols jest zgodny z widokiem wszystkich zakończonych montaży.
+- wersja `11.48` — `Drukuj protokół` otwiera prywatny PDF w natywnym podglądzie iOS/Safari zamiast wysyłać PNG przez Web Share.
 - wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.

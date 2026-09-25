@@ -1,22 +1,17 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.47
+- 11.48
 
 ## Zakres
-- ponowne podpisanie protokołu zakończonego montażu przez innego pracownika
-- spójne uprawnienia RLS dla Storage i job_protocols
-- bez zmian w treści PDF
+- mobilne `Drukuj protokół` otwiera zapisany PDF jako dokument przez podpisany URL
+- brak konwersji do PNG w tej akcji
+- brak bezpośredniego Web Share PDF z PWA
+- brak zmian w treści PDF, bazie i RLS
 
-## Dowód błędu
-- Storage API zwracał 403 RLS przy ponownym zapisie protokołu przez pracownika innego niż autor zakończenia
-- dokładny przypadek został potwierdzony w logach produkcyjnych
-
-## Naprawa
-- current_user_can_finalize_job wymaga członka zespołu i statusu Zakończone
-- UPDATE job_protocols pozwala zastąpić istniejący protokół pracownikowi zespołu
-- nowa wersja protokołu zapisuje created_by aktualnego użytkownika
-- migracja produkcyjna została zastosowana i zweryfikowana
+## Założenie testowane na urządzeniu
+- PDF zapisany w Plikach i otwarty na iPhonie pokazuje Phomemo w systemowym Udostępnij
+- 11.48 ma doprowadzić użytkownika do analogicznego podglądu dokumentu bez wcześniejszego zapisywania pliku ręcznie
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING

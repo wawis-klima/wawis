@@ -4,6 +4,7 @@ import {
   JOB_PROTOCOLS_TABLE,
   PROTOCOL_WRITE_CONFLICT,
   loadJobProtocolRecord,
+  openStoredJobProtocolPdfPreview,
   shareStoredJobProtocol,
   storeJobProtocol,
 } from '../src/mobile791/modules/job-protocol-storage.js';
@@ -84,6 +85,10 @@ const supabase = {
         },
         async download(path) {
           return { data: objects.get(path) || null, error: null };
+        },
+        async createSignedUrl(path, expiresIn) {
+          assert.equal(expiresIn, 180);
+          return { data: { signedUrl: 'https://example.test/storage/' + path + '?token=signed' }, error: null };
         },
         async remove(paths) {
           paths.forEach((path) => objects.delete(path));
@@ -202,6 +207,27 @@ assert.equal(sharedPayload.files[0].name, 'wawis-protokol-zmieniony-druk.png');
 assert.equal(sharedPayload.files[0].type, 'image/png');
 assert.equal(await sharedPayload.files[0].text(), 'temporary print image');
 
+let previewRedirect = '';
+let previewClosed = false;
+globalThis.window = {
+  open(target, disposition) {
+    assert.equal(target, '');
+    assert.equal(disposition, '_blank');
+    return {
+      opener: {},
+      document: { title: '', body: { innerHTML: '' } },
+      location: { replace(url) { previewRedirect = url; } },
+      close() { previewClosed = true; },
+    };
+  },
+};
+
+const previewResult = await openStoredJobProtocolPdfPreview({ supabase, record: replaced });
+assert.equal(previewResult.method, 'pdf-native-preview');
+assert.equal(previewResult.expiresIn, 180);
+assert.ok(previewRedirect.includes(replaced.storage_path));
+assert.ok(previewRedirect.endsWith('?token=signed'));
+assert.equal(previewClosed, false);
 await assert.rejects(
   () => storeJobProtocol({
     supabase,
