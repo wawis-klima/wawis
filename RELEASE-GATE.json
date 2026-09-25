@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Do uzupełnienia po wdrożeniu 11.39."
+    "checked": true,
+    "result": "PASS",
+    "notes": "Po produkcyjnym deployu 11.39 od 2026-09-25 05:56:03Z: 0 nowych error i 0 warning w app_diagnostic_events."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -36,8 +36,8 @@
     "rls_role_matrix": "PASS — bez zmian względem 11.38",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
-    "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PENDING — do potwierdzenia po merge do main.",
-    "merge_commit": "PENDING"
+    "vercel_deployment": "N/A — aktywny potwierdzony deployment produkcyjny w tym repo realizuje Cloudflare Pages; screenshot użytkownika wskazuje także domenę vercel.app, ale connector Vercel nie ma autoryzacji do tego projektu.",
+    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107962184181, commit 24da7aa, Deploy successful.",
+    "merge_commit": "24da7aac338621448b56b233db3d1a09e32e616e"
   }
 }
