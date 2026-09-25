@@ -1,3 +1,13 @@
+## 11.39
+- Naprawiono ryzyko wysypania karty Safari podczas mobilnego odczytu tabliczki znamionowej.
+- Czytnik kodów nie utrzymuje już jednocześnie pełnego zestawu dużych canvasów podczas prostowania i kolejnych wariantów obrazu.
+- Mobilny odczyt kodów i lokalny OCR pracują na obrazie ograniczonym do 1800 px.
+- OCR numeru seryjnego i modelu przygotowuje kolejne kadry dopiero w momencie danego przebiegu zamiast trzymać wszystkie duże obrazy naraz.
+- Bufor kadrowania zdjęcia jest zwalniany natychmiast po zapisaniu wykadrowanego pliku.
+- Zachowano pełną logikę rozpoznawania EAN/SN/modelu, walidację JZ/JW oraz fallback AI.
+- Dodano test skali pamięciowej: zdjęcie 8064×6048 nie może tworzyć mobilnego canvasa większego niż 1800 px.
+- Analiza incydentu: nowe zlecenie utworzone przez Michała zapisało się w bazie, ale nie powstał żaden rekord zdjęcia tabliczki i nie dotarł żaden event diagnostyczny z jego konta, co jest zgodne z ubiciem karty Safari przed zapisem/telemetrią.
+
 ## 11.38
 - W mobilnym kroku 2 dla Single sekcje tabliczek JZ i JW zostały przeniesione nad dane urządzenia.
 - Po wykonaniu i potwierdzeniu zdjęć użytkownik widzi poniżej pola Marka i Model, które mogą zostać automatycznie uzupełnione przez odczyt tabliczki.
