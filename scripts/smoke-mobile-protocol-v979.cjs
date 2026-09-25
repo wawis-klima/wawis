@@ -114,6 +114,10 @@ assert.match(pdfModule, /\$\{PROTOCOL_COMPANY\.name\}  \|  \$\{PROTOCOL_COMPANY\
 assert.match(pdfModule, /\$\{PROTOCOL_COMPANY\.address\}  \|  NIP \$\{PROTOCOL_COMPANY\.nip\}/);
 assert.match(pdfModule, /tel\. \$\{PROTOCOL_COMPANY\.phone\}  \|  \$\{PROTOCOL_COMPANY\.email\}  \|  www\.wawis\.pl/);
 assert.match(pdfModule, /const OUTER_MARGIN = 12/);
+assert.match(pdfModule, /const PRINT_SAFE_SCALE = 0\.98/);
+assert.match(pdfModule, /new doc\.Matrix\(PRINT_SAFE_SCALE, 0, 0, PRINT_SAFE_SCALE, insetX, insetY\)/);
+assert.match(pdfModule, /beginPrintSafeArea\(doc\);\s*drawHeader\(doc, data\)/);
+assert.match(pdfModule, /endPrintSafeArea\(doc\);\s*drawFooter\(doc, data\)/);
 assert.match(pdfModule, /const CARD_WIDTH = PAGE_WIDTH - \(OUTER_MARGIN \* 2\)/);
 assert.match(pdfModule, /const CONTENT_WIDTH = CONTENT_RIGHT - CONTENT_LEFT/);
 assert.match(pdfModule, /const bodyFontSize = 9\.4/);
