@@ -369,12 +369,21 @@ function NameplateVerificationReview({
           ? "Odczyt lokalny"
           : "Weryfikacja ręczna";
 
+  const normalizedFieldLabel = String(fieldLabel || "").toLowerCase();
+  const isOutdoorUnit = normalizedFieldLabel.includes("zewnętrzn") || /\bjz\b/i.test(String(fieldLabel || ""));
+  const isIndoorUnit = normalizedFieldLabel.includes("wewnętrzn") || /\bjw\b/i.test(String(fieldLabel || ""));
+  const targetLabel = isOutdoorUnit
+    ? "Zdjęcie tabliczki JZ — jednostka zewnętrzna"
+    : isIndoorUnit
+      ? "Zdjęcie tabliczki JW — jednostka wewnętrzna"
+      : `Zdjęcie tabliczki — ${fieldLabel}`;
+
   return (
     <div className="nameplateVerifyModal" role="dialog" aria-modal="true" aria-label={`Potwierdzenie tabliczki: ${fieldLabel}`}>
       <div className="nameplateVerifyHeader">
         <div>
           <strong>Sprawdź tabliczkę</strong>
-          <span>{fieldLabel}</span>
+          <span className="nameplateVerifyTarget">{targetLabel}</span>
         </div>
         {!verification.busy ? (
           <button type="button" className="nameplateCropClose" onClick={onCancel} aria-label="Anuluj potwierdzanie"><CloseIcon /></button>

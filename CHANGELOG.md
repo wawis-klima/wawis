@@ -1,3 +1,10 @@
+## 11.36
+- Pod tytułem „Sprawdź tabliczkę” dodano krótki, mocno wyróżniony opis wymaganej jednostki.
+- Dla JZ ekran pokazuje: „Zdjęcie tabliczki JZ — jednostka zewnętrzna”.
+- Dla JW ekran pokazuje: „Zdjęcie tabliczki JW — jednostka wewnętrzna”.
+- Napis jest większy i bardziej kontrastowy niż w 11.35, ale bez dodatkowej długiej instrukcji, więc ekran pozostaje kompaktowy.
+- Test E2E kontroluje treść, wielkość wyróżnionej informacji oraz brak dodatkowego przewijania.
+
 ## 11.35
 - Mobilny ekran „Sprawdź tabliczkę” został przeniesiony z ciemnego motywu na jasny, zgodny z resztą aplikacji.
 - Zmniejszono tytuł i podtytuł, przycisk zamknięcia, badge metody odczytu oraz podgląd zdjęcia.

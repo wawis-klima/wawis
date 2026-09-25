@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.35
+- 11.36
 
-Wersja 11.35 ujednolica mobilny ekran „Sprawdź tabliczkę” z jasnym motywem całej aplikacji i zmniejsza jego elementy: nagłówek, podgląd zdjęcia, komunikaty, pola Model/SN oraz dolne przyciski są bardziej kompaktowe i mieszczą się bez zbędnego przewijania na iPhonie.
+Wersja 11.36 wzmacnia informację, jakiej tabliczki dotyczy mobilny ekran weryfikacji: pod tytułem widać krótki, mocny napis „Zdjęcie tabliczki JZ — jednostka zewnętrzna” albo „Zdjęcie tabliczki JW — jednostka wewnętrzna”, bez rozpychania ekranu.
 
-# Wawis Klimatyzacja — wersja 11.35
+# Wawis Klimatyzacja — wersja 11.36
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.36` — ekran „Sprawdź tabliczkę” wyraźnie wskazuje, czy wymagane jest zdjęcie tabliczki JZ czy JW, i pokazuje krótką instrukcję dla instalatora.
 - wersja `11.35` — jasny, kompaktowy ekran weryfikacji tabliczki na mobile; niższe alerty, pola i przyciski oraz mniejszy podgląd zdjęcia.
 - wersja `11.34` — mobilny grid kreatora nie rozciąga już kart; dodano test E2E na iPhonie z twardymi limitami wysokości i szerokości dla kroków 1, 2 i 4.
 - wersja `11.33` — mniejsze podsumowanie urządzenia, kompaktowy przycisk dodania kolejnego urządzenia i niższe przyciski zdjęcia/galerii w tabliczkach.

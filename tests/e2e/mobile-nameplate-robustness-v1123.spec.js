@@ -147,6 +147,7 @@ test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach teren
     await waitForVerificationDone(page);
 
     await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Nie wykryto tabliczki');
+    await expect(page.locator('.nameplateVerifyTarget')).toHaveText('Zdjęcie tabliczki JW — jednostka wewnętrzna');
     await expect(page.locator('.nameplateVerifyMismatch')).toContainText('AI nie zostało uruchomione');
     await expect(page.getByPlaceholder('Przepisz model z tabliczki')).toBeDisabled();
     await expect(page.getByPlaceholder('Przepisz numer seryjny')).toBeDisabled();
@@ -168,6 +169,7 @@ test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach teren
         modalColor: modal ? getComputedStyle(modal).color : '',
         headerBg: header ? getComputedStyle(header).backgroundColor : '',
         titleFont: title ? parseFloat(getComputedStyle(title).fontSize) : 99,
+        targetFont: document.querySelector('.nameplateVerifyTarget') ? parseFloat(getComputedStyle(document.querySelector('.nameplateVerifyTarget')).fontSize) : 0,
         bodyScrollHeight: body?.scrollHeight || 0,
         bodyClientHeight: body?.clientHeight || 0,
         imageHeight: image?.getBoundingClientRect().height || 0,
@@ -180,6 +182,8 @@ test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach teren
     expect(compactLightUi.modalColor).toBe('rgb(15, 23, 42)');
     expect(compactLightUi.headerBg).toBe('rgb(255, 255, 255)');
     expect(compactLightUi.titleFont).toBeLessThanOrEqual(15);
+    expect(compactLightUi.targetFont).toBeGreaterThanOrEqual(12);
+    expect(compactLightUi.targetFont).toBeLessThanOrEqual(13);
     expect(compactLightUi.imageHeight).toBeLessThanOrEqual(210);
     expect(compactLightUi.mismatchFont).toBeLessThanOrEqual(10);
     for (const height of compactLightUi.inputHeights) expect(height).toBeLessThanOrEqual(44);
