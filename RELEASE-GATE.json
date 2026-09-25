@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.45",
+  "version": "11.46",
   "scope": "mobile",
-  "release_branch": "release/v11.45",
+  "release_branch": "release/v11.46",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "REGRESSION",
-    "notes": "11.44 było błędnym kierunkiem, bo Phomemo M832 nie pojawia się w iOS dla PDF. Użytkownik potwierdził, że wcześniejsza ścieżka PNG drukowała pełne A4. 11.45 przywraca dokładny blok renderowania i udostępniania PNG z 10.59."
+    "notes": "W 11.45 Phomemo otwierało PNG 1800 px jako 115 × 163 mm. Użytkownik potwierdził, że ręczne rozciągnięcie dwoma palcami do A4 działa. 11.46 zachowuje ścieżkę PNG i stary renderer, ale zwiększa raster do 3307 px na podstawie proporcji 210/115."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.45.zip"
+    "file_name": "klima-app-v11.46.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.45",
+    "source_branch": "release/v11.46",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu na tym samym zapisanym protokole użyć Drukuj protokół → Phomemo. Phomemo ma być dostępne w menu iOS, a przekazywany plik ma być PNG z renderera 10.59."
+    "notes": "Po wdrożeniu na tym samym protokole użyć Drukuj protokół → Phomemo i sprawdzić wymiar W/H. Oczekiwane około 210 × 297 mm bez ręcznego rozciągania."
   },
   "archive": {
     "source_of_truth": "github-main",
