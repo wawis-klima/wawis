@@ -20,9 +20,9 @@
 - migracja RLS musi być zastosowana i sprawdzona advisorami Supabase
 
 ## Wynik wdrożenia
-- WAWIS PR checks: PENDING
-- targeted regressions: PENDING
-- Supabase migration: PENDING
-- produkcyjny build: PENDING
-- deployment produkcyjny: PENDING
+- WAWIS PR checks: GREEN
+- targeted regressions: GREEN
+- Supabase migration: APPLIED + VERIFIED
+- produkcyjny build: GREEN w PR checks
+- deployment produkcyjny: RETRY po ustawieniu ready_for_main=true
 - merge produkcyjny: PENDING
