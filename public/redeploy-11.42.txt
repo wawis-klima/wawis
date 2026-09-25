@@ -1,0 +1,2 @@
+WAWIS 11.42 production redeploy marker.
+Purpose: force a fresh GitHub -> Vercel production deployment without changing the application URL or version.
