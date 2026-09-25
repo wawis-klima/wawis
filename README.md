@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.49
+- 11.50
 
-Wersja 11.49 zachowuje natywny podgląd PDF z 11.48 i skaluje treść protokołu do 98% w obrębie strony A4, aby Phomemo nie ucinało delikatnie góry i dołu wydruku.
+Wersja 11.50 naprawia desktopowy status tabliczek po usunięciu urządzeń: pełne odświeżenie traktuje pustą odpowiedź Supabase jako aktualny stan i usuwa stary zielony status z lokalnego cache.
 
-# Wawis Klimatyzacja — wersja 11.49
+# Wawis Klimatyzacja — wersja 11.50
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
