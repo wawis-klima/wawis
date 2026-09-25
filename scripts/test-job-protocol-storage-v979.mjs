@@ -185,24 +185,22 @@ navigator.share = async (payload) => {
   sharedPayload = payload;
 };
 
-let imageFallbackCalled = false;
 const shareResult = await shareStoredJobProtocol({
   supabase,
   record: replaced,
   intent: 'print',
-  createPrintImage: async () => {
-    imageFallbackCalled = true;
+  createPrintImage: async (blob, fileName) => {
+    assert.equal(blob, replacementBlob);
+    assert.equal(fileName, replaced.file_name);
     return new File(['temporary print image'], 'wawis-protokol-zmieniony-druk.png', { type: 'image/png' });
   },
 });
-assert.equal(shareResult.method, 'share-pdf');
-assert.equal(shareResult.a4Document, true);
-assert.equal(imageFallbackCalled, false, 'PDF A4 must be preferred; PNG conversion is fallback only.');
+assert.equal(shareResult.method, 'share-image');
 assert.deepEqual(Object.keys(sharedPayload), ['files']);
 assert.equal(sharedPayload.files.length, 1);
-assert.equal(sharedPayload.files[0].name, replaced.file_name);
-assert.equal(sharedPayload.files[0].type, 'application/pdf');
-assert.equal(await sharedPayload.files[0].text(), await replacementBlob.text());
+assert.equal(sharedPayload.files[0].name, 'wawis-protokol-zmieniony-druk.png');
+assert.equal(sharedPayload.files[0].type, 'image/png');
+assert.equal(await sharedPayload.files[0].text(), 'temporary print image');
 
 await assert.rejects(
   () => storeJobProtocol({
