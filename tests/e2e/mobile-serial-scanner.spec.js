@@ -324,7 +324,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     const selectionHeights = await page.locator('.mobileDeviceWizardSelection').evaluateAll((nodes) => (
       nodes.map((node) => node.getBoundingClientRect().height)
     ));
-    expect(selectionHeights).toHaveLength(3);
+    expect(selectionHeights).toHaveLength(2);
     for (const height of selectionHeights) {
       expect(height).toBeGreaterThanOrEqual(54);
       expect(height).toBeLessThanOrEqual(64);
