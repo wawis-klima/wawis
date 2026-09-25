@@ -7,6 +7,7 @@ const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const permissions = read('src','mobile791','utils','jobPermissions.js');
 const form = read('src','mobile791','modules','jobs-form.js');
 const modal = read('src','mobile791','components','modals','JobFormModal.jsx');
+const details = read('src','mobile791','components','JobDetailsPanel.jsx');
 const edge = read('supabase','functions','send-assignment-push','index.ts');
 const sql = read('worker-shared-job-edit-v10.60.sql');
 
@@ -17,6 +18,11 @@ assert.ok(form.includes("main_technician_id: form.main_technician_id || ''"), 'N
 assert.ok(form.includes('viewers: [...new Set((form.viewers || []).filter(Boolean))]'), 'Nowy montaż pracownika kasuje dodatkowych instalatorów.');
 assert.ok(form.includes('profile.id, ...getAssignedUserIdsFromForm(resolvedForm)'), 'Brak dostępu twórcy i wybranych instalatorów.');
 assert.ok(modal.includes('(editingJobId || !isAdmin) ? ('), 'Pracownik nie widzi wyboru instalatorów przy dodawaniu montażu.');
+assert.ok(details.includes('{canEditSelectedJob ? ('), 'Pracownik nie ma przycisku edycji aktywnego montażu.');
+assert.ok(details.includes("isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'"), 'Brak jasnej akcji edycji danych klienta dla pracownika.');
+assert.ok(!details.includes('{canEditSelectedJob && isAdmin ? ('), 'Przycisk edycji klienta nadal jest ograniczony tylko do administratora.');
+assert.ok(form.includes('const updatePayload = {'), 'Edycja pracownika nie korzysta z bezpiecznego payloadu.');
+assert.ok(form.includes('if (isAdmin) {') && form.includes('updatePayload.admin_note'), 'Pola administratora nie są oddzielone od zapisu pracownika.');
 assert.ok(edge.includes('callerIsStaff'), 'Push nie rozpoznaje pracownika jako członka zespołu.');
 assert.ok(edge.includes('Tylko pracownik lub administrator może wysyłać przypisania push.'), 'Push przypisania nadal jest tylko dla administratora.');
 assert.ok(edge.includes('normalizedCommentCallerRole'), 'Push komentarza nie rozpoznaje pracownika niezależnie od przypisania.');
