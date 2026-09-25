@@ -687,9 +687,9 @@ export default function JobDetailsPanel({
           </div>
 
           <div className="detailActions detailActionsBottom mobileFourButtons">
-            {canEditSelectedJob && isAdmin ? (
+            {canEditSelectedJob ? (
               <button className="btn mobileActionCompact" onClick={() => openEditJob(selectedJob)}>
-                <span className="desktopLabel">Edytuj montaż</span>
+                <span className="desktopLabel">{isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'}</span>
                 <span className="mobileLabel">Edytuj</span>
               </button>
             ) : null}

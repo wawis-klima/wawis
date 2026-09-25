@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.39
+- 11.40
 
-Wersja 11.39 stabilizuje mobilny odczyt tabliczek na iPhonie. Odczyt kodów i lokalny OCR nie tworzą już jednocześnie wielu dużych obrazów w pełnej rozdzielczości; mobilna analiza pracuje na obrazie ograniczonym do 1800 px i zwalnia bufory canvas po użyciu. Ma to zapobiegać wywalaniu całej karty Safari podczas odczytu tabliczki.
+Wersja 11.40 udostępnia pracownikom edycję danych klienta w aktywnych montażach oraz przywraca pełny format A4 przy drukowaniu protokołu przez Phomemo M832. Pracownik może poprawić nazwę klienta, telefon, e-mail i adres bez dostępu do pól administratora. Obraz przekazywany do Phomemo ma teraz rozmiar odpowiadający 210 × 297 mm przy 400 DPI.
 
-# Wawis Klimatyzacja — wersja 11.39
+# Wawis Klimatyzacja — wersja 11.40
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.39` — ograniczono zużycie pamięci podczas mobilnego odczytu tabliczek: 1800 px, przetwarzanie OCR przebieg po przebiegu i natychmiastowe zwalnianie canvasów po skanowaniu/kadrowaniu.
+- wersja `11.40` — pracownik może edytować dane klienta w aktywnym montażu, a wydruk protokołu dla Phomemo wrócił do pełnego A4 210 × 297 mm.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.
 - wersja `11.36` — ekran „Sprawdź tabliczkę” wyraźnie wskazuje, czy wymagane jest zdjęcie tabliczki JZ czy JW, i pokazuje krótką instrukcję dla instalatora.

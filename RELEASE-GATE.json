@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.39",
+  "version": "11.40",
   "scope": "mobile",
-  "release_branch": "release/v11.39",
+  "release_branch": "release/v11.40",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.39: 18 error, 84 warning w ostatnich 24 h. Incydent Michała: nowe zlecenie fc5c7a75-bbbf-42cc-bf6b-157e1ead45bb istnieje, ale brak rekordów photos i brak eventów diagnostycznych z jego user_id; screenshot Safari pokazuje crash całej karty podczas odczytu. W kodzie wykryto duży pik pamięci: wiele canvasów 2200+ px oraz kilka OCR dataURL naraz."
+    "notes": "Przed 11.40: 18 error i 84 warning w ostatnich 24 h (11 × photo.thumbnail.load.failed, 7 × console.error, 77 × console.warn, 7 × job.details.retry). To baseline informacyjny obejmujący zdarzenia sprzed bieżącej zmiany; 11.40 nie modyfikuje diagnostyki."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.39.zip"
+    "file_name": "klima-app-v11.40.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.39",
+    "source_branch": "release/v11.40",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.39 od 2026-09-25 05:56:03Z: 0 nowych error i 0 warning w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do kontroli po produkcyjnym wdrożeniu 11.40."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.39 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.38",
+    "supabase_migration_applied": "N/A — 11.40 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "N/A — brak zmian RLS; istniejąca blokada zakończonych zleceń pozostaje bez zmian",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
-    "vercel_deployment": "N/A — aktywny potwierdzony deployment produkcyjny w tym repo realizuje Cloudflare Pages; screenshot użytkownika wskazuje także domenę vercel.app, ale connector Vercel nie ma autoryzacji do tego projektu.",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107962184181, commit 24da7aa, Deploy successful.",
-    "merge_commit": "24da7aac338621448b56b233db3d1a09e32e616e"
+    "vercel_deployment": "PENDING — po merge do main",
+    "cloudflare_deployment": "PENDING — po merge do main",
+    "merge_commit": ""
   }
 }
