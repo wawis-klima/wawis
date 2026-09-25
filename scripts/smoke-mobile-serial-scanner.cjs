@@ -50,7 +50,7 @@ assert.match(wizardSource, /getDevicePhotoCompletion/);
 assert.match(wizardSource, /Dalej do podsumowania/);
 assert.match(wizardSource, /getSingleSplitModelFamilyMismatch/);
 assert.match(wizardSource, /validateSinglePhotoModel/);
-assert.match(wizardSource, /Niezgodny zestaw Single/);
+assert.match(rotensoCatalogSource, /Niezgodny zestaw Single/);
 assert.match(captureSource, /compatibilityError/);
 assert.match(captureSource, /validateModel/);
 assert.doesNotMatch(wizardSource, />Zapisz urządzenie</);
