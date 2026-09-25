@@ -9,7 +9,7 @@ import {
   getDeviceType,
 } from '../../modules/job-devices.js';
 import NameplatePhotoCapture from '../nameplate/NameplatePhotoCapture.jsx';
-import { getAllRotensoPowerOptions, getRotensoModelGroups, getRotensoPowerOptions } from '../../modules/rotenso-models.js';
+import { getAllRotensoPowerOptions, getRotensoModelGroups, getRotensoPowerOptions, getSingleSplitModelFamilyMismatch } from '../../modules/rotenso-models.js';
 import { getRotensoModelHistorySections, recordRotensoModelUsage } from '../../modules/rotenso-model-history.js';
 import './mobile-device-wizard.css';
 
@@ -453,6 +453,48 @@ export default function MobileDeviceWizard({
     setPicker(null);
   }
 
+  function getSingleMismatch(device = null) {
+    if (!device || getDeviceType(device) !== DEVICE_TYPE_SINGLE) return null;
+    return getSingleSplitModelFamilyMismatch({
+      outdoorModel: getUnitModel(device, 'jz'),
+      indoorModel: getUnitModel(device, 'jw-1'),
+    });
+  }
+
+  function validateSinglePhotoModel(unitRef, modelValue, reading) {
+    if (!activeDevice || getDeviceType(activeDevice) !== DEVICE_TYPE_SINGLE) return '';
+    const pairedUnitRef = unitRef === 'jz' ? 'jw-1' : 'jz';
+    const pairedModel = getUnitModel(activeDevice, pairedUnitRef);
+    const detectedFamily = String(
+      reading?.exactModel?.family
+      || reading?.aiResult?.family
+      || reading?.aiResult?.aiResult?.model_family
+      || '',
+    ).trim();
+    const mismatch = unitRef === 'jz'
+      ? getSingleSplitModelFamilyMismatch({
+        outdoorModel: modelValue,
+        indoorModel: pairedModel,
+        outdoorFamily: detectedFamily,
+      })
+      : getSingleSplitModelFamilyMismatch({
+        outdoorModel: pairedModel,
+        indoorModel: modelValue,
+        indoorFamily: detectedFamily,
+      });
+    return mismatch?.message || '';
+  }
+
+  function handleSubmit() {
+    const mismatchIndex = safeDevices.findIndex((device) => Boolean(getSingleMismatch(device)));
+    if (mismatchIndex >= 0) {
+      const mismatch = getSingleMismatch(safeDevices[mismatchIndex]);
+      window.alert(`Urządzenie ${mismatchIndex + 1}: ${mismatch.message}`);
+      return;
+    }
+    onSubmit?.();
+  }
+
   function renderPhotoCapture(unitRef, label) {
     const photoState = getPhotoState({ pendingPhotos, existingPhotos, deviceIndex: activeDeviceIndex, unitRef });
     return (
@@ -466,6 +508,7 @@ export default function MobileDeviceWizard({
         currentModel={activeDevice ? getUnitModel(activeDevice, unitRef) : ''}
         currentSerial={activeDevice ? getUnitSerial(activeDevice, unitRef) : ''}
         verified={photoState.verified}
+        validateModel={({ modelValue, reading }) => validateSinglePhotoModel(unitRef, modelValue, reading)}
         onSelect={(file, reading) => onPhotoSelect?.(activeDeviceIndex, unitRef, file, reading)}
         onRemove={() => onPhotoRemove?.(activeDeviceIndex, unitRef)}
       />
@@ -620,7 +663,7 @@ export default function MobileDeviceWizard({
         </div>
         <button type="button" className="mobileDeviceWizardSecondaryAction mobileDeviceAddAnother" onClick={startAddingDevice}>+ Dodaj kolejne urządzenie</button>
       </div>
-      <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" disabled={busy} onClick={onSubmit}>{busy ? 'Zapisuję…' : submitLabel}</button></div>
+      <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" disabled={busy} onClick={handleSubmit}>{busy ? 'Zapisuję…' : submitLabel}</button></div>
     </div>
   );
 }
