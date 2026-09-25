@@ -497,9 +497,9 @@
   font-weight: 900;
 }
 
-.nameplateVerifyTarget {
+.nameplateVerifyHeader .nameplateVerifyTarget {
   color: #1d4ed8;
-  font-size: 13px;
+  font-size: 13px !important;
   line-height: 1.2;
   font-weight: 900;
 }
@@ -689,8 +689,8 @@
     padding-bottom: 6px;
   }
 
-  .nameplateVerifyTarget {
-    font-size: 12px;
+  .nameplateVerifyHeader .nameplateVerifyTarget {
+    font-size: 12px !important;
   }
 
   .nameplateVerifyBody {
