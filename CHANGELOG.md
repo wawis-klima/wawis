@@ -1,3 +1,11 @@
+## 11.38
+- W mobilnym kroku 2 dla Single sekcje tabliczek JZ i JW zostały przeniesione nad dane urządzenia.
+- Po wykonaniu i potwierdzeniu zdjęć użytkownik widzi poniżej pola Marka i Model, które mogą zostać automatycznie uzupełnione przez odczyt tabliczki.
+- Pole „Moc” zostało usunięte z mobilnego ekranu danych urządzenia; odczytany model nadal może zawierać moc, np. „Imoto 3,5 kW (I35Xo R14)”.
+- Ten sam układ „tabliczka najpierw, dane niżej” zastosowano w ekranie pojedynczej jednostki Multi.
+- Ręczna korekta Marka/Model pozostaje dostępna jako awaryjna ścieżka.
+- Walidacja zgodności modeli JZ/JW w Single z 11.37 pozostaje aktywna.
+
 ## 11.37
 - Dla urządzeń typu Single dodano kontrolę zgodności rodziny modelu między JZ i JW.
 - Zestaw z różnymi rodzinami, np. JZ Imoto + JW Ukura, nie może zostać potwierdzony jako poprawny Single.
