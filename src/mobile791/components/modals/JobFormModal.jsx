@@ -606,7 +606,7 @@ export default function JobFormModal({
           </div>
         </div>
         </div>
-        {editingJobId ? (
+        {editingJobId && (isAdmin || serialOnlyMode) ? (
         <div className="jobDevicesSection">
           <div className="jobDevicesHeader">
             <div>

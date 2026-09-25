@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.40",
+  "version": "11.41",
   "scope": "mobile",
-  "release_branch": "release/v11.40",
+  "release_branch": "release/v11.41",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.40: 18 error i 84 warning w ostatnich 24 h (11 × photo.thumbnail.load.failed, 7 × console.error, 77 × console.warn, 7 × job.details.retry). To baseline informacyjny obejmujący zdarzenia sprzed bieżącej zmiany; 11.40 nie modyfikuje diagnostyki."
+    "notes": "Przed 11.41: 18 error i 88 warning w ostatnich 24 h. Baseline informacyjny; 11.41 jest zmianą mobilnego UI i nie modyfikuje diagnostyki ani backendu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.40.zip"
+    "file_name": "klima-app-v11.41.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.40",
+    "source_branch": "release/v11.41",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Do kontroli po produkcyjnym wdrożeniu 11.40."
+    "notes": "Do kontroli po produkcyjnym wdrożeniu 11.41."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.40 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "N/A — brak zmian RLS; istniejąca blokada zakończonych zleceń pozostaje bez zmian",
+    "supabase_migration_applied": "N/A — 11.41 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "PENDING — po merge do main",

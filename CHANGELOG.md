@@ -1,3 +1,10 @@
+## 11.41
+- W zwykłej edycji danych klienta na koncie pracownika usunięto sekcję „Urządzenia w montażu”; urządzenia i tabliczki pozostają dostępne przez osobny przycisk „Tabliczki”.
+- Administrator nadal zachowuje pełną sekcję urządzeń podczas edycji montażu.
+- Poprawiono wiersz „Data utworzenia” w mobilnych szczegółach pracownika: etykieta ma osobną szerszą kolumnę, a data jest wyrównana do prawej i nie nachodzi na napis.
+- Dodano regresje pilnujące obu zmian.
+- Bez zmian Supabase, RLS, Storage i Edge Functions.
+
 ## 11.40
 - Pracownik mobilny może otworzyć edycję aktywnego montażu i uzupełnić lub poprawić dane klienta: nazwę, telefon, e-mail, miejscowość oraz ulicę/numer.
 - Edycja pracownika nadal nie udostępnia pól administratora; zapis pracownika nie wysyła pól takich jak komentarz administratora, główny monter ani ustawienia administracyjne SMS.

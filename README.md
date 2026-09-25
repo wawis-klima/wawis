@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.40
+- 11.41
 
-Wersja 11.40 udostępnia pracownikom edycję danych klienta w aktywnych montażach oraz przywraca pełny format A4 przy drukowaniu protokołu przez Phomemo M832. Pracownik może poprawić nazwę klienta, telefon, e-mail i adres bez dostępu do pól administratora. Obraz przekazywany do Phomemo ma teraz rozmiar odpowiadający 210 × 297 mm przy 400 DPI.
+Wersja 11.41 upraszcza edycję danych klienta na koncie pracownika: sekcja urządzeń nie zajmuje już miejsca w tym formularzu, bo urządzenia i tabliczki są obsługiwane osobnym przyciskiem „Tabliczki”. Poprawiono też nakładający się wiersz „Data utworzenia” w szczegółach montażu.
 
-# Wawis Klimatyzacja — wersja 11.40
+# Wawis Klimatyzacja — wersja 11.41
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.40` — pracownik może edytować dane klienta w aktywnym montażu, a wydruk protokołu dla Phomemo wrócił do pełnego A4 210 × 297 mm.
+- wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.
 - wersja `11.36` — ekran „Sprawdź tabliczkę” wyraźnie wskazuje, czy wymagane jest zdjęcie tabliczki JZ czy JW, i pokazuje krótką instrukcję dla instalatora.

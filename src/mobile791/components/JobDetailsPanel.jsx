@@ -678,9 +678,9 @@ export default function JobDetailsPanel({
                   <div className="infoValue">{renderInitialBadges(getViewerNames(selectedJob, profiles))}</div>
                 </div>
 
-                <div className="infoItem">
+                <div className="infoItem workerCreatedAtInfoItem">
                   <span className="infoLabel infoLabelWithIcon"><IconClock /><span>Data utworzenia</span></span>
-                  <div className="infoValue">{selectedJob.created_at ? formatDate(selectedJob.created_at) : "-"}</div>
+                  <div className="infoValue workerCreatedAtInfoValue">{selectedJob.created_at ? formatDate(selectedJob.created_at) : "-"}</div>
                 </div>
               </>
             ) : null}
