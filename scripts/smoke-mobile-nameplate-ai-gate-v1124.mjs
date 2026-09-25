@@ -100,8 +100,14 @@ assert(reader.includes('Nie wykryto tabliczki znamionowej — zrób zdjęcie pon
 assert(reader.indexOf('if (!evidence.hasEvidence)') < reader.indexOf('readDesktopNameplateWithAi({'), 'Evidence gate must execute before AI');
 
 const capture = read('src/mobile791/components/nameplate/NameplatePhotoCapture.jsx');
+const captureCss = read('src/mobile791/components/nameplate/nameplate-photo-capture.css');
 assert(capture.includes('AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.'), 'Mobile UI must explain that AI was intentionally skipped');
 assert(capture.includes('disabled={noNameplateEvidence}'), 'Fields must be disabled for a non-nameplate photo');
 assert(capture.includes('noNameplateEvidence ? "Zrób zdjęcie ponownie"'), 'Non-nameplate photo must force a retake instead of manual bypass');
+assert(captureCss.includes('background: #f8fafc;'), 'Nameplate verification screen must use the light application background');
+assert(captureCss.includes('.nameplateVerifyHeader .nameplateCropClose'), 'Verification close button needs a light-mode override');
+assert(captureCss.includes('max-height: 24dvh !important;'), 'Verification photo preview must stay compact on iPhone');
+assert(captureCss.includes('min-height: 41px;'), 'Verification inputs must be compact');
+assert(captureCss.includes('min-height: 42px;'), 'Verification footer actions must be compact');
 
-console.log('Smoke OK: 11.31 rejects ordinary retail EAN codes unless independent nameplate context exists.');
+console.log('Smoke OK: 11.35 keeps nameplate rejection strict and the verification UI light and compact.');
