@@ -1,22 +1,21 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.45
+- 11.46
 
 ## Tryb
 - mobile / hotfix
 
 ## Zakres
-- usunięcie podstawowej ścieżki PDF z 11.44
-- przywrócenie dokładnego mechanizmu PDF → PNG → Phomemo z 10.59
-- PNG 1800 px i pojedynczy plik w navigator.share
-- przywrócenie starego sposobu renderowania strony przez osobny canvas
-- bez zmian w PDF źródłowym, Supabase, RLS i Storage
+- Phomemo nadal otrzymuje jeden plik PNG
+- szerokość PNG 3307 px zamiast 1800 px
+- zachowany dokładny renderer PNG z 10.59
+- brak udostępniania PDF do Phomemo
 
 ## Kryteria wydania
-- `shareStoredJobProtocol` ma wysyłać jeden PNG i nigdy nie preferować PDF
-- renderer ma odpowiadać wersji 10.59
-- test wydruku ma potwierdzić PNG 1800 px
+- shareStoredJobProtocol wysyła wyłącznie image/png
+- renderer nie zawiera ścieżki share-pdf
+- test obrazu potwierdza 3307 px szerokości i proporcje A4
 - regresje, E2E i build muszą być zielone
 
 ## Wynik wdrożenia
