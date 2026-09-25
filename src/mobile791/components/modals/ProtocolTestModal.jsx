@@ -336,11 +336,14 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       setMessage(wasReplacement ? "Protokół został zaktualizowany i podpisany ponownie." : "Protokół został zapisany przy zakończonym zleceniu.");
       onSaved?.(record, paymentPatch);
     } catch (error) {
-      if (isProtocolSaveTimeoutError(error)) {
+      const rawErrorText = String(error?.message || error || "");
+      const isSupabaseRequestTimeout = error?.code === "SUPABASE_REQUEST_TIMEOUT"
+        || /supabase request timeout|aborterror/i.test(rawErrorText);
+      if (isProtocolSaveTimeoutError(error) || isSupabaseRequestTimeout) {
         logDiagnostic("protocol.save.timeout", {
           jobId: String(job?.id || ""),
-          phase: String(error?.phase || "save"),
-          timeoutMs: Number(error?.timeoutMs || 0),
+          phase: String(error?.phase || (isSupabaseRequestTimeout ? "supabase" : "save")),
+          timeoutMs: Number(error?.timeoutMs || error?.timeout_ms || 0),
         });
         setMessage(PROTOCOL_SAVE_TIMEOUT_MESSAGE);
       } else if (error?.code === "PROTOCOL_WRITE_CONFLICT") {
