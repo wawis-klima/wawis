@@ -1,23 +1,20 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.40
+- 11.41
 
 ## Tryb
 - mobile / standard
 
 ## Zakres
-- pracownik mobilny może edytować dane klienta w aktywnym montażu: nazwa, telefon, e-mail, miejscowość i ulica/numer
-- zapis pracownika nie wysyła pól administratora
-- zakończone zlecenia pozostają zablokowane dla edycji pracownika
-- wydruk protokołu dla Phomemo M832 wraca do pełnego A4 210 × 297 mm
-- jednostronicowy protokół renderuje się bez dodatkowego dużego canvasa
+- zwykła edycja klienta pracownika bez sekcji „Urządzenia w montażu”
+- urządzenia i tabliczki nadal dostępne przez osobny tryb „Tabliczki”
+- poprawiony układ „Data utworzenia” bez nachodzenia etykiety i wartości
 - bez zmian Supabase / RLS / Storage / Edge Functions
 
 ## Kryteria wydania
 - `WAWIS PR checks / targeted-checks` musi być zielony
-- regresja `test:smoke:worker-shared-job-edit` musi przejść
-- regresja `test:smoke:mobile-protocol-print` musi przejść
+- `test:smoke:mobile-new-job-no-devices` musi pilnować nowego warunku urządzeń i układu daty
 - wymagane E2E oraz produkcyjny build muszą przejść
 
 ## Wynik wdrożenia
