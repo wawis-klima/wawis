@@ -16,7 +16,7 @@
   },
   "main_protection": {
     "source_branch": "release/v11.42",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — jobs_update_access dla płatności zakończonego zlecenia",
-    "rls_role_matrix": "PENDING — zakończone: wyłącznie pola payment_* i tylko completed_by; trigger guard pozostaje aktywny",
-    "performance_advisor": "PENDING",
-    "trigger_grants": "PENDING — private.guard_job_fields pozostaje ochroną pól zakończonej karty",
-    "vercel_deployment": "PENDING — po merge do main",
+    "supabase_migration_applied": "YES — worker_completed_payment_update_v1142 zastosowana na produkcji",
+    "rls_role_matrix": "VERIFIED — jobs_update_access dopuszcza completed_by na zakończonym zleceniu; private.guard_job_fields nadal ogranicza pracownika do payment_*",
+    "performance_advisor": "BASELINE — istniejące INFO, bez nowego krytycznego problemu po migracji",
+    "trigger_grants": "VERIFIED — private.guard_job_fields pozostaje aktywnym triggerem protect_job_fields",
+    "vercel_deployment": "RETRY REQUIRED — pierwszy deploy został zablokowany przez ready_for_main=false; poprawione w tym PR",
     "cloudflare_deployment": "PENDING — po merge do main",
     "merge_commit": ""
   }
