@@ -373,15 +373,10 @@ function NameplateVerificationReview({
   const isOutdoorUnit = normalizedFieldLabel.includes("zewnętrzn") || /\bjz\b/i.test(String(fieldLabel || ""));
   const isIndoorUnit = normalizedFieldLabel.includes("wewnętrzn") || /\bjw\b/i.test(String(fieldLabel || ""));
   const targetLabel = isOutdoorUnit
-    ? "Tabliczka znamionowa jednostki zewnętrznej (JZ)"
+    ? "Zdjęcie tabliczki JZ — jednostka zewnętrzna"
     : isIndoorUnit
-      ? "Tabliczka znamionowa jednostki wewnętrznej (JW)"
-      : `Tabliczka znamionowa — ${fieldLabel}`;
-  const targetInstruction = isOutdoorUnit
-    ? "Zrób zdjęcie tabliczki znamionowej jednostki zewnętrznej klimatyzatora."
-    : isIndoorUnit
-      ? "Zrób zdjęcie tabliczki znamionowej jednostki wewnętrznej klimatyzatora."
-      : "Zrób wyraźne zdjęcie właściwej tabliczki znamionowej klimatyzatora.";
+      ? "Zdjęcie tabliczki JW — jednostka wewnętrzna"
+      : `Zdjęcie tabliczki — ${fieldLabel}`;
 
   return (
     <div className="nameplateVerifyModal" role="dialog" aria-modal="true" aria-label={`Potwierdzenie tabliczki: ${fieldLabel}`}>
@@ -389,7 +384,6 @@ function NameplateVerificationReview({
         <div>
           <strong>Sprawdź tabliczkę</strong>
           <span className="nameplateVerifyTarget">{targetLabel}</span>
-          <small className="nameplateVerifyInstruction">{targetInstruction}</small>
         </div>
         {!verification.busy ? (
           <button type="button" className="nameplateCropClose" onClick={onCancel} aria-label="Anuluj potwierdzanie"><CloseIcon /></button>
