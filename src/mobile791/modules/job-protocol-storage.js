@@ -293,6 +293,49 @@ export async function downloadStoredJobProtocol({ supabase, record }) {
   return { fileName: record.file_name };
 }
 
+
+const PROTOCOL_PDF_PREVIEW_TTL_SECONDS = 180;
+
+export async function openStoredJobProtocolPdfPreview({ supabase, record }) {
+  if (!supabase || !record?.storage_path) {
+    throw new Error("Nie znaleziono zapisanego protokołu.");
+  }
+  if (typeof window === "undefined" || typeof window.open !== "function") {
+    throw new Error("Podgląd PDF jest dostępny tylko w przeglądarce.");
+  }
+
+  // Okno otwieramy synchronicznie w reakcji na kliknięcie użytkownika.
+  // Dzięki temu iOS nie blokuje go jako popupu, a po uzyskaniu podpisanego URL
+  // przechodzimy do prawdziwego pliku application/pdf zamiast Web Share API.
+  const previewWindow = window.open("", "_blank");
+  if (!previewWindow) {
+    throw new Error("iPhone zablokował otwarcie podglądu PDF.");
+  }
+
+  try {
+    previewWindow.opener = null;
+    previewWindow.document.title = "Protokół PDF";
+    previewWindow.document.body.innerHTML = '<p style="font:16px system-ui;padding:24px">Otwieram protokół PDF…</p>';
+
+    const { data, error } = await supabase.storage
+      .from(PROTOCOLS_BUCKET)
+      .createSignedUrl(record.storage_path, PROTOCOL_PDF_PREVIEW_TTL_SECONDS);
+
+    if (error) throw error;
+    const signedUrl = normalizeText(data?.signedUrl);
+    if (!signedUrl) throw new Error("Nie udało się przygotować bezpiecznego podglądu PDF.");
+
+    previewWindow.location.replace(signedUrl);
+    return {
+      method: "pdf-native-preview",
+      expiresIn: PROTOCOL_PDF_PREVIEW_TTL_SECONDS,
+    };
+  } catch (error) {
+    try { previewWindow.close(); } catch {}
+    throw error;
+  }
+}
+
 function canvasToBlob(canvas, type) {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
