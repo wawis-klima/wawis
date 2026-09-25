@@ -212,7 +212,7 @@ function groupRowsByJobId(rows = []) {
   return map;
 }
 
-export function resolveNameplateOverviewRows({
+function resolveNameplateOverviewRows({
   groupedRows,
   jobId,
   previousRows = [],
