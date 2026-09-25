@@ -338,6 +338,7 @@ function NameplateVerificationReview({
   onRetake,
   onManual,
   onCancel,
+  compatibilityError = "",
 }) {
   const [previewUrl, setPreviewUrl] = useState("");
 
@@ -354,7 +355,7 @@ function NameplateVerificationReview({
   if (!verification) return null;
 
   const progressValue = Math.max(0, Math.min(100, Number(verification.progress?.progress || 0)));
-  const mismatchMessage = verification.reading?.mismatch?.message || "";
+  const mismatchMessage = verification.reading?.mismatch?.message || compatibilityError || "";
   const noNameplateEvidence = Boolean(verification.reading?.noNameplateEvidence);
   const modelReady = Boolean(String(verification.modelValue || "").trim());
   const serialReady = Boolean(String(verification.serialNumber || "").trim());
@@ -475,6 +476,7 @@ export default function NameplatePhotoCapture({
   currentModel = "",
   currentSerial = "",
   verified = false,
+  validateModel = null,
 }) {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
@@ -598,7 +600,7 @@ export default function NameplatePhotoCapture({
   }
 
   function confirmVerification() {
-    if (!verification?.file || verification.busy || verification.reading?.mismatch) return;
+    if (!verification?.file || verification.busy || verification.reading?.mismatch || compatibilityError) return;
     const modelValue = String(verification.modelValue || "").replace(/\s+/g, " ").trim();
     const serialNumber = String(verification.serialNumber || "").replace(/\s+/g, "").trim().toUpperCase();
     if (!modelValue || !serialNumber) return;
@@ -626,6 +628,14 @@ export default function NameplatePhotoCapture({
     // Kliknięcie pozostaje bezpośrednio w geście użytkownika, co jest ważne dla Safari na iPhonie.
     input?.click();
   }
+
+  const compatibilityError = verification && !verification.busy && typeof validateModel === "function"
+    ? String(validateModel({
+      modelValue: String(verification.modelValue || "").trim(),
+      reading: verification.reading || null,
+      unitRef,
+    }) || "")
+    : "";
 
   const previewUrl = localPreviewUrl || existingPhotoUrl;
   const hasPhoto = Boolean(file || existingPhotoUrl);
@@ -723,6 +733,7 @@ export default function NameplatePhotoCapture({
           onRetake={retakeVerificationPhoto}
           onManual={switchVerificationToManual}
           onCancel={() => setVerification(null)}
+          compatibilityError={compatibilityError}
         />
       ) : null}
 
