@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.48",
+  "version": "11.49",
   "scope": "mobile",
-  "release_branch": "release/v11.48",
+  "release_branch": "release/v11.49",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OK",
-    "notes": "Empiryczny test na iPhonie: PDF zapisany w aplikacji Pliki po otwarciu pokazuje Phomemo w systemowym Udostępnij, natomiast bezpośredni Web Share PDF z PWA nie pokazywał Phomemo. 11.48 testuje inny kanał: prawdziwy podgląd PDF przez podpisany URL."
+    "notes": "11.48 potwierdzona fizycznym wydrukiem z Phomemo: PDF wypełnia A4 poprawnie, ale drukarka delikatnie ucina górną i dolną krawędź. 11.49 zmienia wyłącznie geometrię treści PDF: 98% skali, wyśrodkowane na A4."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.48.zip"
+    "file_name": "klima-app-v11.49.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.48",
+    "source_branch": "release/v11.49",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu wejść w zapisany protokół → Drukuj protokół. Oczekiwane: otwarcie PDF w podglądzie iOS/Safari; następnie systemowe Udostępnij powinno pokazać Phomemo. To wymaga fizycznego testu na iPhonie."
+    "notes": "Po wdrożeniu wydrukować ten sam typ protokołu przez Phomemo. Oczekiwane: pełna góra i pełny dół, bez zauważalnej utraty czytelności."
   },
   "archive": {
     "source_of_truth": "github-main",
