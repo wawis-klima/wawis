@@ -66,6 +66,10 @@ async function createCroppedFile({ file, image, crop }) {
       CROP_JPEG_QUALITY,
     );
   });
+  // Zwolnij bufor obrazu od razu po utworzeniu pliku. Na iOS Safari kilka
+  // dużych canvasów pozostawionych do GC potrafi ubić całą kartę podczas OCR.
+  canvas.width = 1;
+  canvas.height = 1;
 
   return new File([blob], getCroppedFileName(file?.name), {
     type: "image/jpeg",
