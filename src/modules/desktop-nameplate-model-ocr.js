@@ -116,6 +116,7 @@ function prepareRegion(image, {
   widthRatio = 1,
   heightRatio = 1,
   threshold = 0,
+  maxDimension = 3000,
 } = {}) {
   const sourceWidth = Number(image.naturalWidth || image.width || 0);
   const sourceHeight = Number(image.naturalHeight || image.height || 0);
@@ -124,7 +125,8 @@ function prepareRegion(image, {
   const sy = Math.max(0, Math.round(sourceHeight * yRatio));
   const sw = Math.max(1, Math.min(sourceWidth - sx, Math.round(sourceWidth * widthRatio)));
   const sh = Math.max(1, Math.min(sourceHeight - sy, Math.round(sourceHeight * heightRatio)));
-  const scale = Math.min(6, Math.max(1, 3000 / Math.max(sw, sh)));
+  const targetDimension = Math.max(900, Number(maxDimension) || 3000);
+  const scale = Math.min(6, Math.max(0.1, targetDimension / Math.max(sw, sh)));
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(sw * scale));
   canvas.height = Math.max(1, Math.round(sh * scale));
@@ -274,14 +276,14 @@ export function extractSerialNumberFromOcrText(rawText = '') {
     .sort((left, right) => right.score - left.score || right.value.length - left.value.length)[0].value;
 }
 
-export async function scanDesktopNameplateSerialText(file, { onProgress } = {}) {
+export async function scanDesktopNameplateSerialText(file, { onProgress, maxDimension = 3000 } = {}) {
   if (!file || !String(file.type || '').startsWith('image/')) throw new Error('Brak prawidłowego zdjęcia tabliczki.');
   onProgress?.({ progress: 50, label: 'Kod seryjny nie został odczytany z kresek — sprawdzam nadruk SN…' });
   const image = await loadImage(file);
   const passes = [
-    { image: prepareRegion(image, { yRatio: 0.34, heightRatio: 0.64, threshold: 150 }), psm: '11', label: 'Szukam oznaczenia SN w dolnej części etykiety…' },
-    { image: prepareRegion(image, { yRatio: 0.26, heightRatio: 0.72 }), psm: '11', label: 'Porównuję numer seryjny na szerszym kadrze…' },
-    { image: prepareRegion(image, { yRatio: 0.42, heightRatio: 0.56, threshold: 185 }), psm: '6', label: 'Potwierdzam ciąg znaków po SN…' },
+    { region: { yRatio: 0.34, heightRatio: 0.64, threshold: 150 }, psm: '11', label: 'Szukam oznaczenia SN w dolnej części etykiety…' },
+    { region: { yRatio: 0.26, heightRatio: 0.72 }, psm: '11', label: 'Porównuję numer seryjny na szerszym kadrze…' },
+    { region: { yRatio: 0.42, heightRatio: 0.56, threshold: 185 }, psm: '6', label: 'Potwierdzam ciąg znaków po SN…' },
   ];
   const worker = await getWorker(onProgress, 'serial');
   const votes = new Map();
@@ -296,7 +298,8 @@ export async function scanDesktopNameplateSerialText(file, { onProgress } = {}) 
       tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:-_/. ',
       preserve_interword_spaces: '1',
     });
-    const result = await worker.recognize(pass.image);
+    const preparedImage = prepareRegion(image, { ...pass.region, maxDimension });
+    const result = await worker.recognize(preparedImage);
     const text = String(result?.data?.text || '');
     const confidence = Number(result?.data?.confidence || 0);
     texts.push(text);
@@ -330,15 +333,15 @@ export async function scanDesktopNameplateSerialText(file, { onProgress } = {}) 
   };
 }
 
-export async function scanDesktopNameplateModelCode(file, { onProgress } = {}) {
+export async function scanDesktopNameplateModelCode(file, { onProgress, maxDimension = 3000 } = {}) {
   if (!file || !String(file.type || '').startsWith('image/')) throw new Error('Brak prawidłowego zdjęcia tabliczki.');
   onProgress?.({ progress: 50, label: 'Kody kreskowe odczytane — szukam nadrukowanego modelu…' });
   const image = await loadImage(file);
   const passes = [
-    { image: prepareRegion(image, { widthRatio: 0.50, heightRatio: 0.46, threshold: 140 }), psm: '11', label: 'Odczytuję kod modelu z lewej części etykiety…' },
-    { image: prepareRegion(image, { widthRatio: 0.72, heightRatio: 0.55 }), psm: '11', label: 'Porównuję nadruk z pełnym katalogiem modeli…' },
-    { image: prepareRegion(image, { heightRatio: 0.56 }), psm: '11', label: 'Szukam modelu w górnej części tabliczki…' },
-    { image: prepareRegion(image, { heightRatio: 0.70, threshold: 185 }), psm: '11', label: 'Potwierdzam kod modelu drugim przebiegiem…' },
+    { region: { widthRatio: 0.50, heightRatio: 0.46, threshold: 140 }, psm: '11', label: 'Odczytuję kod modelu z lewej części etykiety…' },
+    { region: { widthRatio: 0.72, heightRatio: 0.55 }, psm: '11', label: 'Porównuję nadruk z pełnym katalogiem modeli…' },
+    { region: { heightRatio: 0.56 }, psm: '11', label: 'Szukam modelu w górnej części tabliczki…' },
+    { region: { heightRatio: 0.70, threshold: 185 }, psm: '11', label: 'Potwierdzam kod modelu drugim przebiegiem…' },
   ];
   const worker = await getWorker(onProgress);
   const texts = [];
@@ -353,7 +356,8 @@ export async function scanDesktopNameplateModelCode(file, { onProgress } = {}) {
       tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_/ ',
       preserve_interword_spaces: '1',
     });
-    const result = await worker.recognize(pass.image);
+    const preparedImage = prepareRegion(image, { ...pass.region, maxDimension });
+    const result = await worker.recognize(preparedImage);
     texts.push(String(result?.data?.text || ''));
     confidences.push(Number(result?.data?.confidence || 0));
     consensus = selectFocusedModelConsensus(texts, confidences);

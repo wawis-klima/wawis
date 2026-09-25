@@ -8,6 +8,29 @@ const UNIVERSAL_BARCODE_SCRIPT_ID = 'wawis-universal-barcode-reader';
 const BARCODE_DESKEW_ANGLES = Object.freeze([-18, -15, -12, -9, -6, -3, 3, 6, 9, 12, 15, 18]);
 let universalBarcodeReaderPromise = null;
 
+export function getNameplateCanvasScale(width = 0, height = 0, {
+  scale = 1,
+  maxDimension = 0,
+} = {}) {
+  const longest = Math.max(Number(width) || 0, Number(height) || 0);
+  if (!longest) return 1;
+  const requestedScale = Math.max(Number(scale) || 1, longest < 1800 ? 1800 / longest : 1);
+  if (!Number(maxDimension) || Number(maxDimension) <= 0) return requestedScale;
+  return Math.max(0.1, Math.min(requestedScale, Number(maxDimension) / longest));
+}
+
+function releaseCanvas(canvas) {
+  if (!canvas) return;
+  try {
+    canvas.width = 1;
+    canvas.height = 1;
+  } catch (_) { /* best effort memory release */ }
+}
+
+function releaseVariants(variants = []) {
+  for (const variant of variants) releaseCanvas(variant?.canvas);
+}
+
 const EAN_L_PATTERNS = Object.freeze({
   '0001101': '0', '0011001': '1', '0010011': '2', '0111101': '3', '0100011': '4',
   '0110001': '5', '0101111': '6', '0111011': '7', '0110111': '8', '0001011': '9',
@@ -66,12 +89,13 @@ function loadImage(blob) {
   });
 }
 
-function createCanvas(image, { scale = 1, grayscale = false, contrast = 1 } = {}) {
+function createCanvas(image, { scale = 1, grayscale = false, contrast = 1, maxDimension = 0 } = {}) {
   const canvas = document.createElement('canvas');
-  const longest = Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height);
-  const effectiveScale = Math.max(scale, longest < 1800 ? 1800 / Math.max(1, longest) : 1);
-  canvas.width = Math.max(1, Math.round((image.naturalWidth || image.width) * effectiveScale));
-  canvas.height = Math.max(1, Math.round((image.naturalHeight || image.height) * effectiveScale));
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+  const effectiveScale = getNameplateCanvasScale(width, height, { scale, maxDimension });
+  canvas.width = Math.max(1, Math.round(width * effectiveScale));
+  canvas.height = Math.max(1, Math.round(height * effectiveScale));
   const context = canvas.getContext('2d', { willReadFrequently: true });
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = 'high';
@@ -126,9 +150,9 @@ function buildDeskewAngleVariants(base, gray, angle) {
   ];
 }
 
-function buildVariants(image) {
-  const base = createCanvas(image, { contrast: 1.08 });
-  const gray = createCanvas(image, { grayscale: true, contrast: 1.55 });
+function buildVariants(image, { maxDimension = 0 } = {}) {
+  const base = createCanvas(image, { contrast: 1.08, maxDimension });
+  const gray = createCanvas(image, { grayscale: true, contrast: 1.55, maxDimension });
   const variants = [
     { name: 'całe zdjęcie', canvas: base, roleHint: 'any' },
     { name: 'całe zdjęcie — kontrast', canvas: gray, roleHint: 'any' },
@@ -249,48 +273,57 @@ async function createBarcodeDetector(DetectorClass) {
   return new DetectorClass({ formats });
 }
 
-async function detectDeskewWithBarcodeDetector(image, DetectorClass, source) {
+async function detectDeskewWithBarcodeDetector(image, DetectorClass, source, { maxDimension = 0 } = {}) {
   const detector = await createBarcodeDetector(DetectorClass);
   if (!detector) return [];
-  const base = createCanvas(image, { contrast: 1.12 });
-  const gray = createCanvas(image, { grayscale: true, contrast: 1.72 });
+  const base = createCanvas(image, { contrast: 1.12, maxDimension });
+  const gray = createCanvas(image, { grayscale: true, contrast: 1.72, maxDimension });
   const found = [];
 
-  for (const angle of BARCODE_DESKEW_ANGLES) {
-    const variants = buildDeskewAngleVariants(base, gray, angle);
-    for (const variant of variants) {
+  try {
+    for (const angle of BARCODE_DESKEW_ANGLES) {
+      const variants = buildDeskewAngleVariants(base, gray, angle);
       try {
-        const detections = await detector.detect(variant.canvas);
-        for (const detection of detections || []) {
-          found.push({
-            value: normalizeValue(detection.rawValue),
-            format: String(detection.format || '').toLowerCase(),
-            source,
-            variant: variant.name,
-            roleHint: variant.roleHint || 'any',
-          });
+        for (const variant of variants) {
+          try {
+            const detections = await detector.detect(variant.canvas);
+            for (const detection of detections || []) {
+              found.push({
+                value: normalizeValue(detection.rawValue),
+                format: String(detection.format || '').toLowerCase(),
+                source,
+                variant: variant.name,
+                roleHint: variant.roleHint || 'any',
+              });
+            }
+          } catch (_) { /* try next angle */ }
         }
-      } catch (_) { /* try next angle */ }
+      } finally {
+        releaseVariants(variants);
+      }
+      const summary = summarizeBarcodeResults(found);
+      if (summary.ean && summary.serialNumber) break;
     }
-    const summary = summarizeBarcodeResults(found);
-    if (summary.ean && summary.serialNumber) break;
+  } finally {
+    releaseCanvas(base);
+    releaseCanvas(gray);
   }
 
   return found;
 }
 
-async function detectUniversalDeskew(image) {
+async function detectUniversalDeskew(image, options = {}) {
   const Detector = await withTimeout(
     loadUniversalBarcodeDetector(),
     UNIVERSAL_BARCODE_LOAD_TIMEOUT_MS,
     'Uniwersalny czytnik kodów nie załadował się w ciągu 12 sekund.',
   );
-  return detectDeskewWithBarcodeDetector(image, Detector, 'universal_barcode');
+  return detectDeskewWithBarcodeDetector(image, Detector, 'universal_barcode', options);
 }
 
-async function detectNativeDeskew(image) {
+async function detectNativeDeskew(image, options = {}) {
   if (!('BarcodeDetector' in globalThis)) return [];
-  return detectDeskewWithBarcodeDetector(image, globalThis.BarcodeDetector, 'native_barcode');
+  return detectDeskewWithBarcodeDetector(image, globalThis.BarcodeDetector, 'native_barcode', options);
 }
 
 function hammingDistance(left = '', right = '') {
@@ -482,14 +515,24 @@ function detectLocalEan13(variants) {
   return detections;
 }
 
-function detectLocalEan13Deskew(image) {
-  const base = createCanvas(image, { contrast: 1.12 });
-  const gray = createCanvas(image, { grayscale: true, contrast: 1.72 });
-  for (const angle of BARCODE_DESKEW_ANGLES) {
-    const detections = detectLocalEan13(buildDeskewAngleVariants(base, gray, angle));
-    if (detections.length) return detections;
+function detectLocalEan13Deskew(image, { maxDimension = 0 } = {}) {
+  const base = createCanvas(image, { contrast: 1.12, maxDimension });
+  const gray = createCanvas(image, { grayscale: true, contrast: 1.72, maxDimension });
+  try {
+    for (const angle of BARCODE_DESKEW_ANGLES) {
+      const variants = buildDeskewAngleVariants(base, gray, angle);
+      try {
+        const detections = detectLocalEan13(variants);
+        if (detections.length) return detections;
+      } finally {
+        releaseVariants(variants);
+      }
+    }
+    return [];
+  } finally {
+    releaseCanvas(base);
+    releaseCanvas(gray);
   }
-  return [];
 }
 
 function uniqueDetections(items = []) {
@@ -588,10 +631,10 @@ export function getNameplateTargetMismatch(targetUnitRef = '', model = null) {
   };
 }
 
-export async function scanDesktopNameplateBarcodes(file, { onProgress } = {}) {
+export async function scanDesktopNameplateBarcodes(file, { onProgress, maxDimension = 0 } = {}) {
   onProgress?.({ progress: 6, label: 'Przygotowanie czytników kodów…' });
   const image = await loadImage(file);
-  const variants = buildVariants(image);
+  const variants = buildVariants(image, { maxDimension });
   const diagnostics = [];
 
   onProgress?.({ progress: 18, label: 'Odczyt EAN-13 i Code 128…' });
@@ -630,11 +673,15 @@ export async function scanDesktopNameplateBarcodes(file, { onProgress } = {}) {
     summary = summarizeBarcodeResults(all);
   }
 
+  // Nie trzymamy jednocześnie kilkunastu dużych canvasów i wariantów prostowania.
+  // To szczególnie ważne w Safari na iPhonie, gdzie pamięć karty jest mocno ograniczona.
+  releaseVariants(variants);
+
   if (!summary.ean || !summary.serialNumber) {
     onProgress?.({ progress: 76, label: 'Automatyczne prostowanie zdjęcia…' });
     let deskewUniversalResults = [];
     try {
-      deskewUniversalResults = await detectUniversalDeskew(image);
+      deskewUniversalResults = await detectUniversalDeskew(image, { maxDimension });
       all = all.concat(deskewUniversalResults);
       diagnostics.push(deskewUniversalResults.length
         ? `Automatyczne prostowanie + uniwersalny dekoder: ${deskewUniversalResults.length} wyników.`
@@ -646,7 +693,7 @@ export async function scanDesktopNameplateBarcodes(file, { onProgress } = {}) {
 
     if ((!summary.ean || !summary.serialNumber) && 'BarcodeDetector' in globalThis) {
       onProgress?.({ progress: 86, label: 'Prostowanie + czytnik przeglądarki…' });
-      const deskewNativeResults = await detectNativeDeskew(image);
+      const deskewNativeResults = await detectNativeDeskew(image, { maxDimension });
       all = all.concat(deskewNativeResults);
       diagnostics.push(deskewNativeResults.length
         ? `Automatyczne prostowanie + czytnik przeglądarki: ${deskewNativeResults.length} wyników.`
@@ -656,7 +703,7 @@ export async function scanDesktopNameplateBarcodes(file, { onProgress } = {}) {
 
     if (!summary.ean) {
       onProgress?.({ progress: 93, label: 'Prostowanie + lokalny EAN-13…' });
-      const deskewLocalEanResults = detectLocalEan13Deskew(image);
+      const deskewLocalEanResults = detectLocalEan13Deskew(image, { maxDimension });
       all = all.concat(deskewLocalEanResults);
       diagnostics.push(deskewLocalEanResults.length
         ? 'Automatyczne prostowanie + lokalny czytnik EAN-13 rozpoznał kod.'

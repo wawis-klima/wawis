@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.38",
+  "version": "11.39",
   "scope": "mobile",
-  "release_branch": "release/v11.38",
+  "release_branch": "release/v11.39",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.38: 18 error, 82 warning w ostatnich 24 h. Zmiana dotyczy wyłącznie kolejności i widoczności pól w mobilnym kreatorze urządzeń; brak zmian schematu, RLS, OCR/AI i Storage."
+    "notes": "Przed 11.39: 18 error, 84 warning w ostatnich 24 h. Incydent Michała: nowe zlecenie fc5c7a75-bbbf-42cc-bf6b-157e1ead45bb istnieje, ale brak rekordów photos i brak eventów diagnostycznych z jego user_id; screenshot Safari pokazuje crash całej karty podczas odczytu. W kodzie wykryto duży pik pamięci: wiele canvasów 2200+ px oraz kilka OCR dataURL naraz."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.38.zip"
+    "file_name": "klima-app-v11.39.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.38",
+    "source_branch": "release/v11.39",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.38 od 2026-09-25 05:00:47Z: 0 nowych error i 0 warning w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do uzupełnienia po wdrożeniu 11.39."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.38 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.37",
+    "supabase_migration_applied": "N/A — 11.39 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.38",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107950561941, commit 490986d, Deploy successful.",
-    "merge_commit": "490986d792bcd012eae04a6c1adda8c7363c5091"
+    "cloudflare_deployment": "PENDING — do potwierdzenia po merge do main.",
+    "merge_commit": "PENDING"
   }
 }

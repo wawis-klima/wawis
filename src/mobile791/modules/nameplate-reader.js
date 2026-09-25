@@ -15,6 +15,7 @@ const MODEL_OCR_TIMEOUT_MS = 60000;
 const SERIAL_OCR_TIMEOUT_MS = 45000;
 const CATALOG_LOOKUP_TIMEOUT_MS = 7000;
 const AI_READ_TIMEOUT_MS = 60000;
+const MOBILE_IMAGE_MAX_DIMENSION = 1800;
 
 function withTimeout(promise, timeoutMs, message) {
   let timeoutId;
@@ -211,6 +212,7 @@ export async function readMobileNameplate({
     barcodeInfo = await withTimeout(
       scanDesktopNameplateBarcodes(file, {
         onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
+        maxDimension: MOBILE_IMAGE_MAX_DIMENSION,
       }),
       BARCODE_SCAN_TIMEOUT_MS,
       'Lokalny odczyt kodów trwał zbyt długo.',
@@ -229,6 +231,7 @@ export async function readMobileNameplate({
       serialTextResult = await withTimeout(
         scanDesktopNameplateSerialText(file, {
           onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
+          maxDimension: MOBILE_IMAGE_MAX_DIMENSION,
         }),
         SERIAL_OCR_TIMEOUT_MS,
         'Lokalny odczyt numeru seryjnego trwał zbyt długo.',
@@ -244,6 +247,7 @@ export async function readMobileNameplate({
       modelTextResult = await withTimeout(
         scanDesktopNameplateModelCode(file, {
           onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
+          maxDimension: MOBILE_IMAGE_MAX_DIMENSION,
         }),
         MODEL_OCR_TIMEOUT_MS,
         'Lokalny odczyt modelu trwał zbyt długo.',

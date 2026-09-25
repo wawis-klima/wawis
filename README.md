@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.38
+- 11.39
 
-Wersja 11.38 zmienia kolejność mobilnego kroku danych urządzenia: najpierw są tabliczki znamionowe JZ/JW i wykonanie zdjęć, a dopiero pod nimi Marka i Model, które mogą uzupełnić się z odczytu. Pole „Moc” zostało usunięte z tego ekranu jako zbędne powtórzenie informacji zawartej w rozpoznanym modelu.
+Wersja 11.39 stabilizuje mobilny odczyt tabliczek na iPhonie. Odczyt kodów i lokalny OCR nie tworzą już jednocześnie wielu dużych obrazów w pełnej rozdzielczości; mobilna analiza pracuje na obrazie ograniczonym do 1800 px i zwalnia bufory canvas po użyciu. Ma to zapobiegać wywalaniu całej karty Safari podczas odczytu tabliczki.
 
-# Wawis Klimatyzacja — wersja 11.38
+# Wawis Klimatyzacja — wersja 11.39
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.39` — ograniczono zużycie pamięci podczas mobilnego odczytu tabliczek: 1800 px, przetwarzanie OCR przebieg po przebiegu i natychmiastowe zwalnianie canvasów po skanowaniu/kadrowaniu.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.
 - wersja `11.36` — ekran „Sprawdź tabliczkę” wyraźnie wskazuje, czy wymagane jest zdjęcie tabliczki JZ czy JW, i pokazuje krótką instrukcję dla instalatora.
