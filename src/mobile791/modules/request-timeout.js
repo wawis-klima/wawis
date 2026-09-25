@@ -1,4 +1,5 @@
-export const MOBILE_SUPABASE_REQUEST_TIMEOUT_MS = 12 * 1000;
+export const MOBILE_SUPABASE_REQUEST_TIMEOUT_MS = 45 * 1000;
+export const MOBILE_SUPABASE_AUTH_TIMEOUT_MS = 12 * 1000;
 export const MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS = 6 * 1000;
 export const MOBILE_SUPABASE_STORAGE_TIMEOUT_MS = 30 * 1000;
 
@@ -26,7 +27,7 @@ export function resolveSupabaseRequestTimeoutMs(input, init = {}) {
     return MOBILE_SUPABASE_STORAGE_TIMEOUT_MS;
   }
   if (/\/auth\/v1\//i.test(url) && method === 'POST') {
-    return MOBILE_SUPABASE_REQUEST_TIMEOUT_MS;
+    return MOBILE_SUPABASE_AUTH_TIMEOUT_MS;
   }
   return MOBILE_SUPABASE_REQUEST_TIMEOUT_MS;
 }

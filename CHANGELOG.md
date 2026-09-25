@@ -1,3 +1,11 @@
+## 11.42
+- Naprawiono zapis protokołu na koncie pracownika po błędzie `AbortError: Supabase request timeout after 12000 ms`.
+- Zwykłe requesty REST do Supabase nie są już globalnie przerywane po 12 s; limit 45 s wraca dla REST, 6 s pozostaje dla podpisywania zdjęć, a 30 s dla transferu Storage.
+- Zapis protokołu bez włączonego potwierdzenia zapłaty pomija pusty UPDATE zakończonego zlecenia.
+- Przy rzeczywistej zmianie płatności pracownik, który zakończył zlecenie, może zapisać wyłącznie pola płatności; trigger nadal blokuje zmianę pozostałych pól zakończonej karty.
+- Surowy timeout Supabase jest mapowany na czytelny komunikat i diagnostykę `protocol.save.timeout`.
+- Dodano regresje timeoutu REST oraz zapisu protokołu bez płatności.
+
 ## 11.41
 - W zwykłej edycji danych klienta na koncie pracownika usunięto sekcję „Urządzenia w montażu”; urządzenia i tabliczki pozostają dostępne przez osobny przycisk „Tabliczki”.
 - Administrator nadal zachowuje pełną sekcję urządzeń podczas edycji montażu.

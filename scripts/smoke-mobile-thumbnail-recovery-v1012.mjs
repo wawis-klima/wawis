@@ -36,13 +36,15 @@ const { getSignedPhotoUrl } = await import(pathToFileURL(photosModulePath).href)
 const requestTimeoutModulePath = path.join(root, 'src/mobile791/modules/request-timeout.js');
 const {
   MOBILE_SUPABASE_REQUEST_TIMEOUT_MS,
+  MOBILE_SUPABASE_AUTH_TIMEOUT_MS,
   MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS,
   MOBILE_SUPABASE_STORAGE_TIMEOUT_MS,
   resolveSupabaseRequestTimeoutMs,
 } = await import(pathToFileURL(requestTimeoutModulePath).href);
 
-assert(MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS < MOBILE_SUPABASE_REQUEST_TIMEOUT_MS, 'podpis zdjęcia musi kończyć się szybciej niż zwykły request');
-assert(MOBILE_SUPABASE_REQUEST_TIMEOUT_MS < MOBILE_SUPABASE_STORAGE_TIMEOUT_MS, 'realny transfer pliku może mieć dłuższy limit');
+assert(MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS < MOBILE_SUPABASE_STORAGE_TIMEOUT_MS, 'podpis zdjęcia musi kończyć się szybciej niż realny transfer pliku');
+assert.equal(MOBILE_SUPABASE_REQUEST_TIMEOUT_MS, 45_000, 'zwykły REST nie może być ubijany po 12 s');
+assert.equal(MOBILE_SUPABASE_AUTH_TIMEOUT_MS, 12_000, 'krótki limit pozostaje wyłącznie dla auth POST');
 assert.equal(
   resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/sign/job-photos/a.jpg', { method: 'POST' }),
   MOBILE_SUPABASE_STORAGE_SIGN_TIMEOUT_MS,
@@ -50,6 +52,14 @@ assert.equal(
 assert.equal(
   resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/job-photos/a.jpg', { method: 'POST' }),
   MOBILE_SUPABASE_STORAGE_TIMEOUT_MS,
+);
+assert.equal(
+  resolveSupabaseRequestTimeoutMs('https://x.supabase.co/auth/v1/token', { method: 'POST' }),
+  MOBILE_SUPABASE_AUTH_TIMEOUT_MS,
+);
+assert.equal(
+  resolveSupabaseRequestTimeoutMs('https://x.supabase.co/rest/v1/job_protocols', { method: 'POST' }),
+  MOBILE_SUPABASE_REQUEST_TIMEOUT_MS,
 );
 assert.match(appSource, /if \(!thumbnailUrl && storagePath && isSessionTokenCurrent\(sessionToken\)\)[\s\S]*transform:\s*null,[\s\S]*forceRefresh:\s*true/);
 let signingCalls = 0;

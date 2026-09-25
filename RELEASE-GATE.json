@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.41",
+  "version": "11.42",
   "scope": "mobile",
-  "release_branch": "release/v11.41",
+  "release_branch": "release/v11.42",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "INFO",
-    "notes": "Przed 11.41: 18 error i 88 warning w ostatnich 24 h. Baseline informacyjny; 11.41 jest zmianą mobilnego UI i nie modyfikuje diagnostyki ani backendu."
+    "result": "INCIDENT",
+    "notes": "Incydent 09:29: globalny timeout REST 12 s przerwał zapis protokołu pracownika; w logach PostgREST wystąpiły też timeouty serwera. 11.42 usuwa regresję timeoutu i naprawia ścieżkę zapisu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.41.zip"
+    "file_name": "klima-app-v11.42.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.41",
-    "ready_for_main": true,
+    "source_branch": "release/v11.42",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Do kontroli po produkcyjnym wdrożeniu 11.41."
+    "notes": "Po wdrożeniu 11.42 sprawdzić zapis protokołu na roli Pracownik oraz brak nowych protocol.save.timeout."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,10 +32,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.41 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "N/A — brak zmian RLS",
-    "performance_advisor": "N/A — brak zmian SQL",
-    "trigger_grants": "N/A — brak zmian triggerów i grantów",
+    "supabase_migration_applied": "PENDING — jobs_update_access dla płatności zakończonego zlecenia",
+    "rls_role_matrix": "PENDING — zakończone: wyłącznie pola payment_* i tylko completed_by; trigger guard pozostaje aktywny",
+    "performance_advisor": "PENDING",
+    "trigger_grants": "PENDING — private.guard_job_fields pozostaje ochroną pól zakończonej karty",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main",
     "merge_commit": ""
