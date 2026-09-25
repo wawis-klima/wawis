@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Do uzupełnienia po wdrożeniu 11.37."
+    "checked": true,
+    "result": "PASS",
+    "notes": "Po produkcyjnym deployu 11.37 od 2026-09-25 04:35:46Z: 0 nowych error i 0 warning w app_diagnostic_events."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -37,7 +37,7 @@
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PENDING — do potwierdzenia po merge do main.",
-    "merge_commit": "PENDING"
+    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107945532150, commit 6114a12, Deploy successful.",
+    "merge_commit": "6114a12614769537540a656d169593a96bc406f1"
   }
 }
