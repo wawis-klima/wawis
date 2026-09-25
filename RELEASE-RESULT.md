@@ -1,22 +1,23 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.44
+- 11.45
 
 ## Tryb
 - mobile / hotfix
 
 ## Zakres
-- druk zapisanego protokołu jako oryginalny PDF A4
-- pominięcie pomniejszającego edytora obrazu Phomemo jako ścieżki podstawowej
-- PNG 1800 px pozostaje tylko fallbackiem technicznym
-- bez zmian w treści PDF, podpisach, Supabase, RLS i Storage
+- usunięcie podstawowej ścieżki PDF z 11.44
+- przywrócenie dokładnego mechanizmu PDF → PNG → Phomemo z 10.59
+- PNG 1800 px i pojedynczy plik w navigator.share
+- przywrócenie starego sposobu renderowania strony przez osobny canvas
+- bez zmian w PDF źródłowym, Supabase, RLS i Storage
 
 ## Kryteria wydania
-- `shareStoredJobProtocol` ma preferować pojedynczy plik `application/pdf`
-- test ma potwierdzić nazwę pliku `.pdf`, MIME PDF i brak uruchomienia konwersji PNG przy obsłudze PDF
-- istniejące testy zapisu/protokołu muszą przejść
-- wymagane E2E i build produkcyjny muszą być zielone
+- `shareStoredJobProtocol` ma wysyłać jeden PNG i nigdy nie preferować PDF
+- renderer ma odpowiadać wersji 10.59
+- test wydruku ma potwierdzić PNG 1800 px
+- regresje, E2E i build muszą być zielone
 
 ## Wynik wdrożenia
 - WAWIS PR checks: PENDING
