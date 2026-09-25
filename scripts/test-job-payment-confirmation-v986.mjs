@@ -3,6 +3,7 @@ import {
   formatPaymentAmount,
   getPaymentDraftFromJob,
   getPaymentJobPatch,
+  isPaymentConfirmationUnchanged,
   normalizePaymentConfirmation,
   saveJobPaymentConfirmation,
 } from '../src/mobile791/modules/job-payment-confirmation.js';
@@ -75,5 +76,44 @@ assert.equal(capturedId, 'job-1');
 assert.equal(capturedPatch.payment_amount, 4200.5);
 assert.equal(capturedPatch.payment_recorded_by, 'worker-1');
 assert.deepEqual(savedPatch, capturedPatch);
+
+assert.equal(isPaymentConfirmationUnchanged({
+  payment_confirmation_enabled: false,
+  payment_amount: null,
+  payment_kind: null,
+  payment_method: null,
+  payment_paid_at: null,
+}, { enabled: false }), true);
+
+let noOpSessionCalls = 0;
+let noOpUpdateCalls = 0;
+const noOpSupabase = {
+  auth: {
+    async getSession() {
+      noOpSessionCalls += 1;
+      return { data: { session: { user: { id: 'worker-1' } } }, error: null };
+    },
+  },
+  from() {
+    noOpUpdateCalls += 1;
+    throw new Error('No-op payment must not touch jobs.');
+  },
+};
+const noOpPatch = await saveJobPaymentConfirmation({
+  supabase: noOpSupabase,
+  job: {
+    id: 'job-finished',
+    status: 'Zakończone',
+    payment_confirmation_enabled: false,
+    payment_amount: null,
+    payment_kind: null,
+    payment_method: null,
+    payment_paid_at: null,
+  },
+  payment: { enabled: false },
+});
+assert.equal(noOpSessionCalls, 0);
+assert.equal(noOpUpdateCalls, 0);
+assert.equal(noOpPatch.payment_confirmation_enabled, false);
 
 console.log('PASS test-job-payment-confirmation-v986');
