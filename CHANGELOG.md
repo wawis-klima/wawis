@@ -1,3 +1,11 @@
+## 11.47
+- Naprawiono ponowne podpisanie istniejącego protokołu przez innego pracownika zespołu.
+- RLS wcześniej pozwalał zapisać protokół tylko administratorowi albo pracownikowi zapisanym w `jobs.completed_by`; UI jednocześnie pozwalał wszystkim pracownikom otwierać zakończone montaże i wejść w ponowny podpis.
+- `current_user_can_finalize_job()` nadal wymaga statusu `Zakończone`, ale nie wymaga już zgodności z `completed_by`.
+- UPDATE istniejącego `job_protocols` jest dozwolony każdemu pracownikowi zespołu dla zakończonego montażu; nowa wersja protokołu zostaje przypisana do aktualnie zalogowanego pracownika.
+- Polityka Storage korzysta z tej samej funkcji, więc ponowny upload PDF nie kończy się już `new row violates row-level security policy for table objects`.
+- Migracja `protocol_resign_shared_staff_v11.47` została zastosowana produkcyjnie i zweryfikowana na dokładnym przypadku Kacper → montaż zakończony przez Michała.
+
 ## 11.46
 - Druk do Phomemo nadal używa wyłącznie PNG; PDF pozostaje tylko źródłem zapisanym w WAWIS.
 - Po potwierdzeniu w Phomemo, że PNG 1800 px otwiera się jako 115 × 163 mm, szerokość renderowanego PNG zwiększono do 3307 px przy zachowaniu starego renderera PNG z 10.59.
