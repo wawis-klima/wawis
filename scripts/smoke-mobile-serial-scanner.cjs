@@ -17,6 +17,9 @@ const devicesSource = read('src', 'mobile791', 'modules', 'job-devices.js');
 const photosSource = read('src', 'mobile791', 'modules', 'photos.js');
 const jobsFormSource = read('src', 'mobile791', 'modules', 'jobs-form.js');
 const rotensoCatalogSource = read('src', 'mobile791', 'modules', 'rotenso-models.js');
+const mobileNameplateReaderSource = read('src', 'mobile791', 'modules', 'nameplate-reader.js');
+const barcodeReaderSource = read('src', 'modules', 'desktop-nameplate-barcode.js');
+const focusedOcrSource = read('src', 'modules', 'desktop-nameplate-model-ocr.js');
 const e2eSource = read('tests', 'e2e', 'mobile-serial-scanner.spec.js');
 const packageJson = JSON.parse(read('package.json'));
 
@@ -57,6 +60,14 @@ assert.match(wizardSource, /validateSinglePhotoModel/);
 assert.match(rotensoCatalogSource, /Niezgodny zestaw Single/);
 assert.match(captureSource, /compatibilityError/);
 assert.match(captureSource, /validateModel/);
+assert.match(mobileNameplateReaderSource, /MOBILE_IMAGE_MAX_DIMENSION = 1800/);
+assert.match(mobileNameplateReaderSource, /scanDesktopNameplateBarcodes\(file,[\s\S]*maxDimension: MOBILE_IMAGE_MAX_DIMENSION/);
+assert.match(mobileNameplateReaderSource, /scanDesktopNameplateSerialText\(file,[\s\S]*maxDimension: MOBILE_IMAGE_MAX_DIMENSION/);
+assert.match(mobileNameplateReaderSource, /scanDesktopNameplateModelCode\(file,[\s\S]*maxDimension: MOBILE_IMAGE_MAX_DIMENSION/);
+assert.match(barcodeReaderSource, /releaseVariants\(variants\)/);
+assert.match(barcodeReaderSource, /maxDimension/);
+assert.match(focusedOcrSource, /preparedImage = prepareRegion/);
+assert.match(focusedOcrSource, /maxDimension = 3000/);
 assert.doesNotMatch(wizardSource, />Zapisz urządzenie</);
 assert.match(wizardStyles, /\.mobileDeviceWizard/);
 assert.match(wizardStyles, /\.mobileDevicePickerSheet/);
@@ -148,6 +159,12 @@ assert.match(e2eSource, /toBeEnabled/);
   const devices = await import(pathToFileURL(path.join(root, 'src', 'mobile791', 'modules', 'job-devices.js')).href);
   const requirements = await import(pathToFileURL(path.join(root, 'src', 'mobile791', 'modules', 'nameplate-requirements.js')).href);
   const rotensoCatalog = await import(pathToFileURL(path.join(root, 'src', 'mobile791', 'modules', 'rotenso-models.js')).href);
+  const barcode = await import(pathToFileURL(path.join(root, 'src', 'modules', 'desktop-nameplate-barcode.js')).href);
+
+  const highResScale = barcode.getNameplateCanvasScale(8064, 6048, { maxDimension: 1800 });
+  assert.ok((8064 * highResScale) <= 1800.001, 'Mobile barcode canvas must cap a 48 MP photo at 1800 px');
+  assert.equal(barcode.getNameplateCanvasScale(8064, 6048), 1, 'Desktop/default barcode scan must preserve current full-resolution behavior');
+  assert.equal(barcode.getNameplateCanvasScale(1200, 800, { maxDimension: 1800 }), 1.5, 'Small mobile photos may still be enlarged to the target reading size');
 
   const indoorModelNames = rotensoCatalog.getRotensoModelNames({ deviceType: devices.DEVICE_TYPE_SINGLE, unitRef: 'jz' });
   assert.ok(indoorModelNames.length >= 24);
