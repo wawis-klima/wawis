@@ -1,27 +1,26 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.46
-
-## Tryb
-- mobile / hotfix
+- 11.47
 
 ## Zakres
-- Phomemo nadal otrzymuje jeden plik PNG
-- szerokość PNG 3307 px zamiast 1800 px
-- zachowany dokładny renderer PNG z 10.59
-- brak udostępniania PDF do Phomemo
+- ponowne podpisanie protokołu zakończonego montażu przez innego pracownika
+- spójne uprawnienia RLS dla Storage i job_protocols
+- bez zmian w treści PDF
 
-## Kryteria wydania
-- shareStoredJobProtocol wysyła wyłącznie image/png
-- renderer nie zawiera ścieżki share-pdf
-- test obrazu potwierdza 3307 px szerokości i proporcje A4
-- regresje, E2E i build muszą być zielone
+## Dowód błędu
+- Storage API zwracał 403 RLS przy ponownym zapisie protokołu przez pracownika innego niż autor zakończenia
+- dokładny przypadek został potwierdzony w logach produkcyjnych
 
-## Wynik wdrożenia
+## Naprawa
+- current_user_can_finalize_job wymaga członka zespołu i statusu Zakończone
+- UPDATE job_protocols pozwala zastąpić istniejący protokół pracownikowi zespołu
+- nowa wersja protokołu zapisuje created_by aktualnego użytkownika
+- migracja produkcyjna została zastosowana i zweryfikowana
+
+## Wynik wydania
 - WAWIS PR checks: PENDING
-- targeted regressions: PENDING
-- wymagane E2E: PENDING
 - produkcyjny build: PENDING
-- deployment produkcyjny: PENDING
-- merge produkcyjny: PENDING
+- Vercel: PENDING
+- Cloudflare: PENDING
+- merge: PENDING
