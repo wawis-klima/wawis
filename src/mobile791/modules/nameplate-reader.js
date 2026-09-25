@@ -1,7 +1,6 @@
 import { buildDeviceModelValue } from '../../modules/desktop-nameplate-reader-utils.js';
 import {
   getNameplateTargetMismatch,
-  inferNameplateUnitType,
   scanDesktopNameplateBarcodes,
 } from '../../modules/desktop-nameplate-barcode.js';
 import { readDesktopNameplateWithAi } from '../../modules/desktop-nameplate-ai.js';
@@ -159,32 +158,6 @@ function getTargetLabel(unitRef = '') {
   return normalized.toUpperCase() || 'tabliczka';
 }
 
-function inferUnitTypeFromText(...values) {
-  const text = values.filter(Boolean).join('\n').toUpperCase();
-  if (/\bOUTDOOR\s+UNIT\b/.test(text)) return 'outdoor';
-  if (/\bINDOOR\s+UNIT\b/.test(text)) return 'indoor';
-  return '';
-}
-
-function resolveDetectedUnitType({
-  exactModel = null,
-  aiResult = null,
-  serialTextResult = null,
-  modelTextResult = null,
-} = {}) {
-  const modelType = inferNameplateUnitType(exactModel);
-  if (modelType) return modelType;
-  const aiType = String(aiResult?.aiResult?.unit_type || aiResult?.unit_type || '').toLowerCase();
-  if (['indoor', 'outdoor'].includes(aiType)) return aiType;
-  return inferUnitTypeFromText(
-    aiResult?.rawText,
-    aiResult?.aiResult?.raw_text,
-    aiResult?.aiResult?.notes,
-    serialTextResult?.rawText,
-    modelTextResult?.rawText,
-  );
-}
-
 function buildResolvedModelValue({ manufacturer = '', model = '', power = '' } = {}) {
   const normalizedModel = normalizeText(model);
   const normalizedPower = normalizeText(power);
@@ -303,7 +276,6 @@ export async function readMobileNameplate({
     ...localModel,
     serialNumber,
     exactModel,
-    detectedUnitType: resolveDetectedUnitType({ exactModel, serialTextResult, modelTextResult }),
     mismatch: localMismatch,
     barcodeInfo: { ...barcodeInfo, rotensoModel: exactModel },
     serialTextResult,
@@ -377,12 +349,6 @@ export async function readMobileNameplate({
       modelValue,
       serialNumber: finalSerial,
       exactModel: finalExactModel,
-      detectedUnitType: resolveDetectedUnitType({
-        exactModel: finalExactModel,
-        aiResult,
-        serialTextResult,
-        modelTextResult,
-      }),
       mismatch,
       barcodeInfo: { ...barcodeInfo, rotensoModel: finalExactModel },
       serialTextResult,
