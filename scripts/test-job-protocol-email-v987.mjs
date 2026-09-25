@@ -94,6 +94,8 @@ assert.match(modal, /sendJobProtocolEmail/);
 assert.match(modal, /Wyślij z \$\{JOB_PROTOCOL_EMAIL_SENDER\}/);
 assert.match(modal, /Do: \$\{recipientEmail\}/);
 assert.doesNotMatch(modal, /Wybierz aplikację Mail|Wiadomość z linkiem/);
-assert.doesNotMatch(storageModule, /mailto:|createSignedUrl/);
+assert.doesNotMatch(storageModule, /mailto:/);
+assert.match(storageModule, /openStoredJobProtocolPdfPreview/);
+assert.match(storageModule, /createSignedUrl\(record\.storage_path, PROTOCOL_PDF_PREVIEW_TTL_SECONDS\)/);
 
 console.log('PASS test-job-protocol-email-v987');
