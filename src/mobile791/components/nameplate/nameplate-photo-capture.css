@@ -499,18 +499,9 @@
 
 .nameplateVerifyTarget {
   color: #1d4ed8;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.2;
   font-weight: 900;
-}
-
-.nameplateVerifyInstruction {
-  display: block;
-  max-width: 31rem;
-  color: #475569;
-  font-size: 9.5px;
-  line-height: 1.25;
-  font-weight: 700;
 }
 
 .nameplateVerifyHeader .nameplateCropClose {
@@ -699,11 +690,7 @@
   }
 
   .nameplateVerifyTarget {
-    font-size: 11px;
-  }
-
-  .nameplateVerifyInstruction {
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .nameplateVerifyBody {
