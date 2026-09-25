@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.46
+- 11.47
 
-Wersja 11.46 nadal wysyła do Phomemo wyłącznie PNG, ale skaluje je do 3307 px szerokości na podstawie faktycznego odczytu 115 mm dla PNG 1800 px w aplikacji Phomemo.
+Wersja 11.47 naprawia ponowne podpisanie istniejącego protokołu przez innego pracownika zespołu: zakończony montaż może ponownie zapisać każdy pracownik z dostępem do aplikacji, a Storage i tabela job_protocols używają spójnego RLS.
 
-# Wawis Klimatyzacja — wersja 11.46
+# Wawis Klimatyzacja — wersja 11.47
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
