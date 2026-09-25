@@ -487,7 +487,7 @@
 .nameplateVerifyHeader > div {
   min-width: 0;
   display: grid;
-  gap: 1px;
+  gap: 2px;
 }
 
 .nameplateVerifyHeader strong {
@@ -497,13 +497,20 @@
   font-weight: 900;
 }
 
-.nameplateVerifyHeader span {
-  overflow: hidden;
-  color: #64748b;
-  font-size: 10px;
+.nameplateVerifyTarget {
+  color: #1d4ed8;
+  font-size: 12px;
   line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: 900;
+}
+
+.nameplateVerifyInstruction {
+  display: block;
+  max-width: 31rem;
+  color: #475569;
+  font-size: 9.5px;
+  line-height: 1.25;
+  font-weight: 700;
 }
 
 .nameplateVerifyHeader .nameplateCropClose {
@@ -532,7 +539,7 @@
   width: auto !important;
   max-width: min(78vw, 420px) !important;
   height: auto !important;
-  max-height: 24dvh !important;
+  max-height: 22dvh !important;
   margin: 0 auto 8px;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
@@ -689,6 +696,14 @@
   .nameplateVerifyHeader {
     padding-top: max(7px, env(safe-area-inset-top));
     padding-bottom: 6px;
+  }
+
+  .nameplateVerifyTarget {
+    font-size: 11px;
+  }
+
+  .nameplateVerifyInstruction {
+    font-size: 9px;
   }
 
   .nameplateVerifyBody {
