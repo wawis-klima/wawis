@@ -358,28 +358,38 @@ export async function createProtocolPrintImage(pdfBlob, pdfFileName) {
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    let offsetY = 0;
-    for (let index = 0; index < pages.length; index += 1) {
-      const { page } = pages[index];
-      const viewport = viewports[index];
-      const pageCanvas = document.createElement("canvas");
-      pageCanvas.width = Math.ceil(viewport.width);
-      pageCanvas.height = Math.ceil(viewport.height);
-      const pageContext = pageCanvas.getContext("2d", { alpha: false });
-      if (!pageContext) throw new Error("Nie udało się przygotować strony protokołu do wydruku.");
-
+    if (pages.length === 1) {
+      const { page } = pages[0];
       await page.render({
-        canvasContext: pageContext,
-        viewport,
+        canvasContext: context,
+        viewport: viewports[0],
         background: "#ffffff",
       }).promise;
-
-      const offsetX = Math.floor((canvas.width - pageCanvas.width) / 2);
-      context.drawImage(pageCanvas, offsetX, offsetY);
-      offsetY += pageCanvas.height + PRINT_IMAGE_PAGE_GAP;
       page.cleanup();
-      pageCanvas.width = 1;
-      pageCanvas.height = 1;
+    } else {
+      let offsetY = 0;
+      for (let index = 0; index < pages.length; index += 1) {
+        const { page } = pages[index];
+        const viewport = viewports[index];
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = Math.ceil(viewport.width);
+        pageCanvas.height = Math.ceil(viewport.height);
+        const pageContext = pageCanvas.getContext("2d", { alpha: false });
+        if (!pageContext) throw new Error("Nie udało się przygotować strony protokołu do wydruku.");
+
+        await page.render({
+          canvasContext: pageContext,
+          viewport,
+          background: "#ffffff",
+        }).promise;
+
+        const offsetX = Math.floor((canvas.width - pageCanvas.width) / 2);
+        context.drawImage(pageCanvas, offsetX, offsetY);
+        offsetY += pageCanvas.height + PRINT_IMAGE_PAGE_GAP;
+        page.cleanup();
+        pageCanvas.width = 1;
+        pageCanvas.height = 1;
+      }
     }
 
     const imageBlob = await canvasToBlob(canvas, PRINT_IMAGE_MIME_TYPE);
