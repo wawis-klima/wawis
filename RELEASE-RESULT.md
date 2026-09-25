@@ -1,28 +1,26 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.42
+- 11.43
 
 ## Tryb
 - mobile / hotfix
 
 ## Zakres
-- naprawa zapisu protokołu pracownika po globalnym timeout Supabase 12 s
-- pominięcie pustego UPDATE płatności, gdy potwierdzenie zapłaty jest wyłączone i bez zmian
-- kontrolowany RLS dla aktualizacji wyłącznie płatności po zakończeniu przez pracownika, który zakończył zlecenie
-- przyjazny komunikat dla timeoutu Supabase zamiast technicznego AbortError
+- naprawa regresji rozmiaru wydruku protokołu w Phomemo M832
+- przywrócenie sprawdzonego renderu PNG 1800 px
+- zachowanie proporcji A4 bez błędnego przeliczania fizycznego rozmiaru przez założone 400 DPI
+- bez zmian w PDF, Supabase, RLS, Storage i danych
 
 ## Kryteria wydania
-- `WAWIS PR checks / targeted-checks` musi być zielony
-- `test:smoke:mobile-payment` musi potwierdzić brak requestu dla płatności bez zmian
-- `test:smoke:mobile-protocol-save` musi potwierdzić obsługę timeoutów
-- `test:smoke:mobile-thumbnail-recovery` musi potwierdzić osobne limity REST / podpis zdjęcia / Storage
-- migracja RLS musi być zastosowana i sprawdzona advisorami Supabase
+- test obrazu protokołu musi potwierdzić szerokość 1800 px
+- obraz musi zachować proporcje A4
+- test nie może ponownie wyliczać fizycznego rozmiaru Phomemo z założonego DPI
+- pełny build i wymagane testy PR muszą być zielone
 
 ## Wynik wdrożenia
-- WAWIS PR checks: GREEN
-- targeted regressions: GREEN
-- Supabase migration: APPLIED + VERIFIED
-- produkcyjny build: GREEN w PR checks
-- deployment produkcyjny: RETRY po ustawieniu ready_for_main=true
+- WAWIS PR checks: PENDING
+- targeted regressions: PENDING
+- produkcyjny build: PENDING
+- deployment produkcyjny: PENDING
 - merge produkcyjny: PENDING
