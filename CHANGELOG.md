@@ -1,3 +1,12 @@
+## 11.40
+- Pracownik mobilny może otworzyć edycję aktywnego montażu i uzupełnić lub poprawić dane klienta: nazwę, telefon, e-mail, miejscowość oraz ulicę/numer.
+- Edycja pracownika nadal nie udostępnia pól administratora; zapis pracownika nie wysyła pól takich jak komentarz administratora, główny monter ani ustawienia administracyjne SMS.
+- Zakończone zlecenia pozostają zablokowane dla edycji pracownika, aby zapisany protokół PDF nie rozjechał się z danymi po podpisie.
+- Naprawiono pomniejszony wydruk protokołu w Phomemo M832: obraz drukowany ma szerokość 3307 px, co odpowiada 210 mm przy 400 DPI i przywraca pełny format A4 210 × 297 mm.
+- Jednostronicowy protokół A4 renderuje się bez dodatkowego dużego canvasa, aby ograniczyć zużycie pamięci podczas przygotowania wydruku.
+- Rozszerzono regresje o widoczność edycji klienta dla pracownika oraz fizyczny rozmiar A4 obrazu przekazywanego do Phomemo.
+- Bez zmian w schemacie Supabase, RLS, Storage i Edge Functions.
+
 ## 11.39
 - Naprawiono ryzyko wysypania karty Safari podczas mobilnego odczytu tabliczki znamionowej.
 - Czytnik kodów nie utrzymuje już jednocześnie pełnego zestawu dużych canvasów podczas prostowania i kolejnych wariantów obrazu.
