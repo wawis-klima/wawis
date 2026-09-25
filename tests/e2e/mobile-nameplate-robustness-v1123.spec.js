@@ -153,6 +153,39 @@ test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach teren
     await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Wpisz ręcznie', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Zrób zdjęcie ponownie', exact: true })).toBeVisible();
+
+    const compactLightUi = await page.evaluate(() => {
+      const modal = document.querySelector('.nameplateVerifyModal');
+      const header = document.querySelector('.nameplateVerifyHeader');
+      const body = document.querySelector('.nameplateVerifyBody');
+      const image = document.querySelector('.nameplateVerifyImage');
+      const mismatch = document.querySelector('.nameplateVerifyMismatch');
+      const inputs = [...document.querySelectorAll('.nameplateVerifyField .input')];
+      const buttons = [...document.querySelectorAll('.nameplateVerifyFooter .btn')];
+      const title = document.querySelector('.nameplateVerifyHeader strong');
+      return {
+        modalBg: modal ? getComputedStyle(modal).backgroundColor : '',
+        modalColor: modal ? getComputedStyle(modal).color : '',
+        headerBg: header ? getComputedStyle(header).backgroundColor : '',
+        titleFont: title ? parseFloat(getComputedStyle(title).fontSize) : 99,
+        bodyScrollHeight: body?.scrollHeight || 0,
+        bodyClientHeight: body?.clientHeight || 0,
+        imageHeight: image?.getBoundingClientRect().height || 0,
+        mismatchFont: mismatch ? parseFloat(getComputedStyle(mismatch).fontSize) : 99,
+        inputHeights: inputs.map((node) => node.getBoundingClientRect().height),
+        buttonHeights: buttons.map((node) => node.getBoundingClientRect().height),
+      };
+    });
+    expect(compactLightUi.modalBg).toBe('rgb(248, 250, 252)');
+    expect(compactLightUi.modalColor).toBe('rgb(15, 23, 42)');
+    expect(compactLightUi.headerBg).toBe('rgb(255, 255, 255)');
+    expect(compactLightUi.titleFont).toBeLessThanOrEqual(15);
+    expect(compactLightUi.imageHeight).toBeLessThanOrEqual(210);
+    expect(compactLightUi.mismatchFont).toBeLessThanOrEqual(10);
+    for (const height of compactLightUi.inputHeights) expect(height).toBeLessThanOrEqual(44);
+    for (const height of compactLightUi.buttonHeights) expect(height).toBeLessThanOrEqual(44);
+    expect(compactLightUi.bodyScrollHeight).toBeLessThanOrEqual(compactLightUi.bodyClientHeight + 4);
+
     expect(aiRequests).toBe(0);
   });
 
