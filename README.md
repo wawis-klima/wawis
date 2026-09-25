@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 11.36
 
-Wersja 11.36 wzmacnia informację, jakiej tabliczki wymaga mobilny ekran weryfikacji: nagłówek jednoznacznie pokazuje „Tabliczka znamionowa jednostki zewnętrznej (JZ)” lub „Tabliczka znamionowa jednostki wewnętrznej (JW)” oraz krótką instrukcję wykonania właściwego zdjęcia, bez utraty kompaktowego układu.
+Wersja 11.36 wzmacnia informację, jakiej tabliczki dotyczy mobilny ekran weryfikacji: pod tytułem widać krótki, mocny napis „Zdjęcie tabliczki JZ — jednostka zewnętrzna” albo „Zdjęcie tabliczki JW — jednostka wewnętrzna”, bez rozpychania ekranu.
 
 # Wawis Klimatyzacja — wersja 11.36
 
