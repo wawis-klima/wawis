@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.37
+- 11.38
 
-Wersja 11.37 blokuje błędne parowanie modeli w klimatyzatorze typu Single. Jednostka zewnętrzna JZ i wewnętrzna JW muszą należeć do tej samej rodziny modelu Rotenso; np. Imoto + Ukura nie może zostać potwierdzone ani zapisane jako jeden zestaw Single.
+Wersja 11.38 zmienia kolejność mobilnego kroku danych urządzenia: najpierw są tabliczki znamionowe JZ/JW i wykonanie zdjęć, a dopiero pod nimi Marka i Model, które mogą uzupełnić się z odczytu. Pole „Moc” zostało usunięte z tego ekranu jako zbędne powtórzenie informacji zawartej w rozpoznanym modelu.
 
-# Wawis Klimatyzacja — wersja 11.37
+# Wawis Klimatyzacja — wersja 11.38
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.
 - wersja `11.36` — ekran „Sprawdź tabliczkę” wyraźnie wskazuje, czy wymagane jest zdjęcie tabliczki JZ czy JW, i pokazuje krótką instrukcję dla instalatora.
 - wersja `11.35` — jasny, kompaktowy ekran weryfikacji tabliczki na mobile; niższe alerty, pola i przyciski oraz mniejszy podgląd zdjęcia.

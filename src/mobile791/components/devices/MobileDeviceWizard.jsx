@@ -518,9 +518,8 @@ export default function MobileDeviceWizard({
   function renderSelectorPanel() {
     return (
       <div className="mobileDeviceWizardSelectors">
-        <SelectionRow kind="brand" label="Marka" value={activeDescriptor.brand} placeholder="Wybierz markę" onClick={() => setPicker({ kind: 'brand' })} />
-        <SelectionRow kind="model" label="Model" value={activeDescriptor.model} placeholder={activeDescriptor.brand ? 'Wybierz model' : 'Najpierw wybierz markę'} disabled={!activeDescriptor.brand} onClick={() => setPicker({ kind: 'model' })} />
-        <SelectionRow kind="power" label="Moc" value={activeDescriptor.power} placeholder="Wybierz moc" onClick={() => setPicker({ kind: 'power' })} />
+        <SelectionRow kind="brand" label="Marka" value={activeDescriptor.brand} placeholder="Uzupełni się po odczycie tabliczki" onClick={() => setPicker({ kind: 'brand' })} />
+        <SelectionRow kind="model" label="Model" value={activeDescriptor.model} placeholder={activeDescriptor.brand ? 'Uzupełni się po odczycie tabliczki' : 'Najpierw zrób zdjęcie tabliczki'} disabled={!activeDescriptor.brand} onClick={() => setPicker({ kind: 'model' })} />
       </div>
     );
   }
@@ -555,7 +554,6 @@ export default function MobileDeviceWizard({
         <WizardHeader title="Dodaj urządzenie" step={2} onBack={() => setScreen('type')} onClose={onClose} />
         <div className="mobileDeviceWizardBody">
           <div className="mobileDeviceModeChip"><DeviceIcon /> Tryb: Single</div>
-          {renderSelectorPanel()}
           <div className="mobileDeviceWizardPhotoGroup">
             {renderPhotoCapture('jz', 'Jednostka zewnętrzna JZ')}
             {renderPhotoCapture('jw-1', 'Jednostka wewnętrzna JW')}
@@ -563,6 +561,7 @@ export default function MobileDeviceWizard({
               {outdoorPhoto.hasPhoto && indoorPhoto.hasPhoto ? 'Komplet zdjęć dodany' : `Dodano ${(outdoorPhoto.hasPhoto ? 1 : 0) + (indoorPhoto.hasPhoto ? 1 : 0)} z 2 tabliczek`}
             </div>
           </div>
+          {renderSelectorPanel()}
         </div>
         <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
         <PickerSheet picker={picker} descriptor={activeDescriptor} deviceType={activeDevice ? getDeviceType(activeDevice) : selectedType} unitRef={activeUnitRef} onApply={applyPicker} onClose={() => setPicker(null)} />
@@ -578,10 +577,10 @@ export default function MobileDeviceWizard({
         <WizardHeader title={activeUnitRef === 'jz' ? 'Jednostka zewnętrzna' : `Jednostka JW${unitNumber}`} step={3} onBack={() => setScreen('multi')} onClose={onClose} />
         <div className="mobileDeviceWizardBody">
           <div className="mobileDeviceModeChip"><UnitIcon outdoor={activeUnitRef === 'jz'} /> {unitLabel}</div>
-          {renderSelectorPanel()}
           <div className="mobileDeviceWizardPhotoGroup">
             {renderPhotoCapture(activeUnitRef, unitLabel)}
           </div>
+          {renderSelectorPanel()}
         </div>
         <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('multi')}>Zapisz jednostkę</button></div>
         <PickerSheet picker={picker} descriptor={activeDescriptor} deviceType={activeDevice ? getDeviceType(activeDevice) : selectedType} unitRef={activeUnitRef} onApply={applyPicker} onClose={() => setPicker(null)} />
@@ -601,7 +600,7 @@ export default function MobileDeviceWizard({
           <h3>Jednostka zewnętrzna</h3>
           <button type="button" className="mobileMultiOutdoorCard" onClick={() => openUnit('jz')}>
             <span className="mobileMultiOutdoorIcon"><UnitIcon outdoor /></span>
-            <span className="mobileMultiOutdoorText"><strong>JZ</strong><small>{getDeviceOutdoorModel(activeDevice) || 'Uzupełnij markę, model i moc'}</small><em className={outdoorPhoto.hasPhoto ? 'ready' : ''}>{outdoorPhoto.hasPhoto ? 'Tabliczka dodana' : 'Brak tabliczki'}</em></span>
+            <span className="mobileMultiOutdoorText"><strong>JZ</strong><small>{getDeviceOutdoorModel(activeDevice) || 'Najpierw dodaj tabliczkę znamionową'}</small><em className={outdoorPhoto.hasPhoto ? 'ready' : ''}>{outdoorPhoto.hasPhoto ? 'Tabliczka dodana' : 'Brak tabliczki'}</em></span>
             <ChevronIcon />
           </button>
           <h3>Jednostki wewnętrzne</h3>
