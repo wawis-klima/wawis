@@ -302,7 +302,7 @@ export async function saveEditedJobRecord({
   const nextAssignedUserIds = getAssignedUserIdsFromForm(resolvedForm);
   const newlyAssignedUserIds = nextAssignedUserIds.filter((userId) => !previousAssignedUserIds.includes(userId));
 
-  const { error } = await supabase.from('jobs').update({
+  const updatePayload = {
     title: resolvedForm.client.trim(),
     client: resolvedForm.client.trim(),
     email: resolvedForm.email.trim(),
@@ -312,15 +312,20 @@ export async function saveEditedJobRecord({
     location: `${resolvedForm.city.trim()}, ${resolvedForm.street.trim()}`,
     status: normalizeStatus(resolvedForm.status),
     installation_date: resolvedForm.installation_date || null,
-    admin_note: resolvedForm.admin_note.trim() || null,
-    main_technician_id: resolvedForm.main_technician_id || null,
-    sms_consent: true,
-    sms_reminder_enabled: true,
     sms_recipient_phone: resolvedForm.phone.trim() || null,
     contractor_id: resolvedForm.contractor_id || null,
     device_model: deviceFields.device_model || null,
     device_serial_number: deviceFields.device_serial_number || null,
-  }).eq('id', editingJobId);
+  };
+
+  if (isAdmin) {
+    updatePayload.admin_note = resolvedForm.admin_note.trim() || null;
+    updatePayload.main_technician_id = resolvedForm.main_technician_id || null;
+    updatePayload.sms_consent = true;
+    updatePayload.sms_reminder_enabled = true;
+  }
+
+  const { error } = await supabase.from('jobs').update(updatePayload).eq('id', editingJobId);
   if (error) throw error;
 
   await syncJobAccess({
