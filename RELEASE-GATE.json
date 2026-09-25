@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.36",
+  "version": "11.37",
   "scope": "mobile",
-  "release_branch": "release/v11.36",
+  "release_branch": "release/v11.37",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Przed 11.36: 10 error, 50 warning w ostatnich 24 h. Zmiana dotyczy wyłącznie treści i typografii nagłówka mobilnej weryfikacji tabliczki; brak zmian OCR/AI, RLS i schematu."
+    "notes": "Przed 11.37: 16 error, 74 warning w ostatnich 24 h. Zmiana dotyczy mobilnej walidacji modelu zestawu Single; brak zmian schematu, RLS, OCR/AI i Storage."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.36.zip"
+    "file_name": "klima-app-v11.37.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.36",
+    "source_branch": "release/v11.37",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Po produkcyjnym deployu 11.36 od 2026-09-25 04:13:03Z: 0 nowych error i 0 warning w app_diagnostic_events."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Do uzupełnienia po wdrożeniu 11.37."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.36 nie zmienia schematu ani RLS",
-    "rls_role_matrix": "PASS — bez zmian względem 11.35",
+    "supabase_migration_applied": "N/A — 11.37 nie zmienia schematu ani RLS",
+    "rls_role_matrix": "PASS — bez zmian względem 11.36",
     "performance_advisor": "N/A — brak zmian SQL",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "N/A — aktywny deployment produkcyjny realizuje Cloudflare Pages.",
-    "cloudflare_deployment": "PASS — Cloudflare Pages check run 107940840548, commit e08e17d, Deploy successful.",
-    "merge_commit": "e08e17d6352c78fb7d3a1b010588d0832c22f9ac"
+    "cloudflare_deployment": "PENDING — do potwierdzenia po merge do main.",
+    "merge_commit": "PENDING"
   }
 }
