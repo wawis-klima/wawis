@@ -1,8 +1,8 @@
 ## 11.36
-- W nagłówku mobilnego ekranu „Sprawdź tabliczkę” dodano mocno wyróżnioną informację, której tabliczki dotyczy weryfikacja.
-- Dla JZ ekran pokazuje: „Tabliczka znamionowa jednostki zewnętrznej (JZ)” oraz instrukcję wykonania zdjęcia tabliczki jednostki zewnętrznej klimatyzatora.
-- Dla JW ekran pokazuje: „Tabliczka znamionowa jednostki wewnętrznej (JW)” oraz odpowiednią instrukcję dla jednostki wewnętrznej.
-- Zwiększono czytelność celu zdjęcia bez powiększania całego ekranu; podgląd zdjęcia został delikatnie ograniczony, aby zachować kompaktowy układ.
+- Pod tytułem „Sprawdź tabliczkę” dodano krótki, mocno wyróżniony opis wymaganej jednostki.
+- Dla JZ ekran pokazuje: „Zdjęcie tabliczki JZ — jednostka zewnętrzna”.
+- Dla JW ekran pokazuje: „Zdjęcie tabliczki JW — jednostka wewnętrzna”.
+- Napis jest większy i bardziej kontrastowy niż w 11.35, ale bez dodatkowej długiej instrukcji, więc ekran pozostaje kompaktowy.
 - Test E2E kontroluje treść, wielkość wyróżnionej informacji oraz brak dodatkowego przewijania.
 
 ## 11.35
