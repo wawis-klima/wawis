@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.46",
-  "scope": "mobile",
-  "release_branch": "release/v11.46",
+  "version": "11.47",
+  "scope": "mobile+database",
+  "release_branch": "release/v11.47",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "REGRESSION",
-    "notes": "W 11.45 Phomemo otwierało PNG 1800 px jako 115 × 163 mm. Użytkownik potwierdził, że ręczne rozciągnięcie dwoma palcami do A4 działa. 11.46 zachowuje ścieżkę PNG i stary renderer, ale zwiększa raster do 3307 px na podstawie proporcji 210/115."
+    "notes": "Logi 2026-09-25 10:15 UTC potwierdziły dwa błędy Storage API: new row violates row-level security policy for table objects. Request był uwierzytelniony jako Kacper Wydmański, a montaż był zakończony przez Michała Fiutaka. Historyczna reguła current_user_can_finalize_job blokowała taki ponowny podpis."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.46.zip"
+    "file_name": "klima-app-v11.47.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.46",
+    "source_branch": "release/v11.47",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu na tym samym protokole użyć Drukuj protokół → Phomemo i sprawdzić wymiar W/H. Oczekiwane około 210 × 297 mm bez ręcznego rozciągania."
+    "notes": "Po wdrożeniu ponowić podpis na zakończonym montażu utworzonym/zakończonym przez innego pracownika i potwierdzić brak błędu Storage RLS."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,10 +32,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian w Supabase",
-    "rls_role_matrix": "N/A — brak zmian RLS",
-    "performance_advisor": "N/A — brak zmian bazodanowych",
-    "trigger_grants": "N/A — brak zmian triggerów/grantów",
+    "supabase_migration_applied": "YES — protocol_resign_shared_staff_v11_47",
+    "rls_role_matrix": "VERIFIED — Kacper can_finalize=true dla montażu f5ee9df5 zakończonego przez Michała",
+    "performance_advisor": "N/A — brak zmian indeksów/zapytań",
+    "trigger_grants": "N/A — brak zmian triggerów",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main",
     "merge_commit": ""
