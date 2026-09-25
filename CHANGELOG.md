@@ -1,3 +1,10 @@
+## 11.49
+- Po potwierdzeniu działania druku PDF przez Phomemo dodano niewielki bezpieczny margines wydruku.
+- Cała zawartość każdej strony PDF jest skalowana do 98% i pozostaje wyśrodkowana na prawdziwej stronie A4.
+- Daje to około 3 mm dodatkowego zapasu u góry i u dołu oraz około 2 mm po bokach, bez zmiany układu dokumentu.
+- Celem jest usunięcie delikatnego obcięcia górnej i dolnej krawędzi widocznego na wydruku M832.
+- Ścieżka 11.48 pozostaje bez zmian: `Drukuj protokół` nadal otwiera prawdziwy PDF w podglądzie iOS/Safari, a nie PNG.
+
 ## 11.48
 - Zmieniono mobilną akcję `Drukuj protokół`: zamiast konwertować PDF do PNG i wysyłać obraz przez Web Share, aplikacja otwiera zapisany protokół jako prawdziwy plik PDF w osobnym podglądzie iOS/Safari.
 - PDF jest otwierany przez krótko ważny podpisany adres prywatnego pliku z bucketu `job-protocols`; plik nie staje się publiczny.
