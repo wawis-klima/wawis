@@ -17,6 +17,8 @@ const timeoutSource = fs.readFileSync(path.join(root, 'src/mobile791/modules/pro
 assert.match(modalSource, /withProtocolSaveTimeout\(saveOperation/);
 assert.match(modalSource, /timeoutMs: PROTOCOL_SAVE_TOTAL_TIMEOUT_MS/);
 assert.match(modalSource, /logDiagnostic\("protocol\.save\.timeout"/);
+assert.match(modalSource, /SUPABASE_REQUEST_TIMEOUT/);
+assert.match(modalSource, /supabase request timeout\|aborterror/);
 assert.match(modalSource, /finally\s*\{[\s\S]*?setIsGenerating\(false\)/);
 assert.match(timeoutSource, /Ekran został odblokowany/);
 assert.doesNotMatch(
