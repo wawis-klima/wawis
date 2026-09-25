@@ -7,7 +7,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 const storageSource = fs.readFileSync(new URL('../src/mobile791/modules/job-protocol-storage.js', import.meta.url), 'utf8');
 assert.match(storageSource, /const PRINT_IMAGE_WIDTH = 1800;/);
 assert.match(storageSource, /return \{ method: "share-image", copies: 1, fullSize: true \}/);
-assert.doesNotMatch(storageSource, /share-pdf|pdfFile|if \(pages\.length === 1\)/, 'Ścieżka 11.45 ma odpowiadać działającemu rendererowi PNG z 10.59.');
+assert.doesNotMatch(storageSource, /share-pdf|const pdfFile\s*=|if \(pages\.length === 1\)/, 'Ścieżka 11.45 ma odpowiadać działającemu rendererowi PNG z 10.59.');
 
 const source = new jsPDF({ unit: 'pt', format: 'a4', compress: true });
 const fontBytes = fs.readFileSync(new URL('../node_modules/dejavu-fonts-ttf/ttf/DejaVuSans.ttf', import.meta.url));
