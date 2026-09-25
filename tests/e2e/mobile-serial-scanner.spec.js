@@ -313,6 +313,40 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.screenshot({ path: testInfo.outputPath('v11.34-step2-compact.png'), fullPage: true });
   });
 
+  test('v11.37 — Single blokuje zapis, gdy JZ i JW mają różne rodziny modelu', async ({ page }) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
+
+    await page.evaluate((storeKey) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      const job = (store.jobs || []).find((item) => item.id === 'mock-job-002');
+      if (job) {
+        job.device_model = 'JW: Rotenso Ukura 3,5 kW U35Xi R17 | JZ: Rotenso Imoto 3,5 kW I35Xo R14';
+        job.device_serial_number = 'JW: UKURA-JW-001 | JZ: IMOTO-JZ-001';
+        delete job.devices;
+      }
+      window.localStorage.setItem(storeKey, JSON.stringify(store));
+    }, MOCK_STORE_KEY);
+
+    await page.reload();
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
+    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
+
+    let dialogMessage = '';
+    page.once('dialog', async (dialog) => {
+      dialogMessage = dialog.message();
+      await dialog.dismiss();
+    });
+    await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
+    await expect.poll(() => dialogMessage, { timeout: 5_000 }).toContain('Niezgodny zestaw Single');
+    expect(dialogMessage).toContain('JZ to Imoto');
+    expect(dialogMessage).toContain('JW to Ukura');
+    await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
+  });
+
   test('automatycznie odczytuje prawdziwe pola modelu i SN z czytelnej tabliczki Rotenso', async ({ page }) => {
     test.setTimeout(150_000);
     await resetMockSupabase(page);
