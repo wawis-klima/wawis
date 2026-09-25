@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.42
+- 11.43
 
-Wersja 11.42 naprawia zapis protokołu na koncie pracownika: usuwa przedwczesny 12-sekundowy timeout zwykłych requestów Supabase, pomija pusty zapis płatności i przywraca kontrolowaną możliwość aktualizacji pól płatności po zakończeniu zlecenia.
+Wersja 11.43 przywraca sprawdzony pełny format wydruku protokołu w Phomemo M832: obraz PNG wraca do szerokości 1800 px, a test nie wylicza już fizycznego rozmiaru z założonego DPI.
 
-# Wawis Klimatyzacja — wersja 11.42
+# Wawis Klimatyzacja — wersja 11.43
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
