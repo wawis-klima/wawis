@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.34
+- 11.35
 
-Wersja 11.34 naprawia właściwą przyczynę zbyt dużych kafli w mobilnym kreatorze: grid nie rozciąga już wierszy do wolnej wysokości ekranu. Single/Multi, Marka/Model/Moc, karta „Urządzenie 1” i „Dodaj kolejne urządzenie” zachowują teraz swoje kompaktowe wymiary niezależnie od ilości pustego miejsca.
+Wersja 11.35 ujednolica mobilny ekran „Sprawdź tabliczkę” z jasnym motywem całej aplikacji i zmniejsza jego elementy: nagłówek, podgląd zdjęcia, komunikaty, pola Model/SN oraz dolne przyciski są bardziej kompaktowe i mieszczą się bez zbędnego przewijania na iPhonie.
 
-# Wawis Klimatyzacja — wersja 11.34
+# Wawis Klimatyzacja — wersja 11.35
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.35` — jasny, kompaktowy ekran weryfikacji tabliczki na mobile; niższe alerty, pola i przyciski oraz mniejszy podgląd zdjęcia.
 - wersja `11.34` — mobilny grid kreatora nie rozciąga już kart; dodano test E2E na iPhonie z twardymi limitami wysokości i szerokości dla kroków 1, 2 i 4.
 - wersja `11.33` — mniejsze podsumowanie urządzenia, kompaktowy przycisk dodania kolejnego urządzenia i niższe przyciski zdjęcia/galerii w tabliczkach.
 - wersja `11.32` — mobilny kreator urządzeń ma mniejszy jednoliniowy nagłówek oraz bardziej kompaktowe karty Single/Multi i pola Marka/Model/Moc.
