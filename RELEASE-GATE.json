@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.44",
+  "version": "11.45",
   "scope": "mobile",
-  "release_branch": "release/v11.44",
+  "release_branch": "release/v11.45",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "REGRESSION",
-    "notes": "Po wdrożeniu 11.43 Phomemo nadal pokazało protokół jako pomniejszony obraz wewnątrz A4. Zrzut 11:01 potwierdził, że zmiana szerokości PNG nie rozwiązuje problemu. 11.44 omija edytor obrazu i udostępnia oryginalny PDF A4."
+    "notes": "11.44 było błędnym kierunkiem, bo Phomemo M832 nie pojawia się w iOS dla PDF. Użytkownik potwierdził, że wcześniejsza ścieżka PNG drukowała pełne A4. 11.45 przywraca dokładny blok renderowania i udostępniania PNG z 10.59."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.44.zip"
+    "file_name": "klima-app-v11.45.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.44",
+    "source_branch": "release/v11.45",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu otworzyć zapisany protokół i użyć Drukuj protokół. W menu iOS wybrać Phomemo; dokument powinien wejść jako PDF A4, bez ekranu pomniejszonego obiektu obrazu."
+    "notes": "Po wdrożeniu na tym samym zapisanym protokole użyć Drukuj protokół → Phomemo. Phomemo ma być dostępne w menu iOS, a przekazywany plik ma być PNG z renderera 10.59."
   },
   "archive": {
     "source_of_truth": "github-main",

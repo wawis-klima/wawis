@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.44
+- 11.45
 
-Wersja 11.44 przekazuje do Phomemo M832 bezpośrednio zapisany PDF A4. Dzięki temu protokół trafia do trybu dokumentu zamiast jako pomniejszony obraz PNG osadzony wewnątrz strony A4.
+Wersja 11.45 przywraca dokładną, historycznie działającą ścieżkę druku PNG z wersji 10.59: PDF pozostaje dokumentem WAWIS, a do Phomemo M832 trafia pojedynczy obraz PNG 1800 px.
 
-# Wawis Klimatyzacja — wersja 11.44
+# Wawis Klimatyzacja — wersja 11.45
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.44` — druk protokołu w Phomemo M832 używa bezpośrednio PDF A4; PNG pozostaje tylko awaryjnym fallbackiem.
+- wersja `11.45` — przywrócono 1:1 działającą ścieżkę PNG z 10.59; Phomemo ponownie dostaje wyłącznie pojedynczy obraz protokołu.
 - wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.

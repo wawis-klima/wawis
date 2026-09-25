@@ -1,3 +1,11 @@
+## 11.45
+- Cofnięto błędną próbę druku PDF z 11.44. Phomemo M832 nie jest dostępne w menu iPhone'a dla PDF.
+- Przywrócono dokładną ścieżkę druku PNG z wersji 10.59, zamiast kolejnych wariantów opartych na nowych założeniach.
+- `Drukuj protokół` ponownie pobiera zapisany PDF, renderuje go do pojedynczego PNG 1800 px szerokości i udostępnia wyłącznie ten obraz do Phomemo.
+- Przywrócono także dokładny sposób renderowania strony przez osobny canvas, bez optymalizacji dodanej później dla dokumentu jednostronicowego.
+- Testy blokują powrót do ścieżki PDF oraz wymagają identycznego mechanizmu PNG jak w działającym wydaniu 10.59.
+- Bez zmian w treści protokołu PDF, Supabase, RLS, Storage i danych klientów.
+
 ## 11.44
 - Naprawiono druk pełnej strony A4 w Phomemo M832 przez zmianę podstawowej ścieżki z obrazu PNG na oryginalny zapisany PDF A4.
 - `Drukuj protokół` pobiera zapisany PDF i przekazuje go do menu udostępniania iPhone'a jako plik `application/pdf` z nazwą `.pdf`.
