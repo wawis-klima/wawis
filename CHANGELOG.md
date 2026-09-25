@@ -1,3 +1,11 @@
+## 11.44
+- Naprawiono druk pełnej strony A4 w Phomemo M832 przez zmianę podstawowej ścieżki z obrazu PNG na oryginalny zapisany PDF A4.
+- `Drukuj protokół` pobiera zapisany PDF i przekazuje go do menu udostępniania iPhone'a jako plik `application/pdf` z nazwą `.pdf`.
+- Phomemo otwiera dokument w trybie drukowania dokumentów, dzięki czemu nie osadza protokołu jako mniejszego obiektu około 115 × 163 mm wewnątrz strony A4.
+- Konwersja PDF → PNG pozostaje wyłącznie awaryjnym fallbackiem dla urządzeń, które nie potrafią udostępnić PDF.
+- Test zapisu protokołu wymusza teraz PDF jako pierwszą metodę i blokuje przypadkowy powrót do PNG jako ścieżki podstawowej.
+- Bez zmian w samym PDF protokołu, Supabase, RLS, Storage, danych klientów i podpisach.
+
 ## 11.43
 - Naprawiono regresję wydruku protokołu w Phomemo M832 widoczną jako około 115 × 163 mm zamiast pełnego A4.
 - Przywrócono sprawdzony wcześniej rozmiar renderowanego obrazu 1800 px; ten wariant był używany, gdy pojedynczy obraz trafiał do Phomemo jako pełnowymiarowy wydruk.
