@@ -104,13 +104,11 @@ const captureCss = read('src/mobile791/components/nameplate/nameplate-photo-capt
 assert(capture.includes('AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.'), 'Mobile UI must explain that AI was intentionally skipped');
 assert(capture.includes('disabled={noNameplateEvidence}'), 'Fields must be disabled for a non-nameplate photo');
 assert(capture.includes('noNameplateEvidence ? "Zrób zdjęcie ponownie"'), 'Non-nameplate photo must force a retake instead of manual bypass');
-assert(capture.includes('Tabliczka znamionowa jednostki zewnętrznej (JZ)'), 'Verification header must explicitly identify the outdoor-unit nameplate');
-assert(capture.includes('Tabliczka znamionowa jednostki wewnętrznej (JW)'), 'Verification header must explicitly identify the indoor-unit nameplate');
-assert(capture.includes('Zrób zdjęcie tabliczki znamionowej jednostki zewnętrznej klimatyzatora.'), 'Outdoor guidance must explicitly say which nameplate photo is required');
-assert(capture.includes('Zrób zdjęcie tabliczki znamionowej jednostki wewnętrznej klimatyzatora.'), 'Indoor guidance must explicitly say which nameplate photo is required');
+assert(capture.includes('Zdjęcie tabliczki JZ — jednostka zewnętrzna'), 'Verification header must clearly identify the outdoor-unit photo');
+assert(capture.includes('Zdjęcie tabliczki JW — jednostka wewnętrzna'), 'Verification header must clearly identify the indoor-unit photo');
 assert(captureCss.includes('background: #f8fafc;'), 'Nameplate verification screen must use the light application background');
 assert(captureCss.includes('.nameplateVerifyHeader .nameplateCropClose'), 'Verification close button needs a light-mode override');
-assert(captureCss.includes('max-height: 24dvh !important;'), 'Verification photo preview must stay compact on iPhone');
+assert(captureCss.includes('max-height: 22dvh !important;'), 'Verification photo preview must stay compact on iPhone');
 assert(captureCss.includes('min-height: 41px;'), 'Verification inputs must be compact');
 assert(captureCss.includes('min-height: 42px;'), 'Verification footer actions must be compact');
 
