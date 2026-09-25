@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.49
+- 11.50
 
-Wersja 11.49 zachowuje natywny podgląd PDF z 11.48 i skaluje treść protokołu do 98% w obrębie strony A4, aby Phomemo nie ucinało delikatnie góry i dołu wydruku.
+Wersja 11.50 naprawia desktopowy status tabliczek po usunięciu urządzeń: pełne odświeżenie traktuje pustą odpowiedź Supabase jako aktualny stan i usuwa stary zielony status z lokalnego cache.
 
-# Wawis Klimatyzacja — wersja 11.49
+# Wawis Klimatyzacja — wersja 11.50
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.49` — zachowano natywny druk PDF i dodano 2% bezpieczne zmniejszenie treści strony, wyśrodkowane na A4.
+- wersja `11.50` — desktop nie przywraca już z cache starego statusu `Potwierdzone 2/2`, gdy Supabase zwraca brak urządzeń i tabliczek.
 - wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.

@@ -1,3 +1,10 @@
+## 11.50
+- Naprawiono fałszywy zielony status `Potwierdzone 2/2` na desktopowej liście Montaże po wcześniejszym usunięciu urządzeń/tabliczek.
+- Przy pełnym odświeżeniu poprawna pusta odpowiedź z Supabase jest teraz stanem autorytatywnym i czyści stare `nameplatePhotosMeta` oraz `nameplateVerifications` z lokalnej migawki.
+- Stary status jest zachowywany tylko wtedy, gdy zbiorczy odczyt tabliczek jest jeszcze w toku albo chwilowo niedostępny; po prawidłowej odpowiedzi serwera cache nie może już przywrócić usuniętych urządzeń.
+- Naprawiono również możliwość pozostania starej flagi brakującej tabeli ręcznych potwierdzeń po późniejszym prawidłowym odczycie.
+- Dodano regresję 11.50: cache 2/2 + autorytatywna pusta odpowiedź serwera musi dać pustą listę statusu.
+
 ## 11.49
 - Po potwierdzeniu działania druku PDF przez Phomemo dodano niewielki bezpieczny margines wydruku.
 - Cała zawartość każdej strony PDF jest skalowana do 98% i pozostaje wyśrodkowana na prawdziwej stronie A4.

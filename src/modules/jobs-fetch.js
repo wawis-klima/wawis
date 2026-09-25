@@ -212,6 +212,18 @@ function groupRowsByJobId(rows = []) {
   return map;
 }
 
+function resolveNameplateOverviewRows({
+  groupedRows,
+  jobId,
+  previousRows = [],
+  overviewPending = false,
+}) {
+  const previous = Array.isArray(previousRows) ? previousRows : [];
+  if (overviewPending) return previous;
+  if (!groupedRows || typeof groupedRows.get !== 'function') return [];
+  return groupedRows.get(String(jobId || '')) || [];
+}
+
 function buildCombinedJobs({
   jobsData,
   accessData,
@@ -238,9 +250,21 @@ function buildCombinedJobs({
       detailsLoaded: previousDetails?.detailsLoaded || false,
       detailsLoadedAt: previousDetails?.detailsLoadedAt || null,
       detailsLoadError: previousDetails?.detailsLoadError || '',
-      nameplatePhotosMeta: nameplatePhotosByJobId.get(jobId) || previousDetails?.nameplatePhotosMeta || [],
-      nameplateVerifications: nameplateVerificationsByJobId.get(jobId) || previousDetails?.nameplateVerifications || [],
-      nameplateVerificationTableMissing: nameplateVerificationTableMissing || previousDetails?.nameplateVerificationTableMissing || false,
+      nameplatePhotosMeta: resolveNameplateOverviewRows({
+        groupedRows: nameplatePhotosByJobId,
+        jobId,
+        previousRows: previousDetails?.nameplatePhotosMeta,
+        overviewPending: Boolean(nameplateOverviewPending),
+      }),
+      nameplateVerifications: resolveNameplateOverviewRows({
+        groupedRows: nameplateVerificationsByJobId,
+        jobId,
+        previousRows: previousDetails?.nameplateVerifications,
+        overviewPending: Boolean(nameplateOverviewPending),
+      }),
+      nameplateVerificationTableMissing: Boolean(nameplateOverviewPending)
+        ? Boolean(previousDetails?.nameplateVerificationTableMissing)
+        : Boolean(nameplateVerificationTableMissing),
       nameplateOverviewPending: Boolean(nameplateOverviewPending),
     };
   });
