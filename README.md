@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.48
+- 11.49
 
-Wersja 11.48 zmienia mobilne `Drukuj protokół`: zapisany PDF otwiera się jako rzeczywisty dokument w podglądzie iOS/Safari, aby systemowy arkusz Udostępnij mógł przekazać go do Phomemo tak jak PDF otwierany z aplikacji Pliki.
+Wersja 11.49 zachowuje natywny podgląd PDF z 11.48 i skaluje treść protokołu do 98% w obrębie strony A4, aby Phomemo nie ucinało delikatnie góry i dołu wydruku.
 
-# Wawis Klimatyzacja — wersja 11.48
+# Wawis Klimatyzacja — wersja 11.49
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.48` — `Drukuj protokół` otwiera prywatny PDF w natywnym podglądzie iOS/Safari zamiast wysyłać PNG przez Web Share.
+- wersja `11.49` — zachowano natywny druk PDF i dodano 2% bezpieczne zmniejszenie treści strony, wyśrodkowane na A4.
 - wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.
