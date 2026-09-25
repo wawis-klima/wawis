@@ -9,6 +9,11 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   const barcode = await import(pathToFileURL(path.join(root, 'src/modules/desktop-nameplate-barcode.js')).href);
   const ai = await import(pathToFileURL(path.join(root, 'src/modules/desktop-nameplate-ai.js')).href);
 
+  const mobileScale = barcode.getNameplateCanvasScale(8064, 6048, { maxDimension: 1800 });
+  assert(mobileScale < 0.25);
+  assert((8064 * mobileScale) <= 1800.001);
+  assert.strictEqual(barcode.getNameplateCanvasScale(4032, 3024), 1);
+
   const hardBarcode = barcode.summarizeBarcodeResults([
     { value: '5905567600791', format: 'ean_13', source: 'universal_barcode', roleHint: 'ean' },
     { value: '540S25420034B110171916', format: 'code_128', source: 'universal_barcode', roleHint: 'serial' },
