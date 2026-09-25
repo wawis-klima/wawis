@@ -1,17 +1,17 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.48
+- 11.49
 
 ## Zakres
-- mobilne `Drukuj protokół` otwiera zapisany PDF jako dokument przez podpisany URL
-- brak konwersji do PNG w tej akcji
-- brak bezpośredniego Web Share PDF z PWA
-- brak zmian w treści PDF, bazie i RLS
+- zachowany natywny podgląd PDF z 11.48
+- cała treść PDF skalowana do 98% i wyśrodkowana na A4
+- dodatkowy zapas przy górnej i dolnej krawędzi dla Phomemo M832
+- bez zmian w bazie, RLS i sposobie zapisu protokołu
 
-## Założenie testowane na urządzeniu
-- PDF zapisany w Plikach i otwarty na iPhonie pokazuje Phomemo w systemowym Udostępnij
-- 11.48 ma doprowadzić użytkownika do analogicznego podglądu dokumentu bez wcześniejszego zapisywania pliku ręcznie
+## Dowód problemu
+- fizyczny wydruk 11.48 zajmuje prawidłowo całą kartkę A4
+- górna i dolna krawędź są delikatnie ucięte przez obszar druku
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
