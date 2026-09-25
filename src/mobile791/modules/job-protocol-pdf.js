@@ -11,6 +11,7 @@ const PDF_MIME_TYPE = "application/pdf";
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;
 const OUTER_MARGIN = 12;
+const PRINT_SAFE_SCALE = 0.98;
 const CARD_WIDTH = PAGE_WIDTH - (OUTER_MARGIN * 2);
 const CONTENT_LEFT = 20;
 const CONTENT_RIGHT = PAGE_WIDTH - CONTENT_LEFT;
@@ -333,9 +334,24 @@ function drawLegalNotices(doc, y, layout) {
   doc.text(layout.wasteLines, CONTENT_LEFT, wasteTitleY + 12, { lineHeightFactor: layout.lineHeight / layout.bodyFontSize });
 }
 
+function beginPrintSafeArea(doc) {
+  const insetX = ((1 - PRINT_SAFE_SCALE) * PAGE_WIDTH) / 2;
+  const insetY = ((1 - PRINT_SAFE_SCALE) * PAGE_HEIGHT) / 2;
+  doc.saveGraphicsState();
+  doc.setCurrentTransformationMatrix(
+    new doc.Matrix(PRINT_SAFE_SCALE, 0, 0, PRINT_SAFE_SCALE, insetX, insetY),
+  );
+}
+
+function endPrintSafeArea(doc) {
+  doc.restoreGraphicsState();
+}
+
 function addPageIfNeeded(doc, y, requiredHeight) {
   if (y + requiredHeight <= PAGE_HEIGHT - 25) return y;
+  endPrintSafeArea(doc);
   doc.addPage();
+  beginPrintSafeArea(doc);
   doc.setFont(FONT_FAMILY, "normal");
   doc.setTextColor(0, 0, 0);
   return 34;
@@ -345,11 +361,13 @@ function drawFooter(doc, data) {
   const pageCount = doc.getNumberOfPages();
   for (let page = 1; page <= pageCount; page += 1) {
     doc.setPage(page);
+    beginPrintSafeArea(doc);
     doc.setFont(FONT_FAMILY, "normal");
     doc.setFontSize(7);
     doc.setTextColor(0, 0, 0);
     doc.text("Dokument utworzony w aplikacji Wawis z danych karty zakończonego zlecenia.", OUTER_MARGIN, PAGE_HEIGHT - 12);
     doc.text(`ID zlecenia: ${data.jobId}  •  Strona ${page}/${pageCount}`, PAGE_WIDTH - OUTER_MARGIN, PAGE_HEIGHT - 12, { align: "right" });
+    endPrintSafeArea(doc);
   }
 }
 
@@ -358,6 +376,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   const jsPDF = jspdfModule.jsPDF || jspdfModule.default?.jsPDF || jspdfModule.default;
   const doc = new jsPDF({ unit: "pt", format: "a4", compress: true });
   await embedFonts(doc);
+  beginPrintSafeArea(doc);
   drawHeader(doc, data);
 
   let y = 87;
@@ -479,6 +498,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   doc.text("Podpis klienta złożony palcem na ekranie telefonu", clientSignatureLeft, y + 129);
   doc.text("Pieczątka i podpis instalatora", installerSignatureLeft + (clientSignatureWidth / 2), y + 129, { align: "center" });
 
+  endPrintSafeArea(doc);
   drawFooter(doc, data);
   return doc;
 }
