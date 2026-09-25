@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.42
+- 11.43
 
-Wersja 11.42 naprawia zapis protokołu na koncie pracownika: usuwa przedwczesny 12-sekundowy timeout zwykłych requestów Supabase, pomija pusty zapis płatności i przywraca kontrolowaną możliwość aktualizacji pól płatności po zakończeniu zlecenia.
+Wersja 11.43 przywraca sprawdzony pełny format wydruku protokołu w Phomemo M832: obraz PNG wraca do szerokości 1800 px, a test nie wylicza już fizycznego rozmiaru z założonego DPI.
 
-# Wawis Klimatyzacja — wersja 11.42
+# Wawis Klimatyzacja — wersja 11.43
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.42` — naprawiono zapis protokołu pracownika po timeoutach Supabase oraz zbędnym zapisie wyłączonej płatności.
+- wersja `11.43` — przywrócono sprawdzony pełny format obrazu PNG dla wydruku protokołu w Phomemo M832.
 - wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.

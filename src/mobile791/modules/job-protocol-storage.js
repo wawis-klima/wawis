@@ -11,7 +11,9 @@ const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_
 const PROTOCOL_CLEANUP_TIMEOUT_MS = 5_000;
 export const PROTOCOL_WRITE_CONFLICT = "PROTOCOL_WRITE_CONFLICT";
 const PRINT_IMAGE_MIME_TYPE = "image/png";
-const PRINT_IMAGE_WIDTH = 3307;
+// Phomemo M832: 1800 px is the empirically verified import size that fills A4 in the app.
+// Do not convert A4 millimetres to pixels using an assumed printer DPI here — Phomemo rescales imports itself.
+const PRINT_IMAGE_WIDTH = 1800;
 const PRINT_IMAGE_MAX_PIXELS = 24_000_000;
 const PRINT_IMAGE_PAGE_GAP = 24;
 

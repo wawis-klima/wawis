@@ -1,3 +1,11 @@
+## 11.43
+- Naprawiono regresję wydruku protokołu w Phomemo M832 widoczną jako około 115 × 163 mm zamiast pełnego A4.
+- Przywrócono sprawdzony wcześniej rozmiar renderowanego obrazu 1800 px; ten wariant był używany, gdy pojedynczy obraz trafiał do Phomemo jako pełnowymiarowy wydruk.
+- Usunięto błędne założenie z testu, że fizyczny rozmiar w Phomemo można wyliczyć z pikseli przy stałym 400 DPI; Phomemo skaluje importowany obraz po swojemu.
+- Test pilnuje teraz rozmiaru wejściowego 1800 px i proporcji A4, a nie sztucznego przeliczenia DPI.
+- PDF pozostaje bez zmian; zmiana dotyczy wyłącznie obrazu PNG tworzonego do drukowania w Phomemo.
+- Bez zmian w Supabase, RLS, Storage, PUSH i danych klientów.
+
 ## 11.42
 - Naprawiono zapis protokołu na koncie pracownika po błędzie `AbortError: Supabase request timeout after 12000 ms`.
 - Zwykłe requesty REST do Supabase nie są już globalnie przerywane po 12 s; limit 45 s wraca dla REST, 6 s pozostaje dla podpisywania zdjęć, a 30 s dla transferu Storage.
