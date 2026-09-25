@@ -242,6 +242,34 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
   });
 
 
+  test('v11.38 — Krok 2 zaczyna od tabliczek, a Marka i Model są pod nimi bez pola Moc', async ({ page }) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: /Dodaj kolejne urządzenie/ }).click();
+    await page.getByRole('button', { name: 'Dalej', exact: true }).click();
+    await expect(page.getByText('Tryb: Single', { exact: true })).toBeVisible();
+
+    const order = await page.evaluate(() => {
+      const photos = document.querySelector('.mobileDeviceWizardPhotoGroup')?.getBoundingClientRect();
+      const selectors = document.querySelector('.mobileDeviceWizardSelectors')?.getBoundingClientRect();
+      return {
+        photoTop: photos?.top || 0,
+        selectorTop: selectors?.top || 0,
+      };
+    });
+    expect(order.photoTop).toBeGreaterThan(0);
+    expect(order.selectorTop).toBeGreaterThan(order.photoTop);
+
+    await expect(page.locator('.mobileDeviceWizardSelectionText strong', { hasText: 'Marka' })).toBeVisible();
+    await expect(page.locator('.mobileDeviceWizardSelectionText strong', { hasText: 'Model' })).toBeVisible();
+    await expect(page.locator('.mobileDeviceWizardSelectionText strong', { hasText: 'Moc' })).toHaveCount(0);
+  });
+
   test('v11.34 — kreator urządzeń ma kompaktowe wysokości jak zaakceptowany wzorzec', async ({ page }, testInfo) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
