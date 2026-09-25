@@ -115,6 +115,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-nameplate-automatic-fallback',
     'npm run test:smoke:desktop-nameplate-ean-separation',
     'npm run test:smoke:desktop-nameplate-verification-status',
+    'npm run test:smoke:desktop-nameplate-overview-authority',
     'node scripts/smoke-nameplate-ai-auth-v1085.mjs',
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
