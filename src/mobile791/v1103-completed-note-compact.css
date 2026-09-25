@@ -44,6 +44,21 @@
     padding: 0 !important;
   }
 
+  .mobileInlineJobDetails .workerCreatedAtInfoItem {
+    grid-template-columns: 132px minmax(0, 1fr) !important;
+    column-gap: 8px !important;
+  }
+
+  .mobileInlineJobDetails .workerCreatedAtInfoItem .infoLabel {
+    white-space: nowrap !important;
+  }
+
+  .mobileInlineJobDetails .workerCreatedAtInfoValue {
+    justify-content: flex-end !important;
+    white-space: nowrap !important;
+    text-align: right !important;
+  }
+
   .mobileInlineJobDetails .adminNoteSectionCollapsible {
     gap: 0 !important;
     margin-top: 6px !important;
