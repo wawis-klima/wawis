@@ -1,3 +1,10 @@
+## 11.46
+- Druk do Phomemo nadal używa wyłącznie PNG; PDF pozostaje tylko źródłem zapisanym w WAWIS.
+- Po potwierdzeniu w Phomemo, że PNG 1800 px otwiera się jako 115 × 163 mm, szerokość renderowanego PNG zwiększono do 3307 px przy zachowaniu starego renderera PNG z 10.59.
+- Współczynnik wynika bezpośrednio z ekranu Phomemo: 210 / 115 ≈ 1,826; 1800 × 1,826 ≈ 3287 px. Używamy 3307 px, aby trafić w pełną szerokość A4 z niewielkim zapasem.
+- Nie przywrócono ścieżki PDF do udostępniania; do navigator.share trafia jeden plik image/png.
+- Bez zmian w protokole PDF, Supabase, RLS, Storage i danych klientów.
+
 ## 11.45
 - Cofnięto błędną próbę druku PDF z 11.44. Phomemo M832 nie jest dostępne w menu iPhone'a dla PDF.
 - Przywrócono dokładną ścieżkę druku PNG z wersji 10.59, zamiast kolejnych wariantów opartych na nowych założeniach.
