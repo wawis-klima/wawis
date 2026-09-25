@@ -64,6 +64,54 @@ const ROTENSO_MULTI_OUTDOOR_GROUPS = [
 export const ROTENSO_MODEL_GROUPS = ROTENSO_INDOOR_GROUPS;
 export const ROTENSO_MULTI_OUTDOOR_MODELS = ROTENSO_MULTI_OUTDOOR_GROUPS;
 
+const ROTENSO_SINGLE_FAMILIES = Object.freeze(
+  [...new Set(ROTENSO_INDOOR_GROUPS.flatMap((group) => group.models.map((model) => model.name)))]
+    .sort((left, right) => right.length - left.length),
+);
+
+function normalizeModelFamilyText(value = '') {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function getRotensoModelFamilyFromValue(value = '') {
+  const normalizedValue = normalizeModelFamilyText(value);
+  if (!normalizedValue) return '';
+  for (const family of ROTENSO_SINGLE_FAMILIES) {
+    const normalizedFamily = normalizeModelFamilyText(family);
+    if (
+      normalizedValue === normalizedFamily
+      || normalizedValue.startsWith(`${normalizedFamily} `)
+      || normalizedValue.includes(` ${normalizedFamily} `)
+      || normalizedValue.endsWith(` ${normalizedFamily}`)
+    ) {
+      return family;
+    }
+  }
+  return '';
+}
+
+export function getSingleSplitModelFamilyMismatch({
+  outdoorModel = '',
+  indoorModel = '',
+  outdoorFamily = '',
+  indoorFamily = '',
+} = {}) {
+  const resolvedOutdoorFamily = getRotensoModelFamilyFromValue(outdoorFamily) || getRotensoModelFamilyFromValue(outdoorModel);
+  const resolvedIndoorFamily = getRotensoModelFamilyFromValue(indoorFamily) || getRotensoModelFamilyFromValue(indoorModel);
+  if (!resolvedOutdoorFamily || !resolvedIndoorFamily || resolvedOutdoorFamily === resolvedIndoorFamily) return null;
+  return {
+    outdoorFamily: resolvedOutdoorFamily,
+    indoorFamily: resolvedIndoorFamily,
+    message: `Niezgodny zestaw Single: JZ to ${resolvedOutdoorFamily}, a JW to ${resolvedIndoorFamily}. Jednostka zewnętrzna i wewnętrzna muszą być z tego samego modelu/serii.`,
+  };
+}
+
 function copyGroups(groups) {
   return groups.map((group) => ({
     ...group,

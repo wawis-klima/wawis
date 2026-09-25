@@ -48,6 +48,11 @@ assert.match(wizardSource, /Wszystkie tabliczki dodane/);
 assert.match(wizardSource, /tabliczek gotowe/);
 assert.match(wizardSource, /getDevicePhotoCompletion/);
 assert.match(wizardSource, /Dalej do podsumowania/);
+assert.match(wizardSource, /getSingleSplitModelFamilyMismatch/);
+assert.match(wizardSource, /validateSinglePhotoModel/);
+assert.match(rotensoCatalogSource, /Niezgodny zestaw Single/);
+assert.match(captureSource, /compatibilityError/);
+assert.match(captureSource, /validateModel/);
 assert.doesNotMatch(wizardSource, />Zapisz urządzenie</);
 assert.match(wizardStyles, /\.mobileDeviceWizard/);
 assert.match(wizardStyles, /\.mobileDevicePickerSheet/);
@@ -148,6 +153,16 @@ assert.match(e2eSource, /toBeEnabled/);
   assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Teta Mirror'), ['2,6 kW', '3,5 kW', '5,1 kW', '6,9 kW']);
   assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Hiro N', { deviceType: devices.DEVICE_TYPE_MULTI, unitRef: 'jz' }), ['4,1 kW', '5,1 kW', '7,5 kW', '9,4 kW', '11,8 kW']);
   assert.deepEqual(rotensoCatalog.getRotensoModelNames({ deviceType: devices.DEVICE_TYPE_MULTI, unitRef: 'jz' }), ['Hiro N', 'Hiro S', 'Hiro HP']);
+  assert.equal(rotensoCatalog.getRotensoModelFamilyFromValue('Rotenso Imoto 3,5 kW I35Xi R14'), 'Imoto');
+  assert.equal(rotensoCatalog.getRotensoModelFamilyFromValue('Rotenso Ukura 3,5 kW U35Xo R17'), 'Ukura');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Rotenso Imoto 3,5 kW I35Xo R14',
+    indoorModel: 'Rotenso Ukura 3,5 kW U35Xi R17',
+  })?.message.includes('Niezgodny zestaw Single'), true);
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Rotenso Imoto 3,5 kW I35Xo R14',
+    indoorModel: 'Rotenso Imoto 3,5 kW I35Xi R15',
+  }), null);
 
   const draft = devices.normalizeJobDevices({
     devices: [{

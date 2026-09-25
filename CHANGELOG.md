@@ -1,3 +1,11 @@
+## 11.37
+- Dla urządzeń typu Single dodano kontrolę zgodności rodziny modelu między JZ i JW.
+- Zestaw z różnymi rodzinami, np. JZ Imoto + JW Ukura, nie może zostać potwierdzony jako poprawny Single.
+- Przy drugim zdjęciu tabliczki aplikacja pokazuje czerwony komunikat o niezgodnym zestawie i blokuje „Potwierdź”.
+- Przy zapisie całego kreatora wykonywana jest druga kontrola, która blokuje także starsze lub ręcznie zmienione niespójne dane.
+- Multi-split pozostaje bez zmian — różne modele JW i osobny agregat JZ są nadal dozwolone.
+- Dodano test logiki oraz E2E sprawdzający, że Imoto + Ukura nie może zostać zapisane jako Single.
+
 ## 11.36
 - Pod tytułem „Sprawdź tabliczkę” dodano krótki, mocno wyróżniony opis wymaganej jednostki.
 - Dla JZ ekran pokazuje: „Zdjęcie tabliczki JZ — jednostka zewnętrzna”.
