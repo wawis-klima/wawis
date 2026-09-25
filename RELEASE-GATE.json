@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.49",
-  "scope": "mobile",
-  "release_branch": "release/v11.49",
+  "version": "11.50",
+  "scope": "desktop",
+  "release_branch": "release/v11.50",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "OK",
-    "notes": "11.48 potwierdzona fizycznym wydrukiem z Phomemo: PDF wypełnia A4 poprawnie, ale drukarka delikatnie ucina górną i dolną krawędź. 11.49 zmienia wyłącznie geometrię treści PDF: 98% skali, wyśrodkowane na A4."
+    "result": "REGRESSION",
+    "notes": "Dla zgłoszonego montażu Supabase ma device_model=null, device_serial_number=null, 0 rekordów photos i 0 nameplate_manual_verifications, a desktop po ponownym logowaniu pokazywał z cache Potwierdzone 2/2. Kliknięcie montażu pobierało szczegóły i poprawnie przełączało na Brak urządzeń. Przyczyną było zachowywanie starych nameplatePhotosMeta/nameplateVerifications, gdy prawidłowa odpowiedź zbiorcza nie zawierała wiersza dla tego job_id."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.49.zip"
+    "file_name": "klima-app-v11.50.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.49",
+    "source_branch": "release/v11.50",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu wydrukować ten sam typ protokołu przez Phomemo. Oczekiwane: pełna góra i pełny dół, bez zauważalnej utraty czytelności."
+    "notes": "Po wdrożeniu odświeżyć lub zalogować się ponownie na desktopie. Zgłoszony montaż Piotr Wasik / Puchacza 13 ma od razu pokazać Brak urządzeń, bez konieczności otwierania karty."
   },
   "archive": {
     "source_of_truth": "github-main",
