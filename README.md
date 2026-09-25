@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.46
+- 11.47
 
-Wersja 11.46 nadal wysyła do Phomemo wyłącznie PNG, ale skaluje je do 3307 px szerokości na podstawie faktycznego odczytu 115 mm dla PNG 1800 px w aplikacji Phomemo.
+Wersja 11.47 naprawia ponowne podpisanie istniejącego protokołu przez innego pracownika zespołu: zakończony montaż może ponownie zapisać każdy pracownik z dostępem do aplikacji, a Storage i tabela job_protocols używają spójnego RLS.
 
-# Wawis Klimatyzacja — wersja 11.46
+# Wawis Klimatyzacja — wersja 11.47
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.46` — Phomemo nadal dostaje wyłącznie PNG; szerokość obrazu zwiększono z 1800 do 3307 px, zachowując renderer z 10.59.
+- wersja `11.47` — naprawiono ponowny podpis protokołu przez innego pracownika; RLS Storage i job_protocols jest zgodny z widokiem wszystkich zakończonych montaży.
 - wersja `11.41` — uproszczono edycję danych klienta pracownika przez usunięcie sekcji urządzeń z tego formularza oraz poprawiono nakładanie się „Data utworzenia”.
 - wersja `11.38` — w kroku 2 tabliczki znamionowe są nad danymi urządzenia; Marka i Model są pod zdjęciami, a pole Moc zostało usunięte z mobilnego formularza.
 - wersja `11.37` — Single blokuje różne rodziny modelu JZ/JW (np. Imoto + Ukura); blokada działa podczas potwierdzania tabliczki i ponownie przy zapisie całego zestawu.
