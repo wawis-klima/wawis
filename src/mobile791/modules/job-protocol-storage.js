@@ -11,9 +11,6 @@ const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_
 const PROTOCOL_CLEANUP_TIMEOUT_MS = 5_000;
 export const PROTOCOL_WRITE_CONFLICT = "PROTOCOL_WRITE_CONFLICT";
 const PRINT_IMAGE_MIME_TYPE = "image/png";
-// Awaryjny raster dla urządzeń, które nie potrafią udostępnić PDF.
-// Phomemo M832 nie używa już tej ścieżki jako podstawowej, bo import obrazu
-// może otworzyć go jako mniejszy obiekt wewnątrz strony A4.
 const PRINT_IMAGE_WIDTH = 1800;
 const PRINT_IMAGE_MAX_PIXELS = 24_000_000;
 const PRINT_IMAGE_PAGE_GAP = 24;
@@ -361,38 +358,28 @@ export async function createProtocolPrintImage(pdfBlob, pdfFileName) {
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    if (pages.length === 1) {
-      const { page } = pages[0];
+    let offsetY = 0;
+    for (let index = 0; index < pages.length; index += 1) {
+      const { page } = pages[index];
+      const viewport = viewports[index];
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = Math.ceil(viewport.width);
+      pageCanvas.height = Math.ceil(viewport.height);
+      const pageContext = pageCanvas.getContext("2d", { alpha: false });
+      if (!pageContext) throw new Error("Nie udało się przygotować strony protokołu do wydruku.");
+
       await page.render({
-        canvasContext: context,
-        viewport: viewports[0],
+        canvasContext: pageContext,
+        viewport,
         background: "#ffffff",
       }).promise;
+
+      const offsetX = Math.floor((canvas.width - pageCanvas.width) / 2);
+      context.drawImage(pageCanvas, offsetX, offsetY);
+      offsetY += pageCanvas.height + PRINT_IMAGE_PAGE_GAP;
       page.cleanup();
-    } else {
-      let offsetY = 0;
-      for (let index = 0; index < pages.length; index += 1) {
-        const { page } = pages[index];
-        const viewport = viewports[index];
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = Math.ceil(viewport.width);
-        pageCanvas.height = Math.ceil(viewport.height);
-        const pageContext = pageCanvas.getContext("2d", { alpha: false });
-        if (!pageContext) throw new Error("Nie udało się przygotować strony protokołu do wydruku.");
-
-        await page.render({
-          canvasContext: pageContext,
-          viewport,
-          background: "#ffffff",
-        }).promise;
-
-        const offsetX = Math.floor((canvas.width - pageCanvas.width) / 2);
-        context.drawImage(pageCanvas, offsetX, offsetY);
-        offsetY += pageCanvas.height + PRINT_IMAGE_PAGE_GAP;
-        page.cleanup();
-        pageCanvas.width = 1;
-        pageCanvas.height = 1;
-      }
+      pageCanvas.width = 1;
+      pageCanvas.height = 1;
     }
 
     const imageBlob = await canvasToBlob(canvas, PRINT_IMAGE_MIME_TYPE);
@@ -412,28 +399,17 @@ export async function shareStoredJobProtocol({
 }) {
   if (intent !== "print") throw new Error("Wysyłkę e-mail realizuje zabezpieczony serwer WAWIS.");
   const pdfBlob = await downloadProtocolBlob({ supabase, record });
-  const pdfFileName = normalizeText(record?.file_name) || "wawis-protokol.pdf";
-  const pdfFile = typeof File === "function"
-    ? new File([pdfBlob], pdfFileName, { type: PDF_MIME_TYPE })
-    : null;
+  const file = await createPrintImage(pdfBlob, record.file_name);
 
-  // Preferujemy oryginalny PDF A4. Phomemo dla M832 ma osobny tryb drukowania
-  // dokumentów i przy imporcie PDF zachowuje stronę A4, zamiast traktować
-  // protokół jak obraz osadzony w edytorze i pomniejszać go do ok. 115 × 163 mm.
-  if (pdfFile && typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [pdfFile] })) {
-    await navigator.share({ files: [pdfFile] });
-    return { method: "share-pdf", copies: 1, a4Document: true };
+  if (file && typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
+    // Phomemo M832 dostaje dokładnie jeden pełnowymiarowy obraz protokołu.
+    // Kolejne egzemplarze trzeba uruchomić w Phomemo ręcznie, ponieważ ten model
+    // nie obsługuje niezawodnie automatycznych dwóch kolejnych zadań z iOS.
+    await navigator.share({ files: [file] });
+    return { method: "share-image", copies: 1, fullSize: true };
   }
 
-  // Awaryjnie zachowujemy starszą ścieżkę obrazu dla urządzeń, które nie potrafią
-  // udostępnić pliku PDF. Nie jest ona już podstawową metodą druku w Phomemo.
-  const imageFile = await createPrintImage(pdfBlob, pdfFileName);
-  if (imageFile && typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [imageFile] })) {
-    await navigator.share({ files: [imageFile] });
-    return { method: "share-image-fallback", copies: 1, fullSize: false };
-  }
-
-  throw new Error("Ten telefon nie pozwala przekazać protokołu do aplikacji drukującej.");
+  throw new Error("Ten telefon nie pozwala przekazać obrazu protokołu bezpośrednio do aplikacji Phomemo.");
 }
 
 export async function printStoredJobProtocol({ supabase, record }) {
