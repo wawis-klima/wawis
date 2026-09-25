@@ -10,6 +10,7 @@ const modal = read('src','mobile791','components','modals','JobFormModal.jsx');
 const details = read('src','mobile791','components','JobDetailsPanel.jsx');
 const edge = read('supabase','functions','send-assignment-push','index.ts');
 const sql = read('worker-shared-job-edit-v10.60.sql');
+const protocolResignSql = read('supabase','migrations','current','protocol-resign-shared-staff-v11.47.sql');
 
 assert.ok(permissions.includes('return false;'), 'Przypisanie nadal blokuje edycję cudzego montażu.');
 assert.ok(permissions.includes('return !isCompletedJob(job);'), 'Pracownik nie może zarządzać instalatorami aktywnego montażu.');
@@ -31,7 +32,11 @@ assert.ok(sql.includes('current_user_is_staff'), 'Brak funkcji RLS dla całego z
 assert.ok(sql.includes('current_user_can_edit_job'), 'Brak osobnej reguły edycji aktywnego montażu.');
 assert.ok(sql.includes("lower(trim(coalesce(j.status, ''))) <> 'zakończone'"), 'RLS pozwala pracownikowi edytować zakończony montaż.');
 assert.ok(sql.includes('current_user_can_finalize_job'), 'Brak bezpiecznej ścieżki zapisu protokołu po zakończeniu.');
-assert.ok(sql.includes('j.completed_by = auth.uid()'), 'Protokół zakończenia nie jest ograniczony do autora zakończenia.');
+assert.ok(sql.includes('j.completed_by = auth.uid()'), 'Historyczna reguła 10.60 nie dokumentuje ograniczenia protokołu do autora zakończenia.');
+assert.ok(protocolResignSql.includes("j.status = 'Zakończone'"), '11.47 nie zachowuje wymogu zakończonego montażu.');
+assert.ok(!protocolResignSql.includes('j.completed_by = auth.uid()'), '11.47 nadal blokuje ponowny podpis przez innego pracownika.');
+assert.ok(protocolResignSql.includes('public.current_user_can_finalize_job(job_id)'), '11.47 nie przepina UPDATE protokołu na wspólną regułę finalizacji.');
+assert.ok(protocolResignSql.includes('created_by = (select auth.uid())'), '11.47 nie przypisuje nowej wersji protokołu do aktualnego pracownika.');
 assert.ok(sql.includes('job_photos_storage_insert_accessible_job'), 'Brak RLS uploadu zdjęć dla aktywnego montażu.');
 assert.ok(sql.includes('public.current_user_can_edit_job(public.storage_object_job_id(name))'), 'Storage zdjęć nie używa blokady aktywnego montażu.');
 assert.ok(sql.includes('job_protocols_storage_insert_completed_job'), 'Brak kontrolowanego uploadu protokołu po zakończeniu.');
