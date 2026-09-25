@@ -469,8 +469,8 @@
   z-index: 1300;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  background: #020617;
-  color: #f8fafc;
+  background: #f8fafc;
+  color: #0f172a;
   overflow: hidden;
 }
 
@@ -478,157 +478,248 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: max(12px, env(safe-area-inset-top)) 14px 10px;
-  border-bottom: 1px solid #1e293b;
-  background: #0f172a;
+  gap: 10px;
+  padding: max(9px, env(safe-area-inset-top)) 14px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
 }
 
 .nameplateVerifyHeader > div {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
 .nameplateVerifyHeader strong {
-  font-size: 16px;
+  color: #0f172a;
+  font-size: 15px;
+  line-height: 1.15;
   font-weight: 900;
 }
 
 .nameplateVerifyHeader span {
   overflow: hidden;
-  color: #94a3b8;
-  font-size: 11px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.nameplateVerifyHeader .nameplateCropClose {
+  flex-basis: 36px;
+  width: 36px;
+  height: 36px;
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.nameplateVerifyHeader .nameplateCropClose svg {
+  width: 18px;
+  height: 18px;
 }
 
 .nameplateVerifyBody {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 12px 14px 18px;
+  padding: 8px 14px 10px;
+  background: #f8fafc;
 }
 
 .nameplateVerifyImage {
   display: block !important;
-  width: 100% !important;
+  width: auto !important;
+  max-width: min(78vw, 420px) !important;
   height: auto !important;
-  max-height: 34dvh !important;
-  margin: 0 auto 12px;
-  border: 1px solid #334155;
-  border-radius: 14px;
-  background: #000;
+  max-height: 24dvh !important;
+  margin: 0 auto 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
   object-fit: contain !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .nameplateVerifyProgress {
   display: grid;
-  gap: 8px;
-  padding: 14px 0;
+  gap: 5px;
+  padding: 7px 0;
 }
 
 .nameplateVerifyProgressTrack {
-  height: 8px;
+  height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: #1e293b;
+  background: #dbe5f2;
 }
 
 .nameplateVerifyProgressTrack span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #38bdf8;
+  background: #2563eb;
   transition: width 180ms ease;
 }
 
 .nameplateVerifyProgress strong {
-  font-size: 13px;
+  color: #0f172a;
+  font-size: 12px;
+  line-height: 1.25;
 }
 
 .nameplateVerifyProgress small {
-  color: #94a3b8;
-  font-size: 11px;
-  line-height: 1.4;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.3;
 }
 
 .nameplateVerifyMethod {
   display: inline-flex;
-  margin-bottom: 10px;
-  padding: 5px 9px;
-  border: 1px solid #334155;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
   border-radius: 999px;
-  background: #0f172a;
-  color: #cbd5e1;
-  font-size: 10px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 9px;
+  line-height: 1.15;
   font-weight: 800;
 }
 
 .nameplateVerifyField {
   display: grid;
-  gap: 6px;
-  margin-top: 11px;
+  gap: 4px;
+  margin-top: 7px;
 }
 
 .nameplateVerifyField > span {
-  color: #cbd5e1;
-  font-size: 11px;
+  color: #334155;
+  font-size: 10px;
+  line-height: 1.2;
   font-weight: 900;
 }
 
 .nameplateVerifyField .input {
-  min-height: 48px;
-  border-color: #475569;
-  background: #fff;
+  min-height: 41px;
+  padding: 7px 11px;
+  border-color: #cbd5e1;
+  border-radius: 12px;
+  background: #ffffff;
   color: #0f172a;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
+}
+
+.nameplateVerifyField .input::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+.nameplateVerifyField .input:disabled {
+  border-color: #d7dee8;
+  background: #eef2f7;
+  color: #94a3b8;
+  -webkit-text-fill-color: #94a3b8;
+  opacity: 1;
 }
 
 .nameplateVerifyWarning,
 .nameplateVerifyMismatch,
 .nameplateVerifyHint,
 .nameplateVerifyReady {
-  margin: 10px 0;
-  padding: 9px 11px;
-  border-radius: 11px;
-  font-size: 11px;
-  line-height: 1.4;
+  margin: 6px 0;
+  padding: 7px 9px;
+  border-radius: 10px;
+  font-size: 10px;
+  line-height: 1.32;
 }
 
 .nameplateVerifyWarning,
 .nameplateVerifyHint {
   border: 1px solid #f59e0b;
-  background: rgba(120, 53, 15, 0.55);
-  color: #fef3c7;
+  background: #fff7ed;
+  color: #9a3412;
 }
 
 .nameplateVerifyMismatch {
-  border: 1px solid #ef4444;
-  background: rgba(127, 29, 29, 0.62);
-  color: #fee2e2;
+  border: 1px solid #f87171;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .nameplateVerifyReady {
-  border: 1px solid #22c55e;
-  background: rgba(20, 83, 45, 0.48);
-  color: #dcfce7;
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+  color: #166534;
 }
 
 .nameplateVerifyFooter {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: 10px;
-  padding: 11px 14px max(14px, env(safe-area-inset-bottom));
-  border-top: 1px solid #1e293b;
-  background: #0f172a;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 14px max(10px, env(safe-area-inset-bottom));
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
 }
 
 .nameplateVerifyFooter .btn {
-  min-height: 48px;
-  border-radius: 14px;
-  font-size: 12px;
+  min-height: 42px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  line-height: 1.15;
   font-weight: 900;
+}
+
+.nameplateVerifyFooter .btn.secondary {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.nameplateVerifyFooter .btn.primary:disabled {
+  border-color: #cbd5e1;
+  background: #e2e8f0;
+  color: #94a3b8;
+  opacity: 1;
+}
+
+@media (max-height: 760px) {
+  .nameplateVerifyHeader {
+    padding-top: max(7px, env(safe-area-inset-top));
+    padding-bottom: 6px;
+  }
+
+  .nameplateVerifyBody {
+    padding-top: 6px;
+    padding-bottom: 7px;
+  }
+
+  .nameplateVerifyImage {
+    max-height: 20dvh !important;
+    margin-bottom: 6px;
+  }
+
+  .nameplateVerifyWarning,
+  .nameplateVerifyMismatch,
+  .nameplateVerifyHint,
+  .nameplateVerifyReady {
+    margin: 4px 0;
+    padding: 6px 8px;
+  }
+
+  .nameplateVerifyField {
+    margin-top: 5px;
+  }
+
+  .nameplateVerifyField .input {
+    min-height: 38px;
+  }
+
+  .nameplateVerifyFooter .btn {
+    min-height: 40px;
+  }
 }
 
 /* v11.33 — niższe przyciski zdjęcia i galerii w kompaktowej tabliczce. */
