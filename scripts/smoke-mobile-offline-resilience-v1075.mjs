@@ -27,7 +27,8 @@ assert.equal(timeoutError.code, 'SUPABASE_REQUEST_TIMEOUT');
 assert.equal(timeoutError.name, 'AbortError');
 assert.equal(isTransientSupabaseError(timeoutError), true, 'Timeout/abort musi trafić do retry, nie do trwałego błędu.');
 assert(Date.now() - startedAt < 1000, 'Testowy timeout nie może pozostawić nierozwiązanej obietnicy.');
-assert(resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/job-photos/a.jpg') > resolveSupabaseRequestTimeoutMs('https://x.supabase.co/rest/v1/jobs'));
+assert.equal(resolveSupabaseRequestTimeoutMs('https://x.supabase.co/rest/v1/jobs'), 45_000, 'zwykły REST zachowuje bezpieczny limit 45 s');
+assert.equal(resolveSupabaseRequestTimeoutMs('https://x.supabase.co/storage/v1/object/job-photos/a.jpg'), 30_000, 'transfer Storage zachowuje limit 30 s');
 
 const storeSource = read('src', 'mobile791', 'modules', 'job-offline-store.js');
 const queueMatch = storeSource.match(/async function putOfflineJobOperationAtomically[\s\S]*?export async function recoverStaleOfflineJobOperations/);
