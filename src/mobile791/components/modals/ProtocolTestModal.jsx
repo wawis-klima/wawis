@@ -370,7 +370,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         setMessage(`Protokół został wysłany z ${result.senderEmail} do ${result.recipientEmail}.`);
       } else {
         await shareStoredJobProtocol({ supabase, record: savedRecord, intent: "print" });
-        setMessage("Obraz protokołu został przekazany do drukowania bez zapisywania w telefonie.");
+        setMessage("Protokół PDF A4 został przekazany do drukowania bez zapisywania w telefonie.");
       }
     } catch (error) {
       if (error?.name !== "AbortError") setMessage(error?.message || "Nie udało się wykonać operacji na protokole.");

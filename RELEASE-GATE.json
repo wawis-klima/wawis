@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.43",
+  "version": "11.44",
   "scope": "mobile",
-  "release_branch": "release/v11.43",
+  "release_branch": "release/v11.44",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "REGRESSION",
-    "notes": "Zrzut z Phomemo pokazał import 115 × 163 mm zamiast A4 po zmianie szerokości obrazu z 1800 px na 3307 px w 11.40. 11.43 przywraca historycznie sprawdzony wariant 1800 px."
+    "notes": "Po wdrożeniu 11.43 Phomemo nadal pokazało protokół jako pomniejszony obraz wewnątrz A4. Zrzut 11:01 potwierdził, że zmiana szerokości PNG nie rozwiązuje problemu. 11.44 omija edytor obrazu i udostępnia oryginalny PDF A4."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.43.zip"
+    "file_name": "klima-app-v11.44.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.43",
+    "source_branch": "release/v11.44",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić w Phomemo, że importowany protokół otwiera się jako pełny arkusz A4, a nie około 115 × 163 mm."
+    "notes": "Po wdrożeniu otworzyć zapisany protokół i użyć Drukuj protokół. W menu iOS wybrać Phomemo; dokument powinien wejść jako PDF A4, bez ekranu pomniejszonego obiektu obrazu."
   },
   "archive": {
     "source_of_truth": "github-main",
