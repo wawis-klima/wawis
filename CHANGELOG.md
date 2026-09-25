@@ -1,3 +1,11 @@
+## 11.35
+- Mobilny ekran „Sprawdź tabliczkę” został przeniesiony z ciemnego motywu na jasny, zgodny z resztą aplikacji.
+- Zmniejszono tytuł i podtytuł, przycisk zamknięcia, badge metody odczytu oraz podgląd zdjęcia.
+- Pola Model i Numer seryjny są niższe i mają mniejszą typografię; stan zablokowany ma jasne, czytelne kolory.
+- Komunikaty błędu, ostrzeżenia i wskazówki mają mniejszy padding i font, dzięki czemu ekran zajmuje mniej miejsca w pionie.
+- Dolne przyciski „Zrób zdjęcie ponownie” / „Wpisz ręcznie” i „Potwierdź” zostały obniżone do kompaktowych rozmiarów.
+- Dodano test E2E na iPhonie, który sprawdza jasny motyw, rzeczywiste wysokości elementów oraz brak zbędnego przewijania w scenariuszu „Nie wykryto tabliczki”.
+
 ## 11.34
 - Naprawiono przyczynę zbyt wysokich kafli w mobilnym kreatorze: `.mobileDeviceWizardBody` nie rozciąga już automatycznych wierszy siatki na całą wolną wysokość ekranu.
 - Krok 1 zachowuje kompaktowe karty Single/Multi zamiast rozciągać je pionowo.
