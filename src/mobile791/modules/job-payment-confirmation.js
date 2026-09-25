@@ -137,13 +137,46 @@ function isMissingPaymentColumnsError(error) {
     || message.includes("payment_method");
 }
 
+export function isPaymentConfirmationUnchanged(job = {}, payment = {}) {
+  const normalized = normalizePaymentConfirmation(payment);
+  const currentEnabled = Boolean(job?.payment_confirmation_enabled);
+  if (currentEnabled !== normalized.enabled) return false;
+
+  if (!normalized.enabled) {
+    return job?.payment_amount == null
+      && job?.payment_kind == null
+      && job?.payment_method == null
+      && job?.payment_paid_at == null;
+  }
+
+  return parseAmount(job?.payment_amount) === normalized.amount
+    && normalizeText(job?.payment_kind) === normalized.kind
+    && normalizeText(job?.payment_method) === normalized.method
+    && getLocalDateInputValue(job?.payment_paid_at) === normalized.paidDate;
+}
+
+function getExistingPaymentJobPatch(job = {}) {
+  return {
+    payment_confirmation_enabled: Boolean(job?.payment_confirmation_enabled),
+    payment_amount: job?.payment_amount ?? null,
+    payment_kind: job?.payment_kind ?? null,
+    payment_method: job?.payment_method ?? null,
+    payment_paid_at: job?.payment_paid_at ?? null,
+    payment_recorded_by: job?.payment_recorded_by ?? null,
+    payment_updated_at: job?.payment_updated_at ?? null,
+  };
+}
+
 export async function saveJobPaymentConfirmation({ supabase, job, payment }) {
   if (!supabase || !job?.id) throw new Error("Nie można zapisać płatności bez połączenia ze zleceniem.");
+  const normalized = normalizePaymentConfirmation(payment);
+  if (isPaymentConfirmationUnchanged(job, normalized)) return getExistingPaymentJobPatch(job);
+
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
   if (sessionError) throw sessionError;
   const userId = normalizeText(sessionData?.session?.user?.id);
   if (!userId) throw new Error("Sesja wygasła. Zaloguj się ponownie.");
-  const patch = getPaymentJobPatch(payment, userId);
+  const patch = getPaymentJobPatch(normalized, userId);
   const { error } = await supabase.from("jobs").update(patch).eq("id", job.id);
   if (error) {
     if (isMissingPaymentColumnsError(error)) {
