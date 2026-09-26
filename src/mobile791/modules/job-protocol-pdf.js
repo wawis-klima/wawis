@@ -427,14 +427,11 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
 
   y += 70;
   drawSectionTitle(doc, "Realizacja zlecenia", y);
-  drawCard(doc, y + 8, 64);
-  drawField(doc, "Data montażu", data.installationDate, CONTENT_LEFT, y + 25, 82);
-  drawField(doc, "Status", data.status, RIGHT_COLUMN_X, y + 25, 62);
-  drawField(doc, "Monterzy", data.technicians.join(", "), CONTENT_LEFT, y + 43, 82);
-  if (data.completedBy !== "-") drawField(doc, "Zakończył", data.completedBy, RIGHT_COLUMN_X, y + 43, 62);
-  if (data.completedAt !== "-") drawField(doc, "Zakończono", data.completedAt, CONTENT_LEFT, y + 61, 82);
+  drawCard(doc, y + 8, 42);
+  drawField(doc, "Data montażu", data.installationDate, CONTENT_LEFT, y + 29, 82);
+  drawField(doc, "Monterzy", data.technicians.join(", "), RIGHT_COLUMN_X, y + 29, 62);
 
-  y += 84;
+  y += 62;
   const deviceRowHeight = 22;
   const rows = data.deviceRows.length ? data.deviceRows : [{
     unit: "-",
