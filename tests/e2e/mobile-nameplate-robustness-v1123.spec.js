@@ -104,7 +104,7 @@ async function openFirstIndoorNameplate(page) {
   await loginWithoutReset(page, WORKER);
   await page.locator('.statusActionButton[title="W trakcie"]').click();
   await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-  await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+  await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
   await page.locator('.mobileDeviceOverviewOpen').first().click();
   await page.locator('.mobileMultiIndoorCard').first().click();
 }
