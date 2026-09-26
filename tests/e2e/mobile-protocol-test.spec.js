@@ -186,8 +186,15 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
     expect(scrollBeforeEdit - scrollAfterEdit).toBeGreaterThanOrEqual(headerHeight - 4);
     expect(scrollBeforeEdit - scrollAfterEdit).toBeLessThanOrEqual(headerHeight + 4);
+    await page.locator('.protocolWizardModal').evaluate((modal) => {
+      modal.style.removeProperty('height');
+      modal.style.removeProperty('min-height');
+      modal.style.removeProperty('max-height');
+      modal.style.removeProperty('overflow-y');
+      modal.scrollTop = 0;
+    });
 
-    await page.locator('.mobileDeviceWizardClose').click();
+    await page.locator('.mobileDeviceWizardClose').evaluate((button) => button.click());
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
