@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.56",
+  "version": "11.57",
   "scope": "mobile",
-  "release_branch": "release/v11.56",
+  "release_branch": "release/v11.57",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie uproszczenia mobilnego UI protokołu i szczegółów montażu. Bez zmian backendu, danych, RLS i logiki bezpieczeństwa zakończenia."
+    "notes": "Zmiana dotyczy wyłącznie układu protokołu PDF i jego mobilnego podglądu. Bez zmian backendu, danych, RLS i logiki zapisu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.56.zip"
+    "file_name": "klima-app-v11.57.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.56",
+    "source_branch": "release/v11.57",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhonie: protokół nie pokazuje badge Wersja testowa; przy brakujących tabliczkach nie ma czerwonego panelu, ale Zakończ pozostaje disabled i przycisk Tabliczki nadal otwiera kreator."
+    "notes": "Sprawdzić: czarno-biały QR Google w prawym górnym rogu protokołu, brak Status/Zakończył/Zakończono oraz poprawny wydruk QR."
   },
   "archive": {
     "source_of_truth": "github-main",
