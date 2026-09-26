@@ -21,7 +21,7 @@
 - regresja E2E wymaga od teraz absolutnego dołu
 
 ## Wynik wydania
-- WAWIS PR checks: PENDING
-- produkcyjny build: PENDING
-- Vercel: RETRY — pierwszy produkcyjny deploy po merge nie przeszedł; uruchamiana ponowna próba
-- merge: GREEN — funkcjonalna 11.52 jest na main; retry dotyczy wyłącznie Vercela
+- WAWIS PR checks: GREEN
+- produkcyjny build: GREEN
+- Vercel: PENDING
+- merge: PENDING
