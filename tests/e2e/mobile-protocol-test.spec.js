@@ -162,11 +162,19 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
 
     const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
-    const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => {
+    const scrollSetup = await page.locator('.protocolWizardModal').evaluate((modal) => {
+      // Fixture E2E ma krótsze dane niż zgłoszony protokół z iPhone'a.
+      // Zmniejszamy wyłącznie wysokość testowego scroll-containera, żeby odtworzyć realny zapas przewijania.
+      modal.style.setProperty('height', '420px', 'important');
+      modal.style.setProperty('min-height', '420px', 'important');
+      modal.style.setProperty('max-height', '420px', 'important');
+      modal.style.setProperty('overflow-y', 'auto', 'important');
       const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
       modal.scrollTop = Math.min(160, maxScroll);
-      return modal.scrollTop;
+      return { scrollTop: modal.scrollTop, maxScroll };
     });
+    expect(scrollSetup.maxScroll).toBeGreaterThan(44);
+    const scrollBeforeEdit = scrollSetup.scrollTop;
     expect(scrollBeforeEdit).toBeGreaterThan(44);
     // Kliknięcie przez DOM nie uruchamia pomocniczego auto-scroll Playwrighta,
     // więc test mierzy wyłącznie korektę wykonywaną przez samą aplikację.
