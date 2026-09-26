@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.53
+- 11.54
 
-Wersja 11.53 ustawia mobilny protokół dokładnie w pozycji pokazanej na drugim zrzucie użytkownika: po `Uzupełnij protokół` formularz zatrzymuje się 50 CSS px przed absolutnym końcem, zamiast jechać do samego maksimum przewinięcia.
+Wersja 11.54 naprawia właściwy problem po `Uzupełnij protokół`: po rozbudowaniu formularza przeglądarka przewija sekcję „Potwierdzenie klienta” tak, aby jej dolna krawędź była w pełni widoczna tuż nad przyklejonym dolnym paskiem przycisków.
 
-# Wawis Klimatyzacja — wersja 11.53
+# Wawis Klimatyzacja — wersja 11.54
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.54` — po `Uzupełnij protokół` dolna krawędź sekcji „Potwierdzenie klienta” jest automatycznie odsłaniana nad sticky footerem; używamy `scrollIntoView`, więc Safari samo wybiera faktyczny kontener przewijania.
 - wersja `11.53` — po `Uzupełnij protokół` formularz zatrzymuje się 50 CSS px przed absolutnym końcem, zgodnie z drugim zrzutem referencyjnym użytkownika.
 - wersja `11.52` — po `Uzupełnij protokół` aplikacja jedzie do absolutnego dołu faktycznie przewijanego kontenera na iPhonie, zamiast próbować korygować pozycję o stałą wartość.
 - wersja `11.51` — po naciśnięciu `Uzupełnij protokół` mobilny formularz ustawia przewinięcie o wysokość nagłówka wyżej, zamiast zatrzymywać się w zbyt niskiej, mylącej pozycji.

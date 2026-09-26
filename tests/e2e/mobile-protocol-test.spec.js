@@ -178,9 +178,23 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await editProtocolButton.evaluate((button) => button.click());
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
     await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
-      const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
-      return Math.abs((maxScroll - 50) - modal.scrollTop);
-    })).toBeLessThanOrEqual(2);
+      const confirmation = [...modal.querySelectorAll('.protocolTestSection')]
+        .find((section) => section.querySelector('h3')?.textContent?.includes('Potwierdzenie klienta'));
+      const footer = modal.querySelector('.mobileDeviceWizardFooter');
+      if (!confirmation || !footer) return -999;
+      const confirmationRect = confirmation.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      return Math.round(footerRect.top - confirmationRect.bottom);
+    })).toBeGreaterThanOrEqual(10);
+    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
+      const confirmation = [...modal.querySelectorAll('.protocolTestSection')]
+        .find((section) => section.querySelector('h3')?.textContent?.includes('Potwierdzenie klienta'));
+      const footer = modal.querySelector('.mobileDeviceWizardFooter');
+      if (!confirmation || !footer) return 999;
+      const confirmationRect = confirmation.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      return Math.round(footerRect.top - confirmationRect.bottom);
+    })).toBeLessThanOrEqual(24);
     await page.locator('.protocolWizardModal').evaluate((modal) => {
       modal.style.removeProperty('height');
       modal.style.removeProperty('min-height');
