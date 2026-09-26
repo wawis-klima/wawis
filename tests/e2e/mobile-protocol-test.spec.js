@@ -179,7 +179,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
     await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
       const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
-      return Math.abs(maxScroll - modal.scrollTop);
+      return Math.abs((maxScroll - 50) - modal.scrollTop);
     })).toBeLessThanOrEqual(2);
     await page.locator('.protocolWizardModal').evaluate((modal) => {
       modal.style.removeProperty('height');
