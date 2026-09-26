@@ -35,7 +35,10 @@ import { APP_VERSION } from "../../version.js";
 import "../devices/mobile-device-wizard.css";
 
 const SIGNATURE_HEIGHT = 280;
-const EDIT_BOTTOM_REVEAL_PX = 50;
+const SIGNATURE_MIN_WIDTH = 1.65;
+const SIGNATURE_MAX_WIDTH = 3.25;
+const SIGNATURE_BASE_WIDTH = 2.45;
+const SIGNATURE_WIDTH_SMOOTHING = 0.72;
 
 function ProtocolBackIcon() {
   return (
@@ -48,16 +51,18 @@ function ProtocolBackIcon() {
 function setupSignatureCanvas(canvas) {
   if (!canvas) return null;
   const rect = canvas.getBoundingClientRect();
-  const ratio = Math.min(3, Math.max(1, window.devicePixelRatio || 1));
+  const ratio = Math.min(4, Math.max(2, window.devicePixelRatio || 1));
   const logicalHeight = Math.max(SIGNATURE_HEIGHT, Math.round(rect.height || SIGNATURE_HEIGHT));
   canvas.width = Math.max(1, Math.round(rect.width * ratio));
   canvas.height = Math.round(logicalHeight * ratio);
   const context = canvas.getContext("2d");
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, rect.width, logicalHeight);
   context.strokeStyle = "#142a3a";
-  context.lineWidth = 2.8;
+  context.lineWidth = SIGNATURE_BASE_WIDTH;
   context.lineCap = "round";
   context.lineJoin = "round";
   return context;
@@ -65,10 +70,43 @@ function setupSignatureCanvas(canvas) {
 
 function getCanvasPoint(canvas, event) {
   const rect = canvas.getBoundingClientRect();
+  const timestamp = Number(event?.timeStamp || (typeof performance !== "undefined" ? performance.now() : Date.now()));
+  const pressure = Number(event?.pressure);
   return {
-    x: Math.max(0, Math.min(rect.width, event.clientX - rect.left)),
-    y: Math.max(0, Math.min(rect.height, event.clientY - rect.top)),
+    x: Math.max(0, Math.min(rect.width, Number(event?.clientX || 0) - rect.left)),
+    y: Math.max(0, Math.min(rect.height, Number(event?.clientY || 0) - rect.top)),
+    time: Number.isFinite(timestamp) ? timestamp : Date.now(),
+    pressure: Number.isFinite(pressure) && pressure > 0 ? Math.min(1, pressure) : 0.5,
   };
+}
+
+function getCoalescedSignaturePoints(canvas, event) {
+  const nativeEvent = event?.nativeEvent || event;
+  const samples = typeof nativeEvent?.getCoalescedEvents === "function"
+    ? nativeEvent.getCoalescedEvents()
+    : [];
+  const source = samples.length ? samples : [nativeEvent];
+  return source.map((sample) => getCanvasPoint(canvas, sample));
+}
+
+function getSignatureMidpoint(left, right) {
+  return {
+    x: (left.x + right.x) / 2,
+    y: (left.y + right.y) / 2,
+  };
+}
+
+function getSignatureStrokeWidth(previousPoint, point, previousWidth) {
+  const distance = Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y);
+  const elapsed = Math.max(1, point.time - previousPoint.time);
+  const velocity = distance / elapsed;
+  const velocityFactor = Math.min(1, velocity / 1.35);
+  const pressureFactor = 0.9 + (point.pressure * 0.2);
+  const targetWidth = Math.max(
+    SIGNATURE_MIN_WIDTH,
+    Math.min(SIGNATURE_MAX_WIDTH, (SIGNATURE_MAX_WIDTH - ((SIGNATURE_MAX_WIDTH - SIGNATURE_MIN_WIDTH) * velocityFactor)) * pressureFactor),
+  );
+  return (previousWidth * SIGNATURE_WIDTH_SMOOTHING) + (targetWidth * (1 - SIGNATURE_WIDTH_SMOOTHING));
 }
 
 function drawSignaturePreview(context, image, width, height) {
@@ -97,7 +135,7 @@ function getTrimmedSignatureDataUrl(canvas) {
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const offset = (y * width + x) * 4;
-      if (pixels[offset] >= 245 && pixels[offset + 1] >= 245 && pixels[offset + 2] >= 245) continue;
+      if (pixels[offset] >= 252 && pixels[offset + 1] >= 252 && pixels[offset + 2] >= 252) continue;
       minX = Math.min(minX, x);
       minY = Math.min(minY, y);
       maxX = Math.max(maxX, x);
@@ -115,6 +153,8 @@ function getTrimmedSignatureDataUrl(canvas) {
   trimmed.width = sourceRight - sourceX;
   trimmed.height = sourceBottom - sourceY;
   const trimmedContext = trimmed.getContext("2d");
+  trimmedContext.imageSmoothingEnabled = true;
+  trimmedContext.imageSmoothingQuality = "high";
   trimmedContext.fillStyle = "#ffffff";
   trimmedContext.fillRect(0, 0, trimmed.width, trimmed.height);
   trimmedContext.drawImage(canvas, sourceX, sourceY, trimmed.width, trimmed.height, 0, 0, trimmed.width, trimmed.height);
@@ -298,8 +338,14 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     if (!canvas || !signatureCanvasReady || isGenerating) return;
     event.preventDefault();
     canvas.setPointerCapture?.(event.pointerId);
+    const point = getCanvasPoint(canvas, event.nativeEvent || event);
     drawingRef.current = true;
-    lastPointRef.current = getCanvasPoint(canvas, event);
+    lastPointRef.current = {
+      point,
+      midpoint: point,
+      width: SIGNATURE_BASE_WIDTH,
+      moved: false,
+    };
   }
 
   function continueDrawing(event) {
@@ -307,18 +353,54 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     if (!canvas || !drawingRef.current || !lastPointRef.current) return;
     event.preventDefault();
     const context = canvas.getContext("2d");
-    const point = getCanvasPoint(canvas, event);
-    context.beginPath();
-    context.moveTo(lastPointRef.current.x, lastPointRef.current.y);
-    context.lineTo(point.x, point.y);
-    context.stroke();
-    lastPointRef.current = point;
-    setDraftHasSignature(true);
+    const points = getCoalescedSignaturePoints(canvas, event);
+
+    points.forEach((point) => {
+      const state = lastPointRef.current;
+      if (!state?.point) return;
+      const midpoint = getSignatureMidpoint(state.point, point);
+      const width = getSignatureStrokeWidth(state.point, point, state.width);
+
+      context.beginPath();
+      context.moveTo(state.midpoint.x, state.midpoint.y);
+      context.quadraticCurveTo(state.point.x, state.point.y, midpoint.x, midpoint.y);
+      context.lineWidth = width;
+      context.stroke();
+
+      lastPointRef.current = {
+        point,
+        midpoint,
+        width,
+        moved: true,
+      };
+    });
+
+    if (points.length) setDraftHasSignature(true);
   }
 
   function stopDrawing(event) {
     if (!drawingRef.current) return;
     event?.preventDefault?.();
+    const canvas = canvasRef.current;
+    const state = lastPointRef.current;
+
+    if (canvas && state?.point) {
+      const context = canvas.getContext("2d");
+      context.lineWidth = state.width || SIGNATURE_BASE_WIDTH;
+      if (state.moved) {
+        context.beginPath();
+        context.moveTo(state.midpoint.x, state.midpoint.y);
+        context.lineTo(state.point.x, state.point.y);
+        context.stroke();
+      } else {
+        context.beginPath();
+        context.arc(state.point.x, state.point.y, (state.width || SIGNATURE_BASE_WIDTH) / 2, 0, Math.PI * 2);
+        context.fillStyle = "#142a3a";
+        context.fill();
+        setDraftHasSignature(true);
+      }
+    }
+
     drawingRef.current = false;
     lastPointRef.current = null;
   }
