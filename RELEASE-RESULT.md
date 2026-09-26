@@ -23,5 +23,5 @@
 ## Wynik wydania
 - WAWIS PR checks: GREEN
 - produkcyjny build: GREEN
-- Vercel: PENDING
+- Vercel: RETRY REQUIRED — poprzedni metadata-only merge został pominięty przez `ignoreCommand`; source-touch wymusza realny build 11.52
 - merge: PENDING
