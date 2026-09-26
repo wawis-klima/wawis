@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.55",
+  "version": "11.56",
   "scope": "mobile",
-  "release_branch": "release/v11.55",
+  "release_branch": "release/v11.56",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie jakości rysowania i eksportu podpisu klienta na mobilnym protokole. Bez zmian backendu, danych, PDF layoutu i uprawnień."
+    "notes": "Zmiana dotyczy wyłącznie uproszczenia mobilnego UI protokołu i szczegółów montażu. Bez zmian backendu, danych, RLS i logiki bezpieczeństwa zakończenia."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.55.zip"
+    "file_name": "klima-app-v11.56.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.55",
+    "source_branch": "release/v11.56",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhonie złożyć szybki i wolny podpis. Kreska ma być płynna, bez kanciastych segmentów, ostra w podglądzie i zachować jakość po zapisaniu PDF."
+    "notes": "Na iPhonie: protokół nie pokazuje badge Wersja testowa; przy brakujących tabliczkach nie ma czerwonego panelu, ale Zakończ pozostaje disabled i przycisk Tabliczki nadal otwiera kreator."
   },
   "archive": {
     "source_of_truth": "github-main",

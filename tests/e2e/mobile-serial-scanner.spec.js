@@ -247,7 +247,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await loginWithoutReset(page, WORKER);
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: /Dodaj kolejne urządzenie/ }).click();
@@ -275,7 +275,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await loginWithoutReset(page, WORKER);
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
 
     const wizard = page.locator('.mobileDeviceWizard');
     await expect(wizard).toBeVisible();
@@ -359,7 +359,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.reload();
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy B', { exact: true }).click();
-    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
 
@@ -381,7 +381,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await loginWithoutReset(page, WORKER);
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
     await page.locator('.mobileDeviceOverviewOpen').first().click();
     await page.locator('.mobileMultiIndoorCard').first().click();
 
@@ -431,11 +431,12 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
 
-    await expect(page.getByText('Nie można zakończyć zlecenia.', { exact: true })).toBeVisible();
-    await expect(page.getByText(/Brakuje: JZ urządzenia 1, JW 1 urządzenia 1, JW 2 urządzenia 1, JW 3 urządzenia 1/)).toBeVisible();
+    await expect(page.getByText('Nie można zakończyć zlecenia.', { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/Brakuje: JZ urządzenia 1, JW 1 urządzenia 1, JW 2 urządzenia 1, JW 3 urządzenia 1/)).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Tabliczki', exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
     await expect(page.getByText('Multi', { exact: true })).toBeVisible();
@@ -445,7 +446,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
 
-    await page.getByRole('button', { name: 'Dodaj brakujące tabliczki' }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
     await page.locator('.mobileDeviceOverviewOpen').first().click();
     await expect(page.getByText('Tryb: Multi', { exact: true })).toBeVisible();
 

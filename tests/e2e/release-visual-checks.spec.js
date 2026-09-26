@@ -4,7 +4,6 @@ import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 const artifactsDir = path.resolve(process.cwd(), 'visual-artifacts');
-const releaseVersion = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), 'app-version.json'), 'utf8')).version;
 
 function ensureArtifactsDir() {
   fs.mkdirSync(artifactsDir, { recursive: true });
@@ -104,7 +103,8 @@ test.describe('@mobile release visual iPhone', () => {
     await expect(page.getByText('Zakończone · tylko podgląd')).toBeVisible();
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
-    await expect(page.locator('.protocolTestVersionStep')).toContainText(`Wersja testowa · ${releaseVersion}`);
+    await expect(page.locator('.protocolTestVersionStep')).toHaveCount(0);
+    await expect(page.getByText(/Wersja testowa/i)).toHaveCount(0);
 
     const health = await getPageVisualHealth(page);
     expect(health.fontFamily.toLowerCase()).not.toContain('times new roman');

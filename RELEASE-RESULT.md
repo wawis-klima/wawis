@@ -1,22 +1,21 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.55
+- 11.56
 
 ## Zakres
-- mobilny podpis klienta: płynniejszy i dokładniejszy zapis ruchu palca
-- Retina canvas minimum 2×
-- Bézier smoothing + coalesced pointer events
-- łagodnie zmienna grubość kreski
-- zachowanie antyaliasingu przy eksporcie PNG
-- bez zmian w PDF layout, Supabase, RLS i e-mailu
+- usunięcie badge `PDF · Wersja testowa` z protokołu klienta
+- usunięcie czerwonego panelu o brakujących JZ/JW z mobilnych szczegółów montażu
+- zachowanie blokady `Zakończ` przy niekompletnych tabliczkach
+- wejście do tabliczek wyłącznie przez istniejący przycisk `Tabliczki`
+- bez zmian w Supabase, RLS i danych
 
-## Naprawa jakości
-- wcześniejszy podpis łączył kolejne punkty prostymi odcinkami, przez co szybki ruch dawał kanciaste załamania
-- 11.55 interpoluje ruch przez punkty pośrednie i krzywe kwadratowe
-- szerokość kreski jest filtrowana, aby nie skakała między kolejnymi próbkami
-- canvas zachowuje wysoką gęstość pikseli także na urządzeniach z niskim DPR
-- przycinanie obrazu nie odcina delikatnych pikseli antyaliasingu
+## Kontrola regresji
+- protokół nie zawiera już `APP_VERSION` ani klasy `protocolTestVersionStep`
+- share title nie zawiera określenia `wersja testowa`
+- karta montażu nie renderuje `Nie można zakończyć zlecenia` ani `Dodaj brakujące tabliczki`
+- `Zakończ` nadal ma warunek `!effectiveNameplateComplete`
+- E2E sprawdza brak panelu i dostępność przycisku `Tabliczki`
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
