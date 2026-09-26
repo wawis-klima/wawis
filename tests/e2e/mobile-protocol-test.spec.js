@@ -154,8 +154,11 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
     await expect(page.getByText(/Protokół podpisany i zapisany/).first()).toBeVisible();
 
+    const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
+    await editProtocolButton.scrollIntoViewIfNeeded();
     const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
-    await page.getByRole('button', { name: 'Uzupełnij protokół', exact: true }).click();
+    expect(scrollBeforeEdit).toBeGreaterThan(44);
+    await editProtocolButton.click();
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
     await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
       .toBeLessThanOrEqual(scrollBeforeEdit - 40);
