@@ -36,6 +36,11 @@ assert.doesNotMatch(jobDetails, /protocolDownloadButton|protocolEmailButton/);
 assert.doesNotMatch(jobDetails, />Protokół TEST</);
 
 assert.match(modal, /Potwierdzenie zapłaty/);
+assert.match(modal, /<dt>Data montażu<\/dt>/);
+assert.match(modal, /<dt>Monterzy<\/dt>/);
+assert.doesNotMatch(modal, /<dt>Status<\/dt>/);
+assert.doesNotMatch(modal, /<dt>Zakończył<\/dt>/);
+assert.doesNotMatch(modal, /<dt>Zakończono<\/dt>/);
 assert.match(modal, /editing \|\| paymentVisible\.enabled/);
 assert.match(modal, />Uzupełnij protokół<\/button>/);
 assert.doesNotMatch(modal, />Zmień protokół<\/button>/);
