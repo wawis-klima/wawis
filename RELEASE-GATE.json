@@ -7,7 +7,7 @@
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Docelowo formularz ma znaleźć się na absolutnym dole; bez zmian backendu, danych i uprawnień."
+    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Docelowo formularz ma znaleźć się na absolutnym dole; bez zmian backendu, danych i uprawnień. Kandydat 11.52 przeszedł WAWIS PR checks, wymagane E2E mobile i produkcyjny build."
   },
   "drive_backup": {
     "required": false,
@@ -16,7 +16,7 @@
   },
   "main_protection": {
     "source_branch": "release/v11.52",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -36,8 +36,8 @@
     "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian bazodanowych",
     "trigger_grants": "N/A — brak zmian triggerów/grantów",
-    "vercel_deployment": "RETRY — pierwszy deploy merge bfd30e4 nie przeszedł; ponowna próba przez metadata-only merge",
+    "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main",
-    "merge_commit": "bfd30e4ae48b098e90a490cad6b4d5636deffe27"
+    "merge_commit": ""
   }
 }
