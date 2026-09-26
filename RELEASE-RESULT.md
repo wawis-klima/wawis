@@ -1,22 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.50
+- 11.51
 
 ## Zakres
-- desktopowa lista Montaże: usunięcie nieaktualnego statusu tabliczek z cache
-- poprawna pusta odpowiedź Supabase czyści nameplatePhotosMeta i nameplateVerifications
-- bez zmian w Supabase schema/RLS oraz bez zmian w mobile
+- mobilny protokół klienta: korekta pozycji po naciśnięciu `Uzupełnij protokół`
+- po przebudowaniu formularza przewinięcie cofa się o wysokość nagłówka kreatora
+- bez zmian w PDF, podpisie, Supabase, RLS i e-mailu
 
 ## Dowód błędu
-- zgłoszony montaż w bazie ma brak urządzeń oraz 0 zdjęć tabliczek i 0 ręcznych potwierdzeń
-- po ponownym logowaniu cache pokazywał Potwierdzone 2/2
-- po otwarciu karty szczegółowy odczyt serwera poprawnie przełączał status na Brak urządzeń
+- na obrazie zgłoszonym z iPhone'a formularz po wejściu w edycję zatrzymuje się około 50 CSS px za nisko
+- obraz docelowy pokazuje tę samą zawartość przesuniętą o wysokość mobilnego nagłówka w górę
 
 ## Naprawa
-- pusta odpowiedź zbiorczego odczytu jest autorytatywna, gdy odczyt zakończył się poprawnie
-- poprzedni status jest zachowywany wyłącznie podczas pending/unavailable
-- dodana regresja 11.50 dla starego cache 2/2 → pusta odpowiedź serwera
+- przed przejściem do edycji zapamiętywany jest `scrollTop`
+- po dwóch klatkach renderowania wyliczana jest rzeczywista wysokość nagłówka
+- modal ustawia `scrollTop = poprzednia pozycja - wysokość nagłówka`, bez animacji
+- dodana regresja E2E pilnująca tej geometrii
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
