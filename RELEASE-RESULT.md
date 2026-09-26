@@ -1,24 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.54
+- 11.55
 
 ## Zakres
-- mobilny protokół klienta: poprawne odsłonięcie dolnej części po `Uzupełnij protokół`
-- sekcja `Potwierdzenie klienta` ma być w całości widoczna nad sticky footerem
-- bez zmian w PDF, podpisie, Supabase, RLS i e-mailu
+- mobilny podpis klienta: płynniejszy i dokładniejszy zapis ruchu palca
+- Retina canvas minimum 2×
+- Bézier smoothing + coalesced pointer events
+- łagodnie zmienna grubość kreski
+- zachowanie antyaliasingu przy eksporcie PNG
+- bez zmian w PDF layout, Supabase, RLS i e-mailu
 
-## Przyczyna poprzednich nietrafionych poprawek
-- wcześniejsze wersje sterowały liczbowym `scrollTop`
-- na zrzucie problemem nie był sam numer przewinięcia, tylko to, że dół sekcji `Potwierdzenie klienta` pozostawał zasłonięty przez sticky footer
-- 11.54 przewija konkretny element przez `scrollIntoView`, więc Safari wybiera właściwego przodka przewijania
-
-## Naprawa
-- po wejściu w edycję mierzona jest rzeczywista wysokość dolnego paska
-- sekcji `Potwierdzenie klienta` ustawiany jest `scroll-margin-bottom = wysokość footera + 16 px`
-- następnie wykonywane jest `scrollIntoView({ block: "end" })`
-- po 140 ms pozycja jest ponawiana dla iOS
-- E2E sprawdza bezpośrednio odstęp między dołem sekcji a górą footera
+## Naprawa jakości
+- wcześniejszy podpis łączył kolejne punkty prostymi odcinkami, przez co szybki ruch dawał kanciaste załamania
+- 11.55 interpoluje ruch przez punkty pośrednie i krzywe kwadratowe
+- szerokość kreski jest filtrowana, aby nie skakała między kolejnymi próbkami
+- canvas zachowuje wysoką gęstość pikseli także na urządzeniach z niskim DPR
+- przycinanie obrazu nie odcina delikatnych pikseli antyaliasingu
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
