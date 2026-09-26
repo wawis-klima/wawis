@@ -118,8 +118,10 @@ assert.match(captureStyles, /\.nameplateCropHandle/);
 
 assert.match(detailsSource, /getJobNameplateCompletion/);
 assert.match(detailsSource, /nameplateCompletion\.isComplete/);
-assert.match(detailsSource, /Nie można zakończyć zlecenia/);
-assert.match(detailsSource, /Dodaj brakujące tabliczki/);
+assert.doesNotMatch(detailsSource, /Nie można zakończyć zlecenia/);
+assert.doesNotMatch(detailsSource, /Dodaj brakujące tabliczki/);
+assert.match(detailsSource, /mobileLabel">\{isAdmin \? 'Urządzenia' : 'Tabliczki'\}/);
+assert.match(detailsSource, /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete\}/);
 assert.match(detailsSource, /DeviceUnitDocumentationRow/);
 assert.match(detailsSource, /role="button"/);
 assert.match(detailsSource, /onClick=\{handleAction\}/);
@@ -152,6 +154,8 @@ assert.match(e2eSource, /devices\['iPhone 14'\]/);
 assert.match(e2eSource, /mobileDeviceWizard/);
 assert.match(e2eSource, /nameplateGalleryInput/);
 assert.match(e2eSource, /Nie można zakończyć zlecenia/);
+assert.match(e2eSource, /toHaveCount\(0\)/);
+assert.match(e2eSource, /name: 'Tabliczki'/);
 assert.match(e2eSource, /toBeDisabled/);
 assert.match(e2eSource, /toBeEnabled/);
 
