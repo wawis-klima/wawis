@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.52
+- 11.53
 
-Wersja 11.52 poprawia mobilny protokół na iPhonie: po naciśnięciu `Uzupełnij protokół` formularz jest przewijany do absolutnego dołu po przebudowaniu widoku, z uwzględnieniem tego, że Safari może przewijać modal albo jego overlay.
+Wersja 11.53 ustawia mobilny protokół dokładnie w pozycji pokazanej na drugim zrzucie użytkownika: po `Uzupełnij protokół` formularz zatrzymuje się 50 CSS px przed absolutnym końcem, zamiast jechać do samego maksimum przewinięcia.
 
-# Wawis Klimatyzacja — wersja 11.52
+# Wawis Klimatyzacja — wersja 11.53
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.53` — po `Uzupełnij protokół` formularz zatrzymuje się 50 CSS px przed absolutnym końcem, zgodnie z drugim zrzutem referencyjnym użytkownika.
 - wersja `11.52` — po `Uzupełnij protokół` aplikacja jedzie do absolutnego dołu faktycznie przewijanego kontenera na iPhonie, zamiast próbować korygować pozycję o stałą wartość.
 - wersja `11.51` — po naciśnięciu `Uzupełnij protokół` mobilny formularz ustawia przewinięcie o wysokość nagłówka wyżej, zamiast zatrzymywać się w zbyt niskiej, mylącej pozycji.
 - wersja `11.50` — desktop nie przywraca już z cache starego statusu `Potwierdzone 2/2`, gdy Supabase zwraca brak urządzeń i tabliczek.

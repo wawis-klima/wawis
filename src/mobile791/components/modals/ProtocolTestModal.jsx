@@ -35,6 +35,7 @@ import { APP_VERSION } from "../../version.js";
 import "../devices/mobile-device-wizard.css";
 
 const SIGNATURE_HEIGHT = 280;
+const EDIT_BOTTOM_REVEAL_PX = 50;
 
 function ProtocolBackIcon() {
   return (
@@ -188,7 +189,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     let settleTimerId = 0;
     let reapplyTimerId = 0;
 
-    const scrollProtocolToAbsoluteBottom = () => {
+    const scrollProtocolToDesiredBottom = () => {
       const modal = protocolModalRef.current;
       if (!modal) return;
       const overlay = modal.closest(".appModalOverlay");
@@ -201,19 +202,20 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         .sort((left, right) => right.maxScrollTop - left.maxScrollTop)[0];
 
       if (!target?.element) return;
+      const targetScrollTop = Math.max(0, target.maxScrollTop - EDIT_BOTTOM_REVEAL_PX);
       if (typeof target.element.scrollTo === "function") {
-        target.element.scrollTo({ top: target.maxScrollTop, behavior: "auto" });
+        target.element.scrollTo({ top: targetScrollTop, behavior: "auto" });
       } else {
-        target.element.scrollTop = target.maxScrollTop;
+        target.element.scrollTop = targetScrollTop;
       }
-      editScrollBaselineRef.current = { element: target.element, targetScrollTop: target.maxScrollTop };
+      editScrollBaselineRef.current = { element: target.element, targetScrollTop };
     };
 
     const firstFrameId = window.requestAnimationFrame(() => {
       secondFrameId = window.requestAnimationFrame(() => {
         settleTimerId = window.setTimeout(() => {
-          scrollProtocolToAbsoluteBottom();
-          reapplyTimerId = window.setTimeout(scrollProtocolToAbsoluteBottom, 120);
+          scrollProtocolToDesiredBottom();
+          reapplyTimerId = window.setTimeout(scrollProtocolToDesiredBottom, 120);
         }, 60);
       });
     });
@@ -269,8 +271,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function beginEditingStoredProtocol() {
-    // Po przejściu do edycji zawsze jedziemy do absolutnego końca formularza.
-    // Właściwy scroll-container wykrywamy dopiero po przebudowaniu widoku na iOS.
+    // Po przejściu do edycji zatrzymujemy formularz 50 CSS px przed absolutnym końcem.
+    // To odpowiada ręcznie ustawionej pozycji z obrazu referencyjnego użytkownika na iPhonie.
     editScrollBaselineRef.current = { element: null, targetScrollTop: null };
     setEditing(true);
     setActionMenuOpen(false);

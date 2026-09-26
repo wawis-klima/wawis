@@ -1,3 +1,10 @@
+## 11.53
+- Mobile, protokół klienta: po `Uzupełnij protokół` docelowa pozycja to 50 CSS px przed absolutnym końcem przewijania.
+- Porównanie dwóch zrzutów użytkownika wykazało stałe przesunięcie treści o 123 px obrazu, co odpowiada około 50 CSS px na iPhonie.
+- 11.52 jechała do maksymalnego `scrollTop`, dlatego pierwsze zdjęcie nadal różniło się od ręcznie ustawionej pozycji z drugiego zdjęcia.
+- Regresja E2E wymaga teraz dokładnie tej pozycji, zamiast absolutnego dołu.
+- Bez zmian w PDF, podpisie klienta, Supabase, RLS i e-mailu.
+
 ## 11.52
 - Mobile, protokół klienta: po naciśnięciu `Uzupełnij protokół` formularz jest przewijany do absolutnego dołu.
 - Aplikacja po przebudowaniu widoku wybiera ten element, który faktycznie ma największy możliwy zakres przewijania: modal albo overlay Safari.
