@@ -183,27 +183,46 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }, [open, job?.id, protocolRecord?.id]);
 
   useEffect(() => {
-    if (!open || !editing || !Number.isFinite(editScrollBaselineRef.current)) return undefined;
-    const baselineScrollTop = editScrollBaselineRef.current;
+    if (!open || !editing || !editScrollBaselineRef.current) return undefined;
     let secondFrameId = 0;
+    let settleTimerId = 0;
+    let reapplyTimerId = 0;
+
+    const scrollProtocolToAbsoluteBottom = () => {
+      const modal = protocolModalRef.current;
+      if (!modal) return;
+      const overlay = modal.closest(".appModalOverlay");
+      const candidates = [modal, overlay].filter(Boolean);
+      const target = candidates
+        .map((element) => ({
+          element,
+          maxScrollTop: Math.max(0, Number(element.scrollHeight || 0) - Number(element.clientHeight || 0)),
+        }))
+        .sort((left, right) => right.maxScrollTop - left.maxScrollTop)[0];
+
+      if (!target?.element) return;
+      if (typeof target.element.scrollTo === "function") {
+        target.element.scrollTo({ top: target.maxScrollTop, behavior: "auto" });
+      } else {
+        target.element.scrollTop = target.maxScrollTop;
+      }
+      editScrollBaselineRef.current = { element: target.element, targetScrollTop: target.maxScrollTop };
+    };
+
     const firstFrameId = window.requestAnimationFrame(() => {
       secondFrameId = window.requestAnimationFrame(() => {
-        const modal = protocolModalRef.current;
-        if (!modal) return;
-        const header = modal.querySelector(".mobileDeviceWizardHeader");
-        const headerHeight = Math.max(44, Math.round(header?.getBoundingClientRect?.().height || 48));
-        const targetScrollTop = Math.max(0, baselineScrollTop - headerHeight);
-        if (typeof modal.scrollTo === "function") {
-          modal.scrollTo({ top: targetScrollTop, behavior: "auto" });
-        } else {
-          modal.scrollTop = targetScrollTop;
-        }
-        editScrollBaselineRef.current = null;
+        settleTimerId = window.setTimeout(() => {
+          scrollProtocolToAbsoluteBottom();
+          reapplyTimerId = window.setTimeout(scrollProtocolToAbsoluteBottom, 120);
+        }, 60);
       });
     });
+
     return () => {
       window.cancelAnimationFrame(firstFrameId);
       if (secondFrameId) window.cancelAnimationFrame(secondFrameId);
+      if (settleTimerId) window.clearTimeout(settleTimerId);
+      if (reapplyTimerId) window.clearTimeout(reapplyTimerId);
     };
   }, [open, editing]);
 
@@ -250,7 +269,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function beginEditingStoredProtocol() {
-    editScrollBaselineRef.current = protocolModalRef.current?.scrollTop ?? null;
+    // Po przejściu do edycji zawsze jedziemy do absolutnego końca formularza.
+    // Właściwy scroll-container wykrywamy dopiero po przebudowaniu widoku na iOS.
+    editScrollBaselineRef.current = { element: null, targetScrollTop: null };
     setEditing(true);
     setActionMenuOpen(false);
     setHasSignature(false);
