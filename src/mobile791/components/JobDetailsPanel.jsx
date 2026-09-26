@@ -6,7 +6,7 @@ import JobAddressLink from "./JobAddressLink.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, canWorkerRestartJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
 import { getNameplatePhotoMetadata } from "../modules/photos.js";
-import { formatMissingNameplateMessage, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
+import { getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
 import { getManualNameplateVerification, setManualNameplateVerification } from "../../modules/nameplate-verification.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -412,19 +412,11 @@ export default function JobDetailsPanel({
   const showCommentsSection = !isWorkerCompletedLock || showDetailsLoading || comments.length > 0;
   const jobDevices = getJobDeviceRows(selectedJob);
   const nameplateCompletion = getJobNameplateCompletion(selectedJob, { allowLocal: !isAdmin });
-  const effectiveMissingNameplateUnits = isAdmin
-    ? nameplateCompletion.units.filter((unit) => (
-      !unit.ready && !getManualNameplateVerification(manualVerifications, unit.deviceIndex, unit.unitRef)
-    ))
-    : nameplateCompletion.missingUnits;
   const effectiveNameplateComplete = isAdmin ? true : nameplateCompletion.isComplete;
   const hasLocallySavedNameplates = nameplateCompletion.units.some((unit) => {
     const status = String(unit.photo?.upload_status || '').toLowerCase();
     return status === 'local' || status === 'uploading';
   });
-  const missingNameplatesLabel = isAdmin
-    ? effectiveMissingNameplateUnits.map((unit) => unit.shortLabel).join(', ')
-    : formatMissingNameplateMessage(nameplateCompletion);
   const nameplatePhotos = photos.filter((photo) => getNameplatePhotoMetadata(photo).photo_kind === 'nameplate');
   const regularPhotos = photos.filter((photo) => getNameplatePhotoMetadata(photo).photo_kind !== 'nameplate');
   const singleDeviceIndoorUnits = jobDevices.length === 1 ? getDeviceIndoorUnits(jobDevices[0], { keepEmpty: true }) : [];
@@ -721,7 +713,7 @@ export default function JobDetailsPanel({
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
                 disabled={busy || showDetailsLoading || !effectiveNameplateComplete}
-                title={!effectiveNameplateComplete ? `Brakuje tabliczek lub potwierdzeń: ${missingNameplatesLabel}` : 'Zakończ zlecenie'}
+                title={!effectiveNameplateComplete ? 'Uzupełnij wymagane tabliczki przed zakończeniem' : 'Zakończ zlecenie'}
               >
                 <span className="desktopLabel">Zakończone zlecenie</span>
                 <span className="mobileLabel">Zakończ</span>
@@ -773,13 +765,6 @@ export default function JobDetailsPanel({
           </div>
           {canFinishJob && showDetailsLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam wymagane zdjęcia i potwierdzenia tabliczek…</div>
-          ) : null}
-          {canFinishJob && !showDetailsLoading && !effectiveNameplateComplete ? (
-            <div className="finishNameplateRequirement missing">
-              <strong>Nie można zakończyć zlecenia.</strong>
-              <span>Brakuje: {missingNameplatesLabel}.</span>
-              <button type="button" className="btn secondary" onClick={() => openSerialNumbersJob(selectedJob)}>{isAdmin ? 'Dodaj zdjęcie lub potwierdź przy JZ/JW' : 'Dodaj brakujące tabliczki'}</button>
-            </div>
           ) : null}
           {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement ready">
