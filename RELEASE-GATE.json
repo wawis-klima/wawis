@@ -36,7 +36,7 @@
     "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian bazodanowych",
     "trigger_grants": "N/A — brak zmian triggerów/grantów",
-    "vercel_deployment": "PENDING — po merge do main",
+    "vercel_deployment": "RETRY REQUIRED — poprzedni metadata-only merge został pominięty przez Vercel ignoreCommand; source-touch 11.52 ma wymusić realny produkcyjny build",
     "cloudflare_deployment": "PENDING — po merge do main",
     "merge_commit": ""
   }
