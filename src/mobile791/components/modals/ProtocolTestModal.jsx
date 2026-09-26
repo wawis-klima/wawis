@@ -542,10 +542,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 <div><dt>E-mail</dt><dd>{protocolData.email}</dd></div>
                 <div><dt>Adres</dt><dd>{protocolData.address}</dd></div>
                 <div><dt>Data montażu</dt><dd>{protocolData.installationDate}</dd></div>
-                <div><dt>Status</dt><dd>{protocolData.status}</dd></div>
-                <div className="protocolTestWide"><dt>Monterzy</dt><dd>{protocolData.technicians.join(", ")}</dd></div>
-                {protocolData.completedAt !== "-" ? <div><dt>Zakończono</dt><dd>{protocolData.completedAt}</dd></div> : null}
-                {protocolData.completedBy !== "-" ? <div><dt>Zakończył</dt><dd>{protocolData.completedBy}</dd></div> : null}
+                <div><dt>Monterzy</dt><dd>{protocolData.technicians.join(", ")}</dd></div>
               </dl>
             </section>
 
