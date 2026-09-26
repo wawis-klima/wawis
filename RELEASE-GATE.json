@@ -7,7 +7,7 @@
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie pozycji przewinięcia mobilnego formularza protokołu. Baseline diagnostyczny nie został jeszcze odczytany dla kandydata 11.51."
+    "notes": "Zmiana dotyczy wyłącznie pozycji przewinięcia mobilnego formularza protokołu. Baseline diagnostyczny nie został jeszcze odczytany dla kandydata 11.51. Kandydat funkcjonalny przeszedł pełną bramkę PR, E2E mobile i produkcyjny build."
   },
   "drive_backup": {
     "required": false,
@@ -16,7 +16,7 @@
   },
   "main_protection": {
     "source_branch": "release/v11.51",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
