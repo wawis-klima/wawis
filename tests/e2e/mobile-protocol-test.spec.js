@@ -154,16 +154,22 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
     await expect(page.getByText(/Protokół podpisany i zapisany/).first()).toBeVisible();
 
+    // Odtwarzamy realny scenariusz z iPhone'a: zapisany protokół jest zamykany i otwierany ponownie.
+    // Przy ponownym otwarciu istniejący mechanizm ustawia widok na dolnej części protokołu.
+    await page.locator('.mobileDeviceWizardClose').click();
+    await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
+    await page.locator('.protocolTestButton').click();
+    await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
+
     const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
-    await editProtocolButton.scrollIntoViewIfNeeded();
     const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
     expect(scrollBeforeEdit).toBeGreaterThan(44);
     await editProtocolButton.click();
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
-    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
-      .toBeLessThanOrEqual(scrollBeforeEdit - 40);
-    const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
     const headerHeight = await page.locator('.mobileDeviceWizardHeader').evaluate((header) => Math.max(44, Math.round(header.getBoundingClientRect().height || 48)));
+    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
+      .toBeLessThanOrEqual(scrollBeforeEdit - headerHeight + 4);
+    const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
     expect(scrollBeforeEdit - scrollAfterEdit).toBeGreaterThanOrEqual(headerHeight - 4);
     expect(scrollBeforeEdit - scrollAfterEdit).toBeLessThanOrEqual(headerHeight + 4);
 
