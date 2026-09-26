@@ -31,7 +31,6 @@ import {
   PROTOCOL_SAVE_TOTAL_TIMEOUT_MS,
   withProtocolSaveTimeout,
 } from "../../modules/protocol-save-timeout.js";
-import { APP_VERSION } from "../../version.js";
 import "../devices/mobile-device-wizard.css";
 
 const SIGNATURE_HEIGHT = 280;
@@ -527,8 +526,6 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             <h2>Protokół klienta</h2>
             <button type="button" className="mobileDeviceWizardClose" onClick={onClose} disabled={isGenerating}>Zamknij</button>
           </div>
-          <div className="mobileDeviceWizardStep protocolTestVersionStep"><span>PDF</span>Wersja testowa · {APP_VERSION}</div>
-
           <div className="mobileDeviceWizardBody mobileProtocolWizardBody">
             <p className="protocolTestClientName">{protocolData.client}</p>
             <div className={`protocolTestNotice${savedRecord && !editing ? " saved" : ""}`} role="note">
