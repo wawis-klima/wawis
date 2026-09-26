@@ -154,6 +154,24 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
     await expect(page.getByText(/Protokół podpisany i zapisany/).first()).toBeVisible();
 
+    const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
+    await page.getByRole('button', { name: 'Uzupełnij protokół', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
+    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
+      const header = modal.querySelector('.mobileDeviceWizardHeader');
+      const headerHeight = Math.max(44, Math.round(header?.getBoundingClientRect().height || 48));
+      return Math.round(scrollBeforeEdit - modal.scrollTop - headerHeight);
+    })).toBeLessThanOrEqual(4);
+    const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
+    const headerHeight = await page.locator('.mobileDeviceWizardHeader').evaluate((header) => Math.max(44, Math.round(header.getBoundingClientRect().height || 48)));
+    expect(scrollBeforeEdit - scrollAfterEdit).toBeGreaterThanOrEqual(headerHeight - 4);
+    expect(scrollBeforeEdit - scrollAfterEdit).toBeLessThanOrEqual(headerHeight + 4);
+
+    await page.locator('.mobileDeviceWizardClose').click();
+    await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
+    await page.locator('.protocolTestButton').click();
+    await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
+
     await page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Drukuj protokół', exact: true })).toBeVisible();
     await expect.poll(async () => page.locator('.protocolOutputActions').evaluate((section) => {
