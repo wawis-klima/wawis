@@ -468,11 +468,6 @@
   overflow-wrap: anywhere;
 }
 
-.protocolTestVersionStep {
-  margin-bottom: 17px;
-  text-transform: uppercase;
-}
-
 .mobileProtocolWizard .protocolTestNotice,
 .mobileProtocolWizard .protocolTestSection,
 .mobileProtocolWizard .protocolTestMessage {
@@ -516,26 +511,6 @@
 .mobileProtocolWizardBody {
   gap: 12px !important;
   padding-bottom: 4px;
-}
-
-.mobileProtocolWizard .protocolTestVersionStep {
-  width: max-content;
-  max-width: 100%;
-  min-height: 34px;
-  margin: 2px auto 14px;
-  padding: 5px 11px 5px 6px;
-  gap: 7px;
-  border-radius: 999px;
-  font-size: 10px !important;
-  line-height: 1.2 !important;
-  letter-spacing: .02em;
-  text-transform: none;
-}
-
-.mobileProtocolWizard .protocolTestVersionStep > span {
-  width: 24px;
-  height: 24px;
-  font-size: 8px !important;
 }
 
 .mobileProtocolWizard .protocolTestClientName {
