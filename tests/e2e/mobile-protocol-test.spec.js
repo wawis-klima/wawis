@@ -169,23 +169,18 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
       modal.style.setProperty('min-height', '420px', 'important');
       modal.style.setProperty('max-height', '420px', 'important');
       modal.style.setProperty('overflow-y', 'auto', 'important');
-      const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
-      modal.scrollTop = Math.min(160, maxScroll);
-      return { scrollTop: modal.scrollTop, maxScroll };
+      modal.scrollTop = 0;
+      return { maxScroll: Math.max(0, modal.scrollHeight - modal.clientHeight) };
     });
     expect(scrollSetup.maxScroll).toBeGreaterThan(44);
-    const scrollBeforeEdit = scrollSetup.scrollTop;
-    expect(scrollBeforeEdit).toBeGreaterThan(44);
     // Kliknięcie przez DOM nie uruchamia pomocniczego auto-scroll Playwrighta,
-    // więc test mierzy wyłącznie korektę wykonywaną przez samą aplikację.
+    // więc test mierzy wyłącznie przewinięcie wykonywane przez samą aplikację.
     await editProtocolButton.evaluate((button) => button.click());
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
-    const headerHeight = await page.locator('.mobileDeviceWizardHeader').evaluate((header) => Math.max(44, Math.round(header.getBoundingClientRect().height || 48)));
-    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
-      .toBeLessThanOrEqual(scrollBeforeEdit - headerHeight + 4);
-    const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
-    expect(scrollBeforeEdit - scrollAfterEdit).toBeGreaterThanOrEqual(headerHeight - 4);
-    expect(scrollBeforeEdit - scrollAfterEdit).toBeLessThanOrEqual(headerHeight + 4);
+    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
+      const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
+      return Math.abs(maxScroll - modal.scrollTop);
+    })).toBeLessThanOrEqual(2);
     await page.locator('.protocolWizardModal').evaluate((modal) => {
       modal.style.removeProperty('height');
       modal.style.removeProperty('min-height');
