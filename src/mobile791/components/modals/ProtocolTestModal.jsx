@@ -35,7 +35,6 @@ import { APP_VERSION } from "../../version.js";
 import "../devices/mobile-device-wizard.css";
 
 const SIGNATURE_HEIGHT = 280;
-const EDIT_SCROLL_CORRECTION_PX = 50;
 
 function ProtocolBackIcon() {
   return (
@@ -189,34 +188,32 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     let settleTimerId = 0;
     let reapplyTimerId = 0;
 
-    const applyTarget = () => {
+    const scrollProtocolToAbsoluteBottom = () => {
       const modal = protocolModalRef.current;
       if (!modal) return;
       const overlay = modal.closest(".appModalOverlay");
       const candidates = [modal, overlay].filter(Boolean);
-      let target = editScrollBaselineRef.current?.element;
-      let targetScrollTop = editScrollBaselineRef.current?.targetScrollTop;
+      const target = candidates
+        .map((element) => ({
+          element,
+          maxScrollTop: Math.max(0, Number(element.scrollHeight || 0) - Number(element.clientHeight || 0)),
+        }))
+        .sort((left, right) => right.maxScrollTop - left.maxScrollTop)[0];
 
-      if (!target || !target.isConnected || !Number.isFinite(targetScrollTop)) {
-        target = candidates.find((element) => Number(element.scrollTop) > 0.5)
-          || candidates.find((element) => element.scrollHeight > element.clientHeight + 1)
-          || modal;
-        targetScrollTop = Math.max(0, Number(target.scrollTop || 0) - EDIT_SCROLL_CORRECTION_PX);
-        editScrollBaselineRef.current = { element: target, targetScrollTop };
-      }
-
-      if (typeof target.scrollTo === "function") {
-        target.scrollTo({ top: targetScrollTop, behavior: "auto" });
+      if (!target?.element) return;
+      if (typeof target.element.scrollTo === "function") {
+        target.element.scrollTo({ top: target.maxScrollTop, behavior: "auto" });
       } else {
-        target.scrollTop = targetScrollTop;
+        target.element.scrollTop = target.maxScrollTop;
       }
+      editScrollBaselineRef.current = { element: target.element, targetScrollTop: target.maxScrollTop };
     };
 
     const firstFrameId = window.requestAnimationFrame(() => {
       secondFrameId = window.requestAnimationFrame(() => {
         settleTimerId = window.setTimeout(() => {
-          applyTarget();
-          reapplyTimerId = window.setTimeout(applyTarget, 120);
+          scrollProtocolToAbsoluteBottom();
+          reapplyTimerId = window.setTimeout(scrollProtocolToAbsoluteBottom, 120);
         }, 60);
       });
     });
@@ -272,8 +269,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function beginEditingStoredProtocol() {
-    // Sam Safari wybiera czasem modal, a czasem jego overlay jako realny scroll-container.
-    // Zaznaczamy tylko żądanie korekty; właściwy kontener wykrywamy dopiero po przebudowaniu widoku.
+    // Po przejściu do edycji zawsze jedziemy do absolutnego końca formularza.
+    // Właściwy scroll-container wykrywamy dopiero po przebudowaniu widoku na iOS.
     editScrollBaselineRef.current = { element: null, targetScrollTop: null };
     setEditing(true);
     setActionMenuOpen(false);
