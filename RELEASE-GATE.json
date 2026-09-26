@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.50",
-  "scope": "desktop",
-  "release_branch": "release/v11.50",
+  "version": "11.51",
+  "scope": "mobile",
+  "release_branch": "release/v11.51",
   "baseline_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "result": "REGRESSION",
-    "notes": "Dla zgłoszonego montażu Supabase ma device_model=null, device_serial_number=null, 0 rekordów photos i 0 nameplate_manual_verifications, a desktop po ponownym logowaniu pokazywał z cache Potwierdzone 2/2. Kliknięcie montażu pobierało szczegóły i poprawnie przełączało na Brak urządzeń. Przyczyną było zachowywanie starych nameplatePhotosMeta/nameplateVerifications, gdy prawidłowa odpowiedź zbiorcza nie zawierała wiersza dla tego job_id."
+    "checked": false,
+    "last_24h": false,
+    "result": "PENDING",
+    "notes": "Zmiana dotyczy wyłącznie pozycji przewinięcia mobilnego formularza protokołu. Baseline diagnostyczny nie został jeszcze odczytany dla kandydata 11.51."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.50.zip"
+    "file_name": "klima-app-v11.51.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.50",
-    "ready_for_main": true,
+    "source_branch": "release/v11.51",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu odświeżyć lub zalogować się ponownie na desktopie. Zgłoszony montaż Piotr Wasik / Puchacza 13 ma od razu pokazać Brak urządzeń, bez konieczności otwierania karty."
+    "notes": "Po wdrożeniu na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół; dolna część formularza ma ustawić się jak w obrazie referencyjnym, bez zbyt niskiego zatrzymania."
   },
   "archive": {
     "source_of_truth": "github-main",
