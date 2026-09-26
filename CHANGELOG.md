@@ -1,3 +1,10 @@
+## 11.51
+- Mobile, protokół klienta: po naciśnięciu `Uzupełnij protokół` pozycja przewinięcia jest stabilizowana po przebudowaniu formularza.
+- Ekran cofa się o rzeczywistą wysokość nagłówka kreatora (około 48 px na iPhonie), co odpowiada docelowemu układowi ze zgłoszenia zamiast zatrzymywać się zbyt nisko.
+- Korekta wykonywana jest po dwóch klatkach renderowania i bez animacji, żeby iOS nie nadpisywał pozycji podczas zmiany wysokości formularza.
+- Dodano regresję E2E kontrolującą zmianę `scrollTop` przy przejściu z zapisanego protokołu do edycji.
+- Bez zmian w PDF, podpisie klienta, zapisie protokołu, Supabase, RLS i wysyłce e-mail.
+
 ## 11.50
 - Naprawiono fałszywy zielony status `Potwierdzone 2/2` na desktopowej liście Montaże po wcześniejszym usunięciu urządzeń/tabliczek.
 - Przy pełnym odświeżeniu poprawna pusta odpowiedź z Supabase jest teraz stanem autorytatywnym i czyści stare `nameplatePhotosMeta` oraz `nameplateVerifications` z lokalnej migawki.

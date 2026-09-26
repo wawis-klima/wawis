@@ -154,6 +154,51 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
     await expect(page.getByText(/Protokół podpisany i zapisany/).first()).toBeVisible();
 
+    // Odtwarzamy realny scenariusz z iPhone'a: zapisany protokół jest zamykany i otwierany ponownie.
+    // Przy ponownym otwarciu istniejący mechanizm ustawia widok na dolnej części protokołu.
+    await page.locator('.mobileDeviceWizardClose').click();
+    await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
+    await page.locator('.protocolTestButton').click();
+    await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
+
+    const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
+    const scrollSetup = await page.locator('.protocolWizardModal').evaluate((modal) => {
+      // Fixture E2E ma krótsze dane niż zgłoszony protokół z iPhone'a.
+      // Zmniejszamy wyłącznie wysokość testowego scroll-containera, żeby odtworzyć realny zapas przewijania.
+      modal.style.setProperty('height', '420px', 'important');
+      modal.style.setProperty('min-height', '420px', 'important');
+      modal.style.setProperty('max-height', '420px', 'important');
+      modal.style.setProperty('overflow-y', 'auto', 'important');
+      const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
+      modal.scrollTop = Math.min(160, maxScroll);
+      return { scrollTop: modal.scrollTop, maxScroll };
+    });
+    expect(scrollSetup.maxScroll).toBeGreaterThan(44);
+    const scrollBeforeEdit = scrollSetup.scrollTop;
+    expect(scrollBeforeEdit).toBeGreaterThan(44);
+    // Kliknięcie przez DOM nie uruchamia pomocniczego auto-scroll Playwrighta,
+    // więc test mierzy wyłącznie korektę wykonywaną przez samą aplikację.
+    await editProtocolButton.evaluate((button) => button.click());
+    await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
+    const headerHeight = await page.locator('.mobileDeviceWizardHeader').evaluate((header) => Math.max(44, Math.round(header.getBoundingClientRect().height || 48)));
+    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
+      .toBeLessThanOrEqual(scrollBeforeEdit - headerHeight + 4);
+    const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
+    expect(scrollBeforeEdit - scrollAfterEdit).toBeGreaterThanOrEqual(headerHeight - 4);
+    expect(scrollBeforeEdit - scrollAfterEdit).toBeLessThanOrEqual(headerHeight + 4);
+    await page.locator('.protocolWizardModal').evaluate((modal) => {
+      modal.style.removeProperty('height');
+      modal.style.removeProperty('min-height');
+      modal.style.removeProperty('max-height');
+      modal.style.removeProperty('overflow-y');
+      modal.scrollTop = 0;
+    });
+
+    await page.locator('.mobileDeviceWizardClose').evaluate((button) => button.click());
+    await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
+    await page.locator('.protocolTestButton').click();
+    await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
+
     await page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Drukuj protokół', exact: true })).toBeVisible();
     await expect.poll(async () => page.locator('.protocolOutputActions').evaluate((section) => {

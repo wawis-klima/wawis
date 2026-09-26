@@ -125,6 +125,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
   const outputActionsRef = useRef(null);
+  const editScrollBaselineRef = useRef(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
   const openedAtRef = useRef(new Date());
@@ -160,6 +161,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setDraftHasSignature(false);
     setSignatureCanvasReady(false);
     setIsGenerating(false);
+    editScrollBaselineRef.current = null;
     setActionMenuOpen(false);
     setActionBusy("");
     setMessage("");
@@ -179,6 +181,31 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       if (secondFrameId) window.cancelAnimationFrame(secondFrameId);
     };
   }, [open, job?.id, protocolRecord?.id]);
+
+  useEffect(() => {
+    if (!open || !editing || !Number.isFinite(editScrollBaselineRef.current)) return undefined;
+    const baselineScrollTop = editScrollBaselineRef.current;
+    let secondFrameId = 0;
+    const firstFrameId = window.requestAnimationFrame(() => {
+      secondFrameId = window.requestAnimationFrame(() => {
+        const modal = protocolModalRef.current;
+        if (!modal) return;
+        const header = modal.querySelector(".mobileDeviceWizardHeader");
+        const headerHeight = Math.max(44, Math.round(header?.getBoundingClientRect?.().height || 48));
+        const targetScrollTop = Math.max(0, baselineScrollTop - headerHeight);
+        if (typeof modal.scrollTo === "function") {
+          modal.scrollTo({ top: targetScrollTop, behavior: "auto" });
+        } else {
+          modal.scrollTop = targetScrollTop;
+        }
+        editScrollBaselineRef.current = null;
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrameId);
+      if (secondFrameId) window.cancelAnimationFrame(secondFrameId);
+    };
+  }, [open, editing]);
 
   useEffect(() => {
     if (!signatureOpen) return undefined;
@@ -223,6 +250,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function beginEditingStoredProtocol() {
+    editScrollBaselineRef.current = protocolModalRef.current?.scrollTop ?? null;
     setEditing(true);
     setActionMenuOpen(false);
     setHasSignature(false);
