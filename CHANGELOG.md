@@ -1,10 +1,10 @@
 ## 11.52
-- Mobile, protokół klienta: po `Uzupełnij protokół` formularz jest przewijany do absolutnego końca, a nie o stałą wartość względem poprzedniej pozycji.
-- Przyczyną nieskuteczności 11.51 było odwrócenie kierunku korekty: kod zmniejszał `scrollTop`, podczas gdy zgłoszenie wymagało dojścia do maksymalnego `scrollTop`.
-- 11.52 po przebudowaniu widoku wykrywa faktyczny scroll-container Safari i ustawia `scrollTop` na jego maksymalną wartość `scrollHeight - clientHeight`.
-- Ustawienie jest wykonywane po ustabilizowaniu layoutu i powtarzane raz po 120 ms, żeby iOS scroll anchoring nie cofnął widoku.
-- Regresja E2E sprawdza wprost, że po `Uzupełnij protokół` modal kończy dokładnie na maksymalnym scrollu.
+- Mobile, protokół klienta: po naciśnięciu `Uzupełnij protokół` formularz jest przewijany do absolutnego dołu.
+- Aplikacja po przebudowaniu widoku wybiera ten element, który faktycznie ma największy możliwy zakres przewijania: modal albo overlay Safari.
+- Pozycja końcowa jest ustawiana ponownie po krótkim opóźnieniu, aby iOS scroll anchoring nie cofnął formularza z dołu.
+- Regresja E2E wymaga teraz, aby po `Uzupełnij protokół` `scrollTop` był równy maksymalnemu możliwemu przewinięciu.
 - Bez zmian w PDF, podpisie klienta, zapisie protokołu, Supabase, RLS i wysyłce e-mail.
+
 ## 11.51
 - Mobile, protokół klienta: po naciśnięciu `Uzupełnij protokół` pozycja przewinięcia jest stabilizowana po przebudowaniu formularza.
 - Ekran cofa się o rzeczywistą wysokość nagłówka kreatora (około 48 px na iPhonie), co odpowiada docelowemu układowi ze zgłoszenia zamiast zatrzymywać się zbyt nisko.
