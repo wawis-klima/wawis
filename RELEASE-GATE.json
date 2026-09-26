@@ -7,7 +7,7 @@
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Poprawka dotyczy wyłącznie rzeczywistego kontenera przewijania mobilnego protokołu po Uzupełnij protokół. Bez zmian backendu, danych i uprawnień."
+    "notes": "Poprawka dotyczy wyłącznie przewinięcia mobilnego protokołu po Uzupełnij protokół. Bez zmian backendu, danych i uprawnień."
   },
   "drive_backup": {
     "required": false,
@@ -16,14 +16,14 @@
   },
   "main_protection": {
     "source_branch": "release/v11.52",
-    "ready_for_main": true,
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhonie otworzyć zapisany protokół, nacisnąć Uzupełnij protokół i porównać z drugim zdjęciem referencyjnym: zawartość ma być około 50 CSS px niżej niż w błędnym widoku 11.51."
+    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół; formularz ma automatycznie dojść do absolutnego końca przewijania, bez zatrzymania przed dołem."
   },
   "archive": {
     "source_of_truth": "github-main",
