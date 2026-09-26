@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.56` — usunięto z protokołu oznaczenie „PDF · Wersja testowa” oraz czerwony panel „Nie można zakończyć zlecenia / Dodaj brakujące tabliczki”; blokada przycisku „Zakończ” pozostaje bez zmian.
+- wersja `11.57` — protokół PDF ma czarno-białą kartę „Oceń nas w Google” z kodem QR w prawym górnym rogu; sekcja realizacji zawiera tylko datę montażu i monterów, a potwierdzenie klienta zachowuje pełną szerokość.
 - wersja `11.55` — podpis klienta ma wyższą rozdzielczość, wygładzanie Béziera, obsługę coalesced pointer events i naturalniejszą zmienną grubość kreski; eksport PNG zachowuje antyaliasing.
 - wersja `11.54` — po `Uzupełnij protokół` dolna krawędź sekcji „Potwierdzenie klienta” jest automatycznie odsłaniana nad sticky footerem; używamy `scrollIntoView`, więc Safari samo wybiera faktyczny kontener przewijania.
 - wersja `11.53` — po `Uzupełnij protokół` formularz zatrzymuje się 50 CSS px przed absolutnym końcem, zgodnie z drugim zrzutem referencyjnym użytkownika.
