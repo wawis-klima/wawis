@@ -117,7 +117,7 @@ function getRegistration(entry, vehicles) {
 function getVehicleLabel(vehicle) {
   const name = String(vehicle?.vehicle_name || '').trim();
   const registration = String(vehicle?.registration_number || '').trim();
-  return name ? `${name} — ${registration}` : registration;
+  return name && registration ? `${name} — ${registration}` : (name || registration);
 }
 
 function formatEntryCount(value) {

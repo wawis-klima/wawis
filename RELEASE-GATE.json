@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.57",
+  "version": "11.58",
   "scope": "mobile",
-  "release_branch": "release/v11.57",
+  "release_branch": "release/v11.58",
   "baseline_diagnostics": {
-    "checked": false,
-    "last_24h": false,
-    "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie układu protokołu PDF i jego mobilnego podglądu. Bez zmian backendu, danych, RLS i logiki zapisu."
+    "checked": true,
+    "last_24h": true,
+    "result": "PASS",
+    "notes": "Przed wydaniem: 5 błędów i 255 ostrzeżeń globalnie w ostatnich 24 h, ale brak zdarzeń diagnostycznych modułu fuel. Zmiana nie dotyka istniejących błędów z innych modułów."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.57.zip"
+    "file_name": "klima-app-v11.58.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.57",
+    "source_branch": "release/v11.58",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić: czarno-biały QR Google w prawym górnym rogu protokołu, brak Status/Zakończył/Zakończono oraz poprawny wydruk QR."
+    "notes": "Sprawdzić: Edward widoczny jako sama nazwa, zapis tankowania na Edwarda, brak separatora z pustą rejestracją oraz brak nowych błędów modułu fuel."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian w bazie",
-    "rls_role_matrix": "N/A — brak zmian RLS",
-    "performance_advisor": "N/A — brak zmian bazodanowych",
+    "supabase_migration_applied": "PASS — allow_fuel_vehicle_without_registration_v11_58; Edward istnieje z registration_number = NULL",
+    "rls_role_matrix": "PASS — bez zmian polityk RLS i grantów",
+    "performance_advisor": "PASS WITH EXISTING INFO — brak nowych ostrzeżeń związanych ze zmianą; istnieją wcześniejsze informacje o indeksach",
+    "security_advisor": "PASS WITH EXISTING WARNINGS — zmiana nie dodaje funkcji/polityk; wcześniejsze ostrzeżenia SECURITY DEFINER pozostają",
     "trigger_grants": "N/A — brak zmian triggerów/grantów",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main",

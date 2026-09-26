@@ -3,7 +3,7 @@ importScripts("/push-context-guard.js");
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v11.57");
+    const cache = await caches.open("wawis-app-shell-v11.58");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
@@ -19,7 +19,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v11.57")
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v11.58")
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
