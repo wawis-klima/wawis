@@ -39,7 +39,6 @@ const SIGNATURE_MIN_WIDTH = 1.65;
 const SIGNATURE_MAX_WIDTH = 3.25;
 const SIGNATURE_BASE_WIDTH = 2.45;
 const SIGNATURE_WIDTH_SMOOTHING = 0.72;
-const EDIT_BOTTOM_REVEAL_PX = 50;
 
 function ProtocolBackIcon() {
   return (
