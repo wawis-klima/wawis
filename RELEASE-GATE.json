@@ -7,7 +7,7 @@
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Docelowo formularz ma znaleźć się na absolutnym dole; bez zmian backendu, danych i uprawnień."
+    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Docelowo formularz ma znaleźć się na absolutnym dole; bez zmian backendu, danych i uprawnień. Kandydat 11.52 przeszedł WAWIS PR checks, wymagane E2E mobile i produkcyjny build."
   },
   "drive_backup": {
     "required": false,
@@ -16,7 +16,7 @@
   },
   "main_protection": {
     "source_branch": "release/v11.52",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {

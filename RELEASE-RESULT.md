@@ -21,7 +21,7 @@
 - regresja E2E wymaga od teraz absolutnego dołu
 
 ## Wynik wydania
-- WAWIS PR checks: PENDING
-- produkcyjny build: PENDING
+- WAWIS PR checks: GREEN
+- produkcyjny build: GREEN
 - Vercel: PENDING
 - merge: PENDING
