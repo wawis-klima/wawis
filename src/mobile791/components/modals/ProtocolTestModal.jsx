@@ -125,6 +125,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const canvasRef = useRef(null);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
+  const protocolConfirmationRef = useRef(null);
+  const protocolFooterRef = useRef(null);
   const outputActionsRef = useRef(null);
   const editScrollBaselineRef = useRef(null);
   const drawingRef = useRef(false);
@@ -189,34 +191,22 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     let settleTimerId = 0;
     let reapplyTimerId = 0;
 
-    const scrollProtocolToDesiredBottom = () => {
-      const modal = protocolModalRef.current;
-      if (!modal) return;
-      const overlay = modal.closest(".appModalOverlay");
-      const candidates = [modal, overlay].filter(Boolean);
-      const target = candidates
-        .map((element) => ({
-          element,
-          maxScrollTop: Math.max(0, Number(element.scrollHeight || 0) - Number(element.clientHeight || 0)),
-        }))
-        .sort((left, right) => right.maxScrollTop - left.maxScrollTop)[0];
+    const revealProtocolBottom = () => {
+      const target = protocolConfirmationRef.current;
+      const footer = protocolFooterRef.current;
+      if (!target || !footer) return;
 
-      if (!target?.element) return;
-      const targetScrollTop = Math.max(0, target.maxScrollTop - EDIT_BOTTOM_REVEAL_PX);
-      if (typeof target.element.scrollTo === "function") {
-        target.element.scrollTo({ top: targetScrollTop, behavior: "auto" });
-      } else {
-        target.element.scrollTop = targetScrollTop;
-      }
-      editScrollBaselineRef.current = { element: target.element, targetScrollTop };
+      const footerHeight = Math.max(64, Math.round(footer.getBoundingClientRect().height || 0));
+      target.style.scrollMarginBottom = `${footerHeight + 16}px`;
+      target.scrollIntoView({ behavior: "auto", block: "end", inline: "nearest" });
     };
 
     const firstFrameId = window.requestAnimationFrame(() => {
       secondFrameId = window.requestAnimationFrame(() => {
         settleTimerId = window.setTimeout(() => {
-          scrollProtocolToDesiredBottom();
-          reapplyTimerId = window.setTimeout(scrollProtocolToDesiredBottom, 120);
-        }, 60);
+          revealProtocolBottom();
+          reapplyTimerId = window.setTimeout(revealProtocolBottom, 140);
+        }, 80);
       });
     });
 
@@ -271,9 +261,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function beginEditingStoredProtocol() {
-    // Po przejściu do edycji zatrzymujemy formularz 50 CSS px przed absolutnym końcem.
-    // To odpowiada ręcznie ustawionej pozycji z obrazu referencyjnego użytkownika na iPhonie.
-    editScrollBaselineRef.current = { element: null, targetScrollTop: null };
+    // Po rozbudowaniu formularza ustawiamy jego ostatnią sekcję tuż nad sticky footerem.
+    // scrollIntoView wybiera prawdziwy kontener przewijania Safari, zamiast zgadywać scrollTop.
+    editScrollBaselineRef.current = { pending: true };
     setEditing(true);
     setActionMenuOpen(false);
     setHasSignature(false);
@@ -527,7 +517,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               ) : null}
             </section> : null}
 
-            <section className="protocolTestSection">
+            <section ref={protocolConfirmationRef} className="protocolTestSection">
               <h3>Potwierdzenie klienta</h3>
               <div className={`protocolTestSignatureStatus${hasSignature || (savedRecord && !editing) ? " ready" : ""}`}>
                 {hasSignature || (savedRecord && !editing) ? <div>
@@ -556,7 +546,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             {message ? <div className="protocolTestMessage" role="status">{message}</div> : null}
           </div>
 
-          <div className="mobileDeviceWizardFooter">
+          <div ref={protocolFooterRef} className="mobileDeviceWizardFooter">
             <div className="protocolTestFooterActions">
               <button type="button" className="btn" onClick={onClose} disabled={isGenerating || Boolean(actionBusy)}>Zamknij</button>
               {savedRecord && !editing ? (
