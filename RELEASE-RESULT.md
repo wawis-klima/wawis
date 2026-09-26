@@ -1,26 +1,27 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.51
+- 11.52
 
 ## Zakres
-- mobilny protokół klienta: korekta pozycji po naciśnięciu `Uzupełnij protokół`
-- po przebudowaniu formularza przewinięcie cofa się o wysokość nagłówka kreatora
+- mobilny protokół klienta: poprawka realnego przewijania iOS po `Uzupełnij protokół`
+- wykrywanie faktycznie aktywnego scroll-containera po przebudowaniu widoku
+- korekta o 50 CSS px zgodnie z porównaniem zrzutów użytkownika
 - bez zmian w PDF, podpisie, Supabase, RLS i e-mailu
 
 ## Dowód błędu
-- na obrazie zgłoszonym z iPhone'a formularz po wejściu w edycję zatrzymuje się około 50 CSS px za nisko
-- obraz docelowy pokazuje tę samą zawartość przesuniętą o wysokość mobilnego nagłówka w górę
+- w 11.51 kod korygował wyłącznie `.protocolWizardModal.scrollTop`
+- na iPhonie Safari może utrzymywać aktywne przewinięcie na overlay zamiast na samym modalu
+- dlatego test Chromium przechodził, a realny widok na iPhonie praktycznie się nie zmieniał
 
 ## Naprawa
-- przed przejściem do edycji zapamiętywany jest `scrollTop`
-- po dwóch klatkach renderowania wyliczana jest rzeczywista wysokość nagłówka
-- modal ustawia `scrollTop = poprzednia pozycja - wysokość nagłówka`, bez animacji
-- dodana regresja E2E pilnująca tej geometrii
+- po wejściu w edycję aplikacja czeka na ustabilizowanie layoutu
+- wybiera kontener, który rzeczywiście ma aktywne przewinięcie
+- cofa jego `scrollTop` o 50 CSS px i powtarza ustawienie po 120 ms, aby skompensować iOS scroll anchoring
+- jeśli modal jest realnym scrollerem, zachowanie pozostaje zgodne z dotychczasowym E2E
 
 ## Wynik wydania
-- WAWIS PR checks: GREEN — pełne E2E mobile i build przeszły
-- produkcyjny build: GREEN
+- WAWIS PR checks: PENDING
+- produkcyjny build: PENDING
 - Vercel: PENDING
-- Cloudflare: PENDING
-- merge: PENDING — po finalnym checku metadata
+- merge: PENDING
