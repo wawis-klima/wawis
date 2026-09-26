@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.52",
+  "version": "11.53",
   "scope": "mobile",
-  "release_branch": "release/v11.52",
+  "release_branch": "release/v11.53",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Docelowo formularz ma znaleźć się na absolutnym dole; bez zmian backendu, danych i uprawnień. Kandydat 11.52 przeszedł WAWIS PR checks, wymagane E2E mobile i produkcyjny build."
+    "notes": "Zmiana dotyczy wyłącznie docelowej pozycji przewijania mobilnego protokołu po Uzupełnij protokół. Bez zmian backendu, danych i uprawnień."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.52.zip"
+    "file_name": "klima-app-v11.53.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.52",
+    "source_branch": "release/v11.53",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół. Formularz ma automatycznie zjechać do absolutnego dołu, bez ręcznego poprawiania przewinięcia."
+    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół. Widok ma odpowiadać drugiemu zrzutowi użytkownika: 50 CSS px przed absolutnym końcem, bez ręcznego poprawiania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -36,7 +36,7 @@
     "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian bazodanowych",
     "trigger_grants": "N/A — brak zmian triggerów/grantów",
-    "vercel_deployment": "RETRY REQUIRED — poprzedni metadata-only merge został pominięty przez Vercel ignoreCommand; source-touch 11.52 ma wymusić realny produkcyjny build",
+    "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main",
     "merge_commit": ""
   }
