@@ -1,17 +1,24 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.53
+- 11.54
 
 ## Zakres
-- mobilny protokół klienta: ustawienie dokładnej pozycji po `Uzupełnij protokół`
-- docelowo 50 CSS px przed absolutnym końcem przewijania
+- mobilny protokół klienta: poprawne odsłonięcie dolnej części po `Uzupełnij protokół`
+- sekcja `Potwierdzenie klienta` ma być w całości widoczna nad sticky footerem
 - bez zmian w PDF, podpisie, Supabase, RLS i e-mailu
 
-## Dowód
-- pierwszy zrzut 11.52 i drugi ręcznie ustawiony zrzut różnią się pionowo o 123 px obrazu
-- przy szerokości zrzutu 960 px odpowiada to około 50 CSS px na iPhonie
-- 11.52 ustawiała maksymalny `scrollTop`; 11.53 ustawia `maxScrollTop - 50`
+## Przyczyna poprzednich nietrafionych poprawek
+- wcześniejsze wersje sterowały liczbowym `scrollTop`
+- na zrzucie problemem nie był sam numer przewinięcia, tylko to, że dół sekcji `Potwierdzenie klienta` pozostawał zasłonięty przez sticky footer
+- 11.54 przewija konkretny element przez `scrollIntoView`, więc Safari wybiera właściwego przodka przewijania
+
+## Naprawa
+- po wejściu w edycję mierzona jest rzeczywista wysokość dolnego paska
+- sekcji `Potwierdzenie klienta` ustawiany jest `scroll-margin-bottom = wysokość footera + 16 px`
+- następnie wykonywane jest `scrollIntoView({ block: "end" })`
+- po 140 ms pozycja jest ponawiana dla iOS
+- E2E sprawdza bezpośrednio odstęp między dołem sekcji a górą footera
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
