@@ -1,3 +1,11 @@
+## 11.54
+- Mobile, protokół klienta: poprawiono właściwe zachowanie po `Uzupełnij protokół`.
+- Po rozbudowaniu formularza sekcja `Potwierdzenie klienta` jest przewijana przez `scrollIntoView` tak, aby jej dolna krawędź była widoczna tuż nad przyklejonym dolnym paskiem przycisków.
+- Wysokość sticky footera jest mierzona w runtime; do przewinięcia dodawany jest 16 px zapasu, dzięki czemu dół karty nie chowa się pod przyciskami.
+- Pozycja jest ponawiana po 140 ms, aby iOS/Safari nie cofnęły jej podczas końcowego układania formularza.
+- Test E2E nie sprawdza już sztucznego `scrollTop`; sprawdza bezpośrednio geometrię: dół sekcji ma znajdować się 10–24 px nad górną krawędzią footera.
+- Bez zmian w PDF, podpisie klienta, Supabase, RLS i e-mailu.
+
 ## 11.53
 - Mobile, protokół klienta: po `Uzupełnij protokół` docelowa pozycja to 50 CSS px przed absolutnym końcem przewijania.
 - Porównanie dwóch zrzutów użytkownika wykazało stałe przesunięcie treści o 123 px obrazu, co odpowiada około 50 CSS px na iPhonie.
