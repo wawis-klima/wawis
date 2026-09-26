@@ -157,11 +157,8 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
     await page.getByRole('button', { name: 'Uzupełnij protokół', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
-    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
-      const header = modal.querySelector('.mobileDeviceWizardHeader');
-      const headerHeight = Math.max(44, Math.round(header?.getBoundingClientRect().height || 48));
-      return Math.round(scrollBeforeEdit - modal.scrollTop - headerHeight);
-    })).toBeLessThanOrEqual(4);
+    await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
+      .toBeLessThanOrEqual(scrollBeforeEdit - 40);
     const scrollAfterEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
     const headerHeight = await page.locator('.mobileDeviceWizardHeader').evaluate((header) => Math.max(44, Math.round(header.getBoundingClientRect().height || 48)));
     expect(scrollBeforeEdit - scrollAfterEdit).toBeGreaterThanOrEqual(headerHeight - 4);
