@@ -24,6 +24,19 @@ async function drawSignature(page) {
   }));
   expect(screenState.overflow).toBe('hidden');
   expect(Math.abs(screenState.height - screenState.viewport)).toBeLessThanOrEqual(2);
+  const rasterState = await canvas.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      cssWidth: rect.width,
+      cssHeight: rect.height,
+      pixelWidth: element.width,
+      pixelHeight: element.height,
+      devicePixelRatio: window.devicePixelRatio,
+    };
+  });
+  expect(rasterState.pixelWidth / rasterState.cssWidth).toBeGreaterThanOrEqual(1.9);
+  expect(rasterState.pixelHeight / rasterState.cssHeight).toBeGreaterThanOrEqual(1.9);
+
   const box = await canvas.boundingBox();
   if (!box) throw new Error('Brak pola podpisu.');
   await page.mouse.move(box.x + 35, box.y + 95);
