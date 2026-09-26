@@ -162,9 +162,15 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
 
     const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
-    const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop);
+    const scrollBeforeEdit = await page.locator('.protocolWizardModal').evaluate((modal) => {
+      const maxScroll = Math.max(0, modal.scrollHeight - modal.clientHeight);
+      modal.scrollTop = Math.min(160, maxScroll);
+      return modal.scrollTop;
+    });
     expect(scrollBeforeEdit).toBeGreaterThan(44);
-    await editProtocolButton.click();
+    // Kliknięcie przez DOM nie uruchamia pomocniczego auto-scroll Playwrighta,
+    // więc test mierzy wyłącznie korektę wykonywaną przez samą aplikację.
+    await editProtocolButton.evaluate((button) => button.click());
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
     const headerHeight = await page.locator('.mobileDeviceWizardHeader').evaluate((header) => Math.max(44, Math.round(header.getBoundingClientRect().height || 48)));
     await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => modal.scrollTop))
