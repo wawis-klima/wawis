@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.53",
+  "version": "11.54",
   "scope": "mobile",
-  "release_branch": "release/v11.53",
+  "release_branch": "release/v11.54",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyczy wyłącznie docelowej pozycji przewijania mobilnego protokołu po Uzupełnij protokół. Bez zmian backendu, danych i uprawnień."
+    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Bez zmian backendu, danych i uprawnień."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.53.zip"
+    "file_name": "klima-app-v11.54.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.53",
+    "source_branch": "release/v11.54",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół. Widok ma odpowiadać drugiemu zrzutowi użytkownika: 50 CSS px przed absolutnym końcem, bez ręcznego poprawiania."
+    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół. Dolna krawędź sekcji Potwierdzenie klienta ma być w pełni widoczna nad dolnym paskiem Zamknij / Zapisz protokół, bez ręcznego przewijania."
   },
   "archive": {
     "source_of_truth": "github-main",
