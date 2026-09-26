@@ -1,3 +1,12 @@
+## 11.55
+- Mobile, podpis klienta: canvas korzysta z rozdzielczości Retina co najmniej 2× i do 4× `devicePixelRatio`, dzięki czemu kreska jest ostrzejsza na iPhonie.
+- Ruch palca wykorzystuje `getCoalescedEvents()` tam, gdzie Safari je udostępnia, więc szybkie ruchy nie gubią punktów.
+- Zamiast prostych odcinków podpis jest rysowany krzywymi kwadratowymi Béziera przez punkty pośrednie, co usuwa kanciaste załamania.
+- Grubość kreski zmienia się łagodnie zależnie od prędkości ruchu i nacisku, z zachowaniem bezpiecznego zakresu 1,65–3,25 CSS px.
+- Przy eksporcie przycinania zachowywane są delikatne piksele antyaliasingu do progu 252, a skalowanie obrazu działa w jakości `high`.
+- Kliknięcie/kropka bez ruchu również jest poprawnie rejestrowane.
+- PDF, zapis protokołu, Supabase, RLS i wysyłka e-mail pozostają bez zmian.
+
 ## 11.54
 - Mobile, protokół klienta: poprawiono właściwe zachowanie po `Uzupełnij protokół`.
 - Po rozbudowaniu formularza sekcja `Potwierdzenie klienta` jest przewijana przez `scrollIntoView` tak, aby jej dolna krawędź była widoczna tuż nad przyklejonym dolnym paskiem przycisków.
