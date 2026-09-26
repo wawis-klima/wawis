@@ -7,7 +7,7 @@
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Poprawka dotyczy wyłącznie przewinięcia mobilnego protokołu po Uzupełnij protokół. Bez zmian backendu, danych i uprawnień."
+    "notes": "Zmiana dotyczy wyłącznie przewijania mobilnego protokołu po Uzupełnij protokół. Docelowo formularz ma znaleźć się na absolutnym dole; bez zmian backendu, danych i uprawnień."
   },
   "drive_backup": {
     "required": false,
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół; formularz ma automatycznie dojść do absolutnego końca przewijania, bez zatrzymania przed dołem."
+    "notes": "Na iPhonie otworzyć zapisany protokół i nacisnąć Uzupełnij protokół. Formularz ma automatycznie zjechać do absolutnego dołu, bez ręcznego poprawiania przewinięcia."
   },
   "archive": {
     "source_of_truth": "github-main",
