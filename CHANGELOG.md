@@ -1,3 +1,12 @@
+## 11.56
+- Mobile, protokół klienta: usunięto widoczne oznaczenie `PDF · Wersja testowa · <wersja>`.
+- Udostępnianie protokołu używa teraz neutralnego tytułu `Protokół Wawis`.
+- Mobile, szczegóły montażu: usunięto czerwony panel `Nie można zakończyć zlecenia`, listę brakujących JZ/JW i przycisk `Dodaj brakujące tabliczki`.
+- Przycisk `Zakończ` nadal jest zablokowany, dopóki wymagane tabliczki nie są kompletne; zabezpieczenie logiczne po stronie akcji pozostaje bez zmian.
+- Wejście do kreatora tabliczek odbywa się przez istniejący przycisk `Tabliczki`.
+- Zaktualizowano smoke i E2E, aby wymagały braku czerwonego panelu oraz zachowania blokady zakończenia.
+- Bez zmian w Supabase, RLS, danych i układzie PDF.
+
 ## 11.55
 - Mobile, podpis klienta: canvas korzysta z rozdzielczości Retina co najmniej 2× i do 4× `devicePixelRatio`, dzięki czemu kreska jest ostrzejsza na iPhonie.
 - Ruch palca wykorzystuje `getCoalescedEvents()` tam, gdzie Safari je udostępnia, więc szybkie ruchy nie gubią punktów.
