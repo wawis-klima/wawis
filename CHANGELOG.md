@@ -1,3 +1,9 @@
+## 11.58
+- Paliwo: dodano pojazd „Edward” bez numeru rejestracyjnego.
+- Lista pojazdów i historia tankowań pokazują dla takiego pojazdu wyłącznie nazwę, bez pustego separatora „—”.
+- Baza `fuel_vehicles` dopuszcza teraz `NULL` w `registration_number`; dotychczasowe numery rejestracyjne i ograniczenie unikalności pozostają bez zmian.
+- Tankowania, przebieg, średnie spalanie i powiadomienia push działają dla „Edwarda” tak samo jak dla pozostałych pojazdów.
+
 ## 11.57
 - Protokół PDF: w prawym górnym rogu nagłówka usunięto skrócone ID i datę „Podpisano”; w ich miejscu dodano czarno-białą kartę „Oceń nas w Google”.
 - Kod QR jest generowany jako czysty, wektorowy wzór 49×49 z wysoką korekcją błędów i prowadzi do firmowego formularza opinii Google: `https://search.google.com/local/writereview?placeid=ChIJ5R1WPK4jF0cRPUfNSCXd1d4`.
