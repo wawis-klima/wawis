@@ -19,8 +19,8 @@
 - dodana regresja E2E pilnująca tej geometrii
 
 ## Wynik wydania
-- WAWIS PR checks: PENDING
-- produkcyjny build: PENDING
+- WAWIS PR checks: GREEN — pełne E2E mobile i build przeszły
+- produkcyjny build: GREEN
 - Vercel: PENDING
 - Cloudflare: PENDING
-- merge: PENDING
+- merge: PENDING — po finalnym checku metadata
