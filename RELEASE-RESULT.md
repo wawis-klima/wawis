@@ -23,5 +23,5 @@
 ## Wynik wydania
 - WAWIS PR checks: PENDING
 - produkcyjny build: PENDING
-- Vercel: PENDING
-- merge: PENDING
+- Vercel: RETRY — pierwszy produkcyjny deploy po merge nie przeszedł; uruchamiana ponowna próba
+- merge: GREEN — funkcjonalna 11.52 jest na main; retry dotyczy wyłącznie Vercela
