@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.56
+- 11.57
 
-Wersja 11.56 upraszcza mobilny widok: z protokołu klienta usunięto badge „PDF · Wersja testowa”, a z karty montażu usunięto czerwone ostrzeżenie o brakujących tabliczkach. Przycisk „Zakończ” nadal pozostaje zablokowany, dopóki wymagane tabliczki nie są kompletne.
+Wersja 11.57 upraszcza protokół PDF: w prawym górnym rogu pojawia się czarno-biała karta „Oceń nas w Google” z kodem QR, a sekcja realizacji pokazuje tylko datę montażu i monterów.
 
-# Wawis Klimatyzacja — wersja 11.56
+# Wawis Klimatyzacja — wersja 11.57
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
