@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.56
+- 11.57
 
-Wersja 11.56 upraszcza mobilny widok: z protokołu klienta usunięto badge „PDF · Wersja testowa”, a z karty montażu usunięto czerwone ostrzeżenie o brakujących tabliczkach. Przycisk „Zakończ” nadal pozostaje zablokowany, dopóki wymagane tabliczki nie są kompletne.
+Wersja 11.57 upraszcza protokół PDF: w prawym górnym rogu pojawia się czarno-biała karta „Oceń nas w Google” z kodem QR, a sekcja realizacji pokazuje tylko datę montażu i monterów.
 
-# Wawis Klimatyzacja — wersja 11.56
+# Wawis Klimatyzacja — wersja 11.57
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,7 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.56` — usunięto z protokołu oznaczenie „PDF · Wersja testowa” oraz czerwony panel „Nie można zakończyć zlecenia / Dodaj brakujące tabliczki”; blokada przycisku „Zakończ” pozostaje bez zmian.
+- wersja `11.57` — protokół PDF ma czarno-białą kartę „Oceń nas w Google” z kodem QR w prawym górnym rogu; sekcja realizacji zawiera tylko datę montażu i monterów, a potwierdzenie klienta zachowuje pełną szerokość.
 - wersja `11.55` — podpis klienta ma wyższą rozdzielczość, wygładzanie Béziera, obsługę coalesced pointer events i naturalniejszą zmienną grubość kreski; eksport PNG zachowuje antyaliasing.
 - wersja `11.54` — po `Uzupełnij protokół` dolna krawędź sekcji „Potwierdzenie klienta” jest automatycznie odsłaniana nad sticky footerem; używamy `scrollIntoView`, więc Safari samo wybiera faktyczny kontener przewijania.
 - wersja `11.53` — po `Uzupełnij protokół` formularz zatrzymuje się 50 CSS px przed absolutnym końcem, zgodnie z drugim zrzutem referencyjnym użytkownika.

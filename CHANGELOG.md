@@ -1,3 +1,11 @@
+## 11.57
+- Protokół PDF: w prawym górnym rogu nagłówka usunięto skrócone ID i datę „Podpisano”; w ich miejscu dodano czarno-białą kartę „Oceń nas w Google”.
+- Kod QR jest generowany jako czysty, wektorowy wzór 49×49 z wysoką korekcją błędów i prowadzi do firmowego formularza opinii Google: `https://search.google.com/local/writereview?placeid=ChIJ5R1WPK4jF0cRPUfNSCXd1d4`.
+- Sekcja „Realizacja zlecenia” pokazuje teraz tylko „Data montażu” i „Monterzy”; usunięto z PDF pola „Status”, „Zakończył” i „Zakończono”.
+- Wysokość sekcji realizacji została zmniejszona z 64 do 42 pt, aby zostawić więcej miejsca dla większej liczby jednostek.
+- Tekst „Potwierdzenie klienta” nadal korzysta z pełnej szerokości treści protokołu.
+- Bez zmian w Supabase, RLS, zapisie protokołu, wysyłce e-mail i danych zlecenia.
+
 ## 11.56
 - Mobile, protokół klienta: usunięto widoczne oznaczenie `PDF · Wersja testowa · <wersja>`.
 - Udostępnianie protokołu używa teraz neutralnego tytułu `Protokół Wawis`.

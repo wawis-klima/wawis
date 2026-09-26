@@ -5,6 +5,7 @@ import { getJobNameplateCompletion } from "./nameplate-requirements.js";
 import { getNameplatePhotoMetadata } from "./photos.js";
 import { getJobAddress } from "../utils/jobHelpers.jsx";
 import { getPaymentDraftFromJob, normalizePaymentConfirmation } from "./job-payment-confirmation.js";
+import { PROTOCOL_REVIEW_QR_MATRIX } from "./protocol-review-qr.js";
 
 const FONT_FAMILY = "DejaVuSans";
 const PDF_MIME_TYPE = "application/pdf";
@@ -225,6 +226,52 @@ export function getContainedSignatureSize(sourceWidth, sourceHeight, maxWidth, m
   };
 }
 
+function drawReviewCard(doc, x, y, width = 136, height = 60) {
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.8);
+  doc.roundedRect(x, y, width, height, 4, 4, "FD");
+
+  const textX = x + 7;
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(FONT_FAMILY, "bold");
+  doc.setFontSize(7.4);
+  doc.text("★★★★★", textX, y + 13);
+  doc.setFont(FONT_FAMILY, "normal");
+  doc.setFontSize(7.2);
+  doc.text("Oceń nas w", textX, y + 25);
+  doc.setFont(FONT_FAMILY, "bold");
+  doc.setFontSize(13.4);
+  doc.text("Google", textX, y + 40);
+  doc.setFontSize(5.3);
+  doc.text(`tel. ${PROTOCOL_COMPANY.phone}`, textX, y + 53);
+
+  const qrBoxSize = 54;
+  const qrX = x + 73;
+  const qrY = y + 3;
+  const quietZone = 4.5;
+  const matrixSize = PROTOCOL_REVIEW_QR_MATRIX.length;
+  const moduleSize = (qrBoxSize - (quietZone * 2)) / matrixSize;
+  doc.setFillColor(0, 0, 0);
+  PROTOCOL_REVIEW_QR_MATRIX.forEach((row, rowIndex) => {
+    for (let columnIndex = 0; columnIndex < row.length; columnIndex += 1) {
+      if (row[columnIndex] !== "1") continue;
+      doc.rect(
+        qrX + quietZone + (columnIndex * moduleSize),
+        qrY + quietZone + (rowIndex * moduleSize),
+        moduleSize + 0.02,
+        moduleSize + 0.02,
+        "F",
+      );
+    }
+  });
+
+  doc.setFont(FONT_FAMILY, "bold");
+  doc.setFontSize(4.8);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Zeskanuj kod QR", x + width - 3.5, y + height - 5, { angle: 90 });
+}
+
 function drawHeader(doc, data) {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, PAGE_WIDTH, 76, "F");
@@ -248,16 +295,7 @@ function drawHeader(doc, data) {
   doc.text(`${PROTOCOL_COMPANY.address}  |  NIP ${PROTOCOL_COMPANY.nip}`, 64, 42);
   doc.text(`tel. ${PROTOCOL_COMPANY.phone}  |  ${PROTOCOL_COMPANY.email}  |  www.wawis.pl`, 64, 59);
 
-  doc.setDrawColor(160, 170, 177);
-  doc.setLineWidth(0.6);
-  doc.line(440, 12, 440, 65);
-  doc.setFont(FONT_FAMILY, "bold");
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(9);
-  doc.text(`ID ${data.shortJobId}`, PAGE_WIDTH - OUTER_MARGIN, 21, { align: "right" });
-  doc.setFont(FONT_FAMILY, "normal");
-  doc.setFontSize(8);
-  doc.text(`Podpisano: ${data.signedAt}`, PAGE_WIDTH - OUTER_MARGIN, 37, { align: "right" });
+  drawReviewCard(doc, PAGE_WIDTH - OUTER_MARGIN - 136, 7, 136, 60);
 }
 
 function drawSectionTitle(doc, title, y) {
@@ -389,14 +427,11 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
 
   y += 70;
   drawSectionTitle(doc, "Realizacja zlecenia", y);
-  drawCard(doc, y + 8, 64);
-  drawField(doc, "Data montażu", data.installationDate, CONTENT_LEFT, y + 25, 82);
-  drawField(doc, "Status", data.status, RIGHT_COLUMN_X, y + 25, 62);
-  drawField(doc, "Monterzy", data.technicians.join(", "), CONTENT_LEFT, y + 43, 82);
-  if (data.completedBy !== "-") drawField(doc, "Zakończył", data.completedBy, RIGHT_COLUMN_X, y + 43, 62);
-  if (data.completedAt !== "-") drawField(doc, "Zakończono", data.completedAt, CONTENT_LEFT, y + 61, 82);
+  drawCard(doc, y + 8, 42);
+  drawField(doc, "Data montażu", data.installationDate, CONTENT_LEFT, y + 29, 82);
+  drawField(doc, "Monterzy", data.technicians.join(", "), RIGHT_COLUMN_X, y + 29, 62);
 
-  y += 84;
+  y += 62;
   const deviceRowHeight = 22;
   const rows = data.deviceRows.length ? data.deviceRows : [{
     unit: "-",
