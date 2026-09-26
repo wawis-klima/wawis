@@ -1,3 +1,10 @@
+## 11.52
+- Mobile, protokół klienta: poprawiono zachowanie po `Uzupełnij protokół` na iPhonie.
+- Porównanie dwóch zrzutów 11.51 pokazało stałą różnicę około 123 pikseli obrazu, czyli około 50 CSS px na szerokości iPhone'a; docelowy widok wymaga cofnięcia przewinięcia właśnie o tę wartość.
+- Przyczyną było to, że 11.51 korygowała `scrollTop` samego modala, podczas gdy Safari może utrzymywać realne przewinięcie na kontenerze overlay. 11.52 wykrywa aktywny kontener po przebudowaniu widoku.
+- Korekta jest wykonywana po ustabilizowaniu layoutu i powtarzana raz, aby iOS nie nadpisał jej późniejszym scroll anchoringiem.
+- Bez zmian w PDF, podpisie klienta, zapisie protokołu, Supabase, RLS i wysyłce e-mail.
+
 ## 11.51
 - Mobile, protokół klienta: po naciśnięciu `Uzupełnij protokół` pozycja przewinięcia jest stabilizowana po przebudowaniu formularza.
 - Ekran cofa się o rzeczywistą wysokość nagłówka kreatora (około 48 px na iPhonie), co odpowiada docelowemu układowi ze zgłoszenia zamiast zatrzymywać się zbyt nisko.
