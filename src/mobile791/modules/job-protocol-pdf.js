@@ -516,7 +516,7 @@ export async function generateJobProtocolPdf({ job, profiles, signatureDataUrl, 
   if (file && typeof navigator !== "undefined" && navigator.share && navigator.canShare?.({ files: [file] })) {
     await navigator.share({
       files: [file],
-      title: "Protokół Wawis - wersja testowa",
+      title: "Protokół Wawis",
       text: `Protokół dla: ${data.client}`,
     });
     return { fileName, shared: true };
