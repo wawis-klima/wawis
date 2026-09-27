@@ -290,9 +290,14 @@ export default function JobDetailsPanel({
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobStatus = String(selectedJob?.status || "");
   const selectedJobIsCompleted = selectedJobStatus === "Zakończone";
+  const selectedJobCommentCount = Array.isArray(selectedJob?.comments) ? selectedJob.comments.length : 0;
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
   const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
+  const [viewersExpanded, setViewersExpanded] = React.useState(!selectedJobIsCompleted);
+  const [commentsExpanded, setCommentsExpanded] = React.useState(
+    !selectedJobIsCompleted || (Boolean(selectedJob?.detailsLoaded) && selectedJobCommentCount > 0),
+  );
   const emailAutoFitRef = useAutoFitSingleLineText(String(selectedJob?.email || ''), { maxFontSize: 12.5 });
   const addressAutoFitRef = useAutoFitSingleLineText(getJobAddress(selectedJob || {}), { maxFontSize: 13.5 });
 
@@ -309,6 +314,22 @@ export default function JobDetailsPanel({
   React.useEffect(() => {
     setPhotosExpanded(!photosCollapsible);
   }, [selectedJobId, photosCollapsible]);
+
+  React.useEffect(() => {
+    setViewersExpanded(!selectedJobIsCompleted);
+  }, [selectedJobId, selectedJobIsCompleted]);
+
+  React.useEffect(() => {
+    if (!selectedJobIsCompleted) {
+      setCommentsExpanded(true);
+      return;
+    }
+    if (!selectedJob?.detailsLoaded) {
+      setCommentsExpanded(false);
+      return;
+    }
+    setCommentsExpanded(selectedJobCommentCount > 0);
+  }, [selectedJobId, selectedJobIsCompleted, selectedJob?.detailsLoaded, selectedJobCommentCount]);
 
   React.useEffect(() => {
     if (!commentHasUnsavedWork) return undefined;
@@ -398,6 +419,8 @@ export default function JobDetailsPanel({
   const completedByLabel = completedByProfile?.full_name || completedByProfile?.email || '';
   const isCompletedJob = selectedJobIsCompleted;
   const showAdminNoteContents = !isCompletedJob || adminNoteExpanded;
+  const showViewersContents = !isCompletedJob || viewersExpanded;
+  const showCommentsContents = !isCompletedJob || commentsExpanded;
   const isWorkerCompletedLock = isWorkerLockedCompletedJob(selectedJob, isAdmin);
   const canFinishJob = canWorkerFinishJob(selectedJob, isAdmin);
   const canRestartJob = canWorkerRestartJob(selectedJob, isAdmin);
@@ -409,7 +432,6 @@ export default function JobDetailsPanel({
   const canManageSelectedAdminNote = canManageAdminNote(selectedJob, isAdmin);
   const canDeleteSelectedJob = canDeleteJob(selectedJob, isAdmin);
   const canSubmitComment = canAddSelectedJobComment && !busy && !commentSaving && currentCommentDraft.trim().length > 0;
-  const showCommentsSection = !isWorkerCompletedLock || showDetailsLoading || comments.length > 0;
   const jobDevices = getJobDeviceRows(selectedJob);
   const nameplateCompletion = getJobNameplateCompletion(selectedJob, { allowLocal: !isAdmin });
   const effectiveNameplateComplete = isAdmin ? true : nameplateCompletion.isComplete;
@@ -665,10 +687,12 @@ export default function JobDetailsPanel({
 
             {!isAdmin ? (
               <>
-                <div className="infoItem">
-                  <span className="infoLabel infoLabelWithIcon"><IconUsers /><span>Monterzy</span></span>
-                  <div className="infoValue">{renderInitialBadges(getViewerNames(selectedJob, profiles))}</div>
-                </div>
+                {!isCompletedJob ? (
+                  <div className="infoItem">
+                    <span className="infoLabel infoLabelWithIcon"><IconUsers /><span>Monterzy</span></span>
+                    <div className="infoValue">{renderInitialBadges(getViewerNames(selectedJob, profiles))}</div>
+                  </div>
+                ) : null}
 
                 <div className="infoItem workerCreatedAtInfoItem">
                   <span className="infoLabel infoLabelWithIcon"><IconClock /><span>Data utworzenia</span></span>
@@ -959,67 +983,107 @@ export default function JobDetailsPanel({
         ) : null}
       </section>
 
-      {canManageSelectedJobViewers ? (
-        <section className="detailsSection detailsSectionCompact">
-          <h4 className="sectionHeadingWithIcon"><IconUsers /><span>Monterzy</span></h4>
-          <div className="viewerInlineRow" aria-label="Wybór monterów">
-            {profiles.map((person) => {
-              const active = viewers.some((viewer) => viewer.user_id === person.id);
-              return (
-                <button
-                  key={person.id}
-                  type="button"
-                  className={`viewerDot ${active ? "active" : ""}`}
-                  onClick={() => toggleViewer(selectedJob.id, person.id, viewers)}
-                  title={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
-                  aria-label={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
-                >
-                  <span className="viewerDotText">{formatViewerChipName(person.full_name)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      {showCommentsSection ? (
-        <section className="detailsSection">
-          <h4 className="sectionHeadingWithIcon"><IconMessageCircle /><span>Komentarze i pytania</span></h4>
-          <div className="comments">
-          {comments.map((comment) => (
-            <div key={comment.id} className="comment">
-              <div className="commentHeader">
-                <div className="commentAuthor">
-                  <strong>{comment.author_name}</strong>
-                  {comment.offline_pending ? <span className="muted commentPendingLabel">zapisano na telefonie</span> : null}
+      {(canManageSelectedJobViewers || (!isAdmin && isCompletedJob)) ? (
+        <section className={`detailsSection detailsSectionCompact${isCompletedJob ? ' adminNoteSectionCollapsible' : ''}`}>
+          {isCompletedJob ? (
+            <button
+              type="button"
+              className="adminNoteToggle sectionHeadingWithIcon"
+              aria-expanded={viewersExpanded}
+              aria-controls={`viewers-content-${selectedJobId}`}
+              aria-label={`${viewersExpanded ? 'Zwiń' : 'Rozwiń'} monterów`}
+              onClick={() => setViewersExpanded((expanded) => !expanded)}
+            >
+              <IconUsers />
+              <span>Monterzy</span>
+              <span className="adminNoteToggleChevron" aria-hidden="true">⌄</span>
+            </button>
+          ) : (
+            <h4 className="sectionHeadingWithIcon"><IconUsers /><span>Monterzy</span></h4>
+          )}
+          {showViewersContents ? (
+            <div id={`viewers-content-${selectedJobId}`}>
+              {canManageSelectedJobViewers ? (
+                <div className="viewerInlineRow" aria-label="Wybór monterów">
+                  {profiles.map((person) => {
+                    const active = viewers.some((viewer) => viewer.user_id === person.id);
+                    return (
+                      <button
+                        key={person.id}
+                        type="button"
+                        className={`viewerDot ${active ? "active" : ""}`}
+                        onClick={() => toggleViewer(selectedJob.id, person.id, viewers)}
+                        title={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
+                        aria-label={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
+                      >
+                        <span className="viewerDotText">{formatViewerChipName(person.full_name)}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-                {canDeleteJobComment(comment, isAdmin) ? (
-                  <button
-                    type="button"
-                    className="btn premiumActionBtn premiumDangerBtn commentDeleteBtn compactDangerBtn"
-                    onClick={() => requestRemoveComment(comment)}
-                    disabled={busy}
-                  >
-                    Usuń
-                  </button>
-                ) : null}
-              </div>
-              <div className="commentText">{comment.text}</div>
+              ) : (
+                <div className="infoValue">{renderInitialBadges(getViewerNames(selectedJob, profiles))}</div>
+              )}
             </div>
-          ))}
-          {comments.length === 0 && showDetailsLoading ? <div className="muted">Ładowanie komentarzy…</div> : null}
-          {detailsLoaded && comments.length === 0 ? <div className="muted">Brak komentarzy.</div> : null}
-          </div>
-          {canAddSelectedJobComment ? (
-            <>
-              <textarea className="input textarea" placeholder="Napisz komentarz..." value={currentCommentDraft} onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [selectedJob.id]: e.target.value }))} />
-              <div className="row">
-                <button className="btn premiumActionBtn commentAddBtn" onClick={() => void handleAddComment()} disabled={!canSubmitComment}>Dodaj komentarz</button>
-              </div>
-            </>
           ) : null}
         </section>
       ) : null}
+
+      <section className={`detailsSection${isCompletedJob ? ' adminNoteSectionCollapsible' : ''}`}>
+        {isCompletedJob ? (
+          <button
+            type="button"
+            className="adminNoteToggle sectionHeadingWithIcon"
+            aria-expanded={commentsExpanded}
+            aria-controls={`comments-content-${selectedJobId}`}
+            aria-label={`${commentsExpanded ? 'Zwiń' : 'Rozwiń'} komentarze i pytania`}
+            onClick={() => setCommentsExpanded((expanded) => !expanded)}
+          >
+            <IconMessageCircle />
+            <span>Komentarze i pytania</span>
+            <span className="adminNoteToggleChevron" aria-hidden="true">⌄</span>
+          </button>
+        ) : (
+          <h4 className="sectionHeadingWithIcon"><IconMessageCircle /><span>Komentarze i pytania</span></h4>
+        )}
+        {showCommentsContents ? (
+          <div id={`comments-content-${selectedJobId}`}>
+            <div className="comments">
+            {comments.map((comment) => (
+              <div key={comment.id} className="comment">
+                <div className="commentHeader">
+                  <div className="commentAuthor">
+                    <strong>{comment.author_name}</strong>
+                    {comment.offline_pending ? <span className="muted commentPendingLabel">zapisano na telefonie</span> : null}
+                  </div>
+                  {canDeleteJobComment(comment, isAdmin) ? (
+                    <button
+                      type="button"
+                      className="btn premiumActionBtn premiumDangerBtn commentDeleteBtn compactDangerBtn"
+                      onClick={() => requestRemoveComment(comment)}
+                      disabled={busy}
+                    >
+                      Usuń
+                    </button>
+                  ) : null}
+                </div>
+                <div className="commentText">{comment.text}</div>
+              </div>
+            ))}
+            {comments.length === 0 && showDetailsLoading ? <div className="muted">Ładowanie komentarzy…</div> : null}
+            {detailsLoaded && comments.length === 0 ? <div className="muted">Brak komentarzy.</div> : null}
+            </div>
+            {canAddSelectedJobComment ? (
+              <>
+                <textarea className="input textarea" placeholder="Napisz komentarz..." value={currentCommentDraft} onChange={(e) => setCommentDrafts((prev) => ({ ...prev, [selectedJob.id]: e.target.value }))} />
+                <div className="row">
+                  <button className="btn premiumActionBtn commentAddBtn" onClick={() => void handleAddComment()} disabled={!canSubmitComment}>Dodaj komentarz</button>
+                </div>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+      </section>
 
       {isAdmin ? (
         <section className="detailsSection detailsSectionCompact">
