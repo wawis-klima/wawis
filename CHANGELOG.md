@@ -1,3 +1,8 @@
+## 11.59
+- Zakończone montaże (mobile): sekcja „Monterzy” jest domyślnie zwinięta i można ją rozwinąć strzałką.
+- Zakończone montaże (mobile): „Komentarze i pytania” są domyślnie zwinięte, gdy nie ma komentarzy; jeżeli komentarze istnieją, sekcja otwiera się automatycznie.
+- Dla montaży aktywnych zachowanie sekcji „Monterzy” oraz „Komentarze i pytania” pozostaje bez zmian.
+
 ## 11.58
 - Paliwo: dodano pojazd „Edward” bez numeru rejestracyjnego.
 - Lista pojazdów i historia tankowań pokazują dla takiego pojazdu wyłącznie nazwę, bez pustego separatora „—”.
