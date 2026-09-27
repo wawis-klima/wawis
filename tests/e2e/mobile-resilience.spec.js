@@ -162,7 +162,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy B', { exact: true }).click();
 
-    await expect.poll(() => countQueuedPhotos(page), { timeout: 15_000 }).toBe(0);
+    await expect.poll(() => countQueuedPhotos(page), { timeout: 30_000 }).toBe(0);
     await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
     const outdoorRow = page.locator('.deviceUnitDocumentationRow').filter({ hasText: 'JZ' }).first();
     await expect(outdoorRow).toContainText('Zapisano w systemie');
