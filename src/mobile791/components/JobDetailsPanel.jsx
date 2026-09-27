@@ -290,14 +290,11 @@ export default function JobDetailsPanel({
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobStatus = String(selectedJob?.status || "");
   const selectedJobIsCompleted = selectedJobStatus === "Zakończone";
-  const selectedJobCommentCount = Array.isArray(selectedJob?.comments) ? selectedJob.comments.length : 0;
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
   const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
   const [viewersExpanded, setViewersExpanded] = React.useState(!selectedJobIsCompleted);
-  const [commentsExpanded, setCommentsExpanded] = React.useState(
-    !selectedJobIsCompleted || (Boolean(selectedJob?.detailsLoaded) && selectedJobCommentCount > 0),
-  );
+  const [commentsExpandedOverride, setCommentsExpandedOverride] = React.useState(null);
   const emailAutoFitRef = useAutoFitSingleLineText(String(selectedJob?.email || ''), { maxFontSize: 12.5 });
   const addressAutoFitRef = useAutoFitSingleLineText(getJobAddress(selectedJob || {}), { maxFontSize: 13.5 });
 
@@ -320,16 +317,8 @@ export default function JobDetailsPanel({
   }, [selectedJobId, selectedJobIsCompleted]);
 
   React.useEffect(() => {
-    if (!selectedJobIsCompleted) {
-      setCommentsExpanded(true);
-      return;
-    }
-    if (!selectedJob?.detailsLoaded) {
-      setCommentsExpanded(false);
-      return;
-    }
-    setCommentsExpanded(selectedJobCommentCount > 0);
-  }, [selectedJobId, selectedJobIsCompleted, selectedJob?.detailsLoaded, selectedJobCommentCount]);
+    setCommentsExpandedOverride(null);
+  }, [selectedJobId, selectedJobIsCompleted]);
 
   React.useEffect(() => {
     if (!commentHasUnsavedWork) return undefined;
@@ -418,9 +407,11 @@ export default function JobDetailsPanel({
   const completedByProfile = (profiles || []).find((person) => String(person?.id || '') === String(selectedJob.completed_by || ''));
   const completedByLabel = completedByProfile?.full_name || completedByProfile?.email || '';
   const isCompletedJob = selectedJobIsCompleted;
+  const commentsExpanded = !isCompletedJob
+    || (commentsExpandedOverride ?? (detailsLoaded && comments.length > 0));
   const showAdminNoteContents = !isCompletedJob || adminNoteExpanded;
   const showViewersContents = !isCompletedJob || viewersExpanded;
-  const showCommentsContents = !isCompletedJob || commentsExpanded;
+  const showCommentsContents = commentsExpanded;
   const isWorkerCompletedLock = isWorkerLockedCompletedJob(selectedJob, isAdmin);
   const canFinishJob = canWorkerFinishJob(selectedJob, isAdmin);
   const canRestartJob = canWorkerRestartJob(selectedJob, isAdmin);
@@ -1037,7 +1028,10 @@ export default function JobDetailsPanel({
             aria-expanded={commentsExpanded}
             aria-controls={`comments-content-${selectedJobId}`}
             aria-label={`${commentsExpanded ? 'Zwiń' : 'Rozwiń'} komentarze i pytania`}
-            onClick={() => setCommentsExpanded((expanded) => !expanded)}
+            onClick={() => setCommentsExpandedOverride((current) => {
+              const automaticValue = detailsLoaded && comments.length > 0;
+              return !(current ?? automaticValue);
+            })}
           >
             <IconMessageCircle />
             <span>Komentarze i pytania</span>
