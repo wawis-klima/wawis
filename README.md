@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.58
+- 11.59
 
-Wersja 11.58 rozszerza moduł Paliwo o pojazd „Edward” bez numeru rejestracyjnego; pojazd można normalnie wybrać i zapisywać dla niego tankowania.
+Wersja 11.59 porządkuje zakończone montaże na telefonie: monterzy są zwinięci, a komentarze bez treści pozostają zwinięte; istniejące komentarze otwierają się automatycznie.
 
-# Wawis Klimatyzacja — wersja 11.58
+# Wawis Klimatyzacja — wersja 11.59
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.59` — w zakończonych montażach mobile sekcja „Monterzy” startuje zwinięta, a „Komentarze i pytania” są zwinięte przy braku komentarzy i automatycznie rozwinięte, gdy komentarze istnieją.
 - wersja `11.58` — moduł Paliwo obsługuje pojazdy bez numeru rejestracyjnego; dodano „Edward”, który na listach i w historii jest wyświetlany wyłącznie nazwą.
 - wersja `11.57` — protokół PDF ma czarno-białą kartę „Oceń nas w Google” z kodem QR w prawym górnym rogu; sekcja realizacji zawiera tylko datę montażu i monterów, a potwierdzenie klienta zachowuje pełną szerokość.
 - wersja `11.55` — podpis klienta ma wyższą rozdzielczość, wygładzanie Béziera, obsługę coalesced pointer events i naturalniejszą zmienną grubość kreski; eksport PNG zachowuje antyaliasing.
