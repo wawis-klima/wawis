@@ -171,7 +171,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await expect(outdoorRow).toHaveAttribute('aria-label', /Otwórz tabliczkę znamionową JZ/);
   });
 
-  test('zakończone zlecenie ukrywa pustą sekcję komentarzy, ale pokazuje istniejącą historię', async ({ page }) => {
+  test('zakończone zlecenie zwija monterów i puste komentarze, ale rozwija istniejącą historię', async ({ page }) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
 
@@ -179,7 +179,15 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
     await expect(page.getByText('Zakończone · tylko podgląd', { exact: true })).toBeVisible();
     await expect(page.locator('.mobileDetailsLoading')).toBeHidden();
-    await expect(page.getByText('Komentarze i pytania', { exact: true })).toHaveCount(0);
+
+    const viewersToggle = page.getByRole('button', { name: /Rozwiń monterów/i });
+    const commentsToggle = page.getByRole('button', { name: /Rozwiń komentarze i pytania/i });
+    await expect(viewersToggle).toBeVisible();
+    await expect(viewersToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(commentsToggle).toBeVisible();
+    await expect(commentsToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('[id^="viewers-content-"]')).toHaveCount(0);
+    await expect(page.locator('[id^="comments-content-"]')).toHaveCount(0);
 
     await page.evaluate(({ storeKey }) => {
       const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
@@ -198,7 +206,11 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await page.reload();
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
-    await expect(page.getByText('Komentarze i pytania', { exact: true })).toBeVisible();
+    const viewersToggleAfterReload = page.getByRole('button', { name: /Rozwiń monterów/i });
+    const commentsToggleWithHistory = page.getByRole('button', { name: /Zwiń komentarze i pytania/i });
+    await expect(viewersToggleAfterReload).toHaveAttribute('aria-expanded', 'false');
+    await expect(commentsToggleWithHistory).toBeVisible();
+    await expect(commentsToggleWithHistory).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByText('Historia komentarza zakończonego zlecenia.', { exact: true })).toBeVisible();
   });
 });
