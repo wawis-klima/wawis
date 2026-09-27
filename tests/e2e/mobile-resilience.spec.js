@@ -180,8 +180,8 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await expect(page.getByText('Zakończone · tylko podgląd', { exact: true })).toBeVisible();
     await expect(page.locator('.mobileDetailsLoading')).toBeHidden();
 
-    const viewersToggle = page.getByRole('button', { name: /Rozwiń monterów/i });
-    const commentsToggle = page.getByRole('button', { name: /Rozwiń komentarze i pytania/i });
+    const viewersToggle = page.getByRole('button', { name: /^Rozwiń monterów$/i });
+    const commentsToggle = page.getByRole('button', { name: /^Rozwiń komentarze i pytania$/i });
     await expect(viewersToggle).toBeVisible();
     await expect(viewersToggle).toHaveAttribute('aria-expanded', 'false');
     await expect(commentsToggle).toBeVisible();
@@ -207,7 +207,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
     const viewersToggleAfterReload = page.getByRole('button', { name: /Rozwiń monterów/i });
-    const commentsToggleWithHistory = page.getByRole('button', { name: /Zwiń komentarze i pytania/i });
+    const commentsToggleWithHistory = page.getByRole('button', { name: /^Zwiń komentarze i pytania$/i });
     await expect(viewersToggleAfterReload).toHaveAttribute('aria-expanded', 'false');
     await expect(commentsToggleWithHistory).toBeVisible();
     await expect(commentsToggleWithHistory).toHaveAttribute('aria-expanded', 'true');
