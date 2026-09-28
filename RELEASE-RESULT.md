@@ -18,6 +18,7 @@
 - smoke pilnuje, że zapisany protokół omija blokadę monterów przy edycji i ponownym podpisie
 - akcje Drukuj / Zapisz PDF / Wyślij korzystają nadal z istniejącego zapisanego pliku
 - układ 1–2 kompletów pozostaje jednokolumnowy
+- pełny refresh nie nadpisuje już komentarzy i zdjęć szczegółów pobranych w trakcie odświeżania
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
