@@ -67,6 +67,7 @@ function createSeedData() {
       created_at: '2026-04-20T08:30:00.000Z',
       created_by: admin.id,
       main_technician_id: worker.id,
+      installer_ids: [worker.id],
       contractor_id: 'mock-contractor-001',
       sms_consent: true,
       sms_reminder_enabled: true,
@@ -93,6 +94,7 @@ function createSeedData() {
       created_at: '2026-04-21T09:45:00.000Z',
       created_by: admin.id,
       main_technician_id: worker.id,
+      installer_ids: [worker.id],
       contractor_id: 'mock-contractor-002',
       sms_consent: true,
       sms_reminder_enabled: true,
@@ -121,6 +123,7 @@ function createSeedData() {
       completed_at: '2026-04-22T11:05:00.000Z',
       completed_by: worker.id,
       main_technician_id: worker.id,
+      installer_ids: [worker.id],
       contractor_id: 'mock-contractor-003',
       sms_consent: true,
       sms_reminder_enabled: true,
@@ -147,6 +150,7 @@ function createSeedData() {
       created_at: '2026-04-23T11:00:00.000Z',
       created_by: admin.id,
       main_technician_id: admin.id,
+      installer_ids: [admin.id],
       contractor_id: 'mock-contractor-004',
       sms_consent: true,
       sms_reminder_enabled: true,
@@ -173,6 +177,7 @@ function createSeedData() {
       created_at: '2026-07-24T06:00:00.000Z',
       created_by: admin.id,
       main_technician_id: worker.id,
+      installer_ids: [worker.id],
       contractor_id: 'mock-contractor-005',
       sms_consent: true,
       sms_reminder_enabled: true,
@@ -658,6 +663,60 @@ export function createMockSupabaseClient() {
       if (name === 'admin_delete_comment') {
         store.comments = store.comments.filter((item) => item.id !== payload.p_comment_id);
         return { data: true, error: null };
+      }
+      if (name === 'save_job_concurrent_v1168') {
+        const job = store.jobs.find((item) => String(item.id) === String(payload.p_id));
+        if (!job) return { data: null, error: { message: 'Nie zapisano karty. Brak uprawnień albo karta nie istnieje.', code: '42501' } };
+
+        const fields = payload.p_fields && typeof payload.p_fields === 'object' && !Array.isArray(payload.p_fields)
+          ? payload.p_fields
+          : {};
+        const expected = payload.p_expected && typeof payload.p_expected === 'object' && !Array.isArray(payload.p_expected)
+          ? payload.p_expected
+          : {};
+        const normalizeComparable = (value) => value === undefined ? null : value;
+        const normalizeIds = (value) => Array.isArray(value)
+          ? [...new Set(value.map((item) => String(item || '').trim()).filter(Boolean))].sort()
+          : null;
+
+        for (const key of Object.keys(fields)) {
+          if (JSON.stringify(normalizeComparable(job[key])) !== JSON.stringify(normalizeComparable(expected[key]))) {
+            return { data: null, error: { message: `JOB_EDIT_CONFLICT:${key}`, code: 'P0001' } };
+          }
+        }
+
+        if (payload.p_update_installers) {
+          const currentIds = normalizeIds(job.installer_ids);
+          const expectedIds = normalizeIds(payload.p_expected_installer_ids);
+          if (JSON.stringify(currentIds) !== JSON.stringify(expectedIds)) {
+            return { data: null, error: { message: 'JOB_EDIT_CONFLICT:installer_ids', code: 'P0001' } };
+          }
+        }
+
+        const previousJob = clone(job);
+        Object.assign(job, fields);
+
+        if (payload.p_update_installers) {
+          const installerIds = normalizeIds(payload.p_installer_ids) || [];
+          job.installer_ids = installerIds;
+          store.job_access = Array.isArray(store.job_access) ? store.job_access : [];
+          for (const userId of installerIds) {
+            const exists = store.job_access.some((item) => String(item.job_id) === String(job.id) && String(item.user_id) === String(userId));
+            if (!exists) {
+              store.job_access.push({
+                id: `mock-access-${job.id}-${userId}`,
+                job_id: job.id,
+                user_id: userId,
+              });
+            }
+          }
+        }
+
+        persistSharedStore({ table: 'jobs', event: 'UPDATE', newRows: [job], oldRows: [previousJob] });
+        return {
+          data: clone({ id: job.id, status: job.status, installer_ids: job.installer_ids ?? null }),
+          error: null,
+        };
       }
       return { data: null, error: { message: `Mock RPC nie obsługuje funkcji: ${name}` } };
     },
