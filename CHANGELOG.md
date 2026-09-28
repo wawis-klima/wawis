@@ -1,3 +1,11 @@
+## 11.65
+- Desktop i mobile: zapisany montaż korzysta z aktualnych pól `device_model` / `device_serial_number` jako źródła prawdy; stara lokalna tablica `job.devices` nie może już przesłonić świeżych danych z serwera.
+- Świadomie wyczyszczone pola urządzeń pozostają puste i nie są odtwarzane ze starego cache ani samych tabliczek.
+- Niezapisany formularz nadal używa lokalnej tablicy `devices`, więc bieżąca edycja wielu urządzeń i multisplitów pozostaje bez zmian.
+- Edycja istniejącego montażu blokuje usunięcie JW ze środka listy; można usuwać tylko ostatnią JW, z dotychczasową kontrolą zapisanej tabliczki.
+- Nowy, jeszcze niezapisany montaż nadal może usuwać JW ze środka i przenumerować lokalne dokumenty.
+- Bez migracji Supabase, zmian RLS, Storage i Edge Functions.
+
 ## 11.64
 - Mobile/offline: pełna edycja montażu bez internetu nie jest już zapisywana pozornie jako same urządzenia. Formularz pozostaje otwarty z wpisanymi danymi i informuje, że pełny zapis wymaga połączenia.
 - Kolejka urządzeń i tabliczek offline nadal działa w trybie `serialOnlyMode`; chwilowy błąd sieci przy pełnej edycji nie zamienia się już w częściowy sukces.
