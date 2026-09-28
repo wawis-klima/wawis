@@ -56,12 +56,13 @@ function loadJobsFormModule(assignmentHelpers) {
   return sandbox.module.exports;
 }
 
-function createSupabaseMock() {
+function createSupabaseMock({ tracker = null, jobAccessError = null } = {}) {
   return {
     from(table) {
       if (table === 'jobs') {
         return {
           insert(payload) {
+            if (tracker) tracker.jobInserts = Number(tracker.jobInserts || 0) + 1;
             return {
               select() {
                 return {
@@ -85,7 +86,8 @@ function createSupabaseMock() {
       if (table === 'job_access') {
         return {
           async insert() {
-            return { error: null };
+            if (tracker) tracker.accessInserts = Number(tracker.accessInserts || 0) + 1;
+            return { error: jobAccessError };
           },
           delete() {
             return {
@@ -167,6 +169,58 @@ async function main() {
     sendAssignmentPushFn: async (payload) => { pushes.push(payload); },
   });
   assert.equal(pushes.length, 1, 'Przyszły montaż powinien nadal wysłać push przy przypisaniu');
+
+  // 11.67 / C6: po potwierdzonym INSERT błąd powiadomienia, PUSH albo job_access
+  // nie może zostać zwrócony jako błąd całego formularza i prowokować drugiego INSERT-u.
+  {
+    const tracker = {};
+    const created = await jobsForm.addJobRecord({
+      supabase: createSupabaseMock({ tracker }),
+      profile,
+      form: { ...baseForm, installation_date: tomorrow },
+      normalizeStatus: (status) => status || 'Nowe',
+      createNotification: async () => { throw new Error('notification unavailable'); },
+      sendAssignmentPushFn: async () => {},
+    });
+    assert.equal(tracker.jobInserts, 1, 'Błąd powiadomienia nie może powodować drugiego INSERT jobs.');
+    assert.equal(created.id, 'job-new');
+    assert.equal(created.post_create_warnings.some((warning) => warning.phase === 'notification'), true);
+  }
+
+  {
+    const tracker = {};
+    const created = await jobsForm.addJobRecord({
+      supabase: createSupabaseMock({ tracker }),
+      profile,
+      form: { ...baseForm, installation_date: tomorrow },
+      normalizeStatus: (status) => status || 'Nowe',
+      createNotification: async () => {},
+      sendAssignmentPushFn: async () => { throw new Error('push unavailable'); },
+    });
+    assert.equal(tracker.jobInserts, 1, 'Błąd PUSH nie może powodować drugiego INSERT jobs.');
+    assert.equal(created.id, 'job-new');
+    assert.equal(created.post_create_warnings.some((warning) => warning.phase === 'push'), true);
+  }
+
+  {
+    const tracker = {};
+    let notificationCalls = 0;
+    let pushCalls = 0;
+    const created = await jobsForm.addJobRecord({
+      supabase: createSupabaseMock({ tracker, jobAccessError: new Error('access unavailable') }),
+      profile,
+      form: { ...baseForm, installation_date: tomorrow },
+      normalizeStatus: (status) => status || 'Nowe',
+      createNotification: async () => { notificationCalls += 1; },
+      sendAssignmentPushFn: async () => { pushCalls += 1; },
+    });
+    assert.equal(tracker.jobInserts, 1, 'Błąd job_access nie może powodować drugiego INSERT jobs.');
+    assert.equal(created.id, 'job-new');
+    assert.equal(created.access_confirmed, false);
+    assert.equal(created.post_create_warnings.some((warning) => warning.phase === 'job_access'), true);
+    assert.equal(notificationCalls, 0, 'Bez potwierdzonego dostępu nie wysyłamy mylącego powiadomienia.');
+    assert.equal(pushCalls, 0, 'Bez potwierdzonego dostępu nie wysyłamy mylącego PUSH.');
+  }
 
   pushes = [];
   await jobsForm.saveEditedJobRecord({
