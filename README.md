@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.72
+- 11.73
 
-Wersja 11.72 poprawia zachowanie mobilnej aplikacji przy chwilowo wolnym Supabase: po logowaniu użytkownik od razu widzi „Ładowanie danych…”, lokalne dane nie znikają, a przejściowy timeout uruchamia automatyczne ponowienia zamiast zostawiać pusty ekran.
+Wersja 11.73 blokuje pomniejszanie i powiększanie całego okna aplikacji na telefonie. Interfejs pozostaje w stałej skali 100%, a zwykłe przewijanie i gesty wewnątrz formularzy nadal działają.
 
-# Wawis Klimatyzacja — wersja 11.72
+# Wawis Klimatyzacja — wersja 11.73
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.73` — mobilne okno aplikacji ma stałą skalę 100%; pinch-zoom i ręczne pomniejszanie/powiększanie są wyłączone bez blokowania zwykłego przewijania.
 - wersja `11.72` — mobilne logowanie nie czeka pozornie na dane: aplikacja pokazuje „Ładowanie danych…”, zachowuje lokalny snapshot, automatycznie ponawia przejściowe timeouty i nie dubluje pełnego refreshu po SIGNED_IN.
 - wersja `11.71` — pracownik może utworzyć pierwszy protokół dla starego zakończonego montażu bez ręcznego potwierdzania `installer_ids`; monterzy są odtwarzani z historycznych przypisań tylko na potrzeby PDF.
 - wersja `11.70` — na zakończonym montażu pracownik widzi neutralne `Zakończone` zamiast sprzecznego `tylko podgląd`; data zapisanego PDF jest opisana jako `Ostatnia wersja protokołu`, więc nie wygląda jak data pierwszego utworzenia dokumentu.
