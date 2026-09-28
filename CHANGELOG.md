@@ -1,3 +1,9 @@
+## 11.60
+- Mobile, weryfikacja tabliczek Single: Teta i Teta Mirror są traktowane jako zgodne rodziny dla wspólnej jednostki zewnętrznej serii TO.
+- Poprawiono fałszywą blokadę dla prawidłowych par Teta Mirror `TMxxXi + TOxxXo` oraz Teta `TAxxXi + TOxxXo`, niezależnie od tego, czy katalog opisze agregat TO jako „Teta”, czy „Teta Mirror”.
+- Blokada niezgodnych rodzin pozostaje aktywna, np. Imoto + Ukura nadal nie może zostać potwierdzone jako poprawny zestaw Single.
+- Bez zmian w Supabase, RLS, storage, OCR, zapisie zdjęć i protokole PDF.
+
 ## 11.59
 - Zakończone montaże (mobile): sekcja „Monterzy” jest domyślnie zwinięta i można ją rozwinąć strzałką.
 - Zakończone montaże (mobile): „Komentarze i pytania” są domyślnie zwinięte, gdy nie ma komentarzy; jeżeli komentarze istnieją, sekcja otwiera się automatycznie.
