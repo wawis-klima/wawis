@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.71
+- 11.72
 
-Wersja 11.71 pozwala pracownikowi utworzyć pierwszy protokół także dla starszego zakończonego montażu, który nie ma jeszcze jawnego `installer_ids`. Historyczna lista monterów jest odtwarzana tylko na potrzeby PDF z dawnych przypisań, bez zmiany danych zlecenia.
+Wersja 11.72 poprawia zachowanie mobilnej aplikacji przy chwilowo wolnym Supabase: po logowaniu użytkownik od razu widzi „Ładowanie danych…”, lokalne dane nie znikają, a przejściowy timeout uruchamia automatyczne ponowienia zamiast zostawiać pusty ekran.
 
-# Wawis Klimatyzacja — wersja 11.71
+# Wawis Klimatyzacja — wersja 11.72
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.72` — mobilne logowanie nie czeka pozornie na dane: aplikacja pokazuje „Ładowanie danych…”, zachowuje lokalny snapshot, automatycznie ponawia przejściowe timeouty i nie dubluje pełnego refreshu po SIGNED_IN.
 - wersja `11.71` — pracownik może utworzyć pierwszy protokół dla starego zakończonego montażu bez ręcznego potwierdzania `installer_ids`; monterzy są odtwarzani z historycznych przypisań tylko na potrzeby PDF.
 - wersja `11.70` — na zakończonym montażu pracownik widzi neutralne `Zakończone` zamiast sprzecznego `tylko podgląd`; data zapisanego PDF jest opisana jako `Ostatnia wersja protokołu`, więc nie wygląda jak data pierwszego utworzenia dokumentu.
 - wersja `11.69` — protokół PDF przełącza 3+ komplety JW/JZ na dwie kolumny bez rozdzielania kompletu; pracownik może też od razu drukować, uzupełniać i ponownie podpisywać zapisany starszy protokół bez blokady monterów.
