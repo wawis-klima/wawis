@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.69
+- 11.70
 
-Wersja 11.69 układa 3 lub więcej kompletów JW/JZ w dwóch kolumnach protokołu PDF, aby utrzymać wydruk na jednej stronie A4; zapisany starszy protokół pracownik może drukować, edytować i podpisać ponownie bez oczekiwania na administratora.
+Wersja 11.70 porządkuje ekran zakończonego montażu u pracownika: usuwa mylące „tylko podgląd” przy zachowaniu blokady danych zlecenia, a data przy zapisanym PDF jest jednoznacznie opisana jako ostatnia wersja protokołu. Edycja, ponowny podpis i druk zapisanego protokołu pozostają dostępne.
 
-# Wawis Klimatyzacja — wersja 11.69
+# Wawis Klimatyzacja — wersja 11.70
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.70` — na zakończonym montażu pracownik widzi neutralne `Zakończone` zamiast sprzecznego `tylko podgląd`; data zapisanego PDF jest opisana jako `Ostatnia wersja protokołu`, więc nie wygląda jak data pierwszego utworzenia dokumentu.
 - wersja `11.69` — protokół PDF przełącza 3+ komplety JW/JZ na dwie kolumny bez rozdzielania kompletu; pracownik może też od razu drukować, uzupełniać i ponownie podpisywać zapisany starszy protokół bez blokady monterów.
 - wersja `11.68` — jawna lista `installer_ids` oddziela monterów od `job_access`; starsze montaże wymagają potwierdzenia listy przed nowym protokołem, a edycja używa transakcyjnej kontroli konfliktów i zapisuje tylko zmienione pola.
 - wersja `11.67` — po utworzeniu montażu błędy przypisań/powiadomień/PUSH nie cofają sukcesu INSERT; weryfikacja tabliczki sprawdza dokładnie nowy plik po deterministycznej ścieżce Storage.
