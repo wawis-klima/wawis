@@ -83,14 +83,33 @@ export async function saveDesktopNameplateOcrResult({
     saveSerial,
   });
   const serialized = serializeJobDevicesToFields({ devices });
-  const { error } = await supabase
-    .from('jobs')
-    .update({
-      device_model: serialized.device_model || null,
-      device_serial_number: serialized.device_serial_number || null,
-    })
-    .eq('id', job.id);
-  if (error) throw error;
+  const fields = {};
+  const expected = {};
+  const nextModel = String(serialized.device_model || '').trim() || null;
+  const nextSerial = String(serialized.device_serial_number || '').trim() || null;
+  const baseModel = String(job.device_model || '').trim() || null;
+  const baseSerial = String(job.device_serial_number || '').trim() || null;
+
+  if (nextModel !== baseModel) {
+    fields.device_model = nextModel;
+    expected.device_model = job.device_model ?? null;
+  }
+  if (nextSerial !== baseSerial) {
+    fields.device_serial_number = nextSerial;
+    expected.device_serial_number = job.device_serial_number ?? null;
+  }
+
+  if (Object.keys(fields).length) {
+    const { error } = await supabase.rpc('save_job_concurrent_v1168', {
+      p_id: job.id,
+      p_fields: fields,
+      p_expected: expected,
+      p_installer_ids: null,
+      p_expected_installer_ids: null,
+      p_update_installers: false,
+    });
+    if (error) throw error;
+  }
 
   let photoOcrStatus = null;
   if (photo?.id) {
