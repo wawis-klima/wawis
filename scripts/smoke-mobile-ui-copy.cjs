@@ -11,7 +11,9 @@ const pagination = read('src', 'mobile791', 'components', 'jobs', 'JobsPaginatio
 const paginationStyles = read('src', 'mobile791', 'components', 'jobs', 'mobile-jobs-pagination-v999.css.js');
 const styles = read('src', 'mobile791', 'styles.css');
 
-assert.equal((panel.match(/Zakończone · tylko podgląd/g) || []).length, 1, 'Status tylko do podglądu powinien wystąpić dokładnie raz.');
+assert.equal((panel.match(/className=\"workerReadOnlyNote\" role=\"status\">Zakończone<\\/div>/g) || []).length, 1, 'Zakończone zlecenie pracownika powinno mieć jeden neutralny status.');
+assert.doesNotMatch(panel, /Zakończone · tylko podgląd/);
+assert.match(panel, /Ostatnia wersja protokołu/);
 assert.doesNotMatch(panel, /karta jest tylko do podglądu dla pracownika/);
 assert.doesNotMatch(panel, /pracownik nie może już dodawać ani usuwać zdjęć/);
 assert.doesNotMatch(panel, /pracownik nie może już dodawać komentarzy ani pytań/);
