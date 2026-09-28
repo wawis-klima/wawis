@@ -34,13 +34,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert(!mobileSources.includes('Odczytaj przez AI'), 'Desktop AI action leaked into mobile UI');
 
   const saveModule = await import(pathToFileURL(path.join(root, 'src/modules/desktop-nameplate-ocr-save.js')).href);
-  const updates = [];
+  const rpcCalls = [];
   const photoUpdates = [];
   const supabase = {
     from(table) {
-      if (table === 'jobs') {
-        return { update(payload) { updates.push(payload); return { eq: async () => ({ error: null }) }; } };
-      }
       if (table === 'photos') {
         return {
           update(payload) {
@@ -51,8 +48,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
       }
       throw new Error(`Unexpected table: ${table}`);
     },
-    async rpc(name) {
-      throw new Error(`Unexpected RPC during nameplate save: ${name}`);
+    async rpc(name, payload) {
+      assert.strictEqual(name, 'save_job_concurrent_v1168', 'Nameplate save must use concurrent job save RPC.');
+      rpcCalls.push(payload);
+      return { data: { id: payload.p_id }, error: null };
     },
   };
 
@@ -69,7 +68,11 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
     saveModel: true,
     saveSerial: true,
   });
-  assert.strictEqual(updates.length, 1, 'Nameplate save should update job once');
+  assert.strictEqual(rpcCalls.length, 1, 'Nameplate save should update job once through concurrent RPC.');
+  assert.strictEqual(rpcCalls[0].p_id, 'job-1');
+  assert.strictEqual(rpcCalls[0].p_expected.device_model, 'JZ: Rotenso Hiro 5,2 kW | JW1: Rotenso Ukura 2,6 kW | JW2: Rotenso Ukura 3,5 kW');
+  assert.strictEqual(rpcCalls[0].p_expected.device_serial_number, 'JZ: OUT-1 | JW1: IN-1');
+  assert.strictEqual(rpcCalls[0].p_update_installers, false);
   assert.strictEqual(photoUpdates.length, 1, 'Nameplate save should approve photo once');
   assert.strictEqual(result.photoOcrStatus?.ocr_status, 'approved', 'Historical approval status must remain compatible');
   assert(result.device_model.includes('JW2: Rotenso Ukura 3,5 kW'));
