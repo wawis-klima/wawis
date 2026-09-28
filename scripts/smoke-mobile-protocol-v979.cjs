@@ -135,6 +135,11 @@ assert.match(pdfModule, /import \{ getInitials, getJobAddress \} from "\.\.\/uti
 assert.match(pdfModule, /const initialsById = new Map/);
 assert.match(pdfModule, /getInitials\(displayName\)/);
 assert.match(pdfModule, /const seenIds = new Set\(\)/);
+assert.match(pdfModule, /if \(!Array\.isArray\(job\?\.installer_ids\)\) return \["Do potwierdzenia"\]/);
+assert.doesNotMatch(pdfModule, /job\?\.viewers\.map\(\(viewer\) => viewer\?\.user_id\)/, 'Protokół nie może już wyprowadzać monterów z job_access.');
+assert.match(modal, /Monterzy wymagają potwierdzenia/);
+assert.match(modal, /Nie można utworzyć nowego protokołu, dopóki lista monterów/);
+assert.match(modal, /disabled=\{!hasSignature \|\| isGenerating \|\| !installersConfirmed/);
 assert.match(pdfModule, /drawField\(doc, "Monterzy", data\.technicians\.join\(", "\)/);
 assert.match(pdfModule, /DejaVuSans\.ttf\?url/);
 assert.match(pdfModule, /WAWIS CHŁODNICTWO I KLIMATYZACJA/);

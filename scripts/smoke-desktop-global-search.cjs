@@ -39,7 +39,8 @@ function assert(condition, message) {
     installation_date: '2026-07-15',
     status: 'Zakończone',
     main_technician_id: 'tech-1',
-    viewers: [{ user_id: 'tech-2' }],
+    installer_ids: ['tech-1', 'tech-2'],
+    viewers: [{ user_id: 'access-only' }],
   }];
   const contractors = [{
     id: 'contractor-1',

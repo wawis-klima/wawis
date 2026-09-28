@@ -819,11 +819,21 @@ export default function JobFormModal({
           </div>
         </div>
         <h4>Instalatorzy (opcjonalnie)</h4>
+                {editingJobId && jobForm.installers_confirmed === false ? (
+                  <div className="workerReadOnlyNote" role="status">
+                    <strong>Potwierdź monterów tego montażu.</strong> To starszy wpis: zaznaczenia poniżej są tylko podpowiedzią z dawnego dostępu do zlecenia i nie trafią do nowego protokołu, dopóki ich nie potwierdzisz.
+                    <div className="row" style={{ marginTop: 8 }}>
+                      <button type="button" className="btn" onClick={() => setJobForm((prev) => ({ ...prev, installers_confirmed: true }))}>
+                        Potwierdź tę listę
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
         <div className="viewerGrid">
           {profiles.map((person) => {
             const active = jobForm.viewers.includes(person.id);
             return (
-              <button type="button" key={person.id} className={`viewer ${active ? "active" : ""}`} onClick={() => setJobForm((prev) => ({ ...prev, viewers: active ? prev.viewers.filter((id) => id !== person.id) : [...prev.viewers, person.id] }))}>
+              <button type="button" key={person.id} className={`viewer ${active ? "active" : ""}`} onClick={() => setJobForm((prev) => ({ ...prev, installers_confirmed: true, viewers: active ? prev.viewers.filter((id) => id !== person.id) : [...prev.viewers, person.id] }))}>
                 <div>{person.full_name}</div>
                 <small>{person.role}</small>
               </button>

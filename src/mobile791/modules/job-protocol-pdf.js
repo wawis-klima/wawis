@@ -66,10 +66,10 @@ function getAssignedTechnicians(job = {}, profiles = []) {
     const displayName = person?.full_name || emailName;
     return [String(person?.id || ""), getInitials(displayName)];
   }));
-  const ids = [
-    job?.main_technician_id,
-    ...(Array.isArray(job?.viewers) ? job.viewers.map((viewer) => viewer?.user_id) : []),
-  ].map((value) => String(value || "").trim()).filter(Boolean);
+  if (!Array.isArray(job?.installer_ids)) return ["Do potwierdzenia"];
+  const ids = job.installer_ids
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
   const initials = [];
   const seenIds = new Set();
   ids.forEach((id) => {

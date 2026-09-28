@@ -60,7 +60,7 @@ function isMissingJobCompletionColumnsError(error) {
     && (message.includes('does not exist') || message.includes('schema cache') || message.includes('column'));
 }
 
-const JOB_SUMMARY_BASE_FIELDS = 'id, title, client, email, phone, city, street, location, status, installation_date, device_model, device_serial_number, admin_note, created_at, created_by, main_technician_id, contractor_id, contractor_address_id, sms_consent, sms_reminder_enabled, service_due_date, last_sms_sent_at, last_sms_status, last_sms_error, sms_recipient_phone, payment_confirmation_enabled, payment_amount, payment_kind, payment_method, payment_paid_at, payment_recorded_by, payment_updated_at';
+const JOB_SUMMARY_BASE_FIELDS = 'id, title, client, email, phone, city, street, location, status, installation_date, device_model, device_serial_number, admin_note, created_at, created_by, main_technician_id, installer_ids, contractor_id, contractor_address_id, sms_consent, sms_reminder_enabled, service_due_date, last_sms_sent_at, last_sms_status, last_sms_error, sms_recipient_phone, payment_confirmation_enabled, payment_amount, payment_kind, payment_method, payment_paid_at, payment_recorded_by, payment_updated_at';
 const JOB_SUMMARY_COMPLETION_FIELDS = `${JOB_SUMMARY_BASE_FIELDS}, completed_at, completed_by`;
 
 async function getJobsData({ supabase }) {

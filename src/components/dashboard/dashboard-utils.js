@@ -1,4 +1,5 @@
 import { getJobDeviceRows } from '../../modules/job-devices.js';
+import { getAssignedUserIdsFromJob } from '../../modules/jobs-assignment.js';
 import { countSmsDueToday } from '../../modules/sms.js';
 
 function toDate(value) {
@@ -88,10 +89,7 @@ export function buildAdminDashboardStats({ jobs = [], contractors = [] } = {}) {
     const date = toDate(job.installation_date);
     return date && date >= weekStart && date <= weekEnd;
   });
-  const jobsWithoutInstaller = (jobs || []).filter((job) => {
-    const viewers = Array.isArray(job.viewers) ? job.viewers : [];
-    return !job.main_technician_id && viewers.length === 0;
-  });
+  const jobsWithoutInstaller = (jobs || []).filter((job) => getAssignedUserIdsFromJob(job).length === 0);
   const devicesMissingInstallDate = deviceRows.filter((device) => !device.installation_date);
   const devicesDueService = deviceRows.filter((device) => {
     const explicitDue = toDate(device.service_due_date);

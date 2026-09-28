@@ -26,6 +26,7 @@ function getComparableJobForm(form, normalizeStatus) {
     admin_note: String(form?.admin_note || "").trim(),
     main_technician_id: String(form?.main_technician_id || ""),
     viewers: [...new Set((form?.viewers || []).filter(Boolean))].sort(),
+    installers_confirmed: form?.installers_confirmed !== false,
   });
 }
 
@@ -36,6 +37,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
   const [jobForm, setJobFormState] = useState(emptyJobForm);
   const jobFormRef = useRef(emptyJobForm);
   const jobFormInitialRef = useRef(emptyJobForm);
+  const jobFormBaseJobRef = useRef(null);
   const jobFormDirty = getComparableJobForm(jobForm, normalizeStatus) !== getComparableJobForm(jobFormInitialRef.current, normalizeStatus);
 
   function setJobForm(nextValue) {
@@ -55,6 +57,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     setEditingJobId(null);
     setSerialOnlyMode(false);
     jobFormInitialRef.current = emptyJobForm;
+    jobFormBaseJobRef.current = null;
     setJobForm(emptyJobForm);
   }
 
@@ -62,14 +65,16 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     setEditingJobId(null);
     setSerialOnlyMode(false);
     jobFormInitialRef.current = emptyJobForm;
+    jobFormBaseJobRef.current = null;
     setJobForm(emptyJobForm);
     setShowModal(true);
   }
 
-  function openEditJobForm({ jobId, form, serialOnly = false }) {
+  function openEditJobForm({ jobId, form, baseJob = null, serialOnly = false }) {
     setEditingJobId(jobId);
     setSerialOnlyMode(Boolean(serialOnly));
     jobFormInitialRef.current = form;
+    jobFormBaseJobRef.current = baseJob;
     setJobForm(form);
     setShowModal(true);
   }
@@ -99,6 +104,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     jobForm,
     jobFormDirty,
     jobFormRef,
+    jobFormBaseJobRef,
     setJobForm,
     resetJobModalState,
     openAddJob,

@@ -125,7 +125,16 @@ export default function JobDetailsPanel({
   const detailsLoaded = Boolean(selectedJob.detailsLoaded);
   const detailsLoadError = String(selectedJob.detailsLoadError || '').trim();
   const showDetailsLoading = !detailsLoaded && !detailsLoadError;
-  const viewers = Array.isArray(selectedJob.viewers) ? selectedJob.viewers : [];
+  const accessViewers = Array.isArray(selectedJob.viewers) ? selectedJob.viewers : [];
+  const installersConfirmed = Array.isArray(selectedJob.installer_ids);
+  const installerIds = [...new Set(
+    (installersConfirmed
+      ? selectedJob.installer_ids
+      : [selectedJob.main_technician_id, ...accessViewers.map((viewer) => viewer?.user_id)])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean),
+  )];
+  const viewers = installerIds.map((userId) => ({ user_id: userId }));
   const comments = Array.isArray(selectedJob.comments) ? selectedJob.comments : [];
   const isWorkerCompletedLock = isWorkerLockedCompletedJob(selectedJob, isAdmin);
   const canFinishJob = canWorkerFinishJob(selectedJob, isAdmin);
@@ -440,18 +449,28 @@ export default function JobDetailsPanel({
         {canManageSelectedJobViewers || !isAdmin ? (
           <section className="detailsSection detailsSectionCompact jobDetailsSectionCard">
             <h4 className="sectionHeadingWithIcon"><IconUsers /><span>Monterzy</span></h4>
+            {!installersConfirmed ? (
+              <div className="muted" role="status" style={{ marginBottom: 8 }}>
+                Lista monterów w tym starszym montażu nie została jeszcze potwierdzona. Zaznaczenia są podpowiedzią z dawnego dostępu do zlecenia.
+              </div>
+            ) : null}
             {canManageSelectedJobViewers ? (
               <div className="viewerInlineRow" aria-label="Wybór monterów">
                 {profiles.map((person) => {
                   const active = viewers.some((viewer) => viewer.user_id === person.id);
+                  const isMainTechnician = String(selectedJob.main_technician_id || '') === String(person.id || '');
+                  const installerLabel = isMainTechnician
+                    ? `${person.full_name} — główny monter (zmiana w edycji montażu)`
+                    : `${person.full_name} — ${active ? "Monter" : "Nie monter"}`;
                   return (
                     <button
                       key={person.id}
                       type="button"
                       className={`viewerDot ${active ? "active" : ""}`}
-                      onClick={() => toggleViewer(selectedJob.id, person.id, viewers)}
-                      title={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
-                      aria-label={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
+                      onClick={() => toggleViewer(selectedJob.id, person.id)}
+                      disabled={isMainTechnician}
+                      title={installerLabel}
+                      aria-label={installerLabel}
                     >
                       <span className="viewerDotText">{formatViewerChipName(person.full_name)}</span>
                     </button>

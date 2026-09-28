@@ -1,3 +1,5 @@
+import { getAssignedUserIdsFromJob } from './jobs-assignment.js';
+
 export function formatDate(dateStr) {
   if (!dateStr) return '';
   const date = new Date(dateStr);
@@ -36,9 +38,7 @@ export function getVisibleJobs({
 
   const filtered = jobs
     .map((job) => {
-      const viewers = Array.isArray(job.viewers) ? job.viewers : [];
-      const isAssignedToCurrentUser = job.main_technician_id === profile.id
-        || viewers.some((viewer) => viewer.user_id === profile.id);
+      const isAssignedToCurrentUser = getAssignedUserIdsFromJob(job).includes(String(profile.id));
 
       return {
         ...job,

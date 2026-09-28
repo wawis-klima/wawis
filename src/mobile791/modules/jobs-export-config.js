@@ -1,4 +1,5 @@
 import { normalizeStatus } from "../utils/jobHelpers.jsx";
+import { getAssignedUserIdsFromJob } from "./jobs-assignment.js";
 
 export const EXPORT_SCOPE_OPTIONS = [
   { value: "all", label: "Wszystkie zlecenia" },
@@ -27,7 +28,7 @@ function getRoleExportDescription(isAdmin) {
 
 function filterJobsByAssignment({ jobs, profile, isAdmin, showAssignedJobsOnly }) {
   if (isAdmin || !showAssignedJobsOnly || !profile?.id) return [...(jobs || [])];
-  return (jobs || []).filter((job) => job.main_technician_id === profile.id || (Array.isArray(job.viewers) ? job.viewers : []).some((viewer) => viewer.user_id === profile.id));
+  return (jobs || []).filter((job) => getAssignedUserIdsFromJob(job).includes(String(profile.id)));
 }
 
 export function getRangeLabel(exportScope, exportStatuses = []) {

@@ -200,12 +200,15 @@ test.describe('@mobile iPhone — odporność danych', () => {
         text: 'Historia komentarza zakończonego zlecenia.',
         created_at: '2026-07-29T06:00:00.000Z',
       });
-      window.localStorage.setItem(storeKey, JSON.stringify(store));
+      const serialized = JSON.stringify(store);
+      window.localStorage.setItem(storeKey, serialized);
+      window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
     }, { storeKey: MOCK_STORE_KEY });
 
     await page.reload();
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
+    await expect(page.locator('.mobileDetailsLoading')).toBeHidden();
     const viewersToggleAfterReload = page.getByRole('button', { name: /Rozwiń monterów/i });
     const commentsToggleWithHistory = page.getByRole('button', { name: /^Zwiń komentarze i pytania$/i });
     await expect(viewersToggleAfterReload).toHaveAttribute('aria-expanded', 'false');

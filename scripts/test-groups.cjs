@@ -41,6 +41,7 @@ const GROUPS = {
     'npm run test:smoke:job-auto-contractor',
     'npm run test:smoke:contractor-addresses',
     'npm run test:smoke:worker-shared-job-edit',
+    'npm run test:smoke:job-concurrency-installers',
     'npm run test:smoke:worker-create-status',
     'npm run test:smoke:job-completion',
     'npm run test:smoke:new-job-author-comment',

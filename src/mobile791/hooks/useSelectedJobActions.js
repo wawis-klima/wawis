@@ -20,7 +20,7 @@ import {
   loadJobNameplatePhotosData,
 } from "../modules/jobs.js";
 import { addJobComment, deleteJobComment, withTimeout } from "../modules/jobs-comments.js";
-import { toggleJobViewer } from "../modules/jobs-assignment.js";
+import { getLegacyInstallerSuggestionIds, normalizeInstallerIds, toggleJobViewer } from "../modules/jobs-assignment.js";
 import { deleteJobPhoto, getNameplatePhotoMetadata, isLocalQueuedPhoto, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
@@ -111,6 +111,7 @@ export function useSelectedJobActions({
   previewImage,
   setPreviewImage,
   jobFormRef,
+  jobFormBaseJobRef,
   setJobForm,
   editingJobId,
   serialOnlyMode,
@@ -403,7 +404,7 @@ export function useSelectedJobActions({
       return;
     }
     const nextForm = buildEditJobForm({ job, profiles, normalizeStatus });
-    openEditJobForm({ jobId: job.id, form: nextForm, serialOnly: false });
+    openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: false });
   }
 
   function openSerialNumbersJob(job) {
@@ -413,7 +414,7 @@ export function useSelectedJobActions({
       return;
     }
     const nextForm = buildEditJobForm({ job, profiles, normalizeStatus });
-    openEditJobForm({ jobId: job.id, form: nextForm, serialOnly: true });
+    openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: true });
   }
 
   async function saveEditedJob(formOverride) {
@@ -439,9 +440,9 @@ export function useSelectedJobActions({
         return;
       }
       const recordSave = serialOnlyMode
-        ? saveJobDeviceSerialsRecord({ supabase, editingJobId, form })
+        ? saveJobDeviceSerialsRecord({ supabase, editingJobId, form, baseJob: jobFormBaseJobRef?.current })
         : saveEditedJobRecord({
-          supabase, editingJobId, form, contractors: contractorsCatalog, isAdmin, jobs, normalizeStatus, sendAssignmentPushFn: sendAssignmentPush,
+          supabase, editingJobId, form, baseJob: jobFormBaseJobRef?.current, contractors: contractorsCatalog, isAdmin, jobs, normalizeStatus, sendAssignmentPushFn: sendAssignmentPush,
         });
       const recordResult = await settleWithin(recordSave, NAMEPLATE_SAVE_TIMEOUT_MS, 'record-save');
       if (recordResult.timedOut) {
@@ -1000,7 +1001,7 @@ export function useSelectedJobActions({
     });
   }
 
-  async function toggleViewer(jobId, userId, viewers) {
+  async function toggleViewer(jobId, userId) {
     if (!canManageResolvedJobViewers(jobId)) {
       alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
       return;
@@ -1008,28 +1009,31 @@ export function useSelectedJobActions({
 
     const previousJobs = jobs;
     const previousSelectedJob = selectedJob;
-    const currentViewers = Array.isArray(viewers) ? viewers : [];
-    const exists = currentViewers.some((viewer) => viewer.user_id === userId);
-    const optimisticViewer = {
-      id: `local-${jobId}-${userId}`,
-      job_id: jobId,
-      user_id: userId,
-      optimistic: true,
-    };
-    const nextViewers = exists
-      ? currentViewers.filter((viewer) => viewer.user_id !== userId)
-      : [...currentViewers, optimisticViewer];
+    const currentJob = getResolvedJob(jobId) || jobs.find((job) => String(job?.id) === String(jobId)) || {};
+    const currentInstallerIds = Array.isArray(currentJob.installer_ids)
+      ? normalizeInstallerIds(currentJob.installer_ids)
+      : getLegacyInstallerSuggestionIds(currentJob);
+    const exists = currentInstallerIds.includes(String(userId));
+    const nextInstallerIds = normalizeInstallerIds(
+      exists
+        ? currentInstallerIds.filter((installerId) => installerId !== String(userId))
+        : [...currentInstallerIds, String(userId)],
+    );
 
-    const applyOptimisticViewers = (job) => (String(job?.id) === String(jobId) ? { ...job, viewers: nextViewers } : job);
-    setJobs((prev) => prev.map(applyOptimisticViewers));
-    setSelectedJob((prev) => (prev && String(prev.id) === String(jobId) ? applyOptimisticViewers(prev) : prev));
+    const applyOptimisticInstallers = (job) => (
+      String(job?.id) === String(jobId)
+        ? { ...job, installer_ids: nextInstallerIds }
+        : job
+    );
+    setJobs((prev) => prev.map(applyOptimisticInstallers));
+    setSelectedJob((prev) => (prev && String(prev.id) === String(jobId) ? applyOptimisticInstallers(prev) : prev));
 
     try {
       await toggleJobViewer({
         supabase,
         jobId,
         userId,
-        viewers: currentViewers,
+        job: currentJob,
         jobs,
         sendAssignmentPushFn: sendAssignmentPush,
       });

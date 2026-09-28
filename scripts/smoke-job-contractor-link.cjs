@@ -17,23 +17,11 @@ function loadJobContractorsModule() {
 function loadJobsFormModule() {
   let source = fs.readFileSync(path.join(root, 'src', 'modules', 'jobs-form.js'), 'utf8');
   source = source.replace(
-    /import \{[\s\S]*?getAssignedUserIdsFromForm[\s\S]*?getAssignedUserIdsFromJob[\s\S]*?\} from '\.\/jobs-assignment\.js';/,
-    `const getAssignedUserIdsFromForm = (form = {}) => {
-      const userIds = [];
-      if (form.main_technician_id) userIds.push(form.main_technician_id);
-      for (const viewerId of Array.isArray(form.viewers) ? form.viewers : []) {
-        if (viewerId) userIds.push(viewerId);
-      }
-      return [...new Set(userIds)];
-    };
-    const getAssignedUserIdsFromJob = (job = {}) => {
-      const userIds = [];
-      if (job?.main_technician_id) userIds.push(job.main_technician_id);
-      for (const viewer of Array.isArray(job?.viewers) ? job.viewers : []) {
-        if (viewer?.user_id) userIds.push(viewer.user_id);
-      }
-      return [...new Set(userIds)];
-    };
+    /import \{[\s\S]*?\} from '\.\/jobs-assignment\.js';/,
+    `const normalizeInstallerIds = (ids = []) => [...new Set((ids || []).filter(Boolean).map(String))].sort();
+    const getAssignedUserIdsFromForm = (form = {}) => normalizeInstallerIds([form.main_technician_id, ...(Array.isArray(form.viewers) ? form.viewers : [])]);
+    const getAssignedUserIdsFromJob = (job = {}) => Array.isArray(job.installer_ids) ? normalizeInstallerIds(job.installer_ids) : normalizeInstallerIds([job.main_technician_id]);
+    const getLegacyInstallerSuggestionIds = (job = {}) => normalizeInstallerIds([job.main_technician_id, ...(Array.isArray(job.viewers) ? job.viewers.map((viewer) => viewer?.user_id) : [])]);
     const shouldSendAssignmentPushForInstallationDate = () => true;`
   );
   source = source.replace(
@@ -48,12 +36,16 @@ function loadJobsFormModule() {
     })();`
   );
   source = source.replace(
-    /import \{[\s\S]*?ensureJobFormDevices[\s\S]*?serializeJobDevicesToFields[\s\S]*?\} from '\.\/job-devices\.js';/,
+    /import \{[\s\S]*?\} from '\.\/job-devices\.js';/,
     `const DEVICE_TYPE_SINGLE = 'single-split';
-    function ensureJobFormDevices(input = {}) { return { ...input, devices: input.devices || [] }; }
+    function ensureJobFormDevices(input = {}) { return { ...input, devices: Array.isArray(input.devices) ? input.devices : [] }; }
+    function getJobDeviceRows(input = {}) { return Array.isArray(input.devices) ? input.devices : []; }
     function serializeJobDevicesToFields(input = {}) {
-      const first = Array.isArray(input.devices) ? input.devices[0] || {} : {};
-      return { device_model: first.model || input.device_model || '', device_serial_number: first.serial_number || input.device_serial_number || '' };
+      const devices = Array.isArray(input.devices) ? input.devices : [];
+      return {
+        device_model: devices.length ? devices.map((device) => String(device.model || '').trim()).join('\\n') : String(input.device_model || '').trim(),
+        device_serial_number: devices.length ? devices.map((device) => String(device.serial_number || '').trim()).join('\\n') : String(input.device_serial_number || '').trim(),
+      };
     }`
   );
   source = source.replace(/export const (\w+) =/g, 'const $1 =');
@@ -65,91 +57,48 @@ function loadJobsFormModule() {
   return sandbox.module.exports;
 }
 
-function assertAutoLinkResolver() {
+(async () => {
   const { findAutoLinkedContractor, applyAutoLinkedContractorToJobForm } = loadJobContractorsModule();
+  const { EMPTY_JOB_FORM, addJobRecord, saveEditedJobRecord } = loadJobsFormModule();
+
   const contractors = [
     { id: 'con-1', company_name: 'Michał Szota', city: 'Poręba', street: 'Jasna 5', phone: '600700800', email: 'michal@example.com' },
     { id: 'con-2', company_name: 'Michał Szota', city: 'Katowice', street: 'Długa 1', phone: '111222333', email: 'katowice@example.com' },
   ];
 
-  const match = findAutoLinkedContractor({
-    contractors,
-    client: 'Michał Szota',
-    city: 'Poręba',
-    phone: '600-700-800',
-  });
+  const match = findAutoLinkedContractor({ contractors, client: 'Michał Szota', city: 'Poręba', phone: '600-700-800' });
   assert.equal(match?.id, 'con-1');
-
-  const ambiguous = findAutoLinkedContractor({
-    contractors,
-    client: 'Michał Szota',
-  });
-  assert.equal(ambiguous, null);
+  assert.equal(findAutoLinkedContractor({ contractors, client: 'Michał Szota' }), null);
 
   const resolved = applyAutoLinkedContractorToJobForm({
-    client: 'Michał Szota',
-    email: '',
-    phone: '',
-    city: 'Poręba',
-    street: '',
-    contractor_id: '',
+    client: 'Michał Szota', email: '', phone: '', city: 'Poręba', street: '', contractor_id: '',
   }, contractors);
   assert.equal(resolved.form.contractor_id, 'con-1');
   assert.equal(resolved.form.phone, '600700800');
   assert.equal(resolved.form.email, 'michal@example.com');
   assert.equal(resolved.form.street, 'Jasna 5');
-}
-
-async function assertAddJobAutoLink() {
-  const { EMPTY_JOB_FORM, addJobRecord, saveEditedJobRecord } = loadJobsFormModule();
-  const contractors = [
-    { id: 'con-1', company_name: 'Michał Szota', city: 'Poręba', street: 'Jasna 5', phone: '600700800', email: 'michal@example.com' },
-  ];
 
   let insertPayload = null;
-  let updatePayload = null;
-
+  let editRpc = null;
   const supabase = {
+    async rpc(name, payload) {
+      if (name === 'save_job_concurrent_v1168') {
+        editRpc = payload;
+        return { data: { id: payload.p_id, installer_ids: payload.p_installer_ids }, error: null };
+      }
+      throw new Error(`Nieoczekiwane RPC: ${name}`);
+    },
     from(table) {
       if (table === 'jobs') {
         return {
           insert(payload) {
             insertPayload = payload;
-            return {
-              select() {
-                return {
-                  async single() {
-                    return { data: { id: 'job-1' }, error: null };
-                  },
-                };
-              },
-            };
-          },
-          update(payload) {
-            updatePayload = payload;
-            return {
-              async eq() {
-                return { error: null };
-              },
-            };
+            return { select() { return { async single() { return { data: { id: 'job-1' }, error: null }; } }; } };
           },
         };
       }
-      if (table === 'job_access') {
-        return {
-          async insert() { return { error: null }; },
-          delete() {
-            return {
-              eq() {
-                return {
-                  async in() { return { error: null }; },
-                };
-              },
-            };
-          },
-        };
-      }
-      throw new Error(`Nieobsługiwana tabela w smoke teście: ${table}`);
+      if (table === 'job_access') return { async insert() { return { error: null }; } };
+      throw new Error(`Nieobsługiwana tabela: ${table}`);
     },
   };
 
@@ -157,7 +106,7 @@ async function assertAddJobAutoLink() {
     ...EMPTY_JOB_FORM,
     client: 'Michał Szota',
     city: 'Poręba',
-    street: '',
+    street: 'Jasna 5',
     phone: '',
     email: '',
     viewers: [],
@@ -166,7 +115,7 @@ async function assertAddJobAutoLink() {
   await addJobRecord({
     supabase,
     profile: { id: 'admin-1' },
-    form: { ...form, street: 'Jasna 5' },
+    form,
     contractors,
     isAdmin: true,
     normalizeStatus: (status) => status || 'Nowe',
@@ -174,33 +123,51 @@ async function assertAddJobAutoLink() {
     sendAssignmentPushFn: null,
   });
 
-  assert.ok(insertPayload, 'Brak payloadu insert dla addJobRecord');
   assert.equal(insertPayload.contractor_id, 'con-1');
   assert.equal(insertPayload.phone, '600700800');
   assert.equal(insertPayload.email, 'michal@example.com');
 
+  const baseJob = {
+    id: 'job-1',
+    title: 'Michał Szota',
+    client: 'Michał Szota',
+    email: '',
+    phone: '',
+    sms_recipient_phone: '',
+    city: 'Poręba',
+    street: 'Jasna 5',
+    location: 'Poręba, Jasna 5',
+    status: 'Nowe',
+    installation_date: null,
+    admin_note: null,
+    main_technician_id: null,
+    contractor_id: null,
+    contractor_address_id: null,
+    device_model: null,
+    device_serial_number: null,
+    installer_ids: [],
+    viewers: [],
+  };
+
   await saveEditedJobRecord({
     supabase,
     editingJobId: 'job-1',
-    form: { ...form, street: 'Jasna 5' },
+    form,
+    baseJob,
     contractors,
     isAdmin: true,
-    jobs: [{ id: 'job-1', viewers: [], main_technician_id: null }],
+    jobs: [baseJob],
     normalizeStatus: (status) => status || 'Nowe',
     sendAssignmentPushFn: null,
   });
 
-  assert.ok(updatePayload, 'Brak payloadu update dla saveEditedJobRecord');
-  assert.equal(updatePayload.contractor_id, 'con-1');
-  assert.equal(updatePayload.phone, '600700800');
-  assert.equal(updatePayload.email, 'michal@example.com');
-}
+  assert.ok(editRpc, 'Edycja musi użyć atomowego RPC 11.68.');
+  assert.equal(editRpc.p_fields.contractor_id, 'con-1');
+  assert.equal(editRpc.p_fields.phone, '600700800');
+  assert.equal(editRpc.p_fields.email, 'michal@example.com');
+  assert.equal(Object.prototype.hasOwnProperty.call(editRpc.p_fields, 'status'), false, 'Niezmieniony status nie może wracać w UPDATE.');
 
-(async () => {
-  assertAutoLinkResolver();
-  await assertAddJobAutoLink();
   console.log('Job contractor auto-link smoke OK');
-process.exit(0);
 })().catch((error) => {
   console.error(error);
   process.exit(1);

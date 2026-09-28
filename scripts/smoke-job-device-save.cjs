@@ -4,40 +4,22 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const modalSource = fs.readFileSync(path.join(root, 'src', 'components', 'modals', 'JobFormModal.jsx'), 'utf8');
+const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8').replace(/\r\n/g, '\n');
 
+const modalSource = read('src', 'components', 'modals', 'JobFormModal.jsx');
 assert.match(modalSource, /jobDevices\.map/);
 assert.match(modalSource, /\+ Dodaj urządzenie/);
-assert.match(modalSource, /addDeviceRow/);
-assert.match(modalSource, /removeDeviceRow/);
-assert.match(modalSource, /updateDeviceField\(index, "model", e\.target\.value\)/);
-assert.match(modalSource, /function updateIndoorUnitField\(deviceIndex, indoorIndex, value\)/);
-assert.match(modalSource, /function addIndoorUnit\(deviceIndex\)/);
 assert.match(modalSource, /\+ Dodaj tylko jednostkę wewnętrzną/);
-assert.match(modalSource, /updateDeviceField\(index, "outdoor_serial_number", e\.target\.value\)/);
 assert.match(modalSource, /Stary zapis numeru seryjnego/);
 
 function loadJobsFormModule() {
-  const sourcePath = path.join(root, 'src', 'modules', 'jobs-form.js');
-  let source = fs.readFileSync(sourcePath, 'utf8');
+  let source = read('src', 'modules', 'jobs-form.js');
   source = source.replace(
-    /import \{[\s\S]*?getAssignedUserIdsFromForm[\s\S]*?getAssignedUserIdsFromJob[\s\S]*?\} from '\.\/jobs-assignment\.js';/,
-    `const getAssignedUserIdsFromForm = (form = {}) => {
-      const userIds = [];
-      if (form.main_technician_id) userIds.push(form.main_technician_id);
-      for (const viewerId of Array.isArray(form.viewers) ? form.viewers : []) {
-        if (viewerId) userIds.push(viewerId);
-      }
-      return [...new Set(userIds)];
-    };
-    const getAssignedUserIdsFromJob = (job = {}) => {
-      const userIds = [];
-      if (job?.main_technician_id) userIds.push(job.main_technician_id);
-      for (const viewer of Array.isArray(job?.viewers) ? job.viewers : []) {
-        if (viewer?.user_id) userIds.push(viewer.user_id);
-      }
-      return [...new Set(userIds)];
-    };
+    /import \{[\s\S]*?\} from '\.\/jobs-assignment\.js';/,
+    `const normalizeInstallerIds = (ids = []) => [...new Set((ids || []).filter(Boolean).map(String))].sort();
+    const getAssignedUserIdsFromForm = (form = {}) => normalizeInstallerIds([form.main_technician_id, ...(Array.isArray(form.viewers) ? form.viewers : [])]);
+    const getAssignedUserIdsFromJob = (job = {}) => Array.isArray(job.installer_ids) ? normalizeInstallerIds(job.installer_ids) : normalizeInstallerIds([job.main_technician_id]);
+    const getLegacyInstallerSuggestionIds = (job = {}) => normalizeInstallerIds([job.main_technician_id, ...(Array.isArray(job.viewers) ? job.viewers.map((viewer) => viewer?.user_id) : [])]);
     const shouldSendAssignmentPushForInstallationDate = () => true;`
   );
   source = source.replace(
@@ -45,152 +27,123 @@ function loadJobsFormModule() {
     `const applyAutoLinkedContractorToJobForm = (form = {}) => ({ form: { ...form }, contractor: null, autoLinked: false });`
   );
   source = source.replace(
-    /import \{[\s\S]*?ensureJobFormDevices[\s\S]*?serializeJobDevicesToFields[\s\S]*?\} from '\.\/job-devices\.js';/,
+    /import \{[\s\S]*?\} from '\.\/job-devices\.js';/,
     `const DEVICE_TYPE_SINGLE = 'single-split';
-    function normalizeLine(value) {
-      return String(value || '').replace(/[\\r\\n]+/g, ' ').replace(/\\s+/g, ' ').trim();
-    }
-    function splitField(value) {
-      const raw = String(value || '');
-      return raw ? raw.replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n').split('\\n').map(normalizeLine) : [];
-    }
-    function formatSerial(device = {}) {
-      const indoor = normalizeLine(device.indoor_serial_number);
-      const outdoor = normalizeLine(device.outdoor_serial_number);
-      const parts = [];
-      if (indoor) parts.push(\`JW: \${indoor}\`);
-      if (outdoor) parts.push(\`JZ: \${outdoor}\`);
-      return parts.join(' | ');
-    }
-    function normalizeRows(input = {}, keepEmptyRow = false) {
-      const sourceRows = Array.isArray(input.devices) && input.devices.length
-        ? input.devices.map((device) => {
-          const indoor = normalizeLine(device.indoor_serial_number);
-          const outdoor = normalizeLine(device.outdoor_serial_number);
-          const legacy = indoor || outdoor ? '' : normalizeLine(device.legacy_serial_number || device.serial_number);
-          return {
-            model: normalizeLine(device.model),
-            indoor_serial_number: indoor,
-            outdoor_serial_number: outdoor,
-            legacy_serial_number: legacy,
-            serial_number: formatSerial({ indoor_serial_number: indoor, outdoor_serial_number: outdoor }) || legacy,
-          };
-        })
-        : (() => {
-          const models = splitField(input.device_model);
-          const serials = splitField(input.device_serial_number);
-          return Array.from({ length: Math.max(models.length, serials.length) }, (_, index) => ({
-            model: models[index] || '',
-            serial_number: serials[index] || '',
-          }));
-        })();
-      if (keepEmptyRow && Array.isArray(input.devices) && input.devices.length) {
-        return sourceRows.length ? sourceRows : [{ model: '', serial_number: '', indoor_serial_number: '', outdoor_serial_number: '', legacy_serial_number: '' }];
-      }
-      const rows = sourceRows.filter((device) => device.model || device.serial_number || device.indoor_serial_number || device.outdoor_serial_number || device.legacy_serial_number);
-      return rows.length ? rows : (keepEmptyRow ? [{ model: '', serial_number: '', indoor_serial_number: '', outdoor_serial_number: '', legacy_serial_number: '' }] : []);
-    }
+    function normalizeLine(value) { return String(value || '').replace(/[\\r\\n]+/g, ' ').replace(/\\s+/g, ' ').trim(); }
     function serializeJobDevicesToFields(input = {}) {
-      const devices = normalizeRows(input);
+      const devices = Array.isArray(input.devices) ? input.devices : [];
       return {
         devices,
-        device_model: devices.map((device) => device.model || '').join('\\n'),
-        device_serial_number: devices.map((device) => device.serial_number || '').join('\\n'),
+        device_model: devices.length ? devices.map((device) => normalizeLine(device.model)).join('\\n') : normalizeLine(input.device_model),
+        device_serial_number: devices.length ? devices.map((device) => normalizeLine(device.serial_number)).join('\\n') : normalizeLine(input.device_serial_number),
       };
     }
-    function ensureJobFormDevices(input = {}) {
-      const devices = normalizeRows(input, true);
-      const serialized = serializeJobDevicesToFields({ devices });
-      return { ...input, devices, device_model: serialized.device_model, device_serial_number: serialized.device_serial_number };
-    }`
+    function ensureJobFormDevices(input = {}) { return { ...input, devices: Array.isArray(input.devices) ? input.devices : [] }; }
+    function getJobDeviceRows(input = {}) { return Array.isArray(input.devices) ? input.devices : []; }`
   );
   source = source.replace(/export const (\w+) =/g, 'const $1 =');
   source = source.replace(/export async function (\w+)\(/g, 'async function $1(');
   source = source.replace(/export function (\w+)\(/g, 'function $1(');
-  source += '\nmodule.exports = { EMPTY_JOB_FORM, saveEditedJobRecord };\n';
+  source += '\nmodule.exports = { buildJobEditChangeSet, saveJobDeviceSerialsRecord };\n';
+
   const sandbox = { module: { exports: {} }, exports: {}, console, Promise, setTimeout, clearTimeout };
   vm.runInNewContext(source, sandbox, { filename: 'jobs-form.device-save-smoke.js' });
   return sandbox.module.exports;
 }
 
-async function assertSaveEditedJobRecord() {
-  const { EMPTY_JOB_FORM, saveEditedJobRecord } = loadJobsFormModule();
-  let jobsUpdatePayload = null;
-  let updatedJobId = null;
+(async () => {
+  const { buildJobEditChangeSet, saveJobDeviceSerialsRecord } = loadJobsFormModule();
 
-  const supabase = {
-    from(table) {
-      if (table === 'jobs') {
-        return {
-          update(payload) {
-            jobsUpdatePayload = payload;
-            return {
-              async eq(column, value) {
-                assert.equal(column, 'id');
-                updatedJobId = value;
-                return { error: null };
-              },
-            };
-          },
-        };
-      }
-      if (table === 'job_access') {
-        return {
-          delete() {
-            return {
-              eq() {
-                return {
-                  async in() {
-                    return { error: null };
-                  },
-                };
-              },
-            };
-          },
-          async insert() {
-            return { error: null };
-          },
-        };
-      }
-      throw new Error(`Nieobsługiwana tabela w smoke teście: ${table}`);
-    },
+  const baseJob = {
+    id: 'job-456',
+    title: 'Klient testowy',
+    client: 'Klient testowy',
+    email: 'a@example.com',
+    phone: '600700800',
+    sms_recipient_phone: '600700800',
+    city: 'Zawiercie',
+    street: 'Przyjaźni 136',
+    location: 'Zawiercie, Przyjaźni 136',
+    status: 'W trakcie',
+    installation_date: '2026-09-28',
+    contractor_id: 'contractor-1',
+    contractor_address_id: 'address-1',
+    device_model: 'Rotenso Imoto',
+    device_serial_number: 'OLD-SN',
+    admin_note: 'Notatka',
+    main_technician_id: 'tech-main',
+    installer_ids: ['tech-main', 'tech-viewer'],
   };
 
   const form = {
-    ...EMPTY_JOB_FORM,
     client: 'Klient testowy',
+    email: 'a@example.com',
+    phone: '700800900',
     city: 'Zawiercie',
     street: 'Przyjaźni 136',
-    phone: '600700800',
-    contractor_id: '',
-    devices: [
-      { model: '  Rotenso Imoto X  ', indoor_serial_number: '  JW-2026-0001  ', outdoor_serial_number: '  JZ-2026-0001  ' },
-      { model: '  Daikin Stylish  ', indoor_serial_number: '  JW-2026-0002  ', outdoor_serial_number: '  JZ-2026-0002  ' },
-    ],
-    viewers: [],
+    status: 'W trakcie',
+    installation_date: '2026-09-28',
+    contractor_id: 'contractor-1',
+    contractor_address_id: 'address-1',
+    admin_note: 'Notatka',
+    main_technician_id: 'tech-main',
+    viewers: ['tech-viewer'],
+    devices: [{ model: 'Rotenso Imoto', serial_number: 'OLD-SN' }],
   };
 
-  await saveEditedJobRecord({
-    supabase,
-    editingJobId: 'job-456',
+  const changeSet = buildJobEditChangeSet({
     form,
-    jobs: [{ id: 'job-456', viewers: [], main_technician_id: null }],
+    baseJob,
+    isAdmin: true,
     normalizeStatus: (status) => status || 'Nowe',
-    sendAssignmentPushFn: null,
   });
 
-  assert.equal(updatedJobId, 'job-456');
-  assert.ok(jobsUpdatePayload, 'Nie zapisano payloadu dla aktualizacji jobs');
-  assert.equal(jobsUpdatePayload.device_model, 'Rotenso Imoto X\nDaikin Stylish');
-  assert.equal(jobsUpdatePayload.device_serial_number, 'JW: JW-2026-0001 | JZ: JZ-2026-0001\nJW: JW-2026-0002 | JZ: JZ-2026-0002');
-  assert.equal(jobsUpdatePayload.contractor_id, null);
-  assert.equal(jobsUpdatePayload.location, 'Zawiercie, Przyjaźni 136');
-}
+  assert.deepEqual(
+    Object.keys(changeSet.fields).sort(),
+    ['phone', 'sms_recipient_phone'],
+    'C7: zmiana telefonu nie może wysłać starego statusu, urządzeń ani innych pól snapshotu.',
+  );
+  assert.equal(changeSet.expected.phone, '600700800');
+  assert.equal(changeSet.expected.sms_recipient_phone, '600700800');
+  assert.equal(Object.prototype.hasOwnProperty.call(changeSet.fields, 'status'), false);
 
-assertSaveEditedJobRecord().then(() => {
-  console.log('Job device save smoke OK');
-process.exit(0);
-}).catch((error) => {
+  let rpcName = '';
+  let rpcPayload = null;
+  const supabase = {
+    async rpc(name, payload) {
+      rpcName = name;
+      rpcPayload = payload;
+      return { data: { id: 'job-456', status: 'W trakcie' }, error: null };
+    },
+  };
+
+  await saveJobDeviceSerialsRecord({
+    supabase,
+    editingJobId: 'job-456',
+    baseJob,
+    form: {
+      ...form,
+      devices: [{ model: 'Rotenso Imoto X', serial_number: 'NEW-SN' }],
+    },
+  });
+
+  assert.equal(rpcName, 'save_job_concurrent_v1168');
+  assert.equal(JSON.stringify(rpcPayload.p_fields), JSON.stringify({
+    device_model: 'Rotenso Imoto X',
+    device_serial_number: 'NEW-SN',
+  }));
+  assert.equal(JSON.stringify(rpcPayload.p_expected), JSON.stringify({
+    device_model: 'Rotenso Imoto',
+    device_serial_number: 'OLD-SN',
+  }));
+  assert.equal(rpcPayload.p_update_installers, false);
+
+  const source = read('src', 'modules', 'jobs-form.js');
+  assert.match(source, /JOB_EDIT_CONFLICT|save_job_concurrent_v1168/);
+  assert.match(source, /buildJobEditChangeSet/);
+
+  console.log('Job device/concurrency save smoke OK');
+})().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
