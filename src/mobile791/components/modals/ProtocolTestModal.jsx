@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppModal from "./AppModal.jsx";
 import { buildJobProtocolData, createJobProtocolPdfFile } from "../../modules/job-protocol-pdf.js";
+import { getLegacyInstallerSuggestionIds } from "../../modules/jobs-assignment.js";
 import {
   downloadStoredJobProtocol,
   formatStoredProtocolDate,
@@ -191,9 +192,21 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [message, setMessage] = useState("");
   const protocolJob = resolvedJob || job;
   const installersConfirmed = Array.isArray(protocolJob?.installer_ids);
+  const protocolJobForDocument = useMemo(() => {
+    if (installersConfirmed || !savedRecord) return protocolJob;
+    // Starszy, już zapisany protokół może być ponownie uzupełniany i podpisywany
+    // przez pracownika bez oczekiwania na administratora. Do odtworzenia pola
+    // „Monterzy” używamy dokładnie historycznej reguły sprzed 11.68:
+    // główny monter + dawne przypisania/viewers. Nie zapisujemy tego fallbacku
+    // automatycznie do jobs.installer_ids.
+    return {
+      ...(protocolJob || {}),
+      installer_ids: getLegacyInstallerSuggestionIds(protocolJob),
+    };
+  }, [protocolJob, installersConfirmed, savedRecord]);
   const protocolData = useMemo(
-    () => buildJobProtocolData({ job: protocolJob, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
-    [protocolJob, profiles],
+    () => buildJobProtocolData({ job: protocolJobForDocument, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
+    [protocolJobForDocument, profiles],
   );
 
   useEffect(() => {
@@ -343,10 +356,6 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function beginEditingStoredProtocol() {
-    if (!installersConfirmed) {
-      setMessage("Ten zapisany protokół możesz drukować bez potwierdzania monterów. Potwierdź ich listę tylko wtedy, gdy chcesz uzupełnić lub podpisać protokół ponownie.");
-      return;
-    }
     // Po rozbudowaniu formularza ustawiamy jego ostatnią sekcję tuż nad sticky footerem.
     // scrollIntoView wybiera prawdziwy kontener przewijania Safari, zamiast zgadywać scrollTop.
     editScrollBaselineRef.current = { pending: true };
@@ -460,8 +469,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   async function createPdf() {
-    if (!installersConfirmed) {
-      setMessage("Nie można utworzyć nowego protokołu, dopóki lista monterów tego montażu nie zostanie potwierdzona.");
+    if (!installersConfirmed && !savedRecord) {
+      setMessage("Nie można utworzyć pierwszego protokołu, dopóki lista monterów tego starszego montażu nie zostanie potwierdzona.");
       return;
     }
     if (!paymentReady || paymentLoadError) {
@@ -481,7 +490,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           saveJobPaymentConfirmation({ supabase, job: protocolJob, payment }),
           { phase: "payment", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
-        const updatedJob = { ...protocolJob, ...paymentPatch };
+        const updatedJob = { ...protocolJobForDocument, ...paymentPatch };
         const signedAt = new Date();
         progress.phase = "pdf";
         const result = await withProtocolSaveTimeout(
@@ -565,9 +574,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const paymentVisible = editing ? paymentDraft : storedPayment;
   const recipientEmail = getJobProtocolRecipientEmail(protocolJob);
   const canSendEmail = isValidProtocolEmail(recipientEmail);
-  const techniciansDisplay = savedRecord && !editing && !installersConfirmed
-    ? "Zapisani w istniejącym PDF"
-    : protocolData.technicians.join(", ");
+  const techniciansDisplay = protocolData.technicians.join(", ");
 
   return (
     <>
@@ -625,10 +632,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               </div>
             </section>
 
-            {editing && !installersConfirmed ? (
+            {!savedRecord && !installersConfirmed ? (
               <section className="protocolTestSection">
                 <div className="protocolTestNotice" role="status">
-                  <strong>Monterzy wymagają potwierdzenia.</strong> Ten starszy montaż nie ma jeszcze jawnej listy osób, które faktycznie wykonywały montaż. Administrator powinien potwierdzić listę w edycji montażu przed utworzeniem lub ponownym podpisaniem protokołu.
+                  <strong>Monterzy wymagają potwierdzenia.</strong> Ten starszy montaż nie ma jeszcze jawnej listy osób, które faktycznie wykonywały montaż. Potwierdź listę w edycji montażu przed utworzeniem pierwszego protokołu.
                 </div>
               </section>
             ) : null}
@@ -678,7 +685,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                   {savedRecord && !editing ? null : <span>Możesz zapisać protokół PDF albo zmienić podpis.</span>}
                 </div> : null}
                 {editing ? (
-                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !installersConfirmed || !paymentReady || Boolean(paymentLoadError)}>{hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
+                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || (!savedRecord && !installersConfirmed) || !paymentReady || Boolean(paymentLoadError)}>{hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
                 ) : (
                   <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol} disabled={!paymentReady || Boolean(paymentLoadError)}>Uzupełnij protokół</button>
                 )}
@@ -705,7 +712,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               {savedRecord && !editing ? (
                 <button type="button" className="btn primary protocolTestGenerate" onClick={() => setActionMenuOpen((value) => !value)} disabled={Boolean(actionBusy)}>Drukuj lub wyślij</button>
               ) : (
-                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating || !installersConfirmed || !paymentReady || Boolean(paymentLoadError)}>{isGenerating ? "Zapisuję protokół..." : "Zapisz protokół"}</button>
+                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating || (!savedRecord && !installersConfirmed) || !paymentReady || Boolean(paymentLoadError)}>{isGenerating ? "Zapisuję protokół..." : "Zapisz protokół"}</button>
               )}
             </div>
           </div>
