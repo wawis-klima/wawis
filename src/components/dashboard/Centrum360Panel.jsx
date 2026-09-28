@@ -90,8 +90,8 @@ function getAssignedInstallerNames(job = {}, profilesById = new Map()) {
   addName(job.main_technician_name || job.technician_name || job.installer_name || job.assigned_to_name);
   addProfileName(job.main_technician_id || job.technician_id || job.assigned_to || job.assigned_user_id);
 
-  if (Array.isArray(job.viewers)) {
-    job.viewers.forEach((viewer) => addProfileName(viewer?.user_id || viewer?.id || viewer));
+  if (Array.isArray(job.installer_ids)) {
+    job.installer_ids.forEach(addProfileName);
   }
   if (Array.isArray(job.installers)) {
     job.installers.forEach((installer) => addName(installer?.name || installer?.full_name || installer?.email || installer));
@@ -109,7 +109,7 @@ function getAssignedInstallerNames(job = {}, profilesById = new Map()) {
 function hasInstaller(job = {}, profilesById = new Map()) {
   if (getAssignedInstallerNames(job, profilesById).length) return true;
   if (normalizeText(job.main_technician_id || job.technician_id || job.assigned_to || job.assigned_user_id)) return true;
-  if (Array.isArray(job.viewers) && job.viewers.length) return true;
+  if (Array.isArray(job.installer_ids) && job.installer_ids.length) return true;
   if (Array.isArray(job.installers) && job.installers.length) return true;
   if (Array.isArray(job.assignees) && job.assignees.length) return true;
   if (Array.isArray(job.assigned_user_ids) && job.assigned_user_ids.length) return true;
