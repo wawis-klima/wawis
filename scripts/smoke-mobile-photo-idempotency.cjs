@@ -10,6 +10,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   const queueSource = read('src/mobile791/modules/photo-offline-queue.js');
   const photosSource = read('src/mobile791/modules/photos.js');
   const requirementsSource = read('src/mobile791/modules/nameplate-requirements.js');
+  const actionsSource = read('src/mobile791/hooks/useSelectedJobActions.js');
   const appSource = read('src/mobile791/App.jsx');
   const migrationSource = read('photo-upload-idempotency-v8.82.sql');
 
@@ -22,6 +23,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert(photosSource.includes('findExistingServerPhotoForQueuedPhoto'), 'Brak kontroli serwera przed ponownym uploadem.');
   assert(photosSource.includes('reconcileQueuedPhotoFromServer'), 'Brak uzgodnienia lokalnego błędu z poprawnym zdjęciem serwerowym.');
   assert(photosSource.includes('findLegacyServerNameplate'), 'Brak naprawy starych wpisów kolejki z wersji 8.81.');
+  assert(photosSource.includes('prepareJobDocumentationPhotoIdentities'), 'C8: brak przygotowania tożsamości tabliczki przed uploadem.');
+  assert(photosSource.includes('serverPhotoMatchesDocumentationIdentity'), 'C8: brak dopasowania dokładnej ścieżki pliku.');
+  assert(actionsSource.includes('documents: preparedPendingDocuments'), 'C8: upload musi używać przygotowanych tożsamości.');
+  assert(actionsSource.includes("verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'upload-timeout')"), 'C8: timeout musi sprawdzać przygotowane tożsamości.');
   assert(
     photosSource.includes("queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status };"),
     'Worker kolejki musi zachować status przejętego rekordu do uzgodnienia starej tabliczki z serwerem.',
@@ -69,6 +74,53 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert.strictEqual(first.localId, duplicate.localId, 'Identyczne zdjęcie nie może tworzyć drugiego rekordu lokalnego.');
   assert.notStrictEqual(first.uploadKey, changedFile.uploadKey, 'Inne zdjęcie powinno dostać inny identyfikator.');
   assert.notStrictEqual(first.uploadKey, otherUnit.uploadKey, 'To samo zdjęcie przypisane do innej jednostki powinno mieć osobny identyfikator.');
+
+  const previousFile = new File([Buffer.from('poprzednia-tabliczka')], 'previous.jpg', { type: 'image/jpeg', lastModified: 1 });
+  const replacementFile = new File([Buffer.from('zastepcza-tabliczka')], 'replacement.jpg', { type: 'image/jpeg', lastModified: 2 });
+  const [previousDocument] = await photosModule.prepareJobDocumentationPhotoIdentities({
+    jobId: 'job-c8',
+    documents: [{ file: previousFile, deviceIndex: 0, unitRef: 'jz', serialNumber: 'SN-1' }],
+  });
+  const [replacementDocument] = await photosModule.prepareJobDocumentationPhotoIdentities({
+    jobId: 'job-c8',
+    documents: [{ file: replacementFile, deviceIndex: 0, unitRef: 'jz', serialNumber: 'SN-1' }],
+  });
+
+  assert.notStrictEqual(
+    previousDocument.uploadIdentity.plannedStoragePath,
+    replacementDocument.uploadIdentity.plannedStoragePath,
+    'C8: podmieniony plik tej samej jednostki musi mieć inną ścieżkę.',
+  );
+  assert.strictEqual(
+    photosModule.serverPhotoMatchesDocumentationIdentity(
+      { storage_path: previousDocument.uploadIdentity.plannedStoragePath },
+      replacementDocument,
+    ),
+    false,
+    'C8: wcześniejszy plik tej samej jednostki nie może potwierdzić podmiany.',
+  );
+  assert.strictEqual(
+    photosModule.serverPhotoMatchesDocumentationIdentity(
+      { storage_path: replacementDocument.uploadIdentity.plannedStoragePath },
+      replacementDocument,
+    ),
+    true,
+    'C8: dokładnie podmieniony plik ma zostać rozpoznany.',
+  );
+
+  const preparedPair = await photosModule.prepareJobDocumentationPhotoIdentities({
+    jobId: 'job-c8-partial',
+    documents: [
+      { file: replacementFile, deviceIndex: 0, unitRef: 'jz', serialNumber: 'OUT-1' },
+      { file: sameBytesA, deviceIndex: 0, unitRef: 'jw-1', serialNumber: 'IN-1' },
+    ],
+  });
+  const oneServerPhoto = [{ storage_path: preparedPair[0].uploadIdentity.plannedStoragePath }];
+  assert.strictEqual(
+    preparedPair.every((document) => oneServerPhoto.some((photo) => photosModule.serverPhotoMatchesDocumentationIdentity(photo, document))),
+    false,
+    'C8: częściowo wysłany komplet nie może zostać uznany za w pełni potwierdzony.',
+  );
 
   const requirementsModule = await import(pathToFileURL(path.join(root, 'src/mobile791/modules/nameplate-requirements.js')).href);
   const remotePhoto = {

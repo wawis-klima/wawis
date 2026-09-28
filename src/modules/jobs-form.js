@@ -378,32 +378,70 @@ export async function addJobRecord({
     device_serial_number: deviceFields.device_serial_number || null,
   }).select('id').single();
   if (error) throw error;
+  const createdJob = Array.isArray(data) ? data[0] : data;
+  if (!createdJob?.id) throw new Error('Baza nie zwróciła identyfikatora zapisanego montażu.');
 
-  const selectedUsers = [...new Set(form.viewers)];
+  // Po potwierdzonym INSERT rekord jobs jest już utworzony. Kolejne etapy są
+  // poboczne i nie mogą zamienić sukcesu INSERT w błąd całego formularza.
+  const postCreateWarnings = [];
+  const selectedUsers = [...new Set(resolvedForm.viewers || [])];
+  let accessConfirmed = true;
+
   if (selectedUsers.length) {
-    const { error: accessError } = await supabase.from('job_access').insert(
-      selectedUsers.map((userId) => ({ job_id: data.id, user_id: userId })),
-    );
-    if (accessError) throw accessError;
+    try {
+      const { error: accessError } = await supabase.from('job_access').insert(
+        selectedUsers.map((userId) => ({ job_id: createdJob.id, user_id: userId })),
+      );
+      if (accessError) throw accessError;
+    } catch (accessError) {
+      accessConfirmed = false;
+      postCreateWarnings.push({
+        phase: 'job_access',
+        message: 'Nie udało się potwierdzić przypisania monterów. Otwórz zapisany montaż i ustaw przypisania ponownie.',
+        error: String(accessError?.message || accessError || ''),
+      });
+    }
 
-    for (const userId of selectedUsers) {
-      if (userId != profile.id) {
-        await createNotification({
-          userId,
-          title: 'Nowe',
-          body: `Dodano nowe zlecenie: ${resolvedForm.client.trim()}`,
-          linkJobId: data.id,
-        });
+    if (accessConfirmed) {
+      for (const userId of selectedUsers) {
+        if (userId == profile.id) continue;
+        try {
+          await createNotification({
+            userId,
+            title: 'Nowe',
+            body: `Dodano nowe zlecenie: ${resolvedForm.client.trim()}`,
+            linkJobId: createdJob.id,
+          });
+        } catch (notificationError) {
+          postCreateWarnings.push({
+            phase: 'notification',
+            user_id: userId,
+            message: 'Nie udało się wysłać jednego z powiadomień w aplikacji.',
+            error: String(notificationError?.message || notificationError || ''),
+          });
+        }
       }
     }
   }
 
   const assignedUserIds = getAssignedUserIdsFromForm(resolvedForm);
-  if (shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
-    await sendAssignmentPushFn?.({ newUserIds: assignedUserIds, jobId: data.id });
+  if (accessConfirmed && shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
+    try {
+      await sendAssignmentPushFn?.({ newUserIds: assignedUserIds, jobId: createdJob.id });
+    } catch (pushError) {
+      postCreateWarnings.push({
+        phase: 'push',
+        message: 'Nie udało się wysłać powiadomienia PUSH o przypisaniu monterów.',
+        error: String(pushError?.message || pushError || ''),
+      });
+    }
   }
 
-  return data;
+  return {
+    ...createdJob,
+    access_confirmed: accessConfirmed,
+    post_create_warnings: postCreateWarnings,
+  };
 }
 
 export async function saveJobDeviceSerialsRecord({

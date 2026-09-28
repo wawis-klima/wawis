@@ -268,31 +268,68 @@ export async function addJobRecord({
   const createdJob = Array.isArray(data) ? data[0] : data;
   if (!createdJob?.id) throw new Error('Baza nie zwróciła identyfikatora zapisanego montażu.');
 
+  // Od tego miejsca rekord jobs już istnieje. Błędy etapów pobocznych nie mogą
+  // zostać zgłoszone jako błąd całego formularza, bo ponowne "Zapisz" mogłoby
+  // utworzyć drugi montaż. Zwracamy ID oraz jawne ostrzeżenia etapów dodatkowych.
+  const postCreateWarnings = [];
   const selectedUsers = [...new Set([profile.id, ...getAssignedUserIdsFromForm(resolvedForm)])];
-  if (selectedUsers.length) {
-    const { error: accessError } = await supabase.from('job_access').insert(
-      selectedUsers.map((userId) => ({ job_id: createdJob.id, user_id: userId })),
-    );
-    if (accessError) throw accessError;
+  let accessConfirmed = true;
 
-    for (const userId of selectedUsers) {
-      if (userId != profile.id) {
-        await createNotification({
-          userId,
-          title: 'Nowe',
-          body: `Dodano nowe zlecenie: ${resolvedForm.client.trim()}`,
-          linkJobId: createdJob.id,
-        });
+  if (selectedUsers.length) {
+    try {
+      const { error: accessError } = await supabase.from('job_access').insert(
+        selectedUsers.map((userId) => ({ job_id: createdJob.id, user_id: userId })),
+      );
+      if (accessError) throw accessError;
+    } catch (accessError) {
+      accessConfirmed = false;
+      postCreateWarnings.push({
+        phase: 'job_access',
+        message: 'Nie udało się potwierdzić przypisania monterów. Otwórz zapisany montaż i ustaw przypisania ponownie.',
+        error: String(accessError?.message || accessError || ''),
+      });
+    }
+
+    if (accessConfirmed) {
+      for (const userId of selectedUsers) {
+        if (userId == profile.id) continue;
+        try {
+          await createNotification({
+            userId,
+            title: 'Nowe',
+            body: `Dodano nowe zlecenie: ${resolvedForm.client.trim()}`,
+            linkJobId: createdJob.id,
+          });
+        } catch (notificationError) {
+          postCreateWarnings.push({
+            phase: 'notification',
+            user_id: userId,
+            message: 'Nie udało się wysłać jednego z powiadomień w aplikacji.',
+            error: String(notificationError?.message || notificationError || ''),
+          });
+        }
       }
     }
   }
 
   const assignedUserIds = getAssignedUserIdsFromForm(resolvedForm).filter((userId) => userId !== profile.id);
-  if (assignedUserIds.length && shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
-    await sendAssignmentPushFn?.({ newUserIds: assignedUserIds, jobId: createdJob.id });
+  if (accessConfirmed && assignedUserIds.length && shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
+    try {
+      await sendAssignmentPushFn?.({ newUserIds: assignedUserIds, jobId: createdJob.id });
+    } catch (pushError) {
+      postCreateWarnings.push({
+        phase: 'push',
+        message: 'Nie udało się wysłać powiadomienia PUSH o przypisaniu monterów.',
+        error: String(pushError?.message || pushError || ''),
+      });
+    }
   }
 
-  return createdJob;
+  return {
+    ...createdJob,
+    access_confirmed: accessConfirmed,
+    post_create_warnings: postCreateWarnings,
+  };
 }
 
 export async function saveEditedJobRecord({

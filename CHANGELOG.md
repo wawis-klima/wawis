@@ -1,3 +1,12 @@
+## 11.67
+- C6 / desktop i mobile: po potwierdzonym INSERT nowego montażu błędy `job_access`, powiadomienia w aplikacji i PUSH nie są już zgłaszane jako błąd całego formularza.
+- Nowy montaż zachowuje ID po sukcesie INSERT; etapy poboczne zwracają jawne ostrzeżenia. Dzięki temu ponowne kliknięcie „Zapisz” po awarii powiadomienia nie powinno tworzyć drugiego rekordu.
+- Gdy nie uda się potwierdzić `job_access`, nie wysyłamy mylących powiadomień/PUSH i informujemy, że przypisania trzeba sprawdzić na istniejącym montażu.
+- C8 / mobile: przed uploadem tabliczki wyliczana jest deterministyczna tożsamość i dokładna ścieżka Storage na bazie istniejącego mechanizmu upload key/fingerprint.
+- Weryfikacja po timeout lub zakończeniu uploadu uznaje sukces tylko wtedy, gdy na serwerze istnieje dokładnie nowy plik; starsza tabliczka tej samej JW/JZ nie może już potwierdzić podmiany.
+- Zachowano kolejkę offline, idempotentny upload i ponawianie bez tworzenia duplikatów.
+- Bez migracji Supabase, zmian RLS, Storage i Edge Functions.
+
 ## 11.66
 - Desktop i mobile: lista oraz odświeżenie pojedynczego montażu pobierają komplet istniejących pól płatności `payment_*`.
 - Mobile/protokół: stary cache bez pól płatności jest doładowywany z `jobs` przed inicjalizacją formularza; brak pola nie jest już interpretowany jako „brak płatności”.

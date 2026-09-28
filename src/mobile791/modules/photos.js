@@ -570,6 +570,48 @@ export async function createPhotoUploadIdentity({ file, jobId, metadata = {} }) 
   };
 }
 
+function getJobDocumentationPhotoMetadata(document = {}) {
+  return {
+    photo_kind: 'nameplate',
+    device_index: Number(document.deviceIndex || 0) + 1,
+    unit_ref: document.unitRef || 'unit',
+    device_ref: document.deviceRef || '',
+    serial_number: document.serialNumber || '',
+    documentation_label: document.documentationLabel || '',
+    ocr_status: document.verified || String(document.ocrStatus || '').toLowerCase() === 'approved' ? 'approved' : '',
+    ocr_checked_at: document.ocrCheckedAt || (document.verified ? new Date().toISOString() : null),
+  };
+}
+
+export async function prepareJobDocumentationPhotoIdentities({ jobId, documents = [] } = {}) {
+  const validDocuments = (documents || []).filter((document) => document?.file);
+  return Promise.all(validDocuments.map(async (document) => {
+    const metadata = getJobDocumentationPhotoMetadata(document);
+    const identity = await createPhotoUploadIdentity({ file: document.file, jobId, metadata });
+    const plannedStoragePath = buildPhotoStoragePath(jobId, {
+      id: identity.localId,
+      upload_key: identity.uploadKey,
+      photo_kind: metadata.photo_kind,
+      device_index: metadata.device_index,
+      unit_ref: metadata.unit_ref,
+      serial_number: metadata.serial_number,
+    });
+    return {
+      ...document,
+      uploadIdentity: {
+        ...identity,
+        plannedStoragePath,
+      },
+    };
+  }));
+}
+
+export function serverPhotoMatchesDocumentationIdentity(photo = {}, document = {}) {
+  const expectedPath = String(document?.uploadIdentity?.plannedStoragePath || '').trim();
+  const serverPath = String(photo?.storage_path || '').trim();
+  return Boolean(expectedPath) && serverPath === expectedPath;
+}
+
 function mergePhotoIntoJob(job, photo) {
   if (!job || String(job.id) !== String(photo.job_id)) return job;
   const photos = Array.isArray(job.photos) ? job.photos : [];
@@ -651,21 +693,23 @@ function applyPhotoRemoval({ photo, setJobs, setSelectedJob }) {
   setSelectedJob?.((prev) => (prev && String(prev.id) === String(photo.job_id) ? removePhotoFromJob(prev, photo) : prev));
 }
 
-async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = {} }) {
+async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = {}, identity = null }) {
   const createdAt = new Date().toISOString();
   const localPreviewUrl = createLocalPreviewUrl(file);
-  const identity = await createPhotoUploadIdentity({ file, jobId, metadata });
+  const resolvedIdentity = identity?.uploadKey
+    ? identity
+    : await createPhotoUploadIdentity({ file, jobId, metadata });
   const queuedPhoto = {
-    id: identity.localId,
+    id: resolvedIdentity.localId,
     job_id: jobId,
     image_url: localPreviewUrl,
     original_image_url: localPreviewUrl,
     signed_url: localPreviewUrl,
     storage_path: '',
     planned_storage_path: '',
-    upload_key: identity.uploadKey,
-    unit_key: identity.unitKey,
-    file_fingerprint: identity.fileFingerprint,
+    upload_key: resolvedIdentity.uploadKey,
+    unit_key: resolvedIdentity.unitKey,
+    file_fingerprint: resolvedIdentity.fileFingerprint,
     legacy_queue_item: false,
     uploaded_by: uploaderId || profile.id,
     created_at: createdAt,
@@ -685,7 +729,7 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
     ocr_status: metadata.ocr_status || '',
     ocr_checked_at: metadata.ocr_checked_at || null,
   };
-  queuedPhoto.planned_storage_path = buildPhotoStoragePath(jobId, queuedPhoto);
+  queuedPhoto.planned_storage_path = resolvedIdentity.plannedStoragePath || buildPhotoStoragePath(jobId, queuedPhoto);
   queuedPhoto.storage_path = queuedPhoto.planned_storage_path;
   return queuedPhoto;
 }
@@ -1358,21 +1402,17 @@ export async function uploadJobDocumentationPhotos({
     return { uploadedCount: 0, queuedCount: 0, failedCount: validDocuments.length, photos: [] };
   }
 
-  const queuedCandidates = await Promise.all(validDocuments.map((document) => createQueuedPhoto({
+  const preparedDocuments = validDocuments.every((document) => document?.uploadIdentity?.plannedStoragePath)
+    ? validDocuments
+    : await prepareJobDocumentationPhotoIdentities({ jobId, documents: validDocuments });
+
+  const queuedCandidates = await Promise.all(preparedDocuments.map((document) => createQueuedPhoto({
     file: document.file,
     jobId,
     profile,
     uploaderId,
-    metadata: {
-      photo_kind: 'nameplate',
-      device_index: Number(document.deviceIndex || 0) + 1,
-      unit_ref: document.unitRef || 'unit',
-      device_ref: document.deviceRef || '',
-      serial_number: document.serialNumber || '',
-      documentation_label: document.documentationLabel || '',
-      ocr_status: document.verified || String(document.ocrStatus || '').toLowerCase() === 'approved' ? 'approved' : '',
-      ocr_checked_at: document.ocrCheckedAt || (document.verified ? new Date().toISOString() : null),
-    },
+    metadata: getJobDocumentationPhotoMetadata(document),
+    identity: document.uploadIdentity,
   })));
   if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
