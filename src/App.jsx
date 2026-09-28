@@ -137,6 +137,7 @@ export default function App() {
   const [desktopNavKey, setDesktopNavKey] = useState("center360");
   const [jobsPage, setJobsPage] = useState(1);
   const [pendingOpenJobId, setPendingOpenJobId] = useState(null);
+  const [pendingPushOpenJobId, setPendingPushOpenJobId] = useState("");
   const [calendarReturnContext, setCalendarReturnContext] = useState(null);
   const [calendarFocusDateKey, setCalendarFocusDateKey] = useState("");
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
@@ -841,6 +842,35 @@ export default function App() {
       setSelectedJob(null);
     }
   }, [selectedJob, visibleJobs]);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return undefined;
+
+    const handlePushNavigationMessage = (event) => {
+      if (event.data?.type !== "WAWIS_OPEN_JOB") return;
+      const requestedJobId = String(event.data?.jobId || "").trim();
+      if (!requestedJobId) return;
+      setPendingPushOpenJobId(requestedJobId);
+    };
+
+    navigator.serviceWorker.addEventListener("message", handlePushNavigationMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", handlePushNavigationMessage);
+  }, []);
+
+  useEffect(() => {
+    if (!pendingPushOpenJobId || !jobs.length) return;
+
+    const requestedJob = jobs.find((job) => String(job.id) === String(pendingPushOpenJobId));
+    if (!requestedJob) return;
+
+    openJobInJobsModule(requestedJob);
+    setPendingPushOpenJobId("");
+
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("jobId");
+    const cleanHref = `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`;
+    window.history.replaceState(window.history.state, "", cleanHref);
+  }, [pendingPushOpenJobId, jobs]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !jobs.length) return;

@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.62",
+  "version": "11.63",
   "scope": "mobile",
-  "release_branch": "release/v11.62",
+  "release_branch": "release/v11.63",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,

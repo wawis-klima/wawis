@@ -21,11 +21,17 @@ for (const appPath of ['src/App.jsx', 'src/mobile791/App.jsx']) {
   assert.match(source, /setSelectedJob\(resolvedJob\);/);
   assert.match(source, /setPendingOpenJobId\(String\(resolvedJob\.id\)\);/);
   assert.match(source, /handleDesktopNavigation\('jobs', 'orders'\);/);
+  assert.match(source, /pendingPushOpenJobId/);
+  assert.match(source, /WAWIS_OPEN_JOB/);
+  assert.match(source, /setPendingPushOpenJobId\(requestedJobId\);/);
 }
 
 const worker = read('public/push-sw.js');
 assert.match(worker, /const targetUrl = event\.notification\?\.data\?\.url \|\| "\/";/);
+assert.match(worker, /existingClient\.postMessage\(\{/);
+assert.match(worker, /type: "WAWIS_OPEN_JOB"/);
 assert.match(worker, /await existingClient\.navigate\(targetUrl\);/);
+assert.match(worker, /await existingClient\.focus\(\);/);
 assert.match(worker, /await clients\.openWindow\(targetUrl\);/);
 
 const edge = read('supabase/functions/send-assignment-push/index.ts');

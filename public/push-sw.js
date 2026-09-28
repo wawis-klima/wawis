@@ -3,7 +3,7 @@ importScripts("/push-context-guard.js");
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v11.62");
+    const cache = await caches.open("wawis-app-shell-v11.63");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
@@ -19,7 +19,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v11.62")
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v11.63")
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
@@ -36,7 +36,7 @@ self.addEventListener("fetch", (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open("wawis-app-shell-v11.57");
+          const cache = await caches.open("wawis-app-shell-v11.63");
           await cache.put("/", response.clone());
         }
         return response;
@@ -52,7 +52,7 @@ self.addEventListener("fetch", (event) => {
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {
-      const cache = await caches.open("wawis-app-shell-v11.57");
+      const cache = await caches.open("wawis-app-shell-v11.63");
       await cache.put(request, response.clone());
     }
     return response;
@@ -172,7 +172,7 @@ self.addEventListener("message", (event) => {
   if (event.data?.type !== "WAWIS_CACHE_LOADED_ASSETS") return;
   const urls = Array.isArray(event.data.urls) ? event.data.urls : [];
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v11.57");
+    const cache = await caches.open("wawis-app-shell-v11.63");
     const safeUrls = urls.filter((value) => {
       try {
         return new URL(value, self.location.origin).origin === self.location.origin;
@@ -221,10 +221,26 @@ self.addEventListener("notificationclick", (event) => {
     const existingClient = allClients.find((client) => "focus" in client);
 
     if (existingClient) {
-      await existingClient.focus();
-      if ("navigate" in existingClient) {
-        await existingClient.navigate(targetUrl);
+      const targetJobId = String(event.notification?.data?.jobId || "").trim();
+
+      if (targetJobId && "postMessage" in existingClient) {
+        existingClient.postMessage({
+          type: "WAWIS_OPEN_JOB",
+          jobId: targetJobId,
+          url: targetUrl,
+        });
       }
+
+      if ("navigate" in existingClient) {
+        try {
+          await existingClient.navigate(targetUrl);
+        } catch (_error) {
+          // iOS/PWA potrafi odrzucić navigate() po wznowieniu; postMessage powyżej
+          // otwiera montaż bez przeładowania, a URL pozostaje fallbackiem.
+        }
+      }
+
+      await existingClient.focus();
       return;
     }
 
