@@ -72,14 +72,33 @@ const mobileSnapshot = read('src/mobile791/modules/job-offline-store.js');
 assert.match(mobileSnapshot, /server_fetched_at_ms/);
 assert.match(mobileSnapshot, /currentVersion > normalizedServerFetchedAtMs/);
 
-for (const relativePath of [
-  'src/components/layout/AppAuthenticatedLayout.jsx',
-  'src/mobile791/components/layout/AppAuthenticatedLayout.jsx',
-]) {
-  const source = read(relativePath);
-  assert.match(source, /appDataRefreshStatus/);
-  assert.match(source, />Odświeżanie</);
-}
+const desktopLayout = read('src/components/layout/AppAuthenticatedLayout.jsx');
+assert.match(desktopLayout, /appDataRefreshStatus/);
+assert.match(desktopLayout, />Odświeżanie</);
+
+const mobileLayout = read('src/mobile791/components/layout/AppAuthenticatedLayout.jsx');
+assert.match(mobileLayout, /appDataRefreshStatus/);
+assert.match(mobileLayout, /hasUsableData \? 'Odświeżanie danych…' : 'Ładowanie danych…'/);
+
+const mobileApp = read('src/mobile791/App.jsx');
+assert.match(mobileApp, /hasUsableData=\{Boolean\(profile\) \|\| jobs\.length > 0\}/);
+
+const mobileAuth = read('src/mobile791/modules/auth.js');
+assert.match(mobileAuth, /silent: false,[\s\S]*autoRetryTransient: true/);
+assert.match(mobileAuth, /if \(event === 'USER_UPDATED'\)/);
+assert.doesNotMatch(
+  mobileAuth,
+  /if \(event === 'SIGNED_IN' \|\| event === 'USER_UPDATED'\) \{\s*void refreshAll/,
+  'Mobile SIGNED_IN nie może dublować pełnego pobierania danych.',
+);
+
+const mobileSession1172 = read('src/mobile791/hooks/useAppSession.js');
+assert.match(mobileSession1172, /TRANSIENT_REFRESH_RETRY_MS = 3000/);
+assert.match(mobileSession1172, /TRANSIENT_REFRESH_MAX_ATTEMPTS = 3/);
+assert.match(mobileSession1172, /autoRetryTransient = false/);
+assert.match(mobileSession1172, /retryScheduled: canScheduleRetry/);
+assert.match(mobileSession1172, /keepVisibleForRetry = !silent && !hasUsableJobs/);
+assert.match(mobileSession1172, /setIsRefreshingData\(false\)/);
 
 const desktopAuth = read('src/modules/auth.js');
 assert.match(desktopAuth, /Promise\.race\(\[\s*supabase\.auth\.signOut\(\{ scope: 'local' \}\)/, 'Desktop logout nie może czekać na wolny endpoint Auth.');
