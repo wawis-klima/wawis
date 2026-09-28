@@ -458,14 +458,19 @@ export default function JobDetailsPanel({
               <div className="viewerInlineRow" aria-label="Wybór monterów">
                 {profiles.map((person) => {
                   const active = viewers.some((viewer) => viewer.user_id === person.id);
+                  const isMainTechnician = String(selectedJob.main_technician_id || '') === String(person.id || '');
+                  const installerLabel = isMainTechnician
+                    ? `${person.full_name} — główny monter (zmiana w edycji montażu)`
+                    : `${person.full_name} — ${active ? "Monter" : "Nie monter"}`;
                   return (
                     <button
                       key={person.id}
                       type="button"
                       className={`viewerDot ${active ? "active" : ""}`}
                       onClick={() => toggleViewer(selectedJob.id, person.id)}
-                      title={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
-                      aria-label={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
+                      disabled={isMainTechnician}
+                      title={installerLabel}
+                      aria-label={installerLabel}
                     >
                       <span className="viewerDotText">{formatViewerChipName(person.full_name)}</span>
                     </button>
