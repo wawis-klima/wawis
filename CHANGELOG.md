@@ -1,3 +1,12 @@
+## 11.69
+- Protokół PDF: przy 3 lub większej liczbie kompletów urządzeń sekcja „Urządzenia i tabliczki” automatycznie przechodzi na dwie kolumny.
+- JW i JZ tego samego urządzenia zawsze pozostają w tej samej kolumnie; dla 1–2 kompletów zachowano dotychczasowy układ pełnej szerokości.
+- Podział kolumn jest balansowany liczbą wierszy, dzięki czemu większa liczba jednostek zajmuje mniej wysokości i „Potwierdzenie klienta” pozostaje na pierwszej stronie A4.
+- Dodano rzeczywisty test renderowania PDF z trzema kompletami JW/JZ i kontrolę jednej strony.
+- Starszy, już zapisany protokół można normalnie drukować, pobierać i wysyłać bez ostrzeżenia „Monterzy wymagają potwierdzenia”.
+- Potwierdzenie monterów nadal jest wymagane przy tworzeniu nowego protokołu albo przy zmianie i ponownym podpisaniu starego; sam wydruk istniejącego PDF nie zmienia danych zlecenia.
+- Bez migracji Supabase, zmian RLS, Storage i Edge Functions.
+
 ## 11.68
 - Monterzy: dodano jawne pole biznesowe `jobs.installer_ids`; techniczny dostęp przez `job_access` nie oznacza już automatycznie, że dana osoba była monterem.
 - Nowe montaże zapisują potwierdzoną listę monterów od razu. Dla starszych montaży dawne przypisania są tylko podpowiedzią i wymagają jawnego potwierdzenia przed utworzeniem lub ponownym podpisaniem protokołu.
