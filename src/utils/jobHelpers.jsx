@@ -95,8 +95,16 @@ export function getJobTypeClass(job) {
   return "jobTypeNew";
 }
 
-export function getViewerNames(job, profiles) {
-  return profiles
-    .filter((profile) => job.viewers.some((viewer) => viewer.user_id === profile.id) && profile.id !== job.main_technician_id)
-    .map((profile) => profile.full_name);
+export function getViewerNames(job = {}, profiles = []) {
+  const installerIds = [...new Set(
+    (Array.isArray(job.installer_ids)
+      ? job.installer_ids
+      : [job.main_technician_id, ...(Array.isArray(job.viewers) ? job.viewers.map((viewer) => viewer?.user_id) : [])])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean),
+  )];
+  return (profiles || [])
+    .filter((profile) => installerIds.includes(String(profile?.id || '')))
+    .map((profile) => profile.full_name || profile.email)
+    .filter(Boolean);
 }
