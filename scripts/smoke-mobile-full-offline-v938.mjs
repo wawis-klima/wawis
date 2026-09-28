@@ -31,6 +31,43 @@ assert.equal(restored[0].status, 'Zakończone');
 assert.equal(restored[0].comments[0].text, 'Zapis offline');
 assert.equal(restored[0].comments[0].offline_pending, true);
 assert.equal(restored[0].offline_pending, true);
+
+const conflictRestored = applyOfflineOperationsToJobs([{
+  id: 'job-conflict',
+  status: 'Zakończone',
+  offline_pending: true,
+}], [{
+  id: 'status-conflict',
+  user_id: 'worker-1',
+  job_id: 'job-conflict',
+  type: 'status',
+  status: 'conflict',
+  base: { status: 'W trakcie' },
+  payload: { status: 'Zakończone' },
+  error: 'Status zmienił się w systemie.',
+  server_state: { status: 'Niezrealizowane' },
+}], { id: 'worker-1', full_name: 'Jan Monter' });
+
+assert.equal(conflictRestored[0].status, 'Niezrealizowane', 'Konflikt musi pokazać potwierdzony stan serwera, nie odrzuconą lokalną zmianę.');
+assert.equal(conflictRestored[0].offline_conflict, true);
+assert.equal(conflictRestored[0].offline_pending, false);
+
+const legacyConflictRestored = applyOfflineOperationsToJobs([{
+  id: 'job-legacy-conflict',
+  status: 'Zakończone',
+  offline_pending: true,
+}], [{
+  id: 'status-legacy-conflict',
+  user_id: 'worker-1',
+  job_id: 'job-legacy-conflict',
+  type: 'status',
+  status: 'conflict',
+  base: { status: 'W trakcie' },
+  payload: { status: 'Zakończone' },
+}], { id: 'worker-1' });
+
+assert.equal(legacyConflictRestored[0].status, 'W trakcie', 'Stary konflikt bez server_state nie może nadal pokazywać odrzuconego statusu.');
+assert.equal(legacyConflictRestored[0].offline_conflict, true);
 assert.match(createOfflineUuid(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
 
 const store = read('src', 'mobile791', 'modules', 'job-offline-store.js');
@@ -39,6 +76,7 @@ const actions = read('src', 'mobile791', 'hooks', 'useSelectedJobActions.js');
 const session = read('src', 'mobile791', 'hooks', 'useAppSession.js');
 const app = read('src', 'mobile791', 'App.jsx');
 const center = read('src', 'mobile791', 'components', 'PhotoSyncStatus.jsx');
+const details = read('src', 'mobile791', 'components', 'JobDetailsPanel.jsx');
 const worker = read('public', 'push-sw.js');
 const main = read('src', 'main.jsx');
 
@@ -51,12 +89,19 @@ assert.match(actions, /queueDeviceSaveOffline/);
 assert.match(actions, /queueCommentOffline/);
 assert.match(actions, /queueStatusOffline/);
 assert.match(actions, /Dodanie nowego klienta wymaga internetu/);
+assert.match(actions, /Pełna edycja montażu wymaga połączenia z internetem/);
+assert.match(actions, /!isAdmin && serialOnlyMode && isTransientSupabaseError\(error\)/);
+assert.match(actions, /offline\.full-edit\.network-unconfirmed/);
 assert.match(sync, /OfflineConflictError/);
 assert.match(sync, /Dane urządzenia zostały w międzyczasie zmienione/);
 assert.match(sync, /OFFLINE_DEPENDENCY_WAITING/);
+assert.match(sync, /conflictJobIds/);
+assert.match(sync, /server_state: error\?\.serverState \|\| null/);
 assert.match(app, /syncOfflineJobOperations/);
+assert.match(app, /result\.conflictJobIds/);
 assert.match(app, /window\.addEventListener\('online', onlineHandler\)/);
 assert.match(center, /Konflikt — nie wysłano/);
+assert.match(details, /Konflikt synchronizacji · lokalna zmiana nie została zapisana na serwerze/);
 assert.match(center, /Zachowaj dane z systemu/);
 assert.ok(worker.includes(`wawis-app-shell-v${currentVersion}`));
 assert.match(worker, /self\.addEventListener\("fetch"/);

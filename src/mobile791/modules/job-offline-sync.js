@@ -15,10 +15,11 @@ const OPERATION_LEASE_MS = 2 * 60 * 1000;
 const MAX_RETRY_DELAY_MS = 30 * 60 * 1000;
 
 export class OfflineConflictError extends Error {
-  constructor(message) {
+  constructor(message, details = {}) {
     super(message);
     this.name = 'OfflineConflictError';
     this.code = 'OFFLINE_CONFLICT';
+    this.serverState = details?.serverState || null;
   }
 }
 
@@ -75,7 +76,10 @@ async function syncStatusOperation({ supabase, operation, jobs, sendCompletionPu
   const currentStatus = normalizeText(current.status);
   if (currentStatus === desiredStatus) return;
   if (currentStatus !== expectedStatus) {
-    throw new OfflineConflictError(`Status w systemie to „${currentStatus || 'brak'}”, a na telefonie zmieniano „${expectedStatus || 'brak'}”. Niczego nie nadpisano.`);
+    throw new OfflineConflictError(
+      `Status w systemie to „${currentStatus || 'brak'}”, a na telefonie zmieniano „${expectedStatus || 'brak'}”. Niczego nie nadpisano.`,
+      { serverState: current },
+    );
   }
 
   if (desiredStatus === 'Zakończone') {
@@ -97,7 +101,18 @@ async function syncStatusOperation({ supabase, operation, jobs, sendCompletionPu
     .select('id')
     .maybeSingle();
   if (statusUpdate.error) throw statusUpdate.error;
-  if (!statusUpdate.data) throw new OfflineConflictError('Status zmienił się podczas synchronizacji. Niczego nie nadpisano.');
+  if (!statusUpdate.data) {
+    let latestServerState = null;
+    try {
+      latestServerState = await readJobForConflictCheck(supabase, operation.job_id);
+    } catch {
+      // Sam brak ponownego odczytu nie może zamienić wykrytego konfliktu w pozorny sukces.
+    }
+    throw new OfflineConflictError(
+      'Status zmienił się podczas synchronizacji. Niczego nie nadpisano.',
+      { serverState: latestServerState },
+    );
+  }
   if (desiredStatus === 'Zakończone') {
     try {
       await sendCompletionPush?.({ jobId: operation.job_id });
@@ -189,7 +204,7 @@ async function runSync(options = {}) {
   const { profile } = options;
   const userId = String(profile?.id || '').trim();
   if (!userId || !options.supabase || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
-    return { processed: 0, synced: 0, conflicts: 0, errors: 0 };
+    return { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
   }
 
   await recoverStaleOfflineJobOperations(userId);
@@ -198,7 +213,7 @@ async function runSync(options = {}) {
     .filter((item) => operationIsDue(item))
     .sort((left, right) => operationPriority(left) - operationPriority(right)
       || String(left.created_at || '').localeCompare(String(right.created_at || '')));
-  const result = { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [] };
+  const result = { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
 
   for (const queuedOperation of operations) {
     if (typeof navigator !== 'undefined' && navigator.onLine === false) break;
@@ -217,8 +232,16 @@ async function runSync(options = {}) {
       if (!result.changedJobIds.includes(operation.job_id)) result.changedJobIds.push(operation.job_id);
     } catch (error) {
       if (error instanceof OfflineConflictError || error?.code === 'OFFLINE_CONFLICT') {
-        await updateOfflineJobOperation(operation.id, { status: 'conflict', error: error.message, lease_until: '' });
+        await updateOfflineJobOperation(operation.id, {
+          status: 'conflict',
+          error: error.message,
+          lease_until: '',
+          next_attempt_at: '',
+          server_state: error?.serverState || null,
+        });
         result.conflicts += 1;
+        if (!result.conflictJobIds.includes(operation.job_id)) result.conflictJobIds.push(operation.job_id);
+        if (!result.changedJobIds.includes(operation.job_id)) result.changedJobIds.push(operation.job_id);
         continue;
       }
       const waiting = isTransientSupabaseError(error) || error?.code === 'OFFLINE_DEPENDENCY_WAITING';

@@ -411,8 +411,13 @@ export function useSelectedJobActions({
     logDiagnostic('nameplate.save.started', { jobId: editingJobId, operationId, serialOnlyMode, pendingCount: getPendingNameplateKeys(pendingDocuments).size });
 
     try {
-      if (!isAdmin && isBrowserOffline()) {
-        await queueDeviceSaveOffline(form, pendingDocuments);
+      if (isBrowserOffline()) {
+        if (!isAdmin && serialOnlyMode) {
+          await queueDeviceSaveOffline(form, pendingDocuments);
+          return;
+        }
+        logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
+        alert('Pełna edycja montażu wymaga połączenia z internetem. Wprowadzone dane pozostają w formularzu — połącz się z internetem i zapisz ponownie.');
         return;
       }
       const recordSave = serialOnlyMode
@@ -516,7 +521,7 @@ export function useSelectedJobActions({
       }
     } catch (error) {
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
-      if (!isAdmin && isTransientSupabaseError(error)) {
+      if (!isAdmin && serialOnlyMode && isTransientSupabaseError(error)) {
         try {
           await queueDeviceSaveOffline(form, pendingDocuments, 'transient-error');
           return;
@@ -524,6 +529,11 @@ export function useSelectedJobActions({
           alert(queueError?.message || 'Nie udało się zapisać zmiany w pamięci telefonu.');
           return;
         }
+      }
+      if (!serialOnlyMode && isTransientSupabaseError(error)) {
+        logDiagnostic('offline.full-edit.network-unconfirmed', { jobId: editingJobId, operationId, isAdmin });
+        alert('Nie udało się potwierdzić pełnego zapisu z powodu problemu z połączeniem. Formularz pozostaje otwarty — po odzyskaniu internetu sprawdź dane i zapisz ponownie.');
+        return;
       }
       alert(normalizeDatabaseErrorMessage(error, EDIT_SAVE_ERROR_MESSAGE));
     } finally {

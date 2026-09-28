@@ -485,7 +485,11 @@ export default function JobDetailsPanel({
     <>
       <style data-wawis-mobile-device-table="8.89">{MOBILE_DEVICE_TABLE_V889_CSS}</style>
       <div className="card premiumCard">
-      {selectedJob.offline_pending ? (
+      {selectedJob.offline_conflict ? (
+        <div className="workerReadOnlyNote" role="status">
+          Konflikt synchronizacji · lokalna zmiana nie została zapisana na serwerze. Sprawdź Centrum synchronizacji.
+        </div>
+      ) : selectedJob.offline_pending ? (
         <div className="workerReadOnlyNote" role="status">Zmiany zapisane na telefonie · oczekują na synchronizację</div>
       ) : null}
       <div className="jobHead detailHeader">

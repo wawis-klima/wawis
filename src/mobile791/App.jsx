@@ -779,7 +779,7 @@ export default function App() {
     const currentProfile = syncContext.profile;
     if (!supabase || !currentProfile || isAdmin || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
       await photoSyncStatus.refreshQueueSummary();
-      return { processed: 0, synced: 0, conflicts: 0, errors: 0 };
+      return { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
     }
     photoSyncStatus.markPhotoSyncing();
     try {
@@ -792,11 +792,31 @@ export default function App() {
         sendCompletionPush: sendCompletionPushAction,
       });
       if (result.synced > 0 || result.conflicts > 0) {
-        for (const changedJobId of result.changedJobIds || []) {
+        const conflictJobIds = new Set((result.conflictJobIds || []).map((jobId) => String(jobId)));
+        const refreshJobIds = [...new Set([
+          ...(result.changedJobIds || []),
+          ...(result.conflictJobIds || []),
+        ].map((jobId) => String(jobId)).filter(Boolean))];
+
+        for (const changedJobId of refreshJobIds) {
           await reloadJobSummary(changedJobId);
         }
         if (selectedJobIdRef.current) {
           await reloadJobDetails(selectedJobIdRef.current, { force: true, background: true });
+        }
+
+        if (conflictJobIds.size > 0) {
+          const markConflict = (job) => (
+            job && conflictJobIds.has(String(job.id))
+              ? {
+                ...job,
+                offline_conflict: true,
+                offline_conflict_message: job.offline_conflict_message || 'Konflikt synchronizacji. Lokalna zmiana nie została zapisana na serwerze.',
+              }
+              : job
+          );
+          setJobs((prev) => prev.map(markConflict));
+          setSelectedJob((prev) => markConflict(prev));
         }
       }
       if (result.errors > 0) photoSyncStatus.markPhotoSyncError();
@@ -806,7 +826,7 @@ export default function App() {
     } catch (error) {
       photoSyncStatus.markPhotoSyncError();
       await photoSyncStatus.refreshQueueSummary();
-      return { processed: 0, synced: 0, conflicts: 0, errors: 1, error };
+      return { processed: 0, synced: 0, conflicts: 0, errors: 1, changedJobIds: [], conflictJobIds: [], error };
     }
   }, [isAdmin, reloadJobDetails, reloadJobSummary, supabase, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing, photoSyncStatus.refreshQueueSummary]);
 

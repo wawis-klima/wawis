@@ -1,3 +1,10 @@
+## 11.64
+- Mobile/offline: pełna edycja montażu bez internetu nie jest już zapisywana pozornie jako same urządzenia. Formularz pozostaje otwarty z wpisanymi danymi i informuje, że pełny zapis wymaga połączenia.
+- Kolejka urządzeń i tabliczek offline nadal działa w trybie `serialOnlyMode`; chwilowy błąd sieci przy pełnej edycji nie zamienia się już w częściowy sukces.
+- Konflikt statusu offline nie nadpisuje już karty odrzuconą lokalną wartością. Aplikacja przywraca potwierdzony stan serwera, a dla starszych wpisów bez zapisanego stanu serwera wraca do wartości bazowej.
+- Synchronizacja zwraca identyfikatory montaży z konfliktem, odświeża ich podsumowania i pokazuje na karcie jasny komunikat o konflikcie.
+- Bez zmian w Supabase, RLS, Storage, Edge Functions i schemacie bazy.
+
 ## 11.63
 - PUSH / iPhone PWA: kliknięcie powiadomienia o konkretnym montażu otwiera ten montaż również wtedy, gdy aplikacja była już uruchomiona w tle na innym ekranie.
 - Service Worker wysyła do aktywnego okna komunikat `WAWIS_OPEN_JOB` z `jobId`, a nawigacja URL pozostaje dodatkowym fallbackiem.

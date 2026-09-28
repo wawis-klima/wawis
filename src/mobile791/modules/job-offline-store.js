@@ -448,9 +448,46 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
   return (jobs || []).map((job) => {
     const jobOperations = operationsByJob.get(String(job?.id || '')) || [];
-    if (!jobOperations.length) return job;
-    let nextJob = { ...job, offline_pending: true };
+    if (!jobOperations.length) {
+      if (!job?.offline_conflict && !job?.offline_sync_error) return job;
+      return {
+        ...job,
+        offline_conflict: false,
+        offline_conflict_message: '',
+        offline_sync_error: false,
+      };
+    }
+
+    let nextJob = {
+      ...job,
+      offline_pending: false,
+      offline_conflict: false,
+      offline_conflict_message: '',
+      offline_sync_error: false,
+    };
+    let hasPendingProjection = false;
+
     for (const operation of jobOperations) {
+      const operationStatus = String(operation?.status || 'pending').toLowerCase();
+      const terminalStatusOperation = operation.type === 'status'
+        && (operationStatus === 'conflict' || operationStatus === 'error');
+
+      if (terminalStatusOperation) {
+        const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
+        if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
+        if (operationStatus === 'conflict') {
+          nextJob = {
+            ...nextJob,
+            offline_conflict: true,
+            offline_conflict_message: String(operation?.error || 'Konflikt synchronizacji. Zmiana statusu nie została zapisana na serwerze.'),
+          };
+        } else {
+          nextJob = { ...nextJob, offline_sync_error: true };
+        }
+        continue;
+      }
+
+      hasPendingProjection = true;
       if (operation.type === 'device') {
         nextJob = { ...nextJob, ...(operation.payload?.device_fields || {}) };
       } else if (operation.type === 'status') {
@@ -476,6 +513,8 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
         }
       }
     }
+
+    nextJob.offline_pending = hasPendingProjection;
     return nextJob;
   });
 }

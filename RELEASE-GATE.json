@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.63",
+  "version": "11.64",
   "scope": "mobile",
-  "release_branch": "release/v11.63",
+  "release_branch": "release/v11.64",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana wyłącznie w mobilnym generowaniu i podglądzie protokołu PDF: lista monterów jest skracana do inicjałów. Bez zmian Supabase, RLS, Storage, Edge Functions i danych zlecenia."
+    "notes": "Pakiet Offline C1+C9. Zmiany wyłącznie w mobilnej obsłudze pełnej edycji offline, projekcji konfliktowego statusu, odświeżeniu po konflikcie i komunikacie na karcie. Bez zmian backendu, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.62.zip"
+    "file_name": "klima-app-v11.64.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.62",
+    "source_branch": "release/v11.64",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić protokół mobilny: dla kilku przypisanych monterów PDF i podgląd pokazują wyłącznie inicjały, np. KW, MF, PW, bez pełnych imion i nazwisk."
+    "notes": "Sprawdzić mobile: pełna edycja bez internetu pozostawia formularz i nie kolejkuje samych urządzeń; serialOnlyMode nadal kolejkuje urządzenia; konflikt zakończenia nie pokazuje montażu jako skutecznie zakończonego i pozostaje widoczny w Centrum synchronizacji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian w bazie",
+    "supabase_migration_applied": "N/A — brak zmian bazy",
     "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian bazodanowych",
     "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
