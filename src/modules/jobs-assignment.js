@@ -1,14 +1,29 @@
 import { supabaseAnonKey, supabaseUrl } from "../lib/supabase.js";
 
+export function normalizeInstallerIds(ids = []) {
+  return [...new Set((Array.isArray(ids) ? ids : [])
+    .map((value) => String(value || '').trim())
+    .filter(Boolean))].sort();
+}
+
 export function getAssignedUserIdsFromForm(form) {
-  const ids = [form?.main_technician_id, ...(form?.viewers || [])].filter(Boolean);
-  return [...new Set(ids)];
+  return normalizeInstallerIds([form?.main_technician_id, ...(form?.viewers || [])]);
+}
+
+export function getLegacyInstallerSuggestionIds(job) {
+  if (!job) return [];
+  return normalizeInstallerIds([
+    job.main_technician_id,
+    ...(Array.isArray(job.viewers) ? job.viewers.map((viewer) => viewer?.user_id) : []),
+  ]);
 }
 
 export function getAssignedUserIdsFromJob(job) {
   if (!job) return [];
-  const ids = [job.main_technician_id, ...(job.viewers || []).map((viewer) => viewer.user_id)].filter(Boolean);
-  return [...new Set(ids)];
+  if (Array.isArray(job.installer_ids)) return normalizeInstallerIds(job.installer_ids);
+  // Dla historycznego rekordu bez installer_ids jedynym potwierdzonym biznesowo
+  // przypisaniem pozostaje main_technician_id. job_access jest tylko sugestią UI.
+  return normalizeInstallerIds([job.main_technician_id]);
 }
 
 export function getLocalDateKey(date = new Date()) {
@@ -149,26 +164,44 @@ export async function toggleJobViewer({
   supabase,
   jobId,
   userId,
-  viewers,
+  job = null,
   jobs = [],
   sendAssignmentPushFn,
 }) {
-  if (!supabase) return;
+  if (!supabase || !jobId || !userId) return null;
 
-  const exists = viewers.some((viewer) => viewer.user_id === userId);
-  if (exists) {
-    const { error } = await supabase.from('job_access').delete().eq('job_id', jobId).eq('user_id', userId);
-    if (error) throw error;
-    return;
-  }
+  const currentJob = job || (Array.isArray(jobs) ? jobs.find((item) => String(item?.id) === String(jobId)) : null) || {};
+  const expectedInstallerIds = Array.isArray(currentJob.installer_ids)
+    ? normalizeInstallerIds(currentJob.installer_ids)
+    : null;
+  const currentInstallerIds = expectedInstallerIds ?? getLegacyInstallerSuggestionIds(currentJob);
+  const exists = currentInstallerIds.includes(String(userId));
+  const nextInstallerIds = normalizeInstallerIds(
+    exists
+      ? currentInstallerIds.filter((installerId) => installerId !== String(userId))
+      : [...currentInstallerIds, String(userId)],
+  );
 
-  const { error } = await supabase.from('job_access').insert({ job_id: jobId, user_id: userId });
+  const { data, error } = await supabase.rpc('save_job_concurrent_v1168', {
+    p_id: jobId,
+    p_fields: {},
+    p_expected: {},
+    p_installer_ids: nextInstallerIds,
+    p_expected_installer_ids: expectedInstallerIds,
+    p_update_installers: true,
+  });
   if (error) throw error;
 
-  const job = Array.isArray(jobs) ? jobs.find((item) => item?.id === jobId) : null;
-  if (shouldSendAssignmentPushForInstallationDate(job?.installation_date)) {
+  if (!exists && shouldSendAssignmentPushForInstallationDate(currentJob?.installation_date)) {
     void sendAssignmentPushFn?.({ newUserIds: [userId], jobId }).catch((pushError) => {
       console.warn('Nie udało się wysłać push o przypisaniu, ale przypisanie montera zostało zapisane:', pushError?.message || pushError);
     });
   }
+
+  return {
+    ...(data || {}),
+    installer_ids: nextInstallerIds,
+    added: !exists,
+    removed: exists,
+  };
 }
