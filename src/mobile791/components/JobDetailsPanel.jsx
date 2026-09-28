@@ -1039,8 +1039,9 @@ export default function JobDetailsPanel({
                         type="button"
                         className={`viewerDot ${active ? "active" : ""}`}
                         onClick={() => toggleViewer(selectedJob.id, person.id)}
-                        title={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
-                        aria-label={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
+                        disabled={isMainTechnician}
+                        title={installerLabel}
+                        aria-label={installerLabel}
                       >
                         <span className="viewerDotText">{formatViewerChipName(person.full_name)}</span>
                       </button>
