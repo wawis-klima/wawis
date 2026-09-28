@@ -30,8 +30,11 @@ assert(restoreCallIndex >= 0 && restoreCommitIndex > restoreCallIndex, 'Flaga od
 const sessionGuardIndex = app.indexOf('if (!isQueueSessionCurrent()) return;', restoreCallIndex);
 assert(sessionGuardIndex > restoreCallIndex && sessionGuardIndex < restoreCommitIndex, 'Po restore trzeba ponownie sprawdzić aktualność sesji przed ustawieniem flagi odtworzenia.');
 assert(jobsFetch.includes('export function preserveLatestQueuedPhotos'), 'Brak ochrony lokalnej kolejki przed spóźnionym pełnym refreshem.');
+assert(jobsFetch.includes('export function preserveLatestLoadedJobDetails'), 'Brak ochrony świeżo załadowanych komentarzy i zdjęć przed spóźnionym pełnym refreshem.');
 assert(sessionHook.includes('preserveLatestQueuedPhotos(freshJobs, jobsRef.current)'), 'Pierwsza odpowiedź serwera musi scalić najnowszą kolejkę zdjęć.');
+assert(sessionHook.includes('preserveLatestLoadedJobDetails(freshJobsWithLatestQueue, jobsRef.current)'), 'Pierwsza odpowiedź serwera nie może skasować szczegółów załadowanych już po starcie refreshu.');
 assert(sessionHook.includes('preserveLatestQueuedPhotos(payloadJobs, jobsRef.current)'), 'Końcowa odpowiedź serwera nie może nadpisać zdjęcia odtworzonego po starcie requestu.');
+assert(sessionHook.includes('preserveLatestLoadedJobDetails(payloadJobsWithLatestQueue, jobsRef.current)'), 'Końcowa odpowiedź serwera nie może nadpisać komentarzy i zdjęć załadowanych w trakcie requestu.');
 assert(jobsFetch.includes("queuedPhotos: photos.filter((photo) => isLocalQueuedPhoto(photo))"), 'Pełny refresh nie może zgubić lokalnego zdjęcia odtworzonego z IndexedDB.');
 assert(panel.includes('Wyślij ponownie'), 'Brak ręcznego ponowienia błędnego uploadu.');
 assert(requirements.includes("uploadStatus === 'local'"), 'Lokalna tabliczka błędnie pozwoliłaby zakończyć zlecenie przed synchronizacją.');
