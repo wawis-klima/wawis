@@ -344,7 +344,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
 
   function beginEditingStoredProtocol() {
     if (!installersConfirmed) {
-      setMessage("Najpierw potwierdź listę monterów w edycji montażu. Dostęp do zlecenia nie jest już traktowany jako informacja, kto faktycznie montował.");
+      setMessage("Ten zapisany protokół możesz drukować bez potwierdzania monterów. Potwierdź ich listę tylko wtedy, gdy chcesz uzupełnić lub podpisać protokół ponownie.");
       return;
     }
     // Po rozbudowaniu formularza ustawiamy jego ostatnią sekcję tuż nad sticky footerem.
@@ -565,6 +565,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const paymentVisible = editing ? paymentDraft : storedPayment;
   const recipientEmail = getJobProtocolRecipientEmail(protocolJob);
   const canSendEmail = isValidProtocolEmail(recipientEmail);
+  const techniciansDisplay = savedRecord && !editing && !installersConfirmed
+    ? "Zapisani w istniejącym PDF"
+    : protocolData.technicians.join(", ");
 
   return (
     <>
@@ -600,7 +603,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 <div><dt>E-mail</dt><dd>{protocolData.email}</dd></div>
                 <div><dt>Adres</dt><dd>{protocolData.address}</dd></div>
                 <div><dt>Data montażu</dt><dd>{protocolData.installationDate}</dd></div>
-                <div><dt>Monterzy</dt><dd>{protocolData.technicians.join(", ")}</dd></div>
+                <div><dt>Monterzy</dt><dd>{techniciansDisplay}</dd></div>
               </dl>
             </section>
 
@@ -622,7 +625,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               </div>
             </section>
 
-            {!installersConfirmed ? (
+            {editing && !installersConfirmed ? (
               <section className="protocolTestSection">
                 <div className="protocolTestNotice" role="status">
                   <strong>Monterzy wymagają potwierdzenia.</strong> Ten starszy montaż nie ma jeszcze jawnej listy osób, które faktycznie wykonywały montaż. Administrator powinien potwierdzić listę w edycji montażu przed utworzeniem lub ponownym podpisaniem protokołu.
@@ -677,7 +680,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 {editing ? (
                   <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !installersConfirmed || !paymentReady || Boolean(paymentLoadError)}>{hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
                 ) : (
-                  <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol} disabled={!installersConfirmed || !paymentReady || Boolean(paymentLoadError)}>Uzupełnij protokół</button>
+                  <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol} disabled={!paymentReady || Boolean(paymentLoadError)}>Uzupełnij protokół</button>
                 )}
               </div>
             </section>
