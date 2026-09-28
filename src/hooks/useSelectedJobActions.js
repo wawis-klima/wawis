@@ -45,6 +45,7 @@ export function useSelectedJobActions({
   previewImage,
   setPreviewImage,
   jobFormRef,
+  jobFormBaseJobRef,
   editingJobId,
   serialOnlyMode = false,
   resetJobModalState,
@@ -102,7 +103,7 @@ export function useSelectedJobActions({
       return;
     }
     const nextForm = buildEditJobForm({ job, profiles, normalizeStatus });
-    openEditJobForm({ jobId: job.id, form: nextForm });
+    openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job });
   }
 
   function openSerialNumbersJob(job) {
@@ -112,7 +113,7 @@ export function useSelectedJobActions({
       return;
     }
     const nextForm = buildEditJobForm({ job, profiles, normalizeStatus });
-    openEditJobForm({ jobId: job.id, form: nextForm, serialOnly: true });
+    openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: true });
   }
 
   async function saveEditedJob(formOverride) {
@@ -127,12 +128,13 @@ export function useSelectedJobActions({
 
     try {
       if (serialOnlyMode) {
-        await saveJobDeviceSerialsRecord({ supabase, editingJobId, form });
+        await saveJobDeviceSerialsRecord({ supabase, editingJobId, form, baseJob: jobFormBaseJobRef?.current });
       } else {
         await saveEditedJobRecord({
           supabase,
           editingJobId,
           form,
+          baseJob: jobFormBaseJobRef?.current,
           contractors: contractorsCatalog,
           isAdmin,
           jobs,
@@ -433,18 +435,19 @@ export function useSelectedJobActions({
     });
   }
 
-  async function toggleViewer(jobId, userId, viewers) {
+  async function toggleViewer(jobId, userId) {
     if (!canManageResolvedJobViewers(jobId)) {
       alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
       return;
     }
 
     try {
+      const currentJob = getResolvedJob(jobId) || jobs.find((job) => String(job?.id) === String(jobId)) || null;
       await toggleJobViewer({
         supabase,
         jobId,
         userId,
-        viewers,
+        job: currentJob,
         jobs,
         sendAssignmentPushFn: sendAssignmentPush,
       });
