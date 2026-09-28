@@ -21,7 +21,7 @@ import {
 } from "../modules/jobs.js";
 import { addJobComment, deleteJobComment, withTimeout } from "../modules/jobs-comments.js";
 import { toggleJobViewer } from "../modules/jobs-assignment.js";
-import { deleteJobPhoto, getNameplatePhotoMetadata, isLocalQueuedPhoto, retryQueuedJobPhoto, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
+import { deleteJobPhoto, getNameplatePhotoMetadata, isLocalQueuedPhoto, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
@@ -77,14 +77,12 @@ function getPendingNameplateKeys(documents = []) {
 function serverHasPendingNameplates(photos = [], documents = []) {
   const pendingDocuments = (documents || []).filter((item) => item?.file);
   if (!pendingDocuments.length) return true;
-  const serverByKey = new Map((photos || []).map((photo) => {
-    const metadata = getNameplatePhotoMetadata(photo);
-    const key = `${Number(metadata.device_index || 0)}:${String(metadata.unit_ref || '').toLowerCase()}`;
-    return [key, photo];
-  }));
+
   return pendingDocuments.every((document) => {
-    const key = `${Number(document.deviceIndex || 0) + 1}:${String(document.unitRef || '').toLowerCase()}`;
-    const serverPhoto = serverByKey.get(key);
+    // Sama zgodność device/unit nie wystarcza: przy wymianie tabliczki stary plik
+    // tej samej JW/JZ nie może potwierdzić nowego uploadu. Sprawdzamy dokładnie
+    // deterministyczną ścieżkę wyliczoną z istniejącego upload identity.
+    const serverPhoto = (photos || []).find((photo) => serverPhotoMatchesDocumentationIdentity(photo, document));
     if (!serverPhoto) return false;
     if (!document.verified && String(document.ocrStatus || '').toLowerCase() !== 'approved') return true;
     return String(serverPhoto.ocr_status || '').toLowerCase() === 'approved'
@@ -452,8 +450,15 @@ export function useSelectedJobActions({
       }
       logDiagnostic('nameplate.save.record.completed', { jobId: editingJobId, operationId });
 
+      // Tożsamość i docelowa ścieżka muszą być znane przed rozpoczęciem oczekiwania
+      // na upload. Dzięki temu timeout może potwierdzić dokładnie nowy plik, a nie
+      // starszą tabliczkę tej samej JW/JZ.
+      const preparedPendingDocuments = pendingDocuments.length
+        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments })
+        : [];
+
       const uploadPromise = uploadJobDocumentationPhotos({
-        supabase, profile, jobId: editingJobId, documents: pendingDocuments, setJobs, setSelectedJob, supabaseUrl,
+        supabase, profile, jobId: editingJobId, documents: preparedPendingDocuments, setJobs, setSelectedJob, supabaseUrl,
         onPhotoUploaded: (uploadedPhoto) => {
           onPhotoSyncSuccess?.();
           schedulePhotoDetailsSync(uploadedPhoto?.job_id || editingJobId);
@@ -465,7 +470,7 @@ export function useSelectedJobActions({
 
       if (uploadOutcome.timedOut) {
         logDiagnostic('nameplate.save.upload.timeout', { jobId: editingJobId, operationId, timeoutMs: NAMEPLATE_SAVE_TIMEOUT_MS });
-        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-timeout');
+        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'upload-timeout');
         if (confirmed) {
           resetJobModalState();
           logDiagnostic('nameplate.save.modal.closed.after-timeout-confirmation', { jobId: editingJobId, operationId });
@@ -483,9 +488,9 @@ export function useSelectedJobActions({
         jobId: editingJobId, operationId, uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount, failedCount: documentationResult.failedCount,
       });
 
-      const pendingNameplateCount = getPendingNameplateKeys(pendingDocuments).size;
+      const pendingNameplateCount = getPendingNameplateKeys(preparedPendingDocuments).size;
       if (serialOnlyMode && pendingNameplateCount) {
-        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-completed');
+        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'upload-completed');
         if (!confirmed) {
           logDiagnostic('nameplate.save.modal.kept-open', {
             jobId: editingJobId,
@@ -503,7 +508,7 @@ export function useSelectedJobActions({
       }
 
       if (serialOnlyMode && documentationResult.failedCount) {
-        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'reported-failure');
+        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'reported-failure');
         if (!confirmed) {
           const uploadedKeys = new Set(documentationResult.photos.map((photo) => {
             const metadata = getNameplatePhotoMetadata(photo);
