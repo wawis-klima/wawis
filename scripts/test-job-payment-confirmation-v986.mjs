@@ -88,6 +88,29 @@ assert.equal(paymentSelectFields, PAYMENT_JOB_FIELDS);
 assert.equal(paymentSelectJobId, 'job-payment-read');
 assert.deepEqual(loadedSnapshot, completePaymentSnapshot);
 
+const failedPaymentReadSupabase = {
+  from() {
+    return {
+      select() {
+        return {
+          eq() {
+            return {
+              async maybeSingle() {
+                return { data: null, error: new Error('network unavailable') };
+              },
+            };
+          },
+        };
+      },
+    };
+  },
+};
+await assert.rejects(
+  () => loadJobPaymentSnapshot({ supabase: failedPaymentReadSupabase, jobId: 'job-old-cache' }),
+  /network unavailable/,
+  'Stary cache bez payment_* nie może zostać potraktowany jak brak płatności, gdy doładowanie nie powiedzie się.',
+);
+
 let capturedPatch = null;
 let capturedId = null;
 const supabase = {
