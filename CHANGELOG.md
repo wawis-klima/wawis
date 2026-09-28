@@ -4,8 +4,11 @@
 - Podział kolumn jest balansowany liczbą wierszy, dzięki czemu większa liczba jednostek zajmuje mniej wysokości i „Potwierdzenie klienta” pozostaje na pierwszej stronie A4.
 - Dodano rzeczywisty test renderowania PDF z trzema kompletami JW/JZ i kontrolę jednej strony.
 - Starszy, już zapisany protokół można normalnie drukować, pobierać i wysyłać bez ostrzeżenia „Monterzy wymagają potwierdzenia”.
-- Potwierdzenie monterów nadal jest wymagane przy tworzeniu nowego protokołu albo przy zmianie i ponownym podpisaniu starego; sam wydruk istniejącego PDF nie zmienia danych zlecenia.
-- Bez migracji Supabase, zmian RLS, Storage i Edge Functions.
+- Pracownik mający dostęp do zakończonego montażu może od razu wejść w „Uzupełnij protokół”, zmienić dane protokołu i podpisać go ponownie — bez oczekiwania na potwierdzenie monterów przez administratora.
+- Przy ponownym generowaniu starego protokołu lista monterów jest odtwarzana lokalnie według historycznej reguły sprzed 11.68 (główny monter + dawne przypisania), bez automatycznego zapisywania tej listy do `jobs.installer_ids`.
+- Potwierdzenie `installer_ids` pozostaje wymagane tylko przy tworzeniu pierwszego protokołu dla starszego montażu, który nie ma jeszcze zapisanego PDF.
+- Backend nie wymaga nowej migracji: produkcyjna reguła z 11.47 już pozwala każdemu pracownikowi zespołu ponownie zapisać protokół zakończonego montażu.
+- Bez nowych zmian RLS, Storage i Edge Functions.
 
 ## 11.68
 - Monterzy: dodano jawne pole biznesowe `jobs.installer_ids`; techniczny dostęp przez `job_access` nie oznacza już automatycznie, że dana osoba była monterem.
