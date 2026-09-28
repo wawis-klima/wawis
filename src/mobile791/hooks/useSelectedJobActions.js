@@ -300,6 +300,16 @@ export function useSelectedJobActions({
         sendAssignmentPushFn: sendAssignmentPush,
       });
 
+      const postCreateWarnings = [...new Set((createdJob?.post_create_warnings || [])
+        .map((warning) => String(warning?.message || '').trim())
+        .filter(Boolean))];
+      if (postCreateWarnings.length) {
+        logDiagnostic('new-job.post-create.warning', {
+          jobId: createdJob?.id,
+          phases: (createdJob?.post_create_warnings || []).map((warning) => warning?.phase).filter(Boolean),
+        });
+      }
+
       if (String(form.worker_comment || '').trim() && createdJob?.id) {
         try {
           await addJobComment({
@@ -362,15 +372,25 @@ export function useSelectedJobActions({
       resetJobModalState();
       logDiagnostic('nameplate.save.modal.closed', { jobId: createdJob?.id, source: 'new-job', uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount });
       refreshAfterNameplateSave(createdJob?.id, 'new-job');
+      let outcomeMessage = '';
       if (documentationResult.failedCount) {
-        alert(workerWantsImmediateCompletion ? `Montaż został zapisany jako W trakcie, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu, a potem zakończ zlecenie.` : `Montaż został zapisany, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.`);
+        outcomeMessage = workerWantsImmediateCompletion
+          ? `Montaż został zapisany jako W trakcie, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu, a potem zakończ zlecenie.`
+          : `Montaż został zapisany, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.`;
       } else if (immediateCompletionQueued) {
-        alert('Montaż został zapisany. Zakończy się automatycznie po wysłaniu i potwierdzeniu wszystkich tabliczek znamionowych.');
+        outcomeMessage = 'Montaż został zapisany. Zakończy się automatycznie po wysłaniu i potwierdzeniu wszystkich tabliczek znamionowych.';
       } else if (documentationResult.backgroundCount) {
-        alert(`Montaż został zapisany. ${documentationResult.backgroundCount} ${documentationResult.backgroundCount === 1 ? 'zdjęcie wysyła się' : 'zdjęcia wysyłają się'} w tle.`);
+        outcomeMessage = `Montaż został zapisany. ${documentationResult.backgroundCount} ${documentationResult.backgroundCount === 1 ? 'zdjęcie wysyła się' : 'zdjęcia wysyłają się'} w tle.`;
       } else if (documentationResult.queuedCount) {
-        alert(`${documentationResult.queuedCount} ${documentationResult.queuedCount === 1 ? 'zdjęcie zapisano' : 'zdjęcia zapisano'} na telefonie. Aplikacja wyśle je automatycznie po odzyskaniu internetu.`);
+        outcomeMessage = `${documentationResult.queuedCount} ${documentationResult.queuedCount === 1 ? 'zdjęcie zapisano' : 'zdjęcia zapisano'} na telefonie. Aplikacja wyśle je automatycznie po odzyskaniu internetu.`;
       }
+      if (postCreateWarnings.length) {
+        const warningText = postCreateWarnings.join(' ');
+        outcomeMessage = outcomeMessage
+          ? `${outcomeMessage} ${warningText}`
+          : `Montaż został zapisany. ${warningText}`;
+      }
+      if (outcomeMessage) alert(outcomeMessage);
     } catch (error) {
       alert(normalizeDatabaseErrorMessage(error, SAVE_ERROR_MESSAGE));
     } finally {
