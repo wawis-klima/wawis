@@ -1,3 +1,14 @@
+## 11.68
+- Monterzy: dodano jawne pole biznesowe `jobs.installer_ids`; techniczny dostęp przez `job_access` nie oznacza już automatycznie, że dana osoba była monterem.
+- Nowe montaże zapisują potwierdzoną listę monterów od razu. Dla starszych montaży dawne przypisania są tylko podpowiedzią i wymagają jawnego potwierdzenia przed utworzeniem lub ponownym podpisaniem protokołu.
+- Protokół PDF używa wyłącznie potwierdzonej listy `installer_ids`; twórca lub osoba mająca sam dostęp techniczny nie trafia do pola „Monterzy”.
+- Usunięcie osoby z listy monterów nie odbiera jej automatycznie technicznego dostępu do montażu.
+- C7 / współbieżność: pełna edycja zapisuje tylko pola rzeczywiście zmienione względem snapshotu z chwili otwarcia formularza.
+- Backendowy zapis `save_job_concurrent_v1168` blokuje wiersz, sprawdza wartości bazowe zmienianych pól i zwraca konflikt zamiast nadpisywać świeższą zmianę z innego telefonu/desktopu.
+- Dane montażu i zmiana listy monterów są zapisywane w jednej transakcji; desktopowy OCR urządzeń korzysta z tej samej kontroli konfliktu.
+- Dodano czytelny komunikat konfliktu oraz regresję dla różnych pól, tego samego pola, technicznego dostępu i protokołu.
+- Migracja produkcyjna: `job_installers_concurrency_v1168`. Bez zmian polityk RLS.
+
 ## 11.67
 - C6 / desktop i mobile: po potwierdzonym INSERT nowego montażu błędy `job_access`, powiadomienia w aplikacji i PUSH nie są już zgłaszane jako błąd całego formularza.
 - Nowy montaż zachowuje ID po sukcesie INSERT; etapy poboczne zwracają jawne ostrzeżenia. Dzięki temu ponowne kliknięcie „Zapisz” po awarii powiadomienia nie powinno tworzyć drugiego rekordu.
