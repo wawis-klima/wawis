@@ -568,12 +568,29 @@ function inferJobDevicesFromNameplatePhotos(job = {}) {
   });
 }
 
+function hasPersistedDeviceFields(job = {}) {
+  if (!String(job?.id || '').trim()) return false;
+  return Object.prototype.hasOwnProperty.call(job, 'device_model')
+    || Object.prototype.hasOwnProperty.call(job, 'device_serial_number');
+}
+
 export function getJobDeviceRows(job = {}) {
-  const rows = normalizeJobDevices({
-    devices: job.devices,
-    device_model: job.device_model,
-    device_serial_number: job.device_serial_number,
-  });
+  const usePersistedFields = hasPersistedDeviceFields(job);
+  const rows = normalizeJobDevices(usePersistedFields
+    ? {
+      device_model: job.device_model,
+      device_serial_number: job.device_serial_number,
+    }
+    : {
+      devices: job.devices,
+      device_model: job.device_model,
+      device_serial_number: job.device_serial_number,
+    });
+
+  // Dla zapisanego montażu pola z rekordu jobs są źródłem prawdy, również gdy
+  // zostały świadomie wyczyszczone. Stara lokalna tablica job.devices nie może
+  // przywrócić usuniętego lub zmienionego urządzenia po odświeżeniu summary.
+  if (usePersistedFields) return rows;
   return rows.length ? rows : inferJobDevicesFromNameplatePhotos(job);
 }
 

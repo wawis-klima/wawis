@@ -284,6 +284,17 @@ export default function JobFormModal({
   }
 
   function removeIndoorUnit(deviceIndex, indoorIndex) {
+    const currentDevice = jobDevices[deviceIndex] || {};
+    const currentIndoorCount = Math.max(
+      getDeviceIndoorSerials(currentDevice, { keepEmpty: true }).length,
+      getDeviceIndoorModels(currentDevice, { keepEmpty: true }).length,
+      1,
+    );
+    if (editingJobId && indoorIndex < currentIndoorCount - 1) {
+      alert('W zapisanym montażu można usunąć tylko ostatnią jednostkę JW. Dzięki temu istniejące tabliczki i potwierdzenia pozostają przypisane do właściwych jednostek.');
+      return;
+    }
+
     const unitRef = `jw-${indoorIndex + 1}`;
     if (hasExistingNameplatePhoto(deviceIndex, unitRef)) {
       alert('Nie można usunąć tej jednostki JW, ponieważ jej tabliczka jest już zapisana. Najpierw usuń zdjęcie z karty zlecenia.');

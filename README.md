@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.64
+- 11.65
 
-Wersja 11.64 porządkuje tryb offline: pełna edycja nie udaje zapisu samych urządzeń, a odrzucony status offline nie pozostaje na karcie jako potwierdzony.
+Wersja 11.65 porządkuje urządzenia i JW: świeże pola z serwera mają pierwszeństwo nad starym cache, a w istniejącym montażu nie można usunąć JW ze środka listy.
 
-# Wawis Klimatyzacja — wersja 11.64
+# Wawis Klimatyzacja — wersja 11.65
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.65` — zapisane montaże nie pokazują już starych `job.devices` zamiast świeżych pól z serwera; usuwanie JW ze środka istniejącego montażu jest blokowane, żeby nie rozjechać przypisań tabliczek.
 - wersja `11.64` — pełna edycja montażu wymaga połączenia i zachowuje formularz przy braku sieci; konflikt statusu offline przywraca potwierdzony stan zamiast pokazywać odrzucone „Zakończone”.
 - wersja `11.63` — kliknięcie PUSH dotyczącego montażu otwiera właściwe zlecenie także przy wznowieniu już uruchomionej aplikacji PWA; aktywne okno dostaje `jobId` bezpośrednio, a deeplink URL pozostaje fallbackiem.
 - wersja `11.61` — mobilna edycja klienta zachowuje powiązaną kartotekę i nadpisuje zmienione dane dla Administratora oraz Pracownika; historyczne duplikaty e-maila/telefonu nie blokują aktualizacji istniejącego klienta.
