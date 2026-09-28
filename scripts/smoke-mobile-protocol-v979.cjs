@@ -107,6 +107,11 @@ assert.match(paymentModule, /Wpłacono zaliczkę/);
 assert.match(paymentModule, /saveJobPaymentConfirmation/);
 
 assert.match(pdfModule, /createJobProtocolPdfFile/);
+assert.match(pdfModule, /import \{ getInitials, getJobAddress \} from "\.\.\/utils\/jobHelpers\.jsx";/);
+assert.match(pdfModule, /const initialsById = new Map/);
+assert.match(pdfModule, /getInitials\(displayName\)/);
+assert.match(pdfModule, /const seenIds = new Set\(\)/);
+assert.match(pdfModule, /drawField\(doc, "Monterzy", data\.technicians\.join\(", "\)/);
 assert.match(pdfModule, /DejaVuSans\.ttf\?url/);
 assert.match(pdfModule, /WAWIS CHŁODNICTWO I KLIMATYZACJA/);
 assert.doesNotMatch(pdfModule, /doc\.text\("WERSJA TESTOWA"/);
