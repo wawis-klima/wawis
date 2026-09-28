@@ -3,7 +3,7 @@ import boldFontUrl from "dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows, parseDeviceSerialLine } from "./job-devices.js";
 import { getJobNameplateCompletion } from "./nameplate-requirements.js";
 import { getNameplatePhotoMetadata } from "./photos.js";
-import { getJobAddress } from "../utils/jobHelpers.jsx";
+import { getInitials, getJobAddress } from "../utils/jobHelpers.jsx";
 import { getPaymentDraftFromJob, normalizePaymentConfirmation } from "./job-payment-confirmation.js";
 import { PROTOCOL_REVIEW_QR_MATRIX } from "./protocol-review-qr.js";
 
@@ -61,20 +61,25 @@ export function formatProtocolDateTime(value) {
 }
 
 function getAssignedTechnicians(job = {}, profiles = []) {
-  const namesById = new Map((profiles || []).map((person) => [String(person?.id || ""), person?.full_name || person?.email || ""]));
+  const initialsById = new Map((profiles || []).map((person) => {
+    const emailName = String(person?.email || "").split("@")[0].replace(/[._-]+/g, " ");
+    const displayName = person?.full_name || emailName;
+    return [String(person?.id || ""), getInitials(displayName)];
+  }));
   const ids = [
     job?.main_technician_id,
     ...(Array.isArray(job?.viewers) ? job.viewers.map((viewer) => viewer?.user_id) : []),
   ].map((value) => String(value || "").trim()).filter(Boolean);
-  const names = [];
-  const seen = new Set();
+  const initials = [];
+  const seenIds = new Set();
   ids.forEach((id) => {
-    const name = normalizeText(namesById.get(id), "");
-    if (!name || seen.has(name)) return;
-    seen.add(name);
-    names.push(name);
+    if (seenIds.has(id)) return;
+    seenIds.add(id);
+    const value = normalizeText(initialsById.get(id), "");
+    if (!value || value === "-") return;
+    initials.push(value);
   });
-  return names.length ? names : ["Brak przypisanych monterów"];
+  return initials.length ? initials : ["Brak przypisanych monterów"];
 }
 
 export function getProtocolModelRevision(model = "") {
