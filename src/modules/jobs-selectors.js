@@ -1,3 +1,5 @@
+import { getAssignedUserIdsFromJob } from './jobs-assignment.js';
+
 export function formatDate(dateStr) {
   if (!dateStr) return '';
   const date = new Date(dateStr);
@@ -37,7 +39,7 @@ export function getVisibleJobs({
   const filtered = jobs.filter((job) => {
     const hay = `${job.client || ''} ${job.city || ''} ${job.street || ''} ${job.email || ''} ${job.phone || ''} ${job.device_model || ''} ${job.device_serial_number || ''}`.toLowerCase();
     const matchesQuery = hay.includes(normalizedQuery);
-    const isAssignedToCurrentUser = job.main_technician_id === profile.id || job.viewers.some((viewer) => viewer.user_id === profile.id);
+    const isAssignedToCurrentUser = getAssignedUserIdsFromJob(job).includes(String(profile.id));
     const shouldIgnoreStatusFilter = !isAdmin && showAssignedJobsOnly;
     const matchesStatus = hasActiveQuery || shouldIgnoreStatusFilter ? true : normalizeStatus(job.status) === desktopStatusFilter;
     const matchesAssignedFilter = isAdmin || !showAssignedJobsOnly ? true : isAssignedToCurrentUser;
