@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.67",
+  "version": "11.68",
   "scope": "full",
-  "release_branch": "release/v11.67",
+  "release_branch": "release/v11.68",
   "baseline_diagnostics": {
-    "checked": false,
+    "checked": true,
     "last_24h": false,
-    "result": "PENDING",
-    "notes": "Pakiet Pewność zapisów C6+C8. Desktop/mobile: sukces INSERT jobs jest oddzielony od błędów job_access/powiadomień/PUSH. Mobile: tabliczka jest potwierdzana po dokładnej deterministycznej ścieżce nowego uploadu. Bez zmian schematu, RLS, Storage i Edge Functions."
+    "result": "PASS",
+    "notes": "Przed wdrożeniem sprawdzono produkcyjny schemat jobs, RLS jobs/job_access, trigger private.guard_job_fields oraz wdrożoną definicję save_job_with_access. 11.68 dodaje jawne installer_ids i osobny RPC z kontrolą współbieżności; nie zmienia istniejących polityk RLS."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.67.zip"
+    "file_name": "klima-app-v11.68.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.67",
+    "source_branch": "release/v11.68",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić: awaria powiadomienia/PUSH po zapisaniu nowego montażu nie tworzy drugiego jobs i użytkownik dostaje ostrzeżenie; awaria job_access pozostawia istniejący montaż bez ponownego INSERT. Mobile: przy podmianie tabliczki stary plik tej samej JW/JZ nie potwierdza nowego uploadu; po utracie odpowiedzi dokładnie nowa ścieżka jest rozpoznawana."
+    "notes": "Sprawdzić: twórca z samym job_access nie pojawia się jako monter; starszy montaż wymaga jawnego potwierdzenia listy przed nowym protokołem; usunięcie z listy monterów nie usuwa job_access; równoległa zmiana dwóch różnych pól nie koliduje, a równoległa zmiana tego samego pola zwraca konflikt bez nadpisania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak migracji; używane są istniejące jobs/job_access/photos i storage_path",
-    "rls_role_matrix": "N/A — brak zmian RLS",
-    "performance_advisor": "N/A — brak zmian bazodanowych",
-    "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
-    "trigger_grants": "N/A — brak zmian triggerów/grantów",
+    "supabase_migration_applied": "PASS — job_installers_concurrency_v1168 zastosowana produkcyjnie",
+    "rls_role_matrix": "PASS — bez zmian polityk RLS; zweryfikowano jobs i job_access przed migracją",
+    "performance_advisor": "N/A — migracja nie dodaje indeksów ani ciężkich zapytań listowych",
+    "security_advisor": "N/A — bez zmian polityk bezpieczeństwa; RPC działa jako invoker i wykonanie przyznano authenticated",
+    "trigger_grants": "PASS — istniejący guard_job_fields pozostaje aktywny; RPC nie używa SECURITY DEFINER",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main"
   }
