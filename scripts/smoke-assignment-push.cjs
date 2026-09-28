@@ -53,21 +53,21 @@ async function main() {
   assert.equal(assignment.shouldSendAssignmentPushForInstallationDate('2026-09-29', fixedToday), true);
 
   assert.deepEqual(
-    assignment.getAssignedUserIdsFromJob({
+    Array.from(assignment.getAssignedUserIdsFromJob({
       main_technician_id: 'main',
       installer_ids: ['tech-b', 'main'],
       viewers: [{ user_id: 'access-only' }],
-    }),
+    })),
     ['main', 'tech-b'],
     'Potwierdzona lista monterów nie może być rozszerzana przez techniczny job_access.',
   );
 
   assert.deepEqual(
-    assignment.getAssignedUserIdsFromJob({
+    Array.from(assignment.getAssignedUserIdsFromJob({
       main_technician_id: 'main',
       installer_ids: null,
       viewers: [{ user_id: 'legacy-access' }],
-    }),
+    })),
     ['main'],
     'Historyczny job_access nie jest automatycznie potwierdzoną listą monterów.',
   );
@@ -97,8 +97,8 @@ async function main() {
     sendAssignmentPushFn: async (payload) => pushes.push(payload),
   });
 
-  assert.deepEqual(rpcPayload.p_installer_ids, ['tech-new']);
-  assert.deepEqual(rpcPayload.p_expected_installer_ids, []);
+  assert.deepEqual(Array.from(rpcPayload.p_installer_ids), ['tech-new']);
+  assert.deepEqual(Array.from(rpcPayload.p_expected_installer_ids), []);
   assert.equal(rpcPayload.p_update_installers, true);
   assert.equal(added.added, true);
   assert.equal(pushes.length, 1, 'Nowe przypisanie biznesowe przyszłego montażu nadal wysyła push.');
@@ -120,7 +120,7 @@ async function main() {
     sendAssignmentPushFn: async (payload) => pushes.push(payload),
   });
 
-  assert.deepEqual(rpcPayload.p_installer_ids, ['main']);
+  assert.deepEqual(Array.from(rpcPayload.p_installer_ids), ['main']);
   assert.equal(rpcPayload.p_expected_installer_ids, null, 'Pierwsze potwierdzenie starego montażu ma rozpoznać brak wcześniejszej jawnej listy.');
   assert.equal(removed.removed, true);
   assert.equal(pushes.length, 0, 'Usunięcie sugestii/historyczne przypisanie nie wysyła push.');
