@@ -18,6 +18,8 @@ import { getOrCreateRefreshPayloadRequest, persistedSnapshotCoversCursor } from 
 
 const APP_REFRESH_TIMEOUT_MS = 20000;
 const AUTH_RESTORE_RETRY_MS = 30000;
+const TRANSIENT_REFRESH_RETRY_MS = 3000;
+const TRANSIENT_REFRESH_MAX_ATTEMPTS = 3;
 
 function withRefreshTimeout(promise, timeoutMs = APP_REFRESH_TIMEOUT_MS) {
   let timerId;
@@ -64,6 +66,7 @@ export function useAppSession({
   const refreshPayloadInFlightRef = useRef(new Map());
   const changeCursorRef = useRef(null);
   const incrementalRefreshInFlightRef = useRef(null);
+  const transientRefreshRetryTimerRef = useRef(null);
   const sessionGenerationStateRef = useRef(createSessionGenerationState());
 
   useEffect(() => {
@@ -92,6 +95,10 @@ export function useAppSession({
   const previousUserId = String(sessionGenerationStateRef.current.userId || '').trim();
   transitionSessionGeneration(sessionGenerationStateRef.current, nextUserId);
   if (previousUserId !== nextUserId) {
+    if (transientRefreshRetryTimerRef.current && typeof window !== 'undefined') {
+      window.clearTimeout(transientRefreshRetryTimerRef.current);
+      transientRefreshRetryTimerRef.current = null;
+    }
     refreshPayloadInFlightRef.current.clear();
     incrementalRefreshInFlightRef.current = null;
     changeCursorRef.current = null;
@@ -132,7 +139,12 @@ export function useAppSession({
 
   const refreshAll = useCallback(async (user, options = {}) => {
     if (!supabase || !user) return;
-    const { silent = false, preserveJobDetails = true } = options;
+    const {
+      silent = false,
+      preserveJobDetails = true,
+      autoRetryTransient = false,
+      retryAttempt = 0,
+    } = options;
     const userId = String(user.id || '').trim();
     const sessionToken = captureSessionGeneration(sessionGenerationStateRef.current, userId);
     const isCurrentSession = () => isSessionGenerationCurrent(sessionGenerationStateRef.current, sessionToken);
@@ -146,6 +158,12 @@ export function useAppSession({
     let coreJobsApplied = false;
     let coreJobs = null;
     let changeCursorAtRefreshStart = null;
+    let keepVisibleForRetry = false;
+
+    if (transientRefreshRetryTimerRef.current && typeof window !== 'undefined') {
+      window.clearTimeout(transientRefreshRetryTimerRef.current);
+      transientRefreshRetryTimerRef.current = null;
+    }
 
     const getProfileFallback = (activeUser = user) => profileRef.current || {
       id: activeUser?.id || userId,
@@ -366,19 +384,51 @@ export function useAppSession({
         return { ok: true, transient: true, partial: true, coreJobsApplied: true };
       }
 
-      // Przy chwilowym 5xx/timeoutie zachowujemy ostatni poprawny stan. Ręczny refresh
-      // pokazuje błąd tylko wtedy, gdy telefon nie ma żadnych użytecznych danych.
+      // Przy chwilowym 5xx/timeoutie zachowujemy ostatni poprawny stan. Jeżeli po
+      // logowaniu nie mamy jeszcze żadnych danych, utrzymujemy komunikat ładowania
+      // i ponawiamy pobranie automatycznie zamiast zostawiać pusty ekran.
       const hasUsableJobs = Array.isArray(jobsRef.current) && jobsRef.current.length > 0;
+      const canScheduleRetry = (
+        transient
+        && !sessionExpired
+        && autoRetryTransient
+        && retryAttempt < TRANSIENT_REFRESH_MAX_ATTEMPTS
+        && typeof window !== 'undefined'
+      );
+
+      if (canScheduleRetry) {
+        keepVisibleForRetry = !silent && !hasUsableJobs;
+        transientRefreshRetryTimerRef.current = window.setTimeout(() => {
+          transientRefreshRetryTimerRef.current = null;
+          if (!isCurrentSession()) return;
+          void refreshAll(user, {
+            ...options,
+            silent: hasUsableJobs ? true : false,
+            preserveJobDetails: true,
+            autoRetryTransient: true,
+            retryAttempt: retryAttempt + 1,
+          });
+        }, TRANSIENT_REFRESH_RETRY_MS);
+      }
+
       if (sessionExpired) {
         setErrorMsg('Sesja wygasła — zaloguj się ponownie.');
-      } else if (!transient || (!silent && !hasUsableJobs)) {
+      } else if (!canScheduleRetry && (!transient || (!silent && !hasUsableJobs))) {
         setErrorMsg(getSupabaseUserMessage(error, 'Nie udało się pobrać danych.'));
       }
-      return { ok: false, transient, sessionExpired, preservedExistingData: hasUsableJobs };
+      return {
+        ok: false,
+        transient,
+        sessionExpired,
+        preservedExistingData: hasUsableJobs,
+        retryScheduled: canScheduleRetry,
+      };
     } finally {
       if (!silent && isCurrentSession()) {
         setBusy(false);
-        if (visibleRefreshRequestId === visibleRefreshRequestIdRef.current) setIsRefreshingData(false);
+        if (!keepVisibleForRetry && visibleRefreshRequestId === visibleRefreshRequestIdRef.current) {
+          setIsRefreshingData(false);
+        }
       }
     }
   }, [normalizeStatus, selectedJobIdRef, setSelectedJob, setSessionUserForGeneration, supabase]);
@@ -569,6 +619,10 @@ export function useAppSession({
     return () => {
       isMounted = false;
       if (retryTimerId && typeof window !== "undefined") window.clearTimeout(retryTimerId);
+      if (transientRefreshRetryTimerRef.current && typeof window !== "undefined") {
+        window.clearTimeout(transientRefreshRetryTimerRef.current);
+        transientRefreshRetryTimerRef.current = null;
+      }
       unsubscribe();
     };
   }, [applyLoggedOutState, logoutFlagKey, refreshAll, setSessionUserForGeneration, supabase]);
