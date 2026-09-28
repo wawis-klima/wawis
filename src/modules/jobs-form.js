@@ -370,7 +370,7 @@ export async function addJobRecord({
   // Po potwierdzonym INSERT rekord jobs jest już utworzony. Kolejne etapy są
   // poboczne i nie mogą zamienić sukcesu INSERT w błąd całego formularza.
   const postCreateWarnings = [];
-  const selectedUsers = [...new Set(resolvedForm.viewers || [])];
+  const selectedUsers = getAssignedUserIdsFromForm(resolvedForm);
   let accessConfirmed = true;
 
   if (selectedUsers.length) {
