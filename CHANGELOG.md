@@ -1,3 +1,10 @@
+## 11.61
+- Mobile, edycja klienta: Administrator i Pracownik mogą zmieniać dane klienta w aktywnym montażu, a istniejąca kartoteka kontrahenta pozostaje podpięta i jest aktualizowana.
+- Historyczny duplikat e-maila, telefonu lub NIP w bazie nie blokuje już aktualizacji istniejącego kontrahenta; blokada tworzenia nowych duplikatów nadal działa przy dodawaniu nowej kartoteki.
+- Ręczna lub głosowa zmiana nazwy klienta podczas edycji nie odpina już `contractor_id`; dla starszych niepodpiętych montaży aplikacja bezpiecznie dopasowuje albo tworzy kontrahenta przez ograniczone RPC.
+- Synchronizacja danych klienta z edytowanego montażu działa zarówno dla Administratora, jak i Pracownika, bez przyznawania bezpośredniego UPDATE do tabeli `contractors`.
+- Unikalność nazwy kontrahenta pozostaje chroniona istniejącym indeksem; zmiana nie usuwa danych ani polityk RLS.
+
 ## 11.60
 - Mobile, weryfikacja tabliczek Single: Teta i Teta Mirror są traktowane jako zgodne rodziny dla wspólnej jednostki zewnętrznej serii TO.
 - Poprawiono fałszywą blokadę dla prawidłowych par Teta Mirror `TMxxXi + TOxxXo` oraz Teta `TAxxXi + TOxxXo`, niezależnie od tego, czy katalog opisze agregat TO jako „Teta”, czy „Teta Mirror”.
