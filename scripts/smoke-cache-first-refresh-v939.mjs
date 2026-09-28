@@ -84,12 +84,18 @@ const mobileApp = read('src/mobile791/App.jsx');
 assert.match(mobileApp, /hasUsableData=\{Boolean\(profile\) \|\| jobs\.length > 0\}/);
 
 const mobileAuth = read('src/mobile791/modules/auth.js');
-assert.match(mobileAuth, /silent: false,[\s\S]*autoRetryTransient: true/);
-assert.match(mobileAuth, /if \(event === 'USER_UPDATED'\)/);
-assert.doesNotMatch(
+assert.match(
   mobileAuth,
-  /if \(event === 'SIGNED_IN' \|\| event === 'USER_UPDATED'\) \{\s*void refreshAll/,
-  'Mobile SIGNED_IN nie może dublować pełnego pobierania danych.',
+  /if \(event === 'SIGNED_IN'\) \{[\s\S]*silent: false,[\s\S]*autoRetryTransient: true/,
+);
+assert.match(mobileAuth, /else if \(event === 'USER_UPDATED'\)/);
+const mobileLoginStart = mobileAuth.indexOf('export async function loginUser');
+const mobileRegisterStart = mobileAuth.indexOf('export async function registerAppUser', mobileLoginStart);
+const mobileLoginBody = mobileAuth.slice(mobileLoginStart, mobileRegisterStart);
+assert.doesNotMatch(
+  mobileLoginBody,
+  /refreshAll\(/,
+  'loginUser nie może dublować pełnego pobierania wykonywanego przez SIGNED_IN listener.',
 );
 
 const mobileSession1172 = read('src/mobile791/hooks/useAppSession.js');
