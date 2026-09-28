@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Zmiana 11.69 dotyczy wyłącznie renderowania mobilnego protokołu PDF i widoku zapisanego protokołu. Nie zmienia schematu Supabase, RLS, Storage ani Edge Functions."
+    "notes": "Zmiana 11.69 dotyczy renderowania mobilnego protokołu PDF i usunięcia blokady UI dla ponownej edycji/podpisu zapisanego starszego protokołu. Zweryfikowano produkcyjne RLS: current_user_can_finalize_job() dopuszcza każdego pracownika zespołu dla zakończonego montażu, a UPDATE job_protocols korzysta z tej reguły. Nie jest potrzebna nowa migracja."
   },
   "drive_backup": {
     "required": false,
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić na produkcji: protokół z 3 kompletami JW/JZ ma jedną stronę A4 i dwie kolumny; JW/JZ jednego kompletu nie są rozdzielone; zapisany starszy protokół drukuje się bez komunikatu o niepotwierdzonych monterach."
+    "notes": "Sprawdzić na produkcji: protokół z 3 kompletami JW/JZ ma jedną stronę A4 i dwie kolumny; JW/JZ jednego kompletu nie są rozdzielone; pracownik może drukować, wejść w Uzupełnij protokół, zmienić dane i podpisać ponownie zapisany starszy protokół bez komunikatu o potwierdzeniu monterów."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,7 +33,7 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_migration_applied": "N/A — brak zmian backendu i migracji",
-    "rls_role_matrix": "N/A — brak zmian RLS",
+    "rls_role_matrix": "PASS — produkcyjna funkcja current_user_can_finalize_job() dopuszcza staff dla zakończonego montażu; UPDATE job_protocols używa tej reguły",
     "performance_advisor": "N/A — brak zmian zapytań bazodanowych",
     "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
