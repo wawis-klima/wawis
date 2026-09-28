@@ -128,14 +128,14 @@ function loadJobsFormModule() {
   });
 
   assert.equal(rpcName, 'save_job_concurrent_v1168');
-  assert.deepEqual(rpcPayload.p_fields, {
+  assert.equal(JSON.stringify(rpcPayload.p_fields), JSON.stringify({
     device_model: 'Rotenso Imoto X',
     device_serial_number: 'NEW-SN',
-  });
-  assert.deepEqual(rpcPayload.p_expected, {
+  }));
+  assert.equal(JSON.stringify(rpcPayload.p_expected), JSON.stringify({
     device_model: 'Rotenso Imoto',
     device_serial_number: 'OLD-SN',
-  });
+  }));
   assert.equal(rpcPayload.p_update_installers, false);
 
   const source = read('src', 'modules', 'jobs-form.js');
