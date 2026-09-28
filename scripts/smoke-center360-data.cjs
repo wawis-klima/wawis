@@ -15,7 +15,8 @@ assert.match(panelSource, /getJobTypeClass\(job\)/, 'Statusy w Centrum 360 musz�
 assert.match(panelSource, /getJobTypeLabel\(job\)/, 'Statusy w Centrum 360 muszą używać tych samych etykiet co lista Montaże.');
 assert.doesNotMatch(panelSource, /className=\"centrum360InstallerBadge\"/, 'Centrum 360 nie może używać osobnego tekstowego badge montera.');
 assert.doesNotMatch(panelSource, /getJobInstaller\(/, 'Centrum 360 nie może sklejać pełnych nazw monterów w jeden tekst.');
-assert.match(panelSource, /Array\.isArray\(job\.viewers\)/, 'Centrum 360 musi uwzględniać monterów z job.viewers.');
+assert.match(panelSource, /Array\.isArray\(job\.installer_ids\)/, 'Centrum 360 musi używać jawnej listy monterów installer_ids.');
+assert.doesNotMatch(panelSource, /Array\.isArray\(job\.viewers\)/, 'Centrum 360 nie może traktować technicznego job_access/viewers jako listy monterów.');
 assert.match(appSource, /profiles=\{profiles\}/, 'Centrum 360 musi dostać profile, żeby wyświetlać nazwy monterów.');
 assert.doesNotMatch(panelSource, /label:\s*'Urządzenia'/, 'Kafelek Urządzenia ma być usunięty z góry Centrum 360.');
 assert.match(panelSource, /Montaże bieżący tydzień/, 'Kafelek tygodniowy ma mieć etykietę Montaże bieżący tydzień.');
