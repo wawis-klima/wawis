@@ -1270,3 +1270,4 @@ Minimum dla każdej wersji:
 Dodano Teta Mirror TM35Xi R16 oraz agregaty Hiro Multi S-Line, N-Line i HP-Line. Po wdrożeniu należy uruchomić `nameplate-product-catalog-multi-teta-seed-v9.01.sql`.
 
 - `npm run test:smoke:mobile-new-job-comment` — sprawdza kompaktowy komentarz, kontrolowane nagrywanie oraz ukrycie instalatorów przy tworzeniu nowego zlecenia.
+<!-- production-redeploy: 11.63-2 -->
