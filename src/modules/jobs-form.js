@@ -1,6 +1,8 @@
 import {
   getAssignedUserIdsFromForm,
   getAssignedUserIdsFromJob,
+  getLegacyInstallerSuggestionIds,
+  normalizeInstallerIds,
   shouldSendAssignmentPushForInstallationDate,
 } from './jobs-assignment.js';
 import { applyAutoLinkedContractorToJobForm } from './job-contractors.js';
@@ -30,6 +32,7 @@ export const EMPTY_JOB_FORM = {
   sms_reminder_enabled: true,
   sms_recipient_phone: '',
   viewers: [],
+  installers_confirmed: true,
 };
 
 
@@ -85,9 +88,15 @@ export function buildEditJobForm({ job, profiles, normalizeStatus }) {
     sms_consent: true,
     sms_reminder_enabled: true,
     sms_recipient_phone: job.sms_recipient_phone || job.phone || '',
-    viewers: profiles
-      .filter((person) => job.viewers.some((viewer) => viewer.user_id === person.id) && person.id !== job.main_technician_id)
-      .map((person) => person.id),
+    viewers: (() => {
+      const installerIds = Array.isArray(job.installer_ids)
+        ? normalizeInstallerIds(job.installer_ids)
+        : getLegacyInstallerSuggestionIds(job);
+      return profiles
+        .filter((person) => installerIds.includes(String(person.id)) && String(person.id) !== String(job.main_technician_id || ''))
+        .map((person) => person.id);
+    })(),
+    installers_confirmed: Array.isArray(job.installer_ids),
   });
 }
 
@@ -376,6 +385,7 @@ export async function addJobRecord({
     contractor_address_id: resolvedForm.contractor_address_id && resolvedForm.contractor_address_id !== NEW_CONTRACTOR_ADDRESS_ID ? resolvedForm.contractor_address_id : null,
     device_model: deviceFields.device_model || null,
     device_serial_number: deviceFields.device_serial_number || null,
+    installer_ids: getAssignedUserIdsFromForm(resolvedForm),
   }).select('id').single();
   if (error) throw error;
   const createdJob = Array.isArray(data) ? data[0] : data;
