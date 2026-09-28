@@ -10,6 +10,8 @@ const desktopDeviceCardsPath = path.join(root, 'src', 'components', 'desktop', '
 const devicesPanelPath = path.join(root, 'src', 'components', 'devices', 'DevicesPanel.jsx');
 const jobDevicesPath = path.join(root, 'src', 'modules', 'job-devices.js');
 const devicesFetchPath = path.join(root, 'src', 'modules', 'devices-fetch.js');
+const mobileModalPath = path.join(root, 'src', 'mobile791', 'components', 'modals', 'JobFormModal.jsx');
+const mobileJobDevicesPath = path.join(root, 'src', 'mobile791', 'modules', 'job-devices.js');
 
 const modalSource = fs.readFileSync(modalPath, 'utf8');
 const detailsSource = fs.readFileSync(detailsPath, 'utf8');
@@ -17,6 +19,8 @@ const desktopDeviceCardsSource = fs.readFileSync(desktopDeviceCardsPath, 'utf8')
 const devicesPanelSource = fs.readFileSync(devicesPanelPath, 'utf8');
 const jobDevicesSource = fs.readFileSync(jobDevicesPath, 'utf8');
 const devicesFetchSource = fs.readFileSync(devicesFetchPath, 'utf8');
+const mobileModalSource = fs.readFileSync(mobileModalPath, 'utf8');
+const mobileJobDevicesSource = fs.readFileSync(mobileJobDevicesPath, 'utf8');
 
 assert.match(jobDevicesSource, /MAX_INDOOR_UNITS_PER_DEVICE\s*=\s*5/);
 assert.match(jobDevicesSource, /indoor_serial_numbers/);
@@ -33,12 +37,51 @@ assert.match(devicesPanelSource, /function addEditIndoorUnit\(\)/);
 assert.match(devicesPanelSource, /function removeEditIndoorUnit\(indoorIndex\)/);
 assert.match(devicesPanelSource, /\+ Dodaj tylko jednostkę wewnętrzną/);
 assert.match(devicesFetchSource, /indoor_serial_numbers: getDeviceIndoorSerials\(device\)/);
+assert.match(jobDevicesSource, /function hasPersistedDeviceFields\(job = \{\}\)/);
+assert.match(jobDevicesSource, /if \(usePersistedFields\) return rows/);
+assert.match(mobileJobDevicesSource, /function hasPersistedDeviceFields\(job = \{\}\)/);
+assert.match(mobileJobDevicesSource, /if \(usePersistedFields\) return rows/);
+assert.match(modalSource, /editingJobId && indoorIndex < currentIndoorCount - 1/);
+assert.match(mobileModalSource, /editingJobId && indoorIndex < currentIndoorCount - 1/);
+assert.match(modalSource, /W zapisanym montażu można usunąć tylko ostatnią jednostkę JW/);
+assert.match(mobileModalSource, /W zapisanym montażu można usunąć tylko ostatnią jednostkę JW/);
 
 (async () => {
   const jobDevices = await import(pathToFileURL(jobDevicesPath).href);
   const devicesFetch = await import(pathToFileURL(devicesFetchPath).href);
+  const mobileJobDevices = await import(pathToFileURL(mobileJobDevicesPath).href);
 
-  const parsed = jobDevices.parseDeviceSerialLine('JW1: A-001 | JW2: A-002 | JW3: A-003 | JW4: A-004 | JW5: A-005 | JZ: OUT-001');
+  const persistedWithStaleLocalDevices = {
+    id: 'job-stale-device-cache',
+    devices: [{ model: 'OLD LOCAL', serial_number: 'OLD-SN' }],
+    device_model: 'NEW SERVER',
+    device_serial_number: 'NEW-SN',
+  };
+  const desktopFreshRows = jobDevices.getJobDeviceRows(persistedWithStaleLocalDevices);
+  const mobileFreshRows = mobileJobDevices.getJobDeviceRows(persistedWithStaleLocalDevices);
+  assert.equal(desktopFreshRows[0]?.model, 'NEW SERVER', 'Desktop: zapisany montaż musi ufać świeżym polom jobs zamiast starego job.devices.');
+  assert.equal(desktopFreshRows[0]?.serial_number, 'NEW-SN');
+  assert.equal(mobileFreshRows[0]?.model, 'NEW SERVER', 'Mobile: zapisany montaż musi ufać świeżym polom jobs zamiast starego job.devices.');
+  assert.equal(mobileFreshRows[0]?.serial_number, 'NEW-SN');
+
+  const persistedCleared = {
+    id: 'job-cleared-device-cache',
+    devices: [{ model: 'OLD SHOULD NOT RETURN', serial_number: 'OLD-SN' }],
+    device_model: '',
+    device_serial_number: '',
+    photos: [{ storage_path: 'job-cleared-device-cache/nameplates/device-1_jz_old.jpg' }],
+  };
+  assert.deepEqual(jobDevices.getJobDeviceRows(persistedCleared), [], 'Desktop: świadomie wyczyszczone pola nie mogą wskrzesić urządzenia z cache ani zdjęcia.');
+  assert.deepEqual(mobileJobDevices.getJobDeviceRows(persistedCleared), [], 'Mobile: świadomie wyczyszczone pola nie mogą wskrzesić urządzenia z cache ani zdjęcia.');
+
+  const unsavedDraftRows = jobDevices.getJobDeviceRows({
+    devices: [{ model: 'DRAFT LOCAL', serial_number: 'DRAFT-SN' }],
+    device_model: 'SERIALIZED DRAFT',
+    device_serial_number: 'SERIALIZED-DRAFT-SN',
+  });
+  assert.equal(unsavedDraftRows[0]?.model, 'DRAFT LOCAL', 'Niezapisany formularz nadal korzysta z tablicy devices.');
+
+    const parsed = jobDevices.parseDeviceSerialLine('JW1: A-001 | JW2: A-002 | JW3: A-003 | JW4: A-004 | JW5: A-005 | JZ: OUT-001');
   assert.deepEqual(parsed.indoor_serial_numbers, ['A-001', 'A-002', 'A-003', 'A-004', 'A-005']);
   assert.equal(parsed.indoor_serial_number, 'A-001');
   assert.equal(parsed.outdoor_serial_number, 'OUT-001');
