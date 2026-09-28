@@ -6,6 +6,24 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/\r\n/g, '\n');
 
+function assertPostCreateSafetyContract() {
+  const desktopJobsForm = read('src/modules/jobs-form.js');
+  const mobileJobsForm = read('src/mobile791/modules/jobs-form.js');
+  const desktopActions = read('src/hooks/useSelectedJobActions.js');
+  const mobileActions = read('src/mobile791/hooks/useSelectedJobActions.js');
+
+  for (const source of [desktopJobsForm, mobileJobsForm]) {
+    assert(source.includes('post_create_warnings'), 'C6: wynik utworzenia musi zachować ostrzeżenia etapów pobocznych.');
+    assert(source.includes("phase: 'job_access'"), 'C6: błąd przypisań musi być odróżniony od błędu INSERT jobs.');
+    assert(source.includes("phase: 'notification'"), 'C6: błąd powiadomienia musi być ostrzeżeniem po INSERT.');
+    assert(source.includes("phase: 'push'"), 'C6: błąd PUSH musi być ostrzeżeniem po INSERT.');
+  }
+  assert(desktopActions.includes('createdJob?.post_create_warnings'), 'Desktop musi obsłużyć ostrzeżenia bez ponownego INSERT.');
+  assert(mobileActions.includes('createdJob?.post_create_warnings'), 'Mobile musi obsłużyć ostrzeżenia bez ponownego INSERT.');
+}
+
+assertPostCreateSafetyContract();
+
 function assertServerSidePushDateGuard() {
   const source = read('supabase/functions/send-assignment-push/index.ts');
 
