@@ -1,4 +1,4 @@
-import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError, TRANSIENT_SUPABASE_MESSAGE } from './supabase-errors.js';
+import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } from './supabase-errors.js';
 import { deactivatePushForLogout, reconcilePendingPushLogout } from './push-subscriptions.js';
 
 export function clearAppClientState({
