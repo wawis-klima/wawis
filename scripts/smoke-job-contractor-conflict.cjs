@@ -41,43 +41,35 @@ const root = path.resolve(__dirname, '..');
   assert.equal(sameContractor, null, 'Wybrany kontrahent nie może konfliktować sam ze sobą');
 
   let rpcPayload = null;
-  let updatePayload = null;
+  let concurrentPayload = null;
 
   const supabase = {
     async rpc(name, payload) {
-      assert.equal(name, 'admin_upsert_contractor');
-      rpcPayload = payload;
-      return {
-        data: {
-          id: payload.p_id,
-          company_name: payload.p_company_name,
-          phone: payload.p_phone || '',
-          email: payload.p_email || '',
-          city: payload.p_city || '',
-          street: payload.p_street || '',
-          notes: payload.p_notes || '',
-          nip: payload.p_nip || '',
-          is_active: payload.p_is_active !== false,
-        },
-        error: null,
-      };
+      if (name === 'admin_upsert_contractor') {
+        rpcPayload = payload;
+        return {
+          data: {
+            id: payload.p_id,
+            company_name: payload.p_company_name,
+            phone: payload.p_phone || '',
+            email: payload.p_email || '',
+            city: payload.p_city || '',
+            street: payload.p_street || '',
+            notes: payload.p_notes || '',
+            nip: payload.p_nip || '',
+            is_active: payload.p_is_active !== false,
+          },
+          error: null,
+        };
+      }
+      if (name === 'save_job_concurrent_v1168') {
+        concurrentPayload = payload;
+        return { data: { id: payload.p_id, installer_ids: payload.p_installer_ids }, error: null };
+      }
+      throw new Error(`Nieobsługiwane RPC w smoke teście: ${name}`);
     },
     from(table) {
-      if (table === 'jobs') {
-        return {
-          update(payload) {
-            updatePayload = payload;
-            return { async eq() { return { error: null }; } };
-          },
-        };
-      }
-      if (table === 'job_access') {
-        return {
-          delete() { return { eq() { return { async in() { return { error: null }; } }; } }; },
-          async insert() { return { error: null }; },
-        };
-      }
-      throw new Error(`Nieobsługiwana tabela w smoke teście: ${table}`);
+      throw new Error(`Nieoczekiwany zapis tabeli w smoke teście: ${table}`);
     },
   };
 
@@ -100,7 +92,28 @@ const root = path.resolve(__dirname, '..');
     },
     contractors,
     isAdmin: true,
-    jobs: [{ id: 'job-1', viewers: [], main_technician_id: null }],
+    baseJob: {
+      id: 'job-1',
+      title: 'Nieznane 1',
+      client: 'Nieznane 1',
+      phone: '',
+      sms_recipient_phone: '',
+      email: '',
+      city: 'Zawiercie',
+      street: '3 Maja 1',
+      location: 'Zawiercie, 3 Maja 1',
+      status: 'Nowe',
+      installation_date: null,
+      admin_note: null,
+      main_technician_id: null,
+      contractor_id: null,
+      contractor_address_id: null,
+      device_model: null,
+      device_serial_number: null,
+      installer_ids: [],
+      viewers: [],
+    },
+    jobs: [],
     normalizeStatus: (status) => status || 'Nowe',
     sendAssignmentPushFn: null,
   });
@@ -111,8 +124,10 @@ const root = path.resolve(__dirname, '..');
   assert.equal(rpcPayload.p_phone, '500 600 700');
   assert.equal(rpcPayload.p_notes, 'Stały klient - nie kasować notatek.');
   assert.equal(rpcPayload.p_nip, '6490000000');
-  assert.ok(updatePayload, 'Montaż powinien zostać zapisany po rozwiązaniu konfliktu');
-  assert.equal(updatePayload.contractor_id, 'con-jan');
+  assert.ok(concurrentPayload, 'Montaż powinien zostać zapisany przez atomowy RPC po rozwiązaniu konfliktu');
+  assert.equal(concurrentPayload.p_fields.contractor_id, 'con-jan');
+  assert.equal(concurrentPayload.p_expected.contractor_id, null);
+  assert.equal(Object.prototype.hasOwnProperty.call(concurrentPayload.p_fields, 'status'), false, 'Stary status nie może zostać nadpisany przy zmianie klienta.');
 
   console.log('Job contractor conflict decision smoke OK');
   process.exit(0);
