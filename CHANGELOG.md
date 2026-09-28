@@ -8,6 +8,7 @@
 - Przy ponownym generowaniu starego protokołu lista monterów jest odtwarzana lokalnie według historycznej reguły sprzed 11.68 (główny monter + dawne przypisania), bez automatycznego zapisywania tej listy do `jobs.installer_ids`.
 - Potwierdzenie `installer_ids` pozostaje wymagane tylko przy tworzeniu pierwszego protokołu dla starszego montażu, który nie ma jeszcze zapisanego PDF.
 - Backend nie wymaga nowej migracji: produkcyjna reguła z 11.47 już pozwala każdemu pracownikowi zespołu ponownie zapisać protokół zakończonego montażu.
+- Mobile: spóźniona odpowiedź pełnego odświeżenia nie może już skasować komentarzy i zdjęć szczegółów załadowanych w międzyczasie; domyka to automatyczne rozwijanie historii komentarzy w zakończonych montażach.
 - Bez nowych zmian RLS, Storage i Edge Functions.
 
 ## 11.68
