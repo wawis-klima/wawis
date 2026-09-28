@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.68
+- 11.69
 
-Wersja 11.68 rozdziela monterów od technicznego dostępu i chroni równoległą edycję: zapisuje tylko faktycznie zmienione pola, a konflikt nie nadpisuje nowszych danych z innego urządzenia.
+Wersja 11.69 układa 3 lub więcej kompletów JW/JZ w dwóch kolumnach protokołu PDF, aby utrzymać wydruk na jednej stronie A4; zapisane starsze protokoły można drukować bez ostrzeżenia o niepotwierdzonych monterach.
 
-# Wawis Klimatyzacja — wersja 11.68
+# Wawis Klimatyzacja — wersja 11.69
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.69` — protokół PDF przełącza 3+ komplety JW/JZ na dwie kolumny bez rozdzielania kompletu; istniejący starszy PDF można drukować bez komunikatu o monterach, a potwierdzenie listy jest wymagane dopiero przy zmianie lub ponownym podpisaniu.
 - wersja `11.68` — jawna lista `installer_ids` oddziela monterów od `job_access`; starsze montaże wymagają potwierdzenia listy przed nowym protokołem, a edycja używa transakcyjnej kontroli konfliktów i zapisuje tylko zmienione pola.
 - wersja `11.67` — po utworzeniu montażu błędy przypisań/powiadomień/PUSH nie cofają sukcesu INSERT; weryfikacja tabliczki sprawdza dokładnie nowy plik po deterministycznej ścieżce Storage.
 - wersja `11.66` — pola płatności są pobierane razem z montażem; stary cache bez `payment_*` jest doładowywany przed protokołem, a zapis płatności aktualizuje kartę i listę montażów.
