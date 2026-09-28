@@ -100,7 +100,7 @@ test.describe('@mobile release visual iPhone', () => {
     await expect(page.getByRole('button', { name: 'Diagnostyka' })).toHaveCount(0);
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
-    await expect(page.getByText('Zakończone')).toBeVisible();
+    await expect(page.locator('.workerReadOnlyNote')).toHaveText('Zakończone');
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
     await expect(page.locator('.protocolTestVersionStep')).toHaveCount(0);
