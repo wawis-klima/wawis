@@ -1,5 +1,6 @@
 import { getJobAddress, normalizeStatus } from "../utils/jobHelpers.jsx";
 import { EXPORT_SCOPE_OPTIONS, getRangeLabel } from "./jobs-export-config.js";
+import { getAssignedUserIdsFromJob } from "./jobs-assignment.js";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -20,10 +21,10 @@ function getMainTechnicianName(job, profilesMap) {
 }
 
 function getAdditionalTechnicians(job, profilesMap) {
-  const viewers = Array.isArray(job?.viewers) ? job.viewers : [];
-  const names = viewers
-    .filter((viewer) => viewer.user_id && viewer.user_id !== job?.main_technician_id)
-    .map((viewer) => profilesMap.get(viewer.user_id) || "")
+  const mainTechnicianId = String(job?.main_technician_id || '');
+  const names = getAssignedUserIdsFromJob(job)
+    .filter((installerId) => String(installerId) !== mainTechnicianId)
+    .map((installerId) => profilesMap.get(installerId) || "")
     .filter(Boolean);
   return names.length ? names.join(", ") : "-";
 }
