@@ -7,6 +7,7 @@ const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 
 const updateSql = read('supabase', 'migrations', '20260917065004_n7_v1089_worker_contractor_contact_update.sql');
 const readSql = read('supabase', 'migrations', '20260917053548_n7_v1089_worker_contractor_read.sql');
+const overwriteSql = read('supabase', 'migrations', '20260928080000_mobile_contractor_overwrite_v1161.sql');
 
 assert.match(updateSql, /create or replace function private\.sync_worker_contractor_contact_from_job_v1089\(\)/i,
   'Worker contractor sync must stay in private schema.');
@@ -35,5 +36,14 @@ assert.doesNotMatch(readSql, /for update/i,
   'The worker-read migration must not grant direct contractor UPDATE.');
 assert.doesNotMatch(readSql, /for delete/i,
   'The worker-read migration must not grant contractor DELETE.');
+
+assert.match(overwriteSql, /if tg_op = 'UPDATE' then[\s\S]*return new;/i,
+  '11.61 must allow updating an existing contractor even when historical contact duplicates exist.');
+assert.match(overwriteSql, /if new\.contractor_id is null[\s\S]*or old\.contractor_id is distinct from new\.contractor_id[\s\S]*or not public\.current_user_is_staff\(\)/i,
+  '11.61 must synchronize contractor contact changes for both Administrator and Pracownik.');
+assert.doesNotMatch(overwriteSql, /not public\.current_user_is_staff\(\) or public\.current_user_is_admin\(\)/i,
+  '11.61 must not exclude Administrator from mobile contractor synchronization.');
+assert.match(overwriteSql, /revoke all on function private\.sync_worker_contractor_contact_from_job_v1089\(\) from public, anon, authenticated/i,
+  'The contractor sync trigger function must remain non-executable by clients.');
 
 console.log('PASS smoke-worker-contractor-update-v1089');

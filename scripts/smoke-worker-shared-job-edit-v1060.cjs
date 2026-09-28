@@ -24,6 +24,11 @@ assert.ok(details.includes("isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'")
 assert.ok(!details.includes('{canEditSelectedJob && isAdmin ? ('), 'Przycisk edycji klienta nadal jest ograniczony tylko do administratora.');
 assert.ok(form.includes('const updatePayload = {'), 'Edycja pracownika nie korzysta z bezpiecznego payloadu.');
 assert.ok(form.includes('if (isAdmin) {') && form.includes('updatePayload.admin_note'), 'Pola administratora nie są oddzielone od zapisu pracownika.');
+assert.ok(form.includes('resolveEditedJobFormForSave'), 'Edycja mobilna nie ma osobnej ścieżki zachowującej kartotekę klienta.');
+assert.ok(form.includes('existingContractorId') && form.includes('contractor_id: existingContractorId'), 'Edycja mobilna nie zachowuje istniejącego contractor_id przy zmianie danych klienta.');
+assert.ok(form.includes('createContractorFromWorkerJobForm({ supabase, form: linked })'), 'Niepodpięty montaż nie potrafi bezpiecznie dopasować lub utworzyć kontrahenta przy edycji.');
+assert.ok(modal.includes("contractor_id: editingJobId ? prev.contractor_id : ''"), 'Wprowadzanie danych głosem podczas edycji nadal odpina kartotekę klienta.');
+assert.ok(modal.includes("field === 'client' && prev.contractor_id && !editingJobId"), 'Ręczna zmiana nazwy klienta podczas edycji nadal odpina kartotekę zamiast ją nadpisać.');
 assert.ok(edge.includes('callerIsStaff'), 'Push nie rozpoznaje pracownika jako członka zespołu.');
 assert.ok(edge.includes('Tylko pracownik lub administrator może wysyłać przypisania push.'), 'Push przypisania nadal jest tylko dla administratora.');
 assert.ok(edge.includes('normalizedCommentCallerRole'), 'Push komentarza nie rozpoznaje pracownika niezależnie od przypisania.');

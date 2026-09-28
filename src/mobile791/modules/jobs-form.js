@@ -191,6 +191,24 @@ async function resolveJobFormForSave({ supabase, form = {}, contractors = [], is
   return createdContractor?.id ? mergeContractorSnapshotIntoForm(linked, createdContractor) : linked;
 }
 
+async function resolveEditedJobFormForSave({ supabase, form = {}, contractors = [], existingJob = null }) {
+  const existingContractorId = normalizeJobText(existingJob?.contractor_id);
+  const requestedContractorId = normalizeJobText(form.contractor_id);
+  const seeded = requestedContractorId
+    ? { ...form }
+    : existingContractorId
+      ? { ...form, contractor_id: existingContractorId }
+      : { ...form };
+
+  if (normalizeJobText(seeded.contractor_id)) return seeded;
+
+  const linked = applyAutoLinkedContractorToJobForm(seeded, contractors).form;
+  if (normalizeJobText(linked.contractor_id)) return linked;
+
+  const contractor = await createContractorFromWorkerJobForm({ supabase, form: linked });
+  return contractor?.id ? mergeContractorSnapshotIntoForm(linked, contractor) : linked;
+}
+
 async function resolveNewJobFormForSave({ supabase, form = {}, contractors = [], isAdmin = false }) {
   if (isAdmin) {
     return resolveJobFormForSave({ supabase, form, contractors, isAdmin: true });
@@ -292,10 +310,14 @@ export async function saveEditedJobRecord({
   if (!form.city.trim()) throw new Error('Podaj miejscowość.');
   if (!form.street.trim()) throw new Error('Podaj ulicę.');
 
-  const resolvedForm = await resolveJobFormForSave({ supabase, form, contractors, isAdmin });
-  const deviceFields = serializeJobDevicesToFields(resolvedForm);
-
   const existingJob = jobs.find((job) => job.id === editingJobId) || null;
+  const resolvedForm = await resolveEditedJobFormForSave({
+    supabase,
+    form,
+    contractors,
+    existingJob,
+  });
+  const deviceFields = serializeJobDevicesToFields(resolvedForm);
   const previousAssignedUserIds = getAssignedUserIdsFromJob(existingJob);
   const previousViewerIds = [...new Set((existingJob?.viewers || []).map((viewer) => viewer.user_id).filter(Boolean))];
   const nextViewerIds = [...new Set((resolvedForm.viewers || []).filter(Boolean))];
