@@ -188,6 +188,24 @@ assert.match(e2eSource, /toBeEnabled/);
     outdoorModel: 'Rotenso Imoto 3,5 kW I35Xo R14',
     indoorModel: 'Rotenso Imoto 3,5 kW I35Xi R15',
   }), null);
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Rotenso Teta Mirror 3,5 kW (TO35Xo R17)',
+    indoorModel: 'Rotenso Teta 3,5 kW (TA35Xi R17)',
+  }), null, 'Teta TA35Xi musi być zgodna ze wspólną jednostką zewnętrzną TO35Xo R17');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Rotenso Teta Mirror 3,5 kW (TO35Xo R17)',
+    indoorModel: 'Rotenso Teta Mirror 3,5 kW (TM35Xi R17)',
+  }), null, 'Teta Mirror TM35Xi musi być zgodna ze wspólną jednostką zewnętrzną TO35Xo R17');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'TO35Xo R16',
+    indoorModel: 'TM35Xi R16',
+    outdoorFamily: 'Teta',
+    indoorFamily: 'Teta Mirror',
+  }), null, 'Katalogowe oznaczenie TO jako Teta nie może blokować Teta Mirror');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Rotenso Teta Mirror 3,5 kW (TO35Xo R17)',
+    indoorModel: 'Rotenso Ukura 3,5 kW U35Xi R17',
+  })?.message.includes('Niezgodny zestaw Single'), true, 'Wyjątek Teta/Teta Mirror nie może osłabić blokady innych rodzin');
 
   const draft = devices.normalizeJobDevices({
     devices: [{
