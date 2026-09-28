@@ -361,7 +361,7 @@ export default function JobFormModal({
   function applyVoiceClientData(data) {
     setJobForm((prev) => ({
       ...prev,
-      contractor_id: '',
+      contractor_id: editingJobId ? prev.contractor_id : '',
       client: data.clientName || prev.client,
       phone: data.phone || prev.phone,
       email: data.email || prev.email,
@@ -376,7 +376,7 @@ export default function JobFormModal({
       if (field === 'device_model' || field === 'device_serial_number') {
         return applyDeviceRows(next, normalizeJobDevices(next, { keepEmptyRow: true, keepEmptyIndoor: true }));
       }
-      if (field === 'client' && prev.contractor_id) {
+      if (field === 'client' && prev.contractor_id && !editingJobId) {
         const selectedContractor = contractorOptions.find((item) => String(item.id) === String(prev.contractor_id));
         const normalizedSelectedName = String(selectedContractor?.company_name || '').trim();
         if (normalizedSelectedName && String(value || '').trim() !== normalizedSelectedName) {
