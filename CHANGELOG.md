@@ -1,3 +1,12 @@
+## 11.71
+- Mobile/protokół: pracownik może utworzyć pierwszy protokół także dla starszego zakończonego montażu bez `jobs.installer_ids`.
+- Dla historycznego zlecenia pole „Monterzy” jest odtwarzane lokalnie z dawnej reguły sprzed 11.68: główny monter + historyczne przypisania/viewers.
+- Ten fallback działa zarówno przy pierwszym protokole, jak i przy ponownym podpisie, ale nie zapisuje `installer_ids` do tabeli `jobs`.
+- Usunięto blokadę „Monterzy wymagają potwierdzenia” oraz blokadę przycisków podpisu i zapisu pierwszego protokołu.
+- Produkcyjne RLS z 11.47 już dopuszcza pracownika zespołu do INSERT/UPDATE protokołu zakończonego montażu, więc nie jest potrzebna nowa migracja Supabase.
+- Dodano regresję pilnującą, że historyczny pierwszy protokół nie zostanie ponownie zablokowany.
+- Bez zmian w Storage, Edge Functions i schemacie bazy.
+
 ## 11.70
 - Mobile: przy zakończonym montażu pracownika usunięto mylący tekst `Zakończone · tylko podgląd`; karta nadal chroni zakończone dane zlecenia, ale zapisany protokół pozostaje edytowalny, możliwy do ponownego podpisania i wydruku.
 - Zielony status zapisanego PDF pokazuje teraz `Ostatnia wersja protokołu · data, godzina`, dzięki czemu `signed_at` jest jednoznacznie rozumiane jako czas ostatniego zapisu/podpisu, a nie pierwszego utworzenia rekordu.
