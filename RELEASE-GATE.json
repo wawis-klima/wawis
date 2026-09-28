@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.64",
-  "scope": "mobile",
-  "release_branch": "release/v11.64",
+  "version": "11.65",
+  "scope": "full",
+  "release_branch": "release/v11.65",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Pakiet Offline C1+C9. Zmiany wyłącznie w mobilnej obsłudze pełnej edycji offline, projekcji konfliktowego statusu, odświeżeniu po konflikcie i komunikacie na karcie. Bez zmian backendu, RLS, Storage i Edge Functions."
+    "notes": "Pakiet Urządzenia/JW C2+C3. Desktop i mobile: aktualne pola urządzeń z jobs mają pierwszeństwo nad lokalnym cache; w edycji istniejącego montażu blokowane jest usuwanie JW ze środka listy. Bez zmian backendu, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.64.zip"
+    "file_name": "klima-app-v11.65.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.64",
+    "source_branch": "release/v11.65",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile: pełna edycja bez internetu pozostawia formularz i nie kolejkuje samych urządzeń; serialOnlyMode nadal kolejkuje urządzenia; konflikt zakończenia nie pokazuje montażu jako skutecznie zakończonego i pozostaje widoczny w Centrum synchronizacji."
+    "notes": "Sprawdzić desktop i mobile: po odświeżeniu zapisany montaż pokazuje świeże urządzenia z serwera; wyczyszczone urządzenia nie wracają z cache; edycja istniejącego multisplitu pozwala usunąć tylko ostatnią JW, a nowy formularz zachowuje dotychczasowe przenumerowanie lokalnych JW."
   },
   "archive": {
     "source_of_truth": "github-main",
