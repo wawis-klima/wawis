@@ -1,20 +1,20 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.70
+- 11.71
 
 ## Zakres
-- usunięcie mylącego tekstu `Zakończone · tylko podgląd` na koncie Pracownika
-- pozostawienie neutralnego statusu `Zakończone` bez zmiany faktycznych blokad zakończonego zlecenia
-- jednoznaczny opis daty PDF jako `Ostatnia wersja protokołu · data, godzina`
-- zachowanie możliwości: Uzupełnij protokół, ponowny podpis, druk/podgląd zapisanej wersji
+- pierwszy protokół dla historycznego zakończonego montażu bez `installer_ids`
+- odtworzenie monterów z dawnego `main_technician_id + viewers` tylko na potrzeby PDF
+- brak automatycznego zapisu fallbacku do `jobs.installer_ids`
+- usunięcie blokady podpisu i zapisu pierwszego protokołu
 - bez zmian w Supabase, RLS, Storage i Edge Functions
 
 ## Kontrola regresji
-- mobile E2E oczekuje neutralnego statusu `Zakończone`
-- smoke zabrania powrotu tekstu `Zakończone · tylko podgląd`
-- smoke pilnuje etykiety `Ostatnia wersja protokołu`
-- istniejące testy 11.69 nadal pilnują ponownej edycji i podpisu zapisanego protokołu przez pracownika
+- smoke wymaga fallbacku `getLegacyInstallerSuggestionIds` dla braku `installer_ids`
+- smoke zabrania powrotu komunikatu „Monterzy wymagają potwierdzenia”
+- smoke zabrania blokady pierwszego podpisu i zapisu z powodu braku `installer_ids`
+- istniejące testy nadal pilnują ponownego podpisu, druku i zapisu protokołu
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING

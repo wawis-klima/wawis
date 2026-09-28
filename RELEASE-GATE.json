@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.70",
+  "version": "11.71",
   "scope": "mobile",
-  "release_branch": "release/v11.70",
+  "release_branch": "release/v11.71",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Zmiana 11.70 dotyczy wyłącznie czytelności mobilnego statusu zakończonego montażu i opisu czasu zapisanego protokołu. Produkcyjny rekord historycznego protokołu potwierdził, że created_at zachowuje pierwotne utworzenie rekordu, a signed_at wskazuje ostatnią podpisaną wersję; brak zmian schematu, RLS i Storage."
+    "notes": "Zmiana 11.71 dotyczy mobilnego tworzenia pierwszego protokołu dla historycznych zakończonych montaży bez installer_ids. Produkcyjne RLS current_user_can_finalize_job() już dopuszcza staff dla zakończonego montażu; brak zmian schematu, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.70.zip"
+    "file_name": "klima-app-v11.71.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.70",
+    "source_branch": "release/v11.71",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić na produkcji konto Pracownika: zakończony montaż pokazuje `Zakończone` bez `tylko podgląd`; zapisany PDF pokazuje `Ostatnia wersja protokołu · data, godzina`; Uzupełnij protokół, ponowny podpis oraz druk nadal działają."
+    "notes": "Na produkcji sprawdzić konto Pracownika na starszym zakończonym montażu bez zapisanego PDF: otwarcie Protokołu, podpis klienta i pierwszy zapis mają działać bez komunikatu o potwierdzeniu monterów; istniejące protokoły nadal mają działać bez regresji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,7 +33,7 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_migration_applied": "N/A — brak zmian backendu i migracji",
-    "rls_role_matrix": "PASS — produkcyjna funkcja current_user_can_finalize_job() dopuszcza staff dla zakończonego montażu; UPDATE job_protocols używa tej reguły",
+    "rls_role_matrix": "PASS — current_user_can_finalize_job() dopuszcza staff dla statusu Zakończone; job_protocols INSERT/UPDATE używa tej reguły",
     "performance_advisor": "N/A — brak zmian zapytań bazodanowych",
     "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
     "trigger_grants": "N/A — brak zmian triggerów i grantów",
