@@ -69,7 +69,7 @@ export function useSelectedJobActions({
     setBusy(true);
 
     try {
-      await addJobRecord({
+      const createdJob = await addJobRecord({
         supabase,
         profile,
         form,
@@ -81,6 +81,13 @@ export function useSelectedJobActions({
       });
       resetJobModalState();
       await refreshAll(sessionUser);
+
+      const warningMessages = [...new Set((createdJob?.post_create_warnings || [])
+        .map((warning) => String(warning?.message || '').trim())
+        .filter(Boolean))];
+      if (warningMessages.length) {
+        alert(`Montaż został zapisany. ${warningMessages.join(' ')}`);
+      }
     } catch (error) {
       alert(normalizeDatabaseErrorMessage(error, SAVE_ERROR_MESSAGE));
     } finally {
