@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.63
+- 11.64
 
-Wersja 11.63 naprawia otwieranie konkretnego montażu po kliknięciu powiadomienia PUSH, również gdy aplikacja PWA na iPhonie była już uruchomiona w tle.
+Wersja 11.64 porządkuje tryb offline: pełna edycja nie udaje zapisu samych urządzeń, a odrzucony status offline nie pozostaje na karcie jako potwierdzony.
 
-# Wawis Klimatyzacja — wersja 11.63
+# Wawis Klimatyzacja — wersja 11.64
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.64` — pełna edycja montażu wymaga połączenia i zachowuje formularz przy braku sieci; konflikt statusu offline przywraca potwierdzony stan zamiast pokazywać odrzucone „Zakończone”.
 - wersja `11.63` — kliknięcie PUSH dotyczącego montażu otwiera właściwe zlecenie także przy wznowieniu już uruchomionej aplikacji PWA; aktywne okno dostaje `jobId` bezpośrednio, a deeplink URL pozostaje fallbackiem.
 - wersja `11.61` — mobilna edycja klienta zachowuje powiązaną kartotekę i nadpisuje zmienione dane dla Administratora oraz Pracownika; historyczne duplikaty e-maila/telefonu nie blokują aktualizacji istniejącego klienta.
 - wersja `11.60` — poprawiono parowanie Teta/Teta Mirror: jednostka zewnętrzna `TOxxXo` jest zgodna z jednostkami wewnętrznymi `TAxxXi` oraz `TMxxXi`, bez wyłączania blokady innych niezgodnych rodzin.
