@@ -32,6 +32,11 @@ export function isEmptyDeviceSerialUniqueError(error) {
     && (message.includes('duplicate key') || message.includes('unique constraint'));
 }
 
+export function isJobEditConflictError(error) {
+  const message = collectErrorText(error);
+  return /JOB_EDIT_CONFLICT:/i.test(message);
+}
+
 export function isSourceJobIdTypeMismatchError(error) {
   const message = collectErrorText(error).toLowerCase();
   return Boolean(message) && (
@@ -44,6 +49,10 @@ export function isSourceJobIdTypeMismatchError(error) {
 }
 
 export function normalizeDatabaseErrorMessage(error, fallbackMessage = 'Wystąpił nieznany błąd.') {
+  if (isJobEditConflictError(error)) {
+    return 'Ten montaż został w międzyczasie zmieniony na innym urządzeniu. Twoje zmiany nie zostały nadpisane. Zamknij formularz, odśwież montaż i wprowadź zmianę ponownie.';
+  }
+
   if (isTransientSupabaseError(error)) {
     return getSupabaseUserMessage(error, fallbackMessage);
   }
