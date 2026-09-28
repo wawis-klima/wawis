@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.69",
+  "version": "11.70",
   "scope": "mobile",
-  "release_branch": "release/v11.69",
+  "release_branch": "release/v11.70",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Zmiana 11.69 dotyczy renderowania mobilnego protokołu PDF i usunięcia blokady UI dla ponownej edycji/podpisu zapisanego starszego protokołu. Zweryfikowano produkcyjne RLS: current_user_can_finalize_job() dopuszcza każdego pracownika zespołu dla zakończonego montażu, a UPDATE job_protocols korzysta z tej reguły. Nie jest potrzebna nowa migracja."
+    "notes": "Zmiana 11.70 dotyczy wyłącznie czytelności mobilnego statusu zakończonego montażu i opisu czasu zapisanego protokołu. Produkcyjny rekord historycznego protokołu potwierdził, że created_at zachowuje pierwotne utworzenie rekordu, a signed_at wskazuje ostatnią podpisaną wersję; brak zmian schematu, RLS i Storage."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.69.zip"
+    "file_name": "klima-app-v11.70.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.69",
+    "source_branch": "release/v11.70",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić na produkcji: protokół z 3 kompletami JW/JZ ma jedną stronę A4 i dwie kolumny; JW/JZ jednego kompletu nie są rozdzielone; pracownik może drukować, wejść w Uzupełnij protokół, zmienić dane i podpisać ponownie zapisany starszy protokół bez komunikatu o potwierdzeniu monterów."
+    "notes": "Sprawdzić na produkcji konto Pracownika: zakończony montaż pokazuje `Zakończone` bez `tylko podgląd`; zapisany PDF pokazuje `Ostatnia wersja protokołu · data, godzina`; Uzupełnij protokół, ponowny podpis oraz druk nadal działają."
   },
   "archive": {
     "source_of_truth": "github-main",

@@ -179,7 +179,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
 
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
-    await expect(page.getByText('Zakończone · tylko podgląd', { exact: true })).toBeVisible();
+    await expect(page.locator('.workerReadOnlyNote')).toHaveText('Zakończone');
     await expect(page.locator('.mobileDetailsLoading')).toBeHidden();
 
     const viewersToggle = page.getByRole('button', { name: /^Rozwiń monterów$/i });

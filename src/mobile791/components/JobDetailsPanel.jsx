@@ -817,11 +817,11 @@ export default function JobDetailsPanel({
             </div>
           ) : null}
           {isWorkerCompletedLock ? (
-            <div className="workerReadOnlyNote" role="status">Zakończone · tylko podgląd</div>
+            <div className="workerReadOnlyNote" role="status">Zakończone</div>
           ) : null}
           {isCompletedJob && protocolRecord ? (
             <div className="protocolStoredStatus" role="status">
-              Protokół zapisany{formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at) ? ` · ${formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at)}` : ""}
+              Ostatnia wersja protokołu{formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at) ? ` · ${formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at)}` : ""}
             </div>
           ) : null}
           {isCompletedJob && protocolMessage ? <div className="protocolActionMessage" role="status">{protocolMessage}</div> : null}

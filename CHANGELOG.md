@@ -1,3 +1,8 @@
+## 11.70
+- Mobile: przy zakończonym montażu pracownika usunięto mylący tekst `Zakończone · tylko podgląd`; karta nadal chroni zakończone dane zlecenia, ale zapisany protokół pozostaje edytowalny, możliwy do ponownego podpisania i wydruku.
+- Zielony status zapisanego PDF pokazuje teraz `Ostatnia wersja protokołu · data, godzina`, dzięki czemu `signed_at` jest jednoznacznie rozumiane jako czas ostatniego zapisu/podpisu, a nie pierwszego utworzenia rekordu.
+- Bez zmian w Supabase, RLS, Storage i Edge Functions.
+
 ## 11.69
 - Protokół PDF: przy 3 lub większej liczbie kompletów urządzeń sekcja „Urządzenia i tabliczki” automatycznie przechodzi na dwie kolumny.
 - JW i JZ tego samego urządzenia zawsze pozostają w tej samej kolumnie; dla 1–2 kompletów zachowano dotychczasowy układ pełnej szerokości.

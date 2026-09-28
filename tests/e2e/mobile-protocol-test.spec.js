@@ -78,7 +78,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
 
   test('pracownik tworzy protokół, wysyła go z biuro@wawis.pl i pobiera PDF', async ({ page }) => {
     await openJob(page, WORKER, 'Zakończone', 'Klient Testowy C Zakończony');
-    await expect(page.getByText('Zakończone · tylko podgląd', { exact: true })).toBeVisible();
+    await expect(page.locator('.workerReadOnlyNote')).toHaveText('Zakończone');
     await expect(page.locator('.protocolTestButton')).toBeVisible();
 
     await page.locator('.protocolTestButton').click();
