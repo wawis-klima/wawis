@@ -413,7 +413,16 @@ export default function JobDetailsPanel({
   const detailsLoaded = Boolean(selectedJob.detailsLoaded);
   const detailsLoadError = String(selectedJob.detailsLoadError || '').trim();
   const showDetailsLoading = !detailsLoaded && !detailsLoadError;
-  const viewers = Array.isArray(selectedJob.viewers) ? selectedJob.viewers : [];
+  const accessViewers = Array.isArray(selectedJob.viewers) ? selectedJob.viewers : [];
+  const installersConfirmed = Array.isArray(selectedJob.installer_ids);
+  const installerIds = [...new Set(
+    (installersConfirmed
+      ? selectedJob.installer_ids
+      : [selectedJob.main_technician_id, ...accessViewers.map((viewer) => viewer?.user_id)])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean),
+  )];
+  const viewers = installerIds.map((userId) => ({ user_id: userId }));
   const comments = Array.isArray(selectedJob.comments) ? selectedJob.comments : [];
   const manualVerifications = Array.isArray(selectedJob.nameplateVerifications) ? selectedJob.nameplateVerifications : [];
   const completionDateTimeLabel = formatCompletionDateTime(selectedJob.completed_at);
@@ -1011,7 +1020,12 @@ export default function JobDetailsPanel({
           )}
           {showViewersContents ? (
             <div id={`viewers-content-${selectedJobId}`}>
-              {canManageSelectedJobViewers ? (
+              {!installersConfirmed ? (
+              <div className="muted" role="status" style={{ marginBottom: 8 }}>
+                Lista monterów w tym starszym montażu nie została jeszcze potwierdzona. Zaznaczenia są podpowiedzią z dawnego dostępu do zlecenia.
+              </div>
+            ) : null}
+            {canManageSelectedJobViewers ? (
                 <div className="viewerInlineRow" aria-label="Wybór monterów">
                   {profiles.map((person) => {
                     const active = viewers.some((viewer) => viewer.user_id === person.id);
@@ -1020,7 +1034,7 @@ export default function JobDetailsPanel({
                         key={person.id}
                         type="button"
                         className={`viewerDot ${active ? "active" : ""}`}
-                        onClick={() => toggleViewer(selectedJob.id, person.id, viewers)}
+                        onClick={() => toggleViewer(selectedJob.id, person.id)}
                         title={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
                         aria-label={`${person.full_name} — ${active ? "Monter" : "Nie monter"}`}
                       >
