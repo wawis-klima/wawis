@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.65",
+  "version": "11.66",
   "scope": "full",
-  "release_branch": "release/v11.65",
+  "release_branch": "release/v11.66",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Pakiet Urządzenia/JW C2+C3. Desktop i mobile: aktualne pola urządzeń z jobs mają pierwszeństwo nad lokalnym cache; w edycji istniejącego montażu blokowane jest usuwanie JW ze środka listy. Bez zmian backendu, RLS, Storage i Edge Functions."
+    "notes": "Pakiet Płatność/protokół C4. Desktop i mobile pobierają istniejące payment_* w summary; mobile doładowuje brakujący snapshot płatności przed inicjalizacją protokołu i aktualizuje kartę oraz listę po zapisie. Bez zmian schematu, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.65.zip"
+    "file_name": "klima-app-v11.66.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.65",
+    "source_branch": "release/v11.66",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić desktop i mobile: po odświeżeniu zapisany montaż pokazuje świeże urządzenia z serwera; wyczyszczone urządzenia nie wracają z cache; edycja istniejącego multisplitu pozwala usunąć tylko ostatnią JW, a nowy formularz zachowuje dotychczasowe przenumerowanie lokalnych JW."
+    "notes": "Sprawdzić mobile: zapisana płatność pozostaje po zamknięciu karty i odświeżeniu aplikacji; ponowne otwarcie protokołu pokazuje tę samą kwotę/rodzaj/metodę/datę. Stary cache bez payment_* musi doładować dane, a błąd odczytu ma blokować zapis protokołu zamiast przyjąć brak płatności."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian bazy",
+    "supabase_migration_applied": "N/A — używane są istniejące kolumny payment_*",
     "rls_role_matrix": "N/A — brak zmian RLS",
     "performance_advisor": "N/A — brak zmian bazodanowych",
     "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
