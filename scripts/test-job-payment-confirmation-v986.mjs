@@ -3,7 +3,10 @@ import {
   formatPaymentAmount,
   getPaymentDraftFromJob,
   getPaymentJobPatch,
+  hasJobPaymentSnapshot,
   isPaymentConfirmationUnchanged,
+  loadJobPaymentSnapshot,
+  PAYMENT_JOB_FIELDS,
   normalizePaymentConfirmation,
   saveJobPaymentConfirmation,
 } from '../src/mobile791/modules/job-payment-confirmation.js';
@@ -41,6 +44,49 @@ assert.equal(draft.amount, '850');
 assert.equal(draft.kind, 'deposit');
 assert.equal(draft.method, 'transfer');
 assert.equal(draft.paidDate, '2026-09-01');
+
+const completePaymentSnapshot = {
+  payment_confirmation_enabled: true,
+  payment_amount: 850,
+  payment_kind: 'deposit',
+  payment_method: 'transfer',
+  payment_paid_at: '2026-09-01T10:00:00.000Z',
+  payment_recorded_by: 'worker-1',
+  payment_updated_at: '2026-09-01T10:01:00.000Z',
+};
+assert.equal(hasJobPaymentSnapshot(completePaymentSnapshot), true);
+assert.equal(hasJobPaymentSnapshot({ payment_confirmation_enabled: true, payment_amount: 850 }), false);
+
+let paymentSelectFields = '';
+let paymentSelectJobId = '';
+const paymentReadSupabase = {
+  from(table) {
+    assert.equal(table, 'jobs');
+    return {
+      select(fields) {
+        paymentSelectFields = fields;
+        return {
+          eq(field, value) {
+            assert.equal(field, 'id');
+            paymentSelectJobId = value;
+            return {
+              async maybeSingle() {
+                return { data: completePaymentSnapshot, error: null };
+              },
+            };
+          },
+        };
+      },
+    };
+  },
+};
+const loadedSnapshot = await loadJobPaymentSnapshot({
+  supabase: paymentReadSupabase,
+  jobId: 'job-payment-read',
+});
+assert.equal(paymentSelectFields, PAYMENT_JOB_FIELDS);
+assert.equal(paymentSelectJobId, 'job-payment-read');
+assert.deepEqual(loadedSnapshot, completePaymentSnapshot);
 
 let capturedPatch = null;
 let capturedId = null;
