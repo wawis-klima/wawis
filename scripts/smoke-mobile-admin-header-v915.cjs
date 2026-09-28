@@ -24,6 +24,10 @@ assert.doesNotMatch(layout, /IconLogout/, 'Worker toolbar must not waste space o
 assert.match(layout, /wawisOneLinePushSlot[\s\S]*?wawisOneLineFilterButton[\s\S]*?wawisUserInitialsBadge/, 'PUSH, filter and initials must share the same one-line toolbar.');
 
 assert.match(indexHtml, /viewport-fit=cover/, 'Viewport must expose iPhone safe-area insets.');
+assert.match(indexHtml, /minimum-scale=1\.0/, 'Mobile viewport must not zoom out below 100%.');
+assert.match(indexHtml, /maximum-scale=1\.0/, 'Mobile viewport must not zoom in above 100%.');
+assert.match(indexHtml, /user-scalable=no/, 'Mobile viewport must disable manual pinch zoom.');
+assert.match(css, /html,body,#root\{[\s\S]*?touch-action:pan-x pan-y;/, 'Mobile root must allow scrolling but block pinch zoom gestures.');
 assert.match(css, /env\(safe-area-inset-top\)/, 'Mobile page must respect the iPhone top safe area.');
 assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\) !important;/, 'Admin module switcher must use four equal mobile columns.');
 assert.match(runtimeCss, /mobileHeaderV2\.wawisCompactHeader\{[\s\S]*?padding:7px!important;/, 'Mobile header frame must keep symmetric inner padding.');
@@ -34,4 +38,4 @@ assert.match(runtimeCss, /wawisOneLinePushSlot,[\s\S]*?width:54px!important;/, '
 assert.match(runtimeCss, /wawisUserInitialsBadge/, 'Initials badge styling is missing.');
 assert.match(css, /-webkit-text-size-adjust:100%/, 'Mobile UI must prevent Safari text auto-enlargement from breaking the toolbar.');
 
-console.log('Mobile admin header smoke OK: safe-area, deterministic grid, 2.5 px equal edge spacing, user logout and offline-safe sync');
+console.log('Mobile admin header smoke OK: fixed 100% viewport, safe-area, deterministic grid, 2.5 px equal edge spacing, user logout and offline-safe sync');

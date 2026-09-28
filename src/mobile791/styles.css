@@ -1,5 +1,11 @@
 
 *{box-sizing:border-box} body{margin:0;font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;background:#f3f6fb;color:#10203a}
+@media(max-width:700px){
+  html,body,#root{
+    touch-action:pan-x pan-y;
+    -ms-touch-action:pan-x pan-y;
+  }
+}
 .page{max-width:1250px;margin:0 auto;padding:24px}
 .card{background:#fff;border:1px solid #d8e0ec;border-radius:20px;padding:20px;box-shadow:0 1px 8px rgba(0,0,0,.04)}
 .auth{display:grid;grid-template-columns:1fr 1fr;gap:20px}

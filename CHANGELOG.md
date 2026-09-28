@@ -1,3 +1,10 @@
+## 11.73
+- Mobile/iPhone: zablokowano ręczne pomniejszanie i powiększanie całego interfejsu — aplikacja pozostaje w skali 100%.
+- Viewport używa teraz `minimum-scale=1.0`, `maximum-scale=1.0` i `user-scalable=no`, przy zachowaniu `viewport-fit=cover` dla safe-area.
+- Mobilny root dopuszcza zwykłe przewijanie w osi X/Y, ale nie udostępnia gestu pinch-zoom; specjalne obszary (np. podpis) zachowują własne `touch-action`.
+- Dodano regresję pilnującą stałej skali viewportu na mobile.
+- Bez zmian w Supabase, RLS, Storage, Edge Functions i danych.
+
 ## 11.72
 - Mobile/logowanie: po poprawnym Auth aplikacja od razu przechodzi do widoku i pokazuje jawny stan „Ładowanie danych…”, zamiast wyglądać jak pusta lub zawieszona podczas wolnej odpowiedzi Supabase.
 - Gdy telefon ma już lokalny snapshot albo świeże dane, podczas odświeżania widzi „Odświeżanie danych…” i zachowuje poprzedni poprawny stan.
