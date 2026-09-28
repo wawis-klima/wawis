@@ -113,30 +113,6 @@ function runInBackground(task, label) {
     });
 }
 
-async function syncJobAccess({ supabase, editingJobId, previousViewerIds, nextViewerIds }) {
-  const userIdsToRemove = previousViewerIds.filter((userId) => !nextViewerIds.includes(userId));
-  const userIdsToAdd = nextViewerIds.filter((userId) => !previousViewerIds.includes(userId));
-
-  if (userIdsToRemove.length) {
-    const { error: deleteAccessError } = await supabase
-      .from('job_access')
-      .delete()
-      .eq('job_id', editingJobId)
-      .in('user_id', userIdsToRemove);
-    if (deleteAccessError) throw deleteAccessError;
-  }
-
-  if (userIdsToAdd.length) {
-    const { error: insertAccessError } = await supabase
-      .from('job_access')
-      .insert(userIdsToAdd.map((userId) => ({ job_id: editingJobId, user_id: userId })));
-    if (insertAccessError) throw insertAccessError;
-  }
-
-  return { userIdsToAdd, userIdsToRemove };
-}
-
-
 function normalizeJobText(value) {
   return String(value || '').trim();
 }
@@ -342,13 +318,121 @@ export async function addJobRecord({
   };
 }
 
+
+function normalizeEditText(value) {
+  return String(value ?? '').trim();
+}
+
+function valuesMatch(left, right) {
+  return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+}
+
+export function buildJobEditChangeSet({ form = {}, baseJob = {}, isAdmin = false, normalizeStatus }) {
+  const fields = {};
+  const expected = {};
+  const add = (field, nextValue, baseValue) => {
+    fields[field] = nextValue;
+    expected[field] = baseValue ?? null;
+  };
+
+  const nextClient = normalizeEditText(form.client);
+  const baseClient = normalizeEditText(baseJob.client || baseJob.title);
+  if (nextClient !== baseClient) {
+    add('client', nextClient, baseJob.client);
+    add('title', nextClient, baseJob.title);
+  }
+
+  const nextEmail = normalizeEditText(form.email);
+  if (nextEmail !== normalizeEditText(baseJob.email)) add('email', nextEmail, baseJob.email);
+
+  const nextPhone = normalizeEditText(form.phone);
+  const baseFormPhone = normalizeEditText(baseJob.sms_recipient_phone || baseJob.phone);
+  if (nextPhone !== baseFormPhone) {
+    add('phone', nextPhone, baseJob.phone);
+    add('sms_recipient_phone', nextPhone || null, baseJob.sms_recipient_phone);
+  }
+
+  const nextCity = normalizeEditText(form.city);
+  const nextStreet = normalizeEditText(form.street);
+  const cityChanged = nextCity !== normalizeEditText(baseJob.city);
+  const streetChanged = nextStreet !== normalizeEditText(baseJob.street);
+  if (cityChanged) add('city', nextCity, baseJob.city);
+  if (streetChanged) add('street', nextStreet, baseJob.street);
+  if (cityChanged || streetChanged) add('location', `${nextCity}, ${nextStreet}`, baseJob.location);
+
+  const nextStatus = normalizeStatus(form.status);
+  if (nextStatus !== normalizeStatus(baseJob.status)) add('status', nextStatus, baseJob.status);
+
+  const nextInstallationDate = normalizeEditText(form.installation_date) || null;
+  const baseInstallationDate = normalizeEditText(baseJob.installation_date) || null;
+  if (!valuesMatch(nextInstallationDate, baseInstallationDate)) add('installation_date', nextInstallationDate, baseJob.installation_date);
+
+  const nextContractorId = normalizeEditText(form.contractor_id) || null;
+  const baseContractorId = normalizeEditText(baseJob.contractor_id) || null;
+  if (!valuesMatch(nextContractorId, baseContractorId)) add('contractor_id', nextContractorId, baseJob.contractor_id);
+
+  if (Object.prototype.hasOwnProperty.call(form, 'contractor_address_id') || Object.prototype.hasOwnProperty.call(baseJob, 'contractor_address_id')) {
+    const rawAddressId = normalizeEditText(form.contractor_address_id);
+    const nextAddressId = rawAddressId && rawAddressId !== '__new__' ? rawAddressId : null;
+    const baseAddressId = normalizeEditText(baseJob.contractor_address_id) || null;
+    if (!valuesMatch(nextAddressId, baseAddressId)) add('contractor_address_id', nextAddressId, baseJob.contractor_address_id);
+  }
+
+  const deviceFields = serializeJobDevicesToFields(form);
+  const nextDeviceModel = normalizeEditText(deviceFields.device_model) || null;
+  const nextDeviceSerial = normalizeEditText(deviceFields.device_serial_number) || null;
+  const baseDeviceModel = normalizeEditText(baseJob.device_model) || null;
+  const baseDeviceSerial = normalizeEditText(baseJob.device_serial_number) || null;
+  if (!valuesMatch(nextDeviceModel, baseDeviceModel)) add('device_model', nextDeviceModel, baseJob.device_model);
+  if (!valuesMatch(nextDeviceSerial, baseDeviceSerial)) add('device_serial_number', nextDeviceSerial, baseJob.device_serial_number);
+
+  if (isAdmin) {
+    const nextAdminNote = normalizeEditText(form.admin_note) || null;
+    const baseAdminNote = normalizeEditText(baseJob.admin_note) || null;
+    if (!valuesMatch(nextAdminNote, baseAdminNote)) add('admin_note', nextAdminNote, baseJob.admin_note);
+
+    const nextMainTechnician = normalizeEditText(form.main_technician_id) || null;
+    const baseMainTechnician = normalizeEditText(baseJob.main_technician_id) || null;
+    if (!valuesMatch(nextMainTechnician, baseMainTechnician)) add('main_technician_id', nextMainTechnician, baseJob.main_technician_id);
+  }
+
+  return { fields, expected };
+}
+
+async function saveJobConcurrentPatch({
+  supabase,
+  editingJobId,
+  fields = {},
+  expected = {},
+  installerIds = null,
+  expectedInstallerIds = null,
+  updateInstallers = false,
+}) {
+  if (!supabase || !editingJobId) return null;
+  if (!Object.keys(fields).length && !updateInstallers) {
+    return { id: editingJobId, installer_ids: expectedInstallerIds };
+  }
+
+  const { data, error } = await supabase.rpc('save_job_concurrent_v1168', {
+    p_id: editingJobId,
+    p_fields: fields,
+    p_expected: expected,
+    p_installer_ids: updateInstallers ? installerIds : null,
+    p_expected_installer_ids: updateInstallers ? expectedInstallerIds : null,
+    p_update_installers: Boolean(updateInstallers),
+  });
+  if (error) throw error;
+  return data || { id: editingJobId, installer_ids: installerIds };
+}
+
 export async function saveEditedJobRecord({
   supabase,
   editingJobId,
   form,
+  baseJob = null,
   contractors = [],
   isAdmin = false,
-  jobs,
+  jobs = [],
   normalizeStatus,
   sendAssignmentPushFn,
 }) {
@@ -357,51 +441,42 @@ export async function saveEditedJobRecord({
   if (!form.city.trim()) throw new Error('Podaj miejscowość.');
   if (!form.street.trim()) throw new Error('Podaj ulicę.');
 
-  const existingJob = jobs.find((job) => job.id === editingJobId) || null;
+  const originalJob = baseJob || jobs.find((job) => String(job?.id) === String(editingJobId)) || {};
   const resolvedForm = await resolveEditedJobFormForSave({
     supabase,
     form,
     contractors,
-    existingJob,
+    existingJob: originalJob,
   });
-  const deviceFields = serializeJobDevicesToFields(resolvedForm);
-  const previousAssignedUserIds = getAssignedUserIdsFromJob(existingJob);
-  const previousViewerIds = [...new Set((existingJob?.viewers || []).map((viewer) => viewer.user_id).filter(Boolean))];
-  const nextViewerIds = [...new Set((resolvedForm.viewers || []).filter(Boolean))];
-  const nextAssignedUserIds = getAssignedUserIdsFromForm(resolvedForm);
-  const newlyAssignedUserIds = nextAssignedUserIds.filter((userId) => !previousAssignedUserIds.includes(userId));
 
-  const updatePayload = {
-    title: resolvedForm.client.trim(),
-    client: resolvedForm.client.trim(),
-    email: resolvedForm.email.trim(),
-    phone: resolvedForm.phone.trim(),
-    city: resolvedForm.city.trim(),
-    street: resolvedForm.street.trim(),
-    location: `${resolvedForm.city.trim()}, ${resolvedForm.street.trim()}`,
-    status: normalizeStatus(resolvedForm.status),
-    installation_date: resolvedForm.installation_date || null,
-    sms_recipient_phone: resolvedForm.phone.trim() || null,
-    contractor_id: resolvedForm.contractor_id || null,
-    device_model: deviceFields.device_model || null,
-    device_serial_number: deviceFields.device_serial_number || null,
-  };
+  const { fields, expected } = buildJobEditChangeSet({
+    form: resolvedForm,
+    baseJob: originalJob,
+    isAdmin,
+    normalizeStatus,
+  });
 
-  if (isAdmin) {
-    updatePayload.admin_note = resolvedForm.admin_note.trim() || null;
-    updatePayload.main_technician_id = resolvedForm.main_technician_id || null;
-    updatePayload.sms_consent = true;
-    updatePayload.sms_reminder_enabled = true;
-  }
+  const expectedInstallerIds = Array.isArray(originalJob.installer_ids)
+    ? normalizeInstallerIds(originalJob.installer_ids)
+    : null;
+  const baselineInstallerIds = expectedInstallerIds ?? getLegacyInstallerSuggestionIds(originalJob);
+  const nextInstallerIds = getAssignedUserIdsFromForm(resolvedForm);
+  const installerSelectionChanged = !valuesMatch(nextInstallerIds, baselineInstallerIds);
+  const updateInstallers = expectedInstallerIds !== null
+    ? installerSelectionChanged
+    : Boolean(resolvedForm.installers_confirmed || installerSelectionChanged);
 
-  const { error } = await supabase.from('jobs').update(updatePayload).eq('id', editingJobId);
-  if (error) throw error;
+  const previousAssignedUserIds = expectedInstallerIds ?? getAssignedUserIdsFromJob(originalJob);
+  const newlyAssignedUserIds = nextInstallerIds.filter((userId) => !previousAssignedUserIds.includes(userId));
 
-  await syncJobAccess({
+  const result = await saveJobConcurrentPatch({
     supabase,
     editingJobId,
-    previousViewerIds,
-    nextViewerIds,
+    fields,
+    expected,
+    installerIds: nextInstallerIds,
+    expectedInstallerIds,
+    updateInstallers,
   });
 
   if (newlyAssignedUserIds.length && shouldSendAssignmentPushForInstallationDate(resolvedForm.installation_date)) {
@@ -413,8 +488,10 @@ export async function saveEditedJobRecord({
   }
 
   return {
+    ...(result || {}),
     jobId: editingJobId,
     newlyAssignedUserIds,
+    installer_ids: updateInstallers ? nextInstallerIds : expectedInstallerIds,
   };
 }
 
@@ -422,13 +499,33 @@ export async function saveJobDeviceSerialsRecord({
   supabase,
   editingJobId,
   form,
+  baseJob = null,
 }) {
   if (!supabase || !editingJobId) return null;
+  const originalJob = baseJob || {};
   const deviceFields = serializeJobDevicesToFields(form);
-  const { error } = await supabase.from('jobs').update({
-    device_model: deviceFields.device_model || null,
-    device_serial_number: deviceFields.device_serial_number || null,
-  }).eq('id', editingJobId);
-  if (error) throw error;
-  return { jobId: editingJobId };
+  const fields = {};
+  const expected = {};
+  const nextModel = normalizeEditText(deviceFields.device_model) || null;
+  const nextSerial = normalizeEditText(deviceFields.device_serial_number) || null;
+  const baseModel = normalizeEditText(originalJob.device_model) || null;
+  const baseSerial = normalizeEditText(originalJob.device_serial_number) || null;
+
+  if (!valuesMatch(nextModel, baseModel)) {
+    fields.device_model = nextModel;
+    expected.device_model = originalJob.device_model ?? null;
+  }
+  if (!valuesMatch(nextSerial, baseSerial)) {
+    fields.device_serial_number = nextSerial;
+    expected.device_serial_number = originalJob.device_serial_number ?? null;
+  }
+
+  const result = await saveJobConcurrentPatch({
+    supabase,
+    editingJobId,
+    fields,
+    expected,
+  });
+  return { ...(result || {}), jobId: editingJobId };
 }
+
