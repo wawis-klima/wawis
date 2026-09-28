@@ -111,7 +111,11 @@ export async function restoreAuthSession({
     void reconcilePendingPushLogout({ supabase, sessionUser: user, force: true }).catch((pushError) => {
       console.warn('Nie udało się dokończyć poprzedniego wylogowania PUSH:', pushError?.message || pushError);
     });
-    const refreshResult = await refreshAll(user, { silent: true, preserveJobDetails: true });
+    const refreshResult = await refreshAll(user, {
+      silent: false,
+      preserveJobDetails: true,
+      autoRetryTransient: true,
+    });
     return { restored: true, retryable: Boolean(refreshResult?.transient) };
   }
 
@@ -218,7 +222,9 @@ export function subscribeToAuthState({
         signedOutVerificationTimerId = null;
       }
       if (typeof setSessionUser === 'function') setSessionUser(user);
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+      // Logowanie i przywracanie sesji uruchamiają własne odświeżenie.
+      // SIGNED_IN nie może dublować pełnego pobierania danych z telefonu.
+      if (event === 'USER_UPDATED') {
         void refreshAll(user, { silent: true, preserveJobDetails: true });
       }
     } else if (event === 'SIGNED_OUT') {
@@ -272,8 +278,13 @@ export async function loginUser({
       console.warn('Nie udało się uzgodnić PUSH po zmianie konta:', pushError?.message || pushError);
     });
 
-    // Jedno lekkie odświeżenie po zalogowaniu. Auth listener nie dubluje już INITIAL_SESSION.
-    void refreshAll(data.user, { silent: true, preserveJobDetails: true }).then((refreshResult) => {
+    // Logowanie kończy się po poprawnym Auth, a dane są ładowane już w widoku aplikacji.
+    // Refresh jest widoczny i sam ponawia chwilowe błędy, więc użytkownik nie widzi pustego ekranu.
+    void refreshAll(data.user, {
+      silent: false,
+      preserveJobDetails: true,
+      autoRetryTransient: true,
+    }).then((refreshResult) => {
       if (refreshResult?.transient && !refreshResult?.ok && !refreshResult?.preservedExistingData) setErrorMsg(TRANSIENT_SUPABASE_MESSAGE);
     }).catch((refreshError) => {
       setErrorMsg(getSupabaseUserMessage(refreshError, 'Zalogowano, ale nie udało się odświeżyć danych.'));
