@@ -1,3 +1,11 @@
+## 11.66
+- Desktop i mobile: lista oraz odświeżenie pojedynczego montażu pobierają komplet istniejących pól płatności `payment_*`.
+- Mobile/protokół: stary cache bez pól płatności jest doładowywany z `jobs` przed inicjalizacją formularza; brak pola nie jest już interpretowany jako „brak płatności”.
+- Jeśli aktualnych danych płatności nie uda się pobrać, edycja/podpis protokołu pozostaje zablokowana zamiast tworzyć dokument na niepewnych danych.
+- Po zapisaniu lub doładowaniu płatności aktualizowana jest zarówno otwarta karta montażu, jak i jego pozycja na liście.
+- Zachowano istniejące znaczenie kwoty, rodzaju, sposobu i daty płatności; nie zmieniano mechanizmu podpisu ani przechowywania istniejących PDF.
+- Bez migracji Supabase, zmian RLS, Storage i Edge Functions.
+
 ## 11.65
 - Desktop i mobile: zapisany montaż korzysta z aktualnych pól `device_model` / `device_serial_number` jako źródła prawdy; stara lokalna tablica `job.devices` nie może już przesłonić świeżych danych z serwera.
 - Świadomie wyczyszczone pola urządzeń pozostają puste i nie są odtwarzane ze starego cache ani samych tabliczek.

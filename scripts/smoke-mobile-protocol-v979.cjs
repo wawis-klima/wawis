@@ -14,6 +14,8 @@ const reviewQrModule = read('src', 'mobile791', 'modules', 'protocol-review-qr.j
 const storageModule = read('src', 'mobile791', 'modules', 'job-protocol-storage.js');
 const emailModule = read('src', 'mobile791', 'modules', 'job-protocol-email.js');
 const paymentModule = read('src', 'mobile791', 'modules', 'job-payment-confirmation.js');
+const mobileJobsFetch = read('src', 'mobile791', 'modules', 'jobs-fetch.js');
+const desktopJobsFetch = read('src', 'modules', 'jobs-fetch.js');
 const mockSupabase = read('src', 'mobile791', 'lib', 'mockSupabaseClient.js');
 const setupSql = read('supabase', 'setup-job-protocols-v9.79.sql');
 const paymentSql = read('supabase', 'setup-job-payment-confirmation-v9.86.sql');
@@ -105,6 +107,28 @@ assert.match(paymentModule, /PAYMENT_METHODS/);
 assert.match(paymentModule, /Zapłacono całość/);
 assert.match(paymentModule, /Wpłacono zaliczkę/);
 assert.match(paymentModule, /saveJobPaymentConfirmation/);
+assert.match(paymentModule, /hasJobPaymentSnapshot/);
+assert.match(paymentModule, /loadJobPaymentSnapshot/);
+for (const field of [
+  'payment_confirmation_enabled',
+  'payment_amount',
+  'payment_kind',
+  'payment_method',
+  'payment_paid_at',
+  'payment_recorded_by',
+  'payment_updated_at',
+]) {
+  assert.match(mobileJobsFetch, new RegExp(field), `Mobile jobs fetch must include ${field}`);
+  assert.match(desktopJobsFetch, new RegExp(field), `Desktop jobs fetch must include ${field}`);
+}
+assert.match(modal, /hasJobPaymentSnapshot\(job\)/);
+assert.match(modal, /loadJobPaymentSnapshot\(\{ supabase, jobId: job\?\.id \}\)/);
+assert.match(modal, /Nie wolno wtedy interpretować braku pól jako "brak płatności"/);
+assert.match(modal, /!paymentReady \? \(/);
+assert.match(modal, /Nie można bezpiecznie uzupełnić protokołu/);
+assert.match(jobDetails, /function applyPaymentPatchToJobState/);
+assert.match(jobDetails, /setJobs\?\.\(\(currentJobs\) => \(currentJobs \|\| \[\]\)\.map\(patchJob\)\)/);
+assert.match(jobDetails, /onPaymentLoaded=\{\(paymentPatch = \{\}\) =>/);
 
 assert.match(pdfModule, /createJobProtocolPdfFile/);
 assert.match(pdfModule, /import \{ getInitials, getJobAddress \} from "\.\.\/utils\/jobHelpers\.jsx";/);

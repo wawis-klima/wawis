@@ -255,6 +255,7 @@ export default function JobDetailsPanel({
   deleteJob,
   deleteDeviceFromJob,
   setSelectedJob,
+  setJobs,
   requestClearAdminNote,
   openPreview,
   deletePhoto,
@@ -286,6 +287,18 @@ export default function JobDetailsPanel({
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
+
+  function applyPaymentPatchToJobState(paymentPatch = {}) {
+    if (!selectedJobId || !paymentPatch || typeof paymentPatch !== 'object') return;
+    const patchJob = (current) => (
+      current && String(current.id || '') === selectedJobId
+        ? { ...current, ...paymentPatch }
+        : current
+    );
+    setSelectedJob((current) => patchJob(current));
+    setJobs?.((currentJobs) => (currentJobs || []).map(patchJob));
+  }
+
   const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || "") : "";
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobStatus = String(selectedJob?.status || "");
@@ -1099,9 +1112,12 @@ export default function JobDetailsPanel({
         supabase={supabase}
         protocolRecord={protocolRecord}
         onClose={() => setProtocolTestOpen(false)}
+        onPaymentLoaded={(paymentPatch = {}) => {
+          applyPaymentPatchToJobState(paymentPatch);
+        }}
         onSaved={(record, paymentPatch = {}) => {
           setProtocolRecord(record);
-          setSelectedJob((current) => current ? { ...current, ...paymentPatch } : current);
+          applyPaymentPatchToJobState(paymentPatch);
           setProtocolMessage("");
         }}
       />

@@ -13,6 +13,21 @@ export const PAYMENT_KINDS = Object.freeze([
 const PAYMENT_METHOD_VALUES = new Set(PAYMENT_METHODS.map((item) => item.value));
 const PAYMENT_KIND_VALUES = new Set(PAYMENT_KINDS.map((item) => item.value));
 
+export const PAYMENT_JOB_FIELD_NAMES = Object.freeze([
+  "payment_confirmation_enabled",
+  "payment_amount",
+  "payment_kind",
+  "payment_method",
+  "payment_paid_at",
+  "payment_recorded_by",
+  "payment_updated_at",
+]);
+export const PAYMENT_JOB_FIELDS = PAYMENT_JOB_FIELD_NAMES.join(", ");
+
+export function hasJobPaymentSnapshot(job = {}) {
+  return PAYMENT_JOB_FIELD_NAMES.every((field) => Object.prototype.hasOwnProperty.call(job || {}, field));
+}
+
 function normalizeText(value) {
   return String(value ?? "").trim();
 }
@@ -135,6 +150,26 @@ function isMissingPaymentColumnsError(error) {
     || message.includes("payment_confirmation_enabled")
     || message.includes("payment_amount")
     || message.includes("payment_method");
+}
+
+export async function loadJobPaymentSnapshot({ supabase, jobId }) {
+  const targetId = normalizeText(jobId);
+  if (!supabase || !targetId) throw new Error("Nie można pobrać danych płatności bez połączenia ze zleceniem.");
+
+  const { data, error } = await supabase
+    .from("jobs")
+    .select(PAYMENT_JOB_FIELDS)
+    .eq("id", targetId)
+    .maybeSingle();
+
+  if (error) {
+    if (isMissingPaymentColumnsError(error)) {
+      throw new Error("Obsługa płatności wymaga uruchomienia skryptu bazy dołączonego do wersji 9.86.");
+    }
+    throw error;
+  }
+  if (!data) throw new Error("Nie udało się pobrać aktualnych danych płatności dla tego zlecenia.");
+  return data;
 }
 
 export function isPaymentConfirmationUnchanged(job = {}, payment = {}) {

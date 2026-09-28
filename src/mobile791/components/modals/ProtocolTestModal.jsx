@@ -18,6 +18,8 @@ import {
   getPaymentDraftFromJob,
   getPaymentKindLabel,
   getPaymentMethodLabel,
+  hasJobPaymentSnapshot,
+  loadJobPaymentSnapshot,
   normalizePaymentConfirmation,
   PAYMENT_KINDS,
   PAYMENT_METHODS,
@@ -160,7 +162,7 @@ function getTrimmedSignatureDataUrl(canvas) {
   return trimmed.toDataURL("image/png");
 }
 
-export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved }) {
+export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved, onPaymentLoaded }) {
   const canvasRef = useRef(null);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
@@ -174,6 +176,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const paymentDraftBaselineRef = useRef(JSON.stringify(getPaymentDraftFromJob(job)));
   const [savedRecord, setSavedRecord] = useState(protocolRecord);
   const [editing, setEditing] = useState(!protocolRecord);
+  const [resolvedJob, setResolvedJob] = useState(job);
+  const [paymentReady, setPaymentReady] = useState(() => hasJobPaymentSnapshot(job));
+  const [paymentLoadError, setPaymentLoadError] = useState("");
   const [paymentDraft, setPaymentDraft] = useState(() => getPaymentDraftFromJob(job));
   const [hasSignature, setHasSignature] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
@@ -184,19 +189,21 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [actionBusy, setActionBusy] = useState("");
   const [message, setMessage] = useState("");
+  const protocolJob = resolvedJob || job;
   const protocolData = useMemo(
-    () => buildJobProtocolData({ job, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
-    [job, profiles],
+    () => buildJobProtocolData({ job: protocolJob, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
+    [protocolJob, profiles],
   );
 
   useEffect(() => {
     if (!open) return undefined;
+    let cancelled = false;
+
     openedAtRef.current = new Date();
     setSavedRecord(protocolRecord || null);
     setEditing(!protocolRecord);
-    const nextPaymentDraft = getPaymentDraftFromJob(job);
-    paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
-    setPaymentDraft(nextPaymentDraft);
+    setResolvedJob(job);
+    setPaymentLoadError("");
     setHasSignature(false);
     setSignatureOpen(false);
     setSignatureDataUrl("");
@@ -207,7 +214,42 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setActionMenuOpen(false);
     setActionBusy("");
     setMessage("");
-    return undefined;
+
+    const initializePayment = (sourceJob) => {
+      const nextPaymentDraft = getPaymentDraftFromJob(sourceJob);
+      paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
+      setPaymentDraft(nextPaymentDraft);
+    };
+
+    if (hasJobPaymentSnapshot(job)) {
+      initializePayment(job);
+      setPaymentReady(true);
+      return () => { cancelled = true; };
+    }
+
+    // Snapshoty zapisane przez starsze wersje aplikacji mogły nie zawierać
+    // payment_*. Nie wolno wtedy interpretować braku pól jako "brak płatności".
+    setPaymentReady(false);
+    paymentDraftBaselineRef.current = "";
+    setPaymentDraft(getPaymentDraftFromJob({}));
+
+    void loadJobPaymentSnapshot({ supabase, jobId: job?.id })
+      .then((paymentSnapshot) => {
+        if (cancelled) return;
+        const hydratedJob = { ...job, ...paymentSnapshot };
+        setResolvedJob(hydratedJob);
+        initializePayment(hydratedJob);
+        setPaymentReady(true);
+        onPaymentLoaded?.(paymentSnapshot);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        const errorMessage = error?.message || "Nie udało się pobrać aktualnych danych płatności.";
+        setPaymentLoadError(errorMessage);
+        setMessage(`Nie można bezpiecznie uzupełnić protokołu: ${errorMessage}`);
+      });
+
+    return () => { cancelled = true; };
   }, [open, job?.id, protocolRecord?.id]);
 
   useEffect(() => {
@@ -413,6 +455,12 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   async function createPdf() {
+    if (!paymentReady || paymentLoadError) {
+      setMessage(paymentLoadError
+        ? `Nie można zapisać protokołu bez aktualnych danych płatności: ${paymentLoadError}`
+        : "Poczekaj na pobranie aktualnych danych płatności.");
+      return;
+    }
     if (!hasSignature || !signatureDataUrl || isGenerating) return;
     setIsGenerating(true);
     setMessage("");
@@ -421,10 +469,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       const saveOperation = (async () => {
         const payment = normalizePaymentConfirmation(paymentDraft);
         const paymentPatch = await withProtocolSaveTimeout(
-          saveJobPaymentConfirmation({ supabase, job, payment }),
+          saveJobPaymentConfirmation({ supabase, job: protocolJob, payment }),
           { phase: "payment", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
-        const updatedJob = { ...job, ...paymentPatch };
+        const updatedJob = { ...protocolJob, ...paymentPatch };
         const signedAt = new Date();
         progress.phase = "pdf";
         const result = await withProtocolSaveTimeout(
@@ -450,6 +498,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       const wasReplacement = Boolean(savedRecord);
       setSavedRecord(record);
       setEditing(false);
+      setResolvedJob((current) => ({ ...(current || job), ...paymentPatch }));
       paymentDraftBaselineRef.current = JSON.stringify(paymentDraft);
       setHasSignature(false);
       setSignatureDataUrl("");
@@ -488,7 +537,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         await downloadStoredJobProtocol({ supabase, record: savedRecord });
         setMessage("Pobieranie protokołu zostało uruchomione.");
       } else if (action === "email") {
-        const result = await sendJobProtocolEmail({ supabase, record: savedRecord, job });
+        const result = await sendJobProtocolEmail({ supabase, record: savedRecord, job: protocolJob });
         setMessage(`Protokół został wysłany z ${result.senderEmail} do ${result.recipientEmail}.`);
       } else {
         await openStoredJobProtocolPdfPreview({ supabase, record: savedRecord });
@@ -501,11 +550,11 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     }
   }
 
-  const paymentDraftDirty = JSON.stringify(paymentDraft) !== paymentDraftBaselineRef.current;
+  const paymentDraftDirty = paymentReady && JSON.stringify(paymentDraft) !== paymentDraftBaselineRef.current;
   const protocolHasUnsavedWork = Boolean(open && (isGenerating || hasSignature || draftHasSignature || paymentDraftDirty));
-  const storedPayment = getPaymentDraftFromJob(job);
+  const storedPayment = paymentReady ? getPaymentDraftFromJob(protocolJob) : { enabled: false, amount: "", kind: "full", method: "cash", paidDate: "" };
   const paymentVisible = editing ? paymentDraft : storedPayment;
-  const recipientEmail = getJobProtocolRecipientEmail(job);
+  const recipientEmail = getJobProtocolRecipientEmail(protocolJob);
   const canSendEmail = isValidProtocolEmail(recipientEmail);
 
   return (
@@ -565,7 +614,16 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             </section>
 
             <div ref={protocolBottomStartRef} className="protocolBottomStartAnchor" aria-hidden="true" />
-            {editing || paymentVisible.enabled ? <section className="protocolTestSection protocolPaymentSection">
+            {!paymentReady ? (
+              <section className="protocolTestSection protocolPaymentSection">
+                <div className="protocolPaymentHeading"><h3>Potwierdzenie zapłaty</h3></div>
+                <div className="protocolTestNotice" role="status">
+                  {paymentLoadError
+                    ? `Nie udało się pobrać aktualnych danych płatności: ${paymentLoadError}`
+                    : "Pobieranie aktualnych danych płatności…"}
+                </div>
+              </section>
+            ) : editing || paymentVisible.enabled ? <section className="protocolTestSection protocolPaymentSection">
               <div className="protocolPaymentHeading">
                 <h3>Potwierdzenie zapłaty</h3>
                 {editing ? (
@@ -601,9 +659,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                   {savedRecord && !editing ? null : <span>Możesz zapisać protokół PDF albo zmienić podpis.</span>}
                 </div> : null}
                 {editing ? (
-                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating}>{hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
+                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !paymentReady || Boolean(paymentLoadError)}>{hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
                 ) : (
-                  <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol}>Uzupełnij protokół</button>
+                  <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol} disabled={!paymentReady || Boolean(paymentLoadError)}>Uzupełnij protokół</button>
                 )}
               </div>
             </section>
@@ -628,7 +686,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               {savedRecord && !editing ? (
                 <button type="button" className="btn primary protocolTestGenerate" onClick={() => setActionMenuOpen((value) => !value)} disabled={Boolean(actionBusy)}>Drukuj lub wyślij</button>
               ) : (
-                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating}>{isGenerating ? "Zapisuję protokół..." : "Zapisz protokół"}</button>
+                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating || !paymentReady || Boolean(paymentLoadError)}>{isGenerating ? "Zapisuję protokół..." : "Zapisz protokół"}</button>
               )}
             </div>
           </div>
