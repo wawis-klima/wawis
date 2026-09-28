@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 11.62
+- 11.63
 
 Wersja 11.62 skraca listę monterów w protokole PDF do samych inicjałów pracowników, np. KW, MF, PW.
 
