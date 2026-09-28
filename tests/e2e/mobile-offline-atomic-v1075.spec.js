@@ -129,3 +129,31 @@ set: (handler) => {
   expect(result[0].id).toBe('status-race-new');
   expect(result[0].payload.status).toBe('Zakończone');
 });
+
+
+test('@mobile v11.64 — konflikt statusu nie pozostaje jako pozornie zakończony montaż', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    const store = await import('/src/mobile791/modules/job-offline-store.js');
+    const [projected] = store.applyOfflineOperationsToJobs([{
+      id: 'job-conflict-v1164',
+      status: 'Zakończone',
+      offline_pending: true,
+    }], [{
+      id: 'status-conflict-v1164',
+      user_id: 'worker-v1164',
+      job_id: 'job-conflict-v1164',
+      type: 'status',
+      status: 'conflict',
+      base: { status: 'W trakcie' },
+      payload: { status: 'Zakończone' },
+      error: 'Status zmienił się w systemie.',
+      server_state: { status: 'Niezrealizowane' },
+    }], { id: 'worker-v1164' });
+    return projected;
+  });
+
+  expect(result.status).toBe('Niezrealizowane');
+  expect(result.offline_conflict).toBe(true);
+  expect(result.offline_pending).toBe(false);
+});
