@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.61",
-  "scope": "full",
-  "release_branch": "release/v11.61",
+  "version": "11.62",
+  "scope": "mobile",
+  "release_branch": "release/v11.62",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana dotyka mobilnej edycji klienta i funkcji triggerowych Supabase odpowiedzialnych za synchronizację kartoteki kontrahenta. Bez zmian polityk RLS, Storage i Edge Functions."
+    "notes": "Zmiana wyłącznie w mobilnym generowaniu i podglądzie protokołu PDF: lista monterów jest skracana do inicjałów. Bez zmian Supabase, RLS, Storage, Edge Functions i danych zlecenia."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.61.zip"
+    "file_name": "klima-app-v11.62.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.61",
+    "source_branch": "release/v11.62",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile dla Administratora i Pracownika: edycja imienia/nazwy, e-maila, telefonu i adresu zapisuje montaż i aktualizuje powiązaną kartotekę; historyczny duplikat e-maila nie blokuje zapisu; dodawanie nowej kartoteki nadal chroni przed duplikatem."
+    "notes": "Sprawdzić protokół mobilny: dla kilku przypisanych monterów PDF i podgląd pokazują wyłącznie inicjały, np. KW, MF, PW, bez pełnych imion i nazwisk."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — 20260928080000_mobile_contractor_overwrite_v1161.sql po merge do main",
-    "rls_role_matrix": "PENDING — bez zmian polityk RLS; sprawdzić edycję przez Administratora i Pracownika",
-    "performance_advisor": "PENDING — sprawdzić po migracji",
-    "security_advisor": "PENDING — sprawdzić po migracji",
-    "trigger_grants": "N/A — brak nowych grantów; funkcja triggerowa pozostaje bez bezpośredniego EXECUTE dla klientów",
+    "supabase_migration_applied": "N/A — brak zmian w bazie",
+    "rls_role_matrix": "N/A — brak zmian RLS",
+    "performance_advisor": "N/A — brak zmian bazodanowych",
+    "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
+    "trigger_grants": "N/A — brak zmian triggerów/grantów",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main"
   }
