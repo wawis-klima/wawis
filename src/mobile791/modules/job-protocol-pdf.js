@@ -108,6 +108,7 @@ function getProtocolDeviceRows(job = {}) {
     const deviceContext = devices.length > 1 ? ` · urządzenie ${deviceIndex}` : "";
 
     rows.push({
+      deviceIndex,
       unit: "JZ",
       unitType: `Jednostka zewnętrzna${deviceContext}`,
       unitTypeShort: `zewnętrzna${devices.length > 1 ? ` · urz. ${deviceIndex}` : ""}`,
@@ -121,6 +122,7 @@ function getProtocolDeviceRows(job = {}) {
       const unitRef = `jw-${unit.unitNumber}`;
       const unitModel = unit.model || (!isMultiSplit ? outdoorModel : "");
       rows.push({
+        deviceIndex,
         unit: `JW${unit.unitNumber}`,
         unitType: `Jednostka wewnętrzna${deviceContext}`,
         unitTypeShort: `wewnętrzna${devices.length > 1 ? ` · urz. ${deviceIndex}` : ""}`,
@@ -132,6 +134,54 @@ function getProtocolDeviceRows(job = {}) {
   });
 
   return rows;
+}
+
+export function getProtocolDeviceColumnLayout(rows = []) {
+  const sourceRows = Array.isArray(rows) ? rows : [];
+  const groups = [];
+  const groupByKey = new Map();
+
+  sourceRows.forEach((row, index) => {
+    const deviceIndex = Number(row?.deviceIndex);
+    const key = Number.isInteger(deviceIndex) && deviceIndex > 0
+      ? `device-${deviceIndex}`
+      : `row-${index}`;
+    let group = groupByKey.get(key);
+    if (!group) {
+      group = [];
+      groupByKey.set(key, group);
+      groups.push(group);
+    }
+    group.push(row);
+  });
+
+  if (groups.length < 3) {
+    return { twoColumn: false, columns: [sourceRows] };
+  }
+
+  const countRows = (items) => items.reduce((sum, group) => sum + group.length, 0);
+  const totalRows = countRows(groups);
+  let bestSplit = Math.ceil(groups.length / 2);
+  let bestDifference = Math.abs(
+    countRows(groups.slice(0, bestSplit)) - (totalRows - countRows(groups.slice(0, bestSplit))),
+  );
+
+  for (let split = 1; split < groups.length; split += 1) {
+    const leftRows = countRows(groups.slice(0, split));
+    const difference = Math.abs(leftRows - (totalRows - leftRows));
+    if (difference < bestDifference || (difference === bestDifference && split > bestSplit)) {
+      bestSplit = split;
+      bestDifference = difference;
+    }
+  }
+
+  return {
+    twoColumn: true,
+    columns: [
+      groups.slice(0, bestSplit).flat(),
+      groups.slice(bestSplit).flat(),
+    ],
+  };
 }
 
 function getCompletedBy(job = {}, profiles = []) {
@@ -439,6 +489,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   y += 62;
   const deviceRowHeight = 22;
   const rows = data.deviceRows.length ? data.deviceRows : [{
+    deviceIndex: 1,
     unit: "-",
     unitType: "-",
     unitTypeShort: "-",
@@ -446,47 +497,106 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     revision: "-",
     serialNumber: "-",
   }];
-  const tableHeight = 32 + Math.max(1, rows.length) * deviceRowHeight;
+  const deviceLayout = getProtocolDeviceColumnLayout(rows);
+  const visibleRowCount = Math.max(1, ...deviceLayout.columns.map((columnRows) => columnRows.length));
+  const tableHeight = 32 + visibleRowCount * deviceRowHeight;
   y = addPageIfNeeded(doc, y, tableHeight + 28);
   drawSectionTitle(doc, "Urządzenia i tabliczki", y);
   drawCard(doc, y + 8, tableHeight);
-  doc.setFont(FONT_FAMILY, "bold");
-  doc.setFontSize(7.6);
-  doc.setTextColor(0, 0, 0);
-  doc.text("JEDNOSTKA", CONTENT_LEFT, y + 27);
-  doc.text("DANE Z TABLICZKI", 118, y + 27);
-  doc.setDrawColor(212, 224, 230);
-  doc.line(CONTENT_LEFT, y + 35, CONTENT_RIGHT, y + 35);
 
-  rows.forEach((row, index) => {
-    const rowTop = y + 37 + index * deviceRowHeight;
-    const primaryY = rowTop + 8.5;
-    const secondaryY = rowTop + 17.5;
+  if (deviceLayout.twoColumn) {
+    const columnGap = 14;
+    const columnWidth = (CONTENT_WIDTH - columnGap) / 2;
 
+    deviceLayout.columns.forEach((columnRows, columnIndex) => {
+      const columnX = CONTENT_LEFT + columnIndex * (columnWidth + columnGap);
+      const dataX = columnX + 54;
+      const dataWidth = columnWidth - 54;
+
+      doc.setFont(FONT_FAMILY, "bold");
+      doc.setFontSize(6.8);
+      doc.setTextColor(0, 0, 0);
+      doc.text("JEDNOSTKA", columnX, y + 27);
+      doc.text("DANE Z TABLICZKI", dataX, y + 27);
+      doc.setDrawColor(212, 224, 230);
+      doc.line(columnX, y + 35, columnX + columnWidth, y + 35);
+
+      columnRows.forEach((row, index) => {
+        const rowTop = y + 37 + index * deviceRowHeight;
+        const primaryY = rowTop + 8.5;
+        const secondaryY = rowTop + 17.5;
+        const typeShort = row.unit === "JZ" ? "zewn." : (String(row.unit || "").startsWith("JW") ? "wewn." : "");
+        const deviceSuffix = Number(row.deviceIndex) > 0 ? ` · urz. ${row.deviceIndex}` : "";
+
+        doc.setFont(FONT_FAMILY, "bold");
+        doc.setFontSize(7.6);
+        doc.setTextColor(0, 0, 0);
+        doc.text(row.unit, columnX, primaryY);
+
+        doc.setFont(FONT_FAMILY, "normal");
+        doc.setFontSize(5.3);
+        doc.text(`${typeShort}${deviceSuffix}`, columnX, secondaryY);
+
+        doc.setFont(FONT_FAMILY, "bold");
+        doc.setFontSize(7);
+        doc.text(doc.splitTextToSize(row.model, dataWidth), dataX, primaryY);
+
+        doc.setFont(FONT_FAMILY, "normal");
+        doc.setFontSize(5.8);
+        const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
+        doc.text(doc.splitTextToSize(technicalLine, dataWidth), dataX, secondaryY);
+
+        if (index < columnRows.length - 1) {
+          doc.setDrawColor(230, 236, 240);
+          doc.setLineWidth(0.4);
+          doc.line(columnX, rowTop + deviceRowHeight, columnX + columnWidth, rowTop + deviceRowHeight);
+        }
+      });
+    });
+
+    const dividerX = CONTENT_LEFT + ((CONTENT_WIDTH - columnGap) / 2) + (columnGap / 2);
+    doc.setDrawColor(230, 236, 240);
+    doc.setLineWidth(0.5);
+    doc.line(dividerX, y + 18, dividerX, y + tableHeight - 6);
+  } else {
     doc.setFont(FONT_FAMILY, "bold");
-    doc.setFontSize(8.1);
+    doc.setFontSize(7.6);
     doc.setTextColor(0, 0, 0);
-    doc.text(row.unit, CONTENT_LEFT, primaryY);
+    doc.text("JEDNOSTKA", CONTENT_LEFT, y + 27);
+    doc.text("DANE Z TABLICZKI", 118, y + 27);
+    doc.setDrawColor(212, 224, 230);
+    doc.line(CONTENT_LEFT, y + 35, CONTENT_RIGHT, y + 35);
 
-    doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(6.3);
-    doc.text(doc.splitTextToSize(row.unitTypeShort || row.unitType, 78), CONTENT_LEFT, secondaryY);
+    rows.forEach((row, index) => {
+      const rowTop = y + 37 + index * deviceRowHeight;
+      const primaryY = rowTop + 8.5;
+      const secondaryY = rowTop + 17.5;
 
-    doc.setFont(FONT_FAMILY, "bold");
-    doc.setFontSize(7.8);
-    doc.text(doc.splitTextToSize(row.model, 360), 100, primaryY);
+      doc.setFont(FONT_FAMILY, "bold");
+      doc.setFontSize(8.1);
+      doc.setTextColor(0, 0, 0);
+      doc.text(row.unit, CONTENT_LEFT, primaryY);
 
-    doc.setFont(FONT_FAMILY, "normal");
-    doc.setFontSize(6.8);
-    const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
-    doc.text(doc.splitTextToSize(technicalLine, 360), 100, secondaryY);
+      doc.setFont(FONT_FAMILY, "normal");
+      doc.setFontSize(6.3);
+      doc.text(doc.splitTextToSize(row.unitTypeShort || row.unitType, 78), CONTENT_LEFT, secondaryY);
 
-    if (index < rows.length - 1) {
-      doc.setDrawColor(230, 236, 240);
-      doc.setLineWidth(0.4);
-      doc.line(CONTENT_LEFT, rowTop + deviceRowHeight, CONTENT_RIGHT, rowTop + deviceRowHeight);
-    }
-  });
+      doc.setFont(FONT_FAMILY, "bold");
+      doc.setFontSize(7.8);
+      doc.text(doc.splitTextToSize(row.model, 360), 100, primaryY);
+
+      doc.setFont(FONT_FAMILY, "normal");
+      doc.setFontSize(6.8);
+      const technicalLine = `Rewizja: ${normalizeText(row.revision)}  |  S/N: ${normalizeText(row.serialNumber)}`;
+      doc.text(doc.splitTextToSize(technicalLine, 360), 100, secondaryY);
+
+      if (index < rows.length - 1) {
+        doc.setDrawColor(230, 236, 240);
+        doc.setLineWidth(0.4);
+        doc.line(CONTENT_LEFT, rowTop + deviceRowHeight, CONTENT_RIGHT, rowTop + deviceRowHeight);
+      }
+    });
+  }
 
   y += tableHeight + 20;
   if (data.payment?.enabled) {
