@@ -207,7 +207,20 @@ test.describe('@mobile iPhone — odporność danych', () => {
       window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
     }, { storeKey: MOCK_STORE_KEY });
 
+    await expect.poll(() => page.evaluate(() => (
+      window.__KLIMA_MOCK_SUPABASE__?.getStore()?.comments?.some(
+        (comment) => comment.id === 'mock-comment-completed-e2e',
+      ) || false
+    )), { timeout: 10_000 }).toBe(true);
+
     await page.reload();
+
+    await expect.poll(() => page.evaluate(() => (
+      window.__KLIMA_MOCK_SUPABASE__?.getStore()?.comments?.some(
+        (comment) => comment.id === 'mock-comment-completed-e2e',
+      ) || false
+    )), { timeout: 10_000 }).toBe(true);
+
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
     await expect(page.locator('.mobileDetailsLoading')).toBeHidden();
