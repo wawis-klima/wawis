@@ -96,6 +96,18 @@ export function getRotensoModelFamilyFromValue(value = '') {
   return '';
 }
 
+const ROTENSO_SHARED_SINGLE_FAMILY_GROUPS = Object.freeze([
+  Object.freeze(['Teta', 'Teta Mirror']),
+]);
+
+function areCompatibleSingleFamilies(outdoorFamily = '', indoorFamily = '') {
+  if (!outdoorFamily || !indoorFamily) return false;
+  if (outdoorFamily === indoorFamily) return true;
+  return ROTENSO_SHARED_SINGLE_FAMILY_GROUPS.some(
+    (families) => families.includes(outdoorFamily) && families.includes(indoorFamily),
+  );
+}
+
 export function getSingleSplitModelFamilyMismatch({
   outdoorModel = '',
   indoorModel = '',
@@ -104,7 +116,7 @@ export function getSingleSplitModelFamilyMismatch({
 } = {}) {
   const resolvedOutdoorFamily = getRotensoModelFamilyFromValue(outdoorFamily) || getRotensoModelFamilyFromValue(outdoorModel);
   const resolvedIndoorFamily = getRotensoModelFamilyFromValue(indoorFamily) || getRotensoModelFamilyFromValue(indoorModel);
-  if (!resolvedOutdoorFamily || !resolvedIndoorFamily || resolvedOutdoorFamily === resolvedIndoorFamily) return null;
+  if (!resolvedOutdoorFamily || !resolvedIndoorFamily || areCompatibleSingleFamilies(resolvedOutdoorFamily, resolvedIndoorFamily)) return null;
   return {
     outdoorFamily: resolvedOutdoorFamily,
     indoorFamily: resolvedIndoorFamily,

@@ -22,6 +22,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert(photosSource.includes('findExistingServerPhotoForQueuedPhoto'), 'Brak kontroli serwera przed ponownym uploadem.');
   assert(photosSource.includes('reconcileQueuedPhotoFromServer'), 'Brak uzgodnienia lokalnego błędu z poprawnym zdjęciem serwerowym.');
   assert(photosSource.includes('findLegacyServerNameplate'), 'Brak naprawy starych wpisów kolejki z wersji 8.81.');
+  assert(
+    photosSource.includes("queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status };"),
+    'Worker kolejki musi zachować status przejętego rekordu do uzgodnienia starej tabliczki z serwerem.',
+  );
   assert(photosSource.includes('new Map(queuedCandidates.map((photo) => [String(photo.id), photo]))'), 'Brak deduplikacji identycznych zdjęć przed zapisem kolejki.');
   assert(requirementsSource.includes('priority = isNameplatePhotoReady(photo)'), 'Poprawna tabliczka serwerowa nie ma pierwszeństwa nad lokalnym błędem.');
 

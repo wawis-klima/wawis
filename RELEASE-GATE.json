@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.59",
+  "version": "11.60",
   "scope": "mobile",
-  "release_branch": "release/v11.59",
+  "release_branch": "release/v11.60",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "PENDING",
-    "notes": "Zmiana wyłącznie w mobilnym UI zakończonych montaży: zwijanie Monterów oraz warunkowe zwijanie/rozwijanie Komentarzy i pytań. Bez zmian bazy, RLS, storage i Edge Functions."
+    "notes": "Zmiana wyłącznie w mobilnej walidacji zgodności rodziny Single: wspólna jednostka zewnętrzna TO dla Teta/Teta Mirror. Bez zmian bazy, RLS, storage, Edge Functions i OCR."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.59.zip"
+    "file_name": "klima-app-v11.60.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.59",
+    "source_branch": "release/v11.60",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile: zakończony montaż bez komentarzy — Monterzy i Komentarze zwinięte; zakończony montaż z komentarzami — Monterzy zwinięci, Komentarze rozwinięte; aktywne montaże bez zmian."
+    "notes": "Sprawdzić mobile: Teta Mirror TM35Xi + TO35Xo przechodzi; Teta TA26Xi + TO26Xo przechodzi; Imoto + Ukura nadal pokazuje blokadę niezgodnego zestawu."
   },
   "archive": {
     "source_of_truth": "github-main",
