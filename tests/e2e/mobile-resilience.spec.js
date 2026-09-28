@@ -154,7 +154,9 @@ test.describe('@mobile iPhone — odporność danych', () => {
         uploaded_by: 'mock-worker-1',
         created_at: '2026-07-30T05:01:00.000Z',
       });
-      window.localStorage.setItem(storeKey, JSON.stringify(store));
+      const serialized = JSON.stringify(store);
+      window.localStorage.setItem(storeKey, serialized);
+      window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
     }, { storeKey: MOCK_STORE_KEY });
     await putLegacyQueuedNameplateError(page);
 
