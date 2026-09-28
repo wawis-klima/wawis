@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Zmiana 11.70 dotyczy wyłącznie czytelności mobilnego statusu zakończonego montażu i opisu czasu zapisanego protokołu. Produkcyjny rekord Tomasza Sołtysika potwierdził, że created_at zachowuje pierwotne utworzenie rekordu, a signed_at wskazuje ostatnią podpisaną wersję; brak zmian schematu, RLS i Storage."
+    "notes": "Zmiana 11.70 dotyczy wyłącznie czytelności mobilnego statusu zakończonego montażu i opisu czasu zapisanego protokołu. Produkcyjny rekord historycznego protokołu potwierdził, że created_at zachowuje pierwotne utworzenie rekordu, a signed_at wskazuje ostatnią podpisaną wersję; brak zmian schematu, RLS i Storage."
   },
   "drive_backup": {
     "required": false,
