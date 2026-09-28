@@ -1,3 +1,5 @@
+import { getAssignedUserIdsFromJob } from './jobs-assignment.js';
+
 function stripDiacritics(value) {
   return String(value || '')
     .replace(/[łŁ]/g, (character) => (character === 'Ł' ? 'L' : 'l'))
@@ -43,11 +45,9 @@ function formatDate(value) {
 }
 
 function getJobInstallerNames(job = {}, profileById = new Map()) {
-  const ids = unique([
-    job.main_technician_id,
-    ...(Array.isArray(job.viewers) ? job.viewers.map((item) => item?.user_id) : []),
-  ]);
-  return ids.map((id) => profileById.get(String(id))).filter(Boolean);
+  return getAssignedUserIdsFromJob(job)
+    .map((id) => profileById.get(String(id)))
+    .filter(Boolean);
 }
 
 function scoreResult({ title, searchable, query, type }) {
