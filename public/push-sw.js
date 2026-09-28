@@ -3,7 +3,7 @@ importScripts("/push-context-guard.js");
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v11.69");
+    const cache = await caches.open("wawis-app-shell-v11.70");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
