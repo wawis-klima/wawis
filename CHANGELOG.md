@@ -1,3 +1,13 @@
+## 11.72
+- Mobile/logowanie: po poprawnym Auth aplikacja od razu przechodzi do widoku i pokazuje jawny stan „Ładowanie danych…”, zamiast wyglądać jak pusta lub zawieszona podczas wolnej odpowiedzi Supabase.
+- Gdy telefon ma już lokalny snapshot albo świeże dane, podczas odświeżania widzi „Odświeżanie danych…” i zachowuje poprzedni poprawny stan.
+- Chwilowy błąd/timeout pobierania danych po logowaniu jest automatycznie ponawiany do 3 razy co 3 sekundy; w trakcie ponawiania bez danych wskaźnik ładowania pozostaje widoczny.
+- Dopiero po wyczerpaniu automatycznych prób bez żadnych użytecznych danych pojawia się komunikat błędu; przy istniejących danych retry pozostaje cichy.
+- Mobilny listener Auth nie uruchamia już drugiego pełnego odświeżenia po SIGNED_IN; logowanie i przywracanie sesji mają własne pojedyncze pobranie.
+- Przywracanie istniejącej sesji również pokazuje stan ładowania i korzysta z tej samej automatycznej obsługi przejściowych błędów.
+- Dodano regresję dla widocznego ładowania, cache-first, retry oraz braku podwójnego SIGNED_IN refresh.
+- Bez zmian w Supabase, RLS, Storage, Edge Functions i schemacie bazy.
+
 ## 11.71
 - Mobile/protokół: pracownik może utworzyć pierwszy protokół także dla starszego zakończonego montażu bez `jobs.installer_ids`.
 - Dla historycznego zlecenia pole „Monterzy” jest odtwarzane lokalnie z dawnej reguły sprzed 11.68: główny monter + historyczne przypisania/viewers.

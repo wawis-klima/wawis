@@ -1329,6 +1329,7 @@ export default function App() {
         desktopStatusLabels={desktopStatusLabels}
         errorMsg={errorMsg}
         isRefreshingData={isRefreshingData}
+        hasUsableData={Boolean(profile) || jobs.length > 0}
         activeModule={activeModule}
         activeNavKey={desktopNavKey}
         setActiveModule={setActiveModule}

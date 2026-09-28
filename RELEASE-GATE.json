@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.71",
+  "version": "11.72",
   "scope": "mobile",
-  "release_branch": "release/v11.71",
+  "release_branch": "release/v11.72",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": false,
+    "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana 11.71 dotyczy mobilnego tworzenia pierwszego protokołu dla historycznych zakończonych montaży bez installer_ids. Produkcyjne RLS current_user_can_finalize_job() już dopuszcza staff dla zakończonego montażu; brak zmian schematu, RLS, Storage i Edge Functions."
+    "notes": "Produkcja Supabase jest ACTIVE_HEALTHY. Incydent z iPhone administratora został potwierdzony w diagnostyce: data.refresh/refreshAll failed na 11.68, a po ponownym logowaniu wszystkie odpowiedzi były HTTP 200, lecz część trwała 6,6–10,3 s (jobs ~7,9 s, job_access ~10,3 s, notifications ~9,7 s). Minutę później średnia spadła do ~0,48 s. 11.72 naprawia UX i retry po takich przejściowych spowolnieniach; backend bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.71.zip"
+    "file_name": "klima-app-v11.72.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.71",
+    "source_branch": "release/v11.72",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na produkcji sprawdzić konto Pracownika na starszym zakończonym montażu bez zapisanego PDF: otwarcie Protokołu, podpis klienta i pierwszy zapis mają działać bez komunikatu o potwierdzeniu monterów; istniejące protokoły nadal mają działać bez regresji."
+    "notes": "Po deployu potwierdzić na iPhone: wersja 11.72, po logowaniu bez cache widoczne „Ładowanie danych…”, przy istniejącym snapshotcie „Odświeżanie danych…”, brak podwójnego pełnego refreshu po SIGNED_IN oraz brak nowego data.refresh error przy normalnej odpowiedzi serwera."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,10 +33,10 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_migration_applied": "N/A — brak zmian backendu i migracji",
-    "rls_role_matrix": "PASS — current_user_can_finalize_job() dopuszcza staff dla statusu Zakończone; job_protocols INSERT/UPDATE używa tej reguły",
-    "performance_advisor": "N/A — brak zmian zapytań bazodanowych",
-    "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
-    "trigger_grants": "N/A — brak zmian triggerów i grantów",
+    "rls_role_matrix": "N/A — bez zmian RLS",
+    "performance_advisor": "N/A — bez zmian zapytań i indeksów bazy",
+    "security_advisor": "N/A — bez zmian bezpieczeństwa/backendu",
+    "trigger_grants": "N/A — bez zmian triggerów i grantów",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main"
   }

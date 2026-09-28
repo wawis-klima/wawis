@@ -10,6 +10,7 @@ export default function AppAuthenticatedLayout({
   desktopStatusLabels,
   errorMsg,
   isRefreshingData = false,
+  hasUsableData = false,
   activeModule,
   activeNavKey,
   setActiveModule,
@@ -29,7 +30,7 @@ export default function AppAuthenticatedLayout({
       {isRefreshingData ? (
         <div className="appDataRefreshStatus" role="status" aria-live="polite">
           <span className="appDataRefreshSpinner" aria-hidden="true" />
-          <span>Odświeżanie</span>
+          <span>{hasUsableData ? 'Odświeżanie danych…' : 'Ładowanie danych…'}</span>
         </div>
       ) : null}
 

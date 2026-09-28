@@ -1,4 +1,4 @@
-import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError, TRANSIENT_SUPABASE_MESSAGE } from './supabase-errors.js';
+import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } from './supabase-errors.js';
 import { deactivatePushForLogout, reconcilePendingPushLogout } from './push-subscriptions.js';
 
 export function clearAppClientState({
@@ -111,8 +111,15 @@ export async function restoreAuthSession({
     void reconcilePendingPushLogout({ supabase, sessionUser: user, force: true }).catch((pushError) => {
       console.warn('Nie udało się dokończyć poprzedniego wylogowania PUSH:', pushError?.message || pushError);
     });
-    const refreshResult = await refreshAll(user, { silent: true, preserveJobDetails: true });
-    return { restored: true, retryable: Boolean(refreshResult?.transient) };
+    const refreshResult = await refreshAll(user, {
+      silent: false,
+      preserveJobDetails: true,
+      autoRetryTransient: true,
+    });
+    return {
+      restored: true,
+      retryable: Boolean(refreshResult?.transient && !refreshResult?.retryScheduled),
+    };
   }
 
   applyLoggedOutState();
@@ -218,7 +225,16 @@ export function subscribeToAuthState({
         signedOutVerificationTimerId = null;
       }
       if (typeof setSessionUser === 'function') setSessionUser(user);
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+      // SIGNED_IN jest jedynym pełnym odświeżeniem po ręcznym logowaniu:
+      // pokazuje stan ładowania i ma automatyczne retry. LoginUser nie uruchamia
+      // drugiego równoległego pobrania.
+      if (event === 'SIGNED_IN') {
+        void refreshAll(user, {
+          silent: false,
+          preserveJobDetails: true,
+          autoRetryTransient: true,
+        });
+      } else if (event === 'USER_UPDATED') {
         void refreshAll(user, { silent: true, preserveJobDetails: true });
       }
     } else if (event === 'SIGNED_OUT') {
@@ -272,12 +288,8 @@ export async function loginUser({
       console.warn('Nie udało się uzgodnić PUSH po zmianie konta:', pushError?.message || pushError);
     });
 
-    // Jedno lekkie odświeżenie po zalogowaniu. Auth listener nie dubluje już INITIAL_SESSION.
-    void refreshAll(data.user, { silent: true, preserveJobDetails: true }).then((refreshResult) => {
-      if (refreshResult?.transient && !refreshResult?.ok && !refreshResult?.preservedExistingData) setErrorMsg(TRANSIENT_SUPABASE_MESSAGE);
-    }).catch((refreshError) => {
-      setErrorMsg(getSupabaseUserMessage(refreshError, 'Zalogowano, ale nie udało się odświeżyć danych.'));
-    });
+    // Dane pobiera pojedyncza ścieżka SIGNED_IN w listenerze Auth.
+    // Dzięki temu logowanie nie uruchamia dwóch równoległych pełnych refreshów.
   } catch (error) {
     setLoginForm((prev) => ({ ...prev, email, password: prev.password || password }));
     setErrorMsg(getSupabaseUserMessage(error, 'Błąd logowania.'));
