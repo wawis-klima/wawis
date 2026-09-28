@@ -18,6 +18,8 @@ import {
   getPaymentDraftFromJob,
   getPaymentKindLabel,
   getPaymentMethodLabel,
+  hasJobPaymentSnapshot,
+  loadJobPaymentSnapshot,
   normalizePaymentConfirmation,
   PAYMENT_KINDS,
   PAYMENT_METHODS,
@@ -160,7 +162,7 @@ function getTrimmedSignatureDataUrl(canvas) {
   return trimmed.toDataURL("image/png");
 }
 
-export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved }) {
+export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved, onPaymentLoaded }) {
   const canvasRef = useRef(null);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
@@ -174,6 +176,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const paymentDraftBaselineRef = useRef(JSON.stringify(getPaymentDraftFromJob(job)));
   const [savedRecord, setSavedRecord] = useState(protocolRecord);
   const [editing, setEditing] = useState(!protocolRecord);
+  const [resolvedJob, setResolvedJob] = useState(job);
+  const [paymentReady, setPaymentReady] = useState(() => hasJobPaymentSnapshot(job));
+  const [paymentLoadError, setPaymentLoadError] = useState("");
   const [paymentDraft, setPaymentDraft] = useState(() => getPaymentDraftFromJob(job));
   const [hasSignature, setHasSignature] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
@@ -184,19 +189,21 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [actionBusy, setActionBusy] = useState("");
   const [message, setMessage] = useState("");
+  const protocolJob = resolvedJob || job;
   const protocolData = useMemo(
-    () => buildJobProtocolData({ job, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
-    [job, profiles],
+    () => buildJobProtocolData({ job: protocolJob, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
+    [protocolJob, profiles],
   );
 
   useEffect(() => {
     if (!open) return undefined;
+    let cancelled = false;
+
     openedAtRef.current = new Date();
     setSavedRecord(protocolRecord || null);
     setEditing(!protocolRecord);
-    const nextPaymentDraft = getPaymentDraftFromJob(job);
-    paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
-    setPaymentDraft(nextPaymentDraft);
+    setResolvedJob(job);
+    setPaymentLoadError("");
     setHasSignature(false);
     setSignatureOpen(false);
     setSignatureDataUrl("");
@@ -207,7 +214,42 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setActionMenuOpen(false);
     setActionBusy("");
     setMessage("");
-    return undefined;
+
+    const initializePayment = (sourceJob) => {
+      const nextPaymentDraft = getPaymentDraftFromJob(sourceJob);
+      paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
+      setPaymentDraft(nextPaymentDraft);
+    };
+
+    if (hasJobPaymentSnapshot(job)) {
+      initializePayment(job);
+      setPaymentReady(true);
+      return () => { cancelled = true; };
+    }
+
+    // Snapshoty zapisane przez starsze wersje aplikacji mogły nie zawierać
+    // payment_*. Nie wolno wtedy interpretować braku pól jako "brak płatności".
+    setPaymentReady(false);
+    paymentDraftBaselineRef.current = "";
+    setPaymentDraft(getPaymentDraftFromJob({}));
+
+    void loadJobPaymentSnapshot({ supabase, jobId: job?.id })
+      .then((paymentSnapshot) => {
+        if (cancelled) return;
+        const hydratedJob = { ...job, ...paymentSnapshot };
+        setResolvedJob(hydratedJob);
+        initializePayment(hydratedJob);
+        setPaymentReady(true);
+        onPaymentLoaded?.(paymentSnapshot);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        const errorMessage = error?.message || "Nie udało się pobrać aktualnych danych płatności.";
+        setPaymentLoadError(errorMessage);
+        setMessage(`Nie można bezpiecznie uzupełnić protokołu: ${errorMessage}`);
+      });
+
+    return () => { cancelled = true; };
   }, [open, job?.id, protocolRecord?.id]);
 
   useEffect(() => {
