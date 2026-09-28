@@ -154,7 +154,9 @@ test.describe('@mobile iPhone — odporność danych', () => {
         uploaded_by: 'mock-worker-1',
         created_at: '2026-07-30T05:01:00.000Z',
       });
-      window.localStorage.setItem(storeKey, JSON.stringify(store));
+      const serialized = JSON.stringify(store);
+      window.localStorage.setItem(storeKey, serialized);
+      window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
     }, { storeKey: MOCK_STORE_KEY });
     await putLegacyQueuedNameplateError(page);
 
@@ -205,7 +207,20 @@ test.describe('@mobile iPhone — odporność danych', () => {
       window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
     }, { storeKey: MOCK_STORE_KEY });
 
+    await expect.poll(() => page.evaluate(() => (
+      window.__KLIMA_MOCK_SUPABASE__?.getStore()?.comments?.some(
+        (comment) => comment.id === 'mock-comment-completed-e2e',
+      ) || false
+    )), { timeout: 10_000 }).toBe(true);
+
     await page.reload();
+
+    await expect.poll(() => page.evaluate(() => (
+      window.__KLIMA_MOCK_SUPABASE__?.getStore()?.comments?.some(
+        (comment) => comment.id === 'mock-comment-completed-e2e',
+      ) || false
+    )), { timeout: 10_000 }).toBe(true);
+
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
     await expect(page.locator('.mobileDetailsLoading')).toBeHidden();

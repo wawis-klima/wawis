@@ -93,5 +93,51 @@ const doc = await protocol.buildPdfDocument({ data, signatureDataUrl });
 if (doc.getNumberOfPages() !== 1) {
   throw new Error(`Typowy protokół powinien mieć jedną stronę, otrzymano: ${doc.getNumberOfPages()}.`);
 }
-fs.writeFileSync(outputPath, Buffer.from(doc.output('arraybuffer')));
+
+const threeDeviceRows = [1, 2, 3].flatMap((deviceIndex) => ([
+  {
+    deviceIndex,
+    unit: 'JZ',
+    unitType: `Jednostka zewnętrzna · urządzenie ${deviceIndex}`,
+    unitTypeShort: `zewnętrzna · urz. ${deviceIndex}`,
+    model: 'Rotenso Revio 3,5 kW (RO35Xo R14)',
+    revision: 'R14',
+    serialNumber: `540H018803B5040130${50 + deviceIndex}`,
+  },
+  {
+    deviceIndex,
+    unit: 'JW1',
+    unitType: `Jednostka wewnętrzna · urządzenie ${deviceIndex}`,
+    unitTypeShort: `wewnętrzna · urz. ${deviceIndex}`,
+    model: 'Rotenso Revio 3,5 kW (RO35Xi R14)',
+    revision: 'R14',
+    serialNumber: `540W6989704A7020120${180 + deviceIndex}`,
+  },
+]));
+
+const threeDeviceLayout = protocol.getProtocolDeviceColumnLayout(threeDeviceRows);
+if (!threeDeviceLayout.twoColumn || threeDeviceLayout.columns.length !== 2) {
+  throw new Error('Trzy urządzenia muszą przełączać protokół na dwie kolumny.');
+}
+if (threeDeviceLayout.columns[0].length !== 4 || threeDeviceLayout.columns[1].length !== 2) {
+  throw new Error(`Błędny podział trzech urządzeń: ${threeDeviceLayout.columns.map((rows) => rows.length).join('/')}`);
+}
+for (const deviceIndex of [1, 2, 3]) {
+  const columnsWithDevice = threeDeviceLayout.columns.filter((rows) => rows.some((row) => row.deviceIndex === deviceIndex));
+  if (columnsWithDevice.length !== 1) {
+    throw new Error(`JW/JZ urządzenia ${deviceIndex} zostały rozdzielone między kolumny.`);
+  }
+}
+
+const threeDeviceData = {
+  ...data,
+  payment: { ...data.payment, enabled: false },
+  deviceRows: threeDeviceRows,
+};
+const threeDeviceDoc = await protocol.buildPdfDocument({ data: threeDeviceData, signatureDataUrl });
+if (threeDeviceDoc.getNumberOfPages() !== 1) {
+  throw new Error(`Protokół z trzema kompletami JW/JZ powinien mieć jedną stronę, otrzymano: ${threeDeviceDoc.getNumberOfPages()}.`);
+}
+
+fs.writeFileSync(outputPath, Buffer.from(threeDeviceDoc.output('arraybuffer')));
 console.log(outputPath);

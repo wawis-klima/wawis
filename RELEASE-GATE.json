@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.68",
-  "scope": "full",
-  "release_branch": "release/v11.68",
+  "version": "11.69",
+  "scope": "mobile",
+  "release_branch": "release/v11.69",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Przed wdrożeniem sprawdzono produkcyjny schemat jobs, RLS jobs/job_access, trigger private.guard_job_fields oraz wdrożoną definicję save_job_with_access. 11.68 dodaje jawne installer_ids i osobny RPC z kontrolą współbieżności; nie zmienia istniejących polityk RLS."
+    "notes": "Zmiana 11.69 dotyczy renderowania mobilnego protokołu PDF i usunięcia blokady UI dla ponownej edycji/podpisu zapisanego starszego protokołu. Zweryfikowano produkcyjne RLS: current_user_can_finalize_job() dopuszcza każdego pracownika zespołu dla zakończonego montażu, a UPDATE job_protocols korzysta z tej reguły. Nie jest potrzebna nowa migracja."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.68.zip"
+    "file_name": "klima-app-v11.69.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.68",
+    "source_branch": "release/v11.69",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić: twórca z samym job_access nie pojawia się jako monter; starszy montaż wymaga jawnego potwierdzenia listy przed nowym protokołem; usunięcie z listy monterów nie usuwa job_access; równoległa zmiana dwóch różnych pól nie koliduje, a równoległa zmiana tego samego pola zwraca konflikt bez nadpisania."
+    "notes": "Sprawdzić na produkcji: protokół z 3 kompletami JW/JZ ma jedną stronę A4 i dwie kolumny; JW/JZ jednego kompletu nie są rozdzielone; pracownik może drukować, wejść w Uzupełnij protokół, zmienić dane i podpisać ponownie zapisany starszy protokół bez komunikatu o potwierdzeniu monterów."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PASS — job_installers_concurrency_v1168 zastosowana produkcyjnie",
-    "rls_role_matrix": "PASS — bez zmian polityk RLS; zweryfikowano jobs i job_access przed migracją",
-    "performance_advisor": "N/A — migracja nie dodaje indeksów ani ciężkich zapytań listowych",
-    "security_advisor": "N/A — bez zmian polityk bezpieczeństwa; RPC działa jako invoker i wykonanie przyznano authenticated",
-    "trigger_grants": "PASS — istniejący guard_job_fields pozostaje aktywny; RPC nie używa SECURITY DEFINER",
+    "supabase_migration_applied": "N/A — brak zmian backendu i migracji",
+    "rls_role_matrix": "PASS — produkcyjna funkcja current_user_can_finalize_job() dopuszcza staff dla zakończonego montażu; UPDATE job_protocols używa tej reguły",
+    "performance_advisor": "N/A — brak zmian zapytań bazodanowych",
+    "security_advisor": "N/A — brak zmian bezpieczeństwa/backendu",
+    "trigger_grants": "N/A — brak zmian triggerów i grantów",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main"
   }

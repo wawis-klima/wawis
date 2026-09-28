@@ -191,6 +191,28 @@ export function preserveLatestQueuedPhotos(incomingJobs = [], latestJobs = []) {
   });
 }
 
+export function preserveLatestLoadedJobDetails(incomingJobs = [], latestJobs = []) {
+  const latestLoadedByJob = new Map(
+    (Array.isArray(latestJobs) ? latestJobs : [])
+      .filter((job) => job?.id && job?.detailsLoaded)
+      .map((job) => [String(job.id), job]),
+  );
+
+  return (Array.isArray(incomingJobs) ? incomingJobs : []).map((job) => {
+    const latest = latestLoadedByJob.get(String(job?.id || ''));
+    if (!latest) return job;
+
+    return {
+      ...job,
+      comments: Array.isArray(latest.comments) ? latest.comments : [],
+      photos: Array.isArray(latest.photos) ? latest.photos : (Array.isArray(job?.photos) ? job.photos : []),
+      detailsLoaded: true,
+      detailsLoadedAt: latest.detailsLoadedAt || job?.detailsLoadedAt || null,
+      detailsLoadError: '',
+    };
+  });
+}
+
 function buildCombinedJobs({ jobsData, accessData, existingJobs = [], preserveJobDetails = true }) {
   const existingDetails = getExistingJobDetailsMap(existingJobs);
 
