@@ -1,3 +1,9 @@
+## 11.63
+- PUSH / iPhone PWA: kliknięcie powiadomienia o konkretnym montażu otwiera ten montaż również wtedy, gdy aplikacja była już uruchomiona w tle na innym ekranie.
+- Service Worker wysyła do aktywnego okna komunikat `WAWIS_OPEN_JOB` z `jobId`, a nawigacja URL pozostaje dodatkowym fallbackiem.
+- Wznowienie aktywnego okna wykonuje nawigację przed `focus()`, a bezpośrednia wiadomość do aplikacji zabezpiecza przypadki, w których iOS nie wykona `navigate()`.
+- Ujednolicono nazwę cache Service Workera do wersji 11.63 i rozszerzono smoke test deep-linków push.
+
 ## 11.62
 - Protokół PDF: w polu „Monterzy” zamiast pełnych imion i nazwisk wyświetlane są wyłącznie inicjały przypisanych pracowników.
 - Przykładowo: „Kacper Wydmański” → „KW”, „Michał Fiutak” → „MF”, „Piotr Wasik” → „PW”.
