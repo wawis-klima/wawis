@@ -482,6 +482,6 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.locator('.statusActionButton[title="Zakończone"]')).toContainText('2');
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-    await expect(page.getByText('Zakończone · tylko podgląd', { exact: true })).toBeVisible();
+    await expect(page.locator('.workerReadOnlyNote')).toHaveText('Zakończone');
   });
 });
