@@ -1,3 +1,9 @@
+## 11.62
+- Protokół PDF: w polu „Monterzy” zamiast pełnych imion i nazwisk wyświetlane są wyłącznie inicjały przypisanych pracowników.
+- Przykładowo: „Kacper Wydmański” → „KW”, „Michał Fiutak” → „MF”, „Piotr Wasik” → „PW”.
+- Ta sama skrócona forma jest widoczna również w podglądzie protokołu przed zapisem.
+- Bez zmian w danych zlecenia, przypisaniach pracowników, Supabase, RLS, zapisie protokołu i wysyłce e-mail.
+
 ## 11.61
 - Mobile, edycja klienta: Administrator i Pracownik mogą zmieniać dane klienta w aktywnym montażu, a istniejąca kartoteka kontrahenta pozostaje podpięta i jest aktualizowana.
 - Historyczny duplikat e-maila, telefonu lub NIP w bazie nie blokuje już aktualizacji istniejącego kontrahenta; blokada tworzenia nowych duplikatów nadal działa przy dodawaniu nowej kartoteki.
