@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.59
+- 11.60
 
-Wersja 11.59 porządkuje zakończone montaże na telefonie: monterzy są zwinięci, a komentarze bez treści pozostają zwinięte; istniejące komentarze otwierają się automatycznie.
+Wersja 11.60 poprawia weryfikację tabliczek Teta/Teta Mirror: wspólny agregat TO jest poprawnie parowany zarówno z jednostką wewnętrzną TA, jak i TM.
 
-# Wawis Klimatyzacja — wersja 11.59
+# Wawis Klimatyzacja — wersja 11.60
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.60` — poprawiono parowanie Teta/Teta Mirror: jednostka zewnętrzna `TOxxXo` jest zgodna z jednostkami wewnętrznymi `TAxxXi` oraz `TMxxXi`, bez wyłączania blokady innych niezgodnych rodzin.
 - wersja `11.59` — w zakończonych montażach mobile sekcja „Monterzy” startuje zwinięta, a „Komentarze i pytania” są zwinięte przy braku komentarzy i automatycznie rozwinięte, gdy komentarze istnieją.
 - wersja `11.58` — moduł Paliwo obsługuje pojazdy bez numeru rejestracyjnego; dodano „Edward”, który na listach i w historii jest wyświetlany wyłącznie nazwą.
 - wersja `11.57` — protokół PDF ma czarno-białą kartę „Oceń nas w Google” z kodem QR w prawym górnym rogu; sekcja realizacji zawiera tylko datę montażu i monterów, a potwierdzenie klienta zachowuje pełną szerokość.
