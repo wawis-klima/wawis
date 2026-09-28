@@ -116,7 +116,10 @@ export async function restoreAuthSession({
       preserveJobDetails: true,
       autoRetryTransient: true,
     });
-    return { restored: true, retryable: Boolean(refreshResult?.transient) };
+    return {
+      restored: true,
+      retryable: Boolean(refreshResult?.transient && !refreshResult?.retryScheduled),
+    };
   }
 
   applyLoggedOutState();
@@ -285,7 +288,12 @@ export async function loginUser({
       preserveJobDetails: true,
       autoRetryTransient: true,
     }).then((refreshResult) => {
-      if (refreshResult?.transient && !refreshResult?.ok && !refreshResult?.preservedExistingData) setErrorMsg(TRANSIENT_SUPABASE_MESSAGE);
+      if (
+        refreshResult?.transient
+        && !refreshResult?.ok
+        && !refreshResult?.preservedExistingData
+        && !refreshResult?.retryScheduled
+      ) setErrorMsg(TRANSIENT_SUPABASE_MESSAGE);
     }).catch((refreshError) => {
       setErrorMsg(getSupabaseUserMessage(refreshError, 'Zalogowano, ale nie udało się odświeżyć danych.'));
     });
