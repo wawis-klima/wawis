@@ -1029,6 +1029,10 @@ export default function JobDetailsPanel({
                 <div className="viewerInlineRow" aria-label="Wybór monterów">
                   {profiles.map((person) => {
                     const active = viewers.some((viewer) => viewer.user_id === person.id);
+                    const isMainTechnician = String(selectedJob.main_technician_id || '') === String(person.id || '');
+                    const installerLabel = isMainTechnician
+                      ? `${person.full_name} — główny monter (zmiana w edycji montażu)`
+                      : `${person.full_name} — ${active ? "Monter" : "Nie monter"}`;
                     return (
                       <button
                         key={person.id}
