@@ -244,6 +244,7 @@ export const AIR_CONDITIONER_MODEL_DICTIONARY = Object.freeze({
     'Tenji CS',
     'Jato',
     'Nevo',
+    'Aneru HP',
     'Aneru AN',
     'Aneru',
     'Unico',
