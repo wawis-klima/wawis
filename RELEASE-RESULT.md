@@ -33,9 +33,9 @@
 - fixture 1345 kontrahentów: jeden RPC, brak offsetowego SELECT-u, pełna liczba rekordów
 - K16: manual_import + urządzenie z montażu dla tego samego klienta
 - statyczna kontrola świeżości, przycisku Odśwież oraz synchronizacji App↔panel
-- WAWIS PR checks: PENDING
-- Playwright desktop/mobile: PENDING
-- produkcyjny build: PENDING
-- migracja Supabase: PENDING
+- WAWIS PR checks: SUCCESS (head 1661b3d przed aktualizacją dokumentacji); final head recheck PENDING
+- Playwright desktop/mobile: SUCCESS (head 1661b3d); final head recheck PENDING
+- produkcyjny build: SUCCESS (head 1661b3d); final head recheck PENDING
+- migracja Supabase: APPLIED — complete_contractors_catalog_v1178; snapshot produkcyjny 1345/1345
 - Vercel: PENDING
 - merge: PENDING
