@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.80` — tylko mobile: pełny podgląd zdjęcia ma pinch-to-zoom 100–400%, przesuwanie po powiększeniu, podwójne stuknięcie 250%/100% oraz przyciski − / +; desktopowy podgląd zdjęć pozostaje bez zmian.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
 - wersja `11.78` — audyt Kontrahentów etap 5: K16/K19/K21; pełne urządzenia na mobile, jawna świeżość/odświeżenie katalogu i kompletny snapshot kontrahentów bez mieszanej paginacji.
 - wersja `11.77` — audyt Kontrahentów etap 4: K11/K13; poprawny import Status/Adresy (JSON)/numery wierszy i edycja istniejącego klienta ze współdzielonym telefonem lub e-mailem jako ostrzeżenie, nie blokada.
