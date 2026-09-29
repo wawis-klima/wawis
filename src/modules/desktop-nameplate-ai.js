@@ -82,7 +82,8 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
 
   // Najpierw próbujemy ścisłego katalogu. Gdy rewizja jest nowa, resolver zwraca
   // znany model bazowy z dokładnie przepisaną rewizją, ale bez udawania znanego EAN-u.
-  const catalogCodeFromAi = resolveRotensoCatalogModelCode(aiTextEvidence);
+  const catalogCodeFromAi = resolveRotensoCatalogModelCode(clean(result.model_code))
+    || resolveRotensoCatalogModelCode(aiTextEvidence);
   const structuredCodeFromAi = catalogCodeFromAi || resolveRotensoNameplateModelExact(aiTextEvidence);
   const exactModel = exactFromBarcode || exactFromAiEan || structuredCodeFromAi || null;
 
