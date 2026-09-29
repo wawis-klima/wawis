@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — contractor_normalization_v1179 po zielonych PR checks",
+    "supabase_migration_applied": "APPLIED — contractor_normalization_v1179; SQL potwierdza jeden klucz +48500600700 dla 9 cyfr/48/+48/0048, numery zagraniczne +/00 zachowują prefiks; contractors_phone_lookup_idx przebudowany; nadal 6 istniejących grup współdzielonych numerów",
     "rls_role_matrix": "N/A — bez zmian RLS",
     "performance_advisor": "N/A — przebudowa jednego istniejącego indeksu lookup; bez nowych pełnych odczytów",
     "security_advisor": "K14 świadomie poza zakresem; brak zmian zasad współbieżnych INSERT i brak nowych globalnych UNIQUE",
-    "trigger_grants": "Bez zmian; istniejące triggery automatycznie korzystają z nowej normalize_contractors_phone",
+    "trigger_grants": "Bez zmian; enforce_contractors_contact_duplicates zachowuje dotychczasową semantykę INSERT/UPDATE i korzysta z nowej normalize_contractors_phone. K14 nie został dodany.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
