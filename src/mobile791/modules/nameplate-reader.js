@@ -357,8 +357,12 @@ export async function readMobileNameplate({
     const modelValue = buildResolvedModelValue({ manufacturer, model, power }) || localModel.modelValue;
     const finalSerial = normalizeSerial(aiResult.serialNumber || serialNumber);
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
+    const aiTrustedModel = Boolean(
+      aiResult?.modelConfirmedByCatalog
+      || aiResult?.modelBaseRecognized
+    );
 
-    if (weakEvidenceFallback && (!aiResult?.exactModel || !finalSerial)) {
+    if (weakEvidenceFallback && (!aiTrustedModel || !finalSerial)) {
       return {
         ...localReading,
         method: 'ai',
