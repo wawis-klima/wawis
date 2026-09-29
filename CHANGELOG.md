@@ -1,7 +1,7 @@
 ## 11.77
 - Audyt Kontrahentów / etap 4: zamknięto K13 i K11.
 - K13 desktop: przy edycji istniejącego kontrahenta wspólny telefon lub e-mail jest teraz ostrzeżeniem, a nie blokadą zapisu. Tworzenie nowego kontrahenta zachowuje dotychczasową blokadę duplikatów.
-- Konflikt nazwy (oraz inne niekontaktowe pola tożsamości, np. NIP) nadal blokuje zapis na desktopie; nie osłabiono unikalności nazwy ani ochrony INSERT.
+- Przy edycji istniejącego kontrahenta blokujący pozostaje konflikt nazwy; telefon, e-mail i NIP są ostrzeżeniem. Tworzenie nowego rekordu nadal zachowuje pełną kontrolę duplikatów; nie osłabiono unikalności nazwy ani ochrony INSERT.
 - Produkcyjny backend sprawdzono read-only: trigger duplikatów zwraca UPDATE bez blokady kontaktu, a unikalny indeks nazwy pozostaje aktywny.
 - K11 desktop/mobile: import XLSX rozpoznaje eksportowaną kolumnę Status i zachowuje Aktywny/Nieaktywny; plik bez kolumny Status zachowuje kompatybilne domyślne true.
 - Nieznany/pusty Status przy istniejącej kolumnie oraz błędny lub nietablicowy Adresy (JSON) są raportowane jako błąd konkretnego wiersza zamiast cichego pominięcia.
