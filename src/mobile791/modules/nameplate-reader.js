@@ -307,11 +307,31 @@ export async function readMobileNameplate({
     return localReading;
   }
 
-  const lowEvidenceFallback = !evidence.hasEvidence;
+  const weakEvidenceFallback = !evidence.hasEvidence && Boolean(
+    evidence.keywordCount >= 1
+    || evidence.hasTechnicalValue
+    || evidence.hasModelishToken
+    || (evidence.hasSerialLabel && evidence.digitCount >= 6)
+  );
+
+  if (!evidence.hasEvidence && !weakEvidenceFallback) {
+    onProgress?.({
+      progress: 100,
+      label: 'Nie wykryto tabliczki znamionowej — zrób zdjęcie ponownie',
+      method: 'local',
+    });
+    return {
+      ...localReading,
+      noNameplateEvidence: true,
+      aiSkipped: true,
+      aiSkipReason: 'no_nameplate_evidence',
+    };
+  }
+
   onProgress?.({
     progress: 8,
-    label: lowEvidenceFallback
-      ? 'Lokalny odczyt nie potwierdził tabliczki — sprawdzam bezpiecznie przez AI…'
+    label: weakEvidenceFallback
+      ? 'Wykryto słabe ślady tabliczki — sprawdzam bezpiecznie przez AI…'
       : 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…',
     method: 'ai',
   });
@@ -338,7 +358,7 @@ export async function readMobileNameplate({
     const finalSerial = normalizeSerial(aiResult.serialNumber || serialNumber);
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
 
-    if (lowEvidenceFallback && (!aiResult?.exactModel || !finalSerial)) {
+    if (weakEvidenceFallback && (!aiResult?.exactModel || !finalSerial)) {
       return {
         ...localReading,
         method: 'ai',
@@ -369,7 +389,7 @@ export async function readMobileNameplate({
       aiResult,
     };
   } catch (error) {
-    if (lowEvidenceFallback) {
+    if (weakEvidenceFallback) {
       return {
         ...localReading,
         aiAttempted: true,
