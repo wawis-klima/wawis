@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.79
+- 11.80
 
-Wersja 11.79 realizuje tylko K12 z etapu 6 audytu Kontrahentów: desktop, mobile, import i SQL używają spójnych reguł porównywania danych, telefony PL są normalizowane do jednej postaci, a wyszukiwanie obejmuje także dodatkowe adresy. K14 nie jest wdrażany.
+Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.79
+# Wawis Klimatyzacja — wersja 11.80
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
