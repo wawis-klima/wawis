@@ -8737,13 +8737,3 @@ img.previewImage{
 .mobilePhotoZoomViewport.isZoomed .mobilePhotoZoomHint{
   opacity:.72;
 }
-
-@media (min-width:701px){
-  .mobilePhotoPreviewModal,
-  .mobilePhotoZoomViewport,
-  .mobilePhotoZoomImage,
-  .mobilePhotoZoomControls,
-  .mobilePhotoZoomHint{
-    all:revert-layer;
-  }
-}
