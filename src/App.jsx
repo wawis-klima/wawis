@@ -194,6 +194,12 @@ export default function App() {
 
   const isAdmin = profile?.role === "Administrator";
 
+  const applyContractorsCatalogSnapshot = React.useCallback((rows) => {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    setGlobalSearchContractors(safeRows);
+    setContractorsCatalog(safeRows.filter((item) => item.is_active !== false));
+  }, []);
+
   useEffect(() => {
     jobDetailsRequestsRef.current.clear();
     jobSummaryRequestsRef.current.clear();
@@ -754,10 +760,7 @@ export default function App() {
 
       try {
         const data = await loadContractors({ supabase, isAdmin: true });
-        if (!cancelled) {
-          setGlobalSearchContractors(data);
-          setContractorsCatalog(data.filter((item) => item.is_active !== false));
-        }
+        if (!cancelled) applyContractorsCatalogSnapshot(data);
       } catch (error) {
         console.warn('Nie udało się pobrać bazy kontrahentów do formularza montażu.', error?.message || error);
       }
@@ -1006,6 +1009,8 @@ export default function App() {
                 refreshAll={refreshAll}
                 jobs={jobs}
                 requestedContractorId={requestedContractorId}
+                initialContractors={globalSearchContractors}
+                onContractorsLoaded={applyContractorsCatalogSnapshot}
               />
             ) : activeModule === "devices" ? (
               <DevicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
