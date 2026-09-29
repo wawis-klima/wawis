@@ -1,34 +1,41 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.77
+- 11.78
 
 ## Zakres
-- audyt Kontrahentów: etap 4 / K13 + K11
-- bez migracji Supabase i bez zmian RLS
+- audyt Kontrahentów: etap 5 / K16 + K19 + K21
 
-## K13 — desktop i współdzielony kontakt
-- nowy kontrahent nadal jest blokowany przy wykrytym duplikacie
-- istniejący kontrahent może zostać edytowany, gdy konflikt dotyczy telefonu, e-maila lub NIP
-- takie dopasowanie jest widocznym ostrzeżeniem
-- konflikt nazwy nadal blokuje zapis
-- produkcyjny trigger UPDATE dopuszcza wspólne kontakty, a unikalny indeks nazwy pozostaje aktywny
+## K16 — pełne urządzenia na mobile
+- urządzenia zapisanych kontrahentów są pobierane z `admin_get_contractor_devices` dopiero po rozwinięciu konkretnego klienta
+- mobile widzi również rekordy `manual_import`, a nie tylko urządzenia wynikające z `jobs`
+- wynik jest związany z aktualnym `contractorId`
+- przy braku pełnej bazy/błędzie fallback z montaży jest jawnie oznaczony jako niepełny
 
-## K11 — import XLSX
-- kolumna Status jest mapowana do `is_active`
-- obsługiwane są m.in. Aktywny/Nieaktywny/true/false
-- jeśli kolumny Status nie ma, zachowane jest kompatybilne `is_active=true`
-- jeśli kolumna Status istnieje, ale wartość jest pusta/nieznana, wiersz jest błędny
-- błędny lub nietablicowy `Adresy (JSON)` jest raportowany na konkretnym wierszu
-- puste wiersze są odrzucane przed ustawieniem wartości domyślnych
-- zachowywany jest rzeczywisty numer wiersza XLSX
+## K19 — świeżość katalogu
+- mobile ma przycisk `Odśwież`
+- desktop i mobile zachowują poprzednią poprawną listę podczas odświeżania
+- po błędzie lista nie jest zerowana; UI pokazuje `Dane mogą być nieaktualne`
+- widoczny jest czas ostatniego udanego odczytu
+- panel przekazuje świeży snapshot do App; formularz montażu korzysta z tej samej zaktualizowanej zawartości
+- panel może wystartować od katalogu już załadowanego w App zamiast od pustej tablicy
+
+## K21 — kompletność katalogu
+- nowy `admin_get_contractors_catalog()` zwraca cały katalog w jednej wartości JSONB
+- snapshot ma jeden kanoniczny porządek: `lower(company_name), created_at DESC, id`
+- usunięto warunek `firstBatch.length === 1000` i offsetowe `.range(...)`
+- limit wierszy PostgREST nie może już uciąć katalogu na granicy 1000, bo odpowiedź RPC ma jeden top-level JSON wynik
+- eksport/liczniki/duplikaty korzystają z tego samego pełnego loadera
+- bez zmian RLS; RPC pozostaje admin-only
 
 ## Kontrola regresji
-- `scripts/smoke-contractors-stage4-v1177.mjs`
-- smoke obejmuje status, błędny JSON, numer wiersza i regułę K13
-- `tests/e2e/contractor-xlsx-import-v1177.spec.js` wykonuje rzeczywisty round-trip XLSX w Chromium dla desktopu i mobile
+- `scripts/smoke-contractors-stage5-v1178.mjs`
+- fixture 1345 kontrahentów: jeden RPC, brak offsetowego SELECT-u, pełna liczba rekordów
+- K16: manual_import + urządzenie z montażu dla tego samego klienta
+- statyczna kontrola świeżości, przycisku Odśwież oraz synchronizacji App↔panel
 - WAWIS PR checks: PENDING
 - Playwright desktop/mobile: PENDING
 - produkcyjny build: PENDING
+- migracja Supabase: PENDING
 - Vercel: PENDING
 - merge: PENDING
