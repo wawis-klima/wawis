@@ -1,3 +1,14 @@
+## 11.78
+- Audyt Kontrahentów / etap 5: zamknięto K16, K19 i K21.
+- K16 mobile: po rozwinięciu zapisanego kontrahenta aplikacja pobiera pełną listę urządzeń z istniejącego `admin_get_contractor_devices`, więc widoczne są również urządzenia `manual_import`, nie tylko urządzenia wyprowadzone z montaży.
+- Odczyt urządzeń wykonywany jest wyłącznie dla aktualnie rozwiniętego klienta. Wynik jest związany z `contractorId`; przy błędzie pokazany jest jawnie oznaczony fallback z montaży.
+- K19 desktop/mobile: katalog zachowuje poprzednią poprawną listę podczas odświeżania i po błędzie. Widoczny jest czas ostatniego udanego odczytu oraz ostrzeżenie „Dane mogą być nieaktualne”.
+- Mobile otrzymał jawny przycisk „Odśwież”. Udany odczyt panelu aktualizuje również katalog używany przez formularz montażu; wejście do panelu może od razu wykorzystać snapshot już załadowany w App.
+- K21: usunięto mieszanie limitowanego RPC z offsetowym SELECT-em o innym porządku. Nowy admin-only `admin_get_contractors_catalog()` zwraca cały katalog jako jeden atomowy JSON snapshot z kanonicznym porządkiem `lower(company_name), created_at DESC, id`.
+- Dzięki pojedynczej wartości JSONB kompletność nie zależy od limitu 1000 wierszy PostgREST; eksport, liczniki i lokalna analiza duplikatów korzystają z pełnego katalogu zwróconego przez ten sam loader.
+- Zachowano bezpieczny fallback do starego RPC wyłącznie na krótkie okno wdrożenia/rollbacku. Bez zmian RLS; nowy RPC nadal wymaga roli Administrator przez `current_user_is_admin()`.
+- Dodano regresję K16/K19/K21 dla 1345 rekordów, braku offsetowego SELECT-u, manual_import i synchronizacji stanu App/panel.
+
 ## 11.77
 - Audyt Kontrahentów / etap 4: zamknięto K13 i K11.
 - K13 desktop: przy edycji istniejącego kontrahenta wspólny telefon lub e-mail jest teraz ostrzeżeniem, a nie blokadą zapisu. Tworzenie nowego kontrahenta zachowuje dotychczasową blokadę duplikatów.
