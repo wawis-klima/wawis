@@ -156,7 +156,10 @@ function collectCatalogBaseMatches(compactText = '', { ocrCorrected = false } = 
       if (index < 0) return null;
 
       const tail = compactText.slice(index + matchBaseCode.length);
-      const observedRevision = tail.match(/^R[0-9]{1,2}/)?.[0] || '';
+      const observedRevision = tail.match(/^R[0-9]{1,2}(?![A-Z0-9])/)?.[0] || '';
+      const revisionLikeButInvalid = /^R[A-Z0-9]{1,2}/.test(tail) && !observedRevision;
+      if (revisionLikeButInvalid) return null;
+
       const exactCandidate = observedRevision
         ? group.candidates.find((candidate) => (
           (ocrCorrected ? candidate.foldedCode : candidate.compactCode)
@@ -199,6 +202,22 @@ function collectCatalogBaseMatches(compactText = '', { ocrCorrected = false } = 
 export function resolveRotensoCatalogModelCode(rawText = '') {
   const compact = normalizePrintedRotensoModelCode(rawText);
   if (!compact) return null;
+
+  // Dokładna znana rewizja ma pierwszeństwo nawet wtedy, gdy w OCR obok kodu
+  // występuje dalszy tekst (SN/EAN). Nie zmieniamy żadnych znaków.
+  const exactStrict = ROTENSO_CATALOG_MODEL_CANDIDATES
+    .filter((candidate) => compact.includes(candidate.compactCode))
+    .sort((left, right) => (
+      right.compactCode.length - left.compactCode.length
+      || Number(Boolean(right.entry?.verified)) - Number(Boolean(left.entry?.verified))
+    ))[0] || null;
+  if (exactStrict) {
+    return catalogEntryToResolution(exactStrict.entry, {
+      revisionObserved: true,
+      ocrCorrected: false,
+      evidence: 'catalog_model_code',
+    });
+  }
 
   const strictMatches = collectCatalogBaseMatches(compact);
   if (strictMatches.length) return strictMatches[0].resolution;
