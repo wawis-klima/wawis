@@ -72,8 +72,9 @@ for (const loader of [loadDesktopContractors, loadMobileContractors]) {
   assert.equal(result.length, 2);
 }
 
-// K16: mobile pobiera urządzenia z tabeli devices dla rozwiniętego klienta,
-// dzięki czemu manual_import jest widoczny obok urządzenia z montażu.
+// K16: mobile pobiera pełny zbiór z tabeli devices dla rozwiniętego klienta.
+// Produkcyjny RPC jest źródłem prawdy; jobs są używane jedynie do wzbogacenia
+// rekordów i jako jawny fallback przy niedostępności pełnej bazy.
 {
   const jobs = [{
     id: 'job-1',
@@ -93,6 +94,16 @@ for (const loader of [loadDesktopContractors, loadMobileContractors]) {
     service_reminder_years: 5,
     status: 'aktywne',
   };
+  const syncedJobDevice = {
+    id: 'device-job-1',
+    contractor_id: 'contractor-1',
+    model: 'JOB MODEL',
+    serial_number: 'JOB-SN',
+    source_kind: 'job',
+    source_job_id: 'job-1',
+    service_reminder_years: 5,
+    status: 'aktywne',
+  };
   const result = await fetchContractorDevicesResult({
     isAdmin: true,
     contractorId: 'contractor-1',
@@ -101,14 +112,14 @@ for (const loader of [loadDesktopContractors, loadMobileContractors]) {
       async rpc(name, payload) {
         assert.equal(name, 'admin_get_contractor_devices');
         assert.equal(payload.p_contractor_id, 'contractor-1');
-        return { data: [manual], error: null };
+        return { data: [manual, syncedJobDevice], error: null };
       },
     },
   });
   assert.equal(result.source, 'devices-rpc');
   assert.equal(result.staleReason, '');
   assert.ok(result.devices.some((device) => device.model === 'IMPORT MODEL'), 'K16: manual_import musi być widoczny na mobile.');
-  assert.ok(result.devices.some((device) => device.model === 'JOB MODEL'), 'K16: urządzenie z jobs nadal ma być widoczne.');
+  assert.ok(result.devices.some((device) => device.model === 'JOB MODEL'), 'K16: urządzenie zsynchronizowane z jobs nadal ma być widoczne z pełnego RPC.');
 }
 
 const mobilePanel = read('src', 'mobile791', 'components', 'contractors', 'ContractorsPanel.jsx');
