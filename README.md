@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.75
+- 11.76
 
-Wersja 11.75 zamyka etap 2 audytu Kontrahentów (K8 + K9 + K15): niezapisany draft nie jest nadpisywany przez odświeżenia, stare odpowiedzi listy nie cofają potwierdzonych zmian, a urządzenia są zawsze przypisane do aktualnie wybranego kontrahenta.
+Wersja 11.76 realizuje etap 3 audytu Kontrahentów: mobile zachowuje właściwy adres montażu (K1), edycja urządzenia nie nadpisuje danych klienta/lokalizacji (K2), drugie urządzenie fallbacku ma poprawną tożsamość (K17), a okres przypomnień serwisowych jest zgodnie z decyzją biznesową stały: 5 lat.
 
-# Wawis Klimatyzacja — wersja 11.75
+# Wawis Klimatyzacja — wersja 11.76
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
