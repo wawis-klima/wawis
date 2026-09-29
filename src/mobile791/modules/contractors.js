@@ -299,7 +299,11 @@ function buildImportDuplicateReasons(candidate = {}, form = {}) {
 
 export function analyzeContractorImportRows(existingContractors = [], importedRows = []) {
   const normalizedExisting = existingContractors.map((item) => normalizeContractorRecord(item));
-  const preparedRows = importedRows.map((row, index) => ({ rowNumber: index + 2, record: normalizeContractorRecord(row) }));
+  const preparedRows = importedRows.map((row, index) => ({
+    rowNumber: Number(row?.__source_row_number) || index + 2,
+    record: normalizeContractorRecord(row),
+    parseErrors: Array.isArray(row?.__parse_errors) ? row.__parse_errors.filter(Boolean) : [],
+  }));
 
   const accepted = [];
   const duplicateGroups = [];
@@ -308,6 +312,10 @@ export function analyzeContractorImportRows(existingContractors = [], importedRo
 
   for (const entry of preparedRows) {
     const record = entry.record;
+    if (entry.parseErrors.length) {
+      invalidRows.push({ ...entry, reason: entry.parseErrors.join(' ') });
+      continue;
+    }
     if (!record.company_name) {
       invalidRows.push({ ...entry, reason: 'Brak nazwy kontrahenta' });
       continue;
