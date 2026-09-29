@@ -194,20 +194,27 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
   const [deletedFallbackJobIds, setDeletedFallbackJobIds] = useState([]);
   const importInputRef = useRef(null);
 
-  async function reloadContractors() {
+  async function reloadContractors({ reportError = true } = {}) {
     const isCurrent = loadGuard.begin();
     setLoading(true);
-    setErrorMessage('');
+    if (reportError) setErrorMessage('');
     try {
       const data = await loadContractors({ supabase, isAdmin });
-      if (!isCurrent()) return;
+      if (!isCurrent()) return false;
       setContractors(data);
+      return true;
     } catch (error) {
-      if (!isCurrent()) return;
-      setErrorMessage(getFriendlyError(error));
+      if (!isCurrent()) return false;
+      if (reportError) setErrorMessage(getFriendlyError(error));
+      return false;
     } finally {
       if (isCurrent()) setLoading(false);
     }
+  }
+
+  function invalidatePendingContractorLoad() {
+    loadGuard.invalidate();
+    setLoading(false);
   }
 
   useEffect(() => { void reloadContractors(); }, [supabase, isAdmin, userId]);
@@ -313,6 +320,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       setErrorMessage('Podobny kontrahent już istnieje w bazie. Otwórz istniejący wpis albo popraw dane.');
       return;
     }
+    invalidatePendingContractorLoad();
     setSaveBusy(true);
     setErrorMessage('');
     setInfoMessage('');
@@ -330,7 +338,11 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       setForm(getEmptyContractorForm());
       const synced = (syncSummary?.linkedJobsUpdated || 0) + (syncSummary?.legacyJobsUpdated || 0);
       if (typeof refreshAll === 'function' && (wasExisting || synced)) await refreshAll();
-      setInfoMessage(wasExisting ? 'Zmiany kontrahenta zostały zapisane.' : 'Nowy kontrahent został dodany.');
+      const refreshedContractors = await reloadContractors({ reportError: false });
+      setInfoMessage(
+        (wasExisting ? 'Zmiany kontrahenta zostały zapisane.' : 'Nowy kontrahent został dodany.')
+        + (refreshedContractors ? '' : ' Lista pozostaje na potwierdzonym stanie lokalnym.'),
+      );
     } catch (error) {
       setErrorMessage(getFriendlyError(error));
     } finally {
@@ -345,6 +357,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
     const prompt = isFallback ? `„${label}” pochodzi z montażu. Usunięcie wpisu usunie powiązane zlecenie/zlecenia. Kontynuować?` : `Usunąć kontrahenta „${label}”?`;
     if (!window.confirm(prompt)) return;
 
+    invalidatePendingContractorLoad();
     setDeleteBusy(true);
     setErrorMessage('');
     setInfoMessage('');
@@ -358,6 +371,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       }
       setExpandedId(null);
       if (typeof refreshAll === 'function') await refreshAll();
+      await reloadContractors({ reportError: false });
       setInfoMessage('Wpis został usunięty.');
     } catch (error) {
       setErrorMessage(getFriendlyError(error));

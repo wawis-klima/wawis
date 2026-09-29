@@ -131,27 +131,38 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
   const [sortConfig, setSortConfig] = useState({ field: 'company_name', direction: 'asc' });
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [importReview, setImportReview] = useState(null);
-  const [contractorDevicesRemote, setContractorDevicesRemote] = useState([]);
+  const [contractorDevicesRemote, setContractorDevicesRemote] = useState({
+    contractorId: '',
+    rows: [],
+    status: 'idle',
+  });
   const [deviceEditor, setDeviceEditor] = useState(null);
   const [deviceSaveBusy, setDeviceSaveBusy] = useState(false);
   const [deletedFallbackJobIds, setDeletedFallbackJobIds] = useState([]);
   const importInputRef = useRef(null);
 
-  async function reloadContractors() {
+  async function reloadContractors({ reportError = true } = {}) {
     const isCurrent = loadGuard.begin();
     setLoading(true);
-    setErrorMessage('');
+    if (reportError) setErrorMessage('');
     try {
       const data = await loadContractors({ supabase, isAdmin });
-      if (!isCurrent()) return;
+      if (!isCurrent()) return false;
       setContractors(data);
       setSelectedId((prev) => (prev && data.some((item) => item.id === prev) ? prev : null));
+      return true;
     } catch (error) {
-      if (!isCurrent()) return;
-      setErrorMessage(getFriendlyError(error));
+      if (!isCurrent()) return false;
+      if (reportError) setErrorMessage(getFriendlyError(error));
+      return false;
     } finally {
       if (isCurrent()) setLoading(false);
     }
+  }
+
+  function invalidatePendingContractorLoad() {
+    loadGuard.invalidate();
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -180,8 +191,11 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
   );
 
   useEffect(() => {
+    // K8 / 11.75: zewnętrzne odświeżenie jobs/contractors może aktualizować
+    // podgląd, ale nigdy nie może nadpisać aktywnego draftu formularza.
+    if (activeView === 'edit' || activeView === 'new') return;
     if (!selectedId) {
-      if (activeView !== 'edit') setForm(getEmptyContractorForm());
+      setForm(getEmptyContractorForm());
       return;
     }
     const selectedContractor = contractorsWithJobFallback.find((item) => item.id === selectedId);
@@ -224,7 +238,29 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       .sort((left, right) => new Date(right?.installation_date || right?.created_at || 0) - new Date(left?.installation_date || left?.created_at || 0));
   }, [jobs, selectedContractor]);
 
-  const selectedContractorDevices = contractorDevicesRemote.length ? contractorDevicesRemote : selectedContractorDevicesFromJobs;
+  const selectedContractorDeviceId = String(selectedContractor?.id || '');
+  const remoteDevicesMatchSelection = contractorDevicesRemote.contractorId === selectedContractorDeviceId;
+  const selectedContractorDevicesLoading = (
+    Boolean(selectedContractorDeviceId)
+    && !isJobDerivedContractor(selectedContractor)
+    && detailsOpen
+    && contractorDevicesRemote.status === 'loading'
+    && remoteDevicesMatchSelection
+  );
+  const selectedContractorDevicesError = (
+    Boolean(selectedContractorDeviceId)
+    && !isJobDerivedContractor(selectedContractor)
+    && detailsOpen
+    && contractorDevicesRemote.status === 'error'
+    && remoteDevicesMatchSelection
+  );
+  const selectedContractorDevices = isJobDerivedContractor(selectedContractor)
+    ? selectedContractorDevicesFromJobs
+    : remoteDevicesMatchSelection && contractorDevicesRemote.status === 'ready'
+      ? contractorDevicesRemote.rows
+      : remoteDevicesMatchSelection && contractorDevicesRemote.status === 'error'
+        ? selectedContractorDevicesFromJobs
+        : [];
 
   const selectedContractorJobs = useMemo(() => {
     if (!selectedContractor) return [];
@@ -254,26 +290,37 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
   useEffect(() => {
     let cancelled = false;
+    const contractorId = String(selectedContractor?.id || '');
 
     async function loadSelectedContractorDevices() {
-      if (!selectedContractor?.id || isJobDerivedContractor(selectedContractor) || !detailsOpen || !isAdmin) {
-        setContractorDevicesRemote([]);
+      if (!contractorId || isJobDerivedContractor(selectedContractor) || !detailsOpen || !isAdmin) {
+        setContractorDevicesRemote({ contractorId: '', rows: [], status: 'idle' });
         return;
       }
+
+      // K15 / 11.75: poprzedni wynik znika natychmiast po zmianie klienta.
+      // Każdy wynik jest przypisany do konkretnego contractorId.
+      setContractorDevicesRemote({ contractorId, rows: [], status: 'loading' });
 
       try {
         const data = await fetchContractorDevices({
           supabase,
-          contractorId: selectedContractor.id,
+          contractorId,
           isAdmin,
           jobs,
         });
         if (!cancelled) {
-          setContractorDevicesRemote(Array.isArray(data) ? data : []);
+          setContractorDevicesRemote({
+            contractorId,
+            rows: Array.isArray(data) ? data : [],
+            status: 'ready',
+          });
         }
       } catch (error) {
         console.warn('Nie udało się pobrać urządzeń kontrahenta z modułu devices.', error?.message || error);
-        if (!cancelled) setContractorDevicesRemote([]);
+        if (!cancelled) {
+          setContractorDevicesRemote({ contractorId, rows: [], status: 'error' });
+        }
       }
     }
 
@@ -392,6 +439,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       setInfoMessage('');
       return;
     }
+    invalidatePendingContractorLoad();
     setSaveBusy(true);
     setErrorMessage('');
     setInfoMessage('');
@@ -422,17 +470,18 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       if (typeof refreshAll === 'function' && (wasExisting || syncedJobsCount)) {
         await refreshAll();
       }
+      const refreshedContractors = await reloadContractors({ reportError: false });
       if (wasExisting) {
         setInfoMessage(
           syncedJobsCount
-            ? `Zmiany kontrahenta zostały zapisane. Zsynchronizowano ${syncedJobsCount} montaży.`
-            : 'Zmiany kontrahenta zostały zapisane.',
+            ? `Zmiany kontrahenta zostały zapisane. Zsynchronizowano ${syncedJobsCount} montaży.${refreshedContractors ? '' : ' Lista pozostaje na potwierdzonym stanie lokalnym.'}`
+            : `Zmiany kontrahenta zostały zapisane.${refreshedContractors ? '' : ' Lista pozostaje na potwierdzonym stanie lokalnym.'}`,
         );
       } else {
         setInfoMessage(
           syncedJobsCount
-            ? 'Nowy kontrahent został dodany. Przypięto ' + syncedJobsCount + ' montaży z tą nazwą.'
-            : 'Nowy kontrahent został dodany.',
+            ? 'Nowy kontrahent został dodany. Przypięto ' + syncedJobsCount + ` montaży z tą nazwą.${refreshedContractors ? '' : ' Lista pozostaje na potwierdzonym stanie lokalnym.'}`
+            : `Nowy kontrahent został dodany.${refreshedContractors ? '' : ' Lista pozostaje na potwierdzonym stanie lokalnym.'}`,
         );
       }
     } catch (error) {
@@ -452,6 +501,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       );
       if (!shouldDeleteFallback) return;
 
+      invalidatePendingContractorLoad();
       setDeleteBusy(true);
       setErrorMessage('');
       setInfoMessage('');
@@ -468,6 +518,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
           setForm(getEmptyContractorForm());
         }
         if (typeof refreshAll === 'function') await refreshAll();
+        await reloadContractors({ reportError: false });
         const deletedJobs = result.deletedJobs || 0;
         setInfoMessage(deletedJobs === 1
           ? 'Wpis z montażu został usunięty razem z powiązanym zleceniem.'
@@ -483,6 +534,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
     if (!contractor?.id) return;
     const shouldDelete = window.confirm(`Usunąć kontrahenta „${contractor.company_name || 'bez nazwy'}”?`);
     if (!shouldDelete) return;
+    invalidatePendingContractorLoad();
     setDeleteBusy(true);
     setErrorMessage('');
     setInfoMessage('');
@@ -498,6 +550,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
         setActiveView('none');
         setForm(getEmptyContractorForm());
       }
+      await reloadContractors({ reportError: false });
       setInfoMessage('Kontrahent został usunięty.');
     } catch (error) {
       setErrorMessage(getFriendlyError(error));
@@ -582,6 +635,13 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
   function handleOpenDeviceEditor(device) {
     const selectedContractorIdForDevice = isJobDerivedContractor(selectedContractor) ? "" : selectedContractor?.id || "";
+    if (
+      selectedContractorIdForDevice
+      && contractorDevicesRemote.contractorId !== String(selectedContractorIdForDevice)
+    ) {
+      return;
+    }
+    if (selectedContractorIdForDevice && contractorDevicesRemote.status === 'loading') return;
     setDeviceEditor({
       ...createEmptyDeviceForm(selectedContractorIdForDevice),
       ...device,
@@ -608,7 +668,11 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
           isAdmin,
           jobs,
         });
-        setContractorDevicesRemote(Array.isArray(data) ? data : []);
+        setContractorDevicesRemote({
+          contractorId: String(selectedContractor.id),
+          rows: Array.isArray(data) ? data : [],
+          status: 'ready',
+        });
       }
       setDeviceEditor(null);
       setInfoMessage('Urządzenie kontrahenta zostało zapisane.');
@@ -918,7 +982,11 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
                     <section className="contractorsDetailCard">
                       <h4>Urządzenia</h4>
-                      {selectedContractorDevices.length ? (
+                      {selectedContractorDevicesLoading ? (
+                        <div className="contractorsSideEmpty">Ładowanie urządzeń…</div>
+                      ) : selectedContractorDevicesError && !selectedContractorDevices.length ? (
+                        <div className="contractorsSideEmpty">Nie udało się pobrać urządzeń. Spróbuj ponownie po odświeżeniu.</div>
+                      ) : selectedContractorDevices.length ? (
                         <div className="contractorDevicesList" role="list" aria-label="Urządzenia powiązane z kontrahentem">
                           {selectedContractorDevices.map((device) => (
                             <div key={device.id} className="contractorDeviceItem" role="listitem">
@@ -1239,7 +1307,11 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
             <div className="contractorsPreviewItem contractorsPreviewItemFull contractorsNotesCard">
               <span className="infoLabelWithIcon"><IconFileText /><span>Urządzenia kontrahenta</span></span>
-              {selectedContractorDevices.length ? (
+              {selectedContractorDevicesLoading ? (
+                <strong>Ładowanie urządzeń…</strong>
+              ) : selectedContractorDevicesError && !selectedContractorDevices.length ? (
+                <strong>Nie udało się pobrać urządzeń. Spróbuj ponownie po odświeżeniu.</strong>
+              ) : selectedContractorDevices.length ? (
                 <div className="contractorDevicesList" role="list" aria-label="Urządzenia powiązane z kontrahentem">
                   {selectedContractorDevices.map((job) => (
                     <div key={job.id} className="contractorDeviceItem" role="listitem">

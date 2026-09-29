@@ -121,6 +121,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   desktop: [
+    'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:sms-summary',
     'npm run test:smoke:sms-job-grouping',
     'npm run test:smoke:sms-log-cleanup',
@@ -135,6 +136,7 @@ const GROUPS = {
     'npm run test:smoke:calendar-width',
   ],
   mobile: [
+    'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:mobile-ui-copy',
     'npm run test:smoke:mobile-style-bootstrap',
     'npm run test:smoke:mobile-admin-header',
