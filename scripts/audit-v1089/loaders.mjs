@@ -19,6 +19,7 @@ for(const [label,path,name,fetchName] of targets){
  const pending=[];let visible;const events=[];
  const ctx={isAdmin:true,supabase:{},jobs:[],displayVehicleOverview:false,logDiagnostic(){},getFriendlyError:String,
  setLoading:x=>events.push(['loading',x]),setErrorMessage:x=>events.push(['error',x]),setError:x=>events.push(['error',x]),
+ setLastLoadedAt:x=>events.push(['freshness',x]),setCatalogMayBeStale:x=>events.push(['stale',x]),onContractorsLoaded:null,
  setDevices:x=>visible=x,setContractors:x=>visible=x,setVehicles:x=>visible=x,setEntries(){},setHistoryVehicleId(){},setVehicleId(){},setSourceMode(){},setInfoMessage(){},
  [fetchName]:()=>new Promise((resolve,reject)=>pending.push({resolve,reject}))};
  // The production hook supplies this guard. On baseline it is unused.
