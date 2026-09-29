@@ -821,7 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.81` — mobilny protokół klienta na iPhonie przewija własną treść; tło aplikacji jest blokowane, a nagłówek i dolne przyciski pozostają stabilne niezależnie od długości protokołu.
+- wersja `11.82` — stabilniejszy zapis protokołu przy chwilowych timeoutach Supabase (jeden bezpieczny retry + widoczne etapy zapisu) oraz bezpieczny fallback AI dla słabo rozpoznanych tabliczek Rotenso; centralny katalog produkcyjny został zsynchronizowany do 215 zweryfikowanych rekordów.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
 - wersja `11.78` — audyt Kontrahentów etap 5: K16/K19/K21; pełne urządzenia na mobile, jawna świeżość/odświeżenie katalogu i kompletny snapshot kontrahentów bez mieszanej paginacji.
 - wersja `11.77` — audyt Kontrahentów etap 4: K11/K13; poprawny import Status/Adresy (JSON)/numery wierszy i edycja istniejącego klienta ze współdzielonym telefonem lub e-mailem jako ostrzeżenie, nie blokada.
