@@ -1,3 +1,11 @@
+## 11.82
+- Protokół: przy chwilowym błędzie 5xx/timeout bezpieczne odczyty i idempotentny zapis płatności są automatycznie ponawiane jeden raz.
+- Protokół: po naciśnięciu „Zapisz protokół” aplikacja natychmiast pokazuje etap operacji: płatność, tworzenie PDF i zapis PDF.
+- Upload PDF nie jest ślepo ponawiany; dotychczasowe sprawdzenie niejednoznacznego zapisu pozostaje aktywne.
+- Tabliczki: przy słabym lokalnym OCR uruchamiany jest bezpieczny fallback AI; akceptacja wymaga dokładnego modelu z katalogu i numeru seryjnego.
+- Produkcyjny centralny katalog Rotenso zsynchronizowano do 215 zweryfikowanych rekordów.
+- Dodano regresje dla retry, postępu zapisu protokołu i fallbacku tabliczki.
+
 ## 11.81
 - Naprawiono przewijanie mobilnego protokołu klienta na iPhonie: przewija się teraz treść protokołu, a nie strona aplikacji pod pełnoekranowym oknem.
 - Nagłówek oraz dolne przyciski protokołu pozostają stabilne, a tło jest blokowane na czas otwartego protokołu.
