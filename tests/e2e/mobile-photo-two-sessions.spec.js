@@ -39,6 +39,15 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
 
     await adminPage.locator('.thumbCard .thumbBtn').click();
     await expect(adminPage.locator('.previewOverlay')).toBeVisible();
+    await expect(adminPage.getByRole('button', { name: 'Powiększ zdjęcie' })).toBeVisible();
+    await expect(adminPage.getByRole('button', { name: 'Pomniejsz zdjęcie' })).toBeDisabled();
+    await expect(adminPage.getByRole('button', { name: 'Przywróć rozmiar 100 procent' })).toHaveText('100%');
+    await adminPage.getByRole('button', { name: 'Powiększ zdjęcie' }).click();
+    await expect(adminPage.getByRole('button', { name: 'Przywróć rozmiar 100 procent' })).toHaveText('150%');
+    await expect(adminPage.locator('.mobilePhotoZoomViewport')).toHaveClass(/isZoomed/);
+    await expect(adminPage.locator('.mobilePhotoZoomImage')).toHaveAttribute('style', /scale\(1\.5\)/);
+    await adminPage.getByRole('button', { name: 'Przywróć rozmiar 100 procent' }).click();
+    await expect(adminPage.getByRole('button', { name: 'Przywróć rozmiar 100 procent' })).toHaveText('100%');
     const previewScrollLock = await adminPage.evaluate(() => {
       const overlay = document.querySelector('.previewOverlay');
       const style = overlay ? getComputedStyle(overlay) : null;
