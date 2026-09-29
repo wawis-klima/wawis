@@ -107,6 +107,7 @@ const root = path.resolve(__dirname, '..');
   assert.strictEqual(modelOcr.resolveFocusedRotensoModelText('ESSOXi_R17')?.code, 'ES50Xi R17');
 
   const catalogCodes = [...new Set(catalog.ROTENSO_EAN_CATALOG.map((entry) => entry.model_code))];
+  const catalogBaseCodes = [...new Set(catalogCodes.map((modelCode) => modelCode.replace(/\s+R[0-9]{1,2}$/i, '')))];
   for (const modelCode of catalogCodes) {
     const exactCatalogMatch = dictionary.resolveRotensoCatalogModelCode(modelCode);
     assert.strictEqual(exactCatalogMatch?.code, modelCode, `Exact catalog lookup failed for ${modelCode}`);
@@ -117,7 +118,18 @@ const root = path.resolve(__dirname, '..');
       .replace(/Xi/i, 'X1');
     const ocrCatalogMatch = dictionary.resolveRotensoCatalogModelCode(typicalOcrVariant);
     assert.strictEqual(ocrCatalogMatch?.code, modelCode, `OCR catalog lookup failed for ${modelCode}`);
+    assert.strictEqual(ocrCatalogMatch?.ocrCorrected, true, `OCR correction must be explicitly marked for ${modelCode}`);
   }
 
-  console.log(`Smoke OK: both label layouts and all ${catalogCodes.length} catalog model codes work with local OCR matching`);
+  for (const baseCode of catalogBaseCodes) {
+    const futureCode = `${baseCode} R99`;
+    const futureMatch = dictionary.resolveRotensoCatalogModelCode(futureCode);
+    assert.strictEqual(futureMatch?.code, futureCode, `Future revision must be preserved for ${baseCode}`);
+    assert.strictEqual(futureMatch?.revision, 'R99', `Future revision token must not be replaced for ${baseCode}`);
+    assert.strictEqual(futureMatch?.ean, '', `Future revision must never inherit an older EAN for ${baseCode}`);
+    assert.strictEqual(futureMatch?.catalogVerified, false, `Future revision cannot pretend to be an exact catalog row for ${baseCode}`);
+    assert.strictEqual(futureMatch?.baseModelVerified, true, `Known base model must remain recognized for ${baseCode}`);
+  }
+
+  console.log(`Smoke OK: both label layouts, all ${catalogCodes.length} catalog model codes and ${catalogBaseCodes.length} synthetic future revisions work without borrowing an older EAN`);
 })().catch((error) => { console.error(error); process.exit(1); });
