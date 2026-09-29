@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.84",
-  "scope": "full",
-  "release_branch": "release/v11.84",
+  "version": "11.85",
+  "scope": "desktop",
+  "release_branch": "release/v11.85",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana ograniczona funkcjonalnie do desktopowej ewidencji Faktura VAT. Produkcyjny schemat przed migracją nie zawierał jobs.vat_invoice_issued. Nie zmieniamy istniejących polityk RLS; zapis statusu odbywa się przez admin-only RPC. Mobile pozostaje bez zmian."
+    "notes": "11.85 jest wyłącznie zmianą układu desktopowego: istniejący status Faktura VAT zostaje przeniesiony z sekcji Klient do górnego paska szczegółów. Bez zmian Supabase, RLS, Storage, Edge Functions i logiki zapisu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.84.zip"
+    "file_name": "klima-app-v11.85.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.84",
+    "source_branch": "release/v11.85",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: FV czerwone/zielone, przełączenie w sekcji Klient, trwałość po odświeżeniu oraz że 10 najnowszych zakończonych montaży jest do ręcznego potwierdzenia, a starsze są zielone. Mobile bez zmian."
+    "notes": "Po wdrożeniu sprawdzić desktop: Faktura VAT widoczna w górnym pasku w miejscu wskazanym na ekranie, czerwony/zielony stan i kliknięcie działają; w sekcji Klient nie ma już osobnego pola Faktura VAT."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "Zastosowana produkcyjnie 2026-09-29: dodano jobs.vat_invoice_issued, 10 najnowszych zakończonych montaży pozostawiono false, wszystkie wcześniejsze zakończone ustawiono true; dodano admin-only RPC admin_set_job_vat_invoice_issued.",
-    "rls_role_matrix": "Bez zmian istniejących polityk RLS; RPC dodatkowo wymaga roli Administrator.",
-    "performance_advisor": "N/A — pojedyncze pole boolean i punktowy RPC.",
-    "security_advisor": "N/A — brak rozszerzenia uprawnień; RPC admin-only.",
-    "trigger_grants": "N/A — bez nowych triggerów.",
+    "supabase_migration_applied": "N/A — 11.85 nie zmienia bazy; korzysta z wdrożonego mechanizmu 11.84.",
+    "rls_role_matrix": "N/A — bez zmian RLS.",
+    "performance_advisor": "N/A — zmiana układu JSX/CSS.",
+    "security_advisor": "N/A — bez zmian uprawnień.",
+    "trigger_grants": "N/A — bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
