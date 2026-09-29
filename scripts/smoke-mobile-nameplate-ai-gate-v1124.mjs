@@ -99,7 +99,9 @@ assert(reader.includes("aiSkipReason: 'no_nameplate_evidence'"), 'Photo without 
 assert(reader.includes('const weakEvidenceFallback = !evidence.hasEvidence'), 'Weak but non-empty technical evidence must be eligible for guarded AI.');
 assert(reader.includes("aiSkipReason: 'ai_unconfirmed_nameplate'"), 'Guarded AI fallback must reject images without exact model + serial.');
 assert(reader.includes("aiSkipReason: 'ai_failed_low_evidence'"), 'AI failure on weak evidence must remain blocked.');
-assert.match(reader, /weakEvidenceFallback && \(!aiResult\?\.exactModel \|\| !finalSerial\)/, 'Weak-evidence AI may pass only with exact catalog model and serial.');
+assert.match(reader, /aiResult\?\.modelConfirmedByCatalog[\s\S]*aiResult\?\.modelBaseRecognized/, 'Weak-evidence AI must require a catalog-confirmed or strictly recognized base model.');
+assert.match(reader, /weakEvidenceFallback && \(!aiTrustedModel \|\| !finalSerial\)/, 'Weak-evidence AI may pass only with a trusted model and serial.');
+assert.doesNotMatch(reader, /weakEvidenceFallback && \(!aiResult\?\.exactModel \|\| !finalSerial\)/, 'Presence of an untrusted exactModel object alone must not unlock a weak-evidence photo.');
 assert(reader.indexOf('if (!evidence.hasEvidence && !weakEvidenceFallback)') < reader.indexOf('readDesktopNameplateWithAi({'), 'Zero-evidence gate must execute before AI.');
 
 
