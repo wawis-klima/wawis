@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.77` — audyt Kontrahentów etap 4: K11/K13; poprawny import Status/Adresy (JSON)/numery wierszy i edycja istniejącego klienta ze współdzielonym telefonem lub e-mailem jako ostrzeżenie, nie blokada.
 - wersja `11.76` — audyt Kontrahentów etap 3: K1/K2/K17; właściwy adres montażu, izolowana edycja urządzeń i stały okres przypomnień serwisowych dokładnie 5 lat.
 - wersja `11.75` — audyt Kontrahentów etap 2: K8/K9/K15; ochrona draftu, unieważnianie starych odczytów i izolacja urządzeń po contractorId.
 - wersja `11.74` — K6: bezpieczne, odzyskiwalne usuwanie montażu; brak kasowania plików Storage przed DELETE i brak zależności od niepełnego lokalnego cache zdjęć.
