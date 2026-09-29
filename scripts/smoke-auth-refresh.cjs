@@ -651,7 +651,7 @@ async function runContractorsModuleSmoke() {
     isAdmin: true,
   });
   assert.equal(fallbackStorageTouched, false);
-  assert.deepEqual(fallbackDeleteRpcCall, {
+  assert.deepEqual(JSON.parse(JSON.stringify(fallbackDeleteRpcCall)), {
     name: 'admin_delete_jobs_recoverable',
     payload: { p_ids: ['job-robert'], p_only_unlinked: true },
   });
