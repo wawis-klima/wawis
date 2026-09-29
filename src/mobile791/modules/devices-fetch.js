@@ -1,6 +1,7 @@
 import { formatDeviceSerialNumber, getDeviceIndoorSerials, getJobDeviceRows, parseDeviceSerialLine, serializeJobDevicesToFields } from './job-devices.js';
 
 const DEVICE_STATUSES = ['aktywne', 'do_serwisu', 'zdemontowane'];
+const SERVICE_REMINDER_YEARS = 5;
 
 function normalizeText(value) {
   return String(value || '').trim();
