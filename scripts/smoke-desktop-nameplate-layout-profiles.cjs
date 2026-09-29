@@ -118,7 +118,11 @@ const root = path.resolve(__dirname, '..');
       .replace(/Xi/i, 'X1');
     const ocrCatalogMatch = dictionary.resolveRotensoCatalogModelCode(typicalOcrVariant);
     assert.strictEqual(ocrCatalogMatch?.code, modelCode, `OCR catalog lookup failed for ${modelCode}`);
-    assert.strictEqual(ocrCatalogMatch?.ocrCorrected, true, `OCR correction must be explicitly marked for ${modelCode}`);
+    if (typicalOcrVariant !== modelCode) {
+      assert.strictEqual(ocrCatalogMatch?.ocrCorrected, true, `OCR correction must be explicitly marked for ${modelCode}`);
+    } else {
+      assert.strictEqual(ocrCatalogMatch?.ocrCorrected, false, `Exact text must not be mislabeled as OCR-corrected for ${modelCode}`);
+    }
   }
 
   for (const baseCode of catalogBaseCodes) {
