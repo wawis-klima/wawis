@@ -60,16 +60,7 @@ export async function removeContractor({ supabase, contractorId, isAdmin }) {
 }
 
 
-function collectJobPhotoStoragePaths(jobs = [], jobIds = []) {
-  const idSet = new Set(jobIds.map((id) => String(id)));
-  return (jobs || [])
-    .filter((job) => idSet.has(String(job?.id || '')))
-    .flatMap((job) => Array.isArray(job?.photos) ? job.photos : [])
-    .map((photo) => photo?.storage_path)
-    .filter(Boolean);
-}
-
-export async function removeJobFallbackContractor({ supabase, contractor, jobs = [], isAdmin }) {
+export async function removeJobFallbackContractor({ supabase, contractor, isAdmin }) {
   if (!supabase) throw new Error('Brak połączenia z Supabase.');
   if (!isAdmin) throw new Error('Tylko administrator może usuwać wpisy z katalogu kontrahentów.');
 
@@ -83,18 +74,14 @@ export async function removeJobFallbackContractor({ supabase, contractor, jobs =
     throw new Error('Brak powiązanego zlecenia do usunięcia. Odśwież dane i spróbuj ponownie.');
   }
 
-  const photoPaths = collectJobPhotoStoragePaths(jobs, sourceJobIds);
-  if (photoPaths.length && supabase.storage?.from) {
-    const { error: storageError } = await supabase.storage.from('job-photos').remove(photoPaths);
-    if (storageError) throw storageError;
-  }
-
-  const { data, error } = await supabase
-    .from('jobs')
-    .delete()
-    .in('id', sourceJobIds)
-    .is('contractor_id', null)
-    .select('id');
+  // K6 / 11.74: kasowanie z katalogu Kontrahentów musi korzystać z tej samej
+  // odzyskiwalnej ścieżki co kosz montaży. RPC najpierw archiwizuje kartę i
+  // zależne rekordy w job_recycle_bin, a pliki Storage pozostają zachowane,
+  // żeby przywrócenie karty było kompletne. Nie usuwamy plików przed DELETE.
+  const { data, error } = await supabase.rpc('admin_delete_jobs_recoverable', {
+    p_ids: sourceJobIds,
+    p_only_unlinked: true,
+  });
   if (error) throw error;
 
   const deletedJobIds = (data || []).map((item) => item?.id).filter(Boolean);
