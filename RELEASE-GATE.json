@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.76",
+  "version": "11.77",
   "scope": "full",
-  "release_branch": "release/v11.76",
+  "release_branch": "release/v11.77",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Etap 3 audytu Kontrahentów: K1/K2/K17. K23 rozstrzygnięty decyzją biznesową: service_reminder_years ma zawsze wynosić 5. Odczyt produkcji przed zmianą: jobs 146/146 = 5, devices 718/718 = 5. Obecne CHECK dopuszczały 1..10, dlatego 11.76 dodaje twardą regułę =5 bez potrzeby korekty istniejących danych. Migracja produkcyjna zastosowana po zielonych checks: 718/718 devices i 146/146 jobs = 5, invalid=0; oba CHECK wymagają =5, default=5 i NOT NULL."
+    "notes": "Etap 4 audytu Kontrahentów: K13 + K11. Produkcja sprawdzona read-only: enforce_contractors_contact_duplicates() dla UPDATE zwraca NEW bez blokady telefonu/e-maila; contractors_company_name_unique_idx nadal wymusza unikalność nazwy. Zmiana aplikacji tylko wyrównuje desktop z backendem/mobile. Parser XLSX poprawiony lokalnie w desktop/mobile; bez zmian bazy, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.76.zip"
+    "file_name": "klima-app-v11.77.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.76",
+    "source_branch": "release/v11.77",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu potwierdzić: mobile edycja montażu z dodatkowym adresem B + zmiana telefonu zachowuje contractor_address_id B; desktop edycja drugiego urządzenia fallbacku zmienia drugi wiersz; edycja modelu urządzenia nie zmienia city/street/location klienta; wszystkie nowe/edytowane rekordy mają service_reminder_years=5."
+    "notes": "Po deployu potwierdzić 11.77: (1) desktop — istniejący klient ze wspólnym telefonem/e-mailem może zapisać zmianę notatki, ale nowy rekord z duplikatem nadal jest blokowany; zmiana nazwy na istniejącą pozostaje zablokowana; (2) eksport nieaktywnego klienta i ponowny import pokazuje Nieaktywny; (3) zły Adresy (JSON) / nieznany Status trafia do Błędnych wierszy z właściwym numerem; (4) puste sformatowane wiersze nie zwiększają liczników."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — fixed_service_reminder_years_v1176; produkcja zweryfikowana: jobs 146/146=5, devices 718/718=5; oba CHECK wymagają =5; admin_upsert_device wymusza v_years=5",
-    "rls_role_matrix": "N/A — bez zmian RLS",
-    "performance_advisor": "N/A — tylko CHECK/default i istniejący RPC, bez nowych zapytań listujących",
-    "security_advisor": "N/A — bez rozszerzania uprawnień",
-    "trigger_grants": "PASS — admin_upsert_device zachowuje current_user_is_admin() oraz SECURITY DEFINER search_path=public",
+    "supabase_migration_applied": "N/A — etap 4 nie wymaga migracji",
+    "rls_role_matrix": "READ-ONLY — bez zmian; K13 dostosowuje UI do istniejącej polityki UPDATE",
+    "performance_advisor": "N/A — brak zmian zapytań produkcyjnych",
+    "security_advisor": "N/A — ochrona INSERT i unikalność nazwy pozostają; brak rozszerzania uprawnień",
+    "trigger_grants": "READ-ONLY — enforce_contractors_contact_duplicates UPDATE=return new; contractors_company_name_unique_idx aktywny",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }

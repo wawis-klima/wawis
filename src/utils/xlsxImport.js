@@ -203,7 +203,15 @@ function extractWorksheetRows(files, worksheetPath, sharedStrings) {
       const columnIndex = getCellColumnIndex(reference);
       rowValues[columnIndex] = String(readCellValue(cell, sharedStrings) || '').trim();
     }
-    rows.push(rowValues.map((value) => value ?? ''));
+    const normalizedRow = rowValues.map((value) => value ?? '');
+    const sourceRowNumber = Number.parseInt(String(rowNode.getAttribute('r') || ''), 10) || rows.length + 1;
+    Object.defineProperty(normalizedRow, 'sourceRowNumber', {
+      value: sourceRowNumber,
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    rows.push(normalizedRow);
   }
 
   return rows;
@@ -258,7 +266,84 @@ const HEADER_ALIASES = new Map([
   ['notatki', 'notes'],
   ['uwagi', 'notes'],
   ['notes', 'notes'],
+  ['status', 'status'],
+  ['status kontrahenta', 'status'],
+  ['aktywny', 'status'],
+  ['active', 'status'],
 ]);
+
+export function parseContractorStatusValue(value) {
+  const normalized = normalizeHeader(value);
+  if (['aktywny', 'active', 'true', 'tak', 'yes', '1'].includes(normalized)) return { ok: true, value: true };
+  if (['nieaktywny', 'inactive', 'false', 'nie', 'no', '0'].includes(normalized)) return { ok: true, value: false };
+  return {
+    ok: false,
+    value: null,
+    message: normalized
+      ? `Nieznany status „${String(value || '').trim()}”. Dozwolone: Aktywny/Nieaktywny/true/false.`
+      : 'Brak statusu w kolumnie Status. Dozwolone: Aktywny/Nieaktywny/true/false.',
+  };
+}
+
+export function parseContractorImportRow({
+  row = [],
+  normalizedHeaders = [],
+  sourceRowNumber = 0,
+  hasStatusColumn = normalizedHeaders.includes('status'),
+} = {}) {
+  const record = {
+    company_name: '',
+    contact_person: '',
+    phone: '',
+    email: '',
+    city: '',
+    street: '',
+    addresses_json: '',
+    addresses: [],
+    nip: '',
+    notes: '',
+    is_active: true,
+    __source_row_number: Number(sourceRowNumber) || 0,
+    __parse_errors: [],
+  };
+  let statusRaw = '';
+
+  row.forEach((cellValue, columnIndex) => {
+    const field = normalizedHeaders[columnIndex];
+    if (!field) return;
+    const value = String(cellValue || '').trim();
+    if (field === 'status') {
+      statusRaw = value;
+      return;
+    }
+    record[field] = value;
+  });
+
+  if (hasStatusColumn) {
+    const parsedStatus = parseContractorStatusValue(statusRaw);
+    if (parsedStatus.ok) {
+      record.is_active = parsedStatus.value;
+    } else {
+      record.__parse_errors.push(parsedStatus.message);
+    }
+  }
+
+  if (record.addresses_json) {
+    try {
+      const parsed = JSON.parse(record.addresses_json);
+      if (!Array.isArray(parsed)) {
+        record.__parse_errors.push('Kolumna Adresy (JSON) musi zawierać tablicę adresów.');
+      } else {
+        record.addresses = parsed;
+      }
+    } catch {
+      record.__parse_errors.push('Nieprawidłowy JSON w kolumnie Adresy (JSON).');
+    }
+  }
+
+  delete record.addresses_json;
+  return record;
+}
 
 export async function parseXlsxContractorsFile(file) {
   if (!file) {
@@ -277,43 +362,18 @@ export async function parseXlsxContractorsFile(file) {
 
   const [headerRow = [], ...dataRows] = rows;
   const normalizedHeaders = headerRow.map((header) => HEADER_ALIASES.get(normalizeHeader(header)) || null);
+  const hasStatusColumn = normalizedHeaders.includes('status');
 
   return dataRows
-    .map((row) => {
-      const record = {
-        company_name: '',
-        contact_person: '',
-        phone: '',
-        email: '',
-        city: '',
-        street: '',
-        addresses_json: '',
-        addresses: [],
-        nip: '',
-        notes: '',
-        is_active: true,
-      };
-
-      row.forEach((cellValue, index) => {
-        const field = normalizedHeaders[index];
-        if (!field) return;
-        record[field] = String(cellValue || '').trim();
-      });
-
-      if (record.addresses_json) {
-        try {
-          const parsed = JSON.parse(record.addresses_json);
-          if (Array.isArray(parsed)) record.addresses = parsed;
-        } catch {
-          record.addresses = [];
-        }
-      }
-      delete record.addresses_json;
-      return record;
-    })
-    .filter((record) => Object.values(record).some((value) => String(value || '').trim()));
+    // K11 / 11.77: pusty wiersz odrzucamy przed nadaniem domyślnego is_active=true.
+    .filter((row) => row.some((value) => String(value || '').trim()))
+    .map((row, dataIndex) => parseContractorImportRow({
+      row,
+      normalizedHeaders,
+      sourceRowNumber: Number(row.sourceRowNumber) || dataIndex + 2,
+      hasStatusColumn,
+    }));
 }
-
 
 const DEVICE_HEADER_ALIASES = new Map([
   ['kontrahent', 'contractor_name'],

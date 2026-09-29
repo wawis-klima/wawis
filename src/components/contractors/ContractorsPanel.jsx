@@ -286,6 +286,20 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
     () => findContractorDuplicates(contractors, form),
     [contractors, form],
   );
+  const blockingDuplicateMatches = useMemo(
+    () => {
+      if (!form.id) return duplicateMatches;
+      return duplicateMatches.filter(({ reasons = [] }) => reasons.includes('nazwa'));
+    },
+    [duplicateMatches, form.id],
+  );
+  const sharedContactWarnings = useMemo(
+    () => {
+      if (!form.id) return [];
+      return duplicateMatches.filter(({ reasons = [] }) => reasons.length > 0 && !reasons.includes('nazwa'));
+    },
+    [duplicateMatches, form.id],
+  );
 
 
   useEffect(() => {
@@ -434,8 +448,8 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       setInfoMessage('');
       return;
     }
-    if (duplicateMatches.length) {
-      setErrorMessage('Podany kontrahent wygląda na duplikat. Wybierz istniejący wpis albo popraw dane przed zapisem.');
+    if (blockingDuplicateMatches.length) {
+      setErrorMessage('Podany kontrahent koliduje z istniejącym wpisem po nazwie lub innym polu tożsamości. Otwórz istniejący wpis albo popraw dane przed zapisem.');
       setInfoMessage('');
       return;
     }
@@ -1140,24 +1154,40 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
           </div>
 
           {duplicateMatches.length ? (
-            <div className="contractorsDuplicateBox errorBox">
-              <strong>Podobny kontrahent już istnieje w bazie.</strong>
-              <p>Sprawdź poniższe wpisy i nie dodawaj duplikatu, jeśli to ten sam klient.</p>
+            <div className={`contractorsDuplicateBox${blockingDuplicateMatches.length ? ' errorBox' : ''}`}>
+              <strong>
+                {blockingDuplicateMatches.length
+                  ? 'Podobny kontrahent już istnieje w bazie.'
+                  : 'Telefon lub e-mail jest współdzielony z innym kontrahentem.'}
+              </strong>
+              <p>
+                {blockingDuplicateMatches.length
+                  ? 'Sprawdź poniższe wpisy. Konflikt nazwy lub innego pola tożsamości blokuje zapis.'
+                  : 'To tylko ostrzeżenie dla istniejącego rekordu. Możesz zapisać edycję bez usuwania wspólnych danych.'}
+              </p>
               <div className="contractorsDuplicateList">
-                {duplicateMatches.map(({ contractor, reasons }) => (
-                  <div key={contractor.id || `${contractor.company_name}-${contractor.phone}-${contractor.email}`} className="contractorsDuplicateItem">
-                    <div className="contractorsDuplicateItemContent">
-                      <span className="contractorsDuplicateItemTitle">{contractor.company_name || 'Bez nazwy'}</span>
-                      <span className="contractorsDuplicateItemMeta">{[contractor.phone, contractor.email, contractor.street, contractor.city, contractor.nip].filter(Boolean).join(' • ') || 'Brak dodatkowych danych'}</span>
-                      <span className="contractorsDuplicateItemReason">Duplikat po: {reasons.join(' / ')}</span>
+                {duplicateMatches.map(({ contractor, reasons }) => {
+                  const contactOnlyWarning = Boolean(form.id)
+                    && reasons.length > 0
+                    && !reasons.includes('nazwa');
+                  return (
+                    <div key={contractor.id || `${contractor.company_name}-${contractor.phone}-${contractor.email}`} className="contractorsDuplicateItem">
+                      <div className="contractorsDuplicateItemContent">
+                        <span className="contractorsDuplicateItemTitle">{contractor.company_name || 'Bez nazwy'}</span>
+                        <span className="contractorsDuplicateItemMeta">{[contractor.phone, contractor.email, contractor.street, contractor.city, contractor.nip].filter(Boolean).join(' • ') || 'Brak dodatkowych danych'}</span>
+                        <span className="contractorsDuplicateItemReason">{contactOnlyWarning ? 'Wspólny kontakt po' : 'Konflikt po'}: {reasons.join(' / ')}</span>
+                      </div>
+                      <div className="contractorsDuplicateActions">
+                        <button type="button" className="btn ghostBtn contractorsDuplicateOpenBtn" onClick={() => handleOpenDetails(contractor)}>Otwórz istniejącego kontrahenta</button>
+                        <button type="button" className="btn contractorsDuplicateEditBtn" onClick={() => handleStartEdit(contractor)}>Edytuj istniejącego kontrahenta</button>
+                      </div>
                     </div>
-                    <div className="contractorsDuplicateActions">
-                      <button type="button" className="btn ghostBtn contractorsDuplicateOpenBtn" onClick={() => handleOpenDetails(contractor)}>Otwórz istniejącego kontrahenta</button>
-                      <button type="button" className="btn contractorsDuplicateEditBtn" onClick={() => handleStartEdit(contractor)}>Edytuj istniejącego kontrahenta</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+              {sharedContactWarnings.length && !blockingDuplicateMatches.length ? (
+                <div className="contractorsDuplicateItemReason">Wspólny kontakt nie blokuje edycji istniejącego kontrahenta.</div>
+              ) : null}
             </div>
           ) : null}
 
@@ -1172,7 +1202,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
           </label>
 
           <div className="contractorsActions">
-            <button type="button" className="btn" onClick={() => void handleSave()} disabled={saveBusy || deleteBusy || importBusy || exportBusy || duplicateMatches.length}>
+            <button type="button" className="btn" onClick={() => void handleSave()} disabled={saveBusy || deleteBusy || importBusy || exportBusy || blockingDuplicateMatches.length}>
               {saveBusy ? 'Zapisywanie...' : 'Zapisz kontrahenta'}
             </button>
             <button type="button" className="btn" onClick={handleDelete} disabled={saveBusy || deleteBusy || importBusy || exportBusy}>
