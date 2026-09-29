@@ -1,3 +1,13 @@
+## 11.80
+- Mobile-only: pełnoekranowy podgląd zdjęcia obsługuje pinch-to-zoom od 100% do 400%.
+- Po powiększeniu zdjęcie można przesuwać jednym palcem; zmiana zdjęcia automatycznie resetuje zoom do 100%.
+- Dodano przyciski − / + i wskaźnik procentowy; dotknięcie procentu przywraca 100%.
+- Podwójne stuknięcie przełącza szybkie powiększenie do 250% i powrót do 100%.
+- Podczas powiększenia boczne strefy przechodzenia między zdjęciami są wyłączone, żeby gest przesuwania nie zmieniał zdjęcia.
+- Zachowano blokadę przewijania strony pod podglądem; zoom dotyczy wyłącznie zdjęcia, a nie całej aplikacji.
+- Desktopowy PreviewModal i desktopowe style zdjęć nie zostały zmienione.
+- Dodano smoke oraz rozszerzono mobilny E2E podglądu zdjęć o kontrolę zoomu.
+
 ## 11.79
 - Audyt Kontrahentów / etap 6: wdrożono wyłącznie K12. K14 został świadomie wyłączony z zakresu — bez blokad transakcyjnych i bez nowych UNIQUE dla telefonu/e-maila/NIP.
 - Ujednolicono normalizację tożsamości w desktop/mobile z istniejącym SQL: trim, redukcja wielokrotnych białych znaków i lowercase; polskie znaki pozostają częścią tożsamości, więc np. `Górski` i `Gorski` nie są automatycznie tym samym kontrahentem.

@@ -48,6 +48,7 @@ const GROUPS = {
     'npm run test:smoke:new-job-author-comment',
   ],
   photos: [
+    'node scripts/smoke-mobile-photo-zoom-v1180.mjs',
     'npm run test:smoke:private-photos',
     'npm run test:smoke:mobile-private-photos',
     'npm run test:smoke:mobile-photo-compression',
