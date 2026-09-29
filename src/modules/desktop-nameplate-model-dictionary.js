@@ -604,7 +604,8 @@ function buildRotensoResolution(prefix, capacityCode, unitMarker = '', revision 
     : unitType === 'indoor'
       ? 'jednostka wewnętrzna'
       : '';
-  const code = formatRotensoCode(prefix, capacityCode, unitMarker, revision);
+  const cleanRevision = String(revision || '').toUpperCase().replace(/\s+/g, '');
+  const code = formatRotensoCode(prefix, capacityCode, unitMarker, cleanRevision);
   return {
     manufacturer: 'Rotenso',
     prefix,
@@ -614,7 +615,7 @@ function buildRotensoResolution(prefix, capacityCode, unitMarker = '', revision 
     unitType,
     systemType: unitType === 'outdoor' ? 'single-split' : '',
     unitLabel,
-    revision: String(revision || '').toUpperCase().replace(/\s+/g, ''),
+    revision: cleanRevision,
     code,
     model: `${family} ${capacityKw} kW (${code})`,
     familyCandidates: [family],
