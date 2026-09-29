@@ -125,10 +125,13 @@ const desktopForm = read('src', 'components', 'modals', 'JobFormModal.jsx');
 assert.match(desktopForm, /Potwierdź monterów tego montażu/);
 
 const mobileProtocolModal = read('src', 'mobile791', 'components', 'modals', 'ProtocolTestModal.jsx');
-assert.match(mobileProtocolModal, /Monterzy wymagają potwierdzenia/);
-assert.match(mobileProtocolModal, /!installersConfirmed/);
+// 11.71: historyczny brak installer_ids nie blokuje protokołu; fallback jest tylko dokumentowy.
+assert.doesNotMatch(mobileProtocolModal, /Monterzy wymagają potwierdzenia/);
+assert.match(mobileProtocolModal, /getLegacyInstallerSuggestionIds/);
+assert.match(mobileProtocolModal, /protocolJobForDocument/);
+assert.match(mobileProtocolModal, /if \(installersConfirmed\) return protocolJob/);
 
 const desktopOcr = read('src', 'modules', 'desktop-nameplate-ocr-save.js');
 assert.match(desktopOcr, /save_job_concurrent_v1168/);
 
-console.log('11.68 concurrency + installers smoke OK');
+console.log('11.68 concurrency + installers smoke OK; 11.71 protocol fallback preserved');
