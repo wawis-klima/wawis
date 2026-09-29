@@ -10,7 +10,12 @@ import {
   findContractorDuplicates,
   getEmptyContractorForm,
   isJobDerivedContractor,
+  normalizeContractorAddresses,
+  normalizeContractorEmail,
+  normalizeContractorNip,
+  normalizeContractorPhone,
   normalizeContractorRecord,
+  normalizeSearchComparable,
 } from '../../modules/contractors.js';
 import {
   loadContractors,
@@ -39,7 +44,7 @@ function getFriendlyError(error) {
 }
 
 function normalizeSearch(value) {
-  return String(value || '').trim().toLocaleLowerCase('pl-PL');
+  return normalizeSearchComparable(value);
 }
 
 function sortAlphabetically(items) {
@@ -263,8 +268,34 @@ export default function ContractorsPanel({
 
   const filteredContractors = useMemo(() => {
     const needle = normalizeSearch(search);
-    if (!needle) return allContractors;
-    return allContractors.filter((item) => [item.company_name, item.contact_person, item.phone, item.email, item.city, item.street, item.nip, item.notes].some((value) => normalizeSearch(value).includes(needle)));
+    const phoneNeedle = normalizeContractorPhone(search);
+    const nipNeedle = normalizeContractorNip(search);
+    const emailNeedle = normalizeContractorEmail(search);
+    if (!needle && !phoneNeedle && !nipNeedle && !emailNeedle) return allContractors;
+
+    return allContractors.filter((item) => {
+      const textValues = [
+        item.company_name,
+        item.contact_person,
+        item.email,
+        item.city,
+        item.street,
+        item.nip,
+        item.notes,
+        ...normalizeContractorAddresses(item).flatMap((address) => [
+          address.label,
+          address.city,
+          address.street,
+          address.notes,
+        ]),
+      ];
+
+      if (needle && textValues.some((value) => normalizeSearch(value).includes(needle))) return true;
+      if (phoneNeedle && normalizeContractorPhone(item.phone).includes(phoneNeedle)) return true;
+      if (nipNeedle && normalizeContractorNip(item.nip).includes(nipNeedle)) return true;
+      if (emailNeedle && normalizeContractorEmail(item.email).includes(emailNeedle)) return true;
+      return false;
+    });
   }, [allContractors, search]);
 
   const totalPages = Math.max(1, Math.ceil(filteredContractors.length / PAGE_SIZE));
