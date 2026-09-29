@@ -7861,6 +7861,21 @@ img.previewImage{
   border-radius:50%;
 }
 
+.desktopVatInvoiceHeaderToggle{
+  min-height:30px;
+  padding:6px 10px;
+  gap:6px;
+  font-size:11px;
+  box-shadow:none;
+  white-space:nowrap;
+}
+
+.desktopVatInvoiceHeaderLabel{
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+}
+
 
 .jobDetailsDeviceGrid{
   margin-top:0;
