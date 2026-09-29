@@ -630,53 +630,29 @@ async function runContractorsModuleSmoke() {
   assert.equal(deleteRpcCall.payload.p_id, 'con-2');
   assert.equal(deleteResult, true);
 
-  let removedPhotoBucket = '';
-  let removedPhotoPaths = [];
-  let deletedTable = '';
-  let deletedIds = [];
-  let contractorNullFilter = null;
+  let fallbackDeleteRpcCall = null;
+  let fallbackStorageTouched = false;
   const fallbackDeleteResult = await removeJobFallbackContractor({
     supabase: {
       storage: {
-        from(bucket) {
-          removedPhotoBucket = bucket;
-          return {
-            async remove(paths) {
-              removedPhotoPaths = paths;
-              return { error: null };
-            },
-          };
+        from() {
+          fallbackStorageTouched = true;
+          throw new Error('Storage must not be touched before recoverable delete');
         },
       },
-      from(table) {
-        deletedTable = table;
-        return {
-          delete() { return this; },
-          in(field, ids) {
-            assert.equal(field, 'id');
-            deletedIds = ids;
-            return this;
-          },
-          is(field, value) {
-            contractorNullFilter = { field, value };
-            return this;
-          },
-          async select(fields) {
-            assert.equal(fields, 'id');
-            return { data: deletedIds.map((id) => ({ id })), error: null };
-          },
-        };
+      async rpc(name, payload) {
+        fallbackDeleteRpcCall = { name, payload };
+        return { data: [{ id: 'job-robert' }], error: null };
       },
     },
     contractor: { id: 'job-derived:robertkolanko', is_job_fallback: true, source_job_ids: ['job-robert'] },
-    jobs: [{ id: 'job-robert', photos: [{ storage_path: 'job-photos/robert.jpg' }] }],
     isAdmin: true,
   });
-  assert.equal(removedPhotoBucket, 'job-photos');
-  assert.deepEqual(removedPhotoPaths, ['job-photos/robert.jpg']);
-  assert.equal(deletedTable, 'jobs');
-  assert.deepEqual([...deletedIds], ['job-robert']);
-  assert.deepEqual(contractorNullFilter, { field: 'contractor_id', value: null });
+  assert.equal(fallbackStorageTouched, false);
+  assert.deepEqual(fallbackDeleteRpcCall, {
+    name: 'admin_delete_jobs_recoverable',
+    payload: { p_ids: ['job-robert'], p_only_unlinked: true },
+  });
   assert.deepEqual(JSON.parse(JSON.stringify(fallbackDeleteResult)), { deletedJobs: 1, deletedJobIds: ['job-robert'] });
 
   await assert.rejects(
