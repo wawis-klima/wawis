@@ -60,7 +60,7 @@ async function assertDeleteFlow() {
   });
 
   assert.equal(storageTouched, false);
-  assert.deepEqual(rpcCall, {
+  assert.deepEqual(JSON.parse(JSON.stringify(rpcCall)), {
     name: 'admin_delete_jobs_recoverable',
     payload: { p_ids: ['job-123'], p_only_unlinked: false },
   });
