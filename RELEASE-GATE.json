@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Etap 3 audytu Kontrahentów: K1/K2/K17. K23 rozstrzygnięty decyzją biznesową: service_reminder_years ma zawsze wynosić 5. Odczyt produkcji przed zmianą: jobs 146/146 = 5, devices 718/718 = 5. Obecne CHECK dopuszczały 1..10, dlatego 11.76 dodaje twardą regułę =5 bez potrzeby korekty istniejących danych."
+    "notes": "Etap 3 audytu Kontrahentów: K1/K2/K17. K23 rozstrzygnięty decyzją biznesową: service_reminder_years ma zawsze wynosić 5. Odczyt produkcji przed zmianą: jobs 146/146 = 5, devices 718/718 = 5. Obecne CHECK dopuszczały 1..10, dlatego 11.76 dodaje twardą regułę =5 bez potrzeby korekty istniejących danych. Migracja produkcyjna zastosowana po zielonych checks: 718/718 devices i 146/146 jobs = 5, invalid=0; oba CHECK wymagają =5, default=5 i NOT NULL."
   },
   "drive_backup": {
     "required": false,
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — 20260929082000_fixed_service_reminder_years_v1176 po zielonych PR checks",
+    "supabase_migration_applied": "PASS — fixed_service_reminder_years_v1176, produkcyjna migracja 20260929064201",
     "rls_role_matrix": "N/A — bez zmian RLS",
     "performance_advisor": "N/A — tylko CHECK/default i istniejący RPC, bez nowych zapytań listujących",
     "security_advisor": "N/A — bez rozszerzania uprawnień",
-    "trigger_grants": "Bez zmian; admin_upsert_device zachowuje istniejącą kontrolę current_user_is_admin()",
+    "trigger_grants": "PASS — admin_upsert_device zachowuje current_user_is_admin() oraz SECURITY DEFINER search_path=public",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
