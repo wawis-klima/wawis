@@ -14,7 +14,11 @@ import {
   getPrimaryContractorAddress,
   isJobDerivedContractor,
   normalizeContractorAddresses,
+  normalizeContractorEmail,
+  normalizeContractorNip,
+  normalizeContractorPhone,
   normalizeContractorRecord,
+  normalizeSearchComparable,
 } from '../../modules/contractors.js';
 import { loadContractors, removeContractor, removeJobFallbackContractor, saveContractor, syncContractorJobs } from '../../modules/contractors-fetch.js';
 import { createEmptyDeviceForm, fetchContractorDevices, normalizeDeviceStatus, saveDeviceRecord } from '../../modules/devices-fetch.js';
@@ -371,20 +375,29 @@ export default function ContractorsPanel({
   }, [detailsOpen, isAdmin, jobs, selectedContractor, supabase]);
 
   const visibleContractors = useMemo(() => {
-    const normalizedQuery = search.trim().toLocaleLowerCase('pl-PL');
-    const filtered = !normalizedQuery
+    const normalizedQuery = normalizeSearchComparable(search);
+    const phoneQuery = normalizeContractorPhone(search);
+    const nipQuery = normalizeContractorNip(search);
+    const emailQuery = normalizeContractorEmail(search);
+    const filtered = !normalizedQuery && !phoneQuery && !nipQuery && !emailQuery
       ? contractorsWithJobFallback
-      : contractorsWithJobFallback.filter((item) => [
-          item.company_name,
-          item.contact_person,
-          item.phone,
-          item.email,
-          item.city,
-          item.street,
-          item.nip,
-          item.notes,
-          ...normalizeContractorAddresses(item).flatMap((address) => [address.label, address.city, address.street, address.notes]),
-        ].some((value) => String(value || '').toLocaleLowerCase('pl-PL').includes(normalizedQuery)));
+      : contractorsWithJobFallback.filter((item) => {
+          const textValues = [
+            item.company_name,
+            item.contact_person,
+            item.email,
+            item.city,
+            item.street,
+            item.nip,
+            item.notes,
+            ...normalizeContractorAddresses(item).flatMap((address) => [address.label, address.city, address.street, address.notes]),
+          ];
+          if (normalizedQuery && textValues.some((value) => normalizeSearchComparable(value).includes(normalizedQuery))) return true;
+          if (phoneQuery && normalizeContractorPhone(item.phone).includes(phoneQuery)) return true;
+          if (nipQuery && normalizeContractorNip(item.nip).includes(nipQuery)) return true;
+          if (emailQuery && normalizeContractorEmail(item.email).includes(emailQuery)) return true;
+          return false;
+        });
     return sortContractors(filtered, sortConfig);
   }, [contractorsWithJobFallback, search, sortConfig]);
 
