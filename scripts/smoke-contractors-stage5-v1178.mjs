@@ -127,7 +127,7 @@ assert.match(mobilePanel, /fetchContractorDevicesResult/);
 assert.match(mobilePanel, /const expandedContractor = useMemo/);
 assert.match(mobilePanel, /setContractorDevicesRemote\(\{ contractorId, rows: \[\], status: 'loading'/);
 assert.match(mobilePanel, /Nie udało się odczytać pełnej listy urządzeń\. Pokazuję dane z montaży\./);
-assert.match(mobilePanel, />Odśwież</);
+assert.match(mobilePanel, /'Odśwież'/);
 assert.match(mobilePanel, /Ostatnie odświeżenie:/);
 assert.match(mobilePanel, /Dane mogą być nieaktualne/);
 assert.match(mobilePanel, /loading && !contractors\.length/);
