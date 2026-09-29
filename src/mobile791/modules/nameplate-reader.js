@@ -307,21 +307,14 @@ export async function readMobileNameplate({
     return localReading;
   }
 
-  if (!evidence.hasEvidence) {
-    onProgress?.({
-      progress: 100,
-      label: 'Nie wykryto tabliczki znamionowej — zrób zdjęcie ponownie',
-      method: 'local',
-    });
-    return {
-      ...localReading,
-      noNameplateEvidence: true,
-      aiSkipped: true,
-      aiSkipReason: 'no_nameplate_evidence',
-    };
-  }
-
-  onProgress?.({ progress: 8, label: 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…', method: 'ai' });
+  const lowEvidenceFallback = !evidence.hasEvidence;
+  onProgress?.({
+    progress: 8,
+    label: lowEvidenceFallback
+      ? 'Lokalny odczyt nie potwierdził tabliczki — sprawdzam bezpiecznie przez AI…'
+      : 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…',
+    method: 'ai',
+  });
   try {
     const aiResult = await withTimeout(
       readDesktopNameplateWithAi({
@@ -345,6 +338,19 @@ export async function readMobileNameplate({
     const finalSerial = normalizeSerial(aiResult.serialNumber || serialNumber);
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
 
+    if (lowEvidenceFallback && (!aiResult?.exactModel || !finalSerial)) {
+      return {
+        ...localReading,
+        method: 'ai',
+        aiAttempted: true,
+        aiError: '',
+        aiResult,
+        noNameplateEvidence: true,
+        aiSkipped: false,
+        aiSkipReason: 'ai_unconfirmed_nameplate',
+      };
+    }
+
     return {
       method: 'ai',
       manufacturer,
@@ -363,6 +369,16 @@ export async function readMobileNameplate({
       aiResult,
     };
   } catch (error) {
+    if (lowEvidenceFallback) {
+      return {
+        ...localReading,
+        aiAttempted: true,
+        aiError: error?.message || 'Nie udało się odczytać tabliczki przez AI.',
+        noNameplateEvidence: true,
+        aiSkipped: false,
+        aiSkipReason: 'ai_failed_low_evidence',
+      };
+    }
     return {
       ...localReading,
       aiAttempted: true,
