@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.82
+- 11.83
 
-Wersja 11.82 poprawia stabilność zapisu protokołu przy chwilowych problemach Supabase: bezpieczne operacje są automatycznie ponawiane jeden raz, a przycisk pokazuje kolejne etapy zapisu. Mobilny odczyt tabliczek ma też bezpieczny fallback AI dla ciasno wykadrowanych tabliczek Rotenso; AI może zaakceptować słaby lokalny odczyt tylko po potwierdzeniu dokładnego modelu katalogowego i numeru seryjnego. Produkcyjny katalog Rotenso został zsynchronizowany do 215 zweryfikowanych rekordów.
+Wersja 11.83 rozdziela model bazowy Rotenso od rewizji. Znany kod bazowy z nową rewizją (np. hipotetyczne R35Xi R19) pozostaje rozpoznawalny bez przypisywania EAN-u lub parametrów starszej rewizji. Ścisła ścieżka nie zamienia O/0, I/1, S/5 ani podobnych znaków; typowe korekty OCR są osobną ścieżką i wymagają zgodnego wyniku co najmniej dwóch przebiegów. Uzupełniono Aneru HP i Ukura H, wspólne agregaty rodzin oraz poprawiono oficjalne moce bieżącego Roni R18: 3,4 i 5,1 kW.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.82
+# Wawis Klimatyzacja — wersja 11.83
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -821,7 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.82` — stabilniejszy zapis protokołu przy chwilowych timeoutach Supabase (jeden bezpieczny retry + widoczne etapy zapisu) oraz bezpieczny fallback AI dla słabo rozpoznanych tabliczek Rotenso; centralny katalog produkcyjny został zsynchronizowany do 215 zweryfikowanych rekordów.
+- wersja `11.83` — nowe rewizje znanych modeli Rotenso są rozpoznawane po kodzie bazowym bez cofania do starej rewizji i bez pożyczania starego EAN-u; O/0 i podobne korekty OCR wymagają konsensusu; uzupełniono rodziny oraz oficjalne dane Roni R18.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
 - wersja `11.78` — audyt Kontrahentów etap 5: K16/K19/K21; pełne urządzenia na mobile, jawna świeżość/odświeżenie katalogu i kompletny snapshot kontrahentów bez mieszanej paginacji.
 - wersja `11.77` — audyt Kontrahentów etap 4: K11/K13; poprawny import Status/Adresy (JSON)/numery wierszy i edycja istniejącego klienta ze współdzielonym telefonem lub e-mailem jako ostrzeżenie, nie blokada.
