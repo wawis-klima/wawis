@@ -6,9 +6,7 @@ function normalizePrintedRotensoModelCode(value = '') {
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
     .replace(/[–—−]/g, '-')
-    .replace(/[^A-Z0-9]/g, '')
-    .replace(/X[1L]/g, 'XI')
-    .replace(/X[0Q]/g, 'XO');
+    .replace(/[^A-Z0-9]/g, '');
 }
 
 function stripPrintedRotensoRevision(value = '') {
@@ -17,6 +15,10 @@ function stripPrintedRotensoRevision(value = '') {
 
 function foldPrintedRotensoOcrCharacters(value = '') {
   return normalizePrintedRotensoModelCode(value)
+    // Korekty Xi/Xo są dozwolone wyłącznie w ścieżce OCR i są potem oznaczane
+    // jako korekta wymagająca konsensusu kilku przebiegów.
+    .replace(/X[1L]/g, 'XI')
+    .replace(/X[0Q]/g, 'XO')
     .replace(/[OQD]/g, '0')
     .replace(/[IL]/g, '1')
     .replace(/S/g, '5')
@@ -41,23 +43,44 @@ const ROTENSO_CATALOG_MODEL_CANDIDATES = Object.freeze(
     }),
 );
 
+const ROTENSO_CATALOG_BASE_GROUPS = Object.freeze(
+  [...ROTENSO_CATALOG_MODEL_CANDIDATES.reduce((groups, candidate) => {
+    const current = groups.get(candidate.baseCode) || [];
+    current.push(candidate);
+    groups.set(candidate.baseCode, current);
+    return groups;
+  }, new Map()).values()]
+    .map((candidates) => Object.freeze({
+      baseCode: candidates[0].baseCode,
+      foldedBaseCode: candidates[0].foldedBaseCode,
+      candidates: Object.freeze(candidates),
+    }))
+    .sort((left, right) => right.baseCode.length - left.baseCode.length),
+);
+
 function formatCatalogCapacityKw(value = '') {
   const number = Number(String(value || '').replace(',', '.'));
   if (!Number.isFinite(number) || number <= 0) return '';
   return (Number.isInteger(number) ? number.toFixed(1) : String(number)).replace('.', ',');
 }
 
-function catalogEntryToResolution(entry) {
+function catalogEntryToResolution(entry, {
+  revisionObserved = false,
+  ocrCorrected = false,
+  evidence = 'catalog_model_code',
+} = {}) {
   if (!entry) return null;
   const code = String(entry.model_code || '').trim();
   const compactCode = normalizePrintedRotensoModelCode(code);
   const codeParts = stripPrintedRotensoRevision(compactCode).match(/^([A-Z]{1,4})([0-9]{2,3})X(?:[IO]|M[2-5])$/i);
   const unitType = String(entry.unit_type || '').toLowerCase();
+  const family = entry.family || '';
   return {
     manufacturer: entry.manufacturer || 'Rotenso',
     prefix: codeParts?.[1] || '',
     capacityCode: codeParts?.[2] || '',
-    family: entry.family || '',
+    family,
+    familyCandidates: family ? [family] : [],
     capacityKw: formatCatalogCapacityKw(entry.capacity_kw),
     unitType,
     systemType: /XM[2-5]/i.test(code) ? 'multi-split' : (unitType === 'outdoor' ? 'single-split' : ''),
@@ -66,48 +89,126 @@ function catalogEntryToResolution(entry) {
     code,
     model: entry.model_name || code,
     ean: entry.ean || '',
-    evidence: 'catalog_model_code',
+    evidence,
     catalogVerified: Boolean(entry.verified),
+    baseModelVerified: true,
+    revisionCatalogKnown: true,
+    revisionObserved: Boolean(revisionObserved),
+    ocrCorrected: Boolean(ocrCorrected),
   };
+}
+
+function catalogBaseGroupToResolution(group, {
+  revision = '',
+  ocrCorrected = false,
+} = {}) {
+  const candidates = group?.candidates || [];
+  if (!candidates.length) return null;
+
+  const exemplar = candidates
+    .slice()
+    .sort((left, right) => Number(Boolean(right.entry?.verified)) - Number(Boolean(left.entry?.verified)))[0];
+  const exemplarResolution = catalogEntryToResolution(exemplar.entry);
+  if (!exemplarResolution) return null;
+
+  const displayBaseCode = String(exemplar.entry.model_code || '')
+    .replace(/\s+R[0-9]{1,2}$/i, '')
+    .trim();
+  const familyCandidates = [...new Set(
+    candidates.map((candidate) => String(candidate.entry?.family || '').trim()).filter(Boolean),
+  )];
+  const capacityCandidates = [...new Set(
+    candidates.map((candidate) => formatCatalogCapacityKw(candidate.entry?.capacity_kw)).filter(Boolean),
+  )];
+  const stableFamily = familyCandidates.length === 1 ? familyCandidates[0] : '';
+  const stableCapacity = capacityCandidates.length === 1 ? capacityCandidates[0] : '';
+  const cleanRevision = String(revision || '').toUpperCase().replace(/\s+/g, '');
+  const code = `${displayBaseCode}${cleanRevision ? ` ${cleanRevision}` : ''}`;
+  const descriptor = [
+    stableFamily,
+    stableCapacity ? `${stableCapacity} kW` : '',
+  ].filter(Boolean).join(' ');
+
+  return {
+    ...exemplarResolution,
+    family: stableFamily,
+    familyCandidates,
+    capacityKw: stableCapacity,
+    revision: cleanRevision,
+    code,
+    model: descriptor ? `${descriptor} (${code})` : code,
+    ean: '',
+    evidence: ocrCorrected ? 'catalog_base_code_ocr' : 'catalog_base_code',
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: Boolean(ocrCorrected),
+  };
+}
+
+function collectCatalogBaseMatches(compactText = '', { ocrCorrected = false } = {}) {
+  if (!compactText) return [];
+  return ROTENSO_CATALOG_BASE_GROUPS
+    .map((group) => {
+      const matchBaseCode = ocrCorrected ? group.foldedBaseCode : group.baseCode;
+      const index = compactText.indexOf(matchBaseCode);
+      if (index < 0) return null;
+
+      const tail = compactText.slice(index + matchBaseCode.length);
+      const observedRevision = tail.match(/^R[0-9]{1,2}/)?.[0] || '';
+      const exactCandidate = observedRevision
+        ? group.candidates.find((candidate) => (
+          (ocrCorrected ? candidate.foldedCode : candidate.compactCode)
+          === `${matchBaseCode}${observedRevision}`
+        ))
+        : null;
+
+      const resolution = exactCandidate
+        ? catalogEntryToResolution(exactCandidate.entry, {
+          revisionObserved: true,
+          ocrCorrected,
+          evidence: ocrCorrected ? 'catalog_model_code_ocr' : 'catalog_model_code',
+        })
+        : catalogBaseGroupToResolution(group, {
+          revision: observedRevision,
+          ocrCorrected,
+        });
+      if (!resolution) return null;
+
+      const score = exactCandidate
+        ? 1300
+        : observedRevision
+          ? 1200
+          : 1100;
+      return {
+        resolution,
+        score: score - (ocrCorrected ? 250 : 0),
+        index,
+        baseLength: matchBaseCode.length,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => (
+      right.score - left.score
+      || right.baseLength - left.baseLength
+      || left.index - right.index
+    ));
 }
 
 export function resolveRotensoCatalogModelCode(rawText = '') {
   const compact = normalizePrintedRotensoModelCode(rawText);
   if (!compact) return null;
+
+  const strictMatches = collectCatalogBaseMatches(compact);
+  if (strictMatches.length) return strictMatches[0].resolution;
+
+  // Dopiero druga, jawnie oznaczona ścieżka toleruje typowe pomyłki OCR
+  // (np. O/0, S/5, X0/Xo, X1/Xi). Sam taki wynik nie może być uznany
+  // za pewny przez jeden przebieg OCR.
   const folded = foldPrintedRotensoOcrCharacters(rawText);
-  const matches = ROTENSO_CATALOG_MODEL_CANDIDATES
-    .map((candidate) => {
-      let score = 0;
-      let evidence = 'catalog_model_code';
-      let revisionObserved = false;
-      if (compact.includes(candidate.compactCode)) {
-        score = 1200;
-        revisionObserved = true;
-      }
-      else if (folded.includes(candidate.foldedCode)) {
-        score = 1150;
-        evidence = 'catalog_model_code_ocr';
-        revisionObserved = true;
-      } else if (compact.includes(candidate.baseCode)) score = 1100;
-      else if (folded.includes(candidate.foldedBaseCode)) {
-        score = 900;
-        evidence = 'catalog_model_code_ocr';
-      }
-      return score ? { ...candidate, score, evidence, revisionObserved } : null;
-    })
-    .filter(Boolean)
-    .sort((left, right) => (
-      right.score - left.score
-      || right.compactCode.length - left.compactCode.length
-      || Number(Boolean(right.entry.verified)) - Number(Boolean(left.entry.verified))
-    ));
-  if (!matches.length) return null;
-  const resolution = catalogEntryToResolution(matches[0].entry);
-  return resolution ? {
-    ...resolution,
-    evidence: matches[0].evidence,
-    revisionObserved: matches[0].revisionObserved,
-  } : null;
+  const correctedMatches = collectCatalogBaseMatches(folded, { ocrCorrected: true });
+  return correctedMatches[0]?.resolution || null;
 }
 
 export const AIR_CONDITIONER_MODEL_DICTIONARY = Object.freeze({
@@ -199,6 +300,7 @@ export const ROTENSO_MODEL_FAMILIES = Object.freeze({
   TCS: 'Tenji CS',
   J: 'Jato',
   N: 'Nevo',
+  AHP: 'Aneru HP',
   AN: 'Aneru AN',
   A: 'Aneru',
   K: 'Kasi',
