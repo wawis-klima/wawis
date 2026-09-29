@@ -319,9 +319,10 @@ export async function updateFallbackJobDevice({ supabase, device, isAdmin }) {
   if (!sourceJobId) throw new Error('Brak źródłowego montażu do aktualizacji urządzenia.');
 
   const existingJob = await fetchJobDeviceSnapshot({ supabase, sourceJobId });
+  const hasContractorSnapshot = Object.prototype.hasOwnProperty.call(existingJob || {}, 'contractor_id');
   const currentContractorId = normalizeText(existingJob?.contractor_id);
   const requestedContractorId = normalizeText(normalized.contractor_id);
-  if (requestedContractorId && requestedContractorId !== currentContractorId) {
+  if (hasContractorSnapshot && requestedContractorId && requestedContractorId !== currentContractorId) {
     throw new Error('Zmiana kontrahenta urządzenia z montażu wymaga edycji samego montażu.');
   }
 
@@ -330,9 +331,10 @@ export async function updateFallbackJobDevice({ supabase, device, isAdmin }) {
     device_model: deviceFields.device_model || null,
     device_serial_number: deviceFields.device_serial_number || null,
   };
+  const hasInstallationDateSnapshot = Object.prototype.hasOwnProperty.call(existingJob || {}, 'installation_date');
   const nextInstallationDate = normalizeText(normalized.installation_date) || null;
   const currentInstallationDate = normalizeText(existingJob?.installation_date) || null;
-  if (nextInstallationDate !== currentInstallationDate) {
+  if (hasInstallationDateSnapshot && nextInstallationDate !== currentInstallationDate) {
     payload.installation_date = nextInstallationDate;
   }
 
