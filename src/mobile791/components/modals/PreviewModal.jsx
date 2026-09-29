@@ -16,6 +16,11 @@ function getPointerDistance(points) {
 }
 
 export default function PreviewModal({ previewImage, setPreviewImage, previewNext, previewPrev }) {
+  const [mobileZoomEnabled, setMobileZoomEnabled] = useState(() => (
+    typeof window !== "undefined"
+      ? window.matchMedia("(max-width: 700px)").matches
+      : false
+  ));
   const [scale, setScale] = useState(MIN_SCALE);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const pointersRef = useRef(new Map());
@@ -32,8 +37,17 @@ export default function PreviewModal({ previewImage, setPreviewImage, previewNex
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return undefined;
+    const media = window.matchMedia("(max-width: 700px)");
+    const sync = () => setMobileZoomEnabled(media.matches);
+    sync();
+    media.addEventListener?.("change", sync);
+    return () => media.removeEventListener?.("change", sync);
+  }, []);
+
+  useEffect(() => {
     resetZoom();
-  }, [previewImage, resetZoom]);
+  }, [mobileZoomEnabled, previewImage, resetZoom]);
 
   const setSafeScale = useCallback((nextScale) => {
     const value = clamp(Number(nextScale) || MIN_SCALE, MIN_SCALE, MAX_SCALE);
@@ -149,6 +163,34 @@ export default function PreviewModal({ previewImage, setPreviewImage, previewNex
 
   const zoomPercent = Math.round(scale * 100);
   const isZoomed = scale > MIN_SCALE + 0.01;
+
+  // Desktop pozostaje dokładnie przy dotychczasowym podglądzie.
+  // Zoom/pan jest aktywowany wyłącznie dla telefonu.
+  if (!mobileZoomEnabled) {
+    return (
+      <AppModal
+        open={Boolean(previewImage)}
+        onClose={() => setPreviewImage(null)}
+        overlayClassName="previewOverlay"
+        contentClassName="cleanPreviewModal previewModalSurface"
+        lockPagePosition
+      >
+        <div
+          className="previewImageWrap"
+          tabIndex="0"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") previewNext();
+            if (e.key === "ArrowLeft") previewPrev();
+            if (e.key === "Escape") setPreviewImage(null);
+          }}
+        >
+          <div className="previewClickZone left" onClick={previewPrev}></div>
+          {previewImage ? <img src={previewImage} className="fullPreview" alt="Podgląd zdjęcia" /> : null}
+          <div className="previewClickZone right" onClick={previewNext}></div>
+        </div>
+      </AppModal>
+    );
+  }
 
   return (
     <AppModal
