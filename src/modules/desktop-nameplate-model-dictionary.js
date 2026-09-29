@@ -577,6 +577,12 @@ function buildRotensoCatalogResolution(catalogEntry, revision = '') {
     ...(connectionCount ? { connectionCount } : {}),
     code,
     model: `${catalogEntry.family} ${capacityKw} kW (${code})`,
+    familyCandidates: catalogEntry.family ? [catalogEntry.family] : [],
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: false,
   };
 }
 
@@ -610,6 +616,12 @@ function buildRotensoResolution(prefix, capacityCode, unitMarker = '', revision 
     revision: String(revision || '').toUpperCase().replace(/\s+/g, ''),
     code,
     model: `${family} ${capacityKw} kW (${code})`,
+    familyCandidates: [family],
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: false,
   };
 }
 
@@ -675,6 +687,12 @@ function buildRotensoMultiResolution(prefix, capacityCode, connectionCount = '',
     connectionCount: Number(normalizedConnections),
     code,
     model: `${family} ${capacityKw} kW (${code})`,
+    familyCandidates: [family],
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: false,
   };
 }
 
@@ -855,9 +873,14 @@ export function resolveRotensoNameplateModel(rawText = '') {
   let multiMatch = ROTENSO_MULTI_CODE_PATTERN.exec(source);
   while (multiMatch) {
     const prefix = normalizeRotensoPrefix(multiMatch[1]);
-    const capacityCode = normalizeRotensoCapacityCode(multiMatch[2]);
+    const rawCapacityCode = String(multiMatch[2] || '').toUpperCase();
+    const capacityCode = normalizeRotensoCapacityCode(rawCapacityCode);
+    const rawConnectionCount = String(multiMatch[3] || '').toUpperCase();
+    const correctedByOcr = rawCapacityCode !== capacityCode || rawConnectionCount === 'Z';
     const resolution = buildRotensoMultiResolution(prefix, capacityCode, multiMatch[3], multiMatch[4]);
-    if (resolution) return resolution;
+    if (resolution) return correctedByOcr
+      ? { ...resolution, ocrCorrected: true, evidence: 'ocr_corrected_model_code' }
+      : resolution;
     multiMatch = ROTENSO_MULTI_CODE_PATTERN.exec(source);
   }
 
@@ -866,10 +889,18 @@ export function resolveRotensoNameplateModel(rawText = '') {
   const fullCandidates = [];
   while (fullMatch) {
     const prefix = normalizeRotensoPrefix(fullMatch[1]);
-    const capacityCode = normalizeRotensoCapacityCode(fullMatch[2]);
+    const rawCapacityCode = String(fullMatch[2] || '').toUpperCase();
+    const capacityCode = normalizeRotensoCapacityCode(rawCapacityCode);
+    const rawUnitMarker = String(fullMatch[3] || '').toUpperCase();
+    const correctedByOcr = rawCapacityCode !== capacityCode || !['I', 'O'].includes(rawUnitMarker);
     const resolution = buildRotensoResolution(prefix, capacityCode, fullMatch[3], fullMatch[4]);
     if (resolution) {
-      fullCandidates.push({ resolution, index: fullMatch.index });
+      fullCandidates.push({
+        resolution: correctedByOcr
+          ? { ...resolution, ocrCorrected: true, evidence: 'ocr_corrected_model_code' }
+          : resolution,
+        index: fullMatch.index,
+      });
     }
 
     // Na zdjęciach kod I35 bywa odczytany jako H135: przypadkowy znak H
@@ -878,7 +909,12 @@ export function resolveRotensoNameplateModel(rawText = '') {
     if (prefix === 'H' && capacityCode.length === 3 && capacityCode.startsWith('1')) {
       const recoveredCapacity = capacityCode.slice(1);
       const recovered = buildRotensoResolution('I', recoveredCapacity, fullMatch[3], fullMatch[4]);
-      if (recovered) fullCandidates.push({ resolution: recovered, index: fullMatch.index });
+      if (recovered) {
+        fullCandidates.push({
+          resolution: { ...recovered, ocrCorrected: true, evidence: 'ocr_corrected_model_code' },
+          index: fullMatch.index,
+        });
+      }
     }
     fullMatch = ROTENSO_FULL_CODE_PATTERN.exec(source);
   }
