@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.75",
+  "version": "11.76",
   "scope": "full",
-  "release_branch": "release/v11.75",
+  "release_branch": "release/v11.76",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Etap 2 audytu Kontrahentów obejmuje K8/K9/K15 wyłącznie w warstwie aplikacji. K8 chroni aktywny draft desktopowy przed odświeżeniem jobs/katalogu. K9 unieważnia odczyty rozpoczęte przed zapisem/usunięciem i wykonuje kontrolowany odczyt po mutacji. K15 wiąże zdalne urządzenia z contractorId i zeruje poprzedni wynik przy zmianie klienta. Bez migracji Supabase, zmian RLS, Storage lub Edge Functions."
+    "notes": "Etap 3 audytu Kontrahentów: K1/K2/K17. K23 rozstrzygnięty decyzją biznesową: service_reminder_years ma zawsze wynosić 5. Odczyt produkcji przed zmianą: jobs 146/146 = 5, devices 718/718 = 5. Obecne CHECK dopuszczały 1..10, dlatego 11.76 dodaje twardą regułę =5 bez potrzeby korekty istniejących danych. Migracja produkcyjna zastosowana po zielonych checks: 718/718 devices i 146/146 jobs = 5, invalid=0; oba CHECK wymagają =5, default=5 i NOT NULL."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.75.zip"
+    "file_name": "klima-app-v11.76.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.75",
+    "source_branch": "release/v11.76",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu potwierdzić na 11.75: (1) desktop — rozpocząć edycję kontrahenta, zmienić pole bez zapisu i wymusić odświeżenie montaży; draft ma pozostać; (2) przełączyć szybko klienta A→B — urządzenia A nie mogą pojawić się ani dać się edytować pod B; podczas odczytu ma być Ładowanie urządzeń…; (3) po zapisie/usunięciu spóźniony wcześniejszy odczyt nie może cofnąć listy."
+    "notes": "Po deployu potwierdzić: mobile edycja montażu z dodatkowym adresem B + zmiana telefonu zachowuje contractor_address_id B; desktop edycja drugiego urządzenia fallbacku zmienia drugi wiersz; edycja modelu urządzenia nie zmienia city/street/location klienta; wszystkie nowe/edytowane rekordy mają service_reminder_years=5."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian backendu",
+    "supabase_migration_applied": "APPLIED — fixed_service_reminder_years_v1176; produkcja zweryfikowana: jobs 146/146=5, devices 718/718=5; oba CHECK wymagają =5; admin_upsert_device wymusza v_years=5",
     "rls_role_matrix": "N/A — bez zmian RLS",
-    "performance_advisor": "N/A — brak zmian schematu/indeksów",
-    "security_advisor": "N/A — bez zmian bezpieczeństwa/backendu",
-    "trigger_grants": "N/A — bez zmian",
+    "performance_advisor": "N/A — tylko CHECK/default i istniejący RPC, bez nowych zapytań listujących",
+    "security_advisor": "N/A — bez rozszerzania uprawnień",
+    "trigger_grants": "PASS — admin_upsert_device zachowuje current_user_is_admin() oraz SECURITY DEFINER search_path=public",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }

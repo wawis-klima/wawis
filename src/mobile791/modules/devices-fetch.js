@@ -1,6 +1,7 @@
 import { formatDeviceSerialNumber, getDeviceIndoorSerials, getJobDeviceRows, parseDeviceSerialLine, serializeJobDevicesToFields } from './job-devices.js';
 
 const DEVICE_STATUSES = ['aktywne', 'do_serwisu', 'zdemontowane'];
+const SERVICE_REMINDER_YEARS = 5;
 
 function normalizeText(value) {
   return String(value || '').trim();
@@ -34,7 +35,7 @@ export function createEmptyDeviceForm(contractorId = '') {
     source_kind: 'manual',
     created_at: '',
     updated_at: '',
-    service_reminder_years: 5,
+    service_reminder_years: SERVICE_REMINDER_YEARS,
   };
 }
 
@@ -50,7 +51,7 @@ export function normalizeDeviceRecord(device = {}) {
 
   return {
     ...createEmptyDeviceForm(device.contractor_id || ''),
-    service_reminder_years: Number.parseInt(String(device.service_reminder_years || ''), 10) || 5,
+    service_reminder_years: SERVICE_REMINDER_YEARS,
     id: device.id || '',
     contractor_id: device.contractor_id || '',
     contractor_name: normalizeText(device.contractor_name),
@@ -251,6 +252,7 @@ export async function upsertDevice({ supabase, device, isAdmin }) {
     p_model: normalized.model || '',
     p_serial_number: formatDeviceSerialNumber(normalized) || normalized.legacy_serial_number || normalized.serial_number || '',
     p_installation_date: normalized.installation_date || null,
+    p_service_reminder_years: SERVICE_REMINDER_YEARS,
     p_status: normalizeDeviceStatus(normalized.status),
     p_notes: normalized.notes || '',
     p_source_job_id: normalized.source_job_id || null,
@@ -260,41 +262,6 @@ export async function upsertDevice({ supabase, device, isAdmin }) {
   const { data, error } = await supabase.rpc('admin_upsert_device', payload);
   if (error) throw error;
   return normalizeDeviceRecord(data || normalized);
-}
-
-async function fetchContractorSnapshot({ supabase, contractorId }) {
-  const normalizedContractorId = String(contractorId || '').trim();
-  if (!normalizedContractorId) return null;
-
-  const { data, error } = await supabase
-    .from('contractors')
-    .select('id, company_name, email, phone, city, street')
-    .eq('id', normalizedContractorId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data || null;
-}
-
-function buildJobPayloadFromDevice({ device, contractor }) {
-  const city = String(contractor?.city || '').trim();
-  const street = String(contractor?.street || '').trim();
-  const location = [city, street].filter(Boolean).join(', ');
-
-  return {
-    contractor_id: contractor?.id || device.contractor_id || null,
-    client: contractor?.company_name || null,
-    title: contractor?.company_name || null,
-    email: contractor?.email || null,
-    phone: contractor?.phone || null,
-    city: city || null,
-    street: street || null,
-    location: location || null,
-    sms_recipient_phone: contractor?.phone || null,
-    device_model: device.model || null,
-    device_serial_number: formatDeviceSerialNumber(device) || device.legacy_serial_number || device.serial_number || null,
-    installation_date: device.installation_date || null,
-  };
 }
 
 function getSourceJobIdentity(device = {}) {
@@ -314,7 +281,7 @@ function getFallbackJobDeviceIndex(device = {}) {
 async function fetchJobDeviceSnapshot({ supabase, sourceJobId }) {
   const { data, error } = await supabase
     .from('jobs')
-    .select('id, device_model, device_serial_number')
+    .select('id, contractor_id, installation_date, device_model, device_serial_number')
     .eq('id', sourceJobId)
     .maybeSingle();
   if (error) throw error;
@@ -351,31 +318,29 @@ export async function updateFallbackJobDevice({ supabase, device, isAdmin }) {
   const sourceJobId = getSourceJobBaseId(normalized);
   if (!sourceJobId) throw new Error('Brak źródłowego montażu do aktualizacji urządzenia.');
 
-  const contractor = normalized.contractor_id
-    ? await fetchContractorSnapshot({ supabase, contractorId: normalized.contractor_id })
-    : null;
-
   const existingJob = await fetchJobDeviceSnapshot({ supabase, sourceJobId });
+  const hasContractorSnapshot = Object.prototype.hasOwnProperty.call(existingJob || {}, 'contractor_id');
+  const currentContractorId = normalizeText(existingJob?.contractor_id);
+  const requestedContractorId = normalizeText(normalized.contractor_id);
+  if (hasContractorSnapshot && requestedContractorId && requestedContractorId !== currentContractorId) {
+    throw new Error('Zmiana kontrahenta urządzenia z montażu wymaga edycji samego montażu.');
+  }
+
   const deviceFields = patchJobDeviceRows({ job: existingJob, device: normalized });
   const payload = {
-    ...buildJobPayloadFromDevice({
-      device: normalized,
-      contractor,
-    }),
     device_model: deviceFields.device_model || null,
     device_serial_number: deviceFields.device_serial_number || null,
   };
+  const hasInstallationDateSnapshot = Object.prototype.hasOwnProperty.call(existingJob || {}, 'installation_date');
+  const nextInstallationDate = normalizeText(normalized.installation_date) || null;
+  const currentInstallationDate = normalizeText(existingJob?.installation_date) || null;
+  if (hasInstallationDateSnapshot && nextInstallationDate !== currentInstallationDate) {
+    payload.installation_date = nextInstallationDate;
+  }
 
   const { error } = await supabase.from('jobs').update(payload).eq('id', sourceJobId);
   if (error) throw error;
-  return normalizeDeviceRecord({
-    ...normalized,
-    contractor_name: contractor?.company_name || normalized.contractor_name,
-    contractor_city: contractor?.city || normalized.contractor_city,
-    contractor_phone: contractor?.phone || normalized.contractor_phone,
-    contractor_email: contractor?.email || normalized.contractor_email,
-    contractor_street: contractor?.street || normalized.contractor_street,
-  });
+  return normalizeDeviceRecord(normalized);
 }
 
 export async function clearFallbackJobDevice({ supabase, device, isAdmin }) {

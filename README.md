@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.75
+- 11.76
 
-Wersja 11.75 zamyka etap 2 audytu Kontrahentów (K8 + K9 + K15): niezapisany draft nie jest nadpisywany przez odświeżenia, stare odpowiedzi listy nie cofają potwierdzonych zmian, a urządzenia są zawsze przypisane do aktualnie wybranego kontrahenta.
+Wersja 11.76 realizuje etap 3 audytu Kontrahentów: mobile zachowuje właściwy adres montażu (K1), edycja urządzenia nie nadpisuje danych klienta/lokalizacji (K2), drugie urządzenie fallbacku ma poprawną tożsamość (K17), a okres przypomnień serwisowych jest zgodnie z decyzją biznesową stały: 5 lat.
 
-# Wawis Klimatyzacja — wersja 11.75
+# Wawis Klimatyzacja — wersja 11.76
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.76` — audyt Kontrahentów etap 3: K1/K2/K17; właściwy adres montażu, izolowana edycja urządzeń i stały okres przypomnień serwisowych dokładnie 5 lat.
 - wersja `11.75` — audyt Kontrahentów etap 2: K8/K9/K15; ochrona draftu, unieważnianie starych odczytów i izolacja urządzeń po contractorId.
 - wersja `11.74` — K6: bezpieczne, odzyskiwalne usuwanie montażu; brak kasowania plików Storage przed DELETE i brak zależności od niepełnego lokalnego cache zdjęć.
 - wersja `11.73` — mobilne okno aplikacji ma stałą skalę 100%; pinch-zoom i ręczne pomniejszanie/powiększanie są wyłączone bez blokowania zwykłego przewijania.

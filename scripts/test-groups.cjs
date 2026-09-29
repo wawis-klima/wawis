@@ -33,6 +33,7 @@ const GROUPS = {
     'npm run test:smoke:realtime-lite',
   ],
   jobs: [
+    'node scripts/smoke-contractors-stage3-v1176.mjs',
     'npm run test:smoke:delete',
     'npm run test:smoke:device-save',
     'npm run test:smoke:job-multi-indoor',

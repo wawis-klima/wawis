@@ -232,7 +232,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
         city: job.city || '',
         street: job.street || '',
         notes: '',
-        source_job_id: job.id,
+        source_job_id: index === 0 ? job.id : `${job.id}::device-${index + 1}`,
         source_kind: 'job_fallback',
       })))
       .sort((left, right) => new Date(right?.installation_date || right?.created_at || 0) - new Date(left?.installation_date || left?.created_at || 0));
