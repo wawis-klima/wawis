@@ -243,6 +243,20 @@ export default function JobDetailsPanel({
           <div className="jobDetailsStickyMeta" aria-label="Podstawowe informacje o wybranym montażu">
             <span className={`jobTypeTag desktopJobTypeTag jobDetailsStatusChip ${statusClassName}`}>{statusLabel}</span>
             <span className="jobDetailsDateChip"><IconCalendar /> {installationDateLabel}</span>
+            {isAdmin ? (
+              <button
+                type="button"
+                className={`desktopVatInvoiceToggle desktopVatInvoiceHeaderToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
+                onClick={handleVatInvoiceToggle}
+                disabled={vatInvoiceSaving}
+                aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
+                title="Kliknij, aby zmienić status faktury VAT"
+              >
+                <span className="desktopVatInvoiceDot" aria-hidden="true" />
+                <span className="desktopVatInvoiceHeaderLabel">Faktura VAT</span>
+                <span>{vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona')}</span>
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -324,24 +338,6 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            {isAdmin ? (
-              <div className="infoItem desktopVatInvoiceInfoItem">
-                <span className="infoLabel">Faktura VAT</span>
-                <div className="infoValue">
-                  <button
-                    type="button"
-                    className={`desktopVatInvoiceToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
-                    onClick={handleVatInvoiceToggle}
-                    disabled={vatInvoiceSaving}
-                    aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
-                    title="Kliknij, aby zmienić status faktury VAT"
-                  >
-                    <span className="desktopVatInvoiceDot" aria-hidden="true" />
-                    <span>{vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona')}</span>
-                  </button>
-                </div>
-              </div>
-            ) : null}
           </div>
         </section>
 
