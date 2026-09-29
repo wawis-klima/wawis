@@ -289,14 +289,14 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
   const blockingDuplicateMatches = useMemo(
     () => {
       if (!form.id) return duplicateMatches;
-      return duplicateMatches.filter(({ reasons = [] }) => reasons.some((reason) => !['telefon', 'email'].includes(reason)));
+      return duplicateMatches.filter(({ reasons = [] }) => reasons.includes('nazwa'));
     },
     [duplicateMatches, form.id],
   );
   const sharedContactWarnings = useMemo(
     () => {
       if (!form.id) return [];
-      return duplicateMatches.filter(({ reasons = [] }) => reasons.length > 0 && reasons.every((reason) => ['telefon', 'email'].includes(reason)));
+      return duplicateMatches.filter(({ reasons = [] }) => reasons.length > 0 && !reasons.includes('nazwa'));
     },
     [duplicateMatches, form.id],
   );
@@ -1163,13 +1163,13 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
               <p>
                 {blockingDuplicateMatches.length
                   ? 'Sprawdź poniższe wpisy. Konflikt nazwy lub innego pola tożsamości blokuje zapis.'
-                  : 'To tylko ostrzeżenie dla istniejącego rekordu. Możesz zapisać edycję bez usuwania wspólnego telefonu lub e-maila.'}
+                  : 'To tylko ostrzeżenie dla istniejącego rekordu. Możesz zapisać edycję bez usuwania wspólnych danych.'}
               </p>
               <div className="contractorsDuplicateList">
                 {duplicateMatches.map(({ contractor, reasons }) => {
                   const contactOnlyWarning = Boolean(form.id)
                     && reasons.length > 0
-                    && reasons.every((reason) => ['telefon', 'email'].includes(reason));
+                    && !reasons.includes('nazwa');
                   return (
                     <div key={contractor.id || `${contractor.company_name}-${contractor.phone}-${contractor.email}`} className="contractorsDuplicateItem">
                       <div className="contractorsDuplicateItemContent">
