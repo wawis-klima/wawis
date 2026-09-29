@@ -93,6 +93,17 @@ function formatContractorDate(value) {
   return new Intl.DateTimeFormat('pl-PL').format(date);
 }
 
+function formatFreshnessTime(value) {
+  if (!value) return 'jeszcze nie odświeżono';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'nieznany czas';
+  return new Intl.DateTimeFormat('pl-PL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+}
+
 function normalizeContractorText(value) {
   return String(value || '').trim().toLocaleLowerCase('pl-PL').replace(/\s+/g, ' ');
 }
