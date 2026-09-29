@@ -1,3 +1,8 @@
+## 11.81
+- Naprawiono przewijanie mobilnego protokołu klienta na iPhonie: przewija się teraz treść protokołu, a nie strona aplikacji pod pełnoekranowym oknem.
+- Nagłówek oraz dolne przyciski protokołu pozostają stabilne, a tło jest blokowane na czas otwartego protokołu.
+- Dodano test regresyjny pilnujący właściwego kontenera przewijania i blokady tła.
+
 ## 11.80
 - Mobile-only: pełnoekranowy podgląd zdjęcia obsługuje pinch-to-zoom od 100% do 400%.
 - Po powiększeniu zdjęcie można przesuwać jednym palcem; zmiana zdjęcia automatycznie resetuje zoom do 100%.

@@ -987,3 +987,39 @@
     line-height: 1.15 !important;
   }
 }
+
+/* v11.81 — protokół mobilny przewija własną treść, a nie stronę pod spodem. */
+@media (max-width: 700px) {
+  .protocolWizardModal {
+    box-sizing: border-box !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .mobileProtocolWizard {
+    height: 100%;
+    min-height: 0 !important;
+  }
+
+  .mobileProtocolWizardBody {
+    flex: 1 1 auto;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+
+  .mobileProtocolWizard .mobileDeviceWizardHeader,
+  .mobileProtocolWizard .mobileDeviceWizardFooter {
+    flex: 0 0 auto;
+  }
+
+  .mobileProtocolWizard .mobileDeviceWizardFooter {
+    position: relative;
+    bottom: auto;
+  }
+}

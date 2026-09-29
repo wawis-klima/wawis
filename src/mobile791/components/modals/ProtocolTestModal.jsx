@@ -580,6 +580,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         overlayClassName="formOverlay mobileDeviceWizardOverlay"
         contentClassName="card modal mobileDeviceWizardModal protocolWizardModal"
         contentRef={protocolModalRef}
+        lockPagePosition
         closeOnOverlay={!isGenerating && !signatureOpen}
         closeOnEscape={!isGenerating && !signatureOpen}
       >

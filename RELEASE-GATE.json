@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.80",
-  "scope": "full",
-  "release_branch": "release/v11.80",
+  "version": "11.81",
+  "scope": "mobile",
+  "release_branch": "release/v11.81",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.80 jest zmianą wyłącznie mobilnego podglądu zdjęć. Globalny viewport nadal ma user-scalable=no z 11.73; zoom realizowany jest lokalnie wewnątrz PreviewModal przez transform obrazu, więc nie skaluje całej aplikacji. Desktopowy src/components/modals/PreviewModal.jsx nie został zmieniony, a responsywny mobile791 PreviewModal zachowuje stary render dla viewportu >700 px."
+    "notes": "11.81 dotyczy wyłącznie mobilnego protokołu. Przyczyną zgłoszenia było przewijanie dokumentu strony pod fixed overlayem na iOS, gdy pełnoekranowy modal protokołu mógł rosnąć powyżej 100dvh. Zmiana blokuje pozycję strony i przenosi przewijanie do .mobileProtocolWizardBody; backend, RLS, OCR, PDF i desktop pozostają bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.80.zip"
+    "file_name": "klima-app-v11.81.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.80",
+    "source_branch": "release/v11.81",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu na fizycznym iPhone: otworzyć zdjęcie z montażu; sprawdzić pinch 100–400%, przesuwanie jednym palcem po powiększeniu, reset 100%, +/−, podwójne stuknięcie 250%/100%, brak przewijania listy pod modalem oraz normalne przechodzenie między zdjęciami przy 100%. Na desktopie potwierdzić brak nowych kontrolek zoomu."
+    "notes": "Po deployu na fizycznym iPhonie: otworzyć protokół krótki i długi, przesunąć kilka razy góra/dół po środku formularza, potwierdzić że porusza się treść protokołu (nie belka strony pod spodem), a nagłówek i dolne przyciski pozostają na miejscu. Sprawdzić też Uzupełnij protokół i ekran podpisu."
   },
   "archive": {
     "source_of_truth": "github-main",
