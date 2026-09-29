@@ -203,7 +203,15 @@ function extractWorksheetRows(files, worksheetPath, sharedStrings) {
       const columnIndex = getCellColumnIndex(reference);
       rowValues[columnIndex] = String(readCellValue(cell, sharedStrings) || '').trim();
     }
-    rows.push(rowValues.map((value) => value ?? ''));
+    const normalizedRow = rowValues.map((value) => value ?? '');
+    const sourceRowNumber = Number.parseInt(String(rowNode.getAttribute('r') || ''), 10) || rows.length + 1;
+    Object.defineProperty(normalizedRow, 'sourceRowNumber', {
+      value: sourceRowNumber,
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    rows.push(normalizedRow);
   }
 
   return rows;
@@ -258,7 +266,23 @@ const HEADER_ALIASES = new Map([
   ['notatki', 'notes'],
   ['uwagi', 'notes'],
   ['notes', 'notes'],
+  ['status', 'status'],
+  ['aktywny', 'status'],
+  ['active', 'status'],
 ]);
+
+function parseContractorStatus(value) {
+  const normalized = normalizeHeader(value);
+  if (['aktywny', 'active', 'true', 'tak', 'yes', '1'].includes(normalized)) return { ok: true, value: true };
+  if (['nieaktywny', 'inactive', 'false', 'nie', 'no', '0'].includes(normalized)) return { ok: true, value: false };
+  return {
+    ok: false,
+    value: null,
+    message: normalized
+      ? `Nieznany status „${String(value || '').trim()}”. Dozwolone: Aktywny/Nieaktywny/true/false.`
+      : 'Brak statusu w kolumnie Status. Dozwolone: Aktywny/Nieaktywny/true/false.',
+  };
+}
 
 export async function parseXlsxContractorsFile(file) {
   if (!file) {
@@ -277,41 +301,66 @@ export async function parseXlsxContractorsFile(file) {
 
   const [headerRow = [], ...dataRows] = rows;
   const normalizedHeaders = headerRow.map((header) => HEADER_ALIASES.get(normalizeHeader(header)) || null);
+  const hasStatusColumn = normalizedHeaders.includes('status');
 
-  return dataRows
-    .map((row) => {
-      const record = {
-        company_name: '',
-        contact_person: '',
-        phone: '',
-        email: '',
-        city: '',
-        street: '',
-        addresses_json: '',
-        addresses: [],
-        nip: '',
-        notes: '',
-        is_active: true,
-      };
+  // K11 / 11.77: najpierw odrzucamy naprawdę puste wiersze arkusza.
+  // Wartości domyślne nie mogą sprawić, że sformatowany pusty wiersz stanie się rekordem.
+  const nonEmptyRows = dataRows.filter((row) => row.some((value) => String(value || '').trim()));
 
-      row.forEach((cellValue, index) => {
-        const field = normalizedHeaders[index];
-        if (!field) return;
-        record[field] = String(cellValue || '').trim();
-      });
+  return nonEmptyRows.map((row, index) => {
+    const record = {
+      company_name: '',
+      contact_person: '',
+      phone: '',
+      email: '',
+      city: '',
+      street: '',
+      addresses_json: '',
+      addresses: [],
+      nip: '',
+      notes: '',
+      is_active: true,
+      __source_row_number: Number(row.sourceRowNumber) || index + 2,
+      __parse_errors: [],
+    };
+    let statusRaw = '';
 
-      if (record.addresses_json) {
-        try {
-          const parsed = JSON.parse(record.addresses_json);
-          if (Array.isArray(parsed)) record.addresses = parsed;
-        } catch {
-          record.addresses = [];
-        }
+    row.forEach((cellValue, columnIndex) => {
+      const field = normalizedHeaders[columnIndex];
+      if (!field) return;
+      const value = String(cellValue || '').trim();
+      if (field === 'status') {
+        statusRaw = value;
+        return;
       }
-      delete record.addresses_json;
-      return record;
-    })
-    .filter((record) => Object.values(record).some((value) => String(value || '').trim()));
+      record[field] = value;
+    });
+
+    if (hasStatusColumn) {
+      const parsedStatus = parseContractorStatus(statusRaw);
+      if (parsedStatus.ok) {
+        record.is_active = parsedStatus.value;
+      } else {
+        record.__parse_errors.push(parsedStatus.message);
+      }
+    }
+
+    if (record.addresses_json) {
+      try {
+        const parsed = JSON.parse(record.addresses_json);
+        if (!Array.isArray(parsed)) {
+          record.__parse_errors.push('Kolumna Adresy (JSON) musi zawierać tablicę adresów.');
+        } else {
+          record.addresses = parsed;
+        }
+      } catch {
+        record.__parse_errors.push('Nieprawidłowy JSON w kolumnie Adresy (JSON).');
+      }
+    }
+
+    delete record.addresses_json;
+    return record;
+  });
 }
 
 
