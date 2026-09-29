@@ -548,7 +548,9 @@ async function runContractorsModuleSmoke() {
   assert.match(contractorsFetchSource, /rpc\('admin_upsert_contractor'/);
   assert.match(contractorsFetchSource, /rpc\('admin_delete_contractor'/);
   assert.match(contractorsFetchSource, /removeJobFallbackContractor/);
-  assert.match(contractorsFetchSource, /\.from\('jobs'\)[\s\S]*\.delete\(\)[\s\S]*\.is\('contractor_id', null\)/);
+  assert.match(contractorsFetchSource, /rpc\('admin_delete_jobs_recoverable'/);
+  assert.match(contractorsFetchSource, /p_only_unlinked:\s*true/);
+  assert.doesNotMatch(contractorsFetchSource, /storage\.from\(['"]job-photos['"]\)\.remove/);
   assert.match(contractorsPanelSource, /removeJobFallbackContractor/);
   assert.match(contractorsPanelSource, /Usunięcie tego wpisu usunie/);
   assert.match(contractorsPanelSource, /deletedFallbackJobIds/);
