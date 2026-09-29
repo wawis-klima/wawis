@@ -169,15 +169,58 @@ export function formatContractorAddress(address = {}) {
   return [normalizeText(address.street), normalizeText(address.city)].filter(Boolean).join(', ');
 }
 
+function collapseContractorWhitespace(value) {
+  return normalizeText(value).replace(/\s+/g, ' ');
+}
+
 export function normalizeComparable(value) {
-  return normalizeText(value)
+  // K12 / 11.79: normalizacja tożsamości ma być zgodna z SQL:
+  // trim + redukcja białych znaków + lowercase. Polskich znaków nie usuwamy,
+  // bo Górski i Gorski nie mogą automatycznie oznaczać tej samej osoby.
+  return collapseContractorWhitespace(value).toLocaleLowerCase('pl-PL');
+}
+
+export function normalizeSearchComparable(value) {
+  const normalized = collapseContractorWhitespace(value)
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLocaleLowerCase('pl-PL');
+  // Ł/ł nie ulega dekompozycji NFD.
+  return normalized.replace(/[ąćęłńóśźż]/g, (char) => ({
+    ą: 'a',
+    ć: 'c',
+    ę: 'e',
+    ł: 'l',
+    ń: 'n',
+    ó: 'o',
+    ś: 's',
+    ź: 'z',
+    ż: 'z',
+  })[char] || char);
 }
 
 export function normalizeDigits(value) {
   return normalizeText(value).replace(/\D+/g, '');
+}
+
+export function normalizeContractorPhone(value) {
+  const raw = normalizeText(value);
+  const digits = raw.replace(/\D+/g, '');
+  if (!digits) return '';
+  if (/^0048\d{9}$/.test(digits)) return `+48${digits.slice(4)}`;
+  if (/^48\d{9}$/.test(digits)) return `+${digits}`;
+  if (/^\d{9}$/.test(digits)) return `+48${digits}`;
+  if (raw.startsWith('+')) return `+${digits}`;
+  if (/^00\d+$/.test(digits)) return `+${digits.slice(2)}`;
+  return digits;
+}
+
+export function normalizeContractorEmail(value) {
+  return normalizeText(value).toLocaleLowerCase('pl-PL');
+}
+
+export function normalizeContractorNip(value) {
+  return normalizeDigits(value);
 }
 
 export const JOB_DERIVED_CONTRACTOR_ID_PREFIX = 'job-derived:';
@@ -273,9 +316,9 @@ export function buildContractorsWithJobFallback(contractors = [], jobs = []) {
 function buildContractorDuplicateReasons(candidate = {}, form = {}) {
   const reasons = [];
   if (normalizeComparable(candidate.company_name) && normalizeComparable(candidate.company_name) === normalizeComparable(form.company_name)) reasons.push('nazwa');
-  if (normalizeDigits(candidate.phone) && normalizeDigits(candidate.phone) === normalizeDigits(form.phone)) reasons.push('telefon');
-  if (normalizeComparable(candidate.email) && normalizeComparable(candidate.email) === normalizeComparable(form.email)) reasons.push('email');
-  if (normalizeDigits(candidate.nip) && normalizeDigits(candidate.nip) === normalizeDigits(form.nip)) reasons.push('NIP');
+  if (normalizeContractorPhone(candidate.phone) && normalizeContractorPhone(candidate.phone) === normalizeContractorPhone(form.phone)) reasons.push('telefon');
+  if (normalizeContractorEmail(candidate.email) && normalizeContractorEmail(candidate.email) === normalizeContractorEmail(form.email)) reasons.push('email');
+  if (normalizeContractorNip(candidate.nip) && normalizeContractorNip(candidate.nip) === normalizeContractorNip(form.nip)) reasons.push('NIP');
   return reasons;
 }
 
