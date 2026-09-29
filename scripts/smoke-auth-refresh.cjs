@@ -544,6 +544,7 @@ async function runContractorsModuleSmoke() {
   assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel"\]\.includes\(module\.id\)/);
   assert.match(appSource, /activeModule === "contractors"/);
   assert.match(appSource, /const shouldBlockWorkerDesktop\s*=\s*isWorker\s*&&\s*\(!isMobile\s*\|\|\s*!isProbablyPhoneDevice\)/);
+  assert.match(contractorsFetchSource, /rpc\('admin_get_contractors_catalog'\)/);
   assert.match(contractorsFetchSource, /rpc\('admin_list_contractors'\)/);
   assert.match(contractorsFetchSource, /rpc\('admin_upsert_contractor'/);
   assert.match(contractorsFetchSource, /rpc\('admin_delete_contractor'/);
@@ -591,12 +592,19 @@ async function runContractorsModuleSmoke() {
     supabase: {
       async rpc(name) {
         listRpcName = name;
-        return { data: [{ id: 'con-1', company_name: ' Klima Tech ', is_active: true }], error: null };
+        return {
+          data: {
+            generated_at: '2026-09-29T09:30:00Z',
+            total: 1,
+            items: [{ id: 'con-1', company_name: ' Klima Tech ', is_active: true }],
+          },
+          error: null,
+        };
       },
     },
     isAdmin: true,
   });
-  assert.equal(listRpcName, 'admin_list_contractors');
+  assert.equal(listRpcName, 'admin_get_contractors_catalog');
   assert.equal(adminList[0].company_name, 'Klima Tech');
 
   let saveRpcCall = null;
