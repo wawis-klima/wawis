@@ -1,6 +1,7 @@
 import {
   PROTOCOL_SAVE_STEP_TIMEOUT_MS,
   PROTOCOL_SAVE_UPLOAD_TIMEOUT_MS,
+  retryTransientProtocolOperation,
   withProtocolSaveTimeout,
 } from "./protocol-save-timeout.js";
 
@@ -97,12 +98,19 @@ export async function loadJobProtocolRecord({ supabase, jobId, timeoutMs = PROTO
   const normalizedJobId = normalizeText(jobId);
   if (!supabase || !normalizedJobId) return { record: null, backendAvailable: true };
 
-  const query = supabase
-    .from(PROTOCOLS_TABLE)
-    .select(PROTOCOL_RECORD_COLUMNS)
-    .eq("job_id", normalizedJobId)
-    .maybeSingle();
-  const { data, error } = await runTimedProtocolQuery(query, { phase: "load-record", timeoutMs });
+  const { data, error } = await retryTransientProtocolOperation(
+    async () => {
+      const query = supabase
+        .from(PROTOCOLS_TABLE)
+        .select(PROTOCOL_RECORD_COLUMNS)
+        .eq("job_id", normalizedJobId)
+        .maybeSingle();
+      const result = await runTimedProtocolQuery(query, { phase: "load-record", timeoutMs });
+      if (result.error && !isMissingProtocolBackendError(result.error)) throw result.error;
+      return result;
+    },
+    { attempts: 2, delayMs: 650 },
+  );
 
   if (error) {
     if (isMissingProtocolBackendError(error)) {
