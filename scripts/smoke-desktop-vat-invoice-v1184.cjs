@@ -21,6 +21,9 @@ assert.match(columns, /vat_invoice_issued/);
 
 assert.match(panel, /Faktura VAT/);
 assert.match(panel, /desktopVatInvoiceToggle/);
+assert.match(panel, /desktopVatInvoiceHeaderToggle/);
+assert.match(panel, /jobDetailsStickyMeta[\s\S]*Faktura VAT/);
+assert.doesNotMatch(panel, /desktopVatInvoiceInfoItem/, 'Status FV nie powinien już zajmować miejsca w sekcji Klient.');
 assert.match(panel, /handleVatInvoiceToggle/);
 assert.match(panel, /saveVatInvoiceStatus/);
 assert.match(panel, /setJobs\?\.\(\(previous\) => previous\.map\(patchJob\)\)/);
