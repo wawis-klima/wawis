@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.83",
+  "version": "11.84",
   "scope": "full",
-  "release_branch": "release/v11.83",
+  "release_branch": "release/v11.84",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Przegląd katalogu Rotenso i logiki OCR wykazał, że poprzedni resolver po rozpoznaniu znanego kodu bazowego bez dokładnej rewizji mógł zwrócić rekord starszej rewizji. Zweryfikowano bieżącego Roni R18 w oficjalnych materiałach producenta; nie znaleziono oficjalnej R19 na dzień 2026-09-29. 11.83 zachowuje dowolne odczytane Rxx jako osobną rewizję, nie przypisuje starego EAN-u i nie ufa pojedynczej korekcie O/0. Bez zmian RLS i schematu."
+    "notes": "Zmiana ograniczona funkcjonalnie do desktopowej ewidencji Faktura VAT. Produkcyjny schemat przed migracją nie zawierał jobs.vat_invoice_issued. Nie zmieniamy istniejących polityk RLS; zapis statusu odbywa się przez admin-only RPC. Mobile pozostaje bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.83.zip"
+    "file_name": "klima-app-v11.84.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.83",
+    "source_branch": "release/v11.84",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić fizycznie: obecny Roni R18, odrzucenie zdjęcia bez tabliczki, lokalny odczyt O/0 bez pojedynczego auto-potwierdzenia oraz syntetyczny/fixture kod nowej rewizji zachowujący Rxx bez starego EAN-u. Sprawdzić też wspólne agregaty rodzin Single."
+    "notes": "Po wdrożeniu sprawdzić desktop: FV czerwone/zielone, przełączenie w sekcji Klient, trwałość po odświeżeniu oraz że 10 najnowszych zakończonych montaży jest do ręcznego potwierdzenia, a starsze są zielone. Mobile bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "Korekta danych Roni R18 zastosowana produkcyjnie 2026-09-29: EAN 5905567609084/9091 = 3,4 kW; 5905567609107/9114 = 5,1 kW. Bez zmian schematu; wszystkie cztery rekordy pozostają verified=true.",
-    "rls_role_matrix": "N/A — bez zmian RLS",
-    "performance_advisor": "N/A — bez zmian struktury zapytań",
-    "security_advisor": "N/A — bez zmian uprawnień",
-    "trigger_grants": "N/A — bez zmian",
+    "supabase_migration_applied": "PENDING — migracja 11.84 doda jobs.vat_invoice_issued, backfill starszych zakończonych montaży i admin-only RPC.",
+    "rls_role_matrix": "Bez zmian istniejących polityk RLS; RPC dodatkowo wymaga roli Administrator.",
+    "performance_advisor": "N/A — pojedyncze pole boolean i punktowy RPC.",
+    "security_advisor": "N/A — brak rozszerzenia uprawnień; RPC admin-only.",
+    "trigger_grants": "N/A — bez nowych triggerów.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
