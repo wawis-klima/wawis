@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PASS — fixed_service_reminder_years_v1176, produkcyjna migracja 20260929064201",
+    "supabase_migration_applied": "APPLIED — fixed_service_reminder_years_v1176; produkcja zweryfikowana: jobs 146/146=5, devices 718/718=5; oba CHECK wymagają =5; admin_upsert_device wymusza v_years=5",
     "rls_role_matrix": "N/A — bez zmian RLS",
     "performance_advisor": "N/A — tylko CHECK/default i istniejący RPC, bez nowych zapytań listujących",
     "security_advisor": "N/A — bez rozszerzania uprawnień",
