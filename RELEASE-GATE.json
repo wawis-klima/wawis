@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — migracja 11.84 doda jobs.vat_invoice_issued, backfill starszych zakończonych montaży i admin-only RPC.",
+    "supabase_migration_applied": "Zastosowana produkcyjnie 2026-09-29: dodano jobs.vat_invoice_issued, 10 najnowszych zakończonych montaży pozostawiono false, wszystkie wcześniejsze zakończone ustawiono true; dodano admin-only RPC admin_set_job_vat_invoice_issued.",
     "rls_role_matrix": "Bez zmian istniejących polityk RLS; RPC dodatkowo wymaga roli Administrator.",
     "performance_advisor": "N/A — pojedyncze pole boolean i punktowy RPC.",
     "security_advisor": "N/A — brak rozszerzenia uprawnień; RPC admin-only.",
