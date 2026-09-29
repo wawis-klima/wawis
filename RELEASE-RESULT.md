@@ -1,24 +1,29 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.73
+- 11.74
 
 ## Zakres
-- stała skala mobilnego okna aplikacji: 100%
-- brak pinch-zoom i ręcznego pomniejszania/powiększania
-- viewport: minimum-scale=1.0, maximum-scale=1.0, user-scalable=no
-- zachowane viewport-fit=cover i safe-area iPhone
-- zwykłe przewijanie pozostaje dostępne
-- specjalne pola gestów (podpis/kamera) zachowują własne touch-action
-- bez zmian w Supabase, RLS, Storage i Edge Functions
+- audyt Kontrahentów: etap 1 / K6
+- usuwanie wpisu job-derived w Kontrahentach desktop/mobile korzysta z `admin_delete_jobs_recoverable`
+- `p_only_unlinked=true` wymusza po stronie bazy, że fallback może usunąć tylko nadal nieprzypięte montaże
+- zwykłe „Usuń kartę” w Montażach również korzysta z recoverable RPC
+- przed DELETE nie ma już żadnego `storage.remove(job-photos)`
+- lokalna lista `jobs[].photos` nie decyduje już, które pliki mają zostać skasowane
+- pliki pozostają w Storage, ponieważ prywatny recycle bin przechowuje snapshot zdjęć i umożliwia kompletne przywrócenie
+- bez nowej migracji Supabase i bez zmian RLS
+
+## Produkcyjne potwierdzenie read-only
+- `admin_delete_jobs_recoverable(uuid[],boolean)`: istnieje
+- trigger `archive_job_before_delete`: aktywny
+- policy `retained_job_files_delete`: aktywna
+- legacy `job_photos_storage_delete_admin_or_owner`: nie występuje
 
 ## Kontrola regresji
-- smoke wymaga viewport-fit=cover
-- smoke wymaga minimum-scale=1.0
-- smoke wymaga maximum-scale=1.0
-- smoke wymaga user-scalable=no
-- smoke wymaga mobile root touch-action: pan-x pan-y
-- wersja/cache PWA: 11.73
+- smoke zwykłego usuwania wymaga recoverable RPC i zabrania kasowania Storage
+- smoke Kontrahentów wymaga recoverable RPC z `p_only_unlinked=true`
+- scenariusz „DELETE nic nie usunął” nie dotyka Storage i kończy się błędem
+- wersja/cache PWA: 11.74
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
