@@ -42,6 +42,16 @@ const SIGNATURE_MAX_WIDTH = 3.25;
 const SIGNATURE_BASE_WIDTH = 2.45;
 const SIGNATURE_WIDTH_SMOOTHING = 0.72;
 
+function waitForProtocolUiPaint() {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || typeof window.requestAnimationFrame !== "function") {
+      setTimeout(resolve, 0);
+      return;
+    }
+    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+  });
+}
+
 function ProtocolBackIcon() {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -187,6 +197,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [draftHasSignature, setDraftHasSignature] = useState(false);
   const [signatureCanvasReady, setSignatureCanvasReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [saveProgressLabel, setSaveProgressLabel] = useState("");
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [actionBusy, setActionBusy] = useState("");
   const [message, setMessage] = useState("");
@@ -223,6 +234,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setDraftHasSignature(false);
     setSignatureCanvasReady(false);
     setIsGenerating(false);
+    setSaveProgressLabel("");
     editScrollBaselineRef.current = null;
     setActionMenuOpen(false);
     setActionBusy("");
@@ -476,10 +488,14 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     }
     if (!hasSignature || !signatureDataUrl || isGenerating) return;
     setIsGenerating(true);
+    setSaveProgressLabel("Rozpoczynam zapis…");
     setMessage("");
+    await waitForProtocolUiPaint();
     try {
       const progress = { phase: "payment" };
       const saveOperation = (async () => {
+        setSaveProgressLabel("Zapisuję płatność…");
+        await waitForProtocolUiPaint();
         const payment = normalizePaymentConfirmation(paymentDraft);
         const paymentPatch = await withProtocolSaveTimeout(
           saveJobPaymentConfirmation({ supabase, job: protocolJob, payment }),
@@ -488,11 +504,15 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         const updatedJob = { ...protocolJobForDocument, ...paymentPatch };
         const signedAt = new Date();
         progress.phase = "pdf";
+        setSaveProgressLabel("Tworzę PDF…");
+        await waitForProtocolUiPaint();
         const result = await withProtocolSaveTimeout(
           createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl, signedAt, payment }),
           { phase: "pdf", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
         progress.phase = "storage";
+        setSaveProgressLabel("Zapisuję PDF…");
+        await waitForProtocolUiPaint();
         const record = await storeJobProtocol({
           supabase,
           job: updatedJob,
@@ -538,6 +558,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     } finally {
       // Każda ścieżka — sukces, błąd i timeout — musi ponownie odblokować ekran.
       setIsGenerating(false);
+      setSaveProgressLabel("");
     }
   }
 
@@ -701,7 +722,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               {savedRecord && !editing ? (
                 <button type="button" className="btn primary protocolTestGenerate" onClick={() => setActionMenuOpen((value) => !value)} disabled={Boolean(actionBusy)}>Drukuj lub wyślij</button>
               ) : (
-                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating || !paymentReady || Boolean(paymentLoadError)}>{isGenerating ? "Zapisuję protokół..." : "Zapisz protokół"}</button>
+                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating || !paymentReady || Boolean(paymentLoadError)} aria-busy={isGenerating}>{isGenerating ? (saveProgressLabel || "Zapisuję protokół…") : "Zapisz protokół"}</button>
               )}
             </div>
           </div>
