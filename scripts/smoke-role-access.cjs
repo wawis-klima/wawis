@@ -154,10 +154,22 @@ async function assertAdminCanSeeProtectedModules() {
 
   let contractorsRpcName = '';
   const contractors = await loadContractors({
-    supabase: { async rpc(name) { contractorsRpcName = name; return { data: [{ id: 'con-1', company_name: 'Klima Test', is_active: true }], error: null }; } },
+    supabase: {
+      async rpc(name) {
+        contractorsRpcName = name;
+        return {
+          data: {
+            generated_at: '2026-09-29T09:30:00Z',
+            total: 1,
+            items: [{ id: 'con-1', company_name: 'Klima Test', is_active: true }],
+          },
+          error: null,
+        };
+      },
+    },
     isAdmin: true,
   });
-  assert.equal(contractorsRpcName, 'admin_list_contractors');
+  assert.equal(contractorsRpcName, 'admin_get_contractors_catalog');
   assert.equal(contractors[0].company_name, 'Klima Test');
 }
 
