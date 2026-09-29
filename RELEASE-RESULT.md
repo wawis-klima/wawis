@@ -9,9 +9,9 @@
 
 ## K13 — desktop i współdzielony kontakt
 - nowy kontrahent nadal jest blokowany przy wykrytym duplikacie
-- istniejący kontrahent może zostać edytowany, gdy jedynym konfliktem jest wspólny telefon i/lub e-mail
-- wspólny kontakt jest widocznym ostrzeżeniem
-- konflikt nazwy oraz inne niekontaktowe pola tożsamości nadal blokują zapis
+- istniejący kontrahent może zostać edytowany, gdy konflikt dotyczy telefonu, e-maila lub NIP
+- takie dopasowanie jest widocznym ostrzeżeniem
+- konflikt nazwy nadal blokuje zapis
 - produkcyjny trigger UPDATE dopuszcza wspólne kontakty, a unikalny indeks nazwy pozostaje aktywny
 
 ## K11 — import XLSX
