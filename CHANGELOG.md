@@ -1,3 +1,14 @@
+## 11.79
+- Audyt Kontrahentów / etap 6: wdrożono wyłącznie K12. K14 został świadomie wyłączony z zakresu — bez blokad transakcyjnych i bez nowych UNIQUE dla telefonu/e-maila/NIP.
+- Ujednolicono normalizację tożsamości w desktop/mobile z istniejącym SQL: trim, redukcja wielokrotnych białych znaków i lowercase; polskie znaki pozostają częścią tożsamości, więc np. `Górski` i `Gorski` nie są automatycznie tym samym kontrahentem.
+- Dodano osobną, łagodną normalizację wyszukiwania: ignoruje wielkość liter, nadmiarowe spacje i polskie znaki, dzięki czemu wyszukiwanie `Gorski` może znaleźć `Górski` bez uznawania ich za duplikat.
+- Telefon jest normalizowany jednolicie w JS i SQL: polskie 9 cyfr, `48...`, `+48...` i `0048...` dają ten sam klucz `+48...`. Numery zagraniczne z jawnym `+` lub `00` zachowują kod kraju; numerów bez jednoznacznego prefiksu nie obcinamy ani nie zgadujemy.
+- E-mail jest porównywany po trim + lowercase, NIP po samych cyfrach.
+- Mobile i desktop wyszukują również po wszystkich dodatkowych adresach kontrahenta, nie tylko po adresie głównym.
+- Zmieniono `normalize_contractors_phone(text)` i przebudowano zależny indeks `contractors_phone_lookup_idx`.
+- Analiza produkcji przed migracją: 567 rekordów z telefonem, 6 istniejących grup współdzielonych numerów; nowa normalizacja nie tworzy dodatkowych grup konfliktowych.
+- Dodano regresję K12 z identycznymi fixture dla desktop/mobile oraz statyczną kontrolę migracji SQL.
+
 ## 11.78
 - Audyt Kontrahentów / etap 5: zamknięto K16, K19 i K21.
 - K16 mobile: po rozwinięciu zapisanego kontrahenta aplikacja pobiera pełną listę urządzeń z istniejącego `admin_get_contractor_devices`, więc widoczne są również urządzenia `manual_import`, nie tylko urządzenia wyprowadzone z montaży.

@@ -1,41 +1,46 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.78
+- 11.79
 
 ## Zakres
-- audyt Kontrahentów: etap 5 / K16 + K19 + K21
+- audyt Kontrahentów: etap 6 ograniczony do K12
+- K14 pominięty decyzją użytkownika; nie wdrażamy blokad równoczesnego tworzenia ani globalnej unikalności kontaktów
 
-## K16 — pełne urządzenia na mobile
-- urządzenia zapisanych kontrahentów są pobierane z `admin_get_contractor_devices` dopiero po rozwinięciu konkretnego klienta
-- mobile widzi również rekordy `manual_import`, a nie tylko urządzenia wynikające z `jobs`
-- wynik jest związany z aktualnym `contractorId`
-- przy braku pełnej bazy/błędzie fallback z montaży jest jawnie oznaczony jako niepełny
+## K12 — spójna normalizacja
+- nazwa/tożsamość: trim + redukcja białych znaków + lowercase
+- polskie znaki pozostają istotne dla tożsamości; `Górski` != `Gorski`
+- wyszukiwanie ma osobną łagodną normalizację i może znaleźć `Górski` po `Gorski`
+- telefon PL: 9 cyfr / 48 / +48 / 0048 → jeden klucz `+48...`
+- zagraniczne numery z + lub 00 zachowują kod kraju; nie obcinamy ostatnich 9 cyfr
+- e-mail: trim + lowercase
+- NIP: cyfry
+- desktop i mobile przeszukują wszystkie zapisane adresy kontrahenta
+- import korzysta z tych samych reguł duplikatów co pozostały JS
 
-## K19 — świeżość katalogu
-- mobile ma przycisk `Odśwież`
-- desktop i mobile zachowują poprzednią poprawną listę podczas odświeżania
-- po błędzie lista nie jest zerowana; UI pokazuje `Dane mogą być nieaktualne`
-- widoczny jest czas ostatniego udanego odczytu
-- panel przekazuje świeży snapshot do App; formularz montażu korzysta z tej samej zaktualizowanej zawartości
-- panel może wystartować od katalogu już załadowanego w App zamiast od pustej tablicy
+## Produkcja przed zmianą
+- 567 kontrahentów ma telefon
+- 6 istniejących grup współdzielonych numerów
+- proponowana normalizacja nadal daje 6 grup
+- 0 nowych grup konfliktowych powstaje wyłącznie przez nową regułę +48
+- istniejących danych nie scalamy i nie usuwamy
 
-## K21 — kompletność katalogu
-- nowy `admin_get_contractors_catalog()` zwraca cały katalog w jednej wartości JSONB
-- snapshot ma jeden kanoniczny porządek: `lower(company_name), created_at DESC, id`
-- usunięto warunek `firstBatch.length === 1000` i offsetowe `.range(...)`
-- limit wierszy PostgREST nie może już uciąć katalogu na granicy 1000, bo odpowiedź RPC ma jeden top-level JSON wynik
-- eksport/liczniki/duplikaty korzystają z tego samego pełnego loadera
-- bez zmian RLS; RPC pozostaje admin-only
+## SQL
+- zmiana `normalize_contractors_phone(text)`
+- przebudowa `contractors_phone_lookup_idx`
+- `normalize_contractors_text/email/nip` pozostają bez zmiany, bo już odpowiadają docelowej specyfikacji
+- brak zmian RLS
+- brak K14: brak advisory locks i brak nowych UNIQUE dla telefonu/e-maila/NIP
 
 ## Kontrola regresji
-- `scripts/smoke-contractors-stage5-v1178.mjs`
-- fixture 1345 kontrahentów: jeden RPC, brak offsetowego SELECT-u, pełna liczba rekordów
-- K16: manual_import + urządzenie z montażu dla tego samego klienta
-- statyczna kontrola świeżości, przycisku Odśwież oraz synchronizacji App↔panel
-- WAWIS PR checks: SUCCESS (head 1661b3d przed aktualizacją dokumentacji); final head recheck PENDING
-- Playwright desktop/mobile: SUCCESS (head 1661b3d); final head recheck PENDING
-- produkcyjny build: SUCCESS (head 1661b3d); final head recheck PENDING
-- migracja Supabase: APPLIED — complete_contractors_catalog_v1178; snapshot produkcyjny 1345/1345
+- `scripts/smoke-contractors-k12-v1179.mjs`
+- desktop/mobile: identyczne fixture nazw, telefonu, e-maila i NIP
+- kontrola rozdzielenia identity vs search
+- kontrola dodatkowych adresów w wyszukiwaniu
+- kontrola migracji i braku mechanizmów K14
+- WAWIS PR checks: SUCCESS (pre-migration/documentation head); final head recheck PENDING
+- Playwright desktop/mobile: SUCCESS (pre-migration/documentation head); final head recheck PENDING
+- produkcyjny build: SUCCESS (pre-migration/documentation head); final head recheck PENDING
+- migracja Supabase: APPLIED — contractor_normalization_v1179; indeks telefonu przebudowany; 6 istniejących grup współdzielonych numerów bez nowych grup
 - Vercel: PENDING
 - merge: PENDING
