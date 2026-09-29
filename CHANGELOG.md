@@ -1,3 +1,12 @@
+## 11.75
+- Audyt Kontrahentów / etap 2: zamknięto K8, K9 i K15 — ochrona draftu oraz odpowiedzi asynchronicznych.
+- K8 desktop: odświeżenie montaży lub katalogu nie nadpisuje już aktywnego, niezapisanego formularza kontrahenta; draft jest inicjalizowany przy wejściu w edycję i pozostaje własnością użytkownika do zapisu/anulowania.
+- K9 desktop/mobile: zapis i usuwanie unieważniają odczyty rozpoczęte przed mutacją. Po potwierdzonej mutacji lokalny wynik jest zachowywany i wykonywany jest jeden kontrolowany świeży odczyt; spóźniona odpowiedź nie może cofnąć UI.
+- K15 desktop: zdalna lista urządzeń jest przypisana do konkretnego contractorId i ma jawny status idle/loading/ready/error. Po przełączeniu A→B urządzenia A natychmiast znikają i nie mogą zostać otwarte pod klientem B.
+- Pusta poprawna odpowiedź urządzeń jest traktowana jako prawidłowe „0 urządzeń”; fallback z montaży jest używany dopiero przy rzeczywistym błędzie odczytu dla bieżącego klienta.
+- Zachowano istniejącą ochronę przed odpowiedziami po zmianie konta i odmontowaniu komponentu.
+- Dodano smoke regresyjny K8/K9/K15 oraz włączono go do grup desktop i mobile. Bez migracji Supabase i bez zmian RLS.
+
 ## 11.74
 - Audyt Kontrahentów / K6: usuwanie wpisu `job-derived` nie kasuje już plików zdjęć przed potwierdzeniem usunięcia zlecenia.
 - Kontrahenci desktop i mobile korzystają teraz z istniejącego produkcyjnego RPC `admin_delete_jobs_recoverable` z `p_only_unlinked=true`; warunek „montaż nadal bez kontrahenta” jest sprawdzany po stronie bazy.
