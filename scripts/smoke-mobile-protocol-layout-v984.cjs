@@ -35,4 +35,12 @@ assert.match(modal, /className="protocolPaymentDateShell"[\s\S]*className="proto
 assert.match(wizardCss, /\.protocolPaymentDateShell\s*\{[^}]*height:\s*38px;[^}]*max-height:\s*38px;[^}]*overflow:\s*hidden;/, 'Ramka daty musi mieć dokładnie wysokość pola Gotówka i ucinać natywne overflow iOS.');
 assert.match(wizardCss, /\.protocolPaymentForm input\[type="date"\]\s*\{[^}]*-webkit-appearance:\s*none\s*!important;[^}]*inline-size:\s*100%\s*!important;[^}]*max-inline-size:\s*100%\s*!important;[^}]*height:\s*100%\s*!important;[^}]*max-height:\s*100%\s*!important;/, 'Natywny input daty iPhone musi być całkowicie zamknięty wewnątrz własnej ramki.');
 
+
+assert.match(modal, /lockPagePosition/, 'Protokół musi blokować przewijanie strony pod pełnoekranowym modalem na iOS.');
+const protocolScrollFix = wizardCss.slice(wizardCss.indexOf('/* v11.81 — protokół mobilny przewija własną treść, a nie stronę pod spodem. */'));
+assert.ok(protocolScrollFix, 'Brakuje izolowanego bloku przewijania protokołu 11.81.');
+assert.match(protocolScrollFix, /\.protocolWizardModal\s*\{[^}]*height:\s*100dvh\s*!important;[^}]*max-height:\s*100dvh\s*!important;[^}]*overflow:\s*hidden\s*!important;/, 'Kontener protokołu musi być ograniczony do wysokości viewportu.');
+assert.match(protocolScrollFix, /\.mobileProtocolWizardBody\s*\{[^}]*min-height:\s*0\s*!important;[^}]*overflow-y:\s*auto\s*!important;[^}]*touch-action:\s*pan-y;/, 'Treść protokołu musi być właściwym pionowym kontenerem przewijania.');
+assert.match(protocolScrollFix, /\.mobileProtocolWizard \.mobileDeviceWizardFooter\s*\{[^}]*position:\s*relative;[^}]*bottom:\s*auto;/, 'Dolne przyciski protokołu muszą pozostać poza przewijaną treścią.');
+
 console.log('OK: protokół ma uporządkowane dane oraz osobny, nieruchomy ekran podpisu klienta.');
