@@ -95,11 +95,13 @@ const contextualEan = getMobileNameplateEvidence({
 assert.equal(contextualEan.hasEvidence, true, 'EAN with independent nameplate text must remain valid evidence');
 
 const reader = read('src/mobile791/modules/nameplate-reader.js');
-assert(reader.includes('const lowEvidenceFallback = !evidence.hasEvidence'), 'Weak local evidence must enter the guarded AI fallback.');
+assert(reader.includes("aiSkipReason: 'no_nameplate_evidence'"), 'Photo without any nameplate traces must still stop locally.');
+assert(reader.includes('const weakEvidenceFallback = !evidence.hasEvidence'), 'Weak but non-empty technical evidence must be eligible for guarded AI.');
 assert(reader.includes("aiSkipReason: 'ai_unconfirmed_nameplate'"), 'Guarded AI fallback must reject images without exact model + serial.');
 assert(reader.includes("aiSkipReason: 'ai_failed_low_evidence'"), 'AI failure on weak evidence must remain blocked.');
-assert.match(reader, /lowEvidenceFallback && \(!aiResult\?\.exactModel \|\| !finalSerial\)/, 'Weak-evidence AI may pass only with exact catalog model and serial.');
-assert(reader.indexOf('const lowEvidenceFallback = !evidence.hasEvidence') < reader.indexOf('readDesktopNameplateWithAi({'), 'Weak-evidence flag must be established before AI.');
+assert.match(reader, /weakEvidenceFallback && \(!aiResult\?\.exactModel \|\| !finalSerial\)/, 'Weak-evidence AI may pass only with exact catalog model and serial.');
+assert(reader.indexOf('if (!evidence.hasEvidence && !weakEvidenceFallback)') < reader.indexOf('readDesktopNameplateWithAi({'), 'Zero-evidence gate must execute before AI.');
+
 
 const capture = read('src/mobile791/components/nameplate/NameplatePhotoCapture.jsx');
 const captureCss = read('src/mobile791/components/nameplate/nameplate-photo-capture.css');
