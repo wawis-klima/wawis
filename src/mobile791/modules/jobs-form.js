@@ -78,6 +78,8 @@ export function buildEditJobForm({ job, profiles, normalizeStatus }) {
     street: job.street || (job.location?.split(',').slice(1).join(',').trim() || ''),
     location: job.location || '',
     contractor_id: job.contractor_id || '',
+    contractor_address_id: job.contractor_address_id || '',
+    contractor_address_label: '',
     device_model: job.device_model || '',
     device_serial_number: job.device_serial_number || '',
     pending_nameplate_photos: [],
@@ -246,6 +248,9 @@ export async function addJobRecord({
     sms_reminder_enabled: true,
     sms_recipient_phone: resolvedForm.phone.trim() || null,
     contractor_id: resolvedForm.contractor_id || null,
+    contractor_address_id: resolvedForm.contractor_address_id && resolvedForm.contractor_address_id !== '__custom__'
+      ? resolvedForm.contractor_address_id
+      : null,
     device_model: deviceFields.device_model || null,
     device_serial_number: deviceFields.device_serial_number || null,
     installer_ids: getAssignedUserIdsFromForm(resolvedForm),
