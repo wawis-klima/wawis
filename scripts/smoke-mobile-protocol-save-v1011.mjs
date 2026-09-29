@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import {
   isProtocolSaveTimeoutError,
   PROTOCOL_SAVE_TOTAL_TIMEOUT_MS,
+  retryTransientProtocolOperation,
   withProtocolSaveTimeout,
 } from '../src/mobile791/modules/protocol-save-timeout.js';
 import { JOB_PROTOCOLS_TABLE, storeJobProtocol } from '../src/mobile791/modules/job-protocol-storage.js';
@@ -20,6 +21,12 @@ assert.match(modalSource, /logDiagnostic\("protocol\.save\.timeout"/);
 assert.match(modalSource, /SUPABASE_REQUEST_TIMEOUT/);
 assert.match(modalSource, /supabase request timeout\|aborterror/);
 assert.match(modalSource, /finally\s*\{[\s\S]*?setIsGenerating\(false\)/);
+assert.match(modalSource, /waitForProtocolUiPaint/);
+assert.match(modalSource, /setSaveProgressLabel\("Rozpoczynam zapis…"/);
+assert.match(modalSource, /setSaveProgressLabel\("Tworzę PDF…"/);
+assert.match(modalSource, /setSaveProgressLabel\("Zapisuję PDF…"/);
+assert.match(modalSource, /aria-busy=\{isGenerating\}/);
+assert.match(storageSource, /retryTransientProtocolOperation/);
 assert.match(timeoutSource, /Ekran został odblokowany/);
 assert.doesNotMatch(
   storageSource,
@@ -28,6 +35,22 @@ assert.doesNotMatch(
 );
 assert.match(storageSource, /\.insert\(row\)[\s\S]*?\.select\(PROTOCOL_RECORD_COLUMNS\)[\s\S]*?\.single\(\)/);
 assert.match(storageSource, /\.update\(row\)[\s\S]*?\.select\(PROTOCOL_RECORD_COLUMNS\)[\s\S]*?\.single\(\)/);
+
+let transientAttempts = 0;
+const retryResult = await retryTransientProtocolOperation(
+  async () => {
+    transientAttempts += 1;
+    if (transientAttempts === 1) {
+      const error = new Error('service unavailable');
+      error.status = 503;
+      throw error;
+    }
+    return 'ok';
+  },
+  { attempts: 2, delayMs: 1 },
+);
+assert.equal(retryResult, 'ok');
+assert.equal(transientAttempts, 2);
 
 let timeoutCallbackCalled = false;
 const startedAt = Date.now();

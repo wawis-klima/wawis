@@ -1,3 +1,5 @@
+import { retryTransientProtocolOperation } from "./protocol-save-timeout.js";
+
 export const PAYMENT_METHODS = Object.freeze([
   { value: "cash", label: "Gotówka" },
   { value: "transfer", label: "Przelew" },
@@ -156,11 +158,18 @@ export async function loadJobPaymentSnapshot({ supabase, jobId }) {
   const targetId = normalizeText(jobId);
   if (!supabase || !targetId) throw new Error("Nie można pobrać danych płatności bez połączenia ze zleceniem.");
 
-  const { data, error } = await supabase
-    .from("jobs")
-    .select(PAYMENT_JOB_FIELDS)
-    .eq("id", targetId)
-    .maybeSingle();
+  const { data, error } = await retryTransientProtocolOperation(
+    async () => {
+      const result = await supabase
+        .from("jobs")
+        .select(PAYMENT_JOB_FIELDS)
+        .eq("id", targetId)
+        .maybeSingle();
+      if (result.error && !isMissingPaymentColumnsError(result.error)) throw result.error;
+      return result;
+    },
+    { attempts: 2, delayMs: 650 },
+  );
 
   if (error) {
     if (isMissingPaymentColumnsError(error)) {
@@ -212,7 +221,14 @@ export async function saveJobPaymentConfirmation({ supabase, job, payment }) {
   const userId = normalizeText(sessionData?.session?.user?.id);
   if (!userId) throw new Error("Sesja wygasła. Zaloguj się ponownie.");
   const patch = getPaymentJobPatch(normalized, userId);
-  const { error } = await supabase.from("jobs").update(patch).eq("id", job.id);
+  const { error } = await retryTransientProtocolOperation(
+    async () => {
+      const result = await supabase.from("jobs").update(patch).eq("id", job.id);
+      if (result.error && !isMissingPaymentColumnsError(result.error)) throw result.error;
+      return result;
+    },
+    { attempts: 2, delayMs: 650 },
+  );
   if (error) {
     if (isMissingPaymentColumnsError(error)) {
       throw new Error("Obsługa płatności wymaga uruchomienia skryptu bazy dołączonego do wersji 9.86.");

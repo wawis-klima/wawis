@@ -95,13 +95,18 @@ const contextualEan = getMobileNameplateEvidence({
 assert.equal(contextualEan.hasEvidence, true, 'EAN with independent nameplate text must remain valid evidence');
 
 const reader = read('src/mobile791/modules/nameplate-reader.js');
-assert(reader.includes("aiSkipReason: 'no_nameplate_evidence'"), 'No-evidence path must skip AI explicitly');
-assert(reader.includes('Nie wykryto tabliczki znamionowej — zrób zdjęcie ponownie'), 'No-evidence path must explain why reading stopped');
-assert(reader.indexOf('if (!evidence.hasEvidence)') < reader.indexOf('readDesktopNameplateWithAi({'), 'Evidence gate must execute before AI');
+assert(reader.includes("aiSkipReason: 'no_nameplate_evidence'"), 'Photo without any nameplate traces must still stop locally.');
+assert(reader.includes('const weakEvidenceFallback = !evidence.hasEvidence'), 'Weak but non-empty technical evidence must be eligible for guarded AI.');
+assert(reader.includes("aiSkipReason: 'ai_unconfirmed_nameplate'"), 'Guarded AI fallback must reject images without exact model + serial.');
+assert(reader.includes("aiSkipReason: 'ai_failed_low_evidence'"), 'AI failure on weak evidence must remain blocked.');
+assert.match(reader, /weakEvidenceFallback && \(!aiResult\?\.exactModel \|\| !finalSerial\)/, 'Weak-evidence AI may pass only with exact catalog model and serial.');
+assert(reader.indexOf('if (!evidence.hasEvidence && !weakEvidenceFallback)') < reader.indexOf('readDesktopNameplateWithAi({'), 'Zero-evidence gate must execute before AI.');
+
 
 const capture = read('src/mobile791/components/nameplate/NameplatePhotoCapture.jsx');
 const captureCss = read('src/mobile791/components/nameplate/nameplate-photo-capture.css');
-assert(capture.includes('AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.'), 'Mobile UI must explain that AI was intentionally skipped');
+assert(capture.includes('AI sprawdziła zdjęcie, ale nie potwierdziła dokładnego modelu urządzenia i numeru seryjnego.'), 'UI must explain guarded AI rejection.');
+assert(capture.includes('AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.'), 'UI must still explain the true AI-skipped path.');
 assert(capture.includes('disabled={noNameplateEvidence}'), 'Fields must be disabled for a non-nameplate photo');
 assert(capture.includes('noNameplateEvidence ? "Zrób zdjęcie ponownie"'), 'Non-nameplate photo must force a retake instead of manual bypass');
 assert(capture.includes('Zdjęcie tabliczki JZ — jednostka zewnętrzna'), 'Verification header must clearly identify the outdoor-unit photo');

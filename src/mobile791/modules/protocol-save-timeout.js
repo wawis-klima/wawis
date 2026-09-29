@@ -48,3 +48,33 @@ export async function withProtocolSaveTimeout(
     if (timeoutId) clearTimeout(timeoutId);
   }
 }
+
+
+export function isTransientProtocolBackendError(error) {
+  if (isProtocolSaveTimeoutError(error)) return true;
+  const status = Number(error?.status || error?.statusCode || error?.status_code || 0);
+  if (status >= 500 && status <= 599) return true;
+  const code = String(error?.code || "").trim().toUpperCase();
+  if (["502", "503", "504", "PGRST000", "PGRST001", "PGRST002"].includes(code)) return true;
+  const message = String(error?.message || error || "").toLowerCase();
+  return /timeout|timed out|network|fetch failed|load failed|connection|warp server|temporarily unavailable|bad gateway|service unavailable|gateway timeout|aborterror/.test(message);
+}
+
+export async function retryTransientProtocolOperation(
+  operation,
+  { attempts = 2, delayMs = 650, onRetry = null } = {},
+) {
+  const safeAttempts = Math.max(1, Math.min(3, Number(attempts) || 1));
+  let lastError;
+  for (let attempt = 1; attempt <= safeAttempts; attempt += 1) {
+    try {
+      return await operation(attempt);
+    } catch (error) {
+      lastError = error;
+      if (attempt >= safeAttempts || !isTransientProtocolBackendError(error)) throw error;
+      try { onRetry?.({ attempt, nextAttempt: attempt + 1, error }); } catch {}
+      await new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(delayMs) || 0)));
+    }
+  }
+  throw lastError;
+}

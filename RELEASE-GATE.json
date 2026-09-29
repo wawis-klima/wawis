@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.81",
+  "version": "11.82",
   "scope": "mobile",
-  "release_branch": "release/v11.81",
+  "release_branch": "release/v11.82",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.81 dotyczy wyłącznie mobilnego protokołu. Przyczyną zgłoszenia było przewijanie dokumentu strony pod fixed overlayem na iOS, gdy pełnoekranowy modal protokołu mógł rosnąć powyżej 100dvh. Zmiana blokuje pozycję strony i przenosi przewijanie do .mobileProtocolWizardBody; backend, RLS, OCR, PDF i desktop pozostają bez zmian."
+    "notes": "Dawid Czerny: pracownik i administrator trafili w tym samym oknie na błędy PostgREST 'Warp server error: Thread killed by timeout manager'. Rekord protokołu ostatecznie zapisał się poprawnie. 11.82 dodaje ograniczony retry wyłącznie dla bezpiecznych operacji, widoczne etapy zapisu oraz bezpieczny fallback AI tabliczek. Produkcyjny katalog Rotenso zsynchronizowano do 215 verified rekordów; bez zmian schematu i RLS."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.81.zip"
+    "file_name": "klima-app-v11.82.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.81",
+    "source_branch": "release/v11.82",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu na fizycznym iPhonie: otworzyć protokół krótki i długi, przesunąć kilka razy góra/dół po środku formularza, potwierdzić że porusza się treść protokołu (nie belka strony pod spodem), a nagłówek i dolne przyciski pozostają na miejscu. Sprawdzić też Uzupełnij protokół i ekran podpisu."
+    "notes": "Na fizycznym iPhonie sprawdzić: zapis protokołu od razu pokazuje etapy; przy krótkim błędzie backendu bezpieczny krok ponawia się automatycznie; po niepowodzeniu podpis pozostaje i ekran się odblokowuje. Sprawdzić też ciasny kadr Rotenso Roni i odrzucenie zdjęcia bez tabliczki."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — bez zmian Supabase",
+    "supabase_migration_applied": "DML seed katalogu v9.02 zastosowany produkcyjnie; bez zmian schematu. 215 rekordów, wszystkie verified=true.",
     "rls_role_matrix": "N/A — bez zmian RLS",
-    "performance_advisor": "N/A — bez zmian zapytań i backendu",
+    "performance_advisor": "N/A — bez zmian struktury zapytań",
     "security_advisor": "N/A — bez zmian uprawnień",
     "trigger_grants": "N/A — bez zmian",
     "vercel_deployment": "PENDING — po merge do main",

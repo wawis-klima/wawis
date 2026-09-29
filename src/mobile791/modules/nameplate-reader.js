@@ -307,7 +307,14 @@ export async function readMobileNameplate({
     return localReading;
   }
 
-  if (!evidence.hasEvidence) {
+  const weakEvidenceFallback = !evidence.hasEvidence && Boolean(
+    evidence.keywordCount >= 1
+    || evidence.hasTechnicalValue
+    || evidence.hasModelishToken
+    || (evidence.hasSerialLabel && evidence.digitCount >= 6)
+  );
+
+  if (!evidence.hasEvidence && !weakEvidenceFallback) {
     onProgress?.({
       progress: 100,
       label: 'Nie wykryto tabliczki znamionowej — zrób zdjęcie ponownie',
@@ -321,7 +328,13 @@ export async function readMobileNameplate({
     };
   }
 
-  onProgress?.({ progress: 8, label: 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…', method: 'ai' });
+  onProgress?.({
+    progress: 8,
+    label: weakEvidenceFallback
+      ? 'Wykryto słabe ślady tabliczki — sprawdzam bezpiecznie przez AI…'
+      : 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…',
+    method: 'ai',
+  });
   try {
     const aiResult = await withTimeout(
       readDesktopNameplateWithAi({
@@ -345,6 +358,19 @@ export async function readMobileNameplate({
     const finalSerial = normalizeSerial(aiResult.serialNumber || serialNumber);
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
 
+    if (weakEvidenceFallback && (!aiResult?.exactModel || !finalSerial)) {
+      return {
+        ...localReading,
+        method: 'ai',
+        aiAttempted: true,
+        aiError: '',
+        aiResult,
+        noNameplateEvidence: true,
+        aiSkipped: false,
+        aiSkipReason: 'ai_unconfirmed_nameplate',
+      };
+    }
+
     return {
       method: 'ai',
       manufacturer,
@@ -363,6 +389,16 @@ export async function readMobileNameplate({
       aiResult,
     };
   } catch (error) {
+    if (weakEvidenceFallback) {
+      return {
+        ...localReading,
+        aiAttempted: true,
+        aiError: error?.message || 'Nie udało się odczytać tabliczki przez AI.',
+        noNameplateEvidence: true,
+        aiSkipped: false,
+        aiSkipReason: 'ai_failed_low_evidence',
+      };
+    }
     return {
       ...localReading,
       aiAttempted: true,
