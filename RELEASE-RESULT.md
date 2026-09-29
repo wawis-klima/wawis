@@ -33,9 +33,9 @@
 
 ## Kontrola
 - smoke `scripts/smoke-contractors-stage3-v1176.mjs`
-- WAWIS PR checks: PASS przed migracją; po aktualizacji dokumentacji wymagany finalny rerun
-- Playwright: PENDING
-- build: PENDING
+- WAWIS PR checks: PASS — finalny rerun #460 po migracji i aktualizacji dokumentacji
+- Playwright mobile/desktop: PASS
+- produkcyjny build: PASS
 - migracja Supabase: PASS — `fixed_service_reminder_years_v1176` / produkcyjna wersja `20260929064201`
 - Vercel: PENDING — po merge do main
 - merge: PENDING
