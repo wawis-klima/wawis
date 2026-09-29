@@ -218,6 +218,7 @@ export default function App() {
   const [commentDrafts, setCommentDrafts] = useState({});
   const [activeModule, setActiveModule] = useState("jobs");
   const [contractorsCatalog, setContractorsCatalog] = useState([]);
+  const [contractorsCatalogAll, setContractorsCatalogAll] = useState([]);
   const [requestedContractorId, setRequestedContractorId] = useState(null);
   const [desktopNavKey, setDesktopNavKey] = useState("orders");
   const [jobsPage, setJobsPage] = useState(1);
@@ -275,6 +276,13 @@ export default function App() {
   });
 
   const isAdmin = profile?.role === "Administrator";
+
+  const applyContractorsCatalogSnapshot = React.useCallback((rows) => {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    setContractorsCatalogAll(safeRows);
+    setContractorsCatalog(safeRows.filter((item) => item.is_active !== false));
+  }, []);
+
   useEffect(() => {
     jobDetailsRequestsRef.current.clear();
     jobSummaryRequestsRef.current.clear();
@@ -1177,12 +1185,13 @@ export default function App() {
     async function loadAdminContractorsCatalog() {
       if (!isAdmin) {
         setContractorsCatalog([]);
+        setContractorsCatalogAll([]);
         return;
       }
 
       try {
         const data = await loadContractors({ supabase, isAdmin: true });
-        if (!cancelled) setContractorsCatalog(data.filter((item) => item.is_active !== false));
+        if (!cancelled) applyContractorsCatalogSnapshot(data);
       } catch (error) {
         console.warn('Nie udało się pobrać bazy kontrahentów do formularza montażu.', error?.message || error);
       }
@@ -1392,6 +1401,8 @@ export default function App() {
                 refreshAll={refreshAll}
                 jobs={jobs}
                 requestedContractorId={requestedContractorId}
+                initialContractors={contractorsCatalogAll}
+                onContractorsLoaded={applyContractorsCatalogSnapshot}
               />
             ) : activeModule === "devices" ? (
               <DevicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
