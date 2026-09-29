@@ -1,32 +1,29 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.74
+- 11.75
 
 ## Zakres
-- audyt Kontrahentów: etap 1 / K6
-- usuwanie wpisu job-derived w Kontrahentach desktop/mobile korzysta z `admin_delete_jobs_recoverable`
-- `p_only_unlinked=true` wymusza po stronie bazy, że fallback może usunąć tylko nadal nieprzypięte montaże
-- zwykłe „Usuń kartę” w Montażach również korzysta z recoverable RPC
-- przed DELETE nie ma już żadnego `storage.remove(job-photos)`
-- lokalna lista `jobs[].photos` nie decyduje już, które pliki mają zostać skasowane
-- pliki pozostają w Storage, ponieważ prywatny recycle bin przechowuje snapshot zdjęć i umożliwia kompletne przywrócenie
-- bez nowej migracji Supabase i bez zmian RLS
-
-## Produkcyjne potwierdzenie read-only
-- `admin_delete_jobs_recoverable(uuid[],boolean)`: istnieje
-- trigger `archive_job_before_delete`: aktywny
-- policy `retained_job_files_delete`: aktywna
-- legacy `job_photos_storage_delete_admin_or_owner`: nie występuje
+- audyt Kontrahentów: etap 2 / K8 + K9 + K15
+- K8: aktywna edycja kontrahenta na desktopie nie jest już ponownie seedowana po zmianie jobs/katalogu; niezapisany draft pozostaje nietknięty
+- K9: desktop i mobile unieważniają odczyt listy rozpoczęty przed zapisem/usunięciem i po potwierdzonej mutacji wykonują jeden kontrolowany świeży odczyt
+- K9: unieważnienie domyka stan loading; stara odpowiedź nie może nadpisać potwierdzonego lokalnego wyniku
+- K15: desktopowa lista urządzeń ma stan `{ contractorId, rows, status }`
+- K15: po A→B poprzednie urządzenia są czyszczone natychmiast, a akcja edycji jest blokowana dla wyniku należącego do innego contractorId
+- K15: poprawna pusta odpowiedź jest wynikiem „0 urządzeń”, a fallback nie wskrzesza urządzeń z poprzedniego klienta
+- zachowana ochrona requestów po zmianie konta/odmontowaniu komponentu
+- bez migracji Supabase, bez zmian RLS, Storage i Edge Functions
 
 ## Kontrola regresji
-- smoke zwykłego usuwania wymaga recoverable RPC i zabrania kasowania Storage
-- smoke Kontrahentów wymaga recoverable RPC z `p_only_unlinked=true`
-- scenariusz „DELETE nic nie usunął” nie dotyka Storage i kończy się błędem
-- wersja/cache PWA: 11.74
+- nowy `scripts/smoke-contractors-async-v1175.mjs` sprawdza K8/K9/K15
+- smoke wykonuje behawioralny scenariusz generacji requestów: stary load po invalidate nie może commitować, nowy load może
+- grupy desktop i mobile uruchamiają nową regresję
+- pełne WAWIS PR checks / Playwright / build: PENDING
+- wersja/cache PWA: 11.75
 
 ## Wynik wydania
 - WAWIS PR checks: PENDING
+- Playwright mobile/desktop: PENDING
 - produkcyjny build: PENDING
 - Vercel: PENDING
 - merge: PENDING
