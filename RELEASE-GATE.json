@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.73",
-  "scope": "mobile",
-  "release_branch": "release/v11.73",
+  "version": "11.74",
+  "scope": "full",
+  "release_branch": "release/v11.74",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana 11.73 dotyczy wyłącznie warstwy mobilnego viewportu i CSS gestów. Brak zmian zapytań, Supabase, RLS, Storage, Edge Functions i danych."
+    "notes": "K6 potwierdzony w audycie Kontrahentów: poprzednia ścieżka próbowała kasować job-photos przed potwierdzeniem DELETE i opierała się na lokalnym jobs[].photos. Produkcja sprawdzona read-only: admin_delete_jobs_recoverable(uuid[],boolean), trigger archive_job_before_delete i retained_job_files_delete istnieją; legacy job_photos_storage_delete_admin_or_owner nie występuje. 11.74 przepina desktop/mobile na odzyskiwalny RPC i zachowuje Storage dla kosza."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.73.zip"
+    "file_name": "klima-app-v11.74.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.73",
+    "source_branch": "release/v11.74",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu na iPhone potwierdzić wersję 11.73: pinch dwoma palcami nie powiększa ani nie pomniejsza aplikacji, double-tap nie zmienia skali, zwykłe pionowe przewijanie działa, podpis klienta i kamera/tabliczki zachowują własne gesty."
+    "notes": "Po deployu potwierdzić wersję 11.74. Na danych testowych/admin: usunięcie wpisu job-derived usuwa tylko nadal nieprzypięte montaże przez recoverable RPC; zwykłe Usuń kartę również trafia do kosza; brak bezpośredniego kasowania job-photos przed DELETE. Nie wykonywać destrukcyjnego testu na produkcyjnych kartach klientów."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian backendu",
-    "rls_role_matrix": "N/A — bez zmian RLS",
-    "performance_advisor": "N/A — bez zmian backendu",
-    "security_advisor": "N/A — bez zmian bezpieczeństwa/backendu",
-    "trigger_grants": "N/A — bez zmian",
+    "supabase_migration_applied": "N/A — wykorzystano istniejący produkcyjny RPC/trigger/kosz, bez nowej migracji",
+    "rls_role_matrix": "READ-ONLY — istniejący RPC wymaga current_user_is_admin(); brak zmian RLS",
+    "performance_advisor": "N/A — brak nowych zapytań produkcyjnych poza istniejącym RPC",
+    "security_advisor": "N/A — bez zmian polityk; potwierdzono brak legacy permissive Storage DELETE",
+    "trigger_grants": "READ-ONLY — archive_job_before_delete aktywny, admin_delete_jobs_recoverable dostępny zgodnie z istniejącym ACL",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "PENDING — po merge do main"
   }
