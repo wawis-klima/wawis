@@ -361,20 +361,73 @@ export async function parseXlsxContractorsFile(file) {
 
   const [headerRow = [], ...dataRows] = rows;
   const normalizedHeaders = headerRow.map((header) => HEADER_ALIASES.get(normalizeHeader(header)) || null);
-  const hasStatusColumn = normalizedHeaders.includes('status');
+  const statusColumnIndex = normalizedHeaders.findIndex((field) => field === 'is_active');
+  const hasStatusColumn = statusColumnIndex >= 0;
 
-  // K11 / 11.77: najpierw odrzucamy naprawdę puste wiersze arkusza.
-  // Wartości domyślne nie mogą sprawić, że sformatowany pusty wiersz stanie się rekordem.
-  const nonEmptyRows = dataRows.filter((row) => row.some((value) => String(value || '').trim()));
+  return dataRows
+    // K11 / 11.77: pusty wiersz odrzucamy zanim dodamy wartości domyślne.
+    .filter((row) => row.some((value) => String(value || '').trim()))
+    .map((row, dataIndex) => {
+      const sourceRowNumber = Number(row.__xlsxRowNumber) || dataIndex + 2;
+      const record = {
+        company_name: '',
+        contact_person: '',
+        phone: '',
+        email: '',
+        city: '',
+        street: '',
+        addresses_json: '',
+        addresses: [],
+        nip: '',
+        notes: '',
+        is_active: true,
+      };
+      const rowErrors = [];
+      let rawStatus = '';
 
-  return nonEmptyRows.map((row, index) => parseContractorImportRow({
-    row,
-    normalizedHeaders,
-    sourceRowNumber: Number(row.sourceRowNumber) || index + 2,
-    hasStatusColumn,
-  }));
+      row.forEach((cellValue, index) => {
+        const field = normalizedHeaders[index];
+        if (!field) return;
+        const value = String(cellValue || '').trim();
+        if (field === 'is_active') {
+          rawStatus = value;
+          return;
+        }
+        record[field] = value;
+      });
+
+      if (hasStatusColumn) {
+        const normalizedStatus = normalizeHeader(rawStatus);
+        if (normalizedStatus === 'aktywny' || normalizedStatus === 'true') {
+          record.is_active = true;
+        } else if (normalizedStatus === 'nieaktywny' || normalizedStatus === 'false') {
+          record.is_active = false;
+        } else {
+          rowErrors.push(`Nieprawidłowy status „${rawStatus || 'pusty'}”. Dozwolone: Aktywny, Nieaktywny, true, false.`);
+        }
+      }
+
+      if (record.addresses_json) {
+        try {
+          const parsed = JSON.parse(record.addresses_json);
+          if (!Array.isArray(parsed)) {
+            rowErrors.push('Kolumna Adresy (JSON) musi zawierać tablicę JSON.');
+          } else {
+            record.addresses = parsed;
+          }
+        } catch {
+          rowErrors.push('Nieprawidłowy JSON w kolumnie Adresy (JSON).');
+        }
+      }
+      delete record.addresses_json;
+
+      return {
+        ...record,
+        __import_row_number: sourceRowNumber,
+        __import_error: rowErrors.join(' '),
+      };
+    });
 }
-
 
 const DEVICE_HEADER_ALIASES = new Map([
   ['kontrahent', 'contractor_name'],
@@ -407,6 +460,8 @@ const DEVICE_HEADER_ALIASES = new Map([
   ['notatki', 'notes'],
   ['uwagi', 'notes'],
   ['notes', 'notes'],
+  ['status', 'is_active'],
+  ['status kontrahenta', 'is_active'],
 ]);
 
 export async function parseXlsxDevicesFile(file) {
