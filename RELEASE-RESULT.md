@@ -1,29 +1,41 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.75
+- 11.76
 
 ## Zakres
-- audyt Kontrahentów: etap 2 / K8 + K9 + K15
-- K8: aktywna edycja kontrahenta na desktopie nie jest już ponownie seedowana po zmianie jobs/katalogu; niezapisany draft pozostaje nietknięty
-- K9: desktop i mobile unieważniają odczyt listy rozpoczęty przed zapisem/usunięciem i po potwierdzonej mutacji wykonują jeden kontrolowany świeży odczyt
-- K9: unieważnienie domyka stan loading; stara odpowiedź nie może nadpisać potwierdzonego lokalnego wyniku
-- K15: desktopowa lista urządzeń ma stan `{ contractorId, rows, status }`
-- K15: po A→B poprzednie urządzenia są czyszczone natychmiast, a akcja edycji jest blokowana dla wyniku należącego do innego contractorId
-- K15: poprawna pusta odpowiedź jest wynikiem „0 urządzeń”, a fallback nie wskrzesza urządzeń z poprzedniego klienta
-- zachowana ochrona requestów po zmianie konta/odmontowaniu komponentu
-- bez migracji Supabase, bez zmian RLS, Storage i Edge Functions
+- audyt Kontrahentów: etap 3 / K1 + K2 + K17
+- K23 rozstrzygnięty decyzją biznesową: okres przypomnień serwisowych ma być stały i wynosić 5 lat
 
-## Kontrola regresji
-- nowy `scripts/smoke-contractors-async-v1175.mjs` sprawdza K8/K9/K15
-- smoke wykonuje behawioralny scenariusz generacji requestów: stary load po invalidate nie może commitować, nowy load może
-- grupy desktop i mobile uruchamiają nową regresję
-- pełne WAWIS PR checks / Playwright / build: PENDING
-- wersja/cache PWA: 11.75
+## K1 — adres montażu na mobile
+- `buildEditJobForm` zachowuje `contractor_address_id`
+- niezwiązana edycja (np. telefon) nie zmienia ID adresu
+- historyczny rekord bez ID pozostaje bez ID
+- świadomy wybór kontrahenta/adresu przenosi właściwy identyfikator
+- nowe zapisy mobile przekazują `contractor_address_id` do jobs
 
-## Wynik wydania
+## K2 — edycja urządzenia
+- zwykła korekta urządzenia z montażu zapisuje tylko `device_model` i `device_serial_number`
+- `installation_date` trafia do patcha wyłącznie po faktycznej zmianie
+- nie są wysyłane client/title/email/phone/city/street/location/sms_recipient_phone
+- zmiana kontrahenta urządzenia job-backed jest blokowana i wymaga edycji montażu
+
+## K17 — właściwy indeks urządzenia
+- fallback desktopu nadaje `source_job_id=job.id` pierwszemu urządzeniu
+- kolejne mają `job.id::device-N`
+- edycja urządzenia nr 2 nie może już trafić w indeks 0
+
+## Stałe 5 lat
+- odczyt produkcyjny przed zmianą: 146/146 jobs = 5; 718/718 devices = 5
+- aplikacja normalizuje wartość do 5 i jawnie wysyła `p_service_reminder_years=5`
+- migracja zmienia CHECK z 1..10 na dokładnie 5 i wymusza 5 w `admin_upsert_device`
+- istniejące dane nie wymagają korekty wartości
+
+## Kontrola
+- smoke `scripts/smoke-contractors-stage3-v1176.mjs`
 - WAWIS PR checks: PENDING
-- Playwright mobile/desktop: PENDING
-- produkcyjny build: PENDING
+- Playwright: PENDING
+- build: PENDING
+- migracja Supabase: PENDING
 - Vercel: PENDING
 - merge: PENDING
