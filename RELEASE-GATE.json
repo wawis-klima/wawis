@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
   "version": "11.80",
-  "scope": "mobile",
+  "scope": "full",
   "release_branch": "release/v11.80",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana UI ograniczona do mobilnego PreviewModal i src/mobile791/styles.css. Desktopowy PreviewModal/src/styles.css pozostają bez zmian. Zoom jest lokalnym transformem zdjęcia, nie przywraca globalnego pinch-zoom aplikacji."
+    "notes": "11.80 jest zmianą wyłącznie mobilnego podglądu zdjęć. Globalny viewport nadal ma user-scalable=no z 11.73; zoom realizowany jest lokalnie wewnątrz PreviewModal przez transform obrazu, więc nie skaluje całej aplikacji. Desktopowy src/components/modals/PreviewModal.jsx nie został zmieniony, a responsywny mobile791 PreviewModal zachowuje stary render dla viewportu >700 px."
   },
   "drive_backup": {
     "required": false,
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhone/PWA sprawdzić: otwarcie zdjęcia, pinch do ok. 400%, przesuwanie po zoomie, reset 100%, podwójne stuknięcie, przejście poprzednie/następne przy 100%, brak przewijania listy pod modalem. Desktop: brak zmiany zachowania."
+    "notes": "Po deployu na fizycznym iPhone: otworzyć zdjęcie z montażu; sprawdzić pinch 100–400%, przesuwanie jednym palcem po powiększeniu, reset 100%, +/−, podwójne stuknięcie 250%/100%, brak przewijania listy pod modalem oraz normalne przechodzenie między zdjęciami przy 100%. Na desktopie potwierdzić brak nowych kontrolek zoomu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak zmian Supabase",
-    "rls_role_matrix": "N/A — brak zmian RLS",
-    "performance_advisor": "N/A — tylko lokalny stan UI i transform CSS",
-    "security_advisor": "N/A — brak zmian backendu/uprawnień",
-    "trigger_grants": "N/A — brak zmian",
+    "supabase_migration_applied": "N/A — bez zmian Supabase",
+    "rls_role_matrix": "N/A — bez zmian RLS",
+    "performance_advisor": "N/A — bez zmian zapytań i backendu",
+    "security_advisor": "N/A — bez zmian uprawnień",
+    "trigger_grants": "N/A — bez zmian",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
