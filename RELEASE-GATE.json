@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.77",
+  "version": "11.78",
   "scope": "full",
-  "release_branch": "release/v11.77",
+  "release_branch": "release/v11.78",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Etap 4 audytu Kontrahentów: K13 + K11. Produkcja sprawdzona read-only: enforce_contractors_contact_duplicates() dla UPDATE zwraca NEW bez blokady telefonu/e-maila; contractors_company_name_unique_idx nadal wymusza unikalność nazwy. Zmiana aplikacji tylko wyrównuje desktop z backendem/mobile. Parser XLSX poprawiony lokalnie w desktop/mobile; bez zmian bazy, RLS, Storage i Edge Functions."
+    "notes": "Etap 5 audytu Kontrahentów: K16/K19/K21. Produkcja przed zmianą: 1345 kontrahentów; admin_list_contractors() zwraca SETOF uporządkowany po lower(company_name), created_at DESC, lecz klient 11.77 łączył pierwsze maks. 1000 rekordów z offsetowym SELECT-em o innym porządku. K16 korzysta z istniejącego admin_get_contractor_devices. 11.78 dodaje admin-only JSON snapshot katalogu, synchronizuje App/panel i uzupełnia urządzenia mobile."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.77.zip"
+    "file_name": "klima-app-v11.78.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.77",
+    "source_branch": "release/v11.78",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu potwierdzić 11.77: (1) desktop — istniejący klient ze wspólnym telefonem/e-mailem może zapisać zmianę notatki, ale nowy rekord z duplikatem nadal jest blokowany; zmiana nazwy na istniejącą pozostaje zablokowana; (2) eksport nieaktywnego klienta i ponowny import pokazuje Nieaktywny; (3) zły Adresy (JSON) / nieznany Status trafia do Błędnych wierszy z właściwym numerem; (4) puste sformatowane wiersze nie zwiększają liczników."
+    "notes": "Po deployu potwierdzić 11.78: (1) mobile — kontrahent z urządzeniem manual_import pokazuje je po rozwinięciu; fallback przy błędzie jest oznaczony; (2) przycisk Odśwież nie chowa istniejącej listy, a błąd zostawia listę i pokazuje „Dane mogą być nieaktualne”; (3) zapis/odświeżenie w panelu aktualizuje katalog formularza montażu; (4) admin_get_contractors_catalog zwraca dokładnie tyle elementów, ile COUNT(public.contractors), bez powtórzeń ID."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — etap 4 nie wymaga migracji",
-    "rls_role_matrix": "READ-ONLY — bez zmian; K13 dostosowuje UI do istniejącej polityki UPDATE",
-    "performance_advisor": "N/A — brak zmian zapytań produkcyjnych",
-    "security_advisor": "N/A — ochrona INSERT i unikalność nazwy pozostają; brak rozszerzania uprawnień",
-    "trigger_grants": "READ-ONLY — enforce_contractors_contact_duplicates UPDATE=return new; contractors_company_name_unique_idx aktywny",
+    "supabase_migration_applied": "PENDING — 20260929093000_complete_contractors_catalog_v1178 po zielonych PR checks",
+    "rls_role_matrix": "Bez zmian RLS; nowy RPC SECURITY DEFINER sprawdza current_user_is_admin() i ma EXECUTE tylko authenticated/service_role",
+    "performance_advisor": "K20 pozostaje osobnym etapem; 11.78 usuwa błędną mieszaną paginację, ale nie wykonuje jeszcze optymalizacji renderowania/analizy",
+    "security_advisor": "Nowy RPC nie poszerza dostępu — admin-only w treści funkcji, PUBLIC/anon revoked",
+    "trigger_grants": "N/A — bez zmian triggerów",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
