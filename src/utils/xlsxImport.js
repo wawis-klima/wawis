@@ -370,7 +370,7 @@ export async function parseXlsxContractorsFile(file) {
     .map((row, dataIndex) => parseContractorImportRow({
       row,
       normalizedHeaders,
-      sourceRowNumber: Number(row.__xlsxRowNumber) || dataIndex + 2,
+      sourceRowNumber: Number(row.sourceRowNumber) || dataIndex + 2,
       hasStatusColumn,
     }));
 }
