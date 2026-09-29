@@ -1,3 +1,14 @@
+## 11.76
+- Audyt Kontrahentów / etap 3: K1 + K2 + K17 oraz decyzja biznesowa dla K23.
+- K1 mobile: pełna edycja montażu zachowuje `contractor_address_id`; zmiana telefonu lub innych niezwiązanych pól nie przepina adresu dodatkowego na główny ani nie usuwa powiązania.
+- Mobile przy świadomym wyborze kontrahenta zapisuje ID jego wybranego adresu; karta pozwala przełączyć się pomiędzy zapisanymi adresami. Historyczny montaż bez ID adresu pozostaje historycznym snapshotem i nie jest automatycznie dopinany do adresu głównego.
+- K2: edycja urządzenia pochodzącego z montażu aktualizuje wyłącznie pola urządzeń oraz jawnie zmienioną datę montażu. Nie wysyła już nazwy klienta, telefonu, e-maila, miasta, ulicy ani lokalizacji z głównej karty kontrahenta.
+- Próba zmiany kontrahenta urządzenia powiązanego z montażem jest odrzucana; zmianę właściciela należy wykonać na samym montażu.
+- K17: drugi i kolejne wiersze fallbacku zachowują `source_job_id` z sufiksem `::device-N`, więc edycja urządzenia nr 2 nie trafia już w urządzenie nr 1.
+- K23: zgodnie z decyzją biznesową okres przypomnień serwisowych jest stały i wynosi dokładnie 5 lat. Produkcyjny odczyt przed zmianą potwierdził, że wszystkie 146 montaży i 718 urządzeń mają już wartość 5.
+- Aplikacja wysyła jawnie `p_service_reminder_years=5`, a migracja 11.76 blokuje w bazie inne wartości dla `jobs` i `devices` oraz wymusza 5 w `admin_upsert_device`.
+- Dodano regresję etapu 3. Zmiana nie rozszerza RLS ani uprawnień.
+
 ## 11.75
 - Audyt Kontrahentów / etap 2: zamknięto K8, K9 i K15 — ochrona draftu oraz odpowiedzi asynchronicznych.
 - K8 desktop: odświeżenie montaży lub katalogu nie nadpisuje już aktywnego, niezapisanego formularza kontrahenta; draft jest inicjalizowany przy wejściu w edycję i pozostaje własnością użytkownika do zapisu/anulowania.
