@@ -1,3 +1,11 @@
+## 11.84
+- Desktop / Montaże: dodano kolumnę `FV` z czerwonym kółkiem dla niewystawionej faktury VAT i zielonym dla wystawionej.
+- W sekcji `Klient` administrator może kliknąć status `Faktura VAT` i przełączać `Niewystawiona / Wystawiona`; zapis jest trwały w Supabase i od razu aktualizuje tabelę.
+- Pole i obsługa są wyłącznie w wersji desktopowej; mobilny payload i mobilny interfejs nie zostały zmienione.
+- Dodano `jobs.vat_invoice_issued` z domyślną wartością `false` oraz admin-only RPC do zmiany statusu.
+- Przy migracji 10 najnowszych zakończonych montaży według domyślnej kolejności desktopu pozostaje do ręcznego potwierdzenia, a wszystkie wcześniejsze zakończone montaże zostają oznaczone jako faktura VAT wystawiona.
+- Dodano regresję 11.84 sprawdzającą UI desktop, brak pola na mobile, zapis RPC i regułę backfillu 10 najnowszych montaży.
+
 ## 11.83
 - Tabliczki Rotenso: rozdzielono kod bazowy od rewizji. Nieznana jeszcze rewizja znanego modelu zachowuje dokładnie odczytane Rxx i nie dziedziczy EAN-u starszej wersji.
 - Ścisły parser nie zamienia O/0, I/1, L/1, S/5 ani B/8. Tolerancyjne korekty OCR są oznaczane osobno i wymagają zgodnego wyniku co najmniej dwóch przebiegów przed automatycznym uznaniem.
