@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.79",
-  "scope": "full",
-  "release_branch": "release/v11.79",
+  "version": "11.80",
+  "scope": "mobile",
+  "release_branch": "release/v11.80",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Etap 6 ograniczony decyzją użytkownika wyłącznie do K12. K14 nie jest wdrażany: brak advisory locks, brak transakcyjnej blokady kluczy i brak nowych UNIQUE dla kontaktów. Produkcja read-only przed zmianą: 567 kontrahentów z telefonem; obecna i proponowana normalizacja mają po 6 grup współdzielonych numerów, 0 nowych grup powstałych wyłącznie przez regułę +48. SQL normalize_contractors_text/email/nip już odpowiada docelowej specyfikacji; zmiany wymaga phone i jego indeks wyrażeniowy."
+    "notes": "Zmiana UI ograniczona do mobilnego PreviewModal i src/mobile791/styles.css. Desktopowy PreviewModal/src/styles.css pozostają bez zmian. Zoom jest lokalnym transformem zdjęcia, nie przywraca globalnego pinch-zoom aplikacji."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.79.zip"
+    "file_name": "klima-app-v11.80.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.79",
+    "source_branch": "release/v11.80",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu potwierdzić 11.79: (1) 500600700 / 500 600 700 / +48 500 600 700 / 0048 500 600 700 są jednym kluczem telefonu; (2) Górski/Gorski mogą się odnaleźć przez search, ale nie są automatycznie duplikatem nazwy; (3) mobile znajduje kontrahenta po dodatkowym adresie; (4) istniejące wspólne kontakty nie są scalane ani usuwane; (5) K14 pozostaje bez zmian."
+    "notes": "Na iPhone/PWA sprawdzić: otwarcie zdjęcia, pinch do ok. 400%, przesuwanie po zoomie, reset 100%, podwójne stuknięcie, przejście poprzednie/następne przy 100%, brak przewijania listy pod modalem. Desktop: brak zmiany zachowania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — contractor_normalization_v1179; SQL potwierdza jeden klucz +48500600700 dla 9 cyfr/48/+48/0048, numery zagraniczne +/00 zachowują prefiks; contractors_phone_lookup_idx przebudowany; nadal 6 istniejących grup współdzielonych numerów",
-    "rls_role_matrix": "N/A — bez zmian RLS",
-    "performance_advisor": "N/A — przebudowa jednego istniejącego indeksu lookup; bez nowych pełnych odczytów",
-    "security_advisor": "K14 świadomie poza zakresem; brak zmian zasad współbieżnych INSERT i brak nowych globalnych UNIQUE",
-    "trigger_grants": "Bez zmian; enforce_contractors_contact_duplicates zachowuje dotychczasową semantykę INSERT/UPDATE i korzysta z nowej normalize_contractors_phone. K14 nie został dodany.",
+    "supabase_migration_applied": "N/A — brak zmian Supabase",
+    "rls_role_matrix": "N/A — brak zmian RLS",
+    "performance_advisor": "N/A — tylko lokalny stan UI i transform CSS",
+    "security_advisor": "N/A — brak zmian backendu/uprawnień",
+    "trigger_grants": "N/A — brak zmian",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
