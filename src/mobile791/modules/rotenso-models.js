@@ -6,7 +6,7 @@ const ROTENSO_INDOOR_GROUPS = [
       { name: 'Luve Pro', powers: ['2,7 kW', '3,6 kW'] },
       { name: 'Mirai', powers: ['2,6 kW', '3,5 kW'] },
       { name: 'Fresh', powers: ['2,6 kW', '3,5 kW'] },
-      { name: 'Roni', powers: ['2,6 kW', '3,5 kW', '5,1 kW', '7,0 kW'] },
+      { name: 'Roni', powers: ['2,6 kW', '3,4 kW', '5,1 kW', '7,0 kW'] },
       { name: 'Versu Mirror', powers: ['2,6 kW', '3,5 kW', '5,3 kW'] },
       { name: 'Versu Pure', powers: ['2,6 kW', '3,5 kW', '5,3 kW'] },
       { name: 'Versu Cloth Stone', powers: ['2,6 kW', '3,5 kW', '5,3 kW'] },
@@ -17,6 +17,7 @@ const ROTENSO_INDOOR_GROUPS = [
       { name: 'Imoto', powers: ['2,6 kW', '3,5 kW', '5,3 kW', '7,0 kW'] },
       { name: 'Teta Mirror', powers: ['2,6 kW', '3,5 kW', '5,1 kW', '6,9 kW'] },
       { name: 'Teta', powers: ['2,6 kW', '3,5 kW', '5,2 kW', '7,0 kW'] },
+      { name: 'Ukura H', powers: ['2,6 kW', '3,5 kW', '5,3 kW', '7,0 kW'] },
       { name: 'Ukura', powers: ['2,6 kW', '3,5 kW', '5,3 kW', '7,0 kW'] },
       { name: 'Elis', powers: ['2,6 kW', '3,5 kW', '5,1 kW', '7,0 kW'] },
       { name: 'Elis Silver', powers: ['2,6 kW', '3,5 kW', '5,1 kW', '7,0 kW'] },
@@ -25,6 +26,7 @@ const ROTENSO_INDOOR_GROUPS = [
   {
     label: 'Konsolowe',
     models: [
+      { name: 'Aneru HP', powers: ['2,6 kW', '3,5 kW'] },
       { name: 'Aneru', powers: ['2,6 kW', '3,5 kW', '5,0 kW'] },
       { name: 'Aneru AN', powers: ['2,6 kW', '3,5 kW', '5,0 kW'] },
     ],
@@ -98,6 +100,10 @@ export function getRotensoModelFamilyFromValue(value = '') {
 
 const ROTENSO_SHARED_SINGLE_FAMILY_GROUPS = Object.freeze([
   Object.freeze(['Teta', 'Teta Mirror']),
+  Object.freeze(['Elis', 'Elis Silver']),
+  Object.freeze(['Luve', 'Luve Black']),
+  Object.freeze(['Luve Pro', 'Luve Pro Black']),
+  Object.freeze(['Versu', 'Versu Cloth Stone', 'Versu Cloth Caramel']),
 ]);
 
 function areCompatibleSingleFamilies(outdoorFamily = '', indoorFamily = '') {
