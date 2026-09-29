@@ -101,7 +101,7 @@ assert.ok(renameMatches.some(({ reasons }) => reasons.includes('nazwa')));
 
 const desktopPanel = read('src', 'components', 'contractors', 'ContractorsPanel.jsx');
 assert.match(desktopPanel, /if \(!form\.id\) return duplicateMatches;/);
-assert.match(desktopPanel, /reasons\.some\(\(reason\) => !\['telefon', 'email'\]\.includes\(reason\)\)/);
+assert.match(desktopPanel, /reasons\.includes\('nazwa'\)/);
 assert.match(desktopPanel, /if \(blockingDuplicateMatches\.length\)/);
 assert.match(desktopPanel, /disabled=\{saveBusy \|\| deleteBusy \|\| importBusy \|\| exportBusy \|\| blockingDuplicateMatches\.length\}/);
 assert.match(desktopPanel, /To tylko ostrzeżenie dla istniejącego rekordu/);
@@ -109,8 +109,8 @@ assert.match(desktopPanel, /To tylko ostrzeżenie dla istniejącego rekordu/);
 for (const sourcePath of ['src/utils/xlsxImport.js', 'src/mobile791/utils/xlsxImport.js']) {
   const source = read(...sourcePath.split('/'));
   assert.match(source, /\['status', 'status'\]/);
-  assert.match(source, /const nonEmptyRows = dataRows\.filter/);
-  assert.match(source, /row\.sourceRowNumber/);
+  assert.match(source, /\.filter\(\(row\) => row\.some\(/);
+  assert.match(source, /sourceRowNumber:\s*Number\(row\.sourceRowNumber\)/);
   assert.match(source, /__parse_errors/);
   assert.match(source, /Nieprawidłowy JSON w kolumnie Adresy \(JSON\)/);
 }
