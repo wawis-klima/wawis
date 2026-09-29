@@ -1,3 +1,14 @@
+## 11.83
+- Tabliczki Rotenso: rozdzielono kod bazowy od rewizji. Nieznana jeszcze rewizja znanego modelu zachowuje dokładnie odczytane Rxx i nie dziedziczy EAN-u starszej wersji.
+- Ścisły parser nie zamienia O/0, I/1, L/1, S/5 ani B/8. Tolerancyjne korekty OCR są oznaczane osobno i wymagają zgodnego wyniku co najmniej dwóch przebiegów przed automatycznym uznaniem.
+- AI dostała zakaz zgadywania podobnych znaków, rewizji i mocy z samego numeru modelu. Nieznane znaki mają pozostać niepewne.
+- Dla nowej rewizji parametry są dziedziczone tylko wtedy, gdy są identyczne we wszystkich znanych rewizjach danego kodu bazowego; przy różnicy pozostają puste i muszą pochodzić z tabliczki.
+- Uzupełniono prefiks Aneru HP, poprawiono prefiks T jako Tenji oraz dodano Ukura H i Aneru HP do mobilnego katalogu wyboru.
+- Walidacja Single uwzględnia potwierdzone wspólne agregaty: Teta/Teta Mirror, Elis/Elis Silver, Luve/Luve Black, Luve Pro/Luve Pro Black oraz Versu/Versu Cloth Stone/Versu Cloth Caramel. Versu Pure i Versu Mirror pozostają oddzielne.
+- Oficjalne dane Roni R18 skorygowano bez zmiany EAN-ów: R35Xi/R35Xo = 3,4 kW, R50Xi/R50Xo = 5,1 kW. Korekta została zastosowana również w produkcyjnym katalogu Supabase.
+- Dodano regresję dla wszystkich kodów bazowych katalogu z syntetyczną przyszłą rewizją R99: rewizja musi zostać zachowana, EAN ma pozostać pusty, a starsza rewizja nie może zostać podstawiona.
+- Dodano regresje O/0 i X0/Xo: jeden skorygowany przebieg nie może automatycznie potwierdzić modelu.
+
 ## 11.82
 - Protokół: przy chwilowym błędzie 5xx/timeout bezpieczne odczyty i idempotentny zapis płatności są automatycznie ponawiane jeden raz.
 - Protokół: po naciśnięciu „Zapisz protokół” aplikacja natychmiast pokazuje etap operacji: płatność, tworzenie PDF i zapis PDF.

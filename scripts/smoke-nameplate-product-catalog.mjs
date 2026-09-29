@@ -21,6 +21,11 @@ assert.match(seedMigration, /5905567608599/);
 assert.match(seedMigration, /5905567606182/);
 assert.match(seedMigration, /5905567606113/);
 assert.match(seedMigration, /on conflict \(ean\) do update/i);
+const roniCorrection = read('supabase/migrations/current/20260929144500_rotenso_r18_official_power_correction_v1183.sql');
+assert.match(roniCorrection, /5905567609084/);
+assert.match(roniCorrection, /Roni 3,4 kW \(R35Xi R18\)/);
+assert.match(roniCorrection, /5905567609107/);
+assert.match(roniCorrection, /Roni 5,1 kW \(R50Xi R18\)/);
 
 const component = read('src/components/desktop/DesktopNameplateOcrButton.jsx');
 assert.match(component, /lookupBuiltInRotensoProductByEan/);
@@ -57,6 +62,14 @@ assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606540')?.model_code, 'H
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606588')?.model_code, 'HN120Xm5 R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606076')?.model_code, 'HHP50Xm2 R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567601200')?.model_code, 'TM35Xi R16');
+assert.equal(data.getBuiltInRotensoCatalogEntry('5905567609084')?.model_name, 'Roni 3,4 kW (R35Xi R18)');
+assert.equal(Number(data.getBuiltInRotensoCatalogEntry('5905567609084')?.capacity_kw), 3.4);
+assert.equal(data.getBuiltInRotensoCatalogEntry('5905567609091')?.model_name, 'Roni 3,4 kW (R35Xo R18)');
+assert.equal(Number(data.getBuiltInRotensoCatalogEntry('5905567609091')?.capacity_kw), 3.4);
+assert.equal(data.getBuiltInRotensoCatalogEntry('5905567609107')?.model_name, 'Roni 5,1 kW (R50Xi R18)');
+assert.equal(Number(data.getBuiltInRotensoCatalogEntry('5905567609107')?.capacity_kw), 5.1);
+assert.equal(data.getBuiltInRotensoCatalogEntry('5905567609114')?.model_name, 'Roni 5,1 kW (R50Xo R18)');
+assert.equal(Number(data.getBuiltInRotensoCatalogEntry('5905567609114')?.capacity_kw), 5.1);
 assert.equal(data.getBuiltInRotensoCatalogEntry('2411950928074')?.model_code, 'TM35Xi R16');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567608599')?.model_code, 'LBP26Xi R16');
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606175')?.model_code, 'N90Xi R15');

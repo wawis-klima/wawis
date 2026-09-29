@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.82",
-  "scope": "mobile",
-  "release_branch": "release/v11.82",
+  "version": "11.83",
+  "scope": "full",
+  "release_branch": "release/v11.83",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Dawid Czerny: pracownik i administrator trafili w tym samym oknie na błędy PostgREST 'Warp server error: Thread killed by timeout manager'. Rekord protokołu ostatecznie zapisał się poprawnie. 11.82 dodaje ograniczony retry wyłącznie dla bezpiecznych operacji, widoczne etapy zapisu oraz bezpieczny fallback AI tabliczek. Produkcyjny katalog Rotenso zsynchronizowano do 215 verified rekordów; bez zmian schematu i RLS."
+    "notes": "Przegląd katalogu Rotenso i logiki OCR wykazał, że poprzedni resolver po rozpoznaniu znanego kodu bazowego bez dokładnej rewizji mógł zwrócić rekord starszej rewizji. Zweryfikowano bieżącego Roni R18 w oficjalnych materiałach producenta; nie znaleziono oficjalnej R19 na dzień 2026-09-29. 11.83 zachowuje dowolne odczytane Rxx jako osobną rewizję, nie przypisuje starego EAN-u i nie ufa pojedynczej korekcie O/0. Bez zmian RLS i schematu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.82.zip"
+    "file_name": "klima-app-v11.83.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.82",
+    "source_branch": "release/v11.83",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na fizycznym iPhonie sprawdzić: zapis protokołu od razu pokazuje etapy; przy krótkim błędzie backendu bezpieczny krok ponawia się automatycznie; po niepowodzeniu podpis pozostaje i ekran się odblokowuje. Sprawdzić też ciasny kadr Rotenso Roni i odrzucenie zdjęcia bez tabliczki."
+    "notes": "Po wdrożeniu sprawdzić fizycznie: obecny Roni R18, odrzucenie zdjęcia bez tabliczki, lokalny odczyt O/0 bez pojedynczego auto-potwierdzenia oraz syntetyczny/fixture kod nowej rewizji zachowujący Rxx bez starego EAN-u. Sprawdzić też wspólne agregaty rodzin Single."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "DML seed katalogu v9.02 zastosowany produkcyjnie; bez zmian schematu. 215 rekordów, wszystkie verified=true.",
+    "supabase_migration_applied": "Korekta danych Roni R18 zastosowana produkcyjnie 2026-09-29: EAN 5905567609084/9091 = 3,4 kW; 5905567609107/9114 = 5,1 kW. Bez zmian schematu; wszystkie cztery rekordy pozostają verified=true.",
     "rls_role_matrix": "N/A — bez zmian RLS",
     "performance_advisor": "N/A — bez zmian struktury zapytań",
     "security_advisor": "N/A — bez zmian uprawnień",

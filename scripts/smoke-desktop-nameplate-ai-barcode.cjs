@@ -30,10 +30,23 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert.strictEqual(alternateLabel.exactModel?.code, 'R35Xi R18');
   assert.strictEqual(alternateLabel.modelConfirmedByCatalog, true);
   assert.strictEqual(alternateLabel.manufacturer, 'Rotenso');
-  assert(/Roni 3,5 kW/.test(alternateLabel.model));
+  assert(/Roni 3,4 kW/.test(alternateLabel.model));
   assert.strictEqual(alternateLabel.serialNumber, '140201BFT7N28261B000931');
   assert.strictEqual(alternateLabel.fieldQualities.model.level, 'high');
   assert.strictEqual(alternateLabel.fieldSources.serialNumber.type, 'barcode');
+
+  const futureRevision = ai.normalizeNameplateAiResult({ result: {
+    manufacturer: 'Rotenso', model_code: 'R35Xi R19', model_family: 'Roni', power_kw: '3,4',
+    serial_number: 'R19SERIAL123456', ean: '', unit_type: 'indoor', raw_text: 'R35Xi R19 3.4 kW',
+    uncertain_characters: [], notes: '',
+    confidence: { manufacturer: .95, model: .98, power: .95, serial_number: .9, ean: 0 },
+  } });
+  assert.strictEqual(futureRevision.exactModel?.code, 'R35Xi R19');
+  assert.strictEqual(futureRevision.modelConfirmedByCatalog, false);
+  assert.strictEqual(futureRevision.modelBaseRecognized, true);
+  assert.strictEqual(futureRevision.newRevisionRecognized, true);
+  assert.strictEqual(futureRevision.exactModel?.ean, '');
+  assert.strictEqual(futureRevision.fieldQualities.model.level, 'high');
 
   const elisOutdoorFromRawText = ai.normalizeNameplateAiResult({ result: {
     manufacturer: '', model_code: '', model_family: '', power_kw: '',
@@ -45,7 +58,11 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert.strictEqual(elisOutdoorFromRawText.exactModel?.code, 'EO50Xo R17');
   assert.strictEqual(elisOutdoorFromRawText.exactModel?.unitType, 'outdoor');
   assert.strictEqual(elisOutdoorFromRawText.manufacturer, 'Rotenso');
-  assert.strictEqual(elisOutdoorFromRawText.model, 'Elis 5,0 kW (EO50Xo R17)');
+  assert.ok(
+    ['Elis', 'Elis Silver'].includes(elisOutdoorFromRawText.exactModel?.family),
+    'EO50Xo R17 jest wspólną JZ dla Elis i Elis Silver; test nie może wymuszać jednej nazwy rodziny',
+  );
+  assert.match(elisOutdoorFromRawText.model, /5,0 kW \(EO50Xo R17\)$/);
   assert.strictEqual(elisOutdoorFromRawText.power, '5,0 kW');
   assert.strictEqual(elisOutdoorFromRawText.serialNumber, '140202A8RBW16253M000007');
   assert.strictEqual(elisOutdoorFromRawText.modelConfirmedByCatalog, true);
@@ -57,7 +74,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   } });
   assert.strictEqual(unknown.modelConfirmedByCatalog, false);
   assert.strictEqual(unknown.fieldQualities.model.level, 'medium');
-  assert(/nie znaleziono dokładnego odpowiednika/i.test(unknown.fieldQualities.model.warning));
+  assert(
+    /nie udało się bezpiecznie potwierdzić|niepotwierdz/i.test(unknown.fieldQualities.model.warning),
+    'Nieznany kod ma pozostać niepotwierdzony i wymagać sprawdzenia',
+  );
 
   const contradictoryAi = ai.normalizeNameplateAiResult({ result: {
     manufacturer: 'Rotenso', model_code: 'I35Xi R14', model_family: 'Imoto', power_kw: '3,5',
@@ -80,6 +100,9 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert(endpoint.includes('Nigdy nie twórz EAN-u z numeru seryjnego'));
   assert(endpoint.includes('Nie mieszaj numeru seryjnego, EAN-u i kodu modelu'));
   assert(endpoint.includes('EO50Xo R17'));
+  assert(endpoint.includes('Nie zamieniaj litery O na cyfrę 0'));
+  assert(endpoint.includes('Nowa rewizja, np. R19'));
+  assert(endpoint.includes('Nie wyliczaj power_kw wyłącznie z cyfr kodu modelu'));
 
   console.log('Smoke OK: hard barcodes win, AI reads print, and Rotenso models require exact catalog confirmation');
 })().catch((error) => { console.error(error); process.exit(1); });

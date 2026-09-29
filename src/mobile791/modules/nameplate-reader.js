@@ -58,7 +58,7 @@ export function getMobileNameplateEvidence({
   const digitCount = (rawText.match(/\d/g) || []).length;
   const lineCount = rawText.split(/\n+/).map((line) => line.trim()).filter(Boolean).length;
   const hasTechnicalValue = NAMEPLATE_TECHNICAL_VALUE_RE.test(rawText);
-  const hasModelishToken = NAMEPLATE_MODELISH_TOKEN_RE.test(rawText);
+  const modelishTokens = rawText.match(new RegExp(NAMEPLATE_MODELISH_TOKEN_RE.source, 'gi')) || [];
   const hasSerialLabel = NAMEPLATE_SERIAL_LABEL_RE.test(rawText);
 
   const hasRawEan = Boolean(normalizeText(barcodeInfo?.ean));
@@ -80,6 +80,16 @@ export function getMobileNameplateEvidence({
     && focusedSerialVotes >= 2
     && focusedSerialConfidence >= 45,
   );
+
+  // Długi numer seryjny często wygląda dla prostego regexu jak kod modelu.
+  // Nie wolno więc używać tego samego ciągu jednocześnie jako SN i jako
+  // "niezależnego" dowodu modelu.
+  const knownSerialTokens = new Set(
+    [barcodeSerial, focusedSerial, normalizeSerial(serialNumber)].filter(Boolean),
+  );
+  const hasModelishToken = modelishTokens.some((token) => (
+    !knownSerialTokens.has(normalizeSerial(token))
+  ));
 
   // Tekst musi zawierać co najmniej dwa niezależne ślady tabliczki albo
   // jeden charakterystyczny nagłówek wsparty wartością techniczną/kodem modelu.
@@ -357,8 +367,12 @@ export async function readMobileNameplate({
     const modelValue = buildResolvedModelValue({ manufacturer, model, power }) || localModel.modelValue;
     const finalSerial = normalizeSerial(aiResult.serialNumber || serialNumber);
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
+    const aiTrustedModel = Boolean(
+      aiResult?.modelConfirmedByCatalog
+      || aiResult?.modelBaseRecognized
+    );
 
-    if (weakEvidenceFallback && (!aiResult?.exactModel || !finalSerial)) {
+    if (weakEvidenceFallback && (!aiTrustedModel || !finalSerial)) {
       return {
         ...localReading,
         method: 'ai',

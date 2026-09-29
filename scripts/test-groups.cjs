@@ -114,6 +114,8 @@ const GROUPS = {
     'npm run test:smoke:rotenso-model-history',
     'npm run test:smoke:desktop-nameplate-ocr',
     'npm run test:smoke:desktop-nameplate-ai-barcode',
+    'npm run test:smoke:desktop-nameplate-layout-profiles',
+    'npm run test:smoke:mobile-nameplate-verification',
     'npm run test:smoke:desktop-nameplate-read-resilience',
     'npm run test:smoke:desktop-nameplate-automatic-fallback',
     'npm run test:smoke:desktop-nameplate-ean-separation',

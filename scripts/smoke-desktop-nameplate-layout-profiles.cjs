@@ -12,7 +12,10 @@ const root = path.resolve(__dirname, '..');
 
   const exact = dictionary.resolveRotensoCatalogModelCode('R35Xi R18');
   assert.strictEqual(exact?.code, 'R35Xi R18');
-  assert.strictEqual(exact?.model, 'Roni 3,5 kW (R35Xi R18)');
+  assert.strictEqual(exact?.model, 'Roni 3,4 kW (R35Xi R18)');
+  assert.strictEqual(exact?.capacityKw, '3,4');
+  assert.strictEqual(exact?.catalogVerified, true);
+  assert.strictEqual(exact?.revisionCatalogKnown, true);
   assert.strictEqual(exact?.unitType, 'indoor');
   assert.strictEqual(exact?.ean, '5905567609084');
 
@@ -32,6 +35,52 @@ const root = path.resolve(__dirname, '..');
   assert.strictEqual(combined.modelConfirmedByCatalog, true);
   assert.strictEqual(combined.serialNumber, serial);
   assert.strictEqual(combined.fieldQualities.model.level, 'high');
+
+  const futureRoni = dictionary.resolveRotensoCatalogModelCode('R35Xi R19');
+  assert.strictEqual(futureRoni?.code, 'R35Xi R19');
+  assert.strictEqual(futureRoni?.family, 'Roni');
+  assert.strictEqual(futureRoni?.revision, 'R19');
+  assert.strictEqual(futureRoni?.ean, '', 'Nie wolno przypisywać EAN-u starszej rewizji do R19');
+  assert.strictEqual(futureRoni?.catalogVerified, false);
+  assert.strictEqual(futureRoni?.baseModelVerified, true);
+  assert.strictEqual(futureRoni?.revisionCatalogKnown, false);
+  assert.strictEqual(futureRoni?.capacityKw, '', 'R35 zmienił moc między rewizjami, więc nowej rewizji nie wolno zgadywać');
+
+  const stableFutureRoni = dictionary.resolveRotensoCatalogModelCode('R26Xi R19');
+  assert.strictEqual(stableFutureRoni?.code, 'R26Xi R19');
+  assert.strictEqual(stableFutureRoni?.capacityKw, '2,6', 'Stała moc we wszystkich znanych rewizjach może być zachowana');
+  assert.strictEqual(stableFutureRoni?.ean, '');
+
+  const futureAi = ai.normalizeNameplateAiResult({ result: {
+    manufacturer: 'Rotenso', model_code: 'R35Xi R19', model_family: 'Roni', power_kw: '3,4',
+    serial_number: 'RONIR190001234567', ean: '', unit_type: 'indoor',
+    raw_text: 'ROTENSO R35Xi R19 3.4 kW', uncertain_characters: [], notes: '',
+    confidence: { manufacturer: .98, model: .98, power: .95, serial_number: .9, ean: 0 },
+  } });
+  assert.strictEqual(futureAi.exactModel?.code, 'R35Xi R19');
+  assert.strictEqual(futureAi.modelConfirmedByCatalog, false);
+  assert.strictEqual(futureAi.modelBaseRecognized, true);
+  assert.strictEqual(futureAi.newRevisionRecognized, true);
+  assert.strictEqual(futureAi.exactModel?.ean, '');
+  assert.strictEqual(futureAi.power, '3,4', 'Dla nowej rewizji moc ma pochodzić z odczytu tabliczki, nie ze starego katalogu');
+
+  const fuzzyZero = modelOcr.resolveFocusedRotensoModelText('R5OXi R19');
+  assert.strictEqual(fuzzyZero?.code, 'R50Xi R19');
+  assert.strictEqual(fuzzyZero?.ocrCorrected, true);
+  const fuzzyZeroOnePass = modelOcr.selectFocusedModelConsensus(['R5OXi R19'], [99]);
+  assert.strictEqual(fuzzyZeroOnePass.reliable, false, 'Jedna korekta O→0 nie może automatycznie potwierdzić modelu');
+  const fuzzyZeroTwoPasses = modelOcr.selectFocusedModelConsensus(['R5OXi R19', 'R5OXi R19'], [90, 91]);
+  assert.strictEqual(fuzzyZeroTwoPasses.reliable, true);
+  assert.strictEqual(fuzzyZeroTwoPasses.model?.code, 'R50Xi R19');
+
+  const fuzzyUnitMarker = modelOcr.resolveFocusedRotensoModelText('R35X0 R19');
+  assert.strictEqual(fuzzyUnitMarker?.code, 'R35Xo R19');
+  assert.strictEqual(fuzzyUnitMarker?.ocrCorrected, true);
+  assert.strictEqual(modelOcr.selectFocusedModelConsensus(['R35X0 R19'], [99]).reliable, false, 'X0/Xo wymaga konsensusu');
+  assert.strictEqual(modelOcr.selectFocusedModelConsensus(['R35X0 R19', 'R35X0 R19'], [92, 94]).model?.code, 'R35Xo R19');
+
+  const strictZeroMustNotMasquerade = dictionary.resolveRotensoNameplateModelExact('R35X0 R19');
+  assert.strictEqual(strictZeroMustNotMasquerade, null, 'Ścisły parser nie może zamienić cyfry 0 na literę o');
 
   const photographedElis = modelOcr.resolveFocusedRotensoModelText('EOSOXo R17');
   assert.strictEqual(photographedElis?.manufacturer, 'Rotenso');
@@ -58,6 +107,7 @@ const root = path.resolve(__dirname, '..');
   assert.strictEqual(modelOcr.resolveFocusedRotensoModelText('ESSOXi_R17')?.code, 'ES50Xi R17');
 
   const catalogCodes = [...new Set(catalog.ROTENSO_EAN_CATALOG.map((entry) => entry.model_code))];
+  const catalogBaseCodes = [...new Set(catalogCodes.map((modelCode) => modelCode.replace(/\s+R[0-9]{1,2}$/i, '')))];
   for (const modelCode of catalogCodes) {
     const exactCatalogMatch = dictionary.resolveRotensoCatalogModelCode(modelCode);
     assert.strictEqual(exactCatalogMatch?.code, modelCode, `Exact catalog lookup failed for ${modelCode}`);
@@ -68,7 +118,22 @@ const root = path.resolve(__dirname, '..');
       .replace(/Xi/i, 'X1');
     const ocrCatalogMatch = dictionary.resolveRotensoCatalogModelCode(typicalOcrVariant);
     assert.strictEqual(ocrCatalogMatch?.code, modelCode, `OCR catalog lookup failed for ${modelCode}`);
+    if (typicalOcrVariant !== modelCode) {
+      assert.strictEqual(ocrCatalogMatch?.ocrCorrected, true, `OCR correction must be explicitly marked for ${modelCode}`);
+    } else {
+      assert.strictEqual(ocrCatalogMatch?.ocrCorrected, false, `Exact text must not be mislabeled as OCR-corrected for ${modelCode}`);
+    }
   }
 
-  console.log(`Smoke OK: both label layouts and all ${catalogCodes.length} catalog model codes work with local OCR matching`);
+  for (const baseCode of catalogBaseCodes) {
+    const futureCode = `${baseCode} R99`;
+    const futureMatch = dictionary.resolveRotensoCatalogModelCode(futureCode);
+    assert.strictEqual(futureMatch?.code, futureCode, `Future revision must be preserved for ${baseCode}`);
+    assert.strictEqual(futureMatch?.revision, 'R99', `Future revision token must not be replaced for ${baseCode}`);
+    assert.strictEqual(futureMatch?.ean, '', `Future revision must never inherit an older EAN for ${baseCode}`);
+    assert.strictEqual(futureMatch?.catalogVerified, false, `Future revision cannot pretend to be an exact catalog row for ${baseCode}`);
+    assert.strictEqual(futureMatch?.baseModelVerified, true, `Known base model must remain recognized for ${baseCode}`);
+  }
+
+  console.log(`Smoke OK: both label layouts, all ${catalogCodes.length} catalog model codes and ${catalogBaseCodes.length} synthetic future revisions work without borrowing an older EAN`);
 })().catch((error) => { console.error(error); process.exit(1); });

@@ -189,10 +189,11 @@ export function selectFocusedModelConsensus(passTexts = [], passConfidences = []
     || right.maxConfidence - left.maxConfidence
     || String(right.model.code).length - String(left.model.code).length
   ))[0] || null;
+  const needsOcrConsensus = Boolean(winner?.model?.ocrCorrected);
   const reliable = Boolean(winner && (
     winner.passIndexes.size >= 2
-    || winner.maxConfidence >= 68
-    || winner.model.catalogVerified
+    || (!needsOcrConsensus && winner.maxConfidence >= 68)
+    || (!needsOcrConsensus && winner.model.catalogVerified)
   ));
   return {
     model: reliable ? winner.model : null,

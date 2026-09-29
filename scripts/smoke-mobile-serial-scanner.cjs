@@ -89,7 +89,7 @@ assert.match(wizardStyles, /v11\.34 — rzeczywista kompaktowość/);
 assert.match(wizardStyles, /\.mobileDeviceWizardBody \{[\s\S]*?align-content: start !important;[\s\S]*?grid-auto-rows: max-content !important;/);
 assert.match(wizardStyles, /\.mobileDeviceAddAnother \{[\s\S]*?justify-self: center !important;[\s\S]*?width: max-content !important;[\s\S]*?min-height: 38px !important;/);
 
-for (const modelName of ['Luve Pro Black', 'Mirai', 'Fresh', 'Roni', 'Versu Mirror', 'Versu Pure', 'Versu Cloth Stone', 'Versu Cloth Caramel', 'Luve Black', 'Luve', 'Revio', 'Imoto', 'Teta Mirror', 'Teta', 'Ukura', 'Elis', 'Elis Silver', 'Aneru', 'Tenji CC', 'Tenji CS', 'Nevo', 'Jato', 'Hiro N', 'Hiro S', 'Hiro HP']) {
+for (const modelName of ['Luve Pro Black', 'Luve Pro', 'Mirai', 'Fresh', 'Roni', 'Versu Mirror', 'Versu Pure', 'Versu Cloth Stone', 'Versu Cloth Caramel', 'Luve Black', 'Luve', 'Revio', 'Imoto', 'Teta Mirror', 'Teta', 'Ukura H', 'Ukura', 'Elis', 'Elis Silver', 'Aneru HP', 'Aneru', 'Tenji CC', 'Tenji CS', 'Nevo', 'Jato', 'Hiro N', 'Hiro S', 'Hiro HP']) {
   assert.match(rotensoCatalogSource, new RegExp(modelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 }
 assert.match(rotensoCatalogSource, /'15,2 kW'/);
@@ -176,6 +176,9 @@ assert.match(e2eSource, /toBeEnabled/);
   assert.ok(indoorModelNames.includes('Tenji CS'));
   assert.ok(indoorModelNames.includes('Jato'));
   assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Teta Mirror'), ['2,6 kW', '3,5 kW', '5,1 kW', '6,9 kW']);
+  assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Roni'), ['2,6 kW', '3,4 kW', '5,1 kW', '7,0 kW']);
+  assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Ukura H'), ['2,6 kW', '3,5 kW', '5,3 kW', '7,0 kW']);
+  assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Aneru HP'), ['2,6 kW', '3,5 kW']);
   assert.deepEqual(rotensoCatalog.getRotensoPowerOptions('Hiro N', { deviceType: devices.DEVICE_TYPE_MULTI, unitRef: 'jz' }), ['4,1 kW', '5,1 kW', '7,5 kW', '9,4 kW', '11,8 kW']);
   assert.deepEqual(rotensoCatalog.getRotensoModelNames({ deviceType: devices.DEVICE_TYPE_MULTI, unitRef: 'jz' }), ['Hiro N', 'Hiro S', 'Hiro HP']);
   assert.equal(rotensoCatalog.getRotensoModelFamilyFromValue('Rotenso Imoto 3,5 kW I35Xi R14'), 'Imoto');
@@ -206,6 +209,52 @@ assert.match(e2eSource, /toBeEnabled/);
     outdoorModel: 'Rotenso Teta Mirror 3,5 kW (TO35Xo R17)',
     indoorModel: 'Rotenso Ukura 3,5 kW U35Xi R17',
   })?.message.includes('Niezgodny zestaw Single'), true, 'Wyjątek Teta/Teta Mirror nie może osłabić blokady innych rodzin');
+
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('EO35Xo R19'), ['Elis', 'Elis Silver']);
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('LO35Xo R19'), ['Luve', 'Luve Black']);
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('LOP35Xo R19'), ['Luve Pro', 'Luve Pro Black']);
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('VO35Xo R19'), ['Versu', 'Versu Cloth Stone', 'Versu Cloth Caramel']);
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('R35X0 R19'), [], 'Cyfra 0 nie może być potraktowana jak litera o w ścisłej walidacji rodziny');
+
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'EO35Xo R19',
+    indoorModel: 'Elis Silver 3,5 kW (ES35Xi R19)',
+  }), null, 'Nowa rewizja wspólnego agregatu EO ma być zgodna z Elis Silver');
+
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'LO35Xo R19',
+    indoorModel: 'Luve Black 3,6 kW (LB35Xi R19)',
+  }), null, 'Wspólny agregat LO ma być zgodny z Luve Black');
+
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'LOP35Xo R19',
+    indoorModel: 'Luve Pro Black 3,6 kW (LBP35Xi R19)',
+  }), null, 'Wspólny agregat LOP ma być zgodny z Luve Pro Black');
+
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'VO35Xo R19',
+    indoorModel: 'Versu Cloth Caramel 3,5 kW (VCC35Xi R19)',
+  }), null, 'Wspólny agregat VO ma być zgodny z Versu Cloth Caramel');
+
+  assert.equal(Boolean(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'VP35Xo R19',
+    indoorModel: 'Versu Cloth Stone 3,5 kW (VCS35Xi R19)',
+  })), true, 'Versu Pure ma własny agregat VP i nie może być traktowany jak wspólny VO');
+
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('UO90Xo R19'), ['Unico']);
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('T90Xi R19'), ['Tenji']);
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Unico 8,8 kW (UO90Xo R19)',
+    indoorModel: 'Tenji CS 8,8 kW (T90Xi R19)',
+  }), null, 'Unico jest wspólną jednostką zewnętrzną dla Tenji');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Unico 8,8 kW (UO90Xo R19)',
+    indoorModel: 'Jato 10,6 kW (J100Xi R19)',
+  }), null, 'Unico jest kompatybilne z Jato');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Unico 8,8 kW (UO90Xo R19)',
+    indoorModel: 'Roni 3,4 kW (R35Xi R19)',
+  })?.message.includes('Niezgodny zestaw Single'), true, 'Komercyjny wyjątek Unico nie może osłabić blokady Roni');
 
   const draft = devices.normalizeJobDevices({
     devices: [{

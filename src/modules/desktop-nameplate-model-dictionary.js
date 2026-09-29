@@ -6,9 +6,7 @@ function normalizePrintedRotensoModelCode(value = '') {
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
     .replace(/[–—−]/g, '-')
-    .replace(/[^A-Z0-9]/g, '')
-    .replace(/X[1L]/g, 'XI')
-    .replace(/X[0Q]/g, 'XO');
+    .replace(/[^A-Z0-9]/g, '');
 }
 
 function stripPrintedRotensoRevision(value = '') {
@@ -17,6 +15,10 @@ function stripPrintedRotensoRevision(value = '') {
 
 function foldPrintedRotensoOcrCharacters(value = '') {
   return normalizePrintedRotensoModelCode(value)
+    // Korekty Xi/Xo są dozwolone wyłącznie w ścieżce OCR i są potem oznaczane
+    // jako korekta wymagająca konsensusu kilku przebiegów.
+    .replace(/X[1L]/g, 'XI')
+    .replace(/X[0Q]/g, 'XO')
     .replace(/[OQD]/g, '0')
     .replace(/[IL]/g, '1')
     .replace(/S/g, '5')
@@ -41,23 +43,44 @@ const ROTENSO_CATALOG_MODEL_CANDIDATES = Object.freeze(
     }),
 );
 
+const ROTENSO_CATALOG_BASE_GROUPS = Object.freeze(
+  [...ROTENSO_CATALOG_MODEL_CANDIDATES.reduce((groups, candidate) => {
+    const current = groups.get(candidate.baseCode) || [];
+    current.push(candidate);
+    groups.set(candidate.baseCode, current);
+    return groups;
+  }, new Map()).values()]
+    .map((candidates) => Object.freeze({
+      baseCode: candidates[0].baseCode,
+      foldedBaseCode: candidates[0].foldedBaseCode,
+      candidates: Object.freeze(candidates),
+    }))
+    .sort((left, right) => right.baseCode.length - left.baseCode.length),
+);
+
 function formatCatalogCapacityKw(value = '') {
   const number = Number(String(value || '').replace(',', '.'));
   if (!Number.isFinite(number) || number <= 0) return '';
   return (Number.isInteger(number) ? number.toFixed(1) : String(number)).replace('.', ',');
 }
 
-function catalogEntryToResolution(entry) {
+function catalogEntryToResolution(entry, {
+  revisionObserved = false,
+  ocrCorrected = false,
+  evidence = 'catalog_model_code',
+} = {}) {
   if (!entry) return null;
   const code = String(entry.model_code || '').trim();
   const compactCode = normalizePrintedRotensoModelCode(code);
   const codeParts = stripPrintedRotensoRevision(compactCode).match(/^([A-Z]{1,4})([0-9]{2,3})X(?:[IO]|M[2-5])$/i);
   const unitType = String(entry.unit_type || '').toLowerCase();
+  const family = entry.family || '';
   return {
     manufacturer: entry.manufacturer || 'Rotenso',
     prefix: codeParts?.[1] || '',
     capacityCode: codeParts?.[2] || '',
-    family: entry.family || '',
+    family,
+    familyCandidates: family ? [family] : [],
     capacityKw: formatCatalogCapacityKw(entry.capacity_kw),
     unitType,
     systemType: /XM[2-5]/i.test(code) ? 'multi-split' : (unitType === 'outdoor' ? 'single-split' : ''),
@@ -66,48 +89,145 @@ function catalogEntryToResolution(entry) {
     code,
     model: entry.model_name || code,
     ean: entry.ean || '',
-    evidence: 'catalog_model_code',
+    evidence,
     catalogVerified: Boolean(entry.verified),
+    baseModelVerified: true,
+    revisionCatalogKnown: true,
+    revisionObserved: Boolean(revisionObserved),
+    ocrCorrected: Boolean(ocrCorrected),
   };
+}
+
+function catalogBaseGroupToResolution(group, {
+  revision = '',
+  ocrCorrected = false,
+} = {}) {
+  const candidates = group?.candidates || [];
+  if (!candidates.length) return null;
+
+  const exemplar = candidates
+    .slice()
+    .sort((left, right) => Number(Boolean(right.entry?.verified)) - Number(Boolean(left.entry?.verified)))[0];
+  const exemplarResolution = catalogEntryToResolution(exemplar.entry);
+  if (!exemplarResolution) return null;
+
+  const displayBaseCode = String(exemplar.entry.model_code || '')
+    .replace(/\s+R[0-9]{1,2}$/i, '')
+    .trim();
+  const familyCandidates = [...new Set(
+    candidates.map((candidate) => String(candidate.entry?.family || '').trim()).filter(Boolean),
+  )];
+  const capacityCandidates = [...new Set(
+    candidates.map((candidate) => formatCatalogCapacityKw(candidate.entry?.capacity_kw)).filter(Boolean),
+  )];
+  const stableFamily = familyCandidates.length === 1 ? familyCandidates[0] : '';
+  const stableCapacity = capacityCandidates.length === 1 ? capacityCandidates[0] : '';
+  const cleanRevision = String(revision || '').toUpperCase().replace(/\s+/g, '');
+  const code = `${displayBaseCode}${cleanRevision ? ` ${cleanRevision}` : ''}`;
+  const descriptor = [
+    stableFamily,
+    stableCapacity ? `${stableCapacity} kW` : '',
+  ].filter(Boolean).join(' ');
+
+  return {
+    ...exemplarResolution,
+    family: stableFamily,
+    familyCandidates,
+    capacityKw: stableCapacity,
+    revision: cleanRevision,
+    code,
+    model: descriptor ? `${descriptor} (${code})` : code,
+    ean: '',
+    evidence: ocrCorrected ? 'catalog_base_code_ocr' : 'catalog_base_code',
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: Boolean(ocrCorrected),
+  };
+}
+
+function collectCatalogBaseMatches(compactText = '', { ocrCorrected = false } = {}) {
+  if (!compactText) return [];
+  return ROTENSO_CATALOG_BASE_GROUPS
+    .map((group) => {
+      const matchBaseCode = ocrCorrected ? group.foldedBaseCode : group.baseCode;
+      const index = compactText.indexOf(matchBaseCode);
+      if (index < 0) return null;
+
+      const tail = compactText.slice(index + matchBaseCode.length);
+      const observedRevision = tail.match(/^R[0-9]{1,2}(?![A-Z0-9])/)?.[0] || '';
+      const revisionLikeButInvalid = /^R[A-Z0-9]{1,2}/.test(tail) && !observedRevision;
+      if (revisionLikeButInvalid) return null;
+
+      const exactCandidate = observedRevision
+        ? group.candidates.find((candidate) => (
+          (ocrCorrected ? candidate.foldedCode : candidate.compactCode)
+          === `${matchBaseCode}${observedRevision}`
+        ))
+        : null;
+
+      const resolution = exactCandidate
+        ? catalogEntryToResolution(exactCandidate.entry, {
+          revisionObserved: true,
+          ocrCorrected,
+          evidence: ocrCorrected ? 'catalog_model_code_ocr' : 'catalog_model_code',
+        })
+        : catalogBaseGroupToResolution(group, {
+          revision: observedRevision,
+          ocrCorrected,
+        });
+      if (!resolution) return null;
+
+      const score = exactCandidate
+        ? 1300
+        : observedRevision
+          ? 1200
+          : 1100;
+      return {
+        resolution,
+        score: score - (ocrCorrected ? 250 : 0),
+        index,
+        baseLength: matchBaseCode.length,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => (
+      right.score - left.score
+      || right.baseLength - left.baseLength
+      || left.index - right.index
+    ));
 }
 
 export function resolveRotensoCatalogModelCode(rawText = '') {
   const compact = normalizePrintedRotensoModelCode(rawText);
   if (!compact) return null;
-  const folded = foldPrintedRotensoOcrCharacters(rawText);
-  const matches = ROTENSO_CATALOG_MODEL_CANDIDATES
-    .map((candidate) => {
-      let score = 0;
-      let evidence = 'catalog_model_code';
-      let revisionObserved = false;
-      if (compact.includes(candidate.compactCode)) {
-        score = 1200;
-        revisionObserved = true;
-      }
-      else if (folded.includes(candidate.foldedCode)) {
-        score = 1150;
-        evidence = 'catalog_model_code_ocr';
-        revisionObserved = true;
-      } else if (compact.includes(candidate.baseCode)) score = 1100;
-      else if (folded.includes(candidate.foldedBaseCode)) {
-        score = 900;
-        evidence = 'catalog_model_code_ocr';
-      }
-      return score ? { ...candidate, score, evidence, revisionObserved } : null;
-    })
-    .filter(Boolean)
+
+  // Dokładna znana rewizja ma pierwszeństwo nawet wtedy, gdy w OCR obok kodu
+  // występuje dalszy tekst (SN/EAN). Nie zmieniamy żadnych znaków.
+  const exactStrict = ROTENSO_CATALOG_MODEL_CANDIDATES
+    .filter((candidate) => compact.includes(candidate.compactCode))
     .sort((left, right) => (
-      right.score - left.score
-      || right.compactCode.length - left.compactCode.length
-      || Number(Boolean(right.entry.verified)) - Number(Boolean(left.entry.verified))
-    ));
-  if (!matches.length) return null;
-  const resolution = catalogEntryToResolution(matches[0].entry);
-  return resolution ? {
-    ...resolution,
-    evidence: matches[0].evidence,
-    revisionObserved: matches[0].revisionObserved,
-  } : null;
+      right.compactCode.length - left.compactCode.length
+      || Number(Boolean(right.entry?.verified)) - Number(Boolean(left.entry?.verified))
+    ))[0] || null;
+  if (exactStrict) {
+    return catalogEntryToResolution(exactStrict.entry, {
+      revisionObserved: true,
+      ocrCorrected: false,
+      evidence: 'catalog_model_code',
+    });
+  }
+
+  const strictMatches = collectCatalogBaseMatches(compact);
+  if (strictMatches.length) return strictMatches[0].resolution;
+
+  // Dopiero druga, jawnie oznaczona ścieżka toleruje typowe pomyłki OCR
+  // (np. O/0, S/5, X0/Xo, X1/Xi). Sam taki wynik nie może być uznany
+  // za pewny przez jeden przebieg OCR.
+  const folded = foldPrintedRotensoOcrCharacters(rawText);
+  const correctedMatches = collectCatalogBaseMatches(folded, { ocrCorrected: true });
+  return correctedMatches[0]?.resolution || null;
 }
 
 export const AIR_CONDITIONER_MODEL_DICTIONARY = Object.freeze({
@@ -143,6 +263,7 @@ export const AIR_CONDITIONER_MODEL_DICTIONARY = Object.freeze({
     'Tenji CS',
     'Jato',
     'Nevo',
+    'Aneru HP',
     'Aneru AN',
     'Aneru',
     'Unico',
@@ -190,7 +311,7 @@ export const ROTENSO_MODEL_FAMILIES = Object.freeze({
   E: 'Elis',
   ES: 'Elis Silver',
   EO: 'Elis',
-  T: 'Teta',
+  T: 'Tenji',
   TA: 'Teta',
   TO: 'Teta',
   TM: 'Teta Mirror',
@@ -199,6 +320,7 @@ export const ROTENSO_MODEL_FAMILIES = Object.freeze({
   TCS: 'Tenji CS',
   J: 'Jato',
   N: 'Nevo',
+  AHP: 'Aneru HP',
   AN: 'Aneru AN',
   A: 'Aneru',
   K: 'Kasi',
@@ -475,6 +597,12 @@ function buildRotensoCatalogResolution(catalogEntry, revision = '') {
     ...(connectionCount ? { connectionCount } : {}),
     code,
     model: `${catalogEntry.family} ${capacityKw} kW (${code})`,
+    familyCandidates: catalogEntry.family ? [catalogEntry.family] : [],
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: false,
   };
 }
 
@@ -495,7 +623,8 @@ function buildRotensoResolution(prefix, capacityCode, unitMarker = '', revision 
     : unitType === 'indoor'
       ? 'jednostka wewnętrzna'
       : '';
-  const code = formatRotensoCode(prefix, capacityCode, unitMarker, revision);
+  const cleanRevision = String(revision || '').toUpperCase().replace(/\s+/g, '');
+  const code = formatRotensoCode(prefix, capacityCode, unitMarker, cleanRevision);
   return {
     manufacturer: 'Rotenso',
     prefix,
@@ -505,9 +634,15 @@ function buildRotensoResolution(prefix, capacityCode, unitMarker = '', revision 
     unitType,
     systemType: unitType === 'outdoor' ? 'single-split' : '',
     unitLabel,
-    revision: String(revision || '').toUpperCase().replace(/\s+/g, ''),
+    revision: cleanRevision,
     code,
     model: `${family} ${capacityKw} kW (${code})`,
+    familyCandidates: [family],
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: false,
   };
 }
 
@@ -573,6 +708,12 @@ function buildRotensoMultiResolution(prefix, capacityCode, connectionCount = '',
     connectionCount: Number(normalizedConnections),
     code,
     model: `${family} ${capacityKw} kW (${code})`,
+    familyCandidates: [family],
+    catalogVerified: false,
+    baseModelVerified: true,
+    revisionCatalogKnown: false,
+    revisionObserved: Boolean(cleanRevision),
+    ocrCorrected: false,
   };
 }
 
@@ -753,9 +894,14 @@ export function resolveRotensoNameplateModel(rawText = '') {
   let multiMatch = ROTENSO_MULTI_CODE_PATTERN.exec(source);
   while (multiMatch) {
     const prefix = normalizeRotensoPrefix(multiMatch[1]);
-    const capacityCode = normalizeRotensoCapacityCode(multiMatch[2]);
+    const rawCapacityCode = String(multiMatch[2] || '').toUpperCase();
+    const capacityCode = normalizeRotensoCapacityCode(rawCapacityCode);
+    const rawConnectionCount = String(multiMatch[3] || '').toUpperCase();
+    const correctedByOcr = rawCapacityCode !== capacityCode || rawConnectionCount === 'Z';
     const resolution = buildRotensoMultiResolution(prefix, capacityCode, multiMatch[3], multiMatch[4]);
-    if (resolution) return resolution;
+    if (resolution) return correctedByOcr
+      ? { ...resolution, ocrCorrected: true, evidence: 'ocr_corrected_model_code' }
+      : resolution;
     multiMatch = ROTENSO_MULTI_CODE_PATTERN.exec(source);
   }
 
@@ -764,10 +910,18 @@ export function resolveRotensoNameplateModel(rawText = '') {
   const fullCandidates = [];
   while (fullMatch) {
     const prefix = normalizeRotensoPrefix(fullMatch[1]);
-    const capacityCode = normalizeRotensoCapacityCode(fullMatch[2]);
+    const rawCapacityCode = String(fullMatch[2] || '').toUpperCase();
+    const capacityCode = normalizeRotensoCapacityCode(rawCapacityCode);
+    const rawUnitMarker = String(fullMatch[3] || '').toUpperCase();
+    const correctedByOcr = rawCapacityCode !== capacityCode || !['I', 'O'].includes(rawUnitMarker);
     const resolution = buildRotensoResolution(prefix, capacityCode, fullMatch[3], fullMatch[4]);
     if (resolution) {
-      fullCandidates.push({ resolution, index: fullMatch.index });
+      fullCandidates.push({
+        resolution: correctedByOcr
+          ? { ...resolution, ocrCorrected: true, evidence: 'ocr_corrected_model_code' }
+          : resolution,
+        index: fullMatch.index,
+      });
     }
 
     // Na zdjęciach kod I35 bywa odczytany jako H135: przypadkowy znak H
@@ -776,7 +930,12 @@ export function resolveRotensoNameplateModel(rawText = '') {
     if (prefix === 'H' && capacityCode.length === 3 && capacityCode.startsWith('1')) {
       const recoveredCapacity = capacityCode.slice(1);
       const recovered = buildRotensoResolution('I', recoveredCapacity, fullMatch[3], fullMatch[4]);
-      if (recovered) fullCandidates.push({ resolution: recovered, index: fullMatch.index });
+      if (recovered) {
+        fullCandidates.push({
+          resolution: { ...recovered, ocrCorrected: true, evidence: 'ocr_corrected_model_code' },
+          index: fullMatch.index,
+        });
+      }
     }
     fullMatch = ROTENSO_FULL_CODE_PATTERN.exec(source);
   }

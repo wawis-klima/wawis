@@ -1,4 +1,5 @@
 import {
+  resolveRotensoCatalogModelCode,
   resolveRotensoModelFromEan,
   resolveRotensoNameplateModelExact,
 } from './desktop-nameplate-model-dictionary.js';
@@ -31,6 +32,10 @@ function aiQuality(value, labelName = 'wyniku') {
 
 function confirmedQuality(message) {
   return { score: 100, level: 'high', label: 'Potwierdzone', warning: message };
+}
+
+function recognizedQuality(message) {
+  return { score: 95, level: 'high', label: 'Rozpoznane', warning: message };
 }
 
 function loadImage(blob) {
@@ -74,10 +79,15 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
     result.raw_text,
     result.notes,
   ].map(clean).filter(Boolean).join('\n');
-  const exactCodeFromAi = resolveRotensoNameplateModelExact(aiTextEvidence);
-  const exactModel = exactFromBarcode || exactFromAiEan || exactCodeFromAi || null;
 
-  const rawAiModel = exactCodeFromAi?.code
+  // Najpierw próbujemy ścisłego katalogu. Gdy rewizja jest nowa, resolver zwraca
+  // znany model bazowy z dokładnie przepisaną rewizją, ale bez udawania znanego EAN-u.
+  const catalogCodeFromAi = resolveRotensoCatalogModelCode(clean(result.model_code))
+    || resolveRotensoCatalogModelCode(aiTextEvidence);
+  const structuredCodeFromAi = catalogCodeFromAi || resolveRotensoNameplateModelExact(aiTextEvidence);
+  const exactModel = exactFromBarcode || exactFromAiEan || structuredCodeFromAi || null;
+
+  const rawAiModel = structuredCodeFromAi?.code
     || [clean(result.model_family), clean(result.model_code)].filter(Boolean).join(' ').trim();
   const manufacturer = exactModel?.manufacturer || clean(result.manufacturer);
   const model = exactModel?.model || rawAiModel;
@@ -85,30 +95,58 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
   const serialNumber = cleanSerial(barcodeInfo.serialNumber || result.serial_number);
   const confidence = result.confidence || {};
 
-  const modelConfirmedByCatalog = Boolean(exactModel);
+  const modelConfirmedByCatalog = Boolean(
+    exactFromBarcode
+    || exactFromAiEan
+    || catalogCodeFromAi?.catalogVerified,
+  );
+  const modelBaseRecognized = Boolean(
+    modelConfirmedByCatalog
+    || (exactModel?.baseModelVerified && !exactModel?.ocrCorrected),
+  );
+  const newRevisionRecognized = Boolean(
+    modelBaseRecognized
+    && exactModel?.revisionObserved
+    && exactModel?.revisionCatalogKnown === false,
+  );
+
   const modelConfirmationReason = exactFromBarcode
     ? 'dokładnie odczytany EAN'
     : exactFromAiEan
       ? 'EAN odczytany przez AI i znaleziony w katalogu'
-      : exactCodeFromAi
-        ? `kod modelu ${exactCodeFromAi.code} odczytany z transkrypcji AI i znaleziony w słowniku Rotenso`
-        : '';
+      : catalogCodeFromAi?.catalogVerified
+        ? `dokładny kod modelu ${catalogCodeFromAi.code} znaleziony w katalogu Rotenso`
+        : newRevisionRecognized
+          ? `znany model bazowy Rotenso; rewizja ${exactModel.revision} została odczytana bezpośrednio z tabliczki`
+          : modelBaseRecognized
+            ? `znany kod bazowy Rotenso ${exactModel?.code || rawAiModel}`
+            : '';
+
+  const recognizedRevisionWarning = newRevisionRecognized
+    ? `Model bazowy jest znany. Rewizja ${exactModel.revision} nie ma jeszcze osobnego wpisu EAN w katalogu; zachowano ją dokładnie tak, jak odczytano z tabliczki.`
+    : `Kod bazowy Rotenso został rozpoznany bez zgadywania rewizji.`;
 
   const fieldQualities = {
     manufacturer: modelConfirmedByCatalog
       ? confirmedQuality(`Marka wynika z modelu potwierdzonego przez ${modelConfirmationReason}.`)
-      : aiQuality(confidence.manufacturer, 'markę'),
+      : modelBaseRecognized
+        ? recognizedQuality(`Marka wynika z ${modelConfirmationReason}.`)
+        : aiQuality(confidence.manufacturer, 'markę'),
     model: modelConfirmedByCatalog
       ? confirmedQuality(`Model potwierdzony przez ${modelConfirmationReason}.`)
-      : {
-        ...aiQuality(confidence.model, 'model'),
-        warning: rawAiModel
-          ? 'AI odczytała model, ale nie znaleziono dokładnego odpowiednika w katalogu Rotenso. Sprawdź go ręcznie przed zapisem.'
-          : 'AI nie odczytała modelu. Wpisz go ręcznie.',
-      },
-    power: modelConfirmedByCatalog
-      ? confirmedQuality('Moc wynika z dokładnie potwierdzonego modelu w katalogu.')
-      : aiQuality(confidence.power, 'moc'),
+      : modelBaseRecognized
+        ? recognizedQuality(recognizedRevisionWarning)
+        : {
+          ...aiQuality(confidence.model, 'model'),
+          warning: rawAiModel
+            ? 'AI odczytała model, ale nie udało się bezpiecznie potwierdzić jego kodu bazowego. Sprawdź znak po znaku przed zapisem.'
+            : 'AI nie odczytała modelu. Wpisz go ręcznie.',
+        },
+    power: modelConfirmedByCatalog && exactModel?.capacityKw
+      ? confirmedQuality('Moc wynika z dokładnie potwierdzonej pozycji katalogowej.')
+      : modelBaseRecognized && exactModel?.capacityKw
+        ? recognizedQuality('Moc jest wspólna dla znanych rewizji tego samego kodu bazowego.')
+        : aiQuality(confidence.power, 'moc'),
     serialNumber: barcodeInfo.serialNumber
       ? confirmedQuality('Numer seryjny odczytano bezpośrednio z kodu kreskowego.')
       : aiQuality(confidence.serial_number, 'numer seryjny'),
@@ -118,18 +156,23 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
     ? `EAN ${exactBarcodeEan} · katalog Rotenso`
     : exactFromAiEan
       ? `AI: EAN ${aiEan} · katalog Rotenso`
-      : exactCodeFromAi
-      ? `AI: ${exactCodeFromAi.code} · słownik Rotenso`
-        : 'Analiza AI obrazu';
+      : modelConfirmedByCatalog
+        ? `AI: ${exactModel?.code || rawAiModel} · katalog Rotenso`
+        : newRevisionRecognized
+          ? `AI: ${exactModel?.code || rawAiModel} · znany model bazowy / nowa rewizja`
+          : modelBaseRecognized
+            ? `AI: ${exactModel?.code || rawAiModel} · znany model bazowy`
+            : 'Analiza AI obrazu';
 
+  const trustedModelSource = modelConfirmedByCatalog || modelBaseRecognized;
   const fieldSources = {
-    manufacturer: modelConfirmedByCatalog
+    manufacturer: trustedModelSource
       ? fieldSource(exactFromBarcode ? 'barcode' : 'ai', catalogLabel)
       : fieldSource('ai', 'Analiza AI obrazu'),
-    model: modelConfirmedByCatalog
+    model: trustedModelSource
       ? fieldSource(exactFromBarcode ? 'barcode' : 'ai', catalogLabel, exactModel?.code || result.model_code || '')
       : fieldSource('ai', 'Analiza AI obrazu — niepotwierdzony model', result.model_code || ''),
-    power: modelConfirmedByCatalog
+    power: trustedModelSource && exactModel?.capacityKw
       ? fieldSource(exactFromBarcode ? 'barcode' : 'ai', catalogLabel)
       : fieldSource('ai', 'Analiza AI obrazu'),
     serialNumber: barcodeInfo.serialNumber
@@ -139,8 +182,16 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
 
   const notes = [
     exactBarcodeEan ? `EAN (czytnik kodów): ${exactBarcodeEan}` : aiEan ? `EAN (AI): ${aiEan}` : '',
-    exactCodeFromAi ? `Kod modelu potwierdzony w katalogu: ${exactCodeFromAi.code}` : '',
-    rawAiModel && !modelConfirmedByCatalog ? `Model odczytany przez AI, ale niepotwierdzony w katalogu: ${rawAiModel}` : '',
+    modelConfirmedByCatalog && structuredCodeFromAi
+      ? `Kod modelu potwierdzony w katalogu: ${structuredCodeFromAi.code}`
+      : '',
+    newRevisionRecognized
+      ? `Znany model bazowy Rotenso; nowa rewizja zachowana z tabliczki: ${exactModel.code}`
+      : '',
+    exactModel?.ocrCorrected
+      ? 'Kod wymagał korekty podobnych znaków OCR (np. O/0 lub X0/Xo) i nie został automatycznie uznany za pewny.'
+      : '',
+    rawAiModel && !trustedModelSource ? `Model odczytany przez AI, ale niepotwierdzony: ${rawAiModel}` : '',
     clean(result.raw_text),
     clean(result.notes),
     Array.isArray(result.uncertain_characters) && result.uncertain_characters.length
@@ -160,6 +211,8 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
     fieldSources,
     exactModel,
     modelConfirmedByCatalog,
+    modelBaseRecognized,
+    newRevisionRecognized,
     aiResult: result,
   };
 }
