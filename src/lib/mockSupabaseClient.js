@@ -542,6 +542,23 @@ export function createMockSupabaseClient() {
         };
         return { data: store.sms_settings, error: null };
       }
+      if (name === 'admin_get_contractors_catalog') {
+        const items = [...store.contractors].sort((left, right) => {
+          const byName = String(left.company_name || '').localeCompare(String(right.company_name || ''), 'pl', { sensitivity: 'base' });
+          if (byName !== 0) return byName;
+          const byCreated = String(right.created_at || '').localeCompare(String(left.created_at || ''));
+          if (byCreated !== 0) return byCreated;
+          return String(left.id || '').localeCompare(String(right.id || ''));
+        });
+        return {
+          data: {
+            generated_at: nowIso(),
+            total: items.length,
+            items: clone(items),
+          },
+          error: null,
+        };
+      }
       if (name === 'admin_list_contractors') return { data: clone(store.contractors), error: null };
       if (name === 'admin_list_devices_with_contractor') return { data: clone(store.devices), error: null };
       if (name === 'admin_get_contractor_devices') return { data: clone(store.devices.filter((device) => device.contractor_id === payload.p_contractor_id)), error: null };
