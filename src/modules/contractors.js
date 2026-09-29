@@ -223,6 +223,34 @@ export function normalizeContractorNip(value) {
   return normalizeDigits(value);
 }
 
+export function contractorMatchesSearch(contractor = {}, query = '') {
+  const needle = normalizeSearchComparable(query);
+  if (!needle) return true;
+
+  const addresses = normalizeContractorAddresses(contractor);
+  const searchable = [
+    contractor.company_name,
+    contractor.contact_person,
+    contractor.phone,
+    contractor.email,
+    contractor.city,
+    contractor.street,
+    contractor.nip,
+    contractor.notes,
+    ...addresses.flatMap((address) => [address.label, address.city, address.street, address.notes]),
+  ];
+
+  if (searchable.some((value) => normalizeSearchComparable(value).includes(needle))) return true;
+
+  const phoneNeedle = normalizeContractorPhone(query);
+  if (phoneNeedle && normalizeContractorPhone(contractor.phone).includes(phoneNeedle)) return true;
+
+  const digitNeedle = normalizeDigits(query);
+  if (digitNeedle.length >= 3 && normalizeContractorNip(contractor.nip).includes(digitNeedle)) return true;
+
+  return false;
+}
+
 export const JOB_DERIVED_CONTRACTOR_ID_PREFIX = 'job-derived:';
 
 export function isJobDerivedContractor(contractor = {}) {
