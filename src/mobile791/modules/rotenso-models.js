@@ -95,6 +95,10 @@ const ROTENSO_CODE_FAMILY_CANDIDATES = Object.freeze({
   HN: Object.freeze(['Hiro N']),
   H: Object.freeze(['Hiro S']),
   I: Object.freeze(['Imoto']),
+  J: Object.freeze(['Jato']),
+  N: Object.freeze(['Nevo']),
+  T: Object.freeze(['Tenji']),
+  UO: Object.freeze(['Unico']),
   LBP: Object.freeze(['Luve Pro Black']),
   LEP: Object.freeze(['Luve Pro']),
   LOP: Object.freeze(['Luve Pro', 'Luve Pro Black']),
@@ -161,6 +165,7 @@ const ROTENSO_SHARED_SINGLE_FAMILY_GROUPS = Object.freeze([
   Object.freeze(['Luve', 'Luve Black']),
   Object.freeze(['Luve Pro', 'Luve Pro Black']),
   Object.freeze(['Versu', 'Versu Cloth Stone', 'Versu Cloth Caramel']),
+  Object.freeze(['Unico', 'Tenji', 'Tenji CC', 'Tenji CS', 'Jato', 'Nevo']),
 ]);
 
 function areCompatibleSingleFamilies(outdoorFamily = '', indoorFamily = '') {
