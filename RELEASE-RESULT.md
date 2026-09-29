@@ -1,41 +1,34 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.76
+- 11.77
 
 ## Zakres
-- audyt Kontrahentów: etap 3 / K1 + K2 + K17
-- K23 rozstrzygnięty decyzją biznesową: okres przypomnień serwisowych ma być stały i wynosić 5 lat
+- audyt Kontrahentów: etap 4 / K13 + K11
+- bez migracji Supabase i bez zmian RLS
 
-## K1 — adres montażu na mobile
-- `buildEditJobForm` zachowuje `contractor_address_id`
-- niezwiązana edycja (np. telefon) nie zmienia ID adresu
-- historyczny rekord bez ID pozostaje bez ID
-- świadomy wybór kontrahenta/adresu przenosi właściwy identyfikator
-- nowe zapisy mobile przekazują `contractor_address_id` do jobs
+## K13 — desktop i współdzielony kontakt
+- nowy kontrahent nadal jest blokowany przy wykrytym duplikacie
+- istniejący kontrahent może zostać edytowany, gdy jedynym konfliktem jest wspólny telefon i/lub e-mail
+- wspólny kontakt jest widocznym ostrzeżeniem
+- konflikt nazwy oraz inne niekontaktowe pola tożsamości nadal blokują zapis
+- produkcyjny trigger UPDATE dopuszcza wspólne kontakty, a unikalny indeks nazwy pozostaje aktywny
 
-## K2 — edycja urządzenia
-- zwykła korekta urządzenia z montażu zapisuje tylko `device_model` i `device_serial_number`
-- `installation_date` trafia do patcha wyłącznie po faktycznej zmianie
-- nie są wysyłane client/title/email/phone/city/street/location/sms_recipient_phone
-- zmiana kontrahenta urządzenia job-backed jest blokowana i wymaga edycji montażu
+## K11 — import XLSX
+- kolumna Status jest mapowana do `is_active`
+- obsługiwane są m.in. Aktywny/Nieaktywny/true/false
+- jeśli kolumny Status nie ma, zachowane jest kompatybilne `is_active=true`
+- jeśli kolumna Status istnieje, ale wartość jest pusta/nieznana, wiersz jest błędny
+- błędny lub nietablicowy `Adresy (JSON)` jest raportowany na konkretnym wierszu
+- puste wiersze są odrzucane przed ustawieniem wartości domyślnych
+- zachowywany jest rzeczywisty numer wiersza XLSX
 
-## K17 — właściwy indeks urządzenia
-- fallback desktopu nadaje `source_job_id=job.id` pierwszemu urządzeniu
-- kolejne mają `job.id::device-N`
-- edycja urządzenia nr 2 nie może już trafić w indeks 0
-
-## Stałe 5 lat
-- odczyt produkcyjny przed zmianą: 146/146 jobs = 5; 718/718 devices = 5
-- aplikacja normalizuje wartość do 5 i jawnie wysyła `p_service_reminder_years=5`
-- migracja zmienia CHECK z 1..10 na dokładnie 5 i wymusza 5 w `admin_upsert_device`
-- istniejące dane nie wymagają korekty wartości
-
-## Kontrola
-- smoke `scripts/smoke-contractors-stage3-v1176.mjs`
-- WAWIS PR checks: PASS — finalny rerun #460 po migracji i aktualizacji dokumentacji
-- Playwright mobile/desktop: PASS
-- produkcyjny build: PASS
-- migracja Supabase: PASS — `fixed_service_reminder_years_v1176` / produkcyjna wersja `20260929064201`
-- Vercel: PENDING — po merge do main
+## Kontrola regresji
+- `scripts/smoke-contractors-stage4-v1177.mjs`
+- smoke obejmuje status, błędny JSON, numer wiersza i regułę K13
+- `tests/e2e/contractor-xlsx-import-v1177.spec.js` wykonuje rzeczywisty round-trip XLSX w Chromium dla desktopu i mobile
+- WAWIS PR checks: PENDING
+- Playwright desktop/mobile: PENDING
+- produkcyjny build: PENDING
+- Vercel: PENDING
 - merge: PENDING
