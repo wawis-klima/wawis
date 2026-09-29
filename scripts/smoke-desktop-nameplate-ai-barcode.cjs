@@ -58,7 +58,11 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert.strictEqual(elisOutdoorFromRawText.exactModel?.code, 'EO50Xo R17');
   assert.strictEqual(elisOutdoorFromRawText.exactModel?.unitType, 'outdoor');
   assert.strictEqual(elisOutdoorFromRawText.manufacturer, 'Rotenso');
-  assert.strictEqual(elisOutdoorFromRawText.model, 'Elis 5,0 kW (EO50Xo R17)');
+  assert.ok(
+    ['Elis', 'Elis Silver'].includes(elisOutdoorFromRawText.exactModel?.family),
+    'EO50Xo R17 jest wspólną JZ dla Elis i Elis Silver; test nie może wymuszać jednej nazwy rodziny',
+  );
+  assert.match(elisOutdoorFromRawText.model, /5,0 kW \(EO50Xo R17\)$/);
   assert.strictEqual(elisOutdoorFromRawText.power, '5,0 kW');
   assert.strictEqual(elisOutdoorFromRawText.serialNumber, '140202A8RBW16253M000007');
   assert.strictEqual(elisOutdoorFromRawText.modelConfirmedByCatalog, true);
