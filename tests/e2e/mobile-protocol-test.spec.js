@@ -86,13 +86,13 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
     await expect(page.getByText(/Protokół jest opcjonalny/)).toBeVisible();
 
-    const protocolScrollState = await page.locator('.protocolWizardModal').evaluate((modal) => {
-      const paymentSection = modal.querySelector('.protocolPaymentSection');
-      const modalRect = modal.getBoundingClientRect();
+    const protocolScrollState = await page.locator('.mobileProtocolWizardBody').evaluate((body) => {
+      const paymentSection = body.querySelector('.protocolPaymentSection');
+      const bodyRect = body.getBoundingClientRect();
       const paymentRect = paymentSection?.getBoundingClientRect();
       return {
-        scrollTop: modal.scrollTop,
-        paymentVisible: Boolean(paymentRect && paymentRect.top < modalRect.bottom && paymentRect.bottom > modalRect.top),
+        scrollTop: body.scrollTop,
+        paymentVisible: Boolean(paymentRect && paymentRect.top < bodyRect.bottom && paymentRect.bottom > bodyRect.top),
       };
     });
     expect(protocolScrollState.scrollTop).toBeGreaterThan(0);
