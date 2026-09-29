@@ -7,6 +7,7 @@ import DesktopJobProtocolCard from "./desktop/DesktopJobProtocolCard.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
+import { saveVatInvoiceStatus } from "../modules/jobs-crud.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -96,10 +97,12 @@ export default function JobDetailsPanel({
   const selectedJobId = String(selectedJob?.id || '');
   const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || '') : '';
   const [commentSaving, setCommentSaving] = React.useState(false);
+  const [vatInvoiceSaving, setVatInvoiceSaving] = React.useState(false);
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
 
   React.useEffect(() => {
     setCommentSaving(false);
+    setVatInvoiceSaving(false);
   }, [selectedJobId]);
 
   React.useEffect(() => {
@@ -206,6 +209,32 @@ export default function JobDetailsPanel({
     setSelectedJobByUpdater?.(patchJob);
   };
 
+  async function handleVatInvoiceToggle() {
+    if (!isAdmin || !selectedJobId || vatInvoiceSaving) return;
+    const nextIssued = !Boolean(selectedJob?.vat_invoice_issued);
+    setVatInvoiceSaving(true);
+    try {
+      const saved = await saveVatInvoiceStatus({
+        supabase,
+        jobId: selectedJobId,
+        issued: nextIssued,
+      });
+      const issued = Boolean(saved?.vat_invoice_issued ?? nextIssued);
+      const patchJob = (job) => (
+        job && String(job.id) === selectedJobId
+          ? { ...job, vat_invoice_issued: issued }
+          : job
+      );
+      setJobs?.((previous) => previous.map(patchJob));
+      setSelectedJobByUpdater?.(patchJob);
+    } catch (error) {
+      console.error('Nie udało się zapisać statusu faktury VAT.', error);
+      window.alert(`Nie udało się zapisać statusu faktury VAT. ${error?.message || ''}`.trim());
+    } finally {
+      setVatInvoiceSaving(false);
+    }
+  }
+
   return (
     <div className="card premiumCard jobDetailsPanelCard">
       <div className="jobDetailsStickyBar">
@@ -294,6 +323,25 @@ export default function JobDetailsPanel({
                 ) : "Brak telefonu"}
               </div>
             </div>
+
+            {isAdmin ? (
+              <div className="infoItem desktopVatInvoiceInfoItem">
+                <span className="infoLabel">Faktura VAT</span>
+                <div className="infoValue">
+                  <button
+                    type="button"
+                    className={`desktopVatInvoiceToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
+                    onClick={handleVatInvoiceToggle}
+                    disabled={vatInvoiceSaving}
+                    aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
+                    title="Kliknij, aby zmienić status faktury VAT"
+                  >
+                    <span className="desktopVatInvoiceDot" aria-hidden="true" />
+                    <span>{vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona')}</span>
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
 

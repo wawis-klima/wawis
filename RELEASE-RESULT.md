@@ -1,32 +1,33 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.80
+- 11.84
 
 ## Zakres
-- tylko mobilny pełny podgląd zdjęć
-- desktopowy podgląd zdjęć bez zmian
-- bez zmian Supabase, RLS, Storage i Edge Functions
+- desktop: status Faktura VAT w tabeli Montaże i w sekcji Klient
+- Supabase: nowa kolumna `jobs.vat_invoice_issued` oraz admin-only RPC
+- mobile: bez zmian funkcjonalnych i bez pola FV w mobilnym payloadzie
 
-## Mobile photo zoom
-- pinch-to-zoom od 100% do 400%
-- po powiększeniu zdjęcie można przesuwać jednym palcem
-- podwójne stuknięcie przełącza 100% ↔ 250%
-- przyciski − / + zmieniają zoom co 50%
-- środkowy wskaźnik procentowy resetuje do 100%
-- po zmianie zdjęcia zoom i przesunięcie resetują się
-- podczas zoomu boczne strefy poprzednie/następne są wyłączone, żeby pan nie zmieniał zdjęcia
-- strona pod modalem pozostaje zablokowana tak jak od 11.19
+## Zachowanie startowe
+- 10 najnowszych zakończonych montaży według `installation_date DESC, created_at DESC` pozostaje z `vat_invoice_issued=false` do ręcznego potwierdzenia
+- wszystkie wcześniejsze zakończone montaże są jednorazowo ustawiane na `vat_invoice_issued=true`
+- nowe montaże startują jako niewystawiona faktura VAT
 
-## Ochrona desktopu
-- `src/components/modals/PreviewModal.jsx` nie został zmieniony
-- w `mobile791` zoom aktywuje się tylko dla `max-width:700px`
-- dla szerszego viewportu komponent renderuje dotychczasowy podgląd bez nowych kontrolek
-- nowe style zoomu są opakowane w `@media(max-width:700px)`
+## Desktop
+- tabela Montaże: kolumna `FV` pomiędzy Tabliczki i Data montażu
+- czerwone kółko = faktura niewystawiona
+- zielone kółko = faktura wystawiona
+- sekcja Klient: klikany status `Niewystawiona / Wystawiona`
+- zapis aktualizuje listę i otwarty montaż bez pełnego przeładowania
+
+## Bezpieczeństwo
+- zmiana statusu z UI używa `admin_set_job_vat_invoice_issued`
+- RPC wymaga `current_user_is_admin()`
+- brak zmian istniejących polityk RLS
+- mobile nie pobiera nowej kolumny
 
 ## Kontrola regresji
-- `scripts/smoke-mobile-photo-zoom-v1180.mjs`
-- istniejący E2E dwóch sesji został rozszerzony o widoczność kontrolek i zmianę 100% → 150% → 100%
-- pełne WAWIS PR checks / Playwright / build: PENDING
+- `scripts/smoke-desktop-vat-invoice-v1184.cjs`
+- WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING

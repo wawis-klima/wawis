@@ -82,6 +82,17 @@ function renderNameplateStatusCell({ job }) {
   );
 }
 
+function renderVatInvoiceCell({ job }) {
+  const issued = Boolean(job?.vat_invoice_issued);
+  const label = issued ? 'Faktura VAT wystawiona' : 'Faktura VAT niewystawiona';
+
+  return (
+    <div className="desktopCellContent desktopVatInvoiceCellContent" title={label} aria-label={label}>
+      <span className={`desktopVatInvoiceDot ${issued ? 'issued' : 'missing'}`} aria-hidden="true" />
+    </div>
+  );
+}
+
 function renderDateCell({ job, formatDate }) {
   const hasInstallationDate = Boolean(job.installation_date);
 
@@ -194,6 +205,27 @@ export const DESKTOP_JOBS_TABLE_COLUMNS = [
     colClassName: "desktopJobsColNameplates",
     headerClassName: "desktopJobsHeaderCell desktopJobsHeaderCellNameplates",
     cellRenderer: renderNameplateStatusCell,
+  },
+  {
+    key: "vat_invoice",
+    label: "FV",
+    sortable: false,
+    sortKey: null,
+    width: "54px",
+    textAlign: "center",
+    whiteSpace: "nowrap",
+    paddingInlineStart: "4px",
+    paddingInlineEnd: "4px",
+    contentJustifyContent: "center",
+    contentAlignItems: "center",
+    contentTextAlign: "center",
+    contentWidth: "100%",
+    contentMinWidth: "0",
+    contentMaxWidth: "100%",
+    contentMinHeight: "36px",
+    colClassName: "desktopJobsColVatInvoice",
+    headerClassName: "desktopJobsHeaderCell desktopJobsHeaderCellVatInvoice",
+    cellRenderer: renderVatInvoiceCell,
   },
   {
     key: "date",

@@ -28,6 +28,16 @@ export async function updateJobStatus({ supabase, jobId, status }) {
   if (error) throw error;
 }
 
+export async function saveVatInvoiceStatus({ supabase, jobId, issued }) {
+  if (!supabase || !jobId) return null;
+  const { data, error } = await supabase.rpc('admin_set_job_vat_invoice_issued', {
+    p_job_id: jobId,
+    p_issued: Boolean(issued),
+  });
+  if (error) throw error;
+  return data || { id: jobId, vat_invoice_issued: Boolean(issued) };
+}
+
 export async function saveJobAdminNote({ supabase, jobId, adminNote }) {
   if (!supabase || !jobId) return null;
   const normalizedAdminNote = String(adminNote || '').trim() || null;
