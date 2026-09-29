@@ -241,6 +241,21 @@ assert.match(e2eSource, /toBeEnabled/);
     indoorModel: 'Versu Cloth Stone 3,5 kW (VCS35Xi R19)',
   })), true, 'Versu Pure ma własny agregat VP i nie może być traktowany jak wspólny VO');
 
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('UO90Xo R19'), ['Unico']);
+  assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('T90Xi R19'), ['Tenji']);
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Unico 8,8 kW (UO90Xo R19)',
+    indoorModel: 'Tenji CS 8,8 kW (T90Xi R19)',
+  }), null, 'Unico jest wspólną jednostką zewnętrzną dla Tenji');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Unico 8,8 kW (UO90Xo R19)',
+    indoorModel: 'Jato 10,6 kW (J100Xi R19)',
+  }), null, 'Unico jest kompatybilne z Jato');
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Unico 8,8 kW (UO90Xo R19)',
+    indoorModel: 'Roni 3,4 kW (R35Xi R19)',
+  })?.message.includes('Niezgodny zestaw Single'), true, 'Komercyjny wyjątek Unico nie może osłabić blokady Roni');
+
   const draft = devices.normalizeJobDevices({
     devices: [{
       device_type: devices.DEVICE_TYPE_MULTI,
