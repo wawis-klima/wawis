@@ -456,7 +456,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       setErrorMessage('');
       setInfoMessage('');
       try {
-        const result = await removeJobFallbackContractor({ supabase, contractor, jobs, isAdmin });
+        const result = await removeJobFallbackContractor({ supabase, contractor, isAdmin });
         setDeletedFallbackJobIds((prev) => [...new Set([...prev, ...(result.deletedJobIds || [])])]);
         if (selectedId === contractor.id) {
           setSelectedId(null);
