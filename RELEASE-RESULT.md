@@ -38,9 +38,9 @@
 - kontrola rozdzielenia identity vs search
 - kontrola dodatkowych adresów w wyszukiwaniu
 - kontrola migracji i braku mechanizmów K14
-- WAWIS PR checks: PENDING
-- Playwright desktop/mobile: PENDING
-- produkcyjny build: PENDING
-- migracja Supabase: PENDING
+- WAWIS PR checks: SUCCESS (pre-migration/documentation head); final head recheck PENDING
+- Playwright desktop/mobile: SUCCESS (pre-migration/documentation head); final head recheck PENDING
+- produkcyjny build: SUCCESS (pre-migration/documentation head); final head recheck PENDING
+- migracja Supabase: APPLIED — contractor_normalization_v1179; indeks telefonu przebudowany; 6 istniejących grup współdzielonych numerów bez nowych grup
 - Vercel: PENDING
 - merge: PENDING
