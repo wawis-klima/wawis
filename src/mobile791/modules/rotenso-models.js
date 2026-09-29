@@ -81,7 +81,46 @@ function normalizeModelFamilyText(value = '') {
     .trim();
 }
 
-export function getRotensoModelFamilyFromValue(value = '') {
+// Kod bazowy i rewizja to dwie różne informacje. Poniższa mapa dotyczy wyłącznie
+// jednoznacznie zapisanych liter prefiksu; nie zamieniamy tutaj O/0, I/1 ani S/5.
+const ROTENSO_CODE_FAMILY_CANDIDATES = Object.freeze({
+  AHP: Object.freeze(['Aneru HP']),
+  AN: Object.freeze(['Aneru AN']),
+  A: Object.freeze(['Aneru']),
+  ES: Object.freeze(['Elis Silver']),
+  EO: Object.freeze(['Elis', 'Elis Silver']),
+  E: Object.freeze(['Elis']),
+  FH: Object.freeze(['Fresh']),
+  HHP: Object.freeze(['Hiro HP']),
+  HN: Object.freeze(['Hiro N']),
+  H: Object.freeze(['Hiro S']),
+  I: Object.freeze(['Imoto']),
+  LBP: Object.freeze(['Luve Pro Black']),
+  LEP: Object.freeze(['Luve Pro']),
+  LOP: Object.freeze(['Luve Pro', 'Luve Pro Black']),
+  LB: Object.freeze(['Luve Black']),
+  LE: Object.freeze(['Luve']),
+  LO: Object.freeze(['Luve', 'Luve Black']),
+  M: Object.freeze(['Mirai']),
+  R: Object.freeze(['Roni']),
+  RO: Object.freeze(['Revio']),
+  TA: Object.freeze(['Teta']),
+  TM: Object.freeze(['Teta Mirror']),
+  TO: Object.freeze(['Teta', 'Teta Mirror']),
+  U: Object.freeze(['Ukura', 'Ukura H']),
+  UH: Object.freeze(['Ukura H']),
+  VCC: Object.freeze(['Versu Cloth Caramel']),
+  VCS: Object.freeze(['Versu Cloth Stone']),
+  VM: Object.freeze(['Versu Mirror']),
+  VP: Object.freeze(['Versu Pure']),
+  VO: Object.freeze(['Versu', 'Versu Cloth Stone', 'Versu Cloth Caramel']),
+});
+
+const ROTENSO_CODE_PREFIX_PATTERN = Object.keys(ROTENSO_CODE_FAMILY_CANDIDATES)
+  .sort((left, right) => right.length - left.length)
+  .join('|');
+
+function getNamedRotensoFamily(value = '') {
   const normalizedValue = normalizeModelFamilyText(value);
   if (!normalizedValue) return '';
   for (const family of ROTENSO_SINGLE_FAMILIES) {
@@ -96,6 +135,24 @@ export function getRotensoModelFamilyFromValue(value = '') {
     }
   }
   return '';
+}
+
+export function getRotensoModelFamilyCandidatesFromValue(value = '') {
+  const namedFamily = getNamedRotensoFamily(value);
+  if (namedFamily) return [namedFamily];
+
+  const source = String(value || '').toUpperCase();
+  const match = source.match(new RegExp(
+    `(?:^|[^A-Z0-9])(${ROTENSO_CODE_PREFIX_PATTERN})[0-9]{2,3}X(?:I|O|M[2-5])(?:\\s*R[0-9]{1,2})?(?=$|[^A-Z0-9])`,
+    'i',
+  ));
+  const prefix = String(match?.[1] || '').toUpperCase();
+  return prefix ? [...(ROTENSO_CODE_FAMILY_CANDIDATES[prefix] || [])] : [];
+}
+
+export function getRotensoModelFamilyFromValue(value = '') {
+  const candidates = getRotensoModelFamilyCandidatesFromValue(value);
+  return candidates.length === 1 ? candidates[0] : '';
 }
 
 const ROTENSO_SHARED_SINGLE_FAMILY_GROUPS = Object.freeze([
@@ -114,19 +171,35 @@ function areCompatibleSingleFamilies(outdoorFamily = '', indoorFamily = '') {
   );
 }
 
+function resolveFamilyCandidates(explicitFamily = '', modelValue = '') {
+  const explicit = getRotensoModelFamilyCandidatesFromValue(explicitFamily);
+  if (explicit.length) return explicit;
+  return getRotensoModelFamilyCandidatesFromValue(modelValue);
+}
+
 export function getSingleSplitModelFamilyMismatch({
   outdoorModel = '',
   indoorModel = '',
   outdoorFamily = '',
   indoorFamily = '',
 } = {}) {
-  const resolvedOutdoorFamily = getRotensoModelFamilyFromValue(outdoorFamily) || getRotensoModelFamilyFromValue(outdoorModel);
-  const resolvedIndoorFamily = getRotensoModelFamilyFromValue(indoorFamily) || getRotensoModelFamilyFromValue(indoorModel);
-  if (!resolvedOutdoorFamily || !resolvedIndoorFamily || areCompatibleSingleFamilies(resolvedOutdoorFamily, resolvedIndoorFamily)) return null;
+  const outdoorCandidates = resolveFamilyCandidates(outdoorFamily, outdoorModel);
+  const indoorCandidates = resolveFamilyCandidates(indoorFamily, indoorModel);
+  if (!outdoorCandidates.length || !indoorCandidates.length) return null;
+
+  const compatible = outdoorCandidates.some((outdoorCandidate) => (
+    indoorCandidates.some((indoorCandidate) => areCompatibleSingleFamilies(outdoorCandidate, indoorCandidate))
+  ));
+  if (compatible) return null;
+
+  const outdoorLabel = outdoorCandidates.join(' / ');
+  const indoorLabel = indoorCandidates.join(' / ');
   return {
-    outdoorFamily: resolvedOutdoorFamily,
-    indoorFamily: resolvedIndoorFamily,
-    message: `Niezgodny zestaw Single: JZ to ${resolvedOutdoorFamily}, a JW to ${resolvedIndoorFamily}. Jednostka zewnętrzna i wewnętrzna muszą być z tego samego modelu/serii.`,
+    outdoorFamily: outdoorCandidates.length === 1 ? outdoorCandidates[0] : '',
+    indoorFamily: indoorCandidates.length === 1 ? indoorCandidates[0] : '',
+    outdoorFamilies: outdoorCandidates,
+    indoorFamilies: indoorCandidates,
+    message: `Niezgodny zestaw Single: JZ to ${outdoorLabel}, a JW to ${indoorLabel}. Jednostka zewnętrzna i wewnętrzna muszą być z kompatybilnej serii.`,
   };
 }
 
