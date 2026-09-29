@@ -271,7 +271,7 @@ const HEADER_ALIASES = new Map([
   ['active', 'status'],
 ]);
 
-function parseContractorStatus(value) {
+export function parseContractorStatusValue(value) {
   const normalized = normalizeHeader(value);
   if (['aktywny', 'active', 'true', 'tak', 'yes', '1'].includes(normalized)) return { ok: true, value: true };
   if (['nieaktywny', 'inactive', 'false', 'nie', 'no', '0'].includes(normalized)) return { ok: true, value: false };
@@ -282,6 +282,66 @@ function parseContractorStatus(value) {
       ? `Nieznany status „${String(value || '').trim()}”. Dozwolone: Aktywny/Nieaktywny/true/false.`
       : 'Brak statusu w kolumnie Status. Dozwolone: Aktywny/Nieaktywny/true/false.',
   };
+}
+
+export function parseContractorImportRow({
+  row = [],
+  normalizedHeaders = [],
+  sourceRowNumber = 0,
+  hasStatusColumn = normalizedHeaders.includes('status'),
+} = {}) {
+  const record = {
+    company_name: '',
+    contact_person: '',
+    phone: '',
+    email: '',
+    city: '',
+    street: '',
+    addresses_json: '',
+    addresses: [],
+    nip: '',
+    notes: '',
+    is_active: true,
+    __source_row_number: Number(sourceRowNumber) || 0,
+    __parse_errors: [],
+  };
+  let statusRaw = '';
+
+  row.forEach((cellValue, columnIndex) => {
+    const field = normalizedHeaders[columnIndex];
+    if (!field) return;
+    const value = String(cellValue || '').trim();
+    if (field === 'status') {
+      statusRaw = value;
+      return;
+    }
+    record[field] = value;
+  });
+
+  if (hasStatusColumn) {
+    const parsedStatus = parseContractorStatusValue(statusRaw);
+    if (parsedStatus.ok) {
+      record.is_active = parsedStatus.value;
+    } else {
+      record.__parse_errors.push(parsedStatus.message);
+    }
+  }
+
+  if (record.addresses_json) {
+    try {
+      const parsed = JSON.parse(record.addresses_json);
+      if (!Array.isArray(parsed)) {
+        record.__parse_errors.push('Kolumna Adresy (JSON) musi zawierać tablicę adresów.');
+      } else {
+        record.addresses = parsed;
+      }
+    } catch {
+      record.__parse_errors.push('Nieprawidłowy JSON w kolumnie Adresy (JSON).');
+    }
+  }
+
+  delete record.addresses_json;
+  return record;
 }
 
 export async function parseXlsxContractorsFile(file) {
@@ -307,60 +367,12 @@ export async function parseXlsxContractorsFile(file) {
   // Wartości domyślne nie mogą sprawić, że sformatowany pusty wiersz stanie się rekordem.
   const nonEmptyRows = dataRows.filter((row) => row.some((value) => String(value || '').trim()));
 
-  return nonEmptyRows.map((row, index) => {
-    const record = {
-      company_name: '',
-      contact_person: '',
-      phone: '',
-      email: '',
-      city: '',
-      street: '',
-      addresses_json: '',
-      addresses: [],
-      nip: '',
-      notes: '',
-      is_active: true,
-      __source_row_number: Number(row.sourceRowNumber) || index + 2,
-      __parse_errors: [],
-    };
-    let statusRaw = '';
-
-    row.forEach((cellValue, columnIndex) => {
-      const field = normalizedHeaders[columnIndex];
-      if (!field) return;
-      const value = String(cellValue || '').trim();
-      if (field === 'status') {
-        statusRaw = value;
-        return;
-      }
-      record[field] = value;
-    });
-
-    if (hasStatusColumn) {
-      const parsedStatus = parseContractorStatus(statusRaw);
-      if (parsedStatus.ok) {
-        record.is_active = parsedStatus.value;
-      } else {
-        record.__parse_errors.push(parsedStatus.message);
-      }
-    }
-
-    if (record.addresses_json) {
-      try {
-        const parsed = JSON.parse(record.addresses_json);
-        if (!Array.isArray(parsed)) {
-          record.__parse_errors.push('Kolumna Adresy (JSON) musi zawierać tablicę adresów.');
-        } else {
-          record.addresses = parsed;
-        }
-      } catch {
-        record.__parse_errors.push('Nieprawidłowy JSON w kolumnie Adresy (JSON).');
-      }
-    }
-
-    delete record.addresses_json;
-    return record;
-  });
+  return nonEmptyRows.map((row, index) => parseContractorImportRow({
+    row,
+    normalizedHeaders,
+    sourceRowNumber: Number(row.sourceRowNumber) || index + 2,
+    hasStatusColumn,
+  }));
 }
 
 
