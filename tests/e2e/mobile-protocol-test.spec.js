@@ -175,15 +175,17 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
 
     const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
-    const scrollSetup = await page.locator('.protocolWizardModal').evaluate((modal) => {
+    const scrollSetup = await page.locator('.mobileProtocolWizardBody').evaluate((body) => {
       // Fixture E2E ma krótsze dane niż zgłoszony protokół z iPhone'a.
-      // Zmniejszamy wyłącznie wysokość testowego scroll-containera, żeby odtworzyć realny zapas przewijania.
-      modal.style.setProperty('height', '420px', 'important');
-      modal.style.setProperty('min-height', '420px', 'important');
-      modal.style.setProperty('max-height', '420px', 'important');
-      modal.style.setProperty('overflow-y', 'auto', 'important');
-      modal.scrollTop = 0;
-      return { maxScroll: Math.max(0, modal.scrollHeight - modal.clientHeight) };
+      // Zmniejszamy wyłącznie wysokość właściwego wewnętrznego scroll-containera,
+      // żeby odtworzyć realny zapas przewijania bez przewijania strony pod modalem.
+      body.style.setProperty('flex', '0 0 420px', 'important');
+      body.style.setProperty('height', '420px', 'important');
+      body.style.setProperty('min-height', '0', 'important');
+      body.style.setProperty('max-height', '420px', 'important');
+      body.style.setProperty('overflow-y', 'auto', 'important');
+      body.scrollTop = 0;
+      return { maxScroll: Math.max(0, body.scrollHeight - body.clientHeight) };
     });
     expect(scrollSetup.maxScroll).toBeGreaterThan(44);
     // Kliknięcie przez DOM nie uruchamia pomocniczego auto-scroll Playwrighta,
@@ -208,12 +210,13 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
       const footerRect = footer.getBoundingClientRect();
       return Math.round(footerRect.top - confirmationRect.bottom);
     })).toBeLessThanOrEqual(24);
-    await page.locator('.protocolWizardModal').evaluate((modal) => {
-      modal.style.removeProperty('height');
-      modal.style.removeProperty('min-height');
-      modal.style.removeProperty('max-height');
-      modal.style.removeProperty('overflow-y');
-      modal.scrollTop = 0;
+    await page.locator('.mobileProtocolWizardBody').evaluate((body) => {
+      body.style.removeProperty('flex');
+      body.style.removeProperty('height');
+      body.style.removeProperty('min-height');
+      body.style.removeProperty('max-height');
+      body.style.removeProperty('overflow-y');
+      body.scrollTop = 0;
     });
 
     await page.locator('.mobileDeviceWizardClose').evaluate((button) => button.click());
