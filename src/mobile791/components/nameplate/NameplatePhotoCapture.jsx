@@ -365,7 +365,7 @@ function NameplateVerificationReview({
   const serialReady = Boolean(String(verification.serialNumber || "").trim());
   const canConfirm = !verification.busy && !mismatchMessage && !noNameplateEvidence && modelReady && serialReady;
   const methodLabel = noNameplateEvidence
-    ? "Nie wykryto tabliczki"
+    ? (verification.reading?.aiAttempted ? "AI nie potwierdziła tabliczki" : "Nie wykryto tabliczki")
     : verification.reading?.method === "ai"
       ? "Odczyt lokalny + AI"
       : verification.reading?.method === "manual"
@@ -409,7 +409,9 @@ function NameplateVerificationReview({
             <div className="nameplateVerifyMethod">{methodLabel}</div>
             {noNameplateEvidence ? (
               <div className="nameplateVerifyMismatch" role="alert">
-                Nie wykryto tabliczki znamionowej ani żadnych jej charakterystycznych danych. AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.
+                {verification.reading?.aiAttempted
+                  ? "AI sprawdziła zdjęcie, ale nie potwierdziła dokładnego modelu urządzenia i numeru seryjnego. Zrób zdjęcie tabliczki ponownie."
+                  : "Nie wykryto tabliczki znamionowej ani żadnych jej charakterystycznych danych. AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie."}
               </div>
             ) : null}
             {verification.reading?.aiAttempted && verification.reading?.aiError ? (
