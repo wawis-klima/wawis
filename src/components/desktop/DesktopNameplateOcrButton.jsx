@@ -98,6 +98,10 @@ function confirmedQuality(message) {
   return { score: 100, level: 'high', label: 'Potwierdzone', warning: message };
 }
 
+function recognizedQuality(message) {
+  return { score: 95, level: 'high', label: 'Rozpoznane', warning: message };
+}
+
 function serialTextReviewQuality(result = {}) {
   const votes = Number(result?.votes || 0);
   const ocrConfidence = Number(result?.confidence || 0);
@@ -557,20 +561,37 @@ export default function DesktopNameplateOcrButton({
         setManufacturer(exactModel.manufacturer || 'Rotenso');
         setModel(exactModel.model || '');
         setPower(exactModel.capacityKw ? `${exactModel.capacityKw} kW` : '');
+
+        const isNewRevision = Boolean(
+          exactModel.baseModelVerified
+          && exactModel.revisionObserved
+          && exactModel.revisionCatalogKnown === false
+        );
         const label = catalogMatch
           ? `Katalog Wawis · EAN ${result.ean}`
           : result.ean
             ? `EAN ${result.ean} · katalog Rotenso`
-            : printedModelResult?.reliable
-              ? `Lokalny odczyt nadruku ${exactModel.code} · słownik Rotenso`
-              : `Dokładny kod ${exactModel.code}`;
+            : isNewRevision
+              ? `Lokalny odczyt ${exactModel.code} · znany model bazowy / nowa rewizja`
+              : printedModelResult?.reliable
+                ? `Lokalny odczyt nadruku ${exactModel.code} · słownik Rotenso`
+                : `Dokładny kod ${exactModel.code}`;
         const sourceType = catalogMatch ? 'catalog' : printedModelResult?.reliable ? 'ocr' : 'barcode';
         sources.manufacturer = { type: sourceType, label };
         sources.model = { type: sourceType, label };
-        sources.power = { type: sourceType, label };
-        qualities.manufacturer = confirmedQuality('Marka potwierdzona przez dokładny kod produktu.');
-        qualities.model = confirmedQuality('Model dopasowany bez zgadywania do dokładnego kodu z katalogu.');
-        qualities.power = confirmedQuality('Moc wynika z dokładnie dopasowanego modelu.');
+        if (exactModel.capacityKw) sources.power = { type: sourceType, label };
+
+        qualities.manufacturer = isNewRevision
+          ? recognizedQuality('Marka wynika ze znanego kodu bazowego Rotenso.')
+          : confirmedQuality('Marka potwierdzona przez dokładny kod produktu.');
+        qualities.model = isNewRevision
+          ? recognizedQuality(`Model bazowy jest znany, a rewizję ${exactModel.revision} zachowano dokładnie z nadruku. Nie przypisano EAN-u starszej rewizji.`)
+          : confirmedQuality('Model dopasowany do dokładnego kodu Rotenso.');
+        if (exactModel.capacityKw) {
+          qualities.power = isNewRevision
+            ? recognizedQuality('Moc jest zgodna we wszystkich znanych rewizjach tego kodu bazowego.')
+            : confirmedQuality('Moc wynika z dokładnie dopasowanego modelu.');
+        }
       }
 
       setFieldSources((current) => ({ ...current, ...sources }));
@@ -604,7 +625,11 @@ export default function DesktopNameplateOcrButton({
       } else if (result.ean && !exactModel) {
         setError(`EAN ${result.ean} odczytano poprawnie, ale nie ma go w katalogu. Użyj „Odczytaj przez AI” do odczytu nadrukowanego modelu albo wpisz dane ręcznie.`);
       } else if (!result.ean && resolvedSerialNumber && exactModel && printedModelResult?.reliable) {
-        setCatalogMessage(`Kod ${exactModel.code} odczytano lokalnie z nadruku i potwierdzono w słowniku Rotenso.`);
+        if (exactModel.baseModelVerified && exactModel.revisionObserved && exactModel.revisionCatalogKnown === false) {
+          setCatalogMessage(`Kod bazowy rozpoznany. Rewizję ${exactModel.revision} odczytano z tabliczki i zachowano bez zamiany na starszą rewizję; nie przypisano jej cudzego EAN-u.`);
+        } else {
+          setCatalogMessage(`Kod ${exactModel.code} odczytano lokalnie z nadruku i potwierdzono w słowniku Rotenso.`);
+        }
       } else if (!result.ean && result.serialNumber && !exactModel) {
         setCatalogMessage('Numer seryjny odczytano z kodu kreskowego. Ta etykieta nie podała modelu przez EAN — kliknij „Odczytaj przez AI”, aby odczytać markę, model i moc z nadruku.');
       } else if (!result.ean && serialTextResult?.serialNumber && !exactModel) {
@@ -660,8 +685,10 @@ export default function DesktopNameplateOcrButton({
         setError(mismatch.message);
       } else if (!result.manufacturer && !result.model && !result.serialNumber) {
         setError('Analiza AI nie odczytała pewnych danych. Popraw kadr albo wpisz dane ręcznie.');
-      } else if (result.model && !result.modelConfirmedByCatalog) {
-        setError('AI odczytała model, ale nie udało się potwierdzić go dokładnie w katalogu Rotenso. Sprawdź model ręcznie przed zapisem.');
+      } else if (result.model && !result.modelConfirmedByCatalog && !result.modelBaseRecognized) {
+        setError('AI odczytała model, ale nie udało się bezpiecznie potwierdzić jego kodu bazowego. Sprawdź model znak po znaku przed zapisem.');
+      } else if (result.newRevisionRecognized) {
+        setCatalogMessage(`Rozpoznano znany model bazowy Rotenso z rewizją ${result.exactModel?.revision || ''}. Rewizję zachowano dokładnie z tabliczki; nie przypisano EAN-u starszej wersji.`);
       } else if (result.modelConfirmedByCatalog && !barcodeInfo?.ean) {
         setCatalogMessage(`Model odczytany przez AI i potwierdzony w katalogu Rotenso ${BUILT_IN_ROTENSO_CATALOG.version}.`);
       }
