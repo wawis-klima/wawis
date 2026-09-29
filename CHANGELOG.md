@@ -1,3 +1,14 @@
+## 11.77
+- Audyt Kontrahentów / etap 4: zamknięto K13 i K11.
+- K13 desktop: przy edycji istniejącego kontrahenta wspólny telefon lub e-mail jest teraz ostrzeżeniem, a nie blokadą zapisu. Tworzenie nowego kontrahenta zachowuje dotychczasową blokadę duplikatów.
+- Konflikt nazwy (oraz inne niekontaktowe pola tożsamości, np. NIP) nadal blokuje zapis na desktopie; nie osłabiono unikalności nazwy ani ochrony INSERT.
+- Produkcyjny backend sprawdzono read-only: trigger duplikatów zwraca UPDATE bez blokady kontaktu, a unikalny indeks nazwy pozostaje aktywny.
+- K11 desktop/mobile: import XLSX rozpoznaje eksportowaną kolumnę Status i zachowuje Aktywny/Nieaktywny; plik bez kolumny Status zachowuje kompatybilne domyślne true.
+- Nieznany/pusty Status przy istniejącej kolumnie oraz błędny lub nietablicowy Adresy (JSON) są raportowane jako błąd konkretnego wiersza zamiast cichego pominięcia.
+- Sformatowane, ale puste wiersze są odrzucane przed dodaniem wartości domyślnych.
+- Parser zachowuje rzeczywisty numer wiersza z arkusza XLSX, także przy nieciągłych/pustych wierszach.
+- Dodano smoke K11/K13 i E2E round-trip eksport→import dla desktopu i mobile. Bez migracji Supabase i bez zmian RLS.
+
 ## 11.76
 - Audyt Kontrahentów / etap 3: K1 + K2 + K17 oraz decyzja biznesowa dla K23.
 - K1 mobile: pełna edycja montażu zachowuje `contractor_address_id`; zmiana telefonu lub innych niezwiązanych pól nie przepina adresu dodatkowego na główny ani nie usuwa powiązania.
