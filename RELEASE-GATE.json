@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — 20260929093000_complete_contractors_catalog_v1178 po zielonych PR checks",
+    "supabase_migration_applied": "APPLIED — complete_contractors_catalog_v1178; admin_get_contractors_catalog() zwraca 1345/1345 rekordów przy 1345 unikalnych ID; ACL tylko postgres/authenticated/service_role, funkcja dodatkowo wymaga current_user_is_admin()",
     "rls_role_matrix": "Bez zmian RLS; nowy RPC SECURITY DEFINER sprawdza current_user_is_admin() i ma EXECUTE tylko authenticated/service_role",
     "performance_advisor": "K20 pozostaje osobnym etapem; 11.78 usuwa błędną mieszaną paginację, ale nie wykonuje jeszcze optymalizacji renderowania/analizy",
     "security_advisor": "Nowy RPC nie poszerza dostępu — admin-only w treści funkcji, PUBLIC/anon revoked",
