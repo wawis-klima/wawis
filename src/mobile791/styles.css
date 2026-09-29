@@ -8671,9 +8671,9 @@ img.previewImage{
   }
 
   .mobilePhotoZoomControls{
-    position:absolute;
+    position:fixed;
     left:50%;
-    bottom:14px;
+    bottom:calc(12px + env(safe-area-inset-bottom, 0px));
     transform:translateX(-50%);
     z-index:40;
     display:flex;
@@ -8717,9 +8717,9 @@ img.previewImage{
   }
 
   .mobilePhotoZoomHint{
-    position:absolute;
+    position:fixed;
     left:50%;
-    bottom:64px;
+    bottom:calc(62px + env(safe-area-inset-bottom, 0px));
     transform:translateX(-50%);
     z-index:35;
     max-width:88vw;
