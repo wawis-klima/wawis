@@ -93,6 +93,17 @@ function formatContractorDate(value) {
   return new Intl.DateTimeFormat('pl-PL').format(date);
 }
 
+function formatFreshnessTime(value) {
+  if (!value) return 'jeszcze nie odświeżono';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'nieznany czas';
+  return new Intl.DateTimeFormat('pl-PL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+}
+
 function normalizeContractorText(value) {
   return String(value || '').trim().toLocaleLowerCase('pl-PL').replace(/\s+/g, ' ');
 }
@@ -114,13 +125,24 @@ function formatImportReasons(reasons = []) {
   return reasons.join(' / ');
 }
 
-export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll, jobs = [], requestedContractorId = null }) {
+export default function ContractorsPanel({
+  supabase,
+  userId,
+  isAdmin,
+  refreshAll,
+  jobs = [],
+  requestedContractorId = null,
+  initialContractors = [],
+  onContractorsLoaded = null,
+}) {
   const loadGuard = usePanelLoadGuard(supabase, userId);
-  const [contractors, setContractors] = useState([]);
+  const [contractors, setContractors] = useState(() => Array.isArray(initialContractors) ? initialContractors : []);
   const [selectedId, setSelectedId] = useState(null);
   const [form, setForm] = useState(getEmptyContractorForm());
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !(Array.isArray(initialContractors) && initialContractors.length));
+  const [lastLoadedAt, setLastLoadedAt] = useState(() => (Array.isArray(initialContractors) && initialContractors.length ? new Date().toISOString() : ''));
+  const [catalogMayBeStale, setCatalogMayBeStale] = useState(false);
   const [saveBusy, setSaveBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [importBusy, setImportBusy] = useState(false);
@@ -150,9 +172,13 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       if (!isCurrent()) return false;
       setContractors(data);
       setSelectedId((prev) => (prev && data.some((item) => item.id === prev) ? prev : null));
+      setLastLoadedAt(new Date().toISOString());
+      setCatalogMayBeStale(false);
+      if (typeof onContractorsLoaded === 'function') onContractorsLoaded(data);
       return true;
     } catch (error) {
       if (!isCurrent()) return false;
+      setCatalogMayBeStale(true);
       if (reportError) setErrorMessage(getFriendlyError(error));
       return false;
     } finally {
@@ -829,6 +855,11 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
               placeholder="Szukaj po nazwie, telefonie, emailu, NIP, mieście lub ulicy..."
             />
             <div className="contractorsToolbarActions">
+              <span className={catalogMayBeStale ? 'contractorsFreshnessWarning' : 'contractorsFreshness'}>
+                {catalogMayBeStale
+                  ? `Dane mogą być nieaktualne • ostatni odczyt ${formatFreshnessTime(lastLoadedAt)}`
+                  : `Ostatnie odświeżenie ${formatFreshnessTime(lastLoadedAt)}${loading && contractors.length ? ' • odświeżanie…' : ''}`}
+              </span>
               <button type="button" className="btn desktopToolbarActionBtn" onClick={() => void reloadContractors()} disabled={loading || importBusy || exportBusy}>Odśwież listę</button>
             </div>
           </div>
@@ -841,9 +872,9 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
                   <span>{visibleContractors.length} pozycji{jobFallbackContractorsCount ? ' • ' + jobFallbackContractorsCount + ' z montaży do zapisania' : ''}</span>
                 </div>
               </div>
-              {loading ? <div className="contractorsEmptyState">Ładowanie listy kontrahentów...</div> : null}
+              {loading && !contractors.length ? <div className="contractorsEmptyState">Ładowanie listy kontrahentów...</div> : null}
               {!loading && !visibleContractors.length ? <div className="contractorsEmptyState">Brak kontrahentów spełniających kryteria wyszukiwania.</div> : null}
-              {!loading && visibleContractors.length ? (
+              {visibleContractors.length ? (
                 <>
                   <div className="tableWrap contractorsTableWrap contractorsDesktopList">
                     <table className="jobTable contractorsTable" aria-label="Tabela kontrahentów">

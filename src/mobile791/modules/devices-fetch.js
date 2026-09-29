@@ -214,19 +214,41 @@ export async function fetchAdminDevices({ supabase, isAdmin, jobs = [], trySync 
   };
 }
 
-export async function fetchContractorDevices({ supabase, contractorId, isAdmin, jobs = [] }) {
+export async function fetchContractorDevicesResult({ supabase, contractorId, isAdmin, jobs = [] }) {
   const fallbackDevices = buildFallbackDevicesFromJobs(jobs)
     .filter((device) => String(device.contractor_id || '') === String(contractorId || ''));
 
-  if (!supabase || !isAdmin || !contractorId) return fallbackDevices;
+  if (!supabase || !isAdmin || !contractorId) {
+    return {
+      devices: fallbackDevices,
+      source: 'fallback',
+      staleReason: contractorId ? 'Brak dostępu do pełnej bazy urządzeń.' : '',
+    };
+  }
 
   const { data, error } = await supabase.rpc('admin_get_contractor_devices', { p_contractor_id: contractorId });
   if (error) {
-    if (shouldFallback(error)) return fallbackDevices;
+    if (shouldFallback(error)) {
+      return {
+        devices: fallbackDevices,
+        source: 'fallback',
+        staleReason: 'Nie udało się odczytać pełnej bazy urządzeń. Pokazuję dane z montaży.',
+        error,
+      };
+    }
     throw error;
   }
 
-  return enrichDevicesWithJobFallback((Array.isArray(data) ? data : []).map((item) => normalizeDeviceRecord(item)), jobs);
+  return {
+    devices: enrichDevicesWithJobFallback((Array.isArray(data) ? data : []).map((item) => normalizeDeviceRecord(item)), jobs),
+    source: 'devices-rpc',
+    staleReason: '',
+  };
+}
+
+export async function fetchContractorDevices(args) {
+  const result = await fetchContractorDevicesResult(args);
+  return result.devices;
 }
 
 export async function updateDeviceStatus({ supabase, deviceId, status, isAdmin }) {

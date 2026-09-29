@@ -20,6 +20,7 @@ import {
   syncContractorJobs,
 } from '../../modules/contractors-fetch.js';
 import { getJobDeviceRows } from '../../modules/job-devices.js';
+import { fetchContractorDevicesResult } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { normalizeVoiceEmail, normalizeVoicePhone } from '../../modules/client-voice-input.js';
 
@@ -81,6 +82,17 @@ function formatDate(value) {
   }).format(date);
 }
 
+function formatFreshnessTime(value) {
+  if (!value) return 'jeszcze nie odświeżono';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'nieznany czas';
+  return new Intl.DateTimeFormat('pl-PL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).format(date);
+}
+
 function updatePrimaryAddress(form, patch) {
   const source = Array.isArray(form?.addresses) && form.addresses.length
     ? form.addresses.map((address) => ({ ...address }))
@@ -122,7 +134,7 @@ function Pagination({ page, totalPages, onPage }) {
   );
 }
 
-function ExpandedContractorDetails({ contractor, devices, onEdit, onDelete, busy }) {
+function ExpandedContractorDetails({ contractor, devices, deviceStatus = 'ready', deviceStaleReason = '', onEdit, onDelete, busy }) {
   const addresses = Array.isArray(contractor?.addresses) ? contractor.addresses : [];
   const extraAddresses = addresses.filter((address) => !address?.is_primary && (address?.city || address?.street));
   return (
@@ -148,7 +160,8 @@ function ExpandedContractorDetails({ contractor, devices, onEdit, onDelete, busy
 
       <div className="contractorsV1062ExtraBlock">
         <span className="contractorsV1062ExtraLabel">Urządzenia</span>
-        <strong>{devices.length}</strong>
+        {deviceStatus === 'loading' ? <small className="contractorsV1062Muted">Ładowanie pełnej listy urządzeń…</small> : <strong>{devices.length}</strong>}
+        {deviceStaleReason ? <small className="contractorsV1062Muted">{deviceStaleReason}</small> : null}
         {devices.slice(0, 3).map((device, index) => (
           <div key={device.id || `${device.model}-${index}`} className="contractorsV1062DeviceLine">
             <span>{device.model || 'Urządzenie bez modelu'}</span>
@@ -175,15 +188,32 @@ function ExpandedContractorDetails({ contractor, devices, onEdit, onDelete, busy
   );
 }
 
-export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll, jobs = [], requestedContractorId = null }) {
+export default function ContractorsPanel({
+  supabase,
+  userId,
+  isAdmin,
+  refreshAll,
+  jobs = [],
+  requestedContractorId = null,
+  initialContractors = [],
+  onContractorsLoaded = null,
+}) {
   const loadGuard = usePanelLoadGuard(supabase, userId);
-  const [contractors, setContractors] = useState([]);
+  const [contractors, setContractors] = useState(() => Array.isArray(initialContractors) ? initialContractors : []);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState(null);
   const [activeView, setActiveView] = useState('list');
   const [form, setForm] = useState(getEmptyContractorForm());
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !(Array.isArray(initialContractors) && initialContractors.length));
+  const [lastLoadedAt, setLastLoadedAt] = useState(() => (Array.isArray(initialContractors) && initialContractors.length ? new Date().toISOString() : ''));
+  const [catalogMayBeStale, setCatalogMayBeStale] = useState(false);
+  const [contractorDevicesRemote, setContractorDevicesRemote] = useState({
+    contractorId: '',
+    rows: [],
+    status: 'idle',
+    staleReason: '',
+  });
   const [saveBusy, setSaveBusy] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [importBusy, setImportBusy] = useState(false);
@@ -202,9 +232,13 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
       const data = await loadContractors({ supabase, isAdmin });
       if (!isCurrent()) return false;
       setContractors(data);
+      setLastLoadedAt(new Date().toISOString());
+      setCatalogMayBeStale(false);
+      if (typeof onContractorsLoaded === 'function') onContractorsLoaded(data);
       return true;
     } catch (error) {
       if (!isCurrent()) return false;
+      setCatalogMayBeStale(true);
       if (reportError) setErrorMessage(getFriendlyError(error));
       return false;
     } finally {
@@ -252,11 +286,75 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
   const duplicateMatches = useMemo(() => findContractorDuplicates(contractors, form), [contractors, form]);
 
-  function getContractorDevices(contractor) {
+  function getContractorJobDevices(contractor) {
     const fallbackJobIds = new Set((contractor?.source_job_ids || []).map((id) => String(id)));
     return (jobs || [])
       .filter((job) => isJobDerivedContractor(contractor) ? fallbackJobIds.has(String(job?.id || '')) : String(job?.contractor_id || '') === String(contractor?.id || ''))
       .flatMap((job) => getJobDeviceRows(job).map((device, index) => ({ id: `${job.id || 'job'}:${index}`, model: device.model || '', serial_number: device.serial_number || '' })));
+  }
+
+  const expandedContractor = useMemo(
+    () => allContractors.find((item) => String(item?.id || '') === String(expandedId || '')) || null,
+    [allContractors, expandedId],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const contractorId = String(expandedContractor?.id || '');
+
+    async function loadExpandedContractorDevices() {
+      if (!contractorId || isJobDerivedContractor(expandedContractor)) {
+        setContractorDevicesRemote({ contractorId: '', rows: [], status: 'idle', staleReason: '' });
+        return;
+      }
+
+      setContractorDevicesRemote({ contractorId, rows: [], status: 'loading', staleReason: '' });
+      try {
+        const result = await fetchContractorDevicesResult({
+          supabase,
+          contractorId,
+          isAdmin,
+          jobs,
+        });
+        if (cancelled) return;
+        setContractorDevicesRemote({
+          contractorId,
+          rows: Array.isArray(result?.devices) ? result.devices : [],
+          status: 'ready',
+          staleReason: result?.staleReason || '',
+        });
+      } catch (error) {
+        if (cancelled) return;
+        setContractorDevicesRemote({
+          contractorId,
+          rows: getContractorJobDevices(expandedContractor),
+          status: 'error',
+          staleReason: 'Nie udało się odczytać pełnej listy urządzeń. Pokazuję dane z montaży.',
+        });
+      }
+    }
+
+    void loadExpandedContractorDevices();
+    return () => {
+      cancelled = true;
+    };
+  }, [expandedContractor, isAdmin, jobs, supabase]);
+
+  function getContractorDevices(contractor) {
+    if (isJobDerivedContractor(contractor)) return getContractorJobDevices(contractor);
+    const contractorId = String(contractor?.id || '');
+    if (contractorDevicesRemote.contractorId !== contractorId) return [];
+    return contractorDevicesRemote.rows;
+  }
+
+  function getContractorDeviceStatus(contractor) {
+    if (isJobDerivedContractor(contractor)) return { status: 'ready', staleReason: '' };
+    const contractorId = String(contractor?.id || '');
+    if (contractorDevicesRemote.contractorId !== contractorId) return { status: 'loading', staleReason: '' };
+    return {
+      status: contractorDevicesRemote.status,
+      staleReason: contractorDevicesRemote.staleReason,
+    };
   }
 
   function toggleContractor(contractor) {
@@ -453,6 +551,7 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
           <div className="contractorsV1062Actions">
             <div className="contractorsV1062StatCard"><span>Wszyscy kontrahenci</span><div><IconUsers /><strong>{allContractors.length}</strong></div></div>
+            <button type="button" className="contractorsV1062ActionCard" onClick={() => void reloadContractors()} disabled={loading || saveBusy || deleteBusy || importBusy}><strong>↻</strong><span>{loading ? 'Odświeżanie…' : 'Odśwież'}</span></button>
             <button type="button" className="contractorsV1062ActionCard" onClick={() => startNewContractor()}><strong>＋</strong><span>Nowy<br />kontrahent</span></button>
             <button type="button" className="contractorsV1062ActionCard" onClick={() => importInputRef.current?.click()} disabled={importBusy || saveBusy || deleteBusy}><strong>⇧</strong><span>{importBusy ? 'Analiza…' : 'Import XLSX'}</span></button>
             <button type="button" className="contractorsV1062ActionCard" onClick={() => void handleExportXlsx()} disabled={exportBusy || importBusy || !contractors.length}><strong>⇩</strong><span>{exportBusy ? 'Eksport…' : 'Export XLSX'}</span></button>
@@ -461,11 +560,16 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
 
           {infoMessage ? <div className="successBox contractorsV1062Message">{infoMessage}</div> : null}
           {errorMessage ? <div className="errorBox contractorsV1062Message">{errorMessage}</div> : null}
+          <div className={`contractorsV1062Message ${catalogMayBeStale ? 'errorBox' : 'successBox'}`}>
+            {catalogMayBeStale
+              ? `Dane mogą być nieaktualne. Ostatni udany odczyt: ${formatFreshnessTime(lastLoadedAt)}.`
+              : `Ostatnie odświeżenie: ${formatFreshnessTime(lastLoadedAt)}.${loading && contractors.length ? ' Trwa odświeżanie…' : ''}`}
+          </div>
 
           <section className="contractorsV1062List" aria-label="Lista kontrahentów">
-            {loading ? <div className="contractorsV1062Empty">Ładowanie kontrahentów…</div> : null}
-            {!loading && !filteredContractors.length ? <div className="contractorsV1062Empty">Brak kontrahentów spełniających kryteria wyszukiwania.</div> : null}
-            {!loading && pageItems.map((contractor) => {
+            {loading && !contractors.length ? <div className="contractorsV1062Empty">Ładowanie kontrahentów…</div> : null}
+            {!filteredContractors.length && !loading ? <div className="contractorsV1062Empty">Brak kontrahentów spełniających kryteria wyszukiwania.</div> : null}
+            {pageItems.map((contractor) => {
               const id = String(contractor.id || '');
               const expanded = expandedId === id;
               return (
@@ -482,13 +586,26 @@ export default function ContractorsPanel({ supabase, userId, isAdmin, refreshAll
                     </span>
                     <span className="contractorsV1062Chevron" aria-hidden="true">{expanded ? '⌃' : '›'}</span>
                   </button>
-                  {expanded ? <ExpandedContractorDetails contractor={contractor} devices={getContractorDevices(contractor)} onEdit={startEdit} onDelete={handleDelete} busy={deleteBusy || saveBusy} /> : null}
+                  {expanded ? (() => {
+                    const deviceState = getContractorDeviceStatus(contractor);
+                    return (
+                      <ExpandedContractorDetails
+                        contractor={contractor}
+                        devices={getContractorDevices(contractor)}
+                        deviceStatus={deviceState.status}
+                        deviceStaleReason={deviceState.staleReason}
+                        onEdit={startEdit}
+                        onDelete={handleDelete}
+                        busy={deleteBusy || saveBusy}
+                      />
+                    );
+                  })() : null}
                 </article>
               );
             })}
           </section>
 
-          {!loading && filteredContractors.length ? (
+          {filteredContractors.length ? (
             <div className="contractorsV1062Footer">
               <span className="contractorsV1062PerPage">10 na stronę</span>
               <Pagination page={safePage} totalPages={totalPages} onPage={(next) => { setPage(next); setExpandedId(null); }} />

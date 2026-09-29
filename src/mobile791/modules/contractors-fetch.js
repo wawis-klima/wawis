@@ -1,37 +1,39 @@
 import { buildContractorPayload, isJobDerivedContractor, normalizeContractorRecord } from './contractors.js';
 
+function isMissingCatalogRpc(error) {
+  const message = String(error?.message || error?.details || error?.hint || '').toLowerCase();
+  return (
+    message.includes('admin_get_contractors_catalog')
+    || message.includes('schema cache')
+    || message.includes('function public')
+  );
+}
+
+function parseContractorsCatalog(data) {
+  if (data && typeof data === 'object' && !Array.isArray(data) && Array.isArray(data.items)) {
+    return data.items;
+  }
+  return Array.isArray(data) ? data : [];
+}
+
 export async function loadContractors({ supabase, isAdmin }) {
   if (!supabase || !isAdmin) return [];
 
-  const pageSize = 1000;
-  const collected = [];
-
-  const { data, error } = await supabase.rpc('admin_list_contractors');
-  if (error) throw error;
-
-  const firstBatch = Array.isArray(data) ? data : [];
-  collected.push(...firstBatch);
-
-  if (firstBatch.length === pageSize && typeof supabase.from === 'function') {
-    let from = pageSize;
-    while (true) {
-      const { data: extraData, error: extraError } = await supabase
-        .from('contractors')
-        .select('*')
-        .order('company_name', { ascending: true })
-        .order('created_at', { ascending: false })
-        .range(from, from + pageSize - 1);
-      if (extraError) throw extraError;
-
-      const batch = Array.isArray(extraData) ? extraData : [];
-      collected.push(...batch);
-
-      if (batch.length < pageSize) break;
-      from += pageSize;
-    }
+  // K21 / 11.78: katalog przychodzi jako jeden JSON snapshot z serwera.
+  // Nie łączymy już wyniku RPC ograniczonego przez PostgREST z offsetowym SELECT-em
+  // o innym porządku, więc kompletność nie zależy od magicznego limitu 1000.
+  const { data, error } = await supabase.rpc('admin_get_contractors_catalog');
+  if (!error) {
+    return parseContractorsCatalog(data).map((item) => normalizeContractorRecord(item));
   }
 
-  return collected.map((item) => normalizeContractorRecord(item));
+  // Bezpieczna kompatybilność podczas krótkiego okna wdrożenia/rollbacku.
+  // Po wdrożeniu migracji produkcja zawsze korzysta z powyższego snapshotu.
+  if (!isMissingCatalogRpc(error)) throw error;
+
+  const { data: legacyData, error: legacyError } = await supabase.rpc('admin_list_contractors');
+  if (legacyError) throw legacyError;
+  return (Array.isArray(legacyData) ? legacyData : []).map((item) => normalizeContractorRecord(item));
 }
 
 export async function saveContractor({ supabase, contractor, isAdmin }) {

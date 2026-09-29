@@ -122,6 +122,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   desktop: [
+    'node scripts/smoke-contractors-stage5-v1178.mjs',
     'node scripts/smoke-contractors-stage4-v1177.mjs',
     'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:sms-summary',
@@ -138,6 +139,7 @@ const GROUPS = {
     'npm run test:smoke:calendar-width',
   ],
   mobile: [
+    'node scripts/smoke-contractors-stage5-v1178.mjs',
     'node scripts/smoke-contractors-stage4-v1177.mjs',
     'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:mobile-ui-copy',
