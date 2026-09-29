@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.84
+- 11.85
 
-Wersja 11.84 dodaje w desktopowych Montażach prosty status faktury VAT: w tabeli pojawia się kompaktowa kolumna FV z czerwonym lub zielonym kółkiem, a w sekcji Klient administrator może przełączyć Niewystawiona/Wystawiona. Stan jest zapisywany w Supabase. Przy pierwszym wdrożeniu 10 najnowszych zakończonych montaży pozostaje do ręcznego potwierdzenia, a wszystkie starsze zakończone montaże są oznaczane jako już wystawione. Mobile pozostaje bez zmian.
+Wersja 11.85 przenosi status Faktura VAT w desktopowych szczegółach montażu do górnego paska obok statusu i daty, dokładnie w wolne miejsce przed przyciskami Edytuj/Zamknij. Przełącznik zachowuje czerwony stan Niewystawiona i zielony Wystawiona oraz dotychczasowy trwały zapis w Supabase. Sekcja Klient zawiera ponownie tylko dane kontaktowe.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.84
+# Wawis Klimatyzacja — wersja 11.85
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -821,7 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.84` — desktopowa ewidencja Faktura VAT: czerwone/zielone FV w tabeli, ręczne przełączanie w sekcji Klient, trwały zapis w Supabase; 10 najnowszych zakończonych montaży pozostaje do ręcznego potwierdzenia, starsze zakończone są ustawione jako wystawione.
+- wersja `11.85` — status Faktura VAT przeniesiony do górnego paska szczegółów montażu, obok statusu i daty; działanie oraz zapis pozostają bez zmian.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
 - wersja `11.78` — audyt Kontrahentów etap 5: K16/K19/K21; pełne urządzenia na mobile, jawna świeżość/odświeżenie katalogu i kompletny snapshot kontrahentów bez mieszanej paginacji.
 - wersja `11.77` — audyt Kontrahentów etap 4: K11/K13; poprawny import Status/Adresy (JSON)/numery wierszy i edycja istniejącego klienta ze współdzielonym telefonem lub e-mailem jako ostrzeżenie, nie blokada.
