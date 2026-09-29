@@ -10,6 +10,12 @@ import {
   getDuplicateContractorMatch,
 } from "../../modules/job-contractors.js";
 import { DEVICE_TYPE_MULTI, DEVICE_TYPE_SINGLE, MAX_INDOOR_UNITS_PER_DEVICE, createEmptyJobDevice, getDeviceIndoorModels, getDeviceIndoorSerials, getDeviceOutdoorModel, getDeviceType, normalizeJobDevices, serializeJobDevicesToFields } from "../../modules/job-devices.js";
+import {
+  CUSTOM_CONTRACTOR_ADDRESS_ID,
+  formatContractorAddress,
+  getPrimaryContractorAddress,
+  normalizeContractorAddresses,
+} from "../../modules/contractors.js";
 import NameplatePhotoCapture from "../nameplate/NameplatePhotoCapture.jsx";
 import MobileDeviceWizard from "../devices/MobileDeviceWizard.jsx";
 
@@ -53,6 +59,21 @@ export default function JobFormModal({
     }),
     [contractorOptions, jobForm.contractor_id, jobForm.client],
   );
+
+  const linkedContractor = useMemo(
+    () => contractorOptions.find((item) => String(item?.id || '') === String(jobForm.contractor_id || '')) || null,
+    [contractorOptions, jobForm.contractor_id],
+  );
+  const linkedContractorAddresses = useMemo(
+    () => normalizeContractorAddresses(linkedContractor || {}),
+    [linkedContractor],
+  );
+  const explicitContractorAddress = linkedContractorAddresses.find(
+    (address) => String(address.id) === String(jobForm.contractor_address_id || ''),
+  ) || null;
+  const selectedContractorAddressValue = explicitContractorAddress?.id
+    || (linkedContractor ? CUSTOM_CONTRACTOR_ADDRESS_ID : '');
+  const usesCatalogAddress = Boolean(explicitContractorAddress);
 
   const jobDevices = useMemo(
     () => normalizeJobDevices(jobForm, { keepEmptyRow: true, keepEmptyIndoor: true }),
@@ -392,7 +413,22 @@ export default function JobFormModal({
         const normalizedSelectedName = String(selectedContractor?.company_name || '').trim();
         if (normalizedSelectedName && String(value || '').trim() !== normalizedSelectedName) {
           next.contractor_id = '';
+          next.contractor_address_id = '';
+          next.contractor_address_label = '';
         }
+      }
+      return next;
+    });
+  }
+
+  function updateAddressField(field, value) {
+    setJobForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (linkedContractor && usesCatalogAddress) {
+        // Ręczna zmiana lokalizacji jest świadomym odejściem od zapisanego adresu.
+        // Nie wolno zostawiać ID starego adresu przy nowym snapshocie.
+        next.contractor_address_id = '';
+        next.contractor_address_label = '';
       }
       return next;
     });
@@ -400,18 +436,47 @@ export default function JobFormModal({
 
   function handleContractorSelect(contractor) {
     if (!contractor?.id) {
-      setJobForm((prev) => ({ ...prev, contractor_id: '' }));
+      setJobForm((prev) => ({
+        ...prev,
+        contractor_id: '',
+        contractor_address_id: '',
+        contractor_address_label: '',
+      }));
       return;
     }
 
+    const primaryAddress = getPrimaryContractorAddress(contractor);
     setJobForm((prev) => ({
       ...prev,
       contractor_id: contractor.id,
+      contractor_address_id: primaryAddress?.id || '',
+      contractor_address_label: '',
       client: contractor.company_name || prev.client,
       email: contractor.email || prev.email,
       phone: contractor.phone || prev.phone,
-      city: contractor.city || prev.city,
-      street: contractor.street || prev.street,
+      city: primaryAddress?.city || contractor.city || prev.city,
+      street: primaryAddress?.street || contractor.street || prev.street,
+    }));
+  }
+
+  function handleContractorAddressSelect(addressId) {
+    if (addressId === CUSTOM_CONTRACTOR_ADDRESS_ID) {
+      setJobForm((prev) => ({
+        ...prev,
+        contractor_address_id: '',
+        contractor_address_label: '',
+      }));
+      return;
+    }
+
+    const address = linkedContractorAddresses.find((item) => String(item.id) === String(addressId));
+    if (!address) return;
+    setJobForm((prev) => ({
+      ...prev,
+      contractor_address_id: address.id,
+      contractor_address_label: '',
+      city: address.city || '',
+      street: address.street || '',
     }));
   }
 
@@ -420,7 +485,9 @@ export default function JobFormModal({
 
     const { form: resolvedForm } = serialOnlyMode
       ? { form: jobForm }
-      : applyAutoLinkedContractorToJobForm(jobForm, contractorOptions);
+      : editingJobId && jobForm.contractor_id
+        ? { form: jobForm }
+        : applyAutoLinkedContractorToJobForm(jobForm, contractorOptions);
 
     if (!serialOnlyMode && duplicateContractor && !resolvedForm.contractor_id) {
       alert(`Taki klient już jest w bazie. Wybierz go z listy podpowiedzi: ${duplicateContractor.company_name}${duplicateContractor.phone ? ` (${duplicateContractor.phone})` : ''}`);
@@ -529,13 +596,28 @@ export default function JobFormModal({
           <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
           <VoiceFieldButton label="Telefon" onValue={(value) => updateField("phone", value)} transformValue={normalizeVoicePhone} disabled={busy} />
         </div>
+        {linkedContractor ? (
+          <label className="inputLabel jobAddressPicker">
+            <span>Adres montażu</span>
+            <select className="input" value={selectedContractorAddressValue} onChange={(e) => handleContractorAddressSelect(e.target.value)}>
+              {!explicitContractorAddress ? (
+                <option value={CUSTOM_CONTRACTOR_ADDRESS_ID}>Adres zapisany wcześniej w tym montażu</option>
+              ) : null}
+              {linkedContractorAddresses.map((address) => (
+                <option key={address.id} value={address.id}>
+                  {address.is_primary ? 'Główny' : address.label || 'Adres'} — {formatContractorAddress(address) || 'Brak danych'}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <div className="voiceFieldRow">
-          <input className="input" placeholder="Miejscowość" value={jobForm.city} onChange={(e) => updateField("city", e.target.value)} />
-          <VoiceFieldButton label="Miejscowość" onValue={(value) => updateField("city", value)} disabled={busy} />
+          <input className="input" placeholder="Miejscowość" value={jobForm.city} onChange={(e) => updateAddressField("city", e.target.value)} />
+          <VoiceFieldButton label="Miejscowość" onValue={(value) => updateAddressField("city", value)} disabled={busy} />
         </div>
         <div className="voiceFieldRow">
-          <input className="input" placeholder="Ulica i numer" value={jobForm.street} onChange={(e) => updateField("street", e.target.value)} />
-          <VoiceFieldButton label="Ulica i numer" onValue={(value) => updateField("street", value)} disabled={busy} />
+          <input className="input" placeholder="Ulica i numer" value={jobForm.street} onChange={(e) => updateAddressField("street", e.target.value)} />
+          <VoiceFieldButton label="Ulica i numer" onValue={(value) => updateAddressField("street", value)} disabled={busy} />
         </div>
         {isAdmin ? (
           <select className="input" value={jobForm.status} onChange={(e) => updateField("status", e.target.value)}>
