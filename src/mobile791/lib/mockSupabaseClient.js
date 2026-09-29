@@ -552,6 +552,23 @@ export function createMockSupabaseClient() {
       return new MockQueryBuilder(store, tableName, persistSharedStore);
     },
     async rpc(name, payload = {}) {
+      if (name === 'admin_delete_jobs_recoverable') {
+        const requestedIds = new Set((Array.isArray(payload.p_ids) ? payload.p_ids : []).map((id) => String(id || '')));
+        const onlyUnlinked = Boolean(payload.p_only_unlinked);
+        const deleted = store.jobs.filter((job) => (
+          requestedIds.has(String(job.id || ''))
+          && (!onlyUnlinked || !job.contractor_id)
+        ));
+        const deletedIds = new Set(deleted.map((job) => String(job.id || '')));
+        store.jobs = store.jobs.filter((job) => !deletedIds.has(String(job.id || '')));
+        for (const tableName of ['job_access', 'comments', 'photos', 'nameplate_manual_verifications', 'job_protocols', 'job_protocol_email_log']) {
+          if (Array.isArray(store[tableName])) {
+            store[tableName] = store[tableName].filter((row) => !deletedIds.has(String(row.job_id || '')));
+          }
+        }
+        if (deleted.length) persistSharedStore({ table: 'jobs', event: 'DELETE', newRows: [], oldRows: deleted });
+        return { data: clone(deleted.map((job) => ({ id: job.id }))), error: null };
+      }
       if (name === 'admin_cleanup_sms_duplicate_logs') return { data: { ok: true, mock: true }, error: null };
       if (name === 'admin_get_sms_module_snapshot') return { data: { settings: store.sms_settings, logs: store.sms_log }, error: null };
       if (name === 'admin_upsert_sms_settings') {

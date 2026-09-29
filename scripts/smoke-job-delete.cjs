@@ -6,6 +6,8 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const actionsSource = fs.readFileSync(path.join(root, 'src', 'hooks', 'useSelectedJobActions.js'), 'utf8');
 const detailsSource = fs.readFileSync(path.join(root, 'src', 'components', 'JobDetailsPanel.jsx'), 'utf8');
+const desktopCrudSource = fs.readFileSync(path.join(root, 'src', 'modules', 'jobs-crud.js'), 'utf8');
+const mobileCrudSource = fs.readFileSync(path.join(root, 'src', 'mobile791', 'modules', 'jobs-crud.js'), 'utf8');
 
 assert.match(actionsSource, /title:\s*"Usunąć kartę montażu\?"/);
 assert.match(actionsSource, /confirmLabel:\s*"Usuń na stałe"/);
@@ -13,6 +15,11 @@ assert.match(actionsSource, /await confirmDeleteJobRecord\(\{ supabase, jobToDel
 assert.match(actionsSource, /await refreshAll\(sessionUser\);/);
 assert.match(detailsSource, /deleteJob\(selectedJob\)/);
 assert.match(detailsSource, /Usuń kartę/);
+for (const [label, source] of [['desktop', desktopCrudSource], ['mobile', mobileCrudSource]]) {
+  assert.match(source, /admin_delete_jobs_recoverable/, `${label}: usunięcie karty musi korzystać z odzyskiwalnego RPC`);
+  assert.match(source, /p_only_unlinked:\s*false/, `${label}: zwykłe usunięcie karty nie może wymagać contractor_id IS NULL`);
+  assert.doesNotMatch(source, /storage\.from\(['"]job-photos['"]\)\.remove/, `${label}: pliki nie mogą być kasowane przed archiwizacją karty`);
+}
 
 function loadConfirmDeleteJobRecord() {
   const sourcePath = path.join(root, 'src', 'modules', 'jobs-crud.js');
@@ -26,57 +33,50 @@ function loadConfirmDeleteJobRecord() {
 
 async function assertDeleteFlow() {
   const confirmDeleteJobRecord = loadConfirmDeleteJobRecord();
-  const calls = { removed: null, deletedTable: null, deletedId: null, selectArg: null };
+  let rpcCall = null;
+  let storageTouched = false;
   const supabase = {
     storage: {
-      from(bucket) {
-        assert.equal(bucket, 'job-photos');
-        return {
-          async remove(paths) {
-            calls.removed = paths;
-            return { data: paths, error: null };
-          },
-        };
+      from() {
+        storageTouched = true;
+        throw new Error('Storage must not be touched by recoverable job delete');
       },
     },
-    from(table) {
-      assert.equal(table, 'jobs');
-      calls.deletedTable = table;
-      return {
-        delete() {
-          return {
-            eq(column, value) {
-              assert.equal(column, 'id');
-              calls.deletedId = value;
-              return {
-                async select(selection) {
-                  calls.selectArg = selection;
-                  return { data: [{ id: value }], error: null };
-                },
-              };
-            },
-          };
-        },
-      };
+    async rpc(name, payload) {
+      rpcCall = { name, payload };
+      return { data: [{ id: 'job-123' }], error: null };
     },
   };
 
-  await confirmDeleteJobRecord({
+  const result = await confirmDeleteJobRecord({
     supabase,
     jobToDelete: {
       id: 'job-123',
       photos: [
         { storage_path: 'jobs/job-123/photo-1.jpg' },
-        { storage_path: '' },
         { storage_path: 'jobs/job-123/photo-2.jpg' },
       ],
     },
   });
 
-  assert.deepEqual(calls.removed, ['jobs/job-123/photo-1.jpg', 'jobs/job-123/photo-2.jpg']);
-  assert.equal(calls.deletedTable, 'jobs');
-  assert.equal(calls.deletedId, 'job-123');
-  assert.equal(calls.selectArg, 'id');
+  assert.equal(storageTouched, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(rpcCall)), {
+    name: 'admin_delete_jobs_recoverable',
+    payload: { p_ids: ['job-123'], p_only_unlinked: false },
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { deletedJobIds: ['job-123'] });
+
+  await assert.rejects(
+    () => confirmDeleteJobRecord({
+      supabase: {
+        async rpc() {
+          return { data: [], error: null };
+        },
+      },
+      jobToDelete: { id: 'job-missing', photos: [{ storage_path: 'must-stay.jpg' }] },
+    }),
+    /karta nie została usunięta/i,
+  );
 }
 
 assertDeleteFlow().then(() => {

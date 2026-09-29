@@ -1,9 +1,9 @@
 ## Aktualna wersja
-- 11.73
+- 11.74
 
-Wersja 11.73 blokuje pomniejszanie i powiększanie całego okna aplikacji na telefonie. Interfejs pozostaje w stałej skali 100%, a zwykłe przewijanie i gesty wewnątrz formularzy nadal działają.
+Wersja 11.74 zamyka K6 z audytu Kontrahentów: usuwanie wpisu pochodzącego z montażu oraz zwykłe usuwanie karty korzystają z odzyskiwalnego RPC, a zdjęcia nie są kasowane przed potwierdzeniem DELETE i pozostają dostępne dla kosza/przywrócenia.
 
-# Wawis Klimatyzacja — wersja 11.73
+# Wawis Klimatyzacja — wersja 11.74
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -819,6 +819,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.74` — K6: bezpieczne, odzyskiwalne usuwanie montażu; brak kasowania plików Storage przed DELETE i brak zależności od niepełnego lokalnego cache zdjęć.
 - wersja `11.73` — mobilne okno aplikacji ma stałą skalę 100%; pinch-zoom i ręczne pomniejszanie/powiększanie są wyłączone bez blokowania zwykłego przewijania.
 - wersja `11.72` — mobilne logowanie nie czeka pozornie na dane: aplikacja pokazuje „Ładowanie danych…”, zachowuje lokalny snapshot, automatycznie ponawia przejściowe timeouty i nie dubluje pełnego refreshu po SIGNED_IN.
 - wersja `11.71` — pracownik może utworzyć pierwszy protokół dla starego zakończonego montażu bez ręcznego potwierdzania `installer_ids`; monterzy są odtwarzani z historycznych przypisań tylko na potrzeby PDF.

@@ -1,3 +1,12 @@
+## 11.74
+- Audyt Kontrahentów / K6: usuwanie wpisu `job-derived` nie kasuje już plików zdjęć przed potwierdzeniem usunięcia zlecenia.
+- Kontrahenci desktop i mobile korzystają teraz z istniejącego produkcyjnego RPC `admin_delete_jobs_recoverable` z `p_only_unlinked=true`; warunek „montaż nadal bez kontrahenta” jest sprawdzany po stronie bazy.
+- Zwykłe „Usuń kartę” w module Montaże również korzysta z tej samej odzyskiwalnej ścieżki RPC zamiast bezpośredniego DELETE.
+- Pliki `job-photos` nie są usuwane podczas kasowania karty: trigger `archive_job_before_delete` zapisuje snapshot karty i rekordów zdjęć w prywatnym koszu, więc Storage musi pozostać dostępny do pełnego przywrócenia.
+- Usunięto zależność kasowania wpisu z Kontrahentów od lokalnie załadowanej listy `jobs[].photos`.
+- Produkcję sprawdzono read-only: RPC, trigger archiwizujący i polityka `retained_job_files_delete` są aktywne; legacy permissive policy dla DELETE zdjęć nie występuje.
+- Dodano regresje dla obu ścieżek usuwania. Bez migracji Supabase i bez zmian RLS.
+
 ## 11.73
 - Mobile/iPhone: zablokowano ręczne pomniejszanie i powiększanie całego interfejsu — aplikacja pozostaje w skali 100%.
 - Viewport używa teraz `minimum-scale=1.0`, `maximum-scale=1.0` i `user-scalable=no`, przy zachowaniu `viewport-fit=cover` dla safe-area.
