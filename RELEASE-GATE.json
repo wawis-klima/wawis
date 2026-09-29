@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.78",
+  "version": "11.79",
   "scope": "full",
-  "release_branch": "release/v11.78",
+  "release_branch": "release/v11.79",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Etap 5 audytu Kontrahentów: K16/K19/K21. Produkcja przed zmianą: 1345 kontrahentów; admin_list_contractors() zwraca SETOF uporządkowany po lower(company_name), created_at DESC, lecz klient 11.77 łączył pierwsze maks. 1000 rekordów z offsetowym SELECT-em o innym porządku. K16 korzysta z istniejącego admin_get_contractor_devices. 11.78 dodaje admin-only JSON snapshot katalogu, synchronizuje App/panel i uzupełnia urządzenia mobile."
+    "notes": "Etap 6 ograniczony decyzją użytkownika wyłącznie do K12. K14 nie jest wdrażany: brak advisory locks, brak transakcyjnej blokady kluczy i brak nowych UNIQUE dla kontaktów. Produkcja read-only przed zmianą: 567 kontrahentów z telefonem; obecna i proponowana normalizacja mają po 6 grup współdzielonych numerów, 0 nowych grup powstałych wyłącznie przez regułę +48. SQL normalize_contractors_text/email/nip już odpowiada docelowej specyfikacji; zmiany wymaga phone i jego indeks wyrażeniowy."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.78.zip"
+    "file_name": "klima-app-v11.79.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.78",
+    "source_branch": "release/v11.79",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu potwierdzić 11.78: (1) mobile — kontrahent z urządzeniem manual_import pokazuje je po rozwinięciu; fallback przy błędzie jest oznaczony; (2) przycisk Odśwież nie chowa istniejącej listy, a błąd zostawia listę i pokazuje „Dane mogą być nieaktualne”; (3) zapis/odświeżenie w panelu aktualizuje katalog formularza montażu; (4) admin_get_contractors_catalog zwraca dokładnie tyle elementów, ile COUNT(public.contractors), bez powtórzeń ID."
+    "notes": "Po deployu potwierdzić 11.79: (1) 500600700 / 500 600 700 / +48 500 600 700 / 0048 500 600 700 są jednym kluczem telefonu; (2) Górski/Gorski mogą się odnaleźć przez search, ale nie są automatycznie duplikatem nazwy; (3) mobile znajduje kontrahenta po dodatkowym adresie; (4) istniejące wspólne kontakty nie są scalane ani usuwane; (5) K14 pozostaje bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — complete_contractors_catalog_v1178; admin_get_contractors_catalog() zwraca 1345/1345 rekordów przy 1345 unikalnych ID; ACL tylko postgres/authenticated/service_role, funkcja dodatkowo wymaga current_user_is_admin()",
-    "rls_role_matrix": "Bez zmian RLS; nowy RPC SECURITY DEFINER sprawdza current_user_is_admin() i ma EXECUTE tylko authenticated/service_role",
-    "performance_advisor": "K20 pozostaje osobnym etapem; 11.78 usuwa błędną mieszaną paginację, ale nie wykonuje jeszcze optymalizacji renderowania/analizy",
-    "security_advisor": "Nowy RPC nie poszerza dostępu — admin-only w treści funkcji, PUBLIC/anon revoked",
-    "trigger_grants": "N/A — bez zmian triggerów",
+    "supabase_migration_applied": "PENDING — contractor_normalization_v1179 po zielonych PR checks",
+    "rls_role_matrix": "N/A — bez zmian RLS",
+    "performance_advisor": "N/A — przebudowa jednego istniejącego indeksu lookup; bez nowych pełnych odczytów",
+    "security_advisor": "K14 świadomie poza zakresem; brak zmian zasad współbieżnych INSERT i brak nowych globalnych UNIQUE",
+    "trigger_grants": "Bez zmian; istniejące triggery automatycznie korzystają z nowej normalize_contractors_phone",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
