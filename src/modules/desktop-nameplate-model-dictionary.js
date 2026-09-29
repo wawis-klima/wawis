@@ -292,7 +292,7 @@ export const ROTENSO_MODEL_FAMILIES = Object.freeze({
   E: 'Elis',
   ES: 'Elis Silver',
   EO: 'Elis',
-  T: 'Teta',
+  T: 'Tenji',
   TA: 'Teta',
   TO: 'Teta',
   TM: 'Teta Mirror',
