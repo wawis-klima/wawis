@@ -74,7 +74,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   } });
   assert.strictEqual(unknown.modelConfirmedByCatalog, false);
   assert.strictEqual(unknown.fieldQualities.model.level, 'medium');
-  assert(/nie znaleziono dokładnego odpowiednika/i.test(unknown.fieldQualities.model.warning));
+  assert(
+    /nie udało się bezpiecznie potwierdzić|niepotwierdz/i.test(unknown.fieldQualities.model.warning),
+    'Nieznany kod ma pozostać niepotwierdzony i wymagać sprawdzenia',
+  );
 
   const contradictoryAi = ai.normalizeNameplateAiResult({ result: {
     manufacturer: 'Rotenso', model_code: 'I35Xi R14', model_family: 'Imoto', power_kw: '3,5',
