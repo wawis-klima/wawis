@@ -107,19 +107,22 @@ async function lookupHistoricalPostalCode(city: string): Promise<string> {
   const normalizedCity = normalizeComparableCity(city);
   if (!normalizedCity) return "";
 
-  const { data, error } = await adminClient
-    .from("contractors")
-    .select("city")
-    .ilike("city", `%${city}%`)
-    .limit(100);
-
-  if (error || !Array.isArray(data)) return "";
-
   const counts = new Map<string, number>();
-  for (const row of data) {
-    const stored = splitPostalCity(row?.city);
-    if (!stored.postalCode || normalizeComparableCity(stored.city) !== normalizedCity) continue;
-    counts.set(stored.postalCode, (counts.get(stored.postalCode) || 0) + 1);
+
+  for (const table of ["contractors", "jobs"]) {
+    const { data, error } = await adminClient
+      .from(table)
+      .select("city")
+      .ilike("city", `%${city}%`)
+      .limit(100);
+
+    if (error || !Array.isArray(data)) continue;
+
+    for (const row of data) {
+      const stored = splitPostalCity(row?.city);
+      if (!stored.postalCode || normalizeComparableCity(stored.city) !== normalizedCity) continue;
+      counts.set(stored.postalCode, (counts.get(stored.postalCode) || 0) + 1);
+    }
   }
 
   return [...counts.entries()]
