@@ -680,9 +680,6 @@
 .protocolPaymentSection { display: grid; gap: 8px; padding: 12px !important; }
 .protocolPaymentHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .mobileProtocolWizard .protocolPaymentHeading h3 { margin: 0 !important; font-size: 17px !important; line-height: 1.2 !important; }
-.protocolPaymentToggle { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-width: 84px; min-height: 34px; padding: 4px 9px; border: 1px solid #b7c7d1; border-radius: 999px; background: #fff; color: #243746; font-size: 10px !important; font-weight: 900; white-space: nowrap; cursor: pointer; }
-.protocolPaymentToggle input { width: 16px; height: 16px; margin: 0 6px 0 0; accent-color: #176b4d; }
-.protocolPaymentToggle span { display: inline-block; white-space: nowrap; }
 .protocolBottomStartAnchor { height: 0; scroll-margin-top: 10px; }
 
 .protocolPaymentForm { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; min-width: 0; padding: 9px 10px; border: 1px solid #dfe7ec; border-radius: 11px; background: #fff; box-sizing: border-box; overflow: hidden; }

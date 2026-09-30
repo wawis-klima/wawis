@@ -22,6 +22,12 @@ assert.equal(normalized.methodLabel, 'Gotówka');
 assert.match(formatPaymentAmount(normalized.amount), /4[\s\u00a0]?200,50/);
 
 assert.throws(
+  () => normalizePaymentConfirmation({ enabled: true, amount: '', method: '', paidDate: '2026-09-01' }),
+  /Wybierz sposób płatności/,
+);
+
+
+assert.throws(
   () => normalizePaymentConfirmation({ enabled: true, amount: '0', kind: 'full', method: 'cash', paidDate: '2026-09-01' }),
   /gotówką.*większą od zera/i,
 );

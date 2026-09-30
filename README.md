@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.90
+- 11.91
 
-Wersja 11.90 naprawia blokadę przewijania na iPhonie po wyjściu z protokołu. Zagnieżdżony ekran podpisu nie może już zostawić strony w stanie `position: fixed / overflow: hidden`, więc po zamknięciu protokołu lista montaży pozostaje przewijalna bez przeładowania aplikacji.
+Wersja 11.91 ustawia Potwierdzenie zapłaty na stałe w mobilnym protokole. Nie ma już przełącznika Dodaj/Dodane; formularz płatności jest widoczny od razu, a zapis protokołu wymaga wyboru Gotówka albo Przelew.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.90
+# Wawis Klimatyzacja — wersja 11.91
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -821,6 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.91` — Potwierdzenie zapłaty jest stałą częścią protokołu; usunięto przełącznik Dodaj/Dodane i wymagany jest wybór Gotówka/Przelew.
 - wersja `11.90` — naprawa freeze po wyjściu z protokołu: współdzielona blokada przewijania mobilnych modali jest zdejmowana dopiero po zamknięciu ostatniego modala.
 - wersja `11.89` — usunięto Rodzaj / Zapłacono całość z formularza i PDF; poprawiono wyśrodkowanie i kolor daty oraz pozycję „zł”.
 - wersja `11.88` — w mobilnym protokole najpierw wybiera się Gotówka/Przelew, a pole Kwota jest bezpośrednio pod spodem na pełną szerokość; nowa płatność nie ma domyślnej metody.

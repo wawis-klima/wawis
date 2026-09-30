@@ -38,6 +38,8 @@ assert.doesNotMatch(jobDetails, /protocolDownloadButton|protocolEmailButton/);
 assert.doesNotMatch(jobDetails, />Protokół TEST</);
 
 assert.match(modal, /Potwierdzenie zapłaty/);
+assert.doesNotMatch(modal, /protocolPaymentToggle/);
+assert.match(modal, /function getProtocolPaymentDraft\(job = \{\}\) \{[\s\S]*enabled: true/);
 assert.match(modal, /protocolPaymentMethodField/);
 assert.match(modal, /protocolPaymentAmountField/);
 assert.match(modal, /protocolPaymentDateField/);
