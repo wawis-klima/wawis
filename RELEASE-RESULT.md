@@ -1,21 +1,19 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.92
+- 11.93
 
 ## Zakres
-- brak możliwości zakończenia zlecenia bez dodanego urządzenia JW/JZ
-- mobile: zablokowany „Zakończ” i czytelny komunikat przy pustym montażu
-- mobile: brak fałszywego zielonego komunikatu o komplecie tabliczek
-- administrator może nadal pominąć zdjęcia tabliczek, ale dopiero po dodaniu urządzenia
-- desktop i backend mają tę samą blokadę
-- Supabase: zastosowana migracja require_device_before_completion_v1192
-- bez zmian RLS, Storage i Edge Functions
+- mobilny generator protokołu PDF: zagęszczenie pionowe bez zmiany nagłówka i kodu QR
+- niższa sekcja Realizacja zlecenia
+- niższa sekcja Potwierdzenie zapłaty i mniejszy odstęp pod tabelą urządzeń
+- adaptacyjna czcionka RODO/odpadów: 9,4 pt → 8,9 pt → 8,5 pt tylko przy braku miejsca
+- rezerwacja miejsca na Potwierdzenie klienta przed decyzją o przejściu na drugą stronę
+- bez zmian bazy, RLS, Storage, Edge Functions i treści prawnych
 
 ## Kontrola regresji
-- smoke nameplate finish: brak urządzenia blokuje admina i pracownika; urządzenie + brak zdjęć nadal pozwala adminowi zakończyć
-- desktop nameplate verification: nowy backend guard jest przed admin bypass
-- E2E mobile 10.91/10.92: zaktualizowane do reguły 11.92
+- smoke: scripts/smoke-mobile-protocol-density-v1193.cjs
+- diagnostyka produkcyjnej 11.92 / 24 h: 0 błędów, 19 ostrzeżeń
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
