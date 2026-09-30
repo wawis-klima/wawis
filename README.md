@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.88
+- 11.89
 
-Wersja 11.88 porządkuje kolejność pól płatności w mobilnym protokole: najpierw monter wybiera Gotówka albo Przelew, a dopiero pod spodem wpisuje kwotę. Nowa płatność nie ma domyślnie wybranego sposobu. Zasady kwoty z 11.87 pozostają bez zmian.
+Wersja 11.89 upraszcza płatność w protokole: usunięto pole Rodzaj i wybór „Zapłacono całość”, także z PDF. Zostają tylko Sposób płatności, Kwota i Data zapłaty; data jest wyśrodkowana i ma spójny ciemny kolor, a oznaczenie „zł” zostało lekko obniżone.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.88
+# Wawis Klimatyzacja — wersja 11.89
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -821,6 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.89` — usunięto Rodzaj / Zapłacono całość z formularza i PDF; poprawiono wyśrodkowanie i kolor daty oraz pozycję „zł”.
 - wersja `11.88` — w mobilnym protokole najpierw wybiera się Gotówka/Przelew, a pole Kwota jest bezpośrednio pod spodem na pełną szerokość; nowa płatność nie ma domyślnej metody.
 - wersja `11.87` — płatności w protokole ograniczone do Gotówka/Przelew; przelew może być zapisany bez kwoty (puste lub 0), a PDF nie drukuje pustej kwoty.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
