@@ -33,6 +33,7 @@ const GROUPS = {
     'npm run test:smoke:realtime-lite',
   ],
   jobs: [
+    'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-job-nip-v1194.cjs',
     'node scripts/smoke-contractors-stage3-v1176.mjs',
     'npm run test:smoke:delete',
@@ -126,6 +127,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   desktop: [
+    'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-fakturownia-v1195.cjs',
     'node scripts/smoke-desktop-vat-invoice-v1184.cjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
@@ -146,6 +148,7 @@ const GROUPS = {
     'npm run test:smoke:calendar-width',
   ],
   mobile: [
+    'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
     'node scripts/smoke-contractors-stage5-v1178.mjs',
     'node scripts/smoke-contractors-stage4-v1177.mjs',
