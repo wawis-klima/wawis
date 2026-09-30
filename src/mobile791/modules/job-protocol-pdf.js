@@ -382,49 +382,88 @@ function drawField(doc, label, value, x, y, valueOffset = 104) {
   doc.text(lines, x + valueOffset, y);
 }
 
-function getLegalNoticeLayout(doc) {
-  const bodyFontSize = 9.4;
-  const lineHeight = 10.5;
+const LEGAL_NOTICE_PROFILES = Object.freeze([
+  {
+    bodyFontSize: 9.4,
+    lineHeight: 10.5,
+    titleFontSize: 9.4,
+    titleOffset: 25,
+    privacyTextOffset: 38,
+    wasteTitleGap: 6,
+    wasteTextGap: 12,
+    bottomPadding: 6,
+  },
+  {
+    bodyFontSize: 8.9,
+    lineHeight: 9.8,
+    titleFontSize: 9,
+    titleOffset: 24,
+    privacyTextOffset: 34,
+    wasteTitleGap: 5,
+    wasteTextGap: 10,
+    bottomPadding: 5,
+  },
+  {
+    bodyFontSize: 8.5,
+    lineHeight: 9.3,
+    titleFontSize: 8.8,
+    titleOffset: 23,
+    privacyTextOffset: 32,
+    wasteTitleGap: 4,
+    wasteTextGap: 9,
+    bottomPadding: 4,
+  },
+]);
+
+function createLegalNoticeLayout(doc, profile) {
   doc.setFont(FONT_FAMILY, "normal");
-  doc.setFontSize(bodyFontSize);
+  doc.setFontSize(profile.bodyFontSize);
   const privacyLines = doc.splitTextToSize(PROTOCOL_PRIVACY_NOTICE, CONTENT_WIDTH);
   const wasteLines = doc.splitTextToSize(PROTOCOL_WASTE_NOTICE, CONTENT_WIDTH);
-  const privacyHeight = Math.max(1, privacyLines.length) * lineHeight;
-  const wasteHeight = Math.max(1, wasteLines.length) * lineHeight;
+  const privacyHeight = Math.max(1, privacyLines.length) * profile.lineHeight;
+  const wasteHeight = Math.max(1, wasteLines.length) * profile.lineHeight;
+  const fixedHeight = (profile.privacyTextOffset - 8)
+    + profile.wasteTitleGap
+    + profile.wasteTextGap
+    + profile.bottomPadding;
   return {
-    bodyFontSize,
-    lineHeight,
+    ...profile,
     privacyLines,
     wasteLines,
     privacyHeight,
     wasteHeight,
-    cardHeight: 54 + privacyHeight + wasteHeight,
+    cardHeight: fixedHeight + privacyHeight + wasteHeight,
   };
+}
+
+function getLegalNoticeLayout(doc, maxCardHeight = Number.POSITIVE_INFINITY) {
+  const layouts = LEGAL_NOTICE_PROFILES.map((profile) => createLegalNoticeLayout(doc, profile));
+  return layouts.find((layout) => layout.cardHeight <= maxCardHeight) || layouts[layouts.length - 1];
 }
 
 function drawLegalNotices(doc, y, layout) {
   drawCard(doc, y + 8, layout.cardHeight, [250, 252, 253]);
   doc.setFont(FONT_FAMILY, "bold");
-  doc.setFontSize(9.4);
+  doc.setFontSize(layout.titleFontSize);
   doc.setTextColor(0, 0, 0);
-  doc.text("INFORMACJA O PRZETWARZANIU DANYCH OSOBOWYCH", PAGE_WIDTH / 2, y + 25, { align: "center" });
+  doc.text("INFORMACJA O PRZETWARZANIU DANYCH OSOBOWYCH", PAGE_WIDTH / 2, y + layout.titleOffset, { align: "center" });
 
-  const privacyY = y + 38;
+  const privacyY = y + layout.privacyTextOffset;
   doc.setFont(FONT_FAMILY, "normal");
   doc.setFontSize(layout.bodyFontSize);
   doc.setTextColor(0, 0, 0);
   doc.text(layout.privacyLines, CONTENT_LEFT, privacyY, { lineHeightFactor: layout.lineHeight / layout.bodyFontSize });
 
-  const wasteTitleY = privacyY + layout.privacyHeight + 6;
+  const wasteTitleY = privacyY + layout.privacyHeight + layout.wasteTitleGap;
   doc.setFont(FONT_FAMILY, "bold");
-  doc.setFontSize(9.4);
+  doc.setFontSize(layout.titleFontSize);
   doc.setTextColor(0, 0, 0);
   doc.text("ZAGOSPODAROWANIE ODPADÓW", PAGE_WIDTH / 2, wasteTitleY, { align: "center" });
 
   doc.setFont(FONT_FAMILY, "normal");
   doc.setFontSize(layout.bodyFontSize);
   doc.setTextColor(0, 0, 0);
-  doc.text(layout.wasteLines, CONTENT_LEFT, wasteTitleY + 12, { lineHeightFactor: layout.lineHeight / layout.bodyFontSize });
+  doc.text(layout.wasteLines, CONTENT_LEFT, wasteTitleY + layout.wasteTextGap, { lineHeightFactor: layout.lineHeight / layout.bodyFontSize });
 }
 
 function beginPrintSafeArea(doc) {
@@ -482,11 +521,11 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
 
   y += 70;
   drawSectionTitle(doc, "Realizacja zlecenia", y);
-  drawCard(doc, y + 8, 42);
-  drawField(doc, "Data montażu", data.installationDate, CONTENT_LEFT, y + 29, 82);
-  drawField(doc, "Monterzy", data.technicians.join(", "), RIGHT_COLUMN_X, y + 29, 62);
+  drawCard(doc, y + 8, 34);
+  drawField(doc, "Data montażu", data.installationDate, CONTENT_LEFT, y + 27, 82);
+  drawField(doc, "Monterzy", data.technicians.join(", "), RIGHT_COLUMN_X, y + 27, 62);
 
-  y += 62;
+  y += 54;
   const deviceRowHeight = 22;
   const rows = data.deviceRows.length ? data.deviceRows : [{
     deviceIndex: 1,
@@ -598,30 +637,37 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     });
   }
 
-  y += tableHeight + 20;
+  y += tableHeight + 16;
   if (data.payment?.enabled) {
-    y = addPageIfNeeded(doc, y, 72);
-    drawSectionTitle(doc, "Potwierdzenie zapłaty", y);
-    drawCard(doc, y + 8, 44);
     const hasPaymentAmount = data.payment.amount != null && Number(data.payment.amount) > 0;
+    const paymentCardHeight = hasPaymentAmount ? 38 : 32;
+    y = addPageIfNeeded(doc, y, paymentCardHeight + 24);
+    drawSectionTitle(doc, "Potwierdzenie zapłaty", y);
+    drawCard(doc, y + 8, paymentCardHeight);
     if (hasPaymentAmount) {
-      drawField(doc, "Kwota", data.payment.amountLabel, CONTENT_LEFT, y + 25, 54);
-      drawField(doc, "Metoda", data.payment.methodLabel, RIGHT_COLUMN_X, y + 25, 58);
-      drawField(doc, "Data", data.payment.paidDateLabel, CONTENT_LEFT, y + 42, 54);
+      drawField(doc, "Kwota", data.payment.amountLabel, CONTENT_LEFT, y + 22, 54);
+      drawField(doc, "Metoda", data.payment.methodLabel, RIGHT_COLUMN_X, y + 22, 58);
+      drawField(doc, "Data", data.payment.paidDateLabel, CONTENT_LEFT, y + 37, 54);
     } else {
       drawField(doc, "Metoda", data.payment.methodLabel, CONTENT_LEFT, y + 25, 54);
       drawField(doc, "Data", data.payment.paidDateLabel, RIGHT_COLUMN_X, y + 25, 58);
     }
-    y += 62;
+    y += paymentCardHeight + 16;
   }
 
-  const legalLayout = getLegalNoticeLayout(doc);
-  y = addPageIfNeeded(doc, y, legalLayout.cardHeight + 24);
+  const confirmationSectionHeight = 150;
+  const legalBottomGap = 18;
+  const availableLegalCardHeight = Math.max(
+    0,
+    (PAGE_HEIGHT - 25) - y - legalBottomGap - confirmationSectionHeight,
+  );
+  const legalLayout = getLegalNoticeLayout(doc, availableLegalCardHeight);
+  y = addPageIfNeeded(doc, y, legalLayout.cardHeight + 20);
   drawSectionTitle(doc, "Informacje i ustalenia", y);
   drawLegalNotices(doc, y, legalLayout);
-  y += legalLayout.cardHeight + 22;
+  y += legalLayout.cardHeight + legalBottomGap;
 
-  y = addPageIfNeeded(doc, y, 150);
+  y = addPageIfNeeded(doc, y, confirmationSectionHeight);
   drawSectionTitle(doc, "Potwierdzenie klienta", y);
   drawCard(doc, y + 8, 132);
   doc.setFont(FONT_FAMILY, "normal");

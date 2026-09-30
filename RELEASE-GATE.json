@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.92",
+  "version": "11.93",
   "scope": "mobile",
-  "release_branch": "release/v11.92",
+  "release_branch": "release/v11.93",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Sprawdzono diagnostykę z ostatnich 24 h. Istniejące ostrzeżenia auth/photos/jobs pozostają informacyjne; poprawka 11.92 dotyczy wyłącznie reguły zakończenia bez urządzeń."
+    "notes": "Sprawdzono diagnostykę produkcyjnej 11.92 z ostatnich 24 h: 0 błędów i 19 ostrzeżeń; ostrzeżenia dotyczą auth/photos/network/devices/contractors i nie blokują zmiany układu PDF."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.92.zip"
+    "file_name": "klima-app-v11.93.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.92",
+    "source_branch": "release/v11.93",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Na iPhone: otworzyć montaż bez urządzeń — przycisk Zakończ ma być nieaktywny i ma pojawić się komunikat o dodaniu JW/JZ. Po dodaniu urządzenia administrator może zakończyć bez zdjęć tabliczek."
+    "notes": "Wygenerować protokół z większą liczbą urządzeń (jak przypadek 30.09): nagłówek i QR bez zmian, Potwierdzenie klienta ma pozostać na stronie 1; RODO/odpady mogą automatycznie zmniejszyć czcionkę tylko gdy grozi druga strona."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — require_device_before_completion_v1192 (2026-09-30).",
-    "rls_role_matrix": "Bez zmian RLS; guard zakończenia działa przed admin/service_role bypass zdjęć.",
-    "performance_advisor": "N/A — stałokosztowa walidacja pól urządzenia przed istniejącym guardem.",
-    "security_advisor": "Bez zmian uprawnień; reguła zakończenia została zaostrzona.",
-    "trigger_grants": "Bez zmian grantów i triggerów; zastąpiono funkcję private.assert_job_nameplates_complete.",
+    "supabase_migration_applied": "N/A — 11.93 nie zmienia bazy.",
+    "rls_role_matrix": "N/A — bez zmian RLS i ról.",
+    "performance_advisor": "N/A — lokalna zmiana generatora PDF.",
+    "security_advisor": "N/A — bez zmian bezpieczeństwa i danych.",
+    "trigger_grants": "N/A — bez zmian funkcji bazodanowych i grantów.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
