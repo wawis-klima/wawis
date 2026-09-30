@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.85",
+  "version": "11.86",
   "scope": "desktop",
-  "release_branch": "release/v11.85",
+  "release_branch": "release/v11.86",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.85 jest wyłącznie zmianą układu desktopowego: istniejący status Faktura VAT zostaje przeniesiony z sekcji Klient do górnego paska szczegółów. Bez zmian Supabase, RLS, Storage, Edge Functions i logiki zapisu."
+    "notes": "11.86 dodaje wyłącznie desktopowy, informacyjny znacznik metody płatności korzystający z istniejącego jobs.payment_method. Bez zmian Supabase, RLS, Storage, Edge Functions i logiki zapisu protokołu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.85.zip"
+    "file_name": "klima-app-v11.86.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.85",
+    "source_branch": "release/v11.86",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: Faktura VAT widoczna w górnym pasku w miejscu wskazanym na ekranie, czerwony/zielony stan i kliknięcie działają; w sekcji Klient nie ma już osobnego pola Faktura VAT."
+    "notes": "Po wdrożeniu sprawdzić desktop: obok Faktura VAT widoczny znacznik Płatność; Gotówka/Przelew odzwierciedlają protokół, brak danych pokazuje Nieokreślono; Faktura VAT nadal działa."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.85 nie zmienia bazy; korzysta z wdrożonego mechanizmu 11.84.",
+    "supabase_migration_applied": "N/A — 11.86 nie zmienia bazy; korzysta z istniejącego jobs.payment_method.",
     "rls_role_matrix": "N/A — bez zmian RLS.",
-    "performance_advisor": "N/A — zmiana układu JSX/CSS.",
+    "performance_advisor": "N/A — zmiana JSX/CSS i odczyt już pobieranego pola.",
     "security_advisor": "N/A — bez zmian uprawnień.",
     "trigger_grants": "N/A — bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",

@@ -43,6 +43,15 @@ function formatCompletionDateTime(value) {
   }).format(date);
 }
 
+function getPaymentMethodDisplay(job = {}) {
+  const method = String(job?.payment_method || '').trim().toLowerCase();
+  if (method === 'cash') return { label: 'Gotówka', className: 'cash' };
+  if (method === 'transfer') return { label: 'Przelew', className: 'transfer' };
+  if (method === 'card') return { label: 'Karta', className: 'card' };
+  if (method === 'blik') return { label: 'BLIK', className: 'blik' };
+  return { label: 'Nieokreślono', className: 'unknown' };
+}
+
 function formatViewerChipName(fullName = "") {
   const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -152,6 +161,7 @@ export default function JobDetailsPanel({
   const phoneHref = getPhoneHref(selectedJob.phone);
   const installationDateLabel = formatInstallationDate(selectedJob.installation_date);
   const completionDateTimeLabel = formatCompletionDateTime(selectedJob.completed_at);
+  const paymentMethodDisplay = getPaymentMethodDisplay(selectedJob);
   const completedByProfile = (profiles || []).find((person) => String(person?.id || '') === String(selectedJob.completed_by || ''));
   const completedByLabel = completedByProfile?.full_name || completedByProfile?.email || '';
   const isCompletedJob = String(selectedJob.status || '') === 'Zakończone';
@@ -256,6 +266,17 @@ export default function JobDetailsPanel({
                 <span className="desktopVatInvoiceHeaderLabel">Faktura VAT</span>
                 <span>{vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona')}</span>
               </button>
+            ) : null}
+            {isAdmin ? (
+              <span
+                className={`desktopPaymentMethodChip ${paymentMethodDisplay.className}`}
+                title="Metoda płatności odczytana z protokołu montażu"
+                aria-label={`Płatność: ${paymentMethodDisplay.label}`}
+              >
+                <span className="desktopPaymentMethodDot" aria-hidden="true" />
+                <span className="desktopPaymentMethodHeaderLabel">Płatność</span>
+                <span>{paymentMethodDisplay.label}</span>
+              </span>
             ) : null}
           </div>
         </div>
