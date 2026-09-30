@@ -7876,6 +7876,86 @@ img.previewImage{
   letter-spacing:.035em;
 }
 
+.desktopPaymentMethodChip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:30px;
+  padding:6px 10px;
+  border:1px solid #dbe6f2;
+  border-radius:999px;
+  background:#f8fafc;
+  color:#475569;
+  font-size:11px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+
+.desktopPaymentMethodDot{
+  width:9px;
+  height:9px;
+  flex:0 0 9px;
+  border-radius:50%;
+  background:#94a3b8;
+}
+
+.desktopPaymentMethodHeaderLabel{
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+}
+
+.desktopPaymentMethodChip.cash{
+  color:#166534;
+  background:#f0fdf4;
+  border-color:#bbf7d0;
+}
+
+.desktopPaymentMethodChip.cash .desktopPaymentMethodDot{
+  background:#22c55e;
+}
+
+.desktopPaymentMethodChip.transfer{
+  color:#1d4ed8;
+  background:#eff6ff;
+  border-color:#bfdbfe;
+}
+
+.desktopPaymentMethodChip.transfer .desktopPaymentMethodDot{
+  background:#3b82f6;
+}
+
+.desktopPaymentMethodChip.card{
+  color:#92400e;
+  background:#fffbeb;
+  border-color:#fde68a;
+}
+
+.desktopPaymentMethodChip.card .desktopPaymentMethodDot{
+  background:#f59e0b;
+}
+
+.desktopPaymentMethodChip.blik{
+  color:#6b21a8;
+  background:#faf5ff;
+  border-color:#e9d5ff;
+}
+
+.desktopPaymentMethodChip.blik .desktopPaymentMethodDot{
+  background:#a855f7;
+}
+
+.desktopPaymentMethodChip.unknown{
+  color:#475569;
+  background:#f8fafc;
+  border-color:#cbd5e1;
+}
+
+.desktopPaymentMethodChip.unknown .desktopPaymentMethodDot{
+  background:#94a3b8;
+}
+
 
 .jobDetailsDeviceGrid{
   margin-top:0;
