@@ -5,13 +5,8 @@ export const PAYMENT_METHODS = Object.freeze([
   { value: "transfer", label: "Przelew" },
 ]);
 
-export const PAYMENT_KINDS = Object.freeze([
-  { value: "full", label: "Zapłacono całość" },
-  { value: "deposit", label: "Wpłacono zaliczkę" },
-]);
-
 const PAYMENT_METHOD_VALUES = new Set(PAYMENT_METHODS.map((item) => item.value));
-const PAYMENT_KIND_VALUES = new Set(PAYMENT_KINDS.map((item) => item.value));
+const LEGACY_PAYMENT_KIND = "full";
 
 export const PAYMENT_JOB_FIELD_NAMES = Object.freeze([
   "payment_confirmation_enabled",
@@ -56,10 +51,6 @@ export function getPaymentMethodLabel(value) {
   return PAYMENT_METHODS.find((item) => item.value === value)?.label || "-";
 }
 
-export function getPaymentKindLabel(value) {
-  return PAYMENT_KINDS.find((item) => item.value === value)?.label || "-";
-}
-
 export function formatPaymentAmount(value) {
   const amount = parseAmount(value);
   if (amount === null) return "-";
@@ -75,7 +66,6 @@ export function getPaymentDraftFromJob(job = {}) {
   return {
     enabled,
     amount: enabled && job?.payment_amount != null ? String(job.payment_amount).replace(".", ",") : "",
-    kind: PAYMENT_KIND_VALUES.has(job?.payment_kind) ? job.payment_kind : "full",
     method: enabled && PAYMENT_METHOD_VALUES.has(job?.payment_method) ? job.payment_method : "",
     paidDate: getLocalDateInputValue(job?.payment_paid_at || new Date()),
   };
@@ -87,8 +77,6 @@ export function normalizePaymentConfirmation(payment = {}) {
       enabled: false,
       amount: null,
       amountLabel: "-",
-      kind: "",
-      kindLabel: "-",
       method: "",
       methodLabel: "-",
       paidDate: "",
@@ -96,7 +84,6 @@ export function normalizePaymentConfirmation(payment = {}) {
     };
   }
 
-  if (!PAYMENT_KIND_VALUES.has(payment.kind)) throw new Error("Wybierz, czy zapłacono całość, czy zaliczkę.");
   if (!PAYMENT_METHOD_VALUES.has(payment.method)) throw new Error("Wybierz sposób płatności.");
 
   const parsedAmount = parseAmount(payment.amount);
@@ -118,8 +105,6 @@ export function normalizePaymentConfirmation(payment = {}) {
     enabled: true,
     amount,
     amountLabel: formatPaymentAmount(amount),
-    kind: payment.kind,
-    kindLabel: getPaymentKindLabel(payment.kind),
     method: payment.method,
     methodLabel: getPaymentMethodLabel(payment.method),
     paidDate,
@@ -143,7 +128,7 @@ export function getPaymentJobPatch(payment, recordedBy = null, updatedAt = new D
   return {
     payment_confirmation_enabled: true,
     payment_amount: normalized.amount,
-    payment_kind: normalized.kind,
+    payment_kind: LEGACY_PAYMENT_KIND,
     payment_method: normalized.method,
     payment_paid_at: normalized.paidAt,
     payment_recorded_by: recordedBy || null,
@@ -201,7 +186,6 @@ export function isPaymentConfirmationUnchanged(job = {}, payment = {}) {
   }
 
   return parseAmount(job?.payment_amount) === normalized.amount
-    && normalizeText(job?.payment_kind) === normalized.kind
     && normalizeText(job?.payment_method) === normalized.method
     && getLocalDateInputValue(job?.payment_paid_at) === normalized.paidDate;
 }
