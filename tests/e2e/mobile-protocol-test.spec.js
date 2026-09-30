@@ -111,45 +111,67 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     const paymentForm = page.locator('.protocolPaymentForm');
     await expect(paymentForm).toBeVisible();
 
-    const paymentKind = paymentForm.locator('select').nth(0);
-    const paymentMethod = paymentForm.locator('select').nth(1);
+    const paymentMethod = paymentForm.locator('select').nth(0);
+    const paymentKind = paymentForm.locator('select').nth(1);
     const paymentDate = paymentForm.locator('input[type="date"]');
     const paymentDateShell = paymentForm.locator('.protocolPaymentDateShell');
     const compactPaymentLayout = await paymentForm.evaluate((form) => {
       const selects = [...form.querySelectorAll('select.input')];
-      const paymentMethod = selects[1];
+      const paymentMethod = selects[0];
+      const paymentKind = selects[1];
+      const methodField = form.querySelector('.protocolPaymentMethodField');
+      const amountField = form.querySelector('.protocolPaymentAmountField');
+      const amountInput = form.querySelector('input[inputmode="decimal"]');
       const date = form.querySelector('input[type="date"]');
       const dateShell = form.querySelector('.protocolPaymentDateShell');
       const formRect = form.getBoundingClientRect();
       const methodRect = paymentMethod?.getBoundingClientRect();
+      const methodFieldRect = methodField?.getBoundingClientRect();
+      const amountFieldRect = amountField?.getBoundingClientRect();
+      const amountInputRect = amountInput?.getBoundingClientRect();
+      const kindRect = paymentKind?.getBoundingClientRect();
       const dateRect = date?.getBoundingClientRect();
       const dateShellRect = dateShell?.getBoundingClientRect();
       return {
         selectHeights: selects.map((element) => element.getBoundingClientRect().height),
         selectFontSizes: selects.map((element) => parseFloat(getComputedStyle(element).fontSize)),
-        paymentMethodWidth: methodRect?.width ?? 0,
         paymentMethodHeight: methodRect?.height ?? 0,
+        methodFieldWidth: methodFieldRect?.width ?? 0,
+        amountFieldWidth: amountFieldRect?.width ?? 0,
+        amountInputWidth: amountInputRect?.width ?? 0,
+        methodFieldBottom: methodFieldRect?.bottom ?? 0,
+        amountFieldTop: amountFieldRect?.top ?? 0,
+        paymentKindWidth: kindRect?.width ?? 0,
         dateShellWidth: dateShellRect?.width ?? 0,
         dateShellHeight: dateShellRect?.height ?? 0,
         dateHeight: dateRect?.height ?? 0,
         dateFontSize: date ? parseFloat(getComputedStyle(date).fontSize) : 0,
+        methodFitsHorizontally: Boolean(methodFieldRect && methodFieldRect.left >= formRect.left - 1 && methodFieldRect.right <= formRect.right + 1),
+        amountFitsHorizontally: Boolean(amountFieldRect && amountFieldRect.left >= formRect.left - 1 && amountFieldRect.right <= formRect.right + 1),
         dateFitsHorizontally: Boolean(dateShellRect && dateShellRect.left >= formRect.left - 1 && dateShellRect.right <= formRect.right + 1),
         nativeDateFitsShell: Boolean(dateRect && dateShellRect && dateRect.left >= dateShellRect.left - 1 && dateRect.right <= dateShellRect.right + 1 && dateRect.top >= dateShellRect.top - 1 && dateRect.bottom <= dateShellRect.bottom + 1),
       };
     });
     expect(compactPaymentLayout.selectHeights.every((height) => height <= 39)).toBe(true);
     expect(compactPaymentLayout.selectFontSizes.every((size) => size <= 16)).toBe(true);
+    expect(Math.abs(compactPaymentLayout.methodFieldWidth - compactPaymentLayout.amountFieldWidth)).toBeLessThanOrEqual(1);
+    expect(compactPaymentLayout.amountFieldTop).toBeGreaterThanOrEqual(compactPaymentLayout.methodFieldBottom);
+    expect(compactPaymentLayout.amountInputWidth).toBeGreaterThan(0);
+    expect(Math.abs(compactPaymentLayout.dateShellWidth - compactPaymentLayout.paymentKindWidth)).toBeLessThanOrEqual(1);
     expect(Math.abs(compactPaymentLayout.dateShellHeight - compactPaymentLayout.paymentMethodHeight)).toBeLessThanOrEqual(1);
-    expect(Math.abs(compactPaymentLayout.dateShellWidth - compactPaymentLayout.paymentMethodWidth)).toBeLessThanOrEqual(1);
     expect(compactPaymentLayout.dateShellHeight).toBeLessThanOrEqual(39);
     expect(compactPaymentLayout.dateHeight).toBeLessThanOrEqual(39);
     expect(compactPaymentLayout.dateFontSize).toBeLessThanOrEqual(16);
+    expect(compactPaymentLayout.methodFitsHorizontally).toBe(true);
+    expect(compactPaymentLayout.amountFitsHorizontally).toBe(true);
     expect(compactPaymentLayout.dateFitsHorizontally).toBe(true);
     expect(compactPaymentLayout.nativeDateFitsShell).toBe(true);
-    await expect(paymentKind).toBeVisible();
     await expect(paymentMethod).toBeVisible();
+    await expect(paymentKind).toBeVisible();
     await expect(paymentDateShell).toBeVisible();
     await expect(paymentDate).toBeVisible();
+    await expect(paymentMethod).toHaveValue('');
+    await paymentMethod.selectOption('cash');
     await paymentForm.locator('input[inputmode="decimal"]').fill('1000');
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
     await expect(protocolModal.getByText('Zapisana w systemie', { exact: true })).toHaveCount(0);
