@@ -1,3 +1,10 @@
+## 11.91
+- Protokół mobilny: „Potwierdzenie zapłaty” jest teraz zawsze aktywne i nie ma już przełącznika „Dodaj / Dodane”.
+- Przy tworzeniu lub ponownej edycji protokołu formularz płatności od razu pokazuje Sposób płatności, Kwotę i Datę zapłaty.
+- Zapis protokołu wymaga teraz wyboru Gotówka albo Przelew.
+- Gotówka nadal wymaga kwoty > 0, a Przelew może być zapisany bez kwoty.
+- Bez zmian Supabase, RLS i PDF poza tym, że nowe/edytowane protokoły zawsze zapisują wybrany sposób płatności.
+
 ## 11.90
 - Mobile: naprawiono freeze po wyjściu z protokołu, gdy blokada przewijania strony pozostawała na `body/html`.
 - Wspólny mechanizm blokowania strony dla mobilnych modali ma teraz licznik aktywnych blokad; zagnieżdżony ekran podpisu nie może już przywrócić starego `position: fixed` po zamknięciu protokołu.
