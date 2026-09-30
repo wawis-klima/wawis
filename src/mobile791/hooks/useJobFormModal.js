@@ -8,6 +8,7 @@ function getComparableJobForm(form, normalizeStatus) {
     client: String(form?.client || "").trim(),
     email: String(form?.email || "").trim(),
     phone: String(form?.phone || "").trim(),
+    nip: String(form?.nip || "").trim(),
     city: String(form?.city || "").trim(),
     street: String(form?.street || "").trim(),
     location: String(form?.location || "").trim(),
