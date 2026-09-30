@@ -1,6 +1,107 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { blockBeforeUnload, blockUpdateReload } from "../../../modules/update-reload-guard.js";
+
+const pageLockState = {
+  count: 0,
+  positionCount: 0,
+  originalBody: null,
+  originalRoot: null,
+  scrollX: 0,
+  scrollY: 0,
+};
+
+function capturePageLockBaseline(body, root) {
+  pageLockState.originalBody = {
+    overflow: body.style.overflow,
+    position: body.style.position,
+    top: body.style.top,
+    left: body.style.left,
+    right: body.style.right,
+    width: body.style.width,
+  };
+  pageLockState.originalRoot = {
+    overflow: root.style.overflow,
+    overscrollBehavior: root.style.overscrollBehavior,
+  };
+}
+
+function restorePositionLockStyles(body, root) {
+  const originalBody = pageLockState.originalBody || {};
+  const originalRoot = pageLockState.originalRoot || {};
+  body.style.position = originalBody.position || "";
+  body.style.top = originalBody.top || "";
+  body.style.left = originalBody.left || "";
+  body.style.right = originalBody.right || "";
+  body.style.width = originalBody.width || "";
+  root.style.overflow = originalRoot.overflow || "";
+  root.style.overscrollBehavior = originalRoot.overscrollBehavior || "";
+}
+
+function acquirePageLock(lockPagePosition) {
+  if (typeof document === "undefined") return () => {};
+
+  const body = document.body;
+  const root = document.documentElement;
+
+  if (pageLockState.count === 0) {
+    capturePageLockBaseline(body, root);
+  }
+
+  pageLockState.count += 1;
+  body.style.overflow = "hidden";
+
+  if (lockPagePosition) {
+    if (pageLockState.positionCount === 0) {
+      pageLockState.scrollX = typeof window !== "undefined" ? window.scrollX : 0;
+      pageLockState.scrollY = typeof window !== "undefined" ? window.scrollY : 0;
+    }
+    pageLockState.positionCount += 1;
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    body.style.position = "fixed";
+    body.style.top = `-${pageLockState.scrollY}px`;
+    body.style.left = `-${pageLockState.scrollX}px`;
+    body.style.right = "0";
+    body.style.width = "100%";
+  }
+
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+
+    const hadPositionLock = lockPagePosition && pageLockState.positionCount > 0;
+    if (hadPositionLock) pageLockState.positionCount -= 1;
+    pageLockState.count = Math.max(0, pageLockState.count - 1);
+
+    if (pageLockState.count === 0) {
+      const originalBody = pageLockState.originalBody || {};
+      const originalRoot = pageLockState.originalRoot || {};
+      body.style.overflow = originalBody.overflow || "";
+      restorePositionLockStyles(body, root);
+      root.style.overflow = originalRoot.overflow || "";
+      root.style.overscrollBehavior = originalRoot.overscrollBehavior || "";
+
+      if (hadPositionLock && typeof window !== "undefined") {
+        window.scrollTo(pageLockState.scrollX, pageLockState.scrollY);
+      }
+
+      pageLockState.positionCount = 0;
+      pageLockState.originalBody = null;
+      pageLockState.originalRoot = null;
+      return;
+    }
+
+    body.style.overflow = "hidden";
+    if (hadPositionLock && pageLockState.positionCount === 0) {
+      restorePositionLockStyles(body, root);
+      if (typeof window !== "undefined") {
+        window.scrollTo(pageLockState.scrollX, pageLockState.scrollY);
+      }
+    }
+  };
+}
 
 export default function AppModal({
   open,
@@ -16,6 +117,9 @@ export default function AppModal({
   warnBeforeUnload = false,
   lockPagePosition = false,
 }) {
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
     return blockUpdateReload("mobile-app-modal");
@@ -28,59 +132,21 @@ export default function AppModal({
 
   useEffect(() => {
     if (!open || typeof document === "undefined") return undefined;
+    return acquirePageLock(lockPagePosition);
+  }, [lockPagePosition, open]);
 
-    const body = document.body;
-    const root = document.documentElement;
-    const previousBodyStyles = {
-      overflow: body.style.overflow,
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-    };
-    const previousRootStyles = {
-      overflow: root.style.overflow,
-      overscrollBehavior: root.style.overscrollBehavior,
-    };
-    const scrollX = typeof window !== "undefined" ? window.scrollX : 0;
-    const scrollY = typeof window !== "undefined" ? window.scrollY : 0;
-
-    body.style.overflow = "hidden";
-    if (lockPagePosition) {
-      root.style.overflow = "hidden";
-      root.style.overscrollBehavior = "none";
-      body.style.position = "fixed";
-      body.style.top = `-${scrollY}px`;
-      body.style.left = `-${scrollX}px`;
-      body.style.right = "0";
-      body.style.width = "100%";
-    }
+  useEffect(() => {
+    if (!open || typeof document === "undefined") return undefined;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && closeOnEscape) {
-        onClose?.();
+        onCloseRef.current?.();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      body.style.overflow = previousBodyStyles.overflow;
-      body.style.position = previousBodyStyles.position;
-      body.style.top = previousBodyStyles.top;
-      body.style.left = previousBodyStyles.left;
-      body.style.right = previousBodyStyles.right;
-      body.style.width = previousBodyStyles.width;
-      root.style.overflow = previousRootStyles.overflow;
-      root.style.overscrollBehavior = previousRootStyles.overscrollBehavior;
-      document.removeEventListener("keydown", handleKeyDown);
-
-      if (lockPagePosition && typeof window !== "undefined") {
-        window.scrollTo(scrollX, scrollY);
-      }
-    };
-  }, [closeOnEscape, lockPagePosition, onClose, open]);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [closeOnEscape, open]);
 
   if (!open) return null;
 
@@ -90,7 +156,7 @@ export default function AppModal({
       style={overlayStyle}
       onMouseDown={(event) => {
         if (closeOnOverlay && event.target === event.currentTarget) {
-          onClose?.();
+          onCloseRef.current?.();
         }
       }}
       role="presentation"

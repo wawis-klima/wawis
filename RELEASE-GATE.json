@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.89",
+  "version": "11.90",
   "scope": "mobile",
-  "release_branch": "release/v11.89",
+  "release_branch": "release/v11.90",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.89 upraszcza sekcję płatności mobilnego protokołu i PDF: usuwa widoczny Rodzaj/Zapłacono całość, poprawia datę i pozycję zł. Bez zmian schematu bazy, RLS, Storage i Edge Functions."
+    "notes": "11.90 naprawia wyłącznie mobilny scroll-lock AppModal po wyjściu z protokołu. Objaw jest zgodny z pozostającym position:fixed/overflow:hidden; przeładowanie aplikacji resetuje te style. Bez zmian bazy, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.89.zip"
+    "file_name": "klima-app-v11.90.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.89",
+    "source_branch": "release/v11.90",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić na iPhone: brak pola Rodzaj/Zapłacono całość; kolejność Sposób płatności → Kwota → Data zapłaty; data jest wyśrodkowana i ciemna; zł jest lekko niżej; wygenerowany PDF nie zawiera Rodzaju."
+    "notes": "Na iPhone: otworzyć zakończony montaż → protokół → podpis klienta → zamknąć podpis/protokół → wrócić do listy i przewijać. body nie może zostać position:fixed, body/html overflow nie może zostać hidden."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.89 nie zmienia bazy; payment_kind pozostaje technicznym polem legacy dla zgodności istniejącego constraintu.",
+    "supabase_migration_applied": "N/A — 11.90 nie zmienia bazy.",
     "rls_role_matrix": "N/A — bez zmian RLS.",
-    "performance_advisor": "N/A — zmiana UI/PDF.",
+    "performance_advisor": "N/A — zmiana lifecycle UI.",
     "security_advisor": "N/A — bez zmian uprawnień.",
     "trigger_grants": "N/A — bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",

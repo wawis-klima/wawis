@@ -1,26 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.89
+- 11.90
 
 ## Zakres
-- mobile: usunięty Rodzaj / Zapłacono całość z formularza płatności
-- mobile: podsumowanie bez rodzaju płatności
-- PDF: brak pola Rodzaj i brak tej informacji w potwierdzeniu klienta
-- mobile: wyśrodkowana i przyciemniona data zapłaty
-- mobile: oznaczenie „zł” lekko obniżone
-- bez zmian bazy, RLS i Edge Functions
+- mobile: naprawa freeze po wyjściu z protokołu
+- mobile: wspólny licznik blokady body/html dla zagnieżdżonych modali
+- mobile: Escape/onClose nie przeinicjalizuje już scroll-locka
+- E2E: po podpisie i zamknięciu protokołu body/html muszą być odblokowane
+- bez zmian bazy, RLS, PDF i Edge Functions
 
-## Zasady
-- formularz płatności: Sposób płatności → Kwota → Data zapłaty
-- Gotówka nadal wymaga kwoty > 0
-- Przelew nadal może być bez kwoty
-- payment_kind pozostaje wyłącznie technicznie jako wartość legacy dla zgodności schematu; nie jest widoczny w UI/PDF
+## Przyczyna
+- protokół używa lockPagePosition, a ekran podpisu jest drugim AppModalem
+- przy zmianach onClose/Signature React mógł posprzątać efekty w kolejności, która przywracała zapisane wcześniej position: fixed / overflow: hidden
+- przeładowanie aplikacji resetowało style, dlatego usuwało freeze
 
 ## Kontrola regresji
-- test płatności 9.86 zaktualizowany
-- smoke protokołu i layoutu zaktualizowane
-- E2E protokołu mobilnego zaktualizowane
+- mobile protocol E2E rozszerzony o kontrolę body/html po zamknięciu protokołu
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING

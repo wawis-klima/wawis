@@ -1,3 +1,10 @@
+## 11.90
+- Mobile: naprawiono freeze po wyjściu z protokołu, gdy blokada przewijania strony pozostawała na `body/html`.
+- Wspólny mechanizm blokowania strony dla mobilnych modali ma teraz licznik aktywnych blokad; zagnieżdżony ekran podpisu nie może już przywrócić starego `position: fixed` po zamknięciu protokołu.
+- Obsługa klawisza Escape została odseparowana od efektu blokady strony, więc zmiana callbacku `onClose` nie zakłada blokady ponownie.
+- Dodano E2E sprawdzający, że po otwarciu podpisu, zapisaniu protokołu i zamknięciu protokołu `body` oraz `html` nie pozostają zablokowane.
+- Bez zmian Supabase, RLS, PDF i danych klientów.
+
 ## 11.89
 - Protokół mobilny: całkowicie usunięto z interfejsu pole `Rodzaj` oraz wybór `Zapłacono całość / Wpłacono zaliczkę`.
 - Podsumowanie płatności na telefonie nie pokazuje już rodzaju płatności.
