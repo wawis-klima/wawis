@@ -25,7 +25,7 @@ import { deleteJobPhoto, getNameplatePhotoMetadata, isLocalQueuedPhoto, prepareJ
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
-import { serializeJobDevicesToFields } from "../modules/job-devices.js";
+import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { deleteJobDeviceRecord } from "../modules/job-device-delete.js";
@@ -655,6 +655,11 @@ export function useSelectedJobActions({
       if (workerFinishing && currentStatus !== "Zakończone") {
         alert(WORKER_FINISH_STATUS_MESSAGE);
       }
+      return;
+    }
+
+    if (completingNow && getJobDeviceRows(job).length === 0) {
+      alert('Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).');
       return;
     }
 

@@ -88,6 +88,8 @@ export function isNameplatePhotoReady(photo = null, options = {}) {
 
 export function getJobNameplateCompletion(job = {}, options = {}) {
   const photos = Array.isArray(job?.photos) ? job.photos : [];
+  const configuredDevices = getJobDeviceRows(job);
+  const hasConfiguredDevices = configuredDevices.length > 0;
   const requiredUnits = getRequiredNameplateUnits(job);
   const units = requiredUnits.map((unit) => {
     const photo = getLatestNameplatePhotoForUnit(photos, unit.deviceIndex, unit.unitRef);
@@ -114,8 +116,9 @@ export function getJobNameplateCompletion(job = {}, options = {}) {
     requiredCount: units.length,
     readyCount: units.length - missingUnits.length,
     photosComplete,
-    serverGuardRequired: adminServerGuard && !photosComplete,
-    isComplete: photosComplete || adminServerGuard,
+    hasConfiguredDevices,
+    serverGuardRequired: hasConfiguredDevices && adminServerGuard && !photosComplete,
+    isComplete: hasConfiguredDevices && (photosComplete || adminServerGuard),
   };
 }
 

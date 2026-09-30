@@ -447,7 +447,8 @@ export default function JobDetailsPanel({
   const canSubmitComment = canAddSelectedJobComment && !busy && !commentSaving && currentCommentDraft.trim().length > 0;
   const jobDevices = getJobDeviceRows(selectedJob);
   const nameplateCompletion = getJobNameplateCompletion(selectedJob, { allowLocal: !isAdmin });
-  const effectiveNameplateComplete = isAdmin ? true : nameplateCompletion.isComplete;
+  const effectiveNameplateComplete = nameplateCompletion.isComplete;
+  const hasConfiguredDevices = nameplateCompletion.hasConfiguredDevices;
   const hasLocallySavedNameplates = nameplateCompletion.units.some((unit) => {
     const status = String(unit.photo?.upload_status || '').toLowerCase();
     return status === 'local' || status === 'uploading';
@@ -754,7 +755,7 @@ export default function JobDetailsPanel({
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
                 disabled={busy || showDetailsLoading || !effectiveNameplateComplete}
-                title={!effectiveNameplateComplete ? 'Uzupełnij wymagane tabliczki przed zakończeniem' : 'Zakończ zlecenie'}
+                title={!hasConfiguredDevices ? 'Dodaj urządzenie przed zakończeniem' : !effectiveNameplateComplete ? 'Uzupełnij wymagane tabliczki przed zakończeniem' : 'Zakończ zlecenie'}
               >
                 <span className="desktopLabel">Zakończone zlecenie</span>
                 <span className="mobileLabel">Zakończ</span>
@@ -807,10 +808,13 @@ export default function JobDetailsPanel({
           {canFinishJob && showDetailsLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam wymagane zdjęcia i potwierdzenia tabliczek…</div>
           ) : null}
+          {canFinishJob && !showDetailsLoading && !hasConfiguredDevices ? (
+            <div className="finishNameplateRequirement missing">Najpierw dodaj urządzenie (JW/JZ), aby zakończyć zlecenie.</div>
+          ) : null}
           {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement ready">
               {isAdmin
-                ? 'Wszystkie wymagane tabliczki mają zdjęcie albo ręczne potwierdzenie administratora.'
+                ? 'Urządzenia są dodane. Możesz zakończyć zlecenie.'
                 : hasLocallySavedNameplates
                   ? 'Wszystkie wymagane tabliczki są zapisane na telefonie. Zakończenie poczeka na ich synchronizację.'
                   : 'Wszystkie wymagane zdjęcia tabliczek są zapisane.'}

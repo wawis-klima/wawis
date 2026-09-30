@@ -1,3 +1,11 @@
+## 11.92
+- Zakończenie zlecenia wymaga teraz co najmniej jednego rzeczywiście zapisanego urządzenia JW/JZ.
+- Mobile: przy pustym montażu przycisk „Zakończ” jest zablokowany i pojawia się komunikat „Najpierw dodaj urządzenie (JW/JZ)”.
+- Mobile: usunięto fałszywy zielony komunikat sugerujący komplet tabliczek przy braku urządzeń.
+- Administrator nadal może zakończyć montaż bez zdjęć tabliczek, ale dopiero po zapisaniu urządzenia.
+- Desktop i backend stosują tę samą blokadę; Supabase zwraca czytelny błąd `job_devices_missing` przy próbie obejścia UI.
+- Migracja produkcyjna `require_device_before_completion_v1192` została zastosowana.
+
 ## 11.91
 - Protokół mobilny: „Potwierdzenie zapłaty” jest teraz zawsze aktywne i nie ma już przełącznika „Dodaj / Dodane”.
 - Przy tworzeniu lub ponownej edycji protokołu formularz płatności od razu pokazuje Sposób płatności, Kwotę i Datę zapłaty.

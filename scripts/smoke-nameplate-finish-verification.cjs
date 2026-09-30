@@ -8,7 +8,7 @@ const fetchPath = path.join(root, 'src', 'mobile791', 'modules', 'jobs-fetch.js'
 const actionsPath = path.join(root, 'src', 'mobile791', 'hooks', 'useSelectedJobActions.js');
 const requirementsPath = path.join(root, 'src', 'mobile791', 'modules', 'nameplate-requirements.js');
 const permissionsPath = path.join(root, 'src', 'mobile791', 'utils', 'jobPermissions.js');
-const migrationPath = path.join(root, 'supabase', 'migrations', '20260917235600_admin_finish_without_nameplates_v1092.sql');
+const migrationPath = path.join(root, 'supabase', 'migrations', '20260930100831_require_device_before_completion_v1192.sql');
 const fetchSource = fs.readFileSync(fetchPath, 'utf8');
 const actionsSource = fs.readFileSync(actionsPath, 'utf8');
 const requirementsSource = fs.readFileSync(requirementsPath, 'utf8');
@@ -30,17 +30,19 @@ assert.doesNotMatch(
   /reloadJobDetails\?\.\(jobId, \{ force: true \}\)/,
 );
 
-// 10.92: administrator może zakończyć bez zdjęć i bez ręcznego potwierdzania;
+// 11.92: administrator może zakończyć bez zdjęć dopiero po dodaniu urządzenia;
 // pracownik nadal musi mieć prawdziwe zdjęcia.
 assert.match(permissionsSource, /return normalizeStatus\(job\?\.status\) === "W trakcie";/, 'Akcja zakończenia ma być dostępna dla aktywnego montażu także administratorowi.');
 const finishHelper = permissionsSource.slice(permissionsSource.indexOf('export function canWorkerFinishJob'), permissionsSource.indexOf('export function canWorkerRestartJob'));
 assert.doesNotMatch(finishHelper, /if \(isAdmin/, '10.90 nie może ponownie ukrywać przycisku zakończenia administratorowi.');
 assert.match(requirementsSource, /adminServerGuard/, 'Mobilny admin ma przekazać ostateczną weryfikację backendowi.');
 assert.match(requirementsSource, /options\.allowLocal === false/, 'Admin-server-guard musi być rozpoznawany wyłącznie dla jawnego allowLocal:false.');
-assert.match(requirementsSource, /isComplete:\s*photosComplete \|\| adminServerGuard/, 'UI administratora ma umożliwiać próbę zakończenia bez zdjęć.');
+assert.match(requirementsSource, /isComplete:\s*hasConfiguredDevices\s*&&\s*\(photosComplete \|\| adminServerGuard\)/, 'UI administratora może ominąć zdjęcia dopiero po dodaniu urządzenia.');
 assert.match(migrationSource, /public\.current_user_is_admin\(\)/, 'Backend musi rozróżniać administratora od pracownika.');
-assert.match(migrationSource, /v_admin_bypass/, 'Backend musi mieć jawny admin-only bypass.');
-assert.match(migrationSource, /if\s+v_admin_bypass\s+then[\s\S]*return;/i, 'Administrator musi wyjść z guardu przed sprawdzaniem zdjęć.');
+assert.match(migrationSource, /v_admin_bypass/, 'Backend musi mieć jawny admin-only bypass zdjęć.');
+assert.match(migrationSource, /job_devices_missing/, 'Backend musi blokować zakończenie bez zapisanego urządzenia.');
+assert.match(migrationSource, /if\s+not\s+v_has_device_data\s+then[\s\S]*job_devices_missing/i, 'Blokada braku urządzenia musi wystąpić przed bypass zdjęć.');
+assert.match(migrationSource, /if\s+v_admin_bypass\s+then[\s\S]*return;/i, 'Administrator może ominąć dopiero sprawdzanie zdjęć.');
 assert.doesNotMatch(migrationSource, /from public\.nameplate_manual_verifications\s+mv/i, 'Ręczne potwierdzenie nie może być wymagane do zakończenia przez administratora.');
 assert.match(migrationSource, /from public\.photos p/, 'Fizyczne zdjęcia nadal muszą być podstawową ścieżką zakończenia.');
 assert.match(migrationSource, /raise exception 'job_nameplates_incomplete:/, 'Brak zdjęcia nadal musi blokować zakończenie pracownika.');
@@ -53,13 +55,31 @@ assert.match(migrationSource, /raise exception 'job_nameplates_incomplete:/, 'Br
 
   const missingJob = { id: 'job-missing-nameplates', photos: [] };
   const workerCompletion = requirements.getJobNameplateCompletion(missingJob);
-  assert.equal(workerCompletion.isComplete, false, 'Pracownik bez zdjęć nie może ominąć wymogu tabliczek.');
-  assert.equal(workerCompletion.missingUnits.length, 2, 'Pusty montaż nadal wymaga JZ i JW.');
+  assert.equal(workerCompletion.isComplete, false, 'Pracownik bez urządzenia nie może zakończyć zlecenia.');
+  assert.equal(workerCompletion.hasConfiguredDevices, false, 'Pusty montaż musi być rozpoznany jako brak urządzeń.');
+  assert.equal(workerCompletion.missingUnits.length, 2, 'Pusty montaż nadal pokazuje oczekiwane JZ i JW.');
 
-  const adminAttempt = requirements.getJobNameplateCompletion(missingJob, { allowLocal: false });
-  assert.equal(adminAttempt.photosComplete, false, 'UI nie może udawać, że fizyczne zdjęcia istnieją.');
-  assert.equal(adminAttempt.serverGuardRequired, true, 'Brak zdjęć u admina musi być oznaczony do weryfikacji serwerowej.');
-  assert.equal(adminAttempt.isComplete, true, 'Admin ma móc wysłać zakończenie do serwera bez zdjęć i bez ręcznych potwierdzeń.');
+  const emptyAdminAttempt = requirements.getJobNameplateCompletion(missingJob, { allowLocal: false });
+  assert.equal(emptyAdminAttempt.photosComplete, false, 'UI nie może udawać, że fizyczne zdjęcia istnieją.');
+  assert.equal(emptyAdminAttempt.serverGuardRequired, false, 'Bez urządzenia admin nie powinien przechodzić do serwerowego bypassu zdjęć.');
+  assert.equal(emptyAdminAttempt.isComplete, false, 'Admin bez dodanego urządzenia nie może zakończyć zlecenia.');
+
+  const configuredMissingJob = {
+    id: 'job-device-without-nameplates',
+    devices: [{
+      device_type: 'single-split',
+      outdoor_model: 'T35Xo',
+      indoor_models: ['T35Xi'],
+      outdoor_serial_number: '',
+      indoor_serial_numbers: [''],
+    }],
+    photos: [],
+  };
+  const adminAttempt = requirements.getJobNameplateCompletion(configuredMissingJob, { allowLocal: false });
+  assert.equal(adminAttempt.hasConfiguredDevices, true, 'Dodany split musi być rozpoznany jako urządzenie.');
+  assert.equal(adminAttempt.photosComplete, false, 'Brak zdjęć pozostaje faktem także dla admina.');
+  assert.equal(adminAttempt.serverGuardRequired, true, 'Admin z urządzeniem i bez zdjęć przechodzi do serwerowego bypassu.');
+  assert.equal(adminAttempt.isComplete, true, 'Admin z dodanym urządzeniem nadal może zakończyć bez zdjęć tabliczek.');
 
   const responses = [
     { data: null, error: { status: 503, message: 'Service unavailable' } },
@@ -124,7 +144,7 @@ assert.match(migrationSource, /raise exception 'job_nameplates_incomplete:/, 'Br
   assert.equal(result.photos[0].device_index, 1);
   assert.equal(result.photos[0].unit_ref, 'jz');
   assert.equal(result.photos[1].unit_ref, 'jw-1');
-  console.log('Smoke OK: pracownik wymaga zdjęć, a administrator 10.92 może zakończyć bez tabliczek; backend rozróżnia rolę.');
+  console.log('Smoke OK: 11.92 blokuje zakończenie bez urządzenia; admin może ominąć zdjęcia dopiero po dodaniu urządzenia.');
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

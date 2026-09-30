@@ -23,6 +23,7 @@ import { toggleJobViewer } from "../modules/jobs-assignment.js";
 import { deleteJobPhoto, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { deleteJobDeviceRecord } from "../modules/job-device-delete.js";
+import { getJobDeviceRows } from "../modules/job-devices.js";
 
 export function useSelectedJobActions({
   supabase,
@@ -253,6 +254,11 @@ export function useSelectedJobActions({
       if (!isAdmin && status === "Zakończone" && currentStatus !== "Zakończone") {
         alert(WORKER_FINISH_STATUS_MESSAGE);
       }
+      return;
+    }
+
+    if (completingNow && getJobDeviceRows(job).length === 0) {
+      alert('Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).');
       return;
     }
 
