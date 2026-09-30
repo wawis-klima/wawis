@@ -9,8 +9,9 @@ const modal = read('src/mobile791/components/modals/JobFormModal.jsx');
 const css = read('src/mobile791/v1198-new-job-compact.css');
 const main = read('src/main.jsx');
 
-assert.match(modal, /import React, \{ useEffect, useMemo, useState \}/, 'Mobile ma używać efektu do automatycznego lookupu kodu.');
+assert.match(modal, /import React, \\{ useEffect, useMemo, useRef, useState \\}/, 'Mobile ma używać efektu do automatycznego lookupu kodu.');
 assert.match(modal, /window\.setTimeout\(\(\) => \{[\s\S]*refreshPostalCode\(jobForm\.city, jobForm\.street\)[\s\S]*\}, 550\)/, 'Kod ma być wyszukiwany automatycznie po krótkiej pauzie.');
+assert.match(modal, /postalLookupAttemptRef/, 'Lookup nie może zapętlać ponowień dla tego samego adresu.');
 assert.match(modal, /value=\{cityAddressParts\.postalCode\}/, 'Pole kodu ma być kontrolowane i od razu odświeżać wartość.');
 assert.match(modal, /<ClientVoiceInput/, 'Główny przycisk Wprowadź głosowo ma pozostać.');
 assert.doesNotMatch(modal, /VoiceFieldButton|VoiceNoteButton/, 'Przy polach nie może być osobnych mikrofonów.');
