@@ -350,6 +350,7 @@ export default function JobFormModal({
       contractor_id: '',
       contractor_address_id: '',
       contractor_address_label: '',
+      nip: '',
       client: data.clientName || prev.client,
       phone: data.phone || prev.phone,
       email: data.email || prev.email,
@@ -371,6 +372,7 @@ export default function JobFormModal({
           next.contractor_id = '';
           next.contractor_address_id = '';
           next.contractor_address_label = '';
+          next.nip = '';
         }
       }
       return next;
@@ -390,7 +392,7 @@ export default function JobFormModal({
 
   function handleContractorSelect(contractor) {
     if (!contractor?.id) {
-      setJobForm((prev) => ({ ...prev, contractor_id: '', contractor_address_id: '', contractor_address_label: '' }));
+      setJobForm((prev) => ({ ...prev, contractor_id: '', contractor_address_id: '', contractor_address_label: '', nip: '' }));
       return;
     }
 
@@ -403,6 +405,7 @@ export default function JobFormModal({
       client: contractor.company_name || prev.client,
       email: contractor.email || prev.email,
       phone: contractor.phone || prev.phone,
+      nip: contractor.nip || '',
       city: primaryAddress?.city || contractor.city || prev.city,
       street: primaryAddress?.street || contractor.street || prev.street,
     }));
@@ -612,6 +615,10 @@ export default function JobFormModal({
           <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
           <VoiceFieldButton label="Telefon" onValue={(value) => updateField("phone", value)} transformValue={normalizeVoicePhone} disabled={busy} />
         </div>
+        <label className="inputLabel">
+          <span>NIP (opcjonalnie)</span>
+          <input className="input" inputMode="numeric" placeholder="NIP (opcjonalnie)" value={jobForm.nip || ''} onChange={(e) => updateField("nip", e.target.value)} />
+        </label>
         {linkedContractor ? (
           <div className="jobAddressPicker">
             <label className="inputLabel">
