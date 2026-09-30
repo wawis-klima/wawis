@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.96",
+  "version": "11.97",
   "scope": "full",
-  "release_branch": "release/v11.96",
+  "release_branch": "release/v11.97",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Supabase ACTIVE_HEALTHY. Edge Function postal-code-lookup ACTIVE v1; fakturownia-client ACTIVE v2. Brak trwałej zmiany schematu aplikacyjnego — kod pocztowy pozostaje zgodny z dotychczasowym polem city."
+    "notes": "Supabase ACTIVE_HEALTHY. postal-code-lookup ACTIVE v3. Backfill zakończony: 0 jobs, 0 contractors i 0 elementów addresses z miejscowością bez prefiksu kodu pocztowego."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.96.zip"
+    "file_name": "klima-app-v11.97.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.96",
+    "source_branch": "release/v11.97",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile: kompaktowy NIP, ulica przed miejscowością, miejscowość + kod w jednym rzędzie i automatyczne uzupełnienie kodu. Sprawdzić desktop i Fakturownię z polem post_code."
+    "notes": "Sprawdzić wpisanie znanej miejscowości bez ulicy (np. Poręba/Zawiercie) oraz pełnego adresu. Kod ma zostać uzupełniony automatycznie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — bez nowej kolumny; jednorazowy backfill danych wykonywany osobno przez GUGiK UUG.",
-    "rls_role_matrix": "Bez zmian RLS. postal-code-lookup wymaga ważnego JWT; nie zapisuje danych samodzielnie.",
-    "performance_advisor": "N/A — brak nowych indeksów/tabel aplikacyjnych.",
-    "security_advisor": "Lookup adresu nie wymaga klucza zewnętrznego; FAKTUROWNIA_API_TOKEN pozostaje po stronie Supabase.",
-    "trigger_grants": "N/A — brak zmian triggerów i grantów.",
-    "edge_functions": "postal-code-lookup ACTIVE v1; fakturownia-client ACTIVE v2",
+    "supabase_migration_applied": "N/A — bez zmiany schematu aplikacyjnego.",
+    "rls_role_matrix": "Bez zmian RLS. postal-code-lookup wymaga ważnego JWT; historyczny fallback używa service role wyłącznie wewnątrz Edge Function.",
+    "performance_advisor": "N/A — bez nowych tabel/indeksów produkcyjnych; tabela tymczasowa backfillu została usunięta.",
+    "security_advisor": "Brak sekretów po stronie klienta. FAKTUROWNIA_API_TOKEN pozostaje odseparowany i nie jest używany przez postal-code-lookup.",
+    "trigger_grants": "N/A — bez zmian triggerów i grantów.",
+    "edge_functions": "postal-code-lookup ACTIVE v3; fakturownia-client ACTIVE v2",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }

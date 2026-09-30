@@ -1,3 +1,9 @@
+## 11.97
+- Automatyczny kod pocztowy działa także po wpisaniu samej znanej miejscowości: po nieudanym dopasowaniu pełnego adresu aplikacja korzysta z wcześniej uzupełnionych adresów WAWIS.
+- Pełny adres nadal ma pierwszeństwo i jest sprawdzany przez GUGiK UUG.
+- Jednorazowy backfill starych danych zakończony: wszystkie zapisane miejscowości w montażach, kontrahentach i ich adresach mają kod pocztowy.
+- Tymczasowa tabela backfillu i rozszerzenie pg_net użyte do masowego uzupełnienia zostały usunięte.
+
 ## 11.96
 - Mobile: pole NIP ma teraz tę samą wysokość co pozostałe pola formularza.
 - Mobile: kolejność adresu to ulica i numer, a niżej miejscowość + kod pocztowy w jednym rzędzie.
