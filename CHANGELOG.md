@@ -1,3 +1,10 @@
+## 11.95
+- Desktop: dodano w górnym pasku montażu przycisk „Wystaw fakturę”.
+- Dane klienta są synchronizowane do Fakturowni przez bezpieczną Supabase Edge Function.
+- Dopasowanie klienta korzysta najpierw z `external_id`, a następnie z NIP-u i e-maila, aby ograniczyć duplikaty.
+- Token API Fakturowni pozostaje wyłącznie w sekretach Supabase i nie trafia do przeglądarki.
+- Kliknięcie przycisku nie tworzy faktury automatycznie ani nie zmienia statusu „Faktura VAT”; otwierany jest formularz Fakturowni z przygotowanym klientem.
+
 ## 11.94
 - Desktop i mobile: formularz montażu/klienta ma opcjonalne pole NIP.
 - Wybranie kontrahenta wczytuje jego zapisany NIP; zmiana klienta czyści niepasujący NIP.
