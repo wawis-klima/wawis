@@ -25,7 +25,35 @@ assert.match(formatPaymentAmount(normalized.amount), /4[\s\u00a0]?200,50/);
 
 assert.throws(
   () => normalizePaymentConfirmation({ enabled: true, amount: '0', kind: 'full', method: 'cash', paidDate: '2026-09-01' }),
-  /większą od zera/,
+  /gotówką.*większą od zera/i,
+);
+
+const transferWithoutAmount = normalizePaymentConfirmation({
+  enabled: true,
+  amount: '0',
+  kind: 'full',
+  method: 'transfer',
+  paidDate: '2026-09-01',
+});
+assert.equal(transferWithoutAmount.amount, null);
+assert.equal(transferWithoutAmount.amountLabel, '-');
+
+const transferBlankAmount = normalizePaymentConfirmation({
+  enabled: true,
+  amount: '',
+  kind: 'full',
+  method: 'transfer',
+  paidDate: '2026-09-01',
+});
+assert.equal(transferBlankAmount.amount, null);
+
+assert.throws(
+  () => normalizePaymentConfirmation({ enabled: true, amount: '100', kind: 'full', method: 'card', paidDate: '2026-09-01' }),
+  /Wybierz sposób płatności/,
+);
+assert.throws(
+  () => normalizePaymentConfirmation({ enabled: true, amount: '100', kind: 'full', method: 'blik', paidDate: '2026-09-01' }),
+  /Wybierz sposób płatności/,
 );
 
 const disabledPatch = getPaymentJobPatch({ enabled: false }, null, new Date('2026-09-01T12:00:00.000Z'));
