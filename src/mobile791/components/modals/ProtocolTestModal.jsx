@@ -588,7 +588,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
 
   const paymentDraftDirty = paymentReady && JSON.stringify(paymentDraft) !== paymentDraftBaselineRef.current;
   const protocolHasUnsavedWork = Boolean(open && (isGenerating || hasSignature || draftHasSignature || paymentDraftDirty));
-  const storedPayment = paymentReady ? getPaymentDraftFromJob(protocolJob) : { enabled: false, amount: "", kind: "full", method: "cash", paidDate: "" };
+  const storedPayment = paymentReady ? getPaymentDraftFromJob(protocolJob) : { enabled: false, amount: "", method: "", paidDate: "" };
   const paymentVisible = editing ? paymentDraft : storedPayment;
   const recipientEmail = getJobProtocolRecipientEmail(protocolJob);
   const canSendEmail = isValidProtocolEmail(recipientEmail);
