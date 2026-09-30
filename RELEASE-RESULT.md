@@ -12,7 +12,7 @@
 ## Kontrola regresji
 - smoke: scripts/smoke-postal-code-v1196.mjs
 - smoke: scripts/smoke-postal-city-fallback-v1197.cjs
-- Edge Function: postal-code-lookup ACTIVE v2
+- Edge Function: postal-code-lookup ACTIVE v3
 - Edge Function: fakturownia-client ACTIVE v2
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
