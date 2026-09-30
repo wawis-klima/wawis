@@ -821,6 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.88` — w mobilnym protokole najpierw wybiera się Gotówka/Przelew, a pole Kwota jest bezpośrednio pod spodem na pełną szerokość; nowa płatność nie ma domyślnej metody.
 - wersja `11.87` — płatności w protokole ograniczone do Gotówka/Przelew; przelew może być zapisany bez kwoty (puste lub 0), a PDF nie drukuje pustej kwoty.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
 - wersja `11.78` — audyt Kontrahentów etap 5: K16/K19/K21; pełne urządzenia na mobile, jawna świeżość/odświeżenie katalogu i kompletny snapshot kontrahentów bez mieszanej paginacji.
