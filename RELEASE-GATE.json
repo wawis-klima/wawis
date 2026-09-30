@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Supabase ACTIVE_HEALTHY. postal-code-lookup ACTIVE v2. Backfill zakończony: 0 jobs, 0 contractors i 0 elementów addresses z miejscowością bez prefiksu kodu pocztowego."
+    "notes": "Supabase ACTIVE_HEALTHY. postal-code-lookup ACTIVE v3. Backfill zakończony: 0 jobs, 0 contractors i 0 elementów addresses z miejscowością bez prefiksu kodu pocztowego."
   },
   "drive_backup": {
     "required": false,
@@ -37,7 +37,7 @@
     "performance_advisor": "N/A — bez nowych tabel/indeksów produkcyjnych; tabela tymczasowa backfillu została usunięta.",
     "security_advisor": "Brak sekretów po stronie klienta. FAKTUROWNIA_API_TOKEN pozostaje odseparowany i nie jest używany przez postal-code-lookup.",
     "trigger_grants": "N/A — bez zmian triggerów i grantów.",
-    "edge_functions": "postal-code-lookup ACTIVE v2; fakturownia-client ACTIVE v2",
+    "edge_functions": "postal-code-lookup ACTIVE v3; fakturownia-client ACTIVE v2",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
