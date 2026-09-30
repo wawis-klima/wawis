@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.93",
-  "scope": "mobile",
-  "release_branch": "release/v11.93",
+  "version": "11.94",
+  "scope": "full",
+  "release_branch": "release/v11.94",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": true,
+    "last_24h": false,
     "result": "PASS",
-    "notes": "Sprawdzono diagnostykę produkcyjnej 11.92 z ostatnich 24 h: 0 błędów i 19 ostrzeżeń; ostrzeżenia dotyczą auth/photos/network/devices/contractors i nie blokują zmiany układu PDF."
+    "notes": "Supabase ACTIVE_HEALTHY. Migracja NIP 20260930171655 zastosowana; nowy RPC zweryfikowany: authenticated ma EXECUTE, anon nie ma EXECUTE. Security/performance advisors uruchomione; nowy RPC jest celowo ograniczonym SECURITY DEFINER z kontrolą sesji, roli i zakresu zapisu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.93.zip"
+    "file_name": "klima-app-v11.94.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.93",
+    "source_branch": "release/v11.94",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Wygenerować protokół z większą liczbą urządzeń (jak przypadek 30.09): nagłówek i QR bez zmian, Potwierdzenie klienta ma pozostać na stronie 1; RODO/odpady mogą automatycznie zmniejszyć czcionkę tylko gdy grozi druga strona."
+    "notes": "Po deployu sprawdzić desktop i mobile: pole NIP (opcjonalnie), wczytanie NIP istniejącego kontrahenta, zapis nowego NIP oraz blokadę nadpisania innego NIP-u przez pracownika."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.93 nie zmienia bazy.",
-    "rls_role_matrix": "N/A — bez zmian RLS i ról.",
-    "performance_advisor": "N/A — lokalna zmiana generatora PDF.",
-    "security_advisor": "N/A — bez zmian bezpieczeństwa i danych.",
-    "trigger_grants": "N/A — bez zmian funkcji bazodanowych i grantów.",
+    "supabase_migration_applied": "20260930171655 job_contractor_nip_v1194 — zastosowana i zweryfikowana.",
+    "rls_role_matrix": "RPC save_job_contractor_nip: anon bez EXECUTE; authenticated z EXECUTE; funkcja wymaga aktywnej sesji i roli Pracownik/Administrator/admin. Pracownik nie może nadpisać istniejącego innego NIP-u.",
+    "performance_advisor": "Uruchomiony 30.09.2026; brak nowych ostrzeżeń wynikających z pola NIP/RPC. Wskazania dotyczą istniejących indeksów/FK.",
+    "security_advisor": "Uruchomiony 30.09.2026; nowy RPC jest celowo dostępny dla authenticated jako ograniczony SECURITY DEFINER, z pustym search_path i anon EXECUTE=false. Advisor zgłasza także istniejące ostrzeżenia niezwiązane z 11.94.",
+    "trigger_grants": "Brak nowych triggerów. Grant nowego RPC zweryfikowany: authenticated/service_role tak, anon/public nie.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
