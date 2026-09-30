@@ -8,6 +8,7 @@ import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canMan
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 import { saveVatInvoiceStatus } from "../modules/jobs-crud.js";
+import { prepareFakturowniaInvoice } from "../modules/fakturownia.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -122,11 +123,13 @@ export default function JobDetailsPanel({
   const currentCommentDraft = selectedJobId ? String(commentDrafts?.[selectedJobId] || '') : '';
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [vatInvoiceSaving, setVatInvoiceSaving] = React.useState(false);
+  const [fakturowniaOpening, setFakturowniaOpening] = React.useState(false);
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
 
   React.useEffect(() => {
     setCommentSaving(false);
     setVatInvoiceSaving(false);
+    setFakturowniaOpening(false);
   }, [selectedJobId]);
 
   React.useEffect(() => {
@@ -260,6 +263,40 @@ export default function JobDetailsPanel({
     }
   }
 
+
+  async function handleOpenFakturowniaInvoice() {
+    if (!isAdmin || !selectedJobId || fakturowniaOpening) return;
+
+    const invoiceWindow = window.open('about:blank', '_blank');
+    if (!invoiceWindow) {
+      window.alert('Przeglądarka zablokowała nowe okno. Zezwól na wyskakujące okna dla aplikacji WAWIS i spróbuj ponownie.');
+      return;
+    }
+
+    try {
+      invoiceWindow.opener = null;
+      invoiceWindow.document.title = 'Łączenie z Fakturownią';
+      invoiceWindow.document.body.innerHTML = '<div style="font-family:Arial,sans-serif;padding:28px;color:#263845">Łączenie z Fakturownią…</div>';
+    } catch {
+      // Puste okno może zostać zabezpieczone przez przeglądarkę; nawigacja nadal zadziała.
+    }
+
+    setFakturowniaOpening(true);
+    try {
+      const prepared = await prepareFakturowniaInvoice({
+        supabase,
+        jobId: selectedJobId,
+      });
+      invoiceWindow.location.replace(prepared.invoiceUrl);
+    } catch (error) {
+      try { invoiceWindow.close(); } catch {}
+      console.error('Nie udało się przygotować klienta w Fakturowni.', error);
+      window.alert(`Nie udało się otworzyć Fakturowni. ${error?.message || ''}`.trim());
+    } finally {
+      setFakturowniaOpening(false);
+    }
+  }
+
   return (
     <div className="card premiumCard jobDetailsPanelCard">
       <div className="jobDetailsStickyBar">
@@ -292,6 +329,18 @@ export default function JobDetailsPanel({
                 <span className="desktopPaymentMethodHeaderLabel">Płatność</span>
                 <span>{paymentMethodDisplay.label}</span>
               </span>
+            ) : null}
+            {isAdmin ? (
+              <button
+                type="button"
+                className="desktopFakturowniaButton"
+                onClick={handleOpenFakturowniaInvoice}
+                disabled={fakturowniaOpening}
+                title="Przenieś dane klienta do Fakturowni i otwórz formularz faktury"
+              >
+                <IconFileText />
+                <span>{fakturowniaOpening ? 'Łączenie…' : 'Wystaw fakturę'}</span>
+              </button>
             ) : null}
           </div>
         </div>
