@@ -1,3 +1,8 @@
+## 11.99
+- Mobile: naprawiono automatyczne uzupełnianie kodu pocztowego — JobFormModal dostaje teraz klienta Supabase.
+- To usuwa przypadek, w którym formularz wyglądał poprawnie, ale lookup kończył się lokalnie bez wykonania zapytania.
+- Dodano regresję sprawdzającą przekazanie Supabase do formularza mobile.
+
 ## 11.98
 - Mobile: usunięto wszystkie mikrofony przy pojedynczych polach formularza; pozostaje tylko górny przycisk „Wprowadź głosowo”.
 - Mobile: pola danych klienta, NIP, miejscowości i kodu pocztowego są niższe i bardziej zwarte.
