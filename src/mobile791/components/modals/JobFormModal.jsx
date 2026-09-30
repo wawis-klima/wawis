@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput, { VoiceFieldButton, VoiceNoteButton, appendVoiceNoteText } from "../../../components/voice/ClientVoiceInput.jsx";
 import { normalizeVoiceEmail, normalizeVoicePhone } from "../../modules/client-voice-input.js";
+import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
 import {
   applyAutoLinkedContractorToJobForm,
   buildContractorOptionLabel,
@@ -29,6 +30,7 @@ export default function JobFormModal({
   setJobForm,
   profiles,
   contractors = [],
+  supabase,
   isAdmin = false,
   addJob,
   saveEditedJob,
@@ -74,6 +76,9 @@ export default function JobFormModal({
   const selectedContractorAddressValue = explicitContractorAddress?.id
     || (linkedContractor ? CUSTOM_CONTRACTOR_ADDRESS_ID : '');
   const usesCatalogAddress = Boolean(explicitContractorAddress);
+  const cityAddressParts = splitPostalCity(jobForm.city);
+  const [postalLookupBusy, setPostalLookupBusy] = useState(false);
+
 
   const jobDevices = useMemo(
     () => normalizeJobDevices(jobForm, { keepEmptyRow: true, keepEmptyIndoor: true }),
@@ -436,6 +441,36 @@ export default function JobFormModal({
     });
   }
 
+  function updateCityName(value) {
+    const current = splitPostalCity(jobForm.city);
+    updateAddressField('city', composePostalCity(value, current.postalCode));
+  }
+
+  function updatePostalCode(value) {
+    const current = splitPostalCity(jobForm.city);
+    updateAddressField('city', composePostalCity(current.city, normalizePostalCode(value)));
+  }
+
+  async function refreshPostalCode(cityValue = null, streetValue = null) {
+    if (postalLookupBusy || !supabase) return;
+    const current = splitPostalCity(cityValue ?? jobForm.city);
+    const city = current.city;
+    const street = String(streetValue ?? jobForm.street ?? '').trim();
+    if (!city) return;
+
+    setPostalLookupBusy(true);
+    try {
+      const result = await lookupPostalCode({ supabase, city, street });
+      if (result?.postalCode) {
+        updateAddressField('city', composePostalCity(city, result.postalCode));
+      }
+    } catch (error) {
+      console.warn('Nie udało się automatycznie dobrać kodu pocztowego.', error?.message || error);
+    } finally {
+      setPostalLookupBusy(false);
+    }
+  }
+
   function handleContractorSelect(contractor) {
     if (!contractor?.id) {
       setJobForm((prev) => ({
@@ -600,10 +635,13 @@ export default function JobFormModal({
           <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
           <VoiceFieldButton label="Telefon" onValue={(value) => updateField("phone", value)} transformValue={normalizeVoicePhone} disabled={busy} />
         </div>
-        <label className="inputLabel">
-          <span>NIP (opcjonalnie)</span>
-          <input className="input" inputMode="numeric" placeholder="NIP (opcjonalnie)" value={jobForm.nip || ''} onChange={(e) => updateField("nip", e.target.value)} />
-        </label>
+        <input
+          className="input jobNipCompactInput"
+          inputMode="numeric"
+          placeholder="NIP (opcjonalnie)"
+          value={jobForm.nip || ''}
+          onChange={(e) => updateField("nip", e.target.value)}
+        />
         {linkedContractor ? (
           <label className="inputLabel jobAddressPicker">
             <span>Adres montażu</span>
@@ -620,12 +658,33 @@ export default function JobFormModal({
           </label>
         ) : null}
         <div className="voiceFieldRow">
-          <input className="input" placeholder="Miejscowość" value={jobForm.city} onChange={(e) => updateAddressField("city", e.target.value)} />
-          <VoiceFieldButton label="Miejscowość" onValue={(value) => updateAddressField("city", value)} disabled={busy} />
-        </div>
-        <div className="voiceFieldRow">
           <input className="input" placeholder="Ulica i numer" value={jobForm.street} onChange={(e) => updateAddressField("street", e.target.value)} />
           <VoiceFieldButton label="Ulica i numer" onValue={(value) => updateAddressField("street", value)} disabled={busy} />
+        </div>
+        <div className="postalCityFieldRow">
+          <input
+            className="input"
+            placeholder="Miejscowość"
+            value={cityAddressParts.city}
+            onChange={(e) => updateCityName(e.target.value)}
+            onBlur={() => refreshPostalCode()}
+          />
+          <input
+            className="input postalCodeInput"
+            inputMode="numeric"
+            maxLength={6}
+            placeholder={postalLookupBusy ? "Szukam…" : "Kod pocztowy"}
+            value={cityAddressParts.postalCode}
+            onChange={(e) => updatePostalCode(e.target.value)}
+          />
+          <VoiceFieldButton
+            label="Miejscowość"
+            onValue={(value) => {
+              updateCityName(value);
+              void refreshPostalCode(value, jobForm.street);
+            }}
+            disabled={busy || postalLookupBusy}
+          />
         </div>
         {isAdmin ? (
           <select className="input" value={jobForm.status} onChange={(e) => updateField("status", e.target.value)}>
