@@ -687,6 +687,8 @@
 
 .protocolPaymentForm { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; min-width: 0; padding: 9px 10px; border: 1px solid #dfe7ec; border-radius: 11px; background: #fff; box-sizing: border-box; overflow: hidden; }
 .protocolPaymentForm > label { display: grid; gap: 3px; min-width: 0; color: #465a68; font-size: 10px !important; line-height: 1.2 !important; font-weight: 850; }
+.protocolPaymentMethodField,
+.protocolPaymentAmountField { grid-column: 1 / -1; }
 .protocolPaymentForm .input { width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; padding: 6px 9px; border-radius: 9px; box-sizing: border-box; font-size: 16px !important; line-height: 1.05 !important; font-weight: 700; letter-spacing: -.015em; }
 .protocolPaymentForm select.input { font-size: 16px !important; }
 /* v11.29 — iOS date ma własną ramkę o identycznym wymiarze jak select „Gotówka”. */
