@@ -14,12 +14,10 @@ import {
 const normalized = normalizePaymentConfirmation({
   enabled: true,
   amount: '4 200,50',
-  kind: 'full',
   method: 'cash',
   paidDate: '2026-09-01',
 });
 assert.equal(normalized.amount, 4200.5);
-assert.equal(normalized.kindLabel, 'Zapłacono całość');
 assert.equal(normalized.methodLabel, 'Gotówka');
 assert.match(formatPaymentAmount(normalized.amount), /4[\s\u00a0]?200,50/);
 
@@ -31,7 +29,6 @@ assert.throws(
 const transferWithoutAmount = normalizePaymentConfirmation({
   enabled: true,
   amount: '0',
-  kind: 'full',
   method: 'transfer',
   paidDate: '2026-09-01',
 });
@@ -41,7 +38,6 @@ assert.equal(transferWithoutAmount.amountLabel, '-');
 const transferBlankAmount = normalizePaymentConfirmation({
   enabled: true,
   amount: '',
-  kind: 'full',
   method: 'transfer',
   paidDate: '2026-09-01',
 });
@@ -69,7 +65,7 @@ const draft = getPaymentDraftFromJob({
 });
 assert.equal(draft.enabled, true);
 assert.equal(draft.amount, '850');
-assert.equal(draft.kind, 'deposit');
+assert.equal(Object.prototype.hasOwnProperty.call(draft, 'kind'), false);
 assert.equal(draft.method, 'transfer');
 assert.equal(draft.paidDate, '2026-09-01');
 
@@ -171,6 +167,7 @@ const savedPatch = await saveJobPaymentConfirmation({
 });
 assert.equal(capturedId, 'job-1');
 assert.equal(capturedPatch.payment_amount, 4200.5);
+assert.equal(capturedPatch.payment_kind, 'full', 'Pole legacy pozostaje technicznie wymagane przez schemat bazy, ale nie jest częścią UI/PDF.');
 assert.equal(capturedPatch.payment_recorded_by, 'worker-1');
 assert.deepEqual(savedPatch, capturedPatch);
 
