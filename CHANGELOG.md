@@ -1,3 +1,9 @@
+## 11.93
+- Protokół PDF ma mniejsze pionowe odstępy w sekcjach „Realizacja zlecenia” i „Potwierdzenie zapłaty”.
+- Zmniejszono odstęp pod tabelą urządzeń, bez zmiany nagłówka i kodu QR.
+- Informacje RODO i zagospodarowania odpadów zachowują 9,4 pt, a przy ryzyku przejścia podpisu na drugą stronę automatycznie schodzą do 8,9 pt lub 8,5 pt.
+- Generator rezerwuje miejsce na „Potwierdzenie klienta”, aby gęste protokoły z większą liczbą urządzeń mieściły się na jednej stronie A4, gdy pozwala na to treść.
+
 ## 11.92
 - Zakończenie zlecenia wymaga teraz co najmniej jednego rzeczywiście zapisanego urządzenia JW/JZ.
 - Mobile: przy pustym montażu przycisk „Zakończ” jest zablokowany i pojawia się komunikat „Najpierw dodaj urządzenie (JW/JZ)”.
