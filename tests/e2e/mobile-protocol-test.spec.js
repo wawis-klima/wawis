@@ -190,6 +190,18 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     // Przy ponownym otwarciu istniejący mechanizm ustawia widok na dolnej części protokołu.
     await page.locator('.mobileDeviceWizardClose').click();
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
+    const pageLockAfterProtocolClose = await page.evaluate(() => ({
+      bodyPosition: document.body.style.position,
+      bodyOverflow: document.body.style.overflow,
+      bodyTop: document.body.style.top,
+      rootOverflow: document.documentElement.style.overflow,
+      rootOverscroll: document.documentElement.style.overscrollBehavior,
+    }));
+    expect(pageLockAfterProtocolClose.bodyPosition).not.toBe('fixed');
+    expect(pageLockAfterProtocolClose.bodyOverflow).not.toBe('hidden');
+    expect(pageLockAfterProtocolClose.bodyTop).not.toMatch(/^-\d+px$/);
+    expect(pageLockAfterProtocolClose.rootOverflow).not.toBe('hidden');
+    expect(pageLockAfterProtocolClose.rootOverscroll).not.toBe('none');
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
 
