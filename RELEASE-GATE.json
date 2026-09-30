@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.94",
+  "version": "11.95",
   "scope": "full",
-  "release_branch": "release/v11.94",
+  "release_branch": "release/v11.95",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Supabase ACTIVE_HEALTHY. Migracja NIP 20260930171655 zastosowana; nowy RPC zweryfikowany: authenticated ma EXECUTE, anon nie ma EXECUTE. Security/performance advisors uruchomione; nowy RPC jest celowo ograniczonym SECURITY DEFINER z kontrolą sesji, roli i zakresu zapisu."
+    "notes": "Supabase ACTIVE_HEALTHY. Sekret FAKTUROWNIA_API_TOKEN jest skonfigurowany przez administratora. Edge Function fakturownia-client wdrożona jako ACTIVE v1. Brak zmian schematu bazy, RLS i Storage."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.94.zip"
+    "file_name": "klima-app-v11.95.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.94",
+    "source_branch": "release/v11.95",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu sprawdzić desktop i mobile: pole NIP (opcjonalnie), wczytanie NIP istniejącego kontrahenta, zapis nowego NIP oraz blokadę nadpisania innego NIP-u przez pracownika."
+    "notes": "Po deployu sprawdzić desktop: przycisk Wystaw fakturę w górnym pasku, synchronizację klienta po external_id/NIP/e-mail oraz otwarcie formularza Fakturowni z właściwym klientem. Samo kliknięcie nie może tworzyć faktury ani zmieniać statusu Faktura VAT."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,11 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "20260930171655 job_contractor_nip_v1194 — zastosowana i zweryfikowana.",
-    "rls_role_matrix": "RPC save_job_contractor_nip: anon bez EXECUTE; authenticated z EXECUTE; funkcja wymaga aktywnej sesji i roli Pracownik/Administrator/admin. Pracownik nie może nadpisać istniejącego innego NIP-u.",
-    "performance_advisor": "Uruchomiony 30.09.2026; brak nowych ostrzeżeń wynikających z pola NIP/RPC. Wskazania dotyczą istniejących indeksów/FK.",
-    "security_advisor": "Uruchomiony 30.09.2026; nowy RPC jest celowo dostępny dla authenticated jako ograniczony SECURITY DEFINER, z pustym search_path i anon EXECUTE=false. Advisor zgłasza także istniejące ostrzeżenia niezwiązane z 11.94.",
-    "trigger_grants": "Brak nowych triggerów. Grant nowego RPC zweryfikowany: authenticated/service_role tak, anon/public nie.",
+    "supabase_migration_applied": "N/A — 11.95 nie zmienia schematu bazy.",
+    "rls_role_matrix": "N/A — bez zmian RLS. Edge Function wymaga ważnej sesji i roli Administrator/admin.",
+    "performance_advisor": "N/A — brak zmian bazy danych.",
+    "security_advisor": "Token Fakturowni pozostaje wyłącznie w Supabase Edge Function Secrets; nie trafia do klienta ani repozytorium.",
+    "trigger_grants": "N/A — brak zmian funkcji SQL, triggerów i grantów.",
+    "edge_function": "fakturownia-client ACTIVE v1, verify_jwt=true",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
   }
