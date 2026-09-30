@@ -1,21 +1,20 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.94
+- 11.95
 
 ## Zakres
-- desktop i mobile: opcjonalne pole NIP w formularzu dodawania i edycji klienta/montażu
-- NIP jest przechowywany przy kontrahencie, a nie duplikowany w tabeli montaży
-- wybranie istniejącego kontrahenta wczytuje zapisany NIP do formularza
-- administrator może zapisać/zmienić NIP; pracownik może uzupełnić brakujący NIP, ale nie może zastąpić istniejącego inną wartością
-- Supabase: nowy ograniczony RPC `save_job_contractor_nip`, bez dostępu dla roli anonimowej
-- brak integracji GUS i Fakturownia.pl w tej wersji — 11.94 przygotowuje dane pod późniejszą integrację
+- desktop: nowy przycisk `Wystaw fakturę` w górnym pasku szczegółów montażu, obok rozliczeń
+- tylko administrator może uruchomić integrację
+- klient jest synchronizowany do Fakturowni przez `external_id`; dodatkowy fallback używa NIP-u i e-maila
+- dane klienta: nazwa, NIP, e-mail, telefon, miasto i ulica
+- sekret `FAKTUROWNIA_API_TOKEN` pozostaje wyłącznie po stronie Supabase Edge Function
+- Edge Function `fakturownia-client` jest aktywna i wymaga JWT
+- samo kliknięcie nie tworzy faktury i nie oznacza jej jako wystawionej; otwierany jest formularz Fakturowni
 
 ## Kontrola regresji
-- smoke: scripts/smoke-job-nip-v1194.cjs
-- migracja produkcyjna: 20260930171655 job_contractor_nip_v1194 — zastosowana
-- uprawnienia RPC: authenticated=true, anon=false — zweryfikowane
-- Supabase security/performance advisors — uruchomione
+- smoke: scripts/smoke-fakturownia-v1195.cjs
+- Edge Function: fakturownia-client ACTIVE v1
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
