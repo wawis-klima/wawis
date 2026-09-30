@@ -1,8 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
-import ClientVoiceInput, { VoiceFieldButton, VoiceNoteButton, appendVoiceNoteText } from "../../../components/voice/ClientVoiceInput.jsx";
-import { normalizeVoiceEmail, normalizeVoicePhone } from "../../modules/client-voice-input.js";
+import ClientVoiceInput from "../../../components/voice/ClientVoiceInput.jsx";
 import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
 import {
   applyAutoLinkedContractorToJobForm,
@@ -78,6 +77,7 @@ export default function JobFormModal({
   const usesCatalogAddress = Boolean(explicitContractorAddress);
   const cityAddressParts = splitPostalCity(jobForm.city);
   const [postalLookupBusy, setPostalLookupBusy] = useState(false);
+  const postalLookupAttemptRef = useRef("");
 
 
   const jobDevices = useMemo(
@@ -473,6 +473,23 @@ export default function JobFormModal({
     }
   }
 
+  useEffect(() => {
+    if (!showModal || !supabase || postalLookupBusy) return undefined;
+    const current = splitPostalCity(jobForm.city);
+    if (!current.city || current.postalCode) return undefined;
+
+    const lookupKey = `${current.city.toLocaleLowerCase('pl-PL')}|${String(jobForm.street || '').trim().toLocaleLowerCase('pl-PL')}`;
+    if (postalLookupAttemptRef.current === lookupKey) return undefined;
+
+    const timer = window.setTimeout(() => {
+      postalLookupAttemptRef.current = lookupKey;
+      void refreshPostalCode(jobForm.city, jobForm.street);
+    }, 550);
+
+    return () => window.clearTimeout(timer);
+  }, [showModal, supabase, jobForm.city, jobForm.street, postalLookupBusy]);
+
+
   function handleContractorSelect(contractor) {
     if (!contractor?.id) {
       setJobForm((prev) => ({
@@ -600,10 +617,7 @@ export default function JobFormModal({
         ) : null}
         <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
         {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} /> : null}
-        <div className="voiceFieldRow">
-          <input className="input" placeholder="Klient" value={jobForm.client} onChange={(e) => updateField("client", e.target.value)} />
-          <VoiceFieldButton label="Klient" onValue={(value) => updateField("client", value)} disabled={busy} />
-        </div>
+        <input className="input" placeholder="Klient" value={jobForm.client} onChange={(e) => updateField("client", e.target.value)} />
         {contractorSuggestions.length ? (
           <div className="jobContractorSuggestions">
             <div className="jobContractorSuggestionsTitle">Czy chodzi o tego kontrahenta?</div>
@@ -629,14 +643,8 @@ export default function JobFormModal({
             {duplicateContractor.street || duplicateContractor.city ? ` • ${[duplicateContractor.street, duplicateContractor.city].filter(Boolean).join(', ')}` : ''}
           </div>
         ) : null}
-        <div className="voiceFieldRow">
-          <input className="input" placeholder="Email klienta" value={jobForm.email} onChange={(e) => updateField("email", e.target.value)} />
-          <VoiceFieldButton label="Email" onValue={(value) => updateField("email", value)} transformValue={normalizeVoiceEmail} disabled={busy} />
-        </div>
-        <div className="voiceFieldRow">
-          <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
-          <VoiceFieldButton label="Telefon" onValue={(value) => updateField("phone", value)} transformValue={normalizeVoicePhone} disabled={busy} />
-        </div>
+        <input className="input" placeholder="Email klienta" value={jobForm.email} onChange={(e) => updateField("email", e.target.value)} />
+        <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
         <input
           className="input jobNipCompactInput"
           inputMode="numeric"
@@ -659,10 +667,7 @@ export default function JobFormModal({
             </select>
           </label>
         ) : null}
-        <div className="voiceFieldRow">
-          <input className="input" placeholder="Ulica i numer" value={jobForm.street} onChange={(e) => updateAddressField("street", e.target.value)} />
-          <VoiceFieldButton label="Ulica i numer" onValue={(value) => updateAddressField("street", value)} disabled={busy} />
-        </div>
+        <input className="input" placeholder="Ulica i numer" value={jobForm.street} onChange={(e) => updateAddressField("street", e.target.value)} />
         <div className="postalCityFieldRow">
           <input
             className="input"
@@ -676,19 +681,10 @@ export default function JobFormModal({
             inputMode="numeric"
             maxLength={6}
             placeholder={postalLookupBusy ? "Szukam…" : "Kod pocztowy"}
-            key={cityAddressParts.postalCode || 'postal-empty'}
-            defaultValue={cityAddressParts.postalCode}
-            onBlur={(e) => updatePostalCode(e.target.value)}
+            value={cityAddressParts.postalCode}
+            onChange={(e) => updatePostalCode(e.target.value)}
           />
-          <VoiceFieldButton
-            label="Miejscowość"
-            onValue={(value) => {
-              updateCityName(value);
-              void refreshPostalCode(value, jobForm.street);
-            }}
-            disabled={busy || postalLookupBusy}
-          />
-        </div>
+         </div>
         {isAdmin ? (
           <select className="input" value={jobForm.status} onChange={(e) => updateField("status", e.target.value)}>
             {STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
@@ -718,24 +714,14 @@ export default function JobFormModal({
                 </button>
               ) : null}
             </div>
-            <div
-              className="voiceFieldRow workerNewClientCommentVoiceRow"
-              style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 44px', gap: 8, alignItems: 'center', width: '100%', minWidth: 0, marginTop: 8 }}
-            >
-              <textarea
-                rows={3}
-                className="input textarea textareaNoTop workerNewClientCommentTextarea"
-                style={{ width: '100%', minWidth: 0, minHeight: 76, maxHeight: 130, margin: 0, resize: 'vertical', boxSizing: 'border-box' }}
-                placeholder="Komentarz do montażu"
-                value={jobForm.worker_comment || ''}
-                onChange={(e) => updateField("worker_comment", e.target.value)}
-              />
-              <VoiceNoteButton
-                label="Komentarz"
-                onValue={(value) => setJobForm((prev) => ({ ...prev, worker_comment: appendVoiceNoteText(prev.worker_comment, value) }))}
-                disabled={busy}
-              />
-            </div>
+            <textarea
+              rows={3}
+              className="input textarea textareaNoTop workerNewClientCommentTextarea"
+              style={{ width: '100%', minWidth: 0, minHeight: 76, maxHeight: 130, margin: 0, resize: 'vertical', boxSizing: 'border-box' }}
+              placeholder="Komentarz do montażu"
+              value={jobForm.worker_comment || ''}
+              onChange={(e) => updateField("worker_comment", e.target.value)}
+            />
           </div>
         ) : null}
         <div className="inputLabel installationDateField" style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}>
@@ -975,20 +961,14 @@ export default function JobFormModal({
                   </button>
                 ) : null}
               </div>
-              <div
-                className="voiceFieldRow adminNoteVoiceFieldRow"
-                style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 44px', gap: 8, alignItems: 'center', width: '100%', minWidth: 0, marginTop: 8 }}
-              >
-                <textarea
-                  rows={2}
-                  className="input textarea textareaNoTop adminNoteTextareaCompact"
-                  style={{ width: '100%', minWidth: 0, height: 68, minHeight: 68, maxHeight: 108, margin: 0, resize: 'vertical', boxSizing: 'border-box' }}
-                  placeholder="Komentarz administratora"
-                  value={jobForm.admin_note}
-                  onChange={(e) => updateField("admin_note", e.target.value)}
-                />
-                <VoiceNoteButton label="Komentarz administratora" onValue={(value) => setJobForm((prev) => ({ ...prev, admin_note: appendVoiceNoteText(prev.admin_note, value) }))} disabled={busy} />
-              </div>
+              <textarea
+                rows={2}
+                className="input textarea textareaNoTop adminNoteTextareaCompact"
+                style={{ width: '100%', minWidth: 0, height: 68, minHeight: 68, maxHeight: 108, marginTop: 8, resize: 'vertical', boxSizing: 'border-box' }}
+                placeholder="Komentarz administratora"
+                value={jobForm.admin_note}
+                onChange={(e) => updateField("admin_note", e.target.value)}
+              />
             </div>
             {(editingJobId || !isAdmin) ? (
               <>

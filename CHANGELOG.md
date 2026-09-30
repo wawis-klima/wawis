@@ -1,3 +1,9 @@
+## 11.98
+- Mobile: usunięto wszystkie mikrofony przy pojedynczych polach formularza; pozostaje tylko górny przycisk „Wprowadź głosowo”.
+- Mobile: pola danych klienta, NIP, miejscowości i kodu pocztowego są niższe i bardziej zwarte.
+- Mobile: kod pocztowy jest wyszukiwany automatycznie po krótkiej pauzie po wpisaniu miejscowości/adresu, bez konieczności opuszczania pola.
+- Pole kodu pocztowego jest kontrolowane przez stan React, więc wynik lookupu pojawia się od razu.
+
 ## 11.97
 - Automatyczny kod pocztowy działa także po wpisaniu samej znanej miejscowości: po nieudanym dopasowaniu pełnego adresu aplikacja korzysta z wcześniej uzupełnionych adresów WAWIS.
 - Pełny adres nadal ma pierwszeństwo i jest sprawdzany przez GUGiK UUG.
