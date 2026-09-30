@@ -95,12 +95,15 @@ Deno.serve(async (request: Request) => {
     if (!clientName) return json({ error: "Klient nie ma nazwy potrzebnej do Fakturowni." }, 400);
 
     const address = getPrimaryAddress(contractor);
+    const storedCity = normalizeText(address.city || contractor?.city || job.city);
+    const cityParts = splitPostalCity(storedCity);
     const clientData = compactObject({
       name: clientName,
       tax_no: digitsOnly(contractor?.nip),
       email: normalizeEmail(contractor?.email || job.email),
       phone: normalizeText(contractor?.phone || job.phone),
-      city: normalizeText(address.city || contractor?.city || job.city),
+      post_code: cityParts.postalCode,
+      city: cityParts.city,
       street: normalizeText(address.street || contractor?.street || job.street),
       country: "PL",
       person: normalizeText(contractor?.contact_person),
@@ -269,6 +272,15 @@ function readSupabaseKey(legacyName: string, dictionaryName: string): string {
 function normalizeText(value: unknown): string {
   return String(value ?? "").trim();
 }
+
+function splitPostalCity(value: unknown): { postalCode: string; city: string } {
+  const text = normalizeText(value);
+  const match = text.match(/^(\d{2}-\d{3})\s+(.+)$/);
+  return match
+    ? { postalCode: match[1], city: normalizeText(match[2]) }
+    : { postalCode: "", city: text };
+}
+
 
 function normalizeEmail(value: unknown): string {
   return normalizeText(value).toLowerCase();

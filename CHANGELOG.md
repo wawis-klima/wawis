@@ -1,3 +1,11 @@
+## 11.96
+- Mobile: pole NIP ma teraz tę samą wysokość co pozostałe pola formularza.
+- Mobile: kolejność adresu to ulica i numer, a niżej miejscowość + kod pocztowy w jednym rzędzie.
+- Desktop i mobile automatycznie dobierają kod pocztowy przez oficjalną usługę GUGiK UUG.
+- Kod pocztowy jest nadal zgodny ze starym modelem danych: zapisuje się razem z miejscowością, ale w formularzu jest pokazany osobno.
+- Integracja Fakturowni przesyła kod pocztowy do pola `post_code` i samą miejscowość do pola `city`.
+- Produkcyjna baza starych adresów jest jednorazowo uzupełniana kodami pocztowymi na podstawie miejscowości oraz ulicy/numeru.
+
 ## 11.95
 - Desktop: dodano w górnym pasku montażu przycisk „Wystaw fakturę”.
 - Dane klienta są synchronizowane do Fakturowni przez bezpieczną Supabase Edge Function.

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.95",
+  "version": "11.96",
   "scope": "full",
-  "release_branch": "release/v11.95",
+  "release_branch": "release/v11.96",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Supabase ACTIVE_HEALTHY. Sekret FAKTUROWNIA_API_TOKEN jest skonfigurowany przez administratora. Edge Function fakturownia-client wdrożona jako ACTIVE v1. Brak zmian schematu bazy, RLS i Storage."
+    "notes": "Supabase ACTIVE_HEALTHY. Edge Function postal-code-lookup ACTIVE v1; fakturownia-client ACTIVE v2. Brak trwałej zmiany schematu aplikacyjnego — kod pocztowy pozostaje zgodny z dotychczasowym polem city."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.95.zip"
+    "file_name": "klima-app-v11.96.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.95",
+    "source_branch": "release/v11.96",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po deployu sprawdzić desktop: przycisk Wystaw fakturę w górnym pasku, synchronizację klienta po external_id/NIP/e-mail oraz otwarcie formularza Fakturowni z właściwym klientem. Samo kliknięcie nie może tworzyć faktury ani zmieniać statusu Faktura VAT."
+    "notes": "Sprawdzić mobile: kompaktowy NIP, ulica przed miejscowością, miejscowość + kod w jednym rzędzie i automatyczne uzupełnienie kodu. Sprawdzić desktop i Fakturownię z polem post_code."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,13 +32,13 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.95 nie zmienia schematu bazy.",
-    "rls_role_matrix": "N/A — bez zmian RLS. Edge Function wymaga ważnej sesji i roli Administrator/admin.",
-    "performance_advisor": "N/A — brak zmian bazy danych.",
-    "security_advisor": "Token Fakturowni pozostaje wyłącznie w Supabase Edge Function Secrets; nie trafia do klienta ani repozytorium.",
-    "trigger_grants": "N/A — brak zmian funkcji SQL, triggerów i grantów.",
-    "edge_function": "fakturownia-client ACTIVE v1, verify_jwt=true",
+    "supabase_migration_applied": "N/A — bez nowej kolumny; jednorazowy backfill danych wykonywany osobno przez GUGiK UUG.",
+    "rls_role_matrix": "Bez zmian RLS. postal-code-lookup wymaga ważnego JWT; nie zapisuje danych samodzielnie.",
+    "performance_advisor": "N/A — brak nowych indeksów/tabel aplikacyjnych.",
+    "security_advisor": "Lookup adresu nie wymaga klucza zewnętrznego; FAKTUROWNIA_API_TOKEN pozostaje po stronie Supabase.",
+    "trigger_grants": "N/A — brak zmian triggerów i grantów.",
+    "edge_functions": "postal-code-lookup ACTIVE v1; fakturownia-client ACTIVE v2",
     "vercel_deployment": "PENDING — po merge do main",
-    "cloudflare_deployment": "N/A — nie jest częścią tej zmiany"
+    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
 }

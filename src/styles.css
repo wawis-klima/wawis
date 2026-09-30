@@ -10765,3 +10765,41 @@ img.previewImage{
 /* v10.97 — PUSH jako rzeczywisty przełącznik użytkownika */
 .wawisPushMini{cursor:pointer;}
 .wawisPushMini:disabled{cursor:wait !important;opacity:.65;}
+
+
+/* --- v11.96 adres + kod pocztowy --- */
+.jobNipCompactInput{
+  width:100%;
+  min-width:0;
+  margin:0;
+}
+
+.postalCityFieldRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 128px 44px;
+  gap:8px;
+  align-items:center;
+  min-width:0;
+}
+
+.postalCityFieldRow > .input{
+  width:100%;
+  min-width:0;
+  margin:0;
+}
+
+.postalCodeInput{
+  text-align:center;
+}
+
+@media (max-width: 430px){
+  .postalCityFieldRow{
+    grid-template-columns:minmax(0,1fr) 112px 44px;
+    gap:7px;
+  }
+  .postalCodeInput{
+    font-size:14px;
+    padding-left:8px;
+    padding-right:8px;
+  }
+}
