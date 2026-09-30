@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.88",
+  "version": "11.89",
   "scope": "mobile",
-  "release_branch": "release/v11.88",
+  "release_branch": "release/v11.89",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.88 zmienia wyłącznie kolejność i układ pól płatności w mobilnym protokole oraz usuwa domyślny wybór gotówki dla nowej płatności. Bez zmian schematu bazy, RLS, Storage, Edge Functions i generowania PDF."
+    "notes": "11.89 upraszcza sekcję płatności mobilnego protokołu i PDF: usuwa widoczny Rodzaj/Zapłacono całość, poprawia datę i pozycję zł. Bez zmian schematu bazy, RLS, Storage i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.88.zip"
+    "file_name": "klima-app-v11.89.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.88",
+    "source_branch": "release/v11.89",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić na mobile: Sposób płatności jest pierwszy i na pełną szerokość; Kwota jest bezpośrednio pod nim; nowa płatność pokazuje wybór zamiast domyślnej gotówki; zasady kwoty z 11.87 nadal działają."
+    "notes": "Po wdrożeniu sprawdzić na iPhone: brak pola Rodzaj/Zapłacono całość; kolejność Sposób płatności → Kwota → Data zapłaty; data jest wyśrodkowana i ciemna; zł jest lekko niżej; wygenerowany PDF nie zawiera Rodzaju."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.88 nie zmienia bazy.",
+    "supabase_migration_applied": "N/A — 11.89 nie zmienia bazy; payment_kind pozostaje technicznym polem legacy dla zgodności istniejącego constraintu.",
     "rls_role_matrix": "N/A — bez zmian RLS.",
-    "performance_advisor": "N/A — zmiana UI.",
+    "performance_advisor": "N/A — zmiana UI/PDF.",
     "security_advisor": "N/A — bez zmian uprawnień.",
     "trigger_grants": "N/A — bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",

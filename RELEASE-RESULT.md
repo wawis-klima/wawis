@@ -1,22 +1,26 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.88
+- 11.89
 
 ## Zakres
-- mobile: najpierw wybór sposobu płatności, potem kwota
-- mobile: sposób płatności i kwota na pełnej szerokości, jeden pod drugim
-- mobile: dla nowej płatności brak domyślnie zaznaczonej gotówki
-- bez zmian bazy, RLS i PDF
+- mobile: usunięty Rodzaj / Zapłacono całość z formularza płatności
+- mobile: podsumowanie bez rodzaju płatności
+- PDF: brak pola Rodzaj i brak tej informacji w potwierdzeniu klienta
+- mobile: wyśrodkowana i przyciemniona data zapłaty
+- mobile: oznaczenie „zł” lekko obniżone
+- bez zmian bazy, RLS i Edge Functions
 
 ## Zasady
-- monter najpierw wybiera Gotówka albo Przelew
-- poniżej wpisuje kwotę
+- formularz płatności: Sposób płatności → Kwota → Data zapłaty
 - Gotówka nadal wymaga kwoty > 0
 - Przelew nadal może być bez kwoty
+- payment_kind pozostaje wyłącznie technicznie jako wartość legacy dla zgodności schematu; nie jest widoczny w UI/PDF
 
 ## Kontrola regresji
-- rozszerzony `scripts/smoke-mobile-protocol-v979.cjs`
+- test płatności 9.86 zaktualizowany
+- smoke protokołu i layoutu zaktualizowane
+- E2E protokołu mobilnego zaktualizowane
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING

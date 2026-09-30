@@ -17,12 +17,10 @@ import {
 import {
   formatPaymentAmount,
   getPaymentDraftFromJob,
-  getPaymentKindLabel,
   getPaymentMethodLabel,
   hasJobPaymentSnapshot,
   loadJobPaymentSnapshot,
   normalizePaymentConfirmation,
-  PAYMENT_KINDS,
   PAYMENT_METHODS,
   saveJobPaymentConfirmation,
 } from "../../modules/job-payment-confirmation.js";
@@ -673,14 +671,12 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 <div className="protocolPaymentForm">
                   <label className="protocolPaymentMethodField"><span>Sposób płatności</span><select className="input" value={paymentDraft.method} onChange={(event) => updatePaymentDraft({ method: event.target.value })} disabled={isGenerating}>{paymentDraft.method ? null : <option value="" disabled>Wybierz: gotówka lub przelew</option>}{PAYMENT_METHODS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
                   <label className="protocolPaymentAmountField"><span>{paymentDraft.method === "transfer" ? "Kwota (opcjonalna)" : "Kwota"}</span><div className="protocolPaymentAmount"><input className="input" inputMode="decimal" placeholder={paymentDraft.method === "transfer" ? "0,00 — można pominąć" : "0,00"} value={paymentDraft.amount} onChange={(event) => updatePaymentDraft({ amount: event.target.value })} disabled={isGenerating} /><b>zł</b></div></label>
-                  <label><span>Rodzaj</span><select className="input" value={paymentDraft.kind} onChange={(event) => updatePaymentDraft({ kind: event.target.value })} disabled={isGenerating}>{PAYMENT_KINDS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
-                  <label><span>Data zapłaty</span><div className="protocolPaymentDateShell"><input className="protocolPaymentDateInput" type="date" value={paymentDraft.paidDate} onChange={(event) => updatePaymentDraft({ paidDate: event.target.value })} disabled={isGenerating} /></div></label>
+                  <label className="protocolPaymentDateField"><span>Data zapłaty</span><div className="protocolPaymentDateShell"><input className="protocolPaymentDateInput" type="date" value={paymentDraft.paidDate} onChange={(event) => updatePaymentDraft({ paidDate: event.target.value })} disabled={isGenerating} /></div></label>
                 </div>
               ) : null}
               {paymentVisible.enabled && !editing ? (
                 <dl className="protocolPaymentSummary">
                   {paymentVisible.amount != null && Number(paymentVisible.amount) > 0 ? <div><dt>Kwota</dt><dd>{formatPaymentAmount(paymentVisible.amount)}</dd></div> : null}
-                  <div><dt>Rodzaj</dt><dd>{getPaymentKindLabel(paymentVisible.kind)}</dd></div>
                   <div><dt>Sposób</dt><dd>{getPaymentMethodLabel(paymentVisible.method)}</dd></div>
                   <div><dt>Data</dt><dd>{paymentVisible.paidDate.split("-").reverse().join(".")}</dd></div>
                 </dl>

@@ -1,3 +1,12 @@
+## 11.89
+- Protokół mobilny: całkowicie usunięto z interfejsu pole `Rodzaj` oraz wybór `Zapłacono całość / Wpłacono zaliczkę`.
+- Podsumowanie płatności na telefonie nie pokazuje już rodzaju płatności.
+- PDF: usunięto pole `Rodzaj` z sekcji płatności oraz z tekstu potwierdzenia klienta.
+- Formularz płatności zawiera tylko `Sposób płatności`, `Kwota` i `Data zapłaty`.
+- Pole daty jest wyśrodkowane pionowo i poziomo oraz ma wymuszony ciemny kolor zamiast niebieskiego stylu iOS.
+- Oznaczenie `zł` przy kwocie zostało lekko obniżone.
+- Bez zmian bazy i RLS; techniczne pole `payment_kind` pozostaje wyłącznie dla zgodności istniejącego schematu i nie jest widoczne w aplikacji ani PDF.
+
 ## 11.88
 - Protokół mobilny: w sekcji płatności jako pierwsze jest teraz pole `Sposób płatności` z wyborem `Gotówka` / `Przelew`.
 - Dla nowej płatności nie ma domyślnie zaznaczonej gotówki — monter świadomie wybiera sposób płatności.
