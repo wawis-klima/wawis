@@ -603,10 +603,17 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     y = addPageIfNeeded(doc, y, 72);
     drawSectionTitle(doc, "Potwierdzenie zapłaty", y);
     drawCard(doc, y + 8, 44);
-    drawField(doc, "Kwota", data.payment.amountLabel, CONTENT_LEFT, y + 25, 54);
-    drawField(doc, "Rodzaj", data.payment.kindLabel, RIGHT_COLUMN_X, y + 25, 58);
-    drawField(doc, "Metoda", data.payment.methodLabel, CONTENT_LEFT, y + 42, 54);
-    drawField(doc, "Data", data.payment.paidDateLabel, RIGHT_COLUMN_X, y + 42, 58);
+    const hasPaymentAmount = data.payment.amount != null && Number(data.payment.amount) > 0;
+    if (hasPaymentAmount) {
+      drawField(doc, "Kwota", data.payment.amountLabel, CONTENT_LEFT, y + 25, 54);
+      drawField(doc, "Rodzaj", data.payment.kindLabel, RIGHT_COLUMN_X, y + 25, 58);
+      drawField(doc, "Metoda", data.payment.methodLabel, CONTENT_LEFT, y + 42, 54);
+      drawField(doc, "Data", data.payment.paidDateLabel, RIGHT_COLUMN_X, y + 42, 58);
+    } else {
+      drawField(doc, "Rodzaj", data.payment.kindLabel, CONTENT_LEFT, y + 25, 54);
+      drawField(doc, "Metoda", data.payment.methodLabel, RIGHT_COLUMN_X, y + 25, 58);
+      drawField(doc, "Data", data.payment.paidDateLabel, CONTENT_LEFT, y + 42, 54);
+    }
     y += 62;
   }
 
@@ -623,7 +630,9 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
   const paymentConfirmation = data.payment?.enabled
-    ? ` oraz płatność ${data.payment.amountLabel} (${data.payment.kindLabel.toLowerCase()}, ${data.payment.methodLabel.toLowerCase()})`
+    ? (data.payment.amount != null && Number(data.payment.amount) > 0
+      ? ` oraz płatność ${data.payment.amountLabel} (${data.payment.kindLabel.toLowerCase()}, ${data.payment.methodLabel.toLowerCase()})`
+      : ` oraz płatność ${data.payment.methodLabel.toLowerCase()} (${data.payment.kindLabel.toLowerCase()})`)
     : "";
   const confirmation = `Potwierdzam zakończenie montażu${paymentConfirmation}. Zapoznałem(-am) się z informacją o przetwarzaniu danych osobowych i akceptuję ustalenia dotyczące odpadów.`;
   doc.text(doc.splitTextToSize(confirmation, CONTENT_WIDTH), CONTENT_LEFT, y + 31, { lineHeightFactor: 1.18 });

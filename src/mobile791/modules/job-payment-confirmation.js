@@ -3,8 +3,6 @@ import { retryTransientProtocolOperation } from "./protocol-save-timeout.js";
 export const PAYMENT_METHODS = Object.freeze([
   { value: "cash", label: "Gotówka" },
   { value: "transfer", label: "Przelew" },
-  { value: "card", label: "Karta" },
-  { value: "blik", label: "BLIK" },
 ]);
 
 export const PAYMENT_KINDS = Object.freeze([
@@ -78,7 +76,9 @@ export function getPaymentDraftFromJob(job = {}) {
     enabled,
     amount: enabled && job?.payment_amount != null ? String(job.payment_amount).replace(".", ",") : "",
     kind: PAYMENT_KIND_VALUES.has(job?.payment_kind) ? job.payment_kind : "full",
-    method: PAYMENT_METHOD_VALUES.has(job?.payment_method) ? job.payment_method : "cash",
+    method: enabled
+      ? (PAYMENT_METHOD_VALUES.has(job?.payment_method) ? job.payment_method : "")
+      : "cash",
     paidDate: getLocalDateInputValue(job?.payment_paid_at || new Date()),
   };
 }
@@ -98,10 +98,19 @@ export function normalizePaymentConfirmation(payment = {}) {
     };
   }
 
-  const amount = parseAmount(payment.amount);
-  if (amount === null || amount <= 0) throw new Error("Wpisz prawidłową kwotę zapłaty większą od zera.");
   if (!PAYMENT_KIND_VALUES.has(payment.kind)) throw new Error("Wybierz, czy zapłacono całość, czy zaliczkę.");
   if (!PAYMENT_METHOD_VALUES.has(payment.method)) throw new Error("Wybierz sposób płatności.");
+
+  const parsedAmount = parseAmount(payment.amount);
+  let amount = parsedAmount;
+  if (payment.method === "transfer") {
+    if (parsedAmount !== null && parsedAmount < 0) {
+      throw new Error("Kwota przelewu nie może być ujemna.");
+    }
+    if (parsedAmount === null || parsedAmount === 0) amount = null;
+  } else if (parsedAmount === null || parsedAmount <= 0) {
+    throw new Error("Przy płatności gotówką wpisz kwotę większą od zera.");
+  }
   const paidDate = normalizeText(payment.paidDate);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(paidDate)) throw new Error("Wybierz datę zapłaty.");
   const paidAtDate = new Date(`${paidDate}T12:00:00`);

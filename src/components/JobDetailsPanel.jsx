@@ -47,8 +47,6 @@ function getPaymentMethodDisplay(job = {}) {
   const method = String(job?.payment_method || '').trim().toLowerCase();
   if (method === 'cash') return { label: 'Gotówka', className: 'cash' };
   if (method === 'transfer') return { label: 'Przelew', className: 'transfer' };
-  if (method === 'card') return { label: 'Karta', className: 'card' };
-  if (method === 'blik') return { label: 'BLIK', className: 'blik' };
   return { label: 'Nieokreślono', className: 'unknown' };
 }
 

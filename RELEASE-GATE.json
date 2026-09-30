@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.86",
-  "scope": "desktop",
-  "release_branch": "release/v11.86",
+  "version": "11.87",
+  "scope": "full",
+  "release_branch": "release/v11.87",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.86 dodaje wyłącznie desktopowy, informacyjny znacznik metody płatności korzystający z istniejącego jobs.payment_method. Bez zmian Supabase, RLS, Storage, Edge Functions i logiki zapisu protokołu."
+    "notes": "11.87 zmienia formularz płatności mobile, PDF, desktopowy znacznik oraz constraint payment w Supabase. Przed zmianą produkcja zawierała wyłącznie 4 aktywne płatności cash i zero card/blik/transfer, więc zaostrzenie metod do cash/transfer nie usuwa ani nie konwertuje danych."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.86.zip"
+    "file_name": "klima-app-v11.87.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.86",
+    "source_branch": "release/v11.87",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: obok Faktura VAT widoczny znacznik Płatność; Gotówka/Przelew odzwierciedlają protokół, brak danych pokazuje Nieokreślono; Faktura VAT nadal działa."
+    "notes": "Po wdrożeniu sprawdzić: mobilny protokół ma tylko Gotówka/Przelew; przelew zapisuje się z pustą kwotą i z 0; PDF nie pokazuje pola Kwota przy takim przelewie; gotówka nadal wymaga kwoty; desktop pokazuje Gotówka/Przelew/Nieokreślono."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — 11.86 nie zmienia bazy; korzysta z istniejącego jobs.payment_method.",
-    "rls_role_matrix": "N/A — bez zmian RLS.",
-    "performance_advisor": "N/A — zmiana JSX/CSS i odczyt już pobieranego pola.",
+    "supabase_migration_applied": "PENDING — zastosować 20260930071500_payment_cash_transfer_optional_amount_v1187 przed publikacją aplikacji.",
+    "rls_role_matrix": "Bez zmian RLS i grantów; zmienia się wyłącznie check constraint danych płatności.",
+    "performance_advisor": "N/A — prosty check constraint na pojedynczym wierszu.",
     "security_advisor": "N/A — bez zmian uprawnień.",
     "trigger_grants": "N/A — bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",

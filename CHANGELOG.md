@@ -1,3 +1,10 @@
+## 11.87
+- Protokół mobilny: lista sposobów płatności została ograniczona do `Gotówka` i `Przelew`; usunięto `Karta` i `BLIK`.
+- Przy `Przelewie` kwota jest opcjonalna. Puste pole albo wpisane `0` zapisuje brak kwoty (`NULL`), więc kwota nie jest pokazywana w podsumowaniu ani w PDF.
+- Przy `Gotówce` kwota nadal musi być większa od zera.
+- Desktopowy znacznik płatności pokazuje tylko `Gotówka`, `Przelew` albo `Nieokreślono`.
+- Supabase: zaktualizowano constraint płatności tak, aby przelew mógł nie mieć kwoty i aby nowe płatności używały wyłącznie cash/transfer.
+
 ## 11.86
 - Desktop / szczegóły montażu: obok znacznika `Faktura VAT` dodano znacznik `Płatność`, odczytywany bezpośrednio z danych zapisanych przez montera w protokole.
 - `Gotówka` i `Przelew` mają czytelne, różne oznaczenia; brak zapisanej metody pokazuje `Nieokreślono`.
