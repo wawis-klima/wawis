@@ -1,13 +1,13 @@
 ## Aktualna wersja
-- 11.96
+- 11.97
 
-Wersja 11.96 dodaje automatyczne kody pocztowe z GUGiK, porządkuje mobilny układ adresu i przekazuje kod pocztowy do Fakturowni.
+Wersja 11.97 domyka automatyczne kody pocztowe: pełny adres jest sprawdzany przez GUGiK, a dla samej znanej miejscowości aplikacja może użyć wcześniej uzupełnionych adresów WAWIS. Wersja 11.96 uporządkowała mobilny układ adresu i przekazywanie kodu do Fakturowni.
 
 Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpiecznie synchronizuje dane klienta do Fakturowni przez serwerową Edge Function i otwiera formularz faktury; samo kliknięcie nie tworzy dokumentu.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.96
+# Wawis Klimatyzacja — wersja 11.97
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
