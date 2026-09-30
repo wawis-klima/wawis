@@ -28,12 +28,15 @@ assert.match(wizardCss, /\.protocolSignatureModal\s*\{[\s\S]*?height:\s*100dvh\s
 assert.match(wizardCss, /\.protocolSignatureCanvas\s*\{[\s\S]*?touch-action:\s*none\s*!important;/);
 assert.match(wizardCss, /\.protocolPaymentForm \.input\s*\{[^}]*font-size:\s*16px\s*!important;/, 'Pola płatności muszą mieć co najmniej 16 px, aby iPhone nie powiększał formularza po aktywacji.');
 assert.match(wizardCss, /\.protocolPaymentForm \.input\s*\{[^}]*height:\s*38px;[^}]*min-height:\s*38px;/, 'Pola płatności powinny pozostać kompaktowe i mieć 38 px wysokości.');
-assert.match(wizardCss, /input\[type="date"\]::\-webkit-date-and-time-value\s*\{[^}]*transform:\s*scale\(\.82\);/, 'Widoczna data na iOS powinna być wizualnie zmniejszona bez obniżania bezpiecznego font-size inputa.');
+assert.match(wizardCss, /input\[type="date"\]::\-webkit-date-and-time-value\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*transform:\s*none;/, 'Widoczna data na iOS musi być wyśrodkowana pionowo i poziomo bez przesunięcia transformacją.');
 assert.match(wizardCss, /\.protocolPaymentForm > label\s*\{[^}]*min-width:\s*0;/, 'Pola płatności muszą pozwalać zawartości zwęzić się do szerokości karty.');
 assert.match(wizardCss, /\.protocolPaymentForm \.input\s*\{[^}]*min-width:\s*0;[^}]*max-width:\s*100%;[^}]*box-sizing:\s*border-box;/, 'Input płatności nie może przekraczać szerokości swojej kolumny.');
 assert.match(modal, /className="protocolPaymentDateShell"[\s\S]*className="protocolPaymentDateInput"/, 'Data zapłaty musi mieć osobną ramkę zamiast dziedziczyć ogólną klasę .input.');
-assert.match(wizardCss, /\.protocolPaymentDateShell\s*\{[^}]*height:\s*38px;[^}]*max-height:\s*38px;[^}]*overflow:\s*hidden;/, 'Ramka daty musi mieć dokładnie wysokość pola Gotówka i ucinać natywne overflow iOS.');
+assert.match(wizardCss, /\.protocolPaymentDateShell\s*\{[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;[^}]*height:\s*38px;[^}]*max-height:\s*38px;[^}]*overflow:\s*hidden;/, 'Ramka daty musi wyśrodkowywać natywną datę i mieć dokładnie 38 px wysokości.');
 assert.match(wizardCss, /\.protocolPaymentForm input\[type="date"\]\s*\{[^}]*-webkit-appearance:\s*none\s*!important;[^}]*inline-size:\s*100%\s*!important;[^}]*max-inline-size:\s*100%\s*!important;[^}]*height:\s*100%\s*!important;[^}]*max-height:\s*100%\s*!important;/, 'Natywny input daty iPhone musi być całkowicie zamknięty wewnątrz własnej ramki.');
+assert.match(wizardCss, /\.protocolPaymentForm input\[type="date"\]\s*\{[^}]*color:\s*#243746\s*!important;[^}]*-webkit-text-fill-color:\s*#243746\s*!important;[^}]*opacity:\s*1\s*!important;/, 'Data zapłaty nie może dziedziczyć niebieskiego koloru iOS.');
+assert.match(wizardCss, /\.protocolPaymentAmount b\s*\{[^}]*transform:\s*translateY\(3px\);/, 'Oznaczenie zł powinno być lekko obniżone względem pola kwoty.');
+assert.match(wizardCss, /\.protocolPaymentDateField\s*\{\s*grid-column:\s*1\s*\/\s*-1;/, 'Data zapłaty po usunięciu Rodzaju powinna zajmować pełną szerokość formularza.');
 
 
 assert.match(modal, /lockPagePosition/, 'Protokół musi blokować przewijanie strony pod pełnoekranowym modalem na iOS.');
