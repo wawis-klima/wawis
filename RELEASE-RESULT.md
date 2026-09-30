@@ -1,20 +1,18 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.96
+- 11.97
 
 ## Zakres
-- mobile: kompaktowe pole NIP
-- mobile: ulica i numer przed miejscowością
-- mobile: miejscowość i kod pocztowy obok siebie
-- desktop: osobne pole kodu pocztowego obok miejscowości
-- desktop + mobile: automatyczne wyszukiwanie kodu pocztowego przez GUGiK UUG
-- Fakturownia: przekazywanie `post_code` oddzielnie od `city`
-- stare adresy: jednorazowy backfill kodów pocztowych na produkcji
+- kod pocztowy po samej znanej miejscowości dzięki fallbackowi do wcześniej uzupełnionych adresów WAWIS
+- pełny adres nadal sprawdzany najpierw przez GUGiK UUG
+- backfill starych danych zakończony i zweryfikowany
+- brak pozostawionych tabel/rozszerzeń technicznych po jednorazowym backfillu
 
 ## Kontrola regresji
 - smoke: scripts/smoke-postal-code-v1196.mjs
-- Edge Function: postal-code-lookup ACTIVE v1
+- smoke: scripts/smoke-postal-city-fallback-v1197.cjs
+- Edge Function: postal-code-lookup ACTIVE v2
 - Edge Function: fakturownia-client ACTIVE v2
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
