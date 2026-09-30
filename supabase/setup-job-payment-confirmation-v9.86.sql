@@ -16,37 +16,36 @@ alter table public.jobs
 comment on column public.jobs.payment_confirmation_enabled is
   'Czy podpisany protokół zawiera opcjonalne potwierdzenie zapłaty klienta.';
 comment on column public.jobs.payment_amount is
-  'Kwota potwierdzonej płatności w PLN.';
+  'Kwota płatności w PLN; przy przelewie może być NULL, gdy kwota nie jest wpisywana.';
 comment on column public.jobs.payment_kind is
   'Rodzaj płatności: full (całość) albo deposit (zaliczka).';
 comment on column public.jobs.payment_method is
-  'Sposób płatności: cash, transfer, card albo blik.';
+  'Sposób płatności: cash albo transfer.';
 
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint where conname = 'jobs_payment_confirmation_consistent'
-  ) then
-    alter table public.jobs
-      add constraint jobs_payment_confirmation_consistent check (
-        (
-          payment_confirmation_enabled = false
-          and payment_amount is null
-          and payment_kind is null
-          and payment_method is null
-          and payment_paid_at is null
-        )
+alter table public.jobs
+  drop constraint if exists jobs_payment_confirmation_consistent;
+
+alter table public.jobs
+  add constraint jobs_payment_confirmation_consistent check (
+    (
+      payment_confirmation_enabled = false
+      and payment_amount is null
+      and payment_kind is null
+      and payment_method is null
+      and payment_paid_at is null
+    )
+    or
+    (
+      payment_confirmation_enabled = true
+      and payment_kind in ('full', 'deposit')
+      and payment_paid_at is not null
+      and (
+        (payment_method = 'cash' and payment_amount > 0)
         or
-        (
-          payment_confirmation_enabled = true
-          and payment_amount > 0
-          and payment_kind in ('full', 'deposit')
-          and payment_method in ('cash', 'transfer', 'card', 'blik')
-          and payment_paid_at is not null
-        )
-      ) not valid;
-  end if;
-end $$;
+        (payment_method = 'transfer' and (payment_amount is null or payment_amount > 0))
+      )
+    )
+  ) not valid;
 
 alter table public.jobs validate constraint jobs_payment_confirmation_consistent;
 
