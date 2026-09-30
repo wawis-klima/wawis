@@ -1,24 +1,23 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.86
+- 11.87
 
 ## Zakres
-- desktop: znacznik metody płatności obok Faktura VAT w górnym pasku szczegółów montażu
-- Supabase: bez zmian
-- mobile: bez zmian funkcjonalnych
+- mobile: tylko Gotówka / Przelew w protokole
+- mobile: przelew może być bez kwoty; 0 i puste pole są zapisywane jako brak kwoty
+- PDF: przy przelewie bez kwoty pole Kwota nie jest drukowane
+- desktop: znacznik płatności bez Karta/BLIK
+- Supabase: zmiana constraintu płatności
 
-## Desktop
-- znacznik korzysta z istniejącego pola `jobs.payment_method`, które jest zapisywane przy protokole montażu
-- `cash` = Gotówka
-- `transfer` = Przelew
-- brak metody = Nieokreślono
-- istniejące `card` i `blik` są nadal pokazywane zgodnie z zapisanymi danymi
-- element jest tylko informacyjny; zmiana metody nadal odbywa się w protokole mobilnym
-- Faktura VAT zachowuje dotychczasowe działanie i klikany zapis
+## Zasady
+- Gotówka: kwota > 0 jest wymagana.
+- Przelew: kwota jest opcjonalna; dodatnia kwota jest zapisywana, 0 lub puste pole daje NULL.
+- Karta/BLIK: niedostępne w interfejsie i niedozwolone dla nowych zapisów.
 
 ## Kontrola regresji
-- rozszerzony `scripts/smoke-desktop-vat-invoice-v1184.cjs`
+- rozszerzony `scripts/test-job-payment-confirmation-v986.mjs`
+- `scripts/smoke-mobile-protocol-v979.cjs`
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
