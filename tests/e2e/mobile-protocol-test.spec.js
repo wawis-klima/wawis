@@ -112,13 +112,11 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await expect(paymentForm).toBeVisible();
 
     const paymentMethod = paymentForm.locator('select').nth(0);
-    const paymentKind = paymentForm.locator('select').nth(1);
     const paymentDate = paymentForm.locator('input[type="date"]');
     const paymentDateShell = paymentForm.locator('.protocolPaymentDateShell');
     const compactPaymentLayout = await paymentForm.evaluate((form) => {
       const selects = [...form.querySelectorAll('select.input')];
       const paymentMethod = selects[0];
-      const paymentKind = selects[1];
       const methodField = form.querySelector('.protocolPaymentMethodField');
       const amountField = form.querySelector('.protocolPaymentAmountField');
       const amountInput = form.querySelector('input[inputmode="decimal"]');
@@ -129,7 +127,6 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
       const methodFieldRect = methodField?.getBoundingClientRect();
       const amountFieldRect = amountField?.getBoundingClientRect();
       const amountInputRect = amountInput?.getBoundingClientRect();
-      const kindRect = paymentKind?.getBoundingClientRect();
       const dateRect = date?.getBoundingClientRect();
       const dateShellRect = dateShell?.getBoundingClientRect();
       return {
@@ -141,7 +138,6 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
         amountInputWidth: amountInputRect?.width ?? 0,
         methodFieldBottom: methodFieldRect?.bottom ?? 0,
         amountFieldTop: amountFieldRect?.top ?? 0,
-        paymentKindWidth: kindRect?.width ?? 0,
         dateShellWidth: dateShellRect?.width ?? 0,
         dateShellHeight: dateShellRect?.height ?? 0,
         dateHeight: dateRect?.height ?? 0,
@@ -157,7 +153,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     expect(Math.abs(compactPaymentLayout.methodFieldWidth - compactPaymentLayout.amountFieldWidth)).toBeLessThanOrEqual(1);
     expect(compactPaymentLayout.amountFieldTop).toBeGreaterThanOrEqual(compactPaymentLayout.methodFieldBottom);
     expect(compactPaymentLayout.amountInputWidth).toBeGreaterThan(0);
-    expect(Math.abs(compactPaymentLayout.dateShellWidth - compactPaymentLayout.paymentKindWidth)).toBeLessThanOrEqual(1);
+    expect(Math.abs(compactPaymentLayout.dateShellWidth - compactPaymentLayout.methodFieldWidth)).toBeLessThanOrEqual(1);
     expect(Math.abs(compactPaymentLayout.dateShellHeight - compactPaymentLayout.paymentMethodHeight)).toBeLessThanOrEqual(1);
     expect(compactPaymentLayout.dateShellHeight).toBeLessThanOrEqual(39);
     expect(compactPaymentLayout.dateHeight).toBeLessThanOrEqual(39);
@@ -167,7 +163,8 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     expect(compactPaymentLayout.dateFitsHorizontally).toBe(true);
     expect(compactPaymentLayout.nativeDateFitsShell).toBe(true);
     await expect(paymentMethod).toBeVisible();
-    await expect(paymentKind).toBeVisible();
+    await expect(paymentForm.locator('select')).toHaveCount(1);
+    await expect(paymentForm.getByText('Rodzaj', { exact: true })).toHaveCount(0);
     await expect(paymentDateShell).toBeVisible();
     await expect(paymentDate).toBeVisible();
     await expect(paymentMethod).toHaveValue('');
