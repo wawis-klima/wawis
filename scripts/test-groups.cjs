@@ -126,6 +126,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   desktop: [
+    'node scripts/smoke-fakturownia-v1195.cjs',
     'node scripts/smoke-desktop-vat-invoice-v1184.cjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
     'node scripts/smoke-contractors-stage5-v1178.mjs',
