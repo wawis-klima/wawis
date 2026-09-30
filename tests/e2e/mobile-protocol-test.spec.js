@@ -98,16 +98,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     expect(protocolScrollState.scrollTop).toBeGreaterThan(0);
     expect(protocolScrollState.paymentVisible).toBe(true);
 
-    const paymentToggle = page.locator('.protocolPaymentToggle');
-    await expect(paymentToggle).toContainText('Dodaj');
-    const paymentToggleStyle = await paymentToggle.evaluate((element) => ({
-      whiteSpace: getComputedStyle(element).whiteSpace,
-      spanWhiteSpace: getComputedStyle(element.querySelector('span')).whiteSpace,
-    }));
-    expect(paymentToggleStyle.whiteSpace).toBe('nowrap');
-    expect(paymentToggleStyle.spanWhiteSpace).toBe('nowrap');
-
-    await paymentToggle.click();
+    await expect(page.locator('.protocolPaymentToggle')).toHaveCount(0);
     const paymentForm = page.locator('.protocolPaymentForm');
     await expect(paymentForm).toBeVisible();
 
