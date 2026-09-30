@@ -3,6 +3,7 @@ import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput, { VoiceFieldButton, VoiceNoteButton, appendVoiceNoteText } from "../voice/ClientVoiceInput.jsx";
 import { normalizeVoiceEmail, normalizeVoicePhone } from "../../modules/client-voice-input.js";
+import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
 import {
   applyAutoLinkedContractorToJobForm,
   buildContractorOptionLabel,
@@ -32,6 +33,7 @@ export default function JobFormModal({
   setJobForm,
   profiles,
   contractors = [],
+  supabase,
   addJob,
   saveEditedJob,
   busy,
@@ -88,6 +90,9 @@ export default function JobFormModal({
     || (linkedContractor ? CUSTOM_CONTRACTOR_ADDRESS_ID : '');
 
   const usesCatalogAddress = Boolean(explicitContractorAddress || matchedHistoricalAddress);
+  const cityAddressParts = splitPostalCity(jobForm.city);
+  const [postalLookupBusy, setPostalLookupBusy] = useState(false);
+
 
   const jobDevices = useMemo(
     () => normalizeJobDevices(jobForm, { keepEmptyRow: true, keepEmptyIndoor: true }),
@@ -390,6 +395,36 @@ export default function JobFormModal({
     });
   }
 
+  function updateCityName(value) {
+    const current = splitPostalCity(jobForm.city);
+    updateAddressField('city', composePostalCity(value, current.postalCode));
+  }
+
+  function updatePostalCode(value) {
+    const current = splitPostalCity(jobForm.city);
+    updateAddressField('city', composePostalCity(current.city, normalizePostalCode(value)));
+  }
+
+  async function refreshPostalCode(cityValue = null, streetValue = null) {
+    if (postalLookupBusy || !supabase) return;
+    const current = splitPostalCity(cityValue ?? jobForm.city);
+    const city = current.city;
+    const street = String(streetValue ?? jobForm.street ?? '').trim();
+    if (!city) return;
+
+    setPostalLookupBusy(true);
+    try {
+      const result = await lookupPostalCode({ supabase, city, street });
+      if (result?.postalCode) {
+        updateAddressField('city', composePostalCity(city, result.postalCode));
+      }
+    } catch (error) {
+      console.warn('Nie udało się automatycznie dobrać kodu pocztowego.', error?.message || error);
+    } finally {
+      setPostalLookupBusy(false);
+    }
+  }
+
   function handleContractorSelect(contractor) {
     if (!contractor?.id) {
       setJobForm((prev) => ({ ...prev, contractor_id: '', contractor_address_id: '', contractor_address_label: '', nip: '' }));
@@ -644,12 +679,33 @@ export default function JobFormModal({
           </div>
         ) : null}
         <div className="voiceFieldRow">
-          <input className="input" placeholder="Miejscowość" value={jobForm.city} onChange={(e) => updateAddressField("city", e.target.value)} />
-          <VoiceFieldButton label="Miejscowość" onValue={(value) => updateAddressField("city", value)} disabled={busy} />
-        </div>
-        <div className="voiceFieldRow">
           <input className="input" placeholder="Ulica i numer" value={jobForm.street} onChange={(e) => updateAddressField("street", e.target.value)} />
           <VoiceFieldButton label="Ulica i numer" onValue={(value) => updateAddressField("street", value)} disabled={busy} />
+        </div>
+        <div className="postalCityFieldRow">
+          <input
+            className="input"
+            placeholder="Miejscowość"
+            value={cityAddressParts.city}
+            onChange={(e) => updateCityName(e.target.value)}
+            onBlur={() => refreshPostalCode()}
+          />
+          <input
+            className="input postalCodeInput"
+            inputMode="numeric"
+            maxLength={6}
+            placeholder={postalLookupBusy ? "Szukam…" : "Kod pocztowy"}
+            value={cityAddressParts.postalCode}
+            onChange={(e) => updatePostalCode(e.target.value)}
+          />
+          <VoiceFieldButton
+            label="Miejscowość"
+            onValue={(value) => {
+              updateCityName(value);
+              void refreshPostalCode(value, jobForm.street);
+            }}
+            disabled={busy || postalLookupBusy}
+          />
         </div>
         {usesCatalogAddress ? <div className="jobAddressHint">Adres pochodzi z karty klienta. Możesz poprawić miasto, ulicę lub dopisać numer — zmieniona wersja zostanie zapisana jako adres klienta.</div> : null}
         <select className="input" value={jobForm.status} onChange={(e) => updateField("status", e.target.value)}>
