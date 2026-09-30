@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.93
+- 11.94
 
-Wersja 11.93 zagęszcza protokół PDF: zmniejsza pionowe odstępy w realizacji i płatności oraz adaptacyjnie zmniejsza tekst RODO/odpadów tylko wtedy, gdy dzięki temu potwierdzenie klienta może pozostać na pierwszej stronie.
+Wersja 11.94 dodaje opcjonalny NIP do formularza klienta na desktopie i mobile. NIP jest zapisywany przy kontrahencie i przygotowuje dane pod późniejszą integrację z Fakturownią.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.93
+# Wawis Klimatyzacja — wersja 11.94
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -821,6 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.94` — dodano opcjonalny NIP do formularza klienta na desktopie i mobile; NIP zapisuje się przy kontrahencie i jest gotowy pod integrację z Fakturownią.
 - wersja `11.93` — zagęszczony protokół PDF: mniejsze odstępy realizacji/płatności i adaptacyjna czcionka informacji prawnych pomagają utrzymać podpis klienta na stronie 1.
 - wersja `11.92` — pustego montażu bez dodanego urządzenia nie można zakończyć; komunikat mobilny pokazuje konieczność dodania JW/JZ, a backend wymusza tę samą regułę dla każdej roli.
 - wersja `11.91` — Potwierdzenie zapłaty jest stałą częścią protokołu; usunięto przełącznik Dodaj/Dodane i wymagany jest wybór Gotówka/Przelew.

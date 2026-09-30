@@ -103,7 +103,11 @@ export function useSelectedJobActions({
       alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
       return;
     }
-    const nextForm = buildEditJobForm({ job, profiles, normalizeStatus });
+    const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(job.contractor_id || '')) || null;
+    const nextForm = {
+      ...buildEditJobForm({ job, profiles, normalizeStatus }),
+      nip: linkedContractor?.nip || '',
+    };
     openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job });
   }
 
@@ -113,7 +117,11 @@ export function useSelectedJobActions({
       alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
       return;
     }
-    const nextForm = buildEditJobForm({ job, profiles, normalizeStatus });
+    const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(job.contractor_id || '')) || null;
+    const nextForm = {
+      ...buildEditJobForm({ job, profiles, normalizeStatus }),
+      nip: linkedContractor?.nip || '',
+    };
     openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: true });
   }
 

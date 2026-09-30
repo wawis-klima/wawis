@@ -602,6 +602,13 @@ export function createMockSupabaseClient() {
       if (name === 'admin_list_contractors') return { data: clone(store.contractors), error: null };
       if (name === 'admin_list_devices_with_contractor') return { data: clone(store.devices), error: null };
       if (name === 'admin_get_contractor_devices') return { data: clone(store.devices.filter((device) => device.contractor_id === payload.p_contractor_id)), error: null };
+      if (name === 'save_job_contractor_nip') {
+        const contractor = store.contractors.find((item) => String(item.id || '') === String(payload.p_contractor_id || ''));
+        if (!contractor) return { data: null, error: { message: 'Nie znaleziono klienta.' } };
+        contractor.nip = String(payload.p_nip || '').replace(/\D+/g, '');
+        contractor.updated_at = nowIso();
+        return { data: contractor.nip || null, error: null };
+      }
       if (name === 'admin_sync_device_from_job') return { data: { synced: true }, error: null };
       if (name === 'admin_sync_devices_from_jobs') return { data: clone(store.devices), error: null };
       if (name === 'admin_get_device_sms_history') return { data: clone(store.sms_log), error: null };

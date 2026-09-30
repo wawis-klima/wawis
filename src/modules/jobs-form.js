@@ -13,6 +13,7 @@ export const EMPTY_JOB_FORM = {
   client: '',
   email: '',
   phone: '',
+  nip: '',
   city: '',
   street: '',
   location: '',
@@ -70,6 +71,7 @@ export function buildEditJobForm({ job, profiles, normalizeStatus }) {
     client: job.client || '',
     email: job.email || '',
     phone: job.sms_recipient_phone || job.phone || '',
+    nip: '',
     city: job.city || (job.location?.split(',')[0]?.trim() || ''),
     street: job.street || (job.location?.split(',').slice(1).join(',').trim() || ''),
     location: job.location || '',
@@ -112,6 +114,19 @@ function runInBackground(task, label) {
 
 function normalizeJobText(value) {
   return String(value || '').trim();
+}
+
+async function syncContractorNip({ supabase, contractorId, nip }) {
+  const normalizedContractorId = normalizeJobText(contractorId);
+  const normalizedNip = normalizeJobText(nip);
+  if (!supabase || typeof supabase.rpc !== 'function' || !normalizedContractorId || !normalizedNip) return null;
+
+  const { data, error } = await supabase.rpc('save_job_contractor_nip', {
+    p_contractor_id: normalizedContractorId,
+    p_nip: normalizedNip,
+  });
+  if (error) throw error;
+  return data;
 }
 
 const NEW_CONTRACTOR_ADDRESS_ID = '__new__';
@@ -206,6 +221,7 @@ function mergeContractorSnapshotIntoForm(form = {}, contractor = {}) {
   if (normalizedContractor.id) nextForm.contractor_id = normalizedContractor.id;
   if (!normalizeJobText(nextForm.email) && normalizeJobText(normalizedContractor.email)) nextForm.email = normalizeJobText(normalizedContractor.email);
   if (!normalizeJobText(nextForm.phone) && normalizeJobText(normalizedContractor.phone)) nextForm.phone = normalizeJobText(normalizedContractor.phone);
+  if (!normalizeJobText(nextForm.nip) && normalizeJobText(normalizedContractor.nip)) nextForm.nip = normalizeJobText(normalizedContractor.nip);
   if (!normalizeJobText(nextForm.city) && normalizeJobText(primaryAddress?.city || normalizedContractor.city)) nextForm.city = normalizeJobText(primaryAddress?.city || normalizedContractor.city);
   if (!normalizeJobText(nextForm.street) && normalizeJobText(primaryAddress?.street || normalizedContractor.street)) nextForm.street = normalizeJobText(primaryAddress?.street || normalizedContractor.street);
   if (!normalizeJobText(nextForm.contractor_address_id) && primaryAddress?.id) nextForm.contractor_address_id = primaryAddress.id;
@@ -246,7 +262,7 @@ async function upsertContractorFromJobForm({ supabase, form, contractorId = null
     phone: normalizeJobText(form.phone),
     email: normalizeJobText(form.email),
     notes: isUpdate ? normalizedExisting.notes : 'Utworzono automatycznie z nowego montażu.',
-    nip: isUpdate ? normalizedExisting.nip : '',
+    nip: normalizeJobText(form.nip),
     is_active: isUpdate ? normalizedExisting.is_active !== false : true,
   };
 
@@ -370,6 +386,21 @@ export async function addJobRecord({
   // Po potwierdzonym INSERT rekord jobs jest już utworzony. Kolejne etapy są
   // poboczne i nie mogą zamienić sukcesu INSERT w błąd całego formularza.
   const postCreateWarnings = [];
+  if (normalizeJobText(resolvedForm.contractor_id) && normalizeJobText(resolvedForm.nip)) {
+    try {
+      await syncContractorNip({
+        supabase,
+        contractorId: resolvedForm.contractor_id,
+        nip: resolvedForm.nip,
+      });
+    } catch (nipError) {
+      postCreateWarnings.push({
+        phase: 'contractor_nip',
+        message: 'Montaż został zapisany, ale NIP klienta nie został zapisany. Otwórz klienta i spróbuj ponownie.',
+        error: String(nipError?.message || nipError || ''),
+      });
+    }
+  }
   const selectedUsers = getAssignedUserIdsFromForm(resolvedForm);
   let accessConfirmed = true;
 
@@ -589,6 +620,13 @@ export async function saveEditedJobRecord({
 
   const originalJob = baseJob || jobs.find((job) => String(job?.id) === String(editingJobId)) || {};
   const resolvedForm = await resolveJobFormForSave({ supabase, form, contractors, isAdmin });
+  if (normalizeJobText(resolvedForm.contractor_id) && normalizeJobText(resolvedForm.nip)) {
+    await syncContractorNip({
+      supabase,
+      contractorId: resolvedForm.contractor_id,
+      nip: resolvedForm.nip,
+    });
+  }
 
   const { fields, expected } = buildJobEditChangeSet({
     form: resolvedForm,
