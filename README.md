@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.87
+- 11.88
 
-Wersja 11.87 porządkuje płatności w protokole: pozostają wyłącznie Gotówka i Przelew. Przy przelewie kwota jest opcjonalna — puste pole lub 0 oznacza brak kwoty i nie jest drukowane w protokole. Gotówka nadal wymaga dodatniej kwoty. Desktopowy znacznik płatności pokazuje Gotówka / Przelew / Nieokreślono.
+Wersja 11.88 porządkuje kolejność pól płatności w mobilnym protokole: najpierw monter wybiera Gotówka albo Przelew, a dopiero pod spodem wpisuje kwotę. Nowa płatność nie ma domyślnie wybranego sposobu. Zasady kwoty z 11.87 pozostają bez zmian.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.87
+# Wawis Klimatyzacja — wersja 11.88
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
