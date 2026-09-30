@@ -7926,26 +7926,6 @@ img.previewImage{
   background:#3b82f6;
 }
 
-.desktopPaymentMethodChip.card{
-  color:#92400e;
-  background:#fffbeb;
-  border-color:#fde68a;
-}
-
-.desktopPaymentMethodChip.card .desktopPaymentMethodDot{
-  background:#f59e0b;
-}
-
-.desktopPaymentMethodChip.blik{
-  color:#6b21a8;
-  background:#faf5ff;
-  border-color:#e9d5ff;
-}
-
-.desktopPaymentMethodChip.blik .desktopPaymentMethodDot{
-  background:#a855f7;
-}
-
 .desktopPaymentMethodChip.unknown{
   color:#475569;
   background:#f8fafc;
