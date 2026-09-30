@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput from "../../../components/voice/ClientVoiceInput.jsx";
@@ -77,6 +77,7 @@ export default function JobFormModal({
   const usesCatalogAddress = Boolean(explicitContractorAddress);
   const cityAddressParts = splitPostalCity(jobForm.city);
   const [postalLookupBusy, setPostalLookupBusy] = useState(false);
+  const postalLookupAttemptRef = useRef("");
 
 
   const jobDevices = useMemo(
@@ -477,7 +478,11 @@ export default function JobFormModal({
     const current = splitPostalCity(jobForm.city);
     if (!current.city || current.postalCode) return undefined;
 
+    const lookupKey = `${current.city.toLocaleLowerCase('pl-PL')}|${String(jobForm.street || '').trim().toLocaleLowerCase('pl-PL')}`;
+    if (postalLookupAttemptRef.current === lookupKey) return undefined;
+
     const timer = window.setTimeout(() => {
+      postalLookupAttemptRef.current = lookupKey;
       void refreshPostalCode(jobForm.city, jobForm.street);
     }, 550);
 
