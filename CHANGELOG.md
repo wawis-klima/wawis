@@ -1,3 +1,10 @@
+## 11.88
+- Protokół mobilny: w sekcji płatności jako pierwsze jest teraz pole `Sposób płatności` z wyborem `Gotówka` / `Przelew`.
+- Dla nowej płatności nie ma domyślnie zaznaczonej gotówki — monter świadomie wybiera sposób płatności.
+- Pole `Kwota` znajduje się bezpośrednio pod sposobem płatności i oba pola zajmują pełną szerokość formularza.
+- `Rodzaj` oraz `Data zapłaty` pozostają niżej, obok siebie.
+- Bez zmian Supabase, RLS i PDF; obowiązują zasady 11.87: gotówka wymaga kwoty, przelew może być bez kwoty.
+
 ## 11.87
 - Protokół mobilny: lista sposobów płatności została ograniczona do `Gotówka` i `Przelew`; usunięto `Karta` i `BLIK`.
 - Przy `Przelewie` kwota jest opcjonalna. Puste pole albo wpisane `0` zapisuje brak kwoty (`NULL`), więc kwota nie jest pokazywana w podsumowaniu ani w PDF.
