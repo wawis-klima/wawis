@@ -34,6 +34,7 @@ const GROUPS = {
   ],
   jobs: [
     'node scripts/smoke-postal-code-v1196.mjs',
+    'node scripts/smoke-mobile-form-v1198.cjs',
     'node scripts/smoke-postal-city-fallback-v1197.cjs',
     'node scripts/smoke-job-nip-v1194.cjs',
     'node scripts/smoke-contractors-stage3-v1176.mjs',
