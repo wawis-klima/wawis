@@ -100,8 +100,8 @@ async function main() {
     path.join(root, 'src', 'mobile791', 'components', 'JobDetailsPanel.jsx'),
     'utf8',
   );
-  const v1092Sql = fs.readFileSync(
-    path.join(root, 'supabase', 'migrations', '20260917235600_admin_finish_without_nameplates_v1092.sql'),
+  const v1192Sql = fs.readFileSync(
+    path.join(root, 'supabase', 'migrations', '20260930100831_require_device_before_completion_v1192.sql'),
     'utf8',
   );
 
@@ -109,17 +109,20 @@ async function main() {
   // ale pracownik nadal ma allowLocal=true i nie dostaje tego bypassu.
   assert.match(mobilePanelSource, /getJobNameplateCompletion\(selectedJob,\s*\{\s*allowLocal:\s*!isAdmin\s*\}\)/);
   assert.match(mobileRequirementsSource, /adminServerGuard\s*=\s*Object\.prototype\.hasOwnProperty\.call\(options,\s*['"]allowLocal['"]\)[\s\S]*options\.allowLocal\s*===\s*false/);
-  assert.match(mobileRequirementsSource, /serverGuardRequired:\s*adminServerGuard\s*&&\s*!photosComplete/);
-  assert.match(mobileRequirementsSource, /isComplete:\s*photosComplete\s*\|\|\s*adminServerGuard/);
+  assert.match(mobileRequirementsSource, /serverGuardRequired:\s*hasConfiguredDevices\s*&&\s*adminServerGuard\s*&&\s*!photosComplete/);
+  assert.match(mobileRequirementsSource, /isComplete:\s*hasConfiguredDevices\s*&&\s*\(photosComplete\s*\|\|\s*adminServerGuard\)/);
 
-  // 10.92: ręczne potwierdzenia mogą pozostać dostępne administracyjnie,
-  // ale zakończenie przez administratora nie zależy już od nich.
+  // 11.92: ręczne potwierdzenia pozostają opcjonalne, ale pustego montażu
+  // nie może zakończyć ani administrator, ani pracownik.
   assert.match(mobilePanelSource, /Potwierdź ręcznie/);
-  assert.match(mobilePanelSource, /const effectiveNameplateComplete = isAdmin \? true : nameplateCompletion\.isComplete;/);
-  assert.match(v1092Sql, /v_admin_bypass\s+boolean\s*:=\s*\([\s\S]*auth\.role\(\)[\s\S]*service_role[\s\S]*public\.current_user_is_admin\(\)/i);
-  assert.match(v1092Sql, /if\s+v_admin_bypass\s+then[\s\S]*return;/i);
-  assert.doesNotMatch(v1092Sql, /from public\.nameplate_manual_verifications\s+mv/i);
-  assert.match(v1092Sql, /raise exception 'job_nameplates_incomplete:/i);
+  assert.match(mobilePanelSource, /const effectiveNameplateComplete = nameplateCompletion\.isComplete;/);
+  assert.match(mobilePanelSource, /Najpierw dodaj urządzenie \(JW\/JZ\)/);
+  assert.match(v1192Sql, /v_admin_bypass\s+boolean\s*:=\s*\([\s\S]*auth\.role\(\)[\s\S]*service_role[\s\S]*public\.current_user_is_admin\(\)/i);
+  assert.match(v1192Sql, /raise exception 'job_devices_missing'/i);
+  assert.match(v1192Sql, /if\s+not\s+v_has_device_data\s+then[\s\S]*job_devices_missing[\s\S]*if\s+v_admin_bypass\s+then/i);
+  assert.match(v1192Sql, /if\s+v_admin_bypass\s+then[\s\S]*return;/i);
+  assert.doesNotMatch(v1192Sql, /from public\.nameplate_manual_verifications\s+mv/i);
+  assert.match(v1192Sql, /raise exception 'job_nameplates_incomplete:/i);
 
   console.log('desktop nameplate verification status smoke: OK');
 }
