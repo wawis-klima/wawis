@@ -1,22 +1,21 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.90
+- 11.91
 
 ## Zakres
-- mobile: naprawa freeze po wyjściu z protokołu
-- mobile: wspólny licznik blokady body/html dla zagnieżdżonych modali
-- mobile: Escape/onClose nie przeinicjalizuje już scroll-locka
-- E2E: po podpisie i zamknięciu protokołu body/html muszą być odblokowane
-- bez zmian bazy, RLS, PDF i Edge Functions
-
-## Przyczyna
-- protokół używa lockPagePosition, a ekran podpisu jest drugim AppModalem
-- przy zmianach onClose/Signature React mógł posprzątać efekty w kolejności, która przywracała zapisane wcześniej position: fixed / overflow: hidden
-- przeładowanie aplikacji resetowało style, dlatego usuwało freeze
+- mobile: Potwierdzenie zapłaty zawsze aktywne
+- mobile: usunięty przełącznik Dodaj / Dodane
+- mobile: formularz płatności widoczny od razu w protokole
+- zapis protokołu wymaga wyboru Gotówka albo Przelew
+- Gotówka wymaga kwoty > 0
+- Przelew może być bez kwoty
+- bez zmian bazy, RLS i Edge Functions
 
 ## Kontrola regresji
-- mobile protocol E2E rozszerzony o kontrolę body/html po zamknięciu protokołu
+- smoke: brak protocolPaymentToggle i stałe enabled=true w workflow protokołu
+- unit: brak wybranego sposobu płatności blokuje zapis
+- E2E: formularz płatności jest widoczny bez wcześniejszego kliknięcia Dodaj
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
