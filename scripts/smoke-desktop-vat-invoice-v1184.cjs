@@ -23,6 +23,11 @@ assert.match(panel, /Faktura VAT/);
 assert.match(panel, /desktopVatInvoiceToggle/);
 assert.match(panel, /desktopVatInvoiceHeaderToggle/);
 assert.match(panel, /jobDetailsStickyMeta[\s\S]*Faktura VAT/);
+assert.match(panel, /desktopPaymentMethodChip/);
+assert.match(panel, /payment_method/);
+assert.match(panel, /Gotówka/);
+assert.match(panel, /Przelew/);
+assert.match(panel, /Nieokreślono/);
 assert.doesNotMatch(panel, /desktopVatInvoiceInfoItem/, 'Status FV nie powinien już zajmować miejsca w sekcji Klient.');
 assert.match(panel, /handleVatInvoiceToggle/);
 assert.match(panel, /saveVatInvoiceStatus/);
@@ -37,6 +42,9 @@ assert.match(tableCss, /desktopVatInvoiceDot\.issued/);
 assert.match(tableCss, /desktopVatInvoiceDot\.missing/);
 assert.match(detailsCss, /desktopVatInvoiceToggle\.issued/);
 assert.match(detailsCss, /desktopVatInvoiceToggle\.missing/);
+assert.match(detailsCss, /desktopPaymentMethodChip\.cash/);
+assert.match(detailsCss, /desktopPaymentMethodChip\.transfer/);
+assert.match(detailsCss, /desktopPaymentMethodChip\.unknown/);
 
 assert.match(migration, /add column if not exists vat_invoice_issued boolean not null default false/i);
 assert.match(migration, /where status = 'Zakończone'/);
@@ -46,4 +54,4 @@ assert.match(migration, /set vat_invoice_issued = true/);
 assert.match(migration, /current_user_is_admin\(\)/);
 assert.match(migration, /grant execute on function public\.admin_set_job_vat_invoice_issued\(uuid, boolean\) to authenticated/i);
 
-console.log('Desktop VAT invoice 11.84 smoke OK');
+console.log('Desktop VAT invoice/payment badge 11.86 smoke OK');
