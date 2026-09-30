@@ -1,11 +1,11 @@
 ## Aktualna wersja
-- 11.86
+- 11.87
 
-Wersja 11.86 dodaje w desktopowych szczegółach montażu, bezpośrednio obok statusu Faktura VAT, czytelny znacznik metody płatności odczytywany z protokołu zapisanego przez montera. Gotówka i Przelew są oznaczane osobno, a brak metody jako Nieokreślono. Istniejące wartości Karta/BLIK pozostają wyświetlane poprawnie. Bez zmian bazy i aplikacji mobilnej.
+Wersja 11.87 porządkuje płatności w protokole: pozostają wyłącznie Gotówka i Przelew. Przy przelewie kwota jest opcjonalna — puste pole lub 0 oznacza brak kwoty i nie jest drukowane w protokole. Gotówka nadal wymaga dodatniej kwoty. Desktopowy znacznik płatności pokazuje Gotówka / Przelew / Nieokreślono.
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.86
+# Wawis Klimatyzacja — wersja 11.87
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -821,7 +821,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `11.86` — obok statusu Faktura VAT w górnym pasku szczegółów montażu dodany znacznik Płatność odczytywany z protokołu: Gotówka / Przelew / Nieokreślono (oraz zachowane historyczne Karta/BLIK).
+- wersja `11.87` — płatności w protokole ograniczone do Gotówka/Przelew; przelew może być zapisany bez kwoty (puste lub 0), a PDF nie drukuje pustej kwoty.
 - wersja `11.79` — K12: spójna normalizacja kontrahentów w desktop/mobile/SQL/import; wyszukiwanie dodatkowych adresów; K14 świadomie pominięty.
 - wersja `11.78` — audyt Kontrahentów etap 5: K16/K19/K21; pełne urządzenia na mobile, jawna świeżość/odświeżenie katalogu i kompletny snapshot kontrahentów bez mieszanej paginacji.
 - wersja `11.77` — audyt Kontrahentów etap 4: K11/K13; poprawny import Status/Adresy (JSON)/numery wierszy i edycja istniejącego klienta ze współdzielonym telefonem lub e-mailem jako ostrzeżenie, nie blokada.
