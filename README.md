@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 11.98
+- 11.99
 
 Wersja 11.97 domyka automatyczne kody pocztowe: pełny adres jest sprawdzany przez GUGiK, a dla samej znanej miejscowości aplikacja może użyć wcześniej uzupełnionych adresów WAWIS. Wersja 11.96 uporządkowała mobilny układ adresu i przekazywanie kodu do Fakturowni.
 
@@ -7,7 +7,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 11.98
+# Wawis Klimatyzacja — wersja 11.99
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -823,6 +823,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.99` — naprawione przekazanie Supabase do mobilnego formularza, dzięki czemu automatyczny kod pocztowy rzeczywiście wykonuje lookup.
 - wersja `11.98` — mobile: jeden główny przycisk głosowy, mniejsze pola formularza i automatyczne uzupełnianie kodu pocztowego bez czekania na wyjście z pola.
 - wersja `11.97` — kod pocztowy może uzupełnić się także po samej znanej miejscowości; pełny adres nadal ma pierwszeństwo w GUGiK, a historyczny backfill adresów został zakończony.
 - wersja `11.96` — automatyczne kody pocztowe z GUGiK, mobilny układ ulica → miejscowość + kod oraz przekazanie `post_code` do Fakturowni.

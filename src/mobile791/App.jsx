@@ -1502,6 +1502,7 @@ export default function App() {
           setJobForm={setJobForm}
           profiles={profiles}
           contractors={contractorsCatalog}
+          supabase={supabase}
           isAdmin={isAdmin}
           addJob={addJob}
           saveEditedJob={saveEditedJob}
