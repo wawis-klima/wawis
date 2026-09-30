@@ -63,6 +63,23 @@ function getPhoneHref(phone = "") {
   return normalizedPhone ? `tel:${normalizedPhone}` : "";
 }
 
+const DESKTOP_INVOICE_EMAIL_SUBJECT = "Faktura VAT Klimatyzacja";
+const DESKTOP_INVOICE_EMAIL_BODY = `Witam,
+
+FV w załączniku. Proszę zerknąć, czy dane się zgadzają.
+
+Mam też małą prośbę — mam nadzieję, że są Państwo zadowoleni 🙂 Jeśli można, proszę o kilka gwiazdek i krótką opinię o mojej firmie w Google pod tym adresem:
+
+https://g.page/r/CT1HzUgl3dXeEAg/review
+
+Dziękuję 🙂`;
+
+function getDesktopInvoiceEmailHref(email = "") {
+  const normalizedEmail = String(email || "").trim();
+  if (!normalizedEmail) return "";
+  return `mailto:${normalizedEmail}?subject=${encodeURIComponent(DESKTOP_INVOICE_EMAIL_SUBJECT)}&body=${encodeURIComponent(DESKTOP_INVOICE_EMAIL_BODY)}`;
+}
+
 function isNameplatePhoto(photo = {}) {
   const photoKind = String(photo?.photo_kind || '').trim().toLowerCase();
   const storagePath = String(photo?.storage_path || photo?.path || '').trim();
@@ -327,7 +344,7 @@ export default function JobDetailsPanel({
                 {selectedJob.email ? (
                   <div className="infoValueActions">
                     <a
-                      href={`mailto:${selectedJob.email}`}
+                      href={getDesktopInvoiceEmailHref(selectedJob.email)}
                       className="emailLink"
                       title="Kliknij, aby otworzyć klienta poczty"
                       aria-label={`Wyślij email do ${selectedJob.email}`}
