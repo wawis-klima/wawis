@@ -24,3 +24,6 @@
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
+
+## Uwagi z walidacji
+- Pierwszy pełny E2E zatrzymał się na niezależnym teście widoczności sekcji komentarzy w zakończonym zleceniu; test protokołu 11.89 przeszedł. Uruchomiono ponowną walidację całego PR przez nowy commit dokumentacyjny.
