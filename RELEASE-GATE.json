@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.98",
+  "version": "11.99",
   "scope": "full",
-  "release_branch": "release/v11.98",
+  "release_branch": "release/v11.99",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "PASS",
-    "notes": "Supabase ACTIVE_HEALTHY. Brak wywołań postal-code-lookup podczas zgłoszonego testu wskazał problem po stronie UI: lookup był uruchamiany dopiero po blur. Edge Function postal-code-lookup pozostaje ACTIVE v3."
+    "notes": "W logach po teście Widna + Zawiercie nie było żadnego wywołania postal-code-lookup. Przyczyna: mobilny App.jsx nie przekazywał prop supabase do JobFormModal."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.98.zip"
+    "file_name": "klima-app-v11.99.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.98",
+    "source_branch": "release/v11.99",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile: Widna + Zawiercie powinno automatycznie wypełnić kod bez dodatkowego kliknięcia; brak mikrofonów przy polach; tylko jeden górny przycisk głosowy; kompaktowe NIP/miejscowość/kod."
+    "notes": "Sprawdzić mobile: Widna + Zawiercie ma uruchomić postal-code-lookup i uzupełnić kod automatycznie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,9 +35,9 @@
     "supabase_migration_applied": "N/A — bez zmian schematu bazy.",
     "rls_role_matrix": "Bez zmian RLS.",
     "performance_advisor": "N/A — brak zmian bazy danych.",
-    "security_advisor": "Bez zmian sekretów i integracji serwerowych.",
+    "security_advisor": "Bez zmian sekretów.",
     "trigger_grants": "N/A — bez zmian triggerów i grantów.",
-    "edge_functions": "postal-code-lookup ACTIVE v3; fakturownia-client ACTIVE v2",
+    "edge_functions": "postal-code-lookup ACTIVE v3; bez zmian wdrożenia funkcji.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
