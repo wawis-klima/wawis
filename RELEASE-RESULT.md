@@ -1,23 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.87
+- 11.88
 
 ## Zakres
-- mobile: tylko Gotówka / Przelew w protokole
-- mobile: przelew może być bez kwoty; 0 i puste pole są zapisywane jako brak kwoty
-- PDF: przy przelewie bez kwoty pole Kwota nie jest drukowane
-- desktop: znacznik płatności bez Karta/BLIK
-- Supabase: zmiana constraintu płatności
+- mobile: najpierw wybór sposobu płatności, potem kwota
+- mobile: sposób płatności i kwota na pełnej szerokości, jeden pod drugim
+- mobile: dla nowej płatności brak domyślnie zaznaczonej gotówki
+- bez zmian bazy, RLS i PDF
 
 ## Zasady
-- Gotówka: kwota > 0 jest wymagana.
-- Przelew: kwota jest opcjonalna; dodatnia kwota jest zapisywana, 0 lub puste pole daje NULL.
-- Karta/BLIK: niedostępne w interfejsie i niedozwolone dla nowych zapisów.
+- monter najpierw wybiera Gotówka albo Przelew
+- poniżej wpisuje kwotę
+- Gotówka nadal wymaga kwoty > 0
+- Przelew nadal może być bez kwoty
 
 ## Kontrola regresji
-- rozszerzony `scripts/test-job-payment-confirmation-v986.mjs`
-- `scripts/smoke-mobile-protocol-v979.cjs`
+- rozszerzony `scripts/smoke-mobile-protocol-v979.cjs`
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
