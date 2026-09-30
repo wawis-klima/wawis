@@ -823,6 +823,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `11.97` — kod pocztowy może uzupełnić się także po samej znanej miejscowości; pełny adres nadal ma pierwszeństwo w GUGiK, a historyczny backfill adresów został zakończony.
 - wersja `11.96` — automatyczne kody pocztowe z GUGiK, mobilny układ ulica → miejscowość + kod oraz przekazanie `post_code` do Fakturowni.
 - wersja `11.95` — desktop: „Wystaw fakturę” synchronizuje klienta z Fakturownią i otwiera formularz faktury bez automatycznego tworzenia dokumentu.
 - wersja `11.94` — dodano opcjonalny NIP do formularza klienta na desktopie i mobile; NIP zapisuje się przy kontrahencie i jest gotowy pod integrację z Fakturownią.
