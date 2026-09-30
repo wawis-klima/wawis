@@ -1,3 +1,9 @@
+## 11.86
+- Desktop / szczegóły montażu: obok znacznika `Faktura VAT` dodano znacznik `Płatność`, odczytywany bezpośrednio z danych zapisanych przez montera w protokole.
+- `Gotówka` i `Przelew` mają czytelne, różne oznaczenia; brak zapisanej metody pokazuje `Nieokreślono`.
+- Dla zgodności ze starszymi protokołami zachowano też poprawne wyświetlenie istniejących wartości `Karta` i `BLIK`, bez zmiany danych i bez zmiany formularza mobilnego.
+- Bez zmian Supabase, RLS, Storage i logiki protokołu — desktop korzysta z istniejącego pola `jobs.payment_method`.
+
 ## 11.85
 - Desktop / szczegóły montażu: przeniesiono klikany status `Faktura VAT` z sekcji `Klient` do górnego paska obok statusu zlecenia i daty montażu, w miejsce wskazane na ekranie.
 - Zachowano dotychczasowe działanie: czerwony status oznacza `Niewystawiona`, zielony `Wystawiona`; kliknięcie nadal zapisuje zmianę w Supabase i od razu aktualizuje tabelę.
