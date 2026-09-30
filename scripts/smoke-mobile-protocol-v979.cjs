@@ -38,6 +38,10 @@ assert.doesNotMatch(jobDetails, /protocolDownloadButton|protocolEmailButton/);
 assert.doesNotMatch(jobDetails, />Protokół TEST</);
 
 assert.match(modal, /Potwierdzenie zapłaty/);
+assert.match(modal, /protocolPaymentMethodField/);
+assert.match(modal, /protocolPaymentAmountField/);
+assert.ok(modal.indexOf('protocolPaymentMethodField') < modal.indexOf('protocolPaymentAmountField'), 'Sposób płatności musi być przed kwotą.');
+assert.match(modal, /Wybierz: gotówka lub przelew/);
 assert.match(modal, /<dt>Data montażu<\/dt>/);
 assert.match(modal, /<dt>Monterzy<\/dt>/);
 assert.doesNotMatch(modal, /<dt>Status<\/dt>/);

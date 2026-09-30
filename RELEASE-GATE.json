@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.87",
-  "scope": "full",
-  "release_branch": "release/v11.87",
+  "version": "11.88",
+  "scope": "mobile",
+  "release_branch": "release/v11.88",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "11.87 zmienia formularz płatności mobile, PDF, desktopowy znacznik oraz constraint payment w Supabase. Przed zmianą produkcja zawierała wyłącznie 4 aktywne płatności cash i zero card/blik/transfer, więc zaostrzenie metod do cash/transfer nie usuwa ani nie konwertuje danych."
+    "notes": "11.88 zmienia wyłącznie kolejność i układ pól płatności w mobilnym protokole oraz usuwa domyślny wybór gotówki dla nowej płatności. Bez zmian schematu bazy, RLS, Storage, Edge Functions i generowania PDF."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.87.zip"
+    "file_name": "klima-app-v11.88.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.87",
+    "source_branch": "release/v11.88",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić: mobilny protokół ma tylko Gotówka/Przelew; przelew zapisuje się z pustą kwotą i z 0; PDF nie pokazuje pola Kwota przy takim przelewie; gotówka nadal wymaga kwoty; desktop pokazuje Gotówka/Przelew/Nieokreślono."
+    "notes": "Po wdrożeniu sprawdzić na mobile: Sposób płatności jest pierwszy i na pełną szerokość; Kwota jest bezpośrednio pod nim; nowa płatność pokazuje wybór zamiast domyślnej gotówki; zasady kwoty z 11.87 nadal działają."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — zastosować 20260930071500_payment_cash_transfer_optional_amount_v1187 przed publikacją aplikacji.",
-    "rls_role_matrix": "Bez zmian RLS i grantów; zmienia się wyłącznie check constraint danych płatności.",
-    "performance_advisor": "N/A — prosty check constraint na pojedynczym wierszu.",
+    "supabase_migration_applied": "N/A — 11.88 nie zmienia bazy.",
+    "rls_role_matrix": "N/A — bez zmian RLS.",
+    "performance_advisor": "N/A — zmiana UI.",
     "security_advisor": "N/A — bez zmian uprawnień.",
     "trigger_grants": "N/A — bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",

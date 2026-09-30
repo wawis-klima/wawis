@@ -76,9 +76,7 @@ export function getPaymentDraftFromJob(job = {}) {
     enabled,
     amount: enabled && job?.payment_amount != null ? String(job.payment_amount).replace(".", ",") : "",
     kind: PAYMENT_KIND_VALUES.has(job?.payment_kind) ? job.payment_kind : "full",
-    method: enabled
-      ? (PAYMENT_METHOD_VALUES.has(job?.payment_method) ? job.payment_method : "")
-      : "cash",
+    method: enabled && PAYMENT_METHOD_VALUES.has(job?.payment_method) ? job.payment_method : "",
     paidDate: getLocalDateInputValue(job?.payment_paid_at || new Date()),
   };
 }
