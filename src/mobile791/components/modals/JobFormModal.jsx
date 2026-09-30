@@ -676,9 +676,8 @@ export default function JobFormModal({
             inputMode="numeric"
             maxLength={6}
             placeholder={postalLookupBusy ? "Szukam…" : "Kod pocztowy"}
-            key={cityAddressParts.postalCode || 'postal-empty'}
-            defaultValue={cityAddressParts.postalCode}
-            onBlur={(e) => updatePostalCode(e.target.value)}
+            value={cityAddressParts.postalCode}
+            onChange={(e) => updatePostalCode(e.target.value)}
           />
          </div>
         {isAdmin ? (
