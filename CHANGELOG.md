@@ -1,3 +1,11 @@
+## 11.94
+- Desktop i mobile: formularz montażu/klienta ma opcjonalne pole NIP.
+- Wybranie kontrahenta wczytuje jego zapisany NIP; zmiana klienta czyści niepasujący NIP.
+- NIP zapisuje się przy kontrahencie, bez duplikowania go w tabeli montaży.
+- Administrator może aktualizować NIP; pracownik może uzupełnić brakujący NIP klienta powiązanego z montażem, ale nie może nadpisać istniejącego innego NIP-u.
+- Dodano bezpieczny RPC `save_job_contractor_nip`; rola anonimowa nie ma prawa wykonania.
+- Zmiana przygotowuje dane klienta pod późniejszą integrację z Fakturownia.pl; bez integracji GUS/Fakturowni w tej wersji.
+
 ## 11.93
 - Protokół PDF ma mniejsze pionowe odstępy w sekcjach „Realizacja zlecenia” i „Potwierdzenie zapłaty”.
 - Zmniejszono odstęp pod tabelą urządzeń, bez zmiany nagłówka i kodu QR.
