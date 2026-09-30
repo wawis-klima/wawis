@@ -40,6 +40,10 @@ const SIGNATURE_MAX_WIDTH = 3.25;
 const SIGNATURE_BASE_WIDTH = 2.45;
 const SIGNATURE_WIDTH_SMOOTHING = 0.72;
 
+function getProtocolPaymentDraft(job = {}) {
+  return { ...getPaymentDraftFromJob(job), enabled: true };
+}
+
 function waitForProtocolUiPaint() {
   return new Promise((resolve) => {
     if (typeof window === "undefined" || typeof window.requestAnimationFrame !== "function") {
@@ -182,13 +186,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
   const openedAtRef = useRef(new Date());
-  const paymentDraftBaselineRef = useRef(JSON.stringify(getPaymentDraftFromJob(job)));
+  const paymentDraftBaselineRef = useRef(JSON.stringify(getProtocolPaymentDraft(job)));
   const [savedRecord, setSavedRecord] = useState(protocolRecord);
   const [editing, setEditing] = useState(!protocolRecord);
   const [resolvedJob, setResolvedJob] = useState(job);
   const [paymentReady, setPaymentReady] = useState(() => hasJobPaymentSnapshot(job));
   const [paymentLoadError, setPaymentLoadError] = useState("");
-  const [paymentDraft, setPaymentDraft] = useState(() => getPaymentDraftFromJob(job));
+  const [paymentDraft, setPaymentDraft] = useState(() => getProtocolPaymentDraft(job));
   const [hasSignature, setHasSignature] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState("");
@@ -239,7 +243,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setMessage("");
 
     const initializePayment = (sourceJob) => {
-      const nextPaymentDraft = getPaymentDraftFromJob(sourceJob);
+      const nextPaymentDraft = getProtocolPaymentDraft(sourceJob);
       paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
       setPaymentDraft(nextPaymentDraft);
     };
@@ -254,7 +258,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     // payment_*. Nie wolno wtedy interpretować braku pól jako "brak płatności".
     setPaymentReady(false);
     paymentDraftBaselineRef.current = "";
-    setPaymentDraft(getPaymentDraftFromJob({}));
+    setPaymentDraft(getProtocolPaymentDraft({}));
 
     void loadJobPaymentSnapshot({ supabase, jobId: job?.id })
       .then((paymentSnapshot) => {
@@ -660,14 +664,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             ) : editing || paymentVisible.enabled ? <section className="protocolTestSection protocolPaymentSection">
               <div className="protocolPaymentHeading">
                 <h3>Potwierdzenie zapłaty</h3>
-                {editing ? (
-                  <label className="protocolPaymentToggle">
-                    <input type="checkbox" checked={paymentDraft.enabled} onChange={(event) => updatePaymentDraft({ enabled: event.target.checked })} disabled={isGenerating} />
-                    <span>{paymentDraft.enabled ? "Dodane" : "Dodaj"}</span>
-                  </label>
-                ) : null}
               </div>
-              {paymentVisible.enabled && editing ? (
+              {editing ? (
                 <div className="protocolPaymentForm">
                   <label className="protocolPaymentMethodField"><span>Sposób płatności</span><select className="input" value={paymentDraft.method} onChange={(event) => updatePaymentDraft({ method: event.target.value })} disabled={isGenerating}>{paymentDraft.method ? null : <option value="" disabled>Wybierz: gotówka lub przelew</option>}{PAYMENT_METHODS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
                   <label className="protocolPaymentAmountField"><span>{paymentDraft.method === "transfer" ? "Kwota (opcjonalna)" : "Kwota"}</span><div className="protocolPaymentAmount"><input className="input" inputMode="decimal" placeholder={paymentDraft.method === "transfer" ? "0,00 — można pominąć" : "0,00"} value={paymentDraft.amount} onChange={(event) => updatePaymentDraft({ amount: event.target.value })} disabled={isGenerating} /><b>zł</b></div></label>
