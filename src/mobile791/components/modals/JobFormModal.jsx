@@ -443,7 +443,9 @@ export default function JobFormModal({
 
   function updateCityName(value) {
     const current = splitPostalCity(jobForm.city);
-    updateAddressField('city', composePostalCity(value, current.postalCode));
+    const nextCity = String(value || '').trim();
+    const sameCity = current.city.localeCompare(nextCity, 'pl', { sensitivity: 'base' }) === 0;
+    updateAddressField('city', composePostalCity(nextCity, sameCity ? current.postalCode : ''));
   }
 
   function updatePostalCode(value) {
@@ -456,7 +458,7 @@ export default function JobFormModal({
     const current = splitPostalCity(cityValue ?? jobForm.city);
     const city = current.city;
     const street = String(streetValue ?? jobForm.street ?? '').trim();
-    if (!city) return;
+    if (!city || current.postalCode) return;
 
     setPostalLookupBusy(true);
     try {
