@@ -3,6 +3,7 @@ import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput from "../../../components/voice/ClientVoiceInput.jsx";
 import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
+import { lookupCompanyByNip, normalizeGusNip } from "../../modules/gus-bir.js";
 import {
   applyAutoLinkedContractorToJobForm,
   buildContractorOptionLabel,
@@ -86,6 +87,10 @@ export default function JobFormModal({
   const cityAddressParts = splitPostalCity(jobForm.city);
   const [postalLookupBusy, setPostalLookupBusy] = useState(false);
   const postalLookupAttemptRef = useRef("");
+  const [gusLookupBusy, setGusLookupBusy] = useState(false);
+  const [gusLookupMessage, setGusLookupMessage] = useState('');
+  const gusLookupAttemptRef = useRef('');
+  const gusLookupInFlightRef = useRef(false);
 
 
   const jobDevices = useMemo(
@@ -417,6 +422,7 @@ export default function JobFormModal({
   }
 
   function updateField(field, value) {
+    if (field === 'nip') setGusLookupMessage('');
     setJobForm((prev) => {
       const next = { ...prev, [field]: value };
       if (field === 'device_model' || field === 'device_serial_number') {
@@ -491,6 +497,43 @@ export default function JobFormModal({
     }
   }
 
+  async function refreshGusByNip(nipValue) {
+    const nip = normalizeGusNip(nipValue);
+    if (!supabase || nip.length !== 10 || gusLookupInFlightRef.current) return;
+
+    const localMatch = findContractorByNip(contractorOptions, nip);
+    if (localMatch) return;
+
+    gusLookupInFlightRef.current = true;
+    setGusLookupBusy(true);
+    setGusLookupMessage('Pobieram dane z GUS…');
+    try {
+      const result = await lookupCompanyByNip({ supabase, nip });
+      if (!result?.found) {
+        setGusLookupMessage('Nie znaleziono firmy w GUS.');
+        return;
+      }
+
+      setJobForm((prev) => {
+        if (normalizeGusNip(prev.nip) !== nip || prev.contractor_id) return prev;
+        return {
+          ...prev,
+          client: result.name || prev.client,
+          city: result.city ? composePostalCity(result.city, result.postalCode) : prev.city,
+          street: result.street || prev.street,
+        };
+      });
+      setGusLookupMessage('Dane firmy pobrane z GUS.');
+    } catch (error) {
+      const message = String(error?.message || error || '');
+      setGusLookupMessage(message.includes('sumę kontrolną') ? 'Nieprawidłowy NIP.' : 'Nie udało się pobrać danych z GUS.');
+      console.warn('Nie udało się pobrać danych firmy z GUS.', message);
+    } finally {
+      gusLookupInFlightRef.current = false;
+      setGusLookupBusy(false);
+    }
+  }
+
   useEffect(() => {
     if (!showModal || !supabase || postalLookupBusy) return undefined;
     const current = splitPostalCity(jobForm.city);
@@ -513,6 +556,21 @@ export default function JobFormModal({
     if (!match) return;
     handleContractorSelect(match);
   }, [showModal, editingJobId, contractorOptions, jobForm.nip, jobForm.contractor_id]);
+
+  useEffect(() => {
+    if (!showModal || editingJobId || !supabase || jobForm.contractor_id) return undefined;
+    const nip = normalizeGusNip(jobForm.nip);
+    if (nip.length !== 10) return undefined;
+    if (findContractorByNip(contractorOptions, nip)) return undefined;
+    if (gusLookupAttemptRef.current === nip) return undefined;
+
+    const timer = window.setTimeout(() => {
+      gusLookupAttemptRef.current = nip;
+      void refreshGusByNip(nip);
+    }, 650);
+
+    return () => window.clearTimeout(timer);
+  }, [showModal, editingJobId, supabase, contractorOptions, jobForm.nip, jobForm.contractor_id]);
 
 
   function handleContractorSelect(contractor) {
@@ -673,10 +731,11 @@ export default function JobFormModal({
         <input
           className="input jobNipCompactInput"
           inputMode="numeric"
-          placeholder="NIP (opcjonalnie)"
+          placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"}
           value={jobForm.nip || ''}
           onChange={(e) => updateField("nip", e.target.value)}
         />
+        {gusLookupMessage ? <small className="jobNipLookupStatus" role="status">{gusLookupMessage}</small> : null}
         {linkedContractor ? (
           <label className="inputLabel jobAddressPicker">
             <span>Adres montażu</span>
