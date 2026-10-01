@@ -1,3 +1,10 @@
+## 12.12
+- Desktop: zapamiętany `detailsLoadError` z poprzedniego wejścia nie blokuje już automatycznego pobrania szczegółów.
+- Po ponownym otwarciu zlecenia stary komunikat błędu jest czyszczony i uruchamiany jest nowy cykl odczytu.
+- Jeden cykl otwarcia może wykonać tylko jedną automatyczną próbę ładowania na poziomie widoku; wewnętrzny retry z 12.11 nadal działa, więc nie powstaje pętla zapytań.
+- Przycisk „Ponów” pozostaje dostępny dopiero po faktycznie nieudanym bieżącym cyklu.
+- Mobile, Supabase schema, RLS i Edge Functions bez zmian.
+
 ## 12.11
 - Desktop: limit pojedynczego odczytu szczegółów montażu zwiększono z 7 s do 12 s.
 - Po timeoutcie lub typowym błędzie sieciowym aplikacja automatycznie wykonuje drugą próbę po 1,5 s.
