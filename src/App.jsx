@@ -61,7 +61,8 @@ const jobFormModalFallback = (
 );
 
 const JOBS_PAGE_SIZE = 10;
-const JOB_DETAILS_TIMEOUT_MS = 7000;
+const JOB_DETAILS_TIMEOUT_MS = 12000;
+const JOB_DETAILS_RETRY_DELAYS_MS = Object.freeze([0, 1500]);
 const DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000;
 
 function toCalendarDateKey(date) {
@@ -342,64 +343,113 @@ export default function App() {
 
     if (!options.background) setDetailsLoadingJobId(targetId);
     const request = (async () => {
-      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-      const timeoutId = typeof window !== 'undefined'
-        ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_TIMEOUT_MS)
-        : null;
-      try {
-        const details = await loadJobDetailsData({
-          supabase,
-          jobId: targetId,
-          team: profilesRef.current,
-          getSignedPhotoUrl,
-          supabaseUrl,
-          signal: controller?.signal || null,
-          deferThumbnailSigning: true,
-        });
-        if (!isSessionTokenCurrent(sessionToken)) return null;
+      let lastError = null;
 
-        const cleanDetails = { ...details, detailsLoadError: '' };
-        let mergedJob = null;
-        setJobs((prev) => prev.map((job) => {
-          if (String(job.id) !== targetId) return job;
-          mergedJob = { ...job, ...cleanDetails };
-          return mergedJob;
-        }));
-        setSelectedJob((prev) => (prev && String(prev.id) === targetId ? { ...prev, ...cleanDetails } : prev));
-
-        // Metadane zdjęć/komentarzy są już na ekranie. Miniatury podpisujemy dopiero
-        // w tle, żeby Storage nie blokował całych szczegółów montażu.
-        void hydrateJobThumbnails(targetId, cleanDetails.photos || [], sessionToken);
-        return mergedJob;
-      } catch (error) {
-        if (!isSessionTokenCurrent(sessionToken)) return null;
-        // Odświeżenie w tle nie może schować już załadowanych danych.
-        // Przy chwilowym 5xx/timeout zostawiamy ostatni poprawny stan na ekranie.
-        if (options.background && targetJob.detailsLoaded) {
-          console.warn('Tło szczegółów montażu nie odświeżyło się — zachowuję poprzednie dane.', error?.message || error);
-          return targetJob;
+      for (let attemptIndex = 0; attemptIndex < JOB_DETAILS_RETRY_DELAYS_MS.length; attemptIndex += 1) {
+        const delayMs = JOB_DETAILS_RETRY_DELAYS_MS[attemptIndex];
+        if (delayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          if (!isSessionTokenCurrent(sessionToken)) return null;
         }
 
-        const aborted = error?.name === 'AbortError' || controller?.signal?.aborted;
-        const message = aborted
-          ? 'Serwer nie odpowiedział na szczegóły w 7 s. Kliknij „Ponów”.'
-          : 'Nie udało się pobrać zdjęć i komentarzy. Kliknij „Ponów”.';
-        const patchError = (job) => (
-          job && String(job.id) === targetId
-            ? { ...job, detailsLoaded: false, detailsLoadError: message }
-            : job
-        );
-        setJobs((prev) => prev.map(patchError));
-        setSelectedJob((prev) => patchError(prev));
-        console.warn('Nie udało się pobrać szczegółów montażu.', error?.message || error);
-        return null;
-      } finally {
-        if (timeoutId !== null && typeof window !== 'undefined') window.clearTimeout(timeoutId);
-        if (!options.background && isSessionTokenCurrent(sessionToken)) {
-          setDetailsLoadingJobId((current) => (current === targetId ? null : current));
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timeoutId = typeof window !== 'undefined'
+          ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_TIMEOUT_MS)
+          : null;
+
+        try {
+          const details = await loadJobDetailsData({
+            supabase,
+            jobId: targetId,
+            team: profilesRef.current,
+            getSignedPhotoUrl,
+            supabaseUrl,
+            signal: controller?.signal || null,
+            deferThumbnailSigning: true,
+          });
+          if (!isSessionTokenCurrent(sessionToken)) return null;
+
+          const cleanDetails = { ...details, detailsLoadError: '' };
+          let mergedJob = null;
+          setJobs((prev) => prev.map((job) => {
+            if (String(job.id) !== targetId) return job;
+            mergedJob = { ...job, ...cleanDetails };
+            return mergedJob;
+          }));
+          setSelectedJob((prev) => (prev && String(prev.id) === targetId ? { ...prev, ...cleanDetails } : prev));
+
+          // Metadane zdjęć/komentarzy są już na ekranie. Miniatury podpisujemy dopiero
+          // w tle, żeby Storage nie blokował całych szczegółów montażu.
+          void hydrateJobThumbnails(targetId, cleanDetails.photos || [], sessionToken);
+
+          if (attemptIndex > 0) {
+            logDiagnostic('job.details.recovered', {
+              jobId: targetId,
+              attempt: attemptIndex + 1,
+              timeoutMs: JOB_DETAILS_TIMEOUT_MS,
+            });
+          }
+          return mergedJob;
+        } catch (error) {
+          lastError = error;
+          if (!isSessionTokenCurrent(sessionToken)) return null;
+
+          const aborted = error?.name === 'AbortError' || controller?.signal?.aborted;
+          const errorMessage = String(error?.message || error || '');
+          const transient = aborted || /timeout|timed out|network|failed to fetch|fetch failed|502|503|504/i.test(errorMessage);
+          const canRetry = transient && attemptIndex < JOB_DETAILS_RETRY_DELAYS_MS.length - 1;
+
+          if (canRetry) {
+            logDiagnostic('job.details.retry', {
+              jobId: targetId,
+              attempt: attemptIndex + 1,
+              nextAttempt: attemptIndex + 2,
+              timeoutMs: JOB_DETAILS_TIMEOUT_MS,
+              delayMs: JOB_DETAILS_RETRY_DELAYS_MS[attemptIndex + 1],
+              aborted,
+              error: errorMessage,
+            });
+            continue;
+          }
+
+          // Odświeżenie w tle nie może schować już załadowanych danych.
+          // Przy chwilowym 5xx/timeout zostawiamy ostatni poprawny stan na ekranie.
+          if (options.background && targetJob.detailsLoaded) {
+            console.warn('Tło szczegółów montażu nie odświeżyło się — zachowuję poprzednie dane.', error?.message || error);
+            return targetJob;
+          }
+
+          const message = aborted
+            ? 'Serwer nie odpowiedział po ponownej próbie. Kliknij „Ponów”.'
+            : 'Nie udało się pobrać zdjęć i komentarzy. Kliknij „Ponów”.';
+          const patchError = (job) => (
+            job && String(job.id) === targetId
+              ? { ...job, detailsLoaded: false, detailsLoadError: message }
+              : job
+          );
+          setJobs((prev) => prev.map(patchError));
+          setSelectedJob((prev) => patchError(prev));
+          logDiagnostic('job.details.failed', {
+            jobId: targetId,
+            attempts: attemptIndex + 1,
+            timeoutMs: JOB_DETAILS_TIMEOUT_MS,
+            aborted,
+            error: errorMessage,
+          });
+          console.warn('Nie udało się pobrać szczegółów montażu.', error?.message || error);
+          return null;
+        } finally {
+          if (timeoutId !== null && typeof window !== 'undefined') window.clearTimeout(timeoutId);
         }
       }
-    })();
+
+      if (lastError) console.warn('Nie udało się pobrać szczegółów montażu.', lastError?.message || lastError);
+      return null;
+    })().finally(() => {
+      if (!options.background && isSessionTokenCurrent(sessionToken)) {
+        setDetailsLoadingJobId((current) => (current === targetId ? null : current));
+      }
+    });
 
     jobDetailsRequestsRef.current.set(requestKey, request);
     try {

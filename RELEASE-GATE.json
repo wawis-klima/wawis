@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.10",
-  "scope": "full",
-  "release_branch": "release/v12.10",
+  "version": "12.11",
+  "scope": "desktop",
+  "release_branch": "release/v12.11",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Baseline 24 h sprawdzony przed 12.10. W 12.09 widoczne są istniejące ostrzeżenia/błędy data.refresh oraz pojedyncze ostrzeżenia innych modułów; diagnostyka jest informacyjna. 12.10 obejmuje desktopowy pasek Fakturowni oraz odświeżenie cache szczegółów po otwarciu karty mobilnej."
+    "notes": "Hotfix 12.11 bazuje na sprawdzonym baseline 24 h z 12.10; zmiana jest wyłącznie po stronie klienta desktop i nie modyfikuje Supabase, RLS ani Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.10.zip"
+    "file_name": "klima-app-v12.11.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.10",
+    "source_branch": "release/v12.11",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić: desktop — jeden wiersz Faktura/Płatność/Wystaw fakturę, neutralny przycisk i brak ponownej weryfikacji po potwierdzeniu; mobile — komentarze zakończonego montażu odświeżają się po ponownym otwarciu karty."
+    "notes": "Po wdrożeniu sprawdzić desktop: szczegóły montażu mają automatycznie ponowić timeout, nie pokazywać błędu po pierwszych 12 s i zapisać job.details.retry w diagnostyce."
   },
   "archive": {
     "source_of_truth": "github-main",
