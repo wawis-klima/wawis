@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
   "version": "12.10",
-  "scope": "desktop",
+  "scope": "full",
   "release_branch": "release/v12.10",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Baseline 24 h sprawdzony przed 12.10. W 12.09 widoczne są istniejące ostrzeżenia/błędy data.refresh oraz pojedyncze ostrzeżenia innych modułów; diagnostyka jest informacyjna i nie jest skutkiem tej zmiany UI/logiki Fakturowni."
+    "notes": "Baseline 24 h sprawdzony przed 12.10. W 12.09 widoczne są istniejące ostrzeżenia/błędy data.refresh oraz pojedyncze ostrzeżenia innych modułów; diagnostyka jest informacyjna. 12.10 obejmuje desktopowy pasek Fakturowni oraz odświeżenie cache szczegółów po otwarciu karty mobilnej."
   },
   "drive_backup": {
     "required": false,
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić na desktopie: jeden wiersz Faktura/Płatność/Wystaw fakturę, neutralny przycisk oraz brak ponownej weryfikacji statusu po wcześniejszym potwierdzeniu Fakturowni."
+    "notes": "Po wdrożeniu sprawdzić: desktop — jeden wiersz Faktura/Płatność/Wystaw fakturę, neutralny przycisk i brak ponownej weryfikacji po potwierdzeniu; mobile — komentarze zakończonego montażu odświeżają się po ponownym otwarciu karty."
   },
   "archive": {
     "source_of_truth": "github-main",
