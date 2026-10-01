@@ -7,7 +7,7 @@ import DesktopJobProtocolCard from "./desktop/DesktopJobProtocolCard.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
-import { saveVatInvoiceStatus } from "../modules/jobs-crud.js";
+import { confirmVatInvoiceFromFakturownia, saveVatInvoiceStatus } from "../modules/jobs-crud.js";
 import { prepareFakturowniaInvoice, verifyFakturowniaInvoice } from "../modules/fakturownia.js";
 
 
@@ -266,6 +266,7 @@ export default function JobDetailsPanel({
 
   async function handleVatInvoiceToggle() {
     if (!isAdmin || !selectedJobId || vatInvoiceSaving || fakturowniaVerifying) return;
+    if (selectedJob?.vat_invoice_fakturownia_confirmed) return;
     const nextIssued = !Boolean(selectedJob?.vat_invoice_issued);
     setVatInvoiceSaving(true);
     try {
@@ -308,17 +309,24 @@ export default function JobDetailsPanel({
         knownInvoiceIds: pending.knownInvoiceIds,
       });
 
-      if (!result?.found) return;
+      if (!result?.found || !result?.invoiceId) return;
 
-      const saved = await saveVatInvoiceStatus({
+      const saved = await confirmVatInvoiceFromFakturownia({
         supabase,
         jobId: selectedJobId,
-        issued: true,
+        invoiceId: result.invoiceId,
+        invoiceNumber: result.invoiceNumber,
       });
-      const issued = Boolean(saved?.vat_invoice_issued ?? true);
       const patchJob = (job) => (
         job && String(job.id) === selectedJobId
-          ? { ...job, vat_invoice_issued: issued }
+          ? {
+              ...job,
+              vat_invoice_issued: true,
+              vat_invoice_fakturownia_confirmed: true,
+              vat_invoice_fakturownia_invoice_id: saved?.vat_invoice_fakturownia_invoice_id || String(result.invoiceId),
+              vat_invoice_fakturownia_invoice_number: saved?.vat_invoice_fakturownia_invoice_number || String(result.invoiceNumber || ''),
+              vat_invoice_fakturownia_confirmed_at: saved?.vat_invoice_fakturownia_confirmed_at || job.vat_invoice_fakturownia_confirmed_at || new Date().toISOString(),
+            }
           : job
       );
       setJobs?.((previous) => previous.map(patchJob));
@@ -386,13 +394,19 @@ export default function JobDetailsPanel({
                 type="button"
                 className={`desktopVatInvoiceToggle desktopVatInvoiceHeaderToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
                 onClick={handleVatInvoiceToggle}
-                disabled={vatInvoiceSaving || fakturowniaVerifying}
+                disabled={vatInvoiceSaving || fakturowniaVerifying || Boolean(selectedJob.vat_invoice_fakturownia_confirmed)}
                 aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
-                title="Status możesz zmienić ręcznie; po powrocie z Fakturowni aplikacja sprawdza też, czy faktycznie powstała faktura VAT"
+                title={selectedJob.vat_invoice_fakturownia_confirmed
+                  ? 'Faktura została potwierdzona w Fakturowni — statusu nie można już cofnąć.'
+                  : 'Status możesz zmienić ręcznie; po powrocie z Fakturowni aplikacja sprawdza też, czy faktycznie powstała faktura VAT'}
               >
                 <span className="desktopVatInvoiceDot" aria-hidden="true" />
                 <span className="desktopVatInvoiceHeaderLabel">Faktura VAT</span>
-                <span>{fakturowniaVerifying ? 'Sprawdzam…' : (vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona'))}</span>
+                <span>{fakturowniaVerifying
+                  ? 'Sprawdzam…'
+                  : (vatInvoiceSaving
+                    ? 'Zapisywanie…'
+                    : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona'))}</span>
               </button>
             ) : null}
             {isAdmin ? (
