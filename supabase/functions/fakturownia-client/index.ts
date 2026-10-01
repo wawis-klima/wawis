@@ -10,6 +10,9 @@ type SyncInvoiceClientRequest = {
 type FakturowniaClient = {
   id?: number | string;
   name?: string;
+  first_name?: string;
+  last_name?: string;
+  company?: boolean | number | string;
   tax_no?: string;
   email?: string;
   phone?: string;
@@ -142,9 +145,15 @@ Deno.serve(async (request: Request) => {
     const address = getPrimaryAddress(contractor);
     const storedCity = normalizeText(address.city || contractor?.city || job.city);
     const cityParts = splitPostalCity(storedCity);
+    const taxNo = digitsOnly(contractor?.nip);
+    const isCompany = Boolean(taxNo);
+    const personName = splitPrivatePersonName(clientName);
     const clientData = compactObject({
       name: clientName,
-      tax_no: digitsOnly(contractor?.nip),
+      first_name: isCompany ? "" : personName.firstName,
+      last_name: isCompany ? "" : personName.lastName,
+      company: isCompany,
+      tax_no: taxNo,
       email: normalizeEmail(contractor?.email || job.email),
       phone: normalizeText(contractor?.phone || job.phone),
       post_code: cityParts.postalCode,
@@ -159,7 +168,6 @@ Deno.serve(async (request: Request) => {
     let matchedClient = firstClient(await fakturowniaGetClients(apiToken, { external_id: externalId }));
     let matchSource = matchedClient ? "external_id" : "";
 
-    const taxNo = digitsOnly(clientData.tax_no);
     if (!matchedClient && taxNo) {
       const candidates = await fakturowniaGetClients(apiToken, { tax_no: taxNo });
       matchedClient = exactClient(candidates, "tax_no", taxNo);
@@ -349,6 +357,16 @@ function splitPostalCity(value: unknown): { postalCode: string; city: string } {
   return match
     ? { postalCode: match[1], city: normalizeText(match[2]) }
     : { postalCode: "", city: text };
+}
+
+function splitPrivatePersonName(value: unknown): { firstName: string; lastName: string } {
+  const parts = normalizeText(value).split(/\s+/).filter(Boolean);
+  if (!parts.length) return { firstName: "", lastName: "" };
+  if (parts.length === 1) return { firstName: "", lastName: parts[0] };
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1],
+  };
 }
 
 
