@@ -87,9 +87,6 @@ export function findContractorByNip(contractors = [], nip = '') {
 }
 
 export function getDuplicateContractorMatch({ contractors = [], contractorId = '', client = '' } = {}) {
-  const nipMatch = findContractorByNip(contractors, nip);
-  if (nipMatch) return nipMatch;
-
   const normalizedClient = normalizeComparable(client);
   if (!normalizedClient) return null;
 
@@ -114,6 +111,9 @@ export function findAutoLinkedContractor({
   if (normalizedContractorId) {
     return contractors.find((contractor) => String(contractor?.id || '') === normalizedContractorId) || null;
   }
+
+  const nipMatch = findContractorByNip(contractors, nip);
+  if (nipMatch) return nipMatch;
 
   const normalizedClient = normalizeComparable(client);
   if (!normalizedClient) return null;
