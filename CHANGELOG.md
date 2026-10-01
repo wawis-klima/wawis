@@ -1,4 +1,5 @@
 ## 12.10
+- Mobile: po otwarciu karty z zapisanymi szczegółami aplikacja pokazuje cache od razu i odświeża komentarze/zdjęcia w tle, aby zakończony montaż z nową historią komentarzy nie pozostawał błędnie zwinięty.
 - Desktop: status „Faktura VAT”, metoda płatności i przycisk „Wystaw fakturę” są grupowane w jednym, niełamanym wierszu.
 - Przycisk „Wystaw fakturę” ma neutralny biało-szary wygląd i nie używa mocnego niebieskiego tła ani ikony dokumentu.
 - Po trwałym potwierdzeniu faktury w Fakturowni aplikacja czyści oczekującą kontrolę i nie wykonuje kolejnej automatycznej weryfikacji statusu tego montażu.
