@@ -34,7 +34,10 @@ assert.doesNotMatch(refreshSource, /getNameplateOverviewData\(/, 'desktop: globa
 assert.match(fetch, /deferThumbnailSigning = false/, 'desktop: details loader must support deferred thumbnails');
 assert.match(fetch, /signal = null/, 'desktop: details loader must support cancellation');
 
-assert.match(app, /JOB_DETAILS_TIMEOUT_MS = 7000/, 'desktop: details request must have a bounded wait');
+assert.match(app, /JOB_DETAILS_TIMEOUT_MS = 12000/, 'desktop: details request must have a bounded wait');
+assert.match(app, /JOB_DETAILS_RETRY_DELAYS_MS = Object\.freeze\(\[0, 1500\]\)/, 'desktop: transient details failures must retry automatically');
+assert.match(app, /job\.details\.retry/, 'desktop: automatic details retry must be visible in diagnostics');
+assert.match(app, /Serwer nie odpowiedział po ponownej próbie/, 'desktop: timeout message must appear only after automatic retry');
 assert.match(app, /deferThumbnailSigning: true/, 'desktop: details must render before thumbnail signing');
 assert.match(app, /void hydrateJobThumbnails\(/, 'desktop: thumbnail signing should happen in background');
 assert.match(app, /jobsRef\.current\.find/, 'desktop: detail callback must use stable jobs ref');
@@ -69,7 +72,7 @@ assert.match(mobileFetch, /deferThumbnailSigning = false/, 'mobile: details load
 assert.match(mobileFetch, /signal = null/, 'mobile: details loader must support cancellation');
 assert.match(mobileFetch, /detailsLoadError/, 'mobile: details load error must survive list refreshes');
 
-assert.match(mobileApp, /JOB_DETAILS_TIMEOUT_MS = 7000/, 'mobile: details request must have a bounded wait');
+assert.match(mobileApp, /JOB_DETAILS_TIMEOUT_MS = 3200/, 'mobile: details request must have a bounded wait');
 assert.match(mobileApp, /deferThumbnailSigning: true/, 'mobile: details must render before thumbnail signing');
 assert.match(mobileApp, /void hydrateJobThumbnails\(/, 'mobile: thumbnail signing should happen in background');
 assert.match(mobileApp, /jobsRef\.current\.find/, 'mobile: detail callback must use stable jobs ref');
