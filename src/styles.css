@@ -10803,3 +10803,46 @@ img.previewImage{
     padding-right:8px;
   }
 }
+
+
+/* --- v12.02 desktop: krótszy formularz nowego montażu bez wyboru instalatorów --- */
+@media (min-width:901px){
+  .formModal .desktopJobFormCreate .jobHead{
+    margin-bottom:0 !important;
+  }
+
+  .formModal .desktopJobFormCreate .jobHead h2{
+    margin:0 !important;
+  }
+
+  .formModal .desktopJobFormCreate .input,
+  .formModal .desktopJobFormCreate select.input,
+  .formModal .desktopJobFormCreate textarea.input{
+    min-height:40px !important;
+    margin-top:7px !important;
+    padding-top:8px !important;
+    padding-bottom:8px !important;
+  }
+
+  .formModal .desktopJobFormCreate .inputLabel{
+    margin-top:7px !important;
+  }
+
+  .formModal .desktopJobFormCreate .inputLabel span{
+    margin-bottom:4px !important;
+  }
+
+  .formModal .desktopJobFormCreate .desktopAdminNoteInputBlock{
+    gap:4px !important;
+  }
+
+  .formModal .desktopJobFormCreate .desktopAdminNoteTextarea{
+    min-height:60px !important;
+    height:60px !important;
+    max-height:100px !important;
+  }
+
+  .formModal .desktopJobFormCreate .row.rightAlign{
+    margin-top:8px !important;
+  }
+}
