@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput, { VoiceFieldButton, VoiceNoteButton, appendVoiceNoteText } from "../voice/ClientVoiceInput.jsx";
@@ -8,6 +8,7 @@ import {
   applyAutoLinkedContractorToJobForm,
   buildContractorOptionLabel,
   filterContractorsByQuery,
+  findContractorByNip,
   findJobContractorIdentityConflict,
   getContractorIdentityConflictLabel,
   getDuplicateContractorMatch,
@@ -46,16 +47,23 @@ export default function JobFormModal({
   const [contractorConflict, setContractorConflict] = useState(null);
 
   const contractorSuggestions = useMemo(() => {
-    const trimmedClient = String(jobForm.client || '').trim();
-    if (!trimmedClient) return [];
+    const queries = [jobForm.client, jobForm.nip]
+      .map((value) => String(value || '').trim())
+      .filter(Boolean);
+    if (!queries.length) return [];
 
-    return filterContractorsByQuery(contractorOptions, trimmedClient)
+    const seen = new Set();
+    return queries
+      .flatMap((query) => filterContractorsByQuery(contractorOptions, query))
       .filter((item) => {
+        const id = String(item?.id || '');
+        if (!id || seen.has(id)) return false;
+        seen.add(id);
         if (!jobForm.contractor_id) return true;
-        return String(item.id) !== String(jobForm.contractor_id);
+        return id !== String(jobForm.contractor_id);
       })
       .slice(0, 3);
-  }, [contractorOptions, jobForm.client, jobForm.contractor_id]);
+  }, [contractorOptions, jobForm.client, jobForm.nip, jobForm.contractor_id]);
 
   const duplicateContractor = useMemo(
     () => getDuplicateContractorMatch({
@@ -92,6 +100,7 @@ export default function JobFormModal({
   const usesCatalogAddress = Boolean(explicitContractorAddress || matchedHistoricalAddress);
   const cityAddressParts = splitPostalCity(jobForm.city);
   const [postalLookupBusy, setPostalLookupBusy] = useState(false);
+  const postalLookupAttemptRef = useRef("");
 
 
   const jobDevices = useMemo(
@@ -380,6 +389,16 @@ export default function JobFormModal({
           next.nip = '';
         }
       }
+      if (field === 'nip' && prev.contractor_id && !editingJobId) {
+        const selectedContractor = contractorOptions.find((item) => String(item.id) === String(prev.contractor_id));
+        const selectedNip = String(selectedContractor?.nip || '').replace(/\D+/g, '');
+        const nextNip = String(value || '').replace(/\D+/g, '');
+        if (selectedNip && nextNip && selectedNip !== nextNip) {
+          next.contractor_id = '';
+          next.contractor_address_id = '';
+          next.contractor_address_label = '';
+        }
+      }
       return next;
     });
   }
@@ -426,6 +445,29 @@ export default function JobFormModal({
       setPostalLookupBusy(false);
     }
   }
+
+  useEffect(() => {
+    if (!showModal || !supabase || postalLookupBusy) return undefined;
+    const current = splitPostalCity(jobForm.city);
+    if (!current.city || current.postalCode) return undefined;
+
+    const lookupKey = `${current.city.toLocaleLowerCase('pl-PL')}|${String(jobForm.street || '').trim().toLocaleLowerCase('pl-PL')}`;
+    if (postalLookupAttemptRef.current === lookupKey) return undefined;
+
+    const timer = window.setTimeout(() => {
+      postalLookupAttemptRef.current = lookupKey;
+      void refreshPostalCode(jobForm.city, jobForm.street);
+    }, 550);
+
+    return () => window.clearTimeout(timer);
+  }, [showModal, supabase, jobForm.city, jobForm.street, postalLookupBusy]);
+
+  useEffect(() => {
+    if (!showModal || editingJobId || jobForm.contractor_id) return;
+    const match = findContractorByNip(contractorOptions, jobForm.nip);
+    if (!match) return;
+    handleContractorSelect(match);
+  }, [showModal, editingJobId, contractorOptions, jobForm.nip, jobForm.contractor_id]);
 
   function handleContractorSelect(contractor) {
     if (!contractor?.id) {
@@ -697,9 +739,8 @@ export default function JobFormModal({
             inputMode="numeric"
             maxLength={6}
             placeholder={postalLookupBusy ? "Szukam…" : "Kod pocztowy"}
-            key={cityAddressParts.postalCode || 'postal-empty'}
-            defaultValue={cityAddressParts.postalCode}
-            onBlur={(e) => updatePostalCode(e.target.value)}
+            value={cityAddressParts.postalCode}
+            onChange={(e) => updatePostalCode(e.target.value)}
           />
           <VoiceFieldButton
             label="Miejscowość"
