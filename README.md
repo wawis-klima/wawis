@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.07
+- 12.08
+
+Wersja 12.08 rozszerza przycisk „Wystaw fakturę” o wstępne uzupełnienie formularza Fakturowni: nazwę usługi z marką klimatyzatora, VAT 23% dla firmy / 8% dla osoby bez NIP oraz płatność z protokołu (gotówka: opłacona bez terminu; przelew: wystawiona, termin 3 dni). Kliknięcie nadal nie tworzy faktury automatycznie.
 
 Wersja 12.07 usuwa wartości dostępowe z testu regresyjnego integracji GUS. Funkcjonalność lookupu NIP pozostaje bez zmian; klucz BIR jest oczekiwany wyłącznie jako sekret serwerowy Supabase.
 
@@ -11,7 +13,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.07
+# Wawis Klimatyzacja — wersja 12.08
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
