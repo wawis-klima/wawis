@@ -13,7 +13,7 @@ assert.match(
 
 assert.match(edge, /Dostawa i montaż klimatyzatora marki \$\{invoiceBrand\}/);
 assert.match(edge, /\[\/\\bRotenso\\b\/i, "Rotenso"\]/);
-assert.match(edge, /Mitsubishi\\s\+Electric[\\s\\S]*"Mitsubishi Electric"/);
+assert.ok(edge.includes('[/\\\\bMitsubishi\\\\s+Electric\\\\b/i, "Mitsubishi Electric"]'));
 assert.match(edge, /const invoiceTax = isCompany \? 23 : 8;/);
 
 assert.match(
