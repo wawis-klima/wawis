@@ -122,7 +122,9 @@ assert.match(mobileForm, /Potwierdź monterów tego montażu/);
 assert.match(mobileForm, /installers_confirmed: true/);
 
 const desktopForm = read('src', 'components', 'modals', 'JobFormModal.jsx');
-assert.match(desktopForm, /Potwierdź monterów tego montażu/);
+// 12.02: instalatorzy są przypisywani później z widoku montażu, nie z desktopowego formularza.
+assert.doesNotMatch(desktopForm, /Potwierdź monterów tego montażu/);
+assert.doesNotMatch(desktopForm, /Instalatorzy \(opcjonalnie\)/);
 
 const mobileProtocolModal = read('src', 'mobile791', 'components', 'modals', 'ProtocolTestModal.jsx');
 // 11.71: historyczny brak installer_ids nie blokuje protokołu; fallback jest tylko dokumentowy.
