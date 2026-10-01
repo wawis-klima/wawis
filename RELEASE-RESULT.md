@@ -1,18 +1,18 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.10
+- 12.11
 
 ## Zakres
-- desktop: status „Faktura VAT”, metoda płatności i „Wystaw fakturę” w jednym wierszu
-- neutralny biało-szary przycisk Fakturowni bez mocnego niebieskiego tła i bez ikony dokumentu
-- po trwałym potwierdzeniu faktury przez Fakturownię brak ponownej automatycznej weryfikacji tego montażu
-- samo wejście w montaż nie uruchamia zapytania weryfikacyjnego do Fakturowni
-- mobile: po otwarciu karty z cache szczegóły są odświeżane w tle, aby nowe komentarze nie pozostawały ukryte
+- desktop: limit odczytu szczegółów montażu zwiększony z 7 s do 12 s
+- timeout lub błąd sieciowy uruchamia automatyczne ponowienie po 1,5 s
+- komunikat „Ponów” jest pokazywany dopiero po nieudanej automatycznej próbie
+- diagnostyka zapisuje retry, odzyskanie i końcowy błąd szczegółów montażu
+- mobile bez zmian funkcjonalnych
 - Supabase schema, RLS i Edge Functions bez zmian
 
 ## Kontrola regresji
-- baseline diagnostyki 24 h: CHECKED (informacyjny)
+- smoke desktop resilience zaktualizowany o timeout 12 s i auto-retry
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
