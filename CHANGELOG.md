@@ -1,3 +1,10 @@
+## 12.11
+- Desktop: limit pojedynczego odczytu szczegółów montażu zwiększono z 7 s do 12 s.
+- Po timeoutcie lub typowym błędzie sieciowym aplikacja automatycznie wykonuje drugą próbę po 1,5 s.
+- Komunikat z ręcznym przyciskiem „Ponów” pojawia się dopiero po nieudanym automatycznym retry.
+- Diagnostyka zapisuje zdarzenia `job.details.retry`, `job.details.recovered` i `job.details.failed`, aby odróżnić chwilowy lag od powtarzalnego problemu.
+- Mobile, Supabase schema, RLS i Edge Functions bez zmian.
+
 ## 12.10
 - Mobile: po otwarciu karty z zapisanymi szczegółami aplikacja pokazuje cache od razu i odświeża komentarze/zdjęcia w tle, aby zakończony montaż z nową historią komentarzy nie pozostawał błędnie zwinięty.
 - Desktop: status „Faktura VAT”, metoda płatności i przycisk „Wystaw fakturę” są grupowane w jednym, niełamanym wierszu.
