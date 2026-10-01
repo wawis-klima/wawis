@@ -1,3 +1,10 @@
+## 12.02
+- Desktop: usunięto całkowicie sekcję „Instalatorzy (opcjonalnie)” z formularza dodawania/edycji montażu.
+- Instalatorzy nadal mogą być przypisywani później z właściwego widoku montażu; zapis istniejących przypisań nie jest czyszczony przez samo ukrycie sekcji.
+- Nowy formularz desktop jest bardziej zwarty: niższe pola, mniejsze odstępy i krótsze pole komentarza administratora.
+- Mobile pozostaje bez zmian.
+- Dodano test regresyjny pilnujący braku sekcji instalatorów na desktopie i zachowania jej w mobile.
+
 ## 12.01
 - Desktop: pełny NIP wyszukuje istniejącego kontrahenta tak samo jak w mobile i uzupełnia jego dane.
 - Desktop: JobFormModal dostaje Supabase, dzięki czemu lookup kodu pocztowego rzeczywiście wykonuje zapytanie.

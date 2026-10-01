@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.01",
-  "scope": "full",
-  "release_branch": "release/v12.01",
+  "version": "12.02",
+  "scope": "desktop",
+  "release_branch": "release/v12.02",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Źródło błędu desktop potwierdzone w kodzie: JobFormModal deklarował prop supabase, ale src/App.jsx go nie przekazywał. Desktop miał też lookup kodu tylko po blur i brak autolinku po NIP. Mobile ma już oba mechanizmy; 12.01 ujednolica zachowanie i dodaje wspólną regresję."
+    "notes": "Zmiana wyłącznie UI desktop formularza montażu. Sekcja instalatorów została usunięta z renderowania; logika danych przypisań pozostaje bez zmian, dzięki czemu edycja montażu nie czyści istniejących monterów."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.01.zip"
+    "file_name": "klima-app-v12.02.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.01",
+    "source_branch": "release/v12.02",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile i desktop: NIP 6492040094 ma wybrać istniejącego kontrahenta; Zawiercie + ulica ma automatycznie uzupełnić kod pocztowy bez opuszczania pola."
+    "notes": "Sprawdzić desktop: formularz nowego montażu nie pokazuje instalatorów i przy typowym oknie mieści się bez przewijania. Mobile ma pozostać bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -37,7 +37,7 @@
     "performance_advisor": "N/A — brak zmian bazy danych.",
     "security_advisor": "Bez zmian sekretów.",
     "trigger_grants": "N/A — bez zmian triggerów i grantów.",
-    "edge_functions": "postal-code-lookup ACTIVE v3; bez zmian wdrożenia funkcji.",
+    "edge_functions": "Bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }

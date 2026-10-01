@@ -651,7 +651,7 @@ export default function JobFormModal({
       overlayClassName="formOverlay"
       contentClassName="card modal formModal"
     >
-      <form onSubmit={handleSubmit}>
+      <form className={`desktopJobForm ${editingJobId ? "desktopJobFormEdit" : "desktopJobFormCreate"}`} onSubmit={handleSubmit}>
         <div className="jobHead">
           <h2>{editingJobId ? "Edytuj montaż" : "Nowy montaż / zlecenie"}</h2>
           <button type="button" className="btn" onClick={closeJobModal}>Zamknij</button>
@@ -924,28 +924,6 @@ export default function JobFormModal({
               disabled={busy}
             />
           </div>
-        </div>
-        <h4>Instalatorzy (opcjonalnie)</h4>
-                {editingJobId && jobForm.installers_confirmed === false ? (
-                  <div className="workerReadOnlyNote" role="status">
-                    <strong>Potwierdź monterów tego montażu.</strong> To starszy wpis: zaznaczenia poniżej są tylko podpowiedzią z dawnego dostępu do zlecenia i nie trafią do nowego protokołu, dopóki ich nie potwierdzisz.
-                    <div className="row" style={{ marginTop: 8 }}>
-                      <button type="button" className="btn" onClick={() => setJobForm((prev) => ({ ...prev, installers_confirmed: true }))}>
-                        Potwierdź tę listę
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-        <div className="viewerGrid">
-          {profiles.map((person) => {
-            const active = jobForm.viewers.includes(person.id);
-            return (
-              <button type="button" key={person.id} className={`viewer ${active ? "active" : ""}`} onClick={() => setJobForm((prev) => ({ ...prev, installers_confirmed: true, viewers: active ? prev.viewers.filter((id) => id !== person.id) : [...prev.viewers, person.id] }))}>
-                <div>{person.full_name}</div>
-                <small>{person.role}</small>
-              </button>
-            );
-          })}
         </div>
         <div className="row rightAlign">
           <button type="submit" className="btn primary saveJobBtn" disabled={busy}>{editingJobId ? "Zapisz zmiany" : "Zapisz zlecenie"}</button>

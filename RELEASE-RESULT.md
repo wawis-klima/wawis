@@ -1,20 +1,17 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.01
+- 12.02
 
 ## Zakres
-- desktop: wyszukiwanie istniejącego kontrahenta po pełnym NIP
-- desktop: automatyczny lookup kodu pocztowego po miejscowości/adresie
-- desktop: JobFormModal otrzymuje klienta Supabase, więc lookup kodu wykonuje realne zapytanie
-- desktop: pole kodu jest kontrolowane i pokazuje wynik od razu
-- mobile: zachowane wyszukiwanie po NIP i automatyczny kod pocztowy
-- wspólna regresja dla obu wersji formularza
+- desktop: usunięta sekcja „Instalatorzy (opcjonalnie)” z formularza montażu
+- desktop: nowy formularz bardziej kompaktowy, aby mieścił się bez przewijania przy typowym rozmiarze okna
+- desktop: zmniejszone wysokości pól, odstępy i pole komentarza administratora
+- mobile: bez zmian
 
 ## Kontrola regresji
-- smoke: scripts/smoke-job-form-lookups-v1201.cjs
-- smoke: scripts/smoke-job-nip-lookup-v1200.cjs
-- smoke: scripts/smoke-postal-code-v1196.mjs
+- smoke: scripts/smoke-desktop-job-form-compact-v1202.cjs
+- istniejące testy formularza, NIP i kodu pocztowego pozostają aktywne
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
