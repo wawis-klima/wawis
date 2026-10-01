@@ -266,7 +266,7 @@ export default function JobDetailsPanel({
   };
 
   async function handleVatInvoiceToggle() {
-    if (!isAdmin || !selectedJobId || vatInvoiceSaving || fakturowniaVerifying) return;
+    if (!isAdmin || !isCompletedJob || !selectedJobId || vatInvoiceSaving || fakturowniaVerifying) return;
     if (selectedJob?.vat_invoice_fakturownia_confirmed) return;
     const nextIssued = !Boolean(selectedJob?.vat_invoice_issued);
     setVatInvoiceSaving(true);
@@ -297,7 +297,7 @@ export default function JobDetailsPanel({
 
   async function verifyPendingFakturowniaInvoice() {
     const pending = fakturowniaVerificationRef.current;
-    if (!isAdmin || !selectedJobId || !pending || fakturowniaVerificationBusyRef.current) return;
+    if (!isAdmin || !isCompletedJob || !selectedJobId || !pending || fakturowniaVerificationBusyRef.current) return;
     if (selectedJob?.vat_invoice_fakturownia_confirmed) {
       fakturowniaVerificationRef.current = null;
       return;
@@ -347,7 +347,7 @@ export default function JobDetailsPanel({
 
 
   async function handleOpenFakturowniaInvoice() {
-    if (!isAdmin || !selectedJobId || fakturowniaOpening) return;
+    if (!isAdmin || !isCompletedJob || !selectedJobId || fakturowniaOpening) return;
 
     const invoiceWindow = window.open('about:blank', '_blank');
     if (!invoiceWindow) {
@@ -396,7 +396,7 @@ export default function JobDetailsPanel({
           <div className="jobDetailsStickyMeta" aria-label="Podstawowe informacje o wybranym montażu">
             <span className={`jobTypeTag desktopJobTypeTag jobDetailsStatusChip ${statusClassName}`}>{statusLabel}</span>
             <span className="jobDetailsDateChip"><IconCalendar /> {installationDateLabel}</span>
-            {isAdmin ? (
+            {isAdmin && isCompletedJob ? (
               <div className="desktopInvoiceActionsRowV1210" aria-label="Faktura VAT i płatność">
                 <button
                   type="button"
