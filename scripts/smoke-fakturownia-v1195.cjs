@@ -19,7 +19,8 @@ assert.match(edge, /FAKTUROWNIA_API_TOKEN/, 'Edge Function ma czytać token wył
 assert.match(edge, /external_id/, 'Synchronizacja klienta ma używać external_id, żeby ograniczyć duplikaty.');
 assert.match(edge, /clients\.json/, 'Integracja ma synchronizować kartę klienta w Fakturowni.');
 assert.match(edge, /\/invoices\/new\?client_id=/, 'Integracja ma otwierać formularz faktury z klientem.');
-assert.doesNotMatch(edge, /fakturowniaRequest[^\n]*\/invoices\.json/, 'Kliknięcie nie może automatycznie tworzyć faktury przez API.');
+assert.match(edge, /fakturowniaGetInvoices/, 'Integracja ma móc odczytać listę faktur klienta do weryfikacji.');
+assert.doesNotMatch(edge, /\/invoices\.json[\s\S]{0,240}method:\s*["']POST["']/, 'Kliknięcie nie może automatycznie tworzyć faktury przez API.');
 assert.match(styles, /\.desktopFakturowniaButton\{/, 'Przycisk Fakturowni musi mieć styl desktopowy.');
 
 console.log('OK: v11.95 bezpiecznie synchronizuje klienta i otwiera formularz Fakturowni.');
