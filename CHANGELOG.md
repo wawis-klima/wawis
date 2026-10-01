@@ -1,3 +1,9 @@
+## 12.09
+- Poprawiono parametry wstępnego wypełnienia pozycji formularza Fakturowni z `positions_attributes` na `positions`.
+- Nazwa pozycji i VAT są teraz przekazywane jako `invoice[positions][0][name]` oraz `invoice[positions][0][tax]`.
+- Nie zmieniono działającego mapowania płatności, terminu ani statusu.
+- Kliknięcie „Wystaw fakturę” nadal nie tworzy dokumentu przez API i nie przekazuje ceny ani ilości.
+
 ## 12.08
 - Przycisk „Wystaw fakturę” nadal wyłącznie otwiera formularz Fakturowni; WAWIS nie tworzy dokumentu ani numeru faktury przez API.
 - Formularz otrzymuje nazwę pozycji „Dostawa i montaż klimatyzatora marki …” na podstawie marki rozpoznanej w zapisanym modelu urządzenia; przy braku rozpoznania używany jest opis ogólny.
