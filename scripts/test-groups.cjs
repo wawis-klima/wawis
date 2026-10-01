@@ -139,6 +139,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-verify-v1203.cjs',
     'node scripts/smoke-fakturownia-private-person-v1204.cjs',
     'node scripts/smoke-fakturownia-lock-v1205.cjs',
+    'node scripts/smoke-fakturownia-prefill-v1208.cjs',
     'node scripts/smoke-desktop-vat-invoice-v1184.cjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
     'node scripts/smoke-contractors-stage5-v1178.mjs',
