@@ -1,3 +1,12 @@
+## 12.08
+- Przycisk „Wystaw fakturę” nadal wyłącznie otwiera formularz Fakturowni; WAWIS nie tworzy dokumentu ani numeru faktury przez API.
+- Formularz otrzymuje nazwę pozycji „Dostawa i montaż klimatyzatora marki …” na podstawie marki rozpoznanej w zapisanym modelu urządzenia; przy braku rozpoznania używany jest opis ogólny.
+- Domyślna stawka VAT wynosi 23% dla kontrahenta z NIP oraz 8% dla osoby bez NIP; użytkownik może ją zmienić przed wystawieniem faktury.
+- Płatność gotówką z protokołu ustawia gotówkę, status „opłacona” i brak terminu płatności.
+- Płatność przelewem z protokołu ustawia przelew, status „wystawiona” i termin 3 dni.
+- Prefill nie przekazuje ceny ani ilości.
+- Dodano regresję pilnującą mapowania, braku kwot/ilości oraz zakazu automatycznego POST do endpointu tworzenia faktur.
+
 ## 12.07
 - Poprawka bezpieczeństwa integracji GUS BIR: usunięto wartości kluczy dostępowych z testu regresyjnego.
 - Test weryfikuje teraz wyłącznie, że Edge Function pobiera klucz dynamicznie z sekretu i nie ma klucza wpisanego na sztywno.
