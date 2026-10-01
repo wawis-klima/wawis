@@ -10846,3 +10846,12 @@ img.previewImage{
     margin-top:8px !important;
   }
 }
+
+
+.jobNipLookupStatus {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: #64748b;
+}
