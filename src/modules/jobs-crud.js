@@ -38,6 +38,23 @@ export async function saveVatInvoiceStatus({ supabase, jobId, issued }) {
   return data || { id: jobId, vat_invoice_issued: Boolean(issued) };
 }
 
+export async function confirmVatInvoiceFromFakturownia({ supabase, jobId, invoiceId, invoiceNumber = '' }) {
+  if (!supabase || !jobId || !invoiceId) return null;
+  const { data, error } = await supabase.rpc('admin_confirm_job_vat_invoice_fakturownia', {
+    p_job_id: jobId,
+    p_invoice_id: String(invoiceId),
+    p_invoice_number: String(invoiceNumber || '').trim() || null,
+  });
+  if (error) throw error;
+  return data || {
+    id: jobId,
+    vat_invoice_issued: true,
+    vat_invoice_fakturownia_confirmed: true,
+    vat_invoice_fakturownia_invoice_id: String(invoiceId),
+    vat_invoice_fakturownia_invoice_number: String(invoiceNumber || '').trim() || null,
+  };
+}
+
 export async function saveJobAdminNote({ supabase, jobId, adminNote }) {
   if (!supabase || !jobId) return null;
   const normalizedAdminNote = String(adminNote || '').trim() || null;

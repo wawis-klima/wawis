@@ -1,3 +1,11 @@
+## 12.05
+- Potwierdzenie nowej faktury przez API Fakturowni zapisuje trwałą flagę oraz identyfikator/numer faktury.
+- Po potwierdzeniu status „Faktura VAT wystawiona” jest nieodwracalny z poziomu aplikacji.
+- Ręczny przełącznik pozostaje dostępny przed potwierdzeniem Fakturowni.
+- Blokada działa również po stronie bazy/RPC, więc starszy klient lub bezpośrednie wywołanie nie może cofnąć potwierdzonej faktury.
+- Desktop pobiera i rozpoznaje stan potwierdzenia Fakturowni.
+- Dodano test regresyjny dla nieodwracalnego statusu.
+
 ## 12.04
 - Fakturownia: klient bez NIP jest oznaczany jako osoba prywatna (company=false).
 - Dla osoby prywatnej imię i nazwisko są rozdzielane do pól wymaganych przez Fakturownię.

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.04",
+  "version": "12.05",
   "scope": "desktop",
-  "release_branch": "release/v12.04",
+  "release_branch": "release/v12.05",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Przyczyna potwierdzona: Fakturownia domyślnie traktuje nowego klienta jako firmę. Integracja nie wysyłała pola company ani first_name/last_name dla klientów bez NIP."
+    "notes": "Stan 12.04 pozwalał administratorowi ręcznie cofnąć vat_invoice_issued nawet po potwierdzeniu nowej faktury przez Fakturownię. 12.05 dodaje trwały znacznik potwierdzenia i blokadę na poziomie UI oraz RPC."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.04.zip"
+    "file_name": "klima-app-v12.05.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.04",
+    "source_branch": "release/v12.05",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Test produkcyjny: klient bez NIP ma otworzyć się w Fakturowni jako Osoba prywatna; klient z NIP jako Firma."
+    "notes": "Test: przed potwierdzeniem Fakturowni ręczny przełącznik ma działać w obie strony; po realnym potwierdzeniu faktury ma być zablokowany, a RPC ma odrzucać próbę ustawienia false."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — bez zmian schematu bazy.",
-    "rls_role_matrix": "Bez zmian RLS.",
-    "performance_advisor": "N/A — brak zmian bazy danych.",
-    "security_advisor": "Token Fakturowni nadal wyłącznie w Edge Function.",
-    "trigger_grants": "N/A — bez zmian triggerów i grantów.",
-    "edge_functions": "fakturownia-client — wymaga wdrożenia nowej wersji z company/first_name/last_name.",
+    "supabase_migration_applied": "PENDING — 20261001071500_vat_invoice_fakturownia_lock_v1205.sql",
+    "rls_role_matrix": "Bez zmian RLS; nowe RPC wyłącznie dla administratora.",
+    "performance_advisor": "N/A — tylko cztery lekkie kolumny i dwa RPC.",
+    "security_advisor": "Bez zmian sekretów.",
+    "trigger_grants": "Nowe RPC admin_confirm_job_vat_invoice_fakturownia dostępne tylko authenticated i dodatkowo sprawdza current_user_is_admin().",
+    "edge_functions": "Bez zmian względem 12.04.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
