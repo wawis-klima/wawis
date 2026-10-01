@@ -1,3 +1,12 @@
+## 12.06
+- Dodano integrację z GUS REGON BIR do wyszukiwania firmy po NIP-ie.
+- W nowym montażu desktop/mobile lokalna kartoteka kontrahentów ma pierwszeństwo; GUS jest odpytywany tylko wtedy, gdy NIP-u nie ma w WAWIS.
+- GUS uzupełnia nazwę firmy, kod pocztowy, miejscowość oraz ulicę z numerem; telefon i e-mail pozostają danymi użytkownika.
+- Ten sam lookup działa przy dodawaniu nowego kontrahenta.
+- NIP jest sprawdzany lokalnie i na backendzie, łącznie z sumą kontrolną.
+- Klucz produkcyjny nie trafia do frontendu ani repozytorium; Edge Function odczytuje go z sekretu GUS_BIR_API_KEY.
+- Dodano regresję smoke dla bezpieczeństwa i okablowania GUS.
+
 ## 12.05
 - Potwierdzenie nowej faktury przez API Fakturowni zapisuje trwałą flagę oraz identyfikator/numer faktury.
 - Po potwierdzeniu status „Faktura VAT wystawiona” jest nieodwracalny z poziomu aplikacji.
