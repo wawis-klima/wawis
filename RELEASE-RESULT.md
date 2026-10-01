@@ -1,16 +1,18 @@
 # RELEASE RESULT
 
 ## Wersja
-- 11.99
+- 12.00
 
 ## Zakres
-- mobile: JobFormModal dostaje klienta Supabase
-- automatyczny lookup kodu pocztowego może faktycznie wywołać postal-code-lookup
-- regresja sprawdza dokładnie przekazanie prop supabase do formularza
+- mobile: wyszukiwanie kontrahenta po NIP w formularzu montażu
+- dokładny 10-cyfrowy NIP automatycznie wybiera jednoznacznego kontrahenta z bazy
+- podpowiedzi kontrahentów reagują również na wpisywany NIP
+- po trafieniu uzupełniane są nazwa firmy, dane kontaktowe i zapisany adres
+- zabezpieczenie przed przypadkowym nadpisaniem NIP wcześniej wybranego kontrahenta
 
 ## Kontrola regresji
-- smoke: scripts/smoke-mobile-postal-wire-v1199.cjs
-- smoke: scripts/smoke-mobile-form-v1198.cjs
+- smoke: scripts/smoke-job-nip-lookup-v1200.cjs
+- smoke: scripts/smoke-job-nip-v1194.cjs
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
