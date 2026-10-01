@@ -1,3 +1,10 @@
+## 12.04
+- Fakturownia: klient bez NIP jest oznaczany jako osoba prywatna (company=false).
+- Dla osoby prywatnej imię i nazwisko są rozdzielane do pól wymaganych przez Fakturownię.
+- Klient z NIP jest oznaczany jako firma (company=true).
+- Dotyczy zarówno nowych klientów, jak i aktualizacji wcześniej zsynchronizowanej kartoteki.
+- Dodano test regresyjny dla rozpoznawania osoby prywatnej po braku NIP.
+
 ## 12.03
 - Desktop: kliknięcie „Wystaw fakturę” nadal tylko otwiera formularz Fakturowni i samo nie oznacza faktury jako wystawionej.
 - Przed otwarciem formularza aplikacja zapamiętuje identyfikatory istniejących faktur danego klienta.
