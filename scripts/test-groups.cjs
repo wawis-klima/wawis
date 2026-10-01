@@ -39,6 +39,7 @@ const GROUPS = {
     'node scripts/smoke-postal-city-fallback-v1197.cjs',
     'node scripts/smoke-job-nip-v1194.cjs',
     'node scripts/smoke-job-nip-lookup-v1200.cjs',
+    'node scripts/smoke-job-form-lookups-v1201.cjs',
     'node scripts/smoke-contractors-stage3-v1176.mjs',
     'npm run test:smoke:delete',
     'npm run test:smoke:device-save',
