@@ -8777,3 +8777,12 @@ img.previewImage{
     padding-right:8px;
   }
 }
+
+
+.jobNipLookupStatus {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.25;
+  color: #64748b;
+}
