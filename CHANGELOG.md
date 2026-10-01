@@ -1,3 +1,11 @@
+## 12.03
+- Desktop: kliknięcie „Wystaw fakturę” nadal tylko otwiera formularz Fakturowni i samo nie oznacza faktury jako wystawionej.
+- Przed otwarciem formularza aplikacja zapamiętuje identyfikatory istniejących faktur danego klienta.
+- Po powrocie do WAWIS aplikacja sprawdza Fakturownię i szuka nowej faktury VAT o statusie wystawiona / wysłana / opłacona / częściowo opłacona.
+- Dopiero potwierdzona nowa faktura automatycznie ustawia „Faktura VAT wystawiona”.
+- Ręczny przełącznik „Faktura VAT” pozostaje; ręczna decyzja administratora przerywa oczekującą automatyczną kontrolę.
+- Nie ma zmian schematu bazy.
+
 ## 12.02
 - Desktop: usunięto całkowicie sekcję „Instalatorzy (opcjonalnie)” z formularza dodawania/edycji montażu.
 - Instalatorzy nadal mogą być przypisywani później z właściwego widoku montażu; zapis istniejących przypisań nie jest czyszczony przez samo ukrycie sekcji.
