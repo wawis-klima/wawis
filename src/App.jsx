@@ -1107,6 +1107,7 @@ export default function App() {
           setJobForm={setJobForm}
           profiles={profiles}
           contractors={contractorsCatalog}
+          supabase={supabase}
           addJob={addJob}
           saveEditedJob={saveEditedJob}
           busy={busy}

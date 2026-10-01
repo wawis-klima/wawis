@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.00",
-  "scope": "mobile",
-  "release_branch": "release/v12.00",
+  "version": "12.01",
+  "scope": "full",
+  "release_branch": "release/v12.01",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Potwierdzono w produkcyjnej bazie istniejącego kontrahenta z NIP 6492040094. Przyczyna była w formularzu mobile: autolink wymagał nazwy klienta i nie używał NIP."
+    "notes": "Źródło błędu desktop potwierdzone w kodzie: JobFormModal deklarował prop supabase, ale src/App.jsx go nie przekazywał. Desktop miał też lookup kodu tylko po blur i brak autolinku po NIP. Mobile ma już oba mechanizmy; 12.01 ujednolica zachowanie i dodaje wspólną regresję."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.00.zip"
+    "file_name": "klima-app-v12.01.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.00",
+    "source_branch": "release/v12.01",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile: wpisanie NIP 6492040094 w nowym montażu ma wybrać istniejącego kontrahenta i uzupełnić dane."
+    "notes": "Sprawdzić mobile i desktop: NIP 6492040094 ma wybrać istniejącego kontrahenta; Zawiercie + ulica ma automatycznie uzupełnić kod pocztowy bez opuszczania pola."
   },
   "archive": {
     "source_of_truth": "github-main",
