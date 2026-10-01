@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.08",
+  "version": "12.09",
   "scope": "full",
-  "release_branch": "release/v12.08",
+  "release_branch": "release/v12.09",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Baseline informacyjny: produkcyjny fakturownia-client odpowiadał 200 przed zmianą; 12.08 nie zmienia schematu ani RLS."
+    "notes": "12.08 potwierdziła działanie płatności/statusu/terminu; 12.09 koryguje wyłącznie nazwy parametrów pozycji Fakturowni."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.08.zip"
+    "file_name": "klima-app-v12.09.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.08",
+    "source_branch": "release/v12.09",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge wdrożyć fakturownia-client z verify_jwt=true, potwierdzić Vercel READY i wykonać próbę formularza Fakturowni."
+    "notes": "Po wdrożeniu sprawdzić, czy formularz Fakturowni pokazuje nazwę pozycji i VAT oraz zachowuje działającą płatność/status/termin."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,9 +35,9 @@
     "supabase_migration_applied": "N/A — brak migracji SQL.",
     "rls_role_matrix": "Bez zmian RLS; fakturownia-client nadal wymaga sesji i roli Administrator.",
     "performance_advisor": "N/A — brak zmian schematu.",
-    "security_advisor": "Prefill nie zawiera tokenu API; FAKTUROWNIA_API_TOKEN pozostaje sekretem Edge Function.",
+    "security_advisor": "Bez zmian sekretów; FAKTUROWNIA_API_TOKEN pozostaje wyłącznie po stronie Edge Function.",
     "trigger_grants": "Bez zmian.",
-    "edge_functions": "fakturownia-client: wdrożenie 12.08 po merge, verify_jwt=true.",
+    "edge_functions": "fakturownia-client: wdrożenie 12.09 po merge, verify_jwt=true.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
