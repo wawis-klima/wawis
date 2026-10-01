@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 12.10
 
-Wersja 12.10 porządkuje desktopowy pasek faktury: status „Faktura VAT”, metoda płatności i „Wystaw fakturę” są zawsze trzymane w jednym wierszu, a przycisk Fakturowni ma neutralny, czytelny wygląd bez mocnego niebieskiego tła. Po trwałym potwierdzeniu faktury przez Fakturownię aplikacja nie uruchamia już ponownej weryfikacji statusu dla tego montażu.
+Wersja 12.10 porządkuje desktopowy pasek faktury: status „Faktura VAT”, metoda płatności i „Wystaw fakturę” są zawsze trzymane w jednym wierszu, a przycisk Fakturowni ma neutralny, czytelny wygląd bez mocnego niebieskiego tła. Po trwałym potwierdzeniu faktury przez Fakturownię aplikacja nie uruchamia już ponownej weryfikacji statusu dla tego montażu. Dodatkowo mobilna karta po otwarciu odświeża w tle zapisane szczegóły, dzięki czemu komentarz dodany po wcześniejszym odczycie nie pozostaje ukryty przez stary cache.
 
 Wersja 12.09 poprawia prefill pozycji Fakturowni: nazwa usługi i stawka VAT są przekazywane jako `invoice[positions][0][...]`, zgodnie ze strukturą `positions` używaną przez Fakturownię. Płatność, status i termin z 12.08 pozostają bez zmian; kliknięcie nadal nie tworzy faktury automatycznie.
 
