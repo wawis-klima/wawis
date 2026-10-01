@@ -23,13 +23,10 @@ async function getFunctionErrorMessage(error) {
   return String(error?.message || error || 'Nie udało się połączyć z Fakturownią.');
 }
 
-export async function prepareFakturowniaInvoice({ supabase, jobId }) {
-  const normalizedJobId = String(jobId || '').trim();
-  if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
-
+async function invokeFakturowniaClient({ supabase, body }) {
   const accessToken = await getFreshAccessToken(supabase);
   const { data, error } = await supabase.functions.invoke('fakturownia-client', {
-    body: { jobId: normalizedJobId },
+    body,
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
@@ -37,6 +34,34 @@ export async function prepareFakturowniaInvoice({ supabase, jobId }) {
 
   if (error) throw new Error(await getFunctionErrorMessage(error));
   if (data?.error) throw new Error(String(data.error));
+  return data || {};
+}
+
+export async function prepareFakturowniaInvoice({ supabase, jobId }) {
+  const normalizedJobId = String(jobId || '').trim();
+  if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
+
+  const data = await invokeFakturowniaClient({
+    supabase,
+    body: { action: 'prepare', jobId: normalizedJobId },
+  });
   if (!data?.invoiceUrl) throw new Error('Fakturownia nie zwróciła adresu formularza faktury.');
   return data;
+}
+
+export async function verifyFakturowniaInvoice({ supabase, jobId, clientId, knownInvoiceIds = [] }) {
+  const normalizedJobId = String(jobId || '').trim();
+  const normalizedClientId = String(clientId || '').trim();
+  if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
+  if (!normalizedClientId) throw new Error('Brak identyfikatora klienta Fakturowni.');
+
+  return invokeFakturowniaClient({
+    supabase,
+    body: {
+      action: 'verify',
+      jobId: normalizedJobId,
+      clientId: normalizedClientId,
+      knownInvoiceIds: Array.isArray(knownInvoiceIds) ? knownInvoiceIds.map(String) : [],
+    },
+  });
 }
