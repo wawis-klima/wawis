@@ -1,3 +1,10 @@
+## 12.00
+- Mobile: pole NIP w formularzu nowego montażu bierze udział w wyszukiwaniu kontrahenta.
+- Dokładny 10-cyfrowy NIP automatycznie wiąże jednoznaczny wpis z kartoteki i uzupełnia nazwę/adres/dane kontaktowe.
+- Podpowiedzi kontrahentów reagują także na wpisywany NIP.
+- Zmiana NIP po ręcznym wyborze innego kontrahenta nie nadpisuje przypadkiem jego kartoteki.
+- Dodano test regresyjny lookupu NIP.
+
 ## 11.99
 - Mobile: naprawiono automatyczne uzupełnianie kodu pocztowego — JobFormModal dostaje teraz klienta Supabase.
 - To usuwa przypadek, w którym formularz wyglądał poprawnie, ale lookup kończył się lokalnie bez wykonania zapytania.
