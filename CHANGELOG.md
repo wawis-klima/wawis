@@ -1,3 +1,10 @@
+## 12.01
+- Desktop: pełny NIP wyszukuje istniejącego kontrahenta tak samo jak w mobile i uzupełnia jego dane.
+- Desktop: JobFormModal dostaje Supabase, dzięki czemu lookup kodu pocztowego rzeczywiście wykonuje zapytanie.
+- Desktop: kod pocztowy wyszukuje się automatycznie po krótkiej pauzie i jest od razu widoczny w kontrolowanym polu.
+- Mobile: zachowano lookup po NIP i automatyczny kod pocztowy; nowa regresja pilnuje obu wersji jednocześnie.
+- Dodano test funkcjonalny NIP oraz precyzyjny test okablowania Supabase dla obu formularzy.
+
 ## 12.00
 - Mobile: pole NIP w formularzu nowego montażu bierze udział w wyszukiwaniu kontrahenta.
 - Dokładny 10-cyfrowy NIP automatycznie wiąże jednoznaczny wpis z kartoteki i uzupełnia nazwę/adres/dane kontaktowe.
