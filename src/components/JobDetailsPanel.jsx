@@ -1,4 +1,5 @@
 import React from "react";
+import "./job-details-invoice-v1210.css";
 import { IconCalendar, IconCamera, IconCheckCircle, IconClock, IconFileText, IconImage, IconMail, IconMapPin, IconMessageCircle, IconPhone, IconUsers } from "./ui.jsx";
 import { getInitials, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
 import JobAddressLink from "./JobAddressLink.jsx";
@@ -396,7 +397,7 @@ export default function JobDetailsPanel({
             <span className={`jobTypeTag desktopJobTypeTag jobDetailsStatusChip ${statusClassName}`}>{statusLabel}</span>
             <span className="jobDetailsDateChip"><IconCalendar /> {installationDateLabel}</span>
             {isAdmin ? (
-              <div className="desktopInvoiceActionsRow" aria-label="Faktura VAT i płatność">
+              <div className="desktopInvoiceActionsRowV1210" aria-label="Faktura VAT i płatność">
                 <button
                   type="button"
                   className={`desktopVatInvoiceToggle desktopVatInvoiceHeaderToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
@@ -428,7 +429,7 @@ export default function JobDetailsPanel({
 
                 <button
                   type="button"
-                  className="desktopFakturowniaButton"
+                  className="desktopFakturowniaButton desktopFakturowniaButtonV1210"
                   onClick={handleOpenFakturowniaInvoice}
                   disabled={fakturowniaOpening}
                   title={selectedJob.vat_invoice_fakturownia_confirmed
