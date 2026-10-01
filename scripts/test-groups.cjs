@@ -40,6 +40,7 @@ const GROUPS = {
     'node scripts/smoke-job-nip-v1194.cjs',
     'node scripts/smoke-job-nip-lookup-v1200.cjs',
     'node scripts/smoke-job-form-lookups-v1201.cjs',
+    'node scripts/smoke-gus-bir-v1206.cjs',
     'node scripts/smoke-desktop-job-form-compact-v1202.cjs',
     'node scripts/smoke-contractors-stage3-v1176.mjs',
     'npm run test:smoke:delete',

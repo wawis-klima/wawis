@@ -28,6 +28,7 @@ import { getJobDeviceRows } from '../../modules/job-devices.js';
 import { fetchContractorDevicesResult } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { normalizeVoiceEmail, normalizeVoicePhone } from '../../modules/client-voice-input.js';
+import { lookupCompanyByNip, normalizeGusNip } from '../../modules/gus-bir.js';
 
 const PAGE_SIZE = 10;
 
@@ -228,6 +229,10 @@ export default function ContractorsPanel({
   const [importReview, setImportReview] = useState(null);
   const [deletedFallbackJobIds, setDeletedFallbackJobIds] = useState([]);
   const importInputRef = useRef(null);
+  const [gusLookupBusy, setGusLookupBusy] = useState(false);
+  const [gusLookupMessage, setGusLookupMessage] = useState('');
+  const gusLookupAttemptRef = useRef('');
+  const gusLookupInFlightRef = useRef(false);
 
   async function reloadContractors({ reportError = true } = {}) {
     const isCurrent = loadGuard.begin();
@@ -265,6 +270,63 @@ export default function ContractorsPanel({
   }, [deletedFallbackJobIds, jobs]);
 
   const allContractors = useMemo(() => sortAlphabetically(buildContractorsWithJobFallback(contractors, jobsForFallback)), [contractors, jobsForFallback]);
+
+  useEffect(() => {
+    if (activeView !== 'new' || !supabase) {
+      setGusLookupMessage('');
+      return undefined;
+    }
+
+    const nip = normalizeGusNip(form.nip);
+    if (nip.length !== 10) return undefined;
+
+    const localMatch = allContractors.find((item) => normalizeContractorNip(item.nip) === nip);
+    if (localMatch) {
+      setGusLookupMessage('Ten NIP jest już zapisany w bazie.');
+      return undefined;
+    }
+    if (gusLookupAttemptRef.current === nip || gusLookupInFlightRef.current) return undefined;
+
+    const timer = window.setTimeout(() => {
+      gusLookupAttemptRef.current = nip;
+      gusLookupInFlightRef.current = true;
+      setGusLookupBusy(true);
+      setGusLookupMessage('Pobieram dane z GUS…');
+
+      void lookupCompanyByNip({ supabase, nip })
+        .then((result) => {
+          if (!result?.found) {
+            setGusLookupMessage('Nie znaleziono firmy w GUS.');
+            return;
+          }
+          setForm((prev) => {
+            if (normalizeGusNip(prev.nip) !== nip || prev.id) return prev;
+            const city = [result.postalCode, result.city].filter(Boolean).join(' ').trim() || prev.city || '';
+            const street = result.street || prev.street || '';
+            return {
+              ...prev,
+              nip,
+              company_name: result.name || prev.company_name,
+              city,
+              street,
+              addresses: updatePrimaryAddress(prev, { city, street }),
+            };
+          });
+          setGusLookupMessage('Dane firmy pobrane z GUS.');
+        })
+        .catch((error) => {
+          const message = String(error?.message || error || '');
+          setGusLookupMessage(message.includes('sumę kontrolną') ? 'Nieprawidłowy NIP.' : 'Nie udało się pobrać danych z GUS.');
+          console.warn('Nie udało się pobrać danych firmy z GUS.', message);
+        })
+        .finally(() => {
+          gusLookupInFlightRef.current = false;
+          setGusLookupBusy(false);
+        });
+    }, 650);
+
+    return () => window.clearTimeout(timer);
+  }, [activeView, supabase, form.nip, allContractors]);
 
   const filteredContractors = useMemo(() => {
     const needle = normalizeSearch(search);
@@ -663,7 +725,7 @@ export default function ContractorsPanel({
             <label className="contractorsField"><span>E-mail</span><div className="voiceFieldRow"><input className="input" value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} placeholder="adres@email.pl" /><VoiceFieldButton label="Email" onValue={(value) => setForm((prev) => ({ ...prev, email: value }))} transformValue={normalizeVoiceEmail} disabled={saveBusy} /></div></label>
             <label className="contractorsField"><span>Miasto</span><input className="input" value={form.city} onChange={(event) => { const city = event.target.value; setForm((prev) => ({ ...prev, city, addresses: updatePrimaryAddress(prev, { city }) })); }} placeholder="Miasto" /></label>
             <label className="contractorsField"><span>Ulica i numer</span><input className="input" value={form.street} onChange={(event) => { const street = event.target.value; setForm((prev) => ({ ...prev, street, addresses: updatePrimaryAddress(prev, { street }) })); }} placeholder="Ulica i numer" /></label>
-            <label className="contractorsField"><span>NIP</span><input className="input" value={form.nip} onChange={(event) => setForm((prev) => ({ ...prev, nip: event.target.value }))} placeholder="NIP" /></label>
+            <label className="contractorsField"><span>NIP</span><input className="input" value={form.nip} onChange={(event) => { setGusLookupMessage(''); setForm((prev) => ({ ...prev, nip: event.target.value })); }} placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP"} />{gusLookupMessage ? <small className="jobNipLookupStatus" role="status">{gusLookupMessage}</small> : null}</label>
             <label className="contractorsField contractorsV1062Full"><span>Uwagi</span><textarea className="input contractorsTextarea" value={form.notes} onChange={(event) => setForm((prev) => ({ ...prev, notes: event.target.value }))} placeholder="Uwagi do kontrahenta" /></label>
           </div>
 
