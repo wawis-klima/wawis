@@ -1118,9 +1118,18 @@ export default function App() {
 
   useEffect(() => {
     if (!selectedJob?.id || activeModule !== 'jobs') return;
-    if (selectedJob.detailsLoaded || selectedJob.detailsLoadError) return;
+    if (selectedJob.detailsLoadError) return;
+
+    // Po otwarciu karty z już zapisanymi szczegółami pokazujemy cache od razu,
+    // ale w tle odświeżamy komentarze i zdjęcia, żeby po reloadzie nie zostały
+    // stare dane z poprzedniej sesji.
+    if (selectedJob.detailsLoaded) {
+      void reloadJobDetails(selectedJob.id, { force: true, background: true });
+      return;
+    }
+
     void reloadJobDetails(selectedJob.id);
-  }, [activeModule, selectedJob?.id, selectedJob?.detailsLoaded, selectedJob?.detailsLoadError, reloadJobDetails]);
+  }, [activeModule, selectedJob?.id, reloadJobDetails]);
 
   const smsDueTodayCount = useMemo(() => countSmsDueToday(jobs), [jobs]);
 
