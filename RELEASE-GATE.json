@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.06",
+  "version": "12.07",
   "scope": "full",
-  "release_branch": "release/v12.06",
+  "release_branch": "release/v12.07",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Projekt Supabase jest ACTIVE_HEALTHY. Zmiana nie modyfikuje schematu ani RLS; dodaje uwierzytelnioną Edge Function i integrację frontendową GUS BIR."
+    "notes": "Hotfix bezpieczeństwa: bieżące źródła nie powinny zawierać wartości klucza GUS. Produkcyjny klucz wymaga rotacji przed konfiguracją sekretu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.06.zip"
+    "file_name": "klima-app-v12.07.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.06",
+    "source_branch": "release/v12.07",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Test: nowy NIP spoza lokalnej kartoteki ma uzupełnić nazwę i adres z GUS; istniejący NIP ma użyć danych WAWIS bez zbędnego zapytania zewnętrznego."
+    "notes": "Po wdrożeniu sprawdzić wersję 12.07. Lookup GUS pozostanie bezpiecznie nieaktywny do czasu ustawienia nowego, zrotowanego sekretu GUS_BIR_API_KEY."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,11 +33,11 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_migration_applied": "N/A — brak migracji SQL.",
-    "rls_role_matrix": "Bez zmian RLS; Edge Function wymaga prawidłowej sesji authenticated.",
-    "performance_advisor": "N/A — brak zmian schematu; lookup wykonywany dopiero po pełnym NIP-ie i debounce.",
-    "security_advisor": "Klucz GUS nie jest przechowywany w repozytorium ani frontendzie; wymagany sekret GUS_BIR_API_KEY.",
+    "rls_role_matrix": "Bez zmian RLS; Edge Function nadal wymaga prawidłowej sesji authenticated.",
+    "performance_advisor": "N/A — brak zmian schematu.",
+    "security_advisor": "Bieżący kod testu nie zawiera wartości kluczy; dotychczasowy klucz wymaga rotacji z powodu historii Git.",
     "trigger_grants": "Bez zmian.",
-    "edge_functions": "gus-bir-lookup — PENDING wdrożenia; verify_jwt=true.",
+    "edge_functions": "gus-bir-lookup ACTIVE v1, verify_jwt=true; kod funkcji nie zawiera klucza.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
