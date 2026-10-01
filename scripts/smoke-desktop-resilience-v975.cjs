@@ -43,7 +43,10 @@ assert.match(app, /void hydrateJobThumbnails\(/, 'desktop: thumbnail signing sho
 assert.match(app, /jobsRef\.current\.find/, 'desktop: detail callback must use stable jobs ref');
 assert.match(app, /profilesRef\.current/, 'desktop: detail callback must use stable profiles ref');
 assert.doesNotMatch(app, /\}, \[jobs, profiles, supabase\]\);/, 'desktop: reloadJobDetails must not be recreated for every jobs/profile update');
-assert.match(app, /selectedJob\.detailsLoaded \|\| selectedJob\.detailsLoadError/, 'desktop: failed details load must not auto-loop forever');
+assert.match(app, /jobDetailsAutoLoadRef = useRef\(''\)/, 'desktop: one auto-load cycle must be tracked per opened job');
+assert.match(app, /jobDetailsAutoLoadRef\.current === selectedId/, 'desktop: failed details load must not auto-loop forever');
+assert.match(app, /selectedJob\.detailsLoadError[\s\S]*detailsLoadError: ''/, 'desktop: stale details error must be cleared when reopening a job');
+assert.doesNotMatch(app, /selectedJob\.detailsLoaded \|\| selectedJob\.detailsLoadError/, 'desktop: stale error must not block a fresh automatic load');
 assert.match(app, /reloadJobSummary,\n\s+reloadJobDetails/, 'desktop: realtime receives one-job summary loader');
 
 assert.match(details, /detailsLoadError/, 'desktop: local details error state must be rendered');

@@ -117,6 +117,7 @@ export default function App() {
   const [selectedJob, setSelectedJob] = useState(null);
   const selectedJobIdRef = useRef(null);
   const jobDetailsRequestsRef = useRef(new Map());
+  const jobDetailsAutoLoadRef = useRef('');
   const jobSummaryRequestsRef = useRef(new Map());
   const jobsRef = useRef([]);
   const profilesRef = useRef([]);
@@ -714,10 +715,35 @@ export default function App() {
 
 
   useEffect(() => {
-    if (!selectedJob?.id || activeModule !== 'jobs') return;
-    if (selectedJob.detailsLoaded || selectedJob.detailsLoadError) return;
-    void reloadJobDetails(selectedJob.id);
-  }, [activeModule, selectedJob?.id, selectedJob?.detailsLoaded, selectedJob?.detailsLoadError, reloadJobDetails]);
+    if (!selectedJob?.id || activeModule !== 'jobs') {
+      jobDetailsAutoLoadRef.current = '';
+      return;
+    }
+
+    const selectedId = String(selectedJob.id);
+    if (selectedJob.detailsLoaded) {
+      jobDetailsAutoLoadRef.current = selectedId;
+      return;
+    }
+
+    // Błąd szczegółów z poprzedniego wejścia nie może blokować nowej próby.
+    // Dla jednego otwarcia wykonujemy dokładnie jeden automatyczny cykl
+    // (wewnątrz reloadJobDetails nadal działa retry), więc nie ma pętli.
+    if (jobDetailsAutoLoadRef.current === selectedId) return;
+    jobDetailsAutoLoadRef.current = selectedId;
+
+    if (selectedJob.detailsLoadError) {
+      const clearStaleDetailsError = (job) => (
+        job && String(job.id) === selectedId
+          ? { ...job, detailsLoadError: '' }
+          : job
+      );
+      setJobs((prev) => prev.map(clearStaleDetailsError));
+      setSelectedJob((prev) => clearStaleDetailsError(prev));
+    }
+
+    void reloadJobDetails(selectedId, { force: true });
+  }, [activeModule, selectedJob?.id, selectedJob?.detailsLoaded, reloadJobDetails]);
 
   function openJobInJobsModule(jobLike, options = {}) {
     const requestedJobId = String(jobLike?.source_job_id || jobLike?.job_id || jobLike?.id || '').trim();
