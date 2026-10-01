@@ -18,12 +18,15 @@ assert.match(columns, /key:\s*["']vat_invoice["']/);
 assert.match(columns, /label:\s*["']FV["']/);
 assert.match(columns, /desktopVatInvoiceDot/);
 assert.match(columns, /vat_invoice_issued/);
+assert.match(columns, /String\(job\?\.status \|\| ''\) !== 'Zakończone'/, 'FV w tabeli ma być puste dla niezakończonych montaży.');
 
 assert.match(panel, /Faktura VAT/);
 assert.match(panel, /desktopVatInvoiceToggle/);
 assert.match(panel, /desktopVatInvoiceHeaderToggle/);
 assert.match(panel, /jobDetailsStickyMeta[\s\S]*Faktura VAT/);
 assert.match(panel, /desktopPaymentMethodChip/);
+assert.match(panel, /isAdmin && isCompletedJob \? \(/, 'Pasek Faktura/Płatność/Fakturownia ma być widoczny tylko dla zakończonych montaży.');
+assert.match(panel, /!isAdmin \|\| !isCompletedJob \|\| !selectedJobId/, 'Akcje faktury muszą być zablokowane przed zakończeniem montażu.');
 assert.match(panel, /payment_method/);
 assert.match(panel, /Gotówka/);
 assert.match(panel, /Przelew/);
