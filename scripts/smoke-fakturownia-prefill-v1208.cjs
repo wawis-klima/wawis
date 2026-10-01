@@ -28,8 +28,8 @@ assert.match(
 );
 
 assert.match(edge, /url\.searchParams\.set\("client_id", clientId\)/);
-assert.match(edge, /invoice\[positions_attributes\]\[0\]\[name\]/);
-assert.match(edge, /invoice\[positions_attributes\]\[0\]\[tax\]/);
+assert.match(edge, /invoice\[positions\]\[0\]\[name\]/);
+assert.match(edge, /invoice\[positions\]\[0\]\[tax\]/);
 assert.match(edge, /invoice\[payment_type\]/);
 assert.match(edge, /invoice\[payment_to_kind\]/);
 assert.match(edge, /invoice\[status\]/);
@@ -45,4 +45,4 @@ assert.doesNotMatch(
   'Prefill formularza nie może wysyłać ilości ani kwoty.',
 );
 
-console.log('OK: v12.08 Fakturownia prefill bez automatycznego tworzenia faktury.');
+console.log('OK: v12.09 Fakturownia positions prefill bez automatycznego tworzenia faktury.');
