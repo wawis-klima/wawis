@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.12
+- 12.13
+
+Wersja 12.13 upraszcza niezakończone montaże na desktopie: dla statusów Nowe, W trakcie i Niezrealizowane ukryty jest cały pasek Faktura VAT / Płatność / Wystaw fakturę, a kolumna FV w tabeli nie pokazuje czerwonego statusu przed zakończeniem zlecenia. Funkcje fakturowe pozostają wyłącznie przy montażach Zakończonych.
 
 Wersja 12.12 usuwa przypadek, w którym desktop od razu pokazywał zapamiętany błąd szczegółów z poprzedniego wejścia i nie wykonywał żadnego nowego zapytania. Przy każdym ponownym otwarciu zlecenia stary błąd jest czyszczony, uruchamiany jest nowy cykl pobrania, a w ramach tego cyklu nadal obowiązuje timeout 12 s i automatyczny retry z 12.11.
 
@@ -21,7 +23,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.12
+# Wawis Klimatyzacja — wersja 12.13
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -837,7 +839,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.12` — desktop: stary błąd szczegółów z poprzedniego wejścia nie blokuje już nowego odczytu; po ponownym otwarciu zlecenia aplikacja czyści stary komunikat i uruchamia świeży cykl ładowania z retry.
+- wersja `12.13` — desktop: faktura VAT, metoda płatności i przycisk „Wystaw fakturę” są dostępne wyłącznie dla zakończonych montaży; w tabeli kolumna FV pozostaje pusta dla statusów Nowe, W trakcie i Niezrealizowane.
 - wersja 12.04 — Fakturownia: kontrahent bez NIP jest synchronizowany jako osoba prywatna (company=false) z rozdzielonym imieniem i nazwiskiem; kontrahent z NIP pozostaje firmą.
 - wersja `12.03` — desktop: po otwarciu Fakturowni aplikacja zapamiętuje istniejące faktury klienta; po powrocie sprawdza API i automatycznie oznacza „Faktura VAT wystawiona” tylko wtedy, gdy rzeczywiście powstała nowa wystawiona faktura VAT. Ręczny przycisk statusu pozostaje bez zmian i ma pierwszeństwo.
 - wersja `12.02` — desktop: usunięto z formularza montażu sekcję „Instalatorzy (opcjonalnie)” i zagęszczono nowy formularz, aby mieścił się na ekranie bez przewijania przy typowym widoku desktopowym. Mobile bez zmian.

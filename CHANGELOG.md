@@ -1,3 +1,10 @@
+## 12.13
+- Desktop: pasek „Faktura VAT / Płatność / Wystaw fakturę” jest widoczny wyłącznie dla montaży ze statusem `Zakończone`.
+- Statusy `Nowe`, `W trakcie` i `Niezrealizowane` nie pokazują już statusu faktury, metody płatności ani przycisku Fakturowni w szczegółach.
+- Akcje zmiany statusu faktury, weryfikacji Fakturowni i otwarcia formularza faktury mają dodatkową blokadę logiczną przed zakończeniem montażu.
+- W tabeli desktop kolumna `FV` pozostaje pusta dla niezakończonych montaży, zamiast pokazywać czerwony status „niewystawiona”.
+- Mobile, Supabase schema, RLS i Edge Functions bez zmian.
+
 ## 12.12
 - Desktop: zapamiętany `detailsLoadError` z poprzedniego wejścia nie blokuje już automatycznego pobrania szczegółów.
 - Po ponownym otwarciu zlecenia stary komunikat błędu jest czyszczony i uruchamiany jest nowy cykl odczytu.

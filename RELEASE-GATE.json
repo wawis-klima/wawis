@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.12",
+  "version": "12.13",
   "scope": "desktop",
-  "release_branch": "release/v12.12",
+  "release_branch": "release/v12.13",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Hotfix 12.12 kontynuuje 12.11 i usuwa blokadę nowego odczytu przez zapamiętany detailsLoadError. Brak zmian backendu."
+    "notes": "Zmiana 12.13 dotyczy wyłącznie widoczności i blokady akcji fakturowych na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.12.zip"
+    "file_name": "klima-app-v12.13.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.12",
+    "source_branch": "release/v12.13",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: ponowne otwarcie zlecenia ze starym błędem ma od razu rozpocząć świeży odczyt i nie pokazywać starego komunikatu bez próby."
+    "notes": "Po wdrożeniu sprawdzić desktop: Nowe/W trakcie/Niezrealizowane bez paska Faktura/Płatność/Wystaw fakturę i bez kropki FV; Zakończone zachowują pełny pasek i status FV."
   },
   "archive": {
     "source_of_truth": "github-main",

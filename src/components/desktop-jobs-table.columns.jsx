@@ -83,6 +83,10 @@ function renderNameplateStatusCell({ job }) {
 }
 
 function renderVatInvoiceCell({ job }) {
+  if (String(job?.status || '') !== 'Zakończone') {
+    return <div className="desktopCellContent desktopVatInvoiceCellContent" aria-hidden="true" />;
+  }
+
   const issued = Boolean(job?.vat_invoice_issued);
   const confirmed = Boolean(job?.vat_invoice_fakturownia_confirmed);
   const label = issued
