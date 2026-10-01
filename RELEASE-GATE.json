@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "11.99",
-  "scope": "full",
-  "release_branch": "release/v11.99",
+  "version": "12.00",
+  "scope": "mobile",
+  "release_branch": "release/v12.00",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": false,
+    "last_24h": true,
     "result": "PASS",
-    "notes": "W logach po teście Widna + Zawiercie nie było żadnego wywołania postal-code-lookup. Przyczyna: mobilny App.jsx nie przekazywał prop supabase do JobFormModal."
+    "notes": "Potwierdzono w produkcyjnej bazie istniejącego kontrahenta z NIP 6492040094. Przyczyna była w formularzu mobile: autolink wymagał nazwy klienta i nie używał NIP."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v11.99.zip"
+    "file_name": "klima-app-v12.00.zip"
   },
   "main_protection": {
-    "source_branch": "release/v11.99",
+    "source_branch": "release/v12.00",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić mobile: Widna + Zawiercie ma uruchomić postal-code-lookup i uzupełnić kod automatycznie."
+    "notes": "Sprawdzić mobile: wpisanie NIP 6492040094 w nowym montażu ma wybrać istniejącego kontrahenta i uzupełnić dane."
   },
   "archive": {
     "source_of_truth": "github-main",
