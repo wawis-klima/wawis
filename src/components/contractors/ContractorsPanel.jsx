@@ -25,6 +25,7 @@ import { createEmptyDeviceForm, fetchContractorDevices, normalizeDeviceStatus, s
 import { getJobDeviceRows } from '../../modules/job-devices.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { normalizeVoiceEmail, normalizeVoicePhone } from '../../modules/client-voice-input.js';
+import { lookupCompanyByNip, normalizeGusNip } from '../../modules/gus-bir.js';
 
 
 async function loadContractorsXlsxImportModule() {
@@ -166,6 +167,10 @@ export default function ContractorsPanel({
   const [deviceSaveBusy, setDeviceSaveBusy] = useState(false);
   const [deletedFallbackJobIds, setDeletedFallbackJobIds] = useState([]);
   const importInputRef = useRef(null);
+  const [gusLookupBusy, setGusLookupBusy] = useState(false);
+  const [gusLookupMessage, setGusLookupMessage] = useState('');
+  const gusLookupAttemptRef = useRef('');
+  const gusLookupInFlightRef = useRef(false);
 
   async function reloadContractors({ reportError = true } = {}) {
     const isCurrent = loadGuard.begin();
@@ -214,6 +219,74 @@ export default function ContractorsPanel({
     () => buildContractorsWithJobFallback(contractors, jobsForContractorFallback),
     [contractors, jobsForContractorFallback],
   );
+
+  useEffect(() => {
+    if (activeView !== 'new' || !supabase) {
+      setGusLookupMessage('');
+      return undefined;
+    }
+
+    const nip = normalizeGusNip(form.nip);
+    if (nip.length !== 10) return undefined;
+
+    const localMatch = contractorsWithJobFallback.find((item) => normalizeContractorNip(item.nip) === nip);
+    if (localMatch) {
+      setGusLookupMessage('Ten NIP jest już zapisany w bazie.');
+      return undefined;
+    }
+    if (gusLookupAttemptRef.current === nip || gusLookupInFlightRef.current) return undefined;
+
+    const timer = window.setTimeout(() => {
+      gusLookupAttemptRef.current = nip;
+      gusLookupInFlightRef.current = true;
+      setGusLookupBusy(true);
+      setGusLookupMessage('Pobieram dane z GUS…');
+
+      void lookupCompanyByNip({ supabase, nip })
+        .then((result) => {
+          if (!result?.found) {
+            setGusLookupMessage('Nie znaleziono firmy w GUS.');
+            return;
+          }
+          setForm((prev) => {
+            if (normalizeGusNip(prev.nip) !== nip || prev.id) return prev;
+            const city = [result.postalCode, result.city].filter(Boolean).join(' ').trim() || prev.city || '';
+            const street = result.street || prev.street || '';
+            const addresses = Array.isArray(prev.addresses) && prev.addresses.length
+              ? prev.addresses.map((address) => ({ ...address }))
+              : [createEmptyContractorAddress()];
+            let primaryIndex = addresses.findIndex((address) => address?.is_primary);
+            if (primaryIndex < 0) primaryIndex = 0;
+            addresses[primaryIndex] = {
+              ...(addresses[primaryIndex] || createEmptyContractorAddress()),
+              city,
+              street,
+              is_primary: true,
+            };
+            return {
+              ...prev,
+              nip,
+              company_name: result.name || prev.company_name,
+              city,
+              street,
+              addresses: addresses.map((address, index) => ({ ...address, is_primary: index === primaryIndex })),
+            };
+          });
+          setGusLookupMessage('Dane firmy pobrane z GUS.');
+        })
+        .catch((error) => {
+          const message = String(error?.message || error || '');
+          setGusLookupMessage(message.includes('sumę kontrolną') ? 'Nieprawidłowy NIP.' : 'Nie udało się pobrać danych z GUS.');
+          console.warn('Nie udało się pobrać danych firmy z GUS.', message);
+        })
+        .finally(() => {
+          gusLookupInFlightRef.current = false;
+          setGusLookupBusy(false);
+        });
+    }, 650);
+
+    return () => window.clearTimeout(timer);
+  }, [activeView, supabase, form.nip, contractorsWithJobFallback]);
 
   const jobFallbackContractorsCount = useMemo(
     () => contractorsWithJobFallback.filter((item) => isJobDerivedContractor(item)).length,
@@ -1193,7 +1266,8 @@ export default function ContractorsPanel({
 
             <label className="contractorsField">
               <span>NIP (opcjonalnie)</span>
-              <input className="input" value={form.nip} onChange={(event) => setForm((prev) => ({ ...prev, nip: event.target.value }))} placeholder="np. 1234567890" />
+              <input className="input" value={form.nip} onChange={(event) => { setGusLookupMessage(''); setForm((prev) => ({ ...prev, nip: event.target.value })); }} placeholder={gusLookupBusy ? "Pobieram z GUS…" : "np. 1234567890"} />
+              {gusLookupMessage ? <small className="jobNipLookupStatus" role="status">{gusLookupMessage}</small> : null}
             </label>
           </div>
 
