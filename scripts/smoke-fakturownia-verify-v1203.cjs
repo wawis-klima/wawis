@@ -23,7 +23,8 @@ assert.match(panel, /fakturowniaVerificationRef/, 'Panel musi pamiętać stan sp
 assert.match(panel, /window\.addEventListener\('focus'/, 'Po powrocie do aplikacji ma ruszyć automatyczna kontrola.');
 assert.match(panel, /visibilitychange/, 'Powrót z karty Fakturowni ma być wykrywany także przez visibilitychange.');
 assert.match(panel, /verifyPendingFakturowniaInvoice/, 'Panel musi sprawdzać, czy powstała nowa faktura.');
-assert.match(panel, /saveVatInvoiceStatus[\s\S]*issued:\s*true/, 'Potwierdzona faktura ma automatycznie ustawić status VAT na wystawiony.');
+assert.match(panel, /confirmVatInvoiceFromFakturownia/, 'Potwierdzona faktura ma używać trwałego potwierdzenia z Fakturowni.');
+assert.match(panel, /invoiceId:\s*result\.invoiceId/, 'Potwierdzenie musi zapisać identyfikator faktury z Fakturowni.');
 assert.match(panel, /Ręczna decyzja administratora ma pierwszeństwo/, 'Manualny przycisk musi pozostać nadrzędnym sposobem korekty.');
 assert.match(panel, /fakturowniaVerificationRef\.current = null/, 'Ręczna zmiana ma wyłączać oczekującą automatyczną kontrolę.');
 
