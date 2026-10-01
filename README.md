@@ -829,7 +829,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.07` — poprawka bezpieczeństwa integracji GUS: test regresyjny nie zawiera już żadnych wartości kluczy dostępowych. Klucz BIR musi być wyłącznie sekretem `GUS_BIR_API_KEY` po stronie Supabase.
+- wersja `12.08` — Fakturownia: formularz nowej faktury dostaje opis usługi z marką, VAT 23%/8% oraz płatność z protokołu; samo kliknięcie nadal nie tworzy faktury.
 - wersja 12.04 — Fakturownia: kontrahent bez NIP jest synchronizowany jako osoba prywatna (company=false) z rozdzielonym imieniem i nazwiskiem; kontrahent z NIP pozostaje firmą.
 - wersja `12.03` — desktop: po otwarciu Fakturowni aplikacja zapamiętuje istniejące faktury klienta; po powrocie sprawdza API i automatycznie oznacza „Faktura VAT wystawiona” tylko wtedy, gdy rzeczywiście powstała nowa wystawiona faktura VAT. Ręczny przycisk statusu pozostaje bez zmian i ma pierwszeństwo.
 - wersja `12.02` — desktop: usunięto z formularza montażu sekcję „Instalatorzy (opcjonalnie)” i zagęszczono nowy formularz, aby mieścił się na ekranie bez przewijania przy typowym widoku desktopowym. Mobile bez zmian.
