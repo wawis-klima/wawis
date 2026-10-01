@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.09",
+  "version": "12.10",
   "scope": "desktop",
-  "release_branch": "release/v12.09",
+  "release_branch": "release/v12.10",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "PASS",
-    "notes": "Zmiana dotyczy wyłącznie desktopowej integracji Fakturowni; 12.09 koryguje nazwy parametrów pozycji. Mobile pozostaje bez zmian funkcjonalnych."
+    "result": "CHECKED",
+    "notes": "Baseline 24 h sprawdzony przed 12.10. W 12.09 widoczne są istniejące ostrzeżenia/błędy data.refresh oraz pojedyncze ostrzeżenia innych modułów; diagnostyka jest informacyjna i nie jest skutkiem tej zmiany UI/logiki Fakturowni."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.09.zip"
+    "file_name": "klima-app-v12.10.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.09",
+    "source_branch": "release/v12.10",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu na desktopie sprawdzić, czy formularz Fakturowni pokazuje nazwę pozycji i VAT oraz zachowuje działającą płatność/status/termin."
+    "notes": "Po wdrożeniu sprawdzić na desktopie: jeden wiersz Faktura/Płatność/Wystaw fakturę, neutralny przycisk oraz brak ponownej weryfikacji statusu po wcześniejszym potwierdzeniu Fakturowni."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,11 +33,11 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_migration_applied": "N/A — brak migracji SQL.",
-    "rls_role_matrix": "Bez zmian RLS; fakturownia-client nadal wymaga sesji i roli Administrator.",
+    "rls_role_matrix": "Bez zmian RLS i uprawnień.",
     "performance_advisor": "N/A — brak zmian schematu.",
-    "security_advisor": "Bez zmian sekretów; FAKTUROWNIA_API_TOKEN pozostaje wyłącznie po stronie Edge Function.",
+    "security_advisor": "Bez zmian sekretów.",
     "trigger_grants": "Bez zmian.",
-    "edge_functions": "fakturownia-client: wdrożenie 12.09 po merge, verify_jwt=true.",
+    "edge_functions": "Bez zmian Edge Functions; istniejąca integracja Fakturowni pozostaje bez zmian backendowych.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
