@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.07
+- 12.08
+
+Wersja 12.08 rozszerza przycisk „Wystaw fakturę” o wstępne uzupełnienie formularza Fakturowni: nazwę usługi z marką klimatyzatora, VAT 23% dla firmy / 8% dla osoby bez NIP oraz płatność z protokołu (gotówka: opłacona bez terminu; przelew: wystawiona, termin 3 dni). Kliknięcie nadal nie tworzy faktury automatycznie.
 
 Wersja 12.07 usuwa wartości dostępowe z testu regresyjnego integracji GUS. Funkcjonalność lookupu NIP pozostaje bez zmian; klucz BIR jest oczekiwany wyłącznie jako sekret serwerowy Supabase.
 
@@ -11,7 +13,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.07
+# Wawis Klimatyzacja — wersja 12.08
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -827,7 +829,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.07` — poprawka bezpieczeństwa integracji GUS: test regresyjny nie zawiera już żadnych wartości kluczy dostępowych. Klucz BIR musi być wyłącznie sekretem `GUS_BIR_API_KEY` po stronie Supabase.
+- wersja `12.08` — Fakturownia: formularz nowej faktury dostaje opis usługi z marką, VAT 23%/8% oraz płatność z protokołu; samo kliknięcie nadal nie tworzy faktury.
 - wersja 12.04 — Fakturownia: kontrahent bez NIP jest synchronizowany jako osoba prywatna (company=false) z rozdzielonym imieniem i nazwiskiem; kontrahent z NIP pozostaje firmą.
 - wersja `12.03` — desktop: po otwarciu Fakturowni aplikacja zapamiętuje istniejące faktury klienta; po powrocie sprawdza API i automatycznie oznacza „Faktura VAT wystawiona” tylko wtedy, gdy rzeczywiście powstała nowa wystawiona faktura VAT. Ręczny przycisk statusu pozostaje bez zmian i ma pierwszeństwo.
 - wersja `12.02` — desktop: usunięto z formularza montażu sekcję „Instalatorzy (opcjonalnie)” i zagęszczono nowy formularz, aby mieścił się na ekranie bez przewijania przy typowym widoku desktopowym. Mobile bez zmian.

@@ -121,7 +121,7 @@ Deno.serve(async (request: Request) => {
 
     const { data: job, error: jobError } = await adminClient
       .from("jobs")
-      .select("id, contractor_id, client, title, email, phone, city, street")
+      .select("id, contractor_id, client, title, email, phone, city, street, device_model, payment_method")
       .eq("id", jobId)
       .maybeSingle();
 
@@ -148,6 +148,12 @@ Deno.serve(async (request: Request) => {
     const taxNo = digitsOnly(contractor?.nip);
     const isCompany = Boolean(taxNo);
     const personName = splitPrivatePersonName(clientName);
+    const invoiceBrand = detectInvoiceBrand(job.device_model);
+    const invoicePositionName = invoiceBrand
+      ? `Dostawa i montaż klimatyzatora marki ${invoiceBrand}`
+      : "Dostawa i montaż klimatyzatora";
+    const invoiceTax = isCompany ? 23 : 8;
+    const invoicePayment = getInvoicePaymentPrefill(job.payment_method);
     const clientData = compactObject({
       name: clientName,
       first_name: isCompany ? "" : personName.firstName,
@@ -220,7 +226,14 @@ Deno.serve(async (request: Request) => {
       .map((invoice) => normalizeText(invoice?.id))
       .filter(Boolean);
 
-    const invoiceUrl = `${FAKTUROWNIA_BASE_URL}/invoices/new?client_id=${encodeURIComponent(clientId)}`;
+    const invoiceUrl = buildInvoiceFormUrl({
+      clientId,
+      positionName: invoicePositionName,
+      tax: invoiceTax,
+      paymentType: invoicePayment.paymentType,
+      paymentToKind: invoicePayment.paymentToKind,
+      status: invoicePayment.status,
+    });
     const clientUrl = `${FAKTUROWNIA_BASE_URL}/clients/${encodeURIComponent(clientId)}`;
 
     return json({
@@ -232,6 +245,14 @@ Deno.serve(async (request: Request) => {
       existingInvoiceIds,
       invoiceUrl,
       clientUrl,
+      invoicePrefill: {
+        brand: invoiceBrand,
+        positionName: invoicePositionName,
+        tax: invoiceTax,
+        paymentType: invoicePayment.paymentType,
+        paymentToKind: invoicePayment.paymentToKind,
+        status: invoicePayment.status,
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -328,6 +349,82 @@ function getPrimaryAddress(contractor: Record<string, unknown> | null): { city: 
     city: normalizeText(primary?.city),
     street: normalizeText(primary?.street),
   };
+}
+
+
+type InvoicePaymentPrefill = {
+  paymentType: "" | "cash" | "transfer";
+  paymentToKind: "" | "off" | "3";
+  status: "" | "paid" | "issued";
+};
+
+function getInvoicePaymentPrefill(value: unknown): InvoicePaymentPrefill {
+  const method = normalizeText(value).toLowerCase();
+  if (method === "cash") {
+    return { paymentType: "cash", paymentToKind: "off", status: "paid" };
+  }
+  if (method === "transfer") {
+    return { paymentType: "transfer", paymentToKind: "3", status: "issued" };
+  }
+  return { paymentType: "", paymentToKind: "", status: "" };
+}
+
+function detectInvoiceBrand(value: unknown): string {
+  const text = normalizeText(value);
+  if (!text) return "";
+
+  const brands: Array<[RegExp, string]> = [
+    [/\bMitsubishi\s+Heavy(?:\s+Industries)?\b/i, "Mitsubishi Heavy Industries"],
+    [/\bMitsubishi\s+Electric\b/i, "Mitsubishi Electric"],
+    [/\bRotenso\b/i, "Rotenso"],
+    [/\bDaikin\b/i, "Daikin"],
+    [/\bSamsung\b/i, "Samsung"],
+    [/\bGree\b/i, "Gree"],
+    [/\bKaisai\b/i, "Kaisai"],
+    [/\bHaier\b/i, "Haier"],
+    [/\bPanasonic\b/i, "Panasonic"],
+    [/\bToshiba\b/i, "Toshiba"],
+    [/\bFujitsu\b/i, "Fujitsu"],
+    [/\bHitachi\b/i, "Hitachi"],
+    [/\bHisense\b/i, "Hisense"],
+    [/\bSinclair\b/i, "Sinclair"],
+    [/\bMidea\b/i, "Midea"],
+    [/\bAUX\b/i, "AUX"],
+    [/\bLG\b/i, "LG"],
+    [/\bMitsubishi\b/i, "Mitsubishi Electric"],
+  ];
+
+  return brands.find(([pattern]) => pattern.test(text))?.[1] || "";
+}
+
+function buildInvoiceFormUrl({
+  clientId,
+  positionName,
+  tax,
+  paymentType,
+  paymentToKind,
+  status,
+}: {
+  clientId: string;
+  positionName: string;
+  tax: number;
+  paymentType: string;
+  paymentToKind: string;
+  status: string;
+}): string {
+  const url = new URL("/invoices/new", FAKTUROWNIA_BASE_URL);
+  url.searchParams.set("client_id", clientId);
+
+  // Te parametry wyłącznie wstępnie uzupełniają formularz WWW.
+  // Nie wysyłamy POST /invoices.json, więc samo kliknięcie w WAWIS nie tworzy dokumentu.
+  url.searchParams.set("invoice[positions_attributes][0][name]", positionName);
+  url.searchParams.set("invoice[positions_attributes][0][tax]", String(tax));
+
+  if (paymentType) url.searchParams.set("invoice[payment_type]", paymentType);
+  if (paymentToKind) url.searchParams.set("invoice[payment_to_kind]", paymentToKind);
+  if (status) url.searchParams.set("invoice[status]", status);
+
+  return url.toString();
 }
 
 function compactObject(values: Record<string, unknown>): Record<string, unknown> {
