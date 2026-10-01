@@ -1,7 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.105.4";
 
 type SyncInvoiceClientRequest = {
+  action?: "prepare" | "verify";
   jobId?: string;
+  clientId?: string | number;
+  knownInvoiceIds?: Array<string | number>;
 };
 
 type FakturowniaClient = {
@@ -13,6 +16,14 @@ type FakturowniaClient = {
   city?: string;
   street?: string;
   external_id?: string | number;
+};
+
+type FakturowniaInvoice = {
+  id?: number | string;
+  number?: string;
+  kind?: string;
+  status?: string;
+  client_id?: number | string;
 };
 
 const FAKTUROWNIA_DOMAIN = "wawis.fakturownia.pl";
@@ -68,6 +79,40 @@ Deno.serve(async (request: Request) => {
     }
 
     const body = (await request.json()) as SyncInvoiceClientRequest;
+    const action = normalizeText(body.action || "prepare").toLowerCase();
+
+    if (action === "verify") {
+      const clientId = normalizeText(body.clientId);
+      if (!clientId) return json({ error: "Brak identyfikatora klienta Fakturowni do weryfikacji." }, 400);
+
+      const knownInvoiceIds = new Set(
+        (Array.isArray(body.knownInvoiceIds) ? body.knownInvoiceIds : [])
+          .map((value) => normalizeText(value))
+          .filter(Boolean),
+      );
+      const invoices = await fakturowniaGetInvoices(apiToken, {
+        client_id: clientId,
+        page: "1",
+        per_page: "100",
+        order: "updated_at.desc",
+      });
+      const foundInvoice = invoices.find((invoice) => {
+        const invoiceId = normalizeText(invoice?.id);
+        return invoiceId && !knownInvoiceIds.has(invoiceId) && isIssuedVatInvoice(invoice);
+      }) || null;
+
+      return json({
+        ok: true,
+        found: Boolean(foundInvoice?.id),
+        invoiceId: normalizeText(foundInvoice?.id),
+        invoiceNumber: normalizeText(foundInvoice?.number),
+        invoiceStatus: normalizeText(foundInvoice?.status),
+        invoiceKind: normalizeText(foundInvoice?.kind),
+      });
+    }
+
+    if (action !== "prepare") return json({ error: "Nieznana operacja integracji Fakturowni." }, 400);
+
     const jobId = normalizeText(body.jobId);
     if (!isUuid(jobId)) return json({ error: "Brak prawidłowego identyfikatora montażu." }, 400);
 
@@ -157,6 +202,16 @@ Deno.serve(async (request: Request) => {
 
     // Formularz pozostaje po stronie Fakturowni. API służy tu wyłącznie do synchronizacji klienta,
     // żeby samo kliknięcie nie tworzyło dokumentu ani numeru faktury.
+    const existingInvoices = await fakturowniaGetInvoices(apiToken, {
+      client_id: clientId,
+      page: "1",
+      per_page: "100",
+      order: "updated_at.desc",
+    });
+    const existingInvoiceIds = existingInvoices
+      .map((invoice) => normalizeText(invoice?.id))
+      .filter(Boolean);
+
     const invoiceUrl = `${FAKTUROWNIA_BASE_URL}/invoices/new?client_id=${encodeURIComponent(clientId)}`;
     const clientUrl = `${FAKTUROWNIA_BASE_URL}/clients/${encodeURIComponent(clientId)}`;
 
@@ -166,6 +221,7 @@ Deno.serve(async (request: Request) => {
       clientName,
       created,
       matchSource: matchSource || (created ? "created" : "unknown"),
+      existingInvoiceIds,
       invoiceUrl,
       clientUrl,
     });
@@ -179,6 +235,20 @@ async function fakturowniaGetClients(apiToken: string, params: Record<string, st
   const query = new URLSearchParams(params);
   const result = await fakturowniaRequest<unknown>(`/clients.json?${query.toString()}`, apiToken, { method: "GET" });
   return Array.isArray(result) ? result as FakturowniaClient[] : [];
+}
+
+async function fakturowniaGetInvoices(apiToken: string, params: Record<string, string>): Promise<FakturowniaInvoice[]> {
+  const query = new URLSearchParams(params);
+  const result = await fakturowniaRequest<unknown>(`/invoices.json?${query.toString()}`, apiToken, { method: "GET" });
+  return Array.isArray(result) ? result as FakturowniaInvoice[] : [];
+}
+
+function isIssuedVatInvoice(invoice: FakturowniaInvoice): boolean {
+  const kind = normalizeText(invoice?.kind).toLowerCase();
+  const status = normalizeText(invoice?.status).toLowerCase();
+  const vatKinds = new Set(["vat", "vat_mp", "vat_margin", "final"]);
+  const issuedStatuses = new Set(["issued", "sent", "paid", "partial"]);
+  return vatKinds.has(kind) && issuedStatuses.has(status);
 }
 
 async function fakturowniaRequest<T>(

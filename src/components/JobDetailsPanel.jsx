@@ -8,7 +8,7 @@ import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canMan
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 import { saveVatInvoiceStatus } from "../modules/jobs-crud.js";
-import { prepareFakturowniaInvoice } from "../modules/fakturownia.js";
+import { prepareFakturowniaInvoice, verifyFakturowniaInvoice } from "../modules/fakturownia.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -124,13 +124,40 @@ export default function JobDetailsPanel({
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [vatInvoiceSaving, setVatInvoiceSaving] = React.useState(false);
   const [fakturowniaOpening, setFakturowniaOpening] = React.useState(false);
+  const [fakturowniaVerifying, setFakturowniaVerifying] = React.useState(false);
+  const fakturowniaVerificationRef = React.useRef(null);
+  const fakturowniaVerificationBusyRef = React.useRef(false);
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
 
   React.useEffect(() => {
     setCommentSaving(false);
     setVatInvoiceSaving(false);
     setFakturowniaOpening(false);
+    setFakturowniaVerifying(false);
+    fakturowniaVerificationRef.current = null;
+    fakturowniaVerificationBusyRef.current = false;
   }, [selectedJobId]);
+
+  React.useEffect(() => {
+    if (!isAdmin || !selectedJobId) return undefined;
+
+    let timer = null;
+    const verifyAfterReturn = () => {
+      if (document.visibilityState === 'hidden' || !fakturowniaVerificationRef.current) return;
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        void verifyPendingFakturowniaInvoice();
+      }, 700);
+    };
+
+    window.addEventListener('focus', verifyAfterReturn);
+    document.addEventListener('visibilitychange', verifyAfterReturn);
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener('focus', verifyAfterReturn);
+      document.removeEventListener('visibilitychange', verifyAfterReturn);
+    };
+  }, [isAdmin, selectedJobId, supabase]);
 
   React.useEffect(() => {
     if (!commentHasUnsavedWork) return undefined;
@@ -238,7 +265,7 @@ export default function JobDetailsPanel({
   };
 
   async function handleVatInvoiceToggle() {
-    if (!isAdmin || !selectedJobId || vatInvoiceSaving) return;
+    if (!isAdmin || !selectedJobId || vatInvoiceSaving || fakturowniaVerifying) return;
     const nextIssued = !Boolean(selectedJob?.vat_invoice_issued);
     setVatInvoiceSaving(true);
     try {
@@ -255,11 +282,53 @@ export default function JobDetailsPanel({
       );
       setJobs?.((previous) => previous.map(patchJob));
       setSelectedJobByUpdater?.(patchJob);
+      // Ręczna decyzja administratora ma pierwszeństwo nad oczekującą automatyczną kontrolą.
+      fakturowniaVerificationRef.current = null;
     } catch (error) {
       console.error('Nie udało się zapisać statusu faktury VAT.', error);
       window.alert(`Nie udało się zapisać statusu faktury VAT. ${error?.message || ''}`.trim());
     } finally {
       setVatInvoiceSaving(false);
+    }
+  }
+
+
+  async function verifyPendingFakturowniaInvoice() {
+    const pending = fakturowniaVerificationRef.current;
+    if (!isAdmin || !selectedJobId || !pending || fakturowniaVerificationBusyRef.current) return;
+    if (String(pending.jobId || '') !== selectedJobId) return;
+
+    fakturowniaVerificationBusyRef.current = true;
+    setFakturowniaVerifying(true);
+    try {
+      const result = await verifyFakturowniaInvoice({
+        supabase,
+        jobId: selectedJobId,
+        clientId: pending.clientId,
+        knownInvoiceIds: pending.knownInvoiceIds,
+      });
+
+      if (!result?.found) return;
+
+      const saved = await saveVatInvoiceStatus({
+        supabase,
+        jobId: selectedJobId,
+        issued: true,
+      });
+      const issued = Boolean(saved?.vat_invoice_issued ?? true);
+      const patchJob = (job) => (
+        job && String(job.id) === selectedJobId
+          ? { ...job, vat_invoice_issued: issued }
+          : job
+      );
+      setJobs?.((previous) => previous.map(patchJob));
+      setSelectedJobByUpdater?.(patchJob);
+      fakturowniaVerificationRef.current = null;
+    } catch (error) {
+      console.warn('Nie udało się automatycznie sprawdzić faktury w Fakturowni.', error);
+    } finally {
+      fakturowniaVerificationBusyRef.current = false;
+      setFakturowniaVerifying(false);
     }
   }
 
@@ -287,6 +356,13 @@ export default function JobDetailsPanel({
         supabase,
         jobId: selectedJobId,
       });
+      if (prepared?.clientId) {
+        fakturowniaVerificationRef.current = {
+          jobId: selectedJobId,
+          clientId: String(prepared.clientId),
+          knownInvoiceIds: Array.isArray(prepared.existingInvoiceIds) ? prepared.existingInvoiceIds.map(String) : [],
+        };
+      }
       invoiceWindow.location.replace(prepared.invoiceUrl);
     } catch (error) {
       try { invoiceWindow.close(); } catch {}
@@ -310,13 +386,13 @@ export default function JobDetailsPanel({
                 type="button"
                 className={`desktopVatInvoiceToggle desktopVatInvoiceHeaderToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
                 onClick={handleVatInvoiceToggle}
-                disabled={vatInvoiceSaving}
+                disabled={vatInvoiceSaving || fakturowniaVerifying}
                 aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
-                title="Kliknij, aby zmienić status faktury VAT"
+                title="Status możesz zmienić ręcznie; po powrocie z Fakturowni aplikacja sprawdza też, czy faktycznie powstała faktura VAT"
               >
                 <span className="desktopVatInvoiceDot" aria-hidden="true" />
                 <span className="desktopVatInvoiceHeaderLabel">Faktura VAT</span>
-                <span>{vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona')}</span>
+                <span>{fakturowniaVerifying ? 'Sprawdzam…' : (vatInvoiceSaving ? 'Zapisywanie…' : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona'))}</span>
               </button>
             ) : null}
             {isAdmin ? (
