@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.11",
+  "version": "12.12",
   "scope": "desktop",
-  "release_branch": "release/v12.11",
+  "release_branch": "release/v12.12",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Hotfix 12.11 bazuje na sprawdzonym baseline 24 h z 12.10; zmiana jest wyłącznie po stronie klienta desktop i nie modyfikuje Supabase, RLS ani Edge Functions."
+    "notes": "Hotfix 12.12 kontynuuje 12.11 i usuwa blokadę nowego odczytu przez zapamiętany detailsLoadError. Brak zmian backendu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.11.zip"
+    "file_name": "klima-app-v12.12.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.11",
+    "source_branch": "release/v12.12",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: szczegóły montażu mają automatycznie ponowić timeout, nie pokazywać błędu po pierwszych 12 s i zapisać job.details.retry w diagnostyce."
+    "notes": "Po wdrożeniu sprawdzić desktop: ponowne otwarcie zlecenia ze starym błędem ma od razu rozpocząć świeży odczyt i nie pokazywać starego komunikatu bez próby."
   },
   "archive": {
     "source_of_truth": "github-main",
