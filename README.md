@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.10
+- 12.11
+
+Wersja 12.11 poprawia odporność desktopowych szczegółów montażu na chwilowe opóźnienia Supabase: limit pojedynczej próby rośnie do 12 s, timeout lub błąd sieciowy uruchamia automatyczną drugą próbę po 1,5 s, a komunikat z przyciskiem „Ponów” pojawia się dopiero po nieudanym retry. Diagnostyka zapisuje retry, odzyskanie i końcową porażkę odczytu.
 
 Wersja 12.10 porządkuje desktopowy pasek faktury: status „Faktura VAT”, metoda płatności i „Wystaw fakturę” są zawsze trzymane w jednym wierszu, a przycisk Fakturowni ma neutralny, czytelny wygląd bez mocnego niebieskiego tła. Po trwałym potwierdzeniu faktury przez Fakturownię aplikacja nie uruchamia już ponownej weryfikacji statusu dla tego montażu. Dodatkowo mobilna karta po otwarciu odświeża w tle zapisane szczegóły, dzięki czemu komentarz dodany po wcześniejszym odczycie nie pozostaje ukryty przez stary cache.
 
