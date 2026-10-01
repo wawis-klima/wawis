@@ -30,6 +30,10 @@ function normalizePhone(value) {
   return normalizeText(value).replace(/\D+/g, '');
 }
 
+function normalizeNip(value) {
+  return normalizeText(value).replace(/\D+/g, '');
+}
+
 function normalizeComparable(value) {
   return normalizeText(value)
     .normalize('NFD')
@@ -74,7 +78,18 @@ export function filterContractorsByQuery(contractors = [], query = '') {
   });
 }
 
+export function findContractorByNip(contractors = [], nip = '') {
+  const normalizedNip = normalizeNip(nip);
+  if (normalizedNip.length !== 10) return null;
+
+  const matches = contractors.filter((contractor) => normalizeNip(contractor?.nip) === normalizedNip);
+  return matches.length === 1 ? matches[0] : null;
+}
+
 export function getDuplicateContractorMatch({ contractors = [], contractorId = '', client = '' } = {}) {
+  const nipMatch = findContractorByNip(contractors, nip);
+  if (nipMatch) return nipMatch;
+
   const normalizedClient = normalizeComparable(client);
   if (!normalizedClient) return null;
 
@@ -91,6 +106,7 @@ export function findAutoLinkedContractor({
   client = '',
   email = '',
   phone = '',
+  nip = '',
   city = '',
   street = '',
 } = {}) {
@@ -142,6 +158,7 @@ export function applyAutoLinkedContractorToJobForm(form = {}, contractors = []) 
     client: form.client,
     email: form.email,
     phone: form.phone,
+    nip: form.nip,
     city: form.city,
     street: form.street,
   });
@@ -156,8 +173,10 @@ export function applyAutoLinkedContractorToJobForm(form = {}, contractors = []) 
 
   const primaryAddress = getPrimaryAddress(match);
   const nextForm = { ...form, contractor_id: match.id };
+  if (!normalizeText(nextForm.client) && normalizeText(match.company_name)) nextForm.client = normalizeText(match.company_name);
   if (!normalizeText(nextForm.email) && normalizeText(match.email)) nextForm.email = normalizeText(match.email);
   if (!normalizeText(nextForm.phone) && normalizeText(match.phone)) nextForm.phone = normalizeText(match.phone);
+  if (!normalizeText(nextForm.nip) && normalizeText(match.nip)) nextForm.nip = normalizeText(match.nip);
   if (!normalizeText(nextForm.city) && normalizeText(primaryAddress?.city || match.city)) nextForm.city = normalizeText(primaryAddress?.city || match.city);
   if (!normalizeText(nextForm.street) && normalizeText(primaryAddress?.street || match.street)) nextForm.street = normalizeText(primaryAddress?.street || match.street);
   if (!normalizeText(nextForm.contractor_address_id) && primaryAddress?.id) nextForm.contractor_address_id = primaryAddress.id;
