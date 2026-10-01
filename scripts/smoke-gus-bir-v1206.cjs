@@ -14,7 +14,8 @@ const desktopContractors = read('src/components/contractors/ContractorsPanel.jsx
 const mobileContractors = read('src/mobile791/components/contractors/ContractorsPanel.jsx');
 
 assert.match(edge, /Deno\.env\.get\("GUS_BIR_API_KEY"\)/, 'Klucz GUS musi pochodzić wyłącznie z sekretu Edge Function.');
-assert.doesNotMatch(edge, /abcde12345abcde12345|ad355364b7be457fa57f/, 'Żaden klucz GUS nie może trafić do repozytorium.');
+assert.doesNotMatch(edge, /apiKey\s*=\s*["'][^"']+["']/i, 'Klucz GUS nie może być wpisany na sztywno w Edge Function.');
+assert.match(edge, /escapeXml\(apiKey\)/, 'Envelope SOAP musi używać klucza pobranego dynamicznie z sekretu.');
 assert.match(edge, /auth\.getUser\(\)/, 'Lookup GUS musi wymagać zalogowanego użytkownika.');
 assert.match(edge, /IUslugaBIRzewnPubl\/Zaloguj/, 'Lookup musi logować się do BIR.');
 assert.match(edge, /IUslugaBIRzewnPubl\/DaneSzukajPodmioty/, 'Lookup musi wyszukiwać podmiot po NIP.');
@@ -39,4 +40,4 @@ for (const [label, source] of [['desktop contractors', desktopContractors], ['mo
   assert.match(source, /normalizeContractorNip\(item\.nip\).*=== nip/s, `${label}: istniejący NIP w bazie ma blokować zbędne zapytanie GUS.`);
 }
 
-console.log('OK: v12.06 GUS BIR lookup po NIP jest zabezpieczony i podpięty do montażów oraz kontrahentów.');
+console.log('OK: GUS BIR lookup po NIP jest zabezpieczony, bez wartości klucza w kodzie testu.');
