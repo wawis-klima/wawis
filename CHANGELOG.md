@@ -1,3 +1,10 @@
+## 12.10
+- Desktop: status „Faktura VAT”, metoda płatności i przycisk „Wystaw fakturę” są grupowane w jednym, niełamanym wierszu.
+- Przycisk „Wystaw fakturę” ma neutralny biało-szary wygląd i nie używa mocnego niebieskiego tła ani ikony dokumentu.
+- Po trwałym potwierdzeniu faktury w Fakturowni aplikacja czyści oczekującą kontrolę i nie wykonuje kolejnej automatycznej weryfikacji statusu tego montażu.
+- Samo wejście w szczegóły montażu nie odpytuje API Fakturowni; kontrola dotyczy wyłącznie powrotu po otwarciu formularza dla niepotwierdzonej faktury.
+- Mobile, Supabase schema, RLS i Edge Functions bez zmian.
+
 ## 12.09
 - Poprawiono parametry wstępnego wypełnienia pozycji formularza Fakturowni z `positions_attributes` na `positions`.
 - Nazwa pozycji i VAT są teraz przekazywane jako `invoice[positions][0][name]` oraz `invoice[positions][0][tax]`.
