@@ -1,4 +1,5 @@
 import React from "react";
+import "./job-details-invoice-v1210.css";
 import { IconCalendar, IconCamera, IconCheckCircle, IconClock, IconFileText, IconImage, IconMail, IconMapPin, IconMessageCircle, IconPhone, IconUsers } from "./ui.jsx";
 import { getInitials, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
 import JobAddressLink from "./JobAddressLink.jsx";
@@ -297,6 +298,10 @@ export default function JobDetailsPanel({
   async function verifyPendingFakturowniaInvoice() {
     const pending = fakturowniaVerificationRef.current;
     if (!isAdmin || !selectedJobId || !pending || fakturowniaVerificationBusyRef.current) return;
+    if (selectedJob?.vat_invoice_fakturownia_confirmed) {
+      fakturowniaVerificationRef.current = null;
+      return;
+    }
     if (String(pending.jobId || '') !== selectedJobId) return;
 
     fakturowniaVerificationBusyRef.current = true;
@@ -364,7 +369,9 @@ export default function JobDetailsPanel({
         supabase,
         jobId: selectedJobId,
       });
-      if (prepared?.clientId) {
+      if (selectedJob?.vat_invoice_fakturownia_confirmed) {
+        fakturowniaVerificationRef.current = null;
+      } else if (prepared?.clientId) {
         fakturowniaVerificationRef.current = {
           jobId: selectedJobId,
           clientId: String(prepared.clientId),
@@ -390,47 +397,48 @@ export default function JobDetailsPanel({
             <span className={`jobTypeTag desktopJobTypeTag jobDetailsStatusChip ${statusClassName}`}>{statusLabel}</span>
             <span className="jobDetailsDateChip"><IconCalendar /> {installationDateLabel}</span>
             {isAdmin ? (
-              <button
-                type="button"
-                className={`desktopVatInvoiceToggle desktopVatInvoiceHeaderToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
-                onClick={handleVatInvoiceToggle}
-                disabled={vatInvoiceSaving || fakturowniaVerifying || Boolean(selectedJob.vat_invoice_fakturownia_confirmed)}
-                aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
-                title={selectedJob.vat_invoice_fakturownia_confirmed
-                  ? 'Faktura została potwierdzona w Fakturowni — statusu nie można już cofnąć.'
-                  : 'Status możesz zmienić ręcznie; po powrocie z Fakturowni aplikacja sprawdza też, czy faktycznie powstała faktura VAT'}
-              >
-                <span className="desktopVatInvoiceDot" aria-hidden="true" />
-                <span className="desktopVatInvoiceHeaderLabel">Faktura VAT</span>
-                <span>{fakturowniaVerifying
-                  ? 'Sprawdzam…'
-                  : (vatInvoiceSaving
-                    ? 'Zapisywanie…'
-                    : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona'))}</span>
-              </button>
-            ) : null}
-            {isAdmin ? (
-              <span
-                className={`desktopPaymentMethodChip ${paymentMethodDisplay.className}`}
-                title="Metoda płatności odczytana z protokołu montażu"
-                aria-label={`Płatność: ${paymentMethodDisplay.label}`}
-              >
-                <span className="desktopPaymentMethodDot" aria-hidden="true" />
-                <span className="desktopPaymentMethodHeaderLabel">Płatność</span>
-                <span>{paymentMethodDisplay.label}</span>
-              </span>
-            ) : null}
-            {isAdmin ? (
-              <button
-                type="button"
-                className="desktopFakturowniaButton"
-                onClick={handleOpenFakturowniaInvoice}
-                disabled={fakturowniaOpening}
-                title="Przenieś dane klienta do Fakturowni i otwórz formularz faktury"
-              >
-                <IconFileText />
-                <span>{fakturowniaOpening ? 'Łączenie…' : 'Wystaw fakturę'}</span>
-              </button>
+              <div className="desktopInvoiceActionsRowV1210" aria-label="Faktura VAT i płatność">
+                <button
+                  type="button"
+                  className={`desktopVatInvoiceToggle desktopVatInvoiceHeaderToggle ${selectedJob.vat_invoice_issued ? 'issued' : 'missing'}`}
+                  onClick={handleVatInvoiceToggle}
+                  disabled={vatInvoiceSaving || fakturowniaVerifying || Boolean(selectedJob.vat_invoice_fakturownia_confirmed)}
+                  aria-pressed={Boolean(selectedJob.vat_invoice_issued)}
+                  title={selectedJob.vat_invoice_fakturownia_confirmed
+                    ? 'Faktura została potwierdzona w Fakturowni — statusu nie można już cofnąć.'
+                    : 'Status możesz zmienić ręcznie; po powrocie z Fakturowni aplikacja sprawdza też, czy faktycznie powstała faktura VAT'}
+                >
+                  <span className="desktopVatInvoiceDot" aria-hidden="true" />
+                  <span className="desktopVatInvoiceHeaderLabel">Faktura VAT</span>
+                  <span>{fakturowniaVerifying
+                    ? 'Sprawdzam…'
+                    : (vatInvoiceSaving
+                      ? 'Zapisywanie…'
+                      : (selectedJob.vat_invoice_issued ? 'Wystawiona' : 'Niewystawiona'))}</span>
+                </button>
+
+                <span
+                  className={`desktopPaymentMethodChip ${paymentMethodDisplay.className}`}
+                  title="Metoda płatności odczytana z protokołu montażu"
+                  aria-label={`Płatność: ${paymentMethodDisplay.label}`}
+                >
+                  <span className="desktopPaymentMethodDot" aria-hidden="true" />
+                  <span className="desktopPaymentMethodHeaderLabel">Płatność</span>
+                  <span>{paymentMethodDisplay.label}</span>
+                </span>
+
+                <button
+                  type="button"
+                  className="desktopFakturowniaButton desktopFakturowniaButtonV1210"
+                  onClick={handleOpenFakturowniaInvoice}
+                  disabled={fakturowniaOpening}
+                  title={selectedJob.vat_invoice_fakturownia_confirmed
+                    ? 'Otwórz Fakturownię — status tej faktury jest już potwierdzony i nie będzie ponownie sprawdzany.'
+                    : 'Przenieś dane klienta do Fakturowni i otwórz formularz faktury'}
+                >
+                  <span>{fakturowniaOpening ? 'Łączenie…' : 'Wystaw fakturę'}</span>
+                </button>
+              </div>
             ) : null}
           </div>
         </div>

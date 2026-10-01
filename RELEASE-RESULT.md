@@ -1,19 +1,18 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.07
+- 12.10
 
 ## Zakres
-- poprawka bezpieczeństwa integracji GUS BIR
-- usunięcie wartości kluczy dostępowych z testu regresyjnego
-- pozostawienie wyłącznie referencji do sekretu GUS_BIR_API_KEY
-- funkcjonalność lookupu NIP bez zmian względem 12.06
-- wymagane unieważnienie/zmiana dotychczasowego klucza przed uruchomieniem provider lookup
+- desktop: status „Faktura VAT”, metoda płatności i „Wystaw fakturę” w jednym wierszu
+- neutralny biało-szary przycisk Fakturowni bez mocnego niebieskiego tła i bez ikony dokumentu
+- po trwałym potwierdzeniu faktury przez Fakturownię brak ponownej automatycznej weryfikacji tego montażu
+- samo wejście w montaż nie uruchamia zapytania weryfikacyjnego do Fakturowni
+- mobile: po otwarciu karty z cache szczegóły są odświeżane w tle, aby nowe komentarze nie pozostawały ukryte
+- Supabase schema, RLS i Edge Functions bez zmian
 
 ## Kontrola regresji
-- smoke: scripts/smoke-gus-bir-v1206.cjs
+- baseline diagnostyki 24 h: CHECKED (informacyjny)
 - WAWIS PR checks / targeted-checks: PENDING
-- Supabase Edge Function gus-bir-lookup: ACTIVE, verify_jwt=true
-- nowy sekret GUS_BIR_API_KEY: PENDING po rotacji klucza
 - Vercel: PENDING
 - merge: PENDING
