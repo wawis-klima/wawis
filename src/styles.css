@@ -7711,6 +7711,19 @@ img.previewImage{
   flex-wrap:wrap;
 }
 
+.desktopInvoiceActionsRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:nowrap;
+  width:100%;
+  min-width:0;
+}
+
+.desktopInvoiceActionsRow > *{
+  flex:0 0 auto;
+}
+
 .jobDetailsDateChip{
   display:inline-flex;
   align-items:center;
@@ -7939,36 +7952,32 @@ img.previewImage{
 .desktopFakturowniaButton{
   display:inline-flex;
   align-items:center;
-  gap:6px;
+  justify-content:center;
   min-height:30px;
   padding:6px 11px;
-  border:1px solid #1d4ed8;
+  border:1px solid #cbd5e1;
   border-radius:999px;
-  background:#2563eb;
-  color:#fff;
+  background:#ffffff;
+  color:#334155;
   font:inherit;
   font-size:11px;
-  font-weight:900;
+  font-weight:850;
   line-height:1;
   white-space:nowrap;
   cursor:pointer;
   box-shadow:none;
-  transition:background .15s ease,border-color .15s ease,opacity .15s ease;
+  transition:background .15s ease,border-color .15s ease,color .15s ease,opacity .15s ease;
 }
 
 .desktopFakturowniaButton:hover:not(:disabled){
-  background:#1d4ed8;
-  border-color:#1e40af;
+  background:#f8fafc;
+  border-color:#94a3b8;
+  color:#0f172a;
 }
 
 .desktopFakturowniaButton:disabled{
   cursor:wait;
-  opacity:.65;
-}
-
-.desktopFakturowniaButton .inlineIcon{
-  width:14px;
-  height:14px;
+  opacity:.6;
 }
 
 
