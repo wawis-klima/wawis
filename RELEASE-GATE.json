@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.02",
+  "version": "12.03",
   "scope": "desktop",
-  "release_branch": "release/v12.02",
+  "release_branch": "release/v12.03",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana wyłącznie UI desktop formularza montażu. Sekcja instalatorów została usunięta z renderowania; logika danych przypisań pozostaje bez zmian, dzięki czemu edycja montażu nie czyści istniejących monterów."
+    "notes": "Zmiana dotyczy wyłącznie integracji Fakturowni i desktopowego statusu VAT. Obecny przycisk otwiera formularz bez tworzenia dokumentu; 12.03 dodaje porównanie listy faktur przed i po powrocie z Fakturowni."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.02.zip"
+    "file_name": "klima-app-v12.03.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.02",
+    "source_branch": "release/v12.03",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Sprawdzić desktop: formularz nowego montażu nie pokazuje instalatorów i przy typowym oknie mieści się bez przewijania. Mobile ma pozostać bez zmian."
+    "notes": "Test produkcyjny: kliknąć Wystaw fakturę i wrócić bez zapisu — status ma pozostać Niewystawiona; drugi test — zapisać nową fakturę VAT w Fakturowni i wrócić — status ma automatycznie przejść na Wystawiona. Ręczny toggle ma nadal działać."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,9 +35,9 @@
     "supabase_migration_applied": "N/A — bez zmian schematu bazy.",
     "rls_role_matrix": "Bez zmian RLS.",
     "performance_advisor": "N/A — brak zmian bazy danych.",
-    "security_advisor": "Bez zmian sekretów.",
+    "security_advisor": "Token Fakturowni nadal wyłącznie w Edge Function.",
     "trigger_grants": "N/A — bez zmian triggerów i grantów.",
-    "edge_functions": "Bez zmian.",
+    "edge_functions": "fakturownia-client — wymaga wdrożenia nowej wersji z action=verify.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
