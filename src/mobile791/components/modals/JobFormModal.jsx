@@ -7,6 +7,7 @@ import {
   applyAutoLinkedContractorToJobForm,
   buildContractorOptionLabel,
   filterContractorsByQuery,
+  findContractorByNip,
   getDuplicateContractorMatch,
 } from "../../modules/job-contractors.js";
 import { DEVICE_TYPE_MULTI, DEVICE_TYPE_SINGLE, MAX_INDOOR_UNITS_PER_DEVICE, createEmptyJobDevice, getDeviceIndoorModels, getDeviceIndoorSerials, getDeviceOutdoorModel, getDeviceType, normalizeJobDevices, serializeJobDevicesToFields } from "../../modules/job-devices.js";
@@ -41,16 +42,23 @@ export default function JobFormModal({
   );
 
   const contractorSuggestions = useMemo(() => {
-    const trimmedClient = String(jobForm.client || '').trim();
-    if (!trimmedClient) return [];
+    const queries = [jobForm.client, jobForm.nip]
+      .map((value) => String(value || '').trim())
+      .filter(Boolean);
+    if (!queries.length) return [];
 
-    return filterContractorsByQuery(contractorOptions, trimmedClient)
+    const seen = new Set();
+    return queries
+      .flatMap((query) => filterContractorsByQuery(contractorOptions, query))
       .filter((item) => {
+        const id = String(item?.id || '');
+        if (!id || seen.has(id)) return false;
+        seen.add(id);
         if (!jobForm.contractor_id) return true;
-        return String(item.id) !== String(jobForm.contractor_id);
+        return id !== String(jobForm.contractor_id);
       })
       .slice(0, 3);
-  }, [contractorOptions, jobForm.client, jobForm.contractor_id]);
+  }, [contractorOptions, jobForm.client, jobForm.nip, jobForm.contractor_id]);
 
   const duplicateContractor = useMemo(
     () => getDuplicateContractorMatch({
@@ -424,6 +432,16 @@ export default function JobFormModal({
           next.nip = '';
         }
       }
+      if (field === 'nip' && prev.contractor_id && !editingJobId) {
+        const selectedContractor = contractorOptions.find((item) => String(item.id) === String(prev.contractor_id));
+        const selectedNip = String(selectedContractor?.nip || '').replace(/\D+/g, '');
+        const nextNip = String(value || '').replace(/\D+/g, '');
+        if (selectedNip && nextNip && selectedNip !== nextNip) {
+          next.contractor_id = '';
+          next.contractor_address_id = '';
+          next.contractor_address_label = '';
+        }
+      }
       return next;
     });
   }
@@ -488,6 +506,13 @@ export default function JobFormModal({
 
     return () => window.clearTimeout(timer);
   }, [showModal, supabase, jobForm.city, jobForm.street, postalLookupBusy]);
+
+  useEffect(() => {
+    if (!showModal || editingJobId || jobForm.contractor_id) return;
+    const match = findContractorByNip(contractorOptions, jobForm.nip);
+    if (!match) return;
+    handleContractorSelect(match);
+  }, [showModal, editingJobId, contractorOptions, jobForm.nip, jobForm.contractor_id]);
 
 
   function handleContractorSelect(contractor) {
