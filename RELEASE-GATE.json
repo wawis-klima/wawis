@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.07",
+  "version": "12.08",
   "scope": "full",
-  "release_branch": "release/v12.07",
+  "release_branch": "release/v12.08",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Hotfix bezpieczeństwa: bieżące źródła nie powinny zawierać wartości klucza GUS. Produkcyjny klucz wymaga rotacji przed konfiguracją sekretu."
+    "notes": "Baseline informacyjny: produkcyjny fakturownia-client odpowiadał 200 przed zmianą; 12.08 nie zmienia schematu ani RLS."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.07.zip"
+    "file_name": "klima-app-v12.08.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.07",
+    "source_branch": "release/v12.08",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić wersję 12.07. Lookup GUS pozostanie bezpiecznie nieaktywny do czasu ustawienia nowego, zrotowanego sekretu GUS_BIR_API_KEY."
+    "notes": "Po merge wdrożyć fakturownia-client z verify_jwt=true, potwierdzić Vercel READY i wykonać próbę formularza Fakturowni."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,11 +33,11 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_migration_applied": "N/A — brak migracji SQL.",
-    "rls_role_matrix": "Bez zmian RLS; Edge Function nadal wymaga prawidłowej sesji authenticated.",
+    "rls_role_matrix": "Bez zmian RLS; fakturownia-client nadal wymaga sesji i roli Administrator.",
     "performance_advisor": "N/A — brak zmian schematu.",
-    "security_advisor": "Bieżący kod testu nie zawiera wartości kluczy; dotychczasowy klucz wymaga rotacji z powodu historii Git.",
+    "security_advisor": "Prefill nie zawiera tokenu API; FAKTUROWNIA_API_TOKEN pozostaje sekretem Edge Function.",
     "trigger_grants": "Bez zmian.",
-    "edge_functions": "gus-bir-lookup ACTIVE v1, verify_jwt=true; kod funkcji nie zawiera klucza.",
+    "edge_functions": "fakturownia-client: wdrożenie 12.08 po merge, verify_jwt=true.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
