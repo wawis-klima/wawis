@@ -84,7 +84,10 @@ function renderNameplateStatusCell({ job }) {
 
 function renderVatInvoiceCell({ job }) {
   const issued = Boolean(job?.vat_invoice_issued);
-  const label = issued ? 'Faktura VAT wystawiona' : 'Faktura VAT niewystawiona';
+  const confirmed = Boolean(job?.vat_invoice_fakturownia_confirmed);
+  const label = issued
+    ? (confirmed ? 'Faktura VAT wystawiona — potwierdzona w Fakturowni' : 'Faktura VAT wystawiona')
+    : 'Faktura VAT niewystawiona';
 
   return (
     <div className="desktopCellContent desktopVatInvoiceCellContent" title={label} aria-label={label}>
