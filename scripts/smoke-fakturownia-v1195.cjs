@@ -18,7 +18,8 @@ assert.match(moduleSource, /functions\.invoke\('fakturownia-client'/, 'Frontend 
 assert.match(edge, /FAKTUROWNIA_API_TOKEN/, 'Edge Function ma czytać token wyłącznie z sekretu.');
 assert.match(edge, /external_id/, 'Synchronizacja klienta ma używać external_id, żeby ograniczyć duplikaty.');
 assert.match(edge, /clients\.json/, 'Integracja ma synchronizować kartę klienta w Fakturowni.');
-assert.match(edge, /\/invoices\/new\?client_id=/, 'Integracja ma otwierać formularz faktury z klientem.');
+assert.match(edge, /new URL\("\/invoices\/new", FAKTUROWNIA_BASE_URL\)/, 'Integracja ma otwierać formularz nowej faktury.');
+assert.match(edge, /searchParams\.set\(["']client_id["'],\s*clientId\)/, 'Formularz faktury ma otrzymać klienta przez parametr client_id.');
 assert.match(edge, /fakturowniaGetInvoices/, 'Integracja ma móc odczytać listę faktur klienta do weryfikacji.');
 assert.doesNotMatch(edge, /\/invoices\.json[\s\S]{0,240}method:\s*["']POST["']/, 'Kliknięcie nie może automatycznie tworzyć faktury przez API.');
 assert.match(styles, /\.desktopFakturowniaButton\{/, 'Przycisk Fakturowni musi mieć styl desktopowy.');
