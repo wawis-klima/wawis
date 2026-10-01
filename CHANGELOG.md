@@ -1,3 +1,10 @@
+## 12.07
+- Poprawka bezpieczeństwa integracji GUS BIR: usunięto wartości kluczy dostępowych z testu regresyjnego.
+- Test weryfikuje teraz wyłącznie, że Edge Function pobiera klucz dynamicznie z sekretu i nie ma klucza wpisanego na sztywno.
+- Funkcjonalność lookupu NIP z 12.06 pozostaje bez zmian.
+- Dotychczasowy klucz produkcyjny należy unieważnić/zmienić przed uruchomieniem integracji na żywo.
+- Nowy klucz ma być zapisany wyłącznie jako sekret Supabase `GUS_BIR_API_KEY`.
+
 ## 12.06
 - Dodano integrację z GUS REGON BIR do wyszukiwania firmy po NIP-ie.
 - W nowym montażu desktop/mobile lokalna kartoteka kontrahentów ma pierwszeństwo; GUS jest odpytywany tylko wtedy, gdy NIP-u nie ma w WAWIS.
