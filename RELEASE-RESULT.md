@@ -1,21 +1,22 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.05
+- 12.06
 
 ## Zakres
-- Fakturownia: potwierdzona faktura VAT zostaje trwale oznaczona jako wystawiona
-- zapisujemy flagę potwierdzenia oraz identyfikator/numer faktury z Fakturowni
-- ręczny status VAT działa tylko przed potwierdzeniem
-- po potwierdzeniu UI blokuje przełącznik
-- RPC w bazie blokuje próbę cofnięcia statusu również poza UI
+- GUS REGON BIR: automatyczne wyszukiwanie podmiotu po 10-cyfrowym NIP-ie
+- pierwszeństwo istniejącego kontrahenta z lokalnej bazy WAWIS
+- automatyczne uzupełnianie nazwy firmy, kodu pocztowego, miejscowości oraz ulicy z numerem
+- integracja w formularzu montażu desktop/mobile oraz module Kontrahenci
+- walidacja sumy kontrolnej NIP przed wysłaniem
+- klucz GUS wyłącznie jako sekret GUS_BIR_API_KEY po stronie Edge Function
+- brak zmian schematu bazy i RLS
 
 ## Kontrola regresji
-- smoke: scripts/smoke-fakturownia-lock-v1205.cjs
-- smoke: scripts/smoke-fakturownia-verify-v1203.cjs
-- smoke: scripts/smoke-desktop-vat-invoice-v1184.cjs
-- migracja: supabase/migrations/current/20261001071500_vat_invoice_fakturownia_lock_v1205.sql
+- smoke: scripts/smoke-gus-bir-v1206.cjs
+- istniejące smoke NIP/kod pocztowy/kontrahenci pozostają w grupie jobs
 - WAWIS PR checks / targeted-checks: PENDING
-- Supabase migration: PENDING
+- Supabase Edge Function gus-bir-lookup: PENDING
+- sekret GUS_BIR_API_KEY: PENDING konfiguracji w Supabase
 - Vercel: PENDING
 - merge: PENDING
