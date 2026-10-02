@@ -4,6 +4,7 @@ import {
   deriveSmsApiCallbackToken,
   normalizeSmsApiStatus,
   planSmsCallbackUpdates,
+  smsApiIdxToClaimId,
 } from './security.mjs';
 
 const corsHeaders = {
@@ -13,6 +14,7 @@ const corsHeaders = {
 
 type CallbackEntry = {
   providerMessageId: string;
+  claimId: string | null;
   status: string;
   statusName: string;
   raw: Record<string, unknown>;
@@ -72,9 +74,11 @@ async function parseCallbackEntries(request: Request, callbackUrl: URL): Promise
   const ids = splitValues(firstValue(raw, ['MsgId', 'msgid', 'id', 'message_id', 'sms_id']));
   const statuses = splitValues(firstValue(raw, ['status', 'delivery_status', 'type']));
   const statusNames = splitValues(firstValue(raw, ['status_name', 'statusName']));
+  const idxValues = splitValues(firstValue(raw, ['idx', 'IDX']));
 
   return ids.filter(Boolean).map((providerMessageId, index) => ({
     providerMessageId,
+    claimId: smsApiIdxToClaimId(idxValues[index] || idxValues[0] || ''),
     status: statuses[index] || statuses[0] || '',
     statusName: statusNames[index] || statusNames[0] || '',
     raw,
@@ -83,8 +87,9 @@ async function parseCallbackEntries(request: Request, callbackUrl: URL): Promise
 
 async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>, entry: CallbackEntry) {
   const nextStatus = normalizeSmsApiStatus(entry.status, entry.statusName);
-  const { data, error } = await adminClient.rpc('apply_sms_delivery_atomic', {
+  const { data, error } = await adminClient.rpc('apply_sms_delivery_atomic_v2', {
     p_provider_message_id: entry.providerMessageId,
+    p_claim_id: entry.claimId,
     p_status: nextStatus,
     p_error: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
   });

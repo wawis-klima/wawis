@@ -26,6 +26,13 @@ export function constantTimeEqual(left, right) {
   return diff === 0;
 }
 
+export function smsApiIdxToClaimId(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(raw)) return raw;
+  if (!/^[0-9a-f]{32}$/.test(raw)) return null;
+  return `${raw.slice(0, 8)}-${raw.slice(8, 12)}-${raw.slice(12, 16)}-${raw.slice(16, 20)}-${raw.slice(20)}`;
+}
+
 export function normalizeSmsApiStatus(status, statusName = '') {
   const name = String(statusName || status || '').trim().toUpperCase();
   if (name === 'DELIVERED' || name === 'DORĘCZONA' || name === 'DOSTARCZONA') return 'delivered';

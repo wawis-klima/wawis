@@ -1,3 +1,18 @@
+function getFunctionFailureMessage(data) {
+  const direct = String(data?.error || '').trim();
+  if (direct) return direct;
+
+  const failures = Array.isArray(data?.failures) ? data.failures : [];
+  const messages = [...new Set(
+    failures
+      .map((item) => String(item?.error || '').trim())
+      .filter(Boolean),
+  )];
+
+  if (messages.length) return messages.join(' | ');
+  return 'Operacja SMS nie została wykonana.';
+}
+
 async function getFreshFunctionHeaders(supabase) {
   const { data, error } = await supabase.auth.getSession();
   if (error) throw error;
@@ -31,6 +46,7 @@ export async function sendManualServiceSms({ supabase, jobId }) {
 
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
+  if (data?.ok === false) throw new Error(getFunctionFailureMessage(data));
   return data;
 }
 
@@ -49,6 +65,7 @@ export async function approveAndSendSmsLogs({ supabase, logIds }) {
 
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
+  if (data?.ok === false) throw new Error(getFunctionFailureMessage(data));
   return data;
 }
 
@@ -63,5 +80,6 @@ export async function generateServiceSmsQueue({ supabase }) {
 
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
+  if (data?.ok === false) throw new Error(getFunctionFailureMessage(data));
   return data;
 }

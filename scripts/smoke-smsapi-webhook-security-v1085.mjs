@@ -8,6 +8,7 @@ import {
   normalizeSmsApiStatus,
   planSmsCallbackUpdates,
   shouldAdvanceSmsStatus,
+  smsApiIdxToClaimId,
 } from '../supabase/functions/smsapi-delivery-webhook/security.mjs';
 
 const tokenA1 = await deriveSmsApiCallbackToken('secret-a');
@@ -19,6 +20,8 @@ assert.equal(tokenA1.length, 64);
 assert.equal(constantTimeEqual(tokenA1, tokenA2), true);
 assert.equal(constantTimeEqual(tokenA1, tokenB), false);
 assert.equal(constantTimeEqual('', ''), false);
+assert.equal(smsApiIdxToClaimId('a1c1fa534dd44ec58f6af67abd857e4b'), 'a1c1fa53-4dd4-4ec5-8f6a-f67abd857e4b');
+assert.equal(smsApiIdxToClaimId('bad-idx'), null);
 
 assert.equal(normalizeSmsApiStatus('404', 'DELIVERED'), 'delivered');
 assert.equal(normalizeSmsApiStatus('403', 'SENT'), 'provider_sent');
@@ -76,9 +79,9 @@ assert.match(webhook, /new Response\('OK'/);
 const callbackCode=webhook.slice(webhook.indexOf('async function applyDeliveryStatus('),webhook.indexOf('function firstValue('));
 const context={normalizeSmsApiStatus,JSON};vm.createContext(context);
 vm.runInContext(stripTypeScriptTypes(callbackCode.replace('ReturnType<typeof createClient>','any'))+';globalThis.apply=applyDeliveryStatus;',context);
-const failed=await context.apply({rpc:async()=>({data:null,error:{message:'transaction failed'}})},{providerMessageId:'fixture',status:'DELIVERED',raw:{}});
+const failed=await context.apply({rpc:async()=>({data:null,error:{message:'transaction failed'}})},{providerMessageId:'fixture',claimId:'a1c1fa53-4dd4-4ec5-8f6a-f67abd857e4b',status:'DELIVERED',raw:{}});
 assert.equal(failed.ok,false);assert.equal(failed.status,500);assert.equal(failed.error,'transaction failed');
-const missing=await context.apply({rpc:async()=>({data:null,error:null})},{providerMessageId:'fixture',status:'DELIVERED',raw:{}});
+const missing=await context.apply({rpc:async()=>({data:null,error:null})},{providerMessageId:'fixture',claimId:'a1c1fa53-4dd4-4ec5-8f6a-f67abd857e4b',status:'DELIVERED',raw:{}});
 assert.equal(missing.ok,false);assert.equal(missing.status,500);
 
 const sender = fs.readFileSync('supabase/functions/send-service-sms/index.ts', 'utf8').replace(/\r\n/g, '\n');
@@ -89,6 +92,13 @@ assert.match(sender, /sendServiceSmsOnce/);
 const delivery = fs.readFileSync('supabase/functions/send-service-sms/delivery.ts', 'utf8').replace(/\r\n/g, '\n');
 assert.match(delivery, /claim_service_sms_group_v2/);
 assert.doesNotMatch(delivery, /rpc\('claim_service_sms_group'\s*,/);
-assert.match(delivery, /confirm_service_sms/);
+assert.match(delivery, /stage_service_sms_claim/);
+assert.match(delivery, /record_service_sms_acceptance/);
+assert.match(delivery, /mark_service_sms_claim_uncertain/);
+assert.doesNotMatch(delivery, /confirm_service_sms/);
+assert.match(sender, /check_idx:\s*"1"/);
+assert.match(sender, /idx:\s*toSmsApiIdx/);
+assert.match(webhook, /apply_sms_delivery_atomic_v2/);
+assert.match(webhook, /p_claim_id:\s*entry\.claimId/);
 
 console.log('PASS: callback authentication helpers and RPC failure propagation; atomic ordering is tested by audit-v1089/sms-race.mjs.');

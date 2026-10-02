@@ -1,4 +1,10 @@
-import { sendServiceSmsOnce, SmsDeliveryBlockedError } from './delivery.ts';
+import {
+  sendServiceSmsOnce,
+  SmsAcceptancePersistenceError,
+  SmsDeliveryBlockedError,
+  SmsDeliveryUncertainError,
+  SmsProviderRejectedError,
+} from './delivery.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 type DeleteRow = {
@@ -115,7 +121,7 @@ async function loadSettings(adminClient: ReturnType<typeof createClient>): Promi
   };
 }
 
-async function handleApprovalSend({ adminClient, callerId, settings, sender, token, nowIso, logIds }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; logIds: string[]; }) {
+async function handleApprovalSend({ adminClient, callerId, settings, sender, token, nowIso: _nowIso, logIds }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; logIds: string[]; }) {
   const cleanIds = Array.isArray(logIds) ? logIds.filter(Boolean) : [];
   if (cleanIds.length === 0) return json({ error: "Nie przekazano pozycji z kolejki do wysyłki." }, 400);
 
@@ -127,79 +133,54 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
   if (error) return json({ error: error.message }, 400);
 
   let sentCount = 0;
-  const failures: Array<{ id: string; error: string }> = [];
+  const failures: Array<{ id: string; error: string; outcome: string; retryable: boolean }> = [];
 
   for (const log of logs || []) {
     if (log.status !== "pending_approval") continue;
 
-    let currentMessage = "";
     try {
-      const smsResult = await sendServiceSmsOnce({
+      await sendServiceSmsOnce({
         adminClient,
+        actorId: callerId,
         logId: log.id,
         jobId: log.job_id,
         deviceId: log.device_id,
         cycle: log.reminder_cycle || 1,
-        send: (prepared) => {
-          currentMessage = buildMessage({
+        prepare: (prepared) => {
+          const currentMessage = buildMessage({
             client: prepared.client,
             installation_date: prepared.installationDate,
             service_due_date: prepared.currentDueDate,
             reminder_due_date: prepared.currentDueDate,
             phone: prepared.recipientPhone,
           }, settings);
-          return sendSmsWithSmsApi({
-            token,
-            to: prepared.recipientPhone,
+
+          return {
             message: currentMessage,
-            from: sender,
-          });
+            send: () => sendSmsWithSmsApi({
+              token,
+              to: prepared.recipientPhone,
+              message: currentMessage,
+              from: sender,
+              idx: toSmsApiIdx(prepared.claimId),
+            }),
+          };
         },
       });
 
-      await updateSmsLog(adminClient, log.id, {
-        job_id: smsResult.linkedJobId,
-        device_id: smsResult.deviceId,
-        client: smsResult.client,
-        phone: smsResult.recipientPhone,
-        message: currentMessage,
-        status: "provider_sent",
-        approved_at: nowIso,
-        approved_by: callerId,
-        sent_at: nowIso,
-        provider_message_id: smsResult.providerMessageId,
-        provider_response: safeJson(smsResult.responseBody),
-        reminder_cycle: smsResult.cycle,
-        reminder_due_date: smsResult.currentDueDate,
-        reminder_group_id: smsResult.reminderGroupId,
-        reminder_group_primary: true,
-        error_message: null,
-      });
-
-      if (smsResult.linkedJobId) {
-        await adminClient.from("jobs").update({
-          last_sms_sent_at: nowIso,
-          last_sms_status: "provider_sent",
-          last_sms_error: null,
-          sms_recipient_phone: smsResult.recipientPhone,
-        }).eq("id", smsResult.linkedJobId);
-      }
-
       sentCount += 1;
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
-      failures.push({ id: log.id, error: errorMessage });
-      if (e instanceof SmsDeliveryBlockedError) continue;
-      await updateSmsLog(adminClient, log.id, {
-        status: "error",
-        approved_at: nowIso,
-        approved_by: callerId,
-        error_message: errorMessage,
-      });
+    } catch (error) {
+      const failure = describeSendFailure(error);
+      failures.push({ id: log.id, error: failure.error, outcome: failure.outcome, retryable: failure.retryable });
     }
   }
 
-  return json({ ok: failures.length === 0, sentCount, failures });
+  return json({
+    ok: failures.length === 0,
+    sentCount,
+    failures,
+    outcome: failures.length === 0 ? "sent" : sentCount > 0 ? "partial" : "failed",
+  });
 }
 
 async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: ReturnType<typeof createClient>; callerId: string; rows: DeleteRow[]; }) {
@@ -257,214 +238,141 @@ async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: 
   return json({ ok: true, deletedCount, failures: [] });
 }
 
-async function handleManualJobSend({ adminClient, callerId, settings, sender, token, nowIso, jobId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; jobId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
+async function handleManualJobSend({ adminClient, callerId, settings, sender, token, nowIso: _nowIso, jobId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; jobId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
   const effectiveCycle = Number.parseInt(String(reminderCycle ?? ""), 10) || 1;
-  let currentMessage = "";
 
   try {
     const smsResult = await sendServiceSmsOnce({
       adminClient,
+      actorId: callerId,
       jobId,
       cycle: effectiveCycle,
-      send: (prepared) => {
-        currentMessage = buildMessage({
+      prepare: (prepared) => {
+        const message = buildMessage({
           client: prepared.client,
           installation_date: prepared.installationDate,
           service_due_date: prepared.currentDueDate,
           reminder_due_date: prepared.currentDueDate,
           phone: prepared.recipientPhone,
         }, settings);
-        return sendSmsWithSmsApi({
-          token,
-          to: prepared.recipientPhone,
-          message: currentMessage,
-          from: sender,
-        });
+
+        return {
+          message,
+          send: () => sendSmsWithSmsApi({
+            token,
+            to: prepared.recipientPhone,
+            message,
+            from: sender,
+            idx: toSmsApiIdx(prepared.claimId),
+          }),
+        };
       },
     });
 
-    await upsertFinalizedCycleLog(adminClient, {
-      job_id: smsResult.linkedJobId,
-      device_id: smsResult.deviceId,
-      client: smsResult.client,
-      phone: smsResult.recipientPhone,
-      message: currentMessage,
-      sms_type: "service_reminder",
-      provider: "smsapi",
-      provider_message_id: smsResult.providerMessageId,
-      provider_response: safeJson(smsResult.responseBody),
-      status: "sent",
-      planned_for: nowIso,
-      approved_at: nowIso,
-      approved_by: callerId,
-      sent_at: nowIso,
-      created_by: callerId,
-      reminder_cycle: smsResult.cycle,
-      reminder_due_date: smsResult.currentDueDate,
-      reminder_group_id: smsResult.reminderGroupId,
-      reminder_group_primary: true,
-      error_message: null,
-    });
-
-    if (smsResult.linkedJobId) {
-      await adminClient.from("jobs").update({
-        last_sms_sent_at: nowIso,
-        last_sms_status: "provider_sent",
-        last_sms_error: null,
-        sms_recipient_phone: smsResult.recipientPhone,
-      }).eq("id", smsResult.linkedJobId);
-    }
-
     return json({
       ok: true,
+      outcome: "provider_accepted",
+      retryable: false,
       recipientPhone: smsResult.recipientPhone,
       providerMessageId: smsResult.providerMessageId,
       providerResponse: smsResult.responseBody,
       reminderDueDate: smsResult.currentDueDate,
+      logId: smsResult.logId,
     });
-  } catch (e) {
-    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message, reason: e.reason }, 409);
-
-    const errorMessage = e instanceof Error ? e.message : String(e);
-    const prepared = getPreparedSmsFromError(e);
-
-    if (prepared) {
-      await upsertFinalizedCycleLog(adminClient, {
-        job_id: prepared.linkedJobId,
-        device_id: prepared.deviceId,
-        client: prepared.client,
-        phone: prepared.recipientPhone,
-        message: currentMessage,
-        sms_type: "service_reminder",
-        provider: "smsapi",
-        status: "error",
-        planned_for: nowIso,
-        approved_at: nowIso,
-        approved_by: callerId,
-        created_by: callerId,
-        reminder_cycle: prepared.cycle,
-        reminder_due_date: prepared.currentDueDate,
-        reminder_group_id: prepared.reminderGroupId,
-        reminder_group_primary: true,
-        error_message: errorMessage,
-      });
-
-      if (prepared.linkedJobId) {
-        await adminClient.from("jobs").update({
-          last_sms_status: "error",
-          last_sms_error: errorMessage,
-          sms_recipient_phone: prepared.recipientPhone,
-        }).eq("id", prepared.linkedJobId);
-      }
-    }
-
-    return json({ error: errorMessage }, 500);
+  } catch (error) {
+    const failure = describeSendFailure(error);
+    return json({ ok: false, ...failure }, failure.httpStatus);
   }
 }
 
-async function handleManualDeviceSend({ adminClient, callerId, settings, sender, token, nowIso, deviceId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; deviceId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
+async function handleManualDeviceSend({ adminClient, callerId, settings, sender, token, nowIso: _nowIso, deviceId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; deviceId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
   const effectiveCycle = Number.parseInt(String(reminderCycle ?? ""), 10) || 1;
-  let currentMessage = "";
 
   try {
     const smsResult = await sendServiceSmsOnce({
       adminClient,
+      actorId: callerId,
       deviceId,
       cycle: effectiveCycle,
-      send: (prepared) => {
-        currentMessage = buildMessage({
+      prepare: (prepared) => {
+        const message = buildMessage({
           client: prepared.client,
           installation_date: prepared.installationDate,
           service_due_date: prepared.currentDueDate,
           reminder_due_date: prepared.currentDueDate,
           phone: prepared.recipientPhone,
         }, settings);
-        return sendSmsWithSmsApi({
-          token,
-          to: prepared.recipientPhone,
-          message: currentMessage,
-          from: sender,
-        });
+
+        return {
+          message,
+          send: () => sendSmsWithSmsApi({
+            token,
+            to: prepared.recipientPhone,
+            message,
+            from: sender,
+            idx: toSmsApiIdx(prepared.claimId),
+          }),
+        };
       },
     });
 
-    await upsertFinalizedCycleLog(adminClient, {
-      device_id: smsResult.deviceId,
-      job_id: smsResult.linkedJobId,
-      client: smsResult.client,
-      phone: smsResult.recipientPhone,
-      message: currentMessage,
-      sms_type: "service_reminder",
-      provider: "smsapi",
-      provider_message_id: smsResult.providerMessageId,
-      provider_response: safeJson(smsResult.responseBody),
-      status: "sent",
-      planned_for: nowIso,
-      approved_at: nowIso,
-      approved_by: callerId,
-      sent_at: nowIso,
-      created_by: callerId,
-      reminder_cycle: smsResult.cycle,
-      reminder_due_date: smsResult.currentDueDate,
-      reminder_group_id: smsResult.reminderGroupId,
-      reminder_group_primary: true,
-      error_message: null,
-    });
-
-    if (smsResult.linkedJobId) {
-      await adminClient.from("jobs").update({
-        last_sms_sent_at: nowIso,
-        last_sms_status: "provider_sent",
-        last_sms_error: null,
-        sms_recipient_phone: smsResult.recipientPhone,
-      }).eq("id", smsResult.linkedJobId);
-    }
-
     return json({
       ok: true,
+      outcome: "provider_accepted",
+      retryable: false,
       recipientPhone: smsResult.recipientPhone,
       providerMessageId: smsResult.providerMessageId,
       providerResponse: smsResult.responseBody,
       reminderDueDate: smsResult.currentDueDate,
+      logId: smsResult.logId,
     });
-  } catch (e) {
-    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message, reason: e.reason }, 409);
-
-    const errorMessage = e instanceof Error ? e.message : String(e);
-    const prepared = getPreparedSmsFromError(e);
-
-    if (prepared) {
-      await upsertFinalizedCycleLog(adminClient, {
-        device_id: prepared.deviceId,
-        job_id: prepared.linkedJobId,
-        client: prepared.client,
-        phone: prepared.recipientPhone,
-        message: currentMessage,
-        sms_type: "service_reminder",
-        provider: "smsapi",
-        status: "error",
-        planned_for: nowIso,
-        approved_at: nowIso,
-        approved_by: callerId,
-        created_by: callerId,
-        reminder_cycle: prepared.cycle,
-        reminder_due_date: prepared.currentDueDate,
-        reminder_group_id: prepared.reminderGroupId,
-        reminder_group_primary: true,
-        error_message: errorMessage,
-      });
-
-      if (prepared.linkedJobId) {
-        await adminClient.from("jobs").update({
-          last_sms_status: "error",
-          last_sms_error: errorMessage,
-          sms_recipient_phone: prepared.recipientPhone,
-        }).eq("id", prepared.linkedJobId);
-      }
-    }
-
-    return json({ error: errorMessage }, 500);
+  } catch (error) {
+    const failure = describeSendFailure(error);
+    return json({ ok: false, ...failure }, failure.httpStatus);
   }
+}
+
+function describeSendFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+
+  if (error instanceof SmsDeliveryBlockedError) {
+    return { error: message, outcome: "blocked", retryable: false, httpStatus: 409 };
+  }
+
+  if (error instanceof SmsProviderRejectedError) {
+    return {
+      error: message,
+      outcome: "provider_rejected",
+      retryable: error.claimReleased,
+      httpStatus: 422,
+    };
+  }
+
+  if (error instanceof SmsAcceptancePersistenceError) {
+    return {
+      error: message,
+      outcome: "provider_accepted_persistence_pending",
+      retryable: false,
+      httpStatus: 202,
+      providerMessageId: error.providerMessageId,
+    };
+  }
+
+  if (error instanceof SmsDeliveryUncertainError) {
+    return {
+      error: message,
+      outcome: "uncertain",
+      retryable: false,
+      httpStatus: 202,
+    };
+  }
+
+  return {
+    error: message,
+    outcome: "failed_before_provider",
+    retryable: true,
+    httpStatus: 500,
+  };
 }
 
 function isAdminRole(role: string | null | undefined) {
@@ -488,29 +396,6 @@ function formatDate(value: string) {
   return value;
 }
 
-function safeJson(value: unknown) {
-  try { return JSON.parse(JSON.stringify(value ?? null)); } catch { return { raw: String(value) }; }
-}
-
-function getPreparedSmsFromError(error: unknown) {
-  const prepared = (error as { preparedSms?: Record<string, unknown> } | null)?.preparedSms;
-  if (!prepared || typeof prepared !== "object") return null;
-  const reminderGroupId = String(prepared.reminderGroupId || "").trim();
-  const recipientPhone = String(prepared.recipientPhone || "").trim();
-  const currentDueDate = String(prepared.currentDueDate || "").trim();
-  if (!isUuid(reminderGroupId) || !recipientPhone || !currentDueDate) return null;
-  return prepared as {
-    reminderGroupId: string;
-    recipientPhone: string;
-    currentDueDate: string;
-    linkedJobId: string | null;
-    deviceId: string | null;
-    installationDate: string;
-    client: string;
-    cycle: number;
-  };
-}
-
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -521,98 +406,93 @@ async function deriveSmsApiCallbackToken(accessToken: string) {
   return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
 }
 
-async function sendSmsWithSmsApi({ token, to, message, from }: { token: string; to: string; message: string; from?: string }): Promise<SmsApiResult> {
+function toSmsApiIdx(claimId: string) {
+  const compact = String(claimId || "").replace(/-/g, "").toLowerCase();
+  if (!/^[0-9a-f]{32}$/.test(compact)) {
+    throw new Error("Nie udało się przygotować bezpiecznego IDX dla SMSAPI.");
+  }
+  return compact;
+}
+
+function providerErrorMessage(parsed: unknown, statusCode: number) {
+  const record = parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : {};
+  const code = record.error != null ? String(record.error) : statusCode ? String(statusCode) : "";
+  const message = String(record.message || "").trim();
+  return `SMSAPI odrzuciło wiadomość${code ? ` (kod ${code})` : ""}${message ? `: ${message}` : "."}`;
+}
+
+async function sendSmsWithSmsApi({ token, to, message, from, idx }: { token: string; to: string; message: string; from?: string; idx: string }): Promise<SmsApiResult> {
   const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
-  if (!supabaseUrl) throw new Error('Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.');
+  if (!supabaseUrl) throw new Error("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
+
   const callbackToken = await deriveSmsApiCallbackToken(token);
   const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
-  const payload = new URLSearchParams({ to, message, format: "json", encoding: "utf-8", notify_url: notifyUrl });
+  const payload = new URLSearchParams({
+    to,
+    message,
+    format: "json",
+    encoding: "utf-8",
+    notify_url: notifyUrl,
+    idx,
+    check_idx: "1",
+  });
   if (from) payload.set("from", from);
+
   const response = await fetch("https://api.smsapi.pl/sms.do", {
     method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
     body: payload,
     signal: AbortSignal.timeout(20000),
   });
+
   const text = await response.text();
   let parsed: unknown = null;
-  try { parsed = text ? JSON.parse(text) : null; } catch { parsed = text; }
-  if (!response.ok) throw new Error(`SMSAPI zwróciło błąd ${response.status}: ${typeof parsed === "string" ? parsed : JSON.stringify(parsed)}`);
-  const list = Array.isArray((parsed as Record<string, unknown> | null)?.list) ? ((parsed as { list?: Array<Record<string, unknown>> }).list || []) : [];
-  const providerMessageId = typeof list[0]?.id === "string" ? String(list[0].id) : null;
-  if (!providerMessageId) throw new Error(`SMSAPI nie potwierdziło przyjęcia wiadomości: ${typeof parsed === "string" ? parsed : JSON.stringify(parsed)}`);
-  return { providerMessageId, responseBody: parsed, recipientPhone: to };
-}
-
-async function updateSmsLog(adminClient: ReturnType<typeof createClient>, id: string, patch: Record<string, unknown>) {
-  const { error } = await adminClient.from("sms_log").update(patch).eq("id", id);
-  if (error) console.error("sms_log update failed", id, error.message);
-}
-
-async function upsertFinalizedCycleLog(adminClient: ReturnType<typeof createClient>, payload: Record<string, unknown>) {
-  const reminderGroupId = isUuid(String(payload.reminder_group_id || "")) ? String(payload.reminder_group_id) : null;
-  const jobId = isUuid(String(payload.job_id || "")) ? String(payload.job_id) : null;
-  const deviceId = isUuid(String(payload.device_id || "")) ? String(payload.device_id) : null;
-  const cycle = Number.parseInt(String(payload.reminder_cycle ?? ""), 10) || 1;
-
-  if (reminderGroupId) {
-    const { data: existingGroupLog, error: groupError } = await adminClient
-      .from("sms_log")
-      .select("id, status")
-      .eq("reminder_group_id", reminderGroupId)
-      .eq("reminder_group_primary", true)
-      .limit(1)
-      .maybeSingle();
-
-    if (!groupError && existingGroupLog?.id) {
-      await updateSmsLog(adminClient, existingGroupLog.id, {
-        ...payload,
-        reminder_group_id: reminderGroupId,
-        reminder_group_primary: true,
-      });
-      return;
-    }
-
-    await updateSmsLogInsert(adminClient, {
-      ...payload,
-      reminder_group_id: reminderGroupId,
-      reminder_group_primary: true,
-    });
-    return;
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    parsed = text;
   }
 
-  let query = adminClient
-    .from("sms_log")
-    .select("id, status")
-    .eq("sms_type", "service_reminder")
-    .eq("reminder_cycle", cycle)
-    .limit(1);
+  const record = parsed && typeof parsed === "object" ? parsed as Record<string, unknown> : {};
+  const invalidNumbers = Array.isArray(record.invalid_numbers) ? record.invalid_numbers : [];
+  const hasExplicitProviderError = record.error != null || invalidNumbers.length > 0;
 
-  if (deviceId) {
-    query = query.eq("device_id", deviceId);
-  } else if (jobId) {
-    query = query.eq("job_id", jobId);
-  } else {
-    await updateSmsLogInsert(adminClient, payload);
-    return;
+  if (hasExplicitProviderError || (response.status >= 400 && response.status < 500)) {
+    throw new SmsProviderRejectedError(
+      providerErrorMessage(parsed, response.status),
+      parsed,
+      response.status,
+    );
   }
 
-  const { data: existing, error } = await query.maybeSingle();
-  if (!error && existing?.id && String(existing.status || "").trim().toLowerCase() === "pending_approval") {
-    await updateSmsLog(adminClient, existing.id, payload);
-    return;
+  if (!response.ok) {
+    throw new Error(`SMSAPI zwróciło niepewny błąd HTTP ${response.status}: ${typeof parsed === "string" ? parsed : JSON.stringify(parsed)}`);
   }
 
-  await updateSmsLogInsert(adminClient, payload);
-}
+  const list = Array.isArray(record.list) ? record.list as Array<Record<string, unknown>> : [];
+  const first = list[0] || {};
+  if (first.error != null) {
+    throw new SmsProviderRejectedError(
+      providerErrorMessage(first, response.status),
+      parsed,
+      response.status,
+    );
+  }
 
-async function updateSmsLogInsert(adminClient: ReturnType<typeof createClient>, payload: Record<string, unknown>) {
-  const { error } = await adminClient.from("sms_log").insert(payload);
-  if (!error) return;
-  const fallbackPayload = { ...payload };
-  delete fallbackPayload.provider_response;
-  const fallback = await adminClient.from("sms_log").insert(fallbackPayload);
-  if (fallback.error) console.error("sms_log insert failed", fallback.error.message);
+  const providerMessageId = typeof first.id === "string" ? String(first.id).trim() : "";
+  if (!providerMessageId) {
+    throw new Error(`SMSAPI nie zwróciło jednoznacznego ID przyjętej wiadomości: ${typeof parsed === "string" ? parsed : JSON.stringify(parsed)}`);
+  }
+
+  return {
+    providerMessageId,
+    responseBody: parsed,
+    recipientPhone: to,
+  };
 }
 
 function json(payload: unknown, status = 200) {

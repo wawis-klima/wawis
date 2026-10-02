@@ -1,41 +1,37 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.20
+- 12.21
 
 ## Zakres
-- SMS Etap 3: harmonogram liczony osobno dla każdego fizycznego urządzenia przed grupowaniem klienta.
-- Nowi klienci nadal mają `sms_consent=true` i `sms_reminder_enabled=true`; baza ma teraz takie same defaulty.
-- Brak powiązanej karty klienta nie jest już interpretowany jako zgoda.
-- `source_job_id` w formacie `uuid::device-N` jest poprawnie normalizowany.
-- Daty serwisowe używają domykania końca miesiąca i dni kalendarzowych; bieżący dzień jest wyznaczany w `Europe/Warsaw`.
-- Numer telefonu jest walidowany i normalizowany po stronie generatora oraz bazy.
-- Przed wysyłką `claim_service_sms_group_v2` ponownie pobiera aktualny numer, zgodę, włączenie przypomnień, urządzenie/kartę oraz bieżący termin.
-- Stary numer i termin z przeglądarki lub oczekującego logu nie są źródłem prawdy.
-- Generator może odświeżyć oczekujący log po zmianie numeru/terminu/grupy.
+- SMS Etap 4: niezawodna ścieżka wysyłki, odpowiedzi API i callbacków.
+- Staging claima zapisuje treść i pełny kontekst przed wywołaniem zewnętrznego SMSAPI.
+- SMSAPI otrzymuje `idx` oparty na `claim_id` i `check_idx=1`.
+- Jednoznaczne odrzucenie operatora i wynik niepewny mają różne ścieżki: tylko pewne odrzucenie zwalnia claim.
+- Provider-accepted + błąd zapisu nie może uruchomić ponownej wysyłki; claim pozostaje trwałym śladem do reconciliacji.
+- Webhook może odtworzyć brakujący `sms_log` po `idx → claim_id`.
+- Frontend odrzuca `{ok:false}` także przy HTTP 200.
+- Generator ponawia wyłącznie błędy bez dowodu wysyłki.
 
 ## Produkcja / baza
-- migracja: APPLIED — `20261002073753_sms_stage3_current_state_calendar_v1220`
-- default `sms_consent`: true
-- default `sms_reminder_enabled`: true
-- 29/29 ostatnich zleceń: oba pola true
-- końce miesiąca / leap year: PASS
-- walidacja numeru: PASS
-- `uuid::device-N`: PASS
-- ACL `claim_service_sms_group_v2`: service_role only — VERIFIED
-- kontrolowany podwójny claim: pierwszy PASS, drugi zablokowany — PASS
-- Security Advisor: CHECKED — brak nowej ekspozycji Etapu 3
-- Performance Advisor: CHECKED — brak nowego problemu Etapu 3
+- migracja: APPLIED — `20261002081343_sms_stage4_reliable_delivery_v1221`
+- hotfix RPC: APPLIED — `20261002081756_sms_stage4_found_state_fix_v1221`
+- acceptance test: PASS / ROLLBACK
+- recovery-after-uncertain test: PASS / ROLLBACK
+- definite-rejection test: PASS / ROLLBACK
+- ACL nowych RPC: service_role only — VERIFIED
+- Security Advisor: CHECKED
+- Performance Advisor: CHECKED
 
 ## Kontrola regresji
 - `test:smoke:sms-job-grouping`: PASS
 - `test:smoke:sms-durable-groups`: PASS
 - `test:smoke:sms-stage3`: PASS
+- `test:smoke:sms-stage4`: PASS
+- `smoke-smsapi-webhook-security-v1085`: PASS
 - `test:smoke:sms-log-cleanup`: PASS
-- domyślne SMS przy nowym zleceniu: PASS
 - Playwright E2E: PASS
 - produkcyjny build: PASS
-- Edge Functions: DEPLOYED — `send-service-sms` v31 ACTIVE, `generate-service-sms-queue` v21 ACTIVE
-- postdeploy inwarianty: defaulty SMS=true; duplicate primary=0; duplicate pending primary=0; claim v2 service_role-only
+- Edge Functions: DEPLOYED — `send-service-sms` v32 ACTIVE, `generate-service-sms-queue` v22 ACTIVE, `smsapi-delivery-webhook` v10 ACTIVE
 - Vercel: PENDING
 - merge: PENDING

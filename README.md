@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.20
+- 12.21
+
+Wersja 12.21 domyka Etap 4 modułu SMS: niezawodną ścieżkę wysyłki i statusów. Przed połączeniem z SMSAPI claim zapisuje treść i kontekst wysyłki, każda wiadomość dostaje providerowy `idx` oparty na claimie oraz `check_idx=1`, a po przyjęciu wiadomości provider ID i `sms_log` są utrwalane atomowo. Jednoznaczne odrzucenie operatora zwalnia claim i może być ponowione, natomiast timeout/5xx lub nieudany zapis po akceptacji pozostawia claim zablokowany, aby nie wysłać duplikatu. Webhook potrafi odzyskać brakujący log z `idx → claim_id`, a frontend traktuje każdą odpowiedź `{ok:false}` jako błąd.
 
 Wersja 12.20 domyka Etap 3 modułu SMS. Nowi klienci nadal mają SMS-y i przypomnienia domyślnie włączone; domyślne wartości bazy zostały zrównane z aplikacją. Harmonogram przypomnienia jest liczony osobno dla każdego urządzenia, daty końca miesiąca są domykane kalendarzowo, okno 62 dni liczone jest w dniach kalendarzowych w strefie Europe/Warsaw, a bezpośrednio przed wysyłką serwer ponownie pobiera aktualny numer, zgodę, włączenie przypomnień i termin. Urządzenie bez jednoznacznego powiązania z kartą klienta nie dostaje automatycznej zgody na SMS.
 
@@ -35,7 +37,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.20
+# Wawis Klimatyzacja — wersja 12.21
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -851,6 +853,8 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.21` — SMS Etap 4: staging claima przed SMSAPI, rozróżnienie odrzucenia i wyniku niepewnego, atomowy zapis akceptacji, `idx/check_idx`, odzyskanie przez webhook oraz fail-closed dla `{ok:false}`.
+
 - wersja `12.20` — SMS Etap 3: harmonogram per urządzenie, kalendarzowe daty i 62 dni w Europe/Warsaw oraz ponowna serwerowa weryfikacja aktualnego numeru, zgody, włączenia przypomnień i terminu tuż przed wysyłką. Nowi klienci nadal mają SMS domyślnie włączony.
 - wersja 12.04 — Fakturownia: kontrahent bez NIP jest synchronizowany jako osoba prywatna (company=false) z rozdzielonym imieniem i nazwiskiem; kontrahent z NIP pozostaje firmą.
 - wersja `12.03` — desktop: po otwarciu Fakturowni aplikacja zapamiętuje istniejące faktury klienta; po powrocie sprawdza API i automatycznie oznacza „Faktura VAT wystawiona” tylko wtedy, gdy rzeczywiście powstała nowa wystawiona faktura VAT. Ręczny przycisk statusu pozostaje bez zmian i ma pierwszeństwo.
