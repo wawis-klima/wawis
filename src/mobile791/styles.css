@@ -6027,7 +6027,7 @@ img.previewImage{
 .smsDesktopHeaderCard{padding:28px 30px}
 .smsDesktopHeaderCopy h1{max-width:700px}
 .smsDesktopHeaderCopy p{max-width:620px}
-.smsDesktopSummaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.smsDesktopSummaryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .smsDesktopMetricCard{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:16px;padding:18px 20px;border:1.5px solid #d9e4f0;border-radius:20px;background:#fff;cursor:pointer;text-align:left;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;min-height:118px}
 .smsDesktopMetricCard:hover{transform:translateY(-1px);box-shadow:0 18px 38px rgba(15,35,69,.07)}
 .smsDesktopMetricCard.active{border-color:#1ba3ba;box-shadow:0 16px 36px rgba(27,163,186,.10)}
@@ -6478,7 +6478,7 @@ img.previewImage{
 }
 
 .smsDesktopSummaryGrid{
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:14px;
 }
 
