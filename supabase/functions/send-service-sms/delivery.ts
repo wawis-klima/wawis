@@ -8,9 +8,53 @@ export class SmsDeliveryBlockedError extends Error {
   }
 }
 
-type RpcClient = { rpc: (name: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message: string } | null }> };
+export class SmsProviderRejectedError extends Error {
+  providerResponse: unknown;
+  statusCode: number | null;
+  claimReleased = false;
 
-type PreparedSms = {
+  constructor(message: string, providerResponse: unknown = null, statusCode: number | null = null) {
+    super(message);
+    this.name = 'SmsProviderRejectedError';
+    this.providerResponse = providerResponse;
+    this.statusCode = statusCode;
+  }
+}
+
+export class SmsDeliveryUncertainError extends Error {
+  claimId: string;
+  preparedSms: PreparedSms;
+  safeToRetry = false;
+
+  constructor(message: string, claimId: string, preparedSms: PreparedSms) {
+    super(message);
+    this.name = 'SmsDeliveryUncertainError';
+    this.claimId = claimId;
+    this.preparedSms = preparedSms;
+  }
+}
+
+export class SmsAcceptancePersistenceError extends Error {
+  claimId: string;
+  providerMessageId: string;
+  preparedSms: PreparedSms;
+  safeToRetry = false;
+
+  constructor(message: string, claimId: string, providerMessageId: string, preparedSms: PreparedSms) {
+    super(message);
+    this.name = 'SmsAcceptancePersistenceError';
+    this.claimId = claimId;
+    this.providerMessageId = providerMessageId;
+    this.preparedSms = preparedSms;
+  }
+}
+
+type RpcResult = { data: unknown; error: { message: string } | null };
+type RpcClient = {
+  rpc: (name: string, args: Record<string, unknown>) => PromiseLike<RpcResult>;
+};
+
+export type PreparedSms = {
   claimId: string;
   reminderGroupId: string;
   recipientPhone: string;
@@ -39,6 +83,22 @@ type ClaimResult = {
   cycle?: number | string | null;
 };
 
+type StageResult = {
+  ok?: boolean;
+  reason?: string | null;
+};
+
+type AcceptanceResult = {
+  ok?: boolean;
+  reason?: string | null;
+  log_id?: string | null;
+};
+
+type SendPlan<T> = {
+  message: string;
+  send: () => Promise<T>;
+};
+
 function getBlockedMessage(claim: ClaimResult) {
   if (claim.message) return String(claim.message);
   switch (String(claim.reason || 'blocked')) {
@@ -61,23 +121,45 @@ function getBlockedMessage(claim: ClaimResult) {
   }
 }
 
-// Rezerwacja jest celowo utrzymywana po niepewnym wyniku sieci.
-// Zwolnienie jej po timeout mogłoby spowodować drugi SMS już przyjęty przez SMSAPI.
-export async function sendServiceSmsOnce<T extends { providerMessageId: string | null }>({
+function asObject(value: unknown) {
+  return typeof value === 'object' && value !== null ? value as Record<string, unknown> : {};
+}
+
+async function markUncertain(adminClient: RpcClient, claimId: string, message: string) {
+  try {
+    const result = await adminClient.rpc('mark_service_sms_claim_uncertain', {
+      p_claim_id: claimId,
+      p_error: message,
+    });
+    if (result.error) console.error('mark_service_sms_claim_uncertain failed:', result.error.message);
+  } catch (error) {
+    console.error('mark_service_sms_claim_uncertain threw:', error);
+  }
+}
+
+// Etap 4:
+// 1) claim oparty na aktualnym stanie,
+// 2) staging danych PRZED połączeniem z SMSAPI,
+// 3) wysyłka z provider-level idx,
+// 4) atomowe utrwalenie akceptacji po odpowiedzi operatora.
+// Przy wyniku niepewnym claim pozostaje zablokowany, żeby nie wysłać duplikatu.
+export async function sendServiceSmsOnce<T extends { providerMessageId: string | null; responseBody?: unknown }>({
   adminClient,
+  actorId,
   logId = null,
   jobId = null,
   deviceId = null,
   cycle,
-  send,
+  prepare,
 }: {
   adminClient: RpcClient;
+  actorId: string;
   logId?: string | null;
   jobId?: string | null;
   deviceId?: string | null;
   cycle: number;
-  send: (prepared: PreparedSms) => Promise<T>;
-}): Promise<T & PreparedSms> {
+  prepare: (prepared: PreparedSms) => SendPlan<T>;
+}): Promise<T & PreparedSms & { logId: string | null }> {
   const claim = await adminClient.rpc('claim_service_sms_group_v2', {
     p_log_id: logId,
     p_job_id: jobId,
@@ -87,7 +169,7 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
 
   if (claim.error) throw new Error(claim.error.message);
 
-  const claimData = (typeof claim.data === 'object' && claim.data !== null ? claim.data : {}) as ClaimResult;
+  const claimData = asObject(claim.data) as ClaimResult;
   if (claimData.ok !== true) {
     throw new SmsDeliveryBlockedError(getBlockedMessage(claimData), String(claimData.reason || 'blocked'));
   }
@@ -109,25 +191,82 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
     throw new Error('Baza nie zwróciła kompletnych aktualnych danych do wysyłki SMS.');
   }
 
+  const plan = prepare(prepared);
+  const message = String(plan?.message || '').trim();
+  if (!message || typeof plan?.send !== 'function') {
+    throw new Error('Nie udało się przygotować wiadomości SMS przed wysyłką.');
+  }
+
+  const staged = await adminClient.rpc('stage_service_sms_claim', {
+    p_claim_id: prepared.claimId,
+    p_message: message,
+    p_actor_id: actorId,
+  });
+
+  if (staged.error) throw new Error(staged.error.message);
+  const stagedData = asObject(staged.data) as StageResult;
+  if (stagedData.ok !== true) {
+    throw new Error(`Nie udało się przygotować bezpiecznej wysyłki SMS: ${String(stagedData.reason || 'stage_failed')}`);
+  }
+
   let result: T;
   try {
-    result = await send(prepared);
+    result = await plan.send();
   } catch (error) {
-    const uncertain = new Error(
-      `Nie potwierdzono wyniku wysyłki. Ponowna wysyłka dla tej grupy została zablokowana; sprawdź wynik w SMSAPI. ${error instanceof Error ? error.message : String(error)}`,
-    ) as Error & { reminderGroupId?: string; preparedSms?: PreparedSms };
-    uncertain.reminderGroupId = prepared.reminderGroupId;
-    uncertain.preparedSms = prepared;
-    throw uncertain;
+    if (error instanceof SmsProviderRejectedError) {
+      const rejected = await adminClient.rpc('reject_service_sms_claim', {
+        p_claim_id: prepared.claimId,
+        p_error: error.message,
+        p_provider_response: error.providerResponse ?? null,
+      });
+
+      if (!rejected.error && asObject(rejected.data).ok === true) {
+        error.claimReleased = true;
+      } else {
+        console.error('reject_service_sms_claim failed:', rejected.error?.message || rejected.data);
+      }
+      throw error;
+    }
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    await markUncertain(adminClient, prepared.claimId, errorMessage);
+    throw new SmsDeliveryUncertainError(
+      `Nie potwierdzono wyniku wysyłki SMS. Nie wysyłaj ponownie tej pozycji ręcznie — claim pozostaje zablokowany, a callback SMSAPI może dokończyć zapis. ${errorMessage}`,
+      prepared.claimId,
+      prepared,
+    );
   }
 
-  const confirmed = await adminClient.rpc('confirm_service_sms', {
+  const providerMessageId = String(result?.providerMessageId || '').trim();
+  if (!providerMessageId) {
+    const messageWithoutId = 'SMSAPI nie zwróciło identyfikatora przyjętej wiadomości.';
+    await markUncertain(adminClient, prepared.claimId, messageWithoutId);
+    throw new SmsDeliveryUncertainError(
+      `${messageWithoutId} Nie wysyłaj ponownie tej pozycji ręcznie.`,
+      prepared.claimId,
+      prepared,
+    );
+  }
+
+  const accepted = await adminClient.rpc('record_service_sms_acceptance', {
     p_claim_id: prepared.claimId,
-    p_provider_message_id: result.providerMessageId,
+    p_provider_message_id: providerMessageId,
+    p_provider_response: result.responseBody ?? null,
   });
-  if (confirmed.error) {
-    console.error('SMS accepted; group reservation retained, confirmation recording failed:', confirmed.error.message);
+
+  const acceptedData = asObject(accepted.data) as AcceptanceResult;
+  if (accepted.error || acceptedData.ok !== true) {
+    const reason = accepted.error?.message || String(acceptedData.reason || 'acceptance_persistence_failed');
+    await markUncertain(adminClient, prepared.claimId, `SMSAPI przyjęło wiadomość ${providerMessageId}, ale zapis akceptacji nie został potwierdzony: ${reason}`);
+    throw new SmsAcceptancePersistenceError(
+      `SMSAPI przyjęło wiadomość, ale nie udało się potwierdzić pełnego zapisu w bazie. Nie wysyłaj jej ponownie — webhook może odzyskać wpis po claim/idx. ${reason}`,
+      prepared.claimId,
+      providerMessageId,
+      prepared,
+    );
   }
 
-  return Object.assign(result, prepared);
+  return Object.assign(result, prepared, {
+    logId: String(acceptedData.log_id || '').trim() || null,
+  });
 }
