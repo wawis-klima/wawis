@@ -9,7 +9,6 @@ const assert = (condition, message) => {
 
 const panel = read('src/components/sms/SmsPanel.jsx');
 const smsFetch = read('src/modules/sms-fetch.js');
-const devicesFetch = read('src/modules/devices-fetch.js');
 const app = read('src/App.jsx');
 const styles = read('src/styles.css');
 
