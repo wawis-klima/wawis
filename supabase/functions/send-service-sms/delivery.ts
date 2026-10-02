@@ -116,6 +116,12 @@ function getBlockedMessage(claim: ClaimResult) {
       return 'Ta pozycja została zastąpiona aktualną pozycją przypomnienia klienta. Odśwież listę SMS.';
     case 'group_claim_exists':
       return 'Ten SMS jest już zarezerwowany do wysyłki dla tej grupy klienta.';
+    case 'retry_claim_exists':
+      return 'Ponowienie tego SMS-a jest już w toku albo zostało już wykonane.';
+    case 'log_not_retryable':
+      return 'Ten wpis nie ma już statusu NIEWYSŁANO i nie może być ponowiony.';
+    case 'missing_current_source':
+      return 'Nie można potwierdzić aktualnych danych klienta dla tego starego wpisu.';
     default:
       return 'Dane przypomnienia zmieniły się albo wysyłka jest już zablokowana. Odśwież listę SMS.';
   }
@@ -150,6 +156,7 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
   jobId = null,
   deviceId = null,
   cycle,
+  retryLogId = null,
   prepare,
 }: {
   adminClient: RpcClient;
@@ -158,14 +165,19 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
   jobId?: string | null;
   deviceId?: string | null;
   cycle: number;
+  retryLogId?: string | null;
   prepare: (prepared: PreparedSms) => SendPlan<T>;
 }): Promise<T & PreparedSms & { logId: string | null }> {
-  const claim = await adminClient.rpc('claim_service_sms_group_v2', {
-    p_log_id: logId,
-    p_job_id: jobId,
-    p_device_id: deviceId,
-    p_cycle: cycle,
-  });
+  const claim = retryLogId
+    ? await adminClient.rpc('claim_service_sms_not_sent_retry', {
+        p_log_id: retryLogId,
+      })
+    : await adminClient.rpc('claim_service_sms_group_v2', {
+        p_log_id: logId,
+        p_job_id: jobId,
+        p_device_id: deviceId,
+        p_cycle: cycle,
+      });
 
   if (claim.error) throw new Error(claim.error.message);
 
