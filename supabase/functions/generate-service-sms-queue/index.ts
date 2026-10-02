@@ -62,26 +62,23 @@ Deno.serve(async (request) => {
 
     const { data: logs, error: logsError } = await adminClient
       .from("sms_log")
-      .select("id, job_id, device_id, client, phone, status, reminder_cycle, reminder_due_date")
+      .select("id, job_id, device_id, client, phone, status, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary")
       .eq("sms_type", "service_reminder")
       .limit(5000);
     if (logsError) return json({ error: logsError.message }, 400);
 
     const existingByKey = new Map<string, { id: string; status: string }>();
-    const existingCustomerWindows = new Map<string, Array<{ id: string; status: string; dueDate: string }>>();
+    const existingPrimaryGroupIds = new Set<string>();
     for (const log of logs || []) {
       const identity = log.device_id ? `device:${log.device_id}` : log.job_id ? `job:${log.job_id}` : "";
       const cycle = Number.parseInt(String(log.reminder_cycle ?? ""), 10) || 1;
       if (identity) {
         existingByKey.set(`${identity}:${cycle}`, { id: log.id, status: String(log.status || "") });
       }
-      rememberCustomerReminder(existingCustomerWindows, {
-        id: String(log.id || ""),
-        status: String(log.status || ""),
-        phone: log.phone,
-        client: log.client,
-        dueDate: log.reminder_due_date,
-      });
+      const groupId = String(log.reminder_group_id || "").trim();
+      if (groupId && log.reminder_group_primary === true) {
+        existingPrimaryGroupIds.add(groupId);
+      }
     }
 
     let createdCount = 0;
@@ -148,60 +145,60 @@ Deno.serve(async (request) => {
 
     async function insertQueueItem(item: Record<string, unknown>, identities: string[]) {
       const cycle = Number.parseInt(String(item.cycle ?? ""), 10) || 1;
-      const customerBaseKey = getCustomerBaseKey({ phone: item.phone, client: item.client });
-      const dueDate = String(item.dueDate || "");
-      const alreadyExists = identities.some((identity) => existingByKey.has(`${identity}:${cycle}`))
-        || hasCustomerReminderInWindow(existingCustomerWindows, customerBaseKey, dueDate);
+      const dueDate = String(item.dueDate || "").trim();
+      const phone = normalizePhone(String(item.phone || ""));
+      const reminderGroupId = await ensureServiceSmsGroup(adminClient, phone, dueDate);
+
+      const alreadyExists = existingPrimaryGroupIds.has(reminderGroupId)
+        || identities.some((identity) => existingByKey.has(`${identity}:${cycle}`));
       if (alreadyExists) return;
 
       const message = buildMessage({
         client: item.client || "Kliencie",
-        phone: item.phone,
+        phone,
         installation_date: String(item.installationDate || ""),
-        service_due_date: String(item.dueDate || ""),
+        service_due_date: dueDate,
       }, settings);
 
       const payload = {
         device_id: item.deviceId || null,
         job_id: item.jobId || null,
         client: item.client || null,
-        phone: item.phone,
+        phone,
         message,
         sms_type: "service_reminder",
         provider: "smsapi",
         reminder_cycle: cycle,
-        reminder_due_date: item.dueDate,
+        reminder_due_date: dueDate,
+        reminder_group_id: reminderGroupId,
+        reminder_group_primary: true,
         planned_for: nowIso,
         created_by: callerProfile.id,
       } as Record<string, unknown>;
 
-      if (now.getTime() <= Number(item.expiresAt || 0)) {
-        const { error: insertError } = await adminClient.from("sms_log").insert({ ...payload, status: "pending_approval" });
-        if (!insertError) {
-          createdCount += 1;
-          for (const identity of identities) existingByKey.set(`${identity}:${cycle}`, { id: crypto.randomUUID(), status: "pending_approval" });
-          rememberCustomerReminder(existingCustomerWindows, {
-            id: crypto.randomUUID(),
-            status: "pending_approval",
-            phone: item.phone,
-            client: item.client,
-            dueDate,
-          });
+      const insertPayload = now.getTime() <= Number(item.expiresAt || 0)
+        ? { ...payload, status: "pending_approval" }
+        : { ...payload, status: "not_sent", error_message: "Przekroczono 2-miesięczne okno wysyłki przypomnienia." };
+
+      const { error: insertError } = await adminClient.from("sms_log").insert(insertPayload);
+      if (insertError) {
+        if (String(insertError.code || "") === "23505") {
+          existingPrimaryGroupIds.add(reminderGroupId);
+          return;
         }
-      } else {
-        const { error: insertError } = await adminClient.from("sms_log").insert({ ...payload, status: "not_sent", error_message: "Przekroczono 2-miesięczne okno wysyłki przypomnienia." });
-        if (!insertError) {
-          expiredCount += 1;
-          for (const identity of identities) existingByKey.set(`${identity}:${cycle}`, { id: crypto.randomUUID(), status: "not_sent" });
-          rememberCustomerReminder(existingCustomerWindows, {
-            id: crypto.randomUUID(),
-            status: "not_sent",
-            phone: item.phone,
-            client: item.client,
-            dueDate,
-          });
-        }
+        throw new Error(`Nie udało się zapisać grupy kolejki SMS: ${insertError.message}`);
       }
+
+      existingPrimaryGroupIds.add(reminderGroupId);
+      for (const identity of identities) {
+        existingByKey.set(`${identity}:${cycle}`, {
+          id: crypto.randomUUID(),
+          status: String(insertPayload.status || ""),
+        });
+      }
+
+      if (insertPayload.status === "pending_approval") createdCount += 1;
+      else expiredCount += 1;
     }
 
     const queueItems = [
@@ -231,58 +228,26 @@ Deno.serve(async (request) => {
 
 
 
-function normalizeCustomerKeyPart(value: unknown) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("pl-PL")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ");
-}
-
-function getCustomerBaseKey({ phone, client }: { phone?: unknown; client?: unknown }) {
-  const normalizedPhone = normalizePhone(String(phone || ""));
-  if (normalizedPhone) return `phone:${normalizedPhone}`;
-  const normalizedClient = normalizeCustomerKeyPart(client);
-  return normalizedClient ? `client:${normalizedClient}` : "";
-}
-
-function parseReminderDueDate(value: unknown) {
-  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return 0;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
-  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
-}
-
-function hasCustomerReminderInWindow(
-  map: Map<string, Array<{ id: string; status: string; dueDate: string }>>,
-  customerBaseKey: string,
+async function ensureServiceSmsGroup(
+  adminClient: ReturnType<typeof createClient>,
+  phone: string,
   dueDate: string,
 ) {
-  if (!customerBaseKey || !dueDate) return false;
-  const dueTs = parseReminderDueDate(dueDate);
-  if (!dueTs) return false;
-  return (map.get(customerBaseKey) || []).some((entry) => {
-    const existingDueTs = parseReminderDueDate(entry.dueDate);
-    return existingDueTs > 0 && Math.abs(existingDueTs - dueTs) <= (ACTIVE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const { data, error } = await adminClient.rpc("ensure_service_sms_group", {
+    p_phone: phone,
+    p_due_date: dueDate,
   });
-}
 
-function rememberCustomerReminder(
-  map: Map<string, Array<{ id: string; status: string; dueDate: string }>>,
-  entry: { id?: unknown; status?: unknown; phone?: unknown; client?: unknown; dueDate?: unknown },
-) {
-  const customerBaseKey = getCustomerBaseKey({ phone: entry.phone, client: entry.client });
-  const dueDate = String(entry.dueDate || "").trim();
-  if (!customerBaseKey || !dueDate) return;
-  const rows = map.get(customerBaseKey) || [];
-  rows.push({
-    id: String(entry.id || ""),
-    status: String(entry.status || ""),
-    dueDate,
-  });
-  map.set(customerBaseKey, rows);
+  if (error) {
+    throw new Error(`Nie udało się utworzyć trwałej grupy przypomnienia SMS: ${error.message}`);
+  }
+
+  const groupId = String(data || "").trim();
+  if (!isUuid(groupId)) {
+    throw new Error("Baza nie zwróciła prawidłowego identyfikatora grupy SMS.");
+  }
+
+  return groupId;
 }
 
 function isAdminRole(role: string | null | undefined) {
