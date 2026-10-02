@@ -27,7 +27,7 @@ assert.doesNotMatch(migration, /delete from public\.sms_log/i);
 assert.match(migration, /revoke all on function public\.cancel_service_sms_log\(uuid, uuid\) from authenticated/);
 assert.match(migration, /grant execute on function public\.cancel_service_sms_log\(uuid, uuid\) to service_role/);
 
-for (const relativePath of ['src/modules/sms-fetch.js', 'src/mobile791/modules/sms-fetch.js']) {
+for (const relativePath of ['src/modules/sms-fetch.js']) {
   const source = read(relativePath);
   const loadStart = source.indexOf('export async function loadSmsModuleData');
   const saveStart = source.indexOf('export async function saveSmsSettings', loadStart);

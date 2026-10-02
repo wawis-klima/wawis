@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-for (const prefix of ['src', 'src/mobile791']) {
+for (const prefix of ['src']) {
   const sms = await import(`../${prefix}/modules/sms.js`);
   const { buildUnsentSmsLogs } = await import(`../${prefix}/modules/sms-unsent.js`);
   const { sendUnsentSmsLog, approveAndSendSmsLogs } = await import(`../${prefix}/modules/sms-send.js`);

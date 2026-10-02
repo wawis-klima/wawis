@@ -7,6 +7,12 @@ const corsHeaders = {
 
 const ACTIVE_WINDOW_DAYS = 62;
 const DEFAULT_REMINDER_YEARS = 5;
+const DEVICE_PAGE_SIZE = 1000;
+const JOB_ID_BATCH_SIZE = 100;
+const SMS_LOG_PAGE_SIZE = 1000;
+const DEVICE_SELECT = "id, contractor_id, source_job_id, model, serial_number, installation_date, service_reminder_years, sms_consent, sms_reminder_enabled, contractor:contractors(company_name, phone)";
+const JOB_SELECT = "id, client, title, phone, sms_recipient_phone, sms_consent, sms_reminder_enabled, service_reminder_years";
+const SMS_LOG_SELECT = "id, job_id, device_id, client, phone, message, status, provider, provider_message_id, sent_at, delivered_at, error_message, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary, created_at";
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -41,17 +47,13 @@ Deno.serve(async (request) => {
     const todayIso = getWarsawIsoDate(now);
     const todayDay = isoDateToDay(todayIso);
 
-    const { data: devices, error: devicesError } = await adminClient
-      .from("devices")
-      .select("id, contractor_id, source_job_id, model, serial_number, installation_date, service_reminder_years, sms_consent, sms_reminder_enabled, contractor:contractors(company_name, phone)")
-      .not("installation_date", "is", null);
-    if (devicesError) return json({ error: devicesError.message }, 400);
+    const devices = await fetchAllServiceReminderDevices(adminClient);
 
     const linkedJobIds = [...new Set(
       (devices || [])
         .map((device) => normalizeSourceJobId(device.source_job_id))
         .filter((value) => isUuid(value)),
-    )];
+    )].sort();
 
     const jobsById = new Map<string, {
       id: string;
@@ -64,27 +66,23 @@ Deno.serve(async (request) => {
       service_reminder_years: number | null;
     }>();
 
-    if (linkedJobIds.length) {
-      const { data: jobs, error: jobsError } = await adminClient
-        .from("jobs")
-        .select("id, client, title, phone, sms_recipient_phone, sms_consent, sms_reminder_enabled, service_reminder_years")
-        .in("id", linkedJobIds);
-      if (jobsError) return json({ error: jobsError.message }, 400);
-      for (const job of jobs || []) jobsById.set(String(job.id), job);
-    }
+    const linkedJobs = await fetchJobsByIds(adminClient, linkedJobIds);
+    for (const job of linkedJobs) jobsById.set(String(job.id), job);
 
-    const { data: logs, error: logsError } = await adminClient
-      .from("sms_log")
-      .select("id, job_id, device_id, client, phone, status, provider_message_id, sent_at, delivered_at, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary, created_at")
-      .eq("sms_type", "service_reminder")
-      .limit(5000);
-    if (logsError) return json({ error: logsError.message }, 400);
+    const logs = await fetchAllServiceReminderLogs(adminClient);
 
     const existingByKey = new Map<string, {
       id: string;
       status: string;
       groupId: string;
+      deviceId: string;
+      jobId: string;
+      client: string;
       phone: string;
+      message: string;
+      provider: string;
+      errorMessage: string;
+      cycle: number;
       dueDate: string;
       primary: boolean;
       hasProviderProof: boolean;
@@ -103,7 +101,14 @@ Deno.serve(async (request) => {
           id: String(log.id || ""),
           status: String(log.status || ""),
           groupId,
+          deviceId: String(log.device_id || ""),
+          jobId: String(log.job_id || ""),
+          client: String(log.client || ""),
           phone: String(log.phone || ""),
+          message: String(log.message || ""),
+          provider: String(log.provider || ""),
+          errorMessage: String(log.error_message || ""),
+          cycle,
           dueDate: String(log.reminder_due_date || ""),
           primary: log.reminder_group_primary === true,
           hasProviderProof: Boolean(log.provider_message_id || log.sent_at || log.delivered_at),
@@ -196,7 +201,13 @@ Deno.serve(async (request) => {
       const phone = normalizePhone(String(item.phone || ""));
       if (!phone || !dueDate) return;
 
-      const reminderGroupId = await ensureServiceSmsGroup(adminClient, phone, dueDate);
+      const existing = identities
+        .map((identity) => existingByKey.get(`${identity}:${cycle}`))
+        .find(Boolean);
+      const existingStatus = String(existing?.status || "").trim().toLowerCase();
+      const retryableProviderError = Boolean(existing && existingStatus === "error" && existing.hasProviderProof !== true);
+      if (existing && !["pending_approval", "not_sent"].includes(existingStatus) && !retryableProviderError) return;
+
       const message = buildMessage({
         client: item.client || "Kliencie",
         phone,
@@ -205,6 +216,26 @@ Deno.serve(async (request) => {
       }, settings);
 
       const targetStatus = todayDay <= Number(item.expiresDay || 0) ? "pending_approval" : "not_sent";
+      const targetErrorMessage = targetStatus === "not_sent"
+        ? "Przekroczono 62-dniowe okno wysyłki przypomnienia."
+        : "";
+      if (
+        existing
+        && existing.primary
+        && existing.groupId
+        && existing.deviceId === String(item.deviceId || "")
+        && existing.jobId === String(item.jobId || "")
+        && existing.client === String(item.client || "")
+        && normalizePhone(existing.phone) === phone
+        && existing.message === message
+        && existing.provider === "smsapi"
+        && existing.errorMessage === targetErrorMessage
+        && existing.cycle === cycle
+        && existing.dueDate === dueDate
+        && existingStatus === targetStatus
+      ) return;
+
+      const reminderGroupId = await ensureServiceSmsGroup(adminClient, phone, dueDate);
       const payload = {
         device_id: item.deviceId || null,
         job_id: item.jobId || null,
@@ -220,20 +251,10 @@ Deno.serve(async (request) => {
         planned_for: nowIso,
         created_by: callerProfile.id,
         status: targetStatus,
-        error_message: targetStatus === "not_sent"
-          ? "Przekroczono 62-dniowe okno wysyłki przypomnienia."
-          : null,
+        error_message: targetErrorMessage || null,
       } as Record<string, unknown>;
 
-      const existing = identities
-        .map((identity) => existingByKey.get(`${identity}:${cycle}`))
-        .find(Boolean);
-
       if (existing) {
-        const existingStatus = String(existing.status || "").trim().toLowerCase();
-        const retryableProviderError = existingStatus === "error" && existing.hasProviderProof !== true;
-        if (!["pending_approval", "not_sent"].includes(existingStatus) && !retryableProviderError) return;
-
         if (existing.groupId !== reminderGroupId && existingPrimaryGroupIds.has(reminderGroupId)) {
           const { error: obsoleteError } = await adminClient
             .from("sms_log")
@@ -281,7 +302,14 @@ Deno.serve(async (request) => {
             id: existing.id,
             status: targetStatus,
             groupId: reminderGroupId,
+            deviceId: String(item.deviceId || ""),
+            jobId: String(item.jobId || ""),
+            client: String(item.client || ""),
             phone,
+            message,
+            provider: "smsapi",
+            errorMessage: targetErrorMessage,
+            cycle,
             dueDate,
             primary: true,
             hasProviderProof: false,
@@ -309,7 +337,14 @@ Deno.serve(async (request) => {
           id: crypto.randomUUID(),
           status: targetStatus,
           groupId: reminderGroupId,
+          deviceId: String(item.deviceId || ""),
+          jobId: String(item.jobId || ""),
+          client: String(item.client || ""),
           phone,
+          message,
+          provider: "smsapi",
+          errorMessage: targetErrorMessage,
+          cycle,
           dueDate,
           primary: true,
           hasProviderProof: false,
@@ -355,6 +390,81 @@ async function ensureServiceSmsGroup(
   }
 
   return groupId;
+}
+
+async function fetchAllServiceReminderDevices(
+  adminClient: ReturnType<typeof createClient>,
+) {
+  const devices: Array<Record<string, any>> = [];
+
+  for (let from = 0; ; from += DEVICE_PAGE_SIZE) {
+    const { data, error } = await adminClient
+      .from("devices")
+      .select(DEVICE_SELECT)
+      .not("installation_date", "is", null)
+      .order("id", { ascending: true })
+      .range(from, from + DEVICE_PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`Nie udało się pobrać urządzeń do kolejki SMS: ${error.message}`);
+    }
+
+    const page = data || [];
+    devices.push(...page);
+    if (page.length < DEVICE_PAGE_SIZE) break;
+  }
+
+  return devices;
+}
+
+async function fetchJobsByIds(
+  adminClient: ReturnType<typeof createClient>,
+  jobIds: string[],
+) {
+  const jobs: Array<Record<string, any>> = [];
+
+  for (let from = 0; from < jobIds.length; from += JOB_ID_BATCH_SIZE) {
+    const batch = jobIds.slice(from, from + JOB_ID_BATCH_SIZE);
+    const { data, error } = await adminClient
+      .from("jobs")
+      .select(JOB_SELECT)
+      .in("id", batch)
+      .order("id", { ascending: true });
+
+    if (error) {
+      throw new Error(`Nie udało się pobrać zleceń powiązanych z kolejką SMS: ${error.message}`);
+    }
+
+    jobs.push(...(data || []));
+  }
+
+  return jobs;
+}
+
+async function fetchAllServiceReminderLogs(
+  adminClient: ReturnType<typeof createClient>,
+) {
+  const logs: Array<Record<string, unknown>> = [];
+
+  for (let from = 0; ; from += SMS_LOG_PAGE_SIZE) {
+    const { data, error } = await adminClient
+      .from("sms_log")
+      .select(SMS_LOG_SELECT)
+      .eq("sms_type", "service_reminder")
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, from + SMS_LOG_PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`Nie udało się pobrać historii kolejki SMS: ${error.message}`);
+    }
+
+    const page = data || [];
+    logs.push(...page);
+    if (page.length < SMS_LOG_PAGE_SIZE) break;
+  }
+
+  return logs;
 }
 
 function isAdminRole(role: string | null | undefined) {

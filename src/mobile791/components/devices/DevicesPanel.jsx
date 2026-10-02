@@ -13,7 +13,7 @@ import {
   updateDeviceStatus,
   fetchDeviceSmsHistory,
 } from '../../modules/devices-fetch.js';
-import SmsHistoryCard from '../sms/SmsHistoryCard.jsx';
+import SmsHistoryCard from '../../../components/sms/SmsHistoryCard.jsx';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { MAX_INDOOR_UNITS_PER_DEVICE, getDeviceIndoorSerials } from '../../modules/job-devices.js';
 

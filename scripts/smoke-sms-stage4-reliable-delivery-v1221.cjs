@@ -55,7 +55,7 @@ assert.match(webhook, /apply_sms_delivery_atomic_v2/);
 assert.match(webhook, /p_claim_id:\s*entry\.claimId/);
 assert.match(webhookSecurity, /export function smsApiIdxToClaimId/);
 
-for (const clientPath of ['src/modules/sms-send.js', 'src/mobile791/modules/sms-send.js', 'sms-send.js']) {
+for (const clientPath of ['src/modules/sms-send.js']) {
   const client = read(clientPath);
   assert.match(client, /data\?\.ok === false/);
   assert.match(client, /getFunctionFailureMessage/);

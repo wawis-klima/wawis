@@ -20,15 +20,15 @@ const sender = read('supabase/functions/send-service-sms/index.ts');
 assert.match(sender, /retry_not_sent/);
 assert.match(sender, /handleRetryNotSentSend/);
 
-for (const file of ['src/modules/sms-send.js','src/mobile791/modules/sms-send.js','sms-send.js']) {
+for (const file of ['src/modules/sms-send.js']) {
   assert.match(read(file), /retryNotSentSmsLogs/);
 }
 
-for (const file of ['src/modules/sms-fetch.js','src/mobile791/modules/sms-fetch.js']) {
+for (const file of ['src/modules/sms-fetch.js']) {
   assert.match(read(file), /unsentLogs/);
 }
 
-for (const file of ['src/components/sms/SmsPanel.jsx','src/mobile791/components/sms/SmsPanel.jsx']) {
+for (const file of ['src/components/sms/SmsPanel.jsx']) {
   const panel = read(file);
   assert.match(panel, /SmsUnsentCard/);
   assert.match(panel, /activeSummaryView === 'unsent'/);
@@ -36,13 +36,13 @@ for (const file of ['src/components/sms/SmsPanel.jsx','src/mobile791/components/
   assert.doesNotMatch(panel, /label: 'Zaplanowany'/);
 }
 
-for (const file of ['src/components/sms/SmsUnsentCard.jsx','src/mobile791/components/sms/SmsUnsentCard.jsx']) {
+for (const file of ['src/components/sms/SmsUnsentCard.jsx']) {
   const card = read(file);
   assert.match(card, /Wyślij ponownie/);
   assert.match(card, /Wyślij zaznaczone/);
 }
 
-for (const file of ['src/components/sms/SmsHistoryCard.jsx','src/mobile791/components/sms/SmsHistoryCard.jsx']) {
+for (const file of ['src/components/sms/SmsHistoryCard.jsx']) {
   const history = read(file);
   assert.match(history, /getSmsStatusLabel\(log.status\)/);
   assert.doesNotMatch(history, /oczekuje na wysłanie/i);

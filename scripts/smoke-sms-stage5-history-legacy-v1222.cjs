@@ -23,10 +23,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.match(migration, /grant execute on function public\.claim_service_sms_group_v2\(uuid, uuid, uuid, integer\) to service_role/i);
 
   const desktopFetch = read('src/modules/sms-fetch.js');
-  const mobileFetch = read('src/mobile791/modules/sms-fetch.js');
-  // Desktop może mieć własną warstwę transportową (np. deduplikację równoległych RPC),
-  // ale oba klienty muszą czytać ten sam kontrakt snapshotu.
-  for (const fetchSource of [desktopFetch, mobileFetch]) {
+  for (const fetchSource of [desktopFetch]) {
     assert.match(fetchSource, /admin_get_sms_module_snapshot/);
     assert.match(fetchSource, /sentThisMonthLogs/);
     assert.match(fetchSource, /historyLogs/);
@@ -50,8 +47,6 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   }
 
   const desktopSms = read('src/modules/sms.js');
-  const mobileSms = read('src/mobile791/modules/sms.js');
-  assert.equal(mobileSms, desktopSms, 'Desktop i mobile muszą używać identycznej domeny SMS.');
   assert.match(desktopSms, /isLegacyDevice/);
   assert.match(desktopSms, /sms_eligibility: hasAuthoritativeConsent \? 'linked_job' : \(isLegacyDevice \? 'legacy_device'/);
 
@@ -97,7 +92,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.match(generator, /jobId:\s*linkedJobId \|\| null/);
   assert.match(generator, /contractor\?\.phone/);
 
-  for (const panelPath of ['src/components/sms/SmsPanel.jsx', 'src/mobile791/components/sms/SmsPanel.jsx']) {
+  for (const panelPath of ['src/components/sms/SmsPanel.jsx']) {
     const panel = read(panelPath);
     assert.match(panel, /sentMonthSourceLogs/);
     assert.match(panel, /getSentThisMonthLogs\(sentMonthSourceLogs\)/);

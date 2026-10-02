@@ -155,6 +155,8 @@ const GROUPS = {
     'npm run test:smoke:sms-stage5',
     'npm run test:smoke:sms-unsent-retry',
     'npm run test:smoke:sms-log-cleanup',
+    'npm run test:smoke:sms-shared-source',
+    'npm run test:smoke:sms-generator-pagination',
     'npm run test:smoke:center360',
     'npm run test:smoke:center360-personalization',
     'npm run test:smoke:dashboard-metrics',
@@ -178,6 +180,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-worker-add-client',
     'npm run test:smoke:mobile-default-installation-date',
     'npm run test:smoke:cache-first-refresh',
+    'npm run test:smoke:sms-shared-source',
   ],
   infra: [
     'node scripts/smoke-release-automation-v1061.cjs',
