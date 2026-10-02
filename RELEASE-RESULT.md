@@ -16,8 +16,10 @@
 ## Kontrola regresji
 - smoke sms-job-grouping rozszerzony o dwa urządzenia jednego klienta z terminami oddalonymi o kilkanaście dni i różnymi cyklami
 - smoke sms-log-cleanup rozszerzony o 62-dniowe okno oraz ochronę historii skutecznych wysyłek
-- WAWIS PR checks / targeted-checks: PENDING
-- migracja Supabase: PENDING
-- Edge Function: PENDING
+- WAWIS PR checks / targeted-checks: PENDING (po ostatnich zmianach ACL)
+- migracja Supabase: APPLIED (`sms_customer_window_dedup_v1217` + `sms_cleanup_rpc_acl_v1217`)
+- Edge Function: DEPLOYED — `generate-service-sms-queue` v17 ACTIVE
+- Security Advisor: CHECKED — cleanup RPC bez dostępu anon; pozostałe ostrzeżenia są wcześniejsze i niezwiązane z 12.17
+- Performance Advisor: CHECKED — brak nowych tabel/indeksów; pozostałe informacje są wcześniejsze
 - Vercel: PENDING
 - merge: PENDING
