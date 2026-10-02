@@ -1,36 +1,65 @@
 import { getDeviceIndoorSerials, getJobDeviceRows } from './job-devices.js';
 
 const DEFAULT_TEMPLATE = 'Dzień dobry {client}, przypominamy o obowiązkowym przeglądzie klimatyzacji po 11 miesiącach od montażu. Aby utrzymać gwarancję, prosimy o kontakt: {service_phone}. {company_name}';
-const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_REMINDER_YEARS = 5;
 const ACTIVE_WINDOW_DAYS = 62;
 
-function parseLocalDate(dateStr) {
-  if (!dateStr) return null;
-  const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+function parseIsoDateParts(value) {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) return null;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
-  if (Number.isNaN(date.getTime())) return null;
-  return date;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isInteger(year) || month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return null;
+  return { year, month, day };
 }
 
-function formatIsoDate(date) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+function daysInMonth(year, month) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-function addMonths(date, months) {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
-  const result = new Date(date.getTime());
-  const dayOfMonth = result.getDate();
-  result.setDate(1);
-  result.setMonth(result.getMonth() + months);
-  const lastDay = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
-  result.setDate(Math.min(dayOfMonth, lastDay));
-  return result;
+function formatIsoParts(year, month, day) {
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function addMonthsClampedIso(value, monthsToAdd) {
+  const parts = parseIsoDateParts(value);
+  if (!parts) return '';
+  const zeroBased = (parts.year * 12) + (parts.month - 1) + monthsToAdd;
+  const year = Math.floor(zeroBased / 12);
+  const month = (zeroBased % 12) + 1;
+  const day = Math.min(parts.day, daysInMonth(year, month));
+  return formatIsoParts(year, month, day);
+}
+
+function isoDateToDay(value) {
+  const parts = parseIsoDateParts(value);
+  if (!parts) return 0;
+  return Math.trunc(Date.UTC(parts.year, parts.month - 1, parts.day) / 86400000);
+}
+
+function addDaysIso(value, days) {
+  const dayNumber = isoDateToDay(value);
+  if (!dayNumber) return '';
+  const date = new Date((dayNumber + days) * 86400000);
+  return formatIsoParts(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+}
+
+function getWarsawIsoDate(value = new Date()) {
+  if (typeof value === 'string') {
+    const parsed = parseIsoDateParts(value);
+    if (parsed) return formatIsoParts(parsed.year, parsed.month, parsed.day);
+  }
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/Warsaw',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const read = (type) => parts.find((part) => part.type === type)?.value || '';
+  return `${read('year')}-${read('month')}-${read('day')}`;
 }
 
 function normalizePositiveInteger(value, fallback = DEFAULT_REMINDER_YEARS) {
@@ -39,32 +68,37 @@ function normalizePositiveInteger(value, fallback = DEFAULT_REMINDER_YEARS) {
 }
 
 export function formatSmsDate(dateStr = '') {
+  const parts = parseIsoDateParts(dateStr);
+  if (parts) return `${String(parts.day).padStart(2, '0')}.${String(parts.month).padStart(2, '0')}.${parts.year}`;
   if (!dateStr) return '-';
-  const date = parseLocalDate(String(dateStr)) || new Date(dateStr);
+  const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return dateStr;
-  return new Intl.DateTimeFormat('pl-PL').format(date);
+  return new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw' }).format(date);
 }
 
 export function calculateServiceDueDate(installationDate) {
-  const baseDate = parseLocalDate(installationDate);
-  if (!baseDate) return null;
-  return formatIsoDate(addMonths(baseDate, 11));
+  return addMonthsClampedIso(installationDate, 11) || null;
 }
 
 export function getReminderSchedule(installationDate, reminderYears = DEFAULT_REMINDER_YEARS) {
-  const baseDate = parseLocalDate(installationDate);
-  if (!baseDate) return [];
+  if (!parseIsoDateParts(installationDate)) return [];
   const maxYears = normalizePositiveInteger(reminderYears);
   const schedule = [];
 
   for (let cycle = 1; cycle <= maxYears; cycle += 1) {
-    const dueDate = addMonths(baseDate, cycle === 1 ? 11 : 11 + ((cycle - 1) * 12));
+    const dueDate = addMonthsClampedIso(installationDate, 11 + ((cycle - 1) * 12));
     if (!dueDate) continue;
+    const expiresOn = addDaysIso(dueDate, ACTIVE_WINDOW_DAYS);
+    const dueDay = isoDateToDay(dueDate);
+    const expiresDay = isoDateToDay(expiresOn);
     schedule.push({
       cycle,
-      dueDate: formatIsoDate(dueDate),
-      dueTs: dueDate.getTime(),
-      expiresAt: dueDate.getTime() + (ACTIVE_WINDOW_DAYS * DAY_MS),
+      dueDate,
+      dueDay,
+      expiresOn,
+      expiresDay,
+      dueTs: dueDay,
+      expiresAt: expiresDay,
     });
   }
 
@@ -73,26 +107,19 @@ export function getReminderSchedule(installationDate, reminderYears = DEFAULT_RE
 
 export function getCurrentReminderCycle(installationDate, reminderYears = DEFAULT_REMINDER_YEARS, today = new Date()) {
   const schedule = getReminderSchedule(installationDate, reminderYears);
-  const todayTs = today instanceof Date ? today.getTime() : new Date(today).getTime();
-  if (!Number.isFinite(todayTs)) return null;
+  const todayDay = isoDateToDay(getWarsawIsoDate(today));
+  if (!todayDay) return null;
 
   let activeCycle = null;
   let expiredCycle = null;
 
   for (const item of schedule) {
-    if (item.dueTs > todayTs) break;
-    if (todayTs <= item.expiresAt) {
-      activeCycle = item;
-    } else {
-      expiredCycle = item;
-    }
+    if (item.dueDay > todayDay) break;
+    if (todayDay <= item.expiresDay) activeCycle = item;
+    else expiredCycle = item;
   }
 
-  return {
-    activeCycle,
-    expiredCycle,
-    schedule,
-  };
+  return { activeCycle, expiredCycle, schedule };
 }
 
 export function getDefaultSmsSettings() {
@@ -167,11 +194,13 @@ function getRecordLogIdentities(record = {}) {
     if (!identities.includes(identity)) identities.push(identity);
   };
 
-  const jobId = record.source_job_id || record.job_id || (record.target_type === 'job' ? record.id : '');
-  pushIdentity('job', jobId);
-
   const deviceId = record.device_id || (record.target_type === 'device' ? record.id : '');
-  pushIdentity('device', deviceId);
+  if (deviceId) pushIdentity('device', deviceId);
+
+  if (!deviceId || record.target_type !== 'device') {
+    const jobId = normalizeSourceJobId(record.source_job_id || record.job_id || (record.target_type === 'job' ? record.id : ''));
+    pushIdentity('job', jobId);
+  }
 
   for (const device of record.grouped_devices || []) {
     pushIdentity('device', device?.id);
@@ -214,10 +243,16 @@ function normalizeSmsKeyPart(value) {
 }
 
 function normalizeSmsPhone(value) {
-  const digits = String(value || '').replace(/\D+/g, '');
-  if (!digits) return '';
-  if (digits.length === 9) return `48${digits}`;
-  return digits;
+  const raw = String(value || '').trim();
+  if (!raw || !/^[0-9+()\s.-]+$/.test(raw)) return '';
+  let digits = raw.replace(/\D+/g, '');
+  if (digits.length === 13 && digits.startsWith('0048')) digits = digits.slice(2);
+  else if (digits.length === 9) digits = `48${digits}`;
+  return digits.length === 11 && digits.startsWith('48') ? digits : '';
+}
+
+function normalizeSourceJobId(value) {
+  return String(value || '').trim().split('::')[0].trim();
 }
 
 function getSmsCustomerBaseKey(record = {}) {
@@ -241,8 +276,7 @@ function getSmsCustomerCycleKey(record = {}, cycle = 1, dueDate = '') {
 }
 
 function getSmsDueTime(value) {
-  const parsed = parseLocalDate(String(value || ''));
-  return parsed ? parsed.getTime() : 0;
+  return isoDateToDay(value);
 }
 
 function getSmsLogEventTime(log = {}) {
@@ -267,7 +301,7 @@ function isSmsReminderWindowMatch(leftDueDate, rightDueDate, windowDays = ACTIVE
   const leftTs = getSmsDueTime(leftDueDate);
   const rightTs = getSmsDueTime(rightDueDate);
   if (!leftTs || !rightTs) return false;
-  return Math.abs(leftTs - rightTs) <= (windowDays * DAY_MS);
+  return Math.abs(leftTs - rightTs) <= windowDays;
 }
 
 function addCustomerLogToMap(map, log = {}) {
@@ -377,7 +411,7 @@ export function groupSmsLogsByCustomerWindow(logs = []) {
     for (const log of sorted) {
       const dueTs = getSmsDueTime(log.reminder_due_date);
       const current = clusters[clusters.length - 1];
-      if (!current || dueTs - current.anchorDueTs > (ACTIVE_WINDOW_DAYS * DAY_MS)) {
+      if (!current || dueTs - current.anchorDueTs > ACTIVE_WINDOW_DAYS) {
         clusters.push({ anchorDueTs: dueTs, logs: [log] });
       } else {
         current.logs.push(log);
@@ -460,68 +494,24 @@ function mergeSmsCustomerRows(rows = []) {
 
 export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
   const jobsById = new Map((jobs || []).map((job) => [String(job.id), job]));
-  const groupedJobTargets = new Map();
+  const jobsWithDevices = new Set();
   const targets = [];
-  const seen = new Set();
+  const seenDevices = new Set();
 
   for (const device of devices || []) {
-    const sourceJobId = String(device.source_job_id || '').trim();
-    const linkedJob = jobsById.get(sourceJobId) || null;
+    const deviceId = String(device.id || '').trim();
+    if (!deviceId || seenDevices.has(deviceId)) continue;
+    seenDevices.add(deviceId);
 
-    if (sourceJobId) {
-      let target = groupedJobTargets.get(sourceJobId);
-      if (!target) {
-        const targetId = sourceJobId;
-        target = {
-          id: targetId,
-          target_type: 'job',
-          client: device.contractor_name || linkedJob?.client || linkedJob?.title || 'Klient',
-          contractor_name: device.contractor_name || linkedJob?.client || '',
-          email: device.contractor_email || linkedJob?.email || '',
-          contractor_email: device.contractor_email || linkedJob?.email || '',
-          city: device.contractor_city || linkedJob?.city || '',
-          contractor_city: device.contractor_city || linkedJob?.city || '',
-          contractor_street: device.contractor_street || linkedJob?.street || '',
-          street: device.contractor_street || linkedJob?.street || '',
-          phone: linkedJob?.sms_recipient_phone || linkedJob?.phone || device.contractor_phone || '',
-          sms_recipient_phone: linkedJob?.sms_recipient_phone || linkedJob?.phone || device.contractor_phone || '',
-          installation_date: device.installation_date || linkedJob?.installation_date || '',
-          service_reminder_years: normalizePositiveInteger(device.service_reminder_years || linkedJob?.service_reminder_years || DEFAULT_REMINDER_YEARS),
-          sms_consent: typeof linkedJob?.sms_consent === 'boolean' ? linkedJob.sms_consent : true,
-          sms_reminder_enabled: typeof linkedJob?.sms_reminder_enabled === 'boolean' ? linkedJob.sms_reminder_enabled : true,
-          source_job_id: targetId,
-          contractor_id: device.contractor_id || linkedJob?.contractor_id || '',
-          job_id: targetId,
-          device_id: device.id || '',
-          primary_device_id: device.id || '',
-          model: device.model || linkedJob?.device_model || '',
-          serial_number: device.serial_number || linkedJob?.device_serial_number || '',
-          source_kind: device.source_kind || 'device_group',
-          grouped_devices: [],
-          grouped_device_count: 0,
-        };
-        groupedJobTargets.set(sourceJobId, target);
-      } else {
-        target.phone = target.phone || linkedJob?.sms_recipient_phone || linkedJob?.phone || device.contractor_phone || '';
-        target.sms_recipient_phone = target.sms_recipient_phone || linkedJob?.sms_recipient_phone || linkedJob?.phone || device.contractor_phone || '';
-        target.email = target.email || device.contractor_email || linkedJob?.email || '';
-        target.contractor_email = target.contractor_email || device.contractor_email || linkedJob?.email || '';
-        target.city = target.city || device.contractor_city || linkedJob?.city || '';
-        target.contractor_city = target.contractor_city || device.contractor_city || linkedJob?.city || '';
-        target.street = target.street || device.contractor_street || linkedJob?.street || '';
-        target.contractor_street = target.contractor_street || device.contractor_street || linkedJob?.street || '';
-      }
+    const sourceJobId = normalizeSourceJobId(device.source_job_id);
+    const linkedJob = sourceJobId ? jobsById.get(sourceJobId) || null : null;
+    if (sourceJobId && linkedJob) jobsWithDevices.add(sourceJobId);
 
-      appendGroupedDevice(target, device);
-      continue;
-    }
-
-    const targetId = String(device.id || '');
-    if (!targetId || seen.has(`device:${targetId}`)) continue;
-    seen.add(`device:${targetId}`);
+    const phone = linkedJob?.sms_recipient_phone || linkedJob?.phone || device.contractor_phone || '';
+    const hasAuthoritativeConsent = Boolean(linkedJob);
 
     targets.push({
-      id: targetId,
+      id: deviceId,
       target_type: 'device',
       client: device.contractor_name || linkedJob?.client || linkedJob?.title || 'Klient',
       contractor_name: device.contractor_name || linkedJob?.client || '',
@@ -531,15 +521,17 @@ export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
       contractor_city: device.contractor_city || linkedJob?.city || '',
       contractor_street: device.contractor_street || linkedJob?.street || '',
       street: device.contractor_street || linkedJob?.street || '',
-      phone: device.contractor_phone || linkedJob?.sms_recipient_phone || linkedJob?.phone || '',
-      sms_recipient_phone: device.contractor_phone || linkedJob?.sms_recipient_phone || linkedJob?.phone || '',
+      phone,
+      sms_recipient_phone: phone,
       installation_date: device.installation_date || linkedJob?.installation_date || '',
       service_reminder_years: normalizePositiveInteger(device.service_reminder_years || linkedJob?.service_reminder_years || DEFAULT_REMINDER_YEARS),
-      sms_consent: typeof linkedJob?.sms_consent === 'boolean' ? linkedJob.sms_consent : true,
-      sms_reminder_enabled: typeof linkedJob?.sms_reminder_enabled === 'boolean' ? linkedJob.sms_reminder_enabled : true,
-      source_job_id: device.source_job_id || linkedJob?.id || '',
+      sms_consent: hasAuthoritativeConsent && linkedJob?.sms_consent === true,
+      sms_reminder_enabled: hasAuthoritativeConsent && linkedJob?.sms_reminder_enabled === true,
+      sms_eligibility: hasAuthoritativeConsent ? 'linked_job' : 'missing_linked_job_consent',
+      source_job_id: sourceJobId,
       contractor_id: device.contractor_id || linkedJob?.contractor_id || '',
-      device_id: targetId,
+      job_id: sourceJobId,
+      device_id: deviceId,
       model: device.model || linkedJob?.device_model || '',
       serial_number: device.serial_number || linkedJob?.device_serial_number || '',
       source_kind: device.source_kind || 'device',
@@ -548,21 +540,9 @@ export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
     });
   }
 
-  for (const target of groupedJobTargets.values()) {
-    const deviceCount = Array.isArray(target.grouped_devices) ? target.grouped_devices.length : 0;
-    target.grouped_device_count = deviceCount;
-    if (deviceCount > 1) {
-      target.model = `${deviceCount} urządzenia`;
-      target.serial_number = 'Wiele numerów';
-    }
-    targets.push(target);
-    seen.add(`job:${target.id}`);
-  }
-
   for (const job of jobs || []) {
-    const targetId = String(job.id || '');
-    if (!targetId || seen.has(`job:${targetId}`)) continue;
-    seen.add(`job:${targetId}`);
+    const targetId = String(job.id || '').trim();
+    if (!targetId || jobsWithDevices.has(targetId)) continue;
 
     const jobDevices = getJobDeviceRows(job);
     const groupedDevices = jobDevices.map((device, index) => getDeviceSnapshot({
@@ -588,8 +568,9 @@ export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
       sms_recipient_phone: job.sms_recipient_phone || job.phone || '',
       installation_date: job.installation_date || '',
       service_reminder_years: normalizePositiveInteger(job.service_reminder_years || DEFAULT_REMINDER_YEARS),
-      sms_consent: !!job.sms_consent,
-      sms_reminder_enabled: typeof job.sms_reminder_enabled === 'boolean' ? job.sms_reminder_enabled : true,
+      sms_consent: job.sms_consent === true,
+      sms_reminder_enabled: job.sms_reminder_enabled === true,
+      sms_eligibility: 'linked_job',
       source_job_id: job.id,
       contractor_id: job.contractor_id || '',
       job_id: job.id,
@@ -603,11 +584,12 @@ export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
 
   return targets;
 }
+
 export function countSmsDueToday(records = []) {
   const todayTs = new Date().getTime();
   return records.filter((record) => {
     if (!record.sms_consent || !record.sms_reminder_enabled) return false;
-    if (!(record.sms_recipient_phone || record.phone)) return false;
+    if (!normalizeSmsPhone(record.sms_recipient_phone || record.phone)) return false;
     const current = getCurrentReminderCycle(record.installation_date, record.service_reminder_years, new Date(todayTs));
     return Boolean(current?.activeCycle && current.activeCycle.dueTs <= todayTs);
   }).length;
@@ -660,7 +642,7 @@ export function deriveSmsQueue(records = [], logs = []) {
       const activeCycle = reminder?.activeCycle || null;
       if (!activeCycle) return null;
       if (!record.sms_consent || !record.sms_reminder_enabled) return null;
-      if (!(record.sms_recipient_phone || record.phone)) return null;
+      if (!normalizeSmsPhone(record.sms_recipient_phone || record.phone)) return null;
 
       const customerKey = getSmsCustomerBaseKey(record);
       const queueLog = pickLogForIdentities(pendingByKey, identities, activeCycle.cycle)
@@ -739,7 +721,7 @@ export function deriveSmsQueue(records = [], logs = []) {
     for (const row of sorted) {
       const dueTs = getSmsDueTime(row.reminder_due_date || row.service_due_date);
       const current = clusters[clusters.length - 1];
-      if (!current || !dueTs || dueTs - current.anchorDueTs > (ACTIVE_WINDOW_DAYS * DAY_MS)) {
+      if (!current || !dueTs || dueTs - current.anchorDueTs > ACTIVE_WINDOW_DAYS) {
         clusters.push({ anchorDueTs: dueTs, rows: [row] });
       } else {
         current.rows.push(row);
