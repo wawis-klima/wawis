@@ -485,6 +485,18 @@ export default function JobDetailsPanel({
         <section className="detailsSection jobDetailsSectionCard">
           <h4 className="sectionHeadingWithIcon"><IconUsers /><span>Klient</span></h4>
           <div className="detailMeta">
+            <div className="infoItem infoItemWide">
+              <span className="infoLabel infoLabelWithIcon"><IconMapPin /><span>Adres</span></span>
+              <div className="infoValue">
+                <JobAddressLink
+                  job={selectedJob}
+                  className="addressLink"
+                  emptyLabel="Brak adresu"
+                  title="Kliknij, aby otworzyć adres w Google Maps"
+                />
+              </div>
+            </div>
+
             <div className="infoItem">
               <span className="infoLabel infoLabelWithIcon"><IconMail /><span>Email</span></span>
               <div className="infoValue">
@@ -521,26 +533,6 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-          </div>
-        </section>
-
-        {isAdmin && isCompletedJob ? <DesktopJobProtocolCard job={selectedJob} supabase={supabase} /> : null}
-
-        <section className="detailsSection jobDetailsSectionCard">
-          <h4 className="sectionHeadingWithIcon"><IconMapPin /><span>Adres i termin</span></h4>
-          <div className="detailMeta">
-            <div className="infoItem infoItemWide">
-              <span className="infoLabel infoLabelWithIcon"><IconMapPin /><span>Adres</span></span>
-              <div className="infoValue">
-                <JobAddressLink
-                  job={selectedJob}
-                  className="addressLink"
-                  emptyLabel="Brak adresu"
-                  title="Kliknij, aby otworzyć adres w Google Maps"
-                />
-              </div>
-            </div>
-
             <div className="infoItem">
               <span className="infoLabel infoLabelWithIcon"><IconCalendar /><span>Data montażu</span></span>
               <div className="infoValue">{installationDateLabel}</div>
@@ -564,6 +556,8 @@ export default function JobDetailsPanel({
             ) : null}
           </div>
         </section>
+
+        {isAdmin && isCompletedJob ? <DesktopJobProtocolCard job={selectedJob} supabase={supabase} /> : null}
 
         <section className="detailsSection jobDetailsSectionCard desktopJobDevicesSection">
           <div className="desktopJobDevicesHeadingRow">
