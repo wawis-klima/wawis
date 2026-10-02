@@ -5,7 +5,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
-const migration = read('supabase/migrations/20261002095242_sms_unsent_manual_retry_v1223.sql');
+const migration = read('supabase/migrations/20261002095320_sms_unsent_manual_retry_v1223.sql');
 assert.match(migration, /claim_service_sms_not_sent_retry/);
 assert.match(migration, /retry_of_log_id/);
 assert.match(migration, /unsent_logs/);
