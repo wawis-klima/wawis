@@ -33,7 +33,7 @@
 - merge: PENDING
 
 ## Stan po wdrożeniu generatora
-- live Edge: `generate-service-sms-queue` v23 ACTIVE
+- live Edge: `generate-service-sms-queue` v24 ACTIVE
 - przed pierwszym odświeżeniem modułu: 6 istniejących primary pending / 6 numerów
 - wyliczone brakujące pozycje legacy: 3 unikalne numery
 - oczekiwany stan po odświeżeniu modułu 12.22: 9 klientów
