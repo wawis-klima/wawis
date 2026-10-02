@@ -1,11 +1,10 @@
 {
-  "version": "12.26",
-  "summary": "Pracownik musi zapisać podpisany protokół klienta przed zakończeniem montażu.",
+  "version": "12.27",
+  "summary": "Naprawiony wybór aktualnego rekordu w kolejce SMS i poszerzona kolumna statusu.",
   "changes": [
-    "Protokół jest dostępny pracownikowi już przy statusie W trakcie.",
-    "Zakończenie pracownika wymaga zapisanego podpisanego protokołu oraz dotychczasowego kompletu tabliczek.",
-    "Warunek protokołu jest egzekwowany również w Supabase, więc nie da się go ominąć samą zmianą statusu.",
-    "Administrator zachowuje możliwość ręcznego zakończenia bez protokołu.",
-    "Po zakończeniu istniejąca obsługa ponownego otwarcia i podpisania protokołu pozostaje dostępna."
+    "Kolejka SMS zawsze preferuje rekord reminder_group_primary=true, więc stary techniczny duplikat nie blokuje prawidłowej wysyłki.",
+    "Generator kolejki również preferuje rekord z potwierdzoną wysyłką, następnie rekord główny, a dopiero potem najnowszy wpis.",
+    "Zabezpieczenia przed ponowną wysyłką SMS pozostały bez zmian.",
+    "Kolumna STATUS SMS na desktopie została poszerzona, aby etykieta Oczekuje na wysłanie mieściła się czytelnie."
   ]
 }

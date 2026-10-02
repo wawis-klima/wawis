@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.26
+- 12.27
+
+Wersja 12.27 naprawia kolejkę SMS: przy technicznych duplikatach aplikacja zawsze wybiera aktualny rekord główny (`reminder_group_primary = true`), generator kolejki zachowuje tę samą zasadę, a kolumna statusu SMS na desktopie jest szersza. Zabezpieczenia przed ponowną wysyłką pozostają bez zmian.
 
 Wersja 12.26 zmienia kolejność zakończenia montażu dla pracownika: protokół klienta jest dostępny już przy statusie „W trakcie”, musi zostać wypełniony, podpisany i zapisany przed zmianą statusu na „Zakończone”. Przycisk „Zakończ” pozostaje zablokowany bez zapisanego protokołu, a baza dodatkowo egzekwuje ten warunek przy bezpośredniej próbie zmiany statusu. Administrator zachowuje możliwość ręcznego zakończenia zlecenia bez protokołu. Dotychczasowy warunek kompletu tabliczek JW/JZ pozostaje bez zmian.
 

@@ -129,7 +129,19 @@ function getPrimaryQueueTarget(row = {}) {
 }
 
 function getPrimaryQueueLogId(row = {}) {
-  if (row.queueLog?.id) return row.queueLog.id;
+  const queueLogs = [
+    row.queueLog,
+    ...(Array.isArray(row.queueLogs) ? row.queueLogs : []),
+  ].filter((log, index, rows) => (
+    log?.id && rows.findIndex((item) => item?.id === log.id) === index
+  ));
+
+  const canonical = queueLogs.sort((left, right) => (
+    Number(right?.reminder_group_primary === true) - Number(left?.reminder_group_primary === true)
+    || new Date(right?.created_at || 0).getTime() - new Date(left?.created_at || 0).getTime()
+  ))[0];
+
+  if (canonical?.id) return canonical.id;
   const groupedIds = Array.isArray(row.grouped_queue_log_ids) ? row.grouped_queue_log_ids.filter(Boolean) : [];
   return groupedIds[0] || null;
 }

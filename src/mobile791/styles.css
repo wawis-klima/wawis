@@ -6534,10 +6534,10 @@ img.previewImage{
 }
 
 .smsDesktopTableQueue .smsDesktopColCheckbox{width:48px}
-.smsDesktopTableQueue .smsDesktopColClientWide{width:34%}
-.smsDesktopTableQueue .smsDesktopColModel{width:25%}
-.smsDesktopTableQueue .smsDesktopColSerial{width:27%}
-.smsDesktopTableQueue .smsDesktopColStatus{width:14%}
+.smsDesktopTableQueue .smsDesktopColClientWide{width:31%}
+.smsDesktopTableQueue .smsDesktopColModel{width:22%}
+.smsDesktopTableQueue .smsDesktopColSerial{width:23%}
+.smsDesktopTableQueue .smsDesktopColStatus{width:19%}
 
 .smsDesktopTableSent .smsDesktopColClientWide{width:31%}
 .smsDesktopTableSent .smsDesktopColModel{width:22%}

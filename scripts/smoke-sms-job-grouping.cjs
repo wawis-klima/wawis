@@ -65,6 +65,35 @@ function addMonths(date, months) {
   assert.equal(legacyQueue.length, 1, 'Stare osobne logi urządzeń też muszą być widoczne jako jeden wpis.');
   assert.equal(legacyQueue[0].queueLog.id, 'log-device-1');
 
+  const primaryDuplicateQueue = smsModule.deriveSmsQueue([targets[0]], [
+    {
+      id: 'current-primary',
+      device_id: 'device-1',
+      job_id: 'job-1',
+      phone: '48500600700',
+      status: 'pending_approval',
+      reminder_cycle: queue[0].reminder_cycle,
+      reminder_due_date: queue[0].reminder_due_date,
+      reminder_group_id: 'group-current',
+      reminder_group_primary: true,
+      created_at: new Date(Date.now() - 1_000).toISOString(),
+    },
+    {
+      id: 'old-secondary',
+      device_id: 'device-1',
+      job_id: 'job-1',
+      phone: '48500600700',
+      status: 'pending_approval',
+      reminder_cycle: queue[0].reminder_cycle,
+      reminder_due_date: queue[0].reminder_due_date,
+      reminder_group_id: 'group-current',
+      reminder_group_primary: false,
+      created_at: new Date(Date.now() - 60_000).toISOString(),
+    },
+  ]);
+  assert.equal(primaryDuplicateQueue.length, 1, 'Duplikat techniczny nie może usunąć klienta z kolejki.');
+  assert.equal(primaryDuplicateQueue[0].queueLog.id, 'current-primary', 'Kolejka musi wybrać rekord reminder_group_primary=true zamiast starszego duplikatu.');
+
   const finalizedQueue = smsModule.deriveSmsQueue(targets, [
     { ...legacyPendingLogs[1] },
     { id: 'sent-device-1', device_id: 'device-1', job_id: 'job-1', status: 'sent', reminder_cycle: queue[0].reminder_cycle, sent_at: new Date().toISOString() },
@@ -196,6 +225,8 @@ function addMonths(date, months) {
   assert.match(generatorSource, /existingPrimaryGroupIds/);
   assert.match(generatorSource, /reminder_group_id:\s*reminderGroupId/);
   assert.match(generatorSource, /reminder_group_primary:\s*true/);
+  assert.match(generatorSource, /candidate\.primary/);
+  assert.match(generatorSource, /candidate\.hasProviderProof/);
   assert.doesNotMatch(generatorSource, /existingCustomerWindows/);
   assert.doesNotMatch(generatorSource, /hasCustomerReminderInWindow/);
 
