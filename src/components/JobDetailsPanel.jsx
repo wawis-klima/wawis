@@ -577,7 +577,7 @@ export default function JobDetailsPanel({
 
         {isAdmin && isCompletedJob ? <DesktopJobProtocolCard job={selectedJob} supabase={supabase} /> : null}
 
-        <section className={`detailsSection jobDetailsSectionCard desktopJobDevicesSection${isCompletedJob ? ' desktopCompletedCollapsibleSection' : ''}`}>
+        <section className={`detailsSection jobDetailsSectionCard desktopJobDevicesSection${isCompletedJob ? ` desktopCompletedCollapsibleSection ${desktopDevicesExpanded ? 'isExpanded' : 'isCollapsed'}` : ''}`}>
           <div className="desktopJobDevicesHeadingRow">
             {isCompletedJob ? (
               <button
@@ -588,7 +588,7 @@ export default function JobDetailsPanel({
                 onClick={() => setDesktopDevicesExpanded((expanded) => !expanded)}
               >
                 <IconCheckCircle /><span>Urządzenia</span>
-                <span className="desktopDetailsSectionChevron" aria-hidden="true">⌄</span>
+                <span className="desktopDetailsSectionChevron" aria-hidden="true" />
               </button>
             ) : (
               <h4 className="sectionHeadingWithIcon"><IconCheckCircle /><span>Urządzenia</span></h4>
@@ -639,7 +639,7 @@ export default function JobDetailsPanel({
           ) : null}
         </section>
 
-        <section className={`detailsSection jobDetailsSectionCard${isCompletedJob ? ' desktopCompletedCollapsibleSection' : ''}`}>
+        <section className={`detailsSection jobDetailsSectionCard desktopJobPhotosSection${isCompletedJob ? ` desktopCompletedCollapsibleSection ${desktopPhotosExpanded ? 'isExpanded' : 'isCollapsed'}` : ''}`}>
           {isCompletedJob ? (
             <button
               type="button"
@@ -649,7 +649,7 @@ export default function JobDetailsPanel({
               onClick={() => setDesktopPhotosExpanded((expanded) => !expanded)}
             >
               <IconCamera /><span>Zdjęcia montażu</span>
-              <span className="desktopDetailsSectionChevron" aria-hidden="true">⌄</span>
+              <span className="desktopDetailsSectionChevron" aria-hidden="true" />
             </button>
           ) : (
             <h4 className="sectionHeadingWithIcon"><IconCamera /><span>Zdjęcia montażu</span></h4>
