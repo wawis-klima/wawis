@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Po wdrożeniu potwierdzić send-service-sms z claim_service_sms_group_v2, generator z kalendarzem Europe/Warsaw, zachowane defaulty SMS=true oraz brak podwójnych primary/pending grup."
+    "checked": true,
+    "result": "PASS",
+    "notes": "Potwierdzono send-service-sms v31 ACTIVE z claim_service_sms_group_v2, generator v21 ACTIVE z Europe/Warsaw/per-device schedule, defaulty SMS=true, ACL service_role-only oraz brak podwójnych primary/pending grup."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -42,8 +42,9 @@
     "rls_role_matrix": "VERIFIED — claim_service_sms_group_v2: anon=false, authenticated=false, service_role=true.",
     "performance_advisor": "CHECKED — brak nowych ostrzeżeń wydajności związanych z Etapem 3 SMS; widoczne linty dotyczą wcześniejszych FK/indeksów i konfiguracji Auth.",
     "security_advisor": "CHECKED — claim_service_sms_group_v2 nie jest wykonywalny przez anon ani authenticated; nowe helpery private nie są wystawione. Widoczne ostrzeżenia Security Advisor dotyczą wcześniejszych funkcji/tabel.",
-    "edge_functions": "PENDING — przełączyć po zielonym CI.",
+    "edge_functions": "DEPLOYED — send-service-sms v31 ACTIVE używa claim_service_sms_group_v2 i bieżącego recipient_phone/current_due_date; generate-service-sms-queue v21 ACTIVE używa harmonogramu per urządzenie, Europe/Warsaw i ścisłej zgody linked job.",
     "vercel_deployment": "PENDING — po merge do main",
-    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
+    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki",
+    "postdeploy_invariants": "VERIFIED — sms_consent default=true, sms_reminder_enabled default=true, duplicate primary groups=0, duplicate pending primary groups=0; claim v2 nadal service_role-only."
   }
 }
