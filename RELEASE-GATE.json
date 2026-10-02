@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.16",
-  "scope": "desktop",
-  "release_branch": "release/v12.16",
+  "version": "12.17",
+  "scope": "full",
+  "release_branch": "release/v12.17",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Zmiana 12.16 dotyczy wyłącznie stylu i klas stanu zwijanych sekcji Urządzenia/Zdjęcia na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
+    "notes": "Sprawdzono produkcyjne dane sms_log i urządzenia dla zgłoszonych klientów. Przyczyna duplikacji: grupowanie po dokładnym reminder_due_date/reminder_cycle oraz brak produkcyjnego RPC cleanup; produkcyjna Edge Function generate-service-sms-queue była starsza od repo."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.16.zip"
+    "file_name": "klima-app-v12.17.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.16",
+    "source_branch": "release/v12.17",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić zakończony montaż na desktopie: kompaktowe Urządzenia/Zdjęcia, wyraźny chevron w badge’u, cały pasek klikalny, brak dodatkowych napisów."
+    "notes": "Po wdrożeniu sprawdzić SMS dla klientów z kilkoma urządzeniami: jeden aktywny wpis, brak ponownego pojawiania się po wysłaniu, jedna pozycja w historii bieżącego miesiąca."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "N/A — brak migracji SQL.",
-    "rls_role_matrix": "Bez zmian RLS i uprawnień.",
-    "performance_advisor": "N/A — brak zmian schematu.",
-    "security_advisor": "Bez zmian sekretów.",
-    "trigger_grants": "Bez zmian.",
-    "edge_functions": "Bez zmian Edge Functions.",
+    "supabase_migration_applied": "PENDING — 20261002070000_sms_customer_window_dedup_v1217.sql",
+    "rls_role_matrix": "Bez zmian RLS; cleanup pozostaje security definer z kontrolą current_user_is_admin/service_role.",
+    "performance_advisor": "Do sprawdzenia po migracji; brak nowych tabel i indeksów.",
+    "security_advisor": "Do sprawdzenia po migracji; brak nowych sekretów.",
+    "trigger_grants": "GRANT EXECUTE dla admin_cleanup_sms_duplicate_logs na authenticated.",
+    "edge_functions": "PENDING — deploy generate-service-sms-queue z logiką 62-dniowego okna klienta.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
