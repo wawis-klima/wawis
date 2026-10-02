@@ -509,6 +509,9 @@ export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
 
     const phone = linkedJob?.sms_recipient_phone || linkedJob?.phone || device.contractor_phone || '';
     const hasAuthoritativeConsent = Boolean(linkedJob);
+    const isLegacyDevice = !sourceJobId && Boolean(device.contractor_id);
+    const deviceSmsConsent = isLegacyDevice && device.sms_consent === true;
+    const deviceSmsReminderEnabled = isLegacyDevice && device.sms_reminder_enabled === true;
 
     targets.push({
       id: deviceId,
@@ -525,9 +528,9 @@ export function buildSmsTargets({ jobs = [], devices = [] } = {}) {
       sms_recipient_phone: phone,
       installation_date: device.installation_date || linkedJob?.installation_date || '',
       service_reminder_years: normalizePositiveInteger(device.service_reminder_years || linkedJob?.service_reminder_years || DEFAULT_REMINDER_YEARS),
-      sms_consent: hasAuthoritativeConsent && linkedJob?.sms_consent === true,
-      sms_reminder_enabled: hasAuthoritativeConsent && linkedJob?.sms_reminder_enabled === true,
-      sms_eligibility: hasAuthoritativeConsent ? 'linked_job' : 'missing_linked_job_consent',
+      sms_consent: hasAuthoritativeConsent ? linkedJob?.sms_consent === true : deviceSmsConsent,
+      sms_reminder_enabled: hasAuthoritativeConsent ? linkedJob?.sms_reminder_enabled === true : deviceSmsReminderEnabled,
+      sms_eligibility: hasAuthoritativeConsent ? 'linked_job' : (isLegacyDevice ? 'legacy_device' : 'missing_linked_job_consent'),
       source_job_id: sourceJobId,
       contractor_id: device.contractor_id || linkedJob?.contractor_id || '',
       job_id: sourceJobId,
