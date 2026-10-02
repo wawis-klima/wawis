@@ -32,9 +32,14 @@ for (const file of ['src/components/sms/SmsPanel.jsx','src/mobile791/components/
   const panel = read(file);
   assert.match(panel, /SmsUnsentCard/);
   assert.match(panel, /activeSummaryView === 'unsent'/);
-  assert.match(panel, /Wyślij ponownie/);
   assert.doesNotMatch(panel, /SMS-y są wysyłane automatycznie na 7 dni przed terminem serwisu/);
   assert.doesNotMatch(panel, /label: 'Zaplanowany'/);
+}
+
+for (const file of ['src/components/sms/SmsUnsentCard.jsx','src/mobile791/components/sms/SmsUnsentCard.jsx']) {
+  const card = read(file);
+  assert.match(card, /Wyślij ponownie/);
+  assert.match(card, /Wyślij ponownie zaznaczone/);
 }
 
 for (const file of ['src/components/sms/SmsHistoryCard.jsx','src/mobile791/components/sms/SmsHistoryCard.jsx']) {
