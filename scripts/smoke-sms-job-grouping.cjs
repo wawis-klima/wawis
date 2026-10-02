@@ -109,6 +109,79 @@ function addMonths(date, months) {
   ]);
   assert.equal(customerFinalizedQueue.length, 0, 'Po wysłaniu jednego SMS-a do klienta pozostałe zlecenia klienta z tego samego terminu nie mogą wrócić na listę.');
 
+  const dueA = new Date(today.getTime() - (20 * 24 * 60 * 60 * 1000));
+  const dueB = new Date(today.getTime() - (5 * 24 * 60 * 60 * 1000));
+  const standaloneTargets = smsModule.buildSmsTargets({
+    jobs: [],
+    devices: [
+      {
+        id: 'standalone-a',
+        contractor_name: 'Salon Testowy',
+        contractor_phone: '600 700 800',
+        model: 'Rotenso A',
+        serial_number: 'SER-A',
+        installation_date: formatIsoDate(addMonths(dueA, -47)),
+        service_reminder_years: 5,
+      },
+      {
+        id: 'standalone-b',
+        contractor_name: 'Salon Testowy',
+        contractor_phone: '+48 600 700 800',
+        model: 'Rotenso B',
+        serial_number: 'SER-B',
+        installation_date: formatIsoDate(addMonths(dueB, -35)),
+        service_reminder_years: 5,
+      },
+    ],
+  });
+  const customerWindowQueue = smsModule.deriveSmsQueue(standaloneTargets, []);
+  assert.equal(customerWindowQueue.length, 1, 'Dwa aktywne urządzenia tego samego klienta z terminami oddalonymi o kilkanaście dni powinny dać jeden SMS.');
+  assert.equal(customerWindowQueue[0].grouped_sms_rows.length, 2, 'Grupa klienta powinna zawierać oba urządzenia nawet przy różnych cyklach.');
+  assert.equal(customerWindowQueue[0].grouped_device_count, 2);
+
+  const firstWindowRow = customerWindowQueue[0].grouped_sms_rows.find((row) => row.id === 'standalone-a');
+  const secondWindowRow = customerWindowQueue[0].grouped_sms_rows.find((row) => row.id === 'standalone-b');
+  assert(firstWindowRow && secondWindowRow, 'Oba urządzenia klienta muszą pozostać dostępne w danych grupy.');
+
+  const suppressedWindowQueue = smsModule.deriveSmsQueue(standaloneTargets, [
+    {
+      id: 'sent-standalone-a',
+      device_id: 'standalone-a',
+      client: 'Salon Testowy',
+      phone: '48600700800',
+      status: 'delivered',
+      reminder_cycle: firstWindowRow.reminder_cycle,
+      reminder_due_date: firstWindowRow.reminder_due_date,
+      delivered_at: new Date().toISOString(),
+    },
+  ]);
+  assert.equal(suppressedWindowQueue.length, 0, 'Wysłany SMS dla jednego urządzenia ma zablokować drugie urządzenie tego klienta w tym samym 62-dniowym oknie.');
+
+  const groupedSent = smsModule.getSentThisMonthLogs([
+    {
+      id: 'sent-a',
+      device_id: 'standalone-a',
+      client: 'Salon Testowy',
+      phone: '48600700800',
+      status: 'delivered',
+      reminder_cycle: firstWindowRow.reminder_cycle,
+      reminder_due_date: firstWindowRow.reminder_due_date,
+      delivered_at: new Date().toISOString(),
+    },
+    {
+      id: 'sent-b',
+      device_id: 'standalone-b',
+      client: 'Salon Testowy',
+      phone: '600700800',
+      status: 'sent',
+      reminder_cycle: secondWindowRow.reminder_cycle,
+      reminder_due_date: secondWindowRow.reminder_due_date,
+      sent_at: new Date().toISOString(),
+    },
+  ]);
+  assert.equal(groupedSent.length, 1, 'Historia bieżącego miesiąca ma pokazywać jeden wpis klienta zamiast dwóch bliskich wysyłek.');
+  assert.equal(groupedSent[0].grouped_log_count, 2);
+
   const panelSource = fs.readFileSync(path.join(root, 'src', 'components', 'sms', 'SmsPanel.jsx'), 'utf8');
   assert.match(panelSource, /getGroupedDeviceLabel/);
   assert.match(panelSource, /jeden SMS do klienta/);
@@ -121,8 +194,10 @@ function addMonths(date, months) {
   assert.match(generatorSource, /identities:\s*\[`job:\$\{linkedJobId\}`\]/);
   assert.match(generatorSource, /device_id:\s*item\.deviceId \|\| null/);
   assert.match(generatorSource, /job_id:\s*item\.jobId \|\| null/);
-  assert.match(generatorSource, /existingCustomerByKey/);
-  assert.match(generatorSource, /getCustomerQueueKey/);
+  assert.match(generatorSource, /existingCustomerWindows/);
+  assert.match(generatorSource, /getCustomerBaseKey/);
+  assert.match(generatorSource, /hasCustomerReminderInWindow/);
+  assert.match(generatorSource, /ACTIVE_WINDOW_DAYS \* 24 \* 60 \* 60 \* 1000/);
 
   console.log('SMS job grouping smoke OK');
   process.exit(0);

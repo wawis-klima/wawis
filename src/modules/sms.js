@@ -240,6 +240,122 @@ function getSmsCustomerCycleKey(record = {}, cycle = 1, dueDate = '') {
   return `${base}:due:${dueDate}:cycle:${cycle}`;
 }
 
+function getSmsDueTime(value) {
+  const parsed = parseLocalDate(String(value || ''));
+  return parsed ? parsed.getTime() : 0;
+}
+
+function getSmsLogEventTime(log = {}) {
+  return new Date(log.delivered_at || log.sent_at || log.approved_at || log.created_at || 0).getTime() || 0;
+}
+
+function getSmsLogStatusPriority(status) {
+  switch (normalizeLogStatus(status)) {
+    case 'delivered': return 1;
+    case 'provider_sent': return 2;
+    case 'sent': return 3;
+    case 'pending_approval': return 4;
+    case 'approved': return 5;
+    case 'error': return 6;
+    case 'not_sent': return 7;
+    case 'deleted': return 8;
+    default: return 9;
+  }
+}
+
+function isSmsReminderWindowMatch(leftDueDate, rightDueDate, windowDays = ACTIVE_WINDOW_DAYS) {
+  const leftTs = getSmsDueTime(leftDueDate);
+  const rightTs = getSmsDueTime(rightDueDate);
+  if (!leftTs || !rightTs) return false;
+  return Math.abs(leftTs - rightTs) <= (windowDays * DAY_MS);
+}
+
+function addCustomerLogToMap(map, log = {}) {
+  const key = getSmsCustomerBaseKey(log);
+  if (!key) return;
+  const rows = map.get(key) || [];
+  rows.push(log);
+  map.set(key, rows);
+}
+
+function pickCustomerWindowLog(map, customerKey, dueDate) {
+  if (!customerKey || !dueDate) return null;
+  const matches = (map.get(customerKey) || [])
+    .filter((log) => isSmsReminderWindowMatch(log.reminder_due_date, dueDate))
+    .sort((a, b) => (
+      getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
+      || Math.abs(getSmsDueTime(a.reminder_due_date) - getSmsDueTime(dueDate)) - Math.abs(getSmsDueTime(b.reminder_due_date) - getSmsDueTime(dueDate))
+      || getSmsLogEventTime(b) - getSmsLogEventTime(a)
+    ));
+  return matches[0] || null;
+}
+
+export function groupSmsLogsByCustomerWindow(logs = []) {
+  const byCustomer = new Map();
+  const ungrouped = [];
+
+  for (const log of logs || []) {
+    const customerKey = getSmsCustomerBaseKey(log);
+    const dueTs = getSmsDueTime(log?.reminder_due_date);
+    if (!customerKey || !dueTs) {
+      ungrouped.push({
+        ...log,
+        grouped_logs: [log],
+        grouped_log_ids: log?.id ? [log.id] : [],
+        grouped_log_count: 1,
+        grouped_reminder_due_dates: log?.reminder_due_date ? [log.reminder_due_date] : [],
+      });
+      continue;
+    }
+    const rows = byCustomer.get(customerKey) || [];
+    rows.push(log);
+    byCustomer.set(customerKey, rows);
+  }
+
+  const grouped = [...ungrouped];
+
+  for (const [customerKey, customerLogs] of byCustomer.entries()) {
+    const sorted = [...customerLogs].sort((a, b) => (
+      getSmsDueTime(a.reminder_due_date) - getSmsDueTime(b.reminder_due_date)
+      || getSmsLogEventTime(a) - getSmsLogEventTime(b)
+    ));
+    const clusters = [];
+
+    for (const log of sorted) {
+      const dueTs = getSmsDueTime(log.reminder_due_date);
+      const current = clusters[clusters.length - 1];
+      if (!current || dueTs - current.anchorDueTs > (ACTIVE_WINDOW_DAYS * DAY_MS)) {
+        clusters.push({ anchorDueTs: dueTs, logs: [log] });
+      } else {
+        current.logs.push(log);
+      }
+    }
+
+    for (const cluster of clusters) {
+      const ranked = [...cluster.logs].sort((a, b) => (
+        getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
+        || getSmsLogEventTime(b) - getSmsLogEventTime(a)
+      ));
+      const canonical = ranked[0] || cluster.logs[0];
+      const dueDates = [...new Set(cluster.logs.map((log) => String(log.reminder_due_date || '')).filter(Boolean))].sort();
+      const cycles = [...new Set(cluster.logs.map((log) => Number.parseInt(String(log.reminder_cycle ?? ''), 10)).filter((value) => Number.isFinite(value) && value > 0))];
+
+      grouped.push({
+        ...canonical,
+        sms_customer_group_key: customerKey,
+        grouped_logs: cluster.logs,
+        grouped_log_ids: cluster.logs.map((log) => log?.id).filter(Boolean),
+        grouped_log_count: cluster.logs.length,
+        grouped_reminder_due_dates: dueDates,
+        reminder_due_date: dueDates[0] || canonical.reminder_due_date || null,
+        reminder_cycle: cycles.length === 1 ? cycles[0] : null,
+      });
+    }
+  }
+
+  return grouped.sort((a, b) => getSmsLogEventTime(b) - getSmsLogEventTime(a));
+}
+
 function mergeUniqueById(items = []) {
   const seen = new Set();
   const result = [];
@@ -276,6 +392,8 @@ function mergeSmsCustomerRows(rows = []) {
   })).map((item) => item.id).filter(Boolean);
   const groupedDeviceCount = groupedDevices.length || sortedRows.reduce((sum, row) => sum + (Number(row.grouped_device_count) || 0), 0) || sortedRows.length;
   const latestLog = latestLogs.sort((a, b) => new Date(b.delivered_at || b.sent_at || b.approved_at || b.created_at || 0).getTime() - new Date(a.delivered_at || a.sent_at || a.approved_at || a.created_at || 0).getTime())[0] || primary.latestLog || null;
+  const dueDates = [...new Set(sortedRows.map((row) => String(row.reminder_due_date || row.service_due_date || '')).filter(Boolean))].sort();
+  const cycles = [...new Set(sortedRows.map((row) => Number.parseInt(String(row.reminder_cycle ?? ''), 10)).filter((value) => Number.isFinite(value) && value > 0))];
 
   return {
     ...primary,
@@ -293,6 +411,10 @@ function mergeSmsCustomerRows(rows = []) {
     grouped_device_ids: groupedDeviceIds,
     grouped_devices: groupedDevices,
     grouped_device_count: groupedDeviceCount,
+    service_due_date: dueDates[0] || primary.service_due_date || primary.reminder_due_date || '',
+    reminder_due_date: dueDates[0] || primary.reminder_due_date || primary.service_due_date || '',
+    reminder_cycle: cycles.length === 1 ? cycles[0] : primary.reminder_cycle,
+    grouped_reminder_due_dates: dueDates,
     model: groupedDeviceCount > 1 ? `${groupedDeviceCount} urządzenia` : primary.model,
     serial_number: groupedDeviceCount > 1 ? 'Wiele numerów' : primary.serial_number,
     source_kind: 'customer_sms_group',
@@ -459,6 +581,9 @@ export function deriveSmsQueue(records = [], logs = []) {
   const pendingByKey = new Map();
   const finalizedByKey = new Map();
   const latestLogByIdentity = new Map();
+  const pendingByCustomer = new Map();
+  const finalizedByCustomer = new Map();
+  const latestByCustomer = new Map();
   const now = new Date();
 
   for (const log of logs || []) {
@@ -466,6 +591,13 @@ export function deriveSmsQueue(records = [], logs = []) {
     const cycle = Number.parseInt(String(log.reminder_cycle ?? ''), 10) || 1;
     const cycleKey = keyBase ? `${keyBase}:${cycle}` : '';
     const status = normalizeLogStatus(log.status);
+    const customerKey = getSmsCustomerBaseKey(log);
+
+    if (customerKey) {
+      addCustomerLogToMap(latestByCustomer, log);
+      if (status === 'pending_approval') addCustomerLogToMap(pendingByCustomer, log);
+      if (['provider_sent', 'sent', 'delivered', 'deleted', 'not_sent'].includes(status)) addCustomerLogToMap(finalizedByCustomer, log);
+    }
 
     if (keyBase) {
       const previous = latestLogByIdentity.get(keyBase);
@@ -494,13 +626,20 @@ export function deriveSmsQueue(records = [], logs = []) {
       if (!record.sms_consent || !record.sms_reminder_enabled) return null;
       if (!(record.sms_recipient_phone || record.phone)) return null;
 
-      const queueLog = pickLogForIdentities(pendingByKey, identities, activeCycle.cycle);
-      const finalizedLog = pickLogForIdentities(finalizedByKey, identities, activeCycle.cycle);
-      const latestLog = pickLatestLogForIdentities(latestLogByIdentity, identities) || queueLog || finalizedLog || null;
+      const customerKey = getSmsCustomerBaseKey(record);
+      const queueLog = pickLogForIdentities(pendingByKey, identities, activeCycle.cycle)
+        || pickCustomerWindowLog(pendingByCustomer, customerKey, activeCycle.dueDate);
+      const finalizedLog = pickLogForIdentities(finalizedByKey, identities, activeCycle.cycle)
+        || pickCustomerWindowLog(finalizedByCustomer, customerKey, activeCycle.dueDate);
+      const latestLog = pickLatestLogForIdentities(latestLogByIdentity, identities)
+        || pickCustomerWindowLog(latestByCustomer, customerKey, activeCycle.dueDate)
+        || queueLog
+        || finalizedLog
+        || null;
       const rowStatus = normalizeLogStatus(queueLog?.status || latestLog?.status || 'ready') || 'ready';
       const rowTimestamp = latestLog?.delivered_at || latestLog?.sent_at || latestLog?.approved_at || latestLog?.created_at || null;
       const groupKey = record.source_job_id || record.job_id || (record.target_type === 'job' ? record.id : '') || record.id;
-      const smsCustomerGroupKey = getSmsCustomerCycleKey(record, activeCycle.cycle, activeCycle.dueDate) || `${record.target_type}:${groupKey}:${activeCycle.cycle}`;
+      const smsCustomerGroupKey = customerKey ? `${customerKey}:active` : (getSmsCustomerCycleKey(record, activeCycle.cycle, activeCycle.dueDate) || `${record.target_type}:${groupKey}:${activeCycle.cycle}`);
 
       return {
         ...record,
@@ -545,18 +684,17 @@ export function getSentThisMonthLogs(logs = []) {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  const sentLogs = (logs || []).filter((item) => ['provider_sent', 'sent', 'delivered'].includes(normalizeLogStatus(item.status)));
 
-  return [...logs]
+  return groupSmsLogsByCustomerWindow(sentLogs)
     .filter((item) => {
       const when = item.delivered_at || item.sent_at || item.approved_at || item.created_at;
       if (!when) return false;
       const date = new Date(when);
       if (Number.isNaN(date.getTime())) return false;
-      const status = normalizeLogStatus(item.status);
-      if (!['provider_sent', 'sent', 'delivered'].includes(status)) return false;
       return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     })
-    .sort((a, b) => new Date(b.delivered_at || b.sent_at || b.approved_at || b.created_at || 0).getTime() - new Date(a.delivered_at || a.sent_at || a.approved_at || a.created_at || 0).getTime());
+    .sort((a, b) => getSmsLogEventTime(b) - getSmsLogEventTime(a));
 }
 
 export function getSmsSummary(records = [], queue = [], logs = []) {

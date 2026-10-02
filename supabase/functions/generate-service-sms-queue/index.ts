@@ -70,17 +70,20 @@ Deno.serve(async (request) => {
     if (logsError) return json({ error: logsError.message }, 400);
 
     const existingByKey = new Map<string, { id: string; status: string }>();
-    const existingCustomerByKey = new Map<string, { id: string; status: string }>();
+    const existingCustomerWindows = new Map<string, Array<{ id: string; status: string; dueDate: string }>>();
     for (const log of logs || []) {
       const identity = log.device_id ? `device:${log.device_id}` : log.job_id ? `job:${log.job_id}` : "";
       const cycle = Number.parseInt(String(log.reminder_cycle ?? ""), 10) || 1;
       if (identity) {
         existingByKey.set(`${identity}:${cycle}`, { id: log.id, status: String(log.status || "") });
       }
-      const customerKey = getCustomerQueueKey({ phone: log.phone, client: log.client, dueDate: log.reminder_due_date, cycle });
-      if (customerKey) {
-        existingCustomerByKey.set(customerKey, { id: log.id, status: String(log.status || "") });
-      }
+      rememberCustomerReminder(existingCustomerWindows, {
+        id: String(log.id || ""),
+        status: String(log.status || ""),
+        phone: log.phone,
+        client: log.client,
+        dueDate: log.reminder_due_date,
+      });
     }
 
     let createdCount = 0;
@@ -147,8 +150,10 @@ Deno.serve(async (request) => {
 
     async function insertQueueItem(item: Record<string, unknown>, identities: string[]) {
       const cycle = Number.parseInt(String(item.cycle ?? ""), 10) || 1;
-      const customerKey = getCustomerQueueKey({ phone: item.phone, client: item.client, dueDate: item.dueDate, cycle });
-      const alreadyExists = identities.some((identity) => existingByKey.has(`${identity}:${cycle}`)) || Boolean(customerKey && existingCustomerByKey.has(customerKey));
+      const customerBaseKey = getCustomerBaseKey({ phone: item.phone, client: item.client });
+      const dueDate = String(item.dueDate || "");
+      const alreadyExists = identities.some((identity) => existingByKey.has(`${identity}:${cycle}`))
+        || hasCustomerReminderInWindow(existingCustomerWindows, customerBaseKey, dueDate);
       if (alreadyExists) return;
 
       const message = buildMessage({
@@ -177,28 +182,47 @@ Deno.serve(async (request) => {
         if (!insertError) {
           createdCount += 1;
           for (const identity of identities) existingByKey.set(`${identity}:${cycle}`, { id: crypto.randomUUID(), status: "pending_approval" });
-          if (customerKey) existingCustomerByKey.set(customerKey, { id: crypto.randomUUID(), status: "pending_approval" });
+          rememberCustomerReminder(existingCustomerWindows, {
+            id: crypto.randomUUID(),
+            status: "pending_approval",
+            phone: item.phone,
+            client: item.client,
+            dueDate,
+          });
         }
       } else {
         const { error: insertError } = await adminClient.from("sms_log").insert({ ...payload, status: "not_sent", error_message: "Przekroczono 2-miesięczne okno wysyłki przypomnienia." });
         if (!insertError) {
           expiredCount += 1;
           for (const identity of identities) existingByKey.set(`${identity}:${cycle}`, { id: crypto.randomUUID(), status: "not_sent" });
-          if (customerKey) existingCustomerByKey.set(customerKey, { id: crypto.randomUUID(), status: "not_sent" });
+          rememberCustomerReminder(existingCustomerWindows, {
+            id: crypto.randomUUID(),
+            status: "not_sent",
+            phone: item.phone,
+            client: item.client,
+            dueDate,
+          });
         }
       }
     }
 
-    for (const group of groupedByJobCycle.values()) {
-      await insertQueueItem({
-        ...group,
-        jobId: group.jobId,
-        deviceId: null,
-      }, group.identities as string[]);
-    }
+    const queueItems = [
+      ...[...groupedByJobCycle.values()].map((group) => ({
+        item: {
+          ...group,
+          jobId: group.jobId,
+          deviceId: null,
+        } as Record<string, unknown>,
+        identities: group.identities as string[],
+      })),
+      ...standaloneItems.map((item) => ({
+        item,
+        identities: [String(item.identity || "")].filter(Boolean),
+      })),
+    ].sort((a, b) => Number(a.item.dueTs || 0) - Number(b.item.dueTs || 0));
 
-    for (const item of standaloneItems) {
-      await insertQueueItem(item, [String(item.identity || "")].filter(Boolean));
+    for (const entry of queueItems) {
+      await insertQueueItem(entry.item, entry.identities);
     }
 
     return json({ ok: true, createdCount, expiredCount, cleanupResult });
@@ -231,14 +255,48 @@ function normalizeCustomerKeyPart(value: unknown) {
     .replace(/\s+/g, " ");
 }
 
-function getCustomerQueueKey({ phone, client, dueDate, cycle }: { phone?: unknown; client?: unknown; dueDate?: unknown; cycle?: unknown }) {
-  const normalizedDueDate = String(dueDate || "").trim();
-  const normalizedCycle = Number.parseInt(String(cycle ?? ""), 10) || 1;
-  if (!normalizedDueDate) return "";
+function getCustomerBaseKey({ phone, client }: { phone?: unknown; client?: unknown }) {
   const normalizedPhone = normalizePhone(String(phone || ""));
-  if (normalizedPhone) return `phone:${normalizedPhone}:due:${normalizedDueDate}:cycle:${normalizedCycle}`;
+  if (normalizedPhone) return `phone:${normalizedPhone}`;
   const normalizedClient = normalizeCustomerKeyPart(client);
-  return normalizedClient ? `client:${normalizedClient}:due:${normalizedDueDate}:cycle:${normalizedCycle}` : "";
+  return normalizedClient ? `client:${normalizedClient}` : "";
+}
+
+function parseReminderDueDate(value: unknown) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return 0;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+}
+
+function hasCustomerReminderInWindow(
+  map: Map<string, Array<{ id: string; status: string; dueDate: string }>>,
+  customerBaseKey: string,
+  dueDate: string,
+) {
+  if (!customerBaseKey || !dueDate) return false;
+  const dueTs = parseReminderDueDate(dueDate);
+  if (!dueTs) return false;
+  return (map.get(customerBaseKey) || []).some((entry) => {
+    const existingDueTs = parseReminderDueDate(entry.dueDate);
+    return existingDueTs > 0 && Math.abs(existingDueTs - dueTs) <= (ACTIVE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  });
+}
+
+function rememberCustomerReminder(
+  map: Map<string, Array<{ id: string; status: string; dueDate: string }>>,
+  entry: { id?: unknown; status?: unknown; phone?: unknown; client?: unknown; dueDate?: unknown },
+) {
+  const customerBaseKey = getCustomerBaseKey({ phone: entry.phone, client: entry.client });
+  const dueDate = String(entry.dueDate || "").trim();
+  if (!customerBaseKey || !dueDate) return;
+  const rows = map.get(customerBaseKey) || [];
+  rows.push({
+    id: String(entry.id || ""),
+    status: String(entry.status || ""),
+    dueDate,
+  });
+  map.set(customerBaseKey, rows);
 }
 
 function isAdminRole(role: string | null | undefined) {

@@ -5,7 +5,7 @@ import SmsHistoryCard from './SmsHistoryCard.jsx';
 import SmsSentThisMonthCard from './SmsSentThisMonthCard.jsx';
 import SmsClientDetailsCard from './SmsClientDetailsCard.jsx';
 import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
-import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary } from '../../modules/sms.js';
+import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary, groupSmsLogsByCustomerWindow } from '../../modules/sms.js';
 import { loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
 import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendManualServiceSms } from '../../modules/sms-send.js';
 import { fetchAdminDevices } from '../../modules/devices-fetch.js';
@@ -158,6 +158,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const queue = useMemo(() => deriveSmsQueue(targets, logs), [targets, logs]);
   const summary = useMemo(() => getSmsSummary(targets, queue, logs), [targets, queue, logs]);
   const sentThisMonthLogs = useMemo(() => getSentThisMonthLogs(logs), [logs]);
+  const groupedHistoryLogs = useMemo(() => groupSmsLogsByCustomerWindow(logs), [logs]);
   const isDesktopAdmin = isAdmin && !isMobile;
   const isSettingsOnlyView = isDesktopAdmin && ['settings', 'sms_templates'].includes(requestedSection);
   const settingsOnlyTitle = requestedSection === 'sms_templates' ? 'Szablony SMS' : 'Ustawienia modułu SMS';
@@ -731,7 +732,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
             <SmsSettingsCard settings={settings} setSettings={setSettings} onSave={handleSaveSettings} saveBusy={saveBusy} isAdmin={isAdmin} />
           ) : null}
 
-          {showHistory ? <SmsHistoryCard logs={logs} /> : null}
+          {showHistory ? <SmsHistoryCard logs={groupedHistoryLogs} /> : null}
         </>
       ) : null}
     </div>
