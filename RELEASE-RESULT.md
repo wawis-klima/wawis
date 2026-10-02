@@ -24,14 +24,14 @@
 - Performance Advisor: CHECKED
 
 ## Kontrola regresji
-- `test:smoke:sms-job-grouping`: PENDING CI
-- `test:smoke:sms-durable-groups`: PENDING CI
-- `test:smoke:sms-stage3`: PENDING CI
-- `test:smoke:sms-stage4`: PENDING CI
-- `smoke-smsapi-webhook-security-v1085`: PENDING CI
-- `test:smoke:sms-log-cleanup`: PENDING CI
-- Playwright E2E: PENDING CI
-- produkcyjny build: PENDING CI
-- Edge Functions: PENDING
+- `test:smoke:sms-job-grouping`: PASS
+- `test:smoke:sms-durable-groups`: PASS
+- `test:smoke:sms-stage3`: PASS
+- `test:smoke:sms-stage4`: PASS
+- `smoke-smsapi-webhook-security-v1085`: PASS
+- `test:smoke:sms-log-cleanup`: PASS
+- Playwright E2E: PASS
+- produkcyjny build: PASS
+- Edge Functions: DEPLOYED — `send-service-sms` v32 ACTIVE, `generate-service-sms-queue` v22 ACTIVE, `smsapi-delivery-webhook` v10 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
