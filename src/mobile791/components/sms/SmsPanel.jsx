@@ -137,6 +137,8 @@ function getRowsForDeletePayload(row = {}) {
 export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, refreshAll, onOpenJob, onOpenContractor, requestedSection = 'sms' }) {
   const [settings, setSettings] = useState(getDefaultSmsSettings());
   const [logs, setLogs] = useState([]);
+  const [sentMonthSourceLogs, setSentMonthSourceLogs] = useState([]);
+  const [historyLogs, setHistoryLogs] = useState([]);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
@@ -156,9 +158,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
   const targets = useMemo(() => buildSmsTargets({ jobs, devices }), [jobs, devices]);
   const queue = useMemo(() => deriveSmsQueue(targets, logs), [targets, logs]);
-  const summary = useMemo(() => getSmsSummary(targets, queue, logs), [targets, queue, logs]);
-  const sentThisMonthLogs = useMemo(() => getSentThisMonthLogs(logs), [logs]);
-  const groupedHistoryLogs = useMemo(() => groupSmsLogsByCustomerWindow(logs), [logs]);
+  const sentThisMonthLogs = useMemo(() => getSentThisMonthLogs(sentMonthSourceLogs), [sentMonthSourceLogs]);
+  const summary = useMemo(() => ({
+    ...getSmsSummary(targets, queue, logs),
+    sentThisMonth: sentThisMonthLogs.length,
+  }), [targets, queue, logs, sentThisMonthLogs]);
+  const groupedHistoryLogs = useMemo(() => groupSmsLogsByCustomerWindow(historyLogs), [historyLogs]);
   const isDesktopAdmin = isAdmin && !isMobile;
   const isSettingsOnlyView = isDesktopAdmin && ['settings', 'sms_templates'].includes(requestedSection);
   const settingsOnlyTitle = requestedSection === 'sms_templates' ? 'Szablony SMS' : 'Ustawienia modułu SMS';
@@ -176,6 +181,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       ]);
       setSettings(data.settings || getDefaultSmsSettings());
       setLogs(data.logs || []);
+      setSentMonthSourceLogs(data.sentThisMonthLogs || data.logs || []);
+      setHistoryLogs(data.historyLogs || data.logs || []);
       setDevices(devicesResult.devices || []);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : String(error));
