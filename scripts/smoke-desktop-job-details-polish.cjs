@@ -56,7 +56,7 @@ assert.match(compactStyles, /jobCompletionByBadge[\s\S]*width:\s*22px[\s\S]*heig
 assert.match(compactStyles, /desktopDetailsSectionToggle[\s\S]*cursor:\s*pointer/, 'Nagłówki zwijanych sekcji muszą być klikalne.');
 assert.match(panelSource, /desktopJobDevicesSection[\\s\\S]*isExpanded[\\s\\S]*isCollapsed/, 'Sekcja Urządzenia musi oznaczać stan zwinięty/rozwinięty.');
 assert.match(panelSource, /desktopJobPhotosSection[\\s\\S]*isExpanded[\\s\\S]*isCollapsed/, 'Sekcja Zdjęcia musi oznaczać stan zwinięty/rozwinięty.');
-assert.match(panelSource, /desktopDetailsSectionChevron\" aria-hidden=\"true\" \\/>/, 'Chevron powinien być ikoną bez dodatkowego tekstu.');
+assert(panelSource.includes('className="desktopDetailsSectionChevron" aria-hidden="true" />'), 'Chevron powinien być ikoną bez dodatkowego tekstu.');
 assert.match(compactStyles, /desktopCompletedCollapsibleSection\\.isCollapsed[\\s\\S]*justify-self:\\s*start[\\s\\S]*background:\\s*transparent\\s*!important/, 'Zwinięty kafelek powinien być kompaktowy, a nie rozciągnięty na całą szerokość.');
 assert.match(compactStyles, /desktopJobDevicesSection\\.isCollapsed[\\s\\S]*248px/, 'Zwinięte Urządzenia powinny mieć zwartą szerokość.');
 assert.match(compactStyles, /desktopJobPhotosSection\\.isCollapsed[\\s\\S]*278px/, 'Zwinięte Zdjęcia powinny mieć zwartą szerokość.');
