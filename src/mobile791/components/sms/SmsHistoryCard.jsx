@@ -14,7 +14,7 @@ export default function SmsHistoryCard({ logs }) {
         {logs.map((log) => {
           const when = log.delivered_at || log.sent_at || log.approved_at || log.created_at;
           const normalizedStatus = String(log.status || '').toLowerCase();
-          const statusLabel = normalizedStatus === 'pending_approval' ? 'oczekuje na wysłanie' : getSmsStatusLabel(log.status);
+          const statusLabel = getSmsStatusLabel(log.status);
           return (
             <div key={log.id} className="smsHistoryItem">
               <div className="smsHistoryTop">

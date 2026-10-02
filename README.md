@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 12.27
+- 12.28
 
 Wersja 12.27 naprawia kolejkę SMS: przy technicznych duplikatach aplikacja zawsze wybiera aktualny rekord główny (`reminder_group_primary = true`), generator kolejki zachowuje tę samą zasadę, a kolumna statusu SMS na desktopie jest szersza. Zabezpieczenia przed ponowną wysyłką pozostają bez zmian.
 
@@ -865,7 +865,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.27` — kolejka SMS wybiera aktualny rekord główny przypomnienia, generator zachowuje tę samą regułę, a kolumna statusu SMS na desktopie jest poszerzona; zabezpieczenia przed duplikatem wysyłki pozostają aktywne.
+- wersja `12.28` — SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
@@ -936,7 +936,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 - wersja `11.04` — e-mail i adres w mobilnych szczegółach automatycznie zmniejszają czcionkę tylko wtedy, gdy nie mieszczą się w jednym wierszu; skrajnie długie wartości zachowują bezpieczny wielokropek.
 - wersja `11.01` — mobilne szczegóły montażu są realnie zagęszczone na szerokości iPhone'a, pełny e-mail pozostaje widoczny, a wiersze urządzeń i przyciski zajmują mniej miejsca.
 - wersja `11.00` — mobilne szczegóły montażu są bardziej zwarte, a e-mail, telefon, adres i nagłówki urządzeń pozostają w jednym wierszu na ekranie telefonu.
-- wersja `10.74` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.
+- wersja `10.74` — SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.
 - wersja `10.10` — trwały punkt wznowienia, przyrostowe odświeżanie, cicha diagnostyka, lepsza kolejka zdjęć i zewnętrzna kopia zdjęć oraz protokołów.
 - wersja `9.99` — mobilny wykonawca zakończenia jest pokazany bez `Przez:` i w jednej linii, a strzałki, numery oraz wielokropek paginacji mieszczą się w jednym rzędzie.
 - wersja `9.98` — data i wykonawca zakończenia są odsunięci oraz wyśrodkowani, a karty urządzeń na telefonie są domyślnie zwinięte i rozwijane osobno.

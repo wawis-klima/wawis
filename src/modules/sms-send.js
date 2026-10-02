@@ -59,10 +59,11 @@ export async function approveAndSendSmsLogs({ supabase, logIds }) {
     throw new Error('Nie wybrano SMS-ów do wysyłki.');
   }
 
-  return invokeWithFreshSession(supabase, 'send-service-sms', {
+  const result = await invokeWithFreshSession(supabase, 'send-service-sms', {
     mode: 'approval',
     logIds,
   });
+  return requireSentMessages(result);
 }
 
 export async function retryNotSentSmsLogs({ supabase, logIds }) {
@@ -70,10 +71,30 @@ export async function retryNotSentSmsLogs({ supabase, logIds }) {
     throw new Error('Nie wybrano niewysłanych SMS-ów do ponownej wysyłki.');
   }
 
-  return invokeWithFreshSession(supabase, 'send-service-sms', {
+  const result = await invokeWithFreshSession(supabase, 'send-service-sms', {
     mode: 'retry_not_sent',
     logIds,
   });
+  return requireSentMessages(result);
+}
+
+function requireSentMessages(result) {
+  if (!Number.isInteger(result?.sentCount) || result.sentCount <= 0) {
+    throw new Error('Nie wysłano żadnej wiadomości. Odśwież listę i sprawdź aktualny status SMS.');
+  }
+  return result;
+}
+
+export async function sendUnsentSmsLog({ supabase, log }) {
+  if (!log?.id) throw new Error('Brak identyfikatora niewysłanego SMS-a.');
+  const status = String(log.status || '').trim().toLowerCase();
+  if (status === 'pending_approval') {
+    return approveAndSendSmsLogs({ supabase, logIds: [log.id] });
+  }
+  if (status === 'not_sent') {
+    return retryNotSentSmsLogs({ supabase, logIds: [log.id] });
+  }
+  throw new Error('Ten SMS nie jest dostępny do wysłania. Odśwież listę i sprawdź jego status.');
 }
 
 export async function generateServiceSmsQueue({ supabase }) {
