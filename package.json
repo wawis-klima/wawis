@@ -41,6 +41,7 @@
     "release:desktop:dry-run": "node scripts/run-release.cjs desktop --dry-run",
     "test:smoke:release-zip": "node scripts/smoke-release-zip.cjs",
     "test:smoke:sms-job-grouping": "node scripts/smoke-sms-job-grouping.cjs",
+    "test:smoke:sms-durable-groups": "node scripts/smoke-sms-durable-groups-v1219.cjs",
     "test:smoke:sms-log-cleanup": "node scripts/smoke-sms-log-cleanup.cjs",
     "test:smoke:calendar-width": "node scripts/smoke-calendar-width.cjs",
     "test:e2e:desktop": "node scripts/run-playwright-desktop.cjs e2e",
