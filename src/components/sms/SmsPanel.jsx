@@ -56,7 +56,7 @@ function getSentStatusPresentation(status) {
     return { label: 'Wysłany', tone: 'sent' };
   }
   if (normalized === 'pending_approval') {
-    return { label: 'Zaplanowany', tone: 'planned' };
+    return { label: 'Oczekuje na wysłanie', tone: 'planned' };
   }
   if (normalized === 'error') {
     return { label: 'Błąd', tone: 'warning' };
