@@ -18,13 +18,14 @@
 - test anchoru późniejszy→wcześniejszy→poza oknem: PASS
 - test podwójnego claimu tej samej grupy: PASS
 - ACL nowych RPC: service_role only — VERIFIED
+- inwariant grup: 1154 grup / 1336 logów / 1154 primary; duplicate primary groups = 0, duplicate pending primary groups = 0
 
 ## Kontrola regresji
-- `test:smoke:sms-job-grouping`: PENDING CI
-- `test:smoke:sms-durable-groups`: PENDING CI
-- `test:smoke:sms-log-cleanup`: PENDING CI
-- Playwright E2E: PENDING CI
-- produkcyjny build: PENDING CI
-- Edge Functions: PENDING
+- `test:smoke:sms-job-grouping`: PASS
+- `test:smoke:sms-durable-groups`: PASS
+- `test:smoke:sms-log-cleanup`: PASS
+- Playwright E2E: PASS
+- produkcyjny build: PASS
+- Edge Functions: DEPLOYED — `send-service-sms` v30 ACTIVE, `generate-service-sms-queue` v20 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
