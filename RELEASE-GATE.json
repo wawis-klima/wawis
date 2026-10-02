@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.20",
+  "version": "12.21",
   "scope": "full",
-  "release_branch": "release/v12.20",
+  "release_branch": "release/v12.21",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Potwierdzono, że aplikacja desktop i mobile tworzy nowe zlecenia z sms_consent=true i sms_reminder_enabled=true; 29/29 zleceń z ostatnich 30 dni miało oba pola true. Jednocześnie stary default bazy dla sms_consent był false, generator dopuszczał implicit true dla niepowiązanego urządzenia, a backend/FE różniły się w liczeniu końców miesięcy."
+    "notes": "Etap 4 potwierdził dwie luki z audytu: frontend akceptował odpowiedź Edge {ok:false} bez pola error, a po przyjęciu SMS-a przez SMSAPI zapis sms_log/provider ID był osobnym best-effort krokiem. Webhook potrafił aktualizować wyłącznie istniejący log po provider_message_id."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.20.zip"
+    "file_name": "klima-app-v12.21.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.20",
+    "source_branch": "release/v12.21",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "Potwierdzono send-service-sms v31 ACTIVE z claim_service_sms_group_v2, generator v21 ACTIVE z Europe/Warsaw/per-device schedule, defaulty SMS=true, ACL service_role-only oraz brak podwójnych primary/pending grup."
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Po zielonym CI wdrożyć send-service-sms, generate-service-sms-queue i smsapi-delivery-webhook; potwierdzić staging/record acceptance, idx/check_idx, callback recovery oraz brak duplikatów primary/pending."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,19 +32,16 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — 20261002073753_sms_stage3_current_state_calendar_v1220 zakończona sukcesem na produkcji.",
-    "sms_defaults": "VERIFIED — sms_consent=true i sms_reminder_enabled=true dla nowego zlecenia; defaulty bazy obu kolumn są teraz true.",
-    "recent_jobs_check": "VERIFIED — 29/29 zleceń utworzonych w ostatnich 30 dniach miało sms_consent=true i sms_reminder_enabled=true.",
-    "calendar_tests": "PASS — 31.03.2025 + 11 mies. = 28.02.2026; 31.03.2023 + 11 mies. = 29.02.2024; 31.01.2026 + 11 mies. = 31.12.2026.",
-    "phone_tests": "PASS — +48/0048/lokalny 9-cyfrowy numer normalizuje się do 48XXXXXXXXX; zbyt krótki i zawierający litery jest odrzucany.",
-    "source_job_test": "PASS — uuid::device-N jest normalizowany do UUID karty.",
-    "current_state_claim_test": "PASS — pierwszy claim v2 pobrał bieżący numer, bieżący termin i linked_job_id; druga próba tej samej grupy została zablokowana jako group_claim_exists.",
-    "rls_role_matrix": "VERIFIED — claim_service_sms_group_v2: anon=false, authenticated=false, service_role=true.",
-    "performance_advisor": "CHECKED — brak nowych ostrzeżeń wydajności związanych z Etapem 3 SMS; widoczne linty dotyczą wcześniejszych FK/indeksów i konfiguracji Auth.",
-    "security_advisor": "CHECKED — claim_service_sms_group_v2 nie jest wykonywalny przez anon ani authenticated; nowe helpery private nie są wystawione. Widoczne ostrzeżenia Security Advisor dotyczą wcześniejszych funkcji/tabel.",
-    "edge_functions": "DEPLOYED — send-service-sms v31 ACTIVE używa claim_service_sms_group_v2 i bieżącego recipient_phone/current_due_date; generate-service-sms-queue v21 ACTIVE używa harmonogramu per urządzenie, Europe/Warsaw i ścisłej zgody linked job.",
+    "supabase_migrations": "APPLIED — 20261002081343_sms_stage4_reliable_delivery_v1221 oraz 20261002081756_sms_stage4_found_state_fix_v1221.",
+    "transactional_acceptance_test": "PASS/ROLLBACK — claim → staging → acceptance → delivered utworzył poprawny log z provider ID, sent_at i delivered_at.",
+    "transactional_recovery_test": "PASS/ROLLBACK — po symulowanym wyniku niepewnym callback z provider ID + claim_id odtworzył log; recoveredFromClaim=true.",
+    "transactional_rejection_test": "PASS/ROLLBACK — jednoznaczne odrzucenie ustawiło error bez provider_message_id/sent_at i zwolniło claim.",
+    "found_state_hotfix": "VERIFIED — wykryty w teście problem PL/pgSQL FOUND został poprawiony na jawne l.id IS NULL / IS NOT NULL przed wdrożeniem Edge.",
+    "rls_role_matrix": "VERIFIED — wszystkie nowe RPC Etapu 4: anon=false, authenticated=false, service_role=true.",
+    "security_advisor": "CHECKED — brak nowej ekspozycji RPC Etapu 4; pozostałe ostrzeżenia dotyczą wcześniejszych funkcji/tabel.",
+    "performance_advisor": "CHECKED — brak nowego problemu wykonawczego; nowy indeks claima jest jeszcze oznaczony jako unused przed przełączeniem Edge.",
+    "edge_functions": "PENDING — wdrożenie po pierwszym zielonym CI.",
     "vercel_deployment": "PENDING — po merge do main",
-    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki",
-    "postdeploy_invariants": "VERIFIED — sms_consent default=true, sms_reminder_enabled default=true, duplicate primary groups=0, duplicate pending primary groups=0; claim v2 nadal service_role-only."
+    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
 }
