@@ -1,4 +1,5 @@
-## 12.18 — SMS: Etap 1 ochrony historii
+## 12.18
+SMS: Etap 1 ochrony historii.
 
 - fizyczne kasowanie `sms_log` zostało zablokowane triggerem ochronnym;
 - `admin_cleanup_sms_duplicate_logs` pozostaje kompatybilny, ale nie usuwa rekordów;
