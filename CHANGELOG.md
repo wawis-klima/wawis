@@ -1,3 +1,16 @@
+## 12.23
+SMS: zakładka „Niewysłane” i ręczne ponowienie.
+- dodano osobny snapshot wszystkich logicznie niewysłanych przypomnień `not_sent`;
+- pozycje są grupowane per klient/okno i dostępne w trzecim kaflu „Niewysłane”;
+- administrator może wysłać ponownie jedną lub wiele zaznaczonych pozycji;
+- retry jest wyłącznie ręczny i omija 62-dniowe okno tylko dla jawnie wybranego starego wpisu;
+- przed ponowieniem backend ponownie sprawdza aktualny numer i zgodę SMS;
+- stary wpis `not_sent` pozostaje nietknięty, a ponowienie tworzy nowy log powiązany przez `retry_of_log_id`;
+- timeout/niepewny wynik pozostawia claim zablokowany i ukrywa pozycję przed kolejnym kliknięciem;
+- callback SMSAPI potrafi odtworzyć retry po `idx -> claim_id`;
+- usunięto napis o automatycznej wysyłce 7 dni przed terminem;
+- status `pending_approval` jest opisany jako „Oczekuje na wysłanie”, nie „Zaplanowany”.
+
 ## 12.22
 SMS: Etap 5 — historia, liczniki i kompatybilność legacy.
 - naprawiono pusty licznik „Wysłane w tym miesiącu”: snapshot pobiera wszystkie skuteczne SMS-y z bieżącego miesiąca niezależnie od limitu historii;
