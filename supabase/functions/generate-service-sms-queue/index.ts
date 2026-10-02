@@ -38,8 +38,6 @@ Deno.serve(async (request) => {
 
     const now = new Date();
     const nowIso = now.toISOString();
-    const cleanupResult = await cleanupDuplicateSmsLogs(adminClient);
-
     const { data: devices, error: devicesError } = await adminClient
       .from("devices")
       .select("id, source_job_id, model, serial_number, installation_date, contractor:contractors(company_name, phone)")
@@ -225,24 +223,12 @@ Deno.serve(async (request) => {
       await insertQueueItem(entry.item, entry.identities);
     }
 
-    return json({ ok: true, createdCount, expiredCount, cleanupResult });
+    return json({ ok: true, createdCount, expiredCount });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
 
-
-async function cleanupDuplicateSmsLogs(adminClient: ReturnType<typeof createClient>) {
-  const { data, error } = await adminClient.rpc("admin_cleanup_sms_duplicate_logs");
-  if (!error) return data || { ok: true };
-
-  const message = String(error.message || error.details || error.hint || "");
-  if (/admin_cleanup_sms_duplicate_logs|function .* does not exist|Could not find the function/i.test(message)) {
-    return { ok: true, skipped: true, reason: "missing_rpc" };
-  }
-
-  throw new Error(`Nie udało się wyczyścić duplikatów logów SMS: ${message || "nieznany błąd"}`);
-}
 
 
 function normalizeCustomerKeyPart(value: unknown) {
