@@ -69,7 +69,7 @@ assert.match(desktopHeaderSource, /desktopStatusFilter === "Zakończone"/);
 assert.match(desktopHeaderSource, /column\.completedLabel \|\| column\.label/);
 assert.match(mobileLayoutSource, /function getJobListDate\(job\)/);
 assert.match(mobileLayoutSource, /job\?\.completed_at/);
-assert.match(mobileLayoutSource, /getJobListDate\(job\) \? formatDate\(getJobListDate\(job\)\) : "-"/);
+assert.match(mobileLayoutSource, /getJobListDate\(job\) \? formatDate\(getJobListDate\(job\)\) : \(String\(job\?\.status \|\| ""\) === "Zakończone" \? "Brak daty" : "-"\)/);
 assert.doesNotMatch(mobileLayoutSource, /job\.created_at \? formatDate\(job\.created_at\) : "-"/);
 assert.match(jobsSelectorsSource, /function getJobSortDate\(job\)/);
 assert.match(jobsSelectorsSource, /job\?\.completed_at/);
@@ -88,6 +88,7 @@ for (const [name, source] of [
 assert.match(mobile791ColumnsSource, /completedLabel: "Data zakończenia"/);
 assert.match(mobile791HeaderSource, /desktopStatusFilter === "Zakończone"/);
 assert.match(mobile791LayoutSource, /function getJobListDate\(job\)/);
+assert.match(mobile791LayoutSource, /"Zakończone" \? "Brak daty" : "-"/);
 assert.match(mobile791SelectorsSource, /function getJobSortDate\(job\)/);
 
 console.log('Job selection smoke OK');
