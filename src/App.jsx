@@ -666,6 +666,7 @@ export default function App() {
         setDashboardMetrics(null);
         return;
       }
+      if (activeModule !== 'center360') return;
 
       try {
         const metrics = await loadCachedDashboardMetrics();
@@ -681,7 +682,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, jobs, loadCachedDashboardMetrics]);
+  }, [activeModule, isAdmin, jobs, loadCachedDashboardMetrics]);
 
   useEffect(() => {
     let cancelled = false;
@@ -833,6 +834,10 @@ export default function App() {
         setGlobalSearchContractors([]);
         return;
       }
+
+      // Katalog kontrahentów nie jest potrzebny w module SMS. Nie uruchamiamy
+      // ciężkiego RPC tylko dlatego, że administrator zmienił zakładkę.
+      if (!showModal && !['jobs', 'contractors'].includes(activeModule)) return;
 
       try {
         const data = await loadContractors({ supabase, isAdmin: true });

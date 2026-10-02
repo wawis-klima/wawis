@@ -9,7 +9,8 @@ import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
 import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary, groupSmsLogsByCustomerWindow } from '../../modules/sms.js';
 import { loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
 import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, retryNotSentSmsLogs, sendManualServiceSms } from '../../modules/sms-send.js';
-import { fetchAdminDevices } from '../../modules/devices-fetch.js';
+import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
+import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { IconClock, IconFileText, IconFilter, IconMapPin, IconMessageCircle, IconPhone, IconRefresh, IconUsers } from '../ui';
 
 function normalizeText(value) {
@@ -179,21 +180,32 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const lastAutoRefreshRef = useRef(0);
 
   async function reloadSmsData({ silent = false } = {}) {
-    if (!silent) setLoading(true);
+    if (!silent) {
+      setLoading(true);
+      setDevices(buildFallbackDevicesFromJobs(jobs));
+    }
     setErrorMessage('');
     try {
-      const [data, devicesResult] = await Promise.all([
-        loadSmsModuleData({ supabase, isAdmin }),
-        fetchAdminDevices({ supabase, isAdmin, jobs, trySync: false }),
-      ]);
+      const data = await loadSmsModuleData({ supabase, isAdmin });
       setSettings(data.settings || getDefaultSmsSettings());
       setLogs(data.logs || []);
       setSentMonthSourceLogs(data.sentThisMonthLogs || data.logs || []);
       setUnsentLogs(data.unsentLogs || []);
       setHistoryLogs(data.historyLogs || data.logs || []);
-      setDevices(devicesResult.devices || []);
+
+      // Pełna baza urządzeń jest dociągana dopiero po snapshotcie SMS.
+      // Dzięki temu wejście do modułu nie uderza w bazę kilkoma ciężkimi RPC naraz.
+      if (!silent) {
+        void fetchAdminDevices({ supabase, isAdmin, jobs, trySync: false })
+          .then((devicesResult) => {
+            if (Array.isArray(devicesResult?.devices)) setDevices(devicesResult.devices);
+          })
+          .catch((error) => {
+            console.warn('Nie udało się dociągnąć pełnej bazy urządzeń dla modułu SMS.', normalizeDatabaseErrorMessage(error));
+          });
+      }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error, 'Nie udało się załadować modułu SMS.'));
     } finally {
       if (!silent) setLoading(false);
     }
@@ -206,7 +218,9 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   useEffect(() => {
     if (!isAdmin || !supabase) return undefined;
 
-    void refreshQueueAutomatically({ showBusy: true });
+    // Wejście do modułu ma tylko odczytać snapshot. Generator kolejki nie może
+    // startować równolegle z pierwszym odczytem i dublować ciężkich zapytań.
+    lastAutoRefreshRef.current = Date.now();
 
     const intervalId = window.setInterval(() => {
       void refreshQueueAutomatically();
@@ -214,7 +228,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
     const handleVisibilityOrFocus = () => {
       const now = Date.now();
-      if (document.visibilityState === 'visible' && now - lastAutoRefreshRef.current > 60000) {
+      if (document.visibilityState === 'visible' && now - lastAutoRefreshRef.current > 300000) {
         void refreshQueueAutomatically();
       }
     };
@@ -267,7 +281,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setSettings((prev) => ({ ...prev, ...saved, sending_mode: 'approval' }));
       setInfoMessage('Ustawienia modułu SMS zostały zapisane.');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setSaveBusy(false);
     }
@@ -277,6 +291,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     if (autoRefreshLockRef.current) return;
 
     autoRefreshLockRef.current = true;
+    lastAutoRefreshRef.current = Date.now();
     if (showBusy) setAutoRefreshBusy(true);
     if (showMessage) {
       setInfoMessage('');
@@ -285,14 +300,13 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
     try {
       const result = await generateServiceSmsQueue({ supabase });
-      lastAutoRefreshRef.current = Date.now();
       if (showMessage) {
         setInfoMessage(`Lista klientów odświeżyła się automatycznie. Dodano ${result.createdCount || 0} nowych pozycji oczekujących.`);
       }
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await reloadSmsData({ silent: true });
     } catch (error) {
       if (showMessage) {
-        setErrorMessage(error instanceof Error ? error.message : String(error));
+        setErrorMessage(normalizeDatabaseErrorMessage(error));
       } else {
         console.error('Automatic SMS queue refresh failed', error);
       }
@@ -333,7 +347,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setActiveSummaryView('sentThisMonth');
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setSendBusy(false);
     }
@@ -360,7 +374,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setActiveSummaryView('sentThisMonth');
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setSendBusy(false);
     }
@@ -395,7 +409,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setShowHistory(true);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setSendBusy(false);
     }
@@ -411,7 +425,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setShowHistory(true);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setSendBusy(false);
     }
@@ -464,7 +478,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany ponownie.`);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setSendBusy(false);
     }

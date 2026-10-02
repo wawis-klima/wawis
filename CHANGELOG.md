@@ -1,3 +1,12 @@
+## 12.25
+- Desktop SMS: usunięto automatyczne uruchamianie generatora kolejki równolegle z pierwszym snapshotem modułu.
+- Pełna baza urządzeń jest dociągana dopiero po zakończeniu głównego odczytu SMS; do tego czasu używany jest lekki fallback z montaży.
+- Równoległe identyczne snapshoty SMS są deduplikowane w obrębie klienta Supabase.
+- Wejście do SMS nie pobiera już niepotrzebnie katalogu kontrahentów ani metryk Centrum 360.
+- Błędy Supabase w panelu SMS są normalizowane do czytelnego komunikatu zamiast „[object Object]”.
+- Kafle „Klienci na liście”, „Wysłane w tym miesiącu” i „Niewysłane” są ustawione w jednym rzędzie na desktopie.
+- Dodano smoke regresyjny `smoke-sms-desktop-load-v1225.cjs`; mobile791 pozostaje bez zmian funkcjonalnych.
+
 ## 12.24
 - Desktop: w sekcji „Zakończone” kolumna daty ma nagłówek „Data zakończenia” i pokazuje `completed_at`.
 - Mobile: karta zakończonego montażu pokazuje datę zakończenia zamiast daty montażu.
