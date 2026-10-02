@@ -25,7 +25,7 @@ const deactivate = auth.indexOf('await deactivatePushForLogout({ supabase, sessi
 const clearStorage = auth.indexOf('removeSupabaseStorageKeys();', deactivate);
 assert.ok(deactivate >= 0 && clearStorage > deactivate, 'PUSH nadal musi być dezaktywowany przed czyszczeniem sesji');
 assert.match(auth, /deactivatePushForLogout\(\{ supabase, sessionUser \}\)/, 'Logout 10.83 musi przekazać bieżącego użytkownika bez dodatkowego getSession.');
-assert.match(auth, /event === 'SIGNED_IN' \|\| event === 'USER_UPDATED'/, 'Nie wolno zmieniać istniejącego odświeżenia danych po SIGNED_IN');
+assert.match(auth, /if \\(event === 'SIGNED_IN'\\)[\\s\\S]*?else if \\(event === 'USER_UPDATED'\\)/, 'Listener auth musi nadal odświeżać dane osobno po SIGNED_IN i USER_UPDATED.');
 
 // 10.78 wzmacnia 10.76: własność/klucze są sprawdzane atomowo po stronie DB zamiast SELECT+UPSERT.
 assert.match(edge, /push_subscription_sync_atomic/);
