@@ -7,7 +7,7 @@
 - naprawa bardzo wolnego ładowania desktopowego modułu SMS i timeoutów przy wejściu;
 - brak równoległego generatora kolejki przy pierwszym odczycie;
 - snapshot SMS jest wykonywany przed dociągnięciem pełnej bazy urządzeń;
-- deduplikacja równoległych identycznych odczytów SMS i urządzeń;
+- deduplikacja równoległych identycznych snapshotów SMS;
 - brak zbędnego pobierania katalogu kontrahentów i metryk Centrum 360 podczas pracy w SMS;
 - czytelny komunikat błędu zamiast `[object Object]`;
 - trzy kafle: „Klienci na liście”, „Wysłane w tym miesiącu”, „Niewysłane” w jednym rzędzie na desktopie;
