@@ -38,8 +38,10 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.match(desktop, /addMonthsClampedIso/);
   assert.match(desktop, /isoDateToDay/);
   assert.match(desktop, /normalizeSourceJobId/);
-  assert.match(desktop, /sms_consent:\s*hasAuthoritativeConsent && linkedJob\?\.sms_consent === true/);
-  assert.match(desktop, /sms_eligibility:\s*hasAuthoritativeConsent \? 'linked_job' : 'missing_linked_job_consent'/);
+  assert.match(desktop, /deviceSmsConsent/);
+  assert.match(desktop, /deviceSmsReminderEnabled/);
+  assert.match(desktop, /sms_consent:\s*hasAuthoritativeConsent \? linkedJob\?\.sms_consent === true : deviceSmsConsent/);
+  assert.match(desktop, /sms_eligibility:\s*hasAuthoritativeConsent \? 'linked_job' : \(isLegacyDevice \? 'legacy_device' : 'missing_linked_job_consent'\)/);
   assert.doesNotMatch(desktop, /DAY_MS/);
   assert.doesNotMatch(desktop, /setMonth\(/);
 
