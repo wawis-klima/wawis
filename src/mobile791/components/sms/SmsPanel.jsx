@@ -3,11 +3,12 @@ import SmsQueueTable from './SmsQueueTable.jsx';
 import SmsSettingsCard from './SmsSettingsCard.jsx';
 import SmsHistoryCard from './SmsHistoryCard.jsx';
 import SmsSentThisMonthCard from './SmsSentThisMonthCard.jsx';
+import SmsUnsentCard from './SmsUnsentCard.jsx';
 import SmsClientDetailsCard from './SmsClientDetailsCard.jsx';
 import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
 import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary, groupSmsLogsByCustomerWindow } from '../../modules/sms.js';
 import { loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
-import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendManualServiceSms } from '../../modules/sms-send.js';
+import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, retryNotSentSmsLogs, sendManualServiceSms } from '../../modules/sms-send.js';
 import { fetchAdminDevices } from '../../modules/devices-fetch.js';
 import { IconClock, IconFileText, IconFilter, IconMapPin, IconMessageCircle, IconPhone, IconRefresh, IconUsers } from '../ui';
 
@@ -38,7 +39,7 @@ function getQueueStatusPresentation(row) {
     return { label: 'Wysłany', tone: 'sent' };
   }
   if (status === 'pending_approval') {
-    return { label: 'Zaplanowany', tone: 'planned' };
+    return { label: 'Oczekuje na wysłanie', tone: 'planned' };
   }
   if (status === 'error') {
     return { label: 'Błąd', tone: 'warning' };
@@ -89,7 +90,7 @@ function exportRowsAsCsv(rows, activeSummaryView) {
     'Numer seryjny',
     'Miasto',
     'Kontakt',
-    activeSummaryView === 'queue' ? 'Termin serwisu' : 'Data wysyłki',
+    activeSummaryView === 'sentThisMonth' ? 'Data wysyłki' : 'Termin serwisu',
     'Status SMS',
   ];
 
@@ -99,7 +100,7 @@ function exportRowsAsCsv(rows, activeSummaryView) {
     row.serial_number,
     row.city,
     row.phone,
-    activeSummaryView === 'queue' ? row.service_due_date : row.sent_at,
+    activeSummaryView === 'sentThisMonth' ? row.sent_at : row.service_due_date,
     row.statusLabel,
   ]);
 
@@ -111,7 +112,11 @@ function exportRowsAsCsv(rows, activeSummaryView) {
   const link = document.createElement('a');
   const stamp = new Date().toISOString().slice(0, 10);
   link.href = URL.createObjectURL(blob);
-  link.download = activeSummaryView === 'queue' ? `sms-kolejka-${stamp}.csv` : `sms-wyslane-${stamp}.csv`;
+  link.download = activeSummaryView === 'queue'
+    ? `sms-kolejka-${stamp}.csv`
+    : activeSummaryView === 'unsent'
+      ? `sms-niewyslane-${stamp}.csv`
+      : `sms-wyslane-${stamp}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -138,6 +143,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [settings, setSettings] = useState(getDefaultSmsSettings());
   const [logs, setLogs] = useState([]);
   const [sentMonthSourceLogs, setSentMonthSourceLogs] = useState([]);
+  const [unsentLogs, setUnsentLogs] = useState([]);
   const [historyLogs, setHistoryLogs] = useState([]);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -145,6 +151,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [sendBusy, setSendBusy] = useState(false);
   const [autoRefreshBusy, setAutoRefreshBusy] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedUnsentIds, setSelectedUnsentIds] = useState([]);
   const [infoMessage, setInfoMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -182,6 +189,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setSettings(data.settings || getDefaultSmsSettings());
       setLogs(data.logs || []);
       setSentMonthSourceLogs(data.sentThisMonthLogs || data.logs || []);
+      setUnsentLogs(data.unsentLogs || []);
       setHistoryLogs(data.historyLogs || data.logs || []);
       setDevices(devicesResult.devices || []);
     } catch (error) {
@@ -409,6 +417,72 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     }
   }
 
+  async function handleRetryUnsentSelected() {
+    const selectedRows = unsentRows.filter((row) => selectedUnsentIds.includes(row.selectionKey));
+    if (selectedRows.length === 0) return;
+
+    setSendBusy(true);
+    setInfoMessage('');
+    setErrorMessage('');
+
+    let sentCount = 0;
+    const failures = [];
+
+    try {
+      for (const row of selectedRows) {
+        try {
+          await retryNotSentSmsLogs({ supabase, logIds: [row.retryLogId] });
+          sentCount += 1;
+        } catch (error) {
+          failures.push(`${row.client}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+
+      if (sentCount > 0) {
+        setInfoMessage(`Wysłano ponownie ${sentCount} wiadomości SMS.`);
+      }
+      if (failures.length > 0) {
+        setErrorMessage(`Nie udało się wysłać ${failures.length} pozycji. ${failures.slice(0, 3).join(' | ')}`);
+      }
+
+      setSelectedUnsentIds([]);
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+    } finally {
+      setSendBusy(false);
+    }
+  }
+
+  async function handleRetryUnsentNow(row) {
+    if (!row?.retryLogId) return;
+
+    setSendBusy(true);
+    setInfoMessage('');
+    setErrorMessage('');
+
+    try {
+      await retryNotSentSmsLogs({ supabase, logIds: [row.retryLogId] });
+      setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany ponownie.`);
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setSendBusy(false);
+    }
+  }
+
+  function toggleUnsentOne(selectionKey) {
+    if (!selectionKey) return;
+    setSelectedUnsentIds((prev) => (
+      prev.includes(selectionKey)
+        ? prev.filter((id) => id !== selectionKey)
+        : [...prev, selectionKey]
+    ));
+  }
+
+  function toggleUnsentAll(checked, rows = []) {
+    setSelectedUnsentIds(checked ? rows.filter((row) => row.canSelect).map((row) => row.selectionKey).filter(Boolean) : []);
+  }
+
   function toggleOne(logId) {
     if (!logId) return;
     setSelectedIds((prev) => (prev.includes(logId) ? prev.filter((id) => id !== logId) : [...prev, logId]));
@@ -426,6 +500,32 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     });
     return map;
   }, [targets]);
+
+  const unsentRows = useMemo(() => groupSmsLogsByCustomerWindow(unsentLogs).map((log) => {
+    const identity = log.device_id ? `device:${log.device_id}` : (log.job_id ? `job:${log.job_id}` : '');
+    const target = targetByIdentity.get(identity) || null;
+    const groupedIds = Array.isArray(log.grouped_log_ids) ? log.grouped_log_ids.filter(Boolean) : [];
+    const retryLogId = log.id || groupedIds[0] || null;
+    const dueDate = log.reminder_due_date || '';
+    return {
+      ...log,
+      key: `unsent:${retryLogId || log.id}`,
+      selectionKey: `unsent:${retryLogId || log.id}`,
+      retryLogId,
+      client: log.client || target?.client || 'Klient',
+      addressLine: [normalizeText(target?.street), normalizeText(target?.city)].filter(Boolean).join(', '),
+      model: normalizeText(target?.model) || 'Urządzenie serwisowe',
+      serial_number: normalizeText(target?.serial_number) || '—',
+      city: normalizeText(target?.city) || '—',
+      phone: normalizeText(target?.sms_recipient_phone || target?.phone || log.phone) || '—',
+      service_due_date: dueDate,
+      formattedDueDate: formatSmsDate(dueDate),
+      cycleLabel: log.reminder_cycle ? `Cykl ${log.reminder_cycle}` : '',
+      reason: normalizeText(log.error_message) || 'Przekroczono okno wysyłki.',
+      linkedTarget: target,
+      canSelect: Boolean(retryLogId && target),
+    };
+  }), [unsentLogs, targetByIdentity]);
 
   const queueRows = useMemo(() => queue.map((row) => {
     const presentation = getQueueStatusPresentation(row);
@@ -475,11 +575,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
   const cityOptions = useMemo(() => {
     const values = new Set();
-    [...queueRows, ...sentRows].forEach((row) => {
+    [...queueRows, ...sentRows, ...unsentRows].forEach((row) => {
       if (row.city && row.city !== '—') values.add(row.city);
     });
     return [...values].sort((left, right) => left.localeCompare(right, 'pl', { sensitivity: 'base' }));
-  }, [queueRows, sentRows]);
+  }, [queueRows, sentRows, unsentRows]);
 
   const filteredQueueRows = useMemo(() => {
     const search = normalizeSearch(searchQuery);
@@ -501,7 +601,21 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     });
   }, [sentRows, searchQuery, cityFilter]);
 
-  const activeRows = activeSummaryView === 'queue' ? filteredQueueRows : filteredSentRows;
+  const filteredUnsentRows = useMemo(() => {
+    const search = normalizeSearch(searchQuery);
+    return unsentRows.filter((row) => {
+      if (cityFilter !== 'all' && row.city !== cityFilter) return false;
+      if (!search) return true;
+      const haystack = normalizeSearch([row.client, row.model, row.serial_number, row.city, row.phone, row.addressLine, row.reason].join(' '));
+      return haystack.includes(search);
+    });
+  }, [unsentRows, searchQuery, cityFilter]);
+
+  const activeRows = activeSummaryView === 'queue'
+    ? filteredQueueRows
+    : activeSummaryView === 'unsent'
+      ? filteredUnsentRows
+      : filteredSentRows;
   const pageSize = 10;
   const totalPages = Math.max(1, Math.ceil(activeRows.length / pageSize));
   const currentPageSafe = Math.min(currentPage, totalPages);
@@ -559,6 +673,13 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               <small>Historia skutecznie wysłanych przypomnień SMS z bieżącego miesiąca.</small>
             </div>
           </button>
+          <button type="button" className={`smsSummaryCard smsSummaryCardButton ${activeSummaryView === 'unsent' ? 'active' : ''}`} onClick={() => setActiveSummaryView('unsent')}>
+            <div className="smsSummaryCardBody">
+              <span>Niewysłane</span>
+              <strong>{unsentRows.length}</strong>
+              <small>Przeterminowane przypomnienia dostępne do ręcznej ponownej wysyłki.</small>
+            </div>
+          </button>
         </div>
 
         {infoMessage ? <div className="successBox">{infoMessage}</div> : null}
@@ -588,6 +709,23 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   onSelectClient={(row) => { setSelectedClient(row); setSelectedDevice(null); }}
                   onSelectDevice={(row) => { setSelectedDevice(row); setSelectedClient(null); }}
                   onPageChange={setCurrentPage}
+                />
+              ) : activeSummaryView === 'unsent' ? (
+                <SmsUnsentCard
+                  rows={filteredUnsentRows}
+                  pageRows={pagedRows}
+                  currentPage={currentPageSafe}
+                  totalPages={totalPages}
+                  totalRows={filteredUnsentRows.length}
+                  selectedIds={selectedUnsentIds}
+                  onToggleOne={toggleUnsentOne}
+                  onToggleAll={(checked) => toggleUnsentAll(checked, filteredUnsentRows)}
+                  onSendSelected={handleRetryUnsentSelected}
+                  onSendNow={handleRetryUnsentNow}
+                  sendBusy={sendBusy}
+                  onPageChange={setCurrentPage}
+                  onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
+                  onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
                 />
               ) : (
                 <SmsSentThisMonthCard rows={filteredSentRows} pageRows={pagedRows} currentPage={currentPageSafe} totalPages={totalPages} totalRows={filteredSentRows.length} onPageChange={setCurrentPage} />
@@ -648,6 +786,14 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
           </div>
           <span className="smsDesktopMetricArrow">›</span>
         </button>
+        <button type="button" className={`smsDesktopMetricCard ${activeSummaryView === 'unsent' ? 'active' : ''}`} onClick={() => setActiveSummaryView('unsent')}>
+          <div className="smsDesktopMetricBody">
+            <strong>Niewysłane</strong>
+            <div className="smsDesktopMetricValue">{unsentRows.length}</div>
+            <small>Przypomnienia, których termin wysyłki minął — możesz wysłać je ręcznie</small>
+          </div>
+          <span className="smsDesktopMetricArrow">›</span>
+        </button>
       </section>
 
       <section className="smsDesktopFiltersCard">
@@ -704,6 +850,23 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               onSelectClient={(row) => { setSelectedClient(row); setSelectedDevice(null); }}
               onSelectDevice={(row) => { setSelectedDevice(row); setSelectedClient(null); }}
               onPageChange={setCurrentPage}
+            />
+          ) : activeSummaryView === 'unsent' ? (
+            <SmsUnsentCard
+              rows={filteredUnsentRows}
+              pageRows={pagedRows}
+              currentPage={currentPageSafe}
+              totalPages={totalPages}
+              totalRows={filteredUnsentRows.length}
+              selectedIds={selectedUnsentIds}
+              onToggleOne={toggleUnsentOne}
+              onToggleAll={(checked) => toggleUnsentAll(checked, filteredUnsentRows)}
+              onSendSelected={handleRetryUnsentSelected}
+              onSendNow={handleRetryUnsentNow}
+              sendBusy={sendBusy}
+              onPageChange={setCurrentPage}
+              onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
+              onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
             />
           ) : (
             <SmsSentThisMonthCard
