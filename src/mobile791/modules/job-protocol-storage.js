@@ -38,9 +38,10 @@ export function isMissingProtocolBackendError(error) {
     || message.includes("bucket not found");
 }
 
-function assertCompletedJob(job) {
-  if (normalizeText(job?.status) !== "Zakończone") {
-    throw new Error("Protokół można utworzyć dopiero po zakończeniu zlecenia.");
+function assertProtocolWritableJob(job) {
+  const status = normalizeText(job?.status);
+  if (!["W trakcie", "Zakończone"].includes(status)) {
+    throw new Error("Protokół można zapisać dla zlecenia W trakcie lub Zakończonego.");
   }
   if (!normalizeText(job?.id)) {
     throw new Error("Brakuje identyfikatora zlecenia.");
@@ -162,7 +163,7 @@ export async function storeJobProtocol({
   uploadTimeoutMs = PROTOCOL_SAVE_UPLOAD_TIMEOUT_MS,
 }) {
   if (!supabase) throw new Error("Brak połączenia z bazą aplikacji.");
-  assertCompletedJob(job);
+  assertProtocolWritableJob(job);
   if (!(pdfBlob instanceof Blob) || !pdfBlob.size) throw new Error("Nie udało się przygotować pliku PDF.");
   if (typeof navigator !== "undefined" && navigator.onLine === false) {
     throw new Error("Do zapisania protokołu potrzebne jest połączenie z internetem.");
