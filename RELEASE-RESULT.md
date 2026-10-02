@@ -28,13 +28,14 @@
 - Performance Advisor: CHECKED — brak nowego problemu Etapu 3
 
 ## Kontrola regresji
-- `test:smoke:sms-job-grouping`: PENDING CI
-- `test:smoke:sms-durable-groups`: PENDING CI
-- `test:smoke:sms-stage3`: PENDING CI
-- `test:smoke:sms-log-cleanup`: PENDING CI
-- domyślne SMS przy nowym zleceniu: PENDING CI
-- Playwright E2E: PENDING CI
-- produkcyjny build: PENDING CI
-- Edge Functions: PENDING — wdrożenie dopiero po zielonym CI
+- `test:smoke:sms-job-grouping`: PASS
+- `test:smoke:sms-durable-groups`: PASS
+- `test:smoke:sms-stage3`: PASS
+- `test:smoke:sms-log-cleanup`: PASS
+- domyślne SMS przy nowym zleceniu: PASS
+- Playwright E2E: PASS
+- produkcyjny build: PASS
+- Edge Functions: DEPLOYED — `send-service-sms` v31 ACTIVE, `generate-service-sms-queue` v21 ACTIVE
+- postdeploy inwarianty: defaulty SMS=true; duplicate primary=0; duplicate pending primary=0; claim v2 service_role-only
 - Vercel: PENDING
 - merge: PENDING
