@@ -146,6 +146,7 @@ const GROUPS = {
     'node scripts/smoke-contractors-stage4-v1177.mjs',
     'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:sms-summary',
+    'node scripts/smoke-sms-desktop-load-v1225.cjs',
     'npm run test:smoke:sms-job-grouping',
     'npm run test:smoke:sms-durable-groups',
     'npm run test:smoke:sms-stage3',
