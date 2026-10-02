@@ -861,6 +861,8 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 ## Ostatnia poprawka
 - wersja `12.24` — listy zakończonych montaży na desktopie i mobile pokazują datę zakończenia zamiast daty montażu; sortowanie również używa `completed_at`.
 
+- wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
+
 - wersja `12.22` — SMS Etap 5: przywrócenie 9 klientów do kolejki legacy, osobny odczyt „wysłane w tym miesiącu” bez limitu 300 oraz historia ograniczona do 300 ostatnich wpisów.
 
 - wersja `12.21` — SMS Etap 4: staging claima przed SMSAPI, rozróżnienie odrzucenia i wyniku niepewnego, atomowy zapis akceptacji, `idx/check_idx`, odzyskanie przez webhook oraz fail-closed dla `{ok:false}`.
