@@ -75,7 +75,7 @@ Deno.serve(async (request) => {
 
     const { data: logs, error: logsError } = await adminClient
       .from("sms_log")
-      .select("id, job_id, device_id, client, phone, status, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary")
+      .select("id, job_id, device_id, client, phone, status, provider_message_id, sent_at, delivered_at, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary")
       .eq("sms_type", "service_reminder")
       .limit(5000);
     if (logsError) return json({ error: logsError.message }, 400);
@@ -87,6 +87,7 @@ Deno.serve(async (request) => {
       phone: string;
       dueDate: string;
       primary: boolean;
+      hasProviderProof: boolean;
     }>();
     const existingPrimaryGroupIds = new Set<string>();
 
@@ -103,6 +104,7 @@ Deno.serve(async (request) => {
           phone: String(log.phone || ""),
           dueDate: String(log.reminder_due_date || ""),
           primary: log.reminder_group_primary === true,
+          hasProviderProof: Boolean(log.provider_message_id || log.sent_at || log.delivered_at),
         });
       }
 
@@ -200,7 +202,8 @@ Deno.serve(async (request) => {
 
       if (existing) {
         const existingStatus = String(existing.status || "").trim().toLowerCase();
-        if (!["pending_approval", "not_sent"].includes(existingStatus)) return;
+        const retryableProviderError = existingStatus === "error" && existing.hasProviderProof !== true;
+        if (!["pending_approval", "not_sent"].includes(existingStatus) && !retryableProviderError) return;
 
         if (existing.groupId !== reminderGroupId && existingPrimaryGroupIds.has(reminderGroupId)) {
           const { error: obsoleteError } = await adminClient
@@ -252,6 +255,7 @@ Deno.serve(async (request) => {
             phone,
             dueDate,
             primary: true,
+            hasProviderProof: false,
           });
         }
         refreshedCount += 1;
@@ -278,6 +282,7 @@ Deno.serve(async (request) => {
           phone,
           dueDate,
           primary: true,
+          hasProviderProof: false,
         });
       }
 
