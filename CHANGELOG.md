@@ -1,3 +1,6 @@
+## 12.16
+- Desktop: poprawiono wygląd zwiniętych sekcji „Urządzenia” i „Zdjęcia montażu” — kompaktowe paski, mocniejsza obwódka, większy chevron w osobnym badge’u i cały pasek klikalny; bez dodatkowych napisów. Mobile bez zmian funkcjonalnych.
+
 ## 12.15
 - Desktop: zwężono kafelki danych klienta i dat, zastąpiono pełny napis osoby kończącej małym badge z inicjałami oraz dodano zwijanie Urządzeń i Zdjęć wyłącznie w zakończonych montażach. Pozostałe sekcje nie są zwijane. Mobile bez zmian funkcjonalnych.
 
