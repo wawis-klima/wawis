@@ -39,13 +39,15 @@ for (const file of ['src/components/sms/SmsPanel.jsx','src/mobile791/components/
 for (const file of ['src/components/sms/SmsUnsentCard.jsx','src/mobile791/components/sms/SmsUnsentCard.jsx']) {
   const card = read(file);
   assert.match(card, /Wyślij ponownie/);
-  assert.match(card, /Wyślij ponownie zaznaczone/);
+  assert.match(card, /Wyślij zaznaczone/);
 }
 
 for (const file of ['src/components/sms/SmsHistoryCard.jsx','src/mobile791/components/sms/SmsHistoryCard.jsx']) {
   const history = read(file);
-  assert.match(history, /oczekuje na wysłanie/);
+  assert.match(history, /getSmsStatusLabel\(log.status\)/);
+  assert.doesNotMatch(history, /oczekuje na wysłanie/i);
   assert.match(history, /Powód: \{log\.error_message\}/);
 }
 
 console.log('SMS v12.23 unsent manual retry smoke OK');
+require('node:child_process').execFileSync(process.execPath, [path.join(__dirname, 'test-sms-approval-routing.mjs')], { stdio: 'inherit' });

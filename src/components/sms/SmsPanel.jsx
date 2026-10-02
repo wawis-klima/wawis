@@ -8,7 +8,8 @@ import SmsClientDetailsCard from './SmsClientDetailsCard.jsx';
 import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
 import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary, groupSmsLogsByCustomerWindow } from '../../modules/sms.js';
 import { loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
-import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, retryNotSentSmsLogs, sendManualServiceSms } from '../../modules/sms-send.js';
+import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms } from '../../modules/sms-send.js';
+import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { IconClock, IconFileText, IconFilter, IconMapPin, IconMessageCircle, IconPhone, IconRefresh, IconUsers } from '../ui';
@@ -40,7 +41,7 @@ function getQueueStatusPresentation(row) {
     return { label: 'Wysłany', tone: 'sent' };
   }
   if (status === 'pending_approval') {
-    return { label: 'Oczekuje na wysłanie', tone: 'planned' };
+    return { label: getSmsStatusLabel(status), tone: 'planned' };
   }
   if (status === 'error') {
     return { label: 'Błąd', tone: 'warning' };
@@ -57,7 +58,7 @@ function getSentStatusPresentation(status) {
     return { label: 'Wysłany', tone: 'sent' };
   }
   if (normalized === 'pending_approval') {
-    return { label: 'Oczekuje na wysłanie', tone: 'planned' };
+    return { label: getSmsStatusLabel(normalized), tone: 'planned' };
   }
   if (normalized === 'error') {
     return { label: 'Błąd', tone: 'warning' };
@@ -189,6 +190,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const settingsOnlyTitle = requestedSection === 'sms_templates' ? 'Szablony SMS' : 'Ustawienia modułu SMS';
 
   const autoRefreshLockRef = useRef(false);
+  const smsSendLockRef = useRef(false);
   const lastAutoRefreshRef = useRef(0);
 
   async function reloadSmsData({ silent = false } = {}) {
@@ -329,6 +331,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleSendSelected() {
+    if (smsSendLockRef.current) return;
+    smsSendLockRef.current = true;
     setSendBusy(true);
     setInfoMessage('');
     setErrorMessage('');
@@ -359,13 +363,17 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setActiveSummaryView('sentThisMonth');
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await reloadSmsData({ silent: true });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
+      smsSendLockRef.current = false;
       setSendBusy(false);
     }
   }
 
   async function handleSendNow(job) {
+    if (smsSendLockRef.current) return;
+    smsSendLockRef.current = true;
     setSendBusy(true);
     setInfoMessage('');
     setErrorMessage('');
@@ -386,8 +394,10 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setActiveSummaryView('sentThisMonth');
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await reloadSmsData({ silent: true });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
+      smsSendLockRef.current = false;
       setSendBusy(false);
     }
   }
@@ -444,9 +454,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleRetryUnsentSelected() {
-    const selectedRows = unsentRows.filter((row) => selectedUnsentIds.includes(row.selectionKey));
+    if (smsSendLockRef.current) return;
+    const selectedRows = unsentRows.filter((row) => row.canSelect && selectedUnsentIds.includes(row.selectionKey));
     if (selectedRows.length === 0) return;
 
+    smsSendLockRef.current = true;
     setSendBusy(true);
     setInfoMessage('');
     setErrorMessage('');
@@ -457,41 +469,45 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       for (const row of selectedRows) {
         try {
-          await retryNotSentSmsLogs({ supabase, logIds: [row.retryLogId] });
-          sentCount += 1;
+          const result = await sendUnsentSmsLog({ supabase, log: row });
+          sentCount += result.sentCount;
         } catch (error) {
           failures.push(`${row.client}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 
+      setSelectedUnsentIds([]);
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
       if (sentCount > 0) {
-        setInfoMessage(`Wysłano ponownie ${sentCount} wiadomości SMS.`);
+        setInfoMessage(`Wysłano ${sentCount} wiadomości SMS.`);
       }
       if (failures.length > 0) {
         setErrorMessage(`Nie udało się wysłać ${failures.length} pozycji. ${failures.slice(0, 3).join(' | ')}`);
       }
 
-      setSelectedUnsentIds([]);
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } finally {
+      smsSendLockRef.current = false;
       setSendBusy(false);
     }
   }
 
   async function handleRetryUnsentNow(row) {
-    if (!row?.retryLogId) return;
+    if (smsSendLockRef.current || !row?.canSelect) return;
 
+    smsSendLockRef.current = true;
     setSendBusy(true);
     setInfoMessage('');
     setErrorMessage('');
 
     try {
-      await retryNotSentSmsLogs({ supabase, logIds: [row.retryLogId] });
-      setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany ponownie.`);
+      await sendUnsentSmsLog({ supabase, log: row });
+      setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany.`);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await reloadSmsData({ silent: true });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
+      smsSendLockRef.current = false;
       setSendBusy(false);
     }
   }
@@ -527,9 +543,9 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     return map;
   }, [targets]);
 
-  const unsentRows = useMemo(() => groupSmsLogsByCustomerWindow(unsentLogs).map((log) => {
+  const unsentRows = useMemo(() => buildUnsentSmsLogs({ unsentLogs, queue }).map((log) => {
     const identity = log.device_id ? `device:${log.device_id}` : (log.job_id ? `job:${log.job_id}` : '');
-    const target = targetByIdentity.get(identity) || null;
+    const target = log.linkedTarget || targetByIdentity.get(identity) || null;
     const groupedIds = Array.isArray(log.grouped_log_ids) ? log.grouped_log_ids.filter(Boolean) : [];
     const retryLogId = log.id || groupedIds[0] || null;
     const dueDate = log.reminder_due_date || '';
@@ -547,11 +563,14 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       service_due_date: dueDate,
       formattedDueDate: formatSmsDate(dueDate),
       cycleLabel: log.reminder_cycle ? `Cykl ${log.reminder_cycle}` : '',
-      reason: normalizeText(log.error_message) || 'Przekroczono okno wysyłki.',
+      statusLabel: getSmsStatusLabel(log.status),
+      reason: log.status === 'pending_approval'
+        ? 'Wymaga zatwierdzenia wysyłki.'
+        : normalizeText(log.error_message) || 'Przekroczono okno wysyłki.',
       linkedTarget: target,
       canSelect: Boolean(retryLogId && target),
     };
-  }), [unsentLogs, targetByIdentity]);
+  }), [unsentLogs, queue, targetByIdentity]);
 
   const queueRows = useMemo(() => queue.map((row) => {
     const presentation = getQueueStatusPresentation(row);
@@ -703,7 +722,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
             <div className="smsSummaryCardBody">
               <span>Niewysłane</span>
               <strong>{unsentRows.length}</strong>
-              <small>Przeterminowane przypomnienia dostępne do ręcznej ponownej wysyłki.</small>
+              <small>Przypomnienia oczekujące na zatwierdzenie lub ponowną wysyłkę.</small>
             </div>
           </button>
         </div>
@@ -816,7 +835,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
           <div className="smsDesktopMetricBody">
             <strong>Niewysłane</strong>
             <div className="smsDesktopMetricValue">{unsentRows.length}</div>
-            <small>Przypomnienia, których termin wysyłki minął — możesz wysłać je ręcznie</small>
+            <small>Przypomnienia oczekujące na zatwierdzenie lub ponowną wysyłkę</small>
           </div>
           <span className="smsDesktopMetricArrow">›</span>
         </button>

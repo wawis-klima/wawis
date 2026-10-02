@@ -1,10 +1,10 @@
 {
-  "version": "12.27",
-  "summary": "Naprawiony wybór aktualnego rekordu w kolejce SMS i poszerzona kolumna statusu.",
+  "version": "12.28",
+  "summary": "SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.",
   "changes": [
-    "Kolejka SMS zawsze preferuje rekord reminder_group_primary=true, więc stary techniczny duplikat nie blokuje prawidłowej wysyłki.",
-    "Generator kolejki również preferuje rekord z potwierdzoną wysyłką, następnie rekord główny, a dopiero potem najnowszy wpis.",
-    "Zabezpieczenia przed ponowną wysyłką SMS pozostały bez zmian.",
-    "Kolumna STATUS SMS na desktopie została poszerzona, aby etykieta Oczekuje na wysłanie mieściła się czytelnie."
+    "Niewysłane obejmują aktywne przypomnienia oczekujące na zatwierdzenie i przypomnienia not_sent.",
+    "Przycisk zatwierdza pending_approval lub ponawia not_sent po ręcznej akcji administratora.",
+    "Opis Oczekuje na zatwierdzenie jest spójny w kolejce i historii.",
+    "Odpowiedź z sentCount=0 nie pokazuje sukcesu; szybkie podwójne kliknięcie wysyła jedno żądanie."
   ]
 }

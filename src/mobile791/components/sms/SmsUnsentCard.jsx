@@ -52,7 +52,7 @@ export default function SmsUnsentCard({
           <span>Zaznaczono {selectedIds.length} niewysłanych wiadomości.</span>
           <div>
             <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy} onClick={onSendSelected}>
-              {sendBusy ? 'Wysyłanie…' : 'Wyślij ponownie zaznaczone'}
+              {sendBusy ? 'Wysyłanie…' : 'Wyślij zaznaczone'}
             </button>
           </div>
         </div>
@@ -108,13 +108,13 @@ export default function SmsUnsentCard({
                   </td>
                   <td>
                     <div className="smsDesktopModelCell">
-                      <strong>Niewysłano</strong>
+                      <strong>{row.statusLabel || 'Niewysłano'}</strong>
                       <span>{row.reason || 'Przekroczono okno wysyłki.'}</span>
                     </div>
                   </td>
                   <td>
                     <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || !row.canSelect} onClick={() => onSendNow?.(row)}>
-                      {sendBusy ? 'Wysyłanie…' : 'Wyślij ponownie'}
+                      {sendBusy ? 'Wysyłanie…' : row.status === 'pending_approval' ? 'Zatwierdź i wyślij' : 'Wyślij ponownie'}
                     </button>
                   </td>
                 </tr>
@@ -122,7 +122,7 @@ export default function SmsUnsentCard({
             })}
             {pageRows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="smsDesktopEmptyState">Brak niewysłanych przypomnień do ponowienia.</td>
+                <td colSpan={6} className="smsDesktopEmptyState">Brak niewysłanych przypomnień.</td>
               </tr>
             ) : null}
           </tbody>

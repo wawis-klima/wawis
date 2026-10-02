@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 12.27
+- 12.28
 
 Wersja 12.27 naprawia kolejkę SMS: przy technicznych duplikatach aplikacja zawsze wybiera aktualny rekord główny (`reminder_group_primary = true`), generator kolejki zachowuje tę samą zasadę, a kolumna statusu SMS na desktopie jest szersza. Zabezpieczenia przed ponowną wysyłką pozostają bez zmian.
 
@@ -865,7 +865,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.27` — kolejka SMS wybiera aktualny rekord główny przypomnienia, generator zachowuje tę samą regułę, a kolumna statusu SMS na desktopie jest poszerzona; zabezpieczenia przed duplikatem wysyłki pozostają aktywne.
+- wersja `12.28` — SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

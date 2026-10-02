@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.27",
+  "version": "12.28",
   "scope": "full",
-  "release_branch": "release/v12.27",
+  "release_branch": "release/v12.28",
   "baseline_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "result": "CHECKED",
-    "notes": "Baseline 24 h przed zmianą: 23 zdarzenia error i 59 warning w app_diagnostic_events. Diagnostyka informacyjna; zmiana 12.27 dotyczy wyboru rekordu głównego w kolejce SMS i układu tabeli desktopowej."
+    "checked": false,
+    "last_24h": false,
+    "result": "NOT_CHECKED",
+    "notes": "Poprawka przygotowana do przeglądu, bez operacji na produkcji."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.27.zip"
+    "file_name": "klima-app-v12.28.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.27",
+    "source_branch": "release/v12.28",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "EDGE FUNCTION — generate-service-sms-queue; bez migracji i bez zmiany zabezpieczeń wysyłki.",
-    "pr_check": "PENDING",
+    "supabase_changes": "NONE — istniejące ścieżki approval i retry_not_sent, bez zmian bazy i Edge Functions.",
+    "pr_check": "SUCCESS — WAWIS PR checks #632",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

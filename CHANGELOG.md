@@ -1,3 +1,8 @@
+## 12.28
+- SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.
+- Status pending_approval: Oczekuje na zatwierdzenie.
+- Regresje: routing approval/retry_not_sent, rekord główny grupy, brak automatycznej wysyłki przy błędzie, odpowiedź z sentCount=0 oraz podwójne kliknięcie.
+
 ## 12.27
 - Naprawiono przypadek, w którym dwa rekordy `pending_approval` tej samej grupy mogły spowodować wybranie starszego, niegłównego wpisu i komunikat o zastąpieniu pozycji.
 - Kolejka SMS preferuje `reminder_group_primary=true`; przy tym samym priorytecie wybiera właściwy najnowszy wpis.
