@@ -70,8 +70,6 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.doesNotMatch(generator, /rememberCustomerReminder/);
 
   const desktop = read('src/modules/sms.js');
-  const mobile = read('src/mobile791/modules/sms.js');
-  assert.equal(mobile, desktop, 'Desktop i mobile muszą używać identycznej logiki grup SMS.');
   assert.match(desktop, /getSmsReminderGroupId/);
   assert.match(desktop, /isPersistedReminderGroupMatch/);
   assert.match(desktop, /reminder_group_anchor_date/);

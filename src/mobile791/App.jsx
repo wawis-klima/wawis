@@ -6,7 +6,7 @@ import ConfirmActionModal from "./components/modals/ConfirmActionModal.jsx";
 
 import PreviewModal from "./components/modals/PreviewModal";
 import { createJobAccessors } from "./utils/jobAccessors.js";
-import { countSmsDueToday } from "./modules/sms.js";
+import { countSmsDueToday } from "../modules/sms.js";
 import { normalizeStatus, STATUSES } from "./utils/jobPermissions.js";
 import { supabase, supabaseUrl, LOGOUT_FLAG_KEY, isSupabaseConfigured } from "./lib/supabase.js";
 import { EMPTY_JOB_FORM, loadJobDetailsData, loadJobSummaryData } from "./modules/jobs.js";
@@ -42,7 +42,7 @@ const statusAmberImg = "/status-buttons/status-amber.png";
 const statusSlateImg = "/status-buttons/status-slate.png";
 const statusGreenImg = "/status-buttons/status-green.png";
 
-const SmsPanel = lazy(() => import("./components/sms/SmsPanel.jsx"));
+const SmsPanel = lazy(() => import("../components/sms/SmsPanel.jsx"));
 const ContractorsPanel = lazy(() => import("./components/contractors/ContractorsPanel.jsx"));
 const DevicesPanel = lazy(() => import("./components/devices/DevicesPanel.jsx"));
 const CalendarPanel = lazy(() => import("./components/calendar/CalendarPanel.jsx"));

@@ -121,7 +121,10 @@ assert.match(detailsSource, /nameplateCompletion\.isComplete/);
 assert.doesNotMatch(detailsSource, /Nie można zakończyć zlecenia/);
 assert.doesNotMatch(detailsSource, /Dodaj brakujące tabliczki/);
 assert.match(detailsSource, /mobileLabel">\{isAdmin \? 'Urządzenia' : 'Tabliczki'\}/);
-assert.match(detailsSource, /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete\}/);
+assert.match(
+  detailsSource,
+  /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolReadyForCompletion \|\| \(workerProtocolRequired && \(protocolLoading \|\| !protocolBackendAvailable\)\)\}/,
+);
 assert.match(detailsSource, /DeviceUnitDocumentationRow/);
 assert.match(detailsSource, /role="button"/);
 assert.match(detailsSource, /onClick=\{handleAction\}/);
@@ -157,7 +160,6 @@ assert.match(e2eSource, /Nie można zakończyć zlecenia/);
 assert.match(e2eSource, /toHaveCount\(0\)/);
 assert.match(e2eSource, /name: 'Tabliczki'/);
 assert.match(e2eSource, /toBeDisabled/);
-assert.match(e2eSource, /toBeEnabled/);
 
 (async () => {
   const devices = await import(pathToFileURL(path.join(root, 'src', 'mobile791', 'modules', 'job-devices.js')).href);

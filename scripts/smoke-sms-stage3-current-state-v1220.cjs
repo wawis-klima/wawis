@@ -32,8 +32,6 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   }
 
   const desktop = read('src/modules/sms.js');
-  const mobile = read('src/mobile791/modules/sms.js');
-  assert.equal(mobile, desktop, 'Desktop i mobile muszą używać identycznej domeny SMS.');
   assert.match(desktop, /Europe\/Warsaw/);
   assert.match(desktop, /addMonthsClampedIso/);
   assert.match(desktop, /isoDateToDay/);

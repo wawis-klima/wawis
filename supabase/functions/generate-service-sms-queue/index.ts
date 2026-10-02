@@ -7,7 +7,11 @@ const corsHeaders = {
 
 const ACTIVE_WINDOW_DAYS = 62;
 const DEFAULT_REMINDER_YEARS = 5;
+const DEVICE_PAGE_SIZE = 1000;
+const JOB_ID_BATCH_SIZE = 100;
 const SMS_LOG_PAGE_SIZE = 1000;
+const DEVICE_SELECT = "id, contractor_id, source_job_id, model, serial_number, installation_date, service_reminder_years, sms_consent, sms_reminder_enabled, contractor:contractors(company_name, phone)";
+const JOB_SELECT = "id, client, title, phone, sms_recipient_phone, sms_consent, sms_reminder_enabled, service_reminder_years";
 const SMS_LOG_SELECT = "id, job_id, device_id, client, phone, message, status, provider, provider_message_id, sent_at, delivered_at, error_message, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary, created_at";
 
 Deno.serve(async (request) => {
@@ -43,17 +47,13 @@ Deno.serve(async (request) => {
     const todayIso = getWarsawIsoDate(now);
     const todayDay = isoDateToDay(todayIso);
 
-    const { data: devices, error: devicesError } = await adminClient
-      .from("devices")
-      .select("id, contractor_id, source_job_id, model, serial_number, installation_date, service_reminder_years, sms_consent, sms_reminder_enabled, contractor:contractors(company_name, phone)")
-      .not("installation_date", "is", null);
-    if (devicesError) return json({ error: devicesError.message }, 400);
+    const devices = await fetchAllServiceReminderDevices(adminClient);
 
     const linkedJobIds = [...new Set(
       (devices || [])
         .map((device) => normalizeSourceJobId(device.source_job_id))
         .filter((value) => isUuid(value)),
-    )];
+    )].sort();
 
     const jobsById = new Map<string, {
       id: string;
@@ -66,14 +66,8 @@ Deno.serve(async (request) => {
       service_reminder_years: number | null;
     }>();
 
-    if (linkedJobIds.length) {
-      const { data: jobs, error: jobsError } = await adminClient
-        .from("jobs")
-        .select("id, client, title, phone, sms_recipient_phone, sms_consent, sms_reminder_enabled, service_reminder_years")
-        .in("id", linkedJobIds);
-      if (jobsError) return json({ error: jobsError.message }, 400);
-      for (const job of jobs || []) jobsById.set(String(job.id), job);
-    }
+    const linkedJobs = await fetchJobsByIds(adminClient, linkedJobIds);
+    for (const job of linkedJobs) jobsById.set(String(job.id), job);
 
     const logs = await fetchAllServiceReminderLogs(adminClient);
 
@@ -396,6 +390,55 @@ async function ensureServiceSmsGroup(
   }
 
   return groupId;
+}
+
+async function fetchAllServiceReminderDevices(
+  adminClient: ReturnType<typeof createClient>,
+) {
+  const devices: Array<Record<string, any>> = [];
+
+  for (let from = 0; ; from += DEVICE_PAGE_SIZE) {
+    const { data, error } = await adminClient
+      .from("devices")
+      .select(DEVICE_SELECT)
+      .not("installation_date", "is", null)
+      .order("id", { ascending: true })
+      .range(from, from + DEVICE_PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`Nie udało się pobrać urządzeń do kolejki SMS: ${error.message}`);
+    }
+
+    const page = data || [];
+    devices.push(...page);
+    if (page.length < DEVICE_PAGE_SIZE) break;
+  }
+
+  return devices;
+}
+
+async function fetchJobsByIds(
+  adminClient: ReturnType<typeof createClient>,
+  jobIds: string[],
+) {
+  const jobs: Array<Record<string, any>> = [];
+
+  for (let from = 0; from < jobIds.length; from += JOB_ID_BATCH_SIZE) {
+    const batch = jobIds.slice(from, from + JOB_ID_BATCH_SIZE);
+    const { data, error } = await adminClient
+      .from("jobs")
+      .select(JOB_SELECT)
+      .in("id", batch)
+      .order("id", { ascending: true });
+
+    if (error) {
+      throw new Error(`Nie udało się pobrać zleceń powiązanych z kolejką SMS: ${error.message}`);
+    }
+
+    jobs.push(...(data || []));
+  }
+
+  return jobs;
 }
 
 async function fetchAllServiceReminderLogs(
