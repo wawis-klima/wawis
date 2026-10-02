@@ -1,18 +1,19 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.15
+- 12.16
 
 ## Zakres
-- desktop: węższe kafelki e-mail, telefonu, daty montażu i zakończenia w sekcji „Klient”
-- osoba kończąca montaż jest pokazana jako mały badge z inicjałami obok daty i godziny
-- w montażach Zakończonych domyślnie zwinięte są wyłącznie sekcje „Urządzenia” i „Zdjęcia montażu”
-- pozostałe sekcje szczegółów pozostają rozwinięte
+- desktop: zwinięte „Urządzenia” i „Zdjęcia montażu” mają kompaktowe paski zamiast szerokich pustych kafli
+- większy i ciemniejszy chevron jest osadzony w osobnym, wyraźnym badge’u
+- cały pasek nagłówka pozostaje klikalny
+- brak widocznych napisów „rozwiń/zwiń”
+- zachowanie zwijania pozostaje tylko dla Urządzeń i Zdjęć w zakończonych montażach
 - mobile bez zmian funkcjonalnych
 - Supabase schema, RLS i Edge Functions bez zmian
 
 ## Kontrola regresji
-- smoke desktop job details rozszerzony o kompaktowe kafelki, badge zakończenia i zakres zwijania
+- smoke desktop job details rozszerzony o kompaktowe stany collapsed/expanded i czytelny chevron
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING

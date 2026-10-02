@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.15",
+  "version": "12.16",
   "scope": "desktop",
-  "release_branch": "release/v12.15",
+  "release_branch": "release/v12.16",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Zmiana 12.15 dotyczy wyłącznie układu prawego panelu szczegółów montażu na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
+    "notes": "Zmiana 12.16 dotyczy wyłącznie stylu i klas stanu zwijanych sekcji Urządzenia/Zdjęcia na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.15.zip"
+    "file_name": "klima-app-v12.16.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.15",
+    "source_branch": "release/v12.16",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: węższe kafelki e-mail/telefon i daty; mały badge z inicjałami przy Zakończono; Urządzenia i Zdjęcia zwinięte domyślnie tylko w zakończonych montażach; pozostałe sekcje zawsze rozwinięte."
+    "notes": "Po wdrożeniu sprawdzić zakończony montaż na desktopie: kompaktowe Urządzenia/Zdjęcia, wyraźny chevron w badge’u, cały pasek klikalny, brak dodatkowych napisów."
   },
   "archive": {
     "source_of_truth": "github-main",

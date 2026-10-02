@@ -1,4 +1,4 @@
-/* v12.15 — desktop: bardziej zwarty klient i zwijane ciężkie sekcje po zakończeniu. */
+/* v12.16 — desktop: zwarty klient oraz czytelne, kompaktowe sekcje zwijane po zakończeniu. */
 @media (min-width:701px){
   .jobDetailsPanelCard .jobDetailsClientMeta{
     display:flex !important;
@@ -77,42 +77,119 @@
   .jobDetailsPanelCard .desktopDetailsSectionToggle{
     appearance:none;
     -webkit-appearance:none;
-    border:0;
-    background:transparent;
-    padding:0;
-    color:#10203a;
+    display:grid;
+    grid-template-columns:20px minmax(0,1fr) 30px;
+    align-items:center;
+    gap:9px;
+    width:260px;
+    max-width:100%;
+    min-height:42px;
+    padding:6px 7px 6px 11px;
+    border:1px solid #cfd9e6;
+    border-radius:12px;
+    background:linear-gradient(180deg,#ffffff 0%,#f3f7fb 100%);
+    box-shadow:0 2px 7px rgba(15,23,42,.06);
+    color:#172235;
     font:inherit;
-    font-size:15px;
-    font-weight:800;
-    line-height:1.2;
+    font-size:14px;
+    font-weight:850;
+    line-height:1.15;
     cursor:pointer;
     text-align:left;
+    transition:border-color .15s ease,background .15s ease,box-shadow .15s ease,transform .15s ease;
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle:hover{
+    border-color:#aebdce;
+    background:linear-gradient(180deg,#ffffff 0%,#edf3f9 100%);
+    box-shadow:0 4px 10px rgba(15,23,42,.09);
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle:active{
+    transform:translateY(1px);
+    box-shadow:0 1px 4px rgba(15,23,42,.07);
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle:focus-visible{
+    outline:2px solid #8aa4c3;
+    outline-offset:2px;
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle .inlineIcon{
     width:18px;
     height:18px;
+    color:#44546a;
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle > span:not(.desktopDetailsSectionChevron){
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionChevron{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    width:20px;
-    height:20px;
-    margin-left:2px;
-    color:#64748b;
-    font-size:17px;
-    line-height:1;
+    width:28px;
+    height:28px;
+    margin-left:0;
+    border:1px solid #bcc9d8;
+    border-radius:9px;
+    background:#fff;
+    color:#26364a;
+    box-shadow:0 1px 4px rgba(15,23,42,.08);
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionChevron::before{
+    content:"";
+    display:block;
+    width:7px;
+    height:7px;
+    border-right:2px solid currentColor;
+    border-bottom:2px solid currentColor;
+    transform:rotate(45deg);
     transition:transform .16s ease;
   }
 
-  .jobDetailsPanelCard .desktopDetailsSectionToggle[aria-expanded="true"] .desktopDetailsSectionChevron{
-    transform:rotate(180deg);
+  .jobDetailsPanelCard .desktopDetailsSectionToggle[aria-expanded="true"] .desktopDetailsSectionChevron::before{
+    transform:rotate(-135deg);
   }
 
   .jobDetailsPanelCard .desktopCompletedCollapsibleSection{
     gap:10px;
+  }
+
+  .jobDetailsPanelCard .desktopCompletedCollapsibleSection.isCollapsed{
+    justify-self:start;
+    width:min(280px,100%);
+    padding:0 !important;
+    border:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    gap:0;
+  }
+
+  .jobDetailsPanelCard .desktopJobDevicesSection.isCollapsed{
+    width:min(248px,100%);
+  }
+
+  .jobDetailsPanelCard .desktopJobPhotosSection.isCollapsed{
+    width:min(278px,100%);
+  }
+
+  .jobDetailsPanelCard .desktopCompletedCollapsibleSection.isCollapsed .desktopJobDevicesHeadingRow{
+    width:100%;
+    margin-bottom:0;
+  }
+
+  .jobDetailsPanelCard .desktopCompletedCollapsibleSection.isCollapsed .desktopDetailsSectionToggle{
+    width:100%;
+  }
+
+  .jobDetailsPanelCard .desktopCompletedCollapsibleSection.isExpanded .desktopDetailsSectionToggle{
+    width:min(278px,100%);
   }
 
   .jobDetailsPanelCard .desktopCollapsibleSectionContent{
