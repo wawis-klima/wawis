@@ -593,7 +593,7 @@ export default function JobDetailsPanel({
             ) : (
               <h4 className="sectionHeadingWithIcon"><IconCheckCircle /><span>Urządzenia</span></h4>
             )}
-            {isAdmin && canEditSelectedJob ? (
+            {isAdmin && canEditSelectedJob && (!isCompletedJob || desktopDevicesExpanded) ? (
               <button
                 type="button"
                 className="btn secondary desktopJobDevicesManageBtn"
