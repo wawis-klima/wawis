@@ -278,12 +278,29 @@ function addCustomerLogToMap(map, log = {}) {
   map.set(key, rows);
 }
 
+function getSmsReminderGroupId(log = {}) {
+  return String(log?.reminder_group_id || '').trim();
+}
+
+function isPersistedReminderGroupMatch(log = {}, dueDate = '') {
+  const groupId = getSmsReminderGroupId(log);
+  if (!groupId) return false;
+  const dueTs = getSmsDueTime(dueDate);
+  const anchorTs = getSmsDueTime(log.reminder_group_anchor_date);
+  const windowEndTs = getSmsDueTime(log.reminder_group_window_end_date);
+  return Boolean(dueTs && anchorTs && windowEndTs && dueTs >= anchorTs && dueTs <= windowEndTs);
+}
+
 function pickCustomerWindowLog(map, customerKey, dueDate) {
   if (!customerKey || !dueDate) return null;
   const matches = (map.get(customerKey) || [])
-    .filter((log) => isSmsReminderWindowMatch(log.reminder_due_date, dueDate))
+    .filter((log) => (
+      isPersistedReminderGroupMatch(log, dueDate)
+      || (!getSmsReminderGroupId(log) && isSmsReminderWindowMatch(log.reminder_due_date, dueDate))
+    ))
     .sort((a, b) => (
-      getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
+      Number(!isPersistedReminderGroupMatch(a, dueDate)) - Number(!isPersistedReminderGroupMatch(b, dueDate))
+      || getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
       || Math.abs(getSmsDueTime(a.reminder_due_date) - getSmsDueTime(dueDate)) - Math.abs(getSmsDueTime(b.reminder_due_date) - getSmsDueTime(dueDate))
       || getSmsLogEventTime(b) - getSmsLogEventTime(a)
     ));
@@ -291,10 +308,41 @@ function pickCustomerWindowLog(map, customerKey, dueDate) {
 }
 
 export function groupSmsLogsByCustomerWindow(logs = []) {
-  const byCustomer = new Map();
+  const durableGroups = new Map();
+  const legacyByCustomer = new Map();
   const ungrouped = [];
 
+  const pushGroupedCluster = (grouped, clusterLogs, customerKey, reminderGroupId = '') => {
+    const ranked = [...clusterLogs].sort((a, b) => (
+      getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
+      || getSmsLogEventTime(b) - getSmsLogEventTime(a)
+    ));
+    const canonical = ranked[0] || clusterLogs[0];
+    const dueDates = [...new Set(clusterLogs.map((log) => String(log.reminder_due_date || '')).filter(Boolean))].sort();
+    const cycles = [...new Set(clusterLogs.map((log) => Number.parseInt(String(log.reminder_cycle ?? ''), 10)).filter((value) => Number.isFinite(value) && value > 0))];
+
+    grouped.push({
+      ...canonical,
+      sms_customer_group_key: reminderGroupId ? `group:${reminderGroupId}` : customerKey,
+      reminder_group_id: reminderGroupId || canonical?.reminder_group_id || null,
+      grouped_logs: clusterLogs,
+      grouped_log_ids: clusterLogs.map((log) => log?.id).filter(Boolean),
+      grouped_log_count: clusterLogs.length,
+      grouped_reminder_due_dates: dueDates,
+      reminder_due_date: dueDates[0] || canonical.reminder_due_date || null,
+      reminder_cycle: cycles.length === 1 ? cycles[0] : null,
+    });
+  };
+
   for (const log of logs || []) {
+    const reminderGroupId = getSmsReminderGroupId(log);
+    if (reminderGroupId) {
+      const rows = durableGroups.get(reminderGroupId) || [];
+      rows.push(log);
+      durableGroups.set(reminderGroupId, rows);
+      continue;
+    }
+
     const customerKey = getSmsCustomerBaseKey(log);
     const dueTs = getSmsDueTime(log?.reminder_due_date);
     if (!customerKey || !dueTs) {
@@ -307,14 +355,19 @@ export function groupSmsLogsByCustomerWindow(logs = []) {
       });
       continue;
     }
-    const rows = byCustomer.get(customerKey) || [];
+
+    const rows = legacyByCustomer.get(customerKey) || [];
     rows.push(log);
-    byCustomer.set(customerKey, rows);
+    legacyByCustomer.set(customerKey, rows);
   }
 
   const grouped = [...ungrouped];
 
-  for (const [customerKey, customerLogs] of byCustomer.entries()) {
+  for (const [reminderGroupId, groupLogs] of durableGroups.entries()) {
+    pushGroupedCluster(grouped, groupLogs, getSmsCustomerBaseKey(groupLogs[0] || {}), reminderGroupId);
+  }
+
+  for (const [customerKey, customerLogs] of legacyByCustomer.entries()) {
     const sorted = [...customerLogs].sort((a, b) => (
       getSmsDueTime(a.reminder_due_date) - getSmsDueTime(b.reminder_due_date)
       || getSmsLogEventTime(a) - getSmsLogEventTime(b)
@@ -332,24 +385,7 @@ export function groupSmsLogsByCustomerWindow(logs = []) {
     }
 
     for (const cluster of clusters) {
-      const ranked = [...cluster.logs].sort((a, b) => (
-        getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
-        || getSmsLogEventTime(b) - getSmsLogEventTime(a)
-      ));
-      const canonical = ranked[0] || cluster.logs[0];
-      const dueDates = [...new Set(cluster.logs.map((log) => String(log.reminder_due_date || '')).filter(Boolean))].sort();
-      const cycles = [...new Set(cluster.logs.map((log) => Number.parseInt(String(log.reminder_cycle ?? ''), 10)).filter((value) => Number.isFinite(value) && value > 0))];
-
-      grouped.push({
-        ...canonical,
-        sms_customer_group_key: customerKey,
-        grouped_logs: cluster.logs,
-        grouped_log_ids: cluster.logs.map((log) => log?.id).filter(Boolean),
-        grouped_log_count: cluster.logs.length,
-        grouped_reminder_due_dates: dueDates,
-        reminder_due_date: dueDates[0] || canonical.reminder_due_date || null,
-        reminder_cycle: cycles.length === 1 ? cycles[0] : null,
-      });
+      pushGroupedCluster(grouped, cluster.logs, customerKey);
     }
   }
 
@@ -639,7 +675,10 @@ export function deriveSmsQueue(records = [], logs = []) {
       const rowStatus = normalizeLogStatus(queueLog?.status || latestLog?.status || 'ready') || 'ready';
       const rowTimestamp = latestLog?.delivered_at || latestLog?.sent_at || latestLog?.approved_at || latestLog?.created_at || null;
       const groupKey = record.source_job_id || record.job_id || (record.target_type === 'job' ? record.id : '') || record.id;
-      const smsCustomerGroupKey = customerKey ? `${customerKey}:active` : (getSmsCustomerCycleKey(record, activeCycle.cycle, activeCycle.dueDate) || `${record.target_type}:${groupKey}:${activeCycle.cycle}`);
+      const reminderGroupId = getSmsReminderGroupId(queueLog) || getSmsReminderGroupId(finalizedLog) || getSmsReminderGroupId(latestLog);
+      const smsCustomerGroupKey = reminderGroupId
+        ? `group:${reminderGroupId}`
+        : (customerKey || getSmsCustomerCycleKey(record, activeCycle.cycle, activeCycle.dueDate) || `${record.target_type}:${groupKey}:${activeCycle.cycle}`);
 
       return {
         ...record,
@@ -660,16 +699,58 @@ export function deriveSmsQueue(records = [], logs = []) {
     })
     .filter(Boolean);
 
-  const groupedByCustomer = new Map();
+  const groupedRowSets = [];
+  const durableGroups = new Map();
+  const fallbackByCustomer = new Map();
+
   for (const row of candidateRows) {
-    const key = row.sms_customer_group_key || row.sms_group_key;
-    const group = groupedByCustomer.get(key) || [];
+    const reminderGroupId = getSmsReminderGroupId(row.queueLog)
+      || getSmsReminderGroupId(row.finalizedLog)
+      || getSmsReminderGroupId(row.latestLog);
+
+    if (reminderGroupId) {
+      const key = `group:${reminderGroupId}`;
+      const group = durableGroups.get(key) || [];
+      group.push(row);
+      durableGroups.set(key, group);
+      continue;
+    }
+
+    const customerKey = getSmsCustomerBaseKey(row);
+    if (!customerKey) {
+      groupedRowSets.push([row]);
+      continue;
+    }
+
+    const group = fallbackByCustomer.get(customerKey) || [];
     group.push(row);
-    groupedByCustomer.set(key, group);
+    fallbackByCustomer.set(customerKey, group);
+  }
+
+  groupedRowSets.push(...durableGroups.values());
+
+  for (const customerRows of fallbackByCustomer.values()) {
+    const sorted = [...customerRows].sort((a, b) => (
+      getSmsDueTime(a.reminder_due_date || a.service_due_date) - getSmsDueTime(b.reminder_due_date || b.service_due_date)
+      || String(a.id || '').localeCompare(String(b.id || ''))
+    ));
+
+    const clusters = [];
+    for (const row of sorted) {
+      const dueTs = getSmsDueTime(row.reminder_due_date || row.service_due_date);
+      const current = clusters[clusters.length - 1];
+      if (!current || !dueTs || dueTs - current.anchorDueTs > (ACTIVE_WINDOW_DAYS * DAY_MS)) {
+        clusters.push({ anchorDueTs: dueTs, rows: [row] });
+      } else {
+        current.rows.push(row);
+      }
+    }
+
+    groupedRowSets.push(...clusters.map((cluster) => cluster.rows));
   }
 
   const rows = [];
-  for (const groupRows of groupedByCustomer.values()) {
+  for (const groupRows of groupedRowSets) {
     if (groupRows.some((row) => row.finalizedLog)) continue;
     const merged = mergeSmsCustomerRows(groupRows);
     if (!merged) continue;
