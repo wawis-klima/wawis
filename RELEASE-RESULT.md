@@ -22,10 +22,16 @@
 - Performance Advisor: CHECKED
 
 ## Kontrola regresji
-- `test:smoke:sms-stage5`: PENDING CI
-- `test:smoke:sms-unsent-retry`: PENDING CI
-- Playwright E2E: PENDING CI
-- produkcyjny build: PENDING CI
-- Edge sender: PENDING
+- `test:smoke:sms-stage5`: PASS
+- `test:smoke:sms-unsent-retry`: PASS
+- Playwright E2E: PASS (run #615)
+- produkcyjny build: PASS (run #615)
+- Edge sender: DEPLOYED — `send-service-sms` v33 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
+
+## Stan produkcyjny po wdrożeniu sendera
+- `send-service-sms` v33 ACTIVE, `verify_jwt=false`
+- live source zawiera tryb `retry_not_sent` i RPC `claim_service_sms_not_sent_retry`
+- snapshot: queue=100, sent-this-month=17, unsent=878, history=300
+- generator pozostaje v24 ACTIVE; webhook pozostaje v10 ACTIVE
