@@ -12,11 +12,11 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.27.zip"
+    "file_name": "klima-app-v12.28.zip"
   },
   "main_protection": {
     "source_branch": "release/v12.28",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -33,7 +33,7 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_changes": "NONE — istniejące ścieżki approval i retry_not_sent, bez zmian bazy i Edge Functions.",
-    "pr_check": "PENDING",
-    "vercel_deployment": "NOT_DEPLOYED — wersja przygotowana do przeglądu"
+    "pr_check": "SUCCESS — WAWIS PR checks #632",
+    "vercel_deployment": "PENDING — po merge do main"
   }
 }
