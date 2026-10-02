@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Po zielonym CI wdrożyć send-service-sms, generate-service-sms-queue i smsapi-delivery-webhook; potwierdzić staging/record acceptance, idx/check_idx, callback recovery oraz brak duplikatów primary/pending."
+    "checked": true,
+    "result": "PASS",
+    "notes": "send-service-sms v32 ACTIVE: staging claima, provider outcome classification, idx/check_idx i atomowy record_service_sms_acceptance. generate-service-sms-queue v22 ACTIVE: retry tylko dla error bez provider_message_id/sent_at/delivered_at. smsapi-delivery-webhook v10 ACTIVE: idx -> claim_id i apply_sms_delivery_atomic_v2 recovery. Produkcyjne źródła odczytane i potwierdzone."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -40,7 +40,7 @@
     "rls_role_matrix": "VERIFIED — wszystkie nowe RPC Etapu 4: anon=false, authenticated=false, service_role=true.",
     "security_advisor": "CHECKED — brak nowej ekspozycji RPC Etapu 4; pozostałe ostrzeżenia dotyczą wcześniejszych funkcji/tabel.",
     "performance_advisor": "CHECKED — brak nowego problemu wykonawczego; nowy indeks claima jest jeszcze oznaczony jako unused przed przełączeniem Edge.",
-    "edge_functions": "PENDING — wdrożenie po pierwszym zielonym CI.",
+    "edge_functions": "DEPLOYED — send-service-sms v32 ACTIVE, generate-service-sms-queue v22 ACTIVE, smsapi-delivery-webhook v10 ACTIVE.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
