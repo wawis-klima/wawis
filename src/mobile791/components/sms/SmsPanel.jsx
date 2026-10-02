@@ -730,7 +730,6 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
           <div className="smsDesktopInfoStrip">
             <span className="smsDesktopInfoIcon">i</span>
-            <span>SMS-y są wysyłane automatycznie na 7 dni przed terminem serwisu.</span>
             <button type="button" className="smsDesktopInlineLink" onClick={() => setShowSettings((prev) => !prev)}>Zarządzaj szablonami SMS</button>
             <button type="button" className="smsDesktopInlineLink" onClick={() => setShowHistory((prev) => !prev)}>Pokaż pełną historię</button>
           </div>
