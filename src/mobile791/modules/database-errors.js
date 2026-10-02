@@ -42,6 +42,11 @@ export function isJobDevicesMissingError(error) {
   return /job_devices_missing/i.test(message);
 }
 
+export function isJobProtocolRequiredError(error) {
+  const message = collectErrorText(error);
+  return /job_protocol_required/i.test(message);
+}
+
 export function isSourceJobIdTypeMismatchError(error) {
   const message = collectErrorText(error).toLowerCase();
   return Boolean(message) && (
@@ -60,6 +65,10 @@ export function normalizeDatabaseErrorMessage(error, fallbackMessage = 'Wystąpi
 
   if (isJobDevicesMissingError(error)) {
     return 'Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).';
+  }
+
+  if (isJobProtocolRequiredError(error)) {
+    return 'Nie można zakończyć zlecenia. Najpierw wypełnij, podpisz i zapisz protokół klienta.';
   }
 
   if (isTransientSupabaseError(error)) {
