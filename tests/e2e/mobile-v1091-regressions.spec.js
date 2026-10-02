@@ -73,7 +73,9 @@ test.describe('@mobile 10.91 regressions', () => {
     expect(mobileDetailsSource).toContain('Cofnij ręczne');
     expect(mobileDetailsSource).toContain('const effectiveNameplateComplete = nameplateCompletion.isComplete;');
     expect(mobileDetailsSource).toContain('Najpierw dodaj urządzenie (JW/JZ), aby zakończyć zlecenie.');
-    expect(mobileDetailsSource).toContain('disabled={busy || showDetailsLoading || !effectiveNameplateComplete}');
+    expect(mobileDetailsSource).toContain('const workerProtocolRequired = !isAdmin && canFinishJob;');
+    expect(mobileDetailsSource).toContain('const protocolReadyForCompletion = !workerProtocolRequired || Boolean(protocolRecord);');
+    expect(mobileDetailsSource).toContain('disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolReadyForCompletion || (workerProtocolRequired && (protocolLoading || !protocolBackendAvailable))}');
 
     expect(backendGuardSource).toContain('public.current_user_is_admin()');
     expect(backendGuardSource).toContain('v_admin_bypass');

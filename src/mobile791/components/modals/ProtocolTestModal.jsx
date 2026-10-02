@@ -204,6 +204,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [actionBusy, setActionBusy] = useState("");
   const [message, setMessage] = useState("");
   const protocolJob = resolvedJob || job;
+  const protocolIsCompleted = String(protocolJob?.status || "").trim() === "Zakończone";
   const installersConfirmed = Array.isArray(protocolJob?.installer_ids);
   const protocolJobForDocument = useMemo(() => {
     if (installersConfirmed) return protocolJob;
@@ -539,7 +540,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       setSignatureDataUrl("");
       setDraftHasSignature(false);
       setActionMenuOpen(false);
-      setMessage(wasReplacement ? "Protokół został zaktualizowany i podpisany ponownie." : "Protokół został zapisany przy zakończonym zleceniu.");
+      setMessage(
+        wasReplacement
+          ? "Protokół został zaktualizowany i podpisany ponownie."
+          : protocolIsCompleted
+            ? "Protokół został zapisany przy zakończonym zleceniu."
+            : "Protokół został zapisany. Możesz teraz zakończyć zlecenie po spełnieniu pozostałych warunków."
+      );
       onSaved?.(record, paymentPatch);
     } catch (error) {
       const rawErrorText = String(error?.message || error || "");
@@ -618,7 +625,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             <div className={`protocolTestNotice${savedRecord && !editing ? " saved" : ""}`} role="note">
               {savedRecord && !editing
                 ? `Protokół podpisany i zapisany${formatStoredProtocolDate(savedRecord.signed_at || savedRecord.created_at) ? ` · ${formatStoredProtocolDate(savedRecord.signed_at || savedRecord.created_at)}` : ""}.`
-                : "Protokół jest opcjonalny i nie zmienia statusu zakończonego zlecenia."}
+                : protocolIsCompleted
+                  ? "Protokół można uzupełnić lub podpisać ponownie."
+                  : "Wypełnij, podpisz i zapisz protokół przed zakończeniem montażu."}
             </div>
 
             <section className="protocolTestSection">

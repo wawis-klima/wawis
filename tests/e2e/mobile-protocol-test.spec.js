@@ -69,11 +69,14 @@ async function seedProtocolRecordForPostSaveFlow(page) {
   }, { storeKey: MOCK_STORE_KEY });
 }
 
-test.describe('@mobile protokół po zakończeniu zlecenia', () => {
-  test('protokół nie jest dostępny przed zakończeniem zlecenia', async ({ page }) => {
+test.describe('@mobile protokół i zakończenie zlecenia', () => {
+  test('pracownik nie może zakończyć bez zapisanego protokołu', async ({ page }) => {
     await openJob(page, WORKER, 'W trakcie', 'Klient Testowy B');
-    await expect(page.locator('.protocolTestButton')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeVisible();
+    await expect(page.locator('.protocolTestButton')).toBeVisible();
+    const finishButton = page.getByRole('button', { name: 'Zakończ', exact: true });
+    await expect(finishButton).toBeVisible();
+    await expect(finishButton).toBeDisabled();
+    await expect(page.getByText(/Najpierw wypełnij, podpisz i zapisz protokół klienta/)).toBeVisible();
   });
 
   test('pracownik tworzy protokół, wysyła go z biuro@wawis.pl i pobiera PDF', async ({ page }) => {
@@ -84,7 +87,7 @@ test.describe('@mobile protokół po zakończeniu zlecenia', () => {
     await page.locator('.protocolTestButton').click();
     const protocolModal = page.locator('.mobileProtocolWizard');
     await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
-    await expect(page.getByText(/Protokół jest opcjonalny/)).toBeVisible();
+    await expect(page.getByText(/Protokół można uzupełnić lub podpisać ponownie/)).toBeVisible();
 
     const protocolScrollState = await page.locator('.mobileProtocolWizardBody').evaluate((body) => {
       const paymentSection = body.querySelector('.protocolPaymentSection');
