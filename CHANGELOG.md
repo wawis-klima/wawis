@@ -1,3 +1,13 @@
+## 12.19
+SMS: Etap 2 trwałych grup klienta.
+- dodano `private.sms_reminder_groups` z trwałym `reminder_group_id`, anchor date i końcem 62-dniowego okna;
+- historyczne logi zostały przypisane do grup metodą stałego anchoru, bez łańcuchowego łączenia;
+- każdy trwały group ma jeden kanoniczny `sms_log` oznaczony `reminder_group_primary`;
+- generator korzysta z `ensure_service_sms_group` i unique primary zamiast pairwise dedup;
+- wysyłka używa `claim_service_sms_group`, więc dwa montaże/urządzenia tego samego klienta nie uzyskają dwóch niezależnych claimów;
+- desktop i mobile rozpoznają zapisane granice grup i zachowują fallback anchored grouping dla starych danych;
+- dodano regresję 1/60/120 dni oraz smoke `sms-durable-groups`.
+
 ## 12.18
 SMS: Etap 1 ochrony historii.
 
