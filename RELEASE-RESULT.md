@@ -1,27 +1,29 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.24
+- 12.25
 
 ## Zakres
-- listy montaży w statusie „Zakończone” pokazują datę zakończenia zamiast daty montażu;
-- desktop zmienia nagłówek kolumny na „Data zakończenia”;
-- mobile pokazuje `completed_at` na karcie zakończonego montażu;
-- sortowanie daty dla zakończonych używa `completed_at`;
-- pozostałe statusy nadal używają `installation_date`;
-- brak `completed_at` w starym zakończonym zleceniu daje „Brak daty”, bez fallbacku do daty montażu.
+- naprawa bardzo wolnego ładowania desktopowego modułu SMS i timeoutów przy wejściu;
+- brak równoległego generatora kolejki przy pierwszym odczycie;
+- snapshot SMS jest wykonywany przed dociągnięciem pełnej bazy urządzeń;
+- deduplikacja równoległych identycznych odczytów SMS i urządzeń;
+- brak zbędnego pobierania katalogu kontrahentów i metryk Centrum 360 podczas pracy w SMS;
+- czytelny komunikat błędu zamiast `[object Object]`;
+- trzy kafle: „Klienci na liście”, „Wysłane w tym miesiącu”, „Niewysłane” w jednym rzędzie na desktopie;
+- mobile791 bez zmian funkcjonalnych.
 
 ## Baza / backend
 - brak migracji;
 - brak zmian RLS, Storage, Edge Functions i danych produkcyjnych.
 
 ## Diagnostyka startowa
-- CHECKED — 24 h przed zmianą;
-- 16 zdarzeń error i 51 warning w `app_diagnostic_events`;
-- baseline jest informacyjny i nie blokuje wydania.
+- CHECKED;
+- w logach potwierdzono timeout `admin_get_sms_module_snapshot` po ok. 45–58 s oraz równoległe wolne/503 odczyty wywołane z jednej sesji desktopowej;
+- poprawka ogranicza równoległość i zbędne zapytania po stronie klienta.
 
 ## Kontrola regresji
-- `test:smoke:selection`: PENDING CI
+- `scripts/smoke-sms-desktop-load-v1225.cjs`: PENDING CI
 - pozostałe testy dobrane przez `release-impact`: PENDING CI
 - Vercel: PENDING
 - merge: PENDING
