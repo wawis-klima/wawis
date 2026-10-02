@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.17",
+  "version": "12.18",
   "scope": "full",
-  "release_branch": "release/v12.17",
+  "release_branch": "release/v12.18",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Sprawdzono produkcyjne dane sms_log i urządzenia dla zgłoszonych klientów. Przyczyna duplikacji: grupowanie po dokładnym reminder_due_date/reminder_cycle oraz brak produkcyjnego RPC cleanup; produkcyjna Edge Function generate-service-sms-queue była starsza od repo."
+    "notes": "Audyt i odczyt produkcji potwierdziły trzy ryzyka Etapu 1: fizyczny cleanup sms_log, możliwość nadpisania wysłanego/doręczonego wpisu na deleted oraz ON DELETE CASCADE dla powiązań historii."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.17.zip"
+    "file_name": "klima-app-v12.18.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.17",
+    "source_branch": "release/v12.18",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge/Vercel sprawdzić SMS: jeden aktywny wpis na klienta w 62-dniowym oknie, brak ponownego pojawiania się po wysłaniu, historia pogrupowana. Produkcyjne migracje i Edge Function v17 są już wdrożone."
+    "notes": "Po merge/Vercel potwierdzić wersję 12.18, aktywne Edge Functions oraz zachowanie historii: brak fizycznego cleanupu, brak anulowania po claimie/wysyłce i retencja logu po usunięciu źródła."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — sms_customer_window_dedup_v1217 oraz sms_cleanup_rpc_acl_v1217 zakończone sukcesem na produkcji.",
-    "rls_role_matrix": "Bez zmian RLS. admin_cleanup_sms_duplicate_logs pozostaje SECURITY DEFINER z kontrolą service_role/current_user_is_admin; anon EXECUTE został odebrany, authenticated/service_role zachowane celowo.",
-    "performance_advisor": "CHECKED — tylko istniejące wcześniej informacje o nieindeksowanych FK/nieużywanych indeksach; ta zmiana nie dodaje tabel ani indeksów.",
-    "security_advisor": "CHECKED — po poprawce ACL admin_cleanup_sms_duplicate_logs nie jest już wykonywalny przez anon. Pozostałe ostrzeżenia dotyczą istniejących wcześniej funkcji/tabel i nie są częścią zmiany 12.17.",
-    "trigger_grants": "CHECKED — cleanup RPC: public/anon revoke; authenticated i service_role execute.",
-    "edge_functions": "DEPLOYED — generate-service-sms-queue v17 ACTIVE z grupowaniem klienta w 62-dniowym oknie.",
+    "supabase_migration_applied": "APPLIED — 20261002062031_sms_history_safety_stage1_v1218 zakończona sukcesem na produkcji.",
+    "rls_role_matrix": "Bez zmian RLS. cancel_service_sms_log jest dostępne wyłącznie dla service_role; trigger ochronny działa w bazie. admin_cleanup_sms_duplicate_logs pozostaje kompatybilnym no-op z guardem administrator/service_role.",
+    "performance_advisor": "CHECKED — brak nowych ostrzeżeń związanych z Etapem 1; widoczne informacje są wcześniejsze.",
+    "security_advisor": "CHECKED — brak nowej ekspozycji anon. Ostrzeżenie dla kompatybilnego admin_cleanup_sms_duplicate_logs dotyczy authenticated, ale funkcja jest no-op i nadal sprawdza administratora.",
+    "trigger_grants": "CHECKED — trg_protect_sms_log_history aktywny; cancel_service_sms_log: public/anon/authenticated REVOKE, service_role EXECUTE.",
+    "edge_functions": "PENDING — send-service-sms i generate-service-sms-queue zostaną wdrożone po zielonym CI.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
