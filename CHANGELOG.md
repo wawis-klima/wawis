@@ -1,3 +1,6 @@
+## 12.14
+- Desktop: scalono adres, kontakt i terminy w sekcji „Klient”; usunięto osobną kartę „Adres i termin”, a protokół przeniesiono bezpośrednio pod dane klienta. Mobile bez zmian funkcjonalnych.
+
 ## 12.13
 - Desktop: pasek „Faktura VAT / Płatność / Wystaw fakturę” jest widoczny wyłącznie dla montaży ze statusem `Zakończone`.
 - Statusy `Nowe`, `W trakcie` i `Niezrealizowane` nie pokazują już statusu faktury, metody płatności ani przycisku Fakturowni w szczegółach.
