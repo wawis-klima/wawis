@@ -1,3 +1,14 @@
+## 12.22
+SMS: Etap 5 — historia, liczniki i kompatybilność legacy.
+- naprawiono pusty licznik „Wysłane w tym miesiącu”: snapshot pobiera wszystkie skuteczne SMS-y z bieżącego miesiąca niezależnie od limitu historii;
+- kolejka korzysta z osobnego zestawu logów aktywnego 62-dniowego okna, więc nie zależy od ostatnich 300 wpisów;
+- historia pozostaje ograniczona do 300 najnowszych wpisów i nie wymaga pobierania całych 1336+ rekordów;
+- devices ma jawne sms_consent=true i sms_reminder_enabled=true dla urządzeń legacy;
+- stare urządzenie bez source_job_id, ale z kontrahentem, poprawnym numerem i włączonymi flagami SMS może ponownie wejść do kolejki;
+- nieprawidłowe lub częściowe source_job_id nadal są blokowane przez walidację Etapu 3;
+- generator i claim czytają aktualny numer kontrahenta dla legacy tuż przed wysyłką;
+- kontrola produkcyjna wykazała dokładnie 9 klientów do obsługi po naprawie: 6 istniejących pending + 3 nowe, przy 94 aktywnych urządzeniach już obsłużonych skutecznym SMS-em.
+
 ## 12.21
 SMS: Etap 4 — niezawodna wysyłka, API i webhook.
 - claim przechowuje kontekst potrzebny do odzyskania wysyłki: grupę, log, kartę/urządzenie, numer, cykl, termin, klienta, treść i aktora;
