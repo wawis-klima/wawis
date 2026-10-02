@@ -9,7 +9,7 @@ const migration = read('supabase/migrations/20261002095320_sms_unsent_manual_ret
 assert.match(migration, /claim_service_sms_not_sent_retry/);
 assert.match(migration, /retry_of_log_id/);
 assert.match(migration, /unsent_logs/);
-assert.match(migration, /reminder_group_primary,false/);
+assert.match(migration, /c\.reminder_group_id,false,c\.retry_of_log_id/);
 assert.match(migration, /grant execute on function public\.claim_service_sms_not_sent_retry\(uuid\) to service_role/i);
 
 const delivery = read('supabase/functions/send-service-sms/delivery.ts');
