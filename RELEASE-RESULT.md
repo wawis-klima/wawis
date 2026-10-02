@@ -18,8 +18,8 @@
 - trigger `trg_protect_sms_log_history`: VERIFIED — BEFORE UPDATE OR DELETE
 - Security Advisor: CHECKED
 - Performance Advisor: CHECKED
-- smoke `sms-log-cleanup`: PENDING w WAWIS PR checks
-- WAWIS PR checks / targeted-checks: PENDING po korekcie metadanych wydania
-- Edge Functions: PENDING
+- smoke `sms-log-cleanup`: PASS w WAWIS PR checks
+- WAWIS PR checks / targeted-checks: PASS (release gate, regresja, Playwright E2E, produkcyjny build)
+- Edge Functions: DEPLOYED — `send-service-sms` v29 ACTIVE, `generate-service-sms-queue` v19 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
