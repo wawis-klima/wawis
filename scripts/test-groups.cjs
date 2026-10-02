@@ -149,6 +149,7 @@ const GROUPS = {
     'npm run test:smoke:sms-job-grouping',
     'npm run test:smoke:sms-durable-groups',
     'npm run test:smoke:sms-stage3',
+    'npm run test:smoke:sms-stage4',
     'npm run test:smoke:sms-log-cleanup',
     'npm run test:smoke:center360',
     'npm run test:smoke:center360-personalization',
