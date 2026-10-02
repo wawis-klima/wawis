@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.17
+- 12.18
+
+Wersja 12.18 zabezpiecza historię SMS przed fizycznym kasowaniem i przypadkowym nadpisaniem. Automatyczny cleanup nie usuwa już wpisów, odczyt modułu i generator nie uruchamiają cleanupu jako efektu ubocznego, anulowanie oczekującej pozycji odbywa się atomowo przez serwerowe RPC, a relacje `sms_log` do montaży i urządzeń używają `ON DELETE SET NULL`, dzięki czemu historia pozostaje po usunięciu źródła.
 
 Wersja 12.17 usuwa powtarzające się SMS-y dla jednego klienta. Aktywne przypomnienia kilku urządzeń są łączone na podstawie numeru telefonu w jedno 62-dniowe okno serwisowe, nawet gdy urządzenia mają różne daty montażu i różne numery cyklu. Jedna skuteczna wysyłka blokuje pozostałe bliskie przypomnienia, a historia i widok „Wysłane w tym miesiącu” pokazują jeden wpis grupowy. Produkcyjna funkcja `generate-service-sms-queue` jest aktualizowana razem z migracją cleanupu, która nie usuwa faktycznej historii skutecznych wysyłek.
 
