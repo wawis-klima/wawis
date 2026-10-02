@@ -29,6 +29,13 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.match(desktopFetch, /historyLogs/);
   assert.match(desktopFetch, /queue_logs/);
 
+  const desktopPanel = read('src/components/devices/DevicesPanel.jsx');
+  const mobilePanel = read('src/mobile791/components/devices/DevicesPanel.jsx');
+  assert.match(desktopPanel, /startsWith\('devices-rpc'\)/);
+  assert.match(mobilePanel, /startsWith\('devices-rpc'\)/);
+  assert.doesNotMatch(desktopPanel, /sourceMode !== 'devices-rpc'/);
+  assert.doesNotMatch(mobilePanel, /sourceMode !== 'devices-rpc'/);
+
   const desktopDevices = read('src/modules/devices-fetch.js');
   const mobileDevices = read('src/mobile791/modules/devices-fetch.js');
   assert.equal(mobileDevices, desktopDevices, 'Desktop i mobile muszą czytać identyczny katalog urządzeń.');
