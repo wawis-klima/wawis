@@ -17,25 +17,31 @@ export function DesktopJobsTableColGroup() {
   );
 }
 
-export default function DesktopJobsTableHeader({ toggleSort, getSortLabel }) {
+export default function DesktopJobsTableHeader({ toggleSort, getSortLabel, desktopStatusFilter }) {
   return (
     <thead>
       <tr>
-        {DESKTOP_JOBS_TABLE_COLUMNS.map((column) => (
-          <th key={column.key} className={column.headerClassName} data-column={column.key}>
-            {column.sortable ? (
-              <button
-                type="button"
-                className="sortBtn"
-                onClick={() => toggleSort(column.sortKey)}
-              >
-                {getSortLabel(column.sortKey, column.label)}
-              </button>
-            ) : (
-              column.label
-            )}
-          </th>
-        ))}
+        {DESKTOP_JOBS_TABLE_COLUMNS.map((column) => {
+          const label = column.key === "date" && desktopStatusFilter === "Zakończone"
+            ? (column.completedLabel || column.label)
+            : column.label;
+
+          return (
+            <th key={column.key} className={column.headerClassName} data-column={column.key}>
+              {column.sortable ? (
+                <button
+                  type="button"
+                  className="sortBtn"
+                  onClick={() => toggleSort(column.sortKey)}
+                >
+                  {getSortLabel(column.sortKey, label)}
+                </button>
+              ) : (
+                label
+              )}
+            </th>
+          );
+        })}
       </tr>
     </thead>
   );
