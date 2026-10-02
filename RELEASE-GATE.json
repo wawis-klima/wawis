@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.22",
+  "version": "12.23",
   "scope": "full",
-  "release_branch": "release/v12.22",
+  "release_branch": "release/v12.23",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Regresja nie była utratą danych. sms_log nadal zawiera 1336 wpisów. Ostatnie 300 snapshotu składało się z not_sent/pending, więc skuteczne SMS-y z bieżącego miesiąca wypadały z widoku. Dodatkowo legacy devices bez source_job_id zostały wykluczone przez ostrzejszą walidację Etapu 3."
+    "notes": "878 wpisów not_sent jest poza 62-dniowym oknem; wszystkie 878 mają nadal żywe device_id. Brak dowodu późniejszej skutecznej wysyłki w tej samej grupie."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.22.zip"
+    "file_name": "klima-app-v12.23.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.22",
+    "source_branch": "release/v12.23",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": true,
     "result": "PASS",
-    "notes": "Pierwszy pełny CI po poprawce sourceMode/fixture: PASS (run #605: regresja, Playwright E2E, build). generate-service-sms-queue v24 ACTIVE i live source potwierdza legacy consent/contractor phone/jobId null. Generator nie został sztucznie wywołany administracyjnie; przed odświeżeniem modułu pozostaje 6 istniejących pending. Model danych potwierdza dokładnie 3 brakujące unikalne numery, więc pierwsze odświeżenie modułu 12.22 da łącznie 9 klientów."
+    "notes": "CI run #615 PASS: release gate, pełna regresja, Playwright E2E i build. send-service-sms v33 ACTIVE; live source zawiera retry_not_sent, handleRetryNotSentSend i claim_service_sms_not_sent_retry."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,19 +32,18 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration": "APPLIED — 20261002090424 sms_stage5_history_legacy_v1222.",
-    "snapshot": "VERIFIED — queue_logs=99, sent_this_month_logs=17, history_logs=300; alias logs=queue_logs.",
-    "legacy_claim": "PASS/ROLLBACK — istniejący pending legacy przechodzi claim z consent_source=legacy_device, linked_job_id=null i aktualnym numerem kontrahenta.",
-    "queue_cardinality": "VERIFIED — 6 istniejących pending + 3 nowe unikalne numery = 9 klientów do obsługi; 94 aktywne urządzenia mają już dowód skutecznej wysyłki.",
-    "acl": "VERIFIED — claim v2 service_role only. admin_list_devices_with_contractor_v2: anon=false, authenticated=true, service_role=true oraz wewnętrzny current_user_is_admin().",
-    "security_advisor": "CHECKED — nowy admin_list_devices_with_contractor_v2 jest zgłoszony przez lint 0029 jako SECURITY DEFINER dla authenticated; jest to celowy admin-RPC z current_user_is_admin(), analogiczny do istniejącego v1. Brak ekspozycji anon.",
-    "performance_advisor": "CHECKED — brak nowego ostrzeżenia wydajności związanego z Etapem 5.",
-    "edge_functions": "DEPLOYED — generate-service-sms-queue v24 ACTIVE; send-service-sms v32 i smsapi-delivery-webhook v10 pozostają bez zmian.",
+    "supabase_migration": "APPLIED — 20261002095320 sms_unsent_manual_retry_v1223.",
+    "snapshot": "VERIFIED — queue_logs=100, sent_this_month_logs=17, unsent_logs=878, history_logs=300.",
+    "retry_acceptance_test": "PASS/ROLLBACK — oryginalny not_sent bez zmian; nowy retry log provider_sent/delivered, non-primary.",
+    "retry_recovery_test": "PASS/ROLLBACK — callback po niepewnym wyniku odtworzył nowy retry log; recoveredFromClaim=true.",
+    "retry_rejection_test": "PASS/ROLLBACK — odrzucenie utworzyło osobny error log i zwolniło claim.",
+    "acl": "VERIFIED — claim_service_sms_not_sent_retry: anon=false, authenticated=false, service_role=true.",
+    "security_advisor": "CHECKED — brak nowej ekspozycji retry RPC; widoczne ostrzeżenia dotyczą wcześniejszych funkcji.",
+    "performance_advisor": "CHECKED — nowe indeksy retry są świeże i oznaczone jako unused przed użyciem, bez nowego problemu wykonawczego.",
+    "edge_functions": "DEPLOYED — send-service-sms v33 ACTIVE; generate-service-sms-queue v24 i smsapi-delivery-webhook v10 bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",
-    "first_green_ci": "PASS — run #605: targeted regressions, Playwright E2E i production build.",
-    "current_pending_before_generator_refresh": "VERIFIED — 6 primary pending / 6 unikalnych numerów; generator v23 nie został jeszcze wywołany po deployu.",
-    "sent_this_month": "VERIFIED — 17 skutecznych rekordów, 16 trwałych grup / 16 unikalnych numerów w bieżącym miesiącu.",
-    "repo_migration_alignment": "VERIFIED — plik repo zmieniony na 20261002090424_sms_stage5_history_legacy_v1222.sql zgodnie z historią produkcyjną.",
-    "generator_authoritative_check": "VERIFIED — bezpośredni odczyt produkcyjnego Edge Function po deployu: generate-service-sms-queue version=24, status=ACTIVE, verify_jwt=false; live source zawiera isLegacyDevice, device.sms_consent, contractor?.phone i jobId: linkedJobId || null."
+    "first_green_ci": "PASS — run #615: targeted regressions, Playwright E2E i production build.",
+    "live_sender": "VERIFIED — version=33, status=ACTIVE, verify_jwt=false; retry_not_sent route i retry claim obecne w live source.",
+    "current_snapshot": "VERIFIED — queue_logs=100, sent_this_month_logs=17, unsent_logs=878, history_logs=300."
   }
 }

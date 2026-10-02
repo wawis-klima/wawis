@@ -13,17 +13,22 @@ export default function SmsHistoryCard({ logs }) {
       <div className="smsHistoryList">
         {logs.map((log) => {
           const when = log.delivered_at || log.sent_at || log.approved_at || log.created_at;
+          const normalizedStatus = String(log.status || '').toLowerCase();
+          const statusLabel = normalizedStatus === 'pending_approval' ? 'oczekuje na wysłanie' : getSmsStatusLabel(log.status);
           return (
             <div key={log.id} className="smsHistoryItem">
               <div className="smsHistoryTop">
                 <strong>{log.client || 'Klient'}</strong>
-                <span className={`smsStatusBadge smsStatus-${String(log.status || '').toLowerCase()}`}>{getSmsStatusLabel(log.status)}</span>
+                <span className={`smsStatusBadge smsStatus-${normalizedStatus}`}>{statusLabel}</span>
               </div>
               <div className="muted">
                 {[log.phone, log.reminder_due_date ? `Termin: ${formatSmsDate(log.reminder_due_date)}` : '', log.reminder_cycle ? `Cykl ${log.reminder_cycle}` : '', formatSmsDate(when)].filter(Boolean).join(' · ')}
               </div>
-              {String(log.status || '').toLowerCase() === 'error' ? (
+              {normalizedStatus === 'error' ? (
                 <div className="smsHistoryError">Błąd: {log.error_message || 'Nieznany błąd'}</div>
+              ) : null}
+              {normalizedStatus === 'not_sent' && log.error_message ? (
+                <div className="smsHistoryError">Powód: {log.error_message}</div>
               ) : null}
             </div>
           );

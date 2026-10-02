@@ -4,12 +4,14 @@ function normalizeSmsSnapshot(data) {
   const fallbackLogs = Array.isArray(data?.logs) ? data.logs : [];
   const queueLogs = Array.isArray(data?.queue_logs) ? data.queue_logs : fallbackLogs;
   const sentThisMonthLogs = Array.isArray(data?.sent_this_month_logs) ? data.sent_this_month_logs : fallbackLogs;
+  const unsentLogs = Array.isArray(data?.unsent_logs) ? data.unsent_logs : [];
   const historyLogs = Array.isArray(data?.history_logs) ? data.history_logs : fallbackLogs;
 
   return {
     settings: { ...getDefaultSmsSettings(), ...(data?.settings || {}) },
     logs: queueLogs,
     sentThisMonthLogs,
+    unsentLogs,
     historyLogs,
   };
 }
@@ -25,7 +27,7 @@ export async function cleanupSmsDuplicateLogs() {
 
 export async function loadSmsModuleData({ supabase, isAdmin }) {
   if (!supabase || !isAdmin) {
-    return { settings: getDefaultSmsSettings(), logs: [], sentThisMonthLogs: [], historyLogs: [] };
+    return { settings: getDefaultSmsSettings(), logs: [], sentThisMonthLogs: [], unsentLogs: [], historyLogs: [] };
   }
 
   const { data, error } = await supabase.rpc('admin_get_sms_module_snapshot');

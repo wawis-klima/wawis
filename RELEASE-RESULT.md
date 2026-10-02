@@ -1,41 +1,37 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.22
+- 12.23
 
 ## Zakres
-- SMS Etap 5: naprawa pustej listy klientów i „Wysłane w tym miesiącu”.
-- Snapshot SMS rozdzielony na kolejkę, bieżący miesiąc i ograniczoną historię.
-- Legacy devices bez source_job_id mają jawne zgody SMS na poziomie urządzenia.
-- Nowe/uszkodzone powiązania nadal podlegają ścisłej walidacji Etapu 3.
-- Historia sms_log pozostaje nienaruszona i append-only.
+- SMS: nowa zakładka „Niewysłane”.
+- Ręczne ponowienie przeterminowanych SMS-ów, pojedynczo lub zaznaczonych.
+- Stary wpis NIEWYSŁANO pozostaje w historii; retry tworzy nowy log.
+- Aktualny numer i zgoda SMS są sprawdzane przed ponowieniem.
+- Usunięty mylący tekst o automatycznej wysyłce 7 dni przed terminem.
+- Status oczekujący opisany jako „Oczekuje na wysłanie”.
 
 ## Produkcja / baza
-- migracja: APPLIED — `20261002090424 sms_stage5_history_legacy_v1222`
-- snapshot: VERIFIED — queue=99, sent-month source=17, history=300
-- legacy claim: PASS / ROLLBACK
-- kolejka po naprawie: VERIFIED — 9 klientów (6 pending + 3 nowe)
+- migracja: APPLIED — `20261002095320 sms_unsent_manual_retry_v1223`
+- snapshot: VERIFIED — unsent=878
+- normal retry: PASS / ROLLBACK
+- uncertain recovery: PASS / ROLLBACK
+- provider rejection: PASS / ROLLBACK
 - ACL: VERIFIED
 - Security Advisor: CHECKED
 - Performance Advisor: CHECKED
 
 ## Kontrola regresji
-- `test:smoke:sms-job-grouping`: PASS
-- `test:smoke:sms-durable-groups`: PASS
-- `test:smoke:sms-stage3`: PASS
-- `test:smoke:sms-stage4`: PASS
 - `test:smoke:sms-stage5`: PASS
-- `test:smoke:sms-log-cleanup`: PASS
-- Playwright E2E: PASS
-- produkcyjny build: PASS
-- Edge generator: DEPLOYED — `generate-service-sms-queue` v24 ACTIVE
+- `test:smoke:sms-unsent-retry`: PASS
+- Playwright E2E: PASS (run #615)
+- produkcyjny build: PASS (run #615)
+- Edge sender: DEPLOYED — `send-service-sms` v33 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
 
-## Stan po wdrożeniu generatora
-- live Edge: `generate-service-sms-queue` v24 ACTIVE
-- przed pierwszym odświeżeniem modułu: 6 istniejących primary pending / 6 numerów
-- wyliczone brakujące pozycje legacy: 3 unikalne numery
-- oczekiwany stan po odświeżeniu modułu 12.22: 9 klientów
-- wysłane w bieżącym miesiącu: 17 rekordów, 16 grup / 16 numerów
-- migracja repo i produkcji wyrównana do `20261002090424_sms_stage5_history_legacy_v1222.sql`
+## Stan produkcyjny po wdrożeniu sendera
+- `send-service-sms` v33 ACTIVE, `verify_jwt=false`
+- live source zawiera tryb `retry_not_sent` i RPC `claim_service_sms_not_sent_retry`
+- snapshot: queue=100, sent-this-month=17, unsent=878, history=300
+- generator pozostaje v24 ACTIVE; webhook pozostaje v10 ACTIVE
