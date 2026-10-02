@@ -121,7 +121,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
 
   const { data: logs, error } = await adminClient
     .from("sms_log")
-    .select("id, job_id, device_id, client, phone, message, status, reminder_cycle")
+    .select("id, job_id, device_id, client, phone, message, status, reminder_cycle, reminder_due_date, reminder_group_id")
     .in("id", cleanIds);
 
   if (error) return json({ error: error.message }, 400);
@@ -132,7 +132,16 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
   for (const log of logs || []) {
     if (log.status !== "pending_approval") continue;
     try {
-      const smsResult = await sendServiceSmsOnce({ adminClient, jobId: log.job_id, deviceId: log.device_id, cycle: log.reminder_cycle || 1, send: () => sendSmsWithSmsApi({ token, to: normalizePhone(log.phone || ""), message: log.message || "", from: sender }) });
+      const recipientPhone = normalizePhone(log.phone || "");
+      const smsResult = await sendServiceSmsOnce({
+        adminClient,
+        phone: recipientPhone,
+        dueDate: String(log.reminder_due_date || ""),
+        jobId: log.job_id,
+        deviceId: log.device_id,
+        cycle: log.reminder_cycle || 1,
+        send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message: log.message || "", from: sender }),
+      });
       await updateSmsLog(adminClient, log.id, {
         status: "provider_sent",
         approved_at: nowIso,
@@ -141,6 +150,8 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
         provider_message_id: smsResult.providerMessageId,
         provider_response: safeJson(smsResult.responseBody),
         phone: smsResult.recipientPhone,
+        reminder_group_id: smsResult.reminderGroupId,
+        reminder_group_primary: true,
         error_message: null,
       });
       if (log.job_id) {
@@ -231,7 +242,14 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
   const message = buildMessage({ ...job, service_due_date: effectiveDueDate, reminder_due_date: effectiveDueDate }, settings);
 
   try {
-    const smsResult = await sendServiceSmsOnce({ adminClient, jobId: job.id, cycle: effectiveCycle, send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }) });
+    const smsResult = await sendServiceSmsOnce({
+      adminClient,
+      phone: recipientPhone,
+      dueDate: effectiveDueDate,
+      jobId: job.id,
+      cycle: effectiveCycle,
+      send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }),
+    });
     await upsertFinalizedCycleLog(adminClient, {
       job_id: job.id,
       client: job.client || job.title || null,
@@ -249,6 +267,8 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
       created_by: callerId,
       reminder_cycle: effectiveCycle,
       reminder_due_date: effectiveDueDate,
+      reminder_group_id: smsResult.reminderGroupId,
+      reminder_group_primary: true,
       error_message: null,
     });
     await adminClient.from("jobs").update({ last_sms_sent_at: nowIso, last_sms_status: "provider_sent", last_sms_error: null, sms_recipient_phone: smsResult.recipientPhone }).eq("id", job.id);
@@ -256,7 +276,25 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
   } catch (e) {
     if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message }, 409);
     const errorMessage = e instanceof Error ? e.message : String(e);
-    await updateSmsLogInsert(adminClient, { job_id: job.id, client: job.client || job.title || null, phone: recipientPhone, message, sms_type: "service_reminder", provider: "smsapi", status: "error", planned_for: nowIso, approved_at: nowIso, approved_by: callerId, created_by: callerId, reminder_cycle: effectiveCycle, reminder_due_date: effectiveDueDate, error_message: errorMessage });
+    const reminderGroupId = getReminderGroupIdFromError(e);
+    await upsertFinalizedCycleLog(adminClient, {
+      job_id: job.id,
+      client: job.client || job.title || null,
+      phone: recipientPhone,
+      message,
+      sms_type: "service_reminder",
+      provider: "smsapi",
+      status: "error",
+      planned_for: nowIso,
+      approved_at: nowIso,
+      approved_by: callerId,
+      created_by: callerId,
+      reminder_cycle: effectiveCycle,
+      reminder_due_date: effectiveDueDate,
+      reminder_group_id: reminderGroupId,
+      reminder_group_primary: Boolean(reminderGroupId),
+      error_message: errorMessage,
+    });
     await adminClient.from("jobs").update({ last_sms_status: "error", last_sms_error: errorMessage, sms_recipient_phone: recipientPhone }).eq("id", job.id);
     return json({ error: errorMessage, recipientPhone }, 500);
   }
@@ -280,7 +318,14 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
   const message = buildMessage({ client: contractor?.company_name || "Kliencie", installation_date: String(device.installation_date || ""), service_due_date: dueDate, reminder_due_date: dueDate, phone: recipientPhone }, settings);
 
   try {
-    const smsResult = await sendServiceSmsOnce({ adminClient, deviceId: device.id, cycle: effectiveCycle, send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }) });
+    const smsResult = await sendServiceSmsOnce({
+      adminClient,
+      phone: recipientPhone,
+      dueDate,
+      deviceId: device.id,
+      cycle: effectiveCycle,
+      send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }),
+    });
     const linkedJobId = isUuid(String(device.source_job_id || "").split("::")[0]) ? String(device.source_job_id).split("::")[0] : null;
     await upsertFinalizedCycleLog(adminClient, {
       device_id: device.id,
@@ -300,6 +345,8 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
       created_by: callerId,
       reminder_cycle: effectiveCycle,
       reminder_due_date: dueDate,
+      reminder_group_id: smsResult.reminderGroupId,
+      reminder_group_primary: true,
       error_message: null,
     });
     if (linkedJobId) {
@@ -310,7 +357,8 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
     if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message }, 409);
     const errorMessage = e instanceof Error ? e.message : String(e);
     const linkedJobId = isUuid(String(device.source_job_id || "").split("::")[0]) ? String(device.source_job_id).split("::")[0] : null;
-    await updateSmsLogInsert(adminClient, {
+    const reminderGroupId = getReminderGroupIdFromError(e);
+    await upsertFinalizedCycleLog(adminClient, {
       device_id: device.id,
       job_id: linkedJobId,
       client: contractor?.company_name || null,
@@ -325,6 +373,8 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
       created_by: callerId,
       reminder_cycle: effectiveCycle,
       reminder_due_date: dueDate,
+      reminder_group_id: reminderGroupId,
+      reminder_group_primary: Boolean(reminderGroupId),
       error_message: errorMessage,
     });
     if (linkedJobId) {
@@ -375,6 +425,11 @@ function safeJson(value: unknown) {
   try { return JSON.parse(JSON.stringify(value ?? null)); } catch { return { raw: String(value) }; }
 }
 
+function getReminderGroupIdFromError(error: unknown) {
+  const value = String((error as { reminderGroupId?: unknown } | null)?.reminderGroupId || "").trim();
+  return isUuid(value) ? value : null;
+}
+
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -414,9 +469,36 @@ async function updateSmsLog(adminClient: ReturnType<typeof createClient>, id: st
 }
 
 async function upsertFinalizedCycleLog(adminClient: ReturnType<typeof createClient>, payload: Record<string, unknown>) {
+  const reminderGroupId = isUuid(String(payload.reminder_group_id || "")) ? String(payload.reminder_group_id) : null;
   const jobId = isUuid(String(payload.job_id || "")) ? String(payload.job_id) : null;
   const deviceId = isUuid(String(payload.device_id || "")) ? String(payload.device_id) : null;
   const cycle = Number.parseInt(String(payload.reminder_cycle ?? ""), 10) || 1;
+
+  if (reminderGroupId) {
+    const { data: existingGroupLog, error: groupError } = await adminClient
+      .from("sms_log")
+      .select("id, status")
+      .eq("reminder_group_id", reminderGroupId)
+      .eq("reminder_group_primary", true)
+      .limit(1)
+      .maybeSingle();
+
+    if (!groupError && existingGroupLog?.id) {
+      await updateSmsLog(adminClient, existingGroupLog.id, {
+        ...payload,
+        reminder_group_id: reminderGroupId,
+        reminder_group_primary: true,
+      });
+      return;
+    }
+
+    await updateSmsLogInsert(adminClient, {
+      ...payload,
+      reminder_group_id: reminderGroupId,
+      reminder_group_primary: true,
+    });
+    return;
+  }
 
   let query = adminClient
     .from("sms_log")
