@@ -47,17 +47,15 @@ function addMonths(date, months) {
   ];
 
   const targets = smsModule.buildSmsTargets({ jobs, devices });
-  assert.equal(targets.length, 1, 'Dwa urządzenia z jednego montażu powinny utworzyć jeden target SMS.');
-  assert.equal(targets[0].target_type, 'job');
-  assert.equal(targets[0].id, 'job-1');
-  assert.equal(targets[0].grouped_device_count, 2);
-  assert.equal(targets[0].model, '2 urządzenia');
-  assert.equal(targets[0].serial_number, 'Wiele numerów');
+  assert.equal(targets.length, 2, 'Etap 3 musi zachować dwa osobne targety urządzeń przed grupowaniem SMS.');
+  assert.ok(targets.every((target) => target.target_type === 'device'));
+  assert.deepEqual(targets.map((target) => target.id).sort(), ['device-1', 'device-2']);
+  assert.ok(targets.every((target) => target.grouped_device_count === 1));
 
   const queue = smsModule.deriveSmsQueue(targets, []);
-  assert.equal(queue.length, 1, 'Kolejka SMS powinna pokazać jeden wpis dla montażu z dwoma urządzeniami.');
+  assert.equal(queue.length, 1, 'Kolejka SMS powinna nadal pokazać jeden wpis dla klienta z dwoma urządzeniami w tym samym oknie.');
   assert.equal(queue[0].grouped_device_count, 2);
-  assert.match(queue[0].selectionKey, /^job:job-1:/);
+  assert.match(queue[0].selectionKey, /^sms:/);
 
   const legacyPendingLogs = [
     { id: 'log-device-1', device_id: 'device-1', job_id: 'job-1', status: 'pending_approval', reminder_cycle: queue[0].reminder_cycle, created_at: new Date().toISOString() },
@@ -112,26 +110,13 @@ function addMonths(date, months) {
   const dueA = new Date(today.getTime() - (20 * 24 * 60 * 60 * 1000));
   const dueB = new Date(today.getTime() - (5 * 24 * 60 * 60 * 1000));
   const standaloneTargets = smsModule.buildSmsTargets({
-    jobs: [],
+    jobs: [
+      { id: 'job-standalone-a', client: 'Salon Testowy', phone: '600 700 800', sms_recipient_phone: '600 700 800', sms_consent: true, sms_reminder_enabled: true, service_reminder_years: 5 },
+      { id: 'job-standalone-b', client: 'Salon Testowy', phone: '+48 600 700 800', sms_recipient_phone: '+48 600 700 800', sms_consent: true, sms_reminder_enabled: true, service_reminder_years: 5 },
+    ],
     devices: [
-      {
-        id: 'standalone-a',
-        contractor_name: 'Salon Testowy',
-        contractor_phone: '600 700 800',
-        model: 'Rotenso A',
-        serial_number: 'SER-A',
-        installation_date: formatIsoDate(addMonths(dueA, -47)),
-        service_reminder_years: 5,
-      },
-      {
-        id: 'standalone-b',
-        contractor_name: 'Salon Testowy',
-        contractor_phone: '+48 600 700 800',
-        model: 'Rotenso B',
-        serial_number: 'SER-B',
-        installation_date: formatIsoDate(addMonths(dueB, -35)),
-        service_reminder_years: 5,
-      },
+      { id: 'standalone-a', source_job_id: 'job-standalone-a::device-1', contractor_name: 'Salon Testowy', contractor_phone: '600 700 800', model: 'Rotenso A', serial_number: 'SER-A', installation_date: formatIsoDate(addMonths(dueA, -47)), service_reminder_years: 5 },
+      { id: 'standalone-b', source_job_id: 'job-standalone-b::device-1', contractor_name: 'Salon Testowy', contractor_phone: '+48 600 700 800', model: 'Rotenso B', serial_number: 'SER-B', installation_date: formatIsoDate(addMonths(dueB, -35)), service_reminder_years: 5 },
     ],
   });
   const customerWindowQueue = smsModule.deriveSmsQueue(standaloneTargets, []);
@@ -198,10 +183,14 @@ function addMonths(date, months) {
   assert.match(panelSource, /grouped_sms_rows/);
 
   const generatorSource = fs.readFileSync(path.join(root, 'supabase', 'functions', 'generate-service-sms-queue', 'index.ts'), 'utf8');
-  assert.match(generatorSource, /groupedByJobCycle/);
-  assert.match(generatorSource, /identities:\s*\[`job:\$\{linkedJobId\}`\]/);
+  assert.doesNotMatch(generatorSource, /groupedByJobCycle/);
+  assert.doesNotMatch(generatorSource, /standaloneItems/);
+  assert.match(generatorSource, /normalizeSourceJobId/);
+  assert.match(generatorSource, /identities:\s*\[`device:\$\{device\.id\}`\]/);
   assert.match(generatorSource, /device_id:\s*item\.deviceId \|\| null/);
   assert.match(generatorSource, /job_id:\s*item\.jobId \|\| null/);
+  assert.match(generatorSource, /linkedJob\.sms_consent === true/);
+  assert.match(generatorSource, /linkedJob\.sms_reminder_enabled === true/);
   assert.match(generatorSource, /ensureServiceSmsGroup/);
   assert.match(generatorSource, /ensure_service_sms_group/);
   assert.match(generatorSource, /existingPrimaryGroupIds/);

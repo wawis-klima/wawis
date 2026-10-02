@@ -28,18 +28,19 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.match(migration, /reminder_group_window_end_date/i);
 
   const delivery = read('supabase/functions/send-service-sms/delivery.ts');
-  assert.match(delivery, /claim_service_sms_group/);
-  assert.match(delivery, /p_phone:\s*phone/);
-  assert.match(delivery, /p_due_date:\s*dueDate/);
+  assert.match(delivery, /claim_service_sms_group_v2/);
+  assert.match(delivery, /p_log_id:\s*logId/);
+  assert.match(delivery, /p_job_id:\s*jobId/);
+  assert.match(delivery, /p_device_id:\s*deviceId/);
   assert.match(delivery, /reminder_group_id/);
   assert.match(delivery, /reminderGroupId/);
-  assert.doesNotMatch(delivery, /rpc\('claim_service_sms'\s*,/);
+  assert.doesNotMatch(delivery, /rpc\('claim_service_sms_group'\s*,/);
 
   const sender = read('supabase/functions/send-service-sms/index.ts');
-  assert.match(sender, /reminder_due_date, reminder_group_id/);
-  assert.match(sender, /phone:\s*recipientPhone/);
-  assert.match(sender, /dueDate:\s*effectiveDueDate/);
-  assert.match(sender, /dueDate,\s*deviceId:/s);
+  assert.match(sender, /currentDueDate/);
+  assert.match(sender, /recipientPhone/);
+  assert.match(sender, /logId:\s*log\.id/);
+  assert.doesNotMatch(sender, /dueDate:\s*effectiveDueDate/);
   assert.match(sender, /reminder_group_id:\s*smsResult\.reminderGroupId/);
   assert.match(sender, /reminder_group_primary:\s*true/);
   assert.match(sender, /\.eq\("reminder_group_id", reminderGroupId\)/);

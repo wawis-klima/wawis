@@ -1,3 +1,15 @@
+## 12.20
+SMS: Etap 3 — harmonogramy, daty, aktualny numer i zgoda.
+- nowi klienci nadal zapisują `sms_consent=true` i `sms_reminder_enabled=true`; defaulty kolumn bazy zostały wyrównane do `true`;
+- harmonogram przypomnienia jest liczony osobno dla każdego fizycznego urządzenia przed grupowaniem klienta;
+- `source_job_id` obsługuje wariant `uuid::device-N`; brak prawidłowego powiązania z kartą nie oznacza już domyślnej zgody;
+- daty końca miesiąca są domykane kalendarzowo (np. 31.03 -> 28/29.02), a 62-dniowe okno używa dni kalendarzowych w `Europe/Warsaw`;
+- numer telefonu jest walidowany jako polski numer w formacie 48XXXXXXXXX;
+- przed wysłaniem `claim_service_sms_group_v2` ponownie sprawdza w bazie aktualną zgodę, włączenie przypomnień, numer, urządzenie, kartę, cykl i bieżący termin;
+- wysyłka nie ufa już numerowi ani terminowi zapisanym wcześniej w przeglądarce lub starej pozycji kolejki;
+- generator odświeża oczekujące pozycje po zmianie numeru/terminu/grupy i pomija osierocone urządzenia;
+- dodano smoke `sms-stage3` i rozszerzono testy grupowania oraz webhooka.
+
 ## 12.19
 SMS: Etap 2 trwałych grup klienta.
 - dodano `private.sms_reminder_groups` z trwałym `reminder_group_id`, anchor date i końcem 62-dniowego okna;

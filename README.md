@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.19
+- 12.20
+
+Wersja 12.20 domyka Etap 3 modułu SMS. Nowi klienci nadal mają SMS-y i przypomnienia domyślnie włączone; domyślne wartości bazy zostały zrównane z aplikacją. Harmonogram przypomnienia jest liczony osobno dla każdego urządzenia, daty końca miesiąca są domykane kalendarzowo, okno 62 dni liczone jest w dniach kalendarzowych w strefie Europe/Warsaw, a bezpośrednio przed wysyłką serwer ponownie pobiera aktualny numer, zgodę, włączenie przypomnień i termin. Urządzenie bez jednoznacznego powiązania z kartą klienta nie dostaje automatycznej zgody na SMS.
 
 Wersja 12.18 zabezpiecza historię SMS przed fizycznym kasowaniem i przypadkowym nadpisaniem. Automatyczny cleanup nie usuwa już wpisów, odczyt modułu i generator nie uruchamiają cleanupu jako efektu ubocznego, anulowanie oczekującej pozycji odbywa się atomowo przez serwerowe RPC, a relacje `sms_log` do montaży i urządzeń używają `ON DELETE SET NULL`, dzięki czemu historia pozostaje po usunięciu źródła.
 
@@ -33,7 +35,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.19
+# Wawis Klimatyzacja — wersja 12.20
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -849,7 +851,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.19` — SMS Etap 2: przypomnienia jednego numeru telefonu mają trwałą grupę klienta z nieruchomym 62-dniowym oknem zakotwiczonym na najwcześniejszym terminie; generator zapisuje jeden kanoniczny log grupy, a wysyłka rezerwuje całą grupę, więc różne montaże i urządzenia nie mogą równolegle wysłać dwóch SMS-ów z tej samej grupy.
+- wersja `12.20` — SMS Etap 3: harmonogram per urządzenie, kalendarzowe daty i 62 dni w Europe/Warsaw oraz ponowna serwerowa weryfikacja aktualnego numeru, zgody, włączenia przypomnień i terminu tuż przed wysyłką. Nowi klienci nadal mają SMS domyślnie włączony.
 - wersja 12.04 — Fakturownia: kontrahent bez NIP jest synchronizowany jako osoba prywatna (company=false) z rozdzielonym imieniem i nazwiskiem; kontrahent z NIP pozostaje firmą.
 - wersja `12.03` — desktop: po otwarciu Fakturowni aplikacja zapamiętuje istniejące faktury klienta; po powrocie sprawdza API i automatycznie oznacza „Faktura VAT wystawiona” tylko wtedy, gdy rzeczywiście powstała nowa wystawiona faktura VAT. Ręczny przycisk statusu pozostaje bez zmian i ma pierwszeństwo.
 - wersja `12.02` — desktop: usunięto z formularza montażu sekcję „Instalatorzy (opcjonalnie)” i zagęszczono nowy formularz, aby mieścił się na ekranie bez przewijania przy typowym widoku desktopowym. Mobile bez zmian.
@@ -1174,6 +1176,7 @@ Skrypt nie usuwa ani nie zmienia istniejących numerów seryjnych. Pozwala tylko
 - `npm run test:smoke:sms-summary` — smoke logiki `getSmsSummary()` oraz widocznych kart podsumowania SMS w panelu administratora: `Klienci na liście` i `Wysłane w tym miesiącu`; test pilnuje też, że oba kafelki przełączają aktywny widok modułu SMS i że kafelek `Do przypomnienia dziś` nie wraca już do UI
 - `npm run test:smoke:sms-job-grouping` — smoke grupowania SMS; pilnuje grupowania montaży i urządzeń klienta oraz stałego anchoru 62 dni, w tym przypadku 1/60/120 dni.
 - `npm run test:smoke:sms-durable-groups` — smoke Etapu 2; sprawdza trwałe grupy w bazie, group-level claim, kanoniczny log grupy i zgodność desktop/mobile.
+- `npm run test:smoke:sms-stage3` — smoke Etapu 3: domyślne SMS=true, harmonogram per urządzenie, końce miesięcy, Europe/Warsaw, aktualny numer/zgoda/termin i blokada osieroconych urządzeń.
 - `npm run test:smoke:sms-log-cleanup` — smoke Etapu 1 ochrony historii SMS; pilnuje braku fizycznego cleanupu, atomowego anulowania i trwałości historii.
 - `npm run test:smoke:desktop-refresh` — smoke desktopowego shellu administratora i wiernego layoutu 1:1 modułu `SMS`; pilnuje obecności lewego sidebaru, górnego paska użytkownika, dużych kafelków, rozbudowanych filtrów i nowej tabeli desktopowej
 - `npm run test:smoke:desktop-only` — smoke dla wersji desktopowej; pilnuje, że desktopowy release nie zmienił pliku `MobileJobsLayout.jsx`, że desktop i mobile nadal są rozdzielone lazy loadingiem oraz że bazowe hooki CSS widoku mobilnego nadal istnieją
