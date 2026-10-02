@@ -236,6 +236,7 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
   const [selectedClientDevice, setSelectedClientDevice] = useState(null);
   const importInputRef = useRef(null);
   const hasActiveFilters = Boolean(String(search || '').trim()) || statusFilter !== 'all';
+  const hasWritableDevicesRpc = String(sourceMode || '').startsWith('devices-rpc');
 
   async function loadDevices({ silent = false, trySync = true } = {}) {
     const isCurrent = loadGuard.begin();
@@ -288,7 +289,7 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
   }), [devices]);
 
   async function handleStatusChange(device, nextStatus) {
-    if (sourceMode !== 'devices-rpc') {
+    if (!hasWritableDevicesRpc) {
       setInfoMessage('Zmiana statusu będzie dostępna po wdrożeniu SQL modułu devices do Supabase.');
       return;
     }
@@ -344,7 +345,7 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
   }
 
   async function handleConfirmImport() {
-    if (sourceMode !== 'devices-rpc') {
+    if (!hasWritableDevicesRpc) {
       setImportReview(null);
       setInfoMessage('Import XLSX wymaga wdrożenia SQL modułu devices do Supabase. Aktualnie panel działa w trybie fallback z montaży.');
       return;
@@ -675,7 +676,7 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
                         className="input devicesRowStatusSelect"
                         value={normalizeDeviceStatus(device.status)}
                         onChange={(event) => void handleStatusChange(device, event.target.value)}
-                        disabled={sourceMode !== 'devices-rpc' || busyStatusId === String(device.id)}
+                        disabled={!hasWritableDevicesRpc || busyStatusId === String(device.id)}
                       >
                         {DEVICE_STATUSES.map((status) => (
                           <option key={`mobile-${device.id}-${status}`} value={status}>{STATUS_LABELS[status]}</option>

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.21",
+  "version": "12.22",
   "scope": "full",
-  "release_branch": "release/v12.21",
+  "release_branch": "release/v12.22",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Etap 4 potwierdził dwie luki z audytu: frontend akceptował odpowiedź Edge {ok:false} bez pola error, a po przyjęciu SMS-a przez SMSAPI zapis sms_log/provider ID był osobnym best-effort krokiem. Webhook potrafił aktualizować wyłącznie istniejący log po provider_message_id."
+    "notes": "Regresja nie była utratą danych. sms_log nadal zawiera 1336 wpisów. Ostatnie 300 snapshotu składało się z not_sent/pending, więc skuteczne SMS-y z bieżącego miesiąca wypadały z widoku. Dodatkowo legacy devices bez source_job_id zostały wykluczone przez ostrzejszą walidację Etapu 3."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.21.zip"
+    "file_name": "klima-app-v12.22.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.21",
+    "source_branch": "release/v12.22",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": true,
     "result": "PASS",
-    "notes": "send-service-sms v32 ACTIVE: staging claima, provider outcome classification, idx/check_idx i atomowy record_service_sms_acceptance. generate-service-sms-queue v22 ACTIVE: retry tylko dla error bez provider_message_id/sent_at/delivered_at. smsapi-delivery-webhook v10 ACTIVE: idx -> claim_id i apply_sms_delivery_atomic_v2 recovery. Produkcyjne źródła odczytane i potwierdzone."
+    "notes": "Pierwszy pełny CI po poprawce sourceMode/fixture: PASS (run #605: regresja, Playwright E2E, build). generate-service-sms-queue v24 ACTIVE i live source potwierdza legacy consent/contractor phone/jobId null. Generator nie został sztucznie wywołany administracyjnie; przed odświeżeniem modułu pozostaje 6 istniejących pending. Model danych potwierdza dokładnie 3 brakujące unikalne numery, więc pierwsze odświeżenie modułu 12.22 da łącznie 9 klientów."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,16 +32,19 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migrations": "APPLIED — 20261002081343_sms_stage4_reliable_delivery_v1221 oraz 20261002081756_sms_stage4_found_state_fix_v1221.",
-    "transactional_acceptance_test": "PASS/ROLLBACK — claim → staging → acceptance → delivered utworzył poprawny log z provider ID, sent_at i delivered_at.",
-    "transactional_recovery_test": "PASS/ROLLBACK — po symulowanym wyniku niepewnym callback z provider ID + claim_id odtworzył log; recoveredFromClaim=true.",
-    "transactional_rejection_test": "PASS/ROLLBACK — jednoznaczne odrzucenie ustawiło error bez provider_message_id/sent_at i zwolniło claim.",
-    "found_state_hotfix": "VERIFIED — wykryty w teście problem PL/pgSQL FOUND został poprawiony na jawne l.id IS NULL / IS NOT NULL przed wdrożeniem Edge.",
-    "rls_role_matrix": "VERIFIED — wszystkie nowe RPC Etapu 4: anon=false, authenticated=false, service_role=true.",
-    "security_advisor": "CHECKED — brak nowej ekspozycji RPC Etapu 4; pozostałe ostrzeżenia dotyczą wcześniejszych funkcji/tabel.",
-    "performance_advisor": "CHECKED — brak nowego problemu wykonawczego; nowy indeks claima jest jeszcze oznaczony jako unused przed przełączeniem Edge.",
-    "edge_functions": "DEPLOYED — send-service-sms v32 ACTIVE, generate-service-sms-queue v22 ACTIVE, smsapi-delivery-webhook v10 ACTIVE.",
+    "supabase_migration": "APPLIED — 20261002090424 sms_stage5_history_legacy_v1222.",
+    "snapshot": "VERIFIED — queue_logs=99, sent_this_month_logs=17, history_logs=300; alias logs=queue_logs.",
+    "legacy_claim": "PASS/ROLLBACK — istniejący pending legacy przechodzi claim z consent_source=legacy_device, linked_job_id=null i aktualnym numerem kontrahenta.",
+    "queue_cardinality": "VERIFIED — 6 istniejących pending + 3 nowe unikalne numery = 9 klientów do obsługi; 94 aktywne urządzenia mają już dowód skutecznej wysyłki.",
+    "acl": "VERIFIED — claim v2 service_role only. admin_list_devices_with_contractor_v2: anon=false, authenticated=true, service_role=true oraz wewnętrzny current_user_is_admin().",
+    "security_advisor": "CHECKED — nowy admin_list_devices_with_contractor_v2 jest zgłoszony przez lint 0029 jako SECURITY DEFINER dla authenticated; jest to celowy admin-RPC z current_user_is_admin(), analogiczny do istniejącego v1. Brak ekspozycji anon.",
+    "performance_advisor": "CHECKED — brak nowego ostrzeżenia wydajności związanego z Etapem 5.",
+    "edge_functions": "DEPLOYED — generate-service-sms-queue v24 ACTIVE; send-service-sms v32 i smsapi-delivery-webhook v10 pozostają bez zmian.",
     "vercel_deployment": "PENDING — po merge do main",
-    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
+    "first_green_ci": "PASS — run #605: targeted regressions, Playwright E2E i production build.",
+    "current_pending_before_generator_refresh": "VERIFIED — 6 primary pending / 6 unikalnych numerów; generator v23 nie został jeszcze wywołany po deployu.",
+    "sent_this_month": "VERIFIED — 17 skutecznych rekordów, 16 trwałych grup / 16 unikalnych numerów w bieżącym miesiącu.",
+    "repo_migration_alignment": "VERIFIED — plik repo zmieniony na 20261002090424_sms_stage5_history_legacy_v1222.sql zgodnie z historią produkcyjną.",
+    "generator_authoritative_check": "VERIFIED — bezpośredni odczyt produkcyjnego Edge Function po deployu: generate-service-sms-queue version=24, status=ACTIVE, verify_jwt=false; live source zawiera isLegacyDevice, device.sms_consent, contractor?.phone i jobId: linkedJobId || null."
   }
 }

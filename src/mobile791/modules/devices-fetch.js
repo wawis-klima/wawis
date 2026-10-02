@@ -36,6 +36,8 @@ export function createEmptyDeviceForm(contractorId = '') {
     created_at: '',
     updated_at: '',
     service_reminder_years: SERVICE_REMINDER_YEARS,
+    sms_consent: true,
+    sms_reminder_enabled: true,
   };
 }
 
@@ -52,6 +54,8 @@ export function normalizeDeviceRecord(device = {}) {
   return {
     ...createEmptyDeviceForm(device.contractor_id || ''),
     service_reminder_years: SERVICE_REMINDER_YEARS,
+    sms_consent: device.sms_consent !== false,
+    sms_reminder_enabled: device.sms_reminder_enabled !== false,
     id: device.id || '',
     contractor_id: device.contractor_id || '',
     contractor_name: normalizeText(device.contractor_name),
@@ -194,7 +198,16 @@ export async function fetchAdminDevices({ supabase, isAdmin, jobs = [], trySync 
     }
   }
 
-  const { data, error } = await supabase.rpc('admin_list_devices_with_contractor');
+  let { data, error } = await supabase.rpc('admin_list_devices_with_contractor_v2');
+  let source = 'devices-rpc-v2';
+
+  if (error && shouldFallback(error)) {
+    const legacyResult = await supabase.rpc('admin_list_devices_with_contractor');
+    data = legacyResult.data;
+    error = legacyResult.error;
+    source = 'devices-rpc-v1';
+  }
+
   if (error) {
     if (shouldFallback(error)) {
       return {
@@ -209,7 +222,7 @@ export async function fetchAdminDevices({ supabase, isAdmin, jobs = [], trySync 
 
   return {
     devices: enrichDevicesWithJobFallback((Array.isArray(data) ? data : []).map((item) => normalizeDeviceRecord(item)), jobs),
-    source: 'devices-rpc',
+    source,
     staleReason: '',
   };
 }

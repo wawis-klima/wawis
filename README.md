@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.21
+- 12.22
+
+Wersja 12.22 rozpoczyna Etap 5 modułu SMS i naprawia regresję widoku po Etapie 3. Snapshot SMS rozdziela dane kolejki, wysłane w bieżącym miesiącu i ograniczoną historię, dzięki czemu licznik wysłanych nie zależy już od ostatnich 300 wpisów. Starsze urządzenia bez source_job_id mają jawne ustawienia sms_consent i sms_reminder_enabled na poziomie urządzenia; jeśli mają kontrahenta i poprawny numer, wracają do kolejki bez cofania walidacji dla nowych lub uszkodzonych powiązań.
 
 Wersja 12.21 domyka Etap 4 modułu SMS: niezawodną ścieżkę wysyłki i statusów. Przed połączeniem z SMSAPI claim zapisuje treść i kontekst wysyłki, każda wiadomość dostaje providerowy `idx` oparty na claimie oraz `check_idx=1`, a po przyjęciu wiadomości provider ID i `sms_log` są utrwalane atomowo. Jednoznaczne odrzucenie operatora zwalnia claim i może być ponowione, natomiast timeout/5xx lub nieudany zapis po akceptacji pozostawia claim zablokowany, aby nie wysłać duplikatu. Webhook potrafi odzyskać brakujący log z `idx → claim_id`, a frontend traktuje każdą odpowiedź `{ok:false}` jako błąd.
 
@@ -37,7 +39,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.21
+# Wawis Klimatyzacja — wersja 12.22
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -853,6 +855,8 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.22` — SMS Etap 5: przywrócenie 9 klientów do kolejki legacy, osobny odczyt „wysłane w tym miesiącu” bez limitu 300 oraz historia ograniczona do 300 ostatnich wpisów.
+
 - wersja `12.21` — SMS Etap 4: staging claima przed SMSAPI, rozróżnienie odrzucenia i wyniku niepewnego, atomowy zapis akceptacji, `idx/check_idx`, odzyskanie przez webhook oraz fail-closed dla `{ok:false}`.
 
 - wersja `12.20` — SMS Etap 3: harmonogram per urządzenie, kalendarzowe daty i 62 dni w Europe/Warsaw oraz ponowna serwerowa weryfikacja aktualnego numeru, zgody, włączenia przypomnień i terminu tuż przed wysyłką. Nowi klienci nadal mają SMS domyślnie włączony.

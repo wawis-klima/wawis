@@ -43,7 +43,7 @@ Deno.serve(async (request) => {
 
     const { data: devices, error: devicesError } = await adminClient
       .from("devices")
-      .select("id, source_job_id, model, serial_number, installation_date, contractor:contractors(company_name, phone)")
+      .select("id, contractor_id, source_job_id, model, serial_number, installation_date, service_reminder_years, sms_consent, sms_reminder_enabled, contractor:contractors(company_name, phone)")
       .not("installation_date", "is", null);
     if (devicesError) return json({ error: devicesError.message }, 400);
 
@@ -121,24 +121,38 @@ Deno.serve(async (request) => {
 
     for (const device of devices || []) {
       const contractor = Array.isArray(device.contractor) ? device.contractor[0] : device.contractor;
+      const rawSourceJobId = String(device.source_job_id || "").trim();
       const linkedJobId = normalizeSourceJobId(device.source_job_id);
       const linkedJob = linkedJobId ? jobsById.get(linkedJobId) || null : null;
+      const isLegacyDevice = !rawSourceJobId;
 
-      if (!linkedJobId || !linkedJob) {
+      if (rawSourceJobId && (!linkedJobId || !linkedJob)) {
         skippedOrphanCount += 1;
         continue;
       }
 
-      const phone = normalizePhone(String(linkedJob.sms_recipient_phone || linkedJob.phone || ""));
-      const smsConsent = linkedJob.sms_consent === true;
-      const smsReminderEnabled = linkedJob.sms_reminder_enabled === true;
+      const phone = normalizePhone(String(
+        linkedJob
+          ? (linkedJob.sms_recipient_phone || linkedJob.phone || "")
+          : (contractor?.phone || "")
+      ));
+      const smsConsent = linkedJob ? linkedJob.sms_consent === true : device.sms_consent === true;
+      const smsReminderEnabled = linkedJob ? linkedJob.sms_reminder_enabled === true : device.sms_reminder_enabled === true;
       const reminderYears = Math.max(
         1,
-        Number.parseInt(String(linkedJob.service_reminder_years ?? DEFAULT_REMINDER_YEARS), 10) || DEFAULT_REMINDER_YEARS,
+        Number.parseInt(String(
+          linkedJob?.service_reminder_years
+            ?? device.service_reminder_years
+            ?? DEFAULT_REMINDER_YEARS
+        ), 10) || DEFAULT_REMINDER_YEARS,
       );
       const schedule = getReminderSchedule(String(device.installation_date || ""), reminderYears);
 
       if (!schedule.length || !phone || !smsConsent || !smsReminderEnabled) continue;
+      if (isLegacyDevice && !device.contractor_id) {
+        skippedOrphanCount += 1;
+        continue;
+      }
 
       for (const item of schedule) {
         if (item.dueDay > todayDay) break;
@@ -146,14 +160,14 @@ Deno.serve(async (request) => {
         queueItems.push({
           item: {
             deviceId: device.id,
-            jobId: linkedJobId,
+            jobId: linkedJobId || null,
             cycle: item.cycle,
             dueDate: item.dueDate,
             dueDay: item.dueDay,
             expiresOn: item.expiresOn,
             expiresDay: item.expiresDay,
             installationDate: String(device.installation_date || ""),
-            client: linkedJob.client || linkedJob.title || contractor?.company_name || null,
+            client: linkedJob?.client || linkedJob?.title || contractor?.company_name || null,
             phone,
           },
           identities: [`device:${device.id}`],
