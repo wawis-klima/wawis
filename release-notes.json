@@ -3,7 +3,7 @@
   "summary": "Naprawa ładowania desktopowego modułu SMS i układu trzech kafli w jednym rzędzie.",
   "changes": [
     "Pierwszy odczyt modułu SMS nie uruchamia już równolegle generatora kolejki.",
-    "Pełna baza urządzeń jest pobierana dopiero po snapshotcie SMS, a identyczne równoległe odczyty są deduplikowane.",
+    "Pełna baza urządzeń jest pobierana dopiero po snapshotcie SMS, a identyczne równoległe snapshoty SMS są deduplikowane.",
     "Wejście do SMS nie uruchamia zbędnego katalogu kontrahentów ani metryk Centrum 360.",
     "Błędy Supabase są prezentowane czytelnie zamiast jako [object Object].",
     "Klienci na liście, Wysłane w tym miesiącu i Niewysłane są w jednym rzędzie na desktopie.",
