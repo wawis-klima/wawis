@@ -69,6 +69,17 @@ export async function approveAndSendSmsLogs({ supabase, logIds }) {
   return data;
 }
 
+export async function retryNotSentSmsLogs({ supabase, logIds }) {
+  if (!Array.isArray(logIds) || logIds.length === 0) {
+    throw new Error('Nie wybrano niewysłanych SMS-ów do ponownej wysyłki.');
+  }
+
+  return invokeWithFreshSession(supabase, 'send-service-sms', {
+    mode: 'retry_not_sent',
+    logIds,
+  });
+}
+
 export async function generateServiceSmsQueue({ supabase }) {
   if (!supabase) throw new Error('Brak połączenia z Supabase.');
 
