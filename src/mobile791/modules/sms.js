@@ -297,6 +297,19 @@ function getSmsLogStatusPriority(status) {
   }
 }
 
+function getSmsLogPrimaryPriority(log = {}) {
+  return log?.reminder_group_primary === true ? 0 : 1;
+}
+
+function isPreferredSmsLog(candidate = {}, current = null) {
+  if (!current) return true;
+  const statusDelta = getSmsLogStatusPriority(candidate.status) - getSmsLogStatusPriority(current.status);
+  if (statusDelta !== 0) return statusDelta < 0;
+  const primaryDelta = getSmsLogPrimaryPriority(candidate) - getSmsLogPrimaryPriority(current);
+  if (primaryDelta !== 0) return primaryDelta < 0;
+  return getSmsLogEventTime(candidate) >= getSmsLogEventTime(current);
+}
+
 function isSmsReminderWindowMatch(leftDueDate, rightDueDate, windowDays = ACTIVE_WINDOW_DAYS) {
   const leftTs = getSmsDueTime(leftDueDate);
   const rightTs = getSmsDueTime(rightDueDate);
@@ -335,6 +348,7 @@ function pickCustomerWindowLog(map, customerKey, dueDate) {
     .sort((a, b) => (
       Number(!isPersistedReminderGroupMatch(a, dueDate)) - Number(!isPersistedReminderGroupMatch(b, dueDate))
       || getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
+      || getSmsLogPrimaryPriority(a) - getSmsLogPrimaryPriority(b)
       || Math.abs(getSmsDueTime(a.reminder_due_date) - getSmsDueTime(dueDate)) - Math.abs(getSmsDueTime(b.reminder_due_date) - getSmsDueTime(dueDate))
       || getSmsLogEventTime(b) - getSmsLogEventTime(a)
     ));
@@ -349,6 +363,7 @@ export function groupSmsLogsByCustomerWindow(logs = []) {
   const pushGroupedCluster = (grouped, clusterLogs, customerKey, reminderGroupId = '') => {
     const ranked = [...clusterLogs].sort((a, b) => (
       getSmsLogStatusPriority(a.status) - getSmsLogStatusPriority(b.status)
+      || getSmsLogPrimaryPriority(a) - getSmsLogPrimaryPriority(b)
       || getSmsLogEventTime(b) - getSmsLogEventTime(a)
     ));
     const canonical = ranked[0] || clusterLogs[0];
@@ -631,10 +646,12 @@ export function deriveSmsQueue(records = [], logs = []) {
 
     if (!cycleKey) continue;
     if (status === 'pending_approval') {
-      pendingByKey.set(cycleKey, log);
+      const currentPending = pendingByKey.get(cycleKey);
+      if (isPreferredSmsLog(log, currentPending)) pendingByKey.set(cycleKey, log);
     }
     if (['provider_sent', 'sent', 'delivered', 'deleted', 'not_sent'].includes(status)) {
-      finalizedByKey.set(cycleKey, log);
+      const currentFinalized = finalizedByKey.get(cycleKey);
+      if (isPreferredSmsLog(log, currentFinalized)) finalizedByKey.set(cycleKey, log);
     }
   }
 

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.26",
+  "version": "12.27",
   "scope": "full",
-  "release_branch": "release/v12.26",
+  "release_branch": "release/v12.27",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Baseline 24 h przed zmianą: 23 zdarzenia error i 59 warning w app_diagnostic_events. Diagnostyka informacyjna; zmiana 12.26 dotyczy protokołu pracownika i inwariantu zakończenia w Supabase."
+    "notes": "Baseline 24 h przed zmianą: 23 zdarzenia error i 59 warning w app_diagnostic_events. Diagnostyka informacyjna; zmiana 12.27 dotyczy wyboru rekordu głównego w kolejce SMS i układu tabeli desktopowej."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.26.zip"
+    "file_name": "klima-app-v12.27.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.26",
+    "source_branch": "release/v12.27",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "MIGRATION — worker_protocol_before_completion_v1226.",
+    "supabase_changes": "EDGE FUNCTION — generate-service-sms-queue; bez migracji i bez zmiany zabezpieczeń wysyłki.",
     "pr_check": "PENDING",
     "vercel_deployment": "PENDING — po merge do main"
   }

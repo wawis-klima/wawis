@@ -75,7 +75,7 @@ Deno.serve(async (request) => {
 
     const { data: logs, error: logsError } = await adminClient
       .from("sms_log")
-      .select("id, job_id, device_id, client, phone, status, provider_message_id, sent_at, delivered_at, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary")
+      .select("id, job_id, device_id, client, phone, status, provider_message_id, sent_at, delivered_at, reminder_cycle, reminder_due_date, reminder_group_id, reminder_group_primary, created_at")
       .eq("sms_type", "service_reminder")
       .limit(5000);
     if (logsError) return json({ error: logsError.message }, 400);
@@ -88,6 +88,7 @@ Deno.serve(async (request) => {
       dueDate: string;
       primary: boolean;
       hasProviderProof: boolean;
+      createdAt: string;
     }>();
     const existingPrimaryGroupIds = new Set<string>();
 
@@ -97,7 +98,8 @@ Deno.serve(async (request) => {
       const groupId = String(log.reminder_group_id || "").trim();
 
       if (identity) {
-        existingByKey.set(`${identity}:${cycle}`, {
+        const key = `${identity}:${cycle}`;
+        const candidate = {
           id: String(log.id || ""),
           status: String(log.status || ""),
           groupId,
@@ -105,7 +107,20 @@ Deno.serve(async (request) => {
           dueDate: String(log.reminder_due_date || ""),
           primary: log.reminder_group_primary === true,
           hasProviderProof: Boolean(log.provider_message_id || log.sent_at || log.delivered_at),
-        });
+          createdAt: String(log.created_at || ""),
+        };
+        const current = existingByKey.get(key);
+        const candidateTime = Date.parse(candidate.createdAt) || 0;
+        const currentTime = Date.parse(current?.createdAt || "") || 0;
+        const shouldReplace = !current
+          || (candidate.hasProviderProof && !current.hasProviderProof)
+          || (candidate.hasProviderProof === current.hasProviderProof && candidate.primary && !current.primary)
+          || (
+            candidate.hasProviderProof === current.hasProviderProof
+            && candidate.primary === current.primary
+            && candidateTime >= currentTime
+          );
+        if (shouldReplace) existingByKey.set(key, candidate);
       }
 
       if (groupId && log.reminder_group_primary === true) {
@@ -270,6 +285,7 @@ Deno.serve(async (request) => {
             dueDate,
             primary: true,
             hasProviderProof: false,
+          createdAt: nowIso,
           });
         }
         refreshedCount += 1;
@@ -297,6 +313,7 @@ Deno.serve(async (request) => {
           dueDate,
           primary: true,
           hasProviderProof: false,
+        createdAt: nowIso,
         });
       }
 

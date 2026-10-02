@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.26
+- 12.27
+
+Wersja 12.27 naprawia kolejkę SMS: przy technicznych duplikatach aplikacja zawsze wybiera aktualny rekord główny (`reminder_group_primary = true`), generator kolejki zachowuje tę samą zasadę, a kolumna statusu SMS na desktopie jest szersza. Zabezpieczenia przed ponowną wysyłką pozostają bez zmian.
 
 Wersja 12.26 zmienia kolejność zakończenia montażu dla pracownika: protokół klienta jest dostępny już przy statusie „W trakcie”, musi zostać wypełniony, podpisany i zapisany przed zmianą statusu na „Zakończone”. Przycisk „Zakończ” pozostaje zablokowany bez zapisanego protokołu, a baza dodatkowo egzekwuje ten warunek przy bezpośredniej próbie zmiany statusu. Administrator zachowuje możliwość ręcznego zakończenia zlecenia bez protokołu. Dotychczasowy warunek kompletu tabliczek JW/JZ pozostaje bez zmian.
 
@@ -47,7 +49,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.26
+# Wawis Klimatyzacja — wersja 12.27
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -863,7 +865,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.26` — pracownik musi wypełnić, podpisać i zapisać protokół klienta przed zakończeniem montażu; administrator zachowuje ręczny override.
+- wersja `12.27` — kolejka SMS wybiera aktualny rekord główny przypomnienia, generator zachowuje tę samą regułę, a kolumna statusu SMS na desktopie jest poszerzona; zabezpieczenia przed duplikatem wysyłki pozostają aktywne.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
