@@ -1,7 +1,7 @@
 ## 12.25
 - Desktop SMS: usunięto automatyczne uruchamianie generatora kolejki równolegle z pierwszym snapshotem modułu.
 - Pełna baza urządzeń jest dociągana dopiero po zakończeniu głównego odczytu SMS; do tego czasu używany jest lekki fallback z montaży.
-- Równoległe identyczne odczyty snapshotu SMS i katalogu urządzeń są deduplikowane w obrębie klienta Supabase.
+- Równoległe identyczne snapshoty SMS są deduplikowane w obrębie klienta Supabase.
 - Wejście do SMS nie pobiera już niepotrzebnie katalogu kontrahentów ani metryk Centrum 360.
 - Błędy Supabase w panelu SMS są normalizowane do czytelnego komunikatu zamiast „[object Object]”.
 - Kafle „Klienci na liście”, „Wysłane w tym miesiącu” i „Niewysłane” są ustawione w jednym rzędzie na desktopie.
