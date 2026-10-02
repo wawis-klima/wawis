@@ -24,6 +24,8 @@
 - `uuid::device-N`: PASS
 - ACL `claim_service_sms_group_v2`: service_role only — VERIFIED
 - kontrolowany podwójny claim: pierwszy PASS, drugi zablokowany — PASS
+- Security Advisor: CHECKED — brak nowej ekspozycji Etapu 3
+- Performance Advisor: CHECKED — brak nowego problemu Etapu 3
 
 ## Kontrola regresji
 - `test:smoke:sms-job-grouping`: PENDING CI
@@ -33,6 +35,6 @@
 - domyślne SMS przy nowym zleceniu: PENDING CI
 - Playwright E2E: PENDING CI
 - produkcyjny build: PENDING CI
-- Edge Functions: PENDING
+- Edge Functions: PENDING — wdrożenie dopiero po zielonym CI
 - Vercel: PENDING
 - merge: PENDING
