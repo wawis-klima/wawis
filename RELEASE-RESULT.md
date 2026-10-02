@@ -31,3 +31,11 @@
 - Edge generator: DEPLOYED — `generate-service-sms-queue` v24 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
+
+## Stan po wdrożeniu generatora
+- live Edge: `generate-service-sms-queue` v23 ACTIVE
+- przed pierwszym odświeżeniem modułu: 6 istniejących primary pending / 6 numerów
+- wyliczone brakujące pozycje legacy: 3 unikalne numery
+- oczekiwany stan po odświeżeniu modułu 12.22: 9 klientów
+- wysłane w bieżącym miesiącu: 17 rekordów, 16 grup / 16 numerów
+- migracja repo i produkcji wyrównana do `20261002090424_sms_stage5_history_legacy_v1222.sql`
