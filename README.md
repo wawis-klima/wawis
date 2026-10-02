@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.13
+- 12.14
+
+Wersja 12.14 porządkuje prawy panel szczegółów montażu na desktopie: pod nagłówkiem „Klient” wyświetlany jest najpierw adres, następnie e-mail i telefon, a niżej data montażu i — dla zakończonego zlecenia — data zakończenia. Osobna karta „Adres i termin” została usunięta; „Protokół klienta” znajduje się od razu pod scaloną kartą klienta. Mobile bez zmian funkcjonalnych.
 
 Wersja 12.13 upraszcza niezakończone montaże na desktopie: dla statusów Nowe, W trakcie i Niezrealizowane ukryty jest cały pasek Faktura VAT / Płatność / Wystaw fakturę, a kolumna FV w tabeli nie pokazuje czerwonego statusu przed zakończeniem zlecenia. Funkcje fakturowe pozostają wyłącznie przy montażach Zakończonych.
 
@@ -839,7 +841,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.13` — desktop: faktura VAT, metoda płatności i przycisk „Wystaw fakturę” są dostępne wyłącznie dla zakończonych montaży; w tabeli kolumna FV pozostaje pusta dla statusów Nowe, W trakcie i Niezrealizowane.
+- wersja `12.14` — desktop: dane klienta, adres i terminy są teraz w jednej sekcji „Klient”; osobna sekcja „Adres i termin” została usunięta, a „Protokół klienta” znajduje się bezpośrednio pod danymi klienta.
 - wersja 12.04 — Fakturownia: kontrahent bez NIP jest synchronizowany jako osoba prywatna (company=false) z rozdzielonym imieniem i nazwiskiem; kontrahent z NIP pozostaje firmą.
 - wersja `12.03` — desktop: po otwarciu Fakturowni aplikacja zapamiętuje istniejące faktury klienta; po powrocie sprawdza API i automatycznie oznacza „Faktura VAT wystawiona” tylko wtedy, gdy rzeczywiście powstała nowa wystawiona faktura VAT. Ręczny przycisk statusu pozostaje bez zmian i ma pierwszeństwo.
 - wersja `12.02` — desktop: usunięto z formularza montażu sekcję „Instalatorzy (opcjonalnie)” i zagęszczono nowy formularz, aby mieścił się na ekranie bez przewijania przy typowym widoku desktopowym. Mobile bez zmian.

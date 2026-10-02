@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.13",
+  "version": "12.14",
   "scope": "desktop",
-  "release_branch": "release/v12.13",
+  "release_branch": "release/v12.14",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Zmiana 12.13 dotyczy wyłącznie widoczności i blokady akcji fakturowych na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
+    "notes": "Zmiana 12.14 dotyczy wyłącznie układu informacji w prawym panelu szczegółów montażu na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.13.zip"
+    "file_name": "klima-app-v12.14.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.13",
+    "source_branch": "release/v12.14",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: Nowe/W trakcie/Niezrealizowane bez paska Faktura/Płatność/Wystaw fakturę i bez kropki FV; Zakończone zachowują pełny pasek i status FV."
+    "notes": "Po wdrożeniu sprawdzić desktop: w sekcji Klient kolejno adres, e-mail/telefon, data montażu i zakończenia; brak osobnej sekcji Adres i termin; protokół bezpośrednio poniżej."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -37,7 +37,7 @@
     "performance_advisor": "N/A — brak zmian schematu.",
     "security_advisor": "Bez zmian sekretów.",
     "trigger_grants": "Bez zmian.",
-    "edge_functions": "Bez zmian Edge Functions; istniejąca integracja Fakturowni pozostaje bez zmian backendowych.",
+    "edge_functions": "Bez zmian Edge Functions.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }

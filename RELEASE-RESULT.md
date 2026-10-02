@@ -1,18 +1,17 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.13
+- 12.14
 
 ## Zakres
-- desktop: faktura VAT, płatność i Fakturownia tylko dla zakończonych montaży
-- Nowe / W trakcie / Niezrealizowane nie pokazują paska fakturowego
-- akcje fakturowe są logicznie zablokowane przed zakończeniem zlecenia
-- kolumna FV w tabeli jest pusta dla niezakończonych montaży
+- desktop: sekcja „Klient” zawiera kolejno adres, e-mail i telefon oraz datę montażu i datę zakończenia
+- usunięta osobna sekcja „Adres i termin”
+- „Protokół klienta” jest wyświetlany bezpośrednio po danych klienta
 - mobile bez zmian funkcjonalnych
 - Supabase schema, RLS i Edge Functions bez zmian
 
 ## Kontrola regresji
-- smoke desktop VAT rozszerzony o warunek statusu Zakończone
+- smoke desktop job details rozszerzony o nowy układ i brak osobnej sekcji „Adres i termin”
 - WAWIS PR checks / targeted-checks: PENDING
 - Vercel: PENDING
 - merge: PENDING
