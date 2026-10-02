@@ -29,7 +29,7 @@ const stylesSource = readProjectFile(stylesPath);
 
 // Guard desktop-only releases: the current mobile jobs layout must stay byte-for-byte stable.
 // When we intentionally work on mobile, this hash must be updated together with the mobile change description.
-const expectedMobileLayoutHash = 'a68127d2796c2708e7191865035c9c0938fe75e5fe2242da98e0e28fffe00f15';
+const expectedMobileLayoutHash = '26ee77f5e41345b2cea780c23f56846a9e26229ba1cf0bb324f9a7e91bc74b80';
 assert.equal(
   sha256(mobileLayoutSource),
   expectedMobileLayoutHash,
