@@ -79,7 +79,6 @@ assert.doesNotMatch(jobsSelectorsSource, /sortBy === 'date_desc'[\s\S]*created_a
 
 for (const [name, source] of [
   ['mobile791 columns', mobile791ColumnsSource],
-  ['mobile791 header', mobile791HeaderSource],
   ['mobile791 layout', mobile791LayoutSource],
   ['mobile791 selectors', mobile791SelectorsSource],
 ]) {
@@ -87,6 +86,7 @@ for (const [name, source] of [
 }
 assert.match(mobile791ColumnsSource, /completedLabel: "Data zakończenia"/);
 assert.match(mobile791HeaderSource, /desktopStatusFilter === "Zakończone"/);
+assert.match(mobile791HeaderSource, /column\.completedLabel \|\| column\.label/);
 assert.match(mobile791LayoutSource, /function getJobListDate\(job\)/);
 assert.match(mobile791LayoutSource, /"Zakończone" \? "Brak daty" : "-"/);
 assert.match(mobile791SelectorsSource, /function getJobSortDate\(job\)/);
