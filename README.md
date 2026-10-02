@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.22
+- 12.23
+
+Wersja 12.23 rozszerza Etap 5 SMS o zakładkę „Niewysłane”. Pokazuje przeterminowane przypomnienia, których nie wysłano w 62-dniowym oknie, i pozwala administratorowi ręcznie wysłać je ponownie. Stary wpis NIEWYSŁANO pozostaje w historii, a ponowienie tworzy nową próbę z aktualnym numerem i aktualną zgodą SMS. Usunięto mylący komunikat o automatycznej wysyłce 7 dni przed terminem; wysyłka pozostaje ręczna.
 
 Wersja 12.22 rozpoczyna Etap 5 modułu SMS i naprawia regresję widoku po Etapie 3. Snapshot SMS rozdziela dane kolejki, wysłane w bieżącym miesiącu i ograniczoną historię, dzięki czemu licznik wysłanych nie zależy już od ostatnich 300 wpisów. Starsze urządzenia bez source_job_id mają jawne ustawienia sms_consent i sms_reminder_enabled na poziomie urządzenia; jeśli mają kontrahenta i poprawny numer, wracają do kolejki bez cofania walidacji dla nowych lub uszkodzonych powiązań.
 
@@ -855,6 +857,8 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
+
 - wersja `12.22` — SMS Etap 5: przywrócenie 9 klientów do kolejki legacy, osobny odczyt „wysłane w tym miesiącu” bez limitu 300 oraz historia ograniczona do 300 ostatnich wpisów.
 
 - wersja `12.21` — SMS Etap 4: staging claima przed SMSAPI, rozróżnienie odrzucenia i wyniku niepewnego, atomowy zapis akceptacji, `idx/check_idx`, odzyskanie przez webhook oraz fail-closed dla `{ok:false}`.
