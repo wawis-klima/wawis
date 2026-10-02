@@ -172,6 +172,36 @@ function shouldFallback(error) {
   );
 }
 
+const adminDeviceListRequests = new WeakMap();
+
+async function fetchAdminDeviceCatalog({ supabase }) {
+  const inFlight = adminDeviceListRequests.get(supabase);
+  if (inFlight) return inFlight;
+
+  const request = (async () => {
+    let { data, error } = await supabase.rpc('admin_list_devices_with_contractor_v2');
+    let source = 'devices-rpc-v2';
+
+    if (error && shouldFallback(error)) {
+      const legacyResult = await supabase.rpc('admin_list_devices_with_contractor');
+      data = legacyResult.data;
+      error = legacyResult.error;
+      source = 'devices-rpc-v1';
+    }
+
+    return { data, error, source };
+  })();
+
+  adminDeviceListRequests.set(supabase, request);
+  try {
+    return await request;
+  } finally {
+    if (adminDeviceListRequests.get(supabase) === request) {
+      adminDeviceListRequests.delete(supabase);
+    }
+  }
+}
+
 export async function syncDevicesFromJobs({ supabase, isAdmin }) {
   if (!supabase || !isAdmin) return { synced: false, reason: 'no-access' };
   const { data, error } = await supabase.rpc('admin_sync_devices_from_jobs');
@@ -198,15 +228,7 @@ export async function fetchAdminDevices({ supabase, isAdmin, jobs = [], trySync 
     }
   }
 
-  let { data, error } = await supabase.rpc('admin_list_devices_with_contractor_v2');
-  let source = 'devices-rpc-v2';
-
-  if (error && shouldFallback(error)) {
-    const legacyResult = await supabase.rpc('admin_list_devices_with_contractor');
-    data = legacyResult.data;
-    error = legacyResult.error;
-    source = 'devices-rpc-v1';
-  }
+  const { data, error, source } = await fetchAdminDeviceCatalog({ supabase });
 
   if (error) {
     if (shouldFallback(error)) {
