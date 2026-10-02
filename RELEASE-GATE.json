@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Po zielonym CI wdrożyć generate-service-sms-queue 12.22 i potwierdzić 9 klientów kolejki, 17 source rows bieżącego miesiąca / 16 grup po UI oraz brak nowych duplikatów primary/pending."
+    "checked": true,
+    "result": "PASS",
+    "notes": "generate-service-sms-queue v24 ACTIVE. Produkcyjny source potwierdza isLegacyDevice, device.sms_consent, device.sms_reminder_enabled, contractor?.phone i jobId: linkedJobId || null. Snapshot DB: queue_logs=99, sent_this_month_logs=17, history_logs=300. Kardynalność kolejki legacy pozostaje 6 istniejących pending + 3 nowe = 9 klientów."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -39,7 +39,7 @@
     "acl": "VERIFIED — claim v2 service_role only. admin_list_devices_with_contractor_v2: anon=false, authenticated=true, service_role=true oraz wewnętrzny current_user_is_admin().",
     "security_advisor": "CHECKED — nowy admin_list_devices_with_contractor_v2 jest zgłoszony przez lint 0029 jako SECURITY DEFINER dla authenticated; jest to celowy admin-RPC z current_user_is_admin(), analogiczny do istniejącego v1. Brak ekspozycji anon.",
     "performance_advisor": "CHECKED — brak nowego ostrzeżenia wydajności związanego z Etapem 5.",
-    "edge_functions": "PENDING — generator po zielonym CI.",
+    "edge_functions": "DEPLOYED — generate-service-sms-queue v24 ACTIVE; send-service-sms i smsapi-delivery-webhook bez zmian z v12.21.",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }
