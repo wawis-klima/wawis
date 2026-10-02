@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 12.25
 
-Wersja 12.25 naprawia desktopowy moduł SMS, który przy samym wejściu potrafił uruchamiać kilka ciężkich zapytań Supabase równolegle i kończyć ładowanie timeoutem. Pierwszy odczyt SMS jest teraz wykonywany bez równoległego generatora kolejki, pełna baza urządzeń jest dociągana dopiero po snapshotcie, równoległe identyczne odczyty są deduplikowane, a moduł SMS nie uruchamia przy okazji katalogu kontrahentów ani metryk Centrum 360. Błędy Supabase są prezentowane czytelnie zamiast „[object Object]”. Na desktopie trzy kafle „Klienci na liście”, „Wysłane w tym miesiącu” i „Niewysłane” są w jednym rzędzie.
+Wersja 12.25 naprawia desktopowy moduł SMS, który przy samym wejściu potrafił uruchamiać kilka ciężkich zapytań Supabase równolegle i kończyć ładowanie timeoutem. Pierwszy odczyt SMS jest teraz wykonywany bez równoległego generatora kolejki, pełna baza urządzeń jest dociągana dopiero po snapshotcie, równoległe identyczne snapshoty SMS są deduplikowane, a moduł SMS nie uruchamia przy okazji katalogu kontrahentów ani metryk Centrum 360. Błędy Supabase są prezentowane czytelnie zamiast „[object Object]”. Na desktopie trzy kafle „Klienci na liście”, „Wysłane w tym miesiącu” i „Niewysłane” są w jednym rzędzie.
 
 Wersja 12.24 zmienia datę prezentowaną na listach zleceń: w sekcji „Zakończone” desktop i mobile pokazują rzeczywistą datę zakończenia z `completed_at`, a pozostałe statusy nadal pokazują datę montażu. Desktop zmienia także nagłówek kolumny na „Data zakończenia”, a sortowanie daty dla zakończonych korzysta z tej samej wartości. Starsze zakończone zlecenia bez `completed_at` pokazują „Brak daty” zamiast podstawiania daty montażu.
 
