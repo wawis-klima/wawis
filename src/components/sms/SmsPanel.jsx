@@ -183,13 +183,6 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     if (!silent) {
       setLoading(true);
       setDevices(buildFallbackDevicesFromJobs(jobs));
-      void fetchAdminDevices({ supabase, isAdmin, jobs, trySync: false })
-        .then((devicesResult) => {
-          if (Array.isArray(devicesResult?.devices)) setDevices(devicesResult.devices);
-        })
-        .catch((error) => {
-          console.warn('Nie udało się dociągnąć pełnej bazy urządzeń dla modułu SMS.', normalizeDatabaseErrorMessage(error));
-        });
     }
     setErrorMessage('');
     try {
@@ -199,6 +192,18 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setSentMonthSourceLogs(data.sentThisMonthLogs || data.logs || []);
       setUnsentLogs(data.unsentLogs || []);
       setHistoryLogs(data.historyLogs || data.logs || []);
+
+      // Pełna baza urządzeń jest dociągana dopiero po snapshotcie SMS.
+      // Dzięki temu wejście do modułu nie uderza w bazę kilkoma ciężkimi RPC naraz.
+      if (!silent) {
+        void fetchAdminDevices({ supabase, isAdmin, jobs, trySync: false })
+          .then((devicesResult) => {
+            if (Array.isArray(devicesResult?.devices)) setDevices(devicesResult.devices);
+          })
+          .catch((error) => {
+            console.warn('Nie udało się dociągnąć pełnej bazy urządzeń dla modułu SMS.', normalizeDatabaseErrorMessage(error));
+          });
+      }
     } catch (error) {
       setErrorMessage(normalizeDatabaseErrorMessage(error, 'Nie udało się załadować modułu SMS.'));
     } finally {
