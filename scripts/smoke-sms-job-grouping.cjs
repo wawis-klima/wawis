@@ -182,6 +182,14 @@ function addMonths(date, months) {
   assert.equal(groupedSent.length, 1, 'Historia bieżącego miesiąca ma pokazywać jeden wpis klienta zamiast dwóch bliskich wysyłek.');
   assert.equal(groupedSent[0].grouped_log_count, 2);
 
+  const anchoredHistory = smsModule.groupSmsLogsByCustomerWindow([
+    { id: 'anchor-a', client: 'Kotwica', phone: '48500600700', status: 'sent', reminder_due_date: '2026-01-01', sent_at: new Date().toISOString() },
+    { id: 'anchor-b', client: 'Kotwica', phone: '500600700', status: 'sent', reminder_due_date: '2026-03-01', sent_at: new Date().toISOString() },
+    { id: 'anchor-c', client: 'Kotwica', phone: '500 600 700', status: 'sent', reminder_due_date: '2026-04-30', sent_at: new Date().toISOString() },
+  ]);
+  assert.equal(anchoredHistory.length, 2, 'Kotwica 1/60/120 dni musi dać dwie grupy.');
+  assert.deepEqual(anchoredHistory.map((row) => row.grouped_log_count).sort((a, b) => b - a), [2, 1]);
+
   const panelSource = fs.readFileSync(path.join(root, 'src', 'components', 'sms', 'SmsPanel.jsx'), 'utf8');
   assert.match(panelSource, /getGroupedDeviceLabel/);
   assert.match(panelSource, /jeden SMS do klienta/);
@@ -194,10 +202,13 @@ function addMonths(date, months) {
   assert.match(generatorSource, /identities:\s*\[`job:\$\{linkedJobId\}`\]/);
   assert.match(generatorSource, /device_id:\s*item\.deviceId \|\| null/);
   assert.match(generatorSource, /job_id:\s*item\.jobId \|\| null/);
-  assert.match(generatorSource, /existingCustomerWindows/);
-  assert.match(generatorSource, /getCustomerBaseKey/);
-  assert.match(generatorSource, /hasCustomerReminderInWindow/);
-  assert.match(generatorSource, /ACTIVE_WINDOW_DAYS \* 24 \* 60 \* 60 \* 1000/);
+  assert.match(generatorSource, /ensureServiceSmsGroup/);
+  assert.match(generatorSource, /ensure_service_sms_group/);
+  assert.match(generatorSource, /existingPrimaryGroupIds/);
+  assert.match(generatorSource, /reminder_group_id:\s*reminderGroupId/);
+  assert.match(generatorSource, /reminder_group_primary:\s*true/);
+  assert.doesNotMatch(generatorSource, /existingCustomerWindows/);
+  assert.doesNotMatch(generatorSource, /hasCustomerReminderInWindow/);
 
   console.log('SMS job grouping smoke OK');
   process.exit(0);

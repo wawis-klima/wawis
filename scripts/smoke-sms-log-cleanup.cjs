@@ -57,7 +57,8 @@ const testGroupsSource = read('scripts/test-groups.cjs');
 assert.match(testGroupsSource, /test:smoke:sms-log-cleanup/);
 
 const version = String(JSON.parse(read('app-version.json')).version || '');
-assert.equal(version, '12.18');
+assert.match(version, /^\d+\.\d{2}$/, 'Wersja aplikacji musi mieć format NN.NN.');
+assert.ok(Number(version) >= 12.18, 'Etap 1 ochrony historii musi pozostać aktywny od 12.18 wzwyż.');
 
 console.log('SMS history safety stage 1 smoke OK');
 process.exit(0);
