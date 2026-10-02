@@ -1,3 +1,11 @@
+## 12.26
+- Pracownik widzi protokół klienta już dla zlecenia „W trakcie”.
+- Przycisk „Zakończ” jest zablokowany do czasu zapisania podpisanego protokołu oraz spełnienia dotychczasowych wymagań tabliczek JW/JZ.
+- Protokół może zostać zapisany i podpisany przed zakończeniem zlecenia; po zakończeniu nadal można go otworzyć i podpisać ponownie zgodnie z dotychczasowymi uprawnieniami.
+- Baza odrzuca próbę przejścia pracownika do „Zakończone” bez poprawnego rekordu protokołu i istniejącego pliku PDF w Storage.
+- Administrator nie ma nowego obowiązku protokołu i zachowuje ręczne zakończenie awaryjne.
+- Dodano czytelny komunikat błędu `job_protocol_required`, test smoke 12.26 i aktualizację E2E mobile.
+
 ## 12.25
 - Desktop SMS: usunięto automatyczne uruchamianie generatora kolejki równolegle z pierwszym snapshotem modułu.
 - Pełna baza urządzeń jest dociągana dopiero po zakończeniu głównego odczytu SMS; do tego czasu używany jest lekki fallback z montaży.
