@@ -31,13 +31,18 @@ assert.equal(packageJson.scripts['test:smoke:mobile-protocol-print'], 'node scri
 
 assert.match(jobDetails, /const selectedJobStatus = String\(selectedJob\?\.status \|\| ""\);/);
 assert.match(jobDetails, /const selectedJobIsCompleted = selectedJobStatus === "Zakończone";/);
-assert.match(jobDetails, /\{isCompletedJob && !protocolLoading && protocolBackendAvailable \? \(/);
+assert.match(jobDetails, /const selectedJobSupportsProtocol = selectedJobIsCompleted \|\| \(!isAdmin && selectedJobStatus === "W trakcie"\);/);
+assert.match(jobDetails, /\{selectedJobSupportsProtocol && !protocolLoading && protocolBackendAvailable \? \(/);
+assert.match(jobDetails, /workerProtocolRequired/);
+assert.match(jobDetails, /protocolReadyForCompletion/);
+assert.match(jobDetails, /Wypełnij i zapisz protokół przed zakończeniem/);
 assert.match(jobDetails, /<span className="mobileLabel">Protokół<\/span>/);
 assert.match(jobDetails, /loadJobProtocolRecord/);
 assert.doesNotMatch(jobDetails, /protocolDownloadButton|protocolEmailButton/);
 assert.doesNotMatch(jobDetails, />Protokół TEST</);
 
 assert.match(modal, /Potwierdzenie zapłaty/);
+assert.match(modal, /Wypełnij, podpisz i zapisz protokół przed zakończeniem montażu/);
 assert.doesNotMatch(modal, /protocolPaymentToggle/);
 assert.match(modal, /function getProtocolPaymentDraft\(job = \{\}\) \{[\s\S]*enabled: true/);
 assert.match(modal, /protocolPaymentMethodField/);
@@ -79,7 +84,8 @@ assert.match(modal, /Zapisz protokół/);
 assert.match(modal, /storeJobProtocol/);
 assert.match(modal, /replaceExisting: Boolean\(savedRecord\)/);
 
-assert.match(storageModule, /normalizeText\(job\?\.status\) !== "Zakończone"/);
+assert.match(storageModule, /\["W trakcie", "Zakończone"\]\.includes\(status\)/);
+assert.match(storageModule, /assertProtocolWritableJob\(job\)/);
 assert.match(storageModule, /\.from\(PROTOCOLS_BUCKET\)[\s\S]*?\.upload\(/);
 assert.match(storageModule, /\.from\(PROTOCOLS_TABLE\)[\s\S]*?\.insert\(row\)/);
 assert.match(storageModule, /\.download\(record\.storage_path\)/);
