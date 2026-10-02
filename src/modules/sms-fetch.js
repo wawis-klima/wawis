@@ -7,27 +7,19 @@ function normalizeSmsSnapshot(data) {
   };
 }
 
-export async function cleanupSmsDuplicateLogs({ supabase, isAdmin }) {
-  if (!supabase || !isAdmin) return { ok: true, skipped: true };
-
-  const { data, error } = await supabase.rpc('admin_cleanup_sms_duplicate_logs');
-  if (error) {
-    const message = String(error.message || error.details || error.hint || '');
-    if (/admin_cleanup_sms_duplicate_logs|function .* does not exist|Could not find the function/i.test(message)) {
-      return { ok: true, skipped: true, reason: 'missing_rpc' };
-    }
-    throw error;
-  }
-
-  return data || { ok: true };
+export async function cleanupSmsDuplicateLogs() {
+  return {
+    ok: true,
+    skipped: true,
+    reason: 'history_protection_stage1',
+    physicalDeleteDisabled: true,
+  };
 }
 
 export async function loadSmsModuleData({ supabase, isAdmin }) {
   if (!supabase || !isAdmin) {
     return { settings: getDefaultSmsSettings(), logs: [] };
   }
-
-  await cleanupSmsDuplicateLogs({ supabase, isAdmin });
 
   const { data, error } = await supabase.rpc('admin_get_sms_module_snapshot');
   if (error) throw error;
