@@ -21,9 +21,9 @@
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
-    "checked": false,
-    "result": "PENDING",
-    "notes": "Po zielonym CI wdrożyć send-service-sms 12.23 i potwierdzić retry_not_sent."
+    "checked": true,
+    "result": "PASS",
+    "notes": "CI run #615 PASS: release gate, pełna regresja, Playwright E2E i build. send-service-sms v33 ACTIVE; live source zawiera retry_not_sent, handleRetryNotSentSend i claim_service_sms_not_sent_retry."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -40,7 +40,10 @@
     "acl": "VERIFIED — claim_service_sms_not_sent_retry: anon=false, authenticated=false, service_role=true.",
     "security_advisor": "CHECKED — brak nowej ekspozycji retry RPC; widoczne ostrzeżenia dotyczą wcześniejszych funkcji.",
     "performance_advisor": "CHECKED — nowe indeksy retry są świeże i oznaczone jako unused przed użyciem, bez nowego problemu wykonawczego.",
-    "edge_functions": "PENDING — send-service-sms po zielonym CI.",
-    "vercel_deployment": "PENDING — po merge do main"
+    "edge_functions": "DEPLOYED — send-service-sms v33 ACTIVE; generate-service-sms-queue v24 i smsapi-delivery-webhook v10 bez zmian.",
+    "vercel_deployment": "PENDING — po merge do main",
+    "first_green_ci": "PASS — run #615: targeted regressions, Playwright E2E i production build.",
+    "live_sender": "VERIFIED — version=33, status=ACTIVE, verify_jwt=false; retry_not_sent route i retry claim obecne w live source.",
+    "current_snapshot": "VERIFIED — queue_logs=100, sent_this_month_logs=17, unsent_logs=878, history_logs=300."
   }
 }
