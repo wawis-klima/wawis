@@ -38,26 +38,39 @@ Deno.serve(async (request) => {
 
     const now = new Date();
     const nowIso = now.toISOString();
+    const todayIso = getWarsawIsoDate(now);
+    const todayDay = isoDateToDay(todayIso);
+
     const { data: devices, error: devicesError } = await adminClient
       .from("devices")
       .select("id, source_job_id, model, serial_number, installation_date, contractor:contractors(company_name, phone)")
       .not("installation_date", "is", null);
     if (devicesError) return json({ error: devicesError.message }, 400);
 
-    const linkedJobIds = (devices || [])
-      .map((device) => String(device.source_job_id || "").trim())
-      .filter((value) => isUuid(value));
+    const linkedJobIds = [...new Set(
+      (devices || [])
+        .map((device) => normalizeSourceJobId(device.source_job_id))
+        .filter((value) => isUuid(value)),
+    )];
 
-    const jobsById = new Map<string, { id: string; client: string | null; title: string | null; phone: string | null; sms_recipient_phone: string | null; sms_consent: boolean | null; sms_reminder_enabled: boolean | null; service_reminder_years: number | null; }>();
+    const jobsById = new Map<string, {
+      id: string;
+      client: string | null;
+      title: string | null;
+      phone: string | null;
+      sms_recipient_phone: string | null;
+      sms_consent: boolean | null;
+      sms_reminder_enabled: boolean | null;
+      service_reminder_years: number | null;
+    }>();
+
     if (linkedJobIds.length) {
       const { data: jobs, error: jobsError } = await adminClient
         .from("jobs")
         .select("id, client, title, phone, sms_recipient_phone, sms_consent, sms_reminder_enabled, service_reminder_years")
         .in("id", linkedJobIds);
       if (jobsError) return json({ error: jobsError.message }, 400);
-      for (const job of jobs || []) {
-        jobsById.set(String(job.id), job);
-      }
+      for (const job of jobs || []) jobsById.set(String(job.id), job);
     }
 
     const { data: logs, error: logsError } = await adminClient
@@ -67,15 +80,32 @@ Deno.serve(async (request) => {
       .limit(5000);
     if (logsError) return json({ error: logsError.message }, 400);
 
-    const existingByKey = new Map<string, { id: string; status: string }>();
+    const existingByKey = new Map<string, {
+      id: string;
+      status: string;
+      groupId: string;
+      phone: string;
+      dueDate: string;
+      primary: boolean;
+    }>();
     const existingPrimaryGroupIds = new Set<string>();
+
     for (const log of logs || []) {
       const identity = log.device_id ? `device:${log.device_id}` : log.job_id ? `job:${log.job_id}` : "";
       const cycle = Number.parseInt(String(log.reminder_cycle ?? ""), 10) || 1;
-      if (identity) {
-        existingByKey.set(`${identity}:${cycle}`, { id: log.id, status: String(log.status || "") });
-      }
       const groupId = String(log.reminder_group_id || "").trim();
+
+      if (identity) {
+        existingByKey.set(`${identity}:${cycle}`, {
+          id: String(log.id || ""),
+          status: String(log.status || ""),
+          groupId,
+          phone: String(log.phone || ""),
+          dueDate: String(log.reminder_due_date || ""),
+          primary: log.reminder_group_primary === true,
+        });
+      }
+
       if (groupId && log.reminder_group_primary === true) {
         existingPrimaryGroupIds.add(groupId);
       }
@@ -83,62 +113,48 @@ Deno.serve(async (request) => {
 
     let createdCount = 0;
     let expiredCount = 0;
-    const groupedByJobCycle = new Map<string, Record<string, unknown>>();
-    const standaloneItems: Array<Record<string, unknown>> = [];
+    let refreshedCount = 0;
+    let skippedOrphanCount = 0;
+    const queueItems: Array<{ item: Record<string, unknown>; identities: string[] }> = [];
 
     for (const device of devices || []) {
       const contractor = Array.isArray(device.contractor) ? device.contractor[0] : device.contractor;
-      const sourceJobId = String(device.source_job_id || "").trim();
-      const linkedJob = jobsById.get(sourceJobId) || null;
-      const linkedJobId = isUuid(sourceJobId) ? sourceJobId : "";
-      const phone = normalizePhone(String(linkedJob?.sms_recipient_phone || linkedJob?.phone || contractor?.phone || ""));
-      const smsConsent = typeof linkedJob?.sms_consent === "boolean" ? linkedJob.sms_consent : true;
-      const smsReminderEnabled = typeof linkedJob?.sms_reminder_enabled === "boolean" ? linkedJob.sms_reminder_enabled : true;
-      const reminderYears = Math.max(1, Number.parseInt(String(linkedJob?.service_reminder_years ?? DEFAULT_REMINDER_YEARS), 10) || DEFAULT_REMINDER_YEARS);
+      const linkedJobId = normalizeSourceJobId(device.source_job_id);
+      const linkedJob = linkedJobId ? jobsById.get(linkedJobId) || null : null;
+
+      if (!linkedJobId || !linkedJob) {
+        skippedOrphanCount += 1;
+        continue;
+      }
+
+      const phone = normalizePhone(String(linkedJob.sms_recipient_phone || linkedJob.phone || ""));
+      const smsConsent = linkedJob.sms_consent === true;
+      const smsReminderEnabled = linkedJob.sms_reminder_enabled === true;
+      const reminderYears = Math.max(
+        1,
+        Number.parseInt(String(linkedJob.service_reminder_years ?? DEFAULT_REMINDER_YEARS), 10) || DEFAULT_REMINDER_YEARS,
+      );
       const schedule = getReminderSchedule(String(device.installation_date || ""), reminderYears);
+
       if (!schedule.length || !phone || !smsConsent || !smsReminderEnabled) continue;
 
       for (const item of schedule) {
-        if (item.dueTs > now.getTime()) break;
+        if (item.dueDay > todayDay) break;
 
-        if (linkedJobId) {
-          const groupKey = `${linkedJobId}:${item.cycle}`;
-          const group = groupedByJobCycle.get(groupKey) || {
-            key: groupKey,
+        queueItems.push({
+          item: {
+            deviceId: device.id,
             jobId: linkedJobId,
             cycle: item.cycle,
             dueDate: item.dueDate,
-            dueTs: item.dueTs,
-            expiresAt: item.expiresAt,
+            dueDay: item.dueDay,
+            expiresOn: item.expiresOn,
+            expiresDay: item.expiresDay,
             installationDate: String(device.installation_date || ""),
-            client: linkedJob?.client || linkedJob?.title || contractor?.company_name || null,
+            client: linkedJob.client || linkedJob.title || contractor?.company_name || null,
             phone,
-            identities: [`job:${linkedJobId}`],
-          };
-          const identities = group.identities as string[];
-          const deviceIdentity = `device:${device.id}`;
-          if (!identities.includes(deviceIdentity)) identities.push(deviceIdentity);
-          if (item.dueTs < Number(group.dueTs || item.dueTs)) {
-            group.dueDate = item.dueDate;
-            group.dueTs = item.dueTs;
-            group.expiresAt = item.expiresAt;
-            group.installationDate = String(device.installation_date || "");
-          }
-          groupedByJobCycle.set(groupKey, group);
-          continue;
-        }
-
-        standaloneItems.push({
-          identity: `device:${device.id}`,
-          deviceId: device.id,
-          jobId: null,
-          cycle: item.cycle,
-          dueDate: item.dueDate,
-          dueTs: item.dueTs,
-          expiresAt: item.expiresAt,
-          installationDate: String(device.installation_date || ""),
-          client: contractor?.company_name || null,
-          phone,
+          },
+          identities: [`device:${device.id}`],
         });
       }
     }
@@ -147,12 +163,9 @@ Deno.serve(async (request) => {
       const cycle = Number.parseInt(String(item.cycle ?? ""), 10) || 1;
       const dueDate = String(item.dueDate || "").trim();
       const phone = normalizePhone(String(item.phone || ""));
+      if (!phone || !dueDate) return;
+
       const reminderGroupId = await ensureServiceSmsGroup(adminClient, phone, dueDate);
-
-      const alreadyExists = existingPrimaryGroupIds.has(reminderGroupId)
-        || identities.some((identity) => existingByKey.has(`${identity}:${cycle}`));
-      if (alreadyExists) return;
-
       const message = buildMessage({
         client: item.client || "Kliencie",
         phone,
@@ -160,6 +173,7 @@ Deno.serve(async (request) => {
         service_due_date: dueDate,
       }, settings);
 
+      const targetStatus = todayDay <= Number(item.expiresDay || 0) ? "pending_approval" : "not_sent";
       const payload = {
         device_id: item.deviceId || null,
         job_id: item.jobId || null,
@@ -174,13 +188,79 @@ Deno.serve(async (request) => {
         reminder_group_primary: true,
         planned_for: nowIso,
         created_by: callerProfile.id,
+        status: targetStatus,
+        error_message: targetStatus === "not_sent"
+          ? "Przekroczono 62-dniowe okno wysyłki przypomnienia."
+          : null,
       } as Record<string, unknown>;
 
-      const insertPayload = now.getTime() <= Number(item.expiresAt || 0)
-        ? { ...payload, status: "pending_approval" }
-        : { ...payload, status: "not_sent", error_message: "Przekroczono 2-miesięczne okno wysyłki przypomnienia." };
+      const existing = identities
+        .map((identity) => existingByKey.get(`${identity}:${cycle}`))
+        .find(Boolean);
 
-      const { error: insertError } = await adminClient.from("sms_log").insert(insertPayload);
+      if (existing) {
+        const existingStatus = String(existing.status || "").trim().toLowerCase();
+        if (!["pending_approval", "not_sent"].includes(existingStatus)) return;
+
+        if (existing.groupId !== reminderGroupId && existingPrimaryGroupIds.has(reminderGroupId)) {
+          const { error: obsoleteError } = await adminClient
+            .from("sms_log")
+            .update({
+              status: "deleted",
+              reminder_group_primary: false,
+              error_message: "Pozycja zastąpiona aktualną grupą klienta po zmianie danych.",
+            })
+            .eq("id", existing.id);
+          if (obsoleteError) throw new Error(`Nie udało się wygasić nieaktualnej pozycji SMS: ${obsoleteError.message}`);
+          if (existing.groupId) existingPrimaryGroupIds.delete(existing.groupId);
+          for (const identity of identities) {
+            existingByKey.set(`${identity}:${cycle}`, { ...existing, status: "deleted", primary: false });
+          }
+          return;
+        }
+
+        const { error: updateError } = await adminClient
+          .from("sms_log")
+          .update(payload)
+          .eq("id", existing.id);
+
+        if (updateError) {
+          if (String(updateError.code || "") === "23505") {
+            existingPrimaryGroupIds.add(reminderGroupId);
+            await adminClient
+              .from("sms_log")
+              .update({
+                status: "deleted",
+                reminder_group_primary: false,
+                error_message: "Pozycja zastąpiona aktualną grupą klienta po zmianie danych.",
+              })
+              .eq("id", existing.id);
+            return;
+          }
+          throw new Error(`Nie udało się odświeżyć pozycji kolejki SMS: ${updateError.message}`);
+        }
+
+        if (existing.groupId && existing.groupId !== reminderGroupId) {
+          existingPrimaryGroupIds.delete(existing.groupId);
+        }
+        existingPrimaryGroupIds.add(reminderGroupId);
+        for (const identity of identities) {
+          existingByKey.set(`${identity}:${cycle}`, {
+            id: existing.id,
+            status: targetStatus,
+            groupId: reminderGroupId,
+            phone,
+            dueDate,
+            primary: true,
+          });
+        }
+        refreshedCount += 1;
+        return;
+      }
+
+      if (existingPrimaryGroupIds.has(reminderGroupId)) return;
+
+      const { error: insertError } = await adminClient.from("sms_log").insert(payload);
       if (insertError) {
         if (String(insertError.code || "") === "23505") {
           existingPrimaryGroupIds.add(reminderGroupId);
@@ -193,34 +273,25 @@ Deno.serve(async (request) => {
       for (const identity of identities) {
         existingByKey.set(`${identity}:${cycle}`, {
           id: crypto.randomUUID(),
-          status: String(insertPayload.status || ""),
+          status: targetStatus,
+          groupId: reminderGroupId,
+          phone,
+          dueDate,
+          primary: true,
         });
       }
 
-      if (insertPayload.status === "pending_approval") createdCount += 1;
+      if (targetStatus === "pending_approval") createdCount += 1;
       else expiredCount += 1;
     }
 
-    const queueItems = [
-      ...[...groupedByJobCycle.values()].map((group) => ({
-        item: {
-          ...group,
-          jobId: group.jobId,
-          deviceId: null,
-        } as Record<string, unknown>,
-        identities: group.identities as string[],
-      })),
-      ...standaloneItems.map((item) => ({
-        item,
-        identities: [String(item.identity || "")].filter(Boolean),
-      })),
-    ].sort((a, b) => Number(a.item.dueTs || 0) - Number(b.item.dueTs || 0));
+    queueItems.sort((a, b) => Number(a.item.dueDay || 0) - Number(b.item.dueDay || 0));
 
     for (const entry of queueItems) {
       await insertQueueItem(entry.item, entry.identities);
     }
 
-    return json({ ok: true, createdCount, expiredCount });
+    return json({ ok: true, createdCount, expiredCount, refreshedCount, skippedOrphanCount });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }
@@ -272,23 +343,85 @@ function formatDate(value: string) {
 }
 
 function normalizePhone(value: string) {
-  const digits = String(value || "").replace(/\D+/g, "");
-  if (!digits) return "";
-  if (digits.length === 9) return `48${digits}`;
-  if (digits.startsWith("48") && digits.length === 11) return digits;
-  return digits;
+  const raw = String(value || "").trim();
+  if (!raw || !/^[0-9+()\s.-]+$/.test(raw)) return "";
+  let digits = raw.replace(/\D+/g, "");
+  if (digits.length === 13 && digits.startsWith("0048")) digits = digits.slice(2);
+  else if (digits.length === 9) digits = `48${digits}`;
+  return digits.length === 11 && digits.startsWith("48") ? digits : "";
+}
+
+function normalizeSourceJobId(value: unknown) {
+  const source = String(value || "").trim().split("::")[0] || "";
+  return isUuid(source) ? source : "";
+}
+
+function parseIsoDateParts(value: unknown) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isInteger(year) || month < 1 || month > 12 || day < 1 || day > daysInMonth(year, month)) return null;
+  return { year, month, day };
+}
+
+function daysInMonth(year: number, month: number) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function formatIsoParts(year: number, month: number, day: number) {
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function addMonthsClampedIso(value: unknown, monthsToAdd: number) {
+  const parts = parseIsoDateParts(value);
+  if (!parts) return "";
+  const zeroBased = (parts.year * 12) + (parts.month - 1) + monthsToAdd;
+  const year = Math.floor(zeroBased / 12);
+  const month = (zeroBased % 12) + 1;
+  const day = Math.min(parts.day, daysInMonth(year, month));
+  return formatIsoParts(year, month, day);
+}
+
+function isoDateToDay(value: unknown) {
+  const parts = parseIsoDateParts(value);
+  if (!parts) return 0;
+  return Math.trunc(Date.UTC(parts.year, parts.month - 1, parts.day) / 86400000);
+}
+
+function addDaysIso(value: unknown, days: number) {
+  const dayNumber = isoDateToDay(value);
+  if (!dayNumber) return "";
+  const date = new Date((dayNumber + days) * 86400000);
+  return formatIsoParts(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+}
+
+function getWarsawIsoDate(value = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Warsaw",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(value);
+  const read = (type: string) => parts.find((part) => part.type === type)?.value || "";
+  return `${read("year")}-${read("month")}-${read("day")}`;
 }
 
 function getReminderSchedule(installationDate: string, reminderYears = DEFAULT_REMINDER_YEARS) {
-  const match = String(installationDate || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return [];
-  const baseDate = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
-  const schedule: Array<{ cycle: number; dueDate: string; dueTs: number; expiresAt: number }> = [];
+  if (!parseIsoDateParts(installationDate)) return [];
+  const schedule: Array<{ cycle: number; dueDate: string; dueDay: number; expiresOn: string; expiresDay: number }> = [];
   for (let cycle = 1; cycle <= reminderYears; cycle += 1) {
-    const dueDate = new Date(baseDate.getTime());
-    dueDate.setMonth(dueDate.getMonth() + (cycle === 1 ? 11 : 11 + ((cycle - 1) * 12)));
-    const iso = `${dueDate.getFullYear()}-${String(dueDate.getMonth() + 1).padStart(2, "0")}-${String(dueDate.getDate()).padStart(2, "0")}`;
-    schedule.push({ cycle, dueDate: iso, dueTs: dueDate.getTime(), expiresAt: dueDate.getTime() + (ACTIVE_WINDOW_DAYS * 24 * 60 * 60 * 1000) });
+    const dueDate = addMonthsClampedIso(installationDate, 11 + ((cycle - 1) * 12));
+    if (!dueDate) continue;
+    const expiresOn = addDaysIso(dueDate, ACTIVE_WINDOW_DAYS);
+    schedule.push({
+      cycle,
+      dueDate,
+      dueDay: isoDateToDay(dueDate),
+      expiresOn,
+      expiresDay: isoDateToDay(expiresOn),
+    });
   }
   return schedule;
 }
