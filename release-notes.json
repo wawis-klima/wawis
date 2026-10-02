@@ -1,11 +1,12 @@
 {
-  "version": "11.21",
-  "summary": "Kliknięcie w powiadomienie PUSH otwiera bezpośrednio właściwy montaż.",
+  "version": "12.25",
+  "summary": "Naprawa ładowania desktopowego modułu SMS i układu trzech kafli w jednym rzędzie.",
   "changes": [
-    "Deep-link z jobId przechodzi przez wspólną nawigację modułu Montaże.",
-    "Aplikacja ustawia status wskazanego zlecenia, właściwą stronę listy i otwiera jego szczegóły.",
-    "Po obsłużeniu jobId parametr jest usuwany z adresu, aby odświeżenia nie resetowały widoku.",
-    "Poprawka obejmuje desktop i mobile791 oraz ma osobny test regresyjny.",
-    "Brak zmian w Supabase, RLS, Storage i Edge Function wysyłającej PUSH."
+    "Pierwszy odczyt modułu SMS nie uruchamia już równolegle generatora kolejki.",
+    "Pełna baza urządzeń jest pobierana dopiero po snapshotcie SMS, a identyczne równoległe odczyty są deduplikowane.",
+    "Wejście do SMS nie uruchamia zbędnego katalogu kontrahentów ani metryk Centrum 360.",
+    "Błędy Supabase są prezentowane czytelnie zamiast jako [object Object].",
+    "Klienci na liście, Wysłane w tym miesiącu i Niewysłane są w jednym rzędzie na desktopie.",
+    "Brak zmian w Supabase, RLS, Storage i Edge Functions; mobile791 bez zmian funkcjonalnych."
   ]
 }
