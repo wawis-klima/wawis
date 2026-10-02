@@ -22,6 +22,10 @@ assert.match(migration, /delete from public\.sms_log/);
 assert.match(migration, /deleted_duplicate_logs/);
 assert.match(migration, /customer_window_days/);
 assert.match(migration, /successful_send_history_preserved/);
+assert.match(migration, /revoke all on function public\.admin_cleanup_sms_duplicate_logs\(\) from public/);
+assert.match(migration, /revoke all on function public\.admin_cleanup_sms_duplicate_logs\(\) from anon/);
+assert.match(migration, /grant execute on function public\.admin_cleanup_sms_duplicate_logs\(\) to authenticated/);
+assert.match(migration, /grant execute on function public\.admin_cleanup_sms_duplicate_logs\(\) to service_role/);
 
 const fetchSource = read('src/modules/sms-fetch.js');
 assert.match(fetchSource, /cleanupSmsDuplicateLogs/);
