@@ -113,7 +113,7 @@ export default function DesktopJobsLayout({
       <div className="tableWrap">
         <table className="jobTable desktopJobsTable" style={DESKTOP_JOBS_TABLE_LAYOUT_VARS}>
           <DesktopJobsTableColGroup />
-          <DesktopJobsTableHeader toggleSort={toggleSort} getSortLabel={getSortLabel} />
+          <DesktopJobsTableHeader toggleSort={toggleSort} getSortLabel={getSortLabel} desktopStatusFilter={desktopStatusFilter} />
           <tbody>
             {jobsPageRows.map((job) => (
               <DesktopJobsTableRow
