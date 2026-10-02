@@ -38,4 +38,28 @@ for (const relativePath of [
   assert.equal(fs.existsSync(path.join(root, relativePath)), true, `Brakuje wspólnego źródła SMS: ${relativePath}.`);
 }
 
+for (const relativePath of [
+  'src/components/sms/SmsQueueTable.jsx',
+  'src/components/sms/SmsUnsentCard.jsx',
+  'src/components/sms/SmsSentThisMonthCard.jsx',
+]) {
+  const source = read(relativePath);
+  const memoIndex = source.indexOf('const pages = useMemo(() => {');
+  const earlyReturnIndex = source.indexOf('if (totalPages <= 1) return null;');
+  assert.ok(memoIndex >= 0, `${relativePath}: brakuje useMemo paginacji.`);
+  assert.ok(earlyReturnIndex > memoIndex, `${relativePath}: return null nie może poprzedzać hooka useMemo.`);
+}
+
+for (const relativePath of [
+  'src/modules/devices-fetch.js',
+  'src/mobile791/modules/devices-fetch.js',
+]) {
+  const source = read(relativePath);
+  assert.match(source, /code === 'PGRST202'/);
+  assert.match(source, /code === '42883'/);
+  assert.match(source, /code === '42P01'/);
+  assert.doesNotMatch(source, /message\.includes\('function public'\)/);
+  assert.doesNotMatch(source, /message\.includes\('column'\)/);
+}
+
 console.log('SMS desktop/mobile shared source v12.29 smoke OK');
