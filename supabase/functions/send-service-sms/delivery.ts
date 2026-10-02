@@ -115,8 +115,9 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
   } catch (error) {
     const uncertain = new Error(
       `Nie potwierdzono wyniku wysyłki. Ponowna wysyłka dla tej grupy została zablokowana; sprawdź wynik w SMSAPI. ${error instanceof Error ? error.message : String(error)}`,
-    ) as Error & { reminderGroupId?: string };
+    ) as Error & { reminderGroupId?: string; preparedSms?: PreparedSms };
     uncertain.reminderGroupId = prepared.reminderGroupId;
+    uncertain.preparedSms = prepared;
     throw uncertain;
   }
 
