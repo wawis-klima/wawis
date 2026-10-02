@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.18",
+  "version": "12.19",
   "scope": "full",
-  "release_branch": "release/v12.18",
+  "release_branch": "release/v12.19",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Audyt i odczyt produkcji potwierdziły trzy ryzyka Etapu 1: fizyczny cleanup sms_log, możliwość nadpisania wysłanego/doręczonego wpisu na deleted oraz ON DELETE CASCADE dla powiązań historii."
+    "notes": "Po Etapie 1 potwierdzono, że obecny claim nadal był per job/device. Produkcja miała wiele logów tego samego numeru; migracja 12.19 przypisała 1336 logów do 1154 trwałych grup bez kasowania historii."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.18.zip"
+    "file_name": "klima-app-v12.19.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.18",
+    "source_branch": "release/v12.19",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge/Vercel potwierdzić wersję 12.18, aktywne Edge Functions oraz zachowanie historii: brak fizycznego cleanupu, brak anulowania po claimie/wysyłce i retencja logu po usunięciu źródła."
+    "notes": "Po wdrożeniu potwierdzić Edge Functions, group-level claim, brak ponownych pendingów dla istniejącego reminder_group_id i wersję 12.19 na Vercelu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,14 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "APPLIED — 20261002062031_sms_history_safety_stage1_v1218 zakończona sukcesem na produkcji.",
-    "rls_role_matrix": "Bez zmian RLS. cancel_service_sms_log jest dostępne wyłącznie dla service_role; trigger ochronny działa w bazie. admin_cleanup_sms_duplicate_logs pozostaje kompatybilnym no-op z guardem administrator/service_role.",
-    "performance_advisor": "CHECKED — brak nowych ostrzeżeń związanych z Etapem 1; widoczne informacje są wcześniejsze.",
-    "security_advisor": "CHECKED — brak nowej ekspozycji anon. Ostrzeżenie dla kompatybilnego admin_cleanup_sms_duplicate_logs dotyczy authenticated, ale funkcja jest no-op i nadal sprawdza administratora.",
-    "trigger_grants": "CHECKED — trg_protect_sms_log_history aktywny; cancel_service_sms_log: public/anon/authenticated REVOKE, service_role EXECUTE.",
-    "edge_functions": "DEPLOYED — send-service-sms v29 ACTIVE oraz generate-service-sms-queue v19 ACTIVE; verify_jwt=false zachowane jak przed zmianą.",
+    "supabase_migration_applied": "APPLIED — 20261002070050_sms_durable_customer_groups_v1219 zakończona sukcesem na produkcji.",
+    "grouping_backfill": "VERIFIED — 1336 logów z terminem przypisano do 1154 trwałych grup; unique primary gwarantuje jeden kanoniczny log na grupę.",
+    "group_anchor_test": "PASS — kolejność późniejszy→wcześniejszy dla terminów 01.03/01.01 zachowała ten sam group_id i przesunęła anchor do 01.01; termin 30.04 utworzył drugą grupę.",
+    "group_claim_test": "PASS — pierwsza rezerwacja trwałej grupy została przyjęta, druga w tej samej transakcji została zablokowana.",
+    "rls_role_matrix": "private.sms_reminder_groups ma RLS i brak dostępu public/anon/authenticated; ensure_service_sms_group i claim_service_sms_group są wykonywalne wyłącznie przez service_role.",
+    "performance_advisor": "PENDING — sprawdzić po finalnym kodzie przed merge.",
+    "security_advisor": "PENDING — sprawdzić po finalnym kodzie przed merge.",
+    "edge_functions": "PENDING — send-service-sms i generate-service-sms-queue zostaną przełączone na group-level API po zielonym CI.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
