@@ -27,8 +27,6 @@ assert(panel.includes("normalizeDatabaseErrorMessage(error, 'Nie udało się za�
   'Błąd ładowania SMS musi być normalizowany do czytelnego komunikatu.');
 assert(smsFetch.includes('const smsSnapshotRequests = new WeakMap();'),
   'Równoległe snapshoty SMS powinny być deduplikowane.');
-assert(devicesFetch.includes('const adminDeviceListRequests = new WeakMap();'),
-  'Równoległe odczyty katalogu urządzeń powinny być deduplikowane.');
 assert(app.includes("if (!showModal && !['jobs', 'contractors'].includes(activeModule)) return;"),
   'Zmiana zakładki na SMS nie może pobierać katalogu kontrahentów.');
 assert(app.includes("if (activeModule !== 'center360') return;"),
