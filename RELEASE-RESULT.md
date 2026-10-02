@@ -20,14 +20,14 @@
 - Performance Advisor: CHECKED
 
 ## Kontrola regresji
-- `test:smoke:sms-job-grouping`: PENDING CI
-- `test:smoke:sms-durable-groups`: PENDING CI
-- `test:smoke:sms-stage3`: PENDING CI
-- `test:smoke:sms-stage4`: PENDING CI
-- `test:smoke:sms-stage5`: PENDING CI
-- `test:smoke:sms-log-cleanup`: PENDING CI
-- Playwright E2E: PENDING CI
-- produkcyjny build: PENDING CI
-- Edge generator: PENDING
+- `test:smoke:sms-job-grouping`: PASS
+- `test:smoke:sms-durable-groups`: PASS
+- `test:smoke:sms-stage3`: PASS
+- `test:smoke:sms-stage4`: PASS
+- `test:smoke:sms-stage5`: PASS
+- `test:smoke:sms-log-cleanup`: PASS
+- Playwright E2E: PASS
+- produkcyjny build: PASS
+- Edge generator: DEPLOYED — `generate-service-sms-queue` v24 ACTIVE
 - Vercel: PENDING
 - merge: PENDING
