@@ -1,7 +1,5 @@
 import { getDefaultSmsSettings } from './sms.js';
 
-const smsSnapshotRequests = new WeakMap();
-
 function normalizeSmsSnapshot(data) {
   const fallbackLogs = Array.isArray(data?.logs) ? data.logs : [];
   const queueLogs = Array.isArray(data?.queue_logs) ? data.queue_logs : fallbackLogs;
@@ -32,23 +30,10 @@ export async function loadSmsModuleData({ supabase, isAdmin }) {
     return { settings: getDefaultSmsSettings(), logs: [], sentThisMonthLogs: [], unsentLogs: [], historyLogs: [] };
   }
 
-  const inFlight = smsSnapshotRequests.get(supabase);
-  if (inFlight) return inFlight;
+  const { data, error } = await supabase.rpc('admin_get_sms_module_snapshot');
+  if (error) throw error;
 
-  const request = (async () => {
-    const { data, error } = await supabase.rpc('admin_get_sms_module_snapshot');
-    if (error) throw error;
-    return normalizeSmsSnapshot(data);
-  })();
-
-  smsSnapshotRequests.set(supabase, request);
-  try {
-    return await request;
-  } finally {
-    if (smsSnapshotRequests.get(supabase) === request) {
-      smsSnapshotRequests.delete(supabase);
-    }
-  }
+  return normalizeSmsSnapshot(data);
 }
 
 export async function saveSmsSettings({ supabase, settings, isAdmin = true }) {
