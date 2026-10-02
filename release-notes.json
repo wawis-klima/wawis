@@ -1,10 +1,10 @@
 {
-  "version": "12.28",
-  "summary": "SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.",
+  "version": "12.29",
+  "summary": "Domknięcie audytu SMS: stała kolejność hooków paginacji oraz bezpieczny, zawężony fallback urządzeń.",
   "changes": [
-    "Niewysłane obejmują aktywne przypomnienia oczekujące na zatwierdzenie i przypomnienia not_sent.",
-    "Przycisk zatwierdza pending_approval lub ponawia not_sent po ręcznej akcji administratora.",
-    "Opis Oczekuje na zatwierdzenie jest spójny w kolejce i historii.",
-    "Odpowiedź z sentCount=0 nie pokazuje sukcesu; szybkie podwójne kliknięcie wysyła jedno żądanie."
+    "Paginacja SmsQueueTable, SmsUnsentCard i SmsSentThisMonthCard nie wywołuje już hooka warunkowo po wcześniejszym return null.",
+    "devices-fetch przełącza się na fallback wyłącznie przy rzeczywistym braku RPC lub tabeli devices.",
+    "Usunięto szerokie dopasowania błędów po frazach function public oraz column, które mogły ukrywać realne błędy bazy.",
+    "Rozszerzono smoke wspólnego kodu SMS o regresję obu problemów."
   ]
 }

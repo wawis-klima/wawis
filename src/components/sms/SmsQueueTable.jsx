@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 
 function Pagination({ currentPage, totalPages, onPageChange }) {
-  if (totalPages <= 1) return null;
-
   const pages = useMemo(() => {
     const values = [];
     const start = Math.max(1, currentPage - 2);
@@ -10,6 +8,8 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
     for (let page = start; page <= end; page += 1) values.push(page);
     return values;
   }, [currentPage, totalPages]);
+
+  if (totalPages <= 1) return null;
 
   return (
     <div className="smsDesktopPagination" aria-label="Paginacja listy SMS">

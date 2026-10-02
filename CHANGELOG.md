@@ -1,3 +1,10 @@
+## 12.29
+- Naprawiono warunkowe wywołanie `useMemo` w paginacji `SmsQueueTable`, `SmsUnsentCard` i `SmsSentThisMonthCard`; hook jest teraz wykonywany przed ewentualnym `return null`.
+- Zawężono fallback `devices-fetch` do rozpoznanych błędów braku RPC (`PGRST202` / `42883`) lub tabeli `devices` (`42P01`).
+- Usunięto ogólne dopasowania po frazach `function public` i `column`, które mogły maskować prawdziwe błędy Supabase.
+- Rozszerzono smoke wspólnego kodu SMS o regresję kolejności hooków i bezpiecznego fallbacku.
+- Bez zmian bazy, migracji i Edge Functions.
+
 ## 12.28
 - SMS oczekujące na zatwierdzenie można zatwierdzić i wysłać z listy Niewysłane; ponowienie dobiera właściwą ścieżkę do statusu, z ochroną przed podwójnym kliknięciem i fałszywym potwierdzeniem wysyłki.
 - Status pending_approval: Oczekuje na zatwierdzenie.

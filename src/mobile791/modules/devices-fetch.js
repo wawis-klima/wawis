@@ -160,16 +160,26 @@ export function buildFallbackDevicesFromJobs(jobs = []) {
 }
 
 function shouldFallback(error) {
+  const code = String(error?.code || '').trim().toUpperCase();
   const message = String(error?.message || error?.details || error?.hint || '').toLowerCase();
-  return (
-    message.includes('admin_list_devices_with_contractor')
-    || message.includes('admin_get_contractor_devices')
-    || message.includes('admin_upsert_device')
-    || message.includes('schema cache')
-    || message.includes('function public')
-    || message.includes('relation "public.devices" does not exist')
-    || message.includes('column')
-  );
+  const knownRpc = [
+    'admin_list_devices_with_contractor',
+    'admin_get_contractor_devices',
+    'admin_upsert_device',
+    'admin_sync_devices_from_jobs',
+  ].some((name) => message.includes(name));
+  const missingFunction = code === 'PGRST202'
+    || code === '42883'
+    || (knownRpc && (
+      message.includes('schema cache')
+      || message.includes('could not find the function')
+      || message.includes('does not exist')
+      || message.includes('not found')
+    ));
+  const missingDevicesRelation = code === '42P01'
+    && (message.includes('public.devices') || message.includes('relation "devices"'));
+
+  return missingFunction || missingDevicesRelation;
 }
 
 export async function syncDevicesFromJobs({ supabase, isAdmin }) {
