@@ -18,7 +18,12 @@ assert.doesNotMatch(panelSource, />\s*Kalendarz\s*</, 'Szybkie akcje w prawym pa
 assert.match(panelSource, /jobTypeTag desktopJobTypeTag jobDetailsStatusChip/, 'Status w prawym panelu powinien używać tego samego stylu badge co tabela Montaże.');
 assert.match(panelSource, /jobDetailsSectionCard/, 'Szczegóły montażu powinny być uporządkowane w karty/sekcje.');
 assert.match(panelSource, /Klient/, 'Panel szczegółów powinien mieć sekcję Klient.');
-assert.match(panelSource, /Adres i termin/, 'Panel szczegółów powinien mieć sekcję Adres i termin.');
+assert.doesNotMatch(panelSource, /<span>Adres i termin<\/span>/, 'Panel szczegółów nie powinien mieć osobnej sekcji Adres i termin.');
+assert.match(
+  panelSource,
+  /<span>Klient<\/span>[\s\S]*?<span>Adres<\/span>[\s\S]*?<span>Email<\/span>[\s\S]*?<span>Telefon<\/span>[\s\S]*?<span>Data montażu<\/span>[\s\S]*?<span>Zakończono<\/span>[\s\S]*?DesktopJobProtocolCard/,
+  'Sekcja Klient powinna zawierać kolejno adres, kontakt i daty przed protokołem.'
+);
 assert.match(panelSource, /Urządzenia/, 'Panel szczegółów powinien mieć sekcję Urządzenia.');
 
 assert.match(rowSource, /desktopSelectedJobRow/, 'Wybrany wiersz w tabeli Montaże musi mieć wyraźną klasę zaznaczenia.');
