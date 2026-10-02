@@ -87,7 +87,8 @@ assert.match(sender, /smsapi-delivery-webhook\?auth=/);
 assert.match(sender, /AbortSignal\.timeout\(20000\)/);
 assert.match(sender, /sendServiceSmsOnce/);
 const delivery = fs.readFileSync('supabase/functions/send-service-sms/delivery.ts', 'utf8').replace(/\r\n/g, '\n');
-assert.match(delivery, /claim_service_sms/);
+assert.match(delivery, /claim_service_sms_group/);
+assert.doesNotMatch(delivery, /rpc\('claim_service_sms'\s*,/);
 assert.match(delivery, /confirm_service_sms/);
 
 console.log('PASS: callback authentication helpers and RPC failure propagation; atomic ordering is tested by audit-v1089/sms-race.mjs.');
