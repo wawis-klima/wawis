@@ -1,3 +1,11 @@
+## 12.27
+- Naprawiono przypadek, w którym dwa rekordy `pending_approval` tej samej grupy mogły spowodować wybranie starszego, niegłównego wpisu i komunikat o zastąpieniu pozycji.
+- Kolejka SMS preferuje `reminder_group_primary=true`; przy tym samym priorytecie wybiera właściwy najnowszy wpis.
+- Generator kolejki nie nadpisuje rekordu z potwierdzoną wysyłką i preferuje rekord główny przed technicznym duplikatem.
+- Nie zmieniono zabezpieczeń przed ponowną wysyłką ani warunku wykrywania wiadomości już wysłanej.
+- Poszerzono kolumnę „STATUS SMS” na desktopie, aby „Oczekuje na wysłanie” mieściło się czytelnie.
+- Dodano test regresyjny dla duplikatu `pending_approval` z rekordem głównym.
+
 ## 12.26
 - Pracownik widzi protokół klienta już dla zlecenia „W trakcie”.
 - Przycisk „Zakończ” jest zablokowany do czasu zapisania podpisanego protokołu oraz spełnienia dotychczasowych wymagań tabliczek JW/JZ.
