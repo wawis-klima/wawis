@@ -121,7 +121,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
 
   const { data: logs, error } = await adminClient
     .from("sms_log")
-    .select("id, job_id, device_id, client, phone, message, status, reminder_cycle, reminder_due_date, reminder_group_id")
+    .select("id, job_id, device_id, status, reminder_cycle")
     .in("id", cleanIds);
 
   if (error) return json({ error: error.message }, 400);
@@ -131,38 +131,71 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
 
   for (const log of logs || []) {
     if (log.status !== "pending_approval") continue;
+
+    let currentMessage = "";
     try {
-      const recipientPhone = normalizePhone(log.phone || "");
       const smsResult = await sendServiceSmsOnce({
         adminClient,
-        phone: recipientPhone,
-        dueDate: String(log.reminder_due_date || ""),
+        logId: log.id,
         jobId: log.job_id,
         deviceId: log.device_id,
         cycle: log.reminder_cycle || 1,
-        send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message: log.message || "", from: sender }),
+        send: (prepared) => {
+          currentMessage = buildMessage({
+            client: prepared.client,
+            installation_date: prepared.installationDate,
+            service_due_date: prepared.currentDueDate,
+            reminder_due_date: prepared.currentDueDate,
+            phone: prepared.recipientPhone,
+          }, settings);
+          return sendSmsWithSmsApi({
+            token,
+            to: prepared.recipientPhone,
+            message: currentMessage,
+            from: sender,
+          });
+        },
       });
+
       await updateSmsLog(adminClient, log.id, {
+        job_id: smsResult.linkedJobId,
+        device_id: smsResult.deviceId,
+        client: smsResult.client,
+        phone: smsResult.recipientPhone,
+        message: currentMessage,
         status: "provider_sent",
         approved_at: nowIso,
         approved_by: callerId,
         sent_at: nowIso,
         provider_message_id: smsResult.providerMessageId,
         provider_response: safeJson(smsResult.responseBody),
-        phone: smsResult.recipientPhone,
+        reminder_cycle: smsResult.cycle,
+        reminder_due_date: smsResult.currentDueDate,
         reminder_group_id: smsResult.reminderGroupId,
         reminder_group_primary: true,
         error_message: null,
       });
-      if (log.job_id) {
-        await adminClient.from("jobs").update({ last_sms_sent_at: nowIso, last_sms_status: "provider_sent", last_sms_error: null, sms_recipient_phone: smsResult.recipientPhone }).eq("id", log.job_id);
+
+      if (smsResult.linkedJobId) {
+        await adminClient.from("jobs").update({
+          last_sms_sent_at: nowIso,
+          last_sms_status: "provider_sent",
+          last_sms_error: null,
+          sms_recipient_phone: smsResult.recipientPhone,
+        }).eq("id", smsResult.linkedJobId);
       }
+
       sentCount += 1;
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : String(e);
       failures.push({ id: log.id, error: errorMessage });
       if (e instanceof SmsDeliveryBlockedError) continue;
-      await updateSmsLog(adminClient, log.id, { status: "error", approved_at: nowIso, approved_by: callerId, error_message: errorMessage });
+      await updateSmsLog(adminClient, log.id, {
+        status: "error",
+        approved_at: nowIso,
+        approved_by: callerId,
+        error_message: errorMessage,
+      });
     }
   }
 
@@ -224,37 +257,38 @@ async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: 
   return json({ ok: true, deletedCount, failures: [] });
 }
 
-async function handleManualJobSend({ adminClient, callerId, settings, sender, token, nowIso, jobId, reminderCycle, reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; jobId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
-  const { data: job, error } = await adminClient
-    .from("jobs")
-    .select("id, client, title, phone, installation_date, service_due_date, sms_consent, sms_reminder_enabled, sms_recipient_phone")
-    .eq("id", jobId)
-    .single();
-
-  if (error || !job) return json({ error: "Nie znaleziono zlecenia do wysyłki SMS." }, 404);
-  if (!job.sms_consent || !job.sms_reminder_enabled) return json({ error: "Zgoda SMS lub przypomnienia są wyłączone dla tej karty." }, 400);
-
-  const recipientPhone = normalizePhone(job.sms_recipient_phone || job.phone || "");
-  if (!recipientPhone) return json({ error: "Brak numeru telefonu do wysyłki SMS." }, 400);
-
-  const effectiveDueDate = reminderDueDate || job.service_due_date || calculateDueDate(job.installation_date);
-  const effectiveCycle = Number.parseInt(String(reminderCycle ?? ''), 10) || 1;
-  const message = buildMessage({ ...job, service_due_date: effectiveDueDate, reminder_due_date: effectiveDueDate }, settings);
+async function handleManualJobSend({ adminClient, callerId, settings, sender, token, nowIso, jobId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; jobId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
+  const effectiveCycle = Number.parseInt(String(reminderCycle ?? ""), 10) || 1;
+  let currentMessage = "";
 
   try {
     const smsResult = await sendServiceSmsOnce({
       adminClient,
-      phone: recipientPhone,
-      dueDate: effectiveDueDate,
-      jobId: job.id,
+      jobId,
       cycle: effectiveCycle,
-      send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }),
+      send: (prepared) => {
+        currentMessage = buildMessage({
+          client: prepared.client,
+          installation_date: prepared.installationDate,
+          service_due_date: prepared.currentDueDate,
+          reminder_due_date: prepared.currentDueDate,
+          phone: prepared.recipientPhone,
+        }, settings);
+        return sendSmsWithSmsApi({
+          token,
+          to: prepared.recipientPhone,
+          message: currentMessage,
+          from: sender,
+        });
+      },
     });
+
     await upsertFinalizedCycleLog(adminClient, {
-      job_id: job.id,
-      client: job.client || job.title || null,
+      job_id: smsResult.linkedJobId,
+      device_id: smsResult.deviceId,
+      client: smsResult.client,
       phone: smsResult.recipientPhone,
-      message,
+      message: currentMessage,
       sms_type: "service_reminder",
       provider: "smsapi",
       provider_message_id: smsResult.providerMessageId,
@@ -265,74 +299,101 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
       approved_by: callerId,
       sent_at: nowIso,
       created_by: callerId,
-      reminder_cycle: effectiveCycle,
-      reminder_due_date: effectiveDueDate,
+      reminder_cycle: smsResult.cycle,
+      reminder_due_date: smsResult.currentDueDate,
       reminder_group_id: smsResult.reminderGroupId,
       reminder_group_primary: true,
       error_message: null,
     });
-    await adminClient.from("jobs").update({ last_sms_sent_at: nowIso, last_sms_status: "provider_sent", last_sms_error: null, sms_recipient_phone: smsResult.recipientPhone }).eq("id", job.id);
-    return json({ ok: true, recipientPhone: smsResult.recipientPhone, providerMessageId: smsResult.providerMessageId, providerResponse: smsResult.responseBody });
-  } catch (e) {
-    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message }, 409);
-    const errorMessage = e instanceof Error ? e.message : String(e);
-    const reminderGroupId = getReminderGroupIdFromError(e);
-    await upsertFinalizedCycleLog(adminClient, {
-      job_id: job.id,
-      client: job.client || job.title || null,
-      phone: recipientPhone,
-      message,
-      sms_type: "service_reminder",
-      provider: "smsapi",
-      status: "error",
-      planned_for: nowIso,
-      approved_at: nowIso,
-      approved_by: callerId,
-      created_by: callerId,
-      reminder_cycle: effectiveCycle,
-      reminder_due_date: effectiveDueDate,
-      reminder_group_id: reminderGroupId,
-      reminder_group_primary: Boolean(reminderGroupId),
-      error_message: errorMessage,
+
+    if (smsResult.linkedJobId) {
+      await adminClient.from("jobs").update({
+        last_sms_sent_at: nowIso,
+        last_sms_status: "provider_sent",
+        last_sms_error: null,
+        sms_recipient_phone: smsResult.recipientPhone,
+      }).eq("id", smsResult.linkedJobId);
+    }
+
+    return json({
+      ok: true,
+      recipientPhone: smsResult.recipientPhone,
+      providerMessageId: smsResult.providerMessageId,
+      providerResponse: smsResult.responseBody,
+      reminderDueDate: smsResult.currentDueDate,
     });
-    await adminClient.from("jobs").update({ last_sms_status: "error", last_sms_error: errorMessage, sms_recipient_phone: recipientPhone }).eq("id", job.id);
-    return json({ error: errorMessage, recipientPhone }, 500);
+  } catch (e) {
+    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message, reason: e.reason }, 409);
+
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    const prepared = getPreparedSmsFromError(e);
+
+    if (prepared) {
+      await upsertFinalizedCycleLog(adminClient, {
+        job_id: prepared.linkedJobId,
+        device_id: prepared.deviceId,
+        client: prepared.client,
+        phone: prepared.recipientPhone,
+        message: currentMessage,
+        sms_type: "service_reminder",
+        provider: "smsapi",
+        status: "error",
+        planned_for: nowIso,
+        approved_at: nowIso,
+        approved_by: callerId,
+        created_by: callerId,
+        reminder_cycle: prepared.cycle,
+        reminder_due_date: prepared.currentDueDate,
+        reminder_group_id: prepared.reminderGroupId,
+        reminder_group_primary: true,
+        error_message: errorMessage,
+      });
+
+      if (prepared.linkedJobId) {
+        await adminClient.from("jobs").update({
+          last_sms_status: "error",
+          last_sms_error: errorMessage,
+          sms_recipient_phone: prepared.recipientPhone,
+        }).eq("id", prepared.linkedJobId);
+      }
+    }
+
+    return json({ error: errorMessage }, 500);
   }
 }
 
-async function handleManualDeviceSend({ adminClient, callerId, settings, sender, token, nowIso, deviceId, reminderCycle, reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; deviceId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
-  const { data: device, error } = await adminClient
-    .from("devices")
-    .select("id, source_job_id, model, serial_number, installation_date, contractor:contractors(company_name, phone)")
-    .eq("id", deviceId)
-    .single();
-
-  if (error || !device) return json({ error: "Nie znaleziono urządzenia do wysyłki SMS." }, 404);
-
-  const contractor = Array.isArray(device.contractor) ? device.contractor[0] : device.contractor;
-  const recipientPhone = normalizePhone(String(contractor?.phone || ""));
-  if (!recipientPhone) return json({ error: "Urządzenie nie ma numeru telefonu kontrahenta do wysyłki SMS." }, 400);
-
-  const dueDate = reminderDueDate || calculateDueDate(String(device.installation_date || ""));
+async function handleManualDeviceSend({ adminClient, callerId, settings, sender, token, nowIso, deviceId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; deviceId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
   const effectiveCycle = Number.parseInt(String(reminderCycle ?? ""), 10) || 1;
-  const message = buildMessage({ client: contractor?.company_name || "Kliencie", installation_date: String(device.installation_date || ""), service_due_date: dueDate, reminder_due_date: dueDate, phone: recipientPhone }, settings);
+  let currentMessage = "";
 
   try {
     const smsResult = await sendServiceSmsOnce({
       adminClient,
-      phone: recipientPhone,
-      dueDate,
-      deviceId: device.id,
+      deviceId,
       cycle: effectiveCycle,
-      send: () => sendSmsWithSmsApi({ token, to: recipientPhone, message, from: sender }),
+      send: (prepared) => {
+        currentMessage = buildMessage({
+          client: prepared.client,
+          installation_date: prepared.installationDate,
+          service_due_date: prepared.currentDueDate,
+          reminder_due_date: prepared.currentDueDate,
+          phone: prepared.recipientPhone,
+        }, settings);
+        return sendSmsWithSmsApi({
+          token,
+          to: prepared.recipientPhone,
+          message: currentMessage,
+          from: sender,
+        });
+      },
     });
-    const linkedJobId = isUuid(String(device.source_job_id || "").split("::")[0]) ? String(device.source_job_id).split("::")[0] : null;
+
     await upsertFinalizedCycleLog(adminClient, {
-      device_id: device.id,
-      job_id: linkedJobId,
-      client: contractor?.company_name || null,
+      device_id: smsResult.deviceId,
+      job_id: smsResult.linkedJobId,
+      client: smsResult.client,
       phone: smsResult.recipientPhone,
-      message,
+      message: currentMessage,
       sms_type: "service_reminder",
       provider: "smsapi",
       provider_message_id: smsResult.providerMessageId,
@@ -343,44 +404,66 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
       approved_by: callerId,
       sent_at: nowIso,
       created_by: callerId,
-      reminder_cycle: effectiveCycle,
-      reminder_due_date: dueDate,
+      reminder_cycle: smsResult.cycle,
+      reminder_due_date: smsResult.currentDueDate,
       reminder_group_id: smsResult.reminderGroupId,
       reminder_group_primary: true,
       error_message: null,
     });
-    if (linkedJobId) {
-      await adminClient.from("jobs").update({ last_sms_sent_at: nowIso, last_sms_status: "provider_sent", last_sms_error: null, sms_recipient_phone: smsResult.recipientPhone }).eq("id", linkedJobId);
+
+    if (smsResult.linkedJobId) {
+      await adminClient.from("jobs").update({
+        last_sms_sent_at: nowIso,
+        last_sms_status: "provider_sent",
+        last_sms_error: null,
+        sms_recipient_phone: smsResult.recipientPhone,
+      }).eq("id", smsResult.linkedJobId);
     }
-    return json({ ok: true, recipientPhone: smsResult.recipientPhone, providerMessageId: smsResult.providerMessageId, providerResponse: smsResult.responseBody });
-  } catch (e) {
-    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message }, 409);
-    const errorMessage = e instanceof Error ? e.message : String(e);
-    const linkedJobId = isUuid(String(device.source_job_id || "").split("::")[0]) ? String(device.source_job_id).split("::")[0] : null;
-    const reminderGroupId = getReminderGroupIdFromError(e);
-    await upsertFinalizedCycleLog(adminClient, {
-      device_id: device.id,
-      job_id: linkedJobId,
-      client: contractor?.company_name || null,
-      phone: recipientPhone,
-      message,
-      sms_type: "service_reminder",
-      provider: "smsapi",
-      status: "error",
-      planned_for: nowIso,
-      approved_at: nowIso,
-      approved_by: callerId,
-      created_by: callerId,
-      reminder_cycle: effectiveCycle,
-      reminder_due_date: dueDate,
-      reminder_group_id: reminderGroupId,
-      reminder_group_primary: Boolean(reminderGroupId),
-      error_message: errorMessage,
+
+    return json({
+      ok: true,
+      recipientPhone: smsResult.recipientPhone,
+      providerMessageId: smsResult.providerMessageId,
+      providerResponse: smsResult.responseBody,
+      reminderDueDate: smsResult.currentDueDate,
     });
-    if (linkedJobId) {
-      await adminClient.from("jobs").update({ last_sms_status: "error", last_sms_error: errorMessage, sms_recipient_phone: recipientPhone }).eq("id", linkedJobId);
+  } catch (e) {
+    if (e instanceof SmsDeliveryBlockedError) return json({ error: e.message, reason: e.reason }, 409);
+
+    const errorMessage = e instanceof Error ? e.message : String(e);
+    const prepared = getPreparedSmsFromError(e);
+
+    if (prepared) {
+      await upsertFinalizedCycleLog(adminClient, {
+        device_id: prepared.deviceId,
+        job_id: prepared.linkedJobId,
+        client: prepared.client,
+        phone: prepared.recipientPhone,
+        message: currentMessage,
+        sms_type: "service_reminder",
+        provider: "smsapi",
+        status: "error",
+        planned_for: nowIso,
+        approved_at: nowIso,
+        approved_by: callerId,
+        created_by: callerId,
+        reminder_cycle: prepared.cycle,
+        reminder_due_date: prepared.currentDueDate,
+        reminder_group_id: prepared.reminderGroupId,
+        reminder_group_primary: true,
+        error_message: errorMessage,
+      });
+
+      if (prepared.linkedJobId) {
+        await adminClient.from("jobs").update({
+          last_sms_status: "error",
+          last_sms_error: errorMessage,
+          sms_recipient_phone: prepared.recipientPhone,
+        }).eq("id", prepared.linkedJobId);
+      }
     }
-    return json({ error: errorMessage, recipientPhone }, 500);
+
+    return json({ error: errorMessage }, 500);
   }
 }
 
@@ -399,35 +482,33 @@ function buildMessage(target: Record<string, unknown>, settings: SmsSettings) {
   return template.replaceAll("{client}", client).replaceAll("{installation_date}", installationDate).replaceAll("{service_due_date}", serviceDueDate).replaceAll("{service_phone}", servicePhone).replaceAll("{company_name}", companyName);
 }
 
-function calculateDueDate(installationDate: string) {
-  const match = String(installationDate || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (!match) return "";
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
-  date.setMonth(date.getMonth() + 11);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
-
 function formatDate(value: string) {
   const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) return `${match[3]}.${match[2]}.${match[1]}`;
   return value;
 }
 
-function normalizePhone(value: string) {
-  const digits = String(value || "").replace(/\D+/g, "");
-  if (!digits) return "";
-  if (digits.length === 9) return `48${digits}`;
-  if (digits.startsWith("48") && digits.length === 11) return digits;
-  return digits;
-}
-
 function safeJson(value: unknown) {
   try { return JSON.parse(JSON.stringify(value ?? null)); } catch { return { raw: String(value) }; }
 }
 
-function getReminderGroupIdFromError(error: unknown) {
-  const value = String((error as { reminderGroupId?: unknown } | null)?.reminderGroupId || "").trim();
-  return isUuid(value) ? value : null;
+function getPreparedSmsFromError(error: unknown) {
+  const prepared = (error as { preparedSms?: Record<string, unknown> } | null)?.preparedSms;
+  if (!prepared || typeof prepared !== "object") return null;
+  const reminderGroupId = String(prepared.reminderGroupId || "").trim();
+  const recipientPhone = String(prepared.recipientPhone || "").trim();
+  const currentDueDate = String(prepared.currentDueDate || "").trim();
+  if (!isUuid(reminderGroupId) || !recipientPhone || !currentDueDate) return null;
+  return prepared as {
+    reminderGroupId: string;
+    recipientPhone: string;
+    currentDueDate: string;
+    linkedJobId: string | null;
+    deviceId: string | null;
+    installationDate: string;
+    client: string;
+    cycle: number;
+  };
 }
 
 function isUuid(value: string) {
