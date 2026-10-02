@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.28",
+  "version": "12.29",
   "scope": "full",
-  "release_branch": "release/v12.28",
+  "release_branch": "release/v12.29",
   "baseline_diagnostics": {
-    "checked": false,
-    "last_24h": false,
-    "result": "NOT_CHECKED",
-    "notes": "Poprawka przygotowana do przeglądu, bez operacji na produkcji."
+    "checked": true,
+    "last_24h": true,
+    "result": "PASS",
+    "notes": "Końcowa kontrola audytu SMS: v28 bez nowych konfliktów 409 po finalnym wdrożeniu; hotfix dotyczy wyłącznie UI/fallbacku."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.28.zip"
+    "file_name": "klima-app-v12.29.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.28",
+    "source_branch": "release/v12.29",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": false,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu opcjonalny szybki test z konta pracownika; nie blokuje wydania."
+    "notes": "Po merge sprawdzić zielony deployment Vercela i dostępność wersji 12.29."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "NONE — istniejące ścieżki approval i retry_not_sent, bez zmian bazy i Edge Functions.",
-    "pr_check": "SUCCESS — WAWIS PR checks #632",
+    "supabase_changes": "NONE — brak zmian bazy i Edge Functions w 12.29.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.29",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }
