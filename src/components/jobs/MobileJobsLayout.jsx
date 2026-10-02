@@ -130,7 +130,7 @@ export default function MobileJobsLayout({
             <button type="button" className="mobileJobCardButton" onClick={() => setSelectedJob(job)}>
               <div className="mobileJobTop">
                 <strong className="mobileJobClient">{job.client || job.title}</strong>
-                <span className="mobileJobDate">{getJobListDate(job) ? formatDate(getJobListDate(job)) : "-"}</span>
+                <span className="mobileJobDate">{getJobListDate(job) ? formatDate(getJobListDate(job)) : (String(job?.status || "") === "Zakończone" ? "Brak daty" : "-")}</span>
               </div>
               <div className="mobileJobGrid mobileJobGridSingleField">
                 <div className="mobileJobAddressBlock">
