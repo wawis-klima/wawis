@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 (async () => {
-  const migration = read('supabase/migrations/20261002085905_sms_stage5_history_legacy_v1222.sql');
+  const migration = read('supabase/migrations/20261002090424_sms_stage5_history_legacy_v1222.sql');
   assert.match(migration, /add column if not exists sms_consent boolean not null default true/i);
   assert.match(migration, /add column if not exists sms_reminder_enabled boolean not null default true/i);
   assert.match(migration, /admin_list_devices_with_contractor_v2/);
