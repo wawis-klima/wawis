@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić SMS dla klientów z kilkoma urządzeniami: jeden aktywny wpis, brak ponownego pojawiania się po wysłaniu, jedna pozycja w historii bieżącego miesiąca."
+    "notes": "Po merge/Vercel sprawdzić SMS: jeden aktywny wpis na klienta w 62-dniowym oknie, brak ponownego pojawiania się po wysłaniu, historia pogrupowana. Produkcyjne migracje i Edge Function v17 są już wdrożone."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,12 +32,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration_applied": "PENDING — 20261002070000_sms_customer_window_dedup_v1217.sql",
-    "rls_role_matrix": "Bez zmian RLS; cleanup pozostaje security definer z kontrolą current_user_is_admin/service_role.",
-    "performance_advisor": "Do sprawdzenia po migracji; brak nowych tabel i indeksów.",
-    "security_advisor": "Do sprawdzenia po migracji; brak nowych sekretów.",
-    "trigger_grants": "GRANT EXECUTE dla admin_cleanup_sms_duplicate_logs na authenticated.",
-    "edge_functions": "PENDING — deploy generate-service-sms-queue z logiką 62-dniowego okna klienta.",
+    "supabase_migration_applied": "APPLIED — sms_customer_window_dedup_v1217 oraz sms_cleanup_rpc_acl_v1217 zakończone sukcesem na produkcji.",
+    "rls_role_matrix": "Bez zmian RLS. admin_cleanup_sms_duplicate_logs pozostaje SECURITY DEFINER z kontrolą service_role/current_user_is_admin; anon EXECUTE został odebrany, authenticated/service_role zachowane celowo.",
+    "performance_advisor": "CHECKED — tylko istniejące wcześniej informacje o nieindeksowanych FK/nieużywanych indeksach; ta zmiana nie dodaje tabel ani indeksów.",
+    "security_advisor": "CHECKED — po poprawce ACL admin_cleanup_sms_duplicate_logs nie jest już wykonywalny przez anon. Pozostałe ostrzeżenia dotyczą istniejących wcześniej funkcji/tabel i nie są częścią zmiany 12.17.",
+    "trigger_grants": "CHECKED — cleanup RPC: public/anon revoke; authenticated i service_role execute.",
+    "edge_functions": "DEPLOYED — generate-service-sms-queue v17 ACTIVE z grupowaniem klienta w 62-dniowym oknie.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
