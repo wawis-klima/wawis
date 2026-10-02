@@ -477,11 +477,9 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden({ timeout: 20_000 });
 
     await expect(page.getByText('Wszystkie wymagane zdjęcia tabliczek są zapisane.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeEnabled();
-    await page.getByRole('button', { name: 'Zakończ', exact: true }).click();
-    await expect(page.locator('.statusActionButton[title="Zakończone"]')).toContainText('2');
-    await page.locator('.statusActionButton[title="Zakończone"]').click();
-    await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-    await expect(page.locator('.workerReadOnlyNote')).toHaveText('Zakończone');
+    // Komplet tabliczek usuwa blokadę urządzeń, ale od 12.26 pracownik
+    // nadal musi zapisać protokół klienta przed zakończeniem.
+    await expect(page.getByText(/Najpierw wypełnij, podpisz i zapisz protokół klienta/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
   });
 });
