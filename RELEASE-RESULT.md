@@ -1,25 +1,25 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.17
+- 12.18
 
 ## Zakres
-- SMS: jeden klient z kilkoma aktywnymi urządzeniami dostaje jeden wpis i jeden SMS w 62-dniowym oknie serwisowym
-- grupowanie działa także wtedy, gdy urządzenia mają różne daty montażu, różne terminy przypomnienia i różne numery cyklu
-- jedna wysłana/doręczona wiadomość blokuje kolejne bliskie przypomnienia tego samego klienta
-- widok „Wysłane w tym miesiącu” oraz pełna historia są grupowane po kliencie i oknie serwisowym
-- cleanup usuwa tylko techniczne duplikaty oczekujące/anulowane/błędne/niewysłane; zachowuje faktyczną historię sent/provider_sent/delivered
-- aktualizacja Edge Function generate-service-sms-queue
-- nowa migracja Supabase: 20261002070000_sms_customer_window_dedup_v1217.sql
-- desktop i mobile zachowują tę samą logikę
+- SMS Etap 1: ochrona historii `sms_log` przed fizycznym usuwaniem.
+- Automatyczny cleanup nie wykonuje już kasowania i nie jest uruchamiany przy zwykłym odczycie modułu ani przez generator kolejki.
+- Anulowanie oczekującej pozycji odbywa się atomowo przez `cancel_service_sms_log`.
+- Wysłana, doręczona, rozpoczęta lub już zarezerwowana wiadomość nie może zostać oznaczona jako `deleted`.
+- Dane klienta, telefonu, treści i terminu istniejącego logu nie są nadpisywane payloadem przeglądarki przy anulowaniu.
+- `sms_log.job_id` i `sms_log.device_id` używają `ON DELETE SET NULL`, więc usunięcie montażu lub urządzenia nie usuwa historii.
+- Desktop i mobile nie uruchamiają cleanupu podczas odczytu.
 
 ## Kontrola regresji
-- smoke sms-job-grouping rozszerzony o dwa urządzenia jednego klienta z terminami oddalonymi o kilkanaście dni i różnymi cyklami
-- smoke sms-log-cleanup rozszerzony o 62-dniowe okno oraz ochronę historii skutecznych wysyłek
-- WAWIS PR checks / targeted-checks: PENDING (po ostatnich zmianach ACL)
-- migracja Supabase: APPLIED (`sms_customer_window_dedup_v1217` + `sms_cleanup_rpc_acl_v1217`)
-- Edge Function: DEPLOYED — `generate-service-sms-queue` v17 ACTIVE
-- Security Advisor: CHECKED — cleanup RPC bez dostępu anon; pozostałe ostrzeżenia są wcześniejsze i niezwiązane z 12.17
-- Performance Advisor: CHECKED — brak nowych tabel/indeksów; pozostałe informacje są wcześniejsze
+- migracja Supabase: APPLIED (`20261002062031_sms_history_safety_stage1_v1218`)
+- produkcyjne FK: VERIFIED — oba `ON DELETE SET NULL`
+- trigger `trg_protect_sms_log_history`: VERIFIED — BEFORE UPDATE OR DELETE
+- Security Advisor: CHECKED
+- Performance Advisor: CHECKED
+- smoke `sms-log-cleanup`: PASS w WAWIS PR checks
+- WAWIS PR checks / targeted-checks: PASS (release gate, regresja, Playwright E2E, produkcyjny build)
+- Edge Functions: DEPLOYED — `send-service-sms` v29 ACTIVE, `generate-service-sms-queue` v19 ACTIVE
 - Vercel: PENDING
 - merge: PENDING

@@ -68,7 +68,7 @@ Deno.serve(async (request) => {
     const nowIso = new Date().toISOString();
 
     if (body.mode === "delete") {
-      return await handleDeleteLogs({ adminClient, callerId: callerProfile.id, nowIso, rows: Array.isArray(body.rows) ? body.rows : [] });
+      return await handleDeleteLogs({ adminClient, callerId: callerProfile.id, rows: Array.isArray(body.rows) ? body.rows : [] });
     }
 
     const settings = await loadSettings(adminClient);
@@ -158,60 +158,59 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
   return json({ ok: failures.length === 0, sentCount, failures });
 }
 
-async function handleDeleteLogs({ adminClient, callerId, nowIso, rows }: { adminClient: ReturnType<typeof createClient>; callerId: string; nowIso: string; rows: DeleteRow[]; }) {
+async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: ReturnType<typeof createClient>; callerId: string; rows: DeleteRow[]; }) {
   const cleanRows = Array.isArray(rows) ? rows.filter((row) => row && (row.logId || row.deviceId || row.jobId)) : [];
   if (cleanRows.length === 0) return json({ error: "Nie przekazano pozycji z kolejki do usunięcia." }, 400);
 
-  let deletedCount = 0;
+  const logIds = [...new Set(
+    cleanRows
+      .map((row) => String(row.logId || "").trim())
+      .filter((id) => isUuid(id)),
+  )];
 
-  for (const row of cleanRows) {
-    const normalizedJobId = isUuid(String(row.jobId || "")) ? String(row.jobId) : null;
-    const normalizedPhone = row.phone ? normalizePhone(String(row.phone)) : null;
-    const patch = {
-      status: "deleted",
-      approved_at: nowIso,
-      approved_by: callerId,
-      error_message: null,
-      device_id: isUuid(String(row.deviceId || "")) ? String(row.deviceId) : null,
-      job_id: normalizedJobId,
-      reminder_cycle: Number.parseInt(String(row.reminderCycle ?? ""), 10) || 1,
-      reminder_due_date: row.reminderDueDate || null,
-      client: row.client || null,
-      phone: normalizedPhone,
-      message: row.message || null,
-      sms_type: "service_reminder",
-      provider: "smsapi",
-    } as Record<string, unknown>;
-
-    if (row.logId) {
-      const { error } = await adminClient
-        .from("sms_log")
-        .update(patch)
-        .eq("id", String(row.logId));
-      if (!error) {
-        if (normalizedJobId) {
-          await adminClient.from("jobs").update({ last_sms_status: "deleted", last_sms_error: null, sms_recipient_phone: normalizedPhone }).eq("id", normalizedJobId);
-        }
-        deletedCount += 1;
-        continue;
-      }
-    }
-
-    await updateSmsLogInsert(adminClient, {
-      ...patch,
-      created_by: callerId,
-      planned_for: nowIso,
-      sent_at: null,
-      provider_message_id: null,
-      provider_response: null,
-    });
-    if (normalizedJobId) {
-      await adminClient.from("jobs").update({ last_sms_status: "deleted", last_sms_error: null, sms_recipient_phone: normalizedPhone }).eq("id", normalizedJobId);
-    }
-    deletedCount += 1;
+  if (logIds.length === 0) {
+    return json({
+      ok: false,
+      error: "Ta pozycja nie ma jeszcze trwałego wpisu kolejki. Odśwież listę SMS i spróbuj ponownie.",
+      deletedCount: 0,
+      failures: [],
+    }, 409);
   }
 
-  return json({ ok: true, deletedCount });
+  let deletedCount = 0;
+  const failures: Array<{ id: string; error: string }> = [];
+
+  for (const logId of logIds) {
+    const { data, error } = await adminClient.rpc("cancel_service_sms_log", {
+      p_log_id: logId,
+      p_actor_id: callerId,
+    });
+
+    if (error) {
+      failures.push({ id: logId, error: error.message || "Nie udało się bezpiecznie anulować SMS-a." });
+      continue;
+    }
+
+    const result = (data && typeof data === "object" ? data : {}) as Record<string, unknown>;
+    if (result.cancelled === true || result.already_deleted === true) {
+      deletedCount += 1;
+      continue;
+    }
+
+    const reason = String(result.reason || "Pozycja nie może zostać anulowana, ponieważ wysyłka już się rozpoczęła albo stan uległ zmianie.");
+    failures.push({ id: logId, error: reason });
+  }
+
+  if (failures.length > 0) {
+    return json({
+      ok: false,
+      error: "Nie wszystkie pozycje można było anulować. Lista została zabezpieczona przed zmianą historii wysłanych SMS-ów.",
+      deletedCount,
+      failures,
+    }, 409);
+  }
+
+  return json({ ok: true, deletedCount, failures: [] });
 }
 
 async function handleManualJobSend({ adminClient, callerId, settings, sender, token, nowIso, jobId, reminderCycle, reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; jobId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {

@@ -10,60 +10,54 @@ function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8');
 }
 
-const migration = read('sms-module-stage-9-log-cleanup.sql');
-assert.match(migration, /admin_cleanup_sms_duplicate_logs/);
-assert.match(migration, /security definer/);
-assert.match(migration, /current_user_is_admin\(\)/);
-assert.match(migration, /reminder_due_date is not null/);
-assert.match(migration, /abs\(winner\.reminder_due_date - loser\.reminder_due_date\) <= 62/);
-assert.match(migration, /not in \('delivered', 'provider_sent', 'sent'\)/);
-assert.match(migration, /winner\.customer_key = loser\.customer_key/);
-assert.match(migration, /delete from public\.sms_log/);
-assert.match(migration, /deleted_duplicate_logs/);
-assert.match(migration, /customer_window_days/);
-assert.match(migration, /successful_send_history_preserved/);
-assert.match(migration, /revoke all on function public\.admin_cleanup_sms_duplicate_logs\(\) from public/);
-assert.match(migration, /revoke all on function public\.admin_cleanup_sms_duplicate_logs\(\) from anon/);
-assert.match(migration, /grant execute on function public\.admin_cleanup_sms_duplicate_logs\(\) to authenticated/);
-assert.match(migration, /grant execute on function public\.admin_cleanup_sms_duplicate_logs\(\) to service_role/);
+const migration = read('supabase/migrations/20261002062031_sms_history_safety_stage1_v1218.sql');
 
-const fetchSource = read('src/modules/sms-fetch.js');
-assert.match(fetchSource, /cleanupSmsDuplicateLogs/);
-assert.match(fetchSource, /admin_cleanup_sms_duplicate_logs/);
-assert.match(fetchSource, /admin_get_sms_module_snapshot/);
+assert.match(migration, /protect_sms_log_history/);
+assert.match(migration, /Historia SMS nie może być fizycznie usuwana/);
+assert.match(migration, /physical_delete_disabled/);
+assert.match(migration, /cancel_service_sms_log/);
+assert.match(migration, /for update/i);
+assert.match(migration, /private\.sms_delivery_claims/);
+assert.match(migration, /status not in \('pending_approval', 'not_sent'\)/);
+assert.match(migration, /provider_message_id is not null/);
+assert.match(migration, /sent_at is not null/);
+assert.match(migration, /delivered_at is not null/);
+assert.match(migration, /on delete set null/gi);
+assert.doesNotMatch(migration, /delete from public\.sms_log/i);
+assert.match(migration, /revoke all on function public\.cancel_service_sms_log\(uuid, uuid\) from authenticated/);
+assert.match(migration, /grant execute on function public\.cancel_service_sms_log\(uuid, uuid\) to service_role/);
+
+for (const relativePath of ['src/modules/sms-fetch.js', 'src/mobile791/modules/sms-fetch.js']) {
+  const source = read(relativePath);
+  const loadStart = source.indexOf('export async function loadSmsModuleData');
+  const saveStart = source.indexOf('export async function saveSmsSettings', loadStart);
+  const loadBlock = source.slice(loadStart, saveStart);
+  assert.doesNotMatch(loadBlock, /cleanupSmsDuplicateLogs/);
+  assert.match(source, /history_protection_stage1/);
+  assert.match(source, /admin_get_sms_module_snapshot/);
+}
 
 const generatorSource = read('supabase/functions/generate-service-sms-queue/index.ts');
-assert.match(generatorSource, /cleanupDuplicateSmsLogs/);
-assert.match(generatorSource, /admin_cleanup_sms_duplicate_logs/);
-assert.match(generatorSource, /cleanupResult/);
-assert.match(generatorSource, /createdCount, expiredCount, cleanupResult/);
+assert.doesNotMatch(generatorSource, /cleanupDuplicateSmsLogs/);
+assert.doesNotMatch(generatorSource, /admin_cleanup_sms_duplicate_logs/);
+assert.doesNotMatch(generatorSource, /cleanupResult/);
 
-// Od 10.61 release runner korzysta z centralnych grup testów zamiast wpisywać
-// każdą komendę smoke bezpośrednio w scripts/run-release.cjs.
+const senderSource = read('supabase/functions/send-service-sms/index.ts');
+const deleteStart = senderSource.indexOf('async function handleDeleteLogs');
+const manualStart = senderSource.indexOf('async function handleManualJobSend', deleteStart);
+const deleteBlock = senderSource.slice(deleteStart, manualStart);
+assert.match(deleteBlock, /rpc\("cancel_service_sms_log"/);
+assert.match(deleteBlock, /new Set/);
+assert.doesNotMatch(deleteBlock, /from\("sms_log"\)/);
+assert.doesNotMatch(deleteBlock, /updateSmsLogInsert/);
+assert.doesNotMatch(deleteBlock, /client:/);
+assert.doesNotMatch(deleteBlock, /phone:/);
+
 const testGroupsSource = read('scripts/test-groups.cjs');
 assert.match(testGroupsSource, /test:smoke:sms-log-cleanup/);
-assert.match(testGroupsSource, /desktop:\s*\[/);
 
-const runnerSource = read('scripts/run-release.cjs');
-assert.match(runnerSource, /getReleaseGroups/);
-assert.match(runnerSource, /run-test-group\.cjs/);
+const version = String(JSON.parse(read('app-version.json')).version || '');
+assert.equal(version, '12.18');
 
-// Od 10.74/10.75 diagnostyka jest raportem informacyjnym i nie może wrócić
-// do twardej bramki verify-release. Test chroni tę nową regułę procesu.
-const verifySource = read('scripts/verify-release.cjs');
-assert.doesNotMatch(verifySource, /validDiagnosticCheck/);
-assert.doesNotMatch(verifySource, /assert\([^\n]*baseline_diagnostics/);
-assert.doesNotMatch(verifySource, /assert\([^\n]*predeploy_diagnostics/);
-assert.match(verifySource, /Diagnostyka jest informacyjna/);
-assert.match(verifySource, /verifyDist/);
-
-const readme = read('README.md');
-assert.match(readme, /test:smoke:sms-log-cleanup/);
-assert.match(readme, /admin_cleanup_sms_duplicate_logs/);
-
-const changelog = read('CHANGELOG.md');
-assert.match(changelog, /7\.63/);
-assert.match(changelog, /duplikat/iu);
-
-console.log('SMS log cleanup smoke OK');
+console.log('SMS history safety stage 1 smoke OK');
 process.exit(0);
