@@ -1,4 +1,10 @@
-import {\n  sendServiceSmsOnce,\n  SmsAcceptancePersistenceError,\n  SmsDeliveryBlockedError,\n  SmsDeliveryUncertainError,\n  SmsProviderRejectedError,\n} from './delivery.ts';
+import {
+  sendServiceSmsOnce,
+  SmsAcceptancePersistenceError,
+  SmsDeliveryBlockedError,
+  SmsDeliveryUncertainError,
+  SmsProviderRejectedError,
+} from './delivery.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 type DeleteRow = {
