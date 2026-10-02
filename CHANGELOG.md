@@ -1,3 +1,6 @@
+## 12.17
+- SMS: grupowanie przypomnień zostało rozszerzone z dokładnie tego samego terminu na 62-dniowe okno klienta (numer telefonu). Kilka urządzeń i różne cykle tego samego klienta tworzą jeden SMS; skuteczna wysyłka blokuje kolejne bliskie przypomnienia, a historia jest prezentowana jako jeden wpis. Dodano bezpieczny cleanup technicznych duplikatów bez kasowania historii wysłanych/doręczonych wiadomości oraz aktualizację Edge Function `generate-service-sms-queue`.
+
 ## 12.16
 - Desktop: poprawiono wygląd zwiniętych sekcji „Urządzenia” i „Zdjęcia montażu” — kompaktowe paski, mocniejsza obwódka, większy chevron w osobnym badge’u i cały pasek klikalny; bez dodatkowych napisów. Mobile bez zmian funkcjonalnych.
 
