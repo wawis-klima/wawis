@@ -11,6 +11,7 @@ const jobsPaginationSource = fs.readFileSync(path.join(root, 'src', 'components'
 const desktopRowSource = fs.readFileSync(path.join(root, 'src', 'components', 'DesktopJobsTableRow.jsx'), 'utf8');
 const jobsColumnsSource = fs.readFileSync(path.join(root, 'src', 'components', 'desktop-jobs-table.columns.jsx'), 'utf8');
 const jobsSelectorsSource = fs.readFileSync(path.join(root, 'src', 'modules', 'jobs-selectors.js'), 'utf8');
+const desktopHeaderSource = fs.readFileSync(path.join(root, 'src', 'components', 'DesktopJobsTableHeader.jsx'), 'utf8');
 
 assert.match(appSource, /const JobDetailsPanel = lazy\(\(\) => import\("\.\/components\/JobDetailsPanel\.jsx"\)\);/);
 assert.match(appSource, /const \[selectedJob, setSelectedJob\] = useState\(null\);/);
@@ -33,6 +34,7 @@ assert.match(appSource, /<JobDetailsPanel/);
 assert.match(jobsPanelSource, /isMobile \? <MobileJobsLayout \{\.\.\.props\} \/> : <DesktopJobsLayout \{\.\.\.props\} \/>/);
 assert.match(mobileLayoutSource, /onClick=\{\(\) => setSelectedJob\(job\)\}/);
 assert.match(desktopLayoutSource, /onSelect=\{setSelectedJob\}/);
+assert.match(desktopLayoutSource, /desktopStatusFilter=\{desktopStatusFilter\}/);
 assert.match(desktopLayoutSource, /import JobsPagination from "\.\/JobsPagination\.jsx";/);
 assert.match(desktopLayoutSource, /const jobsPageRows = pagedVisibleJobs \|\| visibleJobs;/);
 assert.match(desktopLayoutSource, /\{jobsPageRows\.map\(\(job\) => \(/);
@@ -51,16 +53,24 @@ assert.match(desktopRowSource, /aria-selected=\{selected \? "true" : "false"\}/)
 assert.match(desktopRowSource, /onClick=\{\(\) => onSelect\(job\)\}/);
 
 assert.match(jobsColumnsSource, /label: "Data montażu"/);
-assert.match(jobsColumnsSource, /const hasInstallationDate = Boolean\(job\.installation_date\);/);
-assert.match(jobsColumnsSource, /<div className="desktopDateCell">\{formatDate\(job\.installation_date\)\}<\/div>/);
-assert.match(jobsColumnsSource, /desktopDateMissingBadge/);
+assert.match(jobsColumnsSource, /completedLabel: "Data zakończenia"/);
+assert.match(jobsColumnsSource, /const isCompletedJob = String\(job\?\.status \|\| ''\) === 'Zakończone';/);
+assert.match(jobsColumnsSource, /const dateValue = isCompletedJob \? job\?\.completed_at : job\?\.installation_date;/);
+assert.match(jobsColumnsSource, /Brak ustawionej daty zakończenia/);
 assert.match(jobsColumnsSource, /Brak ustawionej daty montażu/);
+assert.match(jobsColumnsSource, /desktopDateMissingBadge/);
 assert.match(jobsColumnsSource, /Brak daty/);
 assert.doesNotMatch(jobsColumnsSource, /job\.created_at \? formatDate\(job\.created_at\) : "-"/);
-assert.match(mobileLayoutSource, /job\.installation_date \? formatDate\(job\.installation_date\) : "-"/);
+assert.match(desktopHeaderSource, /desktopStatusFilter === "Zakończone"/);
+assert.match(desktopHeaderSource, /column\.completedLabel \|\| column\.label/);
+assert.match(mobileLayoutSource, /function getJobListDate\(job\)/);
+assert.match(mobileLayoutSource, /job\?\.completed_at/);
+assert.match(mobileLayoutSource, /getJobListDate\(job\) \? formatDate\(getJobListDate\(job\)\) : "-"/);
 assert.doesNotMatch(mobileLayoutSource, /job\.created_at \? formatDate\(job\.created_at\) : "-"/);
-assert.match(jobsSelectorsSource, /new Date\(b\.installation_date \|\| 0\) - new Date\(a\.installation_date \|\| 0\)/);
-assert.match(jobsSelectorsSource, /new Date\(a\.installation_date \|\| 0\) - new Date\(b\.installation_date \|\| 0\)/);
+assert.match(jobsSelectorsSource, /function getJobSortDate\(job\)/);
+assert.match(jobsSelectorsSource, /job\?\.completed_at/);
+assert.match(jobsSelectorsSource, /if \(sortBy === 'date_desc'\) return getJobSortDate\(b\) - getJobSortDate\(a\);/);
+assert.match(jobsSelectorsSource, /if \(sortBy === 'date_asc'\) return getJobSortDate\(a\) - getJobSortDate\(b\);/);
 assert.doesNotMatch(jobsSelectorsSource, /sortBy === 'date_desc'[\s\S]*created_at/);
 
 console.log('Job selection smoke OK');
