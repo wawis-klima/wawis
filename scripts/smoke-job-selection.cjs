@@ -12,6 +12,10 @@ const desktopRowSource = fs.readFileSync(path.join(root, 'src', 'components', 'D
 const jobsColumnsSource = fs.readFileSync(path.join(root, 'src', 'components', 'desktop-jobs-table.columns.jsx'), 'utf8');
 const jobsSelectorsSource = fs.readFileSync(path.join(root, 'src', 'modules', 'jobs-selectors.js'), 'utf8');
 const desktopHeaderSource = fs.readFileSync(path.join(root, 'src', 'components', 'DesktopJobsTableHeader.jsx'), 'utf8');
+const mobile791LayoutSource = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'jobs', 'MobileJobsLayout.jsx'), 'utf8');
+const mobile791ColumnsSource = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'desktop-jobs-table.columns.jsx'), 'utf8');
+const mobile791SelectorsSource = fs.readFileSync(path.join(root, 'src', 'mobile791', 'modules', 'jobs-selectors.js'), 'utf8');
+const mobile791HeaderSource = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'DesktopJobsTableHeader.jsx'), 'utf8');
 
 assert.match(appSource, /const JobDetailsPanel = lazy\(\(\) => import\("\.\/components\/JobDetailsPanel\.jsx"\)\);/);
 assert.match(appSource, /const \[selectedJob, setSelectedJob\] = useState\(null\);/);
@@ -72,6 +76,19 @@ assert.match(jobsSelectorsSource, /job\?\.completed_at/);
 assert.match(jobsSelectorsSource, /if \(sortBy === 'date_desc'\) return getJobSortDate\(b\) - getJobSortDate\(a\);/);
 assert.match(jobsSelectorsSource, /if \(sortBy === 'date_asc'\) return getJobSortDate\(a\) - getJobSortDate\(b\);/);
 assert.doesNotMatch(jobsSelectorsSource, /sortBy === 'date_desc'[\s\S]*created_at/);
+
+for (const [name, source] of [
+  ['mobile791 columns', mobile791ColumnsSource],
+  ['mobile791 header', mobile791HeaderSource],
+  ['mobile791 layout', mobile791LayoutSource],
+  ['mobile791 selectors', mobile791SelectorsSource],
+]) {
+  assert.match(source, /completed_at/, `${name}: brak obsługi daty zakończenia`);
+}
+assert.match(mobile791ColumnsSource, /completedLabel: "Data zakończenia"/);
+assert.match(mobile791HeaderSource, /desktopStatusFilter === "Zakończone"/);
+assert.match(mobile791LayoutSource, /function getJobListDate\(job\)/);
+assert.match(mobile791SelectorsSource, /function getJobSortDate\(job\)/);
 
 console.log('Job selection smoke OK');
 process.exit(0);
