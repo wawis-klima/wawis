@@ -37,10 +37,11 @@
     "group_anchor_test": "PASS — kolejność późniejszy→wcześniejszy dla terminów 01.03/01.01 zachowała ten sam group_id i przesunęła anchor do 01.01; termin 30.04 utworzył drugą grupę.",
     "group_claim_test": "PASS — pierwsza rezerwacja trwałej grupy została przyjęta, druga w tej samej transakcji została zablokowana.",
     "rls_role_matrix": "private.sms_reminder_groups ma RLS i brak dostępu public/anon/authenticated; ensure_service_sms_group i claim_service_sms_group są wykonywalne wyłącznie przez service_role.",
-    "performance_advisor": "PENDING — sprawdzić po finalnym kodzie przed merge.",
-    "security_advisor": "PENDING — sprawdzić po finalnym kodzie przed merge.",
-    "edge_functions": "PENDING — send-service-sms i generate-service-sms-queue zostaną przełączone na group-level API po zielonym CI.",
+    "performance_advisor": "CHECKED — nowe powiązanie sms_log.reminder_group_id ma indeks; brak nowych ostrzeżeń wydajności związanych z Etapem 2. Pozostałe informacje są wcześniejsze.",
+    "security_advisor": "CHECKED — nowe RPC ensure_service_sms_group i claim_service_sms_group są service_role-only. private.sms_reminder_groups ma RLS, brak dostępu public/anon/authenticated; INFO o braku policy w prywatnej tabeli jest celowe. Pozostałe ostrzeżenia są wcześniejsze.",
+    "edge_functions": "DEPLOYED — send-service-sms v30 ACTIVE używa claim_service_sms_group; generate-service-sms-queue v20 ACTIVE używa ensure_service_sms_group i nie ma starego pairwise dedup.",
     "vercel_deployment": "PENDING — po merge do main",
-    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
+    "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki",
+    "group_invariants": "VERIFIED — 1154 grup / 1336 przypisanych logów / 1154 primary; duplicate primary groups = 0, duplicate pending primary groups = 0."
   }
 }
