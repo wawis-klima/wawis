@@ -9,6 +9,13 @@ export function formatDate(dateStr) {
   return `${day}.${month}.${year}`;
 }
 
+function getJobSortDate(job) {
+  const dateValue = String(job?.status || '') === 'Zakończone'
+    ? job?.completed_at
+    : job?.installation_date;
+  return new Date(dateValue || 0).getTime();
+}
+
 export function getNextSortValue(currentSort, field) {
   if (currentSort === `${field}_asc`) return `${field}_desc`;
   if (currentSort === `${field}_desc`) return `${field}_asc`;
@@ -61,8 +68,8 @@ export function getVisibleJobs({
   return [...filtered].sort((a, b) => {
     if (sortBy === 'client_asc') return (a.client || a.title || '').localeCompare(b.client || b.title || '', 'pl');
     if (sortBy === 'client_desc') return (b.client || b.title || '').localeCompare(a.client || a.title || '', 'pl');
-    if (sortBy === 'date_desc') return new Date(b.installation_date || 0) - new Date(a.installation_date || 0);
-    if (sortBy === 'date_asc') return new Date(a.installation_date || 0) - new Date(b.installation_date || 0);
+    if (sortBy === 'date_desc') return getJobSortDate(b) - getJobSortDate(a);
+    if (sortBy === 'date_asc') return getJobSortDate(a) - getJobSortDate(b);
     if (sortBy === 'city_asc') return (a.city || '').localeCompare(b.city || '', 'pl');
     if (sortBy === 'city_desc') return (b.city || '').localeCompare(a.city || '', 'pl');
     if (sortBy === 'street_asc') return (a.street || '').localeCompare(b.street || '', 'pl');

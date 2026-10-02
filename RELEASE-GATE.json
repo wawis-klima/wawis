@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.23",
+  "version": "12.24",
   "scope": "full",
-  "release_branch": "release/v12.23",
+  "release_branch": "release/v12.24",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "878 wpisów not_sent jest poza 62-dniowym oknem; wszystkie 878 mają nadal żywe device_id. Brak dowodu późniejszej skutecznej wysyłki w tej samej grupie."
+    "notes": "Baseline 24 h przed zmianą: 16 zdarzeń error i 51 warning w app_diagnostic_events; diagnostyka informacyjna, bez zmian w Supabase dla 12.24."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.23.zip"
+    "file_name": "klima-app-v12.24.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.23",
+    "source_branch": "release/v12.24",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "evidence_required": true,
-    "checked": true,
-    "result": "PASS",
-    "notes": "CI run #615 PASS: release gate, pełna regresja, Playwright E2E i build. send-service-sms v33 ACTIVE; live source zawiera retry_not_sent, handleRetryNotSentSend i claim_service_sms_not_sent_retry."
+    "evidence_required": false,
+    "checked": false,
+    "result": "PENDING",
+    "notes": "Po wdrożeniu opcjonalny szybki przegląd diagnostyki; nie blokuje wydania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,18 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_migration": "APPLIED — 20261002095320 sms_unsent_manual_retry_v1223.",
-    "snapshot": "VERIFIED — queue_logs=100, sent_this_month_logs=17, unsent_logs=878, history_logs=300.",
-    "retry_acceptance_test": "PASS/ROLLBACK — oryginalny not_sent bez zmian; nowy retry log provider_sent/delivered, non-primary.",
-    "retry_recovery_test": "PASS/ROLLBACK — callback po niepewnym wyniku odtworzył nowy retry log; recoveredFromClaim=true.",
-    "retry_rejection_test": "PASS/ROLLBACK — odrzucenie utworzyło osobny error log i zwolniło claim.",
-    "acl": "VERIFIED — claim_service_sms_not_sent_retry: anon=false, authenticated=false, service_role=true.",
-    "security_advisor": "CHECKED — brak nowej ekspozycji retry RPC; widoczne ostrzeżenia dotyczą wcześniejszych funkcji.",
-    "performance_advisor": "CHECKED — nowe indeksy retry są świeże i oznaczone jako unused przed użyciem, bez nowego problemu wykonawczego.",
-    "edge_functions": "DEPLOYED — send-service-sms v33 ACTIVE; generate-service-sms-queue v24 i smsapi-delivery-webhook v10 bez zmian.",
-    "vercel_deployment": "PENDING — po merge do main",
-    "first_green_ci": "PASS — run #615: targeted regressions, Playwright E2E i production build.",
-    "live_sender": "VERIFIED — version=33, status=ACTIVE, verify_jwt=false; retry_not_sent route i retry claim obecne w live source.",
-    "current_snapshot": "VERIFIED — queue_logs=100, sent_this_month_logs=17, unsent_logs=878, history_logs=300."
+    "supabase_changes": "NONE — zmiana wyłącznie frontendowa.",
+    "pr_check": "PENDING",
+    "vercel_deployment": "PENDING — po merge do main"
   }
 }

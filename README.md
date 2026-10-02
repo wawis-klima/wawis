@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.23
+- 12.24
+
+Wersja 12.24 zmienia datę prezentowaną na listach zleceń: w sekcji „Zakończone” desktop i mobile pokazują rzeczywistą datę zakończenia z `completed_at`, a pozostałe statusy nadal pokazują datę montażu. Desktop zmienia także nagłówek kolumny na „Data zakończenia”, a sortowanie daty dla zakończonych korzysta z tej samej wartości. Starsze zakończone zlecenia bez `completed_at` pokazują „Brak daty” zamiast podstawiania daty montażu.
 
 Wersja 12.23 rozszerza Etap 5 SMS o zakładkę „Niewysłane”. Pokazuje przeterminowane przypomnienia, których nie wysłano w 62-dniowym oknie, i pozwala administratorowi ręcznie wysłać je ponownie. Stary wpis NIEWYSŁANO pozostaje w historii, a ponowienie tworzy nową próbę z aktualnym numerem i aktualną zgodą SMS. Usunięto mylący komunikat o automatycznej wysyłce 7 dni przed terminem; wysyłka pozostaje ręczna.
 
@@ -857,6 +859,8 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.24` — listy zakończonych montaży na desktopie i mobile pokazują datę zakończenia zamiast daty montażu; sortowanie również używa `completed_at`.
+
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
 - wersja `12.22` — SMS Etap 5: przywrócenie 9 klientów do kolejki legacy, osobny odczyt „wysłane w tym miesiącu” bez limitu 300 oraz historia ograniczona do 300 ostatnich wpisów.

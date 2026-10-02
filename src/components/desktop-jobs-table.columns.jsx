@@ -101,14 +101,18 @@ function renderVatInvoiceCell({ job }) {
 }
 
 function renderDateCell({ job, formatDate }) {
-  const hasInstallationDate = Boolean(job.installation_date);
+  const isCompletedJob = String(job?.status || '') === 'Zakończone';
+  const dateValue = isCompletedJob ? job?.completed_at : job?.installation_date;
+  const missingDateLabel = isCompletedJob
+    ? 'Brak ustawionej daty zakończenia'
+    : 'Brak ustawionej daty montażu';
 
   return (
     <div className="desktopCellContent desktopDateCellContent">
-      {hasInstallationDate ? (
-        <div className="desktopDateCell">{formatDate(job.installation_date)}</div>
+      {dateValue ? (
+        <div className="desktopDateCell">{formatDate(dateValue)}</div>
       ) : (
-        <span className="desktopDateMissingBadge" title="Brak ustawionej daty montażu" aria-label="Brak ustawionej daty montażu">
+        <span className="desktopDateMissingBadge" title={missingDateLabel} aria-label={missingDateLabel}>
           <span className="desktopDateMissingDot" aria-hidden="true">!</span>
           Brak daty
         </span>
@@ -237,6 +241,7 @@ export const DESKTOP_JOBS_TABLE_COLUMNS = [
   {
     key: "date",
     label: "Data montażu",
+    completedLabel: "Data zakończenia",
     sortable: true,
     sortKey: "date",
     width: "112px",

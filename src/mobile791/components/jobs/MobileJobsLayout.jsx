@@ -16,6 +16,10 @@ function getProfileInitials(profile) {
   return email ? email.slice(0, 2).toUpperCase() : "U";
 }
 
+function getJobListDate(job) {
+  return String(job?.status || "") === "Zakończone" ? job?.completed_at : job?.installation_date;
+}
+
 export default function MobileJobsLayout({
   isAdmin,
   openAddJob,
@@ -253,7 +257,7 @@ export default function MobileJobsLayout({
                 <button type="button" className="mobileJobCardButton" onClick={() => toggleJobDetails(job)} aria-expanded={isSelected}>
                   <div className="mobileJobTop">
                     <strong className="mobileJobClient">{job.client || job.title}</strong>
-                    <span className="mobileJobDate">{job.installation_date ? formatDate(job.installation_date) : "-"}</span>
+                    <span className="mobileJobDate">{getJobListDate(job) ? formatDate(getJobListDate(job)) : (String(job?.status || "") === "Zakończone" ? "Brak daty" : "-")}</span>
                   </div>
                   <div className="mobileJobGrid mobileJobGridSingleField">
                     <div className="mobileJobAddressBlock">

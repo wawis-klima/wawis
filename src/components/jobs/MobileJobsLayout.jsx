@@ -4,6 +4,10 @@ import { IconFilter, IconLogout, IconPlus, IconRefresh, IconUser } from "../ui";
 import { getJobAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
 import JobsPagination from "./JobsPagination.jsx";
 
+function getJobListDate(job) {
+  return String(job?.status || "") === "Zakończone" ? job?.completed_at : job?.installation_date;
+}
+
 export default function MobileJobsLayout({
   isAdmin,
   openAddJob,
@@ -126,7 +130,7 @@ export default function MobileJobsLayout({
             <button type="button" className="mobileJobCardButton" onClick={() => setSelectedJob(job)}>
               <div className="mobileJobTop">
                 <strong className="mobileJobClient">{job.client || job.title}</strong>
-                <span className="mobileJobDate">{job.installation_date ? formatDate(job.installation_date) : "-"}</span>
+                <span className="mobileJobDate">{getJobListDate(job) ? formatDate(getJobListDate(job)) : (String(job?.status || "") === "Zakończone" ? "Brak daty" : "-")}</span>
               </div>
               <div className="mobileJobGrid mobileJobGridSingleField">
                 <div className="mobileJobAddressBlock">
