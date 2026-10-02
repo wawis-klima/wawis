@@ -57,11 +57,11 @@ assert.match(compactStyles, /desktopDetailsSectionToggle[\s\S]*cursor:\s*pointer
 assert(panelSource.includes("desktopDevicesExpanded ? 'isExpanded' : 'isCollapsed'"), 'Sekcja Urządzenia musi oznaczać stan zwinięty/rozwinięty.');
 assert(panelSource.includes("desktopPhotosExpanded ? 'isExpanded' : 'isCollapsed'"), 'Sekcja Zdjęcia musi oznaczać stan zwinięty/rozwinięty.');
 assert(panelSource.includes('className="desktopDetailsSectionChevron" aria-hidden="true" />'), 'Chevron powinien być ikoną bez dodatkowego tekstu.');
-assert.match(compactStyles, /desktopCompletedCollapsibleSection\\.isCollapsed[\\s\\S]*justify-self:\\s*start[\\s\\S]*background:\\s*transparent\\s*!important/, 'Zwinięty kafelek powinien być kompaktowy, a nie rozciągnięty na całą szerokość.');
-assert.match(compactStyles, /desktopJobDevicesSection\\.isCollapsed[\\s\\S]*248px/, 'Zwinięte Urządzenia powinny mieć zwartą szerokość.');
-assert.match(compactStyles, /desktopJobPhotosSection\\.isCollapsed[\\s\\S]*278px/, 'Zwinięte Zdjęcia powinny mieć zwartą szerokość.');
-assert.match(compactStyles, /desktopDetailsSectionChevron[\\s\\S]*width:\\s*28px[\\s\\S]*height:\\s*28px[\\s\\S]*border:/, 'Chevron powinien mieć wyraźny, większy holder.');
-assert.match(compactStyles, /desktopDetailsSectionChevron::before[\\s\\S]*border-right:\\s*2px solid currentColor[\\s\\S]*border-bottom:\\s*2px solid currentColor/, 'Chevron powinien być rysowany grubszą, czytelną kreską.');
+assert(compactStyles.includes('.desktopCompletedCollapsibleSection.isCollapsed{') && compactStyles.includes('justify-self:start;') && compactStyles.includes('background:transparent !important;'), 'Zwinięty kafelek powinien być kompaktowy, a nie rozciągnięty na całą szerokość.');
+assert(compactStyles.includes('.desktopJobDevicesSection.isCollapsed{') && compactStyles.includes('width:min(248px,100%);'), 'Zwinięte Urządzenia powinny mieć zwartą szerokość.');
+assert(compactStyles.includes('.desktopJobPhotosSection.isCollapsed{') && compactStyles.includes('width:min(278px,100%);'), 'Zwinięte Zdjęcia powinny mieć zwartą szerokość.');
+assert(compactStyles.includes('.desktopDetailsSectionChevron{') && compactStyles.includes('width:28px;') && compactStyles.includes('height:28px;') && compactStyles.includes('border:1px solid #bcc9d8;'), 'Chevron powinien mieć wyraźny, większy holder.');
+assert(compactStyles.includes('.desktopDetailsSectionChevron::before{') && compactStyles.includes('border-right:2px solid currentColor;') && compactStyles.includes('border-bottom:2px solid currentColor;'), 'Chevron powinien być rysowany grubszą, czytelną kreską.');
 
 
 console.log('Desktop job details polish smoke OK');
