@@ -228,16 +228,13 @@ assert.equal(previewResult.expiresIn, 180);
 assert.ok(previewRedirect.includes(replaced.storage_path));
 assert.ok(previewRedirect.endsWith('?token=signed'));
 assert.equal(previewClosed, false);
-await assert.rejects(
-  () => storeJobProtocol({
-    supabase,
-    job: { ...completedJob, id: '22222222-2222-4222-8222-222222222222', status: 'W trakcie' },
-    pdfBlob,
-    fileName: 'nie-wolno.pdf',
-    signedAt,
-  }),
-  /dopiero po zakończeniu zlecenia/,
-);
-
-assert.equal(rows.length, 1);
+const inProgressSaved = await storeJobProtocol({
+  supabase,
+  job: { ...completedJob, id: '22222222-2222-4222-8222-222222222222', status: 'W trakcie' },
+  pdfBlob,
+  fileName: 'protokol-przed-zakonczeniem.pdf',
+  signedAt,
+});
+assert.equal(inProgressSaved.job_id, '22222222-2222-4222-8222-222222222222');
+assert.equal(rows.length, 2);
 console.log('PASS test-job-protocol-storage-v979');
