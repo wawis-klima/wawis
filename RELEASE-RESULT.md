@@ -1,31 +1,38 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.19
+- 12.20
 
 ## Zakres
-- SMS Etap 2: trwałe grupy klienta po znormalizowanym numerze telefonu i zakotwiczonym oknie 62 dni.
-- Przypadek A=1, B=60, C=120 daje grupę A+B oraz osobną grupę C; nie ma łączenia łańcuchowego.
-- `sms_log` ma `reminder_group_id` i dokładnie jeden kanoniczny wpis `reminder_group_primary` na grupę.
-- Generator tworzy/pobiera grupę w bazie przez `ensure_service_sms_group` i nie używa już pairwise `existingCustomerWindows`.
-- Wysyłka rezerwuje grupę przez `claim_service_sms_group`; dwa różne montaże lub urządzenia nie mają osobnych claimów, jeśli należą do tej samej grupy.
-- Anulowanie rozpoznaje zarówno nowy group claim, jak i starszy legacy claim.
-- Snapshot administratora zwraca anchor i koniec trwałego okna; desktop/mobile używają tych danych do grupowania.
+- SMS Etap 3: harmonogram liczony osobno dla każdego fizycznego urządzenia przed grupowaniem klienta.
+- Nowi klienci nadal mają `sms_consent=true` i `sms_reminder_enabled=true`; baza ma teraz takie same defaulty.
+- Brak powiązanej karty klienta nie jest już interpretowany jako zgoda.
+- `source_job_id` w formacie `uuid::device-N` jest poprawnie normalizowany.
+- Daty serwisowe używają domykania końca miesiąca i dni kalendarzowych; bieżący dzień jest wyznaczany w `Europe/Warsaw`.
+- Numer telefonu jest walidowany i normalizowany po stronie generatora oraz bazy.
+- Przed wysyłką `claim_service_sms_group_v2` ponownie pobiera aktualny numer, zgodę, włączenie przypomnień, urządzenie/kartę oraz bieżący termin.
+- Stary numer i termin z przeglądarki lub oczekującego logu nie są źródłem prawdy.
+- Generator może odświeżyć oczekujący log po zmianie numeru/terminu/grupy.
 
 ## Produkcja / baza
-- migracja: APPLIED — `20261002070050_sms_durable_customer_groups_v1219`
-- backfill: 1336 logów -> 1154 trwałe grupy
-- test anchoru późniejszy→wcześniejszy→poza oknem: PASS
-- test podwójnego claimu tej samej grupy: PASS
-- ACL nowych RPC: service_role only — VERIFIED
-- inwariant grup: 1154 grup / 1336 logów / 1154 primary; duplicate primary groups = 0, duplicate pending primary groups = 0
+- migracja: APPLIED — `20261002073753_sms_stage3_current_state_calendar_v1220`
+- default `sms_consent`: true
+- default `sms_reminder_enabled`: true
+- 29/29 ostatnich zleceń: oba pola true
+- końce miesiąca / leap year: PASS
+- walidacja numeru: PASS
+- `uuid::device-N`: PASS
+- ACL `claim_service_sms_group_v2`: service_role only — VERIFIED
+- kontrolowany podwójny claim: pierwszy PASS, drugi zablokowany — PASS
 
 ## Kontrola regresji
-- `test:smoke:sms-job-grouping`: PASS
-- `test:smoke:sms-durable-groups`: PASS
-- `test:smoke:sms-log-cleanup`: PASS
-- Playwright E2E: PASS
-- produkcyjny build: PASS
-- Edge Functions: DEPLOYED — `send-service-sms` v30 ACTIVE, `generate-service-sms-queue` v20 ACTIVE
+- `test:smoke:sms-job-grouping`: PENDING CI
+- `test:smoke:sms-durable-groups`: PENDING CI
+- `test:smoke:sms-stage3`: PENDING CI
+- `test:smoke:sms-log-cleanup`: PENDING CI
+- domyślne SMS przy nowym zleceniu: PENDING CI
+- Playwright E2E: PENDING CI
+- produkcyjny build: PENDING CI
+- Edge Functions: PENDING
 - Vercel: PENDING
 - merge: PENDING
