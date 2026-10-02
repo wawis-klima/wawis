@@ -19,7 +19,7 @@ type DeleteRow = {
 };
 
 type SmsRequest = {
-  mode?: "manual" | "approval" | "auto" | "delete";
+  mode?: "manual" | "approval" | "retry_not_sent" | "auto" | "delete";
   jobId?: string;
   deviceId?: string;
   logIds?: string[];
@@ -85,6 +85,10 @@ Deno.serve(async (request) => {
 
     if (body.mode === "approval") {
       return await handleApprovalSend({ adminClient, callerId: callerProfile.id, settings, sender, token: smsApiToken, nowIso, logIds: body.logIds || [] });
+    }
+
+    if (body.mode === "retry_not_sent") {
+      return await handleRetryNotSentSend({ adminClient, callerId: callerProfile.id, settings, sender, token: smsApiToken, logIds: body.logIds || [] });
     }
 
     if (body.deviceId) {
@@ -181,6 +185,62 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
     failures,
     outcome: failures.length === 0 ? "sent" : sentCount > 0 ? "partial" : "failed",
   });
+}
+
+async function handleRetryNotSentSend({ adminClient, callerId, settings, sender, token, logIds }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; logIds: string[]; }) {
+  const cleanIds = [...new Set((Array.isArray(logIds) ? logIds : [])
+    .map((id) => String(id || "").trim())
+    .filter((id) => isUuid(id)))];
+
+  if (cleanIds.length === 0) {
+    return json({ ok: false, error: "Nie wybrano wiadomości NIEWYSŁANO do ponownej wysyłki.", sentCount: 0, failures: [] }, 400);
+  }
+
+  let sentCount = 0;
+  const failures: Array<{ id: string; error: string; outcome: string; retryable: boolean }> = [];
+
+  for (const logId of cleanIds) {
+    try {
+      await sendServiceSmsOnce({
+        adminClient,
+        actorId: callerId,
+        retryLogId: logId,
+        cycle: 1,
+        prepare: (prepared) => {
+          const message = buildMessage({
+            client: prepared.client,
+            installation_date: prepared.installationDate,
+            service_due_date: prepared.currentDueDate,
+            reminder_due_date: prepared.currentDueDate,
+            phone: prepared.recipientPhone,
+          }, settings);
+
+          return {
+            message,
+            send: () => sendSmsWithSmsApi({
+              token,
+              to: prepared.recipientPhone,
+              message,
+              from: sender,
+              idx: toSmsApiIdx(prepared.claimId),
+            }),
+          };
+        },
+      });
+
+      sentCount += 1;
+    } catch (error) {
+      const failure = describeSendFailure(error);
+      failures.push({ id: logId, error: failure.error, outcome: failure.outcome, retryable: failure.retryable });
+    }
+  }
+
+  return json({
+    ok: failures.length === 0,
+    sentCount,
+    failures,
+    outcome: failures.length === 0 ? "sent" : sentCount > 0 ? "partial" : "failed",
+  }, failures.length > 0 && sentCount === 0 ? 409 : 200);
 }
 
 async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: ReturnType<typeof createClient>; callerId: string; rows: DeleteRow[]; }) {
