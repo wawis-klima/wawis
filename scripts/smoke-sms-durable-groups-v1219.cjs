@@ -41,9 +41,12 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.match(sender, /recipientPhone/);
   assert.match(sender, /logId:\s*log\.id/);
   assert.doesNotMatch(sender, /dueDate:\s*effectiveDueDate/);
-  assert.match(sender, /reminder_group_id:\s*smsResult\.reminderGroupId/);
-  assert.match(sender, /reminder_group_primary:\s*true/);
-  assert.match(sender, /\.eq\("reminder_group_id", reminderGroupId\)/);
+  assert.match(sender, /idx:\s*toSmsApiIdx\(prepared\.claimId\)/);
+  assert.match(sender, /check_idx:\s*"1"/);
+  assert.doesNotMatch(sender, /upsertFinalizedCycleLog/);
+  assert.doesNotMatch(sender, /updateSmsLogInsert/);
+  assert.match(delivery, /stage_service_sms_claim/);
+  assert.match(delivery, /record_service_sms_acceptance/);
 
   const generator = read('supabase/functions/generate-service-sms-queue/index.ts');
   assert.match(generator, /ensureServiceSmsGroup/);
