@@ -1,3 +1,13 @@
+## 12.18 — SMS: Etap 1 ochrony historii
+
+- fizyczne kasowanie `sms_log` zostało zablokowane triggerem ochronnym;
+- `admin_cleanup_sms_duplicate_logs` pozostaje kompatybilny, ale nie usuwa rekordów;
+- zwykły odczyt modułu SMS i generator kolejki nie uruchamiają cleanupu;
+- anulowanie używa atomowego `cancel_service_sms_log` i nie przepisuje klienta, telefonu, terminu ani treści z przeglądarki;
+- anulowanie jest blokowane po utworzeniu claimu albo po pojawieniu się dowodu wysyłki;
+- FK `sms_log.job_id` oraz `sms_log.device_id` korzystają z `ON DELETE SET NULL`, więc usunięcie źródła nie kasuje historii;
+- dodano smoke test Etapu 1 i wersję 12.18.
+
 ## 12.17
 - SMS: grupowanie przypomnień zostało rozszerzone z dokładnie tego samego terminu na 62-dniowe okno klienta (numer telefonu). Kilka urządzeń i różne cykle tego samego klienta tworzą jeden SMS; skuteczna wysyłka blokuje kolejne bliskie przypomnienia, a historia jest prezentowana jako jeden wpis. Dodano bezpieczny cleanup technicznych duplikatów bez kasowania historii wysłanych/doręczonych wiadomości oraz aktualizację Edge Function `generate-service-sms-queue`.
 
