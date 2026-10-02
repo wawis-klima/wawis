@@ -40,8 +40,8 @@
     "source_job_test": "PASS — uuid::device-N jest normalizowany do UUID karty.",
     "current_state_claim_test": "PASS — pierwszy claim v2 pobrał bieżący numer, bieżący termin i linked_job_id; druga próba tej samej grupy została zablokowana jako group_claim_exists.",
     "rls_role_matrix": "VERIFIED — claim_service_sms_group_v2: anon=false, authenticated=false, service_role=true.",
-    "performance_advisor": "PENDING — sprawdzić przed merge.",
-    "security_advisor": "PENDING — sprawdzić przed merge.",
+    "performance_advisor": "CHECKED — brak nowych ostrzeżeń wydajności związanych z Etapem 3 SMS; widoczne linty dotyczą wcześniejszych FK/indeksów i konfiguracji Auth.",
+    "security_advisor": "CHECKED — claim_service_sms_group_v2 nie jest wykonywalny przez anon ani authenticated; nowe helpery private nie są wystawione. Widoczne ostrzeżenia Security Advisor dotyczą wcześniejszych funkcji/tabel.",
     "edge_functions": "PENDING — przełączyć po zielonym CI.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
