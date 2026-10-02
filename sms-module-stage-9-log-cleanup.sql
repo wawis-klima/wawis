@@ -1,6 +1,6 @@
--- Moduł SMS etap 9: czyszczenie historycznych duplikatów logów SMS po grupowaniu urządzeń z jednego montażu.
--- Bezpieczna procedura administracyjna zostawia jeden kanoniczny log dla montażu i cyklu przypomnienia,
--- a usuwa stare osobne wpisy urządzeń utworzone przed wersją 7.62.
+-- v12.17: jeden SMS dla klienta, gdy aktywne terminy serwisu jego urządzeń wpadają w to samo 62-dniowe okno.
+-- Zachowujemy faktyczne wysyłki (sent/provider_sent/delivered), a usuwamy tylko zbędne wpisy techniczne
+-- typu oczekujący/anulowany/błąd/niewysłany, jeśli w tym samym oknie istnieje lepszy kanoniczny wpis.
 
 create or replace function public.admin_cleanup_sms_duplicate_logs()
 returns jsonb
@@ -10,29 +10,29 @@ set search_path = public
 as $$
 declare
   v_deleted_count integer := 0;
-  v_canonical_count integer := 0;
 begin
   if coalesce(auth.role(), '') <> 'service_role' and not public.current_user_is_admin() then
     raise exception 'Tylko administrator może czyścić duplikaty logów SMS.' using errcode = '42501';
   end if;
 
-  -- Grupujemy stare logi po montażu i cyklu, a nie po urządzeniu. Dzięki temu dwa lub trzy
-  -- urządzenia z tego samego zlecenia zostawiają tylko jeden wpis historii/kolejki SMS.
-  with linked_logs as (
+  with normalized as (
     select
       l.id,
-      coalesce(d.source_job_id, l.job_id) as group_job_id,
-      coalesce(l.reminder_cycle, 1) as normalized_cycle,
-      l.reminder_due_date,
       l.status,
+      l.reminder_due_date,
       l.created_at,
-      l.approved_at,
-      l.sent_at,
-      l.delivered_at,
-      l.device_id,
-      l.job_id,
-      l.provider_message_id,
-      case lower(coalesce(l.status, ''))
+      case
+        when regexp_replace(coalesce(l.phone, ''), '\D', '', 'g') <> '' then
+          'phone:' ||
+          case
+            when length(regexp_replace(coalesce(l.phone, ''), '\D', '', 'g')) = 9
+              then '48' || regexp_replace(coalesce(l.phone, ''), '\D', '', 'g')
+            else regexp_replace(coalesce(l.phone, ''), '\D', '', 'g')
+          end
+        else
+          'client:' || lower(regexp_replace(trim(coalesce(l.client, '')), '\s+', ' ', 'g'))
+      end as customer_key,
+      case lower(trim(coalesce(l.status, '')))
         when 'delivered' then 1
         when 'provider_sent' then 2
         when 'sent' then 3
@@ -44,65 +44,51 @@ begin
         else 9
       end as status_rank
     from public.sms_log l
-    left join public.devices d on d.id = l.device_id
     where l.sms_type = 'service_reminder'
-      and coalesce(d.source_job_id, l.job_id) is not null
-      and (l.device_id is not null or l.job_id is not null)
-  ), ranked as (
-    select
-      linked_logs.*,
-      row_number() over (
-        partition by group_job_id, normalized_cycle
-        order by
-          status_rank asc,
-          coalesce(delivered_at, sent_at, approved_at, created_at) desc nulls last,
-          id asc
-      ) as rn,
-      min(reminder_due_date) over (partition by group_job_id, normalized_cycle) as group_due_date,
-      count(*) over (partition by group_job_id, normalized_cycle) as group_count
-    from linked_logs
-    where group_job_id is not null
-  ), duplicates as (
-    select id
-    from ranked
-    where group_count > 1
-      and rn > 1
-  ), deleted as (
+      and l.reminder_due_date is not null
+  ),
+  duplicates as (
+    select loser.id
+    from normalized loser
+    where lower(trim(coalesce(loser.status, ''))) not in ('delivered', 'provider_sent', 'sent')
+      and exists (
+        select 1
+        from normalized winner
+        where winner.id <> loser.id
+          and winner.customer_key = loser.customer_key
+          and loser.customer_key not in ('client:', 'phone:')
+          and abs(winner.reminder_due_date - loser.reminder_due_date) <= 62
+          and (
+            winner.status_rank < loser.status_rank
+            or (
+              winner.status_rank = loser.status_rank
+              and (
+                winner.reminder_due_date < loser.reminder_due_date
+                or (
+                  winner.reminder_due_date = loser.reminder_due_date
+                  and (
+                    winner.created_at < loser.created_at
+                    or (winner.created_at = loser.created_at and winner.id::text < loser.id::text)
+                  )
+                )
+              )
+            )
+          )
+      )
+  ),
+  deleted as (
     delete from public.sms_log l
     using duplicates d
     where l.id = d.id
     returning l.id
-  ), canonical as (
-    select id, group_job_id, normalized_cycle, group_due_date
-    from ranked
-    where group_count > 1
-      and rn = 1
-  ), updated as (
-    update public.sms_log l
-    set
-      job_id = canonical.group_job_id,
-      device_id = null,
-      reminder_cycle = canonical.normalized_cycle,
-      reminder_due_date = coalesce(l.reminder_due_date, canonical.group_due_date)
-    from canonical
-    where l.id = canonical.id
-      and (
-        l.job_id is distinct from canonical.group_job_id
-        or l.device_id is not null
-        or l.reminder_cycle is distinct from canonical.normalized_cycle
-        or (l.reminder_due_date is null and canonical.group_due_date is not null)
-      )
-    returning l.id
   )
-  select
-    (select count(*) from deleted),
-    (select count(*) from updated)
-  into v_deleted_count, v_canonical_count;
+  select count(*) into v_deleted_count from deleted;
 
   return jsonb_build_object(
     'ok', true,
     'deleted_duplicate_logs', coalesce(v_deleted_count, 0),
-    'canonicalized_logs', coalesce(v_canonical_count, 0)
+    'customer_window_days', 62,
+    'successful_send_history_preserved', true
   );
 end;
 $$;
