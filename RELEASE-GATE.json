@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.24",
-  "scope": "full",
-  "release_branch": "release/v12.24",
+  "version": "12.25",
+  "scope": "desktop",
+  "release_branch": "release/v12.25",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Baseline 24 h przed zmianą: 16 zdarzeń error i 51 warning w app_diagnostic_events; diagnostyka informacyjna, bez zmian w Supabase dla 12.24."
+    "notes": "Baseline podczas zgłoszenia: jedna sesja desktopowa powodowała równoległe ciężkie odczyty; admin_get_sms_module_snapshot kończył się timeoutem po ok. 45–58 s, a równolegle pojawiały się wolne odpowiedzi/503 innych odczytów. Diagnostyka informacyjna; dla 12.25 brak zmian w Supabase."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.24.zip"
+    "file_name": "klima-app-v12.25.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.24",
+    "source_branch": "release/v12.25",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": false,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu opcjonalny szybki przegląd diagnostyki; nie blokuje wydania."
+    "notes": "Po wdrożeniu opcjonalny szybki przegląd logów i modułu SMS; nie blokuje wydania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "NONE — zmiana wyłącznie frontendowa.",
+    "supabase_changes": "NONE — zmiana frontendowa i ograniczenie zbędnych odczytów.",
     "pr_check": "PENDING",
     "vercel_deployment": "PENDING — po merge do main"
   }
