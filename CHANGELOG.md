@@ -1,3 +1,11 @@
+## 12.24
+- Desktop: w sekcji „Zakończone” kolumna daty ma nagłówek „Data zakończenia” i pokazuje `completed_at`.
+- Mobile: karta zakończonego montażu pokazuje datę zakończenia zamiast daty montażu.
+- Pozostałe statusy nadal pokazują datę montażu bez zmiany dotychczasowego zachowania.
+- Sortowanie po dacie używa daty zakończenia dla zakończonych zleceń.
+- Starsze zakończone zlecenia bez `completed_at` pokazują „Brak daty”, bez mylącego fallbacku do daty montażu.
+- Rozszerzono smoke test selekcji zleceń o desktop i mobile791.
+
 ## 12.23
 SMS: zakładka „Niewysłane” i ręczne ponowienie.
 - dodano osobny snapshot wszystkich logicznie niewysłanych przypomnień `not_sent`;
