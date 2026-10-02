@@ -1,3 +1,6 @@
+## 12.15
+- Desktop: zwężono kafelki danych klienta i dat, zastąpiono pełny napis osoby kończącej małym badge z inicjałami oraz dodano zwijanie Urządzeń i Zdjęć wyłącznie w zakończonych montażach. Pozostałe sekcje nie są zwijane. Mobile bez zmian funkcjonalnych.
+
 ## 12.14
 - Desktop: scalono adres, kontakt i terminy w sekcji „Klient”; usunięto osobną kartę „Adres i termin”, a protokół przeniesiono bezpośrednio pod dane klienta. Mobile bez zmian funkcjonalnych.
 

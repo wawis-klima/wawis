@@ -1,5 +1,6 @@
 import React from "react";
 import "./job-details-invoice-v1210.css";
+import "./job-details-desktop-v1215.css";
 import { IconCalendar, IconCamera, IconCheckCircle, IconClock, IconFileText, IconImage, IconMail, IconMapPin, IconMessageCircle, IconPhone, IconUsers } from "./ui.jsx";
 import { getInitials, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
 import JobAddressLink from "./JobAddressLink.jsx";
@@ -126,6 +127,10 @@ export default function JobDetailsPanel({
   const [vatInvoiceSaving, setVatInvoiceSaving] = React.useState(false);
   const [fakturowniaOpening, setFakturowniaOpening] = React.useState(false);
   const [fakturowniaVerifying, setFakturowniaVerifying] = React.useState(false);
+  const selectedJobStatus = String(selectedJob?.status || '');
+  const selectedJobIsCompleted = selectedJobStatus === 'Zakończone';
+  const [desktopDevicesExpanded, setDesktopDevicesExpanded] = React.useState(!selectedJobIsCompleted);
+  const [desktopPhotosExpanded, setDesktopPhotosExpanded] = React.useState(!selectedJobIsCompleted);
   const fakturowniaVerificationRef = React.useRef(null);
   const fakturowniaVerificationBusyRef = React.useRef(false);
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
@@ -138,6 +143,11 @@ export default function JobDetailsPanel({
     fakturowniaVerificationRef.current = null;
     fakturowniaVerificationBusyRef.current = false;
   }, [selectedJobId]);
+
+  React.useEffect(() => {
+    setDesktopDevicesExpanded(!selectedJobIsCompleted);
+    setDesktopPhotosExpanded(!selectedJobIsCompleted);
+  }, [selectedJobId, selectedJobIsCompleted]);
 
   React.useEffect(() => {
     if (!isAdmin || !selectedJobId) return undefined;
@@ -210,7 +220,7 @@ export default function JobDetailsPanel({
   const paymentMethodDisplay = getPaymentMethodDisplay(selectedJob);
   const completedByProfile = (profiles || []).find((person) => String(person?.id || '') === String(selectedJob.completed_by || ''));
   const completedByLabel = completedByProfile?.full_name || completedByProfile?.email || '';
-  const isCompletedJob = String(selectedJob.status || '') === 'Zakończone';
+  const isCompletedJob = selectedJobIsCompleted;
   const statusLabel = getJobTypeLabel(selectedJob);
   const statusClassName = getJobTypeClass(selectedJob);
   const installationPhotos = photos.filter((photo) => !isNameplatePhoto(photo));
@@ -482,10 +492,10 @@ export default function JobDetailsPanel({
       ) : null}
 
       <div className="jobDetailsContent">
-        <section className="detailsSection jobDetailsSectionCard">
+        <section className="detailsSection jobDetailsSectionCard jobDetailsClientCard">
           <h4 className="sectionHeadingWithIcon"><IconUsers /><span>Klient</span></h4>
-          <div className="detailMeta">
-            <div className="infoItem infoItemWide">
+          <div className="detailMeta jobDetailsClientMeta">
+            <div className="infoItem infoItemWide jobDetailsClientAddressItem">
               <span className="infoLabel infoLabelWithIcon"><IconMapPin /><span>Adres</span></span>
               <div className="infoValue">
                 <JobAddressLink
@@ -497,7 +507,7 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            <div className="infoItem">
+            <div className="infoItem jobDetailsClientCompactItem jobDetailsClientEmailItem">
               <span className="infoLabel infoLabelWithIcon"><IconMail /><span>Email</span></span>
               <div className="infoValue">
                 {selectedJob.email ? (
@@ -515,7 +525,7 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            <div className="infoItem">
+            <div className="infoItem jobDetailsClientCompactItem jobDetailsClientPhoneItem">
               <span className="infoLabel infoLabelWithIcon"><IconPhone /><span>Telefon</span></span>
               <div className="infoValue">
                 {selectedJob.phone ? (
@@ -533,17 +543,25 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            <div className="infoItem">
+            <div className="infoItem jobDetailsClientCompactItem jobDetailsClientDateItem">
               <span className="infoLabel infoLabelWithIcon"><IconCalendar /><span>Data montażu</span></span>
               <div className="infoValue">{installationDateLabel}</div>
             </div>
 
             {isAdmin && isCompletedJob ? (
-              <div className="infoItem">
+              <div className="infoItem jobDetailsClientCompactItem jobDetailsClientCompletionItem">
                 <span className="infoLabel infoLabelWithIcon"><IconClock /><span>Zakończono</span></span>
-                <div className="infoValue">
-                  {completionDateTimeLabel || 'Brak dokładnej godziny (zlecenie sprzed 9.14)'}
-                  {completedByLabel ? <div className="muted jobCompletionBy">Przez: {completedByLabel}</div> : null}
+                <div className="infoValue jobCompletionInlineValue">
+                  <span className="jobCompletionDateTime">{completionDateTimeLabel || 'Brak dokładnej godziny (zlecenie sprzed 9.14)'}</span>
+                  {completedByLabel ? (
+                    <span
+                      className="jobCompletionByBadge"
+                      title={`Zakończył: ${completedByLabel}`}
+                      aria-label={`Zakończył: ${completedByLabel}`}
+                    >
+                      {getInitials(completedByLabel)}
+                    </span>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -559,10 +577,23 @@ export default function JobDetailsPanel({
 
         {isAdmin && isCompletedJob ? <DesktopJobProtocolCard job={selectedJob} supabase={supabase} /> : null}
 
-        <section className="detailsSection jobDetailsSectionCard desktopJobDevicesSection">
+        <section className={`detailsSection jobDetailsSectionCard desktopJobDevicesSection${isCompletedJob ? ' desktopCompletedCollapsibleSection' : ''}`}>
           <div className="desktopJobDevicesHeadingRow">
-            <h4 className="sectionHeadingWithIcon"><IconCheckCircle /><span>Urządzenia</span></h4>
-            {isAdmin && canEditSelectedJob ? (
+            {isCompletedJob ? (
+              <button
+                type="button"
+                className="desktopDetailsSectionToggle sectionHeadingWithIcon"
+                aria-expanded={desktopDevicesExpanded}
+                aria-controls={`desktop-devices-content-${selectedJobId}`}
+                onClick={() => setDesktopDevicesExpanded((expanded) => !expanded)}
+              >
+                <IconCheckCircle /><span>Urządzenia</span>
+                <span className="desktopDetailsSectionChevron" aria-hidden="true">⌄</span>
+              </button>
+            ) : (
+              <h4 className="sectionHeadingWithIcon"><IconCheckCircle /><span>Urządzenia</span></h4>
+            )}
+            {isAdmin && canEditSelectedJob && (!isCompletedJob || desktopDevicesExpanded) ? (
               <button
                 type="button"
                 className="btn secondary desktopJobDevicesManageBtn"
@@ -573,18 +604,22 @@ export default function JobDetailsPanel({
               </button>
             ) : null}
           </div>
-          <DesktopJobDeviceCards
-            job={selectedJob}
-            devices={jobDevices}
-            photos={photos}
-            supabase={supabase}
-            disabled={busy}
-            onOpenPhoto={(photo) => openPreview(photo, 0, nameplatePhotos)}
-            onOcrSaved={handleDesktopOcrSaved}
-            manualVerifications={selectedJob.nameplateVerifications || []}
-            onManualVerificationChanged={handleManualNameplateVerificationChanged}
-            onDeleteDevice={isAdmin ? (deviceIndex) => deleteDeviceFromJob?.(selectedJob, deviceIndex) : null}
-          />
+          {(!isCompletedJob || desktopDevicesExpanded) ? (
+            <div id={`desktop-devices-content-${selectedJobId}`} className="desktopCollapsibleSectionContent">
+              <DesktopJobDeviceCards
+                job={selectedJob}
+                devices={jobDevices}
+                photos={photos}
+                supabase={supabase}
+                disabled={busy}
+                onOpenPhoto={(photo) => openPreview(photo, 0, nameplatePhotos)}
+                onOcrSaved={handleDesktopOcrSaved}
+                manualVerifications={selectedJob.nameplateVerifications || []}
+                onManualVerificationChanged={handleManualNameplateVerificationChanged}
+                onDeleteDevice={isAdmin ? (deviceIndex) => deleteDeviceFromJob?.(selectedJob, deviceIndex) : null}
+              />
+            </div>
+          ) : null}
         </section>
 
         <section className="detailsSection jobDetailsSectionCard">
@@ -604,67 +639,85 @@ export default function JobDetailsPanel({
           ) : null}
         </section>
 
-        <section className="detailsSection jobDetailsSectionCard">
-          <h4 className="sectionHeadingWithIcon"><IconCamera /><span>Zdjęcia montażu</span></h4>
-          <div className="thumbGrid">
-          {showDetailsLoading ? <div className="muted">Ładowanie zdjęć...</div> : null}
-          {detailsLoaded ? installationPhotos.map((photo, photoIndex) => (
-            <div key={photo.id} className="thumbCard">
-              <button
-                type="button"
-                className="thumbBtn desktopThumbBtn"
-                onClick={() => openPreview(photo, photoIndex, installationPhotos)}
-                disabled={!photo.thumbnail_image_url && !photo.storage_path && !photo.original_image_url}
-              >
-                {photo.thumbnail_image_url ? (
-                  <img
-                    src={photo.thumbnail_image_url}
-                    className="thumb desktopThumb"
-                    alt="Zdjęcie montażu"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : <span className="muted">Kliknij, aby wczytać zdjęcie</span>}
-              </button>
-              <div className="photoMeta">
-                <span className="photoMetaText">{formatDate(photo.created_at)}</span>
-                <span className="photoMetaText" title={photo.uploader_name || "Pracownik"}>{getInitials(photo.uploader_name || "Pracownik")}</span>
+        <section className={`detailsSection jobDetailsSectionCard${isCompletedJob ? ' desktopCompletedCollapsibleSection' : ''}`}>
+          {isCompletedJob ? (
+            <button
+              type="button"
+              className="desktopDetailsSectionToggle sectionHeadingWithIcon"
+              aria-expanded={desktopPhotosExpanded}
+              aria-controls={`desktop-photos-content-${selectedJobId}`}
+              onClick={() => setDesktopPhotosExpanded((expanded) => !expanded)}
+            >
+              <IconCamera /><span>Zdjęcia montażu</span>
+              <span className="desktopDetailsSectionChevron" aria-hidden="true">⌄</span>
+            </button>
+          ) : (
+            <h4 className="sectionHeadingWithIcon"><IconCamera /><span>Zdjęcia montażu</span></h4>
+          )}
+          {(!isCompletedJob || desktopPhotosExpanded) ? (
+            <div id={`desktop-photos-content-${selectedJobId}`} className="desktopCollapsibleSectionContent desktopPhotosSectionContent">
+              <div className="thumbGrid">
+              {showDetailsLoading ? <div className="muted">Ładowanie zdjęć...</div> : null}
+              {detailsLoaded ? installationPhotos.map((photo, photoIndex) => (
+                <div key={photo.id} className="thumbCard">
+                  <button
+                    type="button"
+                    className="thumbBtn desktopThumbBtn"
+                    onClick={() => openPreview(photo, photoIndex, installationPhotos)}
+                    disabled={!photo.thumbnail_image_url && !photo.storage_path && !photo.original_image_url}
+                  >
+                    {photo.thumbnail_image_url ? (
+                      <img
+                        src={photo.thumbnail_image_url}
+                        className="thumb desktopThumb"
+                        alt="Zdjęcie montażu"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : <span className="muted">Kliknij, aby wczytać zdjęcie</span>}
+                  </button>
+                  <div className="photoMeta">
+                    <span className="photoMetaText">{formatDate(photo.created_at)}</span>
+                    <span className="photoMetaText" title={photo.uploader_name || "Pracownik"}>{getInitials(photo.uploader_name || "Pracownik")}</span>
+                  </div>
+                  {canModifySelectedJobPhotos ? (
+                    <button
+                      type="button"
+                      className="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn"
+                      disabled={deletingPhotoId === photo.id || busy}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deletePhoto(photo);
+                      }}
+                    >
+                      {deletingPhotoId === photo.id ? "Usuwanie..." : "Usuń"}
+                    </button>
+                  ) : null}
+                </div>
+              )) : null}
+              {detailsLoaded && installationPhotos.length === 0 ? <div className="muted">Brak dodatkowych zdjęć montażu. Tabliczki są dostępne przy odpowiednich JZ/JW powyżej.</div> : null}
               </div>
-              {canModifySelectedJobPhotos ? (
-                <button
-                  type="button"
-                  className="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn"
-                  disabled={deletingPhotoId === photo.id || busy}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deletePhoto(photo);
-                  }}
-                >
-                  {deletingPhotoId === photo.id ? "Usuwanie..." : "Usuń"}
-                </button>
-              ) : null}
+              <div className="photoUploadActions" aria-label="Dodawanie zdjęć do zlecenia">
+                {canModifySelectedJobPhotos ? (
+                  <>
+                    <label className="btn photoUploadBtn photoUploadBtnCamera">
+                      <span className="photoUploadBtnIcon"><IconCamera /></span>
+                      <span className="photoUploadBtnLabel">Aparat</span>
+                      <input type="file" accept="image/*" capture="environment" multiple hidden onChange={(e) => handlePhotoUpload(selectedJob.id, e)} />
+                    </label>
+                    <label className="btn photoUploadBtn photoUploadBtnGallery">
+                      <span className="photoUploadBtnIcon"><IconImage /></span>
+                      <span className="photoUploadBtnLabel">Galeria</span>
+                      <input type="file" accept="image/*" multiple hidden onChange={(e) => handlePhotoUpload(selectedJob.id, e)} />
+                    </label>
+                  </>
+                ) : (
+                  <div className="muted">Zlecenie zakończone — pracownik nie może już dodawać ani usuwać zdjęć.</div>
+                )}
+              </div>
+
             </div>
-          )) : null}
-          {detailsLoaded && installationPhotos.length === 0 ? <div className="muted">Brak dodatkowych zdjęć montażu. Tabliczki są dostępne przy odpowiednich JZ/JW powyżej.</div> : null}
-          </div>
-          <div className="photoUploadActions" aria-label="Dodawanie zdjęć do zlecenia">
-            {canModifySelectedJobPhotos ? (
-              <>
-                <label className="btn photoUploadBtn photoUploadBtnCamera">
-                  <span className="photoUploadBtnIcon"><IconCamera /></span>
-                  <span className="photoUploadBtnLabel">Aparat</span>
-                  <input type="file" accept="image/*" capture="environment" multiple hidden onChange={(e) => handlePhotoUpload(selectedJob.id, e)} />
-                </label>
-                <label className="btn photoUploadBtn photoUploadBtnGallery">
-                  <span className="photoUploadBtnIcon"><IconImage /></span>
-                  <span className="photoUploadBtnLabel">Galeria</span>
-                  <input type="file" accept="image/*" multiple hidden onChange={(e) => handlePhotoUpload(selectedJob.id, e)} />
-                </label>
-              </>
-            ) : (
-              <div className="muted">Zlecenie zakończone — pracownik nie może już dodawać ani usuwać zdjęć.</div>
-            )}
-          </div>
+          ) : null}
         </section>
 
         {canManageSelectedJobViewers || !isAdmin ? (

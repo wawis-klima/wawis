@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.14",
+  "version": "12.15",
   "scope": "desktop",
-  "release_branch": "release/v12.14",
+  "release_branch": "release/v12.15",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "CHECKED",
-    "notes": "Zmiana 12.14 dotyczy wyłącznie układu informacji w prawym panelu szczegółów montażu na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
+    "notes": "Zmiana 12.15 dotyczy wyłącznie układu prawego panelu szczegółów montażu na desktopie. Brak zmian backendu, Supabase, RLS i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.14.zip"
+    "file_name": "klima-app-v12.15.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.14",
+    "source_branch": "release/v12.15",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić desktop: w sekcji Klient kolejno adres, e-mail/telefon, data montażu i zakończenia; brak osobnej sekcji Adres i termin; protokół bezpośrednio poniżej."
+    "notes": "Po wdrożeniu sprawdzić desktop: węższe kafelki e-mail/telefon i daty; mały badge z inicjałami przy Zakończono; Urządzenia i Zdjęcia zwinięte domyślnie tylko w zakończonych montażach; pozostałe sekcje zawsze rozwinięte."
   },
   "archive": {
     "source_of_truth": "github-main",

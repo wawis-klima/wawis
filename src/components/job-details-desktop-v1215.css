@@ -1,0 +1,126 @@
+/* v12.15 — desktop: bardziej zwarty klient i zwijane ciężkie sekcje po zakończeniu. */
+@media (min-width:701px){
+  .jobDetailsPanelCard .jobDetailsClientMeta{
+    display:flex !important;
+    flex-wrap:wrap;
+    align-items:stretch;
+    justify-content:flex-start;
+    gap:8px !important;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientAddressItem{
+    flex:1 0 100%;
+    width:100%;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientCompactItem{
+    flex:0 1 180px;
+    width:180px;
+    min-width:0;
+    padding:7px 9px !important;
+    gap:4px;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientCompactItem .infoLabel{
+    font-size:11px;
+    line-height:1.15;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientCompactItem .infoValue{
+    min-width:0;
+    font-size:13px;
+    line-height:1.15;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientCompactItem .infoValueActions{
+    min-height:24px;
+    flex-wrap:nowrap;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientCompactItem .emailLink,
+  .jobDetailsPanelCard .jobDetailsClientCompactItem .phoneLink{
+    min-width:0;
+    min-height:24px;
+    margin-right:0;
+    overflow-wrap:anywhere;
+  }
+
+  .jobDetailsPanelCard .jobCompletionInlineValue{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    white-space:nowrap;
+  }
+
+  .jobDetailsPanelCard .jobCompletionDateTime{
+    min-width:0;
+  }
+
+  .jobDetailsPanelCard .jobCompletionByBadge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    height:22px;
+    flex:0 0 22px;
+    border:1px solid #cbd5e1;
+    border-radius:999px;
+    background:#f8fafc;
+    color:#334155;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.01em;
+    line-height:1;
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle{
+    appearance:none;
+    -webkit-appearance:none;
+    border:0;
+    background:transparent;
+    padding:0;
+    color:#10203a;
+    font:inherit;
+    font-size:15px;
+    font-weight:800;
+    line-height:1.2;
+    cursor:pointer;
+    text-align:left;
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle .inlineIcon{
+    width:18px;
+    height:18px;
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionChevron{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:20px;
+    height:20px;
+    margin-left:2px;
+    color:#64748b;
+    font-size:17px;
+    line-height:1;
+    transition:transform .16s ease;
+  }
+
+  .jobDetailsPanelCard .desktopDetailsSectionToggle[aria-expanded="true"] .desktopDetailsSectionChevron{
+    transform:rotate(180deg);
+  }
+
+  .jobDetailsPanelCard .desktopCompletedCollapsibleSection{
+    gap:10px;
+  }
+
+  .jobDetailsPanelCard .desktopCollapsibleSectionContent{
+    min-width:0;
+  }
+
+  .jobDetailsPanelCard .desktopPhotosSectionContent{
+    display:grid;
+    gap:12px;
+  }
+}

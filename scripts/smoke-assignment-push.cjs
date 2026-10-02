@@ -83,7 +83,7 @@ async function main() {
   const pushes = [];
   const futureJob = {
     id: 'job-future',
-    installation_date: '2026-09-29',
+    installation_date: '2099-12-31',
     main_technician_id: null,
     installer_ids: [],
     viewers: [{ user_id: 'access-only' }],

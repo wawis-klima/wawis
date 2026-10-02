@@ -28,7 +28,10 @@ for (const rel of ['src/components/JobDetailsPanel.jsx', 'src/mobile791/componen
   assert(source.includes('{completedByLabel}'), `${rel}: widok powinien wskazywać kto zakończył`);
 }
 
-assert(read('src/components/JobDetailsPanel.jsx').includes('Przez: {completedByLabel}'), 'Desktop powinien zachować pełną etykietę wykonawcy.');
+const desktopDetails = read('src/components/JobDetailsPanel.jsx');
+assert(desktopDetails.includes('jobCompletionByBadge'), 'Desktop powinien pokazywać osobę kończącą jako kompaktowy badge.');
+assert(desktopDetails.includes('getInitials(completedByLabel)'), 'Desktopowy badge zakończenia powinien zawierać inicjały wykonawcy.');
+assert(!desktopDetails.includes('Przez: {completedByLabel}'), 'Desktop nie powinien już zajmować osobnego wiersza pełną etykietą wykonawcy.');
 assert(!read('src/mobile791/components/JobDetailsPanel.jsx').includes('Przez: {completedByLabel}'), 'Mobile powinien pokazywać samo nazwisko wykonawcy w jednym wierszu.');
 
 for (const rel of ['src/modules/jobs-assignment.js', 'src/mobile791/modules/jobs-assignment.js']) {
