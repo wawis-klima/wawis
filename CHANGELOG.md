@@ -1,3 +1,16 @@
+## 12.21
+SMS: Etap 4 — niezawodna wysyłka, API i webhook.
+- claim przechowuje kontekst potrzebny do odzyskania wysyłki: grupę, log, kartę/urządzenie, numer, cykl, termin, klienta, treść i aktora;
+- przed wywołaniem SMSAPI wykonywany jest serwerowy staging claima;
+- SMSAPI dostaje `idx` wyprowadzony z `claim_id` oraz `check_idx=1`, co daje dodatkową ochronę przed ponownym zleceniem tej samej wiadomości;
+- jednoznaczne odrzucenie SMSAPI jest odróżniane od timeoutu/5xx; tylko pewne odrzucenie zwalnia claim;
+- timeout/5xx i brak jednoznacznego ID są traktowane jako wynik niepewny i pozostawiają claim zablokowany;
+- akceptacja operatora jest utrwalana przez `record_service_sms_acceptance` razem z provider ID, dowodem wysyłki, logiem i statusem karty;
+- webhook odczytuje `idx`, odzyskuje `claim_id` i przez `apply_sms_delivery_atomic_v2` może odtworzyć brakujący `sms_log` po awarii zapisu;
+- frontend desktop/mobile oraz moduł legacy odrzucają również odpowiedzi `{ok:false}`, nawet bez błędu transportowego;
+- generator ponawia tylko błędy bez dowodu wysyłki; rekordy z provider ID/sent_at/delivered_at nie wracają do kolejki;
+- dodano smoke `sms-stage4` i rozszerzono test webhooka/Etapu 2.
+
 ## 12.20
 SMS: Etap 3 — harmonogramy, daty, aktualny numer i zgoda.
 - nowi klienci nadal zapisują `sms_consent=true` i `sms_reminder_enabled=true`; defaulty kolumn bazy zostały wyrównane do `true`;
