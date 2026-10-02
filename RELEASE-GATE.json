@@ -37,7 +37,7 @@
     "performance_advisor": "CHECKED — brak nowych ostrzeżeń związanych z Etapem 1; widoczne informacje są wcześniejsze.",
     "security_advisor": "CHECKED — brak nowej ekspozycji anon. Ostrzeżenie dla kompatybilnego admin_cleanup_sms_duplicate_logs dotyczy authenticated, ale funkcja jest no-op i nadal sprawdza administratora.",
     "trigger_grants": "CHECKED — trg_protect_sms_log_history aktywny; cancel_service_sms_log: public/anon/authenticated REVOKE, service_role EXECUTE.",
-    "edge_functions": "PENDING — send-service-sms i generate-service-sms-queue zostaną wdrożone po zielonym CI.",
+    "edge_functions": "DEPLOYED — send-service-sms v29 ACTIVE oraz generate-service-sms-queue v19 ACTIVE; verify_jwt=false zachowane jak przed zmianą.",
     "vercel_deployment": "PENDING — po merge do main",
     "cloudflare_deployment": "N/A — nie jest częścią produkcyjnej ścieżki"
   }
