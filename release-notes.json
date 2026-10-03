@@ -1,11 +1,10 @@
 {
-  "version": "12.33",
-  "summary": "Zabezpieczono zbiorcze usuwanie i ponowną wysyłkę SMS po incydencie z zaznaczeniem całej listy.",
+  "version": "12.34",
+  "summary": "Wyrównano i uporządkowano widok pełnej historii wysyłek SMS.",
   "changes": [
-    "Checkbox w nagłówku zaznacza wyłącznie widoczną stronę, maksymalnie 10 wierszy.",
-    "Usuwanie ma osobny stan Usuwanie… i nie zmienia etykiety wysyłania.",
-    "Zbiorcze wysyłanie i usuwanie wymagają potwierdzenia liczby pozycji.",
-    "Usuwanie Niewysłanych nie rozwija już grouped_log_ids; backend dodatkowo blokuje usunięcie ponad 25 logów w jednym żądaniu.",
-    "Pozycje omyłkowo usunięte w incydencie 03.10.2026 zostają przywrócone do stanu not_sent."
+    "Historia SMS ma stałe kolumny: Klient, Telefon, Termin, Cykl, Data wpisu i Status.",
+    "Status pozostaje w swojej kolumnie i nie ucieka na prawy skraj szerokiego wiersza.",
+    "Karta historii nie rozszerza układu poza dostępną szerokość.",
+    "Na węższych ekranach pola układają się pionowo z czytelnymi etykietami."
   ]
 }

@@ -10855,3 +10855,48 @@ img.previewImage{
   line-height: 1.25;
   color: #64748b;
 }
+
+
+/* v12.34 — czytelna, wyrównana historia SMS */
+.smsHistoryCard{width:100%;max-width:100%;min-width:0;overflow:hidden}
+.smsHistoryGridHeader,
+.smsHistoryItem{
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.65fr) minmax(0,1fr) minmax(0,.8fr);
+  column-gap:14px;
+  align-items:center;
+}
+.smsHistoryGridHeader{
+  padding:0 14px 8px;
+  color:#71819a;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.smsHistoryList{display:grid;gap:8px;min-width:0}
+.smsHistoryItem{
+  border:1px solid #e4e9f1;
+  border-radius:14px;
+  padding:11px 14px;
+  background:#fbfdff;
+}
+.smsHistoryCell{min-width:0;font-size:12px;line-height:1.35;color:#52657f;overflow-wrap:anywhere}
+.smsHistoryClient strong{display:block;font-size:13px;line-height:1.3;color:#203252}
+.smsHistoryStatusCell{display:flex;justify-content:flex-start;min-width:0}
+.smsHistoryErrorWide{grid-column:1 / -1;margin-top:4px;padding-top:8px;border-top:1px dashed #e8c7cb}
+.smsStatus-deleted,.smsStatus-dismissed{background:#eef2f7;color:#536174;border:1px solid #cbd5e1}
+.smsStatus-not_sent{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+
+@media(max-width:900px){
+  .smsHistoryGridHeader{display:none}
+  .smsHistoryItem{grid-template-columns:minmax(0,1fr) auto;row-gap:7px;column-gap:12px;align-items:start}
+  .smsHistoryCell{grid-column:1 / -1;display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;align-items:start}
+  .smsHistoryCell::before{content:attr(data-label);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#8190a5}
+  .smsHistoryClient{grid-column:1 / 2;display:block}
+  .smsHistoryClient::before{display:none}
+  .smsHistoryStatusCell{grid-column:2 / 3;grid-row:1;display:block}
+  .smsHistoryStatusCell::before{display:none}
+  .smsHistoryErrorWide{grid-column:1 / -1}
+}
+

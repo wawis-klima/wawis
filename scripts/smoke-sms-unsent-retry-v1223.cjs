@@ -45,6 +45,9 @@ for (const file of ['src/components/sms/SmsUnsentCard.jsx']) {
 for (const file of ['src/components/sms/SmsHistoryCard.jsx']) {
   const history = read(file);
   assert.match(history, /getSmsStatusLabel\(log.status\)/);
+  assert.match(history, /smsHistoryGridHeader/);
+  assert.match(history, /smsHistoryCell/);
+  assert.match(history, /smsHistoryStatusCell/);
   assert.doesNotMatch(history, /oczekuje na wysłanie/i);
   assert.match(history, /Powód: \{log\.error_message\}/);
 }
