@@ -1,3 +1,9 @@
+## 12.31
+- Przeniesiono panel „SMS testowy” z głównego widoku SMS do zakładki „Szablony SMS”.
+- Panel jest wyświetlany pod ustawieniami modułu tylko w widoku `sms_templates`.
+- Funkcja wysyłki testowej, autoryzacja administratora i Edge Function pozostają bez zmian.
+- Rozszerzono regresję o kontrolę lokalizacji panelu.
+
 ## 12.30
 - Dodano administracyjny tryb SMS testowego w `send-service-sms`; nadal wymaga zalogowanego administratora.
 - Frontend przekazuje wyłącznie numer telefonu, a stała treść wiadomości kontrolnej jest definiowana po stronie serwera.
