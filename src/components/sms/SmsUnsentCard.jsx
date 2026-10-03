@@ -40,6 +40,7 @@ export default function SmsUnsentCard({
   onSendNow,
   onDeleteNow,
   sendBusy,
+  sendingIds = [],
   deleteBusy,
   onPageChange,
   onSelectLog,
@@ -91,6 +92,7 @@ export default function SmsUnsentCard({
           <tbody>
             {pageRows.map((row) => {
               const checked = row.canDelete ? selectedIds.includes(row.selectionKey) : false;
+              const rowSending = sendingIds.includes(row.selectionKey);
               return (
                 <tr key={row.key}>
                   <td className="smsDesktopCheckboxCol">
@@ -126,7 +128,7 @@ export default function SmsUnsentCard({
                         {deleteBusy ? 'Usuwanie…' : 'Usuń'}
                       </button>
                       <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || deleteBusy || !row.canSend} onClick={() => onSendNow?.(row)}>
-                        {sendBusy ? 'Wysyłanie…' : row.status === 'pending_approval' ? 'Zatwierdź i wyślij' : 'Wyślij ponownie'}
+                        {rowSending ? 'Wysyłanie…' : row.status === 'pending_approval' ? 'Zatwierdź i wyślij' : 'Wyślij ponownie'}
                       </button>
                     </div>
                   </td>

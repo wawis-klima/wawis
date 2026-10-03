@@ -1,10 +1,10 @@
 {
-  "version": "12.35",
-  "summary": "Naprawiono ponowną wysyłkę niedostarczonego SMS-a, wyczyszczono stare niewysłane wpisy i poszerzono pole e-mail w karcie klienta.",
+  "version": "12.36",
+  "summary": "Wyczyszczono stare niewysłane SMS-y i poprawiono stan przycisku wysyłki per wiersz.",
   "changes": [
-    "SMS przyjęty wcześniej przez operatora, ale oznaczony jako niedostarczony, można świadomie ponowić bez obchodzenia zabezpieczeń przed duplikatem.",
-    "Błąd Edge Function pokazuje teraz właściwy komunikat serwera zamiast ogólnego NON-2XX.",
-    "Na desktopie e-mail wykorzystuje wolną szerokość karty klienta, a telefon pozostaje kompaktowy i jest dosunięty do prawej.",
-    "Produkcja: zbiorczo oznaczono jako usunięte 757 widocznych starych pozycji Niewysłane; bieżący niedostarczony SMS pozostawiono do ponowienia."
+    "Jednorazowo usunięto z aktywnej zakładki wszystkie stare wpisy not_sent bez dowodu wysyłki.",
+    "Po kliknięciu „Wyślij ponownie” tylko wybrany wiersz pokazuje „Wysyłanie…”.",
+    "Pozostałe wiersze nie zmieniają napisu podczas wysyłki jednego SMS-a.",
+    "Generator kolejki nie odtwarza rekordów oznaczonych jako deleted."
   ]
 }
