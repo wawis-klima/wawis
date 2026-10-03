@@ -1,7 +1,10 @@
-# WAWIS 12.31 — gotowa do wdrożenia
+# WAWIS 12.32 — gotowa do wdrożenia
 
-Przeniesiono panel „SMS testowy” z głównego widoku modułu SMS do zakładki „Szablony SMS”, pod ustawieniami modułu.
+Naprawiono usuwanie wpisów SMS z aktywnych list.
 
-Funkcja testowej wysyłki pozostaje bez zmian: nadal korzysta z produkcyjnej ścieżki SMSAPI i wymaga administratora. Zmiana dotyczy wyłącznie położenia elementu interfejsu.
+- wpis ze statusem BŁĄD, który ma już dowód kontaktu z SMSAPI, można usunąć z aktywnej kolejki bez niszczenia historii operatora; rekord dostaje stan `dismissed`,
+- wpisy `NIEWYSŁANO` można usuwać pojedynczo oraz hurtowo przez „Usuń zaznaczone”,
+- zaznaczenie w widoku Niewysłane służy teraz zarówno do ponownej wysyłki, jak i do usuwania; wysyłane są tylko pozycje, które nadal mają poprawne powiązanie z klientem,
+- generator i frontend traktują `dismissed` jako stan końcowy, więc usunięty wpis nie wraca po odświeżeniu.
 
-Bez zmian bazy, migracji i Edge Functions.
+Historia provider_message_id, sent_at i komunikat operatora pozostają zachowane.
