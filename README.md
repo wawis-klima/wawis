@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 12.36
+- 12.37
 
 Wersja 12.35 pozwala bezpiecznie ponowić SMS, który został przyjęty przez operatora, ale później oznaczony jako niedostarczony. Frontend pokazuje czytelniejszy status i właściwy błąd Edge Function. Na desktopie e-mail w karcie klienta wykorzystuje wolną szerokość, a telefon jest dosunięty do prawej. Produkcyjnie wyczyszczono też 757 starych widocznych pozycji „Niewysłane”.
 
@@ -875,7 +875,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.36` — hurtowo wyczyszczono stare „Niewysłane” i poprawiono przycisk „Wysyłanie…” tak, aby dotyczył tylko jednego wiersza.
+- wersja `12.37` — poprawiono ponawianie SMS po potwierdzonym niedoręczeniu oraz ukryto surowy callback SMSAPI w historii.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

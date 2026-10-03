@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.36",
+  "version": "12.37",
   "scope": "full",
-  "release_branch": "release/v12.36",
+  "release_branch": "release/v12.37",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Potwierdzono dwa problemy: stare rekordy not_sent pozostały aktywne oraz globalny sendBusy zmieniał napis na wszystkich przyciskach w tabeli."
+    "notes": "Potwierdzono, że oba wpisy Wojciecha Markowskiego mają status error/UNDELIVERED. Poprzednia logika błędnie traktowała provider_message_id lub sent_at z nieudanej próby jako dowód skutecznej wysyłki."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.36.zip"
+    "file_name": "klima-app-v12.37.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.36",
+    "source_branch": "release/v12.37",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge sprawdzić licznik Niewysłane po odświeżeniu i wysyłkę pojedynczego wiersza."
+    "notes": "Po merge sprawdzić ponowienie niedostarczonego SMS oraz czytelny opis błędu w historii."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "APPLIED — sms_bulk_remove_old_unsent_v1236; wszystkie historyczne not_sent bez provider_message_id/sent_at/delivered_at oznaczone jako deleted.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.36",
+    "supabase_changes": "APPLIED — funkcja claim_service_sms_not_sent_retry z v12.37; test transakcyjny dla bieżącego error/UNDELIVERED zwrócił ok=true. Webhook smsapi-delivery-webhook wdrożony jako v11.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.37",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

@@ -91,10 +91,25 @@ async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>,
     p_provider_message_id: entry.providerMessageId,
     p_claim_id: entry.claimId,
     p_status: nextStatus,
-    p_error: nextStatus === 'error' ? JSON.stringify(entry.raw) : null,
+    p_error: nextStatus === 'error' ? formatDeliveryError(entry) : null,
   });
   if (error) return { ok: false, status: 500, error: error.message };
   return data || { ok: false, status: 500, error: 'Missing atomic callback result' };
+}
+
+function formatDeliveryError(entry: CallbackEntry) {
+  const code = String(entry.status || '').trim();
+  const rawName = String(entry.statusName || '').trim().toUpperCase();
+
+  if (rawName === 'UNDELIVERED' || code === '405') {
+    return `SMSAPI: wiadomość niedostarczona${code ? ` (kod ${code})` : ''}.`;
+  }
+
+  if (rawName) {
+    return `SMSAPI: ${rawName}${code ? ` (kod ${code})` : ''}.`;
+  }
+
+  return `SMSAPI: błąd doręczenia${code ? ` (kod ${code})` : ''}.`;
 }
 
 function firstValue(raw: Record<string, unknown>, keys: string[]) {
