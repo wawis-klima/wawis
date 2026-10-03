@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.30",
+  "version": "12.31",
   "scope": "full",
-  "release_branch": "release/v12.30",
+  "release_branch": "release/v12.31",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "12.29 po pełnej kontroli: 0 nowych 409 sms_log, 0 nowych duplikatów, produkcyjne funkcje SMS aktywne."
+    "notes": "12.30 wdrożone poprawnie; zmiana 12.31 jest wyłącznie zmianą położenia elementu UI."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.30.zip"
+    "file_name": "klima-app-v12.31.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.30",
+    "source_branch": "release/v12.31",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "evidence_required": true,
+    "evidence_required": false,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić Vercel, aktywną wersję send-service-sms i wykonać ręczny SMS testowy z konta administratora."
+    "notes": "Po merge sprawdzić zielony deployment Vercela i wersję 12.31."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "EDGE FUNCTION — send-service-sms: admin-only tryb testowego SMS bez tworzenia danych serwisowych.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.30",
+    "supabase_changes": "NONE — brak zmian bazy i Edge Functions w 12.31.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.31",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }
