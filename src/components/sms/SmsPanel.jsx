@@ -455,7 +455,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
   function buildDeletePayload(rows) {
     return rows.flatMap((row) => getRowsForDeletePayload(row).map((targetRow) => ({
-      logId: targetRow.queueLog?.id || null,
+      logId: targetRow.queueLog?.id || targetRow.latestLog?.id || row.queueLog?.id || row.latestLog?.id || null,
       deviceId: targetRow.target_type === 'device' ? targetRow.id : (targetRow.device_id || null),
       jobId: targetRow.target_type === 'job' ? targetRow.id : (targetRow.source_job_id || targetRow.job_id || targetRow.queueLog?.job_id || null),
       client: targetRow.client || targetRow.title || row.client || row.title || null,
@@ -506,7 +506,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
   async function handleRetryUnsentSelected() {
     if (smsSendLockRef.current) return;
-    const selectedRows = unsentRows.filter((row) => row.canSelect && selectedUnsentIds.includes(row.selectionKey));
+    const selectedRows = unsentRows.filter((row) => row.canSend && selectedUnsentIds.includes(row.selectionKey));
     if (selectedRows.length === 0) return;
 
     smsSendLockRef.current = true;
@@ -543,7 +543,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleRetryUnsentNow(row) {
-    if (smsSendLockRef.current || !row?.canSelect) return;
+    if (smsSendLockRef.current || !row?.canSend) return;
 
     smsSendLockRef.current = true;
     setSendBusy(true);
@@ -573,7 +573,55 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   function toggleUnsentAll(checked, rows = []) {
-    setSelectedUnsentIds(checked ? rows.filter((row) => row.canSelect).map((row) => row.selectionKey).filter(Boolean) : []);
+    setSelectedUnsentIds(checked ? rows.filter((row) => row.canDelete).map((row) => row.selectionKey).filter(Boolean) : []);
+  }
+
+  function buildUnsentDeletePayload(rows = []) {
+    const seen = new Set();
+    return rows.flatMap((row) => {
+      const ids = Array.isArray(row.grouped_log_ids) && row.grouped_log_ids.length
+        ? row.grouped_log_ids
+        : [row.retryLogId || row.id];
+      return ids
+        .map((id) => String(id || '').trim())
+        .filter((id) => id && !seen.has(id) && seen.add(id))
+        .map((logId) => ({ logId }));
+    });
+  }
+
+  async function handleDeleteUnsentSelected() {
+    const selectedRows = unsentRows.filter((row) => row.canDelete && selectedUnsentIds.includes(row.selectionKey));
+    if (selectedRows.length === 0) return;
+    setSendBusy(true);
+    setInfoMessage('');
+    setErrorMessage('');
+    try {
+      const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload(selectedRows) });
+      setInfoMessage(`Usunięto ${result.deletedCount || selectedRows.length} niewysłanych pozycji z listy SMS.`);
+      setSelectedUnsentIds([]);
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+    } catch (error) {
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
+    } finally {
+      setSendBusy(false);
+    }
+  }
+
+  async function handleDeleteUnsentNow(row) {
+    if (!row?.canDelete) return;
+    setSendBusy(true);
+    setInfoMessage('');
+    setErrorMessage('');
+    try {
+      await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload([row]) });
+      setInfoMessage(`Pozycja ${row.client || 'Klient'} została usunięta z listy niewysłanych SMS.`);
+      setSelectedUnsentIds((prev) => prev.filter((id) => id !== row.selectionKey));
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+    } catch (error) {
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
+    } finally {
+      setSendBusy(false);
+    }
   }
 
   function toggleOne(logId) {
@@ -619,7 +667,9 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
         ? 'Wymaga zatwierdzenia wysyłki.'
         : normalizeText(log.error_message) || 'Przekroczono okno wysyłki.',
       linkedTarget: target,
-      canSelect: Boolean(retryLogId && target),
+      canSend: Boolean(retryLogId && target),
+      canDelete: Boolean(retryLogId),
+      canSelect: Boolean(retryLogId),
     };
   }), [unsentLogs, queue, targetByIdentity]);
 
@@ -817,7 +867,9 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   onToggleOne={toggleUnsentOne}
                   onToggleAll={(checked) => toggleUnsentAll(checked, filteredUnsentRows)}
                   onSendSelected={handleRetryUnsentSelected}
+                  onDeleteSelected={handleDeleteUnsentSelected}
                   onSendNow={handleRetryUnsentNow}
+                  onDeleteNow={handleDeleteUnsentNow}
                   sendBusy={sendBusy}
                   onPageChange={setCurrentPage}
                   onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
@@ -968,7 +1020,9 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               onToggleOne={toggleUnsentOne}
               onToggleAll={(checked) => toggleUnsentAll(checked, filteredUnsentRows)}
               onSendSelected={handleRetryUnsentSelected}
+              onDeleteSelected={handleDeleteUnsentSelected}
               onSendNow={handleRetryUnsentNow}
+              onDeleteNow={handleDeleteUnsentNow}
               sendBusy={sendBusy}
               onPageChange={setCurrentPage}
               onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
