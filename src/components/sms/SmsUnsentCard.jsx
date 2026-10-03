@@ -40,12 +40,13 @@ export default function SmsUnsentCard({
   onSendNow,
   onDeleteNow,
   sendBusy,
+  deleteBusy,
   onPageChange,
   onSelectLog,
   onSelectDevice,
 }) {
-  const selectableRows = rows.filter((row) => row.canDelete);
-  const selectedRows = rows.filter((row) => selectedIds.includes(row.selectionKey));
+  const selectableRows = pageRows.filter((row) => row.canDelete);
+  const selectedRows = pageRows.filter((row) => selectedIds.includes(row.selectionKey));
   const selectedSendableCount = selectedRows.filter((row) => row.canSend).length;
   const allChecked = selectableRows.length > 0 && selectableRows.every((row) => selectedIds.includes(row.selectionKey));
 
@@ -55,10 +56,10 @@ export default function SmsUnsentCard({
         <div className="smsDesktopSelectionBar">
           <span>Zaznaczono {selectedIds.length} niewysłanych wiadomości.</span>
           <div>
-            <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy} onClick={onDeleteSelected}>
-              Usuń zaznaczone
+            <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy || deleteBusy} onClick={onDeleteSelected}>
+              {deleteBusy ? 'Usuwanie…' : 'Usuń zaznaczone'}
             </button>
-            <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || selectedSendableCount === 0} onClick={onSendSelected}>
+            <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || deleteBusy || selectedSendableCount === 0} onClick={onSendSelected}>
               {sendBusy ? 'Wysyłanie…' : 'Wyślij zaznaczone'}
             </button>
           </div>
@@ -78,7 +79,7 @@ export default function SmsUnsentCard({
           <thead>
             <tr>
               <th className="smsDesktopCheckboxCol">
-                <input type="checkbox" checked={allChecked} onChange={(event) => onToggleAll(event.target.checked)} aria-label="Zaznacz wszystkie niewysłane SMS-y" />
+                <input type="checkbox" checked={allChecked} onChange={(event) => onToggleAll(event.target.checked)} aria-label="Zaznacz wszystkie niewysłane SMS-y na tej stronie" />
               </th>
               <th>KLIENT</th>
               <th>URZĄDZENIE</th>
@@ -121,10 +122,10 @@ export default function SmsUnsentCard({
                   </td>
                   <td>
                     <div className="smsDesktopRowActions">
-                      <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy || !row.canDelete} onClick={() => onDeleteNow?.(row)}>
-                        Usuń
+                      <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy || deleteBusy || !row.canDelete} onClick={() => onDeleteNow?.(row)}>
+                        {deleteBusy ? 'Usuwanie…' : 'Usuń'}
                       </button>
-                      <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || !row.canSend} onClick={() => onSendNow?.(row)}>
+                      <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || deleteBusy || !row.canSend} onClick={() => onSendNow?.(row)}>
                         {sendBusy ? 'Wysyłanie…' : row.status === 'pending_approval' ? 'Zatwierdź i wyślij' : 'Wyślij ponownie'}
                       </button>
                     </div>
