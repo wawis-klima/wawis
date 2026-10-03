@@ -44,7 +44,8 @@ function getQueueStatusPresentation(row) {
     return { label: getSmsStatusLabel(status), tone: 'planned' };
   }
   if (status === 'error') {
-    return { label: 'Błąd', tone: 'warning' };
+    const providerAccepted = Boolean(row?.latestLog?.provider_message_id || row?.queueLog?.provider_message_id);
+    return { label: providerAccepted ? 'Niedostarczony' : 'Błąd', tone: 'warning' };
   }
   if (!row.sms_consent || !(row.sms_recipient_phone || row.phone)) {
     return { label: 'Nie dotyczy', tone: 'muted' };
@@ -377,9 +378,20 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setInfoMessage('');
     setErrorMessage('');
     try {
-      const approvalIds = [...new Set(selectedRows.map(getPrimaryQueueLogId).filter(Boolean))];
-      const manualRows = selectedRows.filter((job) => !getPrimaryQueueLogId(job));
+      const retryRows = selectedRows.filter((row) => (
+        String(row?.rowStatus || '').trim().toLowerCase() === 'error'
+        && row?.latestLog?.id
+      ));
+      const retryKeys = new Set(retryRows.map((row) => row.selectionKey));
+      const regularRows = selectedRows.filter((row) => !retryKeys.has(row.selectionKey));
+      const approvalIds = [...new Set(regularRows.map(getPrimaryQueueLogId).filter(Boolean))];
+      const manualRows = regularRows.filter((job) => !getPrimaryQueueLogId(job));
       let sentCount = 0;
+
+      for (const row of retryRows) {
+        const result = await sendUnsentSmsLog({ supabase, log: row.latestLog });
+        sentCount += result.sentCount || 0;
+      }
 
       if (approvalIds.length > 0) {
         const result = await approveAndSendSmsLogs({ supabase, logIds: approvalIds });
@@ -433,8 +445,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setInfoMessage('');
     setErrorMessage('');
     try {
+      const rowStatus = String(job?.rowStatus || '').trim().toLowerCase();
       const approvalId = getPrimaryQueueLogId(job);
-      if (approvalId) {
+      if (rowStatus === 'error' && job?.latestLog?.id) {
+        await sendUnsentSmsLog({ supabase, log: job.latestLog });
+      } else if (approvalId) {
         await approveAndSendSmsLogs({ supabase, logIds: [approvalId] });
       } else {
         const primary = getPrimaryQueueTarget(job);
