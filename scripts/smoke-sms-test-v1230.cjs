@@ -13,7 +13,7 @@ assert.match(sender, /handleTestSend/);
 assert.match(sender, /normalizeTestPhone/);
 assert.match(sender, /deliveryCallback:\s*false/);
 assert.match(sender, /TEST_SMS_MESSAGE/);
-assert.doesNotMatch(sender, /606553984/);
+assert.doesNotMatch(sender, /testPhone\s*[:=]\s*['"]\d{9}['"]/);
 
 const client = read('src/modules/sms-send.js');
 assert.match(client, /export async function sendTestSms/);
@@ -25,6 +25,6 @@ assert.match(panel, /sendTestSms/);
 assert.match(panel, /SMS testowy/);
 assert.match(panel, /Wyślij testowy SMS/);
 assert.match(panel, /inputMode="tel"/);
-assert.doesNotMatch(panel, /606553984/);
+assert.doesNotMatch(panel, /testSmsPhone[^\n]*['"]\d{9}['"]/);
 
 console.log('SMS test admin v12.30 smoke OK');
