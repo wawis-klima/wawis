@@ -48,7 +48,21 @@ for (const file of ['src/components/sms/SmsUnsentCard.jsx']) {
   const card = read(file);
   assert.match(card, /Wyślij ponownie/);
   assert.match(card, /Wyślij zaznaczone/);
+  assert.match(card, /sendingIds = \[\]/);
+  assert.match(card, /const rowSending = sendingIds\.includes\(row\.selectionKey\)/);
+  assert.match(card, /rowSending \? 'Wysyłanie…'/);
+  assert.doesNotMatch(card, /\{sendBusy \? 'Wysyłanie…' : row\.status/);
 }
+
+const panelSource = read('src/components/sms/SmsPanel.jsx');
+assert.match(panelSource, /sendingUnsentIds/);
+assert.match(panelSource, /setSendingUnsentIds\(row\?\.selectionKey \? \[row\.selectionKey\] : \[\]\)/);
+assert.match(panelSource, /sendingIds=\{sendingUnsentIds\}/);
+
+const bulkCleanup = read('supabase/migrations/20261003180500_sms_bulk_remove_old_unsent_v1236.sql');
+assert.match(bulkCleanup, /status\s*=\s*'deleted'/);
+assert.match(bulkCleanup, /lower\(btrim\(coalesce\(status, ''\)\)\)\s*=\s*'not_sent'/);
+
 
 for (const file of ['src/components/sms/SmsHistoryCard.jsx']) {
   const history = read(file);
