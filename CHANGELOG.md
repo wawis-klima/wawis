@@ -1,3 +1,12 @@
+## 12.35
+- Naprawiono świadome ponawianie SMS-a, który SMSAPI wcześniej przyjęło, ale później oznaczyło jako niedostarczony: kolejka kieruje taki rekord do bezpiecznej ścieżki retry zamiast do blokowanej wysyłki ręcznej.
+- Retry statusu `error` jest dozwolone tylko wtedy, gdy istnieje `provider_message_id` i brak `delivered_at`; zachowane są zabezpieczenia przed podwójną wysyłką oraz ponowne sprawdzenie aktualnej zgody i numeru.
+- Przy błędzie Edge Function frontend próbuje pokazać właściwy komunikat serwera zamiast ogólnego „Edge Function returned a non-2xx status code”.
+- W kolejce rekord po nieudanym doręczeniu jest opisany jako „Niedostarczony”.
+- Desktop: pole e-mail w karcie klienta wykorzystuje wolną szerokość, a telefon zachowuje kompaktową szerokość i jest odsunięty maksymalnie w prawo.
+- Operacja produkcyjna: 757 widocznych starych wpisów „Niewysłane” oznaczono jako usunięte; bieżący niedostarczony SMS pozostawiono do ponowienia.
+- Migracja: `20261003173500_sms_retry_confirmed_undelivered_v1235.sql`.
+
 ## 12.34
 - Wyrównano widok „Historia wysyłek” SMS: dane są teraz pokazane w stałych kolumnach Klient / Telefon / Termin / Cykl / Data wpisu / Status.
 - Status nie ucieka już na skraj ekranu, a karta historii nie powoduje niepotrzebnego rozszerzania układu ani poziomego przewijania.
