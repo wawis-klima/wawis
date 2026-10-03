@@ -506,7 +506,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
   async function handleRetryUnsentSelected() {
     if (smsSendLockRef.current) return;
-    const selectedRows = unsentRows.filter((row) => row.canSend && selectedUnsentIds.includes(row.selectionKey));
+    const selectedRows = unsentRows.filter((row) => (row.canSend ?? row.canSelect) && selectedUnsentIds.includes(row.selectionKey));
     if (selectedRows.length === 0) return;
 
     smsSendLockRef.current = true;
@@ -543,7 +543,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleRetryUnsentNow(row) {
-    if (smsSendLockRef.current || !row?.canSend) return;
+    if (smsSendLockRef.current || !(row?.canSend ?? row?.canSelect)) return;
 
     smsSendLockRef.current = true;
     setSendBusy(true);
