@@ -1,3 +1,9 @@
+## 12.38
+- Desktop: e-mail i telefon w karcie klienta są grupowane w jeden nierozdzielany wiersz kontaktowy.
+- Pole e-mail elastycznie zajmuje pozostałą szerokość, zamiast wymuszać przeniesienie telefonu do kolejnego rzędu.
+- Karta telefonu została zwężona do 126 px, z nieco mniejszą etykietą i wartością.
+- Mobile bez zmian funkcjonalnych.
+
 ## 12.37
 - Ponowienie SMS po statusie SMSAPI `UNDELIVERED` nie jest już blokowane tylko dlatego, że wcześniejsza nieudana próba ma `provider_message_id` lub `sent_at`.
 - Blokada `group_already_sent` dotyczy teraz wyłącznie faktycznie aktywnych/skutecznych statusów `sent`, `provider_sent` i `delivered`.
