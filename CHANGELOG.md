@@ -1,3 +1,11 @@
+## 12.37
+- Ponowienie SMS po statusie SMSAPI `UNDELIVERED` nie jest już blokowane tylko dlatego, że wcześniejsza nieudana próba ma `provider_message_id` lub `sent_at`.
+- Blokada `group_already_sent` dotyczy teraz wyłącznie faktycznie aktywnych/skutecznych statusów `sent`, `provider_sent` i `delivered`.
+- Historia SMS nie pokazuje surowego JSON-a callbacku SMSAPI; dla statusu 405 wyświetla czytelny komunikat o niedoręczeniu.
+- Webhook SMSAPI zapisuje dla przyszłych błędów czytelny opis zamiast całego payloadu callbacku.
+- Produkcyjnie potwierdzono w transakcyjnym teście, że bieżący niedostarczony wpis Wojciecha Markowskiego może przejść przez claim retry.
+- Migracja: `20261003184000_sms_retry_after_undelivered_v1237.sql`.
+
 ## 12.36
 - Hurtowo usunięto z aktywnej zakładki wszystkie stare rekordy SMS ze statusem `not_sent`, które nie miały `provider_message_id`, `sent_at` ani `delivered_at`.
 - Po migracji produkcyjnej liczba takich starych aktywnych rekordów wynosi 0.
