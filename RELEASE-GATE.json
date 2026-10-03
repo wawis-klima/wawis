@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.32",
+  "version": "12.33",
   "scope": "full",
-  "release_branch": "release/v12.32",
+  "release_branch": "release/v12.33",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zdiagnozowano błąd usuwania: rekord ERROR z dowodem kontaktu SMSAPI był chroniony jako historia. Wpis SILESIA został bezpiecznie oznaczony dismissed, bez utraty provider_message_id/sent_at/error_message."
+    "notes": "Potwierdzono przyczynę incydentu: checkbox nagłówka zaznaczał wszystkie 398 wierszy, a payload usuwania rozwijał grouped_log_ids. W bazie 837 logów oznaczono deleted w ciągu ok. minuty."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.32.zip"
+    "file_name": "klima-app-v12.33.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.32",
+    "source_branch": "release/v12.33",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge sprawdzić Vercel, zniknięcie dismissed z aktywnej kolejki i możliwość usuwania not_sent z widoku Niewysłane."
+    "notes": "Po merge sprawdzić produkcyjny deployment Vercela, wersję 12.33, licznik Niewysłane oraz zachowanie zaznaczenia/usuwania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "MIGRATION — cancel_service_sms_log obsługuje ERROR jako dismissed z zachowaniem historii; not_sent/pending_approval nadal jako deleted.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.32",
+    "supabase_changes": "EDGE FUNCTION — limit maks. 25 logów w delete; DATA REPAIR — przywrócenie omyłkowo usuniętych not_sent po wdrożeniu zabezpieczeń.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.33",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }
