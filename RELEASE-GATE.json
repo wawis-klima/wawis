@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.37",
-  "scope": "full",
-  "release_branch": "release/v12.37",
+  "version": "12.38",
+  "scope": "desktop",
+  "release_branch": "release/v12.38",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Potwierdzono, że oba wpisy Wojciecha Markowskiego mają status error/UNDELIVERED. Poprzednia logika błędnie traktowała provider_message_id lub sent_at z nieudanej próby jako dowód skutecznej wysyłki."
+    "notes": "Zmiana dotyczy wyłącznie układu desktopowego sekcji Klient; brak zmian w logice danych, Supabase i Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.37.zip"
+    "file_name": "klima-app-v12.38.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.37",
+    "source_branch": "release/v12.38",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge sprawdzić ponowienie niedostarczonego SMS oraz czytelny opis błędu w historii."
+    "notes": "Po wdrożeniu sprawdzić na desktopie, że e-mail i telefon pozostają w jednym wierszu oraz że karta telefonu jest wyraźnie węższa."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "APPLIED — funkcja claim_service_sms_not_sent_retry z v12.37; test transakcyjny dla bieżącego error/UNDELIVERED zwrócił ok=true. Webhook smsapi-delivery-webhook wdrożony jako v11.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.37",
+    "supabase_changes": "NONE — release wyłącznie frontendowy.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.38",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }
