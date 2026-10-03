@@ -1,10 +1,12 @@
-# WAWIS 12.32 — gotowa do wdrożenia
+# WAWIS 12.33 — gotowa do wdrożenia
 
-Naprawiono usuwanie wpisów SMS z aktywnych list.
+Naprawiono krytyczny błąd zbiorczych operacji w module SMS.
 
-- wpis ze statusem BŁĄD, który ma już dowód kontaktu z SMSAPI, można usunąć z aktywnej kolejki bez niszczenia historii operatora; rekord dostaje stan `dismissed`,
-- wpisy `NIEWYSŁANO` można usuwać pojedynczo oraz hurtowo przez „Usuń zaznaczone”,
-- zaznaczenie w widoku Niewysłane służy teraz zarówno do ponownej wysyłki, jak i do usuwania; wysyłane są tylko pozycje, które nadal mają poprawne powiązanie z klientem,
-- generator i frontend traktują `dismissed` jako stan końcowy, więc usunięty wpis nie wraca po odświeżeniu.
+- zaznaczenie checkboxem w nagłówku obejmuje tylko bieżącą stronę,
+- zmiana strony, widoku lub filtrów czyści wcześniejsze zaznaczenie,
+- usuwanie i wysyłanie mają osobne stany `Usuwanie…` / `Wysyłanie…`,
+- przed operacją zbiorczą aplikacja pokazuje potwierdzenie z liczbą pozycji,
+- widok „Niewysłane” usuwa tylko dokładny wpis reprezentowany przez widoczny wiersz, bez rozwijania wszystkich historycznych `grouped_log_ids`,
+- Edge Function blokuje próbę usunięcia ponad 25 logów SMS naraz.
 
-Historia provider_message_id, sent_at i komunikat operatora pozostają zachowane.
+Dane omyłkowo oznaczone jako usunięte w incydencie 03.10.2026 są przywracane osobną, kontrolowaną operacją w bazie produkcyjnej.
