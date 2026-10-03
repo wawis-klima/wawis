@@ -1,7 +1,7 @@
 ## Aktualna wersja
-- 12.33
+- 12.34
 
-Wersja 12.33 zabezpiecza zbiorcze operacje SMS: zaznaczenie z nagłówka obejmuje tylko bieżącą stronę, usuwanie i wysyłanie mają osobne stany, operacje zbiorcze wymagają potwierdzenia, a backend blokuje zbyt duże usuwanie.\n\nWersja 12.32 naprawia usuwanie wpisów SMS. Błędny wpis z dowodem kontaktu z SMSAPI jest tylko wycofywany z aktywnej listy (historia operatora zostaje), a w zakładce „Niewysłane” można usuwać pojedyncze lub zaznaczone pozycje. Stan `dismissed` jest końcowy, więc wpis nie wraca po odświeżeniu.
+Wersja 12.34 wyrównuje historię SMS w czytelną tabelę kolumnową i usuwa problem z uciekającym statusem oraz poziomym przewijaniem.\n\nWersja 12.33 zabezpiecza zbiorcze operacje SMS: zaznaczenie z nagłówka obejmuje tylko bieżącą stronę, usuwanie i wysyłanie mają osobne stany, operacje zbiorcze wymagają potwierdzenia, a backend blokuje zbyt duże usuwanie.\n\nWersja 12.32 naprawia usuwanie wpisów SMS. Błędny wpis z dowodem kontaktu z SMSAPI jest tylko wycofywany z aktywnej listy (historia operatora zostaje), a w zakładce „Niewysłane” można usuwać pojedyncze lub zaznaczone pozycje. Stan `dismissed` jest końcowy, więc wpis nie wraca po odświeżeniu.
 
 Wersja 12.31 przenosi panel SMS testowego z głównego widoku przypomnień do zakładki „Szablony SMS”, żeby nie zajmował miejsca podczas codziennej pracy z kolejką. Sama wysyłka testowa działa bez zmian.
 
@@ -57,7 +57,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.33
+# Wawis Klimatyzacja — wersja 12.34
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -873,7 +873,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.33` — zabezpieczono zbiorcze usuwanie i ponowną wysyłkę SMS oraz naprawiono zaznaczanie tylko bieżącej strony.
+- wersja `12.34` — wyrównano historię wysyłek SMS w stałych kolumnach i poprawiono responsywność.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
