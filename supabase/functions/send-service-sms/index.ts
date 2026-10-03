@@ -536,12 +536,7 @@ function providerErrorMessage(parsed: unknown, statusCode: number) {
 }
 
 async function sendSmsWithSmsApi({ token, to, message, from, idx, deliveryCallback = true }: { token: string; to: string; message: string; from?: string; idx?: string; deliveryCallback?: boolean }): Promise<SmsApiResult> {
-  const payload = new URLSearchParams({
-    to,
-    message,
-    format: "json",
-    encoding: "utf-8",
-  });
+  let payload: URLSearchParams;
 
   if (deliveryCallback) {
     if (!idx) throw new Error("Brak IDX do skonfigurowania callbacku SMSAPI.");
@@ -549,9 +544,22 @@ async function sendSmsWithSmsApi({ token, to, message, from, idx, deliveryCallba
     if (!supabaseUrl) throw new Error("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
     const callbackToken = await deriveSmsApiCallbackToken(token);
     const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
-    payload.set("notify_url", notifyUrl);
-    payload.set("idx", idx);
-    payload.set("check_idx", "1");
+    payload = new URLSearchParams({
+      to,
+      message,
+      format: "json",
+      encoding: "utf-8",
+      notify_url: notifyUrl,
+      idx,
+      check_idx: "1",
+    });
+  } else {
+    payload = new URLSearchParams({
+      to,
+      message,
+      format: "json",
+      encoding: "utf-8",
+    });
   }
   if (from) payload.set("from", from);
 
