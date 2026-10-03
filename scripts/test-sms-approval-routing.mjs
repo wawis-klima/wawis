@@ -17,6 +17,7 @@ for (const prefix of ['src']) {
   };
   const pending = { id: 'pending-primary', status: 'pending_approval', reminder_group_id: 'group-a', reminder_group_primary: true, phone: '48500600700', reminder_due_date: '2026-10-02' };
   const expired = { ...pending, id: 'expired', status: 'not_sent', reminder_group_id: 'group-b' };
+  const failedDelivery = { ...pending, id: 'failed-delivery', status: 'error', reminder_group_id: 'group-c', provider_message_id: 'provider-failed' };
   const secondary = { ...pending, id: 'pending-secondary', reminder_group_primary: false, created_at: '2026-10-02T17:00:00Z' };
   const linkedTarget = { id: 'device-a', queueLog: secondary, queueLogs: [secondary, pending] };
   const grouped = buildUnsentSmsLogs({ unsentLogs: [expired, expired], queue: [linkedTarget] });
@@ -27,21 +28,23 @@ for (const prefix of ['src']) {
 
   await sendUnsentSmsLog({ supabase, log: pending });
   await sendUnsentSmsLog({ supabase, log: expired });
+  await sendUnsentSmsLog({ supabase, log: failedDelivery });
   assert.deepEqual(calls, [
     { name: 'send-service-sms', mode: 'approval', logIds: [pending.id] },
     { name: 'send-service-sms', mode: 'retry_not_sent', logIds: [expired.id] },
+    { name: 'send-service-sms', mode: 'retry_not_sent', logIds: [failedDelivery.id] },
   ]);
-  for (const status of ['sent', 'provider_sent', 'delivered', 'deleted', 'error', 'approved', 'sending', '']) {
+  for (const status of ['sent', 'provider_sent', 'delivered', 'deleted', 'approved', 'sending', '']) {
     await assert.rejects(sendUnsentSmsLog({ supabase, log: { ...pending, status } }));
   }
   await assert.rejects(sendUnsentSmsLog({ supabase, log: { status: 'pending_approval' } }));
-  assert.equal(calls.length, 2, 'Unsupported statuses must not invoke the sender');
+  assert.equal(calls.length, 3, 'Unsupported statuses must not invoke the sender');
   response = { ok: true, sentCount: 0 };
   await assert.rejects(sendUnsentSmsLog({ supabase, log: pending }), /Nie wysłano/);
   await assert.rejects(approveAndSendSmsLogs({ supabase, logIds: [pending.id] }), /Nie wysłano/);
   response = { ok: false, failures: [{ error: 'Wysyłka zablokowana' }] };
   await assert.rejects(sendUnsentSmsLog({ supabase, log: pending }), /Wysyłka zablokowana/);
-  assert.equal(calls.length, 5, 'Failure must never fall back to another sending mode');
+  assert.equal(calls.length, 6, 'Failure must never fall back to another sending mode');
 
   const date = new Date();
   date.setUTCDate(1);
