@@ -68,7 +68,7 @@ for (const prefix of ['src']) {
   let sends = 0;
   const context = {
     smsSendLockRef: { current: false }, supabase,
-    setSendBusy: () => {}, setInfoMessage: (value) => messages.push(value), setErrorMessage: (value) => messages.push(value),
+    setSendBusy: () => {}, setSendingUnsentIds: () => {}, setInfoMessage: (value) => messages.push(value), setErrorMessage: (value) => messages.push(value),
     reloadSmsData: async () => {}, refreshAll: async () => {},
     normalizeDatabaseErrorMessage: (error) => error.message,
     sendUnsentSmsLog: () => { sends += 1; return new Promise((resolve) => { resolveSend = resolve; }); },
