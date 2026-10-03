@@ -1,10 +1,11 @@
 {
-  "version": "12.32",
-  "summary": "Naprawiono usuwanie błędnych wpisów SMS i dodano usuwanie pozycji z widoku Niewysłane.",
+  "version": "12.33",
+  "summary": "Zabezpieczono zbiorcze usuwanie i ponowną wysyłkę SMS po incydencie z zaznaczeniem całej listy.",
   "changes": [
-    "Błędny SMS po kontakcie z SMSAPI można usunąć z aktywnej listy bez fizycznego kasowania historii operatora.",
-    "Niewysłane SMS-y można usuwać pojedynczo i hurtowo przez Usuń zaznaczone.",
-    "Stan dismissed jest końcowy i nie wraca do aktywnej kolejki po odświeżeniu.",
-    "Usuwanie zachowuje provider_message_id, sent_at i opis błędu SMSAPI."
+    "Checkbox w nagłówku zaznacza wyłącznie widoczną stronę, maksymalnie 10 wierszy.",
+    "Usuwanie ma osobny stan Usuwanie… i nie zmienia etykiety wysyłania.",
+    "Zbiorcze wysyłanie i usuwanie wymagają potwierdzenia liczby pozycji.",
+    "Usuwanie Niewysłanych nie rozwija już grouped_log_ids; backend dodatkowo blokuje usunięcie ponad 25 logów w jednym żądaniu.",
+    "Pozycje omyłkowo usunięte w incydencie 03.10.2026 zostają przywrócone do stanu not_sent."
   ]
 }
