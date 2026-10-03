@@ -507,39 +507,41 @@ export default function JobDetailsPanel({
               </div>
             </div>
 
-            <div className="infoItem jobDetailsClientCompactItem jobDetailsClientEmailItem">
-              <span className="infoLabel infoLabelWithIcon"><IconMail /><span>Email</span></span>
-              <div className="infoValue">
-                {selectedJob.email ? (
-                  <div className="infoValueActions">
-                    <a
-                      href={getDesktopInvoiceEmailHref(selectedJob.email)}
-                      className="emailLink"
-                      title="Kliknij, aby otworzyć klienta poczty"
-                      aria-label={`Wyślij email do ${selectedJob.email}`}
-                    >
-                      {selectedJob.email}
-                    </a>
-                  </div>
-                ) : "Brak emaila"}
+            <div className="jobDetailsClientContactRow">
+              <div className="infoItem jobDetailsClientCompactItem jobDetailsClientEmailItem">
+                <span className="infoLabel infoLabelWithIcon"><IconMail /><span>Email</span></span>
+                <div className="infoValue">
+                  {selectedJob.email ? (
+                    <div className="infoValueActions">
+                      <a
+                        href={getDesktopInvoiceEmailHref(selectedJob.email)}
+                        className="emailLink"
+                        title="Kliknij, aby otworzyć klienta poczty"
+                        aria-label={`Wyślij email do ${selectedJob.email}`}
+                      >
+                        {selectedJob.email}
+                      </a>
+                    </div>
+                  ) : "Brak emaila"}
+                </div>
               </div>
-            </div>
 
-            <div className="infoItem jobDetailsClientCompactItem jobDetailsClientPhoneItem">
-              <span className="infoLabel infoLabelWithIcon"><IconPhone /><span>Telefon</span></span>
-              <div className="infoValue">
-                {selectedJob.phone ? (
-                  <div className="infoValueActions">
-                    <a
-                      href={phoneHref || `tel:${selectedJob.phone}`}
-                      className="phoneLink"
-                      title="Kliknij, aby zadzwonić"
-                      aria-label={`Zadzwoń pod numer ${selectedJob.phone}`}
-                    >
-                      {selectedJob.phone}
-                    </a>
-                  </div>
-                ) : "Brak telefonu"}
+              <div className="infoItem jobDetailsClientCompactItem jobDetailsClientPhoneItem">
+                <span className="infoLabel infoLabelWithIcon"><IconPhone /><span>Telefon</span></span>
+                <div className="infoValue">
+                  {selectedJob.phone ? (
+                    <div className="infoValueActions">
+                      <a
+                        href={phoneHref || `tel:${selectedJob.phone}`}
+                        className="phoneLink"
+                        title="Kliknij, aby zadzwonić"
+                        aria-label={`Zadzwoń pod numer ${selectedJob.phone}`}
+                      >
+                        {selectedJob.phone}
+                      </a>
+                    </div>
+                  ) : "Brak telefonu"}
+                </div>
               </div>
             </div>
 
