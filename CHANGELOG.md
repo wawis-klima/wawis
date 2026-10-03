@@ -1,3 +1,10 @@
+## 12.36
+- Hurtowo usunięto z aktywnej zakładki wszystkie stare rekordy SMS ze statusem `not_sent`, które nie miały `provider_message_id`, `sent_at` ani `delivered_at`.
+- Po migracji produkcyjnej liczba takich starych aktywnych rekordów wynosi 0.
+- W zakładce „Niewysłane” kliknięcie „Wyślij ponownie” pokazuje „Wysyłanie…” tylko na wierszu faktycznie wysyłanym.
+- Pozostałe wiersze nie zmieniają napisu podczas pojedynczej wysyłki; globalna blokada nadal chroni przed równoległym podwójnym wysłaniem.
+- Migracja: `20261003180500_sms_bulk_remove_old_unsent_v1236.sql`.
+
 ## 12.35
 - Naprawiono świadome ponawianie SMS-a, który SMSAPI wcześniej przyjęło, ale później oznaczyło jako niedostarczony: kolejka kieruje taki rekord do bezpiecznej ścieżki retry zamiast do blokowanej wysyłki ręcznej.
 - Retry statusu `error` jest dozwolone tylko wtedy, gdy istnieje `provider_message_id` i brak `delivered_at`; zachowane są zabezpieczenia przed podwójną wysyłką oraz ponowne sprawdzenie aktualnej zgody i numeru.
