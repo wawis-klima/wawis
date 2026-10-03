@@ -1,11 +1,10 @@
 {
-  "version": "12.30",
-  "summary": "Admin może wysłać bezpieczny SMS testowy z modułu SMS bez tworzenia sztucznego klienta lub zlecenia.",
+  "version": "12.31",
+  "summary": "SMS testowy przeniesiony z głównego widoku SMS do zakładki Szablony SMS.",
   "changes": [
-    "Dodano pole numeru i przycisk Wyślij testowy SMS w desktopowym module SMS administratora.",
-    "Tryb testowy działa przez istniejącą Edge Function send-service-sms i wymaga aktywnej sesji administratora.",
-    "Treść wiadomości kontrolnej jest stała po stronie serwera; frontend przekazuje tylko numer.",
-    "SMS testowy nie tworzy wpisów sms_log ani danych klienta/zlecenia i nie wpływa na kolejkę serwisową.",
-    "Dodano smoke regresyjny blokujący zaszycie numeru testowego w kodzie."
+    "Usunięto blok SMS testowy z głównej listy przypomnień.",
+    "Dodano ten sam blok pod ustawieniami w zakładce Szablony SMS.",
+    "Funkcja wysyłki, autoryzacja i Edge Function pozostają bez zmian.",
+    "Rozszerzono smoke, aby pilnował właściwego miejsca panelu testowego."
   ]
 }
