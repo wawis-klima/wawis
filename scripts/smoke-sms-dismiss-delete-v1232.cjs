@@ -4,6 +4,13 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
+const migration = read('supabase/migrations/20261003055805_sms_dismiss_failed_and_delete_unsent_v1232.sql');
+assert.match(migration, /v_status = 'error'/);
+assert.match(migration, /status = 'dismissed'/);
+assert.match(migration, /v_status in \('deleted', 'dismissed'\)/);
+assert.match(migration, /v_status not in \('pending_approval', 'not_sent'\)/);
+assert.match(migration, /grant execute on function public\.cancel_service_sms_log\(uuid, uuid\) to service_role/i);
+
 const sms = read('src/modules/sms.js');
 assert.match(sms, /'dismissed'/);
 assert.match(sms, /case 'dismissed':\s*return 'usunięto z listy'/);
