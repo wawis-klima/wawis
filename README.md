@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.29
+- 12.30
+
+Wersja 12.30 dodaje administracyjny SMS testowy w module SMS. Numer podaje administrator, treść jest stała po stronie serwera, a wysyłka korzysta z tej samej funkcji i konfiguracji SMSAPI co zwykłe wiadomości. Test nie tworzy danych klienta, zlecenia ani logu przypomnienia serwisowego.
 
 Wersja 12.29 domyka końcowy audyt SMS. Trzy współdzielone paginacje wywołują hooki React zawsze w tej samej kolejności, a fallback modułu urządzeń uruchamia się tylko dla rozpoznanego braku RPC lub tabeli zamiast ukrywać dowolny błąd zawierający słowa „column” albo „function”. Bez zmian bazy i Edge Functions.
 
@@ -51,7 +53,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.29
+# Wawis Klimatyzacja — wersja 12.30
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -867,7 +869,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.29` — domknięcie audytu SMS: stała kolejność hooków paginacji oraz zawężony fallback urządzeń, który nie maskuje już dowolnych błędów bazy.
+- wersja `12.30` — dodano administracyjny SMS testowy wysyłany przez produkcyjną ścieżkę SMSAPI, bez tworzenia sztucznego klienta, zlecenia ani historii serwisowej.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

@@ -1,3 +1,10 @@
+## 12.30
+- Dodano administracyjny tryb SMS testowego w `send-service-sms`; nadal wymaga zalogowanego administratora.
+- Frontend przekazuje wyłącznie numer telefonu, a stała treść wiadomości kontrolnej jest definiowana po stronie serwera.
+- Testowa wysyłka korzysta z produkcyjnego tokenu/nadawcy SMSAPI, ale nie tworzy klienta, zlecenia, claima ani wpisu `sms_log`.
+- Tryb testowy nie rejestruje callbacku doręczenia, ponieważ nie ma rekordu serwisowego do aktualizacji.
+- Dodano regresję `smoke-sms-test-v1230.cjs`, która sprawdza autoryzowany tryb testowy i brak zaszytego numeru w kodzie.
+
 ## 12.29
 - Naprawiono warunkowe wywołanie `useMemo` w paginacji `SmsQueueTable`, `SmsUnsentCard` i `SmsSentThisMonthCard`; hook jest teraz wykonywany przed ewentualnym `return null`.
 - Zawężono fallback `devices-fetch` do rozpoznanych błędów braku RPC (`PGRST202` / `42883`) lub tabeli `devices` (`42P01`).

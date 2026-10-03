@@ -8,7 +8,7 @@ import SmsClientDetailsCard from './SmsClientDetailsCard.jsx';
 import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
 import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary, groupSmsLogsByCustomerWindow } from '../../modules/sms.js';
 import { loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
-import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms } from '../../modules/sms-send.js';
+import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms, sendTestSms } from '../../modules/sms-send.js';
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
@@ -164,6 +164,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [saveBusy, setSaveBusy] = useState(false);
   const [sendBusy, setSendBusy] = useState(false);
   const [autoRefreshBusy, setAutoRefreshBusy] = useState(false);
+  const [testSmsBusy, setTestSmsBusy] = useState(false);
+  const [testSmsPhone, setTestSmsPhone] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedUnsentIds, setSelectedUnsentIds] = useState([]);
   const [infoMessage, setInfoMessage] = useState('');
@@ -368,6 +370,22 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     } finally {
       smsSendLockRef.current = false;
       setSendBusy(false);
+    }
+  }
+
+  async function handleSendTestSms() {
+    if (testSmsBusy) return;
+    setTestSmsBusy(true);
+    setInfoMessage('');
+    setErrorMessage('');
+    try {
+      const result = await sendTestSms({ supabase, phone: testSmsPhone });
+      const providerId = normalizeText(result?.providerMessageId);
+      setInfoMessage(`SMS testowy został przyjęty przez SMSAPI${providerId ? ` (ID: ${providerId})` : ''}.`);
+    } catch (error) {
+      setErrorMessage(normalizeDatabaseErrorMessage(error));
+    } finally {
+      setTestSmsBusy(false);
     }
   }
 
@@ -866,6 +884,35 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
             </button>
           </div>
           <button type="button" className="smsDesktopExportBtn desktopToolbarActionBtn" onClick={handleExportCurrentView}><IconFileText /> Eksportuj do XLSX</button>
+        </div>
+      </section>
+
+      <section className="smsDesktopFiltersCard">
+        <div className="smsDesktopFiltersGrid">
+          <label className="smsDesktopSearchField">
+            <span className="smsDesktopSearchIcon"><IconPhone /></span>
+            <input
+              value={testSmsPhone}
+              onChange={(event) => setTestSmsPhone(event.target.value)}
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="Numer do testu SMS, np. 600 000 000"
+            />
+          </label>
+        </div>
+        <div className="smsDesktopFiltersActions">
+          <div className="smsDesktopFiltersLeftActions">
+            <strong>SMS testowy</strong>
+            <span>Stała wiadomość kontrolna; nie tworzy klienta, zlecenia ani wpisu w historii serwisowej.</span>
+          </div>
+          <button
+            type="button"
+            className="smsDesktopExportBtn desktopToolbarActionBtn"
+            onClick={handleSendTestSms}
+            disabled={testSmsBusy || !normalizeText(testSmsPhone)}
+          >
+            <IconMessageCircle /> {testSmsBusy ? 'Wysyłanie…' : 'Wyślij testowy SMS'}
+          </button>
         </div>
       </section>
 
