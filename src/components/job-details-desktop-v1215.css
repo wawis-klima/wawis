@@ -1,4 +1,8 @@
 /* v12.16 — desktop: zwarty klient oraz czytelne, kompaktowe sekcje zwijane po zakończeniu. */
+.jobDetailsPanelCard .jobDetailsClientContactRow{
+  display:contents;
+}
+
 @media (min-width:701px){
   .jobDetailsPanelCard .jobDetailsClientMeta{
     display:flex !important;
@@ -21,16 +25,37 @@
     gap:4px;
   }
 
+  .jobDetailsPanelCard .jobDetailsClientContactRow{
+    display:flex;
+    flex:1 0 100%;
+    width:100%;
+    min-width:0;
+    flex-wrap:nowrap;
+    align-items:stretch;
+    gap:8px;
+  }
+
   .jobDetailsPanelCard .jobDetailsClientEmailItem{
-    flex:1 1 340px;
+    flex:1 1 auto;
     width:auto;
-    min-width:220px;
+    min-width:0;
   }
 
   .jobDetailsPanelCard .jobDetailsClientPhoneItem{
-    flex:0 0 180px;
-    width:180px;
-    margin-left:auto;
+    flex:0 0 126px;
+    width:126px;
+    min-width:126px;
+    margin-left:0;
+    padding-left:7px !important;
+    padding-right:7px !important;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientPhoneItem .infoLabel{
+    font-size:10px;
+  }
+
+  .jobDetailsPanelCard .jobDetailsClientPhoneItem .infoValue{
+    font-size:12px;
   }
 
   .jobDetailsPanelCard .jobDetailsClientCompactItem .infoLabel{
