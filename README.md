@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.37
+- 12.38
+
+Wersja 12.38 trzyma e-mail i telefon klienta w jednym wierszu w desktopowych szczegółach montażu. Pole e-mail elastycznie wykorzystuje wolne miejsce, a karta telefonu została zwężona, żeby kontakt nie łamał się na dwa rzędy. Mobile bez zmian funkcjonalnych.
 
 Wersja 12.35 pozwala bezpiecznie ponowić SMS, który został przyjęty przez operatora, ale później oznaczony jako niedostarczony. Frontend pokazuje czytelniejszy status i właściwy błąd Edge Function. Na desktopie e-mail w karcie klienta wykorzystuje wolną szerokość, a telefon jest dosunięty do prawej. Produkcyjnie wyczyszczono też 757 starych widocznych pozycji „Niewysłane”.
 
@@ -59,7 +61,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.34
+# Wawis Klimatyzacja — wersja 12.38
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -875,7 +877,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.37` — poprawiono ponawianie SMS po potwierdzonym niedoręczeniu oraz ukryto surowy callback SMSAPI w historii.
+- wersja `12.38` — desktop: e-mail i telefon klienta są trzymane w jednym wierszu, a karta telefonu jest węższa.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
