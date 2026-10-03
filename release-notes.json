@@ -1,10 +1,10 @@
 {
-  "version": "12.36",
-  "summary": "Wyczyszczono stare niewysłane SMS-y i poprawiono stan przycisku wysyłki per wiersz.",
+  "version": "12.37",
+  "summary": "Naprawiono ponawianie SMS po potwierdzonym niedoręczeniu i uproszczono komunikat błędu SMSAPI.",
   "changes": [
-    "Jednorazowo usunięto z aktywnej zakładki wszystkie stare wpisy not_sent bez dowodu wysyłki.",
-    "Po kliknięciu „Wyślij ponownie” tylko wybrany wiersz pokazuje „Wysyłanie…”.",
-    "Pozostałe wiersze nie zmieniają napisu podczas wysyłki jednego SMS-a.",
-    "Generator kolejki nie odtwarza rekordów oznaczonych jako deleted."
+    "Status UNDELIVERED nie blokuje już kolejnej świadomej próby wysyłki tylko dlatego, że poprzednia próba ma ID operatora.",
+    "Blokada przed duplikatem nadal działa dla wiadomości sent, provider_sent i delivered.",
+    "Historia SMS pokazuje czytelny opis niedoręczenia zamiast surowego payloadu callbacku.",
+    "Webhook SMSAPI zapisuje dla przyszłych błędów krótką informację o statusie doręczenia."
   ]
 }
