@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.34",
+  "version": "12.35",
   "scope": "full",
-  "release_branch": "release/v12.34",
+  "release_branch": "release/v12.35",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana wyłącznie prezentacyjna w historii SMS; logika wysyłania/usuwania z 12.33 pozostaje bez zmian."
+    "notes": "Potwierdzono przyczynę błędu: wiadomość została przyjęta przez SMSAPI, potem dostała status niedostarczenia. Zabezpieczenie przed duplikatem blokowało dotychczas świadome ponowienie."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.34.zip"
+    "file_name": "klima-app-v12.35.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.34",
+    "source_branch": "release/v12.35",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge sprawdzić produkcyjny deployment Vercela, wersję 12.34 i układ pełnej historii SMS na desktopie."
+    "notes": "Po merge sprawdzić produkcyjny deployment Vercela, wersję 12.35, układ e-mail/telefon i możliwość ponowienia niedostarczonego SMS."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "NONE — brak zmian bazy i Edge Functions w 12.34.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.34",
+    "supabase_changes": "APPLIED — sms_retry_confirmed_undelivered_v1235; zbiorcze czyszczenie 757 widocznych wpisów not_sent wykonane osobno jako operacja administracyjna.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.35",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

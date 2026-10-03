@@ -12,6 +12,11 @@ assert.match(migration, /unsent_logs/);
 assert.match(migration, /c\.reminder_group_id,false,c\.retry_of_log_id/);
 assert.match(migration, /grant execute on function public\.claim_service_sms_not_sent_retry\(uuid\) to service_role/i);
 
+const retryUndeliveredMigration = read('supabase/migrations/20261003173500_sms_retry_confirmed_undelivered_v1235.sql');
+assert.match(retryUndeliveredMigration, /v_status\s*=\s*'error'/);
+assert.match(retryUndeliveredMigration, /l\.provider_message_id is null/);
+assert.match(retryUndeliveredMigration, /l\.delivered_at is not null/);
+
 const delivery = read('supabase/functions/send-service-sms/delivery.ts');
 assert.match(delivery, /claim_service_sms_not_sent_retry/);
 assert.match(delivery, /retryLogId/);
@@ -21,7 +26,10 @@ assert.match(sender, /retry_not_sent/);
 assert.match(sender, /handleRetryNotSentSend/);
 
 for (const file of ['src/modules/sms-send.js']) {
-  assert.match(read(file), /retryNotSentSmsLogs/);
+  const smsSend = read(file);
+  assert.match(smsSend, /retryNotSentSmsLogs/);
+  assert.match(smsSend, /status === 'not_sent' \|\| status === 'error'/);
+  assert.match(smsSend, /getInvokeErrorMessage/);
 }
 
 for (const file of ['src/modules/sms-fetch.js']) {

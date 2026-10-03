@@ -1,10 +1,10 @@
 {
-  "version": "12.34",
-  "summary": "Wyrównano i uporządkowano widok pełnej historii wysyłek SMS.",
+  "version": "12.35",
+  "summary": "Naprawiono ponowną wysyłkę niedostarczonego SMS-a, wyczyszczono stare niewysłane wpisy i poszerzono pole e-mail w karcie klienta.",
   "changes": [
-    "Historia SMS ma stałe kolumny: Klient, Telefon, Termin, Cykl, Data wpisu i Status.",
-    "Status pozostaje w swojej kolumnie i nie ucieka na prawy skraj szerokiego wiersza.",
-    "Karta historii nie rozszerza układu poza dostępną szerokość.",
-    "Na węższych ekranach pola układają się pionowo z czytelnymi etykietami."
+    "SMS przyjęty wcześniej przez operatora, ale oznaczony jako niedostarczony, można świadomie ponowić bez obchodzenia zabezpieczeń przed duplikatem.",
+    "Błąd Edge Function pokazuje teraz właściwy komunikat serwera zamiast ogólnego NON-2XX.",
+    "Na desktopie e-mail wykorzystuje wolną szerokość karty klienta, a telefon pozostaje kompaktowy i jest dosunięty do prawej.",
+    "Produkcja: zbiorczo oznaczono jako usunięte 757 widocznych starych pozycji Niewysłane; bieżący niedostarczony SMS pozostawiono do ponowienia."
   ]
 }
