@@ -197,6 +197,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [loading, setLoading] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
   const [sendBusy, setSendBusy] = useState(false);
+  const [sendingUnsentIds, setSendingUnsentIds] = useState([]);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [autoRefreshBusy, setAutoRefreshBusy] = useState(false);
   const [testSmsBusy, setTestSmsBusy] = useState(false);
@@ -534,6 +535,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
     smsSendLockRef.current = true;
     setSendBusy(true);
+    setSendingUnsentIds(selectedRows.map((row) => row.selectionKey).filter(Boolean));
     setInfoMessage('');
     setErrorMessage('');
 
@@ -561,6 +563,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
     } finally {
       smsSendLockRef.current = false;
+      setSendingUnsentIds([]);
       setSendBusy(false);
     }
   }
@@ -570,6 +573,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
     smsSendLockRef.current = true;
     setSendBusy(true);
+    setSendingUnsentIds(row?.selectionKey ? [row.selectionKey] : []);
     setInfoMessage('');
     setErrorMessage('');
 
@@ -582,6 +586,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       smsSendLockRef.current = false;
+      setSendingUnsentIds([]);
       setSendBusy(false);
     }
   }
@@ -899,6 +904,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   onSendNow={handleRetryUnsentNow}
                   onDeleteNow={handleDeleteUnsentNow}
                   sendBusy={sendBusy}
+                  sendingIds={sendingUnsentIds}
                   deleteBusy={deleteBusy}
                   onPageChange={setCurrentPage}
                   onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
