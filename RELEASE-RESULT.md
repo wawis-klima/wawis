@@ -1,12 +1,10 @@
-# WAWIS 12.35 — gotowa do wdrożenia
+# WAWIS 12.36 — gotowa do wdrożenia
 
-Naprawiono ponowienie SMS-a, który został przyjęty przez operatora, ale później oznaczony jako niedostarczony.
+Naprawiono dwie rzeczy w zakładce „Niewysłane”.
 
-- kolejka rozpoznaje taki wpis jako „Niedostarczony” zamiast ogólnego „Błąd”,
-- „Wyślij zaznaczone” dla takiego rekordu korzysta z kontrolowanej ścieżki retry, a nie z nowej wysyłki ręcznej blokowanej przez claim,
-- serwer dopuszcza retry wyłącznie dla rekordu `error` z istniejącym `provider_message_id` i bez potwierdzonego doręczenia,
-- frontend odczytuje treść błędu Edge Function zamiast pokazywać tylko „returned a non-2xx status code”,
-- desktopowa karta klienta daje e-mailowi całą wolną szerokość, a telefon pozostaje kompaktowy po prawej stronie,
-- na produkcji zbiorczo oznaczono jako usunięte 757 widocznych starych rekordów „Niewysłane”; bieżący niedostarczony SMS pozostawiono.
+- stare wpisy `not_sent` zostały hurtowo oznaczone jako `deleted`, więc nie powinny już wracać do aktywnej zakładki,
+- na produkcji pozostało **0** starych rekordów `not_sent` bez dowodu wysyłki,
+- kliknięcie „Wyślij ponownie” ustawia „Wysyłanie…” tylko na konkretnym wierszu,
+- pozostałe przyciski pozostają opisane normalnie; nadal są chwilowo zablokowane, żeby nie wysłać dwóch SMS-ów równocześnie.
 
-Migracja produkcyjna: `sms_retry_confirmed_undelivered_v1235`.
+Migracja: `20261003180500_sms_bulk_remove_old_unsent_v1236.sql`.
