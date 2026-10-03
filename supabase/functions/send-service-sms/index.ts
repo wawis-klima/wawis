@@ -316,6 +316,15 @@ async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: 
     }, 409);
   }
 
+  if (logIds.length > 25) {
+    return json({
+      ok: false,
+      error: "Ze względów bezpieczeństwa jednorazowo można usunąć maksymalnie 25 wpisów SMS. Zaznacz mniejszą liczbę pozycji.",
+      deletedCount: 0,
+      failures: [],
+    }, 409);
+  }
+
   let deletedCount = 0;
   const failures: Array<{ id: string; error: string }> = [];
 

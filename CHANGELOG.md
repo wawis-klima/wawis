@@ -1,3 +1,11 @@
+## 12.33
+- Naprawiono krytyczny błąd zbiorczych operacji SMS: checkbox w nagłówku zaznacza teraz tylko bieżącą stronę, a wybór jest czyszczony przy zmianie strony, widoku lub filtrów.
+- Usuwanie i wysyłanie mają osobne stany pracy; podczas kasowania interfejs pokazuje „Usuwanie…”, a nie „Wysyłanie…”.
+- Zbiorcza wysyłka i usuwanie wymagają potwierdzenia z podaniem liczby zaznaczonych pozycji.
+- Usuwanie w widoku „Niewysłane” przekazuje wyłącznie dokładny identyfikator widocznego wpisu, bez rozwijania całej grupy historycznych logów.
+- Edge Function odrzuca próbę jednorazowego usunięcia więcej niż 25 logów SMS.
+- Przywrócenie pozycji omyłkowo oznaczonych jako usunięte podczas incydentu z 03.10.2026 wykonano osobno w bazie produkcyjnej.
+
 ## 12.32
 - Naprawiono usuwanie wpisu ze statusem `error`: po kontakcie z SMSAPI rekord nie jest fizycznie kasowany, tylko otrzymuje stan `dismissed`, dzięki czemu znika z aktywnej kolejki bez utraty historii operatora.
 - `provider_message_id`, `sent_at` i `error_message` pozostają zachowane dla wpisów wycofanych z listy.
