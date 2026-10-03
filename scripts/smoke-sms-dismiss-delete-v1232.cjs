@@ -26,7 +26,7 @@ assert.match(panel, /canSend: Boolean\(retryLogId && target\)/);
 
 const card = read('src/components/sms/SmsUnsentCard.jsx');
 assert.match(card, /Usuń zaznaczone/);
-assert.match(card, />Usuń</);
+assert.match(card, />\\s*Usuń\\s*</);
 assert.match(card, /onDeleteSelected/);
 assert.match(card, /onDeleteNow/);
 
