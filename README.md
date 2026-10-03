@@ -875,7 +875,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.34` — wyrównano historię wysyłek SMS w stałych kolumnach i poprawiono responsywność.
+- wersja `12.35` — naprawiono bezpieczne ponowienie niedostarczonego SMS-a, czytelny błąd Edge Function oraz układ e-mail/telefon w karcie klienta.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
