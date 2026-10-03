@@ -27,6 +27,7 @@ assert.match(
 );
 assert.match(panelSource, /Urządzenia/, 'Panel szczegółów powinien mieć sekcję Urządzenia.');
 assert.match(panelSource, /jobDetailsClientMeta/, 'Sekcja Klient powinna mieć własny zwarty układ desktopowy.');
+assert.match(panelSource, /jobDetailsClientContactRow/, 'E-mail i telefon powinny być grupowane w jeden wiersz kontaktowy na desktopie.');
 assert.match(panelSource, /jobDetailsClientCompactItem/, 'Kontakt i daty powinny używać węższych kafelków.');
 assert.match(panelSource, /jobCompletionByBadge/, 'Osoba kończąca zlecenie powinna być pokazana jako mały badge.');
 assert.match(panelSource, /getInitials\(completedByLabel\)/, 'Badge zakończenia powinien zawierać inicjały zamiast pełnego napisu „Przez”.');
@@ -52,8 +53,9 @@ assert.match(styles, /\.jobDetailsSectionCard\s*\{[\s\S]*border-radius:\s*18px;[
 assert.match(styles, /\.jobDetailsStatusChip\s*\{[\s\S]*min-height:\s*32px[\s\S]*padding:\s*4px 12px/, 'Status w prawym panelu ma mieć rozmiar zgodny z badge z tabeli.');
 assert.match(styles, /\.desktopJobsTable tbody tr\.desktopSelectedJobRow,[\s\S]*box-shadow:\s*inset 4px 0 0/, 'Wybrany wiersz musi mieć mocniejsze podświetlenie.');
 assert.match(compactStyles, /jobDetailsClientCompactItem[\s\S]*flex:\s*0 1 180px[\s\S]*width:\s*180px/, 'Kafelki kontaktu i dat powinny być wyraźnie węższe niż pełna szerokość panelu.');
-assert.match(compactStyles, /jobDetailsClientEmailItem[\s\S]*flex:\s*1 1 340px[\s\S]*min-width:\s*220px/, 'Email powinien wykorzystywać wolną szerokość karty klienta.');
-assert.match(compactStyles, /jobDetailsClientPhoneItem[\s\S]*flex:\s*0 0 180px[\s\S]*margin-left:\s*auto/, 'Telefon powinien zachować zwartą szerokość i być odsunięty maksymalnie w prawo.');
+assert.match(compactStyles, /jobDetailsClientContactRow[\s\S]*display:\s*flex[\s\S]*flex-wrap:\s*nowrap/, 'E-mail i telefon muszą pozostać w jednym wierszu na desktopie.');
+assert.match(compactStyles, /jobDetailsClientEmailItem[\s\S]*flex:\s*1 1 auto[\s\S]*min-width:\s*0/, 'Email powinien elastycznie wykorzystywać pozostałą szerokość wiersza kontaktowego.');
+assert.match(compactStyles, /jobDetailsClientPhoneItem[\s\S]*flex:\s*0 0 126px[\s\S]*width:\s*126px[\s\S]*margin-left:\s*0/, 'Telefon powinien mieć mniejszą, stałą szerokość 126 px i pozostać obok e-maila.');
 assert.match(compactStyles, /jobCompletionByBadge[\s\S]*width:\s*22px[\s\S]*height:\s*22px/, 'Badge osoby kończącej zlecenie powinien być mały.');
 assert.match(compactStyles, /desktopDetailsSectionToggle[\s\S]*cursor:\s*pointer/, 'Nagłówki zwijanych sekcji muszą być klikalne.');
 assert(panelSource.includes("desktopDevicesExpanded ? 'isExpanded' : 'isCollapsed'"), 'Sekcja Urządzenia musi oznaczać stan zwinięty/rozwinięty.');
