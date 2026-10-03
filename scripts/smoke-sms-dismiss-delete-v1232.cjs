@@ -23,10 +23,30 @@ assert.match(panel, /handleDeleteUnsentNow/);
 assert.match(panel, /buildUnsentDeletePayload/);
 assert.match(panel, /canDelete: Boolean\(retryLogId\)/);
 assert.match(panel, /canSend: Boolean\(retryLogId && target\)/);
+assert.match(panel, /setDeleteBusy/);
+assert.match(panel, /toggleUnsentAll\(checked, pagedRows\)/);
+assert.match(panel, /toggleAll\(checked, pagedRows\)/);
+const deletePayloadStart = panel.indexOf('function buildUnsentDeletePayload');
+const deletePayloadEnd = panel.indexOf('async function handleDeleteUnsentSelected', deletePayloadStart);
+const deletePayloadBlock = panel.slice(deletePayloadStart, deletePayloadEnd);
+assert.doesNotMatch(deletePayloadBlock, /grouped_log_ids/);
+assert.match(panel, /window\.confirm/);
 
 const card = read('src/components/sms/SmsUnsentCard.jsx');
 assert.match(card, /Usuń zaznaczone/);
 assert.match(card, /onDeleteSelected/);
 assert.match(card, /onDeleteNow/);
+assert.match(card, /deleteBusy/);
+assert.match(card, /pageRows\.filter/);
+assert.match(card, /Usuwanie…/);
 
-console.log('SMS dismiss/delete v12.32 smoke OK');
+const queueCard = read('src/components/sms/SmsQueueTable.jsx');
+assert.match(queueCard, /deleteBusy/);
+assert.match(queueCard, /pageRows\.filter/);
+assert.match(queueCard, /na tej stronie/);
+
+const edge = read('supabase/functions/send-service-sms/index.ts');
+assert.match(edge, /logIds\.length > 25/);
+assert.match(edge, /maksymalnie 25 wpisów SMS/);
+
+console.log('SMS dismiss/delete safety v12.33 smoke OK');
