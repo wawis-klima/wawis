@@ -16,10 +16,11 @@ type DeleteRow = {
   message?: string | null;
   reminderCycle?: number | string | null;
   reminderDueDate?: string | null;
+  testPhone?: string | null;
 };
 
 type SmsRequest = {
-  mode?: "manual" | "approval" | "retry_not_sent" | "auto" | "delete";
+  mode?: "manual" | "approval" | "retry_not_sent" | "auto" | "delete" | "test";
   jobId?: string;
   deviceId?: string;
   logIds?: string[];
@@ -83,6 +84,10 @@ Deno.serve(async (request) => {
 
     const sender = (settings.sender_name || smsApiSender || "").trim() || undefined;
 
+    if (body.mode === "test") {
+      return await handleTestSend({ sender, token: smsApiToken, phone: body.testPhone || "" });
+    }
+
     if (body.mode === "approval") {
       return await handleApprovalSend({ adminClient, callerId: callerProfile.id, settings, sender, token: smsApiToken, nowIso, logIds: body.logIds || [] });
     }
@@ -123,6 +128,55 @@ async function loadSettings(adminClient: ReturnType<typeof createClient>): Promi
       row?.template_service_reminder ||
       "Dzień dobry {client}, przypominamy o obowiązkowym przeglądzie klimatyzacji po 11 miesiącach od montażu. Aby utrzymać gwarancję, prosimy o kontakt: {service_phone}. {company_name}",
   };
+}
+
+const TEST_SMS_MESSAGE = "WAWIS - test SMS. Jesli otrzymales te wiadomosc, produkcyjna wysylka SMS dziala prawidlowo.";
+
+function normalizeTestPhone(value: string) {
+  let digits = String(value || "").replace(/\D/g, "");
+  if (digits.startsWith("0048")) digits = digits.slice(4);
+  else if (digits.startsWith("48") && digits.length === 11) digits = digits.slice(2);
+  if (!/^\d{9}$/.test(digits)) return "";
+  return `48${digits}`;
+}
+
+async function handleTestSend({ sender, token, phone }: { sender?: string; token: string; phone: string; }) {
+  const recipientPhone = normalizeTestPhone(phone);
+  if (!recipientPhone) {
+    return json({ ok: false, outcome: "validation_failed", error: "Podaj poprawny polski numer telefonu." }, 400);
+  }
+
+  try {
+    const result = await sendSmsWithSmsApi({
+      token,
+      to: recipientPhone,
+      message: TEST_SMS_MESSAGE,
+      from: sender,
+      deliveryCallback: false,
+    });
+
+    return json({
+      ok: true,
+      outcome: "provider_accepted",
+      recipientPhone: result.recipientPhone,
+      providerMessageId: result.providerMessageId,
+      message: "SMS testowy został przyjęty przez SMSAPI.",
+    });
+  } catch (error) {
+    if (error instanceof SmsProviderRejectedError) {
+      return json({
+        ok: false,
+        outcome: "provider_rejected",
+        error: error.message,
+      }, error.statusCode && error.statusCode >= 400 && error.statusCode < 500 ? error.statusCode : 422);
+    }
+
+    return json({
+      ok: false,
+      outcome: "failed",
+      error: error instanceof Error ? error.message : String(error),
+    }, 500);
+  }
 }
 
 async function handleApprovalSend({ adminClient, callerId, settings, sender, token, nowIso: _nowIso, logIds }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; logIds: string[]; }) {
@@ -481,21 +535,24 @@ function providerErrorMessage(parsed: unknown, statusCode: number) {
   return `SMSAPI odrzuciło wiadomość${code ? ` (kod ${code})` : ""}${message ? `: ${message}` : "."}`;
 }
 
-async function sendSmsWithSmsApi({ token, to, message, from, idx }: { token: string; to: string; message: string; from?: string; idx: string }): Promise<SmsApiResult> {
-  const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
-  if (!supabaseUrl) throw new Error("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
-
-  const callbackToken = await deriveSmsApiCallbackToken(token);
-  const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
+async function sendSmsWithSmsApi({ token, to, message, from, idx, deliveryCallback = true }: { token: string; to: string; message: string; from?: string; idx?: string; deliveryCallback?: boolean }): Promise<SmsApiResult> {
   const payload = new URLSearchParams({
     to,
     message,
     format: "json",
     encoding: "utf-8",
-    notify_url: notifyUrl,
-    idx,
-    check_idx: "1",
   });
+
+  if (deliveryCallback) {
+    if (!idx) throw new Error("Brak IDX do skonfigurowania callbacku SMSAPI.");
+    const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
+    if (!supabaseUrl) throw new Error("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
+    const callbackToken = await deriveSmsApiCallbackToken(token);
+    const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
+    payload.set("notify_url", notifyUrl);
+    payload.set("idx", idx);
+    payload.set("check_idx", "1");
+  }
   if (from) payload.set("from", from);
 
   const response = await fetch("https://api.smsapi.pl/sms.do", {
