@@ -1,3 +1,11 @@
+## 12.32
+- Naprawiono usuwanie wpisu ze statusem `error`: po kontakcie z SMSAPI rekord nie jest fizycznie kasowany, tylko otrzymuje stan `dismissed`, dzięki czemu znika z aktywnej kolejki bez utraty historii operatora.
+- `provider_message_id`, `sent_at` i `error_message` pozostają zachowane dla wpisów wycofanych z listy.
+- W zakładce „Niewysłane” dodano „Usuń” przy pojedynczym wpisie oraz „Usuń zaznaczone” dla operacji zbiorczej.
+- Zaznaczenie niewysłanych obejmuje pozycje możliwe do usunięcia; „Wyślij zaznaczone” wysyła wyłącznie rekordy nadal kwalifikujące się do ponowienia.
+- Frontend traktuje `dismissed` jako stan końcowy, więc wycofany błąd nie wraca po odświeżeniu.
+- Migracja: `20261003055805_sms_dismiss_failed_and_delete_unsent_v1232.sql`.
+
 ## 12.31
 - Przeniesiono panel „SMS testowy” z głównego widoku SMS do zakładki „Szablony SMS”.
 - Panel jest wyświetlany pod ustawieniami modułu tylko w widoku `sms_templates`.
