@@ -1036,6 +1036,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               onSendSelected={handleSendSelected}
               onDeleteSelected={handleDeleteSelected}
               sendBusy={sendBusy}
+              sendingIds={sendingUnsentIds}
               deleteBusy={deleteBusy}
               autoRefreshBusy={autoRefreshBusy}
               onSendNow={handleSendNow}
