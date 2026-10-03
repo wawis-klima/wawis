@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.31
+- 12.32
+
+Wersja 12.32 naprawia usuwanie wpisów SMS. Błędny wpis z dowodem kontaktu z SMSAPI jest tylko wycofywany z aktywnej listy (historia operatora zostaje), a w zakładce „Niewysłane” można usuwać pojedyncze lub zaznaczone pozycje. Stan `dismissed` jest końcowy, więc wpis nie wraca po odświeżeniu.
 
 Wersja 12.31 przenosi panel SMS testowego z głównego widoku przypomnień do zakładki „Szablony SMS”, żeby nie zajmował miejsca podczas codziennej pracy z kolejką. Sama wysyłka testowa działa bez zmian.
 
@@ -55,7 +57,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.31
+# Wawis Klimatyzacja — wersja 12.32
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -871,7 +873,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.31` — panel SMS testowego przeniesiono z głównego modułu SMS do zakładki „Szablony SMS”.
+- wersja `12.32` — naprawiono usuwanie błędnych SMS-ów z aktywnej kolejki i dodano usuwanie pojedyncze oraz zbiorcze w zakładce „Niewysłane”.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
