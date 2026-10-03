@@ -111,3 +111,13 @@ export async function deleteServiceSmsQueueItems({ supabase, rows }) {
     rows,
   });
 }
+
+
+export async function sendTestSms({ supabase, phone }) {
+  const testPhone = String(phone || '').trim();
+  if (!testPhone) throw new Error('Podaj numer telefonu do testu SMS.');
+  return invokeWithFreshSession(supabase, 'send-service-sms', {
+    mode: 'test',
+    testPhone,
+  });
+}
