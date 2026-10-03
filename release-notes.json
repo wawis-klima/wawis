@@ -1,10 +1,10 @@
 {
-  "version": "12.37",
-  "summary": "Naprawiono ponawianie SMS po potwierdzonym niedoręczeniu i uproszczono komunikat błędu SMSAPI.",
+  "version": "12.38",
+  "summary": "Desktopowe dane kontaktowe klienta są bardziej zwarte: e-mail i telefon pozostają w jednym wierszu.",
   "changes": [
-    "Status UNDELIVERED nie blokuje już kolejnej świadomej próby wysyłki tylko dlatego, że poprzednia próba ma ID operatora.",
-    "Blokada przed duplikatem nadal działa dla wiadomości sent, provider_sent i delivered.",
-    "Historia SMS pokazuje czytelny opis niedoręczenia zamiast surowego payloadu callbacku.",
-    "Webhook SMSAPI zapisuje dla przyszłych błędów krótką informację o statusie doręczenia."
+    "E-mail i telefon są grupowane w jeden wiersz kontaktowy w szczegółach montażu na desktopie.",
+    "Pole e-mail elastycznie wykorzystuje wolne miejsce.",
+    "Karta telefonu ma stałą szerokość 126 px i mniejszą typografię.",
+    "Widok mobilny pozostaje bez zmian funkcjonalnych."
   ]
 }
