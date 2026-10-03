@@ -13,6 +13,31 @@ function getFunctionFailureMessage(data) {
   return 'Operacja SMS nie została wykonana.';
 }
 
+async function getInvokeErrorMessage(error) {
+  const fallback = String(error?.message || '').trim();
+
+  const response = error?.context;
+  if (response && typeof response.clone === 'function') {
+    try {
+      const payload = await response.clone().json();
+      const direct = String(payload?.error || '').trim();
+      if (direct) return direct;
+
+      const failures = Array.isArray(payload?.failures) ? payload.failures : [];
+      const messages = [...new Set(
+        failures
+          .map((item) => String(item?.error || '').trim())
+          .filter(Boolean),
+      )];
+      if (messages.length) return messages.join(' | ');
+    } catch {
+      // Supabase czasem nie udostępnia treści odpowiedzi jako JSON.
+    }
+  }
+
+  return fallback || 'Operacja SMS nie została wykonana.';
+}
+
 async function invokeWithFreshSession(supabase, functionName, body) {
   if (!supabase) throw new Error('Brak połączenia z Supabase.');
 
@@ -36,7 +61,7 @@ async function invokeWithFreshSession(supabase, functionName, body) {
     },
   });
 
-  if (error) throw error;
+  if (error) throw new Error(await getInvokeErrorMessage(error));
   if (data?.error) throw new Error(data.error);
   if (data?.ok === false) throw new Error(getFunctionFailureMessage(data));
   return data;
@@ -91,7 +116,7 @@ export async function sendUnsentSmsLog({ supabase, log }) {
   if (status === 'pending_approval') {
     return approveAndSendSmsLogs({ supabase, logIds: [log.id] });
   }
-  if (status === 'not_sent') {
+  if (status === 'not_sent' || status === 'error') {
     return retryNotSentSmsLogs({ supabase, logIds: [log.id] });
   }
   throw new Error('Ten SMS nie jest dostępny do wysłania. Odśwież listę i sprawdź jego status.');
