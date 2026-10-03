@@ -26,8 +26,8 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
   );
 }
 
-export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages, totalRows, selectedIds, onToggleOne, onToggleAll, onSendSelected, onDeleteSelected, sendBusy, autoRefreshBusy, selectedClientKey, onSelectClient, onSelectDevice, onPageChange }) {
-  const selectableRows = rows.filter((job) => job.canSelect);
+export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages, totalRows, selectedIds, onToggleOne, onToggleAll, onSendSelected, onDeleteSelected, sendBusy, deleteBusy, autoRefreshBusy, selectedClientKey, onSelectClient, onSelectDevice, onPageChange }) {
+  const selectableRows = pageRows.filter((job) => job.canSelect);
   const allChecked = selectableRows.length > 0 && selectableRows.every((job) => selectedIds.includes(job.selectionKey));
 
   return (
@@ -36,8 +36,8 @@ export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages,
         <div className="smsDesktopSelectionBar">
           <span>Zaznaczono {selectedIds.length} pozycji.</span>
           <div>
-            <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy} onClick={onDeleteSelected}>{sendBusy ? 'Usuwanie…' : 'Usuń zaznaczone'}</button>
-            <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy} onClick={onSendSelected}>{sendBusy ? 'Wysyłanie…' : 'Wyślij zaznaczone'}</button>
+            <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy || deleteBusy} onClick={onDeleteSelected}>{deleteBusy ? 'Usuwanie…' : 'Usuń zaznaczone'}</button>
+            <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || deleteBusy} onClick={onSendSelected}>{sendBusy ? 'Wysyłanie…' : 'Wyślij zaznaczone'}</button>
           </div>
         </div>
       ) : null}
@@ -54,7 +54,7 @@ export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages,
           <thead>
             <tr>
               <th className="smsDesktopCheckboxCol">
-                <input type="checkbox" checked={allChecked} onChange={(event) => onToggleAll(event.target.checked)} aria-label="Zaznacz wszystkie pozycje" />
+                <input type="checkbox" checked={allChecked} onChange={(event) => onToggleAll(event.target.checked)} aria-label="Zaznacz wszystkie pozycje na tej stronie" />
               </th>
               <th>KLIENT</th>
               <th>MODEL URZĄDZENIA</th>
