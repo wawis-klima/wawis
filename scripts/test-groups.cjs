@@ -157,6 +157,7 @@ const GROUPS = {
     'npm run test:smoke:sms-log-cleanup',
     'npm run test:smoke:sms-shared-source',
     'npm run test:smoke:sms-generator-pagination',
+    'npm run test:smoke:sms-test',
     'npm run test:smoke:center360',
     'npm run test:smoke:center360-personalization',
     'npm run test:smoke:dashboard-metrics',
