@@ -1,6 +1,27 @@
 import React from 'react';
 import { formatSmsDate, getSmsStatusLabel } from '../../modules/sms.js';
 
+function formatSmsHistoryError(value) {
+  const text = String(value || '').trim();
+  if (!text) return 'Nieznany błąd';
+
+  if (text.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(text);
+      const statusName = String(parsed?.status_name || '').trim().toUpperCase();
+      const status = String(parsed?.status || '').trim();
+      if (statusName === 'UNDELIVERED' || status === '405') {
+        return `SMSAPI: wiadomość niedostarczona${status ? ` (kod ${status})` : ''}.`;
+      }
+      if (statusName) return `SMSAPI: ${statusName}${status ? ` (kod ${status})` : ''}.`;
+    } catch {
+      // Starszy wpis może nie być poprawnym JSON-em — wtedy pokaż jego tekst.
+    }
+  }
+
+  return text;
+}
+
 export default function SmsHistoryCard({ logs }) {
   return (
     <div className="smsCard smsHistoryCard">
@@ -43,7 +64,7 @@ export default function SmsHistoryCard({ logs }) {
               </div>
 
               {normalizedStatus === 'error' ? (
-                <div className="smsHistoryError smsHistoryErrorWide">Błąd: {log.error_message || 'Nieznany błąd'}</div>
+                <div className="smsHistoryError smsHistoryErrorWide">Błąd: {formatSmsHistoryError(log.error_message)}</div>
               ) : null}
               {normalizedStatus === 'not_sent' && log.error_message ? (
                 <div className="smsHistoryError smsHistoryErrorWide">Powód: {log.error_message}</div>
