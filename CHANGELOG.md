@@ -1,3 +1,8 @@
+## 12.34
+- Wyrównano widok „Historia wysyłek” SMS: dane są teraz pokazane w stałych kolumnach Klient / Telefon / Termin / Cykl / Data wpisu / Status.
+- Status nie ucieka już na skraj ekranu, a karta historii nie powoduje niepotrzebnego rozszerzania układu ani poziomego przewijania.
+- Na węższych ekranach historia przechodzi automatycznie w czytelny układ pionowy z podpisami pól.
+
 ## 12.33
 - Naprawiono krytyczny błąd zbiorczych operacji SMS: checkbox w nagłówku zaznacza teraz tylko bieżącą stronę, a wybór jest czyszczony przy zmianie strony, widoku lub filtrów.
 - Usuwanie i wysyłanie mają osobne stany pracy; podczas kasowania interfejs pokazuje „Usuwanie…”, a nie „Wysyłanie…”.
