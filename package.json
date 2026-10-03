@@ -49,6 +49,7 @@
     "test:smoke:sms-log-cleanup": "node scripts/smoke-sms-log-cleanup.cjs",
     "test:smoke:sms-shared-source": "node scripts/smoke-sms-shared-source-v1229.cjs",
     "test:smoke:sms-generator-pagination": "node scripts/smoke-sms-generator-pagination-v1229.cjs",
+    "test:smoke:sms-test": "node scripts/smoke-sms-test-v1230.cjs",
     "test:smoke:calendar-width": "node scripts/smoke-calendar-width.cjs",
     "test:e2e:desktop": "node scripts/run-playwright-desktop.cjs e2e",
     "test:smoke:e2e-desktop": "node scripts/smoke-e2e-desktop.cjs",
