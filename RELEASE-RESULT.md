@@ -1,10 +1,11 @@
-# WAWIS 12.36 — gotowa do wdrożenia
+# WAWIS 12.37 — gotowa do wdrożenia
 
-Naprawiono dwie rzeczy w zakładce „Niewysłane”.
+Naprawiono przypadek, w którym SMS miał status `UNDELIVERED`, ale ponowienie było błędnie blokowane komunikatem „SMS dla tej grupy klienta został już wysłany”.
 
-- stare wpisy `not_sent` zostały hurtowo oznaczone jako `deleted`, więc nie powinny już wracać do aktywnej zakładki,
-- na produkcji pozostało **0** starych rekordów `not_sent` bez dowodu wysyłki,
-- kliknięcie „Wyślij ponownie” ustawia „Wysyłanie…” tylko na konkretnym wierszu,
-- pozostałe przyciski pozostają opisane normalnie; nadal są chwilowo zablokowane, żeby nie wysłać dwóch SMS-ów równocześnie.
+- wcześniejsza próba z `status=error` i `provider_message_id` nie jest już traktowana jako skutecznie wysłana,
+- ochrona przed duplikatem nadal blokuje statusy `sent`, `provider_sent` i `delivered`,
+- test transakcyjny na bieżącym wpisie Wojciecha Markowskiego zwrócił `ok=true`,
+- webhook SMSAPI v11 zapisuje czytelny błąd zamiast całego callbacku,
+- historia SMS formatuje starsze surowe błędy do krótkiego komunikatu.
 
-Migracja: `20261003180500_sms_bulk_remove_old_unsent_v1236.sql`.
+Migracja: `20261003184000_sms_retry_after_undelivered_v1237.sql`.
