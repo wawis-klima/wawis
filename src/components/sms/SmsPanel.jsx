@@ -153,6 +153,39 @@ function getRowsForDeletePayload(row = {}) {
   return groupedRows.length ? groupedRows : [row];
 }
 
+function SmsTestCard({ phone, setPhone, busy, onSend }) {
+  return (
+    <section className="smsDesktopFiltersCard">
+      <div className="smsDesktopFiltersGrid">
+        <label className="smsDesktopSearchField">
+          <span className="smsDesktopSearchIcon"><IconPhone /></span>
+          <input
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="Numer do testu SMS, np. 600 000 000"
+          />
+        </label>
+      </div>
+      <div className="smsDesktopFiltersActions">
+        <div className="smsDesktopFiltersLeftActions">
+          <strong>SMS testowy</strong>
+          <span>Stała wiadomość kontrolna; nie tworzy klienta, zlecenia ani wpisu w historii serwisowej.</span>
+        </div>
+        <button
+          type="button"
+          className="smsDesktopExportBtn desktopToolbarActionBtn"
+          onClick={onSend}
+          disabled={busy || !normalizeText(phone)}
+        >
+          <IconMessageCircle /> {busy ? 'Wysyłanie…' : 'Wyślij testowy SMS'}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, refreshAll, onOpenJob, onOpenContractor, requestedSection = 'sms' }) {
   const [settings, setSettings] = useState(getDefaultSmsSettings());
   const [logs, setLogs] = useState([]);
@@ -817,7 +850,17 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
         {loading ? <div className="card premiumCard">Ładowanie ustawień SMS...</div> : null}
 
         {!loading ? (
-          <SmsSettingsCard settings={settings} setSettings={setSettings} onSave={handleSaveSettings} saveBusy={saveBusy} isAdmin={isAdmin} />
+          <>
+            <SmsSettingsCard settings={settings} setSettings={setSettings} onSave={handleSaveSettings} saveBusy={saveBusy} isAdmin={isAdmin} />
+            {requestedSection === 'sms_templates' ? (
+              <SmsTestCard
+                phone={testSmsPhone}
+                setPhone={setTestSmsPhone}
+                busy={testSmsBusy}
+                onSend={handleSendTestSms}
+              />
+            ) : null}
+          </>
         ) : null}
       </div>
     );
@@ -884,35 +927,6 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
             </button>
           </div>
           <button type="button" className="smsDesktopExportBtn desktopToolbarActionBtn" onClick={handleExportCurrentView}><IconFileText /> Eksportuj do XLSX</button>
-        </div>
-      </section>
-
-      <section className="smsDesktopFiltersCard">
-        <div className="smsDesktopFiltersGrid">
-          <label className="smsDesktopSearchField">
-            <span className="smsDesktopSearchIcon"><IconPhone /></span>
-            <input
-              value={testSmsPhone}
-              onChange={(event) => setTestSmsPhone(event.target.value)}
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder="Numer do testu SMS, np. 600 000 000"
-            />
-          </label>
-        </div>
-        <div className="smsDesktopFiltersActions">
-          <div className="smsDesktopFiltersLeftActions">
-            <strong>SMS testowy</strong>
-            <span>Stała wiadomość kontrolna; nie tworzy klienta, zlecenia ani wpisu w historii serwisowej.</span>
-          </div>
-          <button
-            type="button"
-            className="smsDesktopExportBtn desktopToolbarActionBtn"
-            onClick={handleSendTestSms}
-            disabled={testSmsBusy || !normalizeText(testSmsPhone)}
-          >
-            <IconMessageCircle /> {testSmsBusy ? 'Wysyłanie…' : 'Wyślij testowy SMS'}
-          </button>
         </div>
       </section>
 
