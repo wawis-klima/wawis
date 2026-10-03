@@ -551,7 +551,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleRetryUnsentNow(row) {
-    if (smsSendLockRef.current || deleteBusy || !(row?.canSend ?? row?.canSelect)) return;
+    if (smsSendLockRef.current || !(row?.canSend ?? row?.canSelect)) return;
 
     smsSendLockRef.current = true;
     setSendBusy(true);
