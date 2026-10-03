@@ -196,6 +196,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [loading, setLoading] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
   const [sendBusy, setSendBusy] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const [autoRefreshBusy, setAutoRefreshBusy] = useState(false);
   const [testSmsBusy, setTestSmsBusy] = useState(false);
   const [testSmsPhone, setTestSmsPhone] = useState('');
@@ -366,13 +367,16 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleSendSelected() {
-    if (smsSendLockRef.current) return;
+    if (smsSendLockRef.current || deleteBusy) return;
+    const selectedRows = queue.filter((job) => selectedIds.includes(job.selectionKey));
+    if (selectedRows.length === 0) return;
+    if (!window.confirm(`Na pewno wysłać ${selectedRows.length} zaznaczonych SMS-ów? Wysyłki nie można cofnąć.`)) return;
+
     smsSendLockRef.current = true;
     setSendBusy(true);
     setInfoMessage('');
     setErrorMessage('');
     try {
-      const selectedRows = queue.filter((job) => selectedIds.includes(job.selectionKey));
       const approvalIds = [...new Set(selectedRows.map(getPrimaryQueueLogId).filter(Boolean))];
       const manualRows = selectedRows.filter((job) => !getPrimaryQueueLogId(job));
       let sentCount = 0;
@@ -423,7 +427,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleSendNow(job) {
-    if (smsSendLockRef.current) return;
+    if (smsSendLockRef.current || deleteBusy) return;
     smsSendLockRef.current = true;
     setSendBusy(true);
     setInfoMessage('');
@@ -467,14 +471,15 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleDeleteSelected() {
-    setSendBusy(true);
+    if (deleteBusy || sendBusy) return;
+    const selectedRows = queue.filter((job) => selectedIds.includes(job.selectionKey));
+    if (selectedRows.length === 0) return;
+    if (!window.confirm(`Usunąć ${selectedRows.length} zaznaczonych pozycji z kolejki SMS? Operacja obejmie tylko zaznaczone wiersze.`)) return;
+
+    setDeleteBusy(true);
     setInfoMessage('');
     setErrorMessage('');
     try {
-      const selectedRows = queue.filter((job) => selectedIds.includes(job.selectionKey));
-      if (selectedRows.length === 0) {
-        throw new Error('Nie wybrano SMS-ów do usunięcia.');
-      }
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildDeletePayload(selectedRows) });
       const deletedCount = result.deletedCount || selectedRows.length;
       setInfoMessage(`Usunięto ${deletedCount} pozycji z kolejki SMS.`);
@@ -484,12 +489,14 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     } catch (error) {
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
-      setSendBusy(false);
+      setDeleteBusy(false);
     }
   }
 
   async function handleDeleteNow(job) {
-    setSendBusy(true);
+    if (deleteBusy || sendBusy) return;
+    if (!window.confirm(`Usunąć pozycję ${job.client || job.title || 'Klient'} z kolejki SMS?`)) return;
+    setDeleteBusy(true);
     setInfoMessage('');
     setErrorMessage('');
     try {
@@ -500,14 +507,15 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     } catch (error) {
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
-      setSendBusy(false);
+      setDeleteBusy(false);
     }
   }
 
   async function handleRetryUnsentSelected() {
-    if (smsSendLockRef.current) return;
+    if (smsSendLockRef.current || deleteBusy) return;
     const selectedRows = unsentRows.filter((row) => (row.canSend ?? row.canSelect) && selectedUnsentIds.includes(row.selectionKey));
     if (selectedRows.length === 0) return;
+    if (!window.confirm(`Na pewno wysłać ponownie ${selectedRows.length} zaznaczonych SMS-ów? Wysyłki nie można cofnąć.`)) return;
 
     smsSendLockRef.current = true;
     setSendBusy(true);
@@ -543,7 +551,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   async function handleRetryUnsentNow(row) {
-    if (smsSendLockRef.current || !(row?.canSend ?? row?.canSelect)) return;
+    if (smsSendLockRef.current || deleteBusy || !(row?.canSend ?? row?.canSelect)) return;
 
     smsSendLockRef.current = true;
     setSendBusy(true);
@@ -578,21 +586,19 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
   function buildUnsentDeletePayload(rows = []) {
     const seen = new Set();
-    return rows.flatMap((row) => {
-      const ids = Array.isArray(row.grouped_log_ids) && row.grouped_log_ids.length
-        ? row.grouped_log_ids
-        : [row.retryLogId || row.id];
-      return ids
-        .map((id) => String(id || '').trim())
-        .filter((id) => id && !seen.has(id) && seen.add(id))
-        .map((logId) => ({ logId }));
-    });
+    return rows
+      .map((row) => String(row.retryLogId || row.id || '').trim())
+      .filter((logId) => logId && !seen.has(logId) && seen.add(logId))
+      .map((logId) => ({ logId }));
   }
 
   async function handleDeleteUnsentSelected() {
+    if (deleteBusy || sendBusy) return;
     const selectedRows = unsentRows.filter((row) => row.canDelete && selectedUnsentIds.includes(row.selectionKey));
     if (selectedRows.length === 0) return;
-    setSendBusy(true);
+    if (!window.confirm(`Usunąć ${selectedRows.length} zaznaczonych pozycji z listy Niewysłane? Operacja obejmie tylko zaznaczone wiersze.`)) return;
+
+    setDeleteBusy(true);
     setInfoMessage('');
     setErrorMessage('');
     try {
@@ -603,13 +609,14 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     } catch (error) {
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
-      setSendBusy(false);
+      setDeleteBusy(false);
     }
   }
 
   async function handleDeleteUnsentNow(row) {
-    if (!row?.canDelete) return;
-    setSendBusy(true);
+    if (deleteBusy || sendBusy || !row?.canDelete) return;
+    if (!window.confirm(`Usunąć pozycję ${row.client || 'Klient'} z listy Niewysłane?`)) return;
+    setDeleteBusy(true);
     setInfoMessage('');
     setErrorMessage('');
     try {
@@ -620,7 +627,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     } catch (error) {
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
-      setSendBusy(false);
+      setDeleteBusy(false);
     }
   }
 
@@ -771,6 +778,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
 
+  useEffect(() => {
+    setSelectedIds([]);
+    setSelectedUnsentIds([]);
+  }, [activeSummaryView, currentPage, searchQuery, cityFilter]);
+
   function clearFilters() {
     setSearchQuery('');
     setCityFilter('all');
@@ -844,10 +856,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   totalRows={filteredQueueRows.length}
                   selectedIds={selectedIds}
                   onToggleOne={toggleOne}
-                  onToggleAll={(checked) => toggleAll(checked, filteredQueueRows)}
+                  onToggleAll={(checked) => toggleAll(checked, pagedRows)}
                   onSendSelected={handleSendSelected}
                   onDeleteSelected={handleDeleteSelected}
                   sendBusy={sendBusy}
+                  deleteBusy={deleteBusy}
                   autoRefreshBusy={autoRefreshBusy}
                   onSendNow={handleSendNow}
                   onDeleteNow={handleDeleteNow}
@@ -865,12 +878,13 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   totalRows={filteredUnsentRows.length}
                   selectedIds={selectedUnsentIds}
                   onToggleOne={toggleUnsentOne}
-                  onToggleAll={(checked) => toggleUnsentAll(checked, filteredUnsentRows)}
+                  onToggleAll={(checked) => toggleUnsentAll(checked, pagedRows)}
                   onSendSelected={handleRetryUnsentSelected}
                   onDeleteSelected={handleDeleteUnsentSelected}
                   onSendNow={handleRetryUnsentNow}
                   onDeleteNow={handleDeleteUnsentNow}
                   sendBusy={sendBusy}
+                  deleteBusy={deleteBusy}
                   onPageChange={setCurrentPage}
                   onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
                   onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
@@ -997,10 +1011,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               totalRows={filteredQueueRows.length}
               selectedIds={selectedIds}
               onToggleOne={toggleOne}
-              onToggleAll={(checked) => toggleAll(checked, filteredQueueRows)}
+              onToggleAll={(checked) => toggleAll(checked, pagedRows)}
               onSendSelected={handleSendSelected}
               onDeleteSelected={handleDeleteSelected}
               sendBusy={sendBusy}
+              deleteBusy={deleteBusy}
               autoRefreshBusy={autoRefreshBusy}
               onSendNow={handleSendNow}
               onDeleteNow={handleDeleteNow}
@@ -1018,12 +1033,13 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               totalRows={filteredUnsentRows.length}
               selectedIds={selectedUnsentIds}
               onToggleOne={toggleUnsentOne}
-              onToggleAll={(checked) => toggleUnsentAll(checked, filteredUnsentRows)}
+              onToggleAll={(checked) => toggleUnsentAll(checked, pagedRows)}
               onSendSelected={handleRetryUnsentSelected}
               onDeleteSelected={handleDeleteUnsentSelected}
               onSendNow={handleRetryUnsentNow}
               onDeleteNow={handleDeleteUnsentNow}
               sendBusy={sendBusy}
+              deleteBusy={deleteBusy}
               onPageChange={setCurrentPage}
               onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
               onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
