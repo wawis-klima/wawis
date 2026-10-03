@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.31",
+  "version": "12.32",
   "scope": "full",
-  "release_branch": "release/v12.31",
+  "release_branch": "release/v12.32",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "12.30 wdrożone poprawnie; zmiana 12.31 jest wyłącznie zmianą położenia elementu UI."
+    "notes": "Zdiagnozowano błąd usuwania: rekord ERROR z dowodem kontaktu SMSAPI był chroniony jako historia. Wpis SILESIA został bezpiecznie oznaczony dismissed, bez utraty provider_message_id/sent_at/error_message."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.31.zip"
+    "file_name": "klima-app-v12.32.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.31",
+    "source_branch": "release/v12.32",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "evidence_required": false,
+    "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge sprawdzić zielony deployment Vercela i wersję 12.31."
+    "notes": "Po merge sprawdzić Vercel, zniknięcie dismissed z aktywnej kolejki i możliwość usuwania not_sent z widoku Niewysłane."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "NONE — brak zmian bazy i Edge Functions w 12.31.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.31",
+    "supabase_changes": "MIGRATION — cancel_service_sms_log obsługuje ERROR jako dismissed z zachowaniem historii; not_sent/pending_approval nadal jako deleted.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.32",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

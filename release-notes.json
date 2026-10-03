@@ -1,10 +1,10 @@
 {
-  "version": "12.31",
-  "summary": "SMS testowy przeniesiony z głównego widoku SMS do zakładki Szablony SMS.",
+  "version": "12.32",
+  "summary": "Naprawiono usuwanie błędnych wpisów SMS i dodano usuwanie pozycji z widoku Niewysłane.",
   "changes": [
-    "Usunięto blok SMS testowy z głównej listy przypomnień.",
-    "Dodano ten sam blok pod ustawieniami w zakładce Szablony SMS.",
-    "Funkcja wysyłki, autoryzacja i Edge Function pozostają bez zmian.",
-    "Rozszerzono smoke, aby pilnował właściwego miejsca panelu testowego."
+    "Błędny SMS po kontakcie z SMSAPI można usunąć z aktywnej listy bez fizycznego kasowania historii operatora.",
+    "Niewysłane SMS-y można usuwać pojedynczo i hurtowo przez Usuń zaznaczone.",
+    "Stan dismissed jest końcowy i nie wraca do aktywnej kolejki po odświeżeniu.",
+    "Usuwanie zachowuje provider_message_id, sent_at i opis błędu SMSAPI."
   ]
 }

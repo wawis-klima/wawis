@@ -1,7 +1,7 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "12.31",
+  "version": "12.32",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",
@@ -50,6 +50,7 @@
     "test:smoke:sms-shared-source": "node scripts/smoke-sms-shared-source-v1229.cjs",
     "test:smoke:sms-generator-pagination": "node scripts/smoke-sms-generator-pagination-v1229.cjs",
     "test:smoke:sms-test": "node scripts/smoke-sms-test-v1230.cjs",
+    "test:smoke:sms-dismiss-delete": "node scripts/smoke-sms-dismiss-delete-v1232.cjs",
     "test:smoke:calendar-width": "node scripts/smoke-calendar-width.cjs",
     "test:e2e:desktop": "node scripts/run-playwright-desktop.cjs e2e",
     "test:smoke:e2e-desktop": "node scripts/smoke-e2e-desktop.cjs",

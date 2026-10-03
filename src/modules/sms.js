@@ -293,6 +293,7 @@ function getSmsLogStatusPriority(status) {
     case 'error': return 6;
     case 'not_sent': return 7;
     case 'deleted': return 8;
+    case 'dismissed': return 8;
     default: return 9;
   }
 }
@@ -632,7 +633,7 @@ export function deriveSmsQueue(records = [], logs = []) {
     if (customerKey) {
       addCustomerLogToMap(latestByCustomer, log);
       if (status === 'pending_approval') addCustomerLogToMap(pendingByCustomer, log);
-      if (['provider_sent', 'sent', 'delivered', 'deleted', 'not_sent'].includes(status)) addCustomerLogToMap(finalizedByCustomer, log);
+      if (['provider_sent', 'sent', 'delivered', 'deleted', 'dismissed', 'not_sent'].includes(status)) addCustomerLogToMap(finalizedByCustomer, log);
     }
 
     if (keyBase) {
@@ -649,7 +650,7 @@ export function deriveSmsQueue(records = [], logs = []) {
       const currentPending = pendingByKey.get(cycleKey);
       if (isPreferredSmsLog(log, currentPending)) pendingByKey.set(cycleKey, log);
     }
-    if (['provider_sent', 'sent', 'delivered', 'deleted', 'not_sent'].includes(status)) {
+    if (['provider_sent', 'sent', 'delivered', 'deleted', 'dismissed', 'not_sent'].includes(status)) {
       const currentFinalized = finalizedByKey.get(cycleKey);
       if (isPreferredSmsLog(log, currentFinalized)) finalizedByKey.set(cycleKey, log);
     }
@@ -756,7 +757,7 @@ export function deriveSmsQueue(records = [], logs = []) {
     if (groupRows.some((row) => row.finalizedLog)) continue;
     const merged = mergeSmsCustomerRows(groupRows);
     if (!merged) continue;
-    if (['provider_sent', 'sent', 'delivered', 'deleted', 'not_sent'].includes(merged.rowStatus)) continue;
+    if (['provider_sent', 'sent', 'delivered', 'deleted', 'dismissed', 'not_sent'].includes(merged.rowStatus)) continue;
     rows.push(merged);
   }
 
@@ -808,6 +809,8 @@ export function getSmsStatusLabel(status) {
       return 'błąd';
     case 'deleted':
       return 'usunięto';
+    case 'dismissed':
+      return 'usunięto z listy';
     case 'not_sent':
       return 'niewysłano';
     case 'ready':

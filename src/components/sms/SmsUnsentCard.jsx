@@ -36,13 +36,17 @@ export default function SmsUnsentCard({
   onToggleOne,
   onToggleAll,
   onSendSelected,
+  onDeleteSelected,
   onSendNow,
+  onDeleteNow,
   sendBusy,
   onPageChange,
   onSelectLog,
   onSelectDevice,
 }) {
-  const selectableRows = rows.filter((row) => row.canSelect);
+  const selectableRows = rows.filter((row) => row.canDelete);
+  const selectedRows = rows.filter((row) => selectedIds.includes(row.selectionKey));
+  const selectedSendableCount = selectedRows.filter((row) => row.canSend).length;
   const allChecked = selectableRows.length > 0 && selectableRows.every((row) => selectedIds.includes(row.selectionKey));
 
   return (
@@ -51,7 +55,10 @@ export default function SmsUnsentCard({
         <div className="smsDesktopSelectionBar">
           <span>Zaznaczono {selectedIds.length} niewysłanych wiadomości.</span>
           <div>
-            <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy} onClick={onSendSelected}>
+            <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy} onClick={onDeleteSelected}>
+              Usuń zaznaczone
+            </button>
+            <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || selectedSendableCount === 0} onClick={onSendSelected}>
               {sendBusy ? 'Wysyłanie…' : 'Wyślij zaznaczone'}
             </button>
           </div>
@@ -82,11 +89,11 @@ export default function SmsUnsentCard({
           </thead>
           <tbody>
             {pageRows.map((row) => {
-              const checked = row.canSelect ? selectedIds.includes(row.selectionKey) : false;
+              const checked = row.canDelete ? selectedIds.includes(row.selectionKey) : false;
               return (
                 <tr key={row.key}>
                   <td className="smsDesktopCheckboxCol">
-                    {row.canSelect ? <input type="checkbox" checked={checked} onChange={() => onToggleOne(row.selectionKey)} aria-label={`Zaznacz ${row.client}`} /> : null}
+                    {row.canDelete ? <input type="checkbox" checked={checked} onChange={() => onToggleOne(row.selectionKey)} aria-label={`Zaznacz ${row.client}`} /> : null}
                   </td>
                   <td>
                     <button type="button" className="smsDesktopClientButton smsClientLink" onClick={() => onSelectLog?.(row)}>
@@ -113,9 +120,14 @@ export default function SmsUnsentCard({
                     </div>
                   </td>
                   <td>
-                    <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || !row.canSelect} onClick={() => onSendNow?.(row)}>
-                      {sendBusy ? 'Wysyłanie…' : row.status === 'pending_approval' ? 'Zatwierdź i wyślij' : 'Wyślij ponownie'}
-                    </button>
+                    <div className="smsDesktopRowActions">
+                      <button type="button" className="smsDesktopGhostBtn" disabled={sendBusy || !row.canDelete} onClick={() => onDeleteNow?.(row)}>
+                        Usuń
+                      </button>
+                      <button type="button" className="smsDesktopPrimaryBtn" disabled={sendBusy || !row.canSend} onClick={() => onSendNow?.(row)}>
+                        {sendBusy ? 'Wysyłanie…' : row.status === 'pending_approval' ? 'Zatwierdź i wyślij' : 'Wyślij ponownie'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
