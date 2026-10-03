@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po merge sprawdzić ponowienie niedostarczonego SMS oraz czytelny opis błędu w historii."
+    "notes": "Po merge sprawdzić ponowienie niedostarczonego SMS, czytelny opis błędu w historii oraz układ szczegółów klienta: e-mail i telefon mają pozostać w jednym wierszu na desktopie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,6 +34,6 @@
   "production_verification": {
     "supabase_changes": "APPLIED — funkcja claim_service_sms_not_sent_retry z v12.37; test transakcyjny dla bieżącego error/UNDELIVERED zwrócił ok=true. Webhook smsapi-delivery-webhook wdrożony jako v11.",
     "pr_check": "PENDING — WAWIS PR checks dla release/v12.37",
-    "vercel_deployment": "PENDING — po merge do main"
+    "vercel_deployment": "PENDING — po merge do main; dodatkowo zweryfikować kompaktowy wiersz e-mail + telefon."
   }
 }
