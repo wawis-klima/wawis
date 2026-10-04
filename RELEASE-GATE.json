@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.40",
-  "scope": "full",
-  "release_branch": "release/v12.40",
+  "version": "12.41",
+  "scope": "mobile",
+  "release_branch": "release/v12.41",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana jest ograniczona do protokołu. Produkcyjny Supabase jest ACTIVE_HEALTHY; migracja dodaje wyłącznie nullable kolumnę note oraz ograniczenie długości do 300 znaków, bez zmiany istniejących rekordów."
+    "notes": "Zmiana dotyczy wyłącznie układu PDF protokołu. Nie zmienia logiki zapisu, danych, Supabase ani Edge Functions."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.40.zip"
+    "file_name": "klima-app-v12.41.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.40",
+    "source_branch": "release/v12.41",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić na iPhonie rozwijanie i usuwanie uwagi, zapis protokołu, ponowne otwarcie oraz PDF."
+    "notes": "Po wdrożeniu sprawdzić podgląd PDF na iPhonie: odstępy nad płatnością, uwagami i informacjami mają być równe i bez niepotrzebnego przejścia na drugą stronę."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "APPLIED — 20261004092411_add_job_protocol_note_v1240: nullable job_protocols.note + limit 300 znaków.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.40",
+    "supabase_changes": "NONE — bez zmian bazy i Edge Functions.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.41",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

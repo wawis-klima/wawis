@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.40
+- 12.41
+
+Wersja 12.41 wyrównuje górne odstępy sekcji w PDF protokołu: płatność, uwagi oraz informacje i ustalenia mają teraz taki sam oddech jak pozostałe bloki.
 
 Wersja 12.40 dodaje do mobilnego protokołu opcjonalną uwagę. Pole jest domyślnie zwinięte, ma limit 300 znaków, zapisuje się razem z protokołem i trafia do PDF. Zmiana uwagi wymaga ponownego podpisu klienta.
 
@@ -879,7 +881,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.40` — mobilny protokół ma opcjonalną uwagę zapisywaną z dokumentem i drukowaną w PDF.
+- wersja `12.41` — wyrównane marginesy nad sekcjami płatności, uwag oraz informacji i ustaleń w PDF protokołu.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

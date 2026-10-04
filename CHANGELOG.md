@@ -1,3 +1,8 @@
+## 12.41
+- PDF protokołu: minimalnie zwiększono górny odstęp nad sekcjami „Potwierdzenie zapłaty”, „Uwagi” oraz „Informacje i ustalenia”.
+- Odstępy zostały wyrównane do rytmu używanego przy sekcji „Realizacja zlecenia”.
+- Brak zmian w Supabase i Edge Functions.
+
 ## 12.40
 - Mobile: protokół ma opcjonalny, domyślnie zwinięty przycisk „Dodaj uwagę (opcjonalnie)” umieszczony przed potwierdzeniem klienta.
 - Uwaga ma limit 300 znaków, można ją usunąć, a jej zmiana unieważnia wcześniejszy podpis klienta.
