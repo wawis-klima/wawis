@@ -1,11 +1,11 @@
 {
-  "version": "12.39",
-  "summary": "Aplikacja mobilna otwiera się szybciej i nie czeka na wolne poboczne zapytania Supabase.",
+  "version": "12.40",
+  "summary": "Mobilny protokół ma opcjonalną uwagę dodawaną na żądanie; uwaga jest zapisywana razem z protokołem i drukowana w PDF.",
   "changes": [
-    "Ostatni zapisany stan z telefonu nadal jest używany jako pierwszy widok.",
-    "Lista montaży jest pobierana przed profilami, uprawnieniami i powiadomieniami.",
-    "Kursor synchronizacji nie może już blokować startu przez kilka sekund.",
-    "Katalog kontrahentów jest ładowany dopiero wtedy, gdy użytkownik faktycznie go potrzebuje.",
-    "Brak zmian w bazie danych i Edge Functions."
+    "W formularzu mobilnym pojawił się kompaktowy przycisk „Dodaj uwagę (opcjonalnie)” nad potwierdzeniem klienta.",
+    "Pole uwagi rozwija się tylko na żądanie, ma limit 300 znaków i można je ponownie usunąć.",
+    "Zmiana uwagi unieważnia złożony wcześniej podpis, aby klient podpisywał dokładnie aktualną treść protokołu.",
+    "Uwaga jest zapisywana w job_protocols, odtwarzana przy ponownym otwarciu i dodawana do PDF.",
+    "Migracja 20261004092411_add_job_protocol_note_v1240.sql dodaje opcjonalną kolumnę note z limitem 300 znaków."
   ]
 }
