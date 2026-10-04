@@ -1,10 +1,11 @@
 {
-  "version": "12.38",
-  "summary": "Desktopowe dane kontaktowe klienta są bardziej zwarte: e-mail i telefon pozostają w jednym wierszu.",
+  "version": "12.39",
+  "summary": "Aplikacja mobilna otwiera się szybciej i nie czeka na wolne poboczne zapytania Supabase.",
   "changes": [
-    "E-mail i telefon są grupowane w jeden wiersz kontaktowy w szczegółach montażu na desktopie.",
-    "Pole e-mail elastycznie wykorzystuje wolne miejsce.",
-    "Karta telefonu ma stałą szerokość 126 px i mniejszą typografię.",
-    "Widok mobilny pozostaje bez zmian funkcjonalnych."
+    "Ostatni zapisany stan z telefonu nadal jest używany jako pierwszy widok.",
+    "Lista montaży jest pobierana przed profilami, uprawnieniami i powiadomieniami.",
+    "Kursor synchronizacji nie może już blokować startu przez kilka sekund.",
+    "Katalog kontrahentów jest ładowany dopiero wtedy, gdy użytkownik faktycznie go potrzebuje.",
+    "Brak zmian w bazie danych i Edge Functions."
   ]
 }
