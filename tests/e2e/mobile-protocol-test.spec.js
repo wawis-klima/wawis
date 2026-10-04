@@ -62,6 +62,7 @@ async function seedProtocolRecordForPostSaveFlow(page) {
       signed_at: '2026-09-14T10:00:00.000Z',
       created_at: '2026-09-14T10:00:00.000Z',
       created_by: 'mock-worker-1',
+      note: 'Utrudniony dostęp do jednostki zewnętrznej. Klient poinformowany.',
     }];
     const serialized = JSON.stringify(store);
     window.localStorage.setItem(storeKey, serialized);
@@ -164,6 +165,16 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     await expect(paymentMethod).toHaveValue('');
     await paymentMethod.selectOption('cash');
     await paymentForm.locator('input[inputmode="decimal"]').fill('1000');
+
+    const protocolNote = 'Utrudniony dostęp do jednostki zewnętrznej. Klient poinformowany.';
+    const addNoteButton = page.getByRole('button', { name: /Dodaj uwagę/ });
+    await expect(addNoteButton).toBeVisible();
+    await addNoteButton.click();
+    const noteInput = page.locator('.protocolNoteInput');
+    await expect(noteInput).toBeVisible();
+    await noteInput.fill(protocolNote);
+    await expect(page.locator('.protocolNoteCounter')).toHaveText(`${protocolNote.length}/300`);
+
     await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
     await expect(protocolModal.getByText('Zapisana w systemie', { exact: true })).toHaveCount(0);
     await expect(protocolModal.getByText('STATUS', { exact: true })).toHaveCount(0);
@@ -198,6 +209,7 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     expect(pageLockAfterProtocolClose.rootOverscroll).not.toBe('none');
     await page.locator('.protocolTestButton').click();
     await expect(page.getByRole('button', { name: 'Drukuj lub wyślij', exact: true })).toBeVisible();
+    await expect(page.locator('.protocolNoteReadOnly')).toHaveText(protocolNote);
 
     const editProtocolButton = page.getByRole('button', { name: 'Uzupełnij protokół', exact: true });
     const scrollSetup = await page.locator('.mobileProtocolWizardBody').evaluate((body) => {
@@ -217,6 +229,7 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     // więc test mierzy wyłącznie przewinięcie wykonywane przez samą aplikację.
     await editProtocolButton.evaluate((button) => button.click());
     await expect(page.getByRole('button', { name: 'Podpis klienta', exact: true })).toBeVisible();
+    await expect(page.locator('.protocolNoteInput')).toHaveValue(protocolNote);
     await expect.poll(async () => page.locator('.protocolWizardModal').evaluate((modal) => {
       const confirmation = [...modal.querySelectorAll('.protocolTestSection')]
         .find((section) => section.querySelector('h3')?.textContent?.includes('Potwierdzenie klienta'));
@@ -266,6 +279,7 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     expect(store.jobs.find((job) => job.id === 'mock-job-003')?.status).toBe('Zakończone');
     expect(store.job_protocols).toHaveLength(1);
     expect(store.job_protocols[0].job_id).toBe('mock-job-003');
+    expect(store.job_protocols[0].note).toBe(protocolNote);
     expect(store.job_protocol_email_log).toHaveLength(1);
     expect(store.job_protocol_email_log[0].sender_email).toBe('biuro@wawis.pl');
     expect(store.job_protocol_email_log[0].recipient_email).toBe('klient.c@example.test');
