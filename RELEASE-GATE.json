@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.38",
-  "scope": "desktop",
-  "release_branch": "release/v12.38",
+  "version": "12.39",
+  "scope": "full",
+  "release_branch": "release/v12.39",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana dotyczy wyłącznie układu desktopowego sekcji Klient; brak zmian w logice danych, Supabase i Edge Functions."
+    "notes": "Diagnoza incydentu 04.10 ok. 07:10: Auth zwrócił 200, ale kilka zapytań PostgREST trwało 7–11 s i pojawiły się timeouty/reloady. Projekt Supabase pozostaje ACTIVE_HEALTHY. Release zmienia wyłącznie frontendową kolejność startu i odporność na wolny backend."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.38.zip"
+    "file_name": "klima-app-v12.39.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.38",
+    "source_branch": "release/v12.39",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić na desktopie, że e-mail i telefon pozostają w jednym wierszu oraz że karta telefonu jest wyraźnie węższa."
+    "notes": "Po wdrożeniu zweryfikować na iPhonie zimny start i ponowne otwarcie: zapisany widok ma pojawić się bez czekania na profiles/job_access/notifications/contractors, a pełne dane mają dociągnąć się później."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "NONE — release wyłącznie frontendowy.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.38",
+    "supabase_changes": "NONE — bez migracji i bez zmian Edge Functions.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.39",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

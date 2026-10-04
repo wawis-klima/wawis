@@ -1198,6 +1198,9 @@ export default function App() {
         return;
       }
 
+      const contractorsNeeded = showModal || activeModule === 'contractors' || activeModule === 'devices';
+      if (!contractorsNeeded) return;
+
       try {
         const data = await loadContractors({ supabase, isAdmin: true });
         if (!cancelled) applyContractorsCatalogSnapshot(data);

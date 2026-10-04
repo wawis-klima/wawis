@@ -1,10 +1,11 @@
-# WAWIS 12.38 — gotowa do wdrożenia
+# WAWIS 12.39 — gotowa do wdrożenia
 
-Poprawiono układ danych kontaktowych klienta w desktopowych szczegółach montażu.
+Poprawiono odporność startu aplikacji mobilnej na chwilowo wolny Supabase.
 
-- e-mail i telefon są trzymane w jednym wierszu,
-- pole e-mail elastycznie wykorzystuje pozostałą szerokość,
-- karta telefonu została zwężona do 126 px,
-- zmiana nie wpływa funkcjonalnie na widok mobilny.
+- lokalny snapshot pozostaje pierwszym źródłem widoku,
+- lista montaży ma pierwszeństwo przed profilami, `job_access` i powiadomieniami,
+- odczyt kursora synchronizacji nie może blokować startu przez kilka sekund,
+- katalog kontrahentów ładuje się dopiero, gdy jest potrzebny,
+- brak zmian w Supabase, Edge Functions i danych.
 
-Brak zmian w Supabase, Edge Functions i danych.
+Przed merge obowiązuje zielony `WAWIS PR checks / targeted-checks`.

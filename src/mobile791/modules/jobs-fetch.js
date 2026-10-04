@@ -358,16 +358,10 @@ export async function refreshAppData({
 }) {
   if (!supabase || !user) return null;
 
-  // Najważniejsza lista montaży startuje od razu i nie czeka na profile,
-  // powiadomienia ani inne poboczne dane. Dzięki temu wolny Auth/profiles
-  // nie może zablokować pokazania nowego montażu.
-  const jobsPromise = getJobsData({ supabase });
-  const accessPromise = getAccessData({ supabase, existingJobs });
-  const profilePromise = getCurrentProfile({ supabase, user, existingProfile });
-  const teamPromise = getTeamProfiles({ supabase, existingProfiles });
-  const notificationsPromise = getNotificationsData({ supabase, user, existingNotifications });
-
-  const { jobsData } = await jobsPromise;
+  // Start krytyczny ma tylko jedno zapytanie: lista montaży.
+  // Profile, uprawnienia i powiadomienia ruszają dopiero po pokazaniu listy,
+  // żeby chwilowo wolny PostgREST nie spowalniał samego wejścia do aplikacji.
+  const { jobsData } = await getJobsData({ supabase });
 
   // Provisional list uses the viewers already cached on the phone. It is
   // applied immediately; fresh job_access follows independently below.
@@ -380,6 +374,11 @@ export async function refreshAppData({
   if (typeof onJobsReady === 'function') {
     await onJobsReady(provisionalJobs);
   }
+
+  const profilePromise = getCurrentProfile({ supabase, user, existingProfile });
+  const teamPromise = getTeamProfiles({ supabase, existingProfiles });
+  const accessPromise = getAccessData({ supabase, existingJobs });
+  const notificationsPromise = getNotificationsData({ supabase, user, existingNotifications });
 
   const [me, team, accessData, notificationsData] = await Promise.all([
     profilePromise,

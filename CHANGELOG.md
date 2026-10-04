@@ -1,3 +1,9 @@
+## 12.39
+- Mobilny start jest cache-first i pobiera listę montaży przed profilami, job_access i powiadomieniami.
+- Odczyt kursora synchronizacji nie może już długo blokować startu; zapisany kursor jest używany bez dodatkowego RPC, a pierwszy odczyt ma krótki limit i możliwość przerwania.
+- Katalog kontrahentów na mobile nie jest pobierany przy każdym wejściu do aplikacji — ładuje się dopiero przy formularzu montażu albo module Kontrahenci/Urządzenia.
+- Brak zmian w schemacie Supabase i Edge Functions.
+
 ## 12.38
 - Desktop: e-mail i telefon w karcie klienta są grupowane w jeden nierozdzielany wiersz kontaktowy.
 - Pole e-mail elastycznie zajmuje pozostałą szerokość, zamiast wymuszać przeniesienie telefonu do kolejnego rzędu.
