@@ -20,6 +20,26 @@ const APP_REFRESH_TIMEOUT_MS = 20000;
 const AUTH_RESTORE_RETRY_MS = 30000;
 const TRANSIENT_REFRESH_RETRY_MS = 3000;
 const TRANSIENT_REFRESH_MAX_ATTEMPTS = 3;
+const STARTUP_CHANGE_HEAD_TIMEOUT_MS = 650;
+
+async function loadStartupChangeHead({ supabase, timeoutMs = STARTUP_CHANGE_HEAD_TIMEOUT_MS }) {
+  if (!supabase) return null;
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  let timerId = null;
+  const request = loadMobileChangeHead({ supabase, signal: controller?.signal }).catch(() => null);
+  const timeout = new Promise((resolve) => {
+    timerId = setTimeout(() => {
+      controller?.abort();
+      resolve(null);
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([request, timeout]);
+  } finally {
+    if (timerId !== null) clearTimeout(timerId);
+  }
+}
 
 function withRefreshTimeout(promise, timeoutMs = APP_REFRESH_TIMEOUT_MS) {
   let timerId;
@@ -213,7 +233,12 @@ export function useAppSession({
 
       // Kursor pobieramy przed lista. Zmiana wykonana w trakcie pelnego odczytu
       // dostanie wyzszy numer i zostanie odebrana przy nastepnym delta refreshu.
-      changeCursorAtRefreshStart = await loadMobileChangeHead({ supabase }).catch(() => null);
+      // Jeżeli mamy zapisany kursor, pełny start nie potrzebuje dodatkowego RPC.
+      // Przy pierwszym uruchomieniu próbujemy odczytać head tylko przez krótki czas;
+      // wolny endpoint nie może opóźnić pokazania listy montaży.
+      changeCursorAtRefreshStart = changeCursorRef.current !== null
+        ? changeCursorRef.current
+        : await loadStartupChangeHead({ supabase });
       if (!isCurrentRefreshRequest()) return { ok: true, ignoredOlderResponse: true };
 
       const applyJobsFirst = async (freshJobs, activeUser = user) => {
