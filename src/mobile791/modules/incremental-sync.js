@@ -8,11 +8,13 @@ export function isIncrementalSyncUnavailable(error) {
   return MISSING_SYNC_INFRASTRUCTURE.test(String(error?.message || error || ''));
 }
 
-export async function loadMobileChangeHead({ supabase }) {
+export async function loadMobileChangeHead({ supabase, signal = null }) {
   if (!supabase) return null;
-  const { data, error } = await supabase.rpc('get_mobile_change_head');
+  let query = supabase.rpc('get_mobile_change_head');
+  if (signal && typeof query?.abortSignal === 'function') query = query.abortSignal(signal);
+  const { data, error } = await query;
   if (error) {
-    if (isIncrementalSyncUnavailable(error)) return null;
+    if (signal?.aborted || isIncrementalSyncUnavailable(error)) return null;
     throw error;
   }
   return normalizeCursor(data);
