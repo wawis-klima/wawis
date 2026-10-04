@@ -642,7 +642,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     });
   }
 
-  y += tableHeight + 16;
+  y += tableHeight + 20;
   if (data.payment?.enabled) {
     const hasPaymentAmount = data.payment.amount != null && Number(data.payment.amount) > 0;
     const paymentCardHeight = hasPaymentAmount ? 38 : 32;
@@ -657,7 +657,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
       drawField(doc, "Metoda", data.payment.methodLabel, CONTENT_LEFT, y + 25, 54);
       drawField(doc, "Data", data.payment.paidDateLabel, RIGHT_COLUMN_X, y + 25, 58);
     }
-    y += paymentCardHeight + 16;
+    y += paymentCardHeight + 20;
   }
 
   if (data.note) {
@@ -673,7 +673,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     doc.setFontSize(8.7);
     doc.setTextColor(0, 0, 0);
     doc.text(noteLines, CONTENT_LEFT + 10, y + 25, { lineHeightFactor: noteLineHeight / 8.7 });
-    y += noteCardHeight + 16;
+    y += noteCardHeight + 20;
   }
 
   const confirmationSectionHeight = 150;
