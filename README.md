@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 12.38
+- 12.39
 
 Wersja 12.38 trzyma e-mail i telefon klienta w jednym wierszu w desktopowych szczegółach montażu. Pole e-mail elastycznie wykorzystuje wolne miejsce, a karta telefonu została zwężona, żeby kontakt nie łamał się na dwa rzędy. Mobile bez zmian funkcjonalnych.
 
@@ -877,7 +877,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.38` — desktop: e-mail i telefon klienta są trzymane w jednym wierszu, a karta telefonu jest węższa.
+- wersja `12.39` — szybszy i odporny start aplikacji mobilnej: cache i montaże mają priorytet, a wolne dane poboczne nie blokują wejścia.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
