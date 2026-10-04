@@ -1,11 +1,11 @@
-# WAWIS 12.39 — gotowa do wdrożenia
+# WAWIS 12.40 — gotowa do wdrożenia
 
-Poprawiono odporność startu aplikacji mobilnej na chwilowo wolny Supabase.
+Dodano opcjonalną uwagę do mobilnego protokołu klienta.
 
-- lokalny snapshot pozostaje pierwszym źródłem widoku,
-- lista montaży ma pierwszeństwo przed profilami, `job_access` i powiadomieniami,
-- odczyt kursora synchronizacji nie może blokować startu przez kilka sekund,
-- katalog kontrahentów ładuje się dopiero, gdy jest potrzebny,
-- brak zmian w Supabase, Edge Functions i danych.
+- przycisk „Dodaj uwagę (opcjonalnie)” jest domyślnie zwinięty i nie powiększa formularza bez potrzeby,
+- pole ma limit 300 znaków i można je usunąć,
+- zmiana uwagi unieważnia wcześniejszy podpis klienta,
+- uwaga jest zapisywana w `job_protocols`, wraca po ponownym otwarciu i trafia do PDF,
+- migracja `20261004092411_add_job_protocol_note_v1240.sql` została zastosowana na produkcyjnym Supabase.
 
 Przed merge obowiązuje zielony `WAWIS PR checks / targeted-checks`.
