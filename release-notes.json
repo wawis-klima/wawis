@@ -1,11 +1,10 @@
 {
-  "version": "12.40",
-  "summary": "Mobilny protokół ma opcjonalną uwagę dodawaną na żądanie; uwaga jest zapisywana razem z protokołem i drukowana w PDF.",
+  "version": "12.41",
+  "summary": "W PDF protokołu wyrównano górne odstępy sekcji płatności, uwag oraz informacji i ustaleń.",
   "changes": [
-    "W formularzu mobilnym pojawił się kompaktowy przycisk „Dodaj uwagę (opcjonalnie)” nad potwierdzeniem klienta.",
-    "Pole uwagi rozwija się tylko na żądanie, ma limit 300 znaków i można je ponownie usunąć.",
-    "Zmiana uwagi unieważnia złożony wcześniej podpis, aby klient podpisywał dokładnie aktualną treść protokołu.",
-    "Uwaga jest zapisywana w job_protocols, odtwarzana przy ponownym otwarciu i dodawana do PDF.",
-    "Migracja 20261004092411_add_job_protocol_note_v1240.sql dodaje opcjonalną kolumnę note z limitem 300 znaków."
+    "Minimalnie zwiększono odstęp nad „Potwierdzenie zapłaty”.",
+    "Taki sam odstęp zastosowano nad „Uwagi” i „Informacje i ustalenia”.",
+    "Odstępy są teraz zgodne z rytmem sekcji „Realizacja zlecenia”.",
+    "Brak zmian w danych, Supabase i Edge Functions."
   ]
 }
