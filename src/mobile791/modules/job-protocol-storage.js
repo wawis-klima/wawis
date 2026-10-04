@@ -8,7 +8,7 @@ import {
 const PROTOCOLS_TABLE = "job_protocols";
 const PROTOCOLS_BUCKET = "job-protocols";
 const PDF_MIME_TYPE = "application/pdf";
-const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_bytes, signed_at, created_at, created_by";
+const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_bytes, signed_at, created_at, created_by, note";
 const PROTOCOL_CLEANUP_TIMEOUT_MS = 5_000;
 export const PROTOCOL_WRITE_CONFLICT = "PROTOCOL_WRITE_CONFLICT";
 const PRINT_IMAGE_MIME_TYPE = "image/png";
@@ -26,6 +26,7 @@ function normalizeRecord(record) {
     ...record,
     file_name: normalizeText(record.file_name) || "wawis-protokol.pdf",
     storage_path: normalizeText(record.storage_path),
+    note: normalizeText(record.note).slice(0, 300),
   };
 }
 
@@ -157,6 +158,7 @@ export async function storeJobProtocol({
   pdfBlob,
   fileName,
   signedAt = new Date(),
+  note = "",
   replaceExisting = false,
   expectedStoragePath = "",
   timeoutMs = PROTOCOL_SAVE_STEP_TIMEOUT_MS,
@@ -203,6 +205,7 @@ export async function storeJobProtocol({
     file_size_bytes: pdfBlob.size,
     signed_at: signedAt.toISOString(),
     created_by: createdBy,
+    note: normalizeText(note).slice(0, 300) || null,
   };
   let writeResult;
   if (existing.record) {

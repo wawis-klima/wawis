@@ -39,6 +39,7 @@ const SIGNATURE_MIN_WIDTH = 1.65;
 const SIGNATURE_MAX_WIDTH = 3.25;
 const SIGNATURE_BASE_WIDTH = 2.45;
 const SIGNATURE_WIDTH_SMOOTHING = 0.72;
+const PROTOCOL_NOTE_MAX_LENGTH = 300;
 
 function getProtocolPaymentDraft(job = {}) {
   return { ...getPaymentDraftFromJob(job), enabled: true };
@@ -187,12 +188,15 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const lastPointRef = useRef(null);
   const openedAtRef = useRef(new Date());
   const paymentDraftBaselineRef = useRef(JSON.stringify(getProtocolPaymentDraft(job)));
+  const noteBaselineRef = useRef(String(protocolRecord?.note || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH));
   const [savedRecord, setSavedRecord] = useState(protocolRecord);
   const [editing, setEditing] = useState(!protocolRecord);
   const [resolvedJob, setResolvedJob] = useState(job);
   const [paymentReady, setPaymentReady] = useState(() => hasJobPaymentSnapshot(job));
   const [paymentLoadError, setPaymentLoadError] = useState("");
   const [paymentDraft, setPaymentDraft] = useState(() => getProtocolPaymentDraft(job));
+  const [protocolNote, setProtocolNote] = useState(() => String(protocolRecord?.note || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH));
+  const [noteOpen, setNoteOpen] = useState(() => Boolean(String(protocolRecord?.note || "").trim()));
   const [hasSignature, setHasSignature] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState("");
@@ -242,6 +246,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setActionMenuOpen(false);
     setActionBusy("");
     setMessage("");
+    const initialProtocolNote = String(protocolRecord?.note || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH);
+    noteBaselineRef.current = initialProtocolNote;
+    setProtocolNote(initialProtocolNote);
+    setNoteOpen(Boolean(initialProtocolNote.trim()));
 
     const initializePayment = (sourceJob) => {
       const nextPaymentDraft = getProtocolPaymentDraft(sourceJob);
@@ -367,6 +375,17 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   function updatePaymentDraft(patch) {
     invalidateSignature();
     setPaymentDraft((current) => ({ ...current, ...patch }));
+  }
+
+  function updateProtocolNote(value) {
+    invalidateSignature();
+    setProtocolNote(String(value || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH));
+  }
+
+  function removeProtocolNote() {
+    invalidateSignature();
+    setProtocolNote("");
+    setNoteOpen(false);
   }
 
   function beginEditingStoredProtocol() {
@@ -500,6 +519,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         setSaveProgressLabel("Zapisuję płatność…");
         await waitForProtocolUiPaint();
         const payment = normalizePaymentConfirmation(paymentDraft);
+        const protocolNoteValue = String(protocolNote || "").trim().slice(0, PROTOCOL_NOTE_MAX_LENGTH);
         const paymentPatch = await withProtocolSaveTimeout(
           saveJobPaymentConfirmation({ supabase, job: protocolJob, payment }),
           { phase: "payment", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
@@ -510,7 +530,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         setSaveProgressLabel("Tworzę PDF…");
         await waitForProtocolUiPaint();
         const result = await withProtocolSaveTimeout(
-          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl, signedAt, payment }),
+          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl, signedAt, payment, note: protocolNoteValue }),
           { phase: "pdf", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
         progress.phase = "storage";
@@ -522,12 +542,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           pdfBlob: result.pdfBlob,
           fileName: result.fileName,
           signedAt,
+          note: protocolNoteValue,
           replaceExisting: Boolean(savedRecord),
           expectedStoragePath: savedRecord?.storage_path || "",
         });
-        return { paymentPatch, record };
+        return { paymentPatch, record, protocolNoteValue };
       })();
-      const { paymentPatch, record } = await withProtocolSaveTimeout(saveOperation, {
+      const { paymentPatch, record, protocolNoteValue } = await withProtocolSaveTimeout(saveOperation, {
         phase: () => progress.phase,
         timeoutMs: PROTOCOL_SAVE_TOTAL_TIMEOUT_MS,
       });
@@ -536,6 +557,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       setEditing(false);
       setResolvedJob((current) => ({ ...(current || job), ...paymentPatch }));
       paymentDraftBaselineRef.current = JSON.stringify(paymentDraft);
+      noteBaselineRef.current = String(record?.note ?? protocolNoteValue ?? "").slice(0, PROTOCOL_NOTE_MAX_LENGTH);
+      setProtocolNote(noteBaselineRef.current);
+      setNoteOpen(Boolean(noteBaselineRef.current.trim()));
       setHasSignature(false);
       setSignatureDataUrl("");
       setDraftHasSignature(false);
@@ -594,7 +618,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   const paymentDraftDirty = paymentReady && JSON.stringify(paymentDraft) !== paymentDraftBaselineRef.current;
-  const protocolHasUnsavedWork = Boolean(open && (isGenerating || hasSignature || draftHasSignature || paymentDraftDirty));
+  const protocolNoteDirty = protocolNote !== noteBaselineRef.current;
+  const protocolHasUnsavedWork = Boolean(open && (isGenerating || hasSignature || draftHasSignature || paymentDraftDirty || protocolNoteDirty));
   const storedPayment = paymentReady ? getPaymentDraftFromJob(protocolJob) : { enabled: false, amount: "", method: "", paidDate: "" };
   const paymentVisible = editing ? paymentDraft : storedPayment;
   const recipientEmail = getJobProtocolRecipientEmail(protocolJob);
@@ -689,6 +714,38 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 </dl>
               ) : null}
             </section> : null}
+
+            {editing && !noteOpen ? (
+              <button type="button" className="btn protocolNoteToggle" onClick={() => setNoteOpen(true)} disabled={isGenerating}>
+                <span aria-hidden="true">＋</span>
+                <span>Dodaj uwagę <small>(opcjonalnie)</small></span>
+              </button>
+            ) : null}
+
+            {noteOpen || (!editing && protocolNote.trim()) ? (
+              <section className="protocolTestSection protocolNoteSection">
+                <div className="protocolNoteHeading">
+                  <h3>Uwagi <small>(opcjonalnie)</small></h3>
+                  {editing ? <button type="button" className="protocolNoteRemove" onClick={removeProtocolNote} disabled={isGenerating}>Usuń</button> : null}
+                </div>
+                {editing ? (
+                  <>
+                    <textarea
+                      className="input protocolNoteInput"
+                      value={protocolNote}
+                      maxLength={PROTOCOL_NOTE_MAX_LENGTH}
+                      rows={3}
+                      placeholder="Np. utrudniony dostęp do jednostki, dodatkowe ustalenia z klientem…"
+                      onChange={(event) => updateProtocolNote(event.target.value)}
+                      disabled={isGenerating}
+                    />
+                    <div className="protocolNoteCounter">{protocolNote.length}/{PROTOCOL_NOTE_MAX_LENGTH}</div>
+                  </>
+                ) : (
+                  <div className="protocolNoteReadOnly">{protocolNote}</div>
+                )}
+              </section>
+            ) : null}
 
             <section ref={protocolConfirmationRef} className="protocolTestSection">
               <h3>Potwierdzenie klienta</h3>

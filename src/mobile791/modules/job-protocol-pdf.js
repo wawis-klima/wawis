@@ -40,6 +40,10 @@ function normalizeText(value, fallback = "-") {
   return normalized || fallback;
 }
 
+function normalizeProtocolNote(value) {
+  return String(value || "").trim().slice(0, 300);
+}
+
 function formatInstallationDate(value) {
   const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (match) return `${match[3]}.${match[2]}.${match[1]}`;
@@ -194,7 +198,7 @@ function formatPaymentDate(value) {
   return match ? `${match[3]}.${match[2]}.${match[1]}` : normalizeText(value);
 }
 
-export function buildJobProtocolData({ job = {}, profiles = [], signedAt = new Date(), payment = null } = {}) {
+export function buildJobProtocolData({ job = {}, profiles = [], signedAt = new Date(), payment = null, note = "" } = {}) {
   const photos = Array.isArray(job?.photos) ? job.photos : [];
   const deviceRows = getProtocolDeviceRows(job);
   const nameplateCompletion = getJobNameplateCompletion(job, { allowLocal: true });
@@ -222,6 +226,7 @@ export function buildJobProtocolData({ job = {}, profiles = [], signedAt = new D
       ...normalizedPayment,
       paidDateLabel: normalizedPayment.enabled ? formatPaymentDate(normalizedPayment.paidDate) : "-",
     },
+    note: normalizeProtocolNote(note),
   };
 }
 
@@ -655,6 +660,22 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     y += paymentCardHeight + 16;
   }
 
+  if (data.note) {
+    doc.setFont(FONT_FAMILY, "normal");
+    doc.setFontSize(8.7);
+    const noteLines = doc.splitTextToSize(data.note, CONTENT_WIDTH - 20);
+    const noteLineHeight = 10.2;
+    const noteCardHeight = Math.max(28, 16 + noteLines.length * noteLineHeight);
+    y = addPageIfNeeded(doc, y, noteCardHeight + 20);
+    drawSectionTitle(doc, "Uwagi", y);
+    drawCard(doc, y + 8, noteCardHeight, [252, 253, 254]);
+    doc.setFont(FONT_FAMILY, "normal");
+    doc.setFontSize(8.7);
+    doc.setTextColor(0, 0, 0);
+    doc.text(noteLines, CONTENT_LEFT + 10, y + 25, { lineHeightFactor: noteLineHeight / 8.7 });
+    y += noteCardHeight + 16;
+  }
+
   const confirmationSectionHeight = 150;
   const legalBottomGap = 18;
   const availableLegalCardHeight = Math.max(
@@ -706,13 +727,14 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   return doc;
 }
 
-export async function generateJobProtocolPdf({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null }) {
+export async function generateJobProtocolPdf({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null, note = "" }) {
   const { data, doc, fileName, pdfBlob } = await createJobProtocolPdfFile({
     job,
     profiles,
     signatureDataUrl,
     signedAt,
     payment,
+    note,
   });
   const file = typeof File === "function" ? new File([pdfBlob], fileName, { type: PDF_MIME_TYPE }) : null;
 
@@ -729,9 +751,9 @@ export async function generateJobProtocolPdf({ job, profiles, signatureDataUrl, 
   return { fileName, shared: false };
 }
 
-export async function createJobProtocolPdfFile({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null }) {
+export async function createJobProtocolPdfFile({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null, note = "" }) {
   if (!signatureDataUrl) throw new Error("Złóż podpis klienta przed utworzeniem PDF.");
-  const data = buildJobProtocolData({ job, profiles, signedAt, payment });
+  const data = buildJobProtocolData({ job, profiles, signedAt, payment, note });
   const doc = await buildPdfDocument({ data, signatureDataUrl });
   const fileName = getProtocolFileName(data);
   const pdfBlob = doc.output("blob");

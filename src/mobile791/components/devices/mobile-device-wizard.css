@@ -682,6 +682,18 @@
 .mobileProtocolWizard .protocolPaymentHeading h3 { margin: 0 !important; font-size: 17px !important; line-height: 1.2 !important; }
 .protocolBottomStartAnchor { height: 0; scroll-margin-top: 10px; }
 
+.protocolNoteToggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; padding: 10px 12px !important; border: 1px dashed #a9bac6 !important; border-radius: 12px !important; background: #f8fafb !important; color: #2b4b5d !important; font-size: 13px !important; font-weight: 850 !important; text-align: left; }
+.protocolNoteToggle > span:first-child { color: #168d91; font-size: 18px; line-height: 1; font-weight: 900; }
+.protocolNoteToggle small,
+.mobileProtocolWizard .protocolNoteHeading small { color: #758793; font-size: 10px !important; font-weight: 750; }
+.protocolNoteSection { display: grid; gap: 7px; padding: 11px 12px !important; border-color: #c7d8df !important; background: #fbfcfd !important; }
+.protocolNoteHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.mobileProtocolWizard .protocolNoteHeading h3 { margin: 0 !important; font-size: 15px !important; line-height: 1.2 !important; }
+.protocolNoteRemove { appearance: none; border: 0; background: transparent; color: #8a4d46; padding: 4px 2px; font-size: 11px; line-height: 1; font-weight: 850; }
+.protocolNoteInput { width: 100%; min-height: 78px; max-height: 132px; resize: vertical; box-sizing: border-box; padding: 9px 10px !important; border-radius: 10px !important; font-size: 15px !important; line-height: 1.35 !important; font-weight: 650 !important; }
+.protocolNoteCounter { justify-self: end; color: #71838f; font-size: 9px; font-weight: 750; }
+.protocolNoteReadOnly { white-space: pre-wrap; overflow-wrap: anywhere; padding: 9px 10px; border: 1px solid #e0e8ed; border-radius: 10px; background: #fff; color: #243746; font-size: 12px; line-height: 1.4; font-weight: 650; }
+
 .protocolPaymentForm { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; min-width: 0; padding: 9px 10px; border: 1px solid #dfe7ec; border-radius: 11px; background: #fff; box-sizing: border-box; overflow: hidden; }
 .protocolPaymentForm > label { display: grid; gap: 3px; min-width: 0; color: #465a68; font-size: 10px !important; line-height: 1.2 !important; font-weight: 850; }
 .protocolPaymentMethodField,

@@ -1,3 +1,9 @@
+## 12.40
+- Mobile: protokół ma opcjonalny, domyślnie zwinięty przycisk „Dodaj uwagę (opcjonalnie)” umieszczony przed potwierdzeniem klienta.
+- Uwaga ma limit 300 znaków, można ją usunąć, a jej zmiana unieważnia wcześniejszy podpis klienta.
+- Uwaga jest zapisywana razem z rekordem protokołu, odtwarzana przy ponownym otwarciu i drukowana w PDF.
+- Migracja: `20261004092411_add_job_protocol_note_v1240.sql`.
+
 ## 12.39
 - Mobilny start jest cache-first i pobiera listę montaży przed profilami, job_access i powiadomieniami.
 - Odczyt kursora synchronizacji nie może już długo blokować startu; zapisany kursor jest używany bez dodatkowego RPC, a pierwszy odczyt ma krótki limit i możliwość przerwania.
