@@ -4,7 +4,7 @@ const db=new PGlite();
 // Platform doubles only. This is a dependency rehearsal, NOT Supabase/Storage/cron verification.
 await db.exec(`create role anon;create role authenticated;create role service_role;create role supabase_admin;
 create schema auth;create schema storage;create schema extensions;create schema private;create schema cron;
-create function extensions.gen_random_bytes(integer) returns bytea language sql volatile as $select decode(repeat('ab',$1),'hex')$;
+create function extensions.gen_random_bytes(integer) returns bytea language sql volatile as $fn$select decode(repeat('ab',$1),'hex')$fn$;
 create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email text);
 create function auth.uid() returns uuid language sql as $$select null::uuid$$;
 create function auth.role() returns text language sql as $$select 'service_role'::text$$;
