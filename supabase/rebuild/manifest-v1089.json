@@ -53,6 +53,26 @@
     "supabase/migrations/20260917103411_audit_delivery_atomic.sql",
     "supabase/migrations/20260917174140_audit_staging_view_guard.sql",
     "supabase/migrations/20260917175255_audit_protocol_retention.sql",
-    "supabase/rebuild/audit_final_acl.sql"
+    "supabase/rebuild/audit_final_acl.sql",
+    "supabase/migrations/20261002062031_sms_history_safety_stage1_v1218.sql",
+    "supabase/migrations/20261002070000_sms_customer_window_dedup_v1217.sql",
+    "supabase/migrations/20261002070050_sms_durable_customer_groups_v1219.sql",
+    "supabase/migrations/20261002071500_sms_cleanup_rpc_acl_v1217.sql",
+    "supabase/migrations/20261002073753_sms_stage3_current_state_calendar_v1220.sql",
+    "supabase/migrations/20261002081343_sms_stage4_reliable_delivery_v1221.sql",
+    "supabase/migrations/20261002081756_sms_stage4_found_state_fix_v1221.sql",
+    "supabase/migrations/20261002090424_sms_stage5_history_legacy_v1222.sql",
+    "supabase/migrations/20261002095320_sms_unsent_manual_retry_v1223.sql",
+    "supabase/migrations/20261003055805_sms_dismiss_failed_and_delete_unsent_v1232.sql",
+    "supabase/migrations/20261003173500_sms_retry_confirmed_undelivered_v1235.sql",
+    "supabase/migrations/20261003180500_sms_bulk_remove_old_unsent_v1236.sql",
+    "supabase/migrations/20261003184000_sms_retry_after_undelivered_v1237.sql",
+    "supabase/migrations/20261005094500_sms_p0_race_safety_v1242.sql",
+    "supabase/migrations/20261005103000_sms_cancel_retry_claim_p1_v1243.sql",
+    "supabase/migrations/20261005114500_sms_sent_month_by_send_time_v1244.sql",
+    "supabase/migrations/20261005123000_sms_dashboard_queue_count_v1245.sql",
+    "supabase/migrations/20261005133000_sms_callback_auth_rotation_v1246.sql",
+    "supabase/migrations/20261005134000_sms_group_device_history_v1247.sql",
+    "supabase/migrations/20261005135000_sms_fixed_clock_and_legacy_indexes_v1248.sql"
   ]
 }
