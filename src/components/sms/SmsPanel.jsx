@@ -6,8 +6,8 @@ import SmsSentThisMonthCard from './SmsSentThisMonthCard.jsx';
 import SmsUnsentCard from './SmsUnsentCard.jsx';
 import SmsClientDetailsCard from './SmsClientDetailsCard.jsx';
 import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
-import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary, groupSmsLogsByCustomerWindow } from '../../modules/sms.js';
-import { loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
+import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary } from '../../modules/sms.js';
+import { loadSmsHistoryPage, loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
 import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms, sendTestSms } from '../../modules/sms-send.js';
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
@@ -193,6 +193,9 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [sentMonthSourceLogs, setSentMonthSourceLogs] = useState([]);
   const [unsentLogs, setUnsentLogs] = useState([]);
   const [historyLogs, setHistoryLogs] = useState([]);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const [historyBusy, setHistoryBusy] = useState(false);
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
@@ -222,7 +225,6 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     ...getSmsSummary(targets, queue, logs),
     sentThisMonth: sentThisMonthLogs.length,
   }), [targets, queue, logs, sentThisMonthLogs]);
-  const groupedHistoryLogs = useMemo(() => groupSmsLogsByCustomerWindow(historyLogs), [historyLogs]);
   const isDesktopAdmin = isAdmin && !isMobile;
   const isSettingsOnlyView = isDesktopAdmin && ['settings', 'sms_templates'].includes(requestedSection);
   const settingsOnlyTitle = requestedSection === 'sms_templates' ? 'Szablony SMS' : 'Ustawienia modułu SMS';
@@ -243,7 +245,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setLogs(data.logs || []);
       setSentMonthSourceLogs(data.sentThisMonthLogs || data.logs || []);
       setUnsentLogs(data.unsentLogs || []);
-      setHistoryLogs(data.historyLogs || data.logs || []);
+      if (!showHistory) {
+        setHistoryLogs([]);
+        setHistoryPage(1);
+        setHistoryTotal(0);
+      }
 
       // Pełna baza urządzeń jest dociągana dopiero po snapshotcie SMS.
       // Dzięki temu wejście do modułu nie uderza w bazę kilkoma ciężkimi RPC naraz.
@@ -323,6 +329,36 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setShowHistory(false);
     }
   }, [requestedSection]);
+
+  async function loadFullHistoryPage(page = 1) {
+    const normalizedPage = Math.max(1, Number(page) || 1);
+    setHistoryBusy(true);
+    setErrorMessage('');
+    try {
+      const result = await loadSmsHistoryPage({
+        supabase,
+        isAdmin,
+        page: normalizedPage,
+        pageSize: 50,
+      });
+      setHistoryLogs(result.rows || []);
+      setHistoryPage(result.page || normalizedPage);
+      setHistoryTotal(result.total || 0);
+    } catch (error) {
+      setErrorMessage(normalizeDatabaseErrorMessage(error, 'Nie udało się załadować pełnej historii SMS.'));
+    } finally {
+      setHistoryBusy(false);
+    }
+  }
+
+  async function handleToggleHistory() {
+    if (showHistory) {
+      setShowHistory(false);
+      return;
+    }
+    setShowHistory(true);
+    await loadFullHistoryPage(1);
+  }
 
   async function handleSaveSettings() {
     setSaveBusy(true);
@@ -1092,14 +1128,23 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
           <div className="smsDesktopInfoStrip">
             <span className="smsDesktopInfoIcon">i</span>
             <button type="button" className="smsDesktopInlineLink" onClick={() => setShowSettings((prev) => !prev)}>Zarządzaj szablonami SMS</button>
-            <button type="button" className="smsDesktopInlineLink" onClick={() => setShowHistory((prev) => !prev)}>Pokaż pełną historię</button>
+            <button type="button" className="smsDesktopInlineLink" onClick={() => void handleToggleHistory()}>{showHistory ? 'Ukryj pełną historię' : 'Pokaż pełną historię'}</button>
           </div>
 
           {showSettings ? (
             <SmsSettingsCard settings={settings} setSettings={setSettings} onSave={handleSaveSettings} saveBusy={saveBusy} isAdmin={isAdmin} />
           ) : null}
 
-          {showHistory ? <SmsHistoryCard logs={groupedHistoryLogs} /> : null}
+          {showHistory ? (
+            <SmsHistoryCard
+              logs={historyLogs}
+              currentPage={historyPage}
+              pageSize={50}
+              totalRows={historyTotal}
+              onPageChange={(page) => void loadFullHistoryPage(page)}
+              busy={historyBusy}
+            />
+          ) : null}
         </>
       ) : null}
     </div>
