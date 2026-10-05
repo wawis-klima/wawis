@@ -290,7 +290,6 @@ Deno.serve(async (request) => {
 
         if (updateError) {
           if (String(updateError.code || "") === "23505") {
-            existingPrimaryGroupIds.add(reminderGroupId);
             const { data: fallbackRows, error: fallbackError } = await adminClient
               .from("sms_log")
               .update({
