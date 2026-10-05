@@ -18,6 +18,7 @@ type DeleteRow = {
   message?: string | null;
   reminderCycle?: number | string | null;
   reminderDueDate?: string | null;
+  reminderGroupId?: string | null;
   testPhone?: string | null;
 };
 
@@ -295,28 +296,52 @@ async function handleRetryNotSentSend({ adminClient, callerId, settings, sender,
 }
 
 async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: ReturnType<typeof createClient>; callerId: string; rows: DeleteRow[]; }) {
-  const cleanRows = Array.isArray(rows) ? rows.filter((row) => row && (row.logId || row.deviceId || row.jobId)) : [];
+  const cleanRows = Array.isArray(rows) ? rows.filter((row) => row && (row.logId || row.reminderGroupId || row.deviceId || row.jobId)) : [];
   if (cleanRows.length === 0) return json({ error: "Nie przekazano pozycji z kolejki do usunięcia." }, 400);
 
-  const logIds = [...new Set(
+  const explicitLogIds = cleanRows
+    .map((row) => String(row.logId || "").trim())
+    .filter((id) => isUuid(id));
+  const groupIds = [...new Set(
     cleanRows
-      .map((row) => String(row.logId || "").trim())
+      .map((row) => String(row.reminderGroupId || "").trim())
       .filter((id) => isUuid(id)),
   )];
+
+  let groupLogIds: string[] = [];
+  if (groupIds.length > 0) {
+    const { data: groupLogs, error: groupError } = await adminClient
+      .from("sms_log")
+      .select("id, reminder_group_id, status")
+      .in("reminder_group_id", groupIds)
+      .in("status", ["pending_approval", "not_sent", "error"]);
+
+    if (groupError) {
+      return json({
+        ok: false,
+        error: groupError.message || "Nie udało się odczytać całej grupy SMS do usunięcia.",
+        deletedCount: 0,
+        failures: [],
+      }, 400);
+    }
+    groupLogIds = (groupLogs || []).map((item) => String(item.id || "")).filter((id) => isUuid(id));
+  }
+
+  const logIds = [...new Set([...explicitLogIds, ...groupLogIds])];
 
   if (logIds.length === 0) {
     return json({
       ok: false,
-      error: "Ta pozycja nie ma jeszcze trwałego wpisu kolejki. Odśwież listę SMS i spróbuj ponownie.",
+      error: "Ta pozycja nie ma już aktywnych wpisów możliwych do usunięcia. Odśwież listę SMS.",
       deletedCount: 0,
       failures: [],
     }, 409);
   }
 
-  if (logIds.length > 25) {
+  if (logIds.length > 200) {
     return json({
       ok: false,
-      error: "Ze względów bezpieczeństwa jednorazowo można usunąć maksymalnie 25 wpisów SMS. Zaznacz mniejszą liczbę pozycji.",
+      error: "Grupa zawiera zbyt wiele aktywnych wpisów do jednorazowej operacji. Odśwież listę i spróbuj ponownie.",
       deletedCount: 0,
       failures: [],
     }, 409);
@@ -346,16 +371,28 @@ async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: 
     failures.push({ id: logId, error: reason });
   }
 
+  if (failures.length > 0 && deletedCount > 0) {
+    return json({
+      ok: true,
+      partial: true,
+      outcome: "partial",
+      error: "Część pozycji zmieniła stan w trakcie operacji. Lista została odświeżona do aktualnego stanu.",
+      deletedCount,
+      failures,
+    });
+  }
+
   if (failures.length > 0) {
     return json({
       ok: false,
-      error: "Nie wszystkie pozycje można było anulować. Lista została zabezpieczona przed zmianą historii wysłanych SMS-ów.",
-      deletedCount,
+      outcome: "failed",
+      error: "Nie udało się anulować zaznaczonych pozycji. Ich stan mógł się zmienić.",
+      deletedCount: 0,
       failures,
     }, 409);
   }
 
-  return json({ ok: true, deletedCount, failures: [] });
+  return json({ ok: true, partial: false, outcome: "deleted", deletedCount, failures: [] });
 }
 
 async function handleManualJobSend({ adminClient, callerId, settings, sender, token, nowIso: _nowIso, jobId, reminderCycle, reminderDueDate: _reminderDueDate }: { adminClient: ReturnType<typeof createClient>; callerId: string; settings: SmsSettings; sender?: string; token: string; nowIso: string; jobId: string; reminderCycle?: number | string | null; reminderDueDate?: string | null; }) {
