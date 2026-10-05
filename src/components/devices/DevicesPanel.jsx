@@ -11,7 +11,7 @@ import {
   saveDeviceRecord,
   deleteDeviceRecord,
   updateDeviceStatus,
-  fetchDeviceSmsHistory,
+  fetchDeviceSmsHistoryPage,
 } from '../../modules/devices-fetch.js';
 import SmsHistoryCard from '../sms/SmsHistoryCard.jsx';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
@@ -280,6 +280,8 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [historyDevice, setHistoryDevice] = useState(null);
   const [historyLogs, setHistoryLogs] = useState([]);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyTotal, setHistoryTotal] = useState(0);
   const [historyBusy, setHistoryBusy] = useState(false);
   const [selectedClientDevice, setSelectedClientDevice] = useState(null);
   const importInputRef = useRef(null);
@@ -474,19 +476,36 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
     }
   }
 
-  async function openDeviceHistory(device) {
-    setHistoryDevice(normalizeDeviceRecord(device));
+  async function loadDeviceHistoryPage(device, page = 1) {
+    const normalizedDevice = normalizeDeviceRecord(device);
+    const normalizedPage = Math.max(1, Number(page) || 1);
     setHistoryBusy(true);
-    setHistoryLogs([]);
     setErrorMessage('');
     try {
-      const logs = await fetchDeviceSmsHistory({ supabase, device, isAdmin });
-      setHistoryLogs(logs);
+      const result = await fetchDeviceSmsHistoryPage({
+        supabase,
+        device: normalizedDevice,
+        isAdmin,
+        page: normalizedPage,
+        pageSize: 50,
+      });
+      setHistoryLogs(result.rows || []);
+      setHistoryPage(result.page || normalizedPage);
+      setHistoryTotal(result.total || 0);
     } catch (error) {
       setErrorMessage(getFriendlyError(error));
     } finally {
       setHistoryBusy(false);
     }
+  }
+
+  async function openDeviceHistory(device) {
+    const normalizedDevice = normalizeDeviceRecord(device);
+    setHistoryDevice(normalizedDevice);
+    setHistoryLogs([]);
+    setHistoryPage(1);
+    setHistoryTotal(0);
+    await loadDeviceHistoryPage(normalizedDevice, 1);
   }
 
   function handleResetFilters() {
@@ -1104,7 +1123,14 @@ export default function DevicesPanel({ supabase, userId, jobs = [], isAdmin, ref
               </div>
               <button type="button" className="btn secondary" onClick={() => setHistoryDevice(null)} disabled={historyBusy}>Zamknij</button>
             </div>
-            {historyBusy ? <div className="card">Ładowanie historii SMS...</div> : <SmsHistoryCard logs={historyLogs} />}
+            <SmsHistoryCard
+              logs={historyLogs}
+              currentPage={historyPage}
+              pageSize={50}
+              totalRows={historyTotal}
+              onPageChange={(page) => void loadDeviceHistoryPage(historyDevice, page)}
+              busy={historyBusy}
+            />
           </>
         ) : null}
       </AppModal>
