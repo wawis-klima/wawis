@@ -69,6 +69,7 @@ async function runPass(pass) {
     }
 
     current = 'package 2 complete paginated history';
+    await db.exec(`create or replace function auth.jwt() returns jsonb language sql as $select '{"role":"service_role"}'::jsonb$;`);
     await db.exec(`
       insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
       values('91000000-0000-4000-8000-000000000001','History Fixture','500999888','2025-11-05',true,true,5);
@@ -94,6 +95,8 @@ async function runPass(pass) {
     if (Number(globalPage.rows[0]?.page?.total) < 205 || globalPage.rows[0]?.page?.rows?.length === 0) {
       throw new Error(`Global history pagination mismatch: ${JSON.stringify(globalPage.rows[0]?.page)}`);
     }
+
+    await db.exec(`create or replace function auth.jwt() returns jsonb language sql as $select '{}'::jsonb$;`);
 
     current = 'fixed-clock SMS behavior';
     await db.exec(`insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
