@@ -22,6 +22,7 @@ export default function GlobalDesktopSearch({
   devices = [],
   profiles = [],
   devicesLoading = false,
+  onSearchStart = () => {},
   onSelectResult = () => {},
 }) {
   const [query, setQuery] = useState('');
@@ -106,7 +107,10 @@ export default function GlobalDesktopSearch({
           aria-expanded={showResults}
           aria-controls="global-desktop-search-results"
           autoComplete="off"
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            onSearchStart();
+            setOpen(true);
+          }}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
