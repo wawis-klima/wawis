@@ -21,8 +21,12 @@ assert(panel.includes("now - lastAutoRefreshRef.current > 300000"),
   'focus/visibility nie może ponawiać ciężkiego odświeżenia częściej niż co 5 minut.');
 assert(panel.includes('setDevices(buildFallbackDevicesFromJobs(jobs));'),
   'SMS desktop powinien od razu użyć lekkiego fallbacku urządzeń z montaży.');
-assert(panel.indexOf('const data = await loadSmsModuleData') < panel.indexOf('void fetchAdminDevices'),
+assert(panel.indexOf('const data = await loadSmsModuleData') < panel.indexOf('const deviceRefresh = refreshDeviceCatalog()'),
   'Pełna baza urządzeń ma być dociągana dopiero po snapshotcie SMS.');
+assert(panel.includes('if (silent) await deviceRefresh;'),
+  'Cichy reload SMS musi również odświeżać katalog urządzeń.');
+assert(panel.includes('if (!isAdmin || !supabase || isSettingsOnlyView) return undefined;'),
+  'Widok ustawień/szablonów SMS nie może uruchamiać timera pełnego modułu.');
 assert(panel.includes("normalizeDatabaseErrorMessage(error, 'Nie udało się załadować modułu SMS.')"),
   'Błąd ładowania SMS musi być normalizowany do czytelnego komunikatu.');
 assert(smsFetch.includes('const smsSnapshotRequests = new WeakMap();'),
