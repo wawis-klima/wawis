@@ -501,8 +501,25 @@ export async function fetchDeviceSmsHistoryPage({ supabase, device, isAdmin, pag
   };
 
   const { data, error } = await supabase.rpc('admin_get_device_sms_history_page', payload);
-  if (error) throw error;
-  const rows = Array.isArray(data?.rows) ? data.rows : [];
-  const total = Math.max(0, Number(data?.total) || 0);
-  return { rows, total, page: normalizedPage, pageSize: normalizedPageSize };
+  if (!error) {
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+    const total = Math.max(0, Number(data?.total) || 0);
+    return { rows, total, page: normalizedPage, pageSize: normalizedPageSize };
+  }
+
+  // Compatibility during a rolling frontend/backend deploy only.
+  if (!['PGRST202', '42883'].includes(String(error.code || ''))) throw error;
+  const legacy = await supabase.rpc('admin_get_device_sms_history', {
+    p_device_id: payload.p_device_id,
+    p_source_job_id: payload.p_source_job_id,
+  });
+  if (legacy.error) throw legacy.error;
+  const allRows = Array.isArray(legacy.data) ? legacy.data : [];
+  const offset = (normalizedPage - 1) * normalizedPageSize;
+  return {
+    rows: allRows.slice(offset, offset + normalizedPageSize),
+    total: allRows.length,
+    page: normalizedPage,
+    pageSize: normalizedPageSize,
+  };
 }
