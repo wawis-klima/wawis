@@ -1,4 +1,6 @@
--- WAWIS 10.89 / N7 stage B / rebuild-only indexes baseline.
+-- WAWIS rebuild indexes baseline.
+-- Legacy reminder_for_date/service_cycle_number columns are retained only for historical replay;
+-- active SMS indexes use reminder_cycle/reminder_due_date and durable reminder_group_id.
 
 drop index if exists public.app_diagnostic_events_module_received_idx;
 drop index if exists public.app_diagnostic_events_received_idx;
@@ -124,10 +126,7 @@ CREATE INDEX services_device_id_idx ON public.services USING btree (device_id);
 CREATE INDEX services_service_due_date_idx ON public.services USING btree (service_due_date);
 CREATE INDEX services_source_job_id_idx ON public.services USING btree (source_job_id);
 CREATE INDEX services_status_idx ON public.services USING btree (status);
-CREATE INDEX sms_log_job_reminder_for_date_idx ON public.sms_log USING btree (job_id, reminder_for_date DESC);
-CREATE INDEX sms_log_job_service_cycle_idx ON public.sms_log USING btree (job_id, service_cycle_number DESC);
 CREATE UNIQUE INDEX contractors_company_name_unique_idx ON public.contractors USING btree (normalize_contractors_text(company_name));
 CREATE UNIQUE INDEX devices_serial_number_key ON public.devices USING btree (lower(btrim(serial_number))) WHERE (NULLIF(btrim(serial_number), ''::text) IS NOT NULL);
 CREATE UNIQUE INDEX devices_source_job_id_key ON public.devices USING btree (source_job_id);
 CREATE UNIQUE INDEX photos_storage_path_unique_v882 ON public.photos USING btree (storage_path) WHERE ((storage_path IS NOT NULL) AND (btrim(storage_path) <> ''::text));
-CREATE UNIQUE INDEX uq_sms_log_active_service_reminder_cycle ON public.sms_log USING btree (job_id, sms_type, reminder_for_date) WHERE ((sms_type = 'service_reminder'::text) AND (reminder_for_date IS NOT NULL) AND (status = ANY (ARRAY['pending_approval'::text, 'approved'::text, 'provider_sent'::text, 'sent'::text, 'delivered'::text])));
