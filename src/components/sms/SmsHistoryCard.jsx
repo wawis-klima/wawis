@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { expandSmsHistoryRows, formatSmsDate, getSmsStatusLabel } from '../../modules/sms.js';
 
 function formatSmsHistoryError(value) {
@@ -22,8 +22,36 @@ function formatSmsHistoryError(value) {
   return text;
 }
 
-export default function SmsHistoryCard({ logs }) {
+function Pagination({ currentPage, totalPages, onPageChange, busy }) {
+  const pages = useMemo(() => {
+    const values = [];
+    const start = Math.max(1, currentPage - 2);
+    const end = Math.min(totalPages, currentPage + 2);
+    for (let page = start; page <= end; page += 1) values.push(page);
+    return values;
+  }, [currentPage, totalPages]);
+
+  if (!onPageChange || totalPages <= 1) return null;
+
+  return (
+    <div className="smsDesktopPagination" aria-label="Paginacja historii SMS">
+      <button type="button" className="smsDesktopPaginationBtn" onClick={() => onPageChange(Math.max(1, currentPage - 1))} disabled={busy || currentPage === 1}>‹</button>
+      {pages[0] > 1 ? <button type="button" className="smsDesktopPaginationBtn" onClick={() => onPageChange(1)} disabled={busy}>1</button> : null}
+      {pages[0] > 2 ? <span className="smsDesktopPaginationDots">…</span> : null}
+      {pages.map((page) => (
+        <button key={page} type="button" className={`smsDesktopPaginationBtn ${page === currentPage ? 'active' : ''}`} onClick={() => onPageChange(page)} disabled={busy}>{page}</button>
+      ))}
+      {pages[pages.length - 1] < totalPages - 1 ? <span className="smsDesktopPaginationDots">…</span> : null}
+      {pages[pages.length - 1] < totalPages ? <button type="button" className="smsDesktopPaginationBtn" onClick={() => onPageChange(totalPages)} disabled={busy}>{totalPages}</button> : null}
+      <button type="button" className="smsDesktopPaginationBtn" onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))} disabled={busy || currentPage === totalPages}>›</button>
+    </div>
+  );
+}
+
+export default function SmsHistoryCard({ logs, currentPage = 1, pageSize = 50, totalRows = null, onPageChange = null, busy = false }) {
   const historyRows = expandSmsHistoryRows(logs);
+  const total = totalRows == null ? historyRows.length : Math.max(0, Number(totalRows) || 0);
+  const totalPages = Math.max(1, Math.ceil(total / Math.max(1, Number(pageSize) || 50)));
 
   return (
     <div className="smsCard smsHistoryCard">
@@ -74,8 +102,18 @@ export default function SmsHistoryCard({ logs }) {
             </div>
           );
         })}
-        {historyRows.length === 0 ? <div className="muted">Brak zapisanej historii SMS.</div> : null}
+        {busy && historyRows.length === 0 ? <div className="muted">Ładowanie historii SMS...</div> : null}
+        {!busy && historyRows.length === 0 ? <div className="muted">Brak zapisanej historii SMS.</div> : null}
       </div>
+
+      {total > 0 ? (
+        <div className="smsDesktopTableFooter">
+          <span>
+            {Math.min((currentPage - 1) * pageSize + 1, total)}–{Math.min(currentPage * pageSize, total)} z {total}
+          </span>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} busy={busy} />
+        </div>
+      ) : null}
     </div>
   );
 }

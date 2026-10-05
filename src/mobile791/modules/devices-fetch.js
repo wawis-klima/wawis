@@ -485,3 +485,40 @@ export async function fetchDeviceSmsHistory({ supabase, device, isAdmin }) {
   if (error) throw error;
   return Array.isArray(data) ? data : [];
 }
+
+
+export async function fetchDeviceSmsHistoryPage({ supabase, device, isAdmin, page = 1, pageSize = 50 }) {
+  if (!supabase || !isAdmin || !device?.id) return { rows: [], total: 0, page: 1, pageSize };
+  const normalizedPageSize = Math.min(100, Math.max(1, Number(pageSize) || 50));
+  const normalizedPage = Math.max(1, Number(page) || 1);
+  const payload = {
+    p_device_id: String(device.id || '').trim() || null,
+    p_source_job_id: /^[0-9a-f-]{36}$/i.test(String(device.source_job_id || '').trim())
+      ? String(device.source_job_id || '').trim()
+      : null,
+    p_limit: normalizedPageSize,
+    p_offset: (normalizedPage - 1) * normalizedPageSize,
+  };
+  const { data, error } = await supabase.rpc('admin_get_device_sms_history_page', payload);
+  if (!error) {
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+    const total = Math.max(0, Number(data?.total) || 0);
+    return { rows, total, page: normalizedPage, pageSize: normalizedPageSize };
+  }
+
+  // Compatibility during a rolling frontend/backend deploy only.
+  if (!['PGRST202', '42883'].includes(String(error.code || ''))) throw error;
+  const legacy = await supabase.rpc('admin_get_device_sms_history', {
+    p_device_id: payload.p_device_id,
+    p_source_job_id: payload.p_source_job_id,
+  });
+  if (legacy.error) throw legacy.error;
+  const allRows = Array.isArray(legacy.data) ? legacy.data : [];
+  const offset = (normalizedPage - 1) * normalizedPageSize;
+  return {
+    rows: allRows.slice(offset, offset + normalizedPageSize),
+    total: allRows.length,
+    page: normalizedPage,
+    pageSize: normalizedPageSize,
+  };
+}
