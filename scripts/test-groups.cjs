@@ -193,6 +193,7 @@ const GROUPS = {
     'node scripts/smoke-playwright-runner-fail-closed-v1085.cjs',
     'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
     'node scripts/smoke-sms-p0-race-safety-v1242.mjs',
+    'node scripts/smoke-sms-callback-snapshot-v1250.mjs',
     'node scripts/smoke-sms-cancel-retry-p1-v1243.mjs',
     'node scripts/smoke-sms-audit-closure-v1248.mjs',
     'node scripts/audit-v1089/rebuild-rehearsal.mjs',
