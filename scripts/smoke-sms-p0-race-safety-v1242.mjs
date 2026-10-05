@@ -83,5 +83,25 @@ await db.exec("update public.sms_log set provider_response='{\"late\":true}'::js
 const jobStatus = await db.query("select last_sms_status from public.jobs where id=$1",[job]);
 assert.equal(jobStatus.rows[0].last_sms_status,'delivered');
 
+// Callback UNDELIVERED/error przed acceptance również musi pozostać końcowym błędem
+// i nie może utworzyć drugiego wpisu historii.
+const originalError = '40000000-0000-4000-8000-000000000002';
+const errorClaim = '50000000-0000-4000-8000-000000000002';
+const errorGroup = '60000000-0000-4000-8000-000000000002';
+const errorProvider = 'provider-p0-error';
+
+await db.exec("insert into public.sms_log(id,job_id,client,phone,message,status,reminder_group_id,reminder_group_primary,reminder_cycle,reminder_due_date) values('" + originalError + "','" + job + "','Klient 2','48600100101','stara','error','" + errorGroup + "',true,1,'2026-10-01')");
+await db.exec("insert into private.sms_delivery_claims(delivery_key,claim_id,reminder_group_id,retry_of_log_id,job_id,recipient_phone,reminder_cycle,reminder_due_date,client,message,approved_by,staged_at) values('retry:p0:error','" + errorClaim + "','" + errorGroup + "','" + originalError + "','" + job + "','48600100101',1,'2026-10-01','Klient 2','wiadomosc 2','70000000-0000-4000-8000-000000000001',now())");
+
+result = await db.query("select public.apply_sms_delivery_atomic_v2($1,$2,'error',$3) as result",[errorProvider,errorClaim,'SMSAPI: wiadomość niedostarczona (kod 405).']);
+assert.equal(result.rows[0].result.ok,true);
+result = await db.query("select public.record_service_sms_acceptance($1,$2,$3::jsonb) as result",[errorClaim,errorProvider,'{"accepted":true}']);
+assert.equal(result.rows[0].result.ok,true);
+assert.equal(result.rows[0].result.status,'error');
+
+rows = await db.query("select count(*)::int as n,min(status) as status from public.sms_log where provider_message_id=$1",[errorProvider]);
+assert.equal(rows.rows[0].n,1);
+assert.equal(rows.rows[0].status,'error');
+
 console.log('PASS: SMS P0 race safety');
 await db.close();
