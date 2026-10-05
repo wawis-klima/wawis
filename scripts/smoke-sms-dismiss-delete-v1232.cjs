@@ -29,7 +29,9 @@ assert.match(panel, /toggleAll\(checked, pagedRows\)/);
 const deletePayloadStart = panel.indexOf('function buildUnsentDeletePayload');
 const deletePayloadEnd = panel.indexOf('async function handleDeleteUnsentSelected', deletePayloadStart);
 const deletePayloadBlock = panel.slice(deletePayloadStart, deletePayloadEnd);
-assert.match(deletePayloadBlock, /grouped_log_ids/);
+assert.match(panel, /grouped_log_ids/);
+assert.match(panel, /function getDeleteLogIds/);
+assert.match(deletePayloadBlock, /getDeleteLogIds/);
 assert.match(deletePayloadBlock, /reminderGroupId/);
 assert.match(panel, /window\.confirm/);
 
