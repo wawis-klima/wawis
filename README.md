@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 12.41
+- 12.56
 
 Wersja 12.41 wyrównuje górne odstępy sekcji w PDF protokołu: płatność, uwagi oraz informacje i ustalenia mają teraz taki sam oddech jak pozostałe bloki.
 
@@ -881,7 +881,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.41` — wyrównane marginesy nad sekcjami płatności, uwag oraz informacji i ustaleń w PDF protokołu.
+- wersja `12.56` — domknięto audyt modułu SMS: bezpieczeństwo wysyłki, historię, paginację, bulk actions i lazy loading.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

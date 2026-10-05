@@ -1,10 +1,11 @@
 {
-  "version": "12.41",
-  "summary": "W PDF protokołu wyrównano górne odstępy sekcji płatności, uwag oraz informacji i ustaleń.",
+  "version": "12.56",
+  "summary": "Domknięto audyt modułu SMS i wyrównano numer aplikacji z linią migracji backendu.",
   "changes": [
-    "Minimalnie zwiększono odstęp nad „Potwierdzenie zapłaty”.",
-    "Taki sam odstęp zastosowano nad „Uwagi” i „Informacje i ustalenia”.",
-    "Odstępy są teraz zgodne z rytmem sekcji „Realizacja zlecenia”.",
-    "Brak zmian w danych, Supabase i Edge Functions."
+    "Naprawiono bezpieczeństwo retry, callbacków i claimów SMS.",
+    "Naprawiono historię SMS, restore archiwów oraz pełną paginację.",
+    "Naprawiono grupowe usuwanie, partial bulk, zaznaczenia między stronami i zakresy paginacji.",
+    "Ustawienia i szablony SMS korzystają z lekkiego lazy loadingu, a katalog urządzeń jest pobierany stronami.",
+    "Wersja aplikacji została wyrównana do 12.56, zgodnie z aktualną linią migracji."
   ]
 }

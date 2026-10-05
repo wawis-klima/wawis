@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.41",
-  "scope": "mobile",
-  "release_branch": "release/v12.41",
+  "version": "12.56",
+  "scope": "full",
+  "release_branch": "release/v12.56",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Zmiana dotyczy wyłącznie układu PDF protokołu. Nie zmienia logiki zapisu, danych, Supabase ani Edge Functions."
+    "notes": "Pakiety 1–3 audytu SMS przeszły targeted regressions, dwa rebuildy, Playwright E2E i production build. Backend SMS v40 ACTIVE."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.41.zip"
+    "file_name": "klima-app-v12.56.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.41",
+    "source_branch": "release/v12.56",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu sprawdzić podgląd PDF na iPhonie: odstępy nad płatnością, uwagami i informacjami mają być równe i bez niepotrzebnego przejścia na drugą stronę."
+    "notes": "Po wdrożeniu potwierdzić na iPhonie numer v12.56 oraz działanie modułu SMS: Niewysłane, historia, paginacja, bulk delete i ustawienia/szablony."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "NONE — bez zmian bazy i Edge Functions.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.41",
+    "supabase_changes": "DONE — migracje SMS do v12.56 oraz send-service-sms v40 ACTIVE.",
+    "pr_check": "PENDING — WAWIS PR checks dla release/v12.56",
     "vercel_deployment": "PENDING — po merge do main"
   }
 }

@@ -1,3 +1,8 @@
+## 12.56
+- domknięto trzy pakiety poprawek audytu SMS: bezpieczeństwo wysyłki/retry, integralność historii i restore, paginację, bulk delete oraz lazy loading
+- poprawiono rozdzielenie daty wysłania i doręczenia, zaznaczenia między stronami, odświeżanie urządzeń i poprawne zakresy paginacji
+- wyrównano numer aplikacji z linią migracji backendu; od tej wersji numeracja aplikacji i migracji wraca do jednej sekwencji
+
 ## 12.41
 - PDF protokołu: minimalnie zwiększono górny odstęp nad sekcjami „Potwierdzenie zapłaty”, „Uwagi” oraz „Informacje i ustalenia”.
 - Odstępy zostały wyrównane do rytmu używanego przy sekcji „Realizacja zlecenia”.
