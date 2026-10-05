@@ -3,6 +3,7 @@ import {stripTypeScriptTypes} from 'node:module';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {
+  collectSmsCallbackAuthTokens,
   constantTimeEqual,
   deriveSmsApiCallbackToken,
   normalizeSmsApiStatus,
@@ -20,6 +21,19 @@ assert.equal(tokenA1.length, 64);
 assert.equal(constantTimeEqual(tokenA1, tokenA2), true);
 assert.equal(constantTimeEqual(tokenA1, tokenB), false);
 assert.equal(constantTimeEqual('', ''), false);
+assert.deepEqual(
+  collectSmsCallbackAuthTokens({
+    current: 't3',
+    previous: 't2',
+    valid_tokens: ['t3', 't2', 't1', 't0', ''],
+  }),
+  ['t3', 't2', 't1', 't0'],
+);
+assert.deepEqual(
+  collectSmsCallbackAuthTokens({ current: 'current-only', previous: 'previous-only' }),
+  ['current-only', 'previous-only'],
+);
+
 assert.equal(smsApiIdxToClaimId('a1c1fa534dd44ec58f6af67abd857e4b'), 'a1c1fa53-4dd4-4ec5-8f6a-f67abd857e4b');
 assert.equal(smsApiIdxToClaimId('bad-idx'), null);
 
@@ -76,6 +90,7 @@ assert.match(webhook, /SMSAPI_ACCESS_TOKEN/);
 assert.match(webhook, /searchParams\.get\('auth'\)/);
 assert.match(webhook, /get_smsapi_callback_auth_tokens/);
 assert.match(webhook, /stableTokens/);
+assert.match(webhook, /collectSmsCallbackAuthTokens\(tokenRecord\)/);
 assert.match(webhook, /deriveSmsApiCallbackToken/);
 assert.match(webhook, /constantTimeEqual/);
 assert.match(webhook, /planSmsCallbackUpdates/);
