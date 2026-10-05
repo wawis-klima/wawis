@@ -46,6 +46,55 @@ async function runPass(pass) {
     );
     if (smsHistoryFks.rows.length) throw new Error('SMS audit history still depends on operational job/device foreign keys');
 
+    current = 'package 2 rebuild parity';
+    const cleanup = await db.query("select public.admin_cleanup_sms_duplicate_logs() as result");
+    if (cleanup.rows[0]?.result?.skipped !== true || cleanup.rows[0]?.result?.physical_delete_disabled !== true) {
+      throw new Error(`Rebuild cleanup is not history-safe: ${JSON.stringify(cleanup.rows[0]?.result)}`);
+    }
+
+    const functionConfigs = await db.query(`
+      select p.proname,array_to_string(p.proconfig,',') as config
+      from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+      where n.nspname='public'
+        and p.proname in ('guard_job_sms_runtime_columns','claim_service_sms','confirm_service_sms')
+      order by p.proname
+    `);
+    const configs = Object.fromEntries(functionConfigs.rows.map((row) => [row.proname,row.config || '']));
+    if (!String(configs.guard_job_sms_runtime_columns || '').includes('search_path=""')) {
+      throw new Error(`guard_job_sms_runtime_columns search_path mismatch: ${JSON.stringify(configs)}`);
+    }
+    if (!String(configs.claim_service_sms || '').includes('search_path=public, pg_temp')
+        || !String(configs.confirm_service_sms || '').includes('search_path=public, pg_temp')) {
+      throw new Error(`legacy claim/confirm search_path mismatch: ${JSON.stringify(configs)}`);
+    }
+
+    current = 'package 2 complete paginated history';
+    await db.exec(`
+      insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
+      values('91000000-0000-4000-8000-000000000001','History Fixture','500999888','2025-11-05',true,true,5);
+      insert into public.devices(id,source_job_id,installation_date,service_reminder_years)
+      values('91000000-0000-4000-8000-000000000002','91000000-0000-4000-8000-000000000001::device-1','2025-11-05',5);
+      insert into public.sms_log(id,job_id,device_id,client,phone,message,status,created_at)
+      select gen_random_uuid(),'91000000-0000-4000-8000-000000000001','91000000-0000-4000-8000-000000000002',
+             'History Fixture','48500999888','history-'||g::text,'not_sent',
+             timestamptz '2026-01-01 00:00:00+00'+(g||' seconds')::interval
+      from generate_series(1,205) g;
+    `);
+    const allDeviceHistory = await db.query(
+      "select count(*)::int as n from public.admin_get_device_sms_history('91000000-0000-4000-8000-000000000002',null)"
+    );
+    if (allDeviceHistory.rows[0].n !== 205) throw new Error(`Legacy device history is still capped: ${allDeviceHistory.rows[0].n}`);
+    const devicePage = await db.query(
+      "select public.admin_get_device_sms_history_page('91000000-0000-4000-8000-000000000002',null,50,200) as page"
+    );
+    if (Number(devicePage.rows[0]?.page?.total) !== 205 || devicePage.rows[0]?.page?.rows?.length !== 5) {
+      throw new Error(`Device history pagination mismatch: ${JSON.stringify(devicePage.rows[0]?.page)}`);
+    }
+    const globalPage = await db.query("select public.admin_get_sms_history_page(50,200) as page");
+    if (Number(globalPage.rows[0]?.page?.total) < 205 || globalPage.rows[0]?.page?.rows?.length === 0) {
+      throw new Error(`Global history pagination mismatch: ${JSON.stringify(globalPage.rows[0]?.page)}`);
+    }
+
     current = 'fixed-clock SMS behavior';
     await db.exec(`insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
 values('90000000-0000-4000-8000-000000000001','Clock Fixture','500111222','2025-11-05',true,true,1)`);
