@@ -47,7 +47,7 @@ export function normalizeSmsApiStatus(status, statusName = '') {
   const text = String(status || '').trim().toLowerCase();
   if (['delivered', 'doręczona', 'dostarczona'].includes(text)) return 'delivered';
   if (['error', 'failed', 'undelivered', 'rejected', 'expired'].includes(text)) return 'error';
-  return 'provider_sent';
+  return null;
 }
 
 export function shouldAdvanceSmsStatus(currentStatus, nextStatus) {
