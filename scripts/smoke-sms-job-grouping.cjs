@@ -130,6 +130,25 @@ function addMonths(date, months) {
   assert.equal(customerPendingQueue.length, 1, 'Stare dwa oczekujące logi klienta muszą być widoczne jako jedno zlecenie SMS.');
   assert.deepEqual(customerPendingQueue[0].grouped_queue_log_ids.sort(), ['log-job-1', 'log-job-2']);
 
+  const durableGroupId = '33333333-3333-4333-8333-333333333333';
+  const pendingPrimaryWithOldDeletedSecondary = smsModule.deriveSmsQueue(secondJobTargets, [
+    {
+      id: 'pending-primary', job_id: 'job-1', phone: '48500600700', status: 'pending_approval',
+      reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date,
+      reminder_group_id: durableGroupId, reminder_group_primary: true,
+      created_at: new Date(Date.now() + 1000).toISOString(),
+    },
+    {
+      id: 'deleted-secondary', job_id: 'job-1', phone: '48500600700', status: 'deleted',
+      reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date,
+      reminder_group_id: durableGroupId, reminder_group_primary: false,
+      created_at: new Date().toISOString(),
+    },
+  ]);
+  assert.equal(pendingPrimaryWithOldDeletedSecondary.length, 1,
+    'Stary deleted secondary nie może ukryć nowszego pending primary trwałej grupy.');
+  assert.equal(pendingPrimaryWithOldDeletedSecondary[0].queueLog?.id, 'pending-primary');
+
   const customerFinalizedQueue = smsModule.deriveSmsQueue(secondJobTargets, [
     { id: 'sent-job-1', job_id: 'job-1', status: 'sent', reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date, phone: '48500600700', sent_at: new Date().toISOString() },
     { id: 'log-job-2', job_id: 'job-2', status: 'pending_approval', reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date, phone: '48500600700', created_at: new Date().toISOString() },
