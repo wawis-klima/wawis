@@ -197,12 +197,19 @@ export async function syncDevicesFromJobs({ supabase, isAdmin }) {
 async function fetchAllRpcRows({ supabase, rpcName, pageSize = 500 }) {
   const rows = [];
   for (let from = 0; ; from += pageSize) {
-    const { data, error } = await supabase
-      .rpc(rpcName)
-      .range(from, from + pageSize - 1);
+    const request = supabase.rpc(rpcName);
+    const result = request && typeof request.range === 'function'
+      ? await request.range(from, from + pageSize - 1)
+      : await request;
+    const { data, error } = result || {};
     if (error) return { data: rows, error };
     const page = Array.isArray(data) ? data : [];
     rows.push(...page);
+
+    // Mock/local clients may return the full data set without range support.
+    if (!request || typeof request.range !== 'function') {
+      return { data: rows, error: null };
+    }
     if (page.length < pageSize) return { data: rows, error: null };
   }
 }
