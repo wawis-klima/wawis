@@ -30,15 +30,6 @@ export class SmsProviderPreflightError extends Error {
   }
 }
 
-export class SmsPreProviderError extends Error {
-  claimReleased = false;
-
-  constructor(message: string) {
-    super(message);
-    this.name = 'SmsPreProviderError';
-  }
-}
-
 export class SmsDeliveryUncertainError extends Error {
   claimId: string;
   preparedSms: PreparedSms;
@@ -308,19 +299,6 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
         error.claimReleased = true;
       } else {
         console.error('reject_service_sms_claim failed:', rejected.error?.message || rejected.data);
-      }
-      throw error;
-    }
-
-    if (error instanceof SmsPreProviderError) {
-      const released = await adminClient.rpc('release_service_sms_claim_before_provider', {
-        p_claim_id: prepared.claimId,
-        p_error: error.message,
-      });
-      if (!released.error && asObject(released.data).ok === true) {
-        error.claimReleased = true;
-      } else {
-        console.error('release_service_sms_claim_before_provider failed:', released.error?.message || released.data);
       }
       throw error;
     }
