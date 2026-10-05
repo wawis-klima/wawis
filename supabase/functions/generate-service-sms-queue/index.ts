@@ -256,15 +256,21 @@ Deno.serve(async (request) => {
 
       if (existing) {
         if (existing.groupId !== reminderGroupId && existingPrimaryGroupIds.has(reminderGroupId)) {
-          const { error: obsoleteError } = await adminClient
+          const { data: obsoleteRows, error: obsoleteError } = await adminClient
             .from("sms_log")
             .update({
               status: "deleted",
               reminder_group_primary: false,
               error_message: "Pozycja zastąpiona aktualną grupą klienta po zmianie danych.",
             })
-            .eq("id", existing.id);
+            .eq("id", existing.id)
+            .in("status", ["pending_approval", "not_sent", "error"])
+            .is("provider_message_id", null)
+            .is("sent_at", null)
+            .is("delivered_at", null)
+            .select("id");
           if (obsoleteError) throw new Error(`Nie udało się wygasić nieaktualnej pozycji SMS: ${obsoleteError.message}`);
+          if (!Array.isArray(obsoleteRows) || obsoleteRows.length === 0) return;
           if (existing.groupId) existingPrimaryGroupIds.delete(existing.groupId);
           for (const identity of identities) {
             existingByKey.set(`${identity}:${cycle}`, { ...existing, status: "deleted", primary: false });
@@ -272,26 +278,41 @@ Deno.serve(async (request) => {
           return;
         }
 
-        const { error: updateError } = await adminClient
+        const { data: updatedRows, error: updateError } = await adminClient
           .from("sms_log")
           .update(payload)
-          .eq("id", existing.id);
+          .eq("id", existing.id)
+          .in("status", ["pending_approval", "not_sent", "error"])
+          .is("provider_message_id", null)
+          .is("sent_at", null)
+          .is("delivered_at", null)
+          .select("id");
 
         if (updateError) {
           if (String(updateError.code || "") === "23505") {
-            existingPrimaryGroupIds.add(reminderGroupId);
-            await adminClient
+            const { data: fallbackRows, error: fallbackError } = await adminClient
               .from("sms_log")
               .update({
                 status: "deleted",
                 reminder_group_primary: false,
                 error_message: "Pozycja zastąpiona aktualną grupą klienta po zmianie danych.",
               })
-              .eq("id", existing.id);
+              .eq("id", existing.id)
+              .in("status", ["pending_approval", "not_sent", "error"])
+              .is("provider_message_id", null)
+              .is("sent_at", null)
+              .is("delivered_at", null)
+              .select("id");
+            if (fallbackError) throw new Error(`Nie udało się wygasić konfliktującej pozycji SMS: ${fallbackError.message}`);
+            if (Array.isArray(fallbackRows) && fallbackRows.length > 0) {
+              existingPrimaryGroupIds.add(reminderGroupId);
+            }
             return;
           }
           throw new Error(`Nie udało się odświeżyć pozycji kolejki SMS: ${updateError.message}`);
         }
+
+        if (!Array.isArray(updatedRows) || updatedRows.length === 0) return;
 
         if (existing.groupId && existing.groupId !== reminderGroupId) {
           existingPrimaryGroupIds.delete(existing.groupId);
