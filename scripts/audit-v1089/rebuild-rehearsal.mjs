@@ -21,6 +21,8 @@ for(let pass=1;pass<=(process.argv.includes('--replay')?2:1);pass++) for(const f
 await db.exec(fs.readFileSync(new URL('supabase/rebuild/verify_audit_v1089.sql',root),'utf8'));
 const legacySmsIndexes=await db.query("select indexname from pg_indexes where schemaname='public' and tablename='sms_log' and indexname in ('sms_log_job_reminder_for_date_idx','sms_log_job_service_cycle_idx','uq_sms_log_active_service_reminder_cycle')");
 if(legacySmsIndexes.rows.length) throw new Error('Legacy SMS schedule indexes survived current rebuild');
+const smsHistoryFks=await db.query("select conname from pg_constraint where conrelid='public.sms_log'::regclass and conname in ('sms_log_job_id_fkey','sms_log_device_id_fkey')");
+if(smsHistoryFks.rows.length) throw new Error('SMS audit history still depends on operational job/device foreign keys');
 await db.exec(`insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
 values('90000000-0000-4000-8000-000000000001','Clock Fixture','500111222','2025-11-05',true,true,1)`);
 const before=await db.query("select private.sms_actionable_queue_count_at(date '2026-10-04')::int as n");
