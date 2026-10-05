@@ -11,7 +11,6 @@ import {
   saveDeviceRecord,
   deleteDeviceRecord,
   updateDeviceStatus,
-  fetchDeviceSmsHistory,
   fetchDeviceSmsHistoryPage,
 } from '../../modules/devices-fetch.js';
 import SmsHistoryCard from '../../../components/sms/SmsHistoryCard.jsx';
