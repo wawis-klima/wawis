@@ -37,7 +37,8 @@ assert.match(delivery, /safeToRetry = false/);
 
 const sender = read('supabase/functions/send-service-sms/index.ts');
 assert.doesNotMatch(sender, /^import \{\\\\n/m);
-assert.match(sender, /idx:\s*toSmsApiIdx\(prepared\.claimId\)/);
+assert.match(sender, /const idx = toSmsApiIdx\(prepared\.claimId\)/);
+assert.match(sender, /\bidx,\s*\n/);
 assert.match(sender, /check_idx:\s*"1"/);
 assert.match(sender, /SmsProviderRejectedError/);
 assert.match(sender, /provider_accepted_persistence_pending/);
