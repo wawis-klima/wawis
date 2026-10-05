@@ -194,6 +194,19 @@ export async function syncDevicesFromJobs({ supabase, isAdmin }) {
   return { synced: true, data: data || null };
 }
 
+async function fetchAllRpcRows({ supabase, rpcName, pageSize = 500 }) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .rpc(rpcName)
+      .range(from, from + pageSize - 1);
+    if (error) return { data: rows, error };
+    const page = Array.isArray(data) ? data : [];
+    rows.push(...page);
+    if (page.length < pageSize) return { data: rows, error: null };
+  }
+}
+
 export async function fetchAdminDevices({ supabase, isAdmin, jobs = [], trySync = true }) {
   const fallbackDevices = buildFallbackDevicesFromJobs(jobs);
   if (!supabase || !isAdmin) {
@@ -208,14 +221,20 @@ export async function fetchAdminDevices({ supabase, isAdmin, jobs = [], trySync 
     }
   }
 
-  let { data, error } = await supabase.rpc('admin_list_devices_with_contractor_v2');
-  let source = 'devices-rpc-v2';
+  let { data, error } = await fetchAllRpcRows({
+    supabase,
+    rpcName: 'admin_list_devices_with_contractor_v2',
+  });
+  let source = 'devices-rpc-v2-paged';
 
   if (error && shouldFallback(error)) {
-    const legacyResult = await supabase.rpc('admin_list_devices_with_contractor');
+    const legacyResult = await fetchAllRpcRows({
+      supabase,
+      rpcName: 'admin_list_devices_with_contractor',
+    });
     data = legacyResult.data;
     error = legacyResult.error;
-    source = 'devices-rpc-v1';
+    source = 'devices-rpc-v1-paged';
   }
 
   if (error) {
