@@ -26,6 +26,16 @@ export function constantTimeEqual(left, right) {
   return diff === 0;
 }
 
+export function collectSmsCallbackAuthTokens(record = {}) {
+  const source = record && typeof record === 'object' ? record : {};
+  const listed = Array.isArray(source.valid_tokens) ? source.valid_tokens : [];
+  return [...new Set(
+    [...listed, source.current, source.previous]
+      .map((value) => String(value || '').trim())
+      .filter(Boolean)
+  )];
+}
+
 export function smsApiIdxToClaimId(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(raw)) return raw;
