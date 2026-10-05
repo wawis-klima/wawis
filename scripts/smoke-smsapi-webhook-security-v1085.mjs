@@ -74,6 +74,8 @@ assert.equal(staleCallback.callbackBelongsToLatestSend, false);
 const webhook = fs.readFileSync('supabase/functions/smsapi-delivery-webhook/index.ts', 'utf8').replace(/\r\n/g, '\n');
 assert.match(webhook, /SMSAPI_ACCESS_TOKEN/);
 assert.match(webhook, /searchParams\.get\('auth'\)/);
+assert.match(webhook, /get_smsapi_callback_auth_tokens/);
+assert.match(webhook, /stableTokens/);
 assert.match(webhook, /deriveSmsApiCallbackToken/);
 assert.match(webhook, /constantTimeEqual/);
 assert.match(webhook, /planSmsCallbackUpdates/);
@@ -92,9 +94,17 @@ assert.equal(unknown.ok,true);assert.equal(unknown.ignored,true);assert.equal(un
 const config=fs.readFileSync('supabase/config.toml','utf8');
 assert.match(config,/\[functions\.smsapi-delivery-webhook\][\s\S]*?verify_jwt\s*=\s*false/);
 
+const callbackMigration = fs.readFileSync('supabase/migrations/20261005133000_sms_callback_auth_rotation_v1246.sql','utf8');
+assert.match(callbackMigration,/private\.sms_callback_auth_config/);
+assert.match(callbackMigration,/rotate_smsapi_callback_auth_token/);
+assert.match(callbackMigration,/previous_valid_until/);
+
 const sender = fs.readFileSync('supabase/functions/send-service-sms/index.ts', 'utf8').replace(/\r\n/g, '\n');
 assert.match(sender, /notify_url: notifyUrl/);
 assert.match(sender, /smsapi-delivery-webhook\?auth=/);
+assert.match(sender, /get_smsapi_callback_auth_tokens/);
+assert.match(sender, /loadSmsCallbackAuthToken/);
+assert.doesNotMatch(sender, /wawis:smsapi-callback:v1:/, 'Nowe wysyłki nie mogą wiązać callback auth z SMSAPI_ACCESS_TOKEN.');
 assert.match(sender, /AbortSignal\.timeout\(20000\)/);
 assert.match(sender, /sendServiceSmsOnce/);
 const delivery = fs.readFileSync('supabase/functions/send-service-sms/delivery.ts', 'utf8').replace(/\r\n/g, '\n');
