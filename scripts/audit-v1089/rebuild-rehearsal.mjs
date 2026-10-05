@@ -69,6 +69,7 @@ async function runPass(pass) {
     }
 
     current = 'package 2 complete paginated history';
+    await db.exec("create or replace function auth.jwt() returns jsonb language sql as $select '{\"role\":\"service_role\"}'::jsonb$");
     await db.exec(`create or replace function auth.jwt() returns jsonb language sql as $select '{"role":"service_role"}'::jsonb$;`);
     await db.exec(`
       insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
@@ -95,6 +96,8 @@ async function runPass(pass) {
     if (Number(globalPage.rows[0]?.page?.total) < 205 || globalPage.rows[0]?.page?.rows?.length === 0) {
       throw new Error(`Global history pagination mismatch: ${JSON.stringify(globalPage.rows[0]?.page)}`);
     }
+
+    await db.exec("create or replace function auth.jwt() returns jsonb language sql as $select '{}'::jsonb$");
 
     await db.exec(`create or replace function auth.jwt() returns jsonb language sql as $select '{}'::jsonb$;`);
 
