@@ -3,9 +3,11 @@ import {
   SmsAcceptancePersistenceError,
   SmsDeliveryBlockedError,
   SmsDeliveryUncertainError,
+  SmsProviderPreflightError,
   SmsProviderRejectedError,
 } from './delivery.ts';
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { resolveSmsSettingsResult } from './settings.mjs';
 
 type DeleteRow = {
   logId?: string | null;
@@ -111,23 +113,14 @@ Deno.serve(async (request) => {
 });
 
 async function loadSettings(adminClient: ReturnType<typeof createClient>): Promise<SmsSettings> {
-  const { data: row } = await adminClient
+  const result = await adminClient
     .from("sms_settings")
     .select("is_enabled, sending_mode, sender_name, service_phone, company_name, template_service_reminder")
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  return {
-    is_enabled: row?.is_enabled ?? true,
-    sending_mode: row?.sending_mode ?? "approval",
-    sender_name: row?.sender_name ?? null,
-    service_phone: row?.service_phone ?? null,
-    company_name: row?.company_name ?? "Wawis Klimatyzacja",
-    template_service_reminder:
-      row?.template_service_reminder ||
-      "Dzień dobry {client}, przypominamy o obowiązkowym przeglądzie klimatyzacji po 11 miesiącach od montażu. Aby utrzymać gwarancję, prosimy o kontakt: {service_phone}. {company_name}",
-  };
+  return resolveSmsSettingsResult(result) as SmsSettings;
 }
 
 const TEST_SMS_MESSAGE = "WAWIS - test SMS. Jesli otrzymales te wiadomosc, produkcyjna wysylka SMS dziala prawidlowo.";
@@ -205,6 +198,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
         deviceId: log.device_id,
         cycle: log.reminder_cycle || 1,
         prepare: (prepared) => {
+          const idx = toSmsApiIdx(prepared.claimId);
           const currentMessage = buildMessage({
             client: prepared.client,
             installation_date: prepared.installationDate,
@@ -221,7 +215,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
               to: prepared.recipientPhone,
               message: currentMessage,
               from: sender,
-              idx: toSmsApiIdx(prepared.claimId),
+              idx,
             }),
           };
         },
@@ -262,6 +256,7 @@ async function handleRetryNotSentSend({ adminClient, callerId, settings, sender,
         retryLogId: logId,
         cycle: 1,
         prepare: (prepared) => {
+          const idx = toSmsApiIdx(prepared.claimId);
           const message = buildMessage({
             client: prepared.client,
             installation_date: prepared.installationDate,
@@ -278,7 +273,7 @@ async function handleRetryNotSentSend({ adminClient, callerId, settings, sender,
               to: prepared.recipientPhone,
               message,
               from: sender,
-              idx: toSmsApiIdx(prepared.claimId),
+              idx,
             }),
           };
         },
@@ -373,6 +368,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
       jobId,
       cycle: effectiveCycle,
       prepare: (prepared) => {
+        const idx = toSmsApiIdx(prepared.claimId);
         const message = buildMessage({
           client: prepared.client,
           installation_date: prepared.installationDate,
@@ -389,7 +385,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
             to: prepared.recipientPhone,
             message,
             from: sender,
-            idx: toSmsApiIdx(prepared.claimId),
+            idx,
           }),
         };
       },
@@ -421,6 +417,7 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
       deviceId,
       cycle: effectiveCycle,
       prepare: (prepared) => {
+        const idx = toSmsApiIdx(prepared.claimId);
         const message = buildMessage({
           client: prepared.client,
           installation_date: prepared.installationDate,
@@ -437,7 +434,7 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
             to: prepared.recipientPhone,
             message,
             from: sender,
-            idx: toSmsApiIdx(prepared.claimId),
+            idx,
           }),
         };
       },
@@ -461,6 +458,15 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
 
 function describeSendFailure(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
+
+  if (error instanceof SmsProviderPreflightError) {
+    return {
+      error: message,
+      outcome: "failed_before_provider",
+      retryable: error.claimReleased,
+      httpStatus: error.claimReleased ? 422 : 409,
+    };
+  }
 
   if (error instanceof SmsDeliveryBlockedError) {
     return { error: message, outcome: "blocked", retryable: false, httpStatus: 409 };
@@ -544,10 +550,12 @@ function providerErrorMessage(parsed: unknown, statusCode: number) {
 
 async function loadSmsCallbackAuthToken(adminClient: ReturnType<typeof createClient>) {
   const { data, error } = await adminClient.rpc("get_smsapi_callback_auth_tokens");
-  if (error) throw new Error(`Nie udało się pobrać tokenu callbacku SMS: ${error.message}`);
+  if (error) {
+    throw new SmsProviderPreflightError(`Nie udało się pobrać tokenu callbacku SMS: ${error.message}`);
+  }
   const token = String((data && typeof data === "object" ? (data as Record<string, unknown>).current : "") || "").trim();
   if (!/^[0-9a-f]{64}$/i.test(token)) {
-    throw new Error("Brak poprawnego stabilnego tokenu callbacku SMS.");
+    throw new SmsProviderPreflightError("Brak poprawnego stabilnego tokenu callbacku SMS.");
   }
   return token;
 }
@@ -556,10 +564,10 @@ async function sendSmsWithSmsApi({ adminClient, token, to, message, from, idx, d
   let payload: URLSearchParams;
 
   if (deliveryCallback) {
-    if (!idx) throw new Error("Brak IDX do skonfigurowania callbacku SMSAPI.");
+    if (!idx) throw new SmsProviderPreflightError("Brak IDX do skonfigurowania callbacku SMSAPI.");
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
-    if (!supabaseUrl) throw new Error("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
-    if (!adminClient) throw new Error("Brak klienta serwisowego do pobrania tokenu callbacku SMS.");
+    if (!supabaseUrl) throw new SmsProviderPreflightError("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
+    if (!adminClient) throw new SmsProviderPreflightError("Brak klienta serwisowego do pobrania tokenu callbacku SMS.");
     const callbackToken = await loadSmsCallbackAuthToken(adminClient);
     const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
     payload = new URLSearchParams({
