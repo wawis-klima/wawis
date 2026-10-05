@@ -196,6 +196,65 @@ function addMonths(date, months) {
   assert.equal(groupedSent.length, 1, 'Historia bieżącego miesiąca ma pokazywać jeden wpis klienta zamiast dwóch bliskich wysyłek.');
   assert.equal(groupedSent[0].grouped_log_count, 2);
 
+  const warsawParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const readWarsawPart = (type) => Number(warsawParts.find((part) => part.type === type)?.value || 0);
+  const currentYear = readWarsawPart('year');
+  const currentMonth = readWarsawPart('month');
+  const previousMonthSend = new Date(Date.UTC(currentYear, currentMonth - 1, 0, 12, 0, 0));
+  const currentMonthDelivery = new Date(Date.UTC(currentYear, currentMonth - 1, 1, 12, 0, 0));
+  const currentMonthSend = new Date(Date.UTC(currentYear, currentMonth - 1, 2, 12, 0, 0));
+
+  const deliveredAcrossMonth = smsModule.getSentThisMonthLogs([{
+    id: 'boundary-old-send',
+    client: 'Granica miesiąca',
+    phone: '48500111222',
+    status: 'delivered',
+    reminder_due_date: '2026-01-01',
+    reminder_group_id: '11111111-1111-4111-8111-111111111111',
+    sent_at: previousMonthSend.toISOString(),
+    delivered_at: currentMonthDelivery.toISOString(),
+  }]);
+  assert.equal(deliveredAcrossMonth.length, 0, 'SMS wysłany w poprzednim miesiącu nie może wejść do bieżącego tylko przez późniejsze delivered_at.');
+
+  const retryAcrossMonths = smsModule.getSentThisMonthLogs([
+    {
+      id: 'boundary-old-attempt',
+      client: 'Granica miesiąca',
+      phone: '48500111222',
+      status: 'delivered',
+      reminder_due_date: '2026-01-01',
+      reminder_group_id: '22222222-2222-4222-8222-222222222222',
+      sent_at: previousMonthSend.toISOString(),
+      delivered_at: currentMonthDelivery.toISOString(),
+    },
+    {
+      id: 'boundary-current-attempt',
+      client: 'Granica miesiąca',
+      phone: '48500111222',
+      status: 'provider_sent',
+      reminder_due_date: '2026-01-01',
+      reminder_group_id: '22222222-2222-4222-8222-222222222222',
+      sent_at: currentMonthSend.toISOString(),
+    },
+  ]);
+  assert.equal(retryAcrossMonths.length, 1, 'Grupa z retry w bieżącym miesiącu ma być widoczna raz.');
+  assert.equal(retryAcrossMonths[0].id, 'boundary-current-attempt', 'Widok miesiąca ma reprezentować próbę faktycznie wysłaną w bieżącym miesiącu.');
+
+  const expandedHistory = smsModule.expandSmsHistoryRows([{
+    id: 'history-representative',
+    grouped_logs: [
+      { id: 'history-older', status: 'error', created_at: '2026-10-01T08:00:00Z' },
+      { id: 'history-newer', status: 'delivered', created_at: '2026-10-02T08:00:00Z' },
+    ],
+  }]);
+  assert.deepEqual(expandedHistory.map((row) => row.id), ['history-newer', 'history-older'], 'Pełna historia ma pokazać każdą rzeczywistą próbę z grupy.');
+
+  const sentMonthMigration = fs.readFileSync(path.join(root, 'supabase', 'migrations', '20261005114500_sms_sent_month_by_send_time_v1244.sql'), 'utf8');
+  assert.match(sentMonthMigration, /coalesce\(l\.sent_at,l\.approved_at,l\.created_at\)/);
+  assert.doesNotMatch(sentMonthMigration, /coalesce\(l\.delivered_at,l\.sent_at,l\.approved_at,l\.created_at\)/);
+
   const anchoredHistory = smsModule.groupSmsLogsByCustomerWindow([
     { id: 'anchor-a', client: 'Kotwica', phone: '48500600700', status: 'sent', reminder_due_date: '2026-01-01', sent_at: new Date().toISOString() },
     { id: 'anchor-b', client: 'Kotwica', phone: '500600700', status: 'sent', reminder_due_date: '2026-03-01', sent_at: new Date().toISOString() },
@@ -203,6 +262,10 @@ function addMonths(date, months) {
   ]);
   assert.equal(anchoredHistory.length, 2, 'Kotwica 1/60/120 dni musi dać dwie grupy.');
   assert.deepEqual(anchoredHistory.map((row) => row.grouped_log_count).sort((a, b) => b - a), [2, 1]);
+
+  const historyCardSource = fs.readFileSync(path.join(root, 'src', 'components', 'sms', 'SmsHistoryCard.jsx'), 'utf8');
+  assert.match(historyCardSource, /expandSmsHistoryRows/);
+  assert.match(historyCardSource, /historyRows\.map/);
 
   const panelSource = fs.readFileSync(path.join(root, 'src', 'components', 'sms', 'SmsPanel.jsx'), 'utf8');
   assert.match(panelSource, /getGroupedDeviceLabel/);
