@@ -72,8 +72,8 @@ async function runPass(pass) {
     await db.exec(`
       insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
       values('91000000-0000-4000-8000-000000000001','History Fixture','500999888','2025-11-05',true,true,5);
-      insert into public.devices(id,source_job_id,installation_date,service_reminder_years)
-      values('91000000-0000-4000-8000-000000000002','91000000-0000-4000-8000-000000000001::device-1','2025-11-05',5);
+      insert into public.devices(id,source_job_id,serial_number,installation_date,service_reminder_years)
+      values('91000000-0000-4000-8000-000000000002','91000000-0000-4000-8000-000000000001::device-1','PKG2-205','2025-11-05',5);
       insert into public.sms_log(id,job_id,device_id,client,phone,message,status,created_at)
       select gen_random_uuid(),'91000000-0000-4000-8000-000000000001','91000000-0000-4000-8000-000000000002',
              'History Fixture','48500999888','history-'||g::text,'not_sent',
