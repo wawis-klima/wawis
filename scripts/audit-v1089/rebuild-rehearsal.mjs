@@ -97,6 +97,7 @@ async function runPass(pass) {
     }
 
     await db.exec("create or replace function auth.jwt() returns jsonb language sql as 'select ''{}''::jsonb';");
+    await db.exec("update public.jobs set sms_reminder_enabled=false where id='91000000-0000-4000-8000-000000000001'");
 
     current = 'fixed-clock SMS behavior';
     await db.exec(`insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
