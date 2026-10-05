@@ -197,6 +197,7 @@ const GROUPS = {
     'node scripts/smoke-sms-callback-multi-rotation-v1251.mjs',
     'node scripts/smoke-sms-history-membership-v1252.mjs',
     'node scripts/smoke-sms-stable-customer-group-v1253.mjs',
+    'node scripts/smoke-sms-package1-v1254.mjs',
     'node scripts/smoke-sms-cancel-retry-p1-v1243.mjs',
     'node scripts/smoke-sms-audit-closure-v1248.mjs',
     'node scripts/audit-v1089/rebuild-rehearsal.mjs',

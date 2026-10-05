@@ -47,19 +47,46 @@ Deno.serve(async (request) => {
     const stableTokens = collectSmsCallbackAuthTokens(tokenRecord);
 
     let authorized = stableTokens.some((expected) => constantTimeEqual(providedToken, expected));
+    let entries: CallbackEntry[] | null = null;
 
-    // Zgodność przejściowa dla callbacków wiadomości wysłanych przed wdrożeniem
-    // stabilnego tokenu. Nowe wiadomości nie zależą już od SMSAPI_ACCESS_TOKEN.
+    // Legacy fallback jest ograniczony do prób rozpoczętych przed rolloutem
+    // stabilnego tokenu i ma twardy termin wygaśnięcia w bazie.
     if (!authorized && smsApiToken) {
       const legacyToken = await deriveSmsApiCallbackToken(smsApiToken);
-      authorized = constantTimeEqual(providedToken, legacyToken);
+      if (constantTimeEqual(providedToken, legacyToken)) {
+        entries = await parseCallbackEntries(request, callbackUrl);
+        if (!entries.length) {
+          return json({ ok: false, error: 'Brak provider_message_id w callbacku.' }, 400);
+        }
+
+        authorized = true;
+        for (const entry of entries) {
+          const { data: legacyAllowed, error: legacyError } = await adminClient.rpc(
+            'is_smsapi_legacy_callback_allowed',
+            {
+              p_claim_id: entry.claimId,
+              p_provider_message_id: entry.providerMessageId,
+            },
+          );
+          if (legacyError) {
+            return json({
+              ok: false,
+              error: `Nie udało się zweryfikować starego callbacku SMSAPI: ${legacyError.message}`,
+            }, 500);
+          }
+          if (legacyAllowed !== true) {
+            authorized = false;
+            break;
+          }
+        }
+      }
     }
 
     if (!authorized) {
       return json({ ok: false, error: 'Nieautoryzowany callback SMSAPI.' }, 401);
     }
 
-    const entries = await parseCallbackEntries(request, callbackUrl);
+    entries ||= await parseCallbackEntries(request, callbackUrl);
     if (!entries.length) {
       return json({ ok: false, error: 'Brak provider_message_id w callbacku.' }, 400);
     }

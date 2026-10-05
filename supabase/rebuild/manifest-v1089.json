@@ -78,6 +78,7 @@
     "supabase/migrations/20261005150842_sms_callback_snapshot_integrity_v1250.sql",
     "supabase/migrations/20261005154104_sms_callback_multi_generation_grace_v1251.sql",
     "supabase/migrations/20261005160818_sms_history_membership_integrity_v1252.sql",
-    "supabase/migrations/20261005162129_sms_stable_customer_group_identity_v1253.sql"
+    "supabase/migrations/20261005162129_sms_stable_customer_group_identity_v1253.sql",
+    "supabase/migrations/20261005164949_sms_package1_retry_preflight_settings_legacy_v1254.sql"
   ]
 }
