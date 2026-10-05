@@ -376,7 +376,7 @@ async function handleDeleteLogs({ adminClient, callerId, rows }: { adminClient: 
       ok: true,
       partial: true,
       outcome: "partial",
-      error: "Część pozycji zmieniła stan w trakcie operacji. Lista została odświeżona do aktualnego stanu.",
+      warning: "Część pozycji zmieniła stan w trakcie operacji. Lista została odświeżona do aktualnego stanu.",
       deletedCount,
       failures,
     });
