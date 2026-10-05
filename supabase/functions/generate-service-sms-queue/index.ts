@@ -235,7 +235,13 @@ Deno.serve(async (request) => {
         && existingStatus === targetStatus
       ) return;
 
-      const reminderGroupId = await ensureServiceSmsGroup(adminClient, phone, dueDate);
+      const reminderGroupId = await ensureServiceSmsGroup(
+        adminClient,
+        phone,
+        dueDate,
+        String(item.deviceId || "").trim() || null,
+        String(item.jobId || "").trim() || null,
+      );
       const payload = {
         device_id: item.deviceId || null,
         job_id: item.jobId || null,
@@ -395,10 +401,14 @@ async function ensureServiceSmsGroup(
   adminClient: ReturnType<typeof createClient>,
   phone: string,
   dueDate: string,
+  deviceId: string | null,
+  jobId: string | null,
 ) {
-  const { data, error } = await adminClient.rpc("ensure_service_sms_group", {
+  const { data, error } = await adminClient.rpc("ensure_service_sms_group_v2", {
     p_phone: phone,
     p_due_date: dueDate,
+    p_device_id: deviceId,
+    p_job_id: jobId,
   });
 
   if (error) {
