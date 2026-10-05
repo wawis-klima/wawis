@@ -24,12 +24,13 @@ assert.doesNotMatch(panelSource, /Montaże 7 dni/, 'Centrum 360 nie może już p
 assert.match(panelSource, /startOfIsoWeek/, 'Bieżący tydzień ma być liczony od poniedziałku, nie jako kolejne 7 dni.');
 assert.match(stylesSource, /\.centrum360CardsGrid\s*\{[\s\S]*grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/, 'Górne kafelki Centrum 360 mają być w układzie 3-kolumnowym.');
 
-assert.match(appSource, /loadSmsModuleData/, 'Centrum 360 musi pobierać snapshot SMS tak jak moduł SMS.');
-assert.match(appSource, /fetchAdminDevices/, 'Centrum 360 musi pobierać urządzenia do licznika SMS, tak jak moduł SMS.');
-assert.match(appSource, /buildSmsTargets\(\{\s*jobs,[\s\S]*devices:/, 'Centrum 360 musi liczyć SMS na podstawie targetów jobs+devices.');
-assert.match(appSource, /deriveSmsQueue\(targets,[\s\S]*logs/, 'Licznik SMS w Centrum 360 musi używać tej samej kolejki co moduł SMS.');
-assert.match(appSource, /setDashboardSmsQueueCount\(queue\.length\)/, 'Kafelek SMS do wysłania ma pokazywać liczbę klientów z kolejki SMS.');
-assert.match(panelSource, /smsDueToday:\s*smsDueTodayCount/, 'Kafelek SMS do wysłania musi używać wyliczonej kolejki SMS, a nie samego RPC.');
+assert.doesNotMatch(appSource, /loadSmsModuleData/, 'Centrum 360 nie może ładować pełnego snapshotu SMS przed wejściem do modułu SMS.');
+assert.doesNotMatch(appSource, /buildSmsTargets\(\{\s*jobs,[\s\S]*devices:/, 'Centrum 360 nie może budować pełnej kolejki SMS po stronie klienta przy starcie.');
+assert.doesNotMatch(appSource, /deriveSmsQueue\(targets,[\s\S]*logs/, 'Centrum 360 nie może uruchamiać logiki pełnego modułu SMS tylko dla licznika.');
+assert.doesNotMatch(appSource, /setDashboardSmsQueueCount\(queue\.length\)/, 'Centrum 360 nie może utrzymywać osobnego ciężkiego licznika z pełnego snapshotu SMS.');
+assert.match(appSource, /loadDashboardMetrics/, 'Centrum 360 musi pobierać lekki RPC z licznikami dashboardu.');
+assert.match(appSource, /dashboardMetrics\?\.smsDueToday/, 'Kafelek SMS ma korzystać z lekkiego licznika dashboardu.');
+assert.match(panelSource, /smsDueToday:\s*smsDueTodayCount/, 'Kafelek SMS do wysłania musi używać przekazanego lekkiego licznika.');
 assert.match(panelSource, /className="centrum360DateBadge"/, 'Nadchodzące montaże w Centrum 360 mają pokazywać tylko datę, bez godziny.');
 assert.doesNotMatch(panelSource, /formatTime\(/, 'Nadchodzące montaże w Centrum 360 nie mogą pokazywać godziny 02:00 przy dacie montażu.');
 assert.doesNotMatch(panelSource, /centrum360TimeBadge/, 'Centrum 360 nie może używać starego badge godziny przy nadchodzących montażach.');
