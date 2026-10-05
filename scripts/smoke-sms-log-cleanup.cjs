@@ -48,7 +48,11 @@ const manualStart = senderSource.indexOf('async function handleManualJobSend', d
 const deleteBlock = senderSource.slice(deleteStart, manualStart);
 assert.match(deleteBlock, /rpc\("cancel_service_sms_log"/);
 assert.match(deleteBlock, /new Set/);
-assert.doesNotMatch(deleteBlock, /from\("sms_log"\)/);
+assert.match(deleteBlock, /from\("sms_log"\)/);
+assert.match(deleteBlock, /\.in\("reminder_group_id", groupIds\)/);
+assert.match(deleteBlock, /rpc\("cancel_service_sms_log"/);
+assert.doesNotMatch(deleteBlock, /\.delete\(\)/);
+assert.doesNotMatch(deleteBlock, /\.update\(/);
 assert.doesNotMatch(deleteBlock, /updateSmsLogInsert/);
 assert.doesNotMatch(deleteBlock, /client:/);
 assert.doesNotMatch(deleteBlock, /phone:/);
