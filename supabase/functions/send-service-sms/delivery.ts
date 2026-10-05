@@ -226,7 +226,17 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
   };
 
   if (!prepared.claimId || !prepared.reminderGroupId || !prepared.recipientPhone || !prepared.currentDueDate) {
-    throw new Error('Baza nie zwróciła kompletnych aktualnych danych do wysyłki SMS.');
+    const preflightError = new SmsProviderPreflightError(
+      'Baza nie zwróciła kompletnych aktualnych danych do wysyłki SMS.',
+    );
+    if (prepared.claimId) {
+      preflightError.claimReleased = await releaseBeforeProvider(
+        adminClient,
+        prepared.claimId,
+        preflightError.message,
+      );
+    }
+    throw preflightError;
   }
 
   let plan: SendPlan<T>;
