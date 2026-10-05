@@ -80,6 +80,7 @@
     "supabase/migrations/20261005160818_sms_history_membership_integrity_v1252.sql",
     "supabase/migrations/20261005162129_sms_stable_customer_group_identity_v1253.sql",
     "supabase/migrations/20261005164949_sms_package1_retry_preflight_settings_legacy_v1254.sql",
-    "supabase/migrations/20261005173500_sms_package2_history_restore_rebuild_v1255.sql"
+    "supabase/migrations/20261005173500_sms_package2_history_restore_rebuild_v1255.sql",
+    "supabase/migrations/20261005183500_sms_package3_settings_lazy_v1256.sql"
   ]
 }

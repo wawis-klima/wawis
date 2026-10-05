@@ -500,6 +500,7 @@ export function createMockSupabaseClient() {
       }
       if (name === 'admin_cleanup_sms_duplicate_logs') return { data: { ok: true, mock: true }, error: null };
       if (name === 'admin_get_sms_module_snapshot') return { data: { settings: store.sms_settings, logs: store.sms_log }, error: null };
+      if (name === 'admin_get_sms_settings') return { data: clone(store.sms_settings), error: null };
       if (name === 'admin_get_dashboard_metrics') {
         const now = new Date();
         const today = now.toISOString().slice(0, 10);

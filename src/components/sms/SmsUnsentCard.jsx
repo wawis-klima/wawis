@@ -47,7 +47,7 @@ export default function SmsUnsentCard({
   onSelectDevice,
 }) {
   const selectableRows = pageRows.filter((row) => row.canDelete);
-  const selectedRows = pageRows.filter((row) => selectedIds.includes(row.selectionKey));
+  const selectedRows = rows.filter((row) => selectedIds.includes(row.selectionKey));
   const selectedSendableCount = selectedRows.filter((row) => row.canSend).length;
   const allChecked = selectableRows.length > 0 && selectableRows.every((row) => selectedIds.includes(row.selectionKey));
 
@@ -145,7 +145,7 @@ export default function SmsUnsentCard({
       </div>
 
       <div className="smsDesktopTableFooter">
-        <div>1–{Math.min(totalRows, currentPage * 10)} z {totalRows}</div>
+        <div>{totalRows > 0 ? `${(currentPage - 1) * 10 + 1}–${Math.min(totalRows, currentPage * 10)} z ${totalRows}` : '0 z 0'}</div>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
       </div>
     </section>

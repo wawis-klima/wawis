@@ -66,7 +66,9 @@ export default function SmsSentThisMonthCard({ rows, pageRows, currentPage, tota
                 <td>
                   <div className="smsDesktopDateCell">
                     <strong>{row.formattedSentAt}</strong>
-                    {row.relativeDateLabel ? <span>{row.relativeDateLabel}</span> : null}
+                    {row.formattedDeliveredAt && row.formattedDeliveredAt !== row.formattedSentAt
+                      ? <span>Doręczono: {row.formattedDeliveredAt}</span>
+                      : (row.relativeDateLabel ? <span>{row.relativeDateLabel}</span> : null)}
                   </div>
                 </td>
                 <td><span className={`smsDesktopStatusBadge tone-${row.statusTone}`}>{row.statusLabel}</span></td>
@@ -82,7 +84,7 @@ export default function SmsSentThisMonthCard({ rows, pageRows, currentPage, tota
       </div>
 
       <div className="smsDesktopTableFooter">
-        <div>1–{Math.min(totalRows, currentPage * 10)} z {totalRows}</div>
+        <div>{totalRows > 0 ? `${(currentPage - 1) * 10 + 1}–${Math.min(totalRows, currentPage * 10)} z ${totalRows}` : '0 z 0'}</div>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
       </div>
     </section>
