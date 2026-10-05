@@ -27,14 +27,36 @@ Deno.serve(async (request) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const smsApiToken = Deno.env.get('SMSAPI_ACCESS_TOKEN') || '';
-    if (!supabaseUrl || !serviceRoleKey || !smsApiToken) {
-      return json({ error: 'Brakuje konfiguracji Supabase/SMSAPI.' }, 500);
+    if (!supabaseUrl || !serviceRoleKey) {
+      return json({ error: 'Brakuje konfiguracji Supabase dla callbacku SMSAPI.' }, 500);
     }
 
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const callbackUrl = new URL(request.url);
     const providedToken = callbackUrl.searchParams.get('auth') || '';
-    const expectedToken = await deriveSmsApiCallbackToken(smsApiToken);
-    if (!constantTimeEqual(providedToken, expectedToken)) {
+
+    const { data: callbackTokens, error: callbackTokenError } = await adminClient.rpc('get_smsapi_callback_auth_tokens');
+    if (callbackTokenError) {
+      return json({ ok: false, error: `Nie udało się zweryfikować tokenu callbacku SMS: ${callbackTokenError.message}` }, 500);
+    }
+
+    const tokenRecord = callbackTokens && typeof callbackTokens === 'object'
+      ? callbackTokens as Record<string, unknown>
+      : {};
+    const stableTokens = [tokenRecord.current, tokenRecord.previous]
+      .map((value) => String(value || '').trim())
+      .filter(Boolean);
+
+    let authorized = stableTokens.some((expected) => constantTimeEqual(providedToken, expected));
+
+    // Zgodność przejściowa dla callbacków wiadomości wysłanych przed wdrożeniem
+    // stabilnego tokenu. Nowe wiadomości nie zależą już od SMSAPI_ACCESS_TOKEN.
+    if (!authorized && smsApiToken) {
+      const legacyToken = await deriveSmsApiCallbackToken(smsApiToken);
+      authorized = constantTimeEqual(providedToken, legacyToken);
+    }
+
+    if (!authorized) {
       return json({ ok: false, error: 'Nieautoryzowany callback SMSAPI.' }, 401);
     }
 
@@ -43,7 +65,6 @@ Deno.serve(async (request) => {
       return json({ ok: false, error: 'Brak provider_message_id w callbacku.' }, 400);
     }
 
-    const adminClient = createClient(supabaseUrl, serviceRoleKey);
     for (const entry of entries) {
       const result = await applyDeliveryStatus(adminClient, entry);
       if (!result.ok) return json(result, result.status || 500);
