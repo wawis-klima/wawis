@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
+  collectSmsCallbackAuthTokens,
   constantTimeEqual,
   deriveSmsApiCallbackToken,
   normalizeSmsApiStatus,
@@ -43,9 +44,7 @@ Deno.serve(async (request) => {
     const tokenRecord = callbackTokens && typeof callbackTokens === 'object'
       ? callbackTokens as Record<string, unknown>
       : {};
-    const stableTokens = [tokenRecord.current, tokenRecord.previous]
-      .map((value) => String(value || '').trim())
-      .filter(Boolean);
+    const stableTokens = collectSmsCallbackAuthTokens(tokenRecord);
 
     let authorized = stableTokens.some((expected) => constantTimeEqual(providedToken, expected));
 
