@@ -216,6 +216,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
           return {
             message: currentMessage,
             send: () => sendSmsWithSmsApi({
+              adminClient,
               token,
               to: prepared.recipientPhone,
               message: currentMessage,
@@ -272,6 +273,7 @@ async function handleRetryNotSentSend({ adminClient, callerId, settings, sender,
           return {
             message,
             send: () => sendSmsWithSmsApi({
+              adminClient,
               token,
               to: prepared.recipientPhone,
               message,
@@ -382,6 +384,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
         return {
           message,
           send: () => sendSmsWithSmsApi({
+            adminClient,
             token,
             to: prepared.recipientPhone,
             message,
@@ -429,6 +432,7 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
         return {
           message,
           send: () => sendSmsWithSmsApi({
+            adminClient,
             token,
             to: prepared.recipientPhone,
             message,
@@ -523,12 +527,6 @@ function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
-async function deriveSmsApiCallbackToken(accessToken: string) {
-  const source = `wawis:smsapi-callback:v1:${String(accessToken || '')}`;
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
-  return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
-}
-
 function toSmsApiIdx(claimId: string) {
   const compact = String(claimId || "").replace(/-/g, "").toLowerCase();
   if (!/^[0-9a-f]{32}$/.test(compact)) {
@@ -544,14 +542,25 @@ function providerErrorMessage(parsed: unknown, statusCode: number) {
   return `SMSAPI odrzuciło wiadomość${code ? ` (kod ${code})` : ""}${message ? `: ${message}` : "."}`;
 }
 
-async function sendSmsWithSmsApi({ token, to, message, from, idx, deliveryCallback = true }: { token: string; to: string; message: string; from?: string; idx?: string; deliveryCallback?: boolean }): Promise<SmsApiResult> {
+async function loadSmsCallbackAuthToken(adminClient: ReturnType<typeof createClient>) {
+  const { data, error } = await adminClient.rpc("get_smsapi_callback_auth_tokens");
+  if (error) throw new Error(`Nie udało się pobrać tokenu callbacku SMS: ${error.message}`);
+  const token = String((data && typeof data === "object" ? (data as Record<string, unknown>).current : "") || "").trim();
+  if (!/^[0-9a-f]{64}$/i.test(token)) {
+    throw new Error("Brak poprawnego stabilnego tokenu callbacku SMS.");
+  }
+  return token;
+}
+
+async function sendSmsWithSmsApi({ adminClient, token, to, message, from, idx, deliveryCallback = true }: { adminClient?: ReturnType<typeof createClient>; token: string; to: string; message: string; from?: string; idx?: string; deliveryCallback?: boolean }): Promise<SmsApiResult> {
   let payload: URLSearchParams;
 
   if (deliveryCallback) {
     if (!idx) throw new Error("Brak IDX do skonfigurowania callbacku SMSAPI.");
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
     if (!supabaseUrl) throw new Error("Brak SUPABASE_URL do skonfigurowania callbacku SMSAPI.");
-    const callbackToken = await deriveSmsApiCallbackToken(token);
+    if (!adminClient) throw new Error("Brak klienta serwisowego do pobrania tokenu callbacku SMS.");
+    const callbackToken = await loadSmsCallbackAuthToken(adminClient);
     const notifyUrl = `${supabaseUrl}/functions/v1/smsapi-delivery-webhook?auth=${encodeURIComponent(callbackToken)}`;
     payload = new URLSearchParams({
       to,
