@@ -844,6 +844,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     };
   }), [unsentLogs, queue, targetByIdentity]);
 
+  useEffect(() => {
+    setSelectedUnsentIds((prev) => prev.filter((id) => (
+      unsentRows.some((row) => row.selectionKey === id)
+    )));
+  }, [unsentRows]);
+
   const queueRows = useMemo(() => queue.map((row) => {
     const presentation = getQueueStatusPresentation(row);
     return {
