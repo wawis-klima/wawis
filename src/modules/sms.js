@@ -312,6 +312,18 @@ function getSmsLogPrimaryPriority(log = {}) {
   return log?.reminder_group_primary === true ? 0 : 1;
 }
 
+function isQueueFinalizedSmsLog(log = {}) {
+  const status = normalizeLogStatus(log.status);
+  if (['provider_sent', 'sent', 'delivered'].includes(status)) return true;
+  if (!['deleted', 'dismissed', 'not_sent'].includes(status)) return false;
+
+  // Dla trwałej grupy miękki stan końcowy blokuje kolejkę tylko wtedy,
+  // gdy dotyczy kanonicznego primary. Stary secondary "deleted" nie może
+  // ukryć nowszego pending primary tej samej grupy.
+  const groupId = String(log.reminder_group_id || '').trim();
+  return !groupId || log.reminder_group_primary === true;
+}
+
 function isPreferredSmsLog(candidate = {}, current = null) {
   if (!current) return true;
   const statusDelta = getSmsLogStatusPriority(candidate.status) - getSmsLogStatusPriority(current.status);
@@ -667,7 +679,7 @@ export function deriveSmsQueue(records = [], logs = []) {
     if (customerKey) {
       addCustomerLogToMap(latestByCustomer, log);
       if (status === 'pending_approval') addCustomerLogToMap(pendingByCustomer, log);
-      if (['provider_sent', 'sent', 'delivered', 'deleted', 'dismissed', 'not_sent'].includes(status)) addCustomerLogToMap(finalizedByCustomer, log);
+      if (isQueueFinalizedSmsLog(log)) addCustomerLogToMap(finalizedByCustomer, log);
     }
 
     if (keyBase) {
@@ -684,7 +696,7 @@ export function deriveSmsQueue(records = [], logs = []) {
       const currentPending = pendingByKey.get(cycleKey);
       if (isPreferredSmsLog(log, currentPending)) pendingByKey.set(cycleKey, log);
     }
-    if (['provider_sent', 'sent', 'delivered', 'deleted', 'dismissed', 'not_sent'].includes(status)) {
+    if (isQueueFinalizedSmsLog(log)) {
       const currentFinalized = finalizedByKey.get(cycleKey);
       if (isPreferredSmsLog(log, currentFinalized)) finalizedByKey.set(cycleKey, log);
     }
