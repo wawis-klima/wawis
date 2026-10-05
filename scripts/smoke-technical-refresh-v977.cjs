@@ -51,7 +51,9 @@ for (const [label, push] of [['desktop', desktopPush], ['mobile', mobilePush]]) 
 
 assert(desktopApp.includes('DASHBOARD_CACHE_TTL_MS = 5 * 60 * 1000'), 'Centrum 360: brak pięciominutowego cache liczników');
 assert(desktopApp.includes('dashboardMetricsCacheRef'), 'Centrum 360: brak cache RPC liczników');
-assert(desktopApp.includes('dashboardAuxCacheRef'), 'Centrum 360: brak cache SMS/urządzeń');
+assert(!desktopApp.includes('dashboardAuxCacheRef'), 'Centrum 360: ciężki cache SMS/urządzeń nie może wrócić na start aplikacji');
+assert(!desktopApp.includes('loadSmsModuleData'), 'Centrum 360: pełny snapshot SMS nie może ładować się przed wejściem do modułu SMS');
+assert(desktopApp.includes('globalSearchRequested'), 'Globalne wyszukiwanie: brak lazy-load danych pomocniczych');
 
 assert(mobileApp.includes('offlineSyncContextRef'), 'offline: callback nadal zależy od całej listy montaży');
 assert(mobileApp.includes('hasPendingOfflineWork'), 'offline: brak warunku uruchamiania okresowej kolejki');
