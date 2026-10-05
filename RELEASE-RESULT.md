@@ -1,10 +1,11 @@
-# WAWIS 12.41 — gotowa do wdrożenia
+# WAWIS 12.56 — gotowa do wdrożenia
 
-Wyrównano pionowe odstępy w PDF protokołu.
+Domknięto audyt modułu SMS w trzech pakietach zmian.
 
-- „Potwierdzenie zapłaty” ma minimalnie większy oddech od poprzedniej sekcji,
-- „Uwagi” zachowują ten sam odstęp,
-- „Informacje i ustalenia” również korzystają z tego samego rytmu,
-- zmiana jest wyłącznie prezentacyjna i nie dotyka danych ani backendu.
+- bezpieczeństwo wysyłki/retry/callbacków — zamknięte,
+- historia, restore i rebuild — zamknięte,
+- UI, bulk actions, paginacja i lazy loading — zamknięte,
+- send-service-sms v40 jest aktywne,
+- numer aplikacji i service worker cache wyrównano do 12.56.
 
 Przed merge obowiązuje zielony `WAWIS PR checks / targeted-checks`.
