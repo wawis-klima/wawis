@@ -87,6 +87,15 @@ async function parseCallbackEntries(request: Request, callbackUrl: URL): Promise
 
 async function applyDeliveryStatus(adminClient: ReturnType<typeof createClient>, entry: CallbackEntry) {
   const nextStatus = normalizeSmsApiStatus(entry.status, entry.statusName);
+  if (!nextStatus) {
+    console.warn('Ignored unknown SMSAPI delivery status', {
+      providerMessageId: entry.providerMessageId,
+      status: entry.status,
+      statusName: entry.statusName,
+    });
+    return { ok: true, ignored: true, reason: 'unknown_delivery_status' };
+  }
+
   const { data, error } = await adminClient.rpc('apply_sms_delivery_atomic_v2', {
     p_provider_message_id: entry.providerMessageId,
     p_claim_id: entry.claimId,
