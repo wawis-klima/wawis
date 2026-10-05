@@ -21,6 +21,15 @@ export class SmsProviderRejectedError extends Error {
   }
 }
 
+export class SmsProviderPreflightError extends Error {
+  claimReleased = false;
+
+  constructor(message: string) {
+    super(message);
+    this.name = 'SmsProviderPreflightError';
+  }
+}
+
 export class SmsDeliveryUncertainError extends Error {
   claimId: string;
   preparedSms: PreparedSms;
@@ -131,6 +140,23 @@ function asObject(value: unknown) {
   return typeof value === 'object' && value !== null ? value as Record<string, unknown> : {};
 }
 
+async function releaseBeforeProvider(adminClient: RpcClient, claimId: string, message: string) {
+  try {
+    const result = await adminClient.rpc('release_service_sms_claim_before_provider', {
+      p_claim_id: claimId,
+      p_error: message,
+    });
+    if (result.error) {
+      console.error('release_service_sms_claim_before_provider failed:', result.error.message);
+      return false;
+    }
+    return asObject(result.data).ok === true;
+  } catch (error) {
+    console.error('release_service_sms_claim_before_provider threw:', error);
+    return false;
+  }
+}
+
 async function markUncertain(adminClient: RpcClient, claimId: string, message: string) {
   try {
     const result = await adminClient.rpc('mark_service_sms_claim_uncertain', {
@@ -200,31 +226,68 @@ export async function sendServiceSmsOnce<T extends { providerMessageId: string |
   };
 
   if (!prepared.claimId || !prepared.reminderGroupId || !prepared.recipientPhone || !prepared.currentDueDate) {
-    throw new Error('Baza nie zwróciła kompletnych aktualnych danych do wysyłki SMS.');
+    const preflightError = new SmsProviderPreflightError(
+      'Baza nie zwróciła kompletnych aktualnych danych do wysyłki SMS.',
+    );
+    if (prepared.claimId) {
+      preflightError.claimReleased = await releaseBeforeProvider(
+        adminClient,
+        prepared.claimId,
+        preflightError.message,
+      );
+    }
+    throw preflightError;
   }
 
-  const plan = prepare(prepared);
+  let plan: SendPlan<T>;
+  try {
+    plan = prepare(prepared);
+  } catch (error) {
+    const preflightError = error instanceof SmsProviderPreflightError
+      ? error
+      : new SmsProviderPreflightError(error instanceof Error ? error.message : String(error));
+    preflightError.claimReleased = await releaseBeforeProvider(adminClient, prepared.claimId, preflightError.message);
+    throw preflightError;
+  }
+
   const message = String(plan?.message || '').trim();
   if (!message || typeof plan?.send !== 'function') {
-    throw new Error('Nie udało się przygotować wiadomości SMS przed wysyłką.');
+    const preflightError = new SmsProviderPreflightError('Nie udało się przygotować wiadomości SMS przed wysyłką.');
+    preflightError.claimReleased = await releaseBeforeProvider(adminClient, prepared.claimId, preflightError.message);
+    throw preflightError;
   }
 
-  const staged = await adminClient.rpc('stage_service_sms_claim', {
-    p_claim_id: prepared.claimId,
-    p_message: message,
-    p_actor_id: actorId,
-  });
+  let staged: RpcResult;
+  try {
+    staged = await adminClient.rpc('stage_service_sms_claim', {
+      p_claim_id: prepared.claimId,
+      p_message: message,
+      p_actor_id: actorId,
+    });
+  } catch (error) {
+    const preflightError = new SmsProviderPreflightError(error instanceof Error ? error.message : String(error));
+    preflightError.claimReleased = await releaseBeforeProvider(adminClient, prepared.claimId, preflightError.message);
+    throw preflightError;
+  }
 
-  if (staged.error) throw new Error(staged.error.message);
   const stagedData = asObject(staged.data) as StageResult;
-  if (stagedData.ok !== true) {
-    throw new Error(`Nie udało się przygotować bezpiecznej wysyłki SMS: ${String(stagedData.reason || 'stage_failed')}`);
+  if (staged.error || stagedData.ok !== true) {
+    const preflightError = new SmsProviderPreflightError(
+      staged.error?.message || `Nie udało się przygotować bezpiecznej wysyłki SMS: ${String(stagedData.reason || 'stage_failed')}`,
+    );
+    preflightError.claimReleased = await releaseBeforeProvider(adminClient, prepared.claimId, preflightError.message);
+    throw preflightError;
   }
 
   let result: T;
   try {
     result = await plan.send();
   } catch (error) {
+    if (error instanceof SmsProviderPreflightError) {
+      error.claimReleased = await releaseBeforeProvider(adminClient, prepared.claimId, error.message);
+      throw error;
+    }
+
     if (error instanceof SmsProviderRejectedError) {
       const rejected = await adminClient.rpc('reject_service_sms_claim', {
         p_claim_id: prepared.claimId,
