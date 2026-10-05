@@ -91,7 +91,7 @@ for (const status of ['provider_sent', 'error', 'delivered']) {
 
   let rows = await db.query(
     `select job_id,device_id,client,phone,message,status,provider_message_id,
-            reminder_cycle,reminder_due_date,reminder_group_id
+            reminder_cycle,reminder_due_date::text as reminder_due_date,reminder_group_id
        from public.sms_log where id=$1`,
     [logId],
   );
