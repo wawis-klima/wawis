@@ -6,8 +6,7 @@ import ConfirmActionModal from "./components/modals/ConfirmActionModal.jsx";
 
 import PreviewModal from "./components/modals/PreviewModal";
 import { createJobAccessors } from "./utils/jobAccessors.js";
-import { buildSmsTargets, countSmsDueToday, deriveSmsQueue } from "./modules/sms.js";
-import { loadSmsModuleData } from "./modules/sms-fetch.js";
+import { countSmsDueToday } from "./modules/sms.js";
 import { fetchAdminDevices } from "./modules/devices-fetch.js";
 import { loadDashboardMetrics } from "./modules/dashboard-metrics.js";
 import { normalizeStatus, STATUSES } from "./utils/jobPermissions.js";
@@ -122,7 +121,6 @@ export default function App() {
   const jobsRef = useRef([]);
   const profilesRef = useRef([]);
   const dashboardMetricsCacheRef = useRef({ value: null, expiresAt: 0, promise: null });
-  const dashboardAuxCacheRef = useRef({ value: null, expiresAt: 0, promise: null });
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("date_desc");
   const [desktopStatusFilter, setDesktopStatusFilter] = useState("Nowe");
@@ -134,6 +132,7 @@ export default function App() {
   const [globalSearchContractors, setGlobalSearchContractors] = useState([]);
   const [globalSearchDevices, setGlobalSearchDevices] = useState([]);
   const [globalSearchDevicesLoading, setGlobalSearchDevicesLoading] = useState(false);
+  const [globalSearchRequested, setGlobalSearchRequested] = useState(false);
   const [requestedContractorId, setRequestedContractorId] = useState(null);
   const [requestedDeviceId, setRequestedDeviceId] = useState(null);
   const [desktopNavKey, setDesktopNavKey] = useState("center360");
@@ -143,7 +142,6 @@ export default function App() {
   const [calendarReturnContext, setCalendarReturnContext] = useState(null);
   const [calendarFocusDateKey, setCalendarFocusDateKey] = useState("");
   const [dashboardMetrics, setDashboardMetrics] = useState(null);
-  const [dashboardSmsQueueCount, setDashboardSmsQueueCount] = useState(null);
   const [detailsLoadingJobId, setDetailsLoadingJobId] = useState(null);
 
   const isConfigured = isSupabaseConfigured;
@@ -637,27 +635,6 @@ export default function App() {
     }
   }, [isAdmin, supabase]);
 
-  const loadCachedDashboardAux = React.useCallback(async () => {
-    if (!isAdmin || !supabase) return null;
-    const cache = dashboardAuxCacheRef.current;
-    if (cache.expiresAt > Date.now()) return cache.value;
-    if (cache.promise) return cache.promise;
-
-    const request = Promise.all([
-      loadSmsModuleData({ supabase, isAdmin }),
-      fetchAdminDevices({ supabase, isAdmin, jobs: jobsRef.current, trySync: false }),
-    ]).then(([smsSnapshot, devicesResult]) => ({ smsSnapshot, devicesResult }));
-    cache.promise = request;
-    try {
-      const value = await request;
-      cache.value = value;
-      cache.expiresAt = Date.now() + DASHBOARD_CACHE_TTL_MS;
-      return value;
-    } finally {
-      if (cache.promise === request) cache.promise = null;
-    }
-  }, [isAdmin, supabase]);
-
   useEffect(() => {
     let cancelled = false;
 
@@ -684,34 +661,7 @@ export default function App() {
     };
   }, [activeModule, isAdmin, jobs, loadCachedDashboardMetrics]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function refreshDashboardSmsQueueCount() {
-      if (!isAdmin || !supabase || activeModule !== 'center360') {
-        if (!cancelled && !isAdmin) setDashboardSmsQueueCount(null);
-        return;
-      }
-
-      try {
-        const { smsSnapshot, devicesResult } = await loadCachedDashboardAux();
-        const targets = buildSmsTargets({ jobs, devices: devicesResult.devices || [] });
-        const queue = deriveSmsQueue(targets, smsSnapshot.logs || []);
-        if (!cancelled) setDashboardSmsQueueCount(queue.length);
-      } catch (error) {
-        console.warn('Nie udało się przeliczyć kolejki SMS dla Centrum 360.', error?.message || error);
-        if (!cancelled) setDashboardSmsQueueCount(null);
-      }
-    }
-
-    void refreshDashboardSmsQueueCount();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeModule, isAdmin, jobs, loadCachedDashboardAux]);
-
-  const smsDueTodayCount = dashboardSmsQueueCount ?? dashboardMetrics?.smsDueToday ?? fallbackSmsDueTodayCount;
+  const smsDueTodayCount = dashboardMetrics?.smsDueToday ?? fallbackSmsDueTodayCount;
 
 
 
@@ -837,7 +787,7 @@ export default function App() {
 
       // Katalog kontrahentów nie jest potrzebny w module SMS. Nie uruchamiamy
       // ciężkiego RPC tylko dlatego, że administrator zmienił zakładkę.
-      if (!showModal && !['jobs', 'contractors'].includes(activeModule)) return;
+      if (!showModal && !globalSearchRequested && !['jobs', 'contractors'].includes(activeModule)) return;
 
       try {
         const data = await loadContractors({ supabase, isAdmin: true });
@@ -851,7 +801,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, showModal, activeModule]);
+  }, [isAdmin, showModal, activeModule, globalSearchRequested]);
 
   useEffect(() => {
     let cancelled = false;
@@ -859,6 +809,10 @@ export default function App() {
     async function loadGlobalSearchDevices() {
       if (!isAdmin || !supabase) {
         setGlobalSearchDevices([]);
+        setGlobalSearchDevicesLoading(false);
+        return;
+      }
+      if (!globalSearchRequested) {
         setGlobalSearchDevicesLoading(false);
         return;
       }
@@ -884,7 +838,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, jobs, supabase]);
+  }, [globalSearchRequested, isAdmin, jobs, supabase]);
 
   const visibleJobs = useMemo(() => getVisibleJobs({
     jobs,
@@ -1033,6 +987,7 @@ export default function App() {
           devices: globalSearchDevices,
           profiles,
           devicesLoading: globalSearchDevicesLoading,
+          onSearchStart: () => setGlobalSearchRequested(true),
           onSelectResult: handleGlobalSearchResult,
         } : null}
         jobsPanel={activeModule === "jobs" || (!isAdmin && activeModule !== "fuel") ? (
