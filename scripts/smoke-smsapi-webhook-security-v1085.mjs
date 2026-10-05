@@ -130,7 +130,8 @@ assert.match(delivery, /record_service_sms_acceptance/);
 assert.match(delivery, /mark_service_sms_claim_uncertain/);
 assert.doesNotMatch(delivery, /confirm_service_sms/);
 assert.match(sender, /check_idx:\s*"1"/);
-assert.match(sender, /idx:\s*toSmsApiIdx/);
+assert.match(sender, /const idx = toSmsApiIdx\(prepared\.claimId\)/);
+assert.match(sender, /idx,/);
 assert.match(webhook, /apply_sms_delivery_atomic_v2/);
 assert.match(webhook, /p_claim_id:\s*entry\.claimId/);
 
