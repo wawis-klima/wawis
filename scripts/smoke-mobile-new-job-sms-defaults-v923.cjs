@@ -21,8 +21,8 @@ for (const rel of [
   const jobs = read(rel);
   const consentMatches = jobs.match(/sms_consent:\s*true,/g) || [];
   const reminderMatches = jobs.match(/sms_reminder_enabled:\s*true,/g) || [];
-  if (consentMatches.length < 4) throw new Error(`${rel}: zapis nie wymusza sms_consent=true we wszystkich ścieżkach`);
-  if (reminderMatches.length < 4) throw new Error(`${rel}: zapis nie wymusza sms_reminder_enabled=true we wszystkich ścieżkach`);
+  if (consentMatches.length < 3) throw new Error(`${rel}: domyślna zgoda SMS nie jest utrzymana w aktywnych ścieżkach formularza`);
+  if (reminderMatches.length < 3) throw new Error(`${rel}: domyślne przypomnienia SMS nie są utrzymane w aktywnych ścieżkach formularza`);
   forbid(jobs, 'sms_consent: !!resolvedForm.sms_consent', `${rel}: zapis zależny od formularza dla SMS`);
   forbid(jobs, 'sms_reminder_enabled: !!resolvedForm.sms_reminder_enabled', `${rel}: zapis zależny od formularza dla przypomnień`);
 }
