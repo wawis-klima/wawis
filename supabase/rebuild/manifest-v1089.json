@@ -73,6 +73,7 @@
     "supabase/migrations/20261005123000_sms_dashboard_queue_count_v1245.sql",
     "supabase/migrations/20261005133000_sms_callback_auth_rotation_v1246.sql",
     "supabase/migrations/20261005134000_sms_group_device_history_v1247.sql",
-    "supabase/migrations/20261005135000_sms_fixed_clock_and_legacy_indexes_v1248.sql"
+    "supabase/migrations/20261005135000_sms_fixed_clock_and_legacy_indexes_v1248.sql",
+    "supabase/migrations/20261005135500_sms_history_restore_integrity_v1249.sql"
   ]
 }
