@@ -13,3 +13,6 @@ verify_jwt = true
 [functions.send-fuel-entry-push]
 verify_jwt = false
 
+
+[functions.smsapi-delivery-webhook]
+verify_jwt = false

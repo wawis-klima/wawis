@@ -28,6 +28,8 @@ assert.equal(normalizeSmsApiStatus('403', 'SENT'), 'provider_sent');
 assert.equal(normalizeSmsApiStatus('405', 'UNDELIVERED'), 'error');
 assert.equal(normalizeSmsApiStatus('406', 'FAILED'), 'error');
 assert.equal(normalizeSmsApiStatus('410', 'ACCEPTED'), 'provider_sent');
+assert.equal(normalizeSmsApiStatus('408', 'UNKNOWN'), 'provider_sent');
+assert.equal(normalizeSmsApiStatus('999', 'FUTURE_STATUS'), null, 'Nieznany callback nie może automatycznie oznaczać SMS jako wysłany.');
 
 assert.equal(shouldAdvanceSmsStatus('provider_sent', 'delivered'), true);
 assert.equal(shouldAdvanceSmsStatus('provider_sent', 'error'), true);
@@ -77,12 +79,18 @@ assert.match(webhook, /constantTimeEqual/);
 assert.match(webhook, /planSmsCallbackUpdates/);
 assert.match(webhook, /new Response\('OK'/);
 const callbackCode=webhook.slice(webhook.indexOf('async function applyDeliveryStatus('),webhook.indexOf('function firstValue('));
-const context={normalizeSmsApiStatus,JSON};vm.createContext(context);
+const context={normalizeSmsApiStatus,JSON,console};vm.createContext(context);
 vm.runInContext(stripTypeScriptTypes(callbackCode.replace('ReturnType<typeof createClient>','any'))+';globalThis.apply=applyDeliveryStatus;',context);
 const failed=await context.apply({rpc:async()=>({data:null,error:{message:'transaction failed'}})},{providerMessageId:'fixture',claimId:'a1c1fa53-4dd4-4ec5-8f6a-f67abd857e4b',status:'DELIVERED',raw:{}});
 assert.equal(failed.ok,false);assert.equal(failed.status,500);assert.equal(failed.error,'transaction failed');
 const missing=await context.apply({rpc:async()=>({data:null,error:null})},{providerMessageId:'fixture',claimId:'a1c1fa53-4dd4-4ec5-8f6a-f67abd857e4b',status:'DELIVERED',raw:{}});
 assert.equal(missing.ok,false);assert.equal(missing.status,500);
+let unknownRpcCalls=0;
+const unknown=await context.apply({rpc:async()=>{unknownRpcCalls+=1;return {data:{ok:true},error:null};}},{providerMessageId:'fixture-unknown',claimId:null,status:'999',statusName:'FUTURE_STATUS',raw:{}});
+assert.equal(unknown.ok,true);assert.equal(unknown.ignored,true);assert.equal(unknownRpcCalls,0,'Nieznany callback nie może dotykać stanu w bazie.');
+
+const config=fs.readFileSync('supabase/config.toml','utf8');
+assert.match(config,/\[functions\.smsapi-delivery-webhook\][\s\S]*?verify_jwt\s*=\s*false/);
 
 const sender = fs.readFileSync('supabase/functions/send-service-sms/index.ts', 'utf8').replace(/\r\n/g, '\n');
 assert.match(sender, /notify_url: notifyUrl/);

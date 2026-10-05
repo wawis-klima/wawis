@@ -15,7 +15,7 @@ for (const key of ['jobs_today', 'jobs_current_week', 'sms_due_today', 'devices_
   assert(migrationSource.includes(key), `RPC nie zwraca ${key}`);
 }
 assert(appSource.includes('loadDashboardMetrics'), 'App.jsx nie pobiera centralnych liczników');
-assert(appSource.includes('dashboardSmsQueueCount ?? dashboardMetrics?.smsDueToday'), 'App.jsx nie ma bezpiecznego fallbacku licznika SMS');
+assert(appSource.includes('dashboardMetrics?.smsDueToday ?? fallbackSmsDueTodayCount'), 'App.jsx nie ma lekkiego fallbacku licznika SMS');
 assert(dashboardSource.includes('metrics = null'), 'Centrum360Panel nie przyjmuje metrics');
 assert(dashboardSource.includes('dashboardCounts'), 'Centrum360Panel nie używa dashboardCounts');
 assert(metricsSource.includes("supabase.rpc('admin_get_dashboard_metrics')"), 'dashboard-metrics.js nie wywołuje RPC');

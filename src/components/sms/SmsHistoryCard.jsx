@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatSmsDate, getSmsStatusLabel } from '../../modules/sms.js';
+import { expandSmsHistoryRows, formatSmsDate, getSmsStatusLabel } from '../../modules/sms.js';
 
 function formatSmsHistoryError(value) {
   const text = String(value || '').trim();
@@ -23,6 +23,8 @@ function formatSmsHistoryError(value) {
 }
 
 export default function SmsHistoryCard({ logs }) {
+  const historyRows = expandSmsHistoryRows(logs);
+
   return (
     <div className="smsCard smsHistoryCard">
       <div className="smsCardHeader">
@@ -42,7 +44,7 @@ export default function SmsHistoryCard({ logs }) {
       </div>
 
       <div className="smsHistoryList">
-        {logs.map((log) => {
+        {historyRows.map((log) => {
           const when = log.delivered_at || log.sent_at || log.approved_at || log.created_at;
           const normalizedStatus = String(log.status || '').toLowerCase();
           const statusLabel = getSmsStatusLabel(log.status);
@@ -72,7 +74,7 @@ export default function SmsHistoryCard({ logs }) {
             </div>
           );
         })}
-        {logs.length === 0 ? <div className="muted">Brak zapisanej historii SMS.</div> : null}
+        {historyRows.length === 0 ? <div className="muted">Brak zapisanej historii SMS.</div> : null}
       </div>
     </div>
   );

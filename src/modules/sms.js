@@ -283,6 +283,16 @@ function getSmsLogEventTime(log = {}) {
   return new Date(log.delivered_at || log.sent_at || log.approved_at || log.created_at || 0).getTime() || 0;
 }
 
+function getSmsSendEventTime(log = {}) {
+  return new Date(log.sent_at || log.approved_at || log.created_at || 0).getTime() || 0;
+}
+
+function getSmsSendMonthKey(log = {}) {
+  const timestamp = getSmsSendEventTime(log);
+  if (!timestamp) return '';
+  return getWarsawIsoDate(new Date(timestamp)).slice(0, 7);
+}
+
 function getSmsLogStatusPriority(status) {
   switch (normalizeLogStatus(status)) {
     case 'delivered': return 1;
@@ -440,6 +450,30 @@ export function groupSmsLogsByCustomerWindow(logs = []) {
   }
 
   return grouped.sort((a, b) => getSmsLogEventTime(b) - getSmsLogEventTime(a));
+}
+
+export function expandSmsHistoryRows(logs = []) {
+  const seen = new Set();
+  const rows = [];
+
+  for (const grouped of logs || []) {
+    const attempts = Array.isArray(grouped?.grouped_logs) && grouped.grouped_logs.length
+      ? grouped.grouped_logs
+      : [grouped];
+
+    for (const attempt of attempts) {
+      const id = String(attempt?.id || '').trim();
+      const fallbackKey = [attempt?.provider_message_id, attempt?.created_at, attempt?.phone, attempt?.status]
+        .map((value) => String(value || ''))
+        .join('|');
+      const key = id || fallbackKey;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      rows.push(attempt);
+    }
+  }
+
+  return rows.sort((left, right) => getSmsLogEventTime(right) - getSmsLogEventTime(left));
 }
 
 function mergeUniqueById(items = []) {
@@ -765,20 +799,33 @@ export function deriveSmsQueue(records = [], logs = []) {
     .sort((a, b) => String(a.service_due_date || '').localeCompare(String(b.service_due_date || '')) || String(a.client || '').localeCompare(String(b.client || ''), 'pl-PL'));
 }
 export function getSentThisMonthLogs(logs = []) {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const currentMonthKey = getWarsawIsoDate(new Date()).slice(0, 7);
   const sentLogs = (logs || []).filter((item) => ['provider_sent', 'sent', 'delivered'].includes(normalizeLogStatus(item.status)));
 
   return groupSmsLogsByCustomerWindow(sentLogs)
-    .filter((item) => {
-      const when = item.delivered_at || item.sent_at || item.approved_at || item.created_at;
-      if (!when) return false;
-      const date = new Date(when);
-      if (Number.isNaN(date.getTime())) return false;
-      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    .map((grouped) => {
+      const attempts = Array.isArray(grouped?.grouped_logs) && grouped.grouped_logs.length
+        ? grouped.grouped_logs
+        : [grouped];
+      const monthAttempts = attempts
+        .filter((attempt) => (
+          ['provider_sent', 'sent', 'delivered'].includes(normalizeLogStatus(attempt.status))
+          && getSmsSendMonthKey(attempt) === currentMonthKey
+        ))
+        .sort((left, right) => getSmsSendEventTime(right) - getSmsSendEventTime(left));
+      const latestMonthAttempt = monthAttempts[0];
+      if (!latestMonthAttempt) return null;
+
+      return {
+        ...grouped,
+        ...latestMonthAttempt,
+        grouped_logs: attempts,
+        grouped_log_ids: attempts.map((attempt) => attempt?.id).filter(Boolean),
+        grouped_log_count: attempts.length,
+      };
     })
-    .sort((a, b) => getSmsLogEventTime(b) - getSmsLogEventTime(a));
+    .filter(Boolean)
+    .sort((a, b) => getSmsSendEventTime(b) - getSmsSendEventTime(a));
 }
 
 export function getSmsSummary(records = [], queue = [], logs = []) {
