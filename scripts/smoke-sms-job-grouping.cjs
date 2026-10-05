@@ -131,7 +131,7 @@ function addMonths(date, months) {
   assert.deepEqual(customerPendingQueue[0].grouped_queue_log_ids.sort(), ['log-job-1', 'log-job-2']);
 
   const durableGroupId = '33333333-3333-4333-8333-333333333333';
-  const pendingPrimaryWithOldDeletedSecondary = smsModule.deriveSmsQueue(secondJobTargets, [
+  const pendingPrimaryWithOldDeletedSecondary = smsModule.deriveSmsQueue([secondJobTargets[0]], [
     {
       id: 'pending-primary', job_id: 'job-1', phone: '48500600700', status: 'pending_approval',
       reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date,
