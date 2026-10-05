@@ -452,6 +452,30 @@ export function groupSmsLogsByCustomerWindow(logs = []) {
   return grouped.sort((a, b) => getSmsLogEventTime(b) - getSmsLogEventTime(a));
 }
 
+export function expandSmsHistoryRows(logs = []) {
+  const seen = new Set();
+  const rows = [];
+
+  for (const grouped of logs || []) {
+    const attempts = Array.isArray(grouped?.grouped_logs) && grouped.grouped_logs.length
+      ? grouped.grouped_logs
+      : [grouped];
+
+    for (const attempt of attempts) {
+      const id = String(attempt?.id || '').trim();
+      const fallbackKey = [attempt?.provider_message_id, attempt?.created_at, attempt?.phone, attempt?.status]
+        .map((value) => String(value || ''))
+        .join('|');
+      const key = id || fallbackKey;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      rows.push(attempt);
+    }
+  }
+
+  return rows.sort((left, right) => getSmsLogEventTime(right) - getSmsLogEventTime(left));
+}
+
 function mergeUniqueById(items = []) {
   const seen = new Set();
   const result = [];
