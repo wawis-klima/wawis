@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatSmsDate, getSmsStatusLabel } from '../../modules/sms.js';
+import { expandSmsHistoryRows, formatSmsDate, getSmsStatusLabel } from '../../modules/sms.js';
 
 function formatSmsHistoryError(value) {
   const text = String(value || '').trim();
@@ -20,34 +20,6 @@ function formatSmsHistoryError(value) {
   }
 
   return text;
-}
-
-function getHistoryEventTime(log = {}) {
-  const value = log.delivered_at || log.sent_at || log.approved_at || log.created_at || '';
-  const parsed = value ? Date.parse(String(value)) : Number.NaN;
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function expandSmsHistoryRows(logs = []) {
-  const seen = new Set();
-  const rows = [];
-
-  for (const grouped of logs || []) {
-    const attempts = Array.isArray(grouped?.grouped_logs) && grouped.grouped_logs.length
-      ? grouped.grouped_logs
-      : [grouped];
-
-    for (const attempt of attempts) {
-      const id = String(attempt?.id || '').trim();
-      const fallbackKey = [attempt?.provider_message_id, attempt?.created_at, attempt?.phone, attempt?.status].map((value) => String(value || '')).join('|');
-      const key = id || fallbackKey;
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      rows.push(attempt);
-    }
-  }
-
-  return rows.sort((left, right) => getHistoryEventTime(right) - getHistoryEventTime(left));
 }
 
 export default function SmsHistoryCard({ logs }) {
