@@ -199,6 +199,7 @@ const GROUPS = {
     'node scripts/smoke-sms-stable-customer-group-v1253.mjs',
     'node scripts/smoke-sms-package1-v1254.mjs',
     'node scripts/smoke-sms-package2-v1255.mjs',
+    'node scripts/smoke-sms-package3-v1256.mjs',
     'npm run test:smoke:mobile-new-job-sms-defaults',
     'npm run test:smoke:sms-street',
     'node scripts/smoke-sms-cancel-retry-p1-v1243.mjs',
