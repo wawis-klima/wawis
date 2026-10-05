@@ -198,6 +198,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
         deviceId: log.device_id,
         cycle: log.reminder_cycle || 1,
         prepare: (prepared) => {
+          const idx = toSmsApiIdx(prepared.claimId);
           const currentMessage = buildMessage({
             client: prepared.client,
             installation_date: prepared.installationDate,
@@ -214,7 +215,7 @@ async function handleApprovalSend({ adminClient, callerId, settings, sender, tok
               to: prepared.recipientPhone,
               message: currentMessage,
               from: sender,
-              idx: toSmsApiIdx(prepared.claimId),
+              idx,
             }),
           };
         },
@@ -255,6 +256,7 @@ async function handleRetryNotSentSend({ adminClient, callerId, settings, sender,
         retryLogId: logId,
         cycle: 1,
         prepare: (prepared) => {
+          const idx = toSmsApiIdx(prepared.claimId);
           const message = buildMessage({
             client: prepared.client,
             installation_date: prepared.installationDate,
@@ -271,7 +273,7 @@ async function handleRetryNotSentSend({ adminClient, callerId, settings, sender,
               to: prepared.recipientPhone,
               message,
               from: sender,
-              idx: toSmsApiIdx(prepared.claimId),
+              idx,
             }),
           };
         },
@@ -366,6 +368,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
       jobId,
       cycle: effectiveCycle,
       prepare: (prepared) => {
+        const idx = toSmsApiIdx(prepared.claimId);
         const message = buildMessage({
           client: prepared.client,
           installation_date: prepared.installationDate,
@@ -382,7 +385,7 @@ async function handleManualJobSend({ adminClient, callerId, settings, sender, to
             to: prepared.recipientPhone,
             message,
             from: sender,
-            idx: toSmsApiIdx(prepared.claimId),
+            idx,
           }),
         };
       },
@@ -414,6 +417,7 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
       deviceId,
       cycle: effectiveCycle,
       prepare: (prepared) => {
+        const idx = toSmsApiIdx(prepared.claimId);
         const message = buildMessage({
           client: prepared.client,
           installation_date: prepared.installationDate,
@@ -430,7 +434,7 @@ async function handleManualDeviceSend({ adminClient, callerId, settings, sender,
             to: prepared.recipientPhone,
             message,
             from: sender,
-            idx: toSmsApiIdx(prepared.claimId),
+            idx,
           }),
         };
       },
