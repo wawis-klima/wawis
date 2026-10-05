@@ -96,7 +96,8 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
     const panel = read(panelPath);
     assert.match(panel, /sentMonthSourceLogs/);
     assert.match(panel, /getSentThisMonthLogs\(sentMonthSourceLogs\)/);
-    assert.match(panel, /groupSmsLogsByCustomerWindow\(historyLogs\)/);
+    assert.match(panel, /loadSmsHistoryPage/);
+    assert.match(panel, /<SmsHistoryCard[\s\S]*logs=\{historyLogs\}/);
     assert.match(panel, /sentThisMonth:\s*sentThisMonthLogs\.length/);
   }
 
