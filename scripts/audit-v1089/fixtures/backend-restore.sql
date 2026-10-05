@@ -42,7 +42,31 @@ do $$declare aid uuid; original jsonb; begin
  end;
  if exists(select 1 from jobs where id='00000000-0000-4000-8000-000000000003') then raise exception 'failed restore left partial job';end if;
  if exists(select 1 from private.job_recycle_bin where archive_id=aid and restored_at is not null) then raise exception 'failed restore consumed archive';end if;
- update private.job_recycle_bin set snapshot=original where archive_id=aid;
+ update private.job_recycle_bin
+ set snapshot=jsonb_set(
+   original,
+   '{sms_log}',
+   coalesce(original->'sms_log','[]'::jsonb)
+   || jsonb_build_array(jsonb_build_object(
+     'id','00000000-0000-4000-8000-000000000099',
+     'job_id','00000000-0000-4000-8000-000000000003',
+     'client','Legacy archive',
+     'phone','000',
+     'message','legacy row without reminder_group_primary',
+     'sms_type','service_reminder',
+     'provider','smsapi',
+     'status','not_sent',
+     'created_at','2025-01-03T03:04:05Z'
+   ))
+ )
+ where archive_id=aid;
  perform public.admin_restore_deleted_job(aid);
-end$$;
+ if not exists(
+   select 1 from sms_log
+   where id='00000000-0000-4000-8000-000000000099'
+     and reminder_group_primary is false
+ ) then
+   raise exception 'legacy SMS archive row without reminder_group_primary was not normalized';
+ end if;
+end$;
 rollback;
