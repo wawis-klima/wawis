@@ -27,6 +27,18 @@ export async function cleanupSmsDuplicateLogs() {
   };
 }
 
+export async function loadSmsSettingsOnly({ supabase, isAdmin }) {
+  if (!supabase || !isAdmin) return getDefaultSmsSettings();
+
+  const { data, error } = await supabase.rpc('admin_get_sms_settings');
+  if (!error) return { ...getDefaultSmsSettings(), ...(data || {}) };
+
+  // Rolling-deploy compatibility until v12.56 reaches the backend.
+  if (!['PGRST202', '42883'].includes(String(error.code || ''))) throw error;
+  const fallback = await loadSmsModuleData({ supabase, isAdmin });
+  return fallback.settings || getDefaultSmsSettings();
+}
+
 export async function loadSmsModuleData({ supabase, isAdmin }) {
   if (!supabase || !isAdmin) {
     return { settings: getDefaultSmsSettings(), logs: [], sentThisMonthLogs: [], unsentLogs: [], historyLogs: [] };
