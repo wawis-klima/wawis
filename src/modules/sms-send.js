@@ -131,10 +131,36 @@ export async function deleteServiceSmsQueueItems({ supabase, rows }) {
     throw new Error('Nie wybrano SMS-ów do usunięcia.');
   }
 
-  return invokeWithFreshSession(supabase, 'send-service-sms', {
-    mode: 'delete',
-    rows,
-  });
+  const chunks = [];
+  for (let index = 0; index < rows.length; index += 25) {
+    chunks.push(rows.slice(index, index + 25));
+  }
+
+  let deletedCount = 0;
+  const failures = [];
+
+  for (const chunk of chunks) {
+    try {
+      const result = await invokeWithFreshSession(supabase, 'send-service-sms', {
+        mode: 'delete',
+        rows: chunk,
+      });
+      deletedCount += Number(result?.deletedCount) || 0;
+      if (Array.isArray(result?.failures)) failures.push(...result.failures);
+    } catch (error) {
+      failures.push({
+        id: '',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return {
+    ok: failures.length === 0,
+    partial: deletedCount > 0 && failures.length > 0,
+    deletedCount,
+    failures,
+  };
 }
 
 

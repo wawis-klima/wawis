@@ -104,7 +104,7 @@ export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages,
       </div>
 
       <div className="smsDesktopTableFooter">
-        <div>{autoRefreshBusy ? 'Odświeżanie listy…' : `1–${Math.min(totalRows, currentPage * 10)} z ${totalRows}`}</div>
+        <div>{autoRefreshBusy ? 'Odświeżanie listy…' : `${totalRows > 0 ? (currentPage - 1) * 10 + 1 : 0}–${Math.min(totalRows, currentPage * 10)} z ${totalRows}`}</div>
         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
       </div>
     </section>

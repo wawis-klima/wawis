@@ -7,7 +7,7 @@ import SmsUnsentCard from './SmsUnsentCard.jsx';
 import SmsClientDetailsCard from './SmsClientDetailsCard.jsx';
 import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
 import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary } from '../../modules/sms.js';
-import { loadSmsHistoryPage, loadSmsModuleData, saveSmsSettings } from '../../modules/sms-fetch.js';
+import { loadSmsHistoryPage, loadSmsModuleData, loadSmsSettingsOnly, saveSmsSettings } from '../../modules/sms-fetch.js';
 import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms, sendTestSms } from '../../modules/sms-send.js';
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
@@ -154,6 +154,27 @@ function getRowsForDeletePayload(row = {}) {
   return groupedRows.length ? groupedRows : [row];
 }
 
+function getDeleteLogIds(row = {}) {
+  return [...new Set([
+    row.retryLogId,
+    row.id,
+    row.queueLog?.id,
+    row.latestLog?.id,
+    ...(Array.isArray(row.queueLogs) ? row.queueLogs.map((item) => item?.id) : []),
+    ...(Array.isArray(row.grouped_queue_log_ids) ? row.grouped_queue_log_ids : []),
+    ...(Array.isArray(row.grouped_log_ids) ? row.grouped_log_ids : []),
+  ].map((value) => normalizeText(value)).filter(Boolean))];
+}
+
+function getReminderGroupId(row = {}) {
+  return normalizeText(
+    row.reminder_group_id
+    || row.queueLog?.reminder_group_id
+    || row.latestLog?.reminder_group_id
+    || row.linkedTarget?.reminder_group_id
+  ) || null;
+}
+
 function SmsTestCard({ phone, setPhone, busy, onSend }) {
   return (
     <section className="smsDesktopFiltersCard">
@@ -209,6 +230,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [selectedUnsentIds, setSelectedUnsentIds] = useState([]);
   const [infoMessage, setInfoMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [deviceCatalogWarning, setDeviceCatalogWarning] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [activeSummaryView, setActiveSummaryView] = useState('queue');
@@ -233,6 +255,18 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const smsSendLockRef = useRef(false);
   const lastAutoRefreshRef = useRef(0);
 
+  async function refreshDeviceCatalog() {
+    try {
+      const devicesResult = await fetchAdminDevices({ supabase, isAdmin, jobs, trySync: false });
+      if (Array.isArray(devicesResult?.devices)) setDevices(devicesResult.devices);
+      setDeviceCatalogWarning(normalizeText(devicesResult?.staleReason));
+    } catch (error) {
+      const message = normalizeDatabaseErrorMessage(error, 'Nie udało się odświeżyć pełnej bazy urządzeń dla modułu SMS.');
+      setDeviceCatalogWarning(message);
+      console.warn('Nie udało się odświeżyć pełnej bazy urządzeń dla modułu SMS.', message);
+    }
+  }
+
   async function reloadSmsData({ silent = false } = {}) {
     if (!silent) {
       setLoading(true);
@@ -251,17 +285,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
         setHistoryTotal(0);
       }
 
-      // Pełna baza urządzeń jest dociągana dopiero po snapshotcie SMS.
-      // Dzięki temu wejście do modułu nie uderza w bazę kilkoma ciężkimi RPC naraz.
-      if (!silent) {
-        void fetchAdminDevices({ supabase, isAdmin, jobs, trySync: false })
-          .then((devicesResult) => {
-            if (Array.isArray(devicesResult?.devices)) setDevices(devicesResult.devices);
-          })
-          .catch((error) => {
-            console.warn('Nie udało się dociągnąć pełnej bazy urządzeń dla modułu SMS.', normalizeDatabaseErrorMessage(error));
-          });
-      }
+      // Katalog urządzeń jest odświeżany także po cichych reloadach, żeby
+      // generator, retry i usuwanie nie pracowały na starej liście urządzeń.
+      const deviceRefresh = refreshDeviceCatalog();
+      if (silent) await deviceRefresh;
+      else void deviceRefresh;
     } catch (error) {
       setErrorMessage(normalizeDatabaseErrorMessage(error, 'Nie udało się załadować modułu SMS.'));
     } finally {
@@ -269,12 +297,29 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     }
   }
 
-  useEffect(() => {
-    void reloadSmsData();
-  }, [supabase, isAdmin]);
+  async function reloadSettingsOnly() {
+    setLoading(true);
+    setErrorMessage('');
+    try {
+      const nextSettings = await loadSmsSettingsOnly({ supabase, isAdmin });
+      setSettings(nextSettings || getDefaultSmsSettings());
+    } catch (error) {
+      setErrorMessage(normalizeDatabaseErrorMessage(error, 'Nie udało się załadować ustawień SMS.'));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    if (!isAdmin || !supabase) return undefined;
+    if (isSettingsOnlyView) {
+      void reloadSettingsOnly();
+      return;
+    }
+    void reloadSmsData();
+  }, [supabase, isAdmin, isSettingsOnlyView]);
+
+  useEffect(() => {
+    if (!isAdmin || !supabase || isSettingsOnlyView) return undefined;
 
     // Wejście do modułu ma tylko odczytać snapshot. Generator kolejki nie może
     // startować równolegle z pierwszym odczytem i dublować ciężkich zapytań.
@@ -299,7 +344,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       window.removeEventListener('focus', handleVisibilityOrFocus);
       document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
     };
-  }, [isAdmin, supabase]);
+  }, [isAdmin, supabase, isSettingsOnlyView]);
 
   useEffect(() => {
     setSelectedIds((prev) => prev.filter((id) => queue.some((job) => job.selectionKey === id)));
@@ -510,16 +555,50 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   function buildDeletePayload(rows) {
-    return rows.flatMap((row) => getRowsForDeletePayload(row).map((targetRow) => ({
-      logId: targetRow.queueLog?.id || targetRow.latestLog?.id || row.queueLog?.id || row.latestLog?.id || null,
-      deviceId: targetRow.target_type === 'device' ? targetRow.id : (targetRow.device_id || null),
-      jobId: targetRow.target_type === 'job' ? targetRow.id : (targetRow.source_job_id || targetRow.job_id || targetRow.queueLog?.job_id || null),
-      client: targetRow.client || targetRow.title || row.client || row.title || null,
-      phone: targetRow.sms_recipient_phone || targetRow.phone || row.sms_recipient_phone || row.phone || null,
-      message: buildReminderMessage(targetRow, settings),
-      reminderCycle: targetRow.reminder_cycle || row.reminder_cycle || null,
-      reminderDueDate: targetRow.reminder_due_date || targetRow.service_due_date || row.reminder_due_date || row.service_due_date || null,
-    })));
+    const seen = new Set();
+    return rows.flatMap((row) => getRowsForDeletePayload(row).flatMap((targetRow) => {
+      const reminderGroupId = getReminderGroupId(targetRow) || getReminderGroupId(row);
+      const logIds = getDeleteLogIds({ ...row, ...targetRow });
+      const base = {
+        reminderGroupId,
+        deviceId: targetRow.target_type === 'device' ? targetRow.id : (targetRow.device_id || row.device_id || null),
+        jobId: targetRow.target_type === 'job' ? targetRow.id : (targetRow.source_job_id || targetRow.job_id || targetRow.queueLog?.job_id || row.job_id || null),
+        client: targetRow.client || targetRow.title || row.client || row.title || null,
+        phone: targetRow.sms_recipient_phone || targetRow.phone || row.sms_recipient_phone || row.phone || null,
+        message: buildReminderMessage(targetRow, settings),
+        reminderCycle: targetRow.reminder_cycle || row.reminder_cycle || null,
+        reminderDueDate: targetRow.reminder_due_date || targetRow.service_due_date || row.reminder_due_date || row.service_due_date || null,
+      };
+
+      if (reminderGroupId) {
+        const key = `group:${reminderGroupId}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        return [{ ...base, logId: logIds[0] || null }];
+      }
+
+      return logIds
+        .filter((logId) => {
+          const key = `log:${logId}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .map((logId) => ({ ...base, logId }));
+    }));
+  }
+
+  function reportDeleteResult(result, noun = 'pozycji') {
+    const deletedCount = Math.max(0, Number(result?.deletedCount) || 0);
+    const failures = Array.isArray(result?.failures) ? result.failures : [];
+    if (deletedCount > 0) {
+      setInfoMessage(`Usunięto ${deletedCount} ${noun} z listy SMS.`);
+    }
+    if (failures.length > 0) {
+      const details = failures.slice(0, 3).map((item) => normalizeText(item?.error)).filter(Boolean).join(' | ');
+      setErrorMessage(`Nie udało się usunąć ${failures.length} pozycji.${details ? ` ${details}` : ''}`);
+    }
+    return { deletedCount, failures };
   }
 
   async function handleDeleteSelected() {
@@ -533,12 +612,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setErrorMessage('');
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildDeletePayload(selectedRows) });
-      const deletedCount = result.deletedCount || selectedRows.length;
-      setInfoMessage(`Usunięto ${deletedCount} pozycji z kolejki SMS.`);
+      reportDeleteResult(result, 'pozycji');
       setSelectedIds([]);
       setShowHistory(true);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -552,11 +631,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setInfoMessage('');
     setErrorMessage('');
     try {
-      await deleteServiceSmsQueueItems({ supabase, rows: buildDeletePayload([job]) });
-      setInfoMessage(`Pozycja ${job.client || job.title} została usunięta z kolejki SMS.`);
+      const result = await deleteServiceSmsQueueItems({ supabase, rows: buildDeletePayload([job]) });
+      reportDeleteResult(result, 'pozycji');
       setShowHistory(true);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -637,15 +717,36 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   function toggleUnsentAll(checked, rows = []) {
-    setSelectedUnsentIds(checked ? rows.filter((row) => row.canDelete).map((row) => row.selectionKey).filter(Boolean) : []);
+    const pageKeys = rows.filter((row) => row.canDelete).map((row) => row.selectionKey).filter(Boolean);
+    setSelectedUnsentIds((prev) => {
+      if (checked) return [...new Set([...prev, ...pageKeys])];
+      const pageSet = new Set(pageKeys);
+      return prev.filter((id) => !pageSet.has(id));
+    });
   }
 
   function buildUnsentDeletePayload(rows = []) {
     const seen = new Set();
-    return rows
-      .map((row) => String(row.retryLogId || row.id || '').trim())
-      .filter((logId) => logId && !seen.has(logId) && seen.add(logId))
-      .map((logId) => ({ logId }));
+    return rows.flatMap((row) => {
+      const reminderGroupId = getReminderGroupId(row);
+      const logIds = getDeleteLogIds(row);
+
+      if (reminderGroupId) {
+        const key = `group:${reminderGroupId}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        return [{ logId: logIds[0] || null, reminderGroupId }];
+      }
+
+      return logIds
+        .filter((logId) => {
+          const key = `log:${logId}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .map((logId) => ({ logId }));
+    });
   }
 
   async function handleDeleteUnsentSelected() {
@@ -659,10 +760,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setErrorMessage('');
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload(selectedRows) });
-      setInfoMessage(`Usunięto ${result.deletedCount || selectedRows.length} niewysłanych pozycji z listy SMS.`);
+      reportDeleteResult(result, 'niewysłanych pozycji');
       setSelectedUnsentIds([]);
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -676,11 +778,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setInfoMessage('');
     setErrorMessage('');
     try {
-      await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload([row]) });
-      setInfoMessage(`Pozycja ${row.client || 'Klient'} została usunięta z listy niewysłanych SMS.`);
+      const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload([row]) });
+      reportDeleteResult(result, 'niewysłanych pozycji');
       setSelectedUnsentIds((prev) => prev.filter((id) => id !== row.selectionKey));
       await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
     } catch (error) {
+      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -693,7 +796,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }
 
   function toggleAll(checked, rows = queue) {
-    setSelectedIds(checked ? rows.filter((job) => job.canSelect).map((job) => job.selectionKey).filter(Boolean) : []);
+    const pageKeys = rows.filter((job) => job.canSelect).map((job) => job.selectionKey).filter(Boolean);
+    setSelectedIds((prev) => {
+      if (checked) return [...new Set([...prev, ...pageKeys])];
+      const pageSet = new Set(pageKeys);
+      return prev.filter((id) => !pageSet.has(id));
+    });
   }
 
   const targetByIdentity = useMemo(() => {
@@ -736,6 +844,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     };
   }), [unsentLogs, queue, targetByIdentity]);
 
+  useEffect(() => {
+    setSelectedUnsentIds((prev) => prev.filter((id) => (
+      unsentRows.some((row) => row.selectionKey === id)
+    )));
+  }, [unsentRows]);
+
   const queueRows = useMemo(() => queue.map((row) => {
     const presentation = getQueueStatusPresentation(row);
     return {
@@ -760,7 +874,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const sentRows = useMemo(() => sentThisMonthLogs.map((log) => {
     const identity = log.device_id ? `device:${log.device_id}` : (log.job_id ? `job:${log.job_id}` : '');
     const target = targetByIdentity.get(identity) || null;
-    const when = log.delivered_at || log.sent_at || log.approved_at || log.created_at || '';
+    const when = log.sent_at || log.approved_at || log.created_at || '';
+    const deliveredWhen = log.delivered_at || '';
     const presentation = getSentStatusPresentation(log.status);
     return {
       ...log,
@@ -774,6 +889,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       phone: normalizeText(log.phone || target?.sms_recipient_phone || target?.phone) || '—',
       sent_at: when ? new Date(when).toISOString().slice(0, 10) : '',
       formattedSentAt: formatSmsDate(when),
+      delivered_at: deliveredWhen ? new Date(deliveredWhen).toISOString().slice(0, 10) : '',
+      formattedDeliveredAt: formatSmsDate(deliveredWhen),
       relativeDateLabel: when ? 'Bieżący miesiąc' : '',
       statusLabel: presentation.label,
       statusTone: presentation.tone,
@@ -837,7 +954,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   useEffect(() => {
     setSelectedIds([]);
     setSelectedUnsentIds([]);
-  }, [activeSummaryView, currentPage, searchQuery, cityFilter]);
+  }, [activeSummaryView, searchQuery, cityFilter]);
 
   function clearFilters() {
     setSearchQuery('');
@@ -898,6 +1015,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
         {infoMessage ? <div className="successBox">{infoMessage}</div> : null}
         {errorMessage ? <div className="errorBox">{errorMessage}</div> : null}
+        {deviceCatalogWarning && !isSettingsOnlyView ? <div className="errorBox">{deviceCatalogWarning}</div> : null}
         {loading ? <div className="card">Ładowanie modułu SMS...</div> : null}
 
         {!loading ? (
@@ -970,6 +1088,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
         {infoMessage ? <div className="successBox">{infoMessage}</div> : null}
         {errorMessage ? <div className="errorBox">{errorMessage}</div> : null}
+        {deviceCatalogWarning && !isSettingsOnlyView ? <div className="errorBox">{deviceCatalogWarning}</div> : null}
         {loading ? <div className="card premiumCard">Ładowanie ustawień SMS...</div> : null}
 
         {!loading ? (
