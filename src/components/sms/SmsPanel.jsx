@@ -801,7 +801,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
         afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
       });
     } catch (error) {
-      await refreshSmsMutation({ reloadSmsData, refreshAll });
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+      });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -825,7 +830,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
         afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
       });
     } catch (error) {
-      await refreshSmsMutation({ reloadSmsData, refreshAll });
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+      });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
