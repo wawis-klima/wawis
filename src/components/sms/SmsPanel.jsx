@@ -12,7 +12,7 @@ import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQu
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
-import { refreshSmsMutation, refreshSmsMutationWithHistory } from '../../modules/sms-ui-flow.js';
+import { refreshSmsMutation, refreshSmsMutationForVisibleHistory, refreshSmsMutationWithHistory } from '../../modules/sms-ui-flow.js';
 import { IconClock, IconFileText, IconFilter, IconMapPin, IconMessageCircle, IconPhone, IconRefresh, IconUsers } from '../ui';
 
 function normalizeText(value) {
@@ -686,11 +686,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       }
 
       setSelectedUnsentIds([]);
-      if (showHistory) {
-        await refreshSmsMutationWithHistory({ reloadSmsData, refreshAll, loadFullHistoryPage });
-      } else {
-        await refreshSmsMutation({ reloadSmsData, refreshAll });
-      }
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+      });
       if (sentCount > 0) {
         setInfoMessage(`Wysłano ${sentCount} wiadomości SMS.`);
       }
@@ -717,17 +718,19 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       await sendUnsentSmsLog({ supabase, log: row });
       setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany.`);
-      if (showHistory) {
-        await refreshSmsMutationWithHistory({ reloadSmsData, refreshAll, loadFullHistoryPage });
-      } else {
-        await refreshSmsMutation({ reloadSmsData, refreshAll });
-      }
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+      });
     } catch (error) {
-      if (showHistory) {
-        await refreshSmsMutationWithHistory({ reloadSmsData, refreshAll, loadFullHistoryPage });
-      } else {
-        await reloadSmsData({ silent: true });
-      }
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
+        reloadSmsData,
+        refreshAll: showHistory ? refreshAll : undefined,
+        loadFullHistoryPage,
+      });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       smsSendLockRef.current = false;
@@ -790,11 +793,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload(selectedRows) });
       setSelectedUnsentIds([]);
-      const refresh = showHistory ? refreshSmsMutationWithHistory : refreshSmsMutation;
-      await refresh({
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
         reloadSmsData,
         refreshAll,
-        ...(showHistory ? { loadFullHistoryPage } : {}),
+        loadFullHistoryPage,
         afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
       });
     } catch (error) {
@@ -814,11 +817,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload([row]) });
       setSelectedUnsentIds((prev) => prev.filter((id) => id !== row.selectionKey));
-      const refresh = showHistory ? refreshSmsMutationWithHistory : refreshSmsMutation;
-      await refresh({
+      await refreshSmsMutationForVisibleHistory({
+        showHistory,
         reloadSmsData,
         refreshAll,
-        ...(showHistory ? { loadFullHistoryPage } : {}),
+        loadFullHistoryPage,
         afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
       });
     } catch (error) {
