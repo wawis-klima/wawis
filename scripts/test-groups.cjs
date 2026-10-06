@@ -166,6 +166,7 @@ const GROUPS = {
     'node scripts/smoke-sms-identity-pagination-v1257.mjs',
     'node scripts/smoke-sms-ui-flow-v1257.mjs',
     'node scripts/smoke-sms-history-mutations-v1258.mjs',
+    'node scripts/smoke-sms-delete-identity-v1259.mjs',
   ],
   desktop: [
     'node scripts/smoke-postal-code-v1196.mjs',

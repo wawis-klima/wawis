@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.58",
-  "scope": "full",
-  "release_branch": "release/v12.58",
+  "version": "12.59",
+  "scope": "desktop",
+  "release_branch": "release/v12.59",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "PASS",
-    "notes": "Bazą jest produkcyjna 12.57: PR #276, finalny WAWIS PR checks run 755 = SUCCESS, Closure Gate = GO, Vercel production READY dla merge commita d685c45b1a06120ade2db22906c6f626c4e71fbc."
+    "result": "INFO",
+    "notes": "Start 12.59: diagnostyka informacyjna z ostatnich 24 h — warning auth 14, contractors 4, photos 4, devices 3, push 2, data.refresh 1; error data.refresh 3 i network 1. Zgodnie z WAWIS-RULES diagnostyka nie jest bramką GO/NO-GO."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.58.zip"
+    "file_name": "klima-app-v12.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.58",
+    "source_branch": "release/v12.59",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub deployment status + Vercel deployment metadata",
-    "notes": "Po merge nie wykonujemy commita wyłącznie po to, aby przepisać wynik deploymentu do źródła; finalny dowód produkcyjny pozostaje zewnętrzny i nie tworzy kolejnego deploymentu."
+    "notes": "Po merge dowód produkcyjny pozostaje zewnętrzny; nie tworzymy commita statusowego wywołującego kolejny deployment."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,13 +34,11 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "previous_release_12_57": "PASS — main=d685c45b1a06120ade2db22906c6f626c4e71fbc; Vercel deployment dpl_6VHW77Esacbqdx8Q1Rvyz4GQ1fHD READY, target=production; app-version w deployowanym commicie=12.57.",
-    "sms_closure": "PASS — SMS-01…SMS-06 CLOSED; finalny PR #276 run 755: regresje PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate PASS, production build PASS.",
-    "sql_two_session_normal_claim": "PASS — backend PID 1233461 wygrał claim, backend PID 1233462 nie otrzymał claimu.",
-    "sql_two_session_retry": "PASS — backend PID 1233472 otrzymał ok=true, backend PID 1233476 otrzymał ok=false/retry_claim_exists; dokładnie 1 claim retry.",
-    "test_fixture_cleanup": "PASS — po weryfikacji 0 claimów, 0 logów testowych, 0 testowych jobs.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD po tym commicie musi przejść WAWIS PR checks / targeted-checks; implementacyjny run 774 = GO (99 regresji + mobile/desktop E2E + Closure Gate + build).",
-    "final_codex_audit": "NOT_REQUIRED — użytkownik zdecydował zakończyć poprawki i wdrożyć pakiet 12.58 bez kolejnego audytu Codexa.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany jest READY/SUCCESS dla dokładnego commita main i weryfikacja produkcyjnej wersji 12.58."
+    "previous_release_12_58": "PASS — main=f11cfa31ad758e425c13543ab929e3562ec9baef; Vercel deployment dpl_BsubbJ7jmmCkbuV6vzMCDZeuM7wT READY, target=production.",
+    "sms_delete_identity_fix": "PASS — run 783 potwierdził trwały test: główna kolejka nie przekazuje row.id urządzenia/zlecenia jako sms_log.id, a Niewysłane zachowuje własne ID logu.",
+    "sms_pending_label_fix": "PASS — run 783 potwierdził pending_approval = Oczekuje oraz zgodność wcześniejszych regresji routingu approval/retry.",
+    "current_release_pr_check": "REQUIRED — finalny HEAD po commicie READY_FOR_MAIN musi ponownie przejść WAWIS PR checks / targeted-checks; nie wykonujemy później commita wyłącznie po to, by przepisać wynik CI.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany jest READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.59.",
+    "implementation_pr_check": "PASS — PR #278, WAWIS PR checks run 783: 94 unikalne komendy regresyjne PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate PASS, production build PASS; artifact wawis-closure-evidence-278-1."
   }
 }

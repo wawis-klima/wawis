@@ -25,7 +25,7 @@ for (const prefix of ['src']) {
   assert.equal(grouped.length, 2, 'Both types are visible once per group');
   assert.equal(grouped.find((log) => log.status === 'pending_approval').id, pending.id, 'Use the primary group log');
   assert.equal(grouped.find((log) => log.status === 'pending_approval').linkedTarget, linkedTarget);
-  assert.equal(sms.getSmsStatusLabel(pending.status), 'Oczekuje na zatwierdzenie');
+  assert.equal(sms.getSmsStatusLabel(pending.status), 'Oczekuje');
 
   await sendUnsentSmsLog({ supabase, log: pending });
   await sendUnsentSmsLog({ supabase, log: expired });

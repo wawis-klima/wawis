@@ -17,6 +17,7 @@ assert.match(sms, /case 'dismissed':\s*return 'usunięto z listy'/);
 assert.match(sms, /'deleted', 'dismissed', 'not_sent'/);
 
 const panel = read('src/components/sms/SmsPanel.jsx');
+const deleteIds = read('src/modules/sms-delete.js');
 assert.match(panel, /latestLog\?\.id/);
 assert.match(panel, /handleDeleteUnsentSelected/);
 assert.match(panel, /handleDeleteUnsentNow/);
@@ -29,10 +30,17 @@ assert.match(panel, /toggleAll\(checked, pagedRows\)/);
 const deletePayloadStart = panel.indexOf('function buildUnsentDeletePayload');
 const deletePayloadEnd = panel.indexOf('async function handleDeleteUnsentSelected', deletePayloadStart);
 const deletePayloadBlock = panel.slice(deletePayloadStart, deletePayloadEnd);
-assert.match(panel, /grouped_log_ids/);
-assert.match(panel, /function getDeleteLogIds/);
-assert.match(deletePayloadBlock, /getDeleteLogIds/);
+assert.match(deleteIds, /grouped_log_ids/);
+assert.match(deleteIds, /export function getQueueDeleteLogIds/);
+assert.match(deleteIds, /export function getUnsentDeleteLogIds/);
+assert.match(deletePayloadBlock, /getUnsentDeleteLogIds/);
 assert.match(deletePayloadBlock, /reminderGroupId/);
+const queueDeletePayloadStart = panel.indexOf('function buildDeletePayload');
+const queueDeletePayloadEnd = panel.indexOf('function reportDeleteResult', queueDeletePayloadStart);
+const queueDeletePayloadBlock = panel.slice(queueDeletePayloadStart, queueDeletePayloadEnd);
+assert.match(queueDeletePayloadBlock, /getQueueDeleteLogIds/);
+const queueIdsBlock = deleteIds.slice(deleteIds.indexOf('export function getQueueDeleteLogIds'), deleteIds.indexOf('export function getUnsentDeleteLogIds'));
+assert.doesNotMatch(queueIdsBlock, /row\.id/);
 assert.match(panel, /window\.confirm/);
 
 const card = read('src/components/sms/SmsUnsentCard.jsx');

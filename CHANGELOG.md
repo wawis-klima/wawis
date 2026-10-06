@@ -1,3 +1,9 @@
+## 12.59
+- SMS: status `pending_approval` jest wyświetlany krótko jako „Oczekuje”.
+- SMS: główna kolejka przy usuwaniu przekazuje wyłącznie identyfikatory `sms_log`; `row.id` urządzenia/zlecenia nie jest już wysyłane do RPC anulowania.
+- Widok „Niewysłane” nadal używa `row.id` jako właściwego identyfikatora logu, więc jego usuwanie pozostaje bez zmian funkcjonalnych.
+- Dodano trwały test behawioralny `scripts/smoke-sms-delete-identity-v1259.mjs`, który odtwarza fałszywy `NOT_FOUND` i kontroluje skrócony status.
+
 ## 12.58
 - FINAL-SMS-01: otwarta historia SMS odświeża się po retry oraz po usuwaniu z „Niewysłane”; zamknięta historia nie powoduje dodatkowego odczytu
 - GATE-01: Closure Gate porównuje dokładną listę wymaganych komend i dokładne przebiegi E2E; niekompletne lub zduplikowane evidence daje NO-GO
