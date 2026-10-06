@@ -59,6 +59,9 @@ function main() {
   assert(appVersion === srcVersion, `NO-GO: src/version.js=${srcVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(appVersion === mobileVersion, `NO-GO: mobile version=${mobileVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(String(gate.version || '').trim() === appVersion, `NO-GO: RELEASE-GATE.json=${gate.version || 'brak'}, oczekiwano ${appVersion}`);
+  const postDeployResult = String(gate.postdeploy_diagnostics?.result || '').trim().toUpperCase();
+  assert(postDeployResult !== 'PENDING' && postDeployResult !== 'WAITING', 'NO-GO: post-deploy status w źródle nie może być PENDING/WAITING; użyj zewnętrznego dowodu deploymentu (EXTERNAL), aby nie tworzyć kolejnego deploymentu przez commit statusowy');
+  assert(!/\\bPENDING\\b/i.test(JSON.stringify(gate.production_verification || {})), 'NO-GO: production_verification nie może zawierać PENDING; użyj jawnego REQUIRED albo EXTERNAL');
   assert(['mobile', 'desktop', 'full'].includes(gate.scope), `NO-GO: nieprawidłowy zakres ${gate.scope || 'brak'}`);
 
   const configuredReleaseBranch = String(gate.release_branch || '').trim();
