@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Start v12.57 z main 12.56. Globalny Closure Gate jest aktywny; pełny przebieg implementacyjny run 748 zakończył się GO."
+    "notes": "WAWIS 12.57: globalny Closure Gate + domknięcie SMS-01…SMS-06. Backend SMS-01/SMS-02/SMS-06 wdrożony i zweryfikowany transakcyjnie; SMS-03/04/05 mają trwałe testy regresyjne."
   },
   "drive_backup": {
     "required": false,
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "DONE — SMS-01/SMS-06 lifecycle retry/pointer oraz SMS-02 stable customer counter są wdrożone i zweryfikowane testami transakcyjnymi z ROLLBACK.",
-    "pr_check": "GO — run 748: regresje, mobile E2E, desktop E2E, Closure Gate i production build PASS. Bieżący HEAD musi ponownie przejść wymagany check po tym commicie dokumentującym zamknięcie.",
+    "supabase_changes": "PASS — SMS-01/SMS-06 lifecycle retry, SMS-02 durable counter i customer_key snapshot wdrożone oraz zweryfikowane na produkcyjnym schemacie.",
+    "pr_check": "PENDING — wymagany ponowny WAWIS PR checks po uporządkowaniu migracji i rozszerzeniu Closure Gate.",
     "vercel_deployment": "PENDING — produkcja dopiero po merge aktualnego HEAD do main.",
-    "closure_evidence": "GO — artifact wawis-closure-evidence-276-1; 121/121 komend PASS, oba E2E PASS, closure-gate-result.json=GO."
+    "closure_evidence": "PENDING — końcowy artifact ma potwierdzić SMS-01…SMS-06 oraz unikalność numerów migracji."
   }
 }
