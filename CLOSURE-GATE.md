@@ -47,6 +47,12 @@ Closure Gate jest kumulacyjny: kiedy wykryjemy nową klasę błędu, dodajemy je
 
 Każde potwierdzone znalezisko wpisujemy także do `REGRESSION-LEDGER.md`. Status CLOSED jest dozwolony dopiero po wskazaniu trwałego pliku testowego i zielonym Closure Gate.
 
+## Integralność migracji Supabase
+
+- Każdy plik w `supabase/migrations` musi mieć unikalny 14-cyfrowy numer wersji.
+- Dwa pliki z tym samym timestampem migracji oznaczają NO-GO, nawet jeżeli testy funkcjonalne przechodzą.
+- Zmiana migracji nie może pozostawiać innego końcowego schematu na świeżym rebuildzie niż na produkcji po kolejnych wdrożeniach.
+
 ## GO / NO-GO
 
 GO:
