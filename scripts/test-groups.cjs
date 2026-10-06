@@ -134,6 +134,38 @@ const GROUPS = {
     'node scripts/smoke-nameplate-ai-auth-v1085.mjs',
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
+  sms: [
+    'npm run test:smoke:sms-summary',
+    'node scripts/smoke-sms-desktop-load-v1225.cjs',
+    'npm run test:smoke:sms-job-grouping',
+    'npm run test:smoke:sms-durable-groups',
+    'npm run test:smoke:sms-stage3',
+    'npm run test:smoke:sms-stage4',
+    'npm run test:smoke:sms-stage5',
+    'npm run test:smoke:sms-unsent-retry',
+    'npm run test:smoke:sms-log-cleanup',
+    'npm run test:smoke:sms-shared-source',
+    'npm run test:smoke:sms-generator-pagination',
+    'npm run test:smoke:sms-test',
+    'npm run test:smoke:sms-dismiss-delete',
+    'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
+    'node scripts/smoke-sms-p0-race-safety-v1242.mjs',
+    'node scripts/smoke-sms-cancel-retry-p1-v1243.mjs',
+    'node scripts/smoke-sms-audit-closure-v1248.mjs',
+    'node scripts/smoke-sms-callback-snapshot-v1250.mjs',
+    'node scripts/smoke-sms-callback-multi-rotation-v1251.mjs',
+    'node scripts/smoke-sms-history-membership-v1252.mjs',
+    'node scripts/smoke-sms-stable-customer-group-v1253.mjs',
+    'node scripts/smoke-sms-package1-v1254.mjs',
+    'node scripts/smoke-sms-package2-v1255.mjs',
+    'node scripts/smoke-sms-package3-v1256.mjs',
+    'node scripts/smoke-sms-retry-chain-v1257.mjs',
+    'node scripts/smoke-sms-customer-identity-pagination-v1257.mjs',
+    'node scripts/smoke-sms-ui-flow-closure-v1257.mjs',
+    'node scripts/smoke-sms-retry-lifecycle-v1257.mjs',
+    'node scripts/smoke-sms-identity-pagination-v1257.mjs',
+    'node scripts/smoke-sms-ui-flow-v1257.mjs',
+  ],
   desktop: [
     'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-fakturownia-v1195.cjs',
@@ -187,6 +219,7 @@ const GROUPS = {
   infra: [
     'node scripts/smoke-release-automation-v1061.cjs',
     'node scripts/smoke-release-impact-v1063.cjs',
+    'node scripts/smoke-closure-gate-v1257.cjs',
     'npm run test:smoke:release-runner',
     'npm run test:smoke:release-zip',
     'npm run test:smoke:release-zip-clean',
@@ -218,9 +251,9 @@ const GROUPS = {
 };
 
 const RELEASE_GROUPS = {
-  mobile: ['core', 'jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'mobile', 'infra'],
-  desktop: ['core', 'jobs', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'desktop', 'infra'],
-  full: ['core', 'jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'desktop', 'mobile', 'infra'],
+  mobile: ['core', 'jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'sms', 'mobile', 'infra'],
+  desktop: ['core', 'jobs', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'sms', 'desktop', 'infra'],
+  full: ['core', 'jobs', 'photos', 'protocol', 'roles', 'push', 'fuel', 'nameplates', 'sms', 'desktop', 'mobile', 'infra'],
 };
 
 function uniqueCommands(groupNames = []) {

@@ -35,6 +35,7 @@ function addMonths(date, months) {
     sms_recipient_phone: '500600700',
     sms_consent: true,
     sms_reminder_enabled: true,
+    contractor_id: 'contractor-jan-kowalski',
     installation_date: installationDueToday,
     service_reminder_years: 5,
     city: 'Warszawa',
@@ -123,6 +124,20 @@ function addMonths(date, months) {
   assert.equal(customerQueue[0].grouped_device_count, 2);
   assert.match(customerQueue[0].selectionKey, /^sms:/);
 
+  const ambiguousSamePhoneTargets = smsModule.buildSmsTargets({
+    jobs: [
+      { ...jobs[0], id: 'legacy-ambiguous-a', contractor_id: '', phone: '511 222 333', sms_recipient_phone: '511 222 333' },
+      { ...jobs[0], id: 'legacy-ambiguous-b', contractor_id: '', phone: '511 222 333', sms_recipient_phone: '511 222 333' },
+    ],
+    devices: [],
+  });
+  const ambiguousSamePhoneQueue = smsModule.deriveSmsQueue(ambiguousSamePhoneTargets, []);
+  assert.equal(
+    ambiguousSamePhoneQueue.length,
+    2,
+    'Sam wspólny telefon bez stabilnego contractor_id nie może dowodzić, że dwa zlecenia należą do tego samego klienta.',
+  );
+
   const customerPendingQueue = smsModule.deriveSmsQueue(secondJobTargets, [
     { id: 'log-job-1', job_id: 'job-1', status: 'pending_approval', reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date, phone: '48500600700', created_at: new Date().toISOString() },
     { id: 'log-job-2', job_id: 'job-2', status: 'pending_approval', reminder_cycle: customerQueue[0].reminder_cycle, reminder_due_date: customerQueue[0].reminder_due_date, phone: '48500600700', created_at: new Date().toISOString() },
@@ -163,8 +178,8 @@ function addMonths(date, months) {
   const dueB = new Date(today.getTime() - (5 * 24 * 60 * 60 * 1000));
   const standaloneTargets = smsModule.buildSmsTargets({
     jobs: [
-      { id: 'job-standalone-a', client: 'Salon Testowy', phone: '600 700 800', sms_recipient_phone: '600 700 800', sms_consent: true, sms_reminder_enabled: true, service_reminder_years: 5 },
-      { id: 'job-standalone-b', client: 'Salon Testowy', phone: '+48 600 700 800', sms_recipient_phone: '+48 600 700 800', sms_consent: true, sms_reminder_enabled: true, service_reminder_years: 5 },
+      { id: 'job-standalone-a', contractor_id: 'contractor-salon-testowy', client: 'Salon Testowy', phone: '600 700 800', sms_recipient_phone: '600 700 800', sms_consent: true, sms_reminder_enabled: true, service_reminder_years: 5 },
+      { id: 'job-standalone-b', contractor_id: 'contractor-salon-testowy', client: 'Salon Testowy', phone: '+48 600 700 800', sms_recipient_phone: '+48 600 700 800', sms_consent: true, sms_reminder_enabled: true, service_reminder_years: 5 },
     ],
     devices: [
       { id: 'standalone-a', source_job_id: 'job-standalone-a::device-1', contractor_name: 'Salon Testowy', contractor_phone: '600 700 800', model: 'Rotenso A', serial_number: 'SER-A', installation_date: formatIsoDate(addMonths(dueA, -47)), service_reminder_years: 5 },

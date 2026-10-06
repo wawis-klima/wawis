@@ -18,6 +18,8 @@ Ta checklista dotyczy aktualnego uproszczonego procesu wydania. Historia zmian n
 - [ ] `RELEASE-GATE.json` wskazuje właściwą wersję i gałąź release.
 - [ ] `scripts/release-impact.cjs` klasyfikuje zmianę jako `fast-ui`, `targeted` albo `critical`.
 - [ ] Dla kandydata MICRO UI `scripts/micro-ui-policy.cjs` potwierdza CSS-only.
+- [ ] Każdy naprawiony wcześniej błąd ma trwały test regresyjny odtwarzający jego mechanizm.
+- [ ] Testy obejmują kontrprzykłady i granice istotne dla zmienianego kodu, a nie wyłącznie obecność fragmentów źródła.
 
 ## 3. Jedyna obowiązkowa bramka CI
 
@@ -27,6 +29,10 @@ Ta checklista dotyczy aktualnego uproszczonego procesu wydania. Historia zmian n
 - [ ] `FAST UI` uruchomił lekkie regresje UI.
 - [ ] `TARGETED` uruchomił powiązane grupy domenowe i potrzebne E2E.
 - [ ] `CRITICAL` uruchomił rozszerzone grupy krytyczne i wymagane E2E.
+- [ ] `closure-evidence.json` potwierdza wykonanie wszystkich wybranych grup i komend testowych.
+- [ ] Jeżeli wymagane było E2E, `closure-e2e-evidence.json` obejmuje wszystkie wymagane platformy.
+- [ ] `closure-gate-result.json` ma status `GO`.
+- [ ] Artefakt `wawis-closure-evidence` został zapisany przez workflow.
 - [ ] `WAWIS PR checks / targeted-checks` jest zielony.
 - [ ] Nie uruchamiamy drugiego obowiązkowego workflow powtarzającego te same kontrole.
 

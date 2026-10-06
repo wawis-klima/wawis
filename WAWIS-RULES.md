@@ -40,6 +40,15 @@ Pliki wygenerowane wyłącznie przez podbicie wersji oraz dokumentacja wydania n
 - Nie uruchamiamy drugiego obowiązkowego workflow „final release” powtarzającego te same testy.
 - Dodatkowy pełny test można uruchomić świadomie przy nietypowej zmianie, ale nie jest standardową zależnością release.
 
+### Closure Gate — obowiązuje całą aplikację
+
+- Szczegółowe zasady są w `CLOSURE-GATE.md`.
+- Każdy potwierdzony błąd wykryty ręcznie, na produkcji lub w audycie musi przed zamknięciem dostać trwały test regresyjny odtwarzający mechanizm błędu.
+- Dla zmian TARGETED i CRITICAL sama kontrola statyczna kodu nie jest wystarczającym dowodem poprawności.
+- CI zapisuje `closure-evidence.json`, a gdy wymagane jest E2E także `closure-e2e-evidence.json`.
+- `scripts/verify-closure-evidence.cjs` działa fail-closed: brak dowodu, pominięta grupa lub niezaliczony test oznacza NO-GO.
+- Workflow archiwizuje komplet dowodów jako artefakt `wawis-closure-evidence`.
+
 ### MICRO UI
 
 - CSS-only,

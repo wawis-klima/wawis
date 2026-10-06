@@ -128,6 +128,7 @@ function selectDomainGroups(files) {
   for (const file of files) {
     const lower = file.toLowerCase();
     if (/^(scripts\/|\.github\/|package(?:-lock)?\.json$|vercel\.json$|version-bump\.cjs$|release-)/.test(lower)) add('infra');
+    if (/(sms|smsapi)/.test(lower)) add('sms');
     if (/(job|monta|contractor|kontrah|device|urzad|urząd)/.test(lower)) add('jobs');
     if (/(photo|zdjec|zdjęc|thumbnail|gallery|storage)/.test(lower)) add('photos');
     if (/(protocol|protokol|protokół|payment|pdf|email)/.test(lower)) add('protocol');

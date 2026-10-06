@@ -62,5 +62,23 @@ jobs:
         if: steps.impact.outputs.needs_playwright == 'true'
         run: node scripts/run-pr-playwright.cjs release-impact.json
 
+      - name: Verify Closure Gate
+        if: always()
+        run: node scripts/verify-closure-evidence.cjs release-impact.json closure-evidence.json closure-e2e-evidence.json closure-gate-result.json
+
+      - name: Upload Closure Gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-closure-evidence-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+          path: |
+            changed-files.txt
+            release-impact.json
+            closure-evidence.json
+            closure-e2e-evidence.json
+            closure-gate-result.json
+          if-no-files-found: warn
+          retention-days: 30
+
       - name: Run production build
         run: npm run build

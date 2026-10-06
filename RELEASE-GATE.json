@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.56",
+  "version": "12.57",
   "scope": "full",
-  "release_branch": "release/v12.56",
+  "release_branch": "release/v12.57",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Pakiety 1–3 audytu SMS przeszły targeted regressions, dwa rebuildy, Playwright E2E i production build. Backend SMS v40 ACTIVE."
+    "notes": "WAWIS 12.57: globalny Closure Gate + domknięcie SMS-01…SMS-06. Backend SMS-01/SMS-02/SMS-06 wdrożony i zweryfikowany transakcyjnie; SMS-03/04/05 mają trwałe testy regresyjne."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.56.zip"
+    "file_name": "klima-app-v12.57.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.56",
+    "source_branch": "release/v12.57",
     "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
@@ -23,7 +23,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu potwierdzić na iPhonie numer v12.56 oraz działanie modułu SMS: Niewysłane, historia, paginacja, bulk delete i ustawienia/szablony."
+    "notes": "Po merge potwierdzić produkcyjny deployment Vercela oraz widoczną wersję 12.57."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "DONE — migracje SMS do v12.56 oraz send-service-sms v40 ACTIVE.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.56",
-    "vercel_deployment": "PENDING — po merge do main"
+    "supabase_changes": "PASS — SMS-01/SMS-06 lifecycle retry, SMS-02 durable counter i customer_key snapshot wdrożone oraz zweryfikowane na produkcyjnym schemacie.",
+    "pr_check": "PENDING — wymagany ponowny WAWIS PR checks po uporządkowaniu migracji i rozszerzeniu Closure Gate.",
+    "vercel_deployment": "PENDING — produkcja dopiero po merge aktualnego HEAD do main.",
+    "closure_evidence": "PENDING — końcowy artifact ma potwierdzić SMS-01…SMS-06 oraz unikalność numerów migracji."
   }
 }

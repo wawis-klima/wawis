@@ -35,6 +35,8 @@ try {
     'CHANGELOG.md',
     'WAWIS-RULES.md',
     'RELEASE-CHECKLIST.md',
+    'CLOSURE-GATE.md',
+    '.github/workflows/pr-checks.yml',
     'vercel.json',
   ]) copy(file);
 

@@ -13,6 +13,15 @@ Bez osobnej zgody nie zmieniaj:
 - logiki protokołów PDF/e-mail, uploadu zdjęć i retry;
 - danych klientów ani logiki produkcyjnej.
 
+## Zasady domknięcia zmian
+- Obowiązuje globalny `CLOSURE-GATE.md`; dotyczy każdego modułu, nie tylko SMS.
+- Każdy potwierdzony błąd musi dostać trwały test regresyjny odtwarzający rzeczywisty mechanizm błędu przed uznaniem poprawki za zamkniętą.
+- Dla błędów sekwencyjnych testuj całą sekwencję (np. retry po retry, callback po nowej próbie, refresh po częściowym błędzie), a nie tylko pierwszy krok.
+- Dla problemów granicznych odtwarzaj granicę (np. >1000 rekordów), zamiast sprawdzać tylko typowy mały fixture.
+- Test statyczny typu regex/assert.match może być dowodem pomocniczym, ale nie może być jedynym dowodem dla zmiany TARGETED lub CRITICAL.
+- Przed zamknięciem zmiany wymagaj zielonego Closure Gate i zachowanego artefaktu dowodowego CI.
+- Potwierdzone błędy wpisuj do `REGRESSION-LEDGER.md`; status CLOSED wymaga wskazania konkretnego trwałego testu.
+
 ## Zasady audytu
 - Każde znalezisko musi zawierać dowód: plik, funkcję/fragment i wyjaśnienie mechanizmu problemu.
 - Nie zgłaszaj problemu tylko na podstawie stylu lub przypuszczenia.

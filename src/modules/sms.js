@@ -255,12 +255,37 @@ function normalizeSourceJobId(value) {
   return String(value || '').trim().split('::')[0].trim();
 }
 
-function getSmsCustomerBaseKey(record = {}) {
-  const phone = normalizeSmsPhone(record.sms_recipient_phone || record.phone);
-  if (phone) return `phone:${phone}`;
+export function getSmsCustomerBaseKey(record = {}) {
+  const durableKey = String(record.reminder_group_customer_key || '').trim();
+  if (/^(contractor|job|device):[^\s]+$/i.test(durableKey)) return durableKey.toLowerCase();
 
   const contractorId = String(record.contractor_id || '').trim();
   if (contractorId) return `contractor:${contractorId}`;
+
+  const phone = normalizeSmsPhone(record.sms_recipient_phone || record.phone);
+  const isLegacyLog = !record.target_type && Boolean(
+    record.status
+      || record.provider_message_id
+      || record.created_at
+      || record.reminder_group_id
+  );
+
+  // Legacy sms_log rows predate durable customer identity. Keep the historical
+  // phone fallback only for those rows; current targets must never use a shared
+  // phone as proof that two jobs/devices belong to the same customer.
+  if (isLegacyLog && phone) return `phone:${phone}`;
+
+  const sourceJobId = normalizeSourceJobId(
+    record.source_job_id
+      || record.job_id
+      || (record.target_type === 'job' ? record.id : ''),
+  );
+  if (sourceJobId) return `job:${sourceJobId}`;
+
+  const deviceId = String(record.device_id || (record.target_type === 'device' ? record.id : '') || '').trim();
+  if (deviceId) return `device:${deviceId}`;
+
+  if (phone) return `phone:${phone}`;
 
   const name = normalizeSmsKeyPart(record.contractor_name || record.client || record.title);
   const street = normalizeSmsKeyPart(record.contractor_street || record.street);

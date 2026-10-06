@@ -1,4 +1,5 @@
 import { getNameplatePhotoMetadata, getPhotoStoragePath, isLocalQueuedPhoto } from "./photos.js";
+import { fetchAllOrderedTableRows } from "../../modules/paginated-read.js";
 
 const DETAILS_PHOTO_URL_MODE = 'lazy-full-v969';
 
@@ -68,17 +69,25 @@ async function getJobsData({ supabase }) {
   const completionFields = JOB_SUMMARY_COMPLETION_FIELDS;
 
   let jobsFields = completionFields;
-  let result = await supabase
-    .from('jobs')
-    .select(jobsFields)
-    .order('created_at', { ascending: false });
+  let result = await fetchAllOrderedTableRows({
+    supabase,
+    table: 'jobs',
+    fields: jobsFields,
+    pageSize: 500,
+    orderBy: 'created_at',
+    ascending: false,
+  });
 
   if (result.error && isMissingJobCompletionColumnsError(result.error)) {
     jobsFields = baseFields;
-    result = await supabase
-      .from('jobs')
-      .select(jobsFields)
-      .order('created_at', { ascending: false });
+    result = await fetchAllOrderedTableRows({
+      supabase,
+      table: 'jobs',
+      fields: jobsFields,
+      pageSize: 500,
+      orderBy: 'created_at',
+      ascending: false,
+    });
   }
 
   if (result.error) throw result.error;

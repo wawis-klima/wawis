@@ -12,6 +12,7 @@ import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQu
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
+import { refreshSmsMutation, refreshSmsMutationWithHistory } from '../../modules/sms-ui-flow.js';
 import { IconClock, IconFileText, IconFilter, IconMapPin, IconMessageCircle, IconPhone, IconRefresh, IconUsers } from '../ui';
 
 function normalizeText(value) {
@@ -494,7 +495,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setSelectedIds([]);
       setShowHistory(true);
       setActiveSummaryView('sentThisMonth');
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutationWithHistory({
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+      });
     } catch (error) {
       await reloadSmsData({ silent: true });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
@@ -544,7 +549,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       setInfoMessage(`SMS dla klienta ${job.client || job.title} został wysłany.`);
       setShowHistory(true);
       setActiveSummaryView('sentThisMonth');
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutationWithHistory({
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+      });
     } catch (error) {
       await reloadSmsData({ silent: true });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
@@ -612,12 +621,16 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setErrorMessage('');
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildDeletePayload(selectedRows) });
-      reportDeleteResult(result, 'pozycji');
       setSelectedIds([]);
       setShowHistory(true);
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutationWithHistory({
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+        afterRefresh: () => reportDeleteResult(result, 'pozycji'),
+      });
     } catch (error) {
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({ reloadSmsData, refreshAll });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -632,11 +645,15 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setErrorMessage('');
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildDeletePayload([job]) });
-      reportDeleteResult(result, 'pozycji');
       setShowHistory(true);
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutationWithHistory({
+        reloadSmsData,
+        refreshAll,
+        loadFullHistoryPage,
+        afterRefresh: () => reportDeleteResult(result, 'pozycji'),
+      });
     } catch (error) {
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({ reloadSmsData, refreshAll });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -669,7 +686,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       }
 
       setSelectedUnsentIds([]);
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({ reloadSmsData, refreshAll });
       if (sentCount > 0) {
         setInfoMessage(`Wysłano ${sentCount} wiadomości SMS.`);
       }
@@ -696,7 +713,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       await sendUnsentSmsLog({ supabase, log: row });
       setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany.`);
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({ reloadSmsData, refreshAll });
     } catch (error) {
       await reloadSmsData({ silent: true });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
@@ -760,11 +777,14 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setErrorMessage('');
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload(selectedRows) });
-      reportDeleteResult(result, 'niewysłanych pozycji');
       setSelectedUnsentIds([]);
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({
+        reloadSmsData,
+        refreshAll,
+        afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
+      });
     } catch (error) {
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({ reloadSmsData, refreshAll });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
@@ -779,11 +799,14 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     setErrorMessage('');
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload([row]) });
-      reportDeleteResult(result, 'niewysłanych pozycji');
       setSelectedUnsentIds((prev) => prev.filter((id) => id !== row.selectionKey));
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({
+        reloadSmsData,
+        refreshAll,
+        afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
+      });
     } catch (error) {
-      await Promise.allSettled([reloadSmsData({ silent: true }), refreshAll?.()]);
+      await refreshSmsMutation({ reloadSmsData, refreshAll });
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       setDeleteBusy(false);
