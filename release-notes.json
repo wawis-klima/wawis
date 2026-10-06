@@ -1,11 +1,14 @@
 {
   "version": "12.57",
-  "summary": "Globalny Closure Gate i domknięcie lifecycle kolejnych prób SMS.",
+  "summary": "Globalny Closure Gate i domknięcie sześciu znalezisk końcowego audytu SMS.",
   "changes": [
     "Każdy potwierdzony błąd ma trwały test regresyjny i wpis w Regression Ledger.",
     "CI zapisuje maszynowe dowody wykonanych testów i E2E oraz działa fail-closed.",
-    "Kolejne retry SMS nie jest blokowane przez wcześniejsze potwierdzone niedostarczenia.",
-    "Stan SMS na zleceniu wskazuje najnowszą próbę i jest odporny na spóźnione callbacki starszych prób.",
-    "Wersja aplikacji i cache Service Workera podbite do 12.57."
+    "SMS-01/SMS-06: kolejne retry po niedostarczeniu działa, a zlecenie wskazuje najnowszą próbę.",
+    "SMS-02: stabilna tożsamość kontrahenta ma pierwszeństwo przed wspólnym numerem telefonu.",
+    "SMS-03: komplet zleceń jest pobierany stronicowo; test obejmuje 1201 rekordów.",
+    "SMS-04: częściowy błąd usuwania pozostaje widoczny po refreshu.",
+    "SMS-05: historia po wysyłce/usunięciu jest jawnie przeładowywana.",
+    "Wersja aplikacji i cache Service Workera pozostają spójne na 12.57."
   ]
 }
