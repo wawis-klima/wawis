@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "DONE — sms_retry_attempt_lifecycle_v1257 zastosowana i odczytana zwrotnie z produkcji.",
-    "pr_check": "PASS — WAWIS PR checks run 719; regressions + mobile/desktop E2E + Closure Gate + build.",
-    "vercel_deployment": "PENDING — dopiero po zielonym Closure Gate i merge do main",
-    "closure_evidence": "PASS — artifact wawis-closure-evidence z run 719."
+    "supabase_changes": "PARTIAL — SMS-01/SMS-06 v12.57 wdrożone i zweryfikowane; migracja stabilnej tożsamości/licznika SMS-02 czeka na finalny Closure Gate.",
+    "pr_check": "PENDING — finalny WAWIS PR checks po SMS-01…SMS-06.",
+    "vercel_deployment": "PENDING — dopiero po zamknięciu wszystkich SMS-01…SMS-06 i merge do main",
+    "closure_evidence": "PENDING — finalny artifact ma obejmować wszystkie sześć reproduktorów."
   }
 }
