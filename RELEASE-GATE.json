@@ -1,29 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.57",
+  "version": "12.58",
   "scope": "full",
-  "release_branch": "release/v12.57",
+  "release_branch": "release/v12.58",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "WAWIS 12.57: globalny Closure Gate + domknięcie SMS-01…SMS-06. Backend SMS-01/SMS-02/SMS-06 wdrożony i zweryfikowany transakcyjnie; SMS-03/04/05 mają trwałe testy regresyjne."
+    "notes": "Bazą jest produkcyjna 12.57: PR #276, finalny WAWIS PR checks run 755 = SUCCESS, Closure Gate = GO, Vercel production READY dla merge commita d685c45b1a06120ade2db22906c6f626c4e71fbc."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.57.zip"
+    "file_name": "klima-app-v12.58.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.57",
-    "ready_for_main": true,
+    "source_branch": "release/v12.58",
+    "ready_for_main": false,
+    "status": "WAITING_FINAL_CODEX_AUDIT",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
-    "result": "PENDING",
-    "notes": "Po merge potwierdzić produkcyjny deployment Vercela oraz widoczną wersję 12.57."
+    "result": "EXTERNAL",
+    "evidence_source": "GitHub deployment status + Vercel deployment metadata",
+    "notes": "Po merge nie wykonujemy commita wyłącznie po to, aby przepisać wynik deploymentu do źródła; finalny dowód produkcyjny pozostaje zewnętrzny i nie tworzy kolejnego deploymentu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +34,13 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "PASS — SMS-01/SMS-06 lifecycle retry, SMS-02 durable counter i customer_key snapshot wdrożone oraz zweryfikowane na produkcyjnym schemacie.",
-    "pr_check": "PENDING — wymagany ponowny WAWIS PR checks po uporządkowaniu migracji i rozszerzeniu Closure Gate.",
-    "vercel_deployment": "PENDING — produkcja dopiero po merge aktualnego HEAD do main.",
-    "closure_evidence": "PENDING — końcowy artifact ma potwierdzić SMS-01…SMS-06 oraz unikalność numerów migracji."
+    "previous_release_12_57": "PASS — main=d685c45b1a06120ade2db22906c6f626c4e71fbc; Vercel deployment dpl_6VHW77Esacbqdx8Q1Rvyz4GQ1fHD READY, target=production; app-version w deployowanym commicie=12.57.",
+    "sms_closure": "PASS — SMS-01…SMS-06 CLOSED; finalny PR #276 run 755: regresje PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate PASS, production build PASS.",
+    "sql_two_session_normal_claim": "PASS — backend PID 1233461 wygrał claim, backend PID 1233462 nie otrzymał claimu.",
+    "sql_two_session_retry": "PASS — backend PID 1233472 otrzymał ok=true, backend PID 1233476 otrzymał ok=false/retry_claim_exists; dokładnie 1 claim retry.",
+    "test_fixture_cleanup": "PASS — po weryfikacji 0 claimów, 0 logów testowych, 0 testowych jobs.",
+    "current_release_pr_check": "REQUIRED — aktualny PR 12.58 musi mieć zielony WAWIS PR checks / targeted-checks i closure-gate-result.json=GO.",
+    "final_codex_audit": "REQUIRED — przed zmianą ready_for_main na true wykonać końcowy audyt SMS na aktualnym HEAD release/v12.58.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — finalny READY/SUCCESS dostawcy deploymentu jest sprawdzany zewnętrznie i nie wymaga późniejszego commita statusowego."
   }
 }
