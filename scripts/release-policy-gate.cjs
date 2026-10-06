@@ -4,7 +4,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 
 function read(file) {
-  return fs.readFileSync(path.join(root, file), 'utf8');
+  const resolved = path.isAbsolute(file) ? file : path.join(root, file);
+  return fs.readFileSync(resolved, 'utf8');
 }
 
 function readJson(file) {
