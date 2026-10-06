@@ -160,6 +160,7 @@ const GROUPS = {
     'node scripts/smoke-sms-package2-v1255.mjs',
     'node scripts/smoke-sms-package3-v1256.mjs',
     'node scripts/smoke-sms-retry-chain-v1257.mjs',
+    'node scripts/smoke-sms-customer-identity-pagination-v1257.mjs',
     'node scripts/smoke-sms-retry-lifecycle-v1257.mjs',
     'node scripts/smoke-sms-identity-pagination-v1257.mjs',
     'node scripts/smoke-sms-ui-flow-v1257.mjs',
