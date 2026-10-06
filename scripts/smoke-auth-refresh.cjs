@@ -22,6 +22,12 @@ function loadRefreshAppData() {
     'import { getPhotoStoragePath } from "./photos.js";',
     `const getPhotoStoragePath = ({ photo }) => photo?.storage_path || '';`
   );
+  source = source.replace(
+    'import { fetchAllOrderedTableRows } from "./paginated-read.js";',
+    `const fetchAllOrderedTableRows = async ({ supabase, table, fields, orderBy = 'created_at', ascending = false }) => {
+      return await supabase.from(table).select(fields).order(orderBy, { ascending });
+    };`
+  );
   source = source.replace(/export async function (\w+)\(/g, 'async function $1(');
   source += '\nmodule.exports = { refreshAppData, loadJobDetailsData };\n';
 
