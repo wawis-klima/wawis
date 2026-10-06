@@ -1,13 +1,14 @@
 {
   "version": "12.58",
-  "summary": "Porządek release po domknięciu SMS oraz realny dwusesyjny dowód PostgreSQL dla claim/retry.",
+  "summary": "Końcowe domknięcie pięciu P2 audytu SMS/Closure Gate oraz trwałe testy regresyjne.",
   "changes": [
-    "Brak nowych zmian funkcjonalnych SMS względem 12.57.",
-    "Potwierdzono na dwóch rzeczywistych sesjach PostgreSQL, że zwykły claim ma dokładnie jednego zwycięzcę.",
-    "Potwierdzono na dwóch rzeczywistych sesjach PostgreSQL, że retry tej samej grupy ma dokładnie jednego zwycięzcę, a druga sesja dostaje retry_claim_exists.",
-    "Syntetyczny fixture testowy został całkowicie usunięty po weryfikacji.",
-    "Status release jest przygotowany do końcowego audytu Codexa bez stale PENDING z poprzedniego wydania.",
-    "Końcowy dowód post-deploy pozostaje zewnętrzny w GitHub/Vercel i nie tworzy kolejnego commita statusowego.",
-    "Wersja aplikacji i cache Service Workera są spójne na 12.58."
+    "Historia SMS odświeża się po retry i usuwaniu z Niewysłane, gdy historia jest otwarta.",
+    "Closure Gate wymaga kompletnej listy faktycznie wykonanych komend i dokładnych przebiegów E2E.",
+    "Fresh rebuild obejmuje aktualne migracje 12.57 i automatycznie blokuje przyszłe pominięcia.",
+    "Polityka release prawidłowo odrzuca PENDING/WAITING i ma negatywne testy.",
+    "Identyfikatory migracji 12.57 w repo są zgodne z produkcyjnym rejestrem Supabase.",
+    "Repo zawiera odtwarzalny dwusesyjny PostgreSQL harness dla claim/retry oraz read-only verifier historii migracji.",
+    "Run 774: 99 regresji PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate GO, production build PASS.",
+    "Wersja aplikacji i cache Service Workera pozostają spójne na 12.58."
   ]
 }
