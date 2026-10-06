@@ -16,7 +16,7 @@ await db.exec(`
   create schema auth;
   create schema private;
 
-  create sequence private.test_uuid_seq;
+  create sequence private.test_uuid_seq start with 1000;
   create function private.test_uuid()
   returns uuid
   language sql
