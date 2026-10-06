@@ -36,3 +36,25 @@ export async function refreshSmsMutationWithHistory({
   }
   return undefined;
 }
+
+export async function refreshSmsMutationForVisibleHistory({
+  showHistory = false,
+  reloadSmsData,
+  refreshAll,
+  loadFullHistoryPage,
+  afterRefresh,
+} = {}) {
+  if (showHistory) {
+    return refreshSmsMutationWithHistory({
+      reloadSmsData,
+      refreshAll,
+      loadFullHistoryPage,
+      afterRefresh,
+    });
+  }
+  return refreshSmsMutation({
+    reloadSmsData,
+    refreshAll,
+    afterRefresh,
+  });
+}
