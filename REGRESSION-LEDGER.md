@@ -68,5 +68,5 @@ Dowód CI przed ustawieniem READY_FOR_MAIN:
 
 | ID | Obszar | Mechanizm | Status | Trwały reproduktor / dowód |
 |---|---|---|---|---|
-| SMS-07 | usuwanie z głównej kolejki | `row.id` urządzenia/zlecenia trafiał razem z prawdziwym `sms_log.id` do anulowania; prawidłowy log znikał, a drugi identyfikator dawał fałszywy `NOT_FOUND` | FIXED-UNVERIFIED | `scripts/smoke-sms-delete-identity-v1259.mjs` |
-| SMS-08 | prezentacja statusu | `pending_approval` miał zbyt długą etykietę „Oczekuje na zatwierdzenie” | FIXED-UNVERIFIED | `scripts/smoke-sms-delete-identity-v1259.mjs` |
+| SMS-07 | usuwanie z głównej kolejki | `row.id` urządzenia/zlecenia trafiał razem z prawdziwym `sms_log.id` do anulowania; prawidłowy log znikał, a drugi identyfikator dawał fałszywy `NOT_FOUND` | CLOSED | `scripts/smoke-sms-delete-identity-v1259.mjs` + PR #278 run 783 / Closure Gate PASS |
+| SMS-08 | prezentacja statusu | `pending_approval` miał zbyt długą etykietę „Oczekuje na zatwierdzenie” | CLOSED | `scripts/smoke-sms-delete-identity-v1259.mjs` + `scripts/test-sms-approval-routing.mjs` + PR #278 run 783 / Closure Gate PASS |
