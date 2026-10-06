@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v12.59",
-    "ready_for_main": false,
-    "status": "CHECK_REQUIRED",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,9 +35,10 @@
   "release_mode": "standard",
   "production_verification": {
     "previous_release_12_58": "PASS — main=f11cfa31ad758e425c13543ab929e3562ec9baef; Vercel deployment dpl_BsubbJ7jmmCkbuV6vzMCDZeuM7wT READY, target=production.",
-    "sms_delete_identity_fix": "REQUIRED — trwały test ma potwierdzić, że ID urządzenia/zlecenia nie trafia do cancel_service_sms_log jako sms_log.id, a Niewysłane nadal usuwa po własnym log ID.",
-    "sms_pending_label_fix": "REQUIRED — trwały test ma potwierdzić etykietę pending_approval = Oczekuje.",
-    "current_release_pr_check": "REQUIRED — przed merge bieżący HEAD musi przejść WAWIS PR checks / targeted-checks i Closure Gate.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany jest READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.59."
+    "sms_delete_identity_fix": "PASS — run 783 potwierdził trwały test: główna kolejka nie przekazuje row.id urządzenia/zlecenia jako sms_log.id, a Niewysłane zachowuje własne ID logu.",
+    "sms_pending_label_fix": "PASS — run 783 potwierdził pending_approval = Oczekuje oraz zgodność wcześniejszych regresji routingu approval/retry.",
+    "current_release_pr_check": "REQUIRED — finalny HEAD po commicie READY_FOR_MAIN musi ponownie przejść WAWIS PR checks / targeted-checks; nie wykonujemy później commita wyłącznie po to, by przepisać wynik CI.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany jest READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.59.",
+    "implementation_pr_check": "PASS — PR #278, WAWIS PR checks run 783: 94 unikalne komendy regresyjne PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate PASS, production build PASS; artifact wawis-closure-evidence-278-1."
   }
 }
