@@ -3,20 +3,68 @@
 -- SMS-06: public.jobs.last_sms_* ma jedno źródło prawdy w triggerze private.remember_job_sms_send.
 -- RPC nie może po triggerze ponownie interpretować statusu poprzedniej próby przez globalny ranking.
 
-do $$
+create or replace function private.remember_job_sms_send()
+returns trigger
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  v_started_attempt boolean := false;
 begin
-  if not exists (
-    select 1
-    from pg_trigger
-    where not tgisinternal
-      and tgrelid='public.sms_log'::regclass
-      and tgname='remember_job_sms_send'
-  ) then
-    raise exception 'SMS lifecycle migration aborted: brak triggera remember_job_sms_send.'
-      using errcode='55000';
+  if new.job_id is null
+     or (
+       nullif(btrim(coalesce(new.provider_message_id,'')),'') is null
+       and new.sent_at is null
+       and new.delivered_at is null
+     ) then
+    return new;
   end if;
+
+  if tg_op='INSERT' then
+    v_started_attempt := true;
+  elsif tg_op='UPDATE' then
+    v_started_attempt := (
+      nullif(btrim(coalesce(old.provider_message_id,'')),'') is null
+      and old.sent_at is null
+      and old.delivered_at is null
+      and (
+        nullif(btrim(coalesce(new.provider_message_id,'')),'') is not null
+        or new.sent_at is not null
+        or new.delivered_at is not null
+      )
+    );
+  end if;
+
+  update public.jobs j
+  set last_sms_log_id=new.id,
+      last_sms_sent_at=coalesce(new.sent_at,new.delivered_at,j.last_sms_sent_at),
+      last_sms_status=new.status,
+      last_sms_error=case
+        when lower(btrim(coalesce(new.status,'')))='error' then new.error_message
+        else null
+      end,
+      sms_recipient_phone=coalesce(nullif(btrim(new.phone),''),j.sms_recipient_phone)
+  where j.id=new.job_id
+    and (
+      j.last_sms_log_id=new.id
+      or j.last_sms_log_id is null
+      or v_started_attempt
+    );
+
+  return new;
 end;
-$$;
+$function$;
+
+drop trigger if exists remember_job_sms_send on public.sms_log;
+create trigger remember_job_sms_send
+after insert or update of provider_message_id,sent_at,delivered_at,status,error_message
+on public.sms_log
+for each row
+execute function private.remember_job_sms_send();
+
+revoke all on function private.remember_job_sms_send() from public, anon, authenticated;
+grant execute on function private.remember_job_sms_send() to service_role;
 
 create or replace function public.claim_service_sms_not_sent_retry(p_log_id uuid)
 returns jsonb
