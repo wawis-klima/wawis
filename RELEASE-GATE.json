@@ -33,8 +33,8 @@
   "release_mode": "standard",
   "production_verification": {
     "supabase_changes": "PASS — SMS-01/SMS-06 lifecycle retry, SMS-02 durable counter i customer_key snapshot wdrożone oraz zweryfikowane na produkcyjnym schemacie.",
-    "pr_check": "PENDING — wymagany ponowny WAWIS PR checks po uporządkowaniu migracji i rozszerzeniu Closure Gate.",
-    "vercel_deployment": "PENDING — produkcja dopiero po merge aktualnego HEAD do main.",
-    "closure_evidence": "PENDING — końcowy artifact ma potwierdzić SMS-01…SMS-06 oraz unikalność numerów migracji."
+    "pr_check": "PASS — WAWIS PR checks / targeted-checks run 37421305298, head bc402bba53098626923c26fc793927f0fc958589.",
+    "vercel_deployment": "PENDING — merge PR #276 do main uruchomi jedyny dozwolony deploy production.",
+    "closure_evidence": "PASS — WAWIS CLOSURE GATE: GO (critical/full), artifact wawis-closure-evidence-276-1, artifact id 11393142366, digest sha256:57b59fdc05c093839ea934eaecc6563f53503614d58b0b29ab2ba8e4c938e7e1."
   }
 }
