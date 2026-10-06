@@ -1,11 +1,11 @@
-# WAWIS 12.56 — gotowa do wdrożenia
+# WAWIS 12.57 — weryfikacja Closure Gate i lifecycle SMS
 
-Domknięto audyt modułu SMS w trzech pakietach zmian.
+Zakres tej wersji:
 
-- bezpieczeństwo wysyłki/retry/callbacków — zamknięte,
-- historia, restore i rebuild — zamknięte,
-- UI, bulk actions, paginacja i lazy loading — zamknięte,
-- send-service-sms v40 jest aktywne,
-- numer aplikacji i service worker cache wyrównano do 12.56.
+- globalny Closure Gate dla całej aplikacji WAWIS,
+- trwały Regression Ledger dla potwierdzonych błędów,
+- SMS-01: kolejne retry po kolejnych niedostarczeniach,
+- SMS-06: bieżący status zlecenia wskazuje najnowszą próbę SMS,
+- behawioralny reproduktor A error → B error → C retry.
 
-Przed merge obowiązuje zielony `WAWIS PR checks / targeted-checks`.
+Status: **NIE GOTOWA DO MAIN** do czasu zielonego `WAWIS PR checks / targeted-checks` i `closure-gate-result.json = GO`.
