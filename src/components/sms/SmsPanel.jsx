@@ -686,7 +686,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       }
 
       setSelectedUnsentIds([]);
-      await refreshSmsMutation({ reloadSmsData, refreshAll });
+      if (showHistory) {
+        await refreshSmsMutationWithHistory({ reloadSmsData, refreshAll, loadFullHistoryPage });
+      } else {
+        await refreshSmsMutation({ reloadSmsData, refreshAll });
+      }
       if (sentCount > 0) {
         setInfoMessage(`Wysłano ${sentCount} wiadomości SMS.`);
       }
@@ -713,9 +717,17 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       await sendUnsentSmsLog({ supabase, log: row });
       setInfoMessage(`SMS dla klienta ${row.client || 'Klient'} został wysłany.`);
-      await refreshSmsMutation({ reloadSmsData, refreshAll });
+      if (showHistory) {
+        await refreshSmsMutationWithHistory({ reloadSmsData, refreshAll, loadFullHistoryPage });
+      } else {
+        await refreshSmsMutation({ reloadSmsData, refreshAll });
+      }
     } catch (error) {
-      await reloadSmsData({ silent: true });
+      if (showHistory) {
+        await refreshSmsMutationWithHistory({ reloadSmsData, refreshAll, loadFullHistoryPage });
+      } else {
+        await reloadSmsData({ silent: true });
+      }
       setErrorMessage(normalizeDatabaseErrorMessage(error));
     } finally {
       smsSendLockRef.current = false;
@@ -778,9 +790,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload(selectedRows) });
       setSelectedUnsentIds([]);
-      await refreshSmsMutation({
+      const refresh = showHistory ? refreshSmsMutationWithHistory : refreshSmsMutation;
+      await refresh({
         reloadSmsData,
         refreshAll,
+        ...(showHistory ? { loadFullHistoryPage } : {}),
         afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
       });
     } catch (error) {
@@ -800,9 +814,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     try {
       const result = await deleteServiceSmsQueueItems({ supabase, rows: buildUnsentDeletePayload([row]) });
       setSelectedUnsentIds((prev) => prev.filter((id) => id !== row.selectionKey));
-      await refreshSmsMutation({
+      const refresh = showHistory ? refreshSmsMutationWithHistory : refreshSmsMutation;
+      await refresh({
         reloadSmsData,
         refreshAll,
+        ...(showHistory ? { loadFullHistoryPage } : {}),
         afterRefresh: () => reportDeleteResult(result, 'niewysłanych pozycji'),
       });
     } catch (error) {
