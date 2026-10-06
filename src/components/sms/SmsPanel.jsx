@@ -10,6 +10,7 @@ import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveS
 import { loadSmsHistoryPage, loadSmsModuleData, loadSmsSettingsOnly, saveSmsSettings } from '../../modules/sms-fetch.js';
 import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms, sendTestSms } from '../../modules/sms-send.js';
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
+import { getQueueDeleteLogIds, getUnsentDeleteLogIds } from '../../modules/sms-delete.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
 import { normalizeDatabaseErrorMessage } from '../../modules/database-errors.js';
 import { refreshSmsMutation, refreshSmsMutationForVisibleHistory, refreshSmsMutationWithHistory } from '../../modules/sms-ui-flow.js';
@@ -153,18 +154,6 @@ function getPrimaryQueueLogId(row = {}) {
 function getRowsForDeletePayload(row = {}) {
   const groupedRows = Array.isArray(row.grouped_sms_rows) ? row.grouped_sms_rows.filter(Boolean) : [];
   return groupedRows.length ? groupedRows : [row];
-}
-
-function getDeleteLogIds(row = {}) {
-  return [...new Set([
-    row.retryLogId,
-    row.id,
-    row.queueLog?.id,
-    row.latestLog?.id,
-    ...(Array.isArray(row.queueLogs) ? row.queueLogs.map((item) => item?.id) : []),
-    ...(Array.isArray(row.grouped_queue_log_ids) ? row.grouped_queue_log_ids : []),
-    ...(Array.isArray(row.grouped_log_ids) ? row.grouped_log_ids : []),
-  ].map((value) => normalizeText(value)).filter(Boolean))];
 }
 
 function getReminderGroupId(row = {}) {
@@ -567,7 +556,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     const seen = new Set();
     return rows.flatMap((row) => getRowsForDeletePayload(row).flatMap((targetRow) => {
       const reminderGroupId = getReminderGroupId(targetRow) || getReminderGroupId(row);
-      const logIds = getDeleteLogIds({ ...row, ...targetRow });
+      const logIds = getQueueDeleteLogIds({ ...row, ...targetRow });
       const base = {
         reminderGroupId,
         deviceId: targetRow.target_type === 'device' ? targetRow.id : (targetRow.device_id || row.device_id || null),
@@ -761,7 +750,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     const seen = new Set();
     return rows.flatMap((row) => {
       const reminderGroupId = getReminderGroupId(row);
-      const logIds = getDeleteLogIds(row);
+      const logIds = getUnsentDeleteLogIds(row);
 
       if (reminderGroupId) {
         const key = `group:${reminderGroupId}`;
