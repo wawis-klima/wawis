@@ -50,6 +50,8 @@ function main() {
   const changelog = read('CHANGELOG.md');
   const rules = read('WAWIS-RULES.md');
   const checklist = read('RELEASE-CHECKLIST.md');
+  const closureGate = read('CLOSURE-GATE.md');
+  const prWorkflow = read('.github/workflows/pr-checks.yml');
   const vercel = readJson('vercel.json');
 
   assert(appVersion === publicAppVersion, `NO-GO: public/app-version.json=${publicAppVersion || 'brak'}, oczekiwano ${appVersion}`);
@@ -70,6 +72,10 @@ function main() {
   assert(rules.includes('WAWIS PR checks / targeted-checks'), 'NO-GO: WAWIS-RULES.md nie wskazuje obowiązkowej bramki PR');
   assert(rules.includes('zielony deployment Vercela'), 'NO-GO: WAWIS-RULES.md nie wymaga zielonego deploymentu Vercela');
   assert(checklist.includes('Jedyna obowiązkowa bramka CI'), 'NO-GO: checklista nie opisuje uproszczonej bramki CI');
+  assert(rules.includes('Closure Gate'), 'NO-GO: WAWIS-RULES.md nie wymaga Closure Gate');
+  assert(closureGate.includes('Każdy potwierdzony błąd'), 'NO-GO: CLOSURE-GATE.md nie wymaga trwałego testu regresyjnego');
+  assert(prWorkflow.includes('Verify Closure Gate'), 'NO-GO: workflow PR nie uruchamia Closure Gate');
+  assert(prWorkflow.includes('wawis-closure-evidence'), 'NO-GO: workflow PR nie archiwizuje dowodów Closure Gate');
   assert(String(vercel.buildCommand || '').includes('release-policy-gate.cjs --deploy'), 'NO-GO: Vercel nie wymaga deploy gate');
 
   const readmeCurrent = extractReadmeCurrent(readme);
