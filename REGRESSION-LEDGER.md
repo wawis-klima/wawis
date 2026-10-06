@@ -20,11 +20,11 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 
 | ID | Priorytet | Mechanizm | Status | Wymagany trwały reproduktor |
 |---|---|---|---|---|
-| SMS-01 | P1 | A error → retry B error → następny retry blokowany jako group_already_sent | OPEN | A error → B error → C claim musi być możliwy; historia A/B zachowana |
+| SMS-01 | P1 | A error → retry B error → następny retry blokowany jako group_already_sent | CLOSED | `scripts/smoke-sms-retry-lifecycle-v1257.mjs`; CI run 719; produkcja: old_rule_blocked=1 → new_rule_blocked=0 |na |
 | SMS-02 | P1 | różni kontrahenci ze wspólnym telefonem łączeni przez frontend/licznik | OPEN | dwa contractor_id + jeden numer; kolejka i licznik muszą zachować 2 niezależne grupy |
 | SMS-03 | P1 | frontend pobiera tylko pierwszą stronę jobs | OPEN | >1000 jobs, urządzenie zależne od zlecenia poza pierwszą stroną nadal trafia do kolejki |
 | SMS-04 | P2 | częściowy błąd delete znika po silent reload | OPEN | partial delete + real reload; komunikat błędu pozostaje widoczny |
 | SMS-05 | P2 | automatyczne otwarcie historii po wysyłce nie pobiera strony historii | OPEN | send → open history → świeży rekord i total bez ręcznego toggle |
-| SMS-06 | P2 | jobs.last_sms_status miesza rangę poprzedniej i nowej próby | OPEN | A error → B provider_sent; last_sms_log_id i last_sms_status muszą opisywać B |
+| SMS-06 | P2 | jobs.last_sms_status miesza rangę poprzedniej i nowej próby | CLOSED | `scripts/smoke-sms-retry-lifecycle-v1257.mjs`; CI run 719; najnowsza próba zachowuje wskaźnik przy starym callbacku |nt; last_sms_log_id i last_sms_status muszą opisywać B |
 
 Po naprawie każdego punktu wpisujemy nazwę testu i zmieniamy status dopiero po zielonym Closure Gate.
