@@ -238,6 +238,14 @@ let state=await db.query(
 assert.equal(state.rows[0].id,b);
 assert.equal(state.rows[0].last_sms_status,'error');
 
+// The newest failed attempt must be visible in Niewysłane despite older failed attempts.
+let snapshot=await db.query('select public.admin_get_sms_module_snapshot() as result');
+let unsent=snapshot.rows[0].result.unsent_logs;
+assert.ok(
+  unsent.some((row)=>row.id===b),
+  'latest retryable failure must remain visible in Niewysłane even with older failed attempts'
+);
+
 // SMS-01: A and B are both historical retryable failures. B must be retryable again.
 let result=await db.query(
   'select public.claim_service_sms_not_sent_retry($1) as result',
@@ -298,19 +306,6 @@ state=await db.query(
 );
 assert.equal(state.rows[0].id,c);
 assert.equal(state.rows[0].last_sms_status,'delivered');
-
-// Unsent snapshot must expose the newest failed attempt when no later success exists.
-await db.exec(`
-  update public.sms_log
-  set status='error',delivered_at=null,error_message='undelivered C'
-  where id='${c}';
-`);
-const snapshot=await db.query('select public.admin_get_sms_module_snapshot() as result');
-const unsent=snapshot.rows[0].result.unsent_logs;
-assert.ok(
-  unsent.some((row)=>row.id===c),
-  'latest retryable failure must remain visible in Niewysłane even with older failed attempts'
-);
 
 console.log('PASS: SMS-01 repeated retry and SMS-06 current-attempt job status lifecycle');
 await db.close();
