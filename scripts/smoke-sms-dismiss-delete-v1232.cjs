@@ -17,6 +17,7 @@ assert.match(sms, /case 'dismissed':\s*return 'usunięto z listy'/);
 assert.match(sms, /'deleted', 'dismissed', 'not_sent'/);
 
 const panel = read('src/components/sms/SmsPanel.jsx');
+const deleteIds = read('src/modules/sms-delete.js');
 assert.match(panel, /latestLog\?\.id/);
 assert.match(panel, /handleDeleteUnsentSelected/);
 assert.match(panel, /handleDeleteUnsentNow/);
