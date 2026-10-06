@@ -1,8 +1,10 @@
 ## Aktualna wersja
-- 12.58
+- 12.59
 
 
 
+
+Wersja 12.59 skraca status SMS `pending_approval` do „Oczekuje” oraz naprawia fałszywy błąd `NOT_FOUND` przy usuwaniu pozycji z głównej kolejki SMS: identyfikator urządzenia/zlecenia nie jest już traktowany jak `sms_log.id`, a widok „Niewysłane” zachowuje własny prawidłowy identyfikator logu.
 
 Wersja 12.58 domyka końcowy pakiet SMS i Closure Gate: otwarta historia jest odświeżana po retry/usunięciu z „Niewysłane”, walidator wymaga kompletnego zestawu komend i E2E, fresh rebuild obejmuje aktualne migracje, polityka release blokuje PENDING, a identyfikatory migracji 12.57 są zgodne z produkcyjnym rejestrem. Dodano też odtwarzalny dwusesyjny PostgreSQL harness dla claim/retry.
 
@@ -71,7 +73,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.58
+# Wawis Klimatyzacja — wersja 12.59
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -887,7 +889,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.58` — końcowe domknięcie 5 P2 z audytu SMS/Closure Gate oraz trwałe testy regresyjne.
+- wersja `12.59` — SMS: krótszy status „Oczekuje” oraz poprawne rozdzielenie ID urządzenia/zlecenia od ID wpisu sms_log podczas usuwania.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
