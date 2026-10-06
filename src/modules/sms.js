@@ -883,7 +883,7 @@ export function getSmsStatusLabel(status) {
   const normalized = normalizeLogStatus(status);
   switch (normalized) {
     case 'pending_approval':
-      return 'Oczekuje na zatwierdzenie';
+      return 'Oczekuje';
     case 'provider_sent':
     case 'sent':
       return 'wysłano';
