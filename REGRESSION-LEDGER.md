@@ -62,3 +62,11 @@ Dowód CI przed ustawieniem READY_FOR_MAIN:
 - Closure Gate GO,
 - production build PASS,
 - artifact `wawis-closure-evidence-277-1`.
+
+
+## SMS 12.59 — zgłoszenia produkcyjne 2026-10-06
+
+| ID | Obszar | Mechanizm | Status | Trwały reproduktor / dowód |
+|---|---|---|---|---|
+| SMS-07 | usuwanie z głównej kolejki | `row.id` urządzenia/zlecenia trafiał razem z prawdziwym `sms_log.id` do anulowania; prawidłowy log znikał, a drugi identyfikator dawał fałszywy `NOT_FOUND` | FIXED-UNVERIFIED | `scripts/smoke-sms-delete-identity-v1259.mjs` |
+| SMS-08 | prezentacja statusu | `pending_approval` miał zbyt długą etykietę „Oczekuje na zatwierdzenie” | FIXED-UNVERIFIED | `scripts/smoke-sms-delete-identity-v1259.mjs` |
