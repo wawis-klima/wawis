@@ -19,4 +19,14 @@ Stan backendu:
 - SMS-04 / SMS-05: obecny przepływ UI jest poprawny; dodane trwałe testy zachowania,
 - migracje 12.57 mają unikalne numery.
 
-Status: **NIE GOTOWA DO MAIN** do czasu ponownego `WAWIS PR checks / targeted-checks` na aktualnym headzie i `closure-gate-result.json = GO`.
+Status: **GOTOWA DO MAIN**.
+
+Dowód przed merge:
+- PR #276, head `bc402bba53098626923c26fc793927f0fc958589`,
+- `WAWIS PR checks / targeted-checks`: SUCCESS,
+- wymagane Playwright E2E: SUCCESS,
+- `WAWIS CLOSURE GATE: GO — critical / full`,
+- artifact: `wawis-closure-evidence-276-1` (ID 11393142366),
+- SMS-01…SMS-06: CLOSED w `REGRESSION-LEDGER.md`,
+- produkcyjny Supabase: SMS-01/SMS-02/SMS-06 wdrożone i zweryfikowane,
+- numery migracji w repo: unikalne.
