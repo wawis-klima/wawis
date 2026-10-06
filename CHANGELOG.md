@@ -1,3 +1,10 @@
+## 12.57
+- dodano globalny Closure Gate dla całej aplikacji: trwałe testy regresyjne, kontrprzykłady, maszynowe dowody CI i fail-closed GO/NO-GO
+- dodano REGRESSION-LEDGER.md, aby każde potwierdzone znalezisko miało stały reproduktor przed statusem CLOSED
+- SMS-01: kolejne retry jest dozwolone po wcześniejszych provider-confirmed failures, jeśli nie istnieje sukces ani niejednoznaczna aktywna próba
+- SMS-06: jobs.last_sms_* wskazuje najnowszą próbę operatora; starszy callback nie może przejąć bieżącego stanu
+- dodano behawioralny test A error → B error → C retry oraz aktualizacji bieżącej próby
+
 ## 12.56
 - domknięto trzy pakiety poprawek audytu SMS: bezpieczeństwo wysyłki/retry, integralność historii i restore, paginację, bulk delete oraz lazy loading
 - poprawiono rozdzielenie daty wysłania i doręczenia, zaznaczenia między stronami, odświeżanie urządzeń i poprawne zakresy paginacji
