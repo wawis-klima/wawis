@@ -4,6 +4,29 @@ import { PGlite } from '@electric-sql/pglite';
 const root = new URL('../../', import.meta.url);
 const manifest = JSON.parse(fs.readFileSync(new URL('supabase/rebuild/manifest-v1089.json', root), 'utf8'));
 
+function assertMigrationCoverage() {
+  const coverageFrom = String(manifest.migrationCoverageFrom || '').trim();
+  if (!/^\d{14}$/.test(coverageFrom)) {
+    throw new Error('manifest-v1089.json requires migrationCoverageFrom as a 14-digit version');
+  }
+  const migrationDir = new URL('supabase/migrations/', root);
+  const repoFiles = fs.readdirSync(migrationDir)
+    .filter((name) => /^\d{14}_.+\.sql$/i.test(name))
+    .filter((name) => name.slice(0, 14) >= coverageFrom)
+    .sort();
+  const manifestSet = new Set(
+    manifest.files
+      .filter((file) => file.startsWith('supabase/migrations/'))
+      .map((file) => file.split('/').pop())
+  );
+  const missing = repoFiles.filter((name) => !manifestSet.has(name));
+  if (missing.length) {
+    throw new Error(`Fresh rebuild manifest omits current migrations: ${missing.join(', ')}`);
+  }
+}
+
+assertMigrationCoverage();
+
 const platformSql = `create role anon;create role authenticated;create role service_role;create role supabase_admin;
 create schema auth;create schema storage;create schema extensions;create schema private;create schema cron;
 create function extensions.gen_random_bytes(integer) returns bytea language sql volatile as $fn$select decode(repeat('ab',$1),'hex')$fn$;
