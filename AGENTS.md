@@ -20,6 +20,7 @@ Bez osobnej zgody nie zmieniaj:
 - Dla problemów granicznych odtwarzaj granicę (np. >1000 rekordów), zamiast sprawdzać tylko typowy mały fixture.
 - Test statyczny typu regex/assert.match może być dowodem pomocniczym, ale nie może być jedynym dowodem dla zmiany TARGETED lub CRITICAL.
 - Przed zamknięciem zmiany wymagaj zielonego Closure Gate i zachowanego artefaktu dowodowego CI.
+- Potwierdzone błędy wpisuj do `REGRESSION-LEDGER.md`; status CLOSED wymaga wskazania konkretnego trwałego testu.
 
 ## Zasady audytu
 - Każde znalezisko musi zawierać dowód: plik, funkcję/fragment i wyjaśnienie mechanizmu problemu.
