@@ -1,14 +1,11 @@
 {
-  "version": "12.58",
-  "summary": "Końcowe domknięcie pięciu P2 audytu SMS/Closure Gate oraz trwałe testy regresyjne.",
+  "version": "12.59",
+  "summary": "Krótszy status oczekującego SMS-a i naprawa fałszywego NOT_FOUND podczas usuwania z głównej kolejki.",
   "changes": [
-    "Historia SMS odświeża się po retry i usuwaniu z Niewysłane, gdy historia jest otwarta.",
-    "Closure Gate wymaga kompletnej listy faktycznie wykonanych komend i dokładnych przebiegów E2E.",
-    "Fresh rebuild obejmuje aktualne migracje 12.57 i automatycznie blokuje przyszłe pominięcia.",
-    "Polityka release prawidłowo odrzuca PENDING/WAITING i ma negatywne testy.",
-    "Identyfikatory migracji 12.57 w repo są zgodne z produkcyjnym rejestrem Supabase.",
-    "Repo zawiera odtwarzalny dwusesyjny PostgreSQL harness dla claim/retry oraz read-only verifier historii migracji.",
-    "Run 774: 99 regresji PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate GO, production build PASS.",
-    "Wersja aplikacji i cache Service Workera pozostają spójne na 12.58."
+    "Status pending_approval jest wyświetlany jako „Oczekuje”.",
+    "Główna kolejka SMS przekazuje do anulowania tylko identyfikatory sms_log, bez row.id urządzenia/zlecenia.",
+    "Zakładka Niewysłane nadal usuwa po własnym row.id, który w tym widoku jest identyfikatorem sms_log.",
+    "Dodano behawioralny test regresyjny odtwarzający mechanizm fałszywego NOT_FOUND oraz kontrolujący nową etykietę.",
+    "Wersja aplikacji i cache Service Workera są podbite do 12.59."
   ]
 }
