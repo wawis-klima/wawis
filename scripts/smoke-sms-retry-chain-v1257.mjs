@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
 const migration = fs.readFileSync(
-  new URL('../supabase/migrations/20261006074500_sms_retry_chain_attempt_pointer_v1257.sql', import.meta.url),
+  new URL('../supabase/migrations/20261006054129_sms_retry_chain_attempt_pointer_v1257.sql', import.meta.url),
   'utf8',
 );
 
