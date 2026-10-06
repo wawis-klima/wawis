@@ -29,9 +29,10 @@ assert.match(panel, /toggleAll\(checked, pagedRows\)/);
 const deletePayloadStart = panel.indexOf('function buildUnsentDeletePayload');
 const deletePayloadEnd = panel.indexOf('async function handleDeleteUnsentSelected', deletePayloadStart);
 const deletePayloadBlock = panel.slice(deletePayloadStart, deletePayloadEnd);
-assert.match(panel, /grouped_log_ids/);
-assert.match(panel, /function getDeleteLogIds/);
-assert.match(deletePayloadBlock, /getDeleteLogIds/);
+const deleteIds = read('src/modules/sms-delete.js');
+assert.match(deleteIds, /grouped_log_ids/);
+assert.match(deleteIds, /export function getUnsentDeleteLogIds/);
+assert.match(deletePayloadBlock, /getUnsentDeleteLogIds/);
 assert.match(deletePayloadBlock, /reminderGroupId/);
 assert.match(panel, /window\.confirm/);
 
