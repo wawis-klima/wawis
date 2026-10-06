@@ -16,15 +16,26 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - FIXED-UNVERIFIED — poprawka istnieje, ale Closure Gate nie potwierdził jeszcze pełnego scenariusza.
 - CLOSED — poprawka i trwały test regresyjny przeszły Closure Gate.
 
-## Otwarte znaleziska SMS — audyt 2026-10-06
+## Audyt SMS — zamknięcie 2026-10-06
 
-| ID | Priorytet | Mechanizm | Status | Wymagany trwały reproduktor |
+Dowód wspólny dla poniższych pozycji:
+- PR #276, WAWIS PR checks run 748,
+- `closure-gate-result.json = GO`,
+- profil `critical`, zakres `full`,
+- 121/121 komend regresyjnych PASS,
+- Playwright mobile PASS,
+- Playwright desktop PASS,
+- artefakt `wawis-closure-evidence-276-1`.
+
+| ID | Priorytet | Mechanizm | Status | Trwały reproduktor / dowód |
 |---|---|---|---|---|
-| SMS-01 | P1 | A error → retry B error → następny retry blokowany jako group_already_sent | CLOSED | `scripts/smoke-sms-retry-lifecycle-v1257.mjs`; CI run 719; produkcja: old_rule_blocked=1 → new_rule_blocked=0 |na |
-| SMS-02 | P1 | różni kontrahenci ze wspólnym telefonem łączeni przez frontend/licznik | FIXED-UNVERIFIED | `scripts/smoke-sms-identity-pagination-v1257.mjs`: 2 contractor_id + 1 numer = 2 grupy; backend counter używa stable customer key |ntractor_id + jeden numer; kolejka i licznik muszą zachować 2 niezależne grupy |
-| SMS-03 | P1 | frontend pobiera tylko pierwszą stronę jobs | FIXED-UNVERIFIED | `scripts/smoke-sms-identity-pagination-v1257.mjs`: 1201 jobs, zakresy 0–499/500–999/1000–1499, job 1201 dociera do kolejki SMS |nie zależne od zlecenia poza pierwszą stroną nadal trafia do kolejki |
-| SMS-04 | P2 | częściowy błąd delete znika po silent reload | FIXED-UNVERIFIED | `scripts/smoke-sms-ui-flow-v1257.mjs`: raport partial delete wykonuje się po reload i pozostaje widoczny |nikat błędu pozostaje widoczny |
-| SMS-05 | P2 | automatyczne otwarcie historii po wysyłce nie pobiera strony historii | FIXED-UNVERIFIED | `scripts/smoke-sms-ui-flow-v1257.mjs`: send/delete → refresh → jawne `loadFullHistoryPage(1)` |nd → open history → świeży rekord i total bez ręcznego toggle |
-| SMS-06 | P2 | jobs.last_sms_status miesza rangę poprzedniej i nowej próby | CLOSED | `scripts/smoke-sms-retry-lifecycle-v1257.mjs`; CI run 719; najnowsza próba zachowuje wskaźnik przy starym callbacku |nt; last_sms_log_id i last_sms_status muszą opisywać B |
+| SMS-01 | P1 | A error → retry B error → następny retry blokowany jako `group_already_sent` | CLOSED | `scripts/smoke-sms-retry-chain-v1257.mjs` + `scripts/smoke-sms-retry-lifecycle-v1257.mjs`; A→B→C retry przechodzi |
+| SMS-02 | P1 | różni kontrahenci ze wspólnym numerem docelowym łączeni przez frontend/licznik | CLOSED | `scripts/smoke-sms-customer-identity-pagination-v1257.mjs` + `scripts/smoke-sms-identity-pagination-v1257.mjs`; 2 contractor_id + 1 numer pozostają 2 klientami |
+| SMS-03 | P1 | niepełny odczyt `jobs` przy >1000 rekordów | CLOSED | te same testy identity/pagination; 1201 jobs, zakresy 0–499 / 500–999 / 1000–1499 |
+| SMS-04 | P2 | komunikat częściowego delete znikał po silent reload | CLOSED | `scripts/smoke-sms-ui-flow-closure-v1257.mjs` + `scripts/smoke-sms-ui-flow-v1257.mjs`; raport jest ustawiany po refreshu |
+| SMS-05 | P2 | historia po wysyłce otwierała się bez świeżego pobrania strony | CLOSED | te same testy UI flow; po mutacji `loadFullHistoryPage(1)` wykonuje się po refreshu |
+| SMS-06 | P2 | `jobs.last_sms_status` / `last_sms_log_id` mogły opisywać poprzednią próbę lub zostać przejęte przez stary callback | CLOSED | testy retry lifecycle/chain; nowa próba przejmuje wskaźnik, spóźniony callback starej próby go nie odzyskuje |
 
-Po naprawie każdego punktu wpisujemy nazwę testu i zmieniamy status dopiero po zielonym Closure Gate.
+## Reguła na przyszłość
+
+Każde kolejne potwierdzone znalezisko dopisujemy do tej tabeli lub kolejnej sekcji domenowej. Status CLOSED nadajemy dopiero po zielonym Closure Gate i zapisanym dowodzie CI.
