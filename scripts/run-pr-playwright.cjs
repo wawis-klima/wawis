@@ -12,7 +12,17 @@ if (!fs.existsSync(impactPath)) throw new Error(`Brak ${impactPath}`);
 const impact = JSON.parse(fs.readFileSync(impactPath, 'utf8'));
 
 if (!impact?.needs_playwright) {
-  writeEvidence({ schema_version: 1, type: 'e2e', platforms: [], runs: [], all_passed: true, skipped: true });
+  writeEvidence({
+    schema_version: 2,
+    type: 'e2e',
+    git_sha: String(process.env.GITHUB_SHA || '').trim() || null,
+    git_run_id: String(process.env.GITHUB_RUN_ID || '').trim() || null,
+    git_run_attempt: String(process.env.GITHUB_RUN_ATTEMPT || '').trim() || null,
+    platforms: [],
+    runs: [],
+    all_passed: true,
+    skipped: true,
+  });
   console.log('Playwright pominięty zgodnie z klasyfikacją ryzyka.');
   process.exit(0);
 }
@@ -21,8 +31,11 @@ const e2e = Array.isArray(impact.e2e) ? impact.e2e : [];
 if (!e2e.length) throw new Error('needs_playwright=true bez wskazanego zakresu E2E.');
 
 const evidence = {
-  schema_version: 1,
+  schema_version: 2,
   type: 'e2e',
+  git_sha: String(process.env.GITHUB_SHA || '').trim() || null,
+  git_run_id: String(process.env.GITHUB_RUN_ID || '').trim() || null,
+  git_run_attempt: String(process.env.GITHUB_RUN_ATTEMPT || '').trim() || null,
   platforms: e2e,
   runs: [],
   all_passed: false,

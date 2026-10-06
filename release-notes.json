@@ -1,14 +1,14 @@
 {
-  "version": "12.57",
-  "summary": "Globalny Closure Gate i domknięcie sześciu znalezisk końcowego audytu SMS.",
+  "version": "12.58",
+  "summary": "Końcowe domknięcie pięciu P2 audytu SMS/Closure Gate oraz trwałe testy regresyjne.",
   "changes": [
-    "Każdy potwierdzony błąd ma trwały test regresyjny i wpis w Regression Ledger.",
-    "CI zapisuje maszynowe dowody wykonanych testów i E2E oraz działa fail-closed.",
-    "SMS-01/SMS-06: kolejne retry po niedostarczeniu działa, a zlecenie wskazuje najnowszą próbę.",
-    "SMS-02: stabilna tożsamość kontrahenta ma pierwszeństwo przed wspólnym numerem telefonu.",
-    "SMS-03: komplet zleceń jest pobierany stronicowo; test obejmuje 1201 rekordów.",
-    "SMS-04: częściowy błąd usuwania pozostaje widoczny po refreshu.",
-    "SMS-05: historia po wysyłce/usunięciu jest jawnie przeładowywana.",
-    "Wersja aplikacji i cache Service Workera pozostają spójne na 12.57."
+    "Historia SMS odświeża się po retry i usuwaniu z Niewysłane, gdy historia jest otwarta.",
+    "Closure Gate wymaga kompletnej listy faktycznie wykonanych komend i dokładnych przebiegów E2E.",
+    "Fresh rebuild obejmuje aktualne migracje 12.57 i automatycznie blokuje przyszłe pominięcia.",
+    "Polityka release prawidłowo odrzuca PENDING/WAITING i ma negatywne testy.",
+    "Identyfikatory migracji 12.57 w repo są zgodne z produkcyjnym rejestrem Supabase.",
+    "Repo zawiera odtwarzalny dwusesyjny PostgreSQL harness dla claim/retry oraz read-only verifier historii migracji.",
+    "Run 774: 99 regresji PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate GO, production build PASS.",
+    "Wersja aplikacji i cache Service Workera pozostają spójne na 12.58."
   ]
 }

@@ -47,6 +47,20 @@ Closure Gate jest kumulacyjny: kiedy wykryjemy nową klasę błędu, dodajemy je
 
 Każde potwierdzone znalezisko wpisujemy także do `REGRESSION-LEDGER.md`. Status CLOSED jest dozwolony dopiero po wskazaniu trwałego pliku testowego i zielonym Closure Gate.
 
+## Race condition i test wielosesyjny
+
+- Jeżeli błąd dotyczy podwójnej rezerwacji, locków, retry, callbacków lub równoległego zapisu, a środowisko pozwala wykonać bezpieczny test bez kontaktu z klientem, przed statusem CLOSED uruchom test na co najmniej dwóch niezależnych sesjach PostgreSQL albo równoważny test rzeczywistej konkurencji.
+- Dowód ma zawierać rozróżnialne sesje (np. `pg_backend_pid()`), oczekiwany wynik „jeden zwycięzca / pozostali zablokowani” oraz kontrolę końcowej liczby rekordów.
+- Test nie może wywoływać SMSAPI ani innych zewnętrznych skutków ubocznych, jeżeli do sprawdzenia wystarcza warstwa claim/rezerwacji.
+- Syntetyczny fixture musi być jednoznacznie oznaczony i po teście usunięty albo pozostawiony w dozwolonym, nieaktywnym stanie zgodnie z ochroną historii.
+- Jeżeli realny test wielosesyjny jest niemożliwy, raport musi to jawnie oznaczyć jako brak dowodu runtime; analiza statyczna sama nie zamyka race condition wysokiego ryzyka.
+
+## Dowód post-deploy bez pętli wersji
+
+- Wynik deploymentu jest dowodem zewnętrznym z GitHub/Vercel i nie wymaga kolejnego commita wyłącznie po to, by zmienić `PENDING` na `PASS`.
+- Źródłowy status release nie może wymuszać samonapędzającej się pętli: commit statusowy → nowy deploy → nowy statusowy commit.
+- Każdy rzeczywisty nowy deployment nadal wymaga podbicia wersji aplikacji.
+
 ## Integralność migracji Supabase
 
 - Każdy plik w `supabase/migrations` musi mieć unikalny 14-cyfrowy numer wersji.

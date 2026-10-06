@@ -136,11 +136,11 @@ assert.equal(queue[0].id, 'job-1201', 'Job beyond the first 1000 rows must reach
 // Backend SMS-02: dashboard count uses stable customer identity, not distinct phone,
 // and the snapshot exposes the durable reminder-group customer key.
 const countMigration = fs.readFileSync(
-  new URL('../supabase/migrations/20261006083000_sms_customer_identity_count_v1257.sql', import.meta.url),
+  new URL('../supabase/migrations/20261006054752_sms_customer_identity_count_v1257.sql', import.meta.url),
   'utf8',
 );
 const snapshotMigration = fs.readFileSync(
-  new URL('../supabase/migrations/20261006080000_sms_snapshot_customer_identity_v1257.sql', import.meta.url),
+  new URL('../supabase/migrations/20261006055831_sms_snapshot_customer_identity_v1257.sql', import.meta.url),
   'utf8',
 );
 const db = new PGlite();

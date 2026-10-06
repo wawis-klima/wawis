@@ -1,6 +1,10 @@
 ## Aktualna wersja
-- 12.57
+- 12.58
 
+
+
+
+Wersja 12.58 domyka końcowy pakiet SMS i Closure Gate: otwarta historia jest odświeżana po retry/usunięciu z „Niewysłane”, walidator wymaga kompletnego zestawu komend i E2E, fresh rebuild obejmuje aktualne migracje, polityka release blokuje PENDING, a identyfikatory migracji 12.57 są zgodne z produkcyjnym rejestrem. Dodano też odtwarzalny dwusesyjny PostgreSQL harness dla claim/retry.
 
 Wersja 12.57 wprowadza globalny Closure Gate dla całej aplikacji i domyka sześć znalezisk końcowego audytu SMS: wielokrotne retry, bieżący status próby, stabilną tożsamość klienta, pełną paginację zleceń, trwały komunikat częściowego usuwania oraz świeże ładowanie historii.
 Wersja 12.41 wyrównuje górne odstępy sekcji w PDF protokołu: płatność, uwagi oraz informacje i ustalenia mają teraz taki sam oddech jak pozostałe bloki.
@@ -67,7 +71,7 @@ Wersja 11.95 dodaje na desktopie przycisk „Wystaw fakturę”. Aplikacja bezpi
 
 Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podglądzie: pinch 100–400%, przesuwanie powiększonego zdjęcia, szybkie 250% po podwójnym stuknięciu oraz przyciski − / + / 100%. Desktopowy podgląd zdjęć pozostaje bez zmian.
 
-# Wawis Klimatyzacja — wersja 12.38
+# Wawis Klimatyzacja — wersja 12.58
 
 ## Stabilizacja diagnostyki, PUSH i Supabase — 11.20
 
@@ -883,7 +887,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.57` — globalny Closure Gate oraz domknięcie SMS-01…SMS-06 z trwałymi testami regresyjnymi i dowodami CI.
+- wersja `12.58` — końcowe domknięcie 5 P2 z audytu SMS/Closure Gate oraz trwałe testy regresyjne.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

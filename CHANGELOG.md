@@ -1,3 +1,13 @@
+## 12.58
+- FINAL-SMS-01: otwarta historia SMS odświeża się po retry oraz po usuwaniu z „Niewysłane”; zamknięta historia nie powoduje dodatkowego odczytu
+- GATE-01: Closure Gate porównuje dokładną listę wymaganych komend i dokładne przebiegi E2E; niekompletne lub zduplikowane evidence daje NO-GO
+- GATE-02: fresh rebuild obejmuje cztery migracje 12.57 i automatycznie odrzuca pominięcie kolejnych migracji od wersji 20261006000000
+- GATE-03: naprawiono egzekwowanie PENDING/WAITING i dodano negatywne testy pełnej polityki release
+- GATE-04: nazwy/timestampy czterech migracji 12.57 w repo są zgodne z produkcyjnym supabase_migrations.schema_migrations
+- dodano odtwarzalny native PostgreSQL harness z dwoma połączeniami, pg_backend_pid, pg_blocking_pids, BEGIN/COMMIT, jednym zwycięzcą i cleanupem
+- dodano read-only verifier zgodności lokalnych migracji z produkcyjnym rejestrem
+- 99 regresji, Playwright mobile+desktop, Closure Gate i production build przeszły w run 774
+
 ## 12.57
 - dodano globalny Closure Gate dla całej aplikacji: trwałe testy regresyjne, kontrprzykłady, maszynowe dowody CI i fail-closed GO/NO-GO
 - dodano REGRESSION-LEDGER.md, aby każde potwierdzone znalezisko miało stały reproduktor przed statusem CLOSED

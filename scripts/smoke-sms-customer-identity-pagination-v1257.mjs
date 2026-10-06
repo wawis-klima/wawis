@@ -5,7 +5,7 @@ import { fetchAllOrderedTableRows } from '../src/modules/paginated-read.js';
 import { getSmsCustomerBaseKey } from '../src/modules/sms.js';
 
 const migration = fs.readFileSync(
-  new URL('../supabase/migrations/20261006083000_sms_customer_identity_count_v1257.sql', import.meta.url),
+  new URL('../supabase/migrations/20261006054752_sms_customer_identity_count_v1257.sql', import.meta.url),
   'utf8',
 );
 const desktopJobsFetch = fs.readFileSync(new URL('../src/modules/jobs-fetch.js', import.meta.url), 'utf8');

@@ -31,6 +31,9 @@ assert.match(rules, /Closure Gate/);
 assert.match(agents, /test regresyjny/);
 assert.match(closure, /Kontrprzykład/);
 assert.match(closure, /nie może być zamknięta wyłącznie testem statycznym/i);
+assert.match(closure, /dwóch niezależnych sesjach PostgreSQL/i);
+assert.match(closure, /Dowód post-deploy bez pętli wersji/i);
+assert.match(agents, /Każdy faktyczny kolejny deploy wymaga natomiast nowego numeru wersji/i);
 assert.match(testGroups, /sms:\s*\[/);
 assert.deepEqual(
   duplicateMigrationVersions,

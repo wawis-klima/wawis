@@ -43,9 +43,13 @@ for (const groupName of groupNames) {
 
 const commands = uniqueCommands(groupNames);
 evidence = {
-  schema_version: 1,
+  schema_version: 2,
   type: 'grouped-checks',
+  git_sha: String(process.env.GITHUB_SHA || '').trim() || null,
+  git_run_id: String(process.env.GITHUB_RUN_ID || '').trim() || null,
+  git_run_attempt: String(process.env.GITHUB_RUN_ATTEMPT || '').trim() || null,
   groups: groupNames,
+  expected_commands: commands,
   commands: [],
   all_passed: false,
 };

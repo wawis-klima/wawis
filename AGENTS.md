@@ -21,6 +21,8 @@ Bez osobnej zgody nie zmieniaj:
 - Test statyczny typu regex/assert.match może być dowodem pomocniczym, ale nie może być jedynym dowodem dla zmiany TARGETED lub CRITICAL.
 - Przed zamknięciem zmiany wymagaj zielonego Closure Gate i zachowanego artefaktu dowodowego CI.
 - Potwierdzone błędy wpisuj do `REGRESSION-LEDGER.md`; status CLOSED wymaga wskazania konkretnego trwałego testu.
+- Dla race condition w bazie, jeżeli jest to bezpieczne i wykonalne, wykonaj również test na dwóch niezależnych sesjach PostgreSQL i zapisz dowód jednego zwycięzcy oraz końcowego stanu danych.
+- Nie twórz po deployu kolejnego commita tylko po to, by zmienić status ewidencyjny; końcowy dowód deploymentu pochodzi z GitHub/Vercel. Każdy faktyczny kolejny deploy wymaga natomiast nowego numeru wersji.
 
 ## Zasady audytu
 - Każde znalezisko musi zawierać dowód: plik, funkcję/fragment i wyjaśnienie mechanizmu problemu.

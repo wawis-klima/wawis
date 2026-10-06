@@ -6,6 +6,7 @@ for (const prefix of ['src']) {
   const sms = await import(`../${prefix}/modules/sms.js`);
   const { buildUnsentSmsLogs } = await import(`../${prefix}/modules/sms-unsent.js`);
   const { sendUnsentSmsLog, approveAndSendSmsLogs } = await import(`../${prefix}/modules/sms-send.js`);
+  const { refreshSmsMutationForVisibleHistory } = await import(`../${prefix}/modules/sms-ui-flow.js`);
   const calls = [];
   let response = { ok: true, sentCount: 1 };
   const supabase = {
@@ -69,7 +70,8 @@ for (const prefix of ['src']) {
   const context = {
     smsSendLockRef: { current: false }, supabase,
     setSendBusy: () => {}, setSendingUnsentIds: () => {}, setInfoMessage: (value) => messages.push(value), setErrorMessage: (value) => messages.push(value),
-    reloadSmsData: async () => {}, refreshAll: async () => {},
+    reloadSmsData: async () => {}, refreshAll: async () => {}, loadFullHistoryPage: async () => {}, showHistory: false,
+    refreshSmsMutationForVisibleHistory,
     normalizeDatabaseErrorMessage: (error) => error.message,
     sendUnsentSmsLog: () => { sends += 1; return new Promise((resolve) => { resolveSend = resolve; }); },
   };

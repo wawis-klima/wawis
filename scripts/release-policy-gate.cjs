@@ -4,7 +4,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 
 function read(file) {
-  return fs.readFileSync(path.join(root, file), 'utf8');
+  const resolved = path.isAbsolute(file) ? file : path.join(root, file);
+  return fs.readFileSync(resolved, 'utf8');
 }
 
 function readJson(file) {
@@ -45,7 +46,7 @@ function main() {
   const packageVersion = String(readJson('package.json').version || '').trim();
   const srcVersion = extractSourceVersion(read('src/version.js'));
   const mobileVersion = extractSourceVersion(read('src/mobile791/version.js'));
-  const gate = readJson('RELEASE-GATE.json');
+  const gate = readJson(process.env.WAWIS_RELEASE_GATE_PATH || 'RELEASE-GATE.json');
   const readme = read('README.md');
   const changelog = read('CHANGELOG.md');
   const rules = read('WAWIS-RULES.md');
@@ -59,6 +60,9 @@ function main() {
   assert(appVersion === srcVersion, `NO-GO: src/version.js=${srcVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(appVersion === mobileVersion, `NO-GO: mobile version=${mobileVersion || 'brak'}, oczekiwano ${appVersion}`);
   assert(String(gate.version || '').trim() === appVersion, `NO-GO: RELEASE-GATE.json=${gate.version || 'brak'}, oczekiwano ${appVersion}`);
+  const postDeployResult = String(gate.postdeploy_diagnostics?.result || '').trim().toUpperCase();
+  assert(postDeployResult !== 'PENDING' && postDeployResult !== 'WAITING', 'NO-GO: post-deploy status w źródle nie może być PENDING/WAITING; użyj zewnętrznego dowodu deploymentu (EXTERNAL), aby nie tworzyć kolejnego deploymentu przez commit statusowy');
+  assert(!/\bPENDING\b/i.test(JSON.stringify(gate.production_verification || {})), 'NO-GO: production_verification nie może zawierać PENDING; użyj jawnego REQUIRED albo EXTERNAL');
   assert(['mobile', 'desktop', 'full'].includes(gate.scope), `NO-GO: nieprawidłowy zakres ${gate.scope || 'brak'}`);
 
   const configuredReleaseBranch = String(gate.release_branch || '').trim();
