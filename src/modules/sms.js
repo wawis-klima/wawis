@@ -256,11 +256,24 @@ function normalizeSourceJobId(value) {
 }
 
 function getSmsCustomerBaseKey(record = {}) {
-  const phone = normalizeSmsPhone(record.sms_recipient_phone || record.phone);
-  if (phone) return `phone:${phone}`;
+  const durableKey = String(record.reminder_group_customer_key || '').trim();
+  if (/^(contractor|job|device):[^\s]+$/i.test(durableKey)) return durableKey.toLowerCase();
 
   const contractorId = String(record.contractor_id || '').trim();
   if (contractorId) return `contractor:${contractorId}`;
+
+  const sourceJobId = normalizeSourceJobId(
+    record.source_job_id
+      || record.job_id
+      || (record.target_type === 'job' ? record.id : ''),
+  );
+  if (sourceJobId) return `job:${sourceJobId}`;
+
+  const deviceId = String(record.device_id || (record.target_type === 'device' ? record.id : '') || '').trim();
+  if (deviceId) return `device:${deviceId}`;
+
+  const phone = normalizeSmsPhone(record.sms_recipient_phone || record.phone);
+  if (phone) return `phone:${phone}`;
 
   const name = normalizeSmsKeyPart(record.contractor_name || record.client || record.title);
   const street = normalizeSmsKeyPart(record.contractor_street || record.street);
