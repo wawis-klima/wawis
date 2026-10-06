@@ -1,29 +1,29 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.56",
+  "version": "12.57",
   "scope": "full",
-  "release_branch": "release/v12.56",
+  "release_branch": "release/v12.57",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Pakiety 1–3 audytu SMS przeszły targeted regressions, dwa rebuildy, Playwright E2E i production build. Backend SMS v40 ACTIVE."
+    "notes": "Start v12.57 z aktualnego main 12.56. Closure Gate i pakiet SMS-01/SMS-06 wymagają pełnych dowodów CI przed GO."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.56.zip"
+    "file_name": "klima-app-v12.57.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.56",
-    "ready_for_main": true,
+    "source_branch": "release/v12.57",
+    "ready_for_main": false,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po wdrożeniu potwierdzić na iPhonie numer v12.56 oraz działanie modułu SMS: Niewysłane, historia, paginacja, bulk delete i ustawienia/szablony."
+    "notes": "Po GO i wdrożeniu potwierdzić numer 12.57 oraz retry SMS po kolejnych niedostarczeniach."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "DONE — migracje SMS do v12.56 oraz send-service-sms v40 ACTIVE.",
-    "pr_check": "PENDING — WAWIS PR checks dla release/v12.56",
-    "vercel_deployment": "PENDING — po merge do main"
+    "supabase_changes": "PENDING — migracja v12.57 nie jest jeszcze wdrożona.",
+    "pr_check": "PENDING — Closure Gate dla release/v12.57",
+    "vercel_deployment": "PENDING — dopiero po zielonym Closure Gate i merge do main"
   }
 }
