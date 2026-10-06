@@ -1,4 +1,5 @@
 import { getPhotoStoragePath } from "./photos.js";
+import { fetchAllOrderedTableRows } from "./paginated-read.js";
 
 const DETAILS_PHOTO_URL_MODE = 'lazy-full-v975';
 const JOB_SUMMARY_BASE_FIELDS = 'id, title, client, email, phone, city, street, location, status, installation_date, device_model, device_serial_number, admin_note, created_at, created_by, main_technician_id, installer_ids, contractor_id, contractor_address_id, sms_consent, sms_reminder_enabled, service_due_date, service_reminder_years, last_sms_sent_at, last_sms_status, last_sms_error, sms_recipient_phone, payment_confirmation_enabled, payment_amount, payment_kind, payment_method, payment_paid_at, payment_recorded_by, payment_updated_at, vat_invoice_issued, vat_invoice_fakturownia_confirmed, vat_invoice_fakturownia_invoice_id, vat_invoice_fakturownia_invoice_number, vat_invoice_fakturownia_confirmed_at';
@@ -102,17 +103,25 @@ async function getJobsData({ supabase }) {
   const completionFields = JOB_SUMMARY_COMPLETION_FIELDS;
 
   let jobsFields = completionFields;
-  let result = await supabase
-    .from('jobs')
-    .select(jobsFields)
-    .order('created_at', { ascending: false });
+  let result = await fetchAllOrderedTableRows({
+    supabase,
+    table: 'jobs',
+    fields: jobsFields,
+    pageSize: 500,
+    orderBy: 'created_at',
+    ascending: false,
+  });
 
   if (result.error && isMissingJobCompletionColumnsError(result.error)) {
     jobsFields = baseFields;
-    result = await supabase
-      .from('jobs')
-      .select(jobsFields)
-      .order('created_at', { ascending: false });
+    result = await fetchAllOrderedTableRows({
+      supabase,
+      table: 'jobs',
+      fields: jobsFields,
+      pageSize: 500,
+      orderBy: 'created_at',
+      ascending: false,
+    });
   }
 
   if (result.error) throw result.error;
