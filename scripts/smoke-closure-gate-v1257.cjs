@@ -1,12 +1,16 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const path = require('node:path');
 const { selectDomainGroups } = require('./release-impact.cjs');
 
-const workflow = fs.readFileSync(new URL('../.github/workflows/pr-checks.yml', import.meta.url), 'utf8');
-const rules = fs.readFileSync(new URL('../WAWIS-RULES.md', import.meta.url), 'utf8');
-const agents = fs.readFileSync(new URL('../AGENTS.md', import.meta.url), 'utf8');
-const closure = fs.readFileSync(new URL('../CLOSURE-GATE.md', import.meta.url), 'utf8');
-const testGroups = fs.readFileSync(new URL('./test-groups.cjs', import.meta.url), 'utf8');
+const root = path.resolve(__dirname, '..');
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+
+const workflow = read('.github/workflows/pr-checks.yml');
+const rules = read('WAWIS-RULES.md');
+const agents = read('AGENTS.md');
+const closure = read('CLOSURE-GATE.md');
+const testGroups = read('scripts/test-groups.cjs');
 
 assert.ok(selectDomainGroups(['src/modules/sms.js']).includes('sms'));
 assert.ok(selectDomainGroups(['supabase/functions/send-service-sms/index.ts']).includes('sms'));
