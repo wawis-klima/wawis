@@ -2,7 +2,7 @@
 - 12.57
 
 
-Wersja 12.57 wprowadza globalny Closure Gate dla całej aplikacji oraz domyka lifecycle retry SMS: poprzednie potwierdzone błędy dostarczenia nie blokują kolejnego retry, a zlecenie wskazuje status najnowszej próby.
+Wersja 12.57 wprowadza globalny Closure Gate dla całej aplikacji i domyka sześć znalezisk końcowego audytu SMS: wielokrotne retry, bieżący status próby, stabilną tożsamość klienta, pełną paginację zleceń, trwały komunikat częściowego usuwania oraz świeże ładowanie historii.
 Wersja 12.41 wyrównuje górne odstępy sekcji w PDF protokołu: płatność, uwagi oraz informacje i ustalenia mają teraz taki sam oddech jak pozostałe bloki.
 
 Wersja 12.40 dodaje do mobilnego protokołu opcjonalną uwagę. Pole jest domyślnie zwinięte, ma limit 300 znaków, zapisuje się razem z protokołem i trafia do PDF. Zmiana uwagi wymaga ponownego podpisu klienta.
@@ -883,7 +883,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.57` — dodano globalny Closure Gate z dowodami CI oraz poprawiono lifecycle retry SMS: kolejne bezpieczne ponowienie po niedostarczeniu i stan bieżącej próby w zleceniu.
+- wersja `12.57` — globalny Closure Gate oraz domknięcie SMS-01…SMS-06 z trwałymi testami regresyjnymi i dowodami CI.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
