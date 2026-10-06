@@ -19,13 +19,16 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 ## Audyt SMS — zamknięcie 2026-10-06
 
 Dowód wspólny dla poniższych pozycji:
-- PR #276, WAWIS PR checks run 748,
+- PR #276, finalny WAWIS PR checks run 755,
 - `closure-gate-result.json = GO`,
 - profil `critical`, zakres `full`,
 - 121/121 komend regresyjnych PASS,
 - Playwright mobile PASS,
 - Playwright desktop PASS,
-- artefakt `wawis-closure-evidence-276-1`.
+- artefakt `wawis-closure-evidence-276-1`,
+- dwusesyjny PostgreSQL normal claim: PID 1233461 wygrał, PID 1233462 bez claimu,
+- dwusesyjny PostgreSQL retry: PID 1233472 `ok=true`, PID 1233476 `retry_claim_exists`, dokładnie 1 claim retry,
+- syntetyczny fixture po teście: 0 claimów / 0 logów / 0 jobs.
 
 | ID | Priorytet | Mechanizm | Status | Trwały reproduktor / dowód |
 |---|---|---|---|---|
@@ -38,4 +41,4 @@ Dowód wspólny dla poniższych pozycji:
 
 ## Reguła na przyszłość
 
-Każde kolejne potwierdzone znalezisko dopisujemy do tej tabeli lub kolejnej sekcji domenowej. Status CLOSED nadajemy dopiero po zielonym Closure Gate i zapisanym dowodzie CI.
+Każde kolejne potwierdzone znalezisko dopisujemy do tej tabeli lub kolejnej sekcji domenowej. Status CLOSED nadajemy dopiero po zielonym Closure Gate i zapisanym dowodzie CI. Dla race condition w bazie, gdy jest to możliwe i bezpieczne, wymagany jest dodatkowo dowód z dwóch niezależnych sesji PostgreSQL albo równoważny test rzeczywistej konkurencji.
