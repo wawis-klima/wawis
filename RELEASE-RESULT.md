@@ -1,51 +1,36 @@
-# WAWIS 12.58 — porządek release + dwusesyjny dowód PostgreSQL
+# WAWIS 12.58 — pakiet końcowy SMS + Closure Gate
 
-Ta wersja nie wprowadza nowej funkcjonalnej zmiany w module SMS. Jej celem jest uporządkowanie końcowej ewidencji po 12.57 i zapisanie brakującego dowodu konkurencji na dwóch rzeczywistych sesjach PostgreSQL przed końcowym audytem Codexa.
+Pakiet 12.58 domyka pięć P2 z końcowego audytu SMS/Closure Gate. Zgodnie z decyzją właściciela aplikacji nie wykonujemy kolejnego audytu Codexa; podstawą wdrożenia jest finalny WAWIS Closure Gate na aktualnym HEAD.
 
-## Zamknięcie 12.57
+## Zamknięte problemy
 
-- PR #276 został zmergowany do `main`.
-- Finalny `WAWIS PR checks` run 755 zakończył się SUCCESS.
-- Regresje grupowe: PASS.
-- Playwright mobile: PASS.
-- Playwright desktop: PASS.
-- `Verify Closure Gate`: PASS.
-- Production build: PASS.
-- Vercel: deployment `dpl_6VHW77Esacbqdx8Q1Rvyz4GQ1fHD` ma stan READY, target `production`, commit `d685c45b1a06120ade2db22906c6f626c4e71fbc`.
-- W deployowanym commicie `app-version.json` i `public/app-version.json` wskazują 12.57.
-- SMS-01…SMS-06 pozostają CLOSED w `REGRESSION-LEDGER.md`.
+- FINAL-SMS-01 — otwarta historia odświeża się po retry oraz usuwaniu z „Niewysłane”.
+- GATE-01 — walidator wymaga dokładnego zestawu faktycznie wykonanych komend i dokładnych przebiegów E2E.
+- GATE-02 — fresh rebuild obejmuje aktualne migracje 12.57 i blokuje przyszłe pominięcia.
+- GATE-03 — PENDING/WAITING jest rzeczywiście blokowane; testy negatywne są wykonywalne.
+- GATE-04 — identyfikatory czterech migracji 12.57 w repo odpowiadają produkcyjnemu rejestrowi Supabase 1:1.
+- Repo zawiera odtwarzalny native two-session PostgreSQL harness dla zwykłego claimu i retry.
 
-## Dwusesyjny PostgreSQL — zwykły claim
+## Dowody przed READY_FOR_MAIN
 
-Dwie niezależne sesje zostały uruchomione równolegle na syntetycznym zleceniu bez wywoływania SMSAPI.
+- PR #277, implementacyjny run 774.
+- 99/99 komend regresyjnych PASS.
+- Playwright mobile PASS.
+- Playwright desktop PASS.
+- Verify Closure Gate PASS.
+- Production build PASS.
+- Artifact: wawis-closure-evidence-277-1.
+- Produkcyjny rejestr Supabase potwierdza:
+  - 20261006051947 — sms_retry_attempt_lifecycle_v1257
+  - 20261006054129 — sms_retry_chain_attempt_pointer_v1257
+  - 20261006054752 — sms_customer_identity_count_v1257
+  - 20261006055831 — sms_snapshot_customer_identity_v1257
+- Dwusesyjny runtime wykonany wcześniej: normal claim 1 zwycięzca; retry 1 zwycięzca; fixture po teście 0/0/0.
 
-- sesja A: `pg_backend_pid() = 1233461` → otrzymała `claim_id`,
-- sesja B: `pg_backend_pid() = 1233462` → `claim_id = NULL`,
-- wynik: dokładnie jedna sesja uzyskała prawo do wysyłki.
+## Status
 
-## Dwusesyjny PostgreSQL — retry
+**READY_FOR_MAIN**
 
-Dwie niezależne sesje równocześnie wywołały retry tego samego syntetycznego wpisu `error`.
+Warunek merge: finalny `WAWIS PR checks / targeted-checks` dla bieżącego HEAD musi być zielony i `closure-gate-result.json` musi mieć `GO`.
 
-- sesja A: `pg_backend_pid() = 1233472` → `ok=true`,
-- sesja B: `pg_backend_pid() = 1233476` → `ok=false`, `reason=retry_claim_exists`,
-- kontrola bazy: dokładnie 1 `retry_claim`,
-- wynik: podwójne retry tej samej grupy nie jest możliwe.
-
-## Sprzątanie fixture
-
-Po teście usunięto wyłącznie zarezerwowane rekordy syntetyczne użyte przez test.
-
-- claims left: 0,
-- sms_log fixtures left: 0,
-- jobs fixtures left: 0.
-
-Żaden SMS nie został wysłany do SMSAPI ani do klienta.
-
-## Status release
-
-Nie używamy już źródłowego `PENDING` po deployu, które wymuszałoby kolejny commit i kolejny deployment. Końcowy dowód produkcyjny pozostaje w GitHub/Vercel.
-
-**Aktualny status 12.58: WAITING_FINAL_CODEX_AUDIT.**
-
-Po zielonym końcowym audycie SMS ustawiamy `main_protection.ready_for_main=true`, przepuszczamy aktualny HEAD przez Closure Gate i dopiero wtedy mergujemy do `main`.
+Po merge wymagane jest potwierdzenie produkcyjnego deploymentu dokładnego commita i wersji 12.58. Końcowy dowód deploymentu pozostaje zewnętrzny w GitHub/Vercel i nie tworzy kolejnego commita statusowego.
