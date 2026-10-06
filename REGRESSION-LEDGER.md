@@ -42,3 +42,23 @@ Dowód wspólny dla poniższych pozycji:
 ## Reguła na przyszłość
 
 Każde kolejne potwierdzone znalezisko dopisujemy do tej tabeli lub kolejnej sekcji domenowej. Status CLOSED nadajemy dopiero po zielonym Closure Gate i zapisanym dowodzie CI. Dla race condition w bazie, gdy jest to możliwe i bezpieczne, wymagany jest dodatkowo dowód z dwóch niezależnych sesji PostgreSQL albo równoważny test rzeczywistej konkurencji.
+
+
+## Końcowy pakiet 12.58 — zamknięcie P2 z audytu końcowego
+
+| ID | Obszar | Status | Trwały dowód |
+|---|---|---|---|
+| FINAL-SMS-01 | historia po retry/delete z Niewysłane | CLOSED | `scripts/smoke-sms-history-mutations-v1258.mjs` + wspólny `refreshSmsMutationForVisibleHistory` |
+| GATE-01 | niekompletne commands/E2E mogły przejść jako GO | CLOSED | `scripts/smoke-closure-evidence-negative-v1258.cjs`; verifier porównuje dokładny expected command set i E2E runs |
+| GATE-02 | fresh rebuild kończył się na 12.56 | CLOSED | manifest zawiera migracje 12.57, `migrationCoverageFrom`, a rebuild-rehearsal failuje przy pominięciu |
+| GATE-03 | PENDING regex nie egzekwował polityki | CLOSED | `scripts/smoke-release-policy-negative-v1258.cjs` |
+| GATE-04 | timestampy migracji repo != produkcja | CLOSED | repo: 20261006051947/054129/054752/055831; read-only produkcja potwierdzona 1:1; `scripts/verify-supabase-migration-history-v1258.mjs` |
+
+Dowód CI przed ustawieniem READY_FOR_MAIN:
+- PR #277, run 774,
+- 99/99 komend regresyjnych PASS,
+- Playwright mobile PASS,
+- Playwright desktop PASS,
+- Closure Gate GO,
+- production build PASS,
+- artifact `wawis-closure-evidence-277-1`.
