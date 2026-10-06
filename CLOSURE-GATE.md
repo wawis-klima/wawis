@@ -45,6 +45,8 @@ SMS ma osobną grupę `sms`, ponieważ jego poprawność zależy równocześnie 
 
 Closure Gate jest kumulacyjny: kiedy wykryjemy nową klasę błędu, dodajemy jej reprodukcję do stałego zestawu testów. Nie usuwamy testu tylko dlatego, że konkretna poprawka została już wdrożona.
 
+Każde potwierdzone znalezisko wpisujemy także do `REGRESSION-LEDGER.md`. Status CLOSED jest dozwolony dopiero po wskazaniu trwałego pliku testowego i zielonym Closure Gate.
+
 ## GO / NO-GO
 
 GO:
