@@ -27,5 +27,8 @@ console.log(`Selected WAWIS PR groups: ${groups.join(', ')}`);
 
 execFileSync(process.execPath, ['scripts/run-test-group.cjs', ...groups], {
   stdio: 'inherit',
-  env: process.env,
+  env: {
+    ...process.env,
+    WAWIS_EVIDENCE_PATH: process.env.WAWIS_EVIDENCE_PATH || 'closure-evidence.json',
+  },
 });
