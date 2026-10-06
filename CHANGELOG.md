@@ -3,6 +3,10 @@
 - dodano REGRESSION-LEDGER.md, aby każde potwierdzone znalezisko miało stały reproduktor przed statusem CLOSED
 - SMS-01: kolejne retry jest dozwolone po wcześniejszych provider-confirmed failures, jeśli nie istnieje sukces ani niejednoznaczna aktywna próba
 - SMS-06: jobs.last_sms_* wskazuje najnowszą próbę operatora; starszy callback nie może przejąć bieżącego stanu
+- SMS-02: frontend i licznik używają stabilnej tożsamości contractor/job/device przed numerem telefonu
+- SMS-03: desktop i mobile pobierają komplet zleceń stronami po 500 rekordów; test obejmuje 1201 zleceń
+- SMS-04: wynik częściowego usuwania jest raportowany po odświeżeniu, więc komunikat błędu nie znika
+- SMS-05: po wysyłce i operacjach otwierających historię jawnie pobierana jest świeża strona 1 historii
 - dodano behawioralny test A error → B error → C retry oraz aktualizacji bieżącej próby
 
 ## 12.56
