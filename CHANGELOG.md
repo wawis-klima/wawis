@@ -1,3 +1,11 @@
+## 12.58
+- brak nowych zmian funkcjonalnych SMS względem 12.57; wersja porządkuje ewidencję release przed końcowym audytem Codexa
+- realny dwusesyjny PostgreSQL test zwykłego claimu: dwa różne backend PID, dokładnie jeden claim, druga sesja bez rezerwacji
+- realny dwusesyjny PostgreSQL test retry: jedna sesja `ok=true`, druga `retry_claim_exists`; końcowo dokładnie 1 claim retry
+- po teście usunięto cały syntetyczny fixture: 0 claimów, 0 logów testowych, 0 testowych zleceń
+- status release nie używa już samonapędzającego się `PENDING` po deployu; końcowy dowód produkcyjny pozostaje zewnętrzny w GitHub/Vercel
+- wersja aplikacji i cache Service Workera zostały podniesione do 12.58
+
 ## 12.57
 - dodano globalny Closure Gate dla całej aplikacji: trwałe testy regresyjne, kontrprzykłady, maszynowe dowody CI i fail-closed GO/NO-GO
 - dodano REGRESSION-LEDGER.md, aby każde potwierdzone znalezisko miało stały reproduktor przed statusem CLOSED
