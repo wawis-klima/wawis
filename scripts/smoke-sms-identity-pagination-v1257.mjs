@@ -133,9 +133,14 @@ queue = deriveSmsQueue(buildSmsTargets({ jobs: paged.data, devices: [] }), []);
 assert.equal(queue.length, 1);
 assert.equal(queue[0].id, 'job-1201', 'Job beyond the first 1000 rows must reach the SMS queue.');
 
-// Backend SMS-02: dashboard count uses stable customer identity, not distinct phone.
-const migration = fs.readFileSync(
-  new URL('../supabase/migrations/20261006074500_sms_stable_identity_counter_v1257.sql', import.meta.url),
+// Backend SMS-02: dashboard count uses stable customer identity, not distinct phone,
+// and the snapshot exposes the durable reminder-group customer key.
+const countMigration = fs.readFileSync(
+  new URL('../supabase/migrations/20261006083000_sms_customer_identity_count_v1257.sql', import.meta.url),
+  'utf8',
+);
+const snapshotMigration = fs.readFileSync(
+  new URL('../supabase/migrations/20261006080000_sms_snapshot_customer_identity_v1257.sql', import.meta.url),
   'utf8',
 );
 const db = new PGlite();
@@ -255,7 +260,8 @@ await db.exec(`
   );
 `);
 
-await db.exec(migration);
+await db.exec(countMigration);
+await db.exec(snapshotMigration);
 
 const contractorA = '71000000-0000-4000-8000-000000000001';
 const contractorB = '71000000-0000-4000-8000-000000000002';
