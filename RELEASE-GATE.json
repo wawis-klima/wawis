@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "PASS",
-    "notes": "Start v12.57 z aktualnego main 12.56. Closure Gate i pakiet SMS-01/SMS-06 wymagają pełnych dowodów CI przed GO."
+    "notes": "Start v12.57 z main 12.56. Globalny Closure Gate jest aktywny; pełny przebieg implementacyjny run 748 zakończył się GO."
   },
   "drive_backup": {
     "required": false,
@@ -16,14 +16,14 @@
   },
   "main_protection": {
     "source_branch": "release/v12.57",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "PENDING",
-    "notes": "Po GO i wdrożeniu potwierdzić numer 12.57 oraz retry SMS po kolejnych niedostarczeniach."
+    "notes": "Po merge potwierdzić produkcyjny deployment Vercela oraz widoczną wersję 12.57."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,9 +32,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "supabase_changes": "PARTIAL — SMS-01/SMS-06 v12.57 wdrożone i zweryfikowane; migracja stabilnej tożsamości/licznika SMS-02 czeka na finalny Closure Gate.",
-    "pr_check": "PENDING — finalny WAWIS PR checks po SMS-01…SMS-06.",
-    "vercel_deployment": "PENDING — dopiero po zamknięciu wszystkich SMS-01…SMS-06 i merge do main",
-    "closure_evidence": "PENDING — finalny artifact ma obejmować wszystkie sześć reproduktorów."
+    "supabase_changes": "DONE — SMS-01/SMS-06 lifecycle retry/pointer oraz SMS-02 stable customer counter są wdrożone i zweryfikowane testami transakcyjnymi z ROLLBACK.",
+    "pr_check": "GO — run 748: regresje, mobile E2E, desktop E2E, Closure Gate i production build PASS. Bieżący HEAD musi ponownie przejść wymagany check po tym commicie dokumentującym zamknięcie.",
+    "vercel_deployment": "PENDING — produkcja dopiero po merge aktualnego HEAD do main.",
+    "closure_evidence": "GO — artifact wawis-closure-evidence-276-1; 121/121 komend PASS, oba E2E PASS, closure-gate-result.json=GO."
   }
 }
