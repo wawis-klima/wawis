@@ -1,11 +1,11 @@
 {
-  "version": "12.56",
-  "summary": "Domknięto audyt modułu SMS i wyrównano numer aplikacji z linią migracji backendu.",
+  "version": "12.57",
+  "summary": "Globalny Closure Gate i domknięcie lifecycle kolejnych prób SMS.",
   "changes": [
-    "Naprawiono bezpieczeństwo retry, callbacków i claimów SMS.",
-    "Naprawiono historię SMS, restore archiwów oraz pełną paginację.",
-    "Naprawiono grupowe usuwanie, partial bulk, zaznaczenia między stronami i zakresy paginacji.",
-    "Ustawienia i szablony SMS korzystają z lekkiego lazy loadingu, a katalog urządzeń jest pobierany stronami.",
-    "Wersja aplikacji została wyrównana do 12.56, zgodnie z aktualną linią migracji."
+    "Każdy potwierdzony błąd ma trwały test regresyjny i wpis w Regression Ledger.",
+    "CI zapisuje maszynowe dowody wykonanych testów i E2E oraz działa fail-closed.",
+    "Kolejne retry SMS nie jest blokowane przez wcześniejsze potwierdzone niedostarczenia.",
+    "Stan SMS na zleceniu wskazuje najnowszą próbę i jest odporny na spóźnione callbacki starszych prób.",
+    "Wersja aplikacji i cache Service Workera podbite do 12.57."
   ]
 }
