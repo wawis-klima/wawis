@@ -255,7 +255,7 @@ function normalizeSourceJobId(value) {
   return String(value || '').trim().split('::')[0].trim();
 }
 
-function getSmsCustomerBaseKey(record = {}) {
+export function getSmsCustomerBaseKey(record = {}) {
   const durableKey = String(record.reminder_group_customer_key || '').trim();
   if (/^(contractor|job|device):[^\s]+$/i.test(durableKey)) return durableKey.toLowerCase();
 
