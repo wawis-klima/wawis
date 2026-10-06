@@ -141,6 +141,6 @@ assert.match(smsSend, /for \(let index = 0; index < rows\.length; index \+= 25\)
 assert.match(edge, /partial: true/);
 assert.match(edge, /warning: "Część pozycji zmieniła stan/);
 assert.doesNotMatch(edge, /ok: true,[\s\S]{0,120}partial: true,[\s\S]{0,120}error:/);
-assert.match(panel, /await Promise\.allSettled\(\[reloadSmsData\(\{ silent: true \}\), refreshAll\?\.\(\)\]\)/);
+assert.match(panel, /refreshSmsMutation\(\{[\s\S]{0,180}reloadSmsData,[\s\S]{0,180}refreshAll/);
 
 console.log('PASS: SMS Package 3 UI, bulk, pagination and lazy-loading regressions');
