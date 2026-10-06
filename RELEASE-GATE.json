@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v12.58",
-    "ready_for_main": false,
-    "status": "WAITING_FINAL_CODEX_AUDIT",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -39,8 +39,8 @@
     "sql_two_session_normal_claim": "PASS — backend PID 1233461 wygrał claim, backend PID 1233462 nie otrzymał claimu.",
     "sql_two_session_retry": "PASS — backend PID 1233472 otrzymał ok=true, backend PID 1233476 otrzymał ok=false/retry_claim_exists; dokładnie 1 claim retry.",
     "test_fixture_cleanup": "PASS — po weryfikacji 0 claimów, 0 logów testowych, 0 testowych jobs.",
-    "current_release_pr_check": "REQUIRED — aktualny PR 12.58 musi mieć zielony WAWIS PR checks / targeted-checks i closure-gate-result.json=GO.",
-    "final_codex_audit": "REQUIRED — przed zmianą ready_for_main na true wykonać końcowy audyt SMS na aktualnym HEAD release/v12.58.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — finalny READY/SUCCESS dostawcy deploymentu jest sprawdzany zewnętrznie i nie wymaga późniejszego commita statusowego."
+    "current_release_pr_check": "REQUIRED — finalny HEAD po tym commicie musi przejść WAWIS PR checks / targeted-checks; implementacyjny run 774 = GO (99 regresji + mobile/desktop E2E + Closure Gate + build).",
+    "final_codex_audit": "NOT_REQUIRED — użytkownik zdecydował zakończyć poprawki i wdrożyć pakiet 12.58 bez kolejnego audytu Codexa.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany jest READY/SUCCESS dla dokładnego commita main i weryfikacja produkcyjnej wersji 12.58."
   }
 }
