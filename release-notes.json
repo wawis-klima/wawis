@@ -6,6 +6,7 @@
     "Główna kolejka SMS przekazuje do anulowania tylko identyfikatory sms_log, bez row.id urządzenia/zlecenia.",
     "Zakładka Niewysłane nadal usuwa po własnym row.id, który w tym widoku jest identyfikatorem sms_log.",
     "Dodano behawioralny test regresyjny odtwarzający mechanizm fałszywego NOT_FOUND oraz kontrolujący nową etykietę.",
-    "Wersja aplikacji i cache Service Workera są podbite do 12.59."
+    "Wersja aplikacji i cache Service Workera są podbite do 12.59.",
+    "Run 783: 94 unikalne regresje PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate PASS i production build PASS."
   ]
 }
