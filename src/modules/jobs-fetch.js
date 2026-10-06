@@ -98,7 +98,7 @@ function isMissingJobCompletionColumnsError(error) {
     && (message.includes('does not exist') || message.includes('schema cache') || message.includes('column'));
 }
 
-export async function getJobsData({ supabase }) {
+async function getJobsData({ supabase }) {
   const baseFields = JOB_SUMMARY_BASE_FIELDS;
   const completionFields = JOB_SUMMARY_COMPLETION_FIELDS;
 
