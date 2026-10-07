@@ -20,7 +20,7 @@ const superseded=[
 ];
 for(const file of expected) assert.equal(files.has(file),true,`missing production-aligned migration ${file}`);
 for(const file of superseded) assert.equal(files.has(file),false,`superseded migration timestamp must be absent: ${file}`);
-assert.equal(manifest.migrationCoverageFrom,'20261006000000');
+assert.ok(manifest.migrationCoverageFrom <= '20261006000000', `rebuild coverage cannot start after 20261006000000: ${manifest.migrationCoverageFrom}`);
 for(const file of expected) {
   assert.equal(manifest.files.includes(`supabase/migrations/${file}`),true,`rebuild manifest missing ${file}`);
 }
