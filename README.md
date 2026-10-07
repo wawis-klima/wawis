@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 12.63
 
-Wersja 12.63 dodaje licznik stanu zbiornika paliwa: stan początkowy 5000 l od 7.10.2026 09:57, automatyczne odejmowanie tankowań oraz dostawy/korekty administratora.
+Wersja 12.63 dodaje dostępny wyłącznie dla administratora licznik stanu zbiornika paliwa: stan początkowy 5000 l od 7.10.2026 09:57, automatyczne odejmowanie tankowań oraz dostawy/korekty administratora.
 
 
 
