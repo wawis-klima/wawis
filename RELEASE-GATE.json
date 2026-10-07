@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v12.64",
-    "ready_for_main": false,
-    "status": "CI_REQUIRED",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,9 +35,9 @@
   "release_mode": "standard",
   "production_verification": {
     "previous_release_12_63": "PASS — main przed zmianą: 127d7e8e56007ddfc8f00e766d2b7af5ee6dd120.",
-    "mobile_tank_layout_regression": "REQUIRED — test ma potwierdzić zwinięte statystyki/dostawę oraz ukrycie linii startowej na mobile.",
-    "desktop_unchanged": "REQUIRED — desktop ma zachować dotychczasowe statystyki i przycisk dostawy bez dodatkowego zwijania.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD musi przejść WAWIS PR checks / targeted-checks.",
+    "mobile_tank_layout_regression": "PASS — WAWIS PR checks run 37601852505: regresje, Playwright, Closure Gate i production build zakończone sukcesem.",
+    "desktop_unchanged": "PASS — ten sam run potwierdził pełny wymagany zestaw testów oraz E2E.",
+    "current_release_pr_check": "REQUIRED — finalny HEAD po zapisie READY_FOR_MAIN musi ponownie przejść WAWIS PR checks / targeted-checks.",
     "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main i kontrola wersji 12.64."
   }
 }
