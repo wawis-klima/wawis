@@ -713,22 +713,46 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
           <div className="fuelTankStockHeading">
             <span>Stan zbiornika paliwa</span>
             <strong id="fuel-tank-stock-title">{Number(tankStatus.balance_liters || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} l</strong>
-            <small>
-              {tankStatus.tracking_started_at
-                ? `Liczenie od ${formatFuelDate(tankStatus.tracking_started_at)} · start 5000,00 l`
-                : 'Ładowanie stanu zbiornika…'}
-            </small>
+            {!compactMobileAdmin ? (
+              <small>
+                {tankStatus.tracking_started_at
+                  ? `Liczenie od ${formatFuelDate(tankStatus.tracking_started_at)} · start 5000,00 l`
+                  : 'Ładowanie stanu zbiornika…'}
+              </small>
+            ) : null}
           </div>
-          <div className="fuelTankStockStats">
-            <span><small>Wydano do aut</small><b>{formatLitersTotal(tankStatus.used_liters)}</b></span>
-            <span><small>Dostawy + start</small><b>{formatLitersTotal(tankStatus.supplied_liters)}</b></span>
-          </div>
-          {isAdmin ? (
-            <button type="button" className="fuelTankDeliveryToggle" onClick={() => setTankDeliveryOpen((current) => !current)} disabled={busy}>
-              {tankDeliveryOpen ? 'Anuluj' : 'Dodaj dostawę'}
-            </button>
+          {!compactMobileAdmin ? (
+            <>
+              <div className="fuelTankStockStats">
+                <span><small>Wydano do aut</small><b>{formatLitersTotal(tankStatus.used_liters)}</b></span>
+                <span><small>Dostawy + start</small><b>{formatLitersTotal(tankStatus.supplied_liters)}</b></span>
+              </div>
+              <button type="button" className="fuelTankDeliveryToggle" onClick={() => setTankDeliveryOpen((current) => !current)} disabled={busy}>
+                {tankDeliveryOpen ? 'Anuluj' : 'Dodaj dostawę'}
+              </button>
+            </>
           ) : null}
         </div>
+
+        {compactMobileAdmin ? (
+          <details
+            className="fuelTankMovements fuelTankMobileControls"
+            onToggle={(event) => {
+              if (!event.currentTarget.open && tankDeliveryOpen) setTankDeliveryOpen(false);
+            }}
+          >
+            <summary>Szczegóły zbiornika</summary>
+            <div className="fuelTankMobileControlsBody">
+              <div className="fuelTankStockStats">
+                <span><small>Wydano do aut</small><b>{formatLitersTotal(tankStatus.used_liters)}</b></span>
+                <span><small>Dostawy + start</small><b>{formatLitersTotal(tankStatus.supplied_liters)}</b></span>
+              </div>
+              <button type="button" className="fuelTankDeliveryToggle" onClick={() => setTankDeliveryOpen((current) => !current)} disabled={busy}>
+                {tankDeliveryOpen ? 'Anuluj' : 'Dodaj dostawę'}
+              </button>
+            </div>
+          </details>
+        ) : null}
 
         {isAdmin && tankDeliveryOpen ? (
           <form className="fuelTankDeliveryForm" onSubmit={handleAddTankDelivery}>
