@@ -32,7 +32,8 @@ assert.notStrictEqual(newForm.devices, emptyForm.devices);
 assert.notStrictEqual(newForm.devices[0].indoor_models, emptyForm.devices[0].indoor_models);
 assert.equal(emptyForm.installation_date, '', 'wzorzec pustego formularza nie może zostać zmieniony');
 
-assert.match(hookSource, /const nextForm = buildNewJobFormDefaults\(emptyJobForm\);/);
+assert.match(hookSource, /const nextForm = \{ \.\.\.buildNewJobFormDefaults\(emptyJobForm\), create_operation_id: createJobOperationId\(\) \};/);
+assert.match(hookSource, /import \{ createJobOperationId \} from "\.\.\/\.\.\/modules\/job-create-idempotency\.js";/, 'Nowy formularz musi dostać stabilny identyfikator operacji tworzenia.');
 assert.match(hookSource, /jobFormInitialRef\.current = nextForm;/);
 assert.match(hookSource, /setJobForm\(nextForm\);/);
 
