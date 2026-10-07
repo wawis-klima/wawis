@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.64
+- 12.65
+
+Wersja 12.65 dodaje pełne śledzenie dostawy PUSH: backend zapisuje wysłanie do dostawcy, Service Worker potwierdza odebranie payloadu i osobno udane wyświetlenie powiadomienia. Potwierdzenia są zabezpieczone jednorazowym tokenem, którego w bazie nie zapisujemy w postaci jawnej. Awaria telemetrii nie blokuje samego PUSH-a.
 
 Wersja 12.64 upraszcza mobilny panel administratora w module Paliwo: duży stan zbiornika jest zawsze widoczny, a „Wydano do aut”, „Dostawy + start” i „Dodaj dostawę” są schowane w rozwijanym bloku „Szczegóły zbiornika”. Linia „Liczenie od … · start 5000,00 l” nie jest pokazywana na mobile. Desktop pozostaje bez zmian funkcjonalnych.
 
@@ -893,6 +895,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.65` — PUSH zapisuje etapy wysłano → odebrano → wyświetlono, z bezpiecznym tokenem receipt i bez blokowania samego powiadomienia.
 - wersja `12.64` — mobilny licznik paliwa pokazuje tylko bieżący stan, a statystyki i dodawanie dostawy są rozwijane na żądanie.
 - wersja `12.63` — licznik stanu zbiornika paliwa z automatycznym rozchodem tankowań.
 

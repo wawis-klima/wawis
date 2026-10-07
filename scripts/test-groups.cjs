@@ -100,6 +100,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
   ],
   push: [
+    'node scripts/smoke-push-delivery-receipts-v1265.mjs',
     'npm run test:smoke:push-job-deeplink',
     'npm run test:smoke:assignment-push',
     'npm run test:smoke:push-reliability',

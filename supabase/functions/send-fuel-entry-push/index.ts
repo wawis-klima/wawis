@@ -158,7 +158,15 @@ Deno.serve(async (request) => {
 
     webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 
+    const receiptEndpoint = `${Deno.env.get("SUPABASE_URL") || ""}/functions/v1/push-delivery-receipt`;
+
     const results = await Promise.all(subscriptions.map(async (subscription: any) => {
+      const attempt = await createDeliveryAttempt(adminClient, {
+        user_id: subscription.user_id,
+        job_id: null,
+        type: deliveryLogType,
+      });
+
       const payload = JSON.stringify({
         type: "fuel_entry_created",
         jobId: null,
@@ -168,6 +176,13 @@ Deno.serve(async (request) => {
         tag: `fuel-entry-${entry.id}`,
         recipientUserId: String(subscription.user_id || ""),
         subscriptionGeneration: Number(subscription.ownership_generation || 0),
+        deliveryReceipt: attempt && receiptEndpoint
+          ? {
+              deliveryLogId: attempt.id,
+              receiptToken: attempt.token,
+              endpoint: receiptEndpoint,
+            }
+          : null,
       });
       try {
         await webpush.sendNotification({
@@ -178,41 +193,58 @@ Deno.serve(async (request) => {
           },
         }, payload);
 
-        await insertDeliveryRows(adminClient, [{
-          user_id: subscription.user_id,
-          job_id: null,
-          type: deliveryLogType,
-          status: "sent",
-          response_code: 201,
-          error_message: null,
-        }]);
+        if (attempt?.id) {
+          await finalizeDeliveryAttempt(adminClient, attempt.id, {
+            status: "sent",
+            response_code: 201,
+            error_message: null,
+          });
+        } else {
+          await insertDeliveryRows(adminClient, [{
+            user_id: subscription.user_id,
+            job_id: null,
+            type: deliveryLogType,
+            status: "sent",
+            response_code: 201,
+            error_message: null,
+          }]);
+        }
 
-        return { ok: true, subscriptionId: subscription.id };
+        return { ok: true, subscriptionId: subscription.id, deliveryLogId: attempt?.id || null };
       } catch (error) {
         const statusCode = typeof error?.statusCode === "number" ? error.statusCode : null;
         const errorMessage = error instanceof Error ? error.message : String(error);
+        const status = statusCode === 404 || statusCode === 410 ? "expired" : "error";
 
-        await insertDeliveryRows(adminClient, [{
-          user_id: subscription.user_id,
-          job_id: null,
-          type: deliveryLogType,
-          status: statusCode === 404 || statusCode === 410 ? "expired" : "error",
-          response_code: statusCode,
-          error_message: errorMessage,
-        }]);
+        if (attempt?.id) {
+          await finalizeDeliveryAttempt(adminClient, attempt.id, {
+            status,
+            response_code: statusCode,
+            error_message: errorMessage,
+          });
+        } else {
+          await insertDeliveryRows(adminClient, [{
+            user_id: subscription.user_id,
+            job_id: null,
+            type: deliveryLogType,
+            status,
+            response_code: statusCode,
+            error_message: errorMessage,
+          }]);
+        }
 
         if (statusCode === 404 || statusCode === 410) {
           await adminClient.rpc("push_subscription_expire_atomic", {
-          p_request_user_id: subscription.user_id,
-          p_endpoint: subscription.endpoint,
-          p_p256dh: subscription.p256dh,
-          p_auth: subscription.auth,
-          p_lifecycle_token: subscription.lifecycle_token || "",
-          p_expected_generation: subscription.ownership_generation,
-        });
+            p_request_user_id: subscription.user_id,
+            p_endpoint: subscription.endpoint,
+            p_p256dh: subscription.p256dh,
+            p_auth: subscription.auth,
+            p_lifecycle_token: subscription.lifecycle_token || "",
+            p_expected_generation: subscription.ownership_generation,
+          });
         }
 
-        return { ok: false, subscriptionId: subscription.id, statusCode, errorMessage };
+        return { ok: false, subscriptionId: subscription.id, deliveryLogId: attempt?.id || null, statusCode, errorMessage };
       }
     }));
 
@@ -227,6 +259,50 @@ Deno.serve(async (request) => {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }
 });
+
+async function createDeliveryAttempt(adminClient: any, row: any) {
+  const token = createReceiptToken();
+  const receiptTokenHash = await sha256Hex(token);
+  const { data, error } = await adminClient
+    .from("push_delivery_log")
+    .insert({
+      ...row,
+      status: "sending",
+      response_code: null,
+      error_message: null,
+      receipt_token_hash: receiptTokenHash,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data?.id) {
+    console.warn("Nie udało się utworzyć śledzonej próby PUSH:", error?.message || "brak id");
+    return null;
+  }
+  return { id: String(data.id), token };
+}
+
+async function finalizeDeliveryAttempt(adminClient: any, deliveryLogId: string, patch: any) {
+  const { error } = await adminClient
+    .from("push_delivery_log")
+    .update(patch)
+    .eq("id", deliveryLogId);
+  if (error) console.warn("Nie udało się zaktualizować push_delivery_log:", error.message);
+}
+
+function createReceiptToken() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+async function sha256Hex(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 async function insertDeliveryRows(adminClient: any, rows: any[]) {
   if (!rows.length) return;

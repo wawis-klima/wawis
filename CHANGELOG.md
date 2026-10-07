@@ -1,3 +1,11 @@
+## 12.65
+- PUSH: log dostawy rozróżnia teraz wysłanie przez backend, odebranie payloadu przez Service Worker oraz udane wyświetlenie systemowego powiadomienia.
+- Zaszyfrowany payload zawiera jednorazowy token potwierdzenia; w bazie przechowywany jest wyłącznie jego SHA-256.
+- Nowa publiczna Edge Function przyjmuje wyłącznie potwierdzenia z poprawnym ID + tokenem i zapisuje je idempotentnie.
+- Tracking nie blokuje samego powiadomienia: awaria receipt endpointu nie zatrzymuje `showNotification`.
+- Mechanizm obejmuje PUSH montażów/komentarzy/testów oraz tankowań.
+- Dodano regresję `scripts/smoke-push-delivery-receipts-v1265.mjs`.
+
 ## 12.64
 - Mobile / Paliwo: duży stan zbiornika pozostaje zawsze widoczny dla administratora.
 - Mobile: usunięto pomocniczą linię „Liczenie od … · start 5000,00 l”.

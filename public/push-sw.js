@@ -3,7 +3,7 @@ importScripts("/push-context-guard.js");
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v12.64");
+    const cache = await caches.open("wawis-app-shell-v12.65");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
@@ -19,7 +19,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v12.64")
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v12.65")
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
@@ -36,7 +36,7 @@ self.addEventListener("fetch", (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open("wawis-app-shell-v12.64");
+          const cache = await caches.open("wawis-app-shell-v12.65");
           await cache.put("/", response.clone());
         }
         return response;
@@ -52,7 +52,7 @@ self.addEventListener("fetch", (event) => {
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {
-      const cache = await caches.open("wawis-app-shell-v12.64");
+      const cache = await caches.open("wawis-app-shell-v12.65");
       await cache.put(request, response.clone());
     }
     return response;
@@ -172,7 +172,7 @@ self.addEventListener("message", (event) => {
   if (event.data?.type !== "WAWIS_CACHE_LOADED_ASSETS") return;
   const urls = Array.isArray(event.data.urls) ? event.data.urls : [];
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v12.64");
+    const cache = await caches.open("wawis-app-shell-v12.65");
     const safeUrls = urls.filter((value) => {
       try {
         return new URL(value, self.location.origin).origin === self.location.origin;
@@ -184,6 +184,50 @@ self.addEventListener("message", (event) => {
   })());
 });
 
+function getDeliveryReceipt(payload = {}) {
+  const receipt = payload?.deliveryReceipt;
+  const deliveryLogId = String(receipt?.deliveryLogId || "").trim();
+  const receiptToken = String(receipt?.receiptToken || "").trim();
+  const endpoint = String(receipt?.endpoint || "").trim();
+  if (!deliveryLogId || !receiptToken || !endpoint) return null;
+
+  try {
+    const url = new URL(endpoint);
+    if (url.protocol !== "https:" || !url.hostname.endsWith(".supabase.co")) return null;
+    if (!url.pathname.endsWith("/functions/v1/push-delivery-receipt")) return null;
+    return { deliveryLogId, receiptToken, endpoint: url.toString() };
+  } catch {
+    return null;
+  }
+}
+
+async function reportPushReceipt(payload, stage) {
+  const receipt = getDeliveryReceipt(payload);
+  if (!receipt || (stage !== "received" && stage !== "displayed")) return false;
+
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 2500) : null;
+  try {
+    const response = await fetch(receipt.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        deliveryLogId: receipt.deliveryLogId,
+        receiptToken: receipt.receiptToken,
+        stage,
+      }),
+      cache: "no-store",
+      credentials: "omit",
+      signal: controller?.signal,
+    });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
 self.addEventListener("push", (event) => {
   let payload = {};
   try {
@@ -193,8 +237,12 @@ self.addEventListener("push", (event) => {
   }
 
   event.waitUntil((async () => {
+    const receivedReceipt = reportPushReceipt(payload, "received");
     const context = await readPushContext().catch(() => null);
-    if (!self.WawisPushSafety?.shouldDisplayPush(payload, context || {})) return;
+    if (!self.WawisPushSafety?.shouldDisplayPush(payload, context || {})) {
+      await receivedReceipt.catch(() => false);
+      return;
+    }
 
     const title = payload.title || "Wawis";
     const options = {
@@ -208,6 +256,10 @@ self.addEventListener("push", (event) => {
       },
     };
     await self.registration.showNotification(title, options);
+    await Promise.allSettled([
+      receivedReceipt,
+      reportPushReceipt(payload, "displayed"),
+    ]);
   })());
 });
 
