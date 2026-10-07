@@ -145,7 +145,14 @@ function getExistingAccessData(existingJobs = []) {
 async function getAccessData({ supabase, existingJobs = [] }) {
   const fallbackAccess = getExistingAccessData(existingJobs);
   const { data, error } = await safeRead(
-    () => supabase.from('job_access').select('id, job_id, user_id'),
+    () => fetchAllOrderedTableRows({
+      supabase,
+      table: 'job_access',
+      fields: 'id, job_id, user_id',
+      pageSize: 500,
+      orderBy: 'id',
+      ascending: true,
+    }),
     fallbackAccess,
   );
   if (error) throw error;
