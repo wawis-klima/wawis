@@ -1,3 +1,9 @@
+## 12.60
+- P0/F01: pracownik nie może bezpośrednim INSERT/UPDATE zmieniać administracyjnych pól faktury VAT; regułę egzekwuje trigger bazy.
+- P0/F02: formularz Fakturowni dostaje OID konkretnego montażu, a weryfikacja potwierdza wyłącznie fakturę z tym samym OID i klientem.
+- Dodano unikalność identyfikatora faktury Fakturowni między montażami oraz blokadę podmiany już potwierdzonej faktury.
+- Dodano behawioralny test P0 obejmujący rolę Pracownik, dwa montaże jednego klienta i próbę podwójnego mapowania faktury.
+
 ## 12.59
 - SMS: status `pending_approval` jest wyświetlany krótko jako „Oczekuje”.
 - SMS: główna kolejka przy usuwaniu przekazuje wyłącznie identyfikatory `sms_log`; `row.id` urządzenia/zlecenia nie jest już wysyłane do RPC anulowania.
