@@ -244,6 +244,13 @@ await check('F05 fuel overview/report crosses the 1000-row boundary', async () =
   assert.equal(report.totals.fueledLiters, 42);
 });
 
+await check('P1 migration timestamp matches production registry', async () => {
+  const expected = path.join(root, 'supabase', 'migrations', 'current', '20261007062745_job_create_idempotency_v1261.sql');
+  const superseded = path.join(root, 'supabase', 'migrations', 'current', '20261007055000_job_create_idempotency_v1261.sql');
+  assert.equal(fs.existsSync(expected), true, 'Repo musi zawierać produkcyjny timestamp migracji F03.');
+  assert.equal(fs.existsSync(superseded), false, 'Roboczy timestamp migracji F03 nie może pozostać w repo.');
+});
+
 await check('F10 cash requires amount while transfer may omit it', async () => {
   assert.throws(
     () => normalizePaymentConfirmation({ enabled: true, amount: '', method: 'cash', paidDate: '2026-10-07' }),
