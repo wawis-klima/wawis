@@ -108,7 +108,8 @@
     "supabase/migrations/current/20261007045625_fakturownia_p0_rpc_acl_v1260.sql",
     "supabase/migrations/current/20261007062745_job_create_idempotency_v1261.sql",
     "supabase/migrations/current/20261007071004_p2_status_delete_idempotency_v1262.sql",
-    "supabase/migrations/current/20261007071856_p2_restore_snapshot_integrity_v1262.sql"
+    "supabase/migrations/current/20261007071856_p2_restore_snapshot_integrity_v1262.sql",
+    "supabase/migrations/current/20261007080329_fuel_tank_stock_v1263.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
