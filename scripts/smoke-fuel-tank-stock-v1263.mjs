@@ -44,6 +44,7 @@ await assert.rejects(
 );
 
 const panel = fs.readFileSync(new URL('../src/components/fuel/FuelPanelBase.jsx', import.meta.url), 'utf8');
+assert.match(panel, /\{isAdmin \? \(\s*<section className="fuelCard fuelTankStockCard"/);
 assert.match(panel, /Stan zbiornika paliwa/);
 assert.match(panel, /Dodaj dostawę/);
 assert.match(panel, /tankStatus\.balance_liters/);
@@ -61,5 +62,16 @@ assert.match(sql, /admin_add_fuel_tank_movement/i);
 assert.match(sql, /get_fuel_tank_status/i);
 assert.match(sql, /fuel_entry_id/i);
 assert.match(sql, /on delete cascade/i);
+
+const adminOnlyMigrationFiles = fs.readdirSync(new URL('../supabase/migrations/current/', import.meta.url))
+  .filter((name) => /fuel_tank_admin_only_v1263\.sql$/i.test(name));
+assert.equal(adminOnlyMigrationFiles.length, 1, 'Brak dokładnie jednej migracji admin-only licznika 12.63.');
+const adminOnlySql = fs.readFileSync(new URL(`../supabase/migrations/current/${adminOnlyMigrationFiles[0]}`, import.meta.url), 'utf8');
+assert.match(adminOnlySql, /fuel_tank_movements_admin_select/i);
+assert.match(adminOnlySql, /current_user_is_admin/i);
+assert.match(adminOnlySql, /Tylko administrator może odczytać stan zbiornika paliwa/i);
+
+const fuelModule = fs.readFileSync(new URL('../src/modules/fuel.js', import.meta.url), 'utf8');
+assert.match(fuelModule, /if \(!isAdmin\) \{[\s\S]*?tankStatus: null[\s\S]*?tankMovements: \[\]/);
 
 console.log('PASS fuel tank stock v12.63');
