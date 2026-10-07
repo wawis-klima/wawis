@@ -149,6 +149,7 @@ await check('F09 rebuild manifest covers active root/current migrations and star
     'supabase/migrations/current/20261001071500_vat_invoice_fakturownia_lock_v1205.sql',
     'supabase/migrations/current/20261007045546_fakturownia_p0_v1260.sql',
     'supabase/migrations/current/20261007062745_job_create_idempotency_v1261.sql',
+    'supabase/migrations/current/20261007071856_p2_restore_snapshot_integrity_v1262.sql',
   ];
   const manifestSet = new Set(manifest.files);
   for (const file of required) assert.ok(manifestSet.has(file), `Fresh rebuild pomija aktywną migrację: ${file}`);
