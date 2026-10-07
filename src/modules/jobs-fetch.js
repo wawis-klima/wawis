@@ -29,20 +29,35 @@ function isMissingNameplateVerificationTableError(error) {
 }
 
 async function getNameplateOverviewData({ supabase }) {
-  let photosResult = await supabase
-    .from('photos')
-    .select('id, job_id, storage_path, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at');
+  let photosResult = await fetchAllOrderedTableRows({
+    supabase,
+    table: 'photos',
+    fields: 'id, job_id, storage_path, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at',
+    pageSize: 500,
+    orderBy: 'id',
+    ascending: true,
+  });
 
   if (photosResult.error && /ocr_status|ocr_checked_at|column .* does not exist|schema cache/i.test(String(photosResult.error.message || ''))) {
-    photosResult = await supabase
-      .from('photos')
-      .select('id, job_id, storage_path, photo_kind, device_index, unit_ref');
+    photosResult = await fetchAllOrderedTableRows({
+      supabase,
+      table: 'photos',
+      fields: 'id, job_id, storage_path, photo_kind, device_index, unit_ref',
+      pageSize: 500,
+      orderBy: 'id',
+      ascending: true,
+    });
   }
   if (photosResult.error) throw photosResult.error;
 
-  let verificationsResult = await supabase
-    .from('nameplate_manual_verifications')
-    .select('id, job_id, device_index, unit_ref, verified_by, verified_at');
+  let verificationsResult = await fetchAllOrderedTableRows({
+    supabase,
+    table: 'nameplate_manual_verifications',
+    fields: 'id, job_id, device_index, unit_ref, verified_by, verified_at',
+    pageSize: 500,
+    orderBy: 'id',
+    ascending: true,
+  });
   if (verificationsResult.error && isMissingNameplateVerificationTableError(verificationsResult.error)) {
     verificationsResult = { data: [], error: null, tableMissing: true };
   }
@@ -162,7 +177,14 @@ async function getAccessData({ supabase, existingJobs = [] }) {
     Array.isArray(job?.viewers) ? job.viewers : []
   ));
   const result = await safeRead(
-    () => supabase.from('job_access').select('id, job_id, user_id'),
+    () => fetchAllOrderedTableRows({
+      supabase,
+      table: 'job_access',
+      fields: 'id, job_id, user_id',
+      pageSize: 500,
+      orderBy: 'id',
+      ascending: true,
+    }),
     fallback,
   );
   if (result.error) throw result.error;
