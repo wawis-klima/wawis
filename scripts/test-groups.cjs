@@ -115,6 +115,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1087.mjs',
   ],
   fuel: [
+    'node scripts/smoke-fuel-tank-stock-v1263.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:fuel-module',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
@@ -228,6 +229,7 @@ const GROUPS = {
     'npm run test:smoke:sms-shared-source',
   ],
   infra: [
+    'node scripts/smoke-fuel-tank-stock-v1263.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-release-automation-v1061.cjs',
