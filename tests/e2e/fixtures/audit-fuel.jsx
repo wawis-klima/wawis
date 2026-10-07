@@ -9,6 +9,15 @@ export function mountFuelHarness(owner='A') {
   const supabase={auth:{
     getSession:async()=>({data:{session:{user:{id:userId}}}}),
     onAuthStateChange(fn){listeners.add(fn);return {data:{subscription:{unsubscribe(){listeners.delete(fn);}}}};},
+  },rpc(name){
+    if(name==='get_fuel_tank_status') return Promise.resolve({data:{
+      balance_liters:5000,
+      supplied_liters:5000,
+      used_liters:0,
+      tracking_started_at:'2026-10-07T07:57:00.000Z',
+      last_movement_at:'2026-10-07T07:57:00.000Z',
+    },error:null});
+    return Promise.resolve({data:null,error:new Error(`Mock RPC nie obsługuje funkcji: ${name}`)});
   },from(table){
     let insert=null,single=false;
     return {select(){return this;},order(){return this;},limit(){return this;},eq(){return this;},
