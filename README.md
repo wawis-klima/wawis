@@ -1,7 +1,7 @@
 ## Aktualna wersja
-- 12.61
+- 12.62
 
-Wersja 12.61 realizuje P1 audytu: zabezpiecza tworzenie montażu przed duplikatem po utracie odpowiedzi, ponownie waliduje komplet i zgodność JW/JZ przy samym zakończeniu oraz usuwa granicę 1000 wpisów z administracyjnego raportu paliwa. F10 (gotówka/przelew) zostało potwierdzone jako już prawidłowo egzekwowane w produkcyjnej bazie i otrzymuje trwały test regresyjny.
+Wersja 12.62 domyka P2 dzisiejszego audytu Codexa: pełne odczyty metadanych bez granicy 1000, atomową zmianę statusu z wykrywaniem konfliktu/0 rekordów, idempotentne usuwanie po utracie odpowiedzi oraz wiarygodny fresh rebuild obejmujący aktywne migracje także z katalogu current.
 
 
 
