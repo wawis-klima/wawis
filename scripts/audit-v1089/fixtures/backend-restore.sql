@@ -32,19 +32,27 @@ do $$begin
  if (select completed_at from jobs where id='00000000-0000-4000-8000-000000000003') <> '2025-01-02T03:04:05Z'::timestamptz then raise exception 'restore historical timestamp';end if;
 end$$;
 select public.admin_delete_jobs_recoverable(array['00000000-0000-4000-8000-000000000003'::uuid],false);
-do $$declare aid uuid; original jsonb; begin
+do $declare aid uuid; original jsonb; tamper_rejected boolean:=false; begin
  select archive_id,snapshot into aid,original from private.job_recycle_bin where job_id='00000000-0000-4000-8000-000000000003' and restored_at is null;
- update private.job_recycle_bin set snapshot=jsonb_set(snapshot,'{photos}',(snapshot->'photos') - 0) where archive_id=aid;
  begin
-  perform public.admin_restore_deleted_job(aid);
-  raise exception 'incomplete restore unexpectedly accepted';
- exception when check_violation then null;
+  update private.job_recycle_bin set snapshot=jsonb_set(snapshot,'{photos}',(snapshot->'photos') - 0) where archive_id=aid;
+ exception when check_violation then
+  tamper_rejected:=true;
  end;
- if exists(select 1 from jobs where id='00000000-0000-4000-8000-000000000003') then raise exception 'failed restore left partial job';end if;
- if exists(select 1 from private.job_recycle_bin where archive_id=aid and restored_at is not null) then raise exception 'failed restore consumed archive';end if;
- update private.job_recycle_bin set snapshot=original where archive_id=aid;
- perform public.admin_restore_deleted_job(aid);
-end$$;
+ if tamper_rejected then
+  perform public.admin_restore_deleted_job(aid);
+ else
+  begin
+   perform public.admin_restore_deleted_job(aid);
+   raise exception 'incomplete restore unexpectedly accepted';
+  exception when check_violation then null;
+  end;
+  if exists(select 1 from jobs where id='00000000-0000-4000-8000-000000000003') then raise exception 'failed restore left partial job';end if;
+  if exists(select 1 from private.job_recycle_bin where archive_id=aid and restored_at is not null) then raise exception 'failed restore consumed archive';end if;
+  update private.job_recycle_bin set snapshot=original where archive_id=aid;
+  perform public.admin_restore_deleted_job(aid);
+ end if;
+end$;
 
 select public.admin_delete_jobs_recoverable(array['00000000-0000-4000-8000-000000000003'::uuid],false);
 
