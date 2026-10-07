@@ -284,8 +284,13 @@ export function useSelectedJobActions({
     }
 
     try {
-      await updateJobStatus({ supabase, jobId, status });
-      if (completingNow) {
+      const statusResult = await updateJobStatus({
+        supabase,
+        jobId,
+        status,
+        expectedStatus: job?.status ?? currentStatus,
+      });
+      if (completingNow && statusResult?.outcome === 'changed') {
         try {
           await sendCompletionPush?.({ jobId });
         } catch (pushError) {
