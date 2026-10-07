@@ -49,7 +49,7 @@ export async function prepareFakturowniaInvoice({ supabase, jobId }) {
   return data;
 }
 
-export async function verifyFakturowniaInvoice({ supabase, jobId, clientId, knownInvoiceIds = [] }) {
+export async function verifyFakturowniaInvoice({ supabase, jobId, clientId }) {
   const normalizedJobId = String(jobId || '').trim();
   const normalizedClientId = String(clientId || '').trim();
   if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
@@ -61,7 +61,6 @@ export async function verifyFakturowniaInvoice({ supabase, jobId, clientId, know
       action: 'verify',
       jobId: normalizedJobId,
       clientId: normalizedClientId,
-      knownInvoiceIds: Array.isArray(knownInvoiceIds) ? knownInvoiceIds.map(String) : [],
     },
   });
 }
