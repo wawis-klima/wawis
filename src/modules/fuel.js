@@ -25,6 +25,62 @@ export function normalizeFuelTankCapacity(value) {
   return Math.round(parsed * 100) / 100;
 }
 
+export function normalizeFuelTankDeliveryLiters(value) {
+  const parsed = Number(String(value ?? '').trim().replace(',', '.'));
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error('Ilość dostawy musi być większa od 0 litrów.');
+  }
+  if (parsed > 100000) {
+    throw new Error('Ilość dostawy jest zbyt duża. Sprawdź wpisaną wartość.');
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
+async function loadFuelTankData({ supabase, isAdmin }) {
+  if (!isAdmin) {
+    return {
+      tankStatus: null,
+      tankMovements: [],
+    };
+  }
+
+  const [statusResult, movementsResult] = await Promise.all([
+    supabase.rpc('get_fuel_tank_status'),
+    supabase
+      .from('fuel_tank_movements')
+      .select('id, movement_type, delta_liters, fuel_entry_id, note, happened_at, created_by, created_at')
+      .order('happened_at', { ascending: false })
+      .limit(20),
+  ]);
+  if (statusResult.error) throw statusResult.error;
+  if (movementsResult.error) throw movementsResult.error;
+
+  return {
+    tankStatus: statusResult.data && typeof statusResult.data === 'object'
+      ? statusResult.data
+      : {
+        balance_liters: 0,
+        supplied_liters: 0,
+        used_liters: 0,
+        tracking_started_at: null,
+        last_movement_at: null,
+      },
+    tankMovements: Array.isArray(movementsResult.data) ? movementsResult.data : [],
+  };
+}
+
+export async function addFuelTankDelivery({ supabase, isAdmin, liters, note = '' }) {
+  assertAdminAccess({ supabase, isAdmin });
+  const normalizedLiters = normalizeFuelTankDeliveryLiters(liters);
+  const { data, error } = await supabase.rpc('admin_add_fuel_tank_movement', {
+    p_movement_type: 'delivery',
+    p_liters: normalizedLiters,
+    p_note: String(note || '').trim() || null,
+  });
+  if (error) throw error;
+  return Array.isArray(data) ? data[0] || null : data || null;
+}
+
 export function calculateFuelConsumptionIntervals(entries = []) {
   const normalized = (Array.isArray(entries) ? entries : [])
     .map((entry) => ({
@@ -251,12 +307,13 @@ async function loadFuelEntries({ supabase, entryLimit = 100 }) {
 export async function loadFuelModuleData({ supabase, isAdmin, entryLimit = 100 }) {
   assertFuelAccess({ supabase });
 
-  const [vehiclesResult, entries] = await Promise.all([
+  const [vehiclesResult, entries, tankData] = await Promise.all([
     supabase
       .from('fuel_vehicles')
       .select('id, vehicle_name, registration_number, is_active, tank_capacity_liters, last_odometer_km, last_fueled_at, created_at, updated_at')
       .order('registration_number', { ascending: true }),
     loadFuelEntries({ supabase, entryLimit }),
+    loadFuelTankData({ supabase, isAdmin }),
   ]);
 
   if (vehiclesResult.error) throw vehiclesResult.error;
@@ -264,6 +321,7 @@ export async function loadFuelModuleData({ supabase, isAdmin, entryLimit = 100 }
   return {
     vehicles: Array.isArray(vehiclesResult.data) ? vehiclesResult.data : [],
     entries,
+    ...tankData,
   };
 }
 

@@ -123,3 +123,28 @@ Dowód po poprawce:
 | F08 | P2 | utrata odpowiedzi po DELETE mogła spowodować niejednoznaczny retry | CLOSED | `scripts/smoke-p2-audit-closure-v1262.mjs`; stabilny `operation_id` + `admin_delete_job_idempotent` |
 | F09 | P2 | fresh rebuild nie obejmował pełnego aktualnego schematu i katalogu `migrations/current` | CLOSED | manifest + `scripts/audit-v1089/rebuild-rehearsal.mjs`; run 833, dwukrotny rebuild PASS |
 | P2-RESTORE | P2 | późniejsza migracja restore mogła przyjąć uszkodzony nowy snapshot kosza | CLOSED | koperta integralności `_integrity`, validated constraint i fixture legacy/restore w pełnym rebuildzie |
+
+
+## 12.63 — licznik zbiornika paliwa
+
+Dowód przed implementacją:
+- run 836: FAIL — brak eksportu `addFuelTankDelivery`, czyli licznik/dostawy nie istniały jeszcze w aplikacji.
+
+Dowód po implementacji:
+- run 852: pełne regresje PASS,
+- Playwright E2E PASS,
+- Closure Gate PASS,
+- production build PASS,
+- fresh rebuild PASS,
+- produkcja: stan początkowy 5000,00 l od 2026-10-07 09:57 Europe/Warsaw,
+- licznik, historia i dostawy widoczne wyłącznie dla administratora,
+- pracownik nie pobiera stanu zbiornika i RLS blokuje SELECT/INSERT ruchów magazynowych poza administratorem.
+
+| Zakres | Status | Dowód |
+|---|---|---|
+| Stan początkowy 5000 l | CLOSED | `20261007080329_fuel_tank_stock_v1263.sql`; produkcja = 5000,00 l |
+| Automatyczne odejmowanie tankowań | CLOSED | trigger `private.sync_fuel_tank_movement()` + FK `fuel_entry_id` ON DELETE CASCADE |
+| Korekta/usunięcie tankowania aktualizuje stan | CLOSED | UPSERT ruchu przy UPDATE + CASCADE przy DELETE |
+| Dostawy do zbiornika | CLOSED | `admin_add_fuel_tank_movement` |
+| Widoczność tylko administrator | CLOSED | UI `isAdmin`, brak pobierania dla pracownika, RLS `fuel_tank_movements_admin_select`, RPC z kontrolą admin |
+| Trwała regresja | CLOSED | `scripts/smoke-fuel-tank-stock-v1263.mjs` + run 852 |

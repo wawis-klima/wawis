@@ -213,3 +213,204 @@
   opacity: .35;
   cursor: default;
 }
+
+
+/* WAWIS 12.63 — stan zbiornika paliwa */
+.fuelTankStockCard {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #c9d8ea;
+  background: linear-gradient(135deg, #f7fbff 0%, #ffffff 70%);
+}
+
+.fuelTankStockTop {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.fuelTankStockHeading {
+  display: grid;
+  gap: 2px;
+}
+
+.fuelTankStockHeading > span {
+  color: #5c6f82;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.fuelTankStockHeading > strong {
+  color: #173f6f;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+
+.fuelTankStockHeading > small {
+  color: #66788a;
+  font-size: 12px;
+}
+
+.fuelTankStockStats {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.fuelTankStockStats > span {
+  display: grid;
+  gap: 2px;
+  min-width: 118px;
+  padding: 8px 10px;
+  border: 1px solid #dce6f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.fuelTankStockStats small {
+  color: #6b7d8f;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.fuelTankStockStats b {
+  color: #263b50;
+  font-size: 14px;
+}
+
+.fuelTankDeliveryToggle {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid #2f75cf;
+  border-radius: 9px;
+  background: #fff;
+  color: #1d5da9;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.fuelTankDeliveryForm {
+  display: grid;
+  grid-template-columns: minmax(160px, .7fr) minmax(220px, 1.3fr) auto;
+  align-items: end;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e3ebf4;
+}
+
+.fuelTankDeliveryForm > label {
+  display: grid;
+  gap: 5px;
+  color: #516477;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fuelTankDeliveryNote > input {
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid #cbd9e7;
+  border-radius: 9px;
+  background: #fff;
+  font: inherit;
+}
+
+.fuelTankMovements {
+  padding-top: 8px;
+  border-top: 1px solid #e3ebf4;
+}
+
+.fuelTankMovements summary {
+  color: #36526f;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.fuelTankMovementList {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.fuelTankMovementRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 9px;
+  border: 1px solid #e6edf5;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.fuelTankMovementRow > span {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.fuelTankMovementRow strong {
+  font-size: 11px;
+}
+
+.fuelTankMovementRow small {
+  overflow: hidden;
+  color: #718196;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fuelTankMovementRow > b {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.fuelTankMovementRow > b.isPositive { color: #17723c; }
+.fuelTankMovementRow > b.isNegative { color: #9a3d35; }
+
+@media (max-width: 780px) {
+  .fuelTankStockCard {
+    gap: 8px;
+  }
+
+  .fuelTankStockTop {
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+
+  .fuelTankStockHeading {
+    grid-column: 1 / -1;
+  }
+
+  .fuelTankStockHeading > strong {
+    font-size: 30px;
+  }
+
+  .fuelTankStockStats {
+    min-width: 0;
+    gap: 5px;
+  }
+
+  .fuelTankStockStats > span {
+    min-width: 0;
+    padding: 6px 8px;
+  }
+
+  .fuelTankDeliveryToggle {
+    align-self: stretch;
+    min-height: 32px;
+    padding: 0 10px;
+  }
+
+  .fuelTankDeliveryForm {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,6 +2,7 @@ import { usePanelLoadGuard } from '../../hooks/usePanelLoadGuard.js';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   addFuelEntry,
+  addFuelTankDelivery,
   calculateFuelConsumptionStats,
   calculateFuelMonthlyReport,
   checkFuelOdometerProgression,
@@ -145,6 +146,20 @@ function formatTankCapacity(value) {
   return `Bak ${capacity.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} l`;
 }
 
+function formatFuelTankMovementType(type) {
+  if (type === 'opening') return 'Stan początkowy';
+  if (type === 'delivery') return 'Dostawa';
+  if (type === 'refuel') return 'Tankowanie auta';
+  if (type === 'adjustment') return 'Korekta';
+  return 'Ruch zbiornika';
+}
+
+function formatFuelTankDelta(value) {
+  const delta = Number(value || 0);
+  const prefix = delta > 0 ? '+' : '';
+  return `${prefix}${delta.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} l`;
+}
+
 function formatAnomalyPercent(value) {
   const percent = Number(value);
   if (!Number.isFinite(percent)) return '';
@@ -172,6 +187,17 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
   const saveGuard = usePanelLoadGuard(supabase, userId);
   const [vehicles, setVehicles] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [tankStatus, setTankStatus] = useState({
+    balance_liters: 0,
+    supplied_liters: 0,
+    used_liters: 0,
+    tracking_started_at: null,
+    last_movement_at: null,
+  });
+  const [tankMovements, setTankMovements] = useState([]);
+  const [tankDeliveryOpen, setTankDeliveryOpen] = useState(false);
+  const [tankDeliveryLiters, setTankDeliveryLiters] = useState('');
+  const [tankDeliveryNote, setTankDeliveryNote] = useState('');
   const [vehicleId, setVehicleId] = useState('');
   const [liters, setLiters] = useState('');
   const [odometerMode, setOdometerMode] = useState('manual');
@@ -315,6 +341,14 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       if (!isCurrent()) return;
       setVehicles(data.vehicles);
       setEntries(data.entries);
+      setTankStatus(data.tankStatus || {
+        balance_liters: 0,
+        supplied_liters: 0,
+        used_liters: 0,
+        tracking_started_at: null,
+        last_movement_at: null,
+      });
+      setTankMovements(Array.isArray(data.tankMovements) ? data.tankMovements : []);
       setHistoryVehicleId((current) => data.vehicles.some((vehicle) => vehicle.id === current) ? current : '');
       setVehicleId((current) => {
         if (data.vehicles.some((vehicle) => vehicle.id === current && vehicle.is_active)) return current;
@@ -400,6 +434,32 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       logDiagnostic('fuel.odometer.read.failed', { module: 'fuel', error: readError });
     } finally {
       setReadingOdometer(false);
+    }
+  }
+
+  async function handleAddTankDelivery(event) {
+    event.preventDefault();
+    if (!isAdmin || busy) return;
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      const saved = await addFuelTankDelivery({
+        supabase,
+        isAdmin,
+        liters: tankDeliveryLiters,
+        note: tankDeliveryNote,
+      });
+      setTankDeliveryLiters('');
+      setTankDeliveryNote('');
+      setTankDeliveryOpen(false);
+      setMessage(`Dodano dostawę ${Number(saved?.delta_liters || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} l do zbiornika.`);
+      await refresh();
+    } catch (deliveryError) {
+      setError(deliveryError?.message || 'Nie udało się dodać dostawy paliwa.');
+      logDiagnostic('fuel.tank.delivery.failed', { module: 'fuel', error: deliveryError });
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -646,6 +706,59 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
 
       {error ? <div className="fuelAlert fuelAlertError" role="alert">{error}</div> : null}
       {message ? <div className="fuelAlert fuelAlertSuccess" role="status">{message}</div> : null}
+
+      {isAdmin ? (
+      <section className="fuelCard fuelTankStockCard" aria-labelledby="fuel-tank-stock-title">
+        <div className="fuelTankStockTop">
+          <div className="fuelTankStockHeading">
+            <span>Stan zbiornika paliwa</span>
+            <strong id="fuel-tank-stock-title">{Number(tankStatus.balance_liters || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} l</strong>
+            <small>
+              {tankStatus.tracking_started_at
+                ? `Liczenie od ${formatFuelDate(tankStatus.tracking_started_at)} · start 5000,00 l`
+                : 'Ładowanie stanu zbiornika…'}
+            </small>
+          </div>
+          <div className="fuelTankStockStats">
+            <span><small>Wydano do aut</small><b>{formatLitersTotal(tankStatus.used_liters)}</b></span>
+            <span><small>Dostawy + start</small><b>{formatLitersTotal(tankStatus.supplied_liters)}</b></span>
+          </div>
+          {isAdmin ? (
+            <button type="button" className="fuelTankDeliveryToggle" onClick={() => setTankDeliveryOpen((current) => !current)} disabled={busy}>
+              {tankDeliveryOpen ? 'Anuluj' : 'Dodaj dostawę'}
+            </button>
+          ) : null}
+        </div>
+
+        {isAdmin && tankDeliveryOpen ? (
+          <form className="fuelTankDeliveryForm" onSubmit={handleAddTankDelivery}>
+            <label>
+              <span>Ilość dostawy</span>
+              <div className="fuelInputWithUnit"><input value={tankDeliveryLiters} onChange={(event) => setTankDeliveryLiters(event.target.value.replace(/[^0-9,.]/g, ''))} inputMode="decimal" placeholder="np. 5000" required /><b>l</b></div>
+            </label>
+            <label className="fuelTankDeliveryNote">
+              <span>Notatka</span>
+              <input value={tankDeliveryNote} onChange={(event) => setTankDeliveryNote(event.target.value)} placeholder="np. Dostawa Orlen" maxLength={160} />
+            </label>
+            <button type="submit" className="fuelPrimaryButton" disabled={busy || !tankDeliveryLiters}>{busy ? 'Zapisywanie…' : 'Dodaj do stanu'}</button>
+          </form>
+        ) : null}
+
+        {isAdmin && tankMovements.length ? (
+          <details className="fuelTankMovements">
+            <summary>Historia zbiornika</summary>
+            <div className="fuelTankMovementList">
+              {tankMovements.map((movement) => (
+                <div key={movement.id} className="fuelTankMovementRow">
+                  <span><strong>{formatFuelTankMovementType(movement.movement_type)}</strong><small>{formatFuelDate(movement.happened_at)}{movement.note ? ` · ${movement.note}` : ''}</small></span>
+                  <b className={Number(movement.delta_liters) >= 0 ? 'isPositive' : 'isNegative'}>{formatFuelTankDelta(movement.delta_liters)}</b>
+                </div>
+              ))}
+            </div>
+          </details>
+        ) : null}
+      </section>
+      ) : null}
 
       <div className="fuelGrid fuelGridSingle">
         <form className={`fuelCard fuelEntryForm ${entryFormCollapsible && !isEntryFormExpanded ? 'isCollapsed' : ''}`} onSubmit={handleSubmit}>

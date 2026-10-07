@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.62",
+  "version": "12.63",
   "scope": "full",
-  "release_branch": "release/v12.62",
+  "release_branch": "release/v12.63",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Start 12.62: P2 dzisiejszego audytu — F06 kompletność paginowanych metadanych, F07 jawny wynik zmiany statusu, F08 idempotentne usuwanie, F09 wiarygodny pełny rebuild."
+    "notes": "12.63: licznik zbiornika paliwa; stan początkowy 5000 l od 2026-10-07 09:57 Europe/Warsaw."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.62.zip"
+    "file_name": "klima-app-v12.63.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.62",
+    "source_branch": "release/v12.63",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub deployment status + Vercel/Cloudflare deployment metadata",
-    "notes": "Po merge wymagany zewnętrzny dowód deploymentu dokładnego commita main oraz kontrola produkcyjnej wersji 12.62."
+    "notes": "Po merge wymagany dowód deploymentu dokładnego commita main i wersji 12.63."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,12 +34,12 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "previous_release_12_61": "PASS — main przed P2: 13f7dee28dd09d733f8b17589ef7b360ce8ca16e.",
-    "p2_reproducer_red": "PASS — run 816 wykazał F06/F07/F08/F09 jako FAIL przed poprawką.",
-    "p2_reproducer_green": "PASS — run 833: F06/F07/F08/F09, pełne regresje, mobile E2E, desktop E2E, Closure Gate i production build.",
-    "p2_database_deployment": "PASS — produkcja: 20261007071004_p2_status_delete_idempotency_v1262 + 20261007071856_p2_restore_snapshot_integrity_v1262; RPC/table/constraint zweryfikowane.",
-    "p2_rebuild_contract": "PASS — manifest obejmuje aktywne root/current, aktualny kontrakt aplikacji i dwukrotny fresh rebuild PASS w runie 833.",
+    "previous_release_12_62": "PASS — main przed zmianą: 76f2ed7a27ecb55701a3878cc86c25c0ac55080e.",
+    "tank_stock_red": "PASS — run 836 wykazał brak funkcji licznika/dostaw przed implementacją.",
+    "tank_stock_green": "PASS — run 852: test licznika, pełne regresje, E2E, Closure Gate i production build.",
+    "database_deployment": "PASS — produkcja ma migracje 20261007080329, 20261007081052 i 20261007081132; stan 5000,00 l od 2026-10-07 09:57; trigger/RPC/RLS zweryfikowane.",
+    "admin_only": "PASS — UI tylko isAdmin, pracownik nie pobiera statusu; RLS SELECT i INSERT wyłącznie admin, RPC statusu wymaga admina.",
     "current_release_pr_check": "REQUIRED — finalny HEAD po zapisie dowodów musi ponownie przejść WAWIS PR checks / targeted-checks.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.62."
+    "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main i kontrola wersji 12.63."
   }
 }

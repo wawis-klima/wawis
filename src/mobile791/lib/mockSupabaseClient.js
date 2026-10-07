@@ -609,6 +609,63 @@ export function createMockSupabaseClient() {
           error: null,
         };
       }
+      if (name === 'get_fuel_tank_status') {
+        if (!Array.isArray(store.fuel_tank_movements) || !store.fuel_tank_movements.length) {
+          store.fuel_tank_movements = [{
+            id: 'mock-fuel-tank-opening',
+            movement_type: 'opening',
+            delta_liters: 5000,
+            fuel_entry_id: null,
+            note: 'Stan początkowy zbiornika — dostawa 5000 l',
+            happened_at: '2026-10-07T07:57:00.000Z',
+            created_by: null,
+            created_at: '2026-10-07T07:57:00.000Z',
+          }];
+        }
+        const balance = store.fuel_tank_movements.reduce((sum, movement) => sum + (Number(movement.delta_liters) || 0), 0);
+        const supplied = store.fuel_tank_movements.reduce((sum, movement) => Number(movement.delta_liters) > 0 ? sum + Number(movement.delta_liters) : sum, 0);
+        const used = store.fuel_tank_movements.reduce((sum, movement) => movement.movement_type === 'refuel' ? sum + Math.abs(Number(movement.delta_liters) || 0) : sum, 0);
+        const opening = store.fuel_tank_movements.find((movement) => movement.movement_type === 'opening');
+        const latest = [...store.fuel_tank_movements].sort((left, right) => String(right.happened_at || '').localeCompare(String(left.happened_at || '')))[0];
+        return {
+          data: {
+            balance_liters: balance,
+            supplied_liters: supplied,
+            used_liters: used,
+            tracking_started_at: opening?.happened_at || null,
+            last_movement_at: latest?.happened_at || null,
+          },
+          error: null,
+        };
+      }
+      if (name === 'admin_add_fuel_tank_movement') {
+        if (!Array.isArray(store.fuel_tank_movements) || !store.fuel_tank_movements.length) {
+          store.fuel_tank_movements = [{
+            id: 'mock-fuel-tank-opening',
+            movement_type: 'opening',
+            delta_liters: 5000,
+            fuel_entry_id: null,
+            note: 'Stan początkowy zbiornika — dostawa 5000 l',
+            happened_at: '2026-10-07T07:57:00.000Z',
+            created_by: null,
+            created_at: '2026-10-07T07:57:00.000Z',
+          }];
+        }
+        const movement = {
+          id: `mock-fuel-tank-${Date.now()}`,
+          movement_type: payload.p_movement_type || 'delivery',
+          delta_liters: Number(payload.p_liters) || 0,
+          fuel_entry_id: null,
+          note: payload.p_note || null,
+          happened_at: nowIso(),
+          created_by: restoreSession(store.users)?.user?.id || null,
+          created_at: nowIso(),
+        };
+        store.fuel_tank_movements.push(movement);
+        persistSharedStore({ table: 'fuel_tank_movements', event: 'INSERT', newRows: [movement], oldRows: [] });
+
+        return { data: clone(movement), error: null };
+      }
       if (name === 'admin_delete_jobs_recoverable') {
         const requestedIds = new Set((Array.isArray(payload.p_ids) ? payload.p_ids : []).map((id) => String(id || '')));
         const onlyUnlinked = Boolean(payload.p_only_unlinked);
