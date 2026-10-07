@@ -81,7 +81,7 @@ select public.admin_delete_jobs_recoverable(array['00000000-0000-4000-8000-00000
 
 update private.job_recycle_bin
 set snapshot=jsonb_set(
-  snapshot,
+  snapshot - '_integrity',
   '{sms_log}',
   coalesce(snapshot->'sms_log','[]'::jsonb)
   || jsonb_build_array(jsonb_build_object(
