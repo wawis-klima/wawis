@@ -233,7 +233,27 @@ await check('F05 fuel overview/report crosses the 1000-row boundary', async () =
         };
       }
       if (table === 'fuel_entries') return entriesQuery();
+      if (table === 'fuel_tank_movements') {
+        return {
+          select() { return this; },
+          order() { return this; },
+          limit() { return Promise.resolve({ data: [], error: null }); },
+        };
+      }
       throw new Error(`Unexpected table ${table}`);
+    },
+    rpc(name) {
+      assert.equal(name, 'get_fuel_tank_status');
+      return Promise.resolve({
+        data: {
+          balance_liters: 5000,
+          supplied_liters: 5000,
+          used_liters: 0,
+          tracking_started_at: '2026-10-07T07:57:00.000Z',
+          last_movement_at: '2026-10-07T07:57:00.000Z',
+        },
+        error: null,
+      });
     },
   };
 
