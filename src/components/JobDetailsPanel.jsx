@@ -321,7 +321,6 @@ export default function JobDetailsPanel({
         supabase,
         jobId: selectedJobId,
         clientId: pending.clientId,
-        knownInvoiceIds: pending.knownInvoiceIds,
       });
 
       if (!result?.found || !result?.invoiceId) return;
@@ -385,7 +384,7 @@ export default function JobDetailsPanel({
         fakturowniaVerificationRef.current = {
           jobId: selectedJobId,
           clientId: String(prepared.clientId),
-          knownInvoiceIds: Array.isArray(prepared.existingInvoiceIds) ? prepared.existingInvoiceIds.map(String) : [],
+          invoiceOid: String(prepared.invoiceOid || ''),
         };
       }
       invoiceWindow.location.replace(prepared.invoiceUrl);
