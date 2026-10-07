@@ -1,7 +1,7 @@
 ## Aktualna wersja
-- 12.62
+- 12.63
 
-Wersja 12.62 domyka P2 dzisiejszego audytu Codexa: pełne odczyty metadanych bez granicy 1000, atomową zmianę statusu z wykrywaniem konfliktu/0 rekordów, idempotentne usuwanie po utracie odpowiedzi oraz wiarygodny fresh rebuild obejmujący aktywne migracje także z katalogu current.
+Wersja 12.63 dodaje licznik stanu zbiornika paliwa: stan początkowy 5000 l od 7.10.2026 09:57, automatyczne odejmowanie tankowań oraz dostawy/korekty administratora.
 
 
 
@@ -891,7 +891,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.62` — P2 dzisiejszego audytu Codexa: paginacja metadanych, jawna zmiana statusu, idempotentne usuwanie i pełny rebuild.
+- wersja `12.63` — licznik stanu zbiornika paliwa z automatycznym rozchodem tankowań.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
