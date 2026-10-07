@@ -35,10 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "previous_release_12_62": "PASS — main przed zmianą: 76f2ed7a27ecb55701a3878cc86c25c0ac55080e.",
-    "tank_stock_red": "PASS — wcześniejsze runy wykryły brak pełnej obsługi licznika i niezgodny harness E2E przed domknięciem implementacji.",
-    "tank_stock_green": "PASS — run 852: pełne regresje, mobile E2E, desktop E2E, Closure Gate i production build.",
-    "database_deployment": "PASS — produkcja: 20261007080329_fuel_tank_stock_v1263, 20261007081052_fuel_tank_admin_only_v1263 i 20261007081132_fuel_tank_admin_visibility_v1263; stan startowy 5000,00 l od 2026-10-07 09:57 Europe/Warsaw; admin-only RLS/RPC zweryfikowane.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD po zapisie READY_FOR_MAIN musi ponownie przejść WAWIS PR checks / targeted-checks.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main oraz wersja 12.63."
+    "tank_stock_red": "PASS — run 836 wykazał brak funkcji licznika/dostaw przed implementacją.",
+    "tank_stock_green": "PASS — run 852: test licznika, pełne regresje, E2E, Closure Gate i production build.",
+    "database_deployment": "PASS — produkcja ma migracje 20261007080329, 20261007081052 i 20261007081132; stan 5000,00 l od 2026-10-07 09:57; trigger/RPC/RLS zweryfikowane.",
+    "admin_only": "PASS — UI tylko isAdmin, pracownik nie pobiera statusu; RLS SELECT i INSERT wyłącznie admin, RPC statusu wymaga admina.",
+    "current_release_pr_check": "REQUIRED — finalny HEAD po zapisie dowodów musi ponownie przejść WAWIS PR checks / targeted-checks.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main i kontrola wersji 12.63."
   }
 }
