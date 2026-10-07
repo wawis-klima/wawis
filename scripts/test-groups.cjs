@@ -33,6 +33,7 @@ const GROUPS = {
     'npm run test:smoke:realtime-lite',
   ],
   jobs: [
+    'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-mobile-form-v1198.cjs',
@@ -58,6 +59,7 @@ const GROUPS = {
     'npm run test:smoke:new-job-author-comment',
   ],
   photos: [
+    'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-mobile-photo-zoom-v1180.mjs',
     'npm run test:smoke:private-photos',
     'npm run test:smoke:mobile-private-photos',
@@ -120,6 +122,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   nameplates: [
+    'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:mobile-serial-scanner',
     'npm run test:smoke:nameplate-rendering',
@@ -225,6 +228,7 @@ const GROUPS = {
     'npm run test:smoke:sms-shared-source',
   ],
   infra: [
+    'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-release-automation-v1061.cjs',
     'node scripts/smoke-release-impact-v1063.cjs',
