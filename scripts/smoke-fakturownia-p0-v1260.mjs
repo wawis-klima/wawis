@@ -8,7 +8,7 @@ import {
 } from '../supabase/functions/fakturownia-client/invoice-match.js';
 
 const root = path.resolve(import.meta.dirname, '..');
-const migrationPath = path.join(root, 'supabase/migrations/current/20261007044000_fakturownia_p0_v1260.sql');
+const migrationPath = path.join(root, 'supabase/migrations/current/20261007045546_fakturownia_p0_v1260.sql');
 const migration = fs.readFileSync(migrationPath, 'utf8');
 
 const jobA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
