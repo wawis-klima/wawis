@@ -4,24 +4,34 @@ import { PGlite } from '@electric-sql/pglite';
 const root = new URL('../../', import.meta.url);
 const manifest = JSON.parse(fs.readFileSync(new URL('supabase/rebuild/manifest-v1089.json', root), 'utf8'));
 
+function listTimestampedMigrationFiles(dirUrl, prefix = 'supabase/migrations') {
+  const files = [];
+  for (const entry of fs.readdirSync(dirUrl, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      files.push(...listTimestampedMigrationFiles(new URL(`${entry.name}/`, dirUrl), `${prefix}/${entry.name}`));
+      continue;
+    }
+    if (/^\d{14}_.+\.sql$/i.test(entry.name)) {
+      files.push(`${prefix}/${entry.name}`);
+    }
+  }
+  return files;
+}
+
 function assertMigrationCoverage() {
   const coverageFrom = String(manifest.migrationCoverageFrom || '').trim();
   if (!/^\d{14}$/.test(coverageFrom)) {
     throw new Error('manifest-v1089.json requires migrationCoverageFrom as a 14-digit version');
   }
-  const migrationDir = new URL('supabase/migrations/', root);
-  const repoFiles = fs.readdirSync(migrationDir)
-    .filter((name) => /^\d{14}_.+\.sql$/i.test(name))
-    .filter((name) => name.slice(0, 14) >= coverageFrom)
+  const repoFiles = listTimestampedMigrationFiles(new URL('supabase/migrations/', root))
+    .filter((file) => file.split('/').pop().slice(0, 14) >= coverageFrom)
     .sort();
   const manifestSet = new Set(
-    manifest.files
-      .filter((file) => file.startsWith('supabase/migrations/'))
-      .map((file) => file.split('/').pop())
+    manifest.files.filter((file) => file.startsWith('supabase/migrations/'))
   );
-  const missing = repoFiles.filter((name) => !manifestSet.has(name));
+  const missing = repoFiles.filter((file) => !manifestSet.has(file));
   if (missing.length) {
-    throw new Error(`Fresh rebuild manifest omits current migrations: ${missing.join(', ')}`);
+    throw new Error(`Fresh rebuild manifest omits active migrations: ${missing.join(', ')}`);
   }
 }
 
@@ -57,6 +67,76 @@ async function runPass(pass) {
 
     current = 'supabase/rebuild/verify_audit_v1089.sql';
     await db.exec(fs.readFileSync(new URL(current, root), 'utf8'));
+
+    current = 'current application schema contract';
+    const requiredJobColumns = [
+      'vat_invoice_issued',
+      'vat_invoice_fakturownia_confirmed',
+      'payment_method',
+      'create_operation_id',
+      'create_payload_fingerprint',
+    ];
+    const jobColumns = await db.query(`
+      select column_name
+      from information_schema.columns
+      where table_schema='public' and table_name='jobs'
+        and column_name = any($1::text[])
+    `, [requiredJobColumns]);
+    const jobColumnSet = new Set(jobColumns.rows.map((row) => row.column_name));
+    const missingColumns = requiredJobColumns.filter((name) => !jobColumnSet.has(name));
+    if (missingColumns.length) throw new Error(`Current jobs columns missing after rebuild: ${missingColumns.join(', ')}`);
+
+    const requiredFunctions = [
+      'admin_set_job_vat_invoice_issued',
+      'admin_confirm_job_vat_invoice_fakturownia',
+      'change_job_status_guarded',
+      'admin_delete_job_idempotent',
+    ];
+    const currentFunctions = await db.query(`
+      select p.proname
+      from pg_proc p
+      join pg_namespace n on n.oid=p.pronamespace
+      where n.nspname='public' and p.proname = any($1::text[])
+    `, [requiredFunctions]);
+    const functionSet = new Set(currentFunctions.rows.map((row) => row.proname));
+    const missingFunctions = requiredFunctions.filter((name) => !functionSet.has(name));
+    if (missingFunctions.length) throw new Error(`Current RPCs missing after rebuild: ${missingFunctions.join(', ')}`);
+
+    const requiredConstraints = [
+      'jobs_payment_confirmation_consistent',
+      'jobs_create_operation_metadata_consistent',
+    ];
+    const currentConstraints = await db.query(`
+      select conname
+      from pg_constraint
+      where conrelid='public.jobs'::regclass and conname = any($1::text[])
+    `, [requiredConstraints]);
+    const constraintSet = new Set(currentConstraints.rows.map((row) => row.conname));
+    const missingConstraints = requiredConstraints.filter((name) => !constraintSet.has(name));
+    if (missingConstraints.length) throw new Error(`Current constraints missing after rebuild: ${missingConstraints.join(', ')}`);
+
+    const requiredPolicies = ['jobs_create_own','jobs_delete_admin','jobs_read_access','jobs_update_access'];
+    const currentPolicies = await db.query(`
+      select polname
+      from pg_policy
+      where polrelid='public.jobs'::regclass and polname = any($1::text[])
+    `, [requiredPolicies]);
+    const policySet = new Set(currentPolicies.rows.map((row) => row.polname));
+    const missingPolicies = requiredPolicies.filter((name) => !policySet.has(name));
+    if (missingPolicies.length) throw new Error(`Current jobs RLS missing after rebuild: ${missingPolicies.join(', ')}`);
+
+    const requiredTriggers = ['protect_job_fields','archive_job_before_delete','trg_jobs_completion_metadata'];
+    const currentTriggers = await db.query(`
+      select tgname
+      from pg_trigger
+      where tgrelid='public.jobs'::regclass and not tgisinternal and tgname = any($1::text[])
+    `, [requiredTriggers]);
+    const triggerSet = new Set(currentTriggers.rows.map((row) => row.tgname));
+    const missingTriggers = requiredTriggers.filter((name) => !triggerSet.has(name));
+    if (missingTriggers.length) throw new Error(`Current jobs triggers missing after rebuild: ${missingTriggers.join(', ')}`);
+
+    const deleteOpsTable = await db.query("select to_regclass('private.job_delete_operations')::text as name");
+    if (!deleteOpsTable.rows[0]?.name) throw new Error('Current idempotent delete operation table missing after rebuild');
 
     current = 'current SMS catalog checks';
     const legacySmsIndexes = await db.query(
