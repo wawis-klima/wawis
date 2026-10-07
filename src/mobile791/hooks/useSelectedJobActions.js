@@ -26,6 +26,7 @@ import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
+import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { deleteJobDeviceRecord } from "../modules/job-device-delete.js";
@@ -669,6 +670,14 @@ export function useSelectedJobActions({
     if (completingNow && getJobDeviceRows(job).length === 0) {
       alert('Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).');
       return;
+    }
+
+    if (completingNow) {
+      const deviceValidation = validateJobDevicesForCompletion(job);
+      if (!deviceValidation.ok) {
+        alert(`Nie można zakończyć zlecenia. ${deviceValidation.message}`);
+        return;
+      }
     }
 
     if (workerFinishing && currentStatus === "Zakończone") return;
