@@ -204,7 +204,7 @@ async function runPass(pass) {
 
     current = 'fixed-clock SMS behavior';
     await db.exec(`insert into public.jobs(id,client,phone,installation_date,sms_consent,sms_reminder_enabled,service_reminder_years)
-values('90000000-0000-4000-8000-000000000001','Clock Fixture','500111222','2025-11-05',true,true,1)`);
+values('90000000-0000-4000-8000-000000000001','Clock Fixture','500111222','2021-11-05',true,true,5)`);
     const before = await db.query("select private.sms_actionable_queue_count_at(date '2026-10-04')::int as n");
     const start = await db.query("select private.sms_actionable_queue_count_at(date '2026-10-05')::int as n");
     const last = await db.query("select private.sms_actionable_queue_count_at(date '2026-12-06')::int as n");
