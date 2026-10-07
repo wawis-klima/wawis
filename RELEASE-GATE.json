@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v12.62",
-    "ready_for_main": false,
-    "status": "IN_PROGRESS",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,11 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "previous_release_12_61": "PASS — main przed P2: 13f7dee28dd09d733f8b17589ef7b360ce8ca16e.",
-    "p2_reproducer_red": "REQUIRED — reproduktor F06/F07/F08/F09 musi wykazać mechanizmy błędów przed poprawką.",
-    "p2_reproducer_green": "REQUIRED — F06/F07/F08/F09 + pełne regresje + E2E + Closure Gate + build.",
-    "p2_database_deployment": "REQUIRED — funkcje atomowej zmiany statusu i idempotentnego usuwania muszą być wdrożone i zweryfikowane katalogiem produkcji.",
-    "p2_rebuild_contract": "REQUIRED — fresh rebuild musi obejmować aktywne migracje root/current oraz sprawdzać aktualny kontrakt aplikacji.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD release/v12.62 musi przejść WAWIS PR checks / targeted-checks oraz Closure Gate.",
+    "p2_reproducer_red": "PASS — run 816 wykazał F06/F07/F08/F09 jako FAIL przed poprawką.",
+    "p2_reproducer_green": "PASS — run 833: F06/F07/F08/F09, pełne regresje, mobile E2E, desktop E2E, Closure Gate i production build.",
+    "p2_database_deployment": "PASS — produkcja: 20261007071004_p2_status_delete_idempotency_v1262 + 20261007071856_p2_restore_snapshot_integrity_v1262; RPC/table/constraint zweryfikowane.",
+    "p2_rebuild_contract": "PASS — manifest obejmuje aktywne root/current, aktualny kontrakt aplikacji i dwukrotny fresh rebuild PASS w runie 833.",
+    "current_release_pr_check": "REQUIRED — finalny HEAD po zapisie dowodów musi ponownie przejść WAWIS PR checks / targeted-checks.",
     "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.62."
   }
 }
