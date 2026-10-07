@@ -1,3 +1,10 @@
+## 12.61
+- P1/F03: tworzenie montażu dostaje trwały klucz operacji i fingerprint, aby utrata odpowiedzi po zapisie nie tworzyła duplikatu przy ponowieniu.
+- P1/F04: zakończenie zlecenia ponownie sprawdza komplet JW/JZ i zgodność par single-split niezależnie od ścieżki, którą urządzenie zostało zapisane.
+- P1/F05: administracyjny raport paliwa pobiera pełną historię stronicami i nie ucina starszych miesięcy na granicy 1000 rekordów.
+- P1/F10: produkcyjny constraint płatności został potwierdzony jako poprawny; gotówka wymaga kwoty > 0, przelew może mieć kwotę pustą.
+- Dodano trwały reproduktor `scripts/smoke-p1-data-integrity-v1261.mjs`.
+
 ## 12.60
 - P0/F01: pracownik nie może bezpośrednim INSERT/UPDATE zmieniać administracyjnych pól faktury VAT; regułę egzekwuje trigger bazy.
 - P0/F02: formularz Fakturowni dostaje OID konkretnego montażu, a weryfikacja potwierdza wyłącznie fakturę z tym samym OID i klientem.

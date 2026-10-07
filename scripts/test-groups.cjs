@@ -33,6 +33,7 @@ const GROUPS = {
     'npm run test:smoke:realtime-lite',
   ],
   jobs: [
+    'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-mobile-form-v1198.cjs',
     'node scripts/smoke-mobile-postal-wire-v1199.cjs',
@@ -74,6 +75,7 @@ const GROUPS = {
     'node scripts/smoke-photo-zero-byte-v1096.mjs',
   ],
   protocol: [
+    'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-worker-protocol-gate-v1226.cjs',
     'npm run test:smoke:mobile-protocol',
     'npm run test:smoke:mobile-protocol-save',
@@ -111,12 +113,14 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1087.mjs',
   ],
   fuel: [
+    'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:fuel-module',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
     'node scripts/smoke-storage-delayed-commit-v1077.mjs',
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   nameplates: [
+    'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:mobile-serial-scanner',
     'npm run test:smoke:nameplate-rendering',
     'npm run test:smoke:nameplate-finish-verification',
@@ -221,6 +225,7 @@ const GROUPS = {
     'npm run test:smoke:sms-shared-source',
   ],
   infra: [
+    'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-release-automation-v1061.cjs',
     'node scripts/smoke-release-impact-v1063.cjs',
     'node scripts/smoke-closure-gate-v1257.cjs',

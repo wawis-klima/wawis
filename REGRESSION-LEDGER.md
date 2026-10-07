@@ -70,3 +70,27 @@ Dowód CI przed ustawieniem READY_FOR_MAIN:
 |---|---|---|---|---|
 | SMS-07 | usuwanie z głównej kolejki | `row.id` urządzenia/zlecenia trafiał razem z prawdziwym `sms_log.id` do anulowania; prawidłowy log znikał, a drugi identyfikator dawał fałszywy `NOT_FOUND` | CLOSED | `scripts/smoke-sms-delete-identity-v1259.mjs` + PR #278 run 783 / Closure Gate PASS |
 | SMS-08 | prezentacja statusu | `pending_approval` miał zbyt długą etykietę „Oczekuje na zatwierdzenie” | CLOSED | `scripts/smoke-sms-delete-identity-v1259.mjs` + `scripts/test-sms-approval-routing.mjs` + PR #278 run 783 / Closure Gate PASS |
+
+
+## P1 12.61 — integralność montażów, JW/JZ i paliwa
+
+Dowód przed poprawką:
+- PR #281, run 798,
+- F03: FAIL — po niejednoznacznym błędzie zapisu retry tworzył 2 rekordy zamiast 1,
+- F04: FAIL — brak wspólnej walidacji pary JW/JZ bezpośrednio przy zakończeniu,
+- F05: FAIL — pełny widok paliwa kończył się na 1000 rekordach,
+- F10: PASS — gotówka już wymagała kwoty > 0, a przelew dopuszczał brak kwoty.
+
+Dowód po poprawce:
+- run 809: F03/F04/F05/F10 PASS, pełne regresje PASS, Playwright mobile PASS, Playwright desktop PASS, Closure Gate PASS, production build PASS,
+- produkcyjna migracja F03: `20261007062745_job_create_idempotency_v1261`,
+- potwierdzone pola `jobs.create_operation_id` i `jobs.create_payload_fingerprint`,
+- potwierdzony unikalny indeks `jobs_create_operation_id_uidx`,
+- constraint `jobs_create_operation_metadata_consistent` ma `validated=true`.
+
+| ID | Priorytet | Mechanizm | Status | Trwały reproduktor / dowód |
+|---|---|---|---|---|
+| F03 | P1 | utrata odpowiedzi po INSERT mogła spowodować drugi montaż przy ponownym zapisie | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs`; stały `create_operation_id` + fingerprint + unikalność w DB |
+| F04 | P1 | zakończenie nie ponawiało końcowej kontroli zgodności JW/JZ | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs`; wspólna `validateJobDevicesForCompletion` w desktop/mobile |
+| F05 | P1 | administracyjny raport paliwa obcinał historię do 1000 rekordów | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs` + `smoke-fuel-module-v1014.mjs`; paginacja po 500 |
+| F10 | P1 | spójność kwoty i metody płatności | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs`; produkcyjny constraint: gotówka > 0, przelew kwota opcjonalna |

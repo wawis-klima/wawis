@@ -28,6 +28,16 @@ function loadJobsFormModule() {
     })();`,
   );
   source = source.replace(
+    /import \{ insertJobIdempotently \} from '\.\/job-create-idempotency\.js';/,
+    `const insertJobIdempotently = async ({ supabase, payload, selectFields = 'id' }) => {
+      const result = await supabase.from('jobs').insert(payload).select(selectFields).single();
+      if (result?.error) throw result.error;
+      const row = Array.isArray(result?.data) ? result.data[0] : result?.data;
+      if (!row?.id) throw new Error('Baza nie zwróciła identyfikatora zapisanego montażu.');
+      return row;
+    };`
+  );
+  source = source.replace(
     /import \{[\s\S]*?ensureJobFormDevices[\s\S]*?serializeJobDevicesToFields[\s\S]*?\} from '\.\/job-devices\.js';/,
     `const DEVICE_TYPE_SINGLE = 'single-split';
     function normalizeLine(value) {

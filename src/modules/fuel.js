@@ -215,28 +215,55 @@ export function calculateFuelMonthlyReport({ entries = [], vehicles = [], monthK
   };
 }
 
+async function loadFuelEntries({ supabase, entryLimit = 100 }) {
+  const numericLimit = Number(entryLimit);
+  const loadAll = entryLimit === Infinity
+    || String(entryLimit || '').trim().toLowerCase() === 'all'
+    || !Number.isFinite(numericLimit);
+
+  if (!loadAll) {
+    const safeEntryLimit = Math.min(Math.max(numericLimit || 100, 1), 1000);
+    const result = await supabase
+      .from('fuel_entries')
+      .select(FUEL_ENTRY_SELECT)
+      .order('fueled_at', { ascending: false })
+      .limit(safeEntryLimit);
+    if (result.error) throw result.error;
+    return Array.isArray(result.data) ? result.data : [];
+  }
+
+  const pageSize = 500;
+  const entries = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const result = await supabase
+      .from('fuel_entries')
+      .select(FUEL_ENTRY_SELECT)
+      .order('fueled_at', { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (result.error) throw result.error;
+    const page = Array.isArray(result.data) ? result.data : [];
+    entries.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return entries;
+}
+
 export async function loadFuelModuleData({ supabase, isAdmin, entryLimit = 100 }) {
   assertFuelAccess({ supabase });
-  const safeEntryLimit = Math.min(Math.max(Number(entryLimit) || 100, 1), 1000);
 
-  const [vehiclesResult, entriesResult] = await Promise.all([
+  const [vehiclesResult, entries] = await Promise.all([
     supabase
       .from('fuel_vehicles')
       .select('id, vehicle_name, registration_number, is_active, tank_capacity_liters, last_odometer_km, last_fueled_at, created_at, updated_at')
       .order('registration_number', { ascending: true }),
-    supabase
-      .from('fuel_entries')
-      .select(FUEL_ENTRY_SELECT)
-      .order('fueled_at', { ascending: false })
-      .limit(safeEntryLimit),
+    loadFuelEntries({ supabase, entryLimit }),
   ]);
 
   if (vehiclesResult.error) throw vehiclesResult.error;
-  if (entriesResult.error) throw entriesResult.error;
 
   return {
     vehicles: Array.isArray(vehiclesResult.data) ? vehiclesResult.data : [],
-    entries: Array.isArray(entriesResult.data) ? entriesResult.data : [],
+    entries,
   };
 }
 

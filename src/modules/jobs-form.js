@@ -7,8 +7,10 @@ import {
 } from './jobs-assignment.js';
 import { applyAutoLinkedContractorToJobForm } from './job-contractors.js';
 import { DEVICE_TYPE_SINGLE, ensureJobFormDevices, getJobDeviceRows, serializeJobDevicesToFields } from './job-devices.js';
+import { insertJobIdempotently } from './job-create-idempotency.js';
 
 export const EMPTY_JOB_FORM = {
+  create_operation_id: '',
   title: '',
   client: '',
   email: '',
@@ -357,7 +359,7 @@ export async function addJobRecord({
   const resolvedForm = await resolveJobFormForSave({ supabase, form, contractors, isAdmin });
   const deviceFields = serializeJobDevicesToFields(resolvedForm);
 
-  const { data, error } = await supabase.from('jobs').insert({
+  const jobPayload = {
     title: resolvedForm.client.trim(),
     client: resolvedForm.client.trim(),
     email: resolvedForm.email.trim(),
@@ -378,10 +380,14 @@ export async function addJobRecord({
     device_model: deviceFields.device_model || null,
     device_serial_number: deviceFields.device_serial_number || null,
     installer_ids: getAssignedUserIdsFromForm(resolvedForm),
-  }).select('id').single();
-  if (error) throw error;
-  const createdJob = Array.isArray(data) ? data[0] : data;
-  if (!createdJob?.id) throw new Error('Baza nie zwróciła identyfikatora zapisanego montażu.');
+  };
+
+  const createdJob = await insertJobIdempotently({
+    supabase,
+    payload: jobPayload,
+    operationId: form.create_operation_id || resolvedForm.create_operation_id,
+    selectFields: 'id',
+  });
 
   // Po potwierdzonym INSERT rekord jobs jest już utworzony. Kolejne etapy są
   // poboczne i nie mogą zamienić sukcesu INSERT w błąd całego formularza.

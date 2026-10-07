@@ -24,6 +24,7 @@ import { deleteJobPhoto, uploadJobDocumentationPhotos, uploadJobPhotos } from ".
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { deleteJobDeviceRecord } from "../modules/job-device-delete.js";
 import { getJobDeviceRows } from "../modules/job-devices.js";
+import { validateJobDevicesForCompletion } from "../modules/job-device-completion-validation.js";
 
 export function useSelectedJobActions({
   supabase,
@@ -268,6 +269,14 @@ export function useSelectedJobActions({
     if (completingNow && getJobDeviceRows(job).length === 0) {
       alert('Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).');
       return;
+    }
+
+    if (completingNow) {
+      const deviceValidation = validateJobDevicesForCompletion(job);
+      if (!deviceValidation.ok) {
+        alert(`Nie można zakończyć zlecenia. ${deviceValidation.message}`);
+        return;
+      }
     }
 
     if (!isAdmin && status === "Zakończone" && currentStatus === "Zakończone") {

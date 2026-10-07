@@ -27,6 +27,10 @@ function loadJobsFormModule() {
     `const applyAutoLinkedContractorToJobForm = (form = {}) => ({ form: { ...form }, contractor: null, autoLinked: false });`
   );
   source = source.replace(
+    /import \{ insertJobIdempotently \} from '\.\/job-create-idempotency\.js';/,
+    `const insertJobIdempotently = async () => { throw new Error('addJobRecord is outside this device-save smoke'); };`
+  );
+  source = source.replace(
     /import \{[\s\S]*?\} from '\.\/job-devices\.js';/,
     `const DEVICE_TYPE_SINGLE = 'single-split';
     function normalizeLine(value) { return String(value || '').replace(/[\\r\\n]+/g, ' ').replace(/\\s+/g, ' ').trim(); }

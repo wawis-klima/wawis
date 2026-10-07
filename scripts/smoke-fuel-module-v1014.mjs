@@ -196,6 +196,7 @@ const productionMigration = read('supabase/setup-fuel-production-v10.26.sql');
 const mobileLayout = read('src/mobile791/components/layout/AppAuthenticatedLayout.jsx');
 const mainLayout = read('src/components/layout/AppAuthenticatedLayout.jsx');
 const panel = read('src/components/fuel/FuelPanelBase.jsx');
+const fuelModule = read('src/modules/fuel.js');
 const fuelPushSource = read('src/modules/fuel-push.js');
 const pushEdge = read('supabase/functions/send-fuel-entry-push/index.ts');
 const endpoint = read('api/read-odometer-ai.js');
@@ -279,7 +280,8 @@ assert.match(mobileApp, /!\["jobs", "fuel"\]\.includes\(activeModule\)/, 'Pracow
 assert.match(mobileApp, /isAdmin && isMobile && activeModule === "devices"/, 'Administrator mobilny ma być wyprowadzany z modułu Urządzenia.');
 assert.doesNotMatch(mobileLayout, /Widzisz wszystkie tankowania|Widzisz wyłącznie własne tankowania/, 'Mobilny moduł paliwa nie powinien marnować miejsca na opis.');
 assert.doesNotMatch(mainLayout, /Testowy rejestr paliwa/, 'Moduł paliwa nie jest już testowy.');
-assert.match(panel, /entryLimit: displayVehicleOverview \? 1000 : 100/, 'Desktop powinien pobierać szerszą historię do zestawienia floty.');
+assert.match(panel, /entryLimit: displayVehicleOverview \? Infinity : 100/, 'Desktop powinien pobierać pełną historię do zestawienia floty.');
+assert.match(fuelModule, /\.range\(offset, offset \+ pageSize - 1\)/, 'Pełna historia paliwa musi być pobierana stronami, a nie jednym limitem 1000.');
 assert.match(panel, /FUEL_ODOMETER_WARNING_DELTA_KM|checkFuelOdometerProgression/);
 assert.match(panel, /rawFleetOdometer === null \|\| rawFleetOdometer === undefined \|\| rawFleetOdometer === ''/, 'Brak pierwszego przebiegu musi pozostać nullem, a nie zostać zamieniony na 0 km.');
 assert.doesNotMatch(panel, /const fleetOdometer = Number\(vehicle\?\.last_odometer_km\)/, 'Pierwszy przebieg nie może być liczony jako skok od 0 km.');
