@@ -158,3 +158,18 @@ Dowód po implementacji:
 | Dostawy do zbiornika | CLOSED | `admin_add_fuel_tank_movement` |
 | Widoczność tylko administrator | CLOSED | UI `isAdmin`, brak pobierania dla pracownika, RLS `fuel_tank_movements_admin_select`, RPC z kontrolą admin |
 | Trwała regresja | CLOSED | `scripts/smoke-fuel-tank-stock-v1263.mjs` + run 852 |
+
+## 12.65 — potwierdzenia dostawy PUSH
+
+Zgłoszenie produkcyjne:
+- zakończenie montażu zostało poprawnie zapisane,
+- Edge Function wysłała `job_completed`,
+- dostawca Apple przyjął wiadomość kodem 201,
+- brakowało dowodu, czy Service Worker urządzenia odebrał payload i czy `showNotification` zakończył się powodzeniem.
+
+Trwała ochrona:
+- `push_delivery_log.received_at` potwierdza odebranie payloadu przez Service Worker,
+- `push_delivery_log.displayed_at` potwierdza udane `showNotification`,
+- receipt wymaga pary `deliveryLogId` + losowy token; w bazie przechowywany jest tylko SHA-256 tokenu,
+- błąd telemetrii nie może blokować wyświetlenia,
+- `scripts/smoke-push-delivery-receipts-v1265.mjs` pilnuje kolejności received → filtr bezpieczeństwa → showNotification → displayed.
