@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.105.4";
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob } from "./invoice-match.js";
 
 type SyncInvoiceClientRequest = {
   action?: "prepare" | "verify";
@@ -27,6 +28,7 @@ type FakturowniaInvoice = {
   kind?: string;
   status?: string;
   client_id?: number | string;
+  oid?: string;
 };
 
 const FAKTUROWNIA_DOMAIN = "wawis.fakturownia.pl";
@@ -85,28 +87,24 @@ Deno.serve(async (request: Request) => {
     const action = normalizeText(body.action || "prepare").toLowerCase();
 
     if (action === "verify") {
+      const jobId = normalizeText(body.jobId);
       const clientId = normalizeText(body.clientId);
+      if (!isUuid(jobId)) return json({ error: "Brak prawidłowego identyfikatora montażu do weryfikacji." }, 400);
       if (!clientId) return json({ error: "Brak identyfikatora klienta Fakturowni do weryfikacji." }, 400);
 
-      const knownInvoiceIds = new Set(
-        (Array.isArray(body.knownInvoiceIds) ? body.knownInvoiceIds : [])
-          .map((value) => normalizeText(value))
-          .filter(Boolean),
-      );
+      const invoiceOid = buildJobInvoiceOid(jobId);
       const invoices = await fakturowniaGetInvoices(apiToken, {
-        client_id: clientId,
+        oid: invoiceOid,
         page: "1",
         per_page: "100",
         order: "updated_at.desc",
       });
-      const foundInvoice = invoices.find((invoice) => {
-        const invoiceId = normalizeText(invoice?.id);
-        return invoiceId && !knownInvoiceIds.has(invoiceId) && isIssuedVatInvoice(invoice);
-      }) || null;
+      const foundInvoice = findIssuedVatInvoiceForJob(invoices, { jobId, clientId });
 
       return json({
         ok: true,
         found: Boolean(foundInvoice?.id),
+        invoiceOid,
         invoiceId: normalizeText(foundInvoice?.id),
         invoiceNumber: normalizeText(foundInvoice?.number),
         invoiceStatus: normalizeText(foundInvoice?.status),
@@ -214,20 +212,12 @@ Deno.serve(async (request: Request) => {
     const clientId = normalizeText(savedClient?.id || matchedClient?.id);
     if (!clientId) return json({ error: "Fakturownia nie zwróciła identyfikatora klienta." }, 502);
 
-    // Formularz pozostaje po stronie Fakturowni. API służy tu wyłącznie do synchronizacji klienta,
-    // żeby samo kliknięcie nie tworzyło dokumentu ani numeru faktury.
-    const existingInvoices = await fakturowniaGetInvoices(apiToken, {
-      client_id: clientId,
-      page: "1",
-      per_page: "100",
-      order: "updated_at.desc",
-    });
-    const existingInvoiceIds = existingInvoices
-      .map((invoice) => normalizeText(invoice?.id))
-      .filter(Boolean);
-
+    // Formularz pozostaje po stronie Fakturowni. Każdy montaż dostaje własny OID,
+    // dzięki czemu późniejsza weryfikacja nie zgaduje po "pierwszej nowej fakturze klienta".
+    const invoiceOid = buildJobInvoiceOid(jobId);
     const invoiceUrl = buildInvoiceFormUrl({
       clientId,
+      invoiceOid,
       positionName: invoicePositionName,
       tax: invoiceTax,
       paymentType: invoicePayment.paymentType,
@@ -242,7 +232,7 @@ Deno.serve(async (request: Request) => {
       clientName,
       created,
       matchSource: matchSource || (created ? "created" : "unknown"),
-      existingInvoiceIds,
+      invoiceOid,
       invoiceUrl,
       clientUrl,
       invoicePrefill: {
@@ -270,14 +260,6 @@ async function fakturowniaGetInvoices(apiToken: string, params: Record<string, s
   const query = new URLSearchParams(params);
   const result = await fakturowniaRequest<unknown>(`/invoices.json?${query.toString()}`, apiToken, { method: "GET" });
   return Array.isArray(result) ? result as FakturowniaInvoice[] : [];
-}
-
-function isIssuedVatInvoice(invoice: FakturowniaInvoice): boolean {
-  const kind = normalizeText(invoice?.kind).toLowerCase();
-  const status = normalizeText(invoice?.status).toLowerCase();
-  const vatKinds = new Set(["vat", "vat_mp", "vat_margin", "final"]);
-  const issuedStatuses = new Set(["issued", "sent", "paid", "partial"]);
-  return vatKinds.has(kind) && issuedStatuses.has(status);
 }
 
 async function fakturowniaRequest<T>(
@@ -399,6 +381,7 @@ function detectInvoiceBrand(value: unknown): string {
 
 function buildInvoiceFormUrl({
   clientId,
+  invoiceOid,
   positionName,
   tax,
   paymentType,
@@ -406,6 +389,7 @@ function buildInvoiceFormUrl({
   status,
 }: {
   clientId: string;
+  invoiceOid: string;
   positionName: string;
   tax: number;
   paymentType: string;
@@ -414,6 +398,7 @@ function buildInvoiceFormUrl({
 }): string {
   const url = new URL("/invoices/new", FAKTUROWNIA_BASE_URL);
   url.searchParams.set("client_id", clientId);
+  url.searchParams.set("invoice[oid]", invoiceOid);
 
   // Te parametry wyłącznie wstępnie uzupełniają formularz WWW.
   // Nie wysyłamy POST /invoices.json, więc samo kliknięcie w WAWIS nie tworzy dokumentu.
