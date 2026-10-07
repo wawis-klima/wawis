@@ -311,7 +311,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
     setLoading(true);
     setError('');
     try {
-      const data = await loadFuelModuleData({ supabase, isAdmin, entryLimit: displayVehicleOverview ? 1000 : 100 });
+      const data = await loadFuelModuleData({ supabase, isAdmin, entryLimit: displayVehicleOverview ? Infinity : 100 });
       if (!isCurrent()) return;
       setVehicles(data.vehicles);
       setEntries(data.entries);
