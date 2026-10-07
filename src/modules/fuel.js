@@ -37,16 +37,21 @@ export function normalizeFuelTankDeliveryLiters(value) {
 }
 
 async function loadFuelTankData({ supabase, isAdmin }) {
-  const statusPromise = supabase.rpc('get_fuel_tank_status');
-  const movementsPromise = isAdmin
-    ? supabase
+  if (!isAdmin) {
+    return {
+      tankStatus: null,
+      tankMovements: [],
+    };
+  }
+
+  const [statusResult, movementsResult] = await Promise.all([
+    supabase.rpc('get_fuel_tank_status'),
+    supabase
       .from('fuel_tank_movements')
       .select('id, movement_type, delta_liters, fuel_entry_id, note, happened_at, created_by, created_at')
       .order('happened_at', { ascending: false })
-      .limit(20)
-    : Promise.resolve({ data: [], error: null });
-
-  const [statusResult, movementsResult] = await Promise.all([statusPromise, movementsPromise]);
+      .limit(20),
+  ]);
   if (statusResult.error) throw statusResult.error;
   if (movementsResult.error) throw movementsResult.error;
 
