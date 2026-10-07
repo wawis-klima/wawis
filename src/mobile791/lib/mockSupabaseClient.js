@@ -552,6 +552,63 @@ export function createMockSupabaseClient() {
       return new MockQueryBuilder(store, tableName, persistSharedStore);
     },
     async rpc(name, payload = {}) {
+      if (name === 'change_job_status_guarded') {
+        const job = store.jobs.find((item) => String(item.id || '') === String(payload.p_job_id || ''));
+        if (!job) return { data: { outcome: 'not_found', id: payload.p_job_id }, error: null };
+        const expectedStatus = payload.p_expected_status ?? null;
+        const currentStatus = job.status ?? null;
+        if (String(currentStatus ?? '') === String(payload.p_new_status ?? '')) {
+          return { data: { outcome: 'already_applied', id: job.id, status: job.status }, error: null };
+        }
+        if (String(currentStatus ?? '') !== String(expectedStatus ?? '')) {
+          return {
+            data: {
+              outcome: 'conflict',
+              id: job.id,
+              current_status: currentStatus,
+              expected_status: expectedStatus,
+              requested_status: payload.p_new_status,
+            },
+            error: null,
+          };
+        }
+        const previous = clone(job);
+        job.status = payload.p_new_status;
+        job.updated_at = nowIso();
+        persistSharedStore({ table: 'jobs', event: 'UPDATE', newRows: [job], oldRows: [previous] });
+
+        return { data: { outcome: 'changed', id: job.id, status: job.status }, error: null };
+      }
+      if (name === 'admin_delete_job_idempotent') {
+        const jobId = String(payload.p_job_id || '');
+        const deleted = store.jobs.find((job) => String(job.id || '') === jobId);
+        if (!deleted) {
+          return {
+            data: {
+              outcome: 'not_found',
+              id: payload.p_job_id,
+              operation_id: payload.p_operation_id,
+            },
+            error: null,
+          };
+        }
+        store.jobs = store.jobs.filter((job) => String(job.id || '') !== jobId);
+        for (const tableName of ['job_access', 'comments', 'photos', 'nameplate_manual_verifications', 'job_protocols', 'job_protocol_email_log']) {
+          if (Array.isArray(store[tableName])) {
+            store[tableName] = store[tableName].filter((row) => String(row.job_id || '') !== jobId);
+          }
+        }
+        persistSharedStore({ table: 'jobs', event: 'DELETE', newRows: [], oldRows: [deleted] });
+
+        return {
+          data: {
+            outcome: 'deleted',
+            id: deleted.id,
+            operation_id: payload.p_operation_id,
+          },
+          error: null,
+        };
+      }
       if (name === 'admin_delete_jobs_recoverable') {
         const requestedIds = new Set((Array.isArray(payload.p_ids) ? payload.p_ids : []).map((id) => String(id || '')));
         const onlyUnlinked = Boolean(payload.p_only_unlinked);
