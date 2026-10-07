@@ -16,8 +16,9 @@ assert.match(actionsSource, /await refreshAll\(sessionUser\);/);
 assert.match(detailsSource, /deleteJob\(selectedJob\)/);
 assert.match(detailsSource, /Usuń kartę/);
 for (const [label, source] of [['desktop', desktopCrudSource], ['mobile', mobileCrudSource]]) {
-  assert.match(source, /admin_delete_jobs_recoverable/, `${label}: usunięcie karty musi korzystać z odzyskiwalnego RPC`);
-  assert.match(source, /p_only_unlinked:\s*false/, `${label}: zwykłe usunięcie karty nie może wymagać contractor_id IS NULL`);
+  assert.match(source, /admin_delete_job_idempotent/, `${label}: usunięcie karty musi korzystać z idempotentnego odzyskiwalnego RPC`);
+  assert.match(source, /p_operation_id/, `${label}: retry usunięcia musi używać stabilnego operation_id`);
+  assert.match(source, /already_applied/, `${label}: retry po utracie odpowiedzi musi uznawać wcześniej wykonane usunięcie`);
   assert.doesNotMatch(source, /storage\.from\(['"]job-photos['"]\)\.remove/, `${label}: pliki nie mogą być kasowane przed archiwizacją karty`);
 }
 
@@ -44,7 +45,14 @@ async function assertDeleteFlow() {
     },
     async rpc(name, payload) {
       rpcCall = { name, payload };
-      return { data: [{ id: 'job-123' }], error: null };
+      return {
+        data: {
+          outcome: 'deleted',
+          id: 'job-123',
+          operation_id: payload.p_operation_id,
+        },
+        error: null,
+      };
     },
   };
 
@@ -60,22 +68,30 @@ async function assertDeleteFlow() {
   });
 
   assert.equal(storageTouched, false);
-  assert.deepEqual(JSON.parse(JSON.stringify(rpcCall)), {
-    name: 'admin_delete_jobs_recoverable',
-    payload: { p_ids: ['job-123'], p_only_unlinked: false },
-  });
-  assert.deepEqual(JSON.parse(JSON.stringify(result)), { deletedJobIds: ['job-123'] });
+  const normalizedRpc = JSON.parse(JSON.stringify(rpcCall));
+  assert.equal(normalizedRpc.name, 'admin_delete_job_idempotent');
+  assert.equal(normalizedRpc.payload.p_job_id, 'job-123');
+  assert.match(normalizedRpc.payload.p_operation_id, /^[0-9a-f-]{36}$/i);
+  assert.deepEqual(JSON.parse(JSON.stringify(result)).deletedJobIds, ['job-123']);
+  assert.equal(result.outcome, 'deleted');
 
   await assert.rejects(
     () => confirmDeleteJobRecord({
       supabase: {
-        async rpc() {
-          return { data: [], error: null };
+        async rpc(name, payload) {
+          return {
+            data: {
+              outcome: 'not_found',
+              id: 'job-missing',
+              operation_id: payload.p_operation_id,
+            },
+            error: null,
+          };
         },
       },
       jobToDelete: { id: 'job-missing', photos: [{ storage_path: 'must-stay.jpg' }] },
     }),
-    /karta nie została usunięta/i,
+    /karta nie istnieje|odśwież listę montaży/i,
   );
 }
 
