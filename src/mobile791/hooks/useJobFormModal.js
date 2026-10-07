@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { buildNewJobFormDefaults } from "../modules/job-date.js";
+import { createJobOperationId } from "../../modules/job-create-idempotency.js";
 
 function getComparableJobForm(form, normalizeStatus) {
   return JSON.stringify({
@@ -65,7 +66,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
   }
 
   function openAddJob() {
-    const nextForm = buildNewJobFormDefaults(emptyJobForm);
+    const nextForm = { ...buildNewJobFormDefaults(emptyJobForm), create_operation_id: createJobOperationId() };
     setEditingJobId(null);
     setSerialOnlyMode(false);
     jobFormInitialRef.current = nextForm;
