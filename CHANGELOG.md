@@ -1,7 +1,7 @@
 ## 12.63
 - Paliwo: licznik stanu zbiornika z początkiem 5000 l od 7 października 2026, 09:57.
 - Każde nowe tankowanie pojazdu automatycznie zmniejsza stan zbiornika.
-- Administrator może dodawać kolejne dostawy i korekty; pracownicy widzą aktualny stan.
+- Licznik, historia zbiornika i dostawy są dostępne wyłącznie dla administratora; pracownicy zapisują tylko własne tankowania pojazdów.
 - Korekta/usunięcie tankowania automatycznie aktualizuje stan przez powiązany ruch magazynowy.
 
 ## 12.62
