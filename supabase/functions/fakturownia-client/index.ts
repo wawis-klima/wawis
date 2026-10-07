@@ -5,7 +5,6 @@ type SyncInvoiceClientRequest = {
   action?: "prepare" | "verify";
   jobId?: string;
   clientId?: string | number;
-  knownInvoiceIds?: Array<string | number>;
 };
 
 type FakturowniaClient = {
