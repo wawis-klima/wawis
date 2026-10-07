@@ -1,23 +1,23 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.60",
+  "version": "12.61",
   "scope": "full",
-  "release_branch": "release/v12.60",
+  "release_branch": "release/v12.61",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Start 12.60: P0 faktur F01/F02. Diagnostyka pozostaje informacyjna; przed merge wymagany pełny targeted-checks i Closure Gate."
+    "notes": "Start 12.61: P1 audytu — F03 idempotencja tworzenia montażu, F04 końcowa walidacja JW/JZ, F05 pełna historia raportu paliwa; F10 potwierdzone jako już zabezpieczone i objęte regresją."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.60.zip"
+    "file_name": "klima-app-v12.61.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.60",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN",
+    "source_branch": "release/v12.61",
+    "ready_for_main": false,
+    "status": "TESTING",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub deployment status + Vercel deployment metadata",
-    "notes": "Po merge wymagany zewnętrzny dowód deploymentu dokładnego commita main oraz kontrola wersji 12.60."
+    "notes": "Po merge wymagany zewnętrzny dowód deploymentu dokładnego commita main oraz kontrola produkcyjnej wersji 12.61."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,11 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "previous_release_12_59": "PASS — main przed wydaniem 12.60: 1ac80d8aaa2c41d47545e466bab41b446795c12b.",
-    "p0_database_transactional_test": "PASS — F01 worker direct UPDATE odrzucony 42501; F02 ta sama faktura nie może zostać przypisana do dwóch montaży; test wykonany w BEGIN/ROLLBACK.",
-    "p0_database_deployment": "PASS — migracje fakturownia_p0_v1260 i fakturownia_p0_rpc_acl_v1260 zastosowane produkcyjnie.",
-    "p0_edge_deployment": "PASS — fakturownia-client version 10 ACTIVE, verify_jwt=true.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD release/v12.60 musi przejść WAWIS PR checks / targeted-checks oraz Closure Gate.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.60."
+    "previous_release_12_60": "PASS — main przed wydaniem 12.61: 38726b6ab66d2f302b3ba2d56718701de9f7b8e6.",
+    "p1_reproducer": "REQUIRED — test scripts/smoke-p1-data-integrity-v1261.mjs ma odtworzyć F03/F04/F05 i zachować strażnika F10.",
+    "p1_database_change": "REQUIRED — F03 otrzymuje trwały operation_id/fingerprint z unikalnością w bazie.",
+    "current_release_pr_check": "REQUIRED — finalny HEAD release/v12.61 musi przejść WAWIS PR checks / targeted-checks oraz Closure Gate.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — po merge wymagany READY/SUCCESS dla dokładnego commita main i kontrola produkcyjnej wersji 12.61."
   }
 }
