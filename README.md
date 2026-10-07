@@ -891,7 +891,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.61` — P1 audytu: idempotentny zapis montażu, końcowa walidacja JW/JZ i pełny raport paliwa; F10 potwierdzone testem.
+- wersja `12.62` — P2 dzisiejszego audytu Codexa: paginacja metadanych, jawna zmiana statusu, idempotentne usuwanie i pełny rebuild.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 
