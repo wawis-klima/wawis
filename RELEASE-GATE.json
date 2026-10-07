@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.63",
+  "version": "12.64",
   "scope": "full",
-  "release_branch": "release/v12.63",
+  "release_branch": "release/v12.64",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "12.63: licznik zbiornika paliwa; stan początkowy 5000 l od 2026-10-07 09:57 Europe/Warsaw."
+    "notes": "12.64: mobilne uproszczenie karty stanu zbiornika paliwa; logika stanu i ruchów zbiornika bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.63.zip"
+    "file_name": "klima-app-v12.64.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.63",
+    "source_branch": "release/v12.64",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub deployment status + Vercel/Cloudflare deployment metadata",
-    "notes": "Po merge wymagany dowód deploymentu dokładnego commita main i wersji 12.63."
+    "notes": "Po merge wymagany dowód deploymentu dokładnego commita main i wersji 12.64."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,12 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "previous_release_12_62": "PASS — main przed zmianą: 76f2ed7a27ecb55701a3878cc86c25c0ac55080e.",
-    "tank_stock_red": "PASS — run 836 wykazał brak funkcji licznika/dostaw przed implementacją.",
-    "tank_stock_green": "PASS — run 852: test licznika, pełne regresje, E2E, Closure Gate i production build.",
-    "database_deployment": "PASS — produkcja ma migracje 20261007080329, 20261007081052 i 20261007081132; stan 5000,00 l od 2026-10-07 09:57; trigger/RPC/RLS zweryfikowane.",
-    "admin_only": "PASS — UI tylko isAdmin, pracownik nie pobiera statusu; RLS SELECT i INSERT wyłącznie admin, RPC statusu wymaga admina.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD po zapisie dowodów musi ponownie przejść WAWIS PR checks / targeted-checks.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main i kontrola wersji 12.63."
+    "previous_release_12_63": "PASS — main przed zmianą: 127d7e8e56007ddfc8f00e766d2b7af5ee6dd120.",
+    "mobile_tank_layout_regression": "PASS — run 37601852505: regresje grupy fuel, wymagane E2E, Closure Gate i production build zakończone sukcesem.",
+    "desktop_unchanged": "PASS — run 37601852505: desktopowe regresje/E2E nie wykazały regresji układu.",
+    "current_release_pr_check": "REQUIRED — po zapisie READY_FOR_MAIN finalny HEAD musi ponownie przejść WAWIS PR checks / targeted-checks.",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main i kontrola wersji 12.64."
   }
 }

@@ -125,6 +125,16 @@ Dowód po poprawce:
 | P2-RESTORE | P2 | późniejsza migracja restore mogła przyjąć uszkodzony nowy snapshot kosza | CLOSED | koperta integralności `_integrity`, validated constraint i fixture legacy/restore w pełnym rebuildzie |
 
 
+## 12.64 — mobilne zwijanie szczegółów zbiornika paliwa
+
+Zakres regresji:
+- na mobile administrator zawsze widzi duży bieżący stan zbiornika,
+- tekst „Liczenie od … · start 5000,00 l” nie zajmuje miejsca na mobile,
+- „Wydano do aut”, „Dostawy + start” i „Dodaj dostawę” są dostępne dopiero po rozwinięciu „Szczegóły zbiornika”,
+- desktop zachowuje dotychczasowy układ bez tego dodatkowego zwijania.
+
+Trwały reproduktor: `node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs`.
+
 ## 12.63 — licznik zbiornika paliwa
 
 Dowód przed implementacją:

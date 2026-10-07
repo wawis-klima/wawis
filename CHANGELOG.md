@@ -1,3 +1,10 @@
+## 12.64
+- Mobile / Paliwo: duży stan zbiornika pozostaje zawsze widoczny dla administratora.
+- Mobile: usunięto pomocniczą linię „Liczenie od … · start 5000,00 l”.
+- Mobile: „Wydano do aut”, „Dostawy + start” i „Dodaj dostawę” przeniesiono do rozwijanego bloku „Szczegóły zbiornika”.
+- „Historia zbiornika” pozostaje osobnym rozwijanym blokiem; desktop nie zmienia układu.
+- Dodano regresję `scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs`.
+
 ## 12.63
 - Paliwo: licznik stanu zbiornika z początkiem 5000 l od 7 października 2026, 09:57.
 - Każde nowe tankowanie pojazdu automatycznie zmniejsza stan zbiornika.

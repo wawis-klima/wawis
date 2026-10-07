@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.63
+- 12.64
+
+Wersja 12.64 upraszcza mobilny panel administratora w module Paliwo: duży stan zbiornika jest zawsze widoczny, a „Wydano do aut”, „Dostawy + start” i „Dodaj dostawę” są schowane w rozwijanym bloku „Szczegóły zbiornika”. Linia „Liczenie od … · start 5000,00 l” nie jest pokazywana na mobile. Desktop pozostaje bez zmian funkcjonalnych.
 
 Wersja 12.63 dodaje dostępny wyłącznie dla administratora licznik stanu zbiornika paliwa: stan początkowy 5000 l od 7.10.2026 09:57, automatyczne odejmowanie tankowań oraz dostawy/korekty administratora.
 
@@ -891,6 +893,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.64` — mobilny licznik paliwa pokazuje tylko bieżący stan, a statystyki i dodawanie dostawy są rozwijane na żądanie.
 - wersja `12.63` — licznik stanu zbiornika paliwa z automatycznym rozchodem tankowań.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
