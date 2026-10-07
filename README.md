@@ -1,7 +1,7 @@
 ## Aktualna wersja
-- 12.61
+- 12.62
 
-Wersja 12.61 realizuje P1 audytu: zabezpiecza tworzenie montażu przed duplikatem po utracie odpowiedzi, ponownie waliduje komplet i zgodność JW/JZ przy samym zakończeniu oraz usuwa granicę 1000 wpisów z administracyjnego raportu paliwa. F10 (gotówka/przelew) zostało potwierdzone jako już prawidłowo egzekwowane w produkcyjnej bazie i otrzymuje trwały test regresyjny.
+Wersja 12.62 domyka P2 dzisiejszego audytu Codexa: pełne odczyty metadanych bez granicy 1000, atomową zmianę statusu z wykrywaniem konfliktu/0 rekordów, idempotentne usuwanie po utracie odpowiedzi oraz wiarygodny fresh rebuild obejmujący aktywne migracje także z katalogu current.
 
 
 
@@ -891,7 +891,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.61` — P1 audytu: idempotentny zapis montażu, końcowa walidacja JW/JZ i pełny raport paliwa; F10 potwierdzone testem.
+- wersja `12.62` — P2 dzisiejszego audytu Codexa: paginacja metadanych, jawna zmiana statusu, idempotentne usuwanie i pełny rebuild.
 
 - wersja `12.23` — SMS: nowa zakładka „Niewysłane”, ręczne ponowienie przeterminowanych wiadomości bez nadpisywania historii oraz usunięcie komunikatu o automatycznej wysyłce.
 

@@ -94,3 +94,32 @@ Dowód po poprawce:
 | F04 | P1 | zakończenie nie ponawiało końcowej kontroli zgodności JW/JZ | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs`; wspólna `validateJobDevicesForCompletion` w desktop/mobile |
 | F05 | P1 | administracyjny raport paliwa obcinał historię do 1000 rekordów | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs` + `smoke-fuel-module-v1014.mjs`; paginacja po 500 |
 | F10 | P1 | spójność kwoty i metody płatności | CLOSED | `scripts/smoke-p1-data-integrity-v1261.mjs`; produkcyjny constraint: gotówka > 0, przelew kwota opcjonalna |
+
+
+## P2 12.62 — domknięcie dzisiejszego audytu Codexa
+
+Dowód przed poprawką:
+- PR #282, run 816,
+- F06: FAIL — pełne odczyty zdjęć/weryfikacji/job_access nie były stronicowane i mogły zatrzymać się na limicie API,
+- F07: FAIL desktop + mobile — UPDATE statusu z wynikiem 0 rekordów był traktowany jak sukces,
+- F08: FAIL desktop + mobile — retry usunięcia po utracie odpowiedzi nie miał stabilnego operation_id,
+- F09: FAIL — fresh rebuild startował zbyt późno i nie obejmował aktywnych migracji z katalogu current.
+
+Dowód po poprawce:
+- run 833: pełne regresje PASS,
+- Playwright mobile PASS,
+- Playwright desktop PASS,
+- Closure Gate PASS,
+- production build PASS,
+- fresh rebuild przechodzi dwukrotnie i obejmuje aktywne migracje do 12.62,
+- produkcyjne migracje P2:
+  - `20261007071004_p2_status_delete_idempotency_v1262`,
+  - `20261007071856_p2_restore_snapshot_integrity_v1262`.
+
+| ID | Priorytet | Mechanizm | Status | Trwały reproduktor / dowód |
+|---|---|---|---|---|
+| F06 | P2 | niepaginowane odczyty metadanych mogły pominąć rekordy po przekroczeniu limitu API | CLOSED | `scripts/smoke-p2-audit-closure-v1262.mjs`; desktop photos/nameplate/job_access i mobile job_access korzystają z pełnej paginacji |
+| F07 | P2 | zmiana statusu mogła wyglądać na sukces przy 0 zmienionych rekordów lub konflikcie innej sesji | CLOSED | `scripts/smoke-p2-audit-closure-v1262.mjs`; `change_job_status_guarded` zwraca changed/already_applied/conflict/not_found |
+| F08 | P2 | utrata odpowiedzi po DELETE mogła spowodować niejednoznaczny retry | CLOSED | `scripts/smoke-p2-audit-closure-v1262.mjs`; stabilny `operation_id` + `admin_delete_job_idempotent` |
+| F09 | P2 | fresh rebuild nie obejmował pełnego aktualnego schematu i katalogu `migrations/current` | CLOSED | manifest + `scripts/audit-v1089/rebuild-rehearsal.mjs`; run 833, dwukrotny rebuild PASS |
+| P2-RESTORE | P2 | późniejsza migracja restore mogła przyjąć uszkodzony nowy snapshot kosza | CLOSED | koperta integralności `_integrity`, validated constraint i fixture legacy/restore w pełnym rebuildzie |

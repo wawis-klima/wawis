@@ -1,3 +1,10 @@
+## 12.62
+- P2/F06: trwała regresja wymaga pełnego, stronicowanego odczytu zdjęć, weryfikacji tabliczek i przypisań job_access.
+- P2/F07: trwała regresja wymaga jawnego wyniku zmiany statusu zamiast traktowania UPDATE 0 rekordów jako sukces.
+- P2/F08: trwała regresja wymaga stabilnego operation_id dla usunięcia po utracie odpowiedzi.
+- P2/F09: trwała regresja wymaga kompletnego fresh rebuild obejmującego także aktywne migracje z migrations/current.
+- Dodano reproduktor `scripts/smoke-p2-audit-closure-v1262.mjs`; poprawki są domykane w tej samej gałęzi release.
+
 ## 12.61
 - P1/F03: tworzenie montażu dostaje trwały klucz operacji i fingerprint, aby utrata odpowiedzi po zapisie nie tworzyła duplikatu przy ponowieniu.
 - P1/F04: zakończenie zlecenia ponownie sprawdza komplet JW/JZ i zgodność par single-split niezależnie od ścieżki, którą urządzenie zostało zapisane.
