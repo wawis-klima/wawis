@@ -707,6 +707,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       {error ? <div className="fuelAlert fuelAlertError" role="alert">{error}</div> : null}
       {message ? <div className="fuelAlert fuelAlertSuccess" role="status">{message}</div> : null}
 
+      {isAdmin ? (
       <section className="fuelCard fuelTankStockCard" aria-labelledby="fuel-tank-stock-title">
         <div className="fuelTankStockTop">
           <div className="fuelTankStockHeading">
@@ -757,6 +758,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
           </details>
         ) : null}
       </section>
+      ) : null}
 
       <div className="fuelGrid fuelGridSingle">
         <form className={`fuelCard fuelEntryForm ${entryFormCollapsible && !isEntryFormExpanded ? 'isCollapsed' : ''}`} onSubmit={handleSubmit}>
