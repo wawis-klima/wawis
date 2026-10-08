@@ -53,6 +53,7 @@ function sanitizeValue(value, seen = new WeakSet(), contextKey = '') {
   if (value instanceof Error) {
     return {
       name: redactText(value.name || 'Error'),
+      code: /^(?:APP_REFRESH_TIMEOUT|SUPABASE_REQUEST_TIMEOUT|SESSION_REFRESH_FAILED|PGRST\d{3}|[0-9A-Z]{5})$/.test(String(value.code || '')) ? String(value.code) : '',
       message: redactText(value.message || '', { technicalOnly: false }),
       stack: redactText(value.stack || '', { technicalOnly: false }),
     };
