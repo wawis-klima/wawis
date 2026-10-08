@@ -17,3 +17,13 @@ Nie wolno zaliczać statycznego grep ani ogólnego green CI w miejsce oryginalne
 
 ## Stan bezpieczeństwa wdrożenia
 Wszystkie dane testowe są syntetyczne. Zmiany w tej gałęzi **nie** są wdrażane automatycznie: PR pozostaje draft, `RELEASE-GATE.main_protection.ready_for_main=false`, do czasu pełnej kontroli. Sam rezultat regresji nie jest dowodem rzeczywistego PUSH na iPhonie, dostawy do Fakturowni ani dwusesyjnego konfliktu w pełnym PostgreSQL. 
+
+## Dodatkowy test — prawdziwe połączenia PostgreSQL (bez danych klientów)
+- Stały test `scripts/codex-postgres-two-sessions-v1269.sh` wykonuje dwie osobne sesje PostgreSQL 16 w jednorazowym kontenerze CI, bez portów i połączeń do produkcji.
+- `.github/workflows/pr-checks.yml` wykonuje test jako obowiązkowy krok `targeted-checks`, przed E2E. Brak testu = brak GO.
+- GitHub Actions PR #291, run #919 (commit `550a0f6`): P1-02 sesje PID 115/122 → A zapisuje, B odrzucone konfliktem; P1-03 PID 136/143 → 1 rekord i 100 l; P1-06 PID 157/164 → 1 wygrana rezerwacja i 1 odmowa, osobny endpoint działa. Trwały dowód: logi `Codex dual-session PostgreSQL race tests`.
+- Pozostałe kontrole run #919: 136 regresji GO, mobile E2E 38 PASS i 1 SKIP, desktop 20 PASS, Closure Gate critical/full GO, build PASS.
+- Produkcyjna migracja JW/JZ: `20261008131504_completion_jw_index_guard_v1269.sql`; trigger `trg_jobs_device_models_v1269` aktywny.
+- Produkcyjna migracja paliwa: `20261008131524_disable_legacy_fuel_rpc_v1269.sql`; stary RPC `admin_add_fuel_tank_movement` odmówiony `authenticated` i `service_role`, nowy `_v1266` nadal dozwolony.
+
+**Nadal wymagające osobnego odbioru:** test rzeczywistego PUSH na fizycznym iPhonie, rzeczywistej synchronizacji na bezpiecznym koncie testowym Fakturowni i pasywny monitoring dostawcy. Dopóki nie ma dowodu, nie oznaczać ich jako VERIFIED ani wszystkich siedmiu jako CLOSED. Nie wysyłać testowych faktur do realnych klientów.
