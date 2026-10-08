@@ -27,6 +27,7 @@ assert.match(css, /\.mobileDiagnosticsPage\{/);
 await build({
   entryPoints: ["src/mobile791/components/jobs/MobileJobsLayout.jsx", "src/mobile791/components/diagnostics/MobileDiagnosticsPanel.jsx"],
   bundle: true,
+  outdir: "dist-smoke-mobile-diagnostics",
   write: false,
   format: "esm",
   platform: "browser",
