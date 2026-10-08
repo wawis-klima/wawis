@@ -55,8 +55,8 @@ export default function SmsSentThisMonthCard({ rows, pageRows, currentPage, tota
                 <td>
                   <div className="smsDesktopModelCell">
                     <strong>{row.model}</strong>
-                    <span>{row.modelMeta}</span>
                     {row.cycleLabel ? <span className="smsDesktopCycleLabel">{row.cycleLabel}</span> : null}
+                    {(!row.cycleLabel || Number(row.grouped_device_count || 0) > 1) && row.modelMeta ? <span>{row.modelMeta}</span> : null}
                   </div>
                 </td>
                 <td>
