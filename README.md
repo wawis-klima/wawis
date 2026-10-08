@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.67
+- 12.68
+
+Wersja 12.68: PUSH weryfikuje odbiorcę względem aktualnych monterów i rezerwuje zdarzenie atomowo, żeby blokować równoczesne duplikaty. Zachowuje śledzenie dostarczenia i diagnostykę.
 
 Wersja 12.67: zakończenie montażu wymaga osobnych modeli JW/JZ na poziomie bazy. Lista SMS pokazuje numer cyklu przypomnienia serwisowego bez zmiany harmonogramu wysyłki. Dodano behawioralny test regresyjny.
 
@@ -899,6 +901,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
 - wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
 - wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.
 - wersja `12.65` — PUSH zapisuje etapy wysłano → odebrano → wyświetlono, z bezpiecznym tokenem receipt i bez blokowania samego powiadomienia.

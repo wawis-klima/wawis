@@ -42,6 +42,7 @@ assert(
   worker.indexOf('showNotification(title, options)') < worker.indexOf('reportPushReceipt(payload, "displayed")'),
   'Etap displayed wolno zapisać dopiero po udanym showNotification.',
 );
-assert.match(worker, /wawis-app-shell-v12\.65/);
+const currentVersion = JSON.parse(read('public/app-version.json')).version;
+assert(worker.includes(`wawis-app-shell-v${currentVersion}`), 'Service Worker must use current released app version');
 
 console.log('PASS push delivery receipts v12.65');

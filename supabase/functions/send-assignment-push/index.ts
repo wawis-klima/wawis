@@ -167,6 +167,8 @@ Deno.serve(async (request) => {
 
     return await handleJobAssigned({
       adminClient,
+      authUserId: authData.user.id,
+      callerIsAdmin,
       jobId,
       assignedUserIds,
       vapidPublicKey,
@@ -299,6 +301,8 @@ async function handleDisableSubscription({ adminClient, authUserId, triggeredBy,
 
 async function handleJobAssigned({
   adminClient,
+  authUserId,
+  callerIsAdmin,
   jobId,
   assignedUserIds,
   vapidPublicKey,
@@ -307,12 +311,26 @@ async function handleJobAssigned({
 }: any) {
   const { data: job, error: jobError } = await adminClient
     .from("jobs")
-    .select("id, client, title, city, street, status, installation_date, created_at")
+    .select("id, client, title, city, street, status, installation_date, created_at, created_by, main_technician_id, installer_ids, push_assignment_epoch")
     .eq("id", jobId)
     .single();
 
   if (jobError || !job) {
     return json({ error: "Nie znaleziono zlecenia." }, 404);
+  }
+
+  const authorizedInstallerIds = new Set([
+    ...(Array.isArray(job.installer_ids) ? job.installer_ids : []),
+    job.main_technician_id || "",
+  ].map((id: unknown) => String(id || "").trim()).filter(Boolean));
+  if (!callerIsAdmin
+      && String(job.created_by || "") !== String(authUserId)
+      && !authorizedInstallerIds.has(String(authUserId))) {
+    return json({ error: "Brak dostępu do przypisań tego montażu." }, 403);
+  }
+  // Reject untrusted client recipients before even querying their subscriptions.
+  if (assignedUserIds.some((userId: string) => !authorizedInstallerIds.has(String(userId)))) {
+    return json({ error: "Odbiorca PUSH nie jest aktualnie przypisanym monterem." }, 409);
   }
 
   if (isInstallationDateInPast(job.installation_date)) {
@@ -339,6 +357,7 @@ async function handleJobAssigned({
     userIds: assignedUserIds,
     job,
     deliveryType: "job_assigned",
+    eventKey: `job_assigned:${job.id}:${Number(job.push_assignment_epoch || 0)}`,
     title: "Nowy montaż",
     body: `Przydzielono Ci montaż: ${address}`,
     tag: `job-assigned-${job.id}`,
@@ -403,6 +422,11 @@ async function handleJobCompleted({
   if (!['employee', 'pracownik', 'admin', 'administrator'].includes(normalizedCallerRole)) {
     return json({ error: "Brak uprawnień pracownika do tego zlecenia." }, 403);
   }
+  // Only the authenticated finisher may announce completion (admin can verify).
+  if (!['admin', 'administrator'].includes(normalizedCallerRole)
+      && String(job.completed_by || "") !== String(authUserId)) {
+    return json({ error: "Zakończenie zostało zapisane przez innego pracownika." }, 403);
+  }
 
   const { data: adminProfiles, error: adminProfilesError } = await adminClient
     .from("profiles")
@@ -447,6 +471,7 @@ async function handleJobCompleted({
     userIds: targetAdminIds,
     job,
     deliveryType: "job_completed",
+    eventKey: `job_completed:${job.id}:${job.completed_at || "missing"}`,
     title: `${completedBy} zakończył zlecenie`,
     body: bodyParts.join(" • "),
     tag: `job-completed-${job.id}-${job.completed_at || "now"}`,
@@ -540,6 +565,7 @@ async function handleJobComment({
     userIds: targetAdminIds,
     job,
     deliveryType: "job_comment",
+    eventKey: `job_comment:${comment.id}`,
     deliveryLogType,
     title: "Nowy komentarz do montażu",
     body,
@@ -563,7 +589,7 @@ async function loadCompletedJobWithRetry(adminClient: any, jobId: string) {
 
     const { data, error } = await adminClient
       .from("jobs")
-      .select("id, client, title, city, street, status, installation_date, main_technician_id, completed_at")
+      .select("id, client, title, city, street, status, installation_date, main_technician_id, completed_at, completed_by")
       .eq("id", jobId)
       .single();
 
@@ -587,6 +613,7 @@ async function sendPushToUsers({
   userIds,
   job,
   deliveryType,
+  eventKey = "",
   deliveryLogType = deliveryType,
   title,
   body,
@@ -646,11 +673,29 @@ async function sendPushToUsers({
   const receiptEndpoint = `${Deno.env.get("SUPABASE_URL") || ""}/functions/v1/push-delivery-receipt`;
 
   const results = await Promise.all(subscriptions.map(async (subscription: any) => {
+    if (eventKey) {
+      const { data: claimed, error: claimError } = await adminClient.rpc("push_claim_delivery_v1268", {
+        p_subscription_id: subscription.id,
+        p_recipient_user_id: subscription.user_id,
+        p_event_key: eventKey,
+      });
+      if (claimError) {
+        // Never send if the atomic claim is uncertain.
+        return { ok: false, skipped: false, subscriptionId: subscription.id, errorMessage: "Nie udało się zarezerwować PUSH." };
+      }
+      if (claimed !== true) {
+        return { ok: false, skipped: true, subscriptionId: subscription.id, reason: "duplicate_or_inactive" };
+      }
+    }
     const attempt = await createDeliveryAttempt(adminClient, {
       user_id: subscription.user_id,
       job_id: job?.id || null,
       type: deliveryLogType,
     });
+
+    if (eventKey && !attempt?.id) {
+      return { ok: false, skipped: false, subscriptionId: subscription.id, errorMessage: "Nie udało się utworzyć logu PUSH." };
+    }
 
     const payload = JSON.stringify({
       type: deliveryType,
@@ -738,8 +783,8 @@ async function sendPushToUsers({
   return json({
     ok: true,
     delivered: results.filter((item: any) => item.ok).length,
-    failed: results.filter((item: any) => !item.ok).length,
-    skipped: usersWithoutSubscription.length,
+    failed: results.filter((item: any) => !item.ok && !item.skipped).length,
+    skipped: usersWithoutSubscription.length + results.filter((item: any) => item.skipped).length,
     results,
   });
 }

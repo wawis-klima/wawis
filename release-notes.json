@@ -1,10 +1,10 @@
 {
-  "version": "12.67",
-  "summary": "Pakiet 2 + numer cyklu w module SMS.",
+  "version": "12.68",
+  "summary": "Pakiet 3 — poprawność odbiorców i deduplikacja PUSH.",
   "changes": [
-    "Zakończenie montażu wymaga kompletnych modelów JW/JZ dla każdego urządzenia.",
-    "Test tabliczek urządzeń uwzględnia poprawne/niewłaściwe modele JW/JZ i multi-split.",
-    "Pod modelem urządzenia w kolejce i historii bieżącego miesiąca widać numer cyklu przypomnienia, także dla grup wielu urządzeń.",
-    "Daty przypomnień, zasady ręcznej wysyłki i statusy SMS pozostają bez zmian."
+    "Wysyłanie PUSH o przypisaniu do montażu jest ograniczone do aktualnie przypisanych monterów.",
+    "Zdarzenia są atomowo rezerwowane na aktywną subskrypcję: podwójne wywołanie nie tworzy dwóch PUSH.",
+    "Ponowne przypisanie do montażu otrzymuje nowy numer zdarzenia.",
+    "Wysyłka po zakończeniu montażu weryfikuje faktycznego wykonawcę."
   ]
 }
