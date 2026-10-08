@@ -68,11 +68,11 @@ export function getSafeDiagnosticDetails(entry = {}) {
     code = 'POSTGREST_SCHEMA_CACHE';
   } else if (/429|rate limit|too many requests/.test(text)) {
     code = 'HTTP_RATE_LIMIT';
-  } else if (/\\b5\\d\\d\\b|http.*(?:500|502|503|504)|bad gateway|service unavailable/.test(text)) {
+  } else if (/\b5\d\d\b|http.*(?:500|502|503|504)|bad gateway|service unavailable/.test(text)) {
     code = 'HTTP_SERVER_ERROR';
-  } else if (/photo\\.thumbnail\\.load\\.retry/.test(text)) {
+  } else if (/photo\.thumbnail\.load\.retry/.test(text)) {
     code = 'PHOTO_THUMBNAIL_RETRY';
-  } else if (/photo\\.thumbnail\\.load\\.failed/.test(text)) {
+  } else if (/photo\.thumbnail\.load\.failed/.test(text)) {
     code = 'PHOTO_THUMBNAIL_FAILED';
   } else if (/subskrypcji push|push subscription.*(?:failed|error)/.test(text)) {
     code = 'PUSH_SUBSCRIPTION_SYNC_FAILED';
