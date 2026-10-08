@@ -271,10 +271,8 @@ wait "$b" || { cat "$WORK/jw-valid-b.err"; exit 23; }
 [[ "$(pg -c "select status||':'||device_model from public.jobs where id='11111111-1111-4111-8111-111111111111'")" == 'Zakończone:JW: Imoto | JZ: Imoto' ]] || exit 24
 
 for p in jw-invalid jw-complete jw-valid; do
-  first="$(grep -E '^pid=[0-9]+
- "$WORK/$p-a.out" | head -1)"
-  second="$(grep -E '^pid=[0-9]+
- "$WORK/$p-b.out" | head -1)"
+  first="$(grep -E '^pid=[0-9]+' "$WORK/$p-a.out" | head -1)"
+  second="$(grep -E '^pid=[0-9]+' "$WORK/$p-b.out" | head -1)"
   [[ -n "$first" && -n "$second" && "$first" != "$second" ]] || { echo "NO-GO: JW/JZ sessions not independent: $p $first/$second"; exit 25; }
   echo "SESSION EVIDENCE $p: $first / $second"
 done
