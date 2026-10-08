@@ -113,7 +113,8 @@
     "supabase/migrations/current/20261007081052_fuel_tank_admin_only_v1263.sql",
     "supabase/migrations/current/20261007081132_fuel_tank_admin_visibility_v1263.sql",
     "supabase/migrations/20261007124500_push_delivery_receipts_v1265.sql",
-    "supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql"
+    "supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql",
+    "supabase/migrations/current/20261008130000_job_device_models_completion_v1267.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
