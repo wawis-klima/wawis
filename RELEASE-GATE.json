@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.69",
-  "scope": "full",
-  "release_branch": "release/v12.69",
+  "version": "12.71",
+  "scope": "mobile",
+  "release_branch": "release/v12.71",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": true,
+    "last_24h": false,
     "result": "INFO",
-    "notes": "Codex 12.65: 7 original scenarios PASS in CI run 919, isolated two-session PG PASS; prod SQL guard and fuel grants verified. Physical provider/phone tests remain NOT VERIFIED."
+    "notes": "UI only: existing mobile diagnostics panel exposed from app version. Remote production log access unavailable (Vercel 403). CI and physical iPhone functionality must be verified separately."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.69.zip"
+    "file_name": "klima-app-v12.71.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.69",
+    "source_branch": "release/v12.71",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Original Codex acceptance matrix, PR CI and production version",
-    "notes": "Do not merge without scenario evidence"
+    "evidence_source": "GitHub PR checks and production app-version.json once deployed",
+    "notes": "Require green CI before merging; verify mobile UI on real iPhone and production SHA/version after deployment."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,10 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — group 136 + two-session PostgreSQL + E2E + Closure Gate",
+    "release_ci": "REQUIRED — mobile targeted tests, Playwright mobile, Closure Gate and build",
     "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
     "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
     "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "Verify exact active SHA/version after deployment"
+    "front_and_backend": "No backend changes in this release; confirm deployed SHA and public version 12.71 after green CI and deployment",
+    "mobile_touch": "EXTERNAL — manually verify tapping version shows Diagnostics, report download, back navigation, worker/admin permissions"
   }
 }
