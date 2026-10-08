@@ -1,3 +1,9 @@
+## 12.69
+- Odbiór audytu Codexa 12.65: testy wykonawcze oryginalnych scenariuszy i ewidencja granic dowodu.
+- P2-01: naprawa oryginalnego testu `.order().range()` tabliczek.
+- Wykonywalne testy Edge Fakturowni i PUSH.
+- Zasada zgodności z testami Codexa obowiązuje kolejne wydania.
+
 ## 12.68
 - Pakiet 3: weryfikacja odbiorców PUSH po stronie Edge na podstawie aktualnych monterów montażu.
 - Atomowe rezerwacje wysyłki dla każdej aktywnej subskrypcji i zdarzenia zapobiegają równoległym duplikatom.

@@ -13,6 +13,14 @@ Bez osobnej zgody nie zmieniaj:
 - logiki protokołów PDF/e-mail, uploadu zdjęć i retry;
 - danych klientów ani logiki produkcyjnej.
 
+## Wierność testom audytu Codex — obowiązkowe
+- Dla każdego ustalenia Codexa czytaj oryginalny raport, scenariusz RED, wskazany reproduktor oraz pełną macierz testów odbiorczych; utrzymuj mapę ustalenie → test → wynik → dowód.
+- Nie zastępuj oryginalnego testu własnym testem o mniejszym zakresie. Jeżeli test oryginalny jest uszkodzony, napraw jego atrapę, zachowaj asercje i odpal oryginał.
+- Testuj wykonanie rzeczywistego kodu lub SQL na bezpiecznych fixture; statyczne regexy są wyłącznie pomocnicze.
+- Brak testu dwusesyjnego, dostawcy, uprawnień czy sekwencji oznacz NOT VERIFIED, nawet gdy CI jest zielone. Nie nazywaj tego CLOSED.
+- Najpierw odtwórz RED na badanej wersji, potem wymagaj GREEN po naprawie; przy istniejącej poprawce dołącz dowód bezpiecznego odtworzenia RED na starej referencji, jeśli to wykonalne.
+- Przed każdą publikacją sprawdzaj wszystkie punkty oryginalnego audytu, grupy regresji, Closure Gate, numer aplikacji i wersję aktywnego backendu; ewidencjonuj co jest poza zakresem symulacji.
+
 ## Zasady domknięcia zmian
 - Obowiązuje globalny `CLOSURE-GATE.md`; dotyczy każdego modułu, nie tylko SMS.
 - Każdy potwierdzony błąd musi dostać trwały test regresyjny odtwarzający rzeczywisty mechanizm błędu przed uznaniem poprawki za zamkniętą.

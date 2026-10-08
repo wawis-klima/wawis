@@ -33,6 +33,7 @@ const GROUPS = {
     'npm run test:smoke:realtime-lite',
   ],
   jobs: [
+    'node scripts/codex-acceptance-note-sql-v1269.mjs',
     'node scripts/smoke-package2-jw-jz-cycle-v1267.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
@@ -92,6 +93,8 @@ const GROUPS = {
     'npm run test:smoke:desktop-protocol',
   ],
   roles: [
+    'node scripts/codex-acceptance-note-sql-v1269.mjs',
+    'node scripts/codex-acceptance-fakturownia-v1269.mjs',
     'npm run test:smoke:admin-worker',
     'npm run test:smoke:desktop-only',
     'npm run test:smoke:supabase-grants',
@@ -101,6 +104,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
   ],
   push: [
+    'node scripts/codex-acceptance-push-v1269.mjs',
     'node scripts/smoke-push-recipient-dedupe-v1268.mjs',
     'node scripts/smoke-push-delivery-receipts-v1265.mjs',
     'npm run test:smoke:push-job-deeplink',
@@ -118,6 +122,8 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1087.mjs',
   ],
   fuel: [
+    'node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs',
+    'node scripts/codex-acceptance-fuel-ui-v1269.mjs',
     'node scripts/smoke-package1-integrity-v1266.mjs',
     'node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
@@ -128,6 +134,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   nameplates: [
+    'node scripts/smoke-package2-jw-jz-cycle-v1267.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:mobile-serial-scanner',
