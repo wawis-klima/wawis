@@ -8,7 +8,8 @@ import {
 
 import {
   sanitizeDiagnosticEntry, sanitizeDiagnosticSummary, setDiagnosticUser,
-  getDiagnosticSession, readDiagnosticEntries, writeDiagnosticEntries, clearDiagnosticEntries,
+  getDiagnosticSession, readDiagnosticEntries, appendDiagnosticEntry, acknowledgeDiagnosticEntries,
+  getDiagnosticDroppedCount, clearDiagnosticEntries,
 } from './diagnostic-privacy.js';
 export { setDiagnosticUser } from './diagnostic-privacy.js';
 
@@ -26,7 +27,6 @@ function createDiagnosticEventId() {
   return `diag-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 function readEntries() { return readDiagnosticEntries(); }
-function writeEntries(entries, session = getDiagnosticSession()) { return writeDiagnosticEntries(entries, session); }
 
 function getSafePath() {
   if (typeof window === 'undefined') return '';
@@ -36,39 +36,59 @@ function getSafePath() {
 export function logDiagnostic(type, payload = {}) {
   if (typeof window === 'undefined' || !getDiagnosticSession().userId) return;
   const session = getDiagnosticSession();
-  const entries = readEntries();
   const entry = sanitizeDiagnosticEntry({
     id: createDiagnosticEventId(), time: nowIso(), type, payload,
     module: inferDiagnosticModule(type, payload),
     app_version: APP_VERSION, platform: DIAGNOSTIC_PLATFORM,
   });
-  entries.push(entry);
-  writeEntries(entries, session);
+  appendDiagnosticEntry(entry, session);
 }
 
 function isRemoteDiagnosticsUnavailable(error) {
-  return /(app_diagnostic_events|does not exist|schema cache|relation.*not found|permission denied)/i.test(String(error?.message || error || ''));
+  const code = String(error?.code || '');
+  return ['42P01', 'PGRST205', 'PGRST116'].includes(code)
+    || /(?:relation.*does not exist|table.*not found|could not find the table)/i.test(String(error?.message || ''));
 }
 
 function isRemoteDiagnosticsModuleUnavailable(error) {
   return /(diagnostic_module.*(?:does not exist|schema cache)|column.*diagnostic_module)/i.test(String(error?.message || error || ''));
 }
 
-export async function flushDiagnosticsToServer({
+const diagnosticFlushes = new Map();
+let lastDiagnosticSync = { status: 'unknown', sent: 0, lastSuccessAt: '', failedAt: '', dropped: 0 };
+export function getDiagnosticSyncStatus() { return { ...lastDiagnosticSync, dropped: getDiagnosticDroppedCount() }; }
+function updateDiagnosticSync(status, sent = 0) {
+  lastDiagnosticSync = {
+    status, sent,
+    lastSuccessAt: status === 'ok' ? nowIso() : lastDiagnosticSync.lastSuccessAt,
+    failedAt: status === 'error' || status === 'unavailable' ? nowIso() : lastDiagnosticSync.failedAt,
+    dropped: getDiagnosticDroppedCount(),
+  };
+}
+export async function flushDiagnosticsToServer(options = {}) {
+  const { supabase, userId } = options;
+  if (!supabase || !userId || typeof window === 'undefined' || navigator.onLine === false) return { sent: 0, offline: navigator?.onLine === false };
+  const session = getDiagnosticSession();
+  if (!session.userId || session.userId !== String(userId)) return { sent: 0, sessionMismatch: true };
+  const key = `${session.userId}:${session.generation}`;
+  if (diagnosticFlushes.has(key)) return diagnosticFlushes.get(key);
+  const request = flushDiagnosticBatch(options, session).finally(() => diagnosticFlushes.delete(key));
+  diagnosticFlushes.set(key, request);
+  return request;
+}
+
+async function flushDiagnosticBatch({
   supabase,
   userId,
   appVersion = '',
   platform = '',
   queueSummary = null,
-} = {}) {
-  if (!supabase || !userId || typeof window === 'undefined' || navigator.onLine === false) return { sent: 0 };
-  const diagnosticSession = getDiagnosticSession();
-  if (!diagnosticSession.userId || diagnosticSession.userId !== String(userId)) return { sent: 0, sessionMismatch: true };
+} = {}, diagnosticSession) {
   const entries = readEntries();
   const candidates = entries
     .filter((entry) => !entry.remote_synced_at && getDiagnosticSeverity(entry))
-    .slice(-30);
-  if (!candidates.length) return { sent: 0 };
+    .slice(0, 30);
+  if (!candidates.length) return { sent: 0, pending: 0 };
 
   const rows = candidates.map((entry) => ({
     client_event_id: String(entry.id || `${entry.time}-${entry.type}`).slice(0, 180),
@@ -97,35 +117,45 @@ export async function flushDiagnosticsToServer({
       .upsert(legacyRows, { onConflict: 'user_id,client_event_id', ignoreDuplicates: true }));
   }
   if (error) {
-    if (isRemoteDiagnosticsUnavailable(error)) return { sent: 0, unavailable: true };
-    return { sent: 0, error };
+    const unavailable = isRemoteDiagnosticsUnavailable(error);
+    updateDiagnosticSync(unavailable ? 'unavailable' : 'error');
+    if (unavailable) return { sent: 0, unavailable: true };
+    return { sent: 0, errorCode: String(error?.code || 'DIAGNOSTIC_INGEST_FAILED').slice(0, 64) };
   }
 
   if (getDiagnosticSession().generation !== diagnosticSession.generation
     || getDiagnosticSession().userId !== diagnosticSession.userId) return { sent: 0, ignoredStaleSession: true };
-  const syncedIds = new Set(candidates.map((entry) => entry.id || `${entry.time}-${entry.type}`));
-  const syncedAt = nowIso();
-  writeEntries(entries.map((entry) => (
-    syncedIds.has(entry.id || `${entry.time}-${entry.type}`)
-      ? { ...entry, remote_synced_at: syncedAt }
-      : entry
-  )), diagnosticSession);
-  return { sent: candidates.length };
+  // ACK individual event IDs in the current store after the network await.
+  // Never write the pre-request snapshot: new entries from this or another tab survive.
+  const ids = candidates.map((entry) => entry.id).filter(Boolean);
+  const acknowledged = acknowledgeDiagnosticEntries(ids, diagnosticSession, nowIso());
+  if (!acknowledged) {
+    updateDiagnosticSync('error');
+    return { sent: 0, ackFailed: true, pending: readEntries().filter((entry) => !entry.remote_synced_at && getDiagnosticSeverity(entry)).length };
+  }
+  updateDiagnosticSync('ok', ids.length);
+  return { sent: ids.length, pending: Math.max(0, readEntries().filter((entry) => !entry.remote_synced_at && getDiagnosticSeverity(entry)).length) };
 }
 
 export function startSilentDiagnosticSync(options = {}) {
   if (typeof window === 'undefined' || !options.supabase || !options.userId) return () => {};
   let stopped = false;
   let timerId = null;
+  let running = false;
   const run = async () => {
-    if (stopped) return;
+    if (stopped || running) return;
+    const hasPending = readEntries().some((entry) => !entry.remote_synced_at && getDiagnosticSeverity(entry));
+    if (!hasPending) return;
+    running = true;
     let queueSummary = null;
     try {
       queueSummary = await options.getQueueSummary?.();
     } catch {
       queueSummary = null;
     }
-    await flushDiagnosticsToServer({ ...options, queueSummary }).catch(() => null);
+    try { await flushDiagnosticsToServer({ ...options, queueSummary }); }
+    catch { updateDiagnosticSync('error'); }
+    finally { running = false; }
   };
   timerId = window.setInterval(() => { void run(); }, REMOTE_DIAGNOSTIC_INTERVAL_MS);
   const onlineHandler = () => { void run(); };
@@ -262,6 +292,7 @@ export function getDiagnosticOverview({ hours = DIAGNOSTIC_RECENT_HOURS, now = D
     errorCount,
     warningCount,
     lastEntryAt: entries.at(-1)?.time || '',
+    droppedCount: getDiagnosticDroppedCount(),
     hours,
   };
 }
