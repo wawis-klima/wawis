@@ -29,7 +29,7 @@ for (const save of [saveDesktopNote, saveMobileNote]) {
 }
 
 const migration = fs.readFileSync(
-  new URL('../supabase/migrations/current/20261008121500_fuel_tank_idempotency_v1266.sql', import.meta.url),
+  new URL('../supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql', import.meta.url),
   'utf8',
 );
 const db = new PGlite();
