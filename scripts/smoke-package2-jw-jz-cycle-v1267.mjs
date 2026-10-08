@@ -11,6 +11,8 @@ for (let cycle = 1; cycle <= 5; cycle++) {
   assert.equal(label, `${cycle}. cykl przypomnienia`);
 }
 assert.equal(getSmsReminderCycleLabel({ reminder_cycle: null }), '');
+assert.equal(getSmsReminderCycleLabel({ reminder_cycle: 0 }), '');
+assert.equal(getSmsReminderCycleLabel({ reminder_cycle: -1 }), '');
 assert.equal(getSmsReminderCycleLabel({ grouped_logs: [{ reminder_cycle: 1 }, { reminder_cycle: 3 }] }), 'Cykle przypomnień: 1., 3.');
 assert.equal(getSmsReminderCycleLabel({ reminder_cycle: 'nieznany' }), '');
 assert.equal(getSmsReminderCycleLabel({ grouped_sms_rows: [
