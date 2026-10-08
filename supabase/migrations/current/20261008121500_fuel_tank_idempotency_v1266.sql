@@ -18,9 +18,9 @@ security invoker
 set search_path = ''
 as $function$
 declare
-  v_type text := lower(pg_catalog.btrim(pg_catalog.coalesce(p_movement_type, '')));
+  v_type text := lower(pg_catalog.btrim(coalesce(p_movement_type, '')));
   v_liters numeric(12,2);
-  v_note text := pg_catalog.nullif(pg_catalog.btrim(pg_catalog.coalesce(p_note, '')), '');
+  v_note text := nullif(pg_catalog.btrim(coalesce(p_note, '')), '');
   v_row public.fuel_tank_movements%rowtype;
 begin
   if (select auth.uid()) is null or not public.current_user_is_admin() then
