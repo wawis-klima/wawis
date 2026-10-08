@@ -173,3 +173,20 @@ Trwała ochrona:
 - receipt wymaga pary `deliveryLogId` + losowy token; w bazie przechowywany jest tylko SHA-256 tokenu,
 - błąd telemetrii nie może blokować wyświetlenia,
 - `scripts/smoke-push-delivery-receipts-v1265.mjs` pilnuje kolejności received → filtr bezpieczeństwa → showNotification → displayed.
+
+## Audyt Codexa 12.65 — odbiór po pakietach 1–3 (wydanie 12.69)
+
+Dla każdego ustalenia obowiązuje oryginalny scenariusz z audytu Codexa z 2026-10-08. Zestaw testów jest podłączony do `scripts/test-groups.cjs`. Statusy pozostają **FIXED-UNVERIFIED** do udokumentowania finalnego CI, produkcyjnej zgodności i wskazanych oddzielnie testów staging/dostawcy/dwóch sesji PostgreSQL. Nie wolno interpretować PASS statycznego testu jako dowodu wykonania biznesowej operacji.
+
+| ID | Priorytet | Pierwotny błąd | Status | Reproduktor |
+|---|---|---|---|---|
+| CODEX-P0-01 | P0 | Wspólny e-mail / różny NIP mógł prowadzić do obcego PUT; zła odpowiedź listy do niechcianego POST | FIXED-UNVERIFIED | `scripts/codex-acceptance-fakturownia-v1269.mjs`, `smoke-fakturownia-p0-v1260.mjs` |
+| CODEX-P1-01 | P1 | DB dopuszczał zakończenie montażu bez JW / z wadliwymi JW1/JW3 | FIXED-UNVERIFIED | `scripts/smoke-package2-jw-jz-cycle-v1267.mjs`; SQL guard 12.69 |
+| CODEX-P1-02 | P1 | Notatka B nadpisywała A z nieaktualnej karty | FIXED-UNVERIFIED | `scripts/codex-acceptance-note-sql-v1269.mjs`, `smoke-package1-integrity-v1266.mjs` |
+| CODEX-P1-03 | P1 | Utrata odpowiedzi przy dostawie 100 l i retry dodawała 200 l; stary RPC nadal pozwala ominąć operation_id | FIXED-UNVERIFIED | `scripts/codex-acceptance-fuel-ui-v1269.mjs`, `scripts/codex-acceptance-fuel-old-rpc-v1269.mjs`, `smoke-package1-integrity-v1266.mjs` |
+| CODEX-P1-05 | P1 | Żądanie PUSH z obcym odbiorcą wysyłało przydzielenie | FIXED-UNVERIFIED | `scripts/codex-acceptance-push-v1269.mjs` |
+| CODEX-P1-06 | P1 | Dwa równoczesne żądania mogły wysłać podwójny PUSH | FIXED-UNVERIFIED | `scripts/codex-acceptance-push-v1269.mjs`, `smoke-push-recipient-dedupe-v1268.mjs` |
+| CODEX-P2-01 | P2 | Oryginalny test tabliczek kończył się na .order/.range | FIXED-UNVERIFIED | `scripts/test-desktop-nameplate-overview-authority-v1150.mjs` (oryginalne asercje) + `smoke-p2-audit-closure-v1262.mjs` (2501) |
+
+Granice dowodu: nie wykonano testu z prawdziwą Fakturownią, rzeczywistego Web Push na telefonach, testu dwóch niezależnych sesji PG ani produkcyjnego ponowienia paliwa. Wszystkie te elementy wymagają osobnego świadomego odbioru. Przyszły status CLOSED musi wskazywać konkretny numer PR, run, artefakt Closure Gate i potwierdzoną wersję produkcyjną.
+
