@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { getSmsReminderCycleLabel } from '../src/modules/sms-reminder-cycle-label.js';
 import { getReminderSchedule } from '../src/modules/sms.js';
+import { validateJobDevicesForCompletion } from '../src/modules/job-device-completion-validation.js';
 
 for (let cycle = 1; cycle <= 5; cycle++) {
   const label = getSmsReminderCycleLabel({ reminder_cycle: cycle });
@@ -34,6 +35,30 @@ for (const filename of ['SmsQueueTable.jsx', 'SmsSentThisMonthCard.jsx']) {
 const panel = fs.readFileSync(new URL('../src/components/sms/SmsPanel.jsx', import.meta.url), 'utf8');
 assert.match(panel, /cycleLabel: getSmsReminderCycleLabel\(row\)/);
 assert.match(panel, /cycleLabel: getSmsReminderCycleLabel\(log\)/);
+
+// Replace the old brittle tabliczka-only check with an executable model-pair regression.
+const validPair = validateJobDevicesForCompletion({ devices: [{
+  device_type: 'single-split',
+  indoor_models: ['Rotenso Imoto I35Xi'],
+  outdoor_model: 'Rotenso Imoto I35Xo',
+}] });
+assert.equal(validPair.ok, true, validPair.message);
+const missingIndoor = validateJobDevicesForCompletion({ devices: [{
+  device_type: 'single-split', indoor_models: [''], outdoor_model: 'Rotenso Imoto I35Xo',
+}] });
+assert.equal(missingIndoor.ok, false);
+assert.equal(missingIndoor.code, 'missing_indoor');
+const wrongFamily = validateJobDevicesForCompletion({ devices: [{
+  device_type: 'single-split', indoor_models: ['Rotenso Ukura U35Xi'],
+  outdoor_model: 'Rotenso Imoto I35Xo',
+}] });
+assert.equal(wrongFamily.ok, false);
+assert.equal(wrongFamily.code, 'single_pair_mismatch');
+const validMulti = validateJobDevicesForCompletion({ devices: [{
+  device_type: 'multi-split', indoor_models: ['Rotenso Imoto I26Xi', 'Rotenso Imoto I35Xi'],
+  outdoor_model: 'Rotenso Hiro Multi H50Xm2',
+}] });
+assert.equal(validMulti.ok, true, validMulti.message);
 
 const migration = fs.readFileSync(
   new URL('../supabase/migrations/current/20261008130000_job_device_models_completion_v1267.sql', import.meta.url), 'utf8',
