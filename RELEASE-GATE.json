@@ -1,31 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.65",
+  "version": "12.66",
   "scope": "full",
-  "release_branch": "release/v12.65",
+  "release_branch": "release/v12.66",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "12.65: analiza realnego job_completed wykazała provider 201 bez możliwości rozróżnienia odbioru i wyświetlenia na urządzeniu; poprawka dodaje oba receipt stages."
+    "notes": "Pakiet 1 audytu 12.65: Fakturownia, konflikt notatek i idempotencja dostaw paliwa."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.65.zip"
+    "file_name": "klima-app-v12.66.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.65",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN",
+    "source_branch": "release/v12.66",
+    "ready_for_main": false,
+    "status": "AWAITING_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub deployment status + Supabase migration/Edge Function metadata + production app-version.json",
-    "notes": "Po merge wymagany dowód deploymentu dokładnego commita main, wersji 12.65 oraz aktywnego endpointu push-delivery-receipt."
+    "evidence_source": "GitHub merge + Vercel deployment + Supabase migration/Edge + public app-version.json",
+    "notes": "Wymaga potwierdzenia po release 12.66."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,11 +34,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "previous_release_12_64": "PASS — main przed zmianą: 882d9d97dc1af24d69da78272930dffdcf1bbb42.",
-    "incident_trace": "PASS — job_completed został zapisany i provider przyjął push kodem 201; brakowało etapu device received/displayed.",
-    "receipt_security": "PASS BY DESIGN — losowy token 256-bit, w bazie tylko SHA-256, update wymaga id + hash.",
-    "receipt_non_blocking": "PASS BY DESIGN — receipt fetch jest niezależny od showNotification i ma timeout.",
-    "current_release_pr_check": "REQUIRED — finalny HEAD musi przejść WAWIS PR checks / targeted-checks.",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — wymagany SUCCESS dla dokładnego commita main i kontrola wersji 12.65."
+    "current_release_pr_check": "REQUIRED — WAWIS PR checks / targeted-checks",
+    "current_release_deployment": "EXTERNAL AFTER MERGE — Vercel i endpoint /app-version.json 12.66",
+    "fuel_migration": "REQUIRED — nowy RPC w Supabase przed frontendem",
+    "fakturownia_edge": "REQUIRED — aktywny Edge code z bezpiecznym dopasowaniem klienta"
   }
 }
