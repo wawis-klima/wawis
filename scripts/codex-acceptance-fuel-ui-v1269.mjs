@@ -63,7 +63,7 @@ assert.equal(attempts,1,'changing payload cannot create a new operation with pen
 assert(pending.has(key));
 const afterReload=makeHarness();
 afterReload.restore();
-assert.equal(afterReload.sandbox.tankDeliveryLiters,'100','reload must restore original liters');
+assert.equal(Number(afterReload.sandbox.tankDeliveryLiters),100,'reload must restore original liters');
 assert.equal(afterReload.sandbox.tankDeliveryNote,'test');
 await afterReload.invoke();
 assert.equal(attempts,2,'retry must invoke exact same logical operation');
