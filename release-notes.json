@@ -1,12 +1,10 @@
 {
-  "version": "12.59",
-  "summary": "Krótszy status oczekującego SMS-a i naprawa fałszywego NOT_FOUND podczas usuwania z głównej kolejki.",
+  "version": "12.66",
+  "summary": "Pakiet 1 — Fakturownia i integralność danych.",
   "changes": [
-    "Status pending_approval jest wyświetlany jako „Oczekuje”.",
-    "Główna kolejka SMS przekazuje do anulowania tylko identyfikatory sms_log, bez row.id urządzenia/zlecenia.",
-    "Zakładka Niewysłane nadal usuwa po własnym row.id, który w tym widoku jest identyfikatorem sms_log.",
-    "Dodano behawioralny test regresyjny odtwarzający mechanizm fałszywego NOT_FOUND oraz kontrolujący nową etykietę.",
-    "Wersja aplikacji i cache Service Workera są podbite do 12.59.",
-    "Run 783: 94 unikalne regresje PASS, mobile E2E PASS, desktop E2E PASS, Closure Gate PASS i production build PASS."
+    "Niejednoznaczna synchronizacja klienta Fakturowni zostaje zatrzymana, bez nadpisywania po samym e-mailu.",
+    "Zapis notatek administratora używa kontroli współbieżności w desktop i mobile.",
+    "Dostawy paliwa korzystają z operation_id do bezpiecznych ponowień po utracie odpowiedzi.",
+    "Dodano test regresyjny i migrację do manifestu rebuild."
   ]
 }
