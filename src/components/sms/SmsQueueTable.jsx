@@ -81,6 +81,7 @@ export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages,
                     <div className="smsDesktopModelCell">
                       <strong>{row.model}</strong>
                       <span>{row.modelMeta}</span>
+                      {row.cycleLabel ? <span className="smsDesktopCycleLabel">{row.cycleLabel}</span> : null}
                     </div>
                   </td>
                   <td>
