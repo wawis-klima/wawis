@@ -5,6 +5,8 @@ import { getJobAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, render
 import JobsPagination from "./JobsPagination.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
+const MobileDiagnosticsPanel = React.lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
+
 function getProfileInitials(profile) {
   const fullName = String(profile?.full_name || "").trim();
   if (fullName) {
@@ -22,6 +24,8 @@ function getJobListDate(job) {
 
 export default function MobileJobsLayout({
   isAdmin,
+  diagnosticsOpen = false,
+  setDiagnosticsOpen = () => {},
   openAddJob,
   refreshAll,
   sessionUser,
@@ -135,7 +139,14 @@ export default function MobileJobsLayout({
     <>
       <div className={`mobileHeaderV2 wawisCompactHeader ${isAdmin ? "wawisCompactHeaderAdmin mobileHeaderAdmin" : "wawisCompactHeaderWorker mobileHeaderWorker"}`}>
         <div className={`wawisOneLineToolbar ${isAdmin ? "isAdmin" : "isWorker"}`}>
-          <div className="mobileVersionTag wawisOneLineVersion" title={`Wersja ${APP_VERSION}`}>v{APP_VERSION}</div>
+          <button
+            type="button"
+            className="mobileVersionTag wawisOneLineVersion wawisVersionDiagnosticsButton"
+            title="Otwórz diagnostykę aplikacji"
+            aria-label={"Diagnostyka aplikacji, wersja " + APP_VERSION}
+            aria-expanded={diagnosticsOpen}
+            onClick={() => setDiagnosticsOpen((open) => !open)}
+          >v{APP_VERSION}</button>
 
           <button
             className="mobileActionBtn primary wawisOneLineAction"
@@ -217,6 +228,12 @@ export default function MobileJobsLayout({
         ) : null}
       </div>
 
+      {diagnosticsOpen ? (
+        <React.Suspense fallback={<div className="muted" role="status">Ładowanie diagnostyki…</div>}>
+          <MobileDiagnosticsPanel isAdmin={isAdmin} profile={profile} selectedJobId={selectedJob?.id || ""} onBack={() => setDiagnosticsOpen(false)} />
+        </React.Suspense>
+      ) : (
+        <>
       <div className="statusButtonsBar" aria-label="Statusy zleceń">
         {statuses.map((status) => {
           const statusCount = jobs.filter((job) => normalizeStatusFn(job.status) === status).length;
@@ -289,6 +306,8 @@ export default function MobileJobsLayout({
         pageSize={jobsPageSize}
         onPageChange={setJobsPage}
       />
+        </>
+      )}
     </>
   );
 }
