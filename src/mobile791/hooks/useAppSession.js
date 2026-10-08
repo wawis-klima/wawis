@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { setDiagnosticUser } from '../modules/diagnostics.js';
 import {
   clearAppClientState,
   loginUser,
@@ -114,6 +115,8 @@ export function useAppSession({
   const nextUserId = String(nextUser?.id || '').trim();
   const previousUserId = String(sessionGenerationStateRef.current.userId || '').trim();
   transitionSessionGeneration(sessionGenerationStateRef.current, nextUserId);
+  // Ustaw właściciela diagnostyki natychmiast, przed renderem i operacjami async.
+  setDiagnosticUser(nextUserId);
   if (previousUserId !== nextUserId) {
     if (transientRefreshRetryTimerRef.current && typeof window !== 'undefined') {
       window.clearTimeout(transientRefreshRetryTimerRef.current);
