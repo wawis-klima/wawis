@@ -117,6 +117,8 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
             <span>
               {entry.moduleLabel}
               {remote ? ` · ${entry.platform || 'urządzenie'} · v${entry.appVersion || '—'}` : ''}
+              {remote && /^[A-Z][A-Z0-9_]{3,63}$/.test(entry.errorCode || '') ? ` · ${entry.errorCode}` : ''}
+              {remote && /^[A-Z][A-Z0-9_]{3,63}$/.test(entry.errorCode || '') && entry.message ? ` · ${entry.message}` : ''}
               {` · ${formatDateTime(entry.lastAt)}`}
             </span>
           </div>

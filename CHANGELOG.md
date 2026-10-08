@@ -1,3 +1,9 @@
+## 12.72
+- Ujednolicono techniczne kody błędów w centralnej Diagnostyce dla desktop i mobile. Zamiast `[object Object]` i niesprecyzowanych komunikatów pokazywany jest bezpieczny kod i opis, bez danych osobowych.
+- Kody rozróżniają timeout PostgreSQL/odświeżania, problemy sieci, przerwane połączenia i wygasanie sesji. Dodano obowiązkowy test prywatności i klasyfikacji.
+- Read-only audyt potwierdzeń PUSH pracowników: 4 aktywne subskrypcje, 0/4 potwierdzonych ostatnich wysyłek z tokenem; wdrożenie nie generuje nowych automatycznych PUSH.
+- Historia poprzednich zdarzeń bez zmian; dostarczenie na telefony monterów pozostaje do potwierdzenia podczas realnej pracy.
+
 ## 12.71
 - Mobilna wersja aplikacji jest przyciskiem otwierającym istniejący panel Diagnostyki bez nowej ikony i bez obciążania startu aplikacji.
 - Powrót do montaży z panelu Diagnostyki; test PUSH dostępny tylko dla administratora.

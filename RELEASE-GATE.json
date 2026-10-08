@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.71",
-  "scope": "mobile",
-  "release_branch": "release/v12.71",
+  "version": "12.72",
+  "scope": "full",
+  "release_branch": "release/v12.72",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": false,
+    "last_24h": true,
     "result": "INFO",
-    "notes": "UI only: existing mobile diagnostics panel exposed from app version. Remote production log access unavailable (Vercel 403). CI and physical iPhone functionality must be verified separately."
+    "notes": "Production SQL diagnostics checked for 2026-10-01..08: 351 events (60 error/291 warning), 21 refreshAll errors, PostgreSQL 57014 statement timeouts; only one reporting account. Worker push receipts: 4 current tokened job_assigned sent, zero received/displayed. See docs/audits/v12.72/DIAGNOSTIC-PUSH-REVIEW.md"
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.71.zip"
+    "file_name": "klima-app-v12.72.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.71",
+    "source_branch": "release/v12.72",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR checks and production app-version.json once deployed",
-    "notes": "Require green CI before merging; verify mobile UI on real iPhone and production SHA/version after deployment."
+    "evidence_source": "GitHub PR checks + Vercel deployment status + public app-version.json",
+    "notes": "Verify version 12.72 after green CI; physical worker phone automatic PUSH receipts remain unverified, do not claim success."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,11 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — mobile targeted tests, Playwright mobile, Closure Gate and build",
+    "release_ci": "REQUIRED — core, push, desktop, mobile, full Playwright, Closure Gate and production build",
     "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
     "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
     "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "No backend changes in this release; confirm deployed SHA and public version 12.71 after green CI and deployment",
-    "mobile_touch": "EXTERNAL — manually verify tapping version shows Diagnostics, report download, back navigation, worker/admin permissions"
+    "front_and_backend": "UI/diagnostics-only release; no SQL or Edge function changes. Verify deployment SHA and public version 12.72.",
+    "mobile_touch": "EXTERNAL — manual check codes in desktop diagnostics and local mobile report after deployment"
   }
 }

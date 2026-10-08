@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.71
+- 12.72
+
+Wersja 12.72: poprawiono kody błędów Centrum Diagnostycznego mobile/desktop (bez danych klientów), w tym osobną identyfikację limitów PostgreSQL, problemów sieci i odświeżania. Zweryfikowano statusy automatycznych PUSH pracowników — brak potwierdzeń odbioru nadal wymaga sprawdzenia na urządzeniach.
 
 Wersja 12.71: na iPhonie dotknięcie numeru wersji otwiera wbudowaną diagnostykę. Dostępne są raport, kolejka zdjęć i powrót do montaży; test push widoczny jest tylko administratorowi. Dodano test regresyjny nawigacji.
 
@@ -903,7 +905,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.71` — mobilna diagnostyka dostępna po dotknięciu numeru wersji.
+- wersja `12.72` — czytelne, bezpieczne kody błędów; audyt potwierdzeń PUSH i kontrola refreshAll.
 - wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
 - wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
 - wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.

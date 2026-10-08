@@ -6,6 +6,8 @@ import {
   partitionDiagnosticEntries,
 } from './diagnostics-core.js';
 
+import { getSafeDiagnosticDetails } from './diagnostic-error-codes.js';
+
 const DIAGNOSTIC_STORAGE_KEY = 'klima_app_diagnostic_log';
 const DIAGNOSTIC_MAX_ENTRIES = 300;
 const DIAGNOSTIC_EXPORT_MAX_ENTRIES = 180;
@@ -51,6 +53,7 @@ function sanitizeValue(value, seen = new WeakSet(), contextKey = '') {
   if (value instanceof Error) {
     return {
       name: redactText(value.name || 'Error'),
+      code: /^(?:APP_REFRESH_TIMEOUT|SUPABASE_REQUEST_TIMEOUT|SESSION_REFRESH_FAILED|PGRST\d{3}|[0-9A-Z]{5})$/.test(String(value.code || '')) ? String(value.code) : '',
       message: redactText(value.message || '', { technicalOnly: false }),
       stack: redactText(value.stack || '', { technicalOnly: false }),
     };
@@ -127,16 +130,6 @@ export function logDiagnostic(type, payload = {}) {
   writeEntries(entries);
 }
 
-function getRemoteErrorMessage(entry = {}) {
-  const payload = entry.payload || {};
-  const candidate = payload?.error?.message
-    || payload?.reason?.message
-    || payload?.message
-    || (Array.isArray(payload?.args) ? payload.args.join(' ') : '')
-    || '';
-  return redactText(candidate, { technicalOnly: true });
-}
-
 function isRemoteDiagnosticsUnavailable(error) {
   return /(app_diagnostic_events|does not exist|schema cache|relation.*not found|permission denied)/i.test(String(error?.message || error || ''));
 }
@@ -171,8 +164,8 @@ export async function flushDiagnosticsToServer({
     queue_pending: Math.max(0, Number(queueSummary?.local || queueSummary?.pending || 0)),
     queue_errors: Math.max(0, Number(queueSummary?.error || queueSummary?.errors || 0)),
     retry_count: Math.max(0, Number(entry.payload?.retry_count || 0)),
-    error_code: String(entry.payload?.error?.code || entry.payload?.code || '').slice(0, 80),
-    error_message: getRemoteErrorMessage(entry),
+    error_code: getSafeDiagnosticDetails(entry).code,
+    error_message: getSafeDiagnosticDetails(entry).message,
     occurred_at: entry.time || nowIso(),
   }));
 
