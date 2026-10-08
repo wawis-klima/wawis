@@ -27,6 +27,7 @@ function makeHarness(){
  const sandbox={
    isAdmin:true,busy:false,userId,tankDeliveryLiters:'100',tankDeliveryNote:'test',
    sessionStorage:storage,
+   useEffect:(callback)=>callback(),
    createFuelEntryAttemptId:()=>{idCount++;return '22222222-2222-4222-8222-'+String(idCount).padStart(12,'0');},
    normalizeFuelTankDeliveryLiters:value=>Number(value),
    setBusy:v=>{sandbox.busy=v;},setError:s=>state.errors.push(s),setMessage:s=>state.messages.push(s),
