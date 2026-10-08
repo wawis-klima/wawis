@@ -25,7 +25,7 @@ const storage={
 function makeHarness(){
  const state={errors:[],messages:[]};
  const sandbox={
-   isAdmin:true,busy:false,userId,tankDeliveryLiters:'100',tankDeliveryNote:'test',supabase:{},
+   isAdmin:true,busy:false,userId,supabase:{},tankDeliveryLiters:'100',tankDeliveryNote:'test',supabase:{},
    sessionStorage:storage,
    useEffect:(callback)=>callback(),
    createFuelEntryAttemptId:()=>{idCount++;return '22222222-2222-4222-8222-'+String(idCount).padStart(12,'0');},
