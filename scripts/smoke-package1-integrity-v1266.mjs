@@ -36,6 +36,8 @@ const db = new PGlite();
 await db.exec(`
   create schema auth;
   create role authenticated;
+  create role anon;
+  create role service_role;
   grant usage on schema auth to authenticated;
   create or replace function auth.uid() returns uuid language sql stable as $$
     select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid
