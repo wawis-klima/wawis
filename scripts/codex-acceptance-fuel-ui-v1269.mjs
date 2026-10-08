@@ -25,7 +25,7 @@ const storage={
 function makeHarness(){
  const state={errors:[],messages:[]};
  const sandbox={
-   isAdmin:true,busy:false,userId,tankDeliveryLiters:'100',tankDeliveryNote:'test',
+   isAdmin:true,busy:false,userId,tankDeliveryLiters:'100',tankDeliveryNote:'test',supabase:{},
    sessionStorage:storage,
    useEffect:(callback)=>callback(),
    createFuelEntryAttemptId:()=>{idCount++;return '22222222-2222-4222-8222-'+String(idCount).padStart(12,'0');},
@@ -52,7 +52,7 @@ function makeHarness(){
 const first=makeHarness();
 await first.invoke();
 const key=`wawis:fuel-delivery-attempt:v1266:${userId}`;
-assert.equal(backendWrites,1,'server committed before lost response');
+assert.equal(backendWrites,1,'server committed before lost response: '+JSON.stringify(first.state.errors));
 assert(pending.has(key),'attempt id must persist after network timeout');
 assert.equal(first.sandbox.busy,false);
 const originalId=JSON.parse(pending.get(key)).operationId;
