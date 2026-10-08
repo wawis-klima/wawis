@@ -5,7 +5,7 @@ import {
 } from '../src/modules/diagnostics.js';
 import {
   logDiagnostic as logMobile, flushDiagnosticsToServer as mobileFlush,
-  getDiagnosticEntries as mobileEntries,
+  getDiagnosticEntries as mobileEntries, getDiagnosticSyncStatus as mobileSyncStatus,
 } from '../src/mobile791/modules/diagnostics.js';
 import { setDiagnosticUser, appendDiagnosticEntry, getDiagnosticSession,
   getDiagnosticDroppedCount } from '../src/modules/diagnostic-privacy.js';
@@ -86,7 +86,8 @@ const failed={from:()=>({upsert:async()=>({error:{code:'42501',message:'new row 
 const err=await mobileFlush({supabase:failed,userId:A});
 assert.equal(err.errorCode,'42501');
 assert.equal(err.unavailable,undefined);
-assert.equal(desktopSyncStatus().status,'error');
+assert.equal(mobileSyncStatus().status,'error');
+assert.equal(desktopSyncStatus().status,'ok');
 assert.equal(desktopEntries().filter(e=>!e.remote_synced_at && e.severity).length,1);
 const retry=await mobileFlush({supabase:ok,userId:A});
 assert.equal(retry.sent,1);
