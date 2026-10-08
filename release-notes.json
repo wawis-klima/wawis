@@ -1,10 +1,9 @@
 {
-  "version": "12.68",
-  "summary": "Pakiet 3 — poprawność odbiorców i deduplikacja PUSH.",
+  "version": "12.69",
+  "summary": "Kontrola odbiorcza audytu Codexa — testy pakietów 1–3.",
   "changes": [
-    "Wysyłanie PUSH o przypisaniu do montażu jest ograniczone do aktualnie przypisanych monterów.",
-    "Zdarzenia są atomowo rezerwowane na aktywną subskrypcję: podwójne wywołanie nie tworzy dwóch PUSH.",
-    "Ponowne przypisanie do montażu otrzymuje nowy numer zdarzenia.",
-    "Wysyłka po zakończeniu montażu weryfikuje faktycznego wykonawcę."
+    "Naprawa oryginalnego testu tabliczek.",
+    "Wykonywalne kontrprzykłady Fakturowni i PUSH.",
+    "Obowiązkowa mapa ustalenie → test → wynik i ograniczenia."
   ]
 }
