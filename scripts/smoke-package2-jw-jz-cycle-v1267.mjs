@@ -106,6 +106,9 @@ await rejectInvalid('JW:  | JZ: Rotenso Ukura', 'empty JW');
 await rejectInvalid('JW: Rotenso Ukura | JZ: ', 'empty JZ');
 await rejectInvalid('JW: Rotenso Ukura | JZ: Rotenso Ukura\nJZ: Inny', 'each serialized device must have JW');
 await rejectInvalid('Rotenso Ukura', 'legacy unstructured model must not evade the new completion guard');
+await rejectInvalid('JW1: Jednostka A | JW3: Jednostka C | JZ: Zewnętrzna', 'JW1/JW3 gap is forbidden');
+await rejectInvalid('JW1: Jednostka A | JW1: Jednostka B | JZ: Zewnętrzna', 'duplicated JW index is forbidden');
+
 await db.query('update public.jobs set status=$1,device_model=$2 where id=$3',
  ['Zakończone','JW: Rotenso Ukura | JZ: Rotenso Ukura',id]);
 const saved = await db.query('select status from public.jobs where id=$1',[id]);
