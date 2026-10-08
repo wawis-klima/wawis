@@ -6,106 +6,27 @@ import {
   partitionDiagnosticEntries,
 } from './diagnostics-core.js';
 
+import {
+  sanitizeDiagnosticEntry, sanitizeDiagnosticSummary, setDiagnosticUser,
+  getDiagnosticSession, readDiagnosticEntries, writeDiagnosticEntries, clearDiagnosticEntries,
+} from './diagnostic-privacy.js';
+export { setDiagnosticUser } from './diagnostic-privacy.js';
+
 import { getSafeDiagnosticDetails } from './diagnostic-error-codes.js';
 
-const DIAGNOSTIC_STORAGE_KEY = 'klima_app_diagnostic_log';
-const DIAGNOSTIC_MAX_ENTRIES = 300;
 const DIAGNOSTIC_EXPORT_MAX_ENTRIES = 180;
-const DIAGNOSTIC_MAX_STRING_LENGTH = 500;
 const REMOTE_DIAGNOSTIC_INTERVAL_MS = 2 * 60 * 1000;
 const DIAGNOSTIC_PLATFORM = 'desktop';
 let consolePatched = false;
 let globalHandlersInstalled = false;
 
-const SENSITIVE_KEY_PATTERN = /(password|token|secret|authorization|apikey|access_token|refresh_token|email|phone|client|customer|contractor|comment|note|address|street|city|photo|image|file_name|filename|serial_number|full_name)/i;
-const TECHNICAL_TEXT_PATTERN = /(error|warning|failed|failure|timeout|timed out|network|fetch|supabase|auth|session|storage|indexeddb|upload|download|ocr|ean|barcode|code 128|http|rpc|query|database|worker|service worker|vite|react|playwright|permission|offline|online|retry|abort|cancel|exception|stack|syntax|render)/i;
-
-function nowIso() {
-  return new Date().toISOString();
-}
-
+function nowIso() { return new Date().toISOString(); }
 function createDiagnosticEventId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
   return `diag-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
-
-function trimString(value) {
-  const text = String(value ?? '');
-  return text.length > DIAGNOSTIC_MAX_STRING_LENGTH ? `${text.slice(0, DIAGNOSTIC_MAX_STRING_LENGTH)}…` : text;
-}
-
-function redactText(value, { technicalOnly = false } = {}) {
-  let text = trimString(value);
-  text = text.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]');
-  text = text.replace(/(?:\+?48[ -]?)?(?:\d[ -]?){9}/g, '[REDACTED_PHONE]');
-  text = text.replace(/https?:\/\/[^\s"']+/gi, '[REDACTED_URL]');
-  text = text.replace(/blob:[^\s"']+/gi, '[REDACTED_BLOB_URL]');
-  text = text.replace(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/gi, '[REDACTED_IMAGE_DATA]');
-  if (technicalOnly && text && !TECHNICAL_TEXT_PATTERN.test(text)) return '[REDACTED_TEXT]';
-  return text;
-}
-
-function sanitizeValue(value, seen = new WeakSet(), contextKey = '') {
-  if (value == null) return value;
-
-  if (SENSITIVE_KEY_PATTERN.test(contextKey)) return '[REDACTED]';
-
-  if (value instanceof Error) {
-    return {
-      name: redactText(value.name || 'Error'),
-      code: /^(?:APP_REFRESH_TIMEOUT|SUPABASE_REQUEST_TIMEOUT|SESSION_REFRESH_FAILED|PGRST\d{3}|[0-9A-Z]{5})$/.test(String(value.code || '')) ? String(value.code) : '',
-      message: redactText(value.message || '', { technicalOnly: false }),
-      stack: redactText(value.stack || '', { technicalOnly: false }),
-    };
-  }
-
-  const valueType = typeof value;
-  if (valueType === 'string') {
-    const lower = value.toLowerCase();
-    if (lower.includes('bearer ') || lower.includes('apikey') || lower.includes('token')) return '[REDACTED]';
-    return redactText(value, { technicalOnly: contextKey === 'args' });
-  }
-
-  if (valueType === 'number' || valueType === 'boolean') return value;
-  if (valueType === 'function') return `[Function ${value.name || 'anonymous'}]`;
-
-  if (Array.isArray(value)) {
-    return value.slice(0, 20).map((entry) => sanitizeValue(entry, seen, contextKey));
-  }
-
-  if (valueType === 'object') {
-    if (seen.has(value)) return '[Circular]';
-    seen.add(value);
-    const output = {};
-    Object.entries(value).slice(0, 40).forEach(([key, entryValue]) => {
-      output[key] = sanitizeValue(entryValue, seen, key);
-    });
-    return output;
-  }
-
-  return redactText(value);
-}
-
-function readEntries() {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(DIAGNOSTIC_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeEntries(entries) {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(DIAGNOSTIC_STORAGE_KEY, JSON.stringify(entries.slice(-DIAGNOSTIC_MAX_ENTRIES)));
-  } catch {
-    // Diagnostyka nie może blokować aplikacji.
-  }
-}
+function readEntries() { return readDiagnosticEntries(); }
+function writeEntries(entries, session = getDiagnosticSession()) { return writeDiagnosticEntries(entries, session); }
 
 function getSafePath() {
   if (typeof window === 'undefined') return '';
@@ -113,21 +34,16 @@ function getSafePath() {
 }
 
 export function logDiagnostic(type, payload = {}) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !getDiagnosticSession().userId) return;
+  const session = getDiagnosticSession();
   const entries = readEntries();
-  const entry = {
-    id: createDiagnosticEventId(),
-    time: nowIso(),
-    type: trimString(type || 'unknown'),
-    payload: sanitizeValue(payload),
-    path: getSafePath(),
+  const entry = sanitizeDiagnosticEntry({
+    id: createDiagnosticEventId(), time: nowIso(), type, payload,
     module: inferDiagnosticModule(type, payload),
-    app_version: APP_VERSION,
-    platform: DIAGNOSTIC_PLATFORM,
-  };
-  entry.severity = getDiagnosticSeverity(entry);
+    app_version: APP_VERSION, platform: DIAGNOSTIC_PLATFORM,
+  });
   entries.push(entry);
-  writeEntries(entries);
+  writeEntries(entries, session);
 }
 
 function isRemoteDiagnosticsUnavailable(error) {
@@ -146,6 +62,8 @@ export async function flushDiagnosticsToServer({
   queueSummary = null,
 } = {}) {
   if (!supabase || !userId || typeof window === 'undefined' || navigator.onLine === false) return { sent: 0 };
+  const diagnosticSession = getDiagnosticSession();
+  if (!diagnosticSession.userId || diagnosticSession.userId !== String(userId)) return { sent: 0, sessionMismatch: true };
   const entries = readEntries();
   const candidates = entries
     .filter((entry) => !entry.remote_synced_at && getDiagnosticSeverity(entry))
@@ -183,13 +101,15 @@ export async function flushDiagnosticsToServer({
     return { sent: 0, error };
   }
 
+  if (getDiagnosticSession().generation !== diagnosticSession.generation
+    || getDiagnosticSession().userId !== diagnosticSession.userId) return { sent: 0, ignoredStaleSession: true };
   const syncedIds = new Set(candidates.map((entry) => entry.id || `${entry.time}-${entry.type}`));
   const syncedAt = nowIso();
   writeEntries(entries.map((entry) => (
     syncedIds.has(entry.id || `${entry.time}-${entry.type}`)
       ? { ...entry, remote_synced_at: syncedAt }
       : entry
-  )));
+  )), diagnosticSession);
   return { sent: candidates.length };
 }
 
@@ -322,7 +242,7 @@ export async function loadPushSubscriptionOverview({ supabase } = {}) {
 
 export function clearDiagnosticLog() {
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(DIAGNOSTIC_STORAGE_KEY);
+  clearDiagnosticEntries();
 }
 
 export function getDiagnosticEntries() {
@@ -356,20 +276,16 @@ async function getStorageSnapshot() {
       usagePercent: estimate?.quota ? Math.round((Number(estimate.usage || 0) / Number(estimate.quota)) * 1000) / 10 : null,
     };
   } catch (error) {
-    return { error: redactText(error?.message || 'storage estimate unavailable') };
+    return { error: 'STORAGE_ESTIMATE_UNAVAILABLE' };
   }
 }
 
 function sanitizeEntryForExport(entry = {}) {
+  const safe = sanitizeDiagnosticEntry(entry);
   return {
-    time: entry.time || '',
-    type: trimString(entry.type || 'unknown'),
-    severity: getDiagnosticSeverity(entry),
-    module: inferDiagnosticModule(entry),
-    appVersion: String(entry.app_version || ''),
-    platform: String(entry.platform || ''),
-    payload: sanitizeValue(entry.payload || {}),
-    path: String(entry.path || '/').split('?')[0].split('#')[0],
+    time: safe.time, type: safe.type, severity: safe.severity,
+    module: safe.module, appVersion: safe.app_version,
+    platform: safe.platform, payload: safe.payload, path: '/',
   };
 }
 
@@ -383,9 +299,9 @@ function buildDiagnosticReportSnapshot({
   const entries = readEntries().slice(-DIAGNOSTIC_EXPORT_MAX_ENTRIES).map(sanitizeEntryForExport);
   const runtime = typeof window === 'undefined' ? {} : {
     online: navigator.onLine,
-    language: navigator.language || '',
-    userAgent: redactText(navigator.userAgent || ''),
-    platform: redactText(navigator.platform || ''),
+    language: /^[a-z]{2}(?:-[A-Z]{2})?$/.test(navigator.language || '') ? navigator.language : '',
+    userAgent: /iphone|ipad|ipod/i.test(navigator.userAgent || '') ? 'iOS' : /android/i.test(navigator.userAgent || '') ? 'Android' : 'Desktop',
+    platform: DIAGNOSTIC_PLATFORM,
     viewport: {
       width: window.innerWidth,
       height: window.innerHeight,
@@ -396,7 +312,7 @@ function buildDiagnosticReportSnapshot({
       height: window.screen?.height || 0,
     },
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
-    path: getSafePath(),
+    path: '/',
     visibilityState: document.visibilityState || '',
     serviceWorkerControlled: Boolean(navigator.serviceWorker?.controller),
   };
@@ -405,9 +321,9 @@ function buildDiagnosticReportSnapshot({
     schemaVersion: 1,
     exportedAt: nowIso(),
     app: 'Wawis Klimatyzacja',
-    appVersion: String(appVersion || ''),
-    role: String(role || ''),
-    currentJobId: currentJobId ? String(currentJobId) : '',
+    appVersion: /^\d{1,3}\.\d{2}$/.test(String(appVersion || '')) ? String(appVersion) : APP_VERSION,
+    role: role === 'Administrator' ? 'Administrator' : 'Pracownik',
+    currentJobId: '', // Bez identyfikatora montażu/klienta w raporcie.
     privacy: {
       customerDataIncluded: false,
       commentsIncluded: false,
@@ -416,9 +332,9 @@ function buildDiagnosticReportSnapshot({
     },
     runtime,
     storage,
-    photoQueue: queueSummary ? sanitizeValue(queueSummary) : null,
+    photoQueue: sanitizeDiagnosticSummary(queueSummary),
     overview: getDiagnosticOverview(),
-    extra: sanitizeValue(extra),
+    extra: sanitizeDiagnosticSummary(extra),
     entries,
   };
 }
