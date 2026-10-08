@@ -12,6 +12,7 @@ import {
   getFuelOdometerPhotoUrl,
   loadFuelModuleData,
   normalizeFuelTankCapacity,
+  normalizeFuelTankDeliveryLiters,
   updateFuelEntry,
   updateFuelVehicleTankCapacity,
 } from '../../modules/fuel.js';
@@ -365,6 +366,22 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
 
   useEffect(() => { void refresh(); }, [refresh]);
   useEffect(() => {
+    if (!isAdmin || !userId) return;
+    try {
+      const raw = sessionStorage.getItem(`wawis:fuel-delivery-attempt:v1266:${userId}`);
+      if (!raw) return;
+      const attempt = JSON.parse(raw);
+      const values = JSON.parse(attempt?.fingerprint || '{}');
+      if (!attempt?.operationId || !values?.liters) return;
+      setTankDeliveryLiters(String(values.liters));
+      setTankDeliveryNote(String(values.note || ''));
+      setTankDeliveryOpen(true);
+      setMessage('Poprzednia dostawa ma niepotwierdzony wynik. Ponów z przywróconymi danymi — aplikacja sprawdzi ten sam zapis bez dodawania paliwa drugi raz.');
+    } catch (error) {
+      console.warn('Nie udało się przywrócić niepotwierdzonej dostawy:', error);
+    }
+  }, [isAdmin, userId]);
+  useEffect(() => {
     if (!fuelEntryAttempt || fuelEntryAttempt.ownerUserId !== userId) return;
     setVehicleId((current) => current || String(fuelEntryAttempt.vehicleId || ''));
     setLiters((current) => current || String(fuelEntryAttempt.liters || ''));
@@ -449,7 +466,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       if (!userId || typeof sessionStorage === 'undefined') {
         throw new Error('Nie można bezpiecznie zapisać dostawy bez aktywnej sesji użytkownika.');
       }
-      const normalizedLiters = Number(String(tankDeliveryLiters).trim().replace(',', '.')).toFixed(2);
+      const normalizedLiters = normalizeFuelTankDeliveryLiters(tankDeliveryLiters).toFixed(2);
       const normalizedNote = String(tankDeliveryNote || '').trim();
       const fingerprint = JSON.stringify({ liters: normalizedLiters, note: normalizedNote });
       const previous = sessionStorage.getItem(storageKey);
