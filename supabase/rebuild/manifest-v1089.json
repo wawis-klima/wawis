@@ -115,7 +115,8 @@
     "supabase/migrations/20261007124500_push_delivery_receipts_v1265.sql",
     "supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql",
     "supabase/migrations/current/20261008105757_job_device_models_completion_v1267.sql",
-    "supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql"
+    "supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql",
+    "supabase/migrations/current/20261008150000_completion_jw_index_guard_v1269.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
