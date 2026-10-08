@@ -69,13 +69,17 @@ async function loadFuelTankData({ supabase, isAdmin }) {
   };
 }
 
-export async function addFuelTankDelivery({ supabase, isAdmin, liters, note = '' }) {
+export async function addFuelTankDelivery({ supabase, isAdmin, liters, note = '', operationId }) {
   assertAdminAccess({ supabase, isAdmin });
   const normalizedLiters = normalizeFuelTankDeliveryLiters(liters);
-  const { data, error } = await supabase.rpc('admin_add_fuel_tank_movement', {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(operationId || ''))) {
+    throw new Error('Brakuje poprawnego identyfikatora dostawy. Spróbuj odświeżyć formularz.');
+  }
+  const { data, error } = await supabase.rpc('admin_add_fuel_tank_movement_v1266', {
     p_movement_type: 'delivery',
     p_liters: normalizedLiters,
     p_note: String(note || '').trim() || null,
+    p_operation_id: operationId,
   });
   if (error) throw error;
   return Array.isArray(data) ? data[0] || null : data || null;
