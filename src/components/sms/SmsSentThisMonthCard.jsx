@@ -56,6 +56,7 @@ export default function SmsSentThisMonthCard({ rows, pageRows, currentPage, tota
                   <div className="smsDesktopModelCell">
                     <strong>{row.model}</strong>
                     <span>{row.modelMeta}</span>
+                    {row.cycleLabel ? <span className="smsDesktopCycleLabel">{row.cycleLabel}</span> : null}
                   </div>
                 </td>
                 <td>
