@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.67
+- 12.68
+
+Wersja 12.68: PUSH weryfikuje odbiorcę względem aktualnych monterów i rezerwuje zdarzenie atomowo, żeby blokować równoczesne duplikaty. Zachowuje śledzenie dostarczenia i diagnostykę.
 
 Wersja 12.67: zakończenie montażu wymaga osobnych modeli JW/JZ na poziomie bazy. Lista SMS pokazuje numer cyklu przypomnienia serwisowego bez zmiany harmonogramu wysyłki. Dodano behawioralny test regresyjny.
 
