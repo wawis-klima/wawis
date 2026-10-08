@@ -51,7 +51,7 @@ const existingJobs = [{
 }];
 
 function makeQuery(table) {
-  const state = { eq: [] };
+  const state = { eq: [], from: null, to: null };
   const resolve = () => {
     if (table === 'jobs') return { data: [serverJob], error: null };
     if (table === 'job_access') return { data: [], error: null };
@@ -70,7 +70,13 @@ function makeQuery(table) {
   const query = {
     select() { return query; },
     eq(column, value) { state.eq.push([column, value]); return query; },
-    order() { return Promise.resolve(resolve()); },
+    order() { return query; },
+    range(from, to) {
+      state.from = from;
+      state.to = to;
+      const result = resolve();
+      return Promise.resolve({ ...result, data: Array.isArray(result.data) ? result.data.slice(from, to + 1) : result.data });
+    },
     maybeSingle() { return Promise.resolve(resolve()); },
     upsert() { return Promise.resolve({ data: null, error: null }); },
     then(onFulfilled, onRejected) { return Promise.resolve(resolve()).then(onFulfilled, onRejected); },
