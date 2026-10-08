@@ -130,18 +130,19 @@ export async function confirmVatInvoiceFromFakturownia({ supabase, jobId, invoic
   };
 }
 
-export async function saveJobAdminNote({ supabase, jobId, adminNote }) {
+export async function saveJobAdminNote({ supabase, jobId, adminNote, expectedAdminNote }) {
   if (!supabase || !jobId) return null;
   const normalizedAdminNote = String(adminNote || '').trim() || null;
-  const { data, error } = await supabase
-    .from('jobs')
-    .update({ admin_note: normalizedAdminNote })
-    .eq('id', jobId)
-    .select('id, admin_note')
-    .maybeSingle();
+  const normalizedExpected = String(expectedAdminNote || '').trim() || null;
+  const { data, error } = await supabase.rpc('save_job_concurrent_v1168', {
+    p_id: jobId,
+    p_fields: { admin_note: normalizedAdminNote },
+    p_expected: { admin_note: normalizedExpected },
+    p_installer_ids: null,
+    p_expected_installer_ids: null,
+    p_update_installers: false,
+  });
   if (error) throw error;
-  if (!data) {
-    throw new Error('Nie udało się zapisać komentarza administratora. Sprawdź uprawnienia albo odśwież dane.');
-  }
+  if (!data) throw new Error('Nie udało się potwierdzić zapisu komentarza administratora.');
   return data;
 }

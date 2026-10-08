@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.65
+- 12.66
+
+Wersja 12.66 zabezpiecza synchronizację klientów Fakturowni, chroni notatki administratora przed nadpisaniem z nieaktualnej sesji oraz dodaje identyfikator operacji dla dostaw paliwa do zbiornika.
 
 Wersja 12.65 dodaje pełne śledzenie dostawy PUSH: backend zapisuje wysłanie do dostawcy, Service Worker potwierdza odebranie payloadu i osobno udane wyświetlenie powiadomienia. Potwierdzenia są zabezpieczone jednorazowym tokenem, którego w bazie nie zapisujemy w postaci jawnej. Awaria telemetrii nie blokuje samego PUSH-a.
 
@@ -895,6 +897,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.
 - wersja `12.65` — PUSH zapisuje etapy wysłano → odebrano → wyświetlono, z bezpiecznym tokenem receipt i bez blokowania samego powiadomienia.
 - wersja `12.64` — mobilny licznik paliwa pokazuje tylko bieżący stan, a statystyki i dodawanie dostawy są rozwijane na żądanie.
 - wersja `12.63` — licznik stanu zbiornika paliwa z automatycznym rozchodem tankowań.

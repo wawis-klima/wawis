@@ -168,20 +168,44 @@ Deno.serve(async (request: Request) => {
     });
 
     const externalId = String(clientData.external_id || "");
-    let matchedClient = firstClient(await fakturowniaGetClients(apiToken, { external_id: externalId }));
+    const externalCandidates = await fakturowniaGetClients(apiToken, { external_id: externalId });
+    const matchingExternal = externalCandidates.filter(
+      (row) => normalizeText(row?.external_id) === externalId && normalizeText(row?.id),
+    );
+    if (matchingExternal.length > 1) {
+      throw new Error("Fakturownia zwróciła kilka kartotek z tym samym external_id. Wymagana ręczna weryfikacja.");
+    }
+    let matchedClient: FakturowniaClient | null = matchingExternal[0] || null;
     let matchSource = matchedClient ? "external_id" : "";
+
+    if (matchedClient && taxNo && digitsOnly(matchedClient.tax_no) && digitsOnly(matchedClient.tax_no) !== taxNo) {
+      throw new Error("Kartoteka external_id ma inny NIP. Zatrzymano synchronizację klienta.");
+    }
 
     if (!matchedClient && taxNo) {
       const candidates = await fakturowniaGetClients(apiToken, { tax_no: taxNo });
-      matchedClient = exactClient(candidates, "tax_no", taxNo);
-      if (matchedClient) matchSource = "tax_no";
+      const exactMatches = candidates.filter((row) => digitsOnly(row?.tax_no) === taxNo && normalizeText(row?.id));
+      if (exactMatches.length > 1) {
+        throw new Error("Kilka kartotek ma ten sam NIP. Wymagana ręczna weryfikacja.");
+      }
+      if (exactMatches.length) {
+        const candidate = exactMatches[0];
+        const linkedExternalId = normalizeText(candidate.external_id);
+        if (linkedExternalId && linkedExternalId !== externalId) {
+          throw new Error("Kartoteka o podanym NIP jest powiązana z innym kontrahentem. Wymagana ręczna weryfikacja.");
+        }
+        matchedClient = candidate;
+        matchSource = "tax_no";
+      }
     }
 
+    // E-mail może być wspólny dla kilku klientów; nigdy nie identyfikuje kartoteki do PUT.
     const email = normalizeEmail(clientData.email);
     if (!matchedClient && email) {
       const candidates = await fakturowniaGetClients(apiToken, { email });
-      matchedClient = exactClient(candidates, "email", email);
-      if (matchedClient) matchSource = "email";
+      if (candidates.some((row) => normalizeEmail(row?.email) === email)) {
+        throw new Error("W Fakturowni istnieje kartoteka z tym adresem e-mail. Powiąż klienta ręcznie przez external_id lub zweryfikuj NIP.");
+      }
     }
 
     let savedClient: FakturowniaClient;
@@ -252,13 +276,19 @@ Deno.serve(async (request: Request) => {
 async function fakturowniaGetClients(apiToken: string, params: Record<string, string>): Promise<FakturowniaClient[]> {
   const query = new URLSearchParams(params);
   const result = await fakturowniaRequest<unknown>(`/clients.json?${query.toString()}`, apiToken, { method: "GET" });
-  return Array.isArray(result) ? result as FakturowniaClient[] : [];
+  if (!Array.isArray(result) || !result.every((item) => item && typeof item === "object" && !Array.isArray(item))) {
+    throw new Error("Nieprawidłowa odpowiedź listy klientów Fakturowni. Zatrzymano synchronizację.");
+  }
+  return result as FakturowniaClient[];
 }
 
 async function fakturowniaGetInvoices(apiToken: string, params: Record<string, string>): Promise<FakturowniaInvoice[]> {
   const query = new URLSearchParams(params);
   const result = await fakturowniaRequest<unknown>(`/invoices.json?${query.toString()}`, apiToken, { method: "GET" });
-  return Array.isArray(result) ? result as FakturowniaInvoice[] : [];
+  if (!Array.isArray(result) || !result.every((item) => item && typeof item === "object" && !Array.isArray(item))) {
+    throw new Error("Nieprawidłowa odpowiedź listy faktur Fakturowni. Zatrzymano weryfikację.");
+  }
+  return result as FakturowniaInvoice[];
 }
 
 async function fakturowniaRequest<T>(
@@ -309,18 +339,6 @@ async function fakturowniaRequest<T>(
   } finally {
     clearTimeout(timeout);
   }
-}
-
-function firstClient(rows: FakturowniaClient[]): FakturowniaClient | null {
-  return Array.isArray(rows) && rows.length ? rows[0] : null;
-}
-
-function exactClient(rows: FakturowniaClient[], field: "tax_no" | "email", expected: string): FakturowniaClient | null {
-  const normalizedExpected = field === "tax_no" ? digitsOnly(expected) : normalizeEmail(expected);
-  return rows.find((row) => {
-    const actual = field === "tax_no" ? digitsOnly(row?.[field]) : normalizeEmail(row?.[field]);
-    return actual && actual === normalizedExpected;
-  }) || null;
 }
 
 function getPrimaryAddress(contractor: Record<string, unknown> | null): { city: string; street: string } {
