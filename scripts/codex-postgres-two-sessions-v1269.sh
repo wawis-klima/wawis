@@ -182,4 +182,101 @@ for p in note fuel push; do
   [[ -n "$first" && -n "$second" && "$first" != "$second" ]] || { echo "NO-GO: non-independent sessions: $p $first/$second"; exit 15; }
   echo "SESSION EVIDENCE $p: $first / $second"
 done
+# P1-01: actual JW/JZ completion guard under concurrent updates on separate backends.
+# Only synthetic jobs in disposable PG16. Never mutate production customer data.
+pg < "$ROOT/supabase/migrations/current/20261008131504_completion_jw_index_guard_v1269.sql"
+pg <<'SQL'
+insert into public.jobs(id,status,device_model) values
+ ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee','W trakcie','JW: Imoto | JZ: Imoto'),
+ ('ffffffff-ffff-4fff-8fff-ffffffffffff','W trakcie','JW: Imoto | JZ: Imoto'),
+ ('11111111-1111-4111-8111-111111111111','W trakcie','JZ: Imoto');
+SQL
+
+# Invalid model write wins first. Concurrent completion must reject the committed JZ-only row.
+pg >"$WORK/jw-invalid-a.out" 2>"$WORK/jw-invalid-a.err" <<'SQL' &
+begin;
+set local role authenticated;
+select 'pid='||pg_backend_pid();
+update public.jobs set device_model='JZ: Imoto' where id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+select pg_sleep(1);
+commit;
+SQL
+a=$!
+sleep 0.15
+pg >"$WORK/jw-invalid-b.out" 2>"$WORK/jw-invalid-b.err" <<'SQL' &
+begin;
+set local role authenticated;
+select 'pid='||pg_backend_pid();
+update public.jobs set status='Zakończone' where id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+commit;
+SQL
+b=$!
+set +e
+wait "$a"; ra=$?
+wait "$b"; rb=$?
+set -e
+[[ "$ra" -eq 0 && "$rb" -ne 0 ]] || { echo "NO-GO: invalid JW/JZ race $ra/$rb"; cat "$WORK/jw-invalid-a.err" "$WORK/jw-invalid-b.err"; exit 16; }
+grep -q 'job_device_models_incomplete' "$WORK/jw-invalid-b.err" || { cat "$WORK/jw-invalid-b.err"; exit 17; }
+[[ "$(pg -c "select status||':'||device_model from public.jobs where id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == 'W trakcie:JZ: Imoto' ]] || exit 18
+
+# Completion wins first; subsequent concurrent corruption of a completed row is rejected.
+pg >"$WORK/jw-complete-a.out" 2>"$WORK/jw-complete-a.err" <<'SQL' &
+begin;
+set local role authenticated;
+select 'pid='||pg_backend_pid();
+update public.jobs set status='Zakończone' where id='ffffffff-ffff-4fff-8fff-ffffffffffff';
+select pg_sleep(1);
+commit;
+SQL
+a=$!
+sleep 0.15
+pg >"$WORK/jw-complete-b.out" 2>"$WORK/jw-complete-b.err" <<'SQL' &
+begin;
+set local role authenticated;
+select 'pid='||pg_backend_pid();
+update public.jobs set device_model='JZ: Imoto' where id='ffffffff-ffff-4fff-8fff-ffffffffffff';
+commit;
+SQL
+b=$!
+set +e
+wait "$a"; ra=$?
+wait "$b"; rb=$?
+set -e
+[[ "$ra" -eq 0 && "$rb" -ne 0 ]] || { echo "NO-GO: completed JW/JZ overwrite $ra/$rb"; cat "$WORK/jw-complete-a.err" "$WORK/jw-complete-b.err"; exit 19; }
+grep -q 'job_device_models_incomplete' "$WORK/jw-complete-b.err" || { cat "$WORK/jw-complete-b.err"; exit 20; }
+[[ "$(pg -c "select status||':'||device_model from public.jobs where id='ffffffff-ffff-4fff-8fff-ffffffffffff'")" == 'Zakończone:JW: Imoto | JZ: Imoto' ]] || exit 21
+
+# Valid JW/JZ model arrives before concurrent completion; transition must succeed.
+pg >"$WORK/jw-valid-a.out" 2>"$WORK/jw-valid-a.err" <<'SQL' &
+begin;
+set local role authenticated;
+select 'pid='||pg_backend_pid();
+update public.jobs set device_model='JW: Imoto | JZ: Imoto' where id='11111111-1111-4111-8111-111111111111';
+select pg_sleep(1);
+commit;
+SQL
+a=$!
+sleep 0.15
+pg >"$WORK/jw-valid-b.out" 2>"$WORK/jw-valid-b.err" <<'SQL' &
+begin;
+set local role authenticated;
+select 'pid='||pg_backend_pid();
+update public.jobs set status='Zakończone' where id='11111111-1111-4111-8111-111111111111';
+commit;
+SQL
+b=$!
+wait "$a" || { cat "$WORK/jw-valid-a.err"; exit 22; }
+wait "$b" || { cat "$WORK/jw-valid-b.err"; exit 23; }
+[[ "$(pg -c "select status||':'||device_model from public.jobs where id='11111111-1111-4111-8111-111111111111'")" == 'Zakończone:JW: Imoto | JZ: Imoto' ]] || exit 24
+
+for p in jw-invalid jw-complete jw-valid; do
+  first="$(grep -E '^pid=[0-9]+
+ "$WORK/$p-a.out" | head -1)"
+  second="$(grep -E '^pid=[0-9]+
+ "$WORK/$p-b.out" | head -1)"
+  [[ -n "$first" && -n "$second" && "$first" != "$second" ]] || { echo "NO-GO: JW/JZ sessions not independent: $p $first/$second"; exit 25; }
+  echo "SESSION EVIDENCE $p: $first / $second"
+done
+echo "PASS CODEX P1-01 JW/JZ two-session races — invalid-first rejects, finished-first protects, valid-first completes"
+
 echo "PASS all Codex dual-session races — disposable real PostgreSQL"
