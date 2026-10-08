@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Codex 12.65: verify original seven findings after packages 1–3"
+    "notes": "Codex 12.65: 7 original scenarios PASS in CI run 919, isolated two-session PG PASS; prod SQL guard and fuel grants verified. Physical provider/phone tests remain NOT VERIFIED."
   },
   "drive_backup": {
     "required": false,
@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v12.69",
-    "ready_for_main": false,
-    "status": "AWAITING_ORIGINAL_CODEX_SCENARIOS",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,7 +35,10 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED",
-    "front_and_backend": "Verify exact active SHA/version"
+    "release_ci": "REQUIRED — group 136 + two-session PostgreSQL + E2E + Closure Gate",
+    "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
+    "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
+    "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
+    "front_and_backend": "Verify exact active SHA/version after deployment"
   }
 }
