@@ -86,7 +86,7 @@ await db.exec(`
     device_model text,
     device_serial_number text
   );
-  grant select,insert,update on public.jobs to authenticated;
+  grant select,insert,update on public.jobs to authenticated, service_role;
 `);
 await db.exec(migration);
 await db.exec(additionalGuard);
