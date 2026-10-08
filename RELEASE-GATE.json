@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v12.68",
-    "ready_for_main": false,
-    "status": "AWAITING_CI",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
