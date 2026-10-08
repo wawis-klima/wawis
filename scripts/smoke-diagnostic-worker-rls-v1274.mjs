@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
-const sql = fs.readFileSync(new URL('../supabase/migrations/20261008215000_diagnostic_worker_upsert_rls_v1274.sql', import.meta.url), 'utf8');
+const sql = fs.readFileSync(new URL('../supabase/migrations/20261008200351_diagnostic_worker_upsert_rls_v1274.sql', import.meta.url), 'utf8');
 const base = fs.readFileSync(new URL('../supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql', import.meta.url), 'utf8');
 assert.match(base, /create policy app_diagnostic_events_select_own .*for select to authenticated/i);
 const db = new PGlite();
