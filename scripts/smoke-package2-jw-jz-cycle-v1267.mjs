@@ -69,6 +69,7 @@ assert.match(normalizeDatabaseErrorMessage({ message: 'job_device_models_incompl
 const migration = fs.readFileSync(
   new URL('../supabase/migrations/current/20261008105757_job_device_models_completion_v1267.sql', import.meta.url), 'utf8',
 );
+const additionalGuard = fs.readFileSync(new URL('../supabase/migrations/current/20261008150000_completion_jw_index_guard_v1269.sql',import.meta.url),'utf8');
 const db = new PGlite();
 await db.exec(`
   create schema auth;
@@ -88,6 +89,7 @@ await db.exec(`
   grant select,insert,update on public.jobs to authenticated;
 `);
 await db.exec(migration);
+await db.exec(additionalGuard);
 await db.exec('set role authenticated');
 await db.query("select set_config('request.jwt.claim.role','authenticated',false)");
 const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -121,4 +123,13 @@ await assert.rejects(
 await db.query('update public.jobs set device_model=$1 where id=$2',
  ['JW1: Wewnętrzna A | JW2: Wewnętrzna B | JZ: Zewnętrzna',id]);
 await db.exec('reset role');
-console.log('PASS v12.67: JW/JZ completeness guarded by SQL, cycles 1–5 and grouping rendered without retry inflation.');
+await db.query('update public.jobs set status=$1,device_model=$2 where id=$3',['W trakcie','JZ: Tylko JZ',id]);
+await db.exec('set role service_role');
+await db.query("select set_config('request.jwt.claim.role','service_role',false)");
+await assert.rejects(
+  () => db.query('update public.jobs set status=$1 where id=$2',['Zakończone',id]),
+  (error) => error?.code === '23514',
+  'privileged service role must not bypass JW/JZ integrity',
+);
+await db.exec('reset role');
+console.log('PASS v12.69: JW/JZ completeness guarded by SQL, cycles 1–5 and grouping rendered without retry inflation.');
