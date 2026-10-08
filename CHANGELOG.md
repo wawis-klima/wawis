@@ -1,3 +1,8 @@
+## 12.71
+- Mobilna wersja aplikacji jest przyciskiem otwierającym istniejący panel Diagnostyki bez nowej ikony i bez obciążania startu aplikacji.
+- Powrót do montaży z panelu Diagnostyki; test PUSH dostępny tylko dla administratora.
+- Test regresyjny nawigacji, obsługi raportu i budowania komponentów mobilnych.
+
 ## 12.69
 - Odbiór audytu Codexa 12.65: testy wykonawcze oryginalnych scenariuszy i ewidencja granic dowodu.
 - P2-01: naprawa oryginalnego testu `.order().range()` tabliczek.

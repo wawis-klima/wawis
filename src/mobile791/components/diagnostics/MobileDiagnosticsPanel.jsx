@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './MobileDiagnosticsPanel.css';
 import { APP_VERSION } from '../../version.js';
 import { downloadDiagnosticReportImmediate, logDiagnostic } from '../../modules/diagnostics.js';
 import { sendTestPush } from '../../modules/push-subscriptions.js';
@@ -7,7 +8,7 @@ import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/p
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
 
-export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null }) {
+export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null, onBack = () => {} }) {
   const [queueSummary, setQueueSummary] = useState(EMPTY_QUEUE);
   const [pushBusy, setPushBusy] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
@@ -92,6 +93,7 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
 
   return (
     <div className="mobileDiagnosticsPage">
+      <button type="button" className="mobileDiagnosticsBack" onClick={onBack}>← Wróć do montaży</button>
       <section className="mobileDiagnosticsCard mobileDiagnosticsHero">
         <div>
           <div className="sectionPill">Diagnostyka</div>
@@ -122,9 +124,11 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
           <button type="button" className="btn primary" onClick={handleDownload} disabled={downloadBusy}>
             {downloadBusy ? 'Przygotowywanie…' : 'Pobierz raport diagnostyczny'}
           </button>
-          <button type="button" className="btn" onClick={handleTestPush} disabled={pushBusy}>
-            {pushBusy ? 'Wysyłanie…' : 'Wyślij test push'}
-          </button>
+          {profile?.role === "Administrator" ? (
+            <button type="button" className="btn" onClick={handleTestPush} disabled={pushBusy}>
+              {pushBusy ? 'Wysyłanie…' : 'Wyślij test push'}
+            </button>
+          ) : null}
           <button type="button" className="btn" onClick={handleRefresh} disabled={refreshBusy}>
             {refreshBusy ? 'Odświeżanie…' : 'Odśwież dane'}
           </button>

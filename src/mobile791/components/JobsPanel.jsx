@@ -20,17 +20,18 @@ export default function JobsPanel(props) {
     visibleJobs,
   } = props;
 
-  const title = showAssignedJobsOnly && !isAdmin ? "Moje zlecenia" : desktopStatusLabels[desktopStatusFilter];
+  const [diagnosticsOpen, setDiagnosticsOpen] = React.useState(false);
+  const title = diagnosticsOpen && isMobile ? "Diagnostyka" : showAssignedJobsOnly && !isAdmin ? "Moje zlecenia" : desktopStatusLabels[desktopStatusFilter];
   const desktopAdminLayout = !isMobile && isAdmin;
 
   const tableContent = (
     <div className={`card premiumCard ${isMobile ? 'mobileJobsShellV959' : ''} ${desktopAdminLayout ? 'desktopJobsTableCard' : ''}`}>
       <div className={`tableTitle ${isMobile ? "mobileJobsStatusTitleV959" : ""}`}>{title}</div>
       <Suspense fallback={jobsLayoutFallback}>
-        {isMobile ? <MobileJobsLayout {...props} /> : <DesktopJobsLayout {...props} />}
+        {isMobile ? <MobileJobsLayout {...props} diagnosticsOpen={diagnosticsOpen} setDiagnosticsOpen={setDiagnosticsOpen} /> : <DesktopJobsLayout {...props} />}
       </Suspense>
 
-      {visibleJobs.length === 0 ? (
+      {!diagnosticsOpen && visibleJobs.length === 0 ? (
         <div className="muted statusTableHint" style={{ marginTop: isMobile ? 6 : 12 }}>
           {query.trim() ? "Brak klientów pasujących do wyszukiwania." : showAssignedJobsOnly && !isAdmin ? "Brak przypisanych zleceń dla tego pracownika." : `Brak klientów w sekcji: ${desktopStatusLabels[desktopStatusFilter]}.`}
         </div>
