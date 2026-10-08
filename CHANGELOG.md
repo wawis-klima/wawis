@@ -1,3 +1,10 @@
+## 12.74
+- Codex P1 D8: own-only SELECT w tabeli app_diagnostic_events dla bezpiecznego idempotentnego UPSERT pracowników, bez dostępu do cudzych raportów; migracja produkcyjna i rebuild RLS.
+- Codex P1 D2: ACK po identyfikatorze w kolejce pojedynczych wpisów, bez nadpisywania nowszych logów podczas await, ograniczenie nakładających się flush.
+- Codex P1 D5: najstarsze niezsynchronizowane ostrzeżenia/błędy najpierw, maks. 300 lokalnych wpisów, ochrona niewysłanych błędów przed nowymi informacyjnymi, licznik utraconych.
+- Stan synchronizacji ok/error/unavailable/unknown, brak fałszywego unavailable dla 42501 RLS. Zachowano zamknięty prywatny schemat z 12.73 i jej testy P0.
+- Wymagane trwałe testy wykonawcze PostgreSQL RLS oraz race/retencji desktop/mobile w CI + dotychczasowe regre­sje.
+
 ## 12.73
 - Pakiet 1 audytu Codexa: P0 D1 — zamknięty schemat lokalnych zdarzeń, bez swobodnych komunikatów błędów, stack trace, adresów klientów i tokenów w pamięci/eksporcie.
 - P0 D3 — natychmiastowe powiązanie dziennika z potwierdzoną sesją; czyszczenie po wylogowaniu/przełączeniu konta, brak przepisywania cudzych zdarzeń podczas opóźnionej odpowiedzi serwera.
