@@ -97,7 +97,17 @@ test.describe('@mobile release visual iPhone', () => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
     await expect(page.locator('.mobileHeaderV2')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Diagnostyka' })).toHaveCount(0);
+    const versionDiagnostics = page.getByRole('button', { name: /^Diagnostyka aplikacji, wersja 12\.71$/ });
+    await expect(versionDiagnostics).toBeVisible();
+    await expect(versionDiagnostics).toHaveAttribute('aria-expanded', 'false');
+    await versionDiagnostics.click();
+    await expect(versionDiagnostics).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('heading', { name: 'Diagnostyka mobilna' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pobierz raport diagnostyczny' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Wyślij test push' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Wróć do montaży' }).click();
+    await expect(versionDiagnostics).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.statusActionButton[title="Zakończone"]')).toBeVisible();
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
     await expect(page.locator('.workerReadOnlyNote')).toHaveText('Zakończone');
