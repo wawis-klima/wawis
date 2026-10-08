@@ -319,6 +319,10 @@ async function handleJobAssigned({
     return json({ error: "Nie znaleziono zlecenia." }, 404);
   }
 
+  if (!Array.isArray(job.installer_ids)) {
+    return json({ error: "Lista monterów wymaga potwierdzenia przed wysłaniem PUSH." }, 409);
+  }
+
   const authorizedInstallerIds = new Set([
     ...(Array.isArray(job.installer_ids) ? job.installer_ids : []),
     job.main_technician_id || "",
@@ -331,6 +335,23 @@ async function handleJobAssigned({
   // Reject untrusted client recipients before even querying their subscriptions.
   if (assignedUserIds.some((userId: string) => !authorizedInstallerIds.has(String(userId)))) {
     return json({ error: "Odbiorca PUSH nie jest aktualnie przypisanym monterem." }, 409);
+  }
+
+  // Assignments are not enough: only active employee/admin profiles can receive job-assigned push.
+  const { data: recipientProfiles, error: recipientProfilesError } = await adminClient
+    .from("profiles")
+    .select("id, role")
+    .in("id", assignedUserIds);
+  if (recipientProfilesError) {
+    return json({ error: "Nie udało się zweryfikować ról odbiorców PUSH." }, 500);
+  }
+  const activeRecipientIds = new Set((recipientProfiles || [])
+    .filter((item: any) => ["pracownik","employee","administrator","admin"].includes(
+      String(item.role || "").trim().toLowerCase(),
+    ))
+    .map((item: any) => String(item.id || "")));
+  if (assignedUserIds.some((id: string) => !activeRecipientIds.has(String(id)))) {
+    return json({ error: "Odbiorca PUSH nie ma aktywnej roli pracownika." }, 403);
   }
 
   if (isInstallationDateInPast(job.installation_date)) {
