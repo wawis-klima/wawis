@@ -305,25 +305,28 @@ export function useSelectedJobActions({
 
   async function saveAdminNote(jobId, admin_note) {
     if (!supabase || !jobId) return false;
-
-    const normalizedAdminNote = String(admin_note || "").trim() || null;
-    const previousJobs = jobs;
-    const previousSelectedJob = selectedJob;
-
-    setJobs((prev) => prev.map((job) => (job.id === jobId ? { ...job, admin_note: normalizedAdminNote } : job)));
-    setSelectedJob((prev) => (prev && prev.id === jobId ? { ...prev, admin_note: normalizedAdminNote } : prev));
+    const normalizedAdminNote = String(admin_note || '').trim() || null;
+    const original = (selectedJob?.id === jobId ? selectedJob : null)
+      || jobs.find((job) => job.id === jobId);
+    const expectedAdminNote = original?.admin_note ?? null;
 
     try {
-      await saveJobAdminNote({ supabase, jobId, adminNote: normalizedAdminNote });
-      await reloadJobSummary?.(jobId);
-      return true;
+      await saveJobAdminNote({ supabase, jobId, adminNote: normalizedAdminNote, expectedAdminNote });
     } catch (error) {
-      setJobs(previousJobs);
-      setSelectedJob(previousSelectedJob);
       alert(normalizeDatabaseErrorMessage(error, ADMIN_NOTE_DELETE_ERROR_MESSAGE));
       return false;
     }
+
+    setJobs((prev) => prev.map((job) => (job.id === jobId ? { ...job, admin_note: normalizedAdminNote } : job)));
+    setSelectedJob((prev) => (prev?.id === jobId ? { ...prev, admin_note: normalizedAdminNote } : prev));
+    try {
+      await reloadJobSummary?.(jobId);
+    } catch (refreshError) {
+      console.warn('Notatka została zapisana, ale odświeżenie karty nie powiodło się:', refreshError);
+    }
+    return true;
   }
+
 
   function requestClearAdminNote(job) {
     if (!canManageAdminNote(job, isAdmin)) return;
