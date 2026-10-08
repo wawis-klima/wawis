@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { getSmsReminderCycleLabel } from '../src/modules/sms-reminder-cycle-label.js';
 import { getReminderSchedule } from '../src/modules/sms.js';
+import { normalizeDatabaseErrorMessage } from '../src/modules/database-errors.js';
 import { validateJobDevicesForCompletion } from '../src/modules/job-device-completion-validation.js';
 
 for (let cycle = 1; cycle <= 5; cycle++) {
@@ -60,6 +61,8 @@ const validMulti = validateJobDevicesForCompletion({ devices: [{
   outdoor_model: 'Rotenso Hiro Multi H50Xm2',
 }] });
 assert.equal(validMulti.ok, true, validMulti.message);
+
+assert.match(normalizeDatabaseErrorMessage({ message: 'job_device_models_incomplete:JW' }), /wewnętrznej.*zewnętrznej/i);
 
 const migration = fs.readFileSync(
   new URL('../supabase/migrations/current/20261008130000_job_device_models_completion_v1267.sql', import.meta.url), 'utf8',
