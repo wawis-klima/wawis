@@ -5966,6 +5966,7 @@ img.previewImage{
 .smsDesktopModelCell{display:grid;gap:6px}
 .smsDesktopModelCell strong{font-size:16px;color:#203252}
 .smsDesktopModelCell span{font-size:13px;color:#7a8ca6}
+.smsDesktopModelCell .smsDesktopCycleLabel{font-size:12px;font-weight:650;color:#42649a;line-height:1.35}
 .smsDesktopDateCell{display:grid;gap:6px}
 .smsDesktopDateCell strong{font-size:15px;color:#203252}
 .smsDesktopDateCell span{font-size:14px;color:#f08b34;font-weight:700}

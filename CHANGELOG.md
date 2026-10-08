@@ -1,3 +1,9 @@
+## 12.67
+- Pakiet 2: PostgreSQL blokuje zakończenie montażu bez jawnych modeli JW i JZ dla każdego urządzenia; administrator zachowuje wyjątek wyłącznie dla fizycznych zdjęć tabliczek.
+- Testy: wykonanie scenariuszy JW/JZ i różnych typów jednostek zamiast samego sprawdzania ciągów w kodzie.
+- SMS: pod modelem urządzenia w kolejce i liście wysłanych pojawia się numer cyklu przypomnienia; grupy wielu urządzeń z różnymi cyklami są odpowiednio opisane.
+- Nie zmieniono logiki wysyłki, terminów ani istniejących statusów SMS.
+
 ## 12.66
 - Pakiet 1: Fakturownia nie przypisuje klienta po samym adresie e-mail i przerywa niejednoznaczną synchronizację.
 - Notatki administratora: optymistyczna kontrola współbieżnego zapisu przez istniejący RPC desktop/mobile.

@@ -8,7 +8,7 @@ update profiles set role='Administrator' where id='00000000-0000-4000-8000-00000
 set local request.jwt.claim.sub='00000000-0000-4000-8000-000000000001';
 set local request.jwt.claim.role='authenticated';
 insert into contractors(id,company_name) values('00000000-0000-4000-8000-000000000002','Audit fixture');
-insert into jobs(id,contractor_id,client,status,device_model,created_by) values('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000002','Audit fixture','W trakcie','Split','00000000-0000-4000-8000-000000000001');
+insert into jobs(id,contractor_id,client,status,device_model,created_by) values('00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000002','Audit fixture','W trakcie','JW: Rotenso Test JW | JZ: Rotenso Test JZ','00000000-0000-4000-8000-000000000001');
 insert into photos(job_id,photo_kind,device_index,unit_ref,storage_path) values
 ('00000000-0000-4000-8000-000000000003','nameplate',1,'jz','00000000-0000-4000-8000-000000000003/jz.jpg'),
 ('00000000-0000-4000-8000-000000000003','nameplate',1,'jw-1','00000000-0000-4000-8000-000000000003/jw.jpg');

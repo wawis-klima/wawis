@@ -1,10 +1,10 @@
 {
-  "version": "12.66",
-  "summary": "Pakiet 1 — Fakturownia i integralność danych.",
+  "version": "12.67",
+  "summary": "Pakiet 2 + numer cyklu w module SMS.",
   "changes": [
-    "Niejednoznaczna synchronizacja klienta Fakturowni zostaje zatrzymana, bez nadpisywania po samym e-mailu.",
-    "Zapis notatek administratora używa kontroli współbieżności w desktop i mobile.",
-    "Dostawy paliwa korzystają z operation_id do bezpiecznych ponowień po utracie odpowiedzi.",
-    "Dodano test regresyjny i migrację do manifestu rebuild."
+    "Zakończenie montażu wymaga kompletnych modelów JW/JZ dla każdego urządzenia.",
+    "Test tabliczek urządzeń uwzględnia poprawne/niewłaściwe modele JW/JZ i multi-split.",
+    "Pod modelem urządzenia w kolejce i historii bieżącego miesiąca widać numer cyklu przypomnienia, także dla grup wielu urządzeń.",
+    "Daty przypomnień, zasady ręcznej wysyłki i statusy SMS pozostają bez zmian."
   ]
 }

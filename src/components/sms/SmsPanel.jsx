@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SmsQueueTable from './SmsQueueTable.jsx';
+import { getSmsReminderCycleLabel } from '../../modules/sms-reminder-cycle-label.js';
 import SmsSettingsCard from './SmsSettingsCard.jsx';
 import SmsHistoryCard from './SmsHistoryCard.jsx';
 import SmsSentThisMonthCard from './SmsSentThisMonthCard.jsx';
@@ -900,6 +901,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       addressLine: [normalizeText(row.street), normalizeText(row.city)].filter(Boolean).join(', '),
       model: getGroupedDeviceLabel(row.grouped_device_count) || normalizeText(row.model) || 'Brak modelu urządzenia',
       modelMeta: getGroupedDeviceSummary(row) || (row.target_type === 'device' ? 'Urządzenie z katalogu' : 'Urządzenie z montażu'),
+      cycleLabel: getSmsReminderCycleLabel(row),
       serial_number: Number(row.grouped_device_count || 0) > 1 ? 'Wiele numerów' : (normalizeText(row.serial_number) || '—'),
       city: normalizeText(row.city) || '—',
       phone: normalizeText(row.sms_recipient_phone || row.phone) || '—',
@@ -925,6 +927,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       addressLine: [normalizeText(target?.street), normalizeText(target?.city)].filter(Boolean).join(', '),
       model: normalizeText(target?.model) || 'Urządzenie serwisowe',
       modelMeta: target?.target_type === 'device' ? 'Historia wysyłki z katalogu urządzeń' : 'Historia wysyłki z montażu',
+      cycleLabel: getSmsReminderCycleLabel(log),
       serial_number: normalizeText(target?.serial_number) || '—',
       city: normalizeText(log.city || target?.city) || '—',
       phone: normalizeText(log.phone || target?.sms_recipient_phone || target?.phone) || '—',

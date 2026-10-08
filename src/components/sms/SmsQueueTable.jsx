@@ -80,7 +80,8 @@ export default function SmsQueueTable({ rows, pageRows, currentPage, totalPages,
                   <td>
                     <div className="smsDesktopModelCell">
                       <strong>{row.model}</strong>
-                      <span>{row.modelMeta}</span>
+                      {row.cycleLabel ? <span className="smsDesktopCycleLabel">{row.cycleLabel}</span> : null}
+                      {(!row.cycleLabel || Number(row.grouped_device_count || 0) > 1) && row.modelMeta ? <span>{row.modelMeta}</span> : null}
                     </div>
                   </td>
                   <td>

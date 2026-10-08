@@ -1,32 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.66",
+  "version": "12.67",
   "scope": "full",
-  "release_branch": "release/v12.66",
+  "release_branch": "release/v12.67",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Pakiet 1 audytu 12.65: Fakturownia, konflikt notatek i idempotencja dostaw paliwa."
+    "notes": "Pakiet 2: backend JW/JZ i odczyt cyklu z harmonogramu SMS (bez wysyłki)."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.66.zip"
+    "file_name": "klima-app-v12.67.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.66",
+    "source_branch": "release/v12.67",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN",
-    "required_check": "WAWIS PR checks / targeted-checks",
-    "note": "Wdrożenie tylko po zielonym Closure Gate, produkcyjnym SQL i aktywnej Edge Function."
+    "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub merge + Vercel deployment + Supabase migration/Edge + public app-version.json",
-    "notes": "Wymaga potwierdzenia po release 12.66."
+    "evidence_source": "GitHub PR checks + Supabase migration + Vercel commit status + public version",
+    "notes": "Po merge wymagana kontrola wersji 12.67 i funkcji JW/JZ."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -36,8 +35,8 @@
   "release_mode": "standard",
   "production_verification": {
     "current_release_pr_check": "REQUIRED — WAWIS PR checks / targeted-checks",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — Vercel i endpoint /app-version.json 12.66",
-    "fuel_migration": "REQUIRED — nowy RPC w Supabase przed frontendem",
-    "fakturownia_edge": "REQUIRED — aktywny Edge code z bezpiecznym dopasowaniem klienta"
+    "current_release_deployment": "EXTERNAL AFTER MERGE — Vercel SUCCESS dokładnego SHA i app-version 12.67",
+    "job_models_migration": "REQUIRED — Supabase migration before publication",
+    "sms_cycle_source": "VALIDATED — reminder_cycle schedule not count of sent SMS"
   }
 }

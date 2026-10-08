@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.66
+- 12.67
+
+Wersja 12.67: zakończenie montażu wymaga osobnych modeli JW/JZ na poziomie bazy. Lista SMS pokazuje numer cyklu przypomnienia serwisowego bez zmiany harmonogramu wysyłki. Dodano behawioralny test regresyjny.
 
 Wersja 12.66 zabezpiecza synchronizację klientów Fakturowni, chroni notatki administratora przed nadpisaniem z nieaktualnej sesji oraz dodaje identyfikator operacji dla dostaw paliwa do zbiornika.
 
@@ -897,6 +899,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
 - wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.
 - wersja `12.65` — PUSH zapisuje etapy wysłano → odebrano → wyświetlono, z bezpiecznym tokenem receipt i bez blokowania samego powiadomienia.
 - wersja `12.64` — mobilny licznik paliwa pokazuje tylko bieżący stan, a statystyki i dodawanie dostawy są rozwijane na żądanie.

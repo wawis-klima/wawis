@@ -63,6 +63,10 @@ export function normalizeDatabaseErrorMessage(error, fallbackMessage = 'Wystąpi
     return 'Ten montaż został w międzyczasie zmieniony na innym urządzeniu. Twoje zmiany nie zostały nadpisane. Zamknij formularz, odśwież montaż i wprowadź zmianę ponownie.';
   }
 
+  if (/job_device_models_(?:incomplete|unstructured)/i.test(collectErrorText(error))) {
+    return 'Nie można zakończyć montażu. Każde urządzenie musi mieć wpisany model jednostki wewnętrznej (JW) oraz zewnętrznej (JZ). Uzupełnij dane urządzenia i spróbuj ponownie.';
+  }
+
   if (isJobDevicesMissingError(error)) {
     return 'Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).';
   }
