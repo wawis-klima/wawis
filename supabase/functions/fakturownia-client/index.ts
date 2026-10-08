@@ -285,7 +285,10 @@ async function fakturowniaGetClients(apiToken: string, params: Record<string, st
 async function fakturowniaGetInvoices(apiToken: string, params: Record<string, string>): Promise<FakturowniaInvoice[]> {
   const query = new URLSearchParams(params);
   const result = await fakturowniaRequest<unknown>(`/invoices.json?${query.toString()}`, apiToken, { method: "GET" });
-  return Array.isArray(result) ? result as FakturowniaInvoice[] : [];
+  if (!Array.isArray(result) || !result.every((item) => item && typeof item === "object" && !Array.isArray(item))) {
+    throw new Error("Nieprawidłowa odpowiedź listy faktur Fakturowni. Zatrzymano weryfikację.");
+  }
+  return result as FakturowniaInvoice[];
 }
 
 async function fakturowniaRequest<T>(
