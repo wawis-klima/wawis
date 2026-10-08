@@ -56,8 +56,11 @@ export function getSafeDiagnosticDetails(entry = {}) {
   const normalizedCodes = codes.map((code) => String(code).toUpperCase());
   const hasCode = (code) => normalizedCodes.includes(code);
   let code = 'DIAGNOSTIC_UNCLASSIFIED';
+  const safeExistingCode = normalizedCodes.find((candidate) => getKnownDiagnosticCodeDetails(candidate));
 
-  if (/failed to fetch dynamically imported module|importing a module script failed/.test(text)) {
+  if (safeExistingCode) {
+    code = safeExistingCode;
+  } else if (/failed to fetch dynamically imported module|importing a module script failed/.test(text)) {
     code = 'NETWORK_MODULE_FETCH_FAILED';
   } else if (/canceling statement due to statement timeout|statement timeout|57014/.test(text) || hasCode('57014')) {
     code = 'DB_STATEMENT_TIMEOUT';
