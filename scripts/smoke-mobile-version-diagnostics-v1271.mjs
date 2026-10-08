@@ -13,7 +13,7 @@ assert.match(jobsPanel, /diagnosticsOpen=\{diagnosticsOpen\} setDiagnosticsOpen=
 assert.match(jobsPanel, /!diagnosticsOpen && visibleJobs\.length === 0/, "Pusty widok montaży nie może zasłaniać diagnostyki");
 assert.match(layout, /React\.lazy\(\(\) => import\("\.\.\/diagnostics\/MobileDiagnosticsPanel\.jsx"\)\)/, "Panel musi być ładowany na żądanie");
 assert.match(layout, /<button[\s\S]*?className="mobileVersionTag wawisOneLineVersion wawisVersionDiagnosticsButton"/, "Wersja musi być przyciskiem");
-assert.match(layout, /aria-label=\{"Diagnostyka aplikacji, wersja " \+ APP_VERSION\}/);
+assert.match(layout, /aria-label=\{"Wersja aplikacji " \+ APP_VERSION \+ " — otwórz diagnostykę"\}/);
 assert.match(layout, /aria-expanded=\{diagnosticsOpen\}/);
 assert.match(layout, /setDiagnosticsOpen\(\(open\) => !open\)/, "Dotknięcie wersji musi przełączać diagnostykę");
 assert.match(layout, /onBack=\{\(\) => setDiagnosticsOpen\(false\)\}/, "Powrót musi zamykać diagnostykę");
