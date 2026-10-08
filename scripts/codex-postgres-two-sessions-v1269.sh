@@ -19,7 +19,8 @@ container="$(docker run --rm -d \
 trap 'docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
 ready=false
 for attempt in $(seq 1 40); do
-  if docker exec "$container" pg_isready -U postgres -d wawis_codex_ci >/dev/null 2>&1; then ready=true; break; fi
+  # pg_isready can succeed during initdb before POSTGRES_DB is created.
+  if [[ "$(docker exec "$container" psql -X -At -v ON_ERROR_STOP=1 -U postgres -d wawis_codex_ci -c 'select 1' 2>/dev/null || true)" == '1' ]]; then ready=true; break; fi
   sleep 1
 done
 if [[ "$ready" != "true" ]]; then
