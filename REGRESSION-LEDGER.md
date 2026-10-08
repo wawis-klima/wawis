@@ -16,6 +16,23 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - FIXED-UNVERIFIED — poprawka istnieje, ale Closure Gate nie potwierdził jeszcze pełnego scenariusza.
 - CLOSED — poprawka i trwały test regresyjny przeszły Closure Gate.
 
+## Audyt Codexa 12.72 — P1 diagnostyka, pakiet 2 (12.74)
+
+Zgłoszenia C3/C4 — reprodukcje wymagane przed naprawą (RED) i po naprawie (GREEN):
+
+| ID | Mechanizm / priorytet | Stan po weryfikacji | Test i dowód |
+|---|---|---|---|
+| CODEX-DIAG-D8 | P1, pracownik dostawał 42501 na INSERT ON CONFLICT mimo INSERT-own + brak SELECT-own | CLOSED dla kontraktu SQL; fizyczny klient PostgREST: EXTERNAL | `scripts/smoke-diagnostic-worker-rls-v1274.mjs` — PGlite rzeczywiste SQL 42501 przed/INSERT+retry po migracji; B/anon odrzuceni, admin ma odczyt. Migracja `20261008200351_diagnostic_worker_upsert_rls_v1274.sql` zastosowana i potwierdzona odczytem produkcyjnego `pg_policies` / `schema_migrations`. |
+| CODEX-DIAG-D2 | P1, spóźniony ACK nadpisywał nowy zapis z in-flight | CLOSED dla lokalnego wyścigu | `scripts/smoke-diagnostics-ingest-queue-v1274.mjs` — wykonawcze dodanie w czasie await, ACK per ID, rozdzielenie kont, jeden flush na sesję, idempotentny retry, mobile i desktop. |
+| CODEX-DIAG-D5 | P1, 300 info wypierało niewysłany błąd i najnowsze 30 głodziło starsze | CLOSED dla kontraktu kolejki 300 | ten sam test — 350 zdarzeń info po niesynchronizowanym błędzie, zachowany error, limit 300, licznik dropped, 30 najstarszych i kolejna porcja. |
+| CODEX-DIAG-RLS-STATE | P1, odmowa 42501 z nazwą tabeli była ukrywana jako 'unavailable' | CLOSED dla mapowania klienta | ten sam test — jawny `errorCode=42501`, status `error`, brak ACK przy odmowie i udany retry. |
+
+Dowód automatyczny: [PR #297](https://github.com/wawis-klima/wawis/pull/297); [wstępny kompletny przebieg CI #37835981482](https://github.com/wawis-klima/wawis/actions/runs/37835981482) — wszystkie regresje, PostgreSQL 2 sesje, Playwright mobile/desktop, Closure Gate i build PASS. Nazwa pliku migracji została później dopasowana do rzeczywistego identyfikatora Supabase; **końcowy przebieg CI dla HEAD PR po tej zmianie nadal musi być GREEN przed merge.**
+
+Kontrola w produkcji: zastosowano migrację z ID 20261008200351. `SELECT` own-only dla pracownika istnieje obok admin-only, `INSERT` own-only pozostaje, brak pracowniczego UPDATE/DELETE. Nie sprawdzono jeszcze realnego żądania PostgREST zalogowanego pracownika; ten punkt pozostaje EXTERNAL, a sama cisza w telemetrii nie będzie przedstawiana jako potwierdzenie poprawnej wysyłki.
+
+Nie zamykamy tym pakietem tematów C5–C13 (Closure Gate, startup, PUSH, widoki i koszty). P0 D1/D3 nadal są w regresjach i muszą przechodzić na każdym releasie.
+
 ## Audyt Codexa 12.72 — P0 diagnostyka, pakiet 1 (12.73)
 
 Red (dowody oryginalne Codexa, syntetyczne fixture, bez produkcyjnych danych):
