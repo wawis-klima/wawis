@@ -200,7 +200,9 @@ function isCurrent(session) {
 export function readDiagnosticEntries() {
   removeOldUnsafe();
   if (!activeUserId) return [];
-  return currentEntries(local());
+  const storage = local();
+  migrateSafeBuffer(storage);
+  return currentEntries(storage);
 }
 export function appendDiagnosticEntry(raw, session = getDiagnosticSession()) {
   removeOldUnsafe();
