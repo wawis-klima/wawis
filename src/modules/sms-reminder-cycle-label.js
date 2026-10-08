@@ -9,7 +9,7 @@ function normalizeCycle(value) {
 export function getSmsReminderCycleLabel(row = {}) {
   const grouped = Array.isArray(row.grouped_sms_rows) && row.grouped_sms_rows.length
     ? row.grouped_sms_rows
-    : null;
+    : (Array.isArray(row.grouped_logs) && row.grouped_logs.length ? row.grouped_logs : null);
   const cycles = grouped
     ? [...new Set(grouped.map((entry) => normalizeCycle(entry?.reminder_cycle)).filter(Boolean))].sort((a, b) => a - b)
     : [normalizeCycle(row.reminder_cycle)].filter(Boolean);
