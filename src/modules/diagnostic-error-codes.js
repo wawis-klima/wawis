@@ -18,6 +18,12 @@ const DESCRIPTIONS = Object.freeze({
   DIAGNOSTIC_UNCLASSIFIED: 'Niesklasyfikowane zdarzenie techniczne; sprawdź kontekst zdarzenia.',
 });
 
+export function getKnownDiagnosticCodeDetails(code) {
+  return Object.prototype.hasOwnProperty.call(DESCRIPTIONS, String(code || ''))
+    ? { code: String(code), message: DESCRIPTIONS[String(code)] }
+    : null;
+}
+
 // Czytamy wyłącznie wybrane pola. Celowo pomijamy stack i dowolne właściwości obiektów.
 function technicalEvidence(entry = {}) {
   const payload = entry.payload && typeof entry.payload === 'object' ? entry.payload : {};
