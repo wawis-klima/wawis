@@ -65,9 +65,10 @@ export function sanitizeDiagnosticSummary(summary = null) {
 
 // Session-specific envelope. Older unowned logs are intentionally destroyed:
 // their original account cannot be proven, so attaching them to a new login is unsafe.
-const KEY = 'klima_app_diagnostic_log_v1273';
-const LEGACY_KEY = 'klima_app_diagnostic_log';
-const STORE_VERSION = 3;
+const LEGACY_SAFE_KEY = 'klima_app_diagnostic_log_v1273';
+const LEGACY_UNSAFE_KEY = 'klima_app_diagnostic_log';
+const EVENT_PREFIX = 'klima_app_diagnostic_event_v1274:';
+const COUNTER_PREFIX = 'klima_app_diagnostic_dropped_v1274:';
 const MAX_ENTRIES = 300;
 
 let activeUserId = '';
@@ -76,24 +77,116 @@ let generation = 0;
 function local() {
   try { return typeof window !== 'undefined' ? window.localStorage : null; } catch { return null; }
 }
-function removeLegacy() {
-  try { local()?.removeItem(LEGACY_KEY); } catch { /* privacy cleanup is best-effort */ }
+function safeRemove(storage, key) {
+  try { storage?.removeItem(key); } catch { /* logger must never throw */ }
 }
-function clearPersisted() {
-  try { local()?.removeItem(KEY); } catch { /* safe fail closed */ }
+function allEventKeys(storage) {
+  if (!storage) return [];
+  const keys = [];
+  try {
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (key && key.startsWith(EVENT_PREFIX)) keys.push(key);
+    }
+  } catch { return []; }
+  return keys;
+}
+function removeOldUnsafe() { safeRemove(local(), LEGACY_UNSAFE_KEY); }
+function entryKey(entryId) { return EVENT_PREFIX + entryId; }
+function readEnvelope(storage, key) {
+  try {
+    const item = JSON.parse(storage.getItem(key) || 'null');
+    return item && typeof item === 'object' ? item : null;
+  } catch { return null; }
+}
+function removeForeignEvents(storage, owner) {
+  for (const key of allEventKeys(storage)) {
+    const item = readEnvelope(storage, key);
+    if (!item || item.owner !== owner || item.version !== 4) safeRemove(storage, key);
+  }
+}
+function currentEntries(storage) {
+  if (!activeUserId || !storage) return [];
+  const result = [];
+  for (const key of allEventKeys(storage)) {
+    const item = readEnvelope(storage, key);
+    if (!item || item.owner !== activeUserId || item.version !== 4) continue;
+    const entry = sanitizeDiagnosticEntry(item.entry);
+    if (!entry.id || entryKey(entry.id) !== key) {
+      safeRemove(storage, key);
+      continue;
+    }
+    result.push(entry);
+  }
+  return result.sort((a, b) => a.time.localeCompare(b.time) || a.id.localeCompare(b.id));
+}
+function migrateSafeBuffer(storage) {
+  // Existing v12.73 envelope is already privacy-sanitized and carries an owner.
+  // Migrate only for the exact authenticated owner; never adopt an unowned buffer.
+  if (!storage || !activeUserId) return;
+  const previous = readEnvelope(storage, LEGACY_SAFE_KEY);
+  if (!previous || previous.version !== 3 || previous.owner !== activeUserId || !Array.isArray(previous.entries)) {
+    safeRemove(storage, LEGACY_SAFE_KEY);
+    return;
+  }
+  for (const old of previous.entries.slice(-MAX_ENTRIES)) {
+    const entry = sanitizeDiagnosticEntry(old);
+    if (!entry.id) continue;
+    try {
+      const key = entryKey(entry.id);
+      if (!storage.getItem(key)) storage.setItem(key, JSON.stringify({ version: 4, owner: activeUserId, entry }));
+    } catch { break; }
+  }
+  safeRemove(storage, LEGACY_SAFE_KEY);
+}
+function increaseDropped(storage, owner) {
+  try {
+    const key = COUNTER_PREFIX + owner;
+    const oldCount = Number(storage.getItem(key)) || 0;
+    storage.setItem(key, String(Math.min(1000000, oldCount + 1)));
+  } catch { /* safe fallback */ }
+}
+function trimStorage(storage, owner, incoming = null) {
+  // New informational traffic must not evict pending errors or warnings.
+  const entries = currentEntries(storage);
+  if (entries.length < MAX_ENTRIES) return true;
+  // Evict acknowledged entries first, then informational entries only.
+  const victim = entries.find((e) => Boolean(e.remote_synced_at))
+    || entries.find((e) => !getDiagnosticSeverity(e));
+  if (!victim) {
+    increaseDropped(storage, owner);
+    return false;
+  }
+  safeRemove(storage, entryKey(victim.id));
+  increaseDropped(storage, owner);
+  return true;
 }
 
 export function setDiagnosticUser(userId = '') {
-  removeLegacy();
+  removeOldUnsafe();
   const normalized = String(userId || '').trim();
   const next = /^[0-9a-z-]{4,128}$/i.test(normalized) ? normalized : '';
   if (activeUserId !== next) {
     const previous = activeUserId;
     activeUserId = next;
     generation += 1;
-    // First restore may reuse a same-owner safe envelope. Every logout
-    // and authenticated account handoff destroys the previous envelope.
-    if (previous || !next) clearPersisted();
+    // Once a session is removed, delete its diagnostic buffer from this device.
+    if (previous && previous !== next) {
+      const storage = local();
+      for (const key of allEventKeys(storage)) {
+        const item = readEnvelope(storage, key);
+        if (item?.owner === previous) safeRemove(storage, key);
+      }
+      safeRemove(storage, COUNTER_PREFIX + previous);
+    }
+  }
+  const storage = local();
+  if (next) {
+    removeForeignEvents(storage, next);
+    migrateSafeBuffer(storage);
+  } else {
+    // Never expose old diagnostics on a login screen; old owner unknown.
+    safeRemove(storage, LEGACY_SAFE_KEY);
   }
   return generation;
 }
@@ -101,48 +194,66 @@ export function setDiagnosticUser(userId = '') {
 export function getDiagnosticSession() {
   return { userId: activeUserId, generation };
 }
-
+function isCurrent(session) {
+  return Boolean(session?.userId) && session.userId === activeUserId && session.generation === generation;
+}
 export function readDiagnosticEntries() {
-  removeLegacy();
+  removeOldUnsafe();
+  if (!activeUserId) return [];
+  return currentEntries(local());
+}
+export function appendDiagnosticEntry(raw, session = getDiagnosticSession()) {
+  removeOldUnsafe();
+  if (!isCurrent(session)) return false;
   const storage = local();
-  if (!activeUserId || !storage) return [];
+  if (!storage) return false;
+  const entry = sanitizeDiagnosticEntry(raw);
+  if (!entry.id) return false;
+  const key = entryKey(entry.id);
   try {
-    const raw = storage.getItem(KEY);
-    if (!raw) return [];
-    const envelope = JSON.parse(raw);
-    if (envelope?.version !== STORE_VERSION || envelope?.owner !== activeUserId || !Array.isArray(envelope.entries)) {
-      storage.removeItem(KEY);
-      return [];
-    }
-    return envelope.entries.slice(-MAX_ENTRIES).map(sanitizeDiagnosticEntry);
+    if (storage.getItem(key)) return true; // idempotent
+    if (!trimStorage(storage, session.userId, entry)) return false;
+    if (!isCurrent(session)) return false;
+    storage.setItem(key, JSON.stringify({ version: 4, owner: session.userId, entry }));
+    return true;
   } catch {
-    clearPersisted();
-    return [];
+    increaseDropped(storage, session.userId);
+    return false;
   }
 }
-
-export function writeDiagnosticEntries(entries, expected = getDiagnosticSession()) {
-  removeLegacy();
-  if (!activeUserId || expected.userId !== activeUserId || expected.generation !== generation) return false;
-  try {
-    const storage = local();
-    if (!storage) return false;
-    // Do not overwrite another account's storage from a different tab.
-    const raw = storage.getItem(KEY);
-    if (raw) {
-      const envelope = JSON.parse(raw);
-      if (envelope?.owner !== activeUserId || envelope?.version !== STORE_VERSION) return false;
-    }
-    const safe = (Array.isArray(entries) ? entries : []).slice(-MAX_ENTRIES).map(sanitizeDiagnosticEntry);
-    storage.setItem(KEY, JSON.stringify({ version: STORE_VERSION, owner: activeUserId, entries: safe }));
-    return true;
-  } catch { return false; }
+export function acknowledgeDiagnosticEntries(ids, session = getDiagnosticSession(), syncedAt = new Date().toISOString()) {
+  if (!isCurrent(session)) return false;
+  const storage = local();
+  if (!storage) return false;
+  for (const id of ids) {
+    if (!isCurrent(session)) return false;
+    const key = entryKey(id);
+    const raw = readEnvelope(storage, key);
+    if (raw?.owner !== session.userId || raw.version !== 4) continue;
+    const entry = sanitizeDiagnosticEntry(raw.entry);
+    if (entry.id !== id || entry.remote_synced_at) continue;
+    try {
+      storage.setItem(key, JSON.stringify({
+        version: 4, owner: session.userId, entry: { ...entry, remote_synced_at: syncedAt },
+      }));
+    } catch { return false; }
+  }
+  return true;
 }
-
+export function getDiagnosticDroppedCount() {
+  if (!activeUserId) return 0;
+  try { return Math.max(0, Math.min(1000000, Number(local()?.getItem(COUNTER_PREFIX + activeUserId)) || 0)); }
+  catch { return 0; }
+}
 export function clearDiagnosticEntries() {
-  removeLegacy();
-  clearPersisted();
+  removeOldUnsafe();
+  const storage = local();
+  if (!storage || !activeUserId) return;
+  for (const key of allEventKeys(storage)) {
+    const item = readEnvelope(storage, key);
+    if (item?.owner === activeUserId) safeRemove(storage, key);
+  }
+  safeRemove(storage, COUNTER_PREFIX + activeUserId);
 }
-
-// Clear the legacy raw buffer on first load, including the signed-out state.
-removeLegacy();
+// Initial load must not retain unowned raw messages even before auth restore.
+removeOldUnsafe();
