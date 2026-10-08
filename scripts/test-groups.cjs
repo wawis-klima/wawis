@@ -6,6 +6,7 @@ const GROUPS = {
   'ui-fast-mobile': [
     'npm run test:smoke:mobile-style-bootstrap',
     'npm run test:smoke:mobile-admin-header',
+    'npm run test:smoke:mobile-version-diagnostics',
   ],
   'ui-fast-desktop': [
     'npm run test:smoke:desktop-refresh',
@@ -234,6 +235,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-ui-copy',
     'npm run test:smoke:mobile-style-bootstrap',
     'npm run test:smoke:mobile-admin-header',
+    'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:mobile-new-job-no-devices',
     'npm run test:smoke:mobile-worker-add-client',
     'npm run test:smoke:mobile-default-installation-date',
