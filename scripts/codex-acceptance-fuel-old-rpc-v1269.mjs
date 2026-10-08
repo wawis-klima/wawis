@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
 const migration = fs.readFileSync(
-  new URL('../supabase/migrations/current/20261008160000_disable_legacy_fuel_rpc_v1269.sql', import.meta.url),
+  new URL('../supabase/migrations/current/20261008131524_disable_legacy_fuel_rpc_v1269.sql', import.meta.url),
   'utf8',
 );
 const db = new PGlite();
