@@ -69,7 +69,7 @@ assert.match(normalizeDatabaseErrorMessage({ message: 'job_device_models_incompl
 const migration = fs.readFileSync(
   new URL('../supabase/migrations/current/20261008105757_job_device_models_completion_v1267.sql', import.meta.url), 'utf8',
 );
-const additionalGuard = fs.readFileSync(new URL('../supabase/migrations/current/20261008150000_completion_jw_index_guard_v1269.sql',import.meta.url),'utf8');
+const additionalGuard = fs.readFileSync(new URL('../supabase/migrations/current/20261008131504_completion_jw_index_guard_v1269.sql',import.meta.url),'utf8');
 const db = new PGlite();
 await db.exec(`
   create schema auth;
