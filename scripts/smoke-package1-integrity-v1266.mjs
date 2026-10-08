@@ -23,7 +23,7 @@ for (const save of [saveDesktopNote, saveMobileNote]) {
   await save({ supabase, jobId, adminNote: 'A', expectedAdminNote: 'original' });
   await assert.rejects(
     () => save({ supabase, jobId, adminNote: 'B', expectedAdminNote: 'original' }),
-    /JOB_EDIT_CONFLICT/,
+    (error) => /JOB_EDIT_CONFLICT/.test(error?.message || ''),
   );
   assert.equal(note, 'A', 'stale editor must not silently overwrite notes');
 }
