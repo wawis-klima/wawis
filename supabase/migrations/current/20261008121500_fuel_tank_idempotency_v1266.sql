@@ -68,5 +68,5 @@ $function$;
 revoke all on function public.admin_add_fuel_tank_movement_v1266(text,numeric,text,uuid) from public, anon;
 grant execute on function public.admin_add_fuel_tank_movement_v1266(text,numeric,text,uuid) to authenticated, service_role;
 
--- Old direct RPC is unsafe after an uncertain commit. Deploy frontend and switch RPC in one controlled release.
-revoke execute on function public.admin_add_fuel_tank_movement(text,numeric,text) from authenticated;
+-- Compatibility: do not revoke the old RPC until the frontend deployment is verified.
+-- After confirming v12.66 production, revoke EXECUTE on the old RPC separately.
