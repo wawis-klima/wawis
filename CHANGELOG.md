@@ -1,3 +1,9 @@
+## 12.66
+- Pakiet 1: Fakturownia nie przypisuje klienta po samym adresie e-mail i przerywa niejednoznaczną synchronizację.
+- Notatki administratora: optymistyczna kontrola współbieżnego zapisu przez istniejący RPC desktop/mobile.
+- Paliwo: stały identyfikator dostawy oraz kontrola idempotencji po utracie odpowiedzi.
+- Nowy test regresyjny i uzupełniony manifest rebuild.
+
 ## 12.65
 - PUSH: log dostawy rozróżnia teraz wysłanie przez backend, odebranie payloadu przez Service Worker oraz udane wyświetlenie systemowego powiadomienia.
 - Zaszyfrowany payload zawiera jednorazowy token potwierdzenia; w bazie przechowywany jest wyłącznie jego SHA-256.
