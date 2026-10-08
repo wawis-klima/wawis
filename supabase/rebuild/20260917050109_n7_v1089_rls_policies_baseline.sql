@@ -19,6 +19,7 @@ create policy access_insert_staff on public.job_access as permissive for insert 
 create policy access_read_job on public.job_access as permissive for select to authenticated using (current_user_can_view_job(job_id));
 create policy app_diagnostic_events_admin_delete on public.app_diagnostic_events as permissive for delete to authenticated using (( SELECT current_user_is_admin() AS current_user_is_admin));
 create policy app_diagnostic_events_admin_read on public.app_diagnostic_events as permissive for select to authenticated using (( SELECT current_user_is_admin() AS current_user_is_admin));
+create policy app_diagnostic_events_select_own on public.app_diagnostic_events as permissive for select to authenticated using (( SELECT auth.uid() AS uid) = user_id);
 create policy app_diagnostic_events_insert_own on public.app_diagnostic_events as permissive for insert to authenticated with check ((( SELECT auth.uid() AS uid) = user_id));
 create policy comments_delete_admin on public.comments as permissive for delete to authenticated using (current_user_is_admin());
 create policy comments_insert_job on public.comments as permissive for insert to authenticated with check (((author_id = auth.uid()) AND current_user_can_view_job(job_id) AND (EXISTS ( SELECT 1 FROM jobs j WHERE ((j.id = comments.job_id) AND (current_user_is_admin() OR (j.status IS DISTINCT FROM 'Zakończone'::text)))))));
