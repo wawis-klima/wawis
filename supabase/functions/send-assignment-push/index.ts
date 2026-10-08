@@ -422,6 +422,11 @@ async function handleJobCompleted({
   if (!['employee', 'pracownik', 'admin', 'administrator'].includes(normalizedCallerRole)) {
     return json({ error: "Brak uprawnień pracownika do tego zlecenia." }, 403);
   }
+  // Only the authenticated finisher may announce completion (admin can verify).
+  if (!['admin', 'administrator'].includes(normalizedCallerRole)
+      && String(job.completed_by || "") !== String(authUserId)) {
+    return json({ error: "Zakończenie zostało zapisane przez innego pracownika." }, 403);
+  }
 
   const { data: adminProfiles, error: adminProfilesError } = await adminClient
     .from("profiles")
@@ -584,7 +589,7 @@ async function loadCompletedJobWithRetry(adminClient: any, jobId: string) {
 
     const { data, error } = await adminClient
       .from("jobs")
-      .select("id, client, title, city, street, status, installation_date, main_technician_id, completed_at")
+      .select("id, client, title, city, street, status, installation_date, main_technician_id, completed_at, completed_by")
       .eq("id", jobId)
       .single();
 
