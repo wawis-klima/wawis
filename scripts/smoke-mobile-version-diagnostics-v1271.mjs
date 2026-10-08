@@ -28,6 +28,7 @@ await build({
   entryPoints: ["src/mobile791/components/jobs/MobileJobsLayout.jsx", "src/mobile791/components/diagnostics/MobileDiagnosticsPanel.jsx"],
   bundle: true,
   write: false,
+  outdir: "dist/.diagnostics-smoke",
   format: "esm",
   platform: "browser",
   loader: { ".js": "jsx", ".jsx": "jsx" },
