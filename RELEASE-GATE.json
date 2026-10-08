@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.72",
+  "version": "12.73",
   "scope": "full",
-  "release_branch": "release/v12.72",
+  "release_branch": "release/v12.73",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": true,
+    "last_24h": false,
     "result": "INFO",
-    "notes": "Production SQL diagnostics checked for 2026-10-01..08: 351 events (60 error/291 warning), 21 refreshAll errors, PostgreSQL 57014 statement timeouts; only one reporting account. Worker push receipts: 4 current tokened job_assigned sent, zero received/displayed. See docs/audits/v12.72/DIAGNOSTIC-PUSH-REVIEW.md"
+    "notes": "P0 privacy implementation; reference: Codex independent audit WAWIS 12.72 (D1/D3 reproduced on synthetic fixtures). Production baseline was analyzed in previous release; no live new read in this release."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.72.zip"
+    "file_name": "klima-app-v12.73.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.72",
+    "source_branch": "release/v12.73",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR checks + Vercel deployment status + public app-version.json",
-    "notes": "Verify version 12.72 after green CI; physical worker phone automatic PUSH receipts remain unverified, do not claim success."
+    "evidence_source": "GitHub WAWIS PR checks + Vercel deployment + public app-version.json",
+    "notes": "Real device privacy validation is external. P1 ingest/ACK remains a later package."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,11 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — core, push, desktop, mobile, full Playwright, Closure Gate and production build",
+    "release_ci": "REQUIRED — Codex D1/D3 executable tests; core, roles, mobile, desktop, Playwright, dual-session PostgreSQL, Closure Gate and build",
     "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
     "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
     "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "UI/diagnostics-only release; no SQL or Edge function changes. Verify deployment SHA and public version 12.72.",
-    "mobile_touch": "EXTERNAL — manual check codes in desktop diagnostics and local mobile report after deployment"
+    "front_and_backend": "Client-only diagnostic privacy hardening. No schema, Edge, SMS, PUSH delivery or job modifications. Verify SHA/version 12.73 and Vercel after CI.",
+    "mobile_touch": "EXTERNAL — manually verify diagnostics panel + report after version 12.73 loads on iPhone"
   }
 }
