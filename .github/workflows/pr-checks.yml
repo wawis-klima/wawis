@@ -54,6 +54,9 @@ jobs:
       - name: Run targeted regression groups
         run: node scripts/run-pr-checks.cjs changed-files.txt release-impact.json
 
+      - name: Codex dual-session PostgreSQL race tests
+        run: bash scripts/codex-postgres-two-sessions-v1269.sh
+
       - name: Install Playwright Chromium when required
         if: steps.impact.outputs.needs_playwright == 'true'
         run: npx playwright install --with-deps chromium
