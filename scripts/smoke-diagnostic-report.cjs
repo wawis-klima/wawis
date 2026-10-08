@@ -17,7 +17,8 @@ for (const source of [desktopDiagnostics, mobileDiagnostics]) {
   assert(source.includes('customerDataIncluded: false'), 'Raport nie deklaruje wykluczenia danych klientów.');
   assert(source.includes('commentsIncluded: false'), 'Raport nie deklaruje wykluczenia komentarzy.');
   assert(source.includes('photosIncluded: false'), 'Raport nie deklaruje wykluczenia zdjęć.');
-  assert(source.includes('SENSITIVE_KEY_PATTERN'), 'Brak maskowania wrażliwych kluczy.');
+  assert(source.includes('sanitizeDiagnosticEntry'), 'Brak zamkniętego schematu lokalnego wpisu.');
+  assert(source.includes('readDiagnosticEntries'), 'Brak izolacji diagnostyki względem sesji.');
   assert(source.includes('navigator.storage.estimate'), 'Brak diagnostyki zajętości pamięci.');
   assert(source.includes("window.addEventListener('offline'"), 'Brak zapisu zmiany stanu offline.');
 }
@@ -30,4 +31,4 @@ assert(shell.includes("label: 'Diagnostyka'"), 'Brak pozycji Diagnostyka w menu 
 assert(mobileButton.includes('getPhotoQueueSummary'), 'Mobilny raport nie zawiera podsumowania kolejki zdjęć.');
 assert(mobileButton.includes('Pobierz raport diagnostyczny'), 'Brak przycisku raportu mobilnego.');
 
-console.log('OK: raport diagnostyczny jest dostępny na desktopie i telefonie, maskuje dane i zawiera stan kolejki zdjęć.');
+console.log('OK: raport diagnostyczny jest dostępny na desktopie i telefonie, stosuje zamknięty schemat danych i zawiera stan kolejki zdjęć.');

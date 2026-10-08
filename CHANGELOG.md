@@ -1,3 +1,10 @@
+## 12.73
+- Pakiet 1 audytu Codexa: P0 D1 — zamknięty schemat lokalnych zdarzeń, bez swobodnych komunikatów błędów, stack trace, adresów klientów i tokenów w pamięci/eksporcie.
+- P0 D3 — natychmiastowe powiązanie dziennika z potwierdzoną sesją; czyszczenie po wylogowaniu/przełączeniu konta, brak przepisywania cudzych zdarzeń podczas opóźnionej odpowiedzi serwera.
+- Stary bufor nieposiadający wiarygodnego właściciela jest usuwany zamiast przypisywany innemu kontu; raport zachowuje bezpieczne kody i liczniki.
+- Obowiązkowe testy wykonawcze RED/GREEN Codex D1/D3 dla desktop i mobile, uzupełniające stałe regresje oraz Closure Gate.
+- Pozycje C3/C4 (RLS, współbieżne ACK, retencja) pozostają odrębnym pakietem 2.
+
 ## 12.72
 - Ujednolicono techniczne kody błędów w centralnej Diagnostyce dla desktop i mobile. Zamiast `[object Object]` i niesprecyzowanych komunikatów pokazywany jest bezpieczny kod i opis, bez danych osobowych.
 - Kody rozróżniają timeout PostgreSQL/odświeżania, problemy sieci, przerwane połączenia i wygasanie sesji. Dodano obowiązkowy test prywatności i klasyfikacji.

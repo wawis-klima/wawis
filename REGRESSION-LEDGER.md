@@ -16,6 +16,23 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - FIXED-UNVERIFIED — poprawka istnieje, ale Closure Gate nie potwierdził jeszcze pełnego scenariusza.
 - CLOSED — poprawka i trwały test regresyjny przeszły Closure Gate.
 
+## Audyt Codexa 12.72 — P0 diagnostyka, pakiet 1 (12.73)
+
+Red (dowody oryginalne Codexa, syntetyczne fixture, bez produkcyjnych danych):
+- D1: lokalny Error.message/stack zachowywał nazwisko, adres lub tekst Bearer; brak skutecznej sanitacji również w eksporcie.
+- D3: jedna wspólna historia localStorage po logout/login pozwalała odczytać/wysłać wpisy A jako B, a spóźniony ACK mógł nadpisać zapis nowego konta.
+
+Green (wykonywalny reproduktor): `scripts/smoke-diagnostics-p0-privacy-v1273.mjs` w grupie `core` (`scripts/test-groups.cjs`). Wykonuje rzeczywiste oba moduły loggerów i izolacji, testuje sekret/PII w localStorage i raporcie, migrację starego bufora fail-closed, przełączenie konta, logout/login, nieprawidłowego ownera i powrót ACK z poprzedniej sesji. `scripts/smoke-diagnostic-report.cjs` uaktualniono, aby wymagał schematu, nie samego regexu.
+
+Dowód CI: [PR #296](https://github.com/wawis-klima/wawis/pull/296), [WAWIS PR checks run 37832603971](https://github.com/wawis-klima/wawis/actions/runs/37832603971): regresje, PostgreSQL na dwóch sesjach, Playwright mobile/desktop, Closure Gate i build — PASS. Ostateczny merge/deployment musi nadal potwierdzić wersję 12.73.
+
+| ID | Priorytet | Mechanizm | Status | Trwała regresja i warunek |
+|---|---|---|---|---|
+| CODEX-DIAG-D1 | P0 | Dowolny Error.message/stack, komentarz/adres/token w lokalnym logu i eksporcie | CLOSED | `scripts/smoke-diagnostics-p0-privacy-v1273.mjs`; brak PII/sekretów w localStorage, raporcie i centralnym schemacie |
+| CODEX-DIAG-D3 | P0 | Jeden nieprzypisany bufor może mieszać konta po logout/login i przy spóźnionym ACK | CLOSED | ten sam wykonywalny test; A nieczytelny dla B, A nigdy nie raportuje jako B, konta mają właściwą generację sesji |
+
+Pozostałe z audytu Codexa (D2/D5, D8, G1/G2, etapy startu/PUSH) nie są tu zamykane. To osobne pakiety; sukces P0 nie jest dowodem naprawy RLS/upsert, wyścigu ACK między wpisami tego samego konta ani produkcyjnego odbioru PUSH.
+
 ## Audyt SMS — zamknięcie 2026-10-06
 
 Dowód wspólny dla poniższych pozycji:

@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.72
+- 12.73
+
+Wersja 12.73: pakiet 1 audytu Codexa C1/C2 (P0): bezpieczny schemat lokalnych zdarzeń diagnostycznych, usunięcie przechowywania swobodnych komunikatów i stack trace, izolacja logów między sesjami i kontami, bezpieczna likwidacja dawnych nieprzypisanych buforów; wykonywalne regresje desktop/mobile oraz testy negatywne D1/D3.
 
 Wersja 12.72: poprawiono kody błędów Centrum Diagnostycznego mobile/desktop (bez danych klientów), w tym osobną identyfikację limitów PostgreSQL, problemów sieci i odświeżania. Zweryfikowano statusy automatycznych PUSH pracowników — brak potwierdzeń odbioru nadal wymaga sprawdzenia na urządzeniach.
 
@@ -905,7 +907,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.72` — czytelne, bezpieczne kody błędów; audyt potwierdzeń PUSH i kontrola refreshAll.
+- wersja `12.73` — P0 prywatności Centrum Diagnostycznego: sanitacja lokalna i separacja kont (Codex D1/D3).
 - wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
 - wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
 - wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.
