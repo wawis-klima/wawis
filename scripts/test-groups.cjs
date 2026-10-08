@@ -93,6 +93,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-protocol',
   ],
   roles: [
+    'node scripts/codex-acceptance-note-sql-v1269.mjs',
     'node scripts/codex-acceptance-fakturownia-v1269.mjs',
     'npm run test:smoke:admin-worker',
     'npm run test:smoke:desktop-only',
@@ -132,6 +133,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   nameplates: [
+    'node scripts/smoke-package2-jw-jz-cycle-v1267.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:mobile-serial-scanner',
