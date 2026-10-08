@@ -2,18 +2,31 @@
 # WAWIS 12.69 Codex: two genuinely separate PostgreSQL backend sessions.
 # Run ONLY on ephemeral CI PostgreSQL, never on production or a customer database.
 set -euo pipefail
-: "${PGHOST:?PGHOST required}"
-: "${PGUSER:?PGUSER required}"
-: "${PGDATABASE:?PGDATABASE required}"
-if [[ "${PGDATABASE}" != "wawis_codex_ci" || "${PGHOST}" != "127.0.0.1" ]]; then
-  echo "NO-GO: this script is restricted to local disposable wawis_codex_ci database" >&2
+# CI-only, isolated fixture: no production URLs, no mounted volumes, no port exposure.
+if [[ "$GITHUB_ACTIONS" != "true" ]]; then
+  echo "NO-GO: only use a disposable GitHub Actions runner" >&2
   exit 12
 fi
-command -v psql >/dev/null || { echo "NO-GO: PostgreSQL psql client missing"; exit 13; }
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+command -v docker >/dev/null || { echo "NO-GO: Docker required"; exit 13; }
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
-pg() { psql -X -q -v ON_ERROR_STOP=1 -At "$@"; }
+secret="$(openssl rand -hex 18)"
+container="$(docker run --rm -d \
+  --env POSTGRES_USER=postgres \
+  --env POSTGRES_DB=wawis_codex_ci \
+  --env POSTGRES_PASSWORD="$secret" \
+  postgres:16)"
+trap 'docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
+ready=false
+for attempt in $(seq 1 40); do
+  if docker exec "$container" pg_isready -U postgres -d wawis_codex_ci >/dev/null 2>&1; then ready=true; break; fi
+  sleep 1
+done
+if [[ "$ready" != "true" ]]; then
+  echo "NO-GO: disposable PostgreSQL fixture failed to start" >&2
+  exit 14
+fi
+pg() { docker exec -i "$container" psql -X -q -v ON_ERROR_STOP=1 -At -U postgres -d wawis_codex_ci "$@"; }
 pg <<'SQL'
 create schema auth;
 create schema private;
@@ -59,9 +72,9 @@ insert into public.push_subscriptions(id,user_id,is_active) values
  ('cccccccc-cccc-4ccc-8ccc-cccccccccccc','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',true),
  ('dddddddd-dddd-4ddd-8ddd-dddddddddddd','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',true);
 SQL
-pg -f "$ROOT/supabase/migrations/20260928120000_job_installers_concurrency_v1168.sql"
-pg -f "$ROOT/supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql"
-pg -f "$ROOT/supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql"
+pg < "$ROOT/supabase/migrations/20260928120000_job_installers_concurrency_v1168.sql"
+pg < "$ROOT/supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql"
+pg < "$ROOT/supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql"
 # A/B: stale note B queues behind A's row lock; after A commits, B must fail with JOB_EDIT_CONFLICT.
 pg >"$WORK/note-a.out" 2>"$WORK/note-a.err" <<'SQL' &
 begin;
