@@ -25,7 +25,7 @@ const schedule = getReminderSchedule('2020-10-08', 5);
 assert.deepEqual(schedule.map((x) => x.cycle), [1, 2, 3, 4, 5]);
 // The label must come from the scheduled reminder cycle, not send attempt count.
 assert.equal(getSmsReminderCycleLabel({ reminder_cycle: schedule[3].cycle, grouped_logs: [
-  { status: 'not_sent' }, { status: 'sent' }
+  { status: 'not_sent', reminder_cycle: 4 }, { status: 'sent', reminder_cycle: 4 }
 ] }), '4. cykl przypomnienia');
 
 for (const filename of ['SmsQueueTable.jsx', 'SmsSentThisMonthCard.jsx']) {
