@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { getSmsReminderCycleLabel } from '../src/modules/sms-reminder-cycle-label.js';
-import { getReminderSchedule, validateJobDevicesForCompletion } from '../src/modules/sms.js';
+import { getReminderSchedule } from '../src/modules/sms.js';
 
 for (let cycle = 1; cycle <= 5; cycle++) {
   const label = getSmsReminderCycleLabel({ reminder_cycle: cycle });
