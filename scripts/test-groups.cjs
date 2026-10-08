@@ -116,6 +116,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1087.mjs',
   ],
   fuel: [
+    'node scripts/smoke-package1-integrity-v1266.mjs',
     'node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
