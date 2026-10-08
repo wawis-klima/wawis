@@ -1,31 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.67",
+  "version": "12.68",
   "scope": "full",
-  "release_branch": "release/v12.67",
+  "release_branch": "release/v12.68",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Pakiet 2: backend JW/JZ i odczyt cyklu z harmonogramu SMS (bez wysyłki)."
+    "notes": "Pakiet 3: PUSH recipients and event-level idempotency"
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.67.zip"
+    "file_name": "klima-app-v12.68.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.67",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN",
+    "source_branch": "release/v12.68",
+    "ready_for_main": false,
+    "status": "AWAITING_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR checks + Supabase migration + Vercel commit status + public version",
-    "notes": "Po merge wymagana kontrola wersji 12.67 i funkcji JW/JZ."
+    "evidence_source": "GitHub PR checks + Supabase migration + Edge ACTIVE + Vercel commit status",
+    "notes": "Weryfikacja wdrożenia po zielonym CI"
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,9 +34,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "current_release_pr_check": "REQUIRED — WAWIS PR checks / targeted-checks",
-    "current_release_deployment": "EXTERNAL AFTER MERGE — Vercel SUCCESS dokładnego SHA i app-version 12.67",
-    "job_models_migration": "REQUIRED — Supabase migration before publication",
-    "sms_cycle_source": "VALIDATED — reminder_cycle schedule not count of sent SMS"
+    "current_release_pr_check": "REQUIRED — WAWIS PR checks",
+    "current_release_deployment": "REQUIRED — Vercel SUCCESS SHA i app-version 12.68",
+    "push_migration": "REQUIRED — database before Edge deployment",
+    "push_edge": "REQUIRED — send-assignment-push ACTIVE with claim RPC and recipients"
   }
 }
