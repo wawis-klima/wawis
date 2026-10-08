@@ -67,7 +67,8 @@ assert.match(photos, /getPhotoRetryDelayMs/);
 for (const source of [diagnostics, mobileDiagnostics]) {
   assert.match(source, /startSilentDiagnosticSync/);
   assert.match(source, /app_diagnostic_events/);
-  assert.match(source, /technicalOnly: true/);
+  assert.match(source, /getSafeDiagnosticDetails\(entry\)\.code/);
+  assert.match(source, /getSafeDiagnosticDetails\(entry\)\.message/);
 }
 assert.match(adminPanel, /Cicha diagnostyka urządzeń/);
 assert.match(adminPanel, /Kopie zdjęć i protokołów/);
