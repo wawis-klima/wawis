@@ -1,3 +1,10 @@
+## 12.68
+- Pakiet 3: weryfikacja odbiorców PUSH po stronie Edge na podstawie aktualnych monterów montażu.
+- Atomowe rezerwacje wysyłki dla każdej aktywnej subskrypcji i zdarzenia zapobiegają równoległym duplikatom.
+- Kolejne przypisanie po usunięciu i ponownym przypisaniu ma nowy numer zdarzenia.
+- Kończenie montażu może zgłosić tylko właściwy kończący lub administrator.
+- Testy SQL i regresyjne, odtwarzalna migracja.
+
 ## 12.67
 - Pakiet 2: PostgreSQL blokuje zakończenie montażu bez jawnych modeli JW i JZ dla każdego urządzenia; administrator zachowuje wyjątek wyłącznie dla fizycznych zdjęć tabliczek.
 - Testy: wykonanie scenariuszy JW/JZ i różnych typów jednostek zamiast samego sprawdzania ciągów w kodzie.
