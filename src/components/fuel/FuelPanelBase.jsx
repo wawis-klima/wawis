@@ -443,20 +443,42 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
     setBusy(true);
     setError('');
     setMessage('');
+    const storageKey = `wawis:fuel-delivery-attempt:v1266:${userId || 'unknown'}`;
+    let attempted = null;
     try {
+      if (!userId || typeof sessionStorage === 'undefined') {
+        throw new Error('Nie można bezpiecznie zapisać dostawy bez aktywnej sesji użytkownika.');
+      }
+      const normalizedLiters = Number(String(tankDeliveryLiters).trim().replace(',', '.')).toFixed(2);
+      const normalizedNote = String(tankDeliveryNote || '').trim();
+      const fingerprint = JSON.stringify({ liters: normalizedLiters, note: normalizedNote });
+      const previous = sessionStorage.getItem(storageKey);
+      if (previous) {
+        attempted = JSON.parse(previous);
+        if (!attempted?.operationId || attempted?.fingerprint !== fingerprint) {
+          throw new Error('Poprzednia dostawa ma niepotwierdzony wynik. Przywróć jej dane i ponów, zamiast tworzyć nowy zapis.');
+        }
+      } else {
+        attempted = { operationId: createFuelEntryAttemptId(), fingerprint };
+        // Persist before request: if commit succeeds but HTTP response is lost, retries reuse the same ID.
+        sessionStorage.setItem(storageKey, JSON.stringify(attempted));
+      }
       const saved = await addFuelTankDelivery({
         supabase,
         isAdmin,
         liters: tankDeliveryLiters,
         note: tankDeliveryNote,
+        operationId: attempted.operationId,
       });
+      sessionStorage.removeItem(storageKey);
       setTankDeliveryLiters('');
       setTankDeliveryNote('');
       setTankDeliveryOpen(false);
       setMessage(`Dodano dostawę ${Number(saved?.delta_liters || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} l do zbiornika.`);
-      await refresh();
+      try { await refresh(); }
+      catch (refreshError) { console.warn('Dostawa zapisana, ale odświeżenie zbiornika nie powiodło się:', refreshError); }
     } catch (deliveryError) {
-      setError(deliveryError?.message || 'Nie udało się dodać dostawy paliwa.');
+      setError(deliveryError?.message || 'Nie udało się potwierdzić dostawy paliwa. Ponów z tymi samymi danymi.');
       logDiagnostic('fuel.tank.delivery.failed', { module: 'fuel', error: deliveryError });
     } finally {
       setBusy(false);
