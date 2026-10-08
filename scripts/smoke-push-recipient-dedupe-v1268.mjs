@@ -4,7 +4,7 @@ import { PGlite } from '@electric-sql/pglite';
 
 const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const edge = read('supabase/functions/send-assignment-push/index.ts');
-const migration = read('supabase/migrations/current/20261008133000_push_recipient_dedup_v1268.sql');
+const migration = read('supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql');
 
 for (const snippet of [
   'authorizedInstallerIds',
