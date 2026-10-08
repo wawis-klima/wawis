@@ -97,7 +97,7 @@ test.describe('@mobile release visual iPhone', () => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
     await expect(page.locator('.mobileHeaderV2')).toBeVisible();
-    const versionDiagnostics = page.getByRole('button', { name: /^Diagnostyka aplikacji, wersja 12\.71$/ });
+    const versionDiagnostics = page.getByRole('button', { name: /^Wersja aplikacji 12\.71 — otwórz diagnostykę$/ });
     await expect(versionDiagnostics).toBeVisible();
     await expect(versionDiagnostics).toHaveAttribute('aria-expanded', 'false');
     await versionDiagnostics.click();
