@@ -27,14 +27,16 @@ const result = await addFuelTankDelivery({
   isAdmin: true,
   liters: '1200,50',
   note: 'Dostawa testowa',
+  operationId: '99999999-9999-4999-8999-999999999999',
 });
 assert.equal(result.delta_liters, 1200.5);
 assert.deepEqual(calls, [{
-  name: 'admin_add_fuel_tank_movement',
+  name: 'admin_add_fuel_tank_movement_v1266',
   args: {
     p_movement_type: 'delivery',
     p_liters: 1200.5,
     p_note: 'Dostawa testowa',
+    p_operation_id: '99999999-9999-4999-8999-999999999999',
   },
 }]);
 
