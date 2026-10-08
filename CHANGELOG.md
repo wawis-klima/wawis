@@ -1,3 +1,8 @@
+## 12.70
+- CODEX P1-01: trzy scenariusze współbieżności zmiany JW/JZ i zakończenia montażu w dwóch niezależnych sesjach PostgreSQL 16.
+- Stały test w obowiązkowej bramce CI na syntetycznych danych; brak modyfikacji backendu i funkcji produkcyjnych.
+- Rzeczywisty Apple Web Push oraz zewnętrzne konto testowe Fakturowni nadal wymagają osobnych dowodów.
+
 ## 12.69
 - Odbiór audytu Codexa 12.65: testy wykonawcze oryginalnych scenariuszy i ewidencja granic dowodu.
 - P2-01: naprawa oryginalnego testu `.order().range()` tabliczek.

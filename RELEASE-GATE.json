@@ -1,31 +1,31 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.69",
+  "version": "12.70",
   "scope": "full",
-  "release_branch": "release/v12.69",
+  "release_branch": "release/v12.70",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Codex 12.65: 7 original scenarios PASS in CI run 919, isolated two-session PG PASS; prod SQL guard and fuel grants verified. Physical provider/phone tests remain NOT VERIFIED."
+    "notes": "CI test-only branch v12.70; add 3 executable P1-01 races; no external invoice or Apple push test performed."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.69.zip"
+    "file_name": "klima-app-v12.70.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.69",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
+    "source_branch": "release/v12.70",
+    "ready_for_main": false,
+    "status": "TEST_ONLY_DRAFT_NO_MERGE",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Original Codex acceptance matrix, PR CI and production version",
-    "notes": "Do not merge without scenario evidence"
+    "evidence_source": "PR CI and production SHA; physical iPhone/provider require separate consent",
+    "notes": "Not a production release. Do not merge until required real-device/provider evidence."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,10 +35,8 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — group 136 + two-session PostgreSQL + E2E + Closure Gate",
-    "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
-    "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
-    "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "Verify exact active SHA/version after deployment"
+    "release_ci": "REQUIRED — full regression + JW/JZ PostgreSQL 2-session + other dual-session tests + E2E + Closure Gate",
+    "external_provider_tests": "NOT VERIFIED — physical iPhone PUSH and isolated test tenant Fakturownia",
+    "front_and_backend": "Draft only — production remains v12.69; separate approval required before deploy"
   }
 }

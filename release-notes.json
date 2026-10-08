@@ -1,9 +1,8 @@
 {
-  "version": "12.69",
-  "summary": "Kontrola odbiorcza audytu Codexa — testy pakietów 1–3.",
+  "version": "12.70",
+  "summary": "Dodatkowy test odbiorczy współbieżności JW/JZ w dwóch sesjach PostgreSQL (bez zmian biznesowych).",
   "changes": [
-    "Naprawa oryginalnego testu tabliczek.",
-    "Wykonywalne kontrprzykłady Fakturowni i PUSH.",
-    "Obowiązkowa mapa ustalenie → test → wynik i ograniczenia."
+    "Trzy trwałe scenariusze równoczesnego zapisu modelu JW/JZ i zakończenia montażu na syntetycznych danych w izolowanym CI.",
+    "Bez wysyłek PUSH, faktur ani zmian danych produkcyjnych."
   ]
 }
