@@ -2,15 +2,15 @@
 # WAWIS 12.69 Codex: two genuinely separate PostgreSQL backend sessions.
 # Run ONLY on ephemeral CI PostgreSQL, never on production or a customer database.
 set -euo pipefail
-: "\${PGHOST:?PGHOST required}"
-: "\${PGUSER:?PGUSER required}"
-: "\${PGDATABASE:?PGDATABASE required}"
-if [[ "\${PGDATABASE}" != "wawis_codex_ci" || "\${PGHOST}" != "127.0.0.1" ]]; then
+: "${PGHOST:?PGHOST required}"
+: "${PGUSER:?PGUSER required}"
+: "${PGDATABASE:?PGDATABASE required}"
+if [[ "${PGDATABASE}" != "wawis_codex_ci" || "${PGHOST}" != "127.0.0.1" ]]; then
   echo "NO-GO: this script is restricted to local disposable wawis_codex_ci database" >&2
   exit 12
 fi
 command -v psql >/dev/null || { echo "NO-GO: PostgreSQL psql client missing"; exit 13; }
-ROOT="$(cd "$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 pg() { psql -X -q -v ON_ERROR_STOP=1 -At "$@"; }
