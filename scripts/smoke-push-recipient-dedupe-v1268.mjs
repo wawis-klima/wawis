@@ -87,6 +87,7 @@ assert.equal(await claim('job_assigned:job:3'),true,'Reassignment must allow a l
 assert.equal(await claim('job_assigned:job:4','dddddddd-dddd-4ddd-8ddd-dddddddddddd'),false,'Foreign recipient must not claim endpoint');
 await db.query('update public.push_subscriptions set is_active=false where id=$1',[sub]);
 assert.equal(await claim('job_assigned:job:5'),false,'Inactive endpoint cannot claim');
+await db.exec('reset role');
 const rows=await db.query('select count(*)::integer as c from private.push_dispatch_claims_v1268');
 assert.equal(rows.rows[0].c,2);
 await db.close();
