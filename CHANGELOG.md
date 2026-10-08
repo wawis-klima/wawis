@@ -1,4 +1,4 @@
-## 12.70
+## 12.71
 - Mobilna wersja aplikacji jest przyciskiem otwierającym istniejący panel Diagnostyki bez nowej ikony i bez obciążania startu aplikacji.
 - Powrót do montaży z panelu Diagnostyki; test PUSH dostępny tylko dla administratora.
 - Test regresyjny nawigacji, obsługi raportu i budowania komponentów mobilnych.
