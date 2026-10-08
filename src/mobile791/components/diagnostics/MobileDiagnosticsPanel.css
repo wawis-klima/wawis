@@ -1,26 +1,24 @@
-.wawisMobileDiagnostics{display:grid;gap:12px;width:100%;min-width:0}
-.wawisMobileDiagnosticsHeader{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.wawisMobileDiagnosticsHeader>div{display:grid;gap:3px;min-width:0}
-.wawisMobileDiagnosticsHeader strong{font-size:19px;font-weight:850;color:#102348}
-.wawisMobileDiagnosticsHeader span{font-size:12px;color:#64748b}
-.wawisMobileDiagnosticsBack,.wawisMobileDiagnosticsSectionHeading button{border:1px solid #cbd5e1;background:#f8fafc;color:#102348;border-radius:12px;padding:10px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
-.wawisMobileDiagnosticsBack{flex:0 0 auto;min-height:42px}
-.wawisMobileDiagnosticsMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.wawisMobileDiagnosticsMetrics>div{border:1px solid #dbe3ef;background:#f8fbff;border-radius:12px;padding:11px 7px;display:grid;gap:5px;text-align:center;min-width:0}
-.wawisMobileDiagnosticsMetrics span{font-size:10px;line-height:1.2;color:#64748b;font-weight:750}
-.wawisMobileDiagnosticsMetrics strong{font-size:17px;color:#102348}
-.wawisMobileDiagnosticsCard{border:1px solid #dbe3ef;background:#fff;border-radius:16px;padding:15px;display:grid;gap:10px;min-width:0}
-.wawisMobileDiagnosticsCard>strong{font-size:15px;color:#102348}
-.wawisMobileDiagnosticsCard p{margin:0;font-size:12px;line-height:1.45;color:#64748b}
-.wawisMobileDiagnosticsPrimary{width:100%;min-height:44px;padding:10px 12px;border:1px solid #bed5ff;border-radius:12px;background:#dceaff;color:#163c76;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
-.wawisMobileDiagnosticsPrimary:disabled{opacity:.6;cursor:wait}
-.wawisMobileDiagnosticsCard .wawisMobileDiagnosticsMessage{color:#1d4ed8}
-.wawisMobileDiagnosticsSectionHeading{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.wawisMobileDiagnosticsSectionHeading strong{font-size:14px;color:#102348}
-.wawisMobileDiagnosticsEvents{list-style:none;margin:0;padding:0;display:grid;gap:7px;max-height:330px;overflow:auto}
-.wawisMobileDiagnosticsEvents li{display:grid;gap:3px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #e5eaf2;min-width:0}
-.wawisMobileDiagnosticsEvents li strong{font-size:12px;line-height:1.3;font-weight:750;overflow-wrap:anywhere}
-.wawisMobileDiagnosticsEvents li span{font-size:11px;color:#64748b}
+.mobileDiagnosticsPage{display:grid;gap:12px;min-width:0;width:100%}
+.mobileDiagnosticsBack{justify-self:start;min-height:42px;border:1px solid #dbe3ef;background:#f8fbff;color:#17365d;border-radius:12px;padding:9px 13px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.mobileDiagnosticsCard{border:1px solid #dbe3ef;border-radius:15px;padding:15px;background:#fff;display:grid;gap:9px;min-width:0}
+.mobileDiagnosticsHero{grid-template-columns:minmax(0,1fr) auto;align-items:start}
+.mobileDiagnosticsHero h1{font-size:19px;line-height:1.2;color:#102348;margin:6px 0 4px}
+.mobileDiagnosticsHero p,.mobileDiagnosticsPrivacy p{font-size:12px;line-height:1.45;color:#64748b;margin:0}
+.mobileDiagnosticsHero .sectionPill{display:inline-flex;border-radius:99px;background:#eef4ff;color:#1d4ed8;padding:4px 9px;font-weight:800;font-size:10px}
+.mobileDiagnosticsVersion{font-size:13px;font-weight:800;color:#64748b;white-space:nowrap}
+.mobileDiagnosticsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;min-width:0}
+.mobileDiagnosticsMetric{min-width:0;display:grid;gap:5px;border:1px solid #dbe3ef;background:#f8fbff;border-radius:12px;padding:12px}
+.mobileDiagnosticsMetric>span{font-size:11px;color:#64748b;font-weight:800}
+.mobileDiagnosticsMetric strong{font-size:20px;line-height:1.1;color:#102348}
+.mobileDiagnosticsMetric strong.isOk{color:#17803d}
+.mobileDiagnosticsMetric strong.isWarn{color:#a16207}
+.mobileDiagnosticsMetric small{font-size:10px;line-height:1.35;color:#64748b;overflow-wrap:anywhere}
+.mobileDiagnosticsCard h2{font-size:15px;color:#102348;margin:0}
+.mobileDiagnosticsActions{display:grid;gap:8px}
+.mobileDiagnosticsActions .btn{width:100%;min-height:44px;font-size:13px;font-weight:750;margin:0}
+.mobileDiagnosticsActions .btn:disabled{opacity:.6;cursor:wait}
+.mobileDiagnosticsMessage{font-size:12px;color:#1d4ed8;line-height:1.4;overflow-wrap:anywhere}
+.mobileDiagnosticsPrivacy strong{font-size:13px;color:#102348}
 .wawisVersionDiagnosticsButton{cursor:pointer;font-family:inherit;touch-action:manipulation}
-.wawisVersionDiagnosticsButton:focus-visible{outline:3px solid #3b82f6;outline-offset:2px}
-@media(max-width:380px){.wawisMobileDiagnosticsHeader{align-items:flex-start;flex-wrap:wrap}.wawisMobileDiagnosticsBack{width:100%}.wawisMobileDiagnosticsMetrics strong{font-size:15px}}
+.wawisVersionDiagnosticsButton:focus-visible,.mobileDiagnosticsBack:focus-visible{outline:3px solid #3b82f6;outline-offset:2px}
+@media(max-width:380px){.mobileDiagnosticsHero{grid-template-columns:1fr}.mobileDiagnosticsGrid{grid-template-columns:1fr}}
