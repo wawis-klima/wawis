@@ -37,6 +37,6 @@
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
     "release_ci": "REQUIRED — full regression + JW/JZ PostgreSQL 2-session + other dual-session tests + E2E + Closure Gate",
     "external_provider_tests": "NOT VERIFIED — physical iPhone PUSH and isolated test tenant Fakturownia",
-    "front_and_backend": "Draft only — production remains 12.69 pending separate approval"
+    "front_and_backend": "Draft only — production remains v12.69; separate approval required before deploy"
   }
 }
