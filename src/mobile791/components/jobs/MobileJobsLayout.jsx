@@ -143,7 +143,7 @@ export default function MobileJobsLayout({
             type="button"
             className="mobileVersionTag wawisOneLineVersion wawisVersionDiagnosticsButton"
             title="Otwórz diagnostykę aplikacji"
-            aria-label={"Diagnostyka aplikacji, wersja " + APP_VERSION}
+            aria-label={"Wersja aplikacji " + APP_VERSION + " — otwórz diagnostykę"}
             aria-expanded={diagnosticsOpen}
             onClick={() => setDiagnosticsOpen((open) => !open)}
           >v{APP_VERSION}</button>
