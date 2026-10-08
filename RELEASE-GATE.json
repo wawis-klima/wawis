@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.73",
+  "version": "12.74",
   "scope": "full",
-  "release_branch": "release/v12.73",
+  "release_branch": "release/v12.74",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "INFO",
-    "notes": "P0 privacy implementation; reference: Codex independent audit WAWIS 12.72 (D1/D3 reproduced on synthetic fixtures). Production baseline was analyzed in previous release; no live new read in this release."
+    "notes": "Codex D8 live policy read-only verified: authenticated has SELECT+INSERT grant but only admin-read + insert-own policies; 42501 reproduced in PostgreSQL fixture. Codex D2/D5 runtime race reproduced from audit, reproduction embedded in durable script. No production data modified before migration."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.73.zip"
+    "file_name": "klima-app-v12.74.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.73",
+    "source_branch": "release/v12.74",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub WAWIS PR checks + Vercel deployment + public app-version.json",
-    "notes": "Real device privacy validation is external. P1 ingest/ACK remains a later package."
+    "evidence_source": "GitHub PR checks, production migration registry and pg_policies, Vercel status and public app-version.json",
+    "notes": "RLS fixture tested, production rule to verify after migration; real-device employee PostgREST receipt remains external unless tested."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,11 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — Codex D1/D3 executable tests; core, roles, mobile, desktop, Playwright, dual-session PostgreSQL, Closure Gate and build",
+    "release_ci": "REQUIRED — Codex D2/D5/D8 dynamic regressions, prior P0 D1/D3, groups selected by critical path, dual-session PostgreSQL, Playwright mobile/desktop, Closure Gate and build",
     "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
     "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
     "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "Client-only diagnostic privacy hardening. No schema, Edge, SMS, PUSH delivery or job modifications. Verify SHA/version 12.73 and Vercel after CI.",
-    "mobile_touch": "EXTERNAL — manually verify diagnostics panel + report after version 12.73 loads on iPhone"
+    "front_and_backend": "Client queue / ACK + additive RLS SELECT-own migration. Apply migration before releasing frontend, then verify live policy, migration version, deployed commit, Vercel and app version 12.74.",
+    "mobile_touch": "EXTERNAL — verify new reports and silent upload on real employee device after next sign-in; do not claim physical PostgREST test until verified"
   }
 }
