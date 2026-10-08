@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Codex D8 live policy read-only verified: authenticated has SELECT+INSERT grant but only admin-read + insert-own policies; 42501 reproduced in PostgreSQL fixture. Codex D2/D5 runtime race reproduced from audit, reproduction embedded in durable script. No production data modified before migration."
+    "notes": "Codex D8 RED PGlite worker UPSERT 42501; GREEN after own-only SELECT policy. Supabase production migration 20261008200351 diagnostic_worker_upsert_rls_v1274 successfully applied and production pg_policies verified read-only. Codex D2/D5 runtime race and queue regression green on CI #37835981482. Physical worker PostgREST session remains EXTERNAL."
   },
   "drive_backup": {
     "required": false,
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR checks, production migration registry and pg_policies, Vercel status and public app-version.json",
+    "evidence_source": "Supabase migration registry 20261008200351 and pg_policies, final PR #297 WAWIS PR checks, Vercel success, public app-version.json",
     "notes": "RLS fixture tested, production rule to verify after migration; real-device employee PostgREST receipt remains external unless tested."
   },
   "archive": {
@@ -39,7 +39,7 @@
     "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
     "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
     "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "Client queue / ACK + additive RLS SELECT-own migration. Apply migration before releasing frontend, then verify live policy, migration version, deployed commit, Vercel and app version 12.74.",
+    "front_and_backend": "RLS migration ID 20261008200351 deployed and pg_policies SELECT-own readback verified. Client-only D2/D5 queue + ACK will deploy via Vercel after final CI. Verify exact main SHA and version 12.74.",
     "mobile_touch": "EXTERNAL — verify new reports and silent upload on real employee device after next sign-in; do not claim physical PostgREST test until verified"
   }
 }
