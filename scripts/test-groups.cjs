@@ -92,6 +92,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-protocol',
   ],
   roles: [
+    'node scripts/codex-acceptance-fakturownia-v1269.mjs',
     'npm run test:smoke:admin-worker',
     'npm run test:smoke:desktop-only',
     'npm run test:smoke:supabase-grants',
@@ -101,6 +102,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
   ],
   push: [
+    'node scripts/codex-acceptance-push-v1269.mjs',
     'node scripts/smoke-push-recipient-dedupe-v1268.mjs',
     'node scripts/smoke-push-delivery-receipts-v1265.mjs',
     'npm run test:smoke:push-job-deeplink',
