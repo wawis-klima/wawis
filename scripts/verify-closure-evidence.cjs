@@ -1,4 +1,6 @@
 const fs = require('node:fs');
+const { execFileSync } = require('node:child_process');
+const { classifyRelease } = require('./release-impact.cjs');
 const { uniqueCommands } = require('./test-groups.cjs');
 
 function readJson(path) {
@@ -11,6 +13,13 @@ function sameOrdered(a = [], b = []) {
 }
 
 function requireCiProvenance(evidence, label) {
+  const requiredHead = String(process.env.WAWIS_PR_HEAD_SHA || '').trim();
+  if (requiredHead) {
+    const currentHead = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+    if (currentHead !== requiredHead || evidence.git_head_sha !== requiredHead) {
+      throw new Error(`${label}: dowód nie jest przypisany do aktualnego HEAD PR (${requiredHead})`);
+    }
+  }
   const sha = String(process.env.GITHUB_SHA || '').trim();
   const runId = String(process.env.GITHUB_RUN_ID || '').trim();
   const runAttempt = String(process.env.GITHUB_RUN_ATTEMPT || '').trim();
@@ -32,8 +41,28 @@ const resultPath = process.argv[5] || 'closure-gate-result.json';
 
 try {
   const impact = readJson(impactPath);
+  // Verify the gate was not fed a reduced or stale "impact.json".
+  // Only CI has the trusted PR HEAD; fixture tests can test evidence in isolation.
+  if (process.env.WAWIS_PR_HEAD_SHA) {
+    const currentHead = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+    if (currentHead !== String(process.env.WAWIS_PR_HEAD_SHA).trim()) {
+      throw new Error('Git checkout HEAD nie odpowiada aktualnemu commitowi PR');
+    }
+    const changed = execFileSync('git', ['diff', '--name-only', `${impact.base_ref || 'origin/main'}...HEAD`], {
+      encoding: 'utf8',
+    }).trim().split(/\r?\n/).filter(Boolean);
+    const expectedImpact = classifyRelease({ baseRef: impact.base_ref || 'origin/main', changedFiles: changed });
+    const orderedEqual = (a,b) => Array.isArray(a) && Array.isArray(b) && sameOrdered(a,b);
+    for (const field of ['changed_files', 'effective_files', 'generated_only_files', 'groups', 'pr_groups', 'platforms', 'e2e']) {
+      if (!orderedEqual(impact[field], expectedImpact[field])) throw new Error(`Zmieniony/nieaktualny release impact: ${field}`);
+    }
+    for (const field of ['profile', 'scope', 'needs_playwright']) {
+      if (impact[field] !== expectedImpact[field]) throw new Error(`Zmieniony/nieaktualny release impact: ${field}`);
+    }
+  }
   const effectiveFiles = Array.isArray(impact.effective_files) ? impact.effective_files : [];
   const expectedGroups = Array.isArray(impact.pr_groups) ? impact.pr_groups : [];
+  if (!sameOrdered(impact.groups || [], expectedGroups)) throw new Error('groups i pr_groups muszą być identyczne');
   if (!expectedGroups.length) throw new Error('Brak pr_groups w klasyfikacji release impact.');
 
   const expectedCommands = uniqueCommands(expectedGroups);
