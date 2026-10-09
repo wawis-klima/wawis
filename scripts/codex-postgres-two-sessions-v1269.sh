@@ -19,7 +19,9 @@ container="$(docker run --rm -d \
 trap 'docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
 ready=false
 for attempt in $(seq 1 40); do
-  if docker exec "$container" pg_isready -U postgres -d wawis_codex_ci >/dev/null 2>&1; then ready=true; break; fi
+  # pg_isready can report a listening server before the requested database exists.
+  # Verify an actual query against the named disposable database before running fixtures.
+  if docker exec "$container" psql -X -qAt -v ON_ERROR_STOP=1 -U postgres -d wawis_codex_ci -c 'select 1' 2>/dev/null | grep -qx '1'; then ready=true; break; fi
   sleep 1
 done
 if [[ "$ready" != "true" ]]; then

@@ -248,6 +248,7 @@ const GROUPS = {
     'npm run test:smoke:sms-shared-source',
   ],
   infra: [
+    'node scripts/smoke-postgres-readiness-v1276.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',

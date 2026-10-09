@@ -20,6 +20,11 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 
 | ID | Stan przed CI | Reproduktor / ograniczenie |
 |---|---|---|
+| CODEX-CI-PG-READY | FIXED-UNVERIFIED | `scripts/smoke-postgres-readiness-v1276.mjs`: runtime symuluje pg_isready=true zanim baza istnieje, wymaga faktycznego SELECT 1 i odmowy po 40 nieudanych próbach. Odbiór: pełne niezależne PostgreSQL A/B w zielonym CI. |
+
+
+| ID | Stan przed CI | Reproduktor / ograniczenie |
+|---|---|---|
 | CODEX-DIAG-C7 | FIXED-UNVERIFIED | `scripts/smoke-diagnostics-package4-v1276.mjs` wykonuje rzeczywisty mobilny handler dla `ok:false`, partial i success oraz desktopowy `refreshServerData` z timeout/empty/unavailable; zachowuje ostatni poprawny stan ze znakiem stale. |
 | CODEX-DIAG-C8 | FIXED-UNVERIFIED | Ten sam runtime smoke wykonuje wczesny inline boot observer i scenariusz błędu modułu, testuje fallback i filtruje PII; fizyczny biały ekran iPhone/Safari = EXTERNAL. |
 | CODEX-DIAG-C9 | PARTIAL / EXTERNAL | Wykonawcze agregaty zdjęć i operacji offline, właściciel bieżącej sesji, raport bez identyfikatorów i treści; pełne potwierdzenia ACK i correlation ID każdej operacji nie są dodane (istniejące Centrum synchronizacji). |
