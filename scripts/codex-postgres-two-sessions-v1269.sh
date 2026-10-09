@@ -11,11 +11,19 @@ command -v docker >/dev/null || { echo "NO-GO: Docker required"; exit 13; }
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORK="$(mktemp -d)"
 secret="$(openssl rand -hex 18)"
+# Docker Hub sometimes rate-limits unauthenticated GitHub runners.
+# Both images are public mirrors of the official PostgreSQL 16 image;
+# failure to pull both is NO-GO (never skip the real dual-session DB tests).
+postgres_image="public.ecr.aws/docker/library/postgres:16"
+if ! docker pull "$postgres_image"; then
+  postgres_image="mirror.gcr.io/library/postgres:16"
+  docker pull "$postgres_image" || { echo "NO-GO: PostgreSQL 16 cannot be pulled from public mirrors" >&2; exit 16; }
+fi
 container="$(docker run --rm -d \
   --env POSTGRES_USER=postgres \
   --env POSTGRES_DB=wawis_codex_ci \
   --env POSTGRES_PASSWORD="$secret" \
-  postgres:16)"
+  "$postgres_image")"
 trap 'docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf "$WORK"' EXIT
 ready=false
 for attempt in $(seq 1 40); do

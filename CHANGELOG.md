@@ -1,4 +1,5 @@
 ## 12.92
+- Odporność CI: realny PostgreSQL 16 dla testów Codexa pobierany z publicznego ECR, zapasowo z Google mirror, bez pomijania testów przy awarii.
 - Krótkie nazwy klientów bez zmian. Długie nazwy z jedną nazwą handlową w cudzysłowie lub jednoznacznym nawiasie prezentowane jako sama nazwa marki, np. POWERMAT.
 - Pozostałe długie nazwy: bez zgadywania marki; bezpieczne skracanie form prawnych i limit dwóch linii na mobilnej karcie, bez nachodzenia na datę.
 - Nazwa źródłowa, wyszukiwanie, szczegóły, faktury i protokoły pozostają bez zmian. Test smoke z kontrprzykładami i Playwright: szerokość, klikalność i dane.

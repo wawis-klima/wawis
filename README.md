@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 12.92
 
-Wersja 12.92: na mobilnych kartach montaży długie nazwy klientów z jednoznaczną nazwą handlową w cudzysłowie lub nawiasie są skracane (np. POWERMAT); pozostałe ograniczamy do dwóch linii i skracamy wyłącznie formy prawne. Pełna nazwa nadal pozostaje w danych, szczegółach, protokołach i fakturach. Dodano testy jednostkowe, smoke i Playwright na iPhonie.
+Wersja 12.92: testy dwóch sesji PostgreSQL 16 korzystają z publicznego mirrora obrazu, aby unikać limitów Docker Hub, bez obniżania wymagań CI. Na mobilnych kartach montaży długie nazwy klientów z jednoznaczną nazwą handlową w cudzysłowie lub nawiasie są skracane (np. POWERMAT); pozostałe ograniczamy do dwóch linii i skracamy wyłącznie formy prawne. Pełna nazwa nadal pozostaje w danych, szczegółach, protokołach i fakturach. Dodano testy jednostkowe, smoke i Playwright na iPhonie.
 
 Wersja 12.91: w mobilnych szczegółach montażu pełny adres jest wyświetlany pod etykietą ADRES i zawija się na kilka linii bez wielokropka ani zmniejszania czcionki. E-mail, telefon, data i otwieranie Google Maps pozostają bez zmian. Dodano regresje smoke i Playwright dla długich adresów.
 
