@@ -251,7 +251,7 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
       {profile?.role === 'Administrator' ? (
         <section className="diagnosticsEventsCard">
           <div className="diagnosticsEventsHeader">
-            <h2>Subskrypcje PUSH zespołu</h2>
+            <h2>Status PUSH zespołu</h2>
             <span>Aktywne urządzenia: {pushSubscriptionOverview.reduce((sum, row) => sum + row.activeSubscriptions, 0)}</span>
           </div>
           <p className="muted">{labelStatus(remoteSections.push)}. Subskrypcja i przyjęcie przez dostawcę nie potwierdzają wyświetlenia PUSH na telefonie.</p>
