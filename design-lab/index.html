@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#edf3fb">
+<meta name="description" content="WAWIS DESIGN LAB — niezależny prototyp graficzny z danymi demonstracyjnymi">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; form-action 'none'; object-src 'none'; base-uri 'none'">
+<title>WAWIS DESIGN LAB — prototyp</title>
+<link rel="stylesheet" href="./style.css">
+<script src="./app.js" defer></script>
+</head>
+<body>
+<div class="lab-ribbon"><span class="ribbon-dot"></span> WAWIS DESIGN LAB <span class="ribbon-divider">/</span> TYLKO DEMO — BRAK POŁĄCZENIA Z PRODUKCJĄ</div>
+<div id="root" class="app-shell">
+ <aside class="sidebar" aria-label="Nawigacja">
+  <div class="brand"><div class="brand-logo">W</div><div><div class="brand-name">WAWIS <span>design</span></div><div class="brand-sub">Warsztat interfejsu</div></div></div>
+  <div class="sidebar-label">PRZESTRZEŃ ROBOCZA</div>
+  <nav id="module-nav" class="module-nav"></nav>
+  <div class="sidebar-bottom"><div class="sidebar-lab-label"><span class="status-pulse"></span> Tryb demonstracyjny</div><p>Wszystkie dane są fikcyjne. Operacje nie są wysyłane do żadnego serwera.</p><div class="version">DESIGN LAB 0.1 · baza WAWIS 12.76</div></div>
+ </aside>
+ <main class="workspace">
+  <header class="topbar"><div class="breadcrumbs"><span>WAWIS</span><b>/</b><strong id="crumb">Montaże</strong></div><div class="top-actions"><span class="mock-state">● Offline demo</span><button class="avatar" title="Konto demonstracyjne" type="button">DL</button></div></header>
+  <div class="canvas">
+    <div class="page-heading"><div><div class="eyebrow">NOWE PODEJŚCIE DO PRACY</div><h1 id="page-title">Montaże <span class="heading-accent">/ Przegląd</span></h1><p id="page-subtitle">Projekt nowego interfejsu. Możesz bezpiecznie sprawdzać wszystkie warianty widoku.</p></div><div class="heading-actions"><button type="button" id="reset-demo" class="btn secondary">↺ Reset danych</button><button type="button" id="new-job" class="btn primary">＋ Nowy montaż</button></div></div>
+    <section class="design-toolbar" aria-label="Warianty projektu"><div class="toolbar-title"><span class="palette-dot">◈</span><div><b>Projekt wyglądu</b><small>Porównuj dwa warianty na tych samych danych</small></div></div><div class="segmented" role="group" aria-label="Wariant wyglądu"><button data-theme="modern" aria-pressed="true" type="button">Koncepcja A</button><button data-theme="classic" aria-pressed="false" type="button">Koncepcja B</button></div></section>
+    <div id="app-content" aria-live="polite"></div>
+    <footer class="footnote">WAWIS DESIGN LAB <span>•</span> Prototyp wizualny <span>•</span> bez prawdziwych klientów, SMS, PUSH i faktur</footer>
+  </div>
+ </main>
+</div>
+<div class="modal-backdrop hidden" id="modal"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-top"><div><div class="eyebrow">WYŁĄCZNIE SYMULACJA</div><h2 id="modal-title">Nowy montaż</h2></div><button id="modal-close" class="icon-btn" aria-label="Zamknij" type="button">✕</button></div><form id="job-form"><div class="form-grid"><label>Nazwa demonstracyjna<input name="client" required placeholder="Np. Klient testowy 41" maxlength="80"></label><label>Miejscowość<input name="city" placeholder="Zawiercie" maxlength="50"></label><label>Termin<input name="date" type="date" value="2026-10-12" required></label><label>Status<select name="status"><option>Nowe</option><option>W trakcie</option><option>Niezrealizowane</option><option>Zakończone</option></select></label><label class="full-width">Model urządzenia<input name="model" placeholder="Np. Rotenso Imoto 3,5 kW" maxlength="100"></label></div><div class="modal-actions"><button type="button" class="btn secondary" id="modal-cancel">Anuluj</button><button type="submit" class="btn primary">Zapisz w demonstracji</button></div></form></div></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body></html>
