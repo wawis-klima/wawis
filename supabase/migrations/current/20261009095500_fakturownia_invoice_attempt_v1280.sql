@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.fakturownia_invoice_attempts (
 ALTER TABLE public.fakturownia_invoice_attempts ENABLE ROW LEVEL SECURITY;
 -- Explicitly no authenticated/anon policy: edge function accesses this via service role.
 REVOKE ALL ON TABLE public.fakturownia_invoice_attempts FROM anon, authenticated;
+GRANT ALL PRIVILEGES ON TABLE public.fakturownia_invoice_attempts TO service_role;
 CREATE INDEX IF NOT EXISTS fakturownia_attempts_client_window_idx
   ON public.fakturownia_invoice_attempts (client_id, expires_at);
 COMMENT ON TABLE public.fakturownia_invoice_attempts IS
