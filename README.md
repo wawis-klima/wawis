@@ -932,6 +932,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.84` — administrator usuwa pojedyncze JW w MULTI-SPLIT; zachowane JZ oraz pozostałe JW/tabliczki, numeracja transakcyjna, minimum 2 JW.
 - wersja `12.83` — Fakturownia: domyślna ilość `1` dla pozycji usługi w formularzu wystawiania; bez zmian cen, VAT i płatności.
 - wersja `12.82` — Fakturownia: weryfikacja firm po poprawnym NIP nawet po aktualizacji danych przez GUS; dotychczasowe zabezpieczenia pozostały.
 - wersja `12.81` — Fakturownia: ukryte pod menu przyciski awaryjne, przyspieszona weryfikacja pozytywna bez osłabienia kontroli montażu.

@@ -483,9 +483,14 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
   }
 }
 /* WAWIS 12.84: single JW removal without widening compact mobile columns. */
+ .jobDevicesTableV888 .deviceUnitDocumentationRow:has(.deviceUnitDocumentationRemoveBtn) {
+  position: relative !important;
+  padding-bottom: 38px !important;
+}
 .jobDevicesTableV888 .deviceUnitDocumentationRemoveBtn {
-  grid-column: 4;
-  justify-self: center;
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
   min-width: 42px;
   padding: 5px 7px;
   border: 1px solid #fecaca;

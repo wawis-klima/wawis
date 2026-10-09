@@ -613,7 +613,14 @@ export default function JobDetailsPanel({
                 {jobDevices.length ? jobDevices.map((device, deviceOffset) => {
                   const deviceIndex = deviceOffset + 1;
                   const isExpanded = expandedDeviceIndexes.includes(deviceIndex);
-                  const indoorUnits = getDeviceIndoorUnits(device, { keepEmpty: true });
+                  const photoIndoorNumbers = nameplatePhotos
+                    .map((photo) => getNameplatePhotoMetadata(photo))
+                    .filter((meta) => Number(meta.device_index) === deviceIndex && /^jw-[1-5]$/.test(String(meta.unit_ref || '')))
+                    .map((meta) => Number(String(meta.unit_ref).split('-')[1]));
+                  const indoorUnits = getDeviceIndoorUnits(device, {
+                    keepEmpty: true,
+                    minimumLength: Math.max(1, ...photoIndoorNumbers),
+                  });
                   const isMultiSplit = indoorUnits.length > 1;
                   const outdoorModel = getDeviceOutdoorModel(device) || (!isMultiSplit ? indoorUnits[0]?.model : '') || String(device?.model || '').trim();
                   const outdoorPhoto = getLatestNameplatePhotoForUnit(nameplatePhotos, deviceIndex, 'jz');
