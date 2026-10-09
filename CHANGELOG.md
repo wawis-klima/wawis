@@ -1,3 +1,9 @@
+## 12.87
+- Ujednolicono ekran kadrowania tabliczek z jasnym motywem mobilnego formularza: białe nagłówek i stopka, jasne tło, granatowy tekst i niebieska akcja zapisu.
+- Zachowano ciemną maskę wyłącznie na zdjęciu poza zaznaczonym kadrem; ostrzeżenia jakości zdjęcia i błędy są czytelne na jasnym tle.
+- Testy CSS smoke i Playwright sprawdzają rzeczywiste kolory oraz wcześniejszy przepływ: galeria → kadr → odczyt/weryfikacja.
+- Brak zmian logiki OCR/AI, bazy i zapisanych tabliczek.
+
 ## 12.86
 - Naprawiono kolejność warstw: ekran weryfikacji tabliczki po kadrowaniu na iPhonie (z-index 13000) jest ponad formularzem urządzenia (9999), zamiast pod nim (1300). Kadrowanie i weryfikacja używają React Portal poza przewijanym/przycinanym kreatorem.
 - Test Playwright sprawdza rzeczywiste `elementFromPoint` dla okna po wyborze z galerii; smoke blokuje ponowne ustawienie zbyt niskiej warstwy.
