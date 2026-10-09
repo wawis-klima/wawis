@@ -174,9 +174,10 @@ export async function loadRemoteDiagnosticEvents({
   limit = 30,
   sinceHours = null,
   olderThanHours = null,
+  strictAvailable = false,
   now = Date.now(),
 } = {}) {
-  if (!supabase) return [];
+  if (!supabase) { if (strictAvailable) throw new Error('DIAGNOSTIC_SOURCE_UNAVAILABLE'); return []; }
   const maxRows = Math.min(Math.max(Number(limit) || 30, 1), 100);
   const buildQuery = (withModule = true) => {
     let query = supabase
@@ -196,7 +197,7 @@ export async function loadRemoteDiagnosticEvents({
     ({ data, error } = await buildQuery(false));
   }
   if (error) {
-    if (isRemoteDiagnosticsUnavailable(error)) return [];
+    if (isRemoteDiagnosticsUnavailable(error) && !strictAvailable) return [];
     throw error;
   }
   return (data || []).map((entry) => ({
