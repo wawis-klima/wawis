@@ -82,6 +82,9 @@ function main() {
   assert(checklist.includes('release-impact.json.interaction_flows'), 'NO-GO: checklista musi wymagać prześledzenia zależnych przepływów');
   assert(closureGate.includes('Regresje współdziałania modułów'), 'NO-GO: Closure Gate nie opisuje regresji współdziałania');
   assert(read('scripts/release-impact.cjs').includes('CROSS_MODULE_FLOWS'), 'NO-GO: nie ma mapy zależności modułów w selektorze testów');
+  assert(read('scripts/release-impact.cjs').includes('requireVisualInteractionRegression'), 'NO-GO: brak automatycznego kierowania zmian graficznych do testów interakcji');
+  assert(rules.includes('Graficzna kontrola wszystkich modułów'), 'NO-GO: brak uniwersalnej zasady kontroli wyglądu');
+  assert(checklist.includes('release-impact.json.visual_surfaces'), 'NO-GO: checklista nie wymaga regresji graficznych');
   assert(prWorkflow.includes('Verify Closure Gate'), 'NO-GO: workflow PR nie uruchamia Closure Gate');
   assert(prWorkflow.includes('wawis-closure-evidence'), 'NO-GO: workflow PR nie archiwizuje dowodów Closure Gate');
   assert(String(vercel.buildCommand || '').includes('release-policy-gate.cjs --deploy'), 'NO-GO: Vercel nie wymaga deploy gate');
