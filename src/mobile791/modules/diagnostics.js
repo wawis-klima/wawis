@@ -1,3 +1,4 @@
+import { readSafeBootTrace } from '../../modules/diagnostics-package4.js';
 import { APP_VERSION } from '../version.js';
 import {
   DIAGNOSTIC_RECENT_HOURS,
@@ -276,6 +277,7 @@ function buildDiagnosticReportSnapshot({
   appVersion = '',
   role = '',
   queueSummary = null,
+  offlineOperations = null,
   currentJobId = '',
   extra = {},
 } = {}, storage = null) {
@@ -316,6 +318,8 @@ function buildDiagnosticReportSnapshot({
     runtime,
     storage,
     photoQueue: sanitizeDiagnosticSummary(queueSummary),
+    offlineOperations: sanitizeDiagnosticSummary(offlineOperations),
+    boot: readSafeBootTrace(),
     overview: getDiagnosticOverview(),
     extra: sanitizeDiagnosticSummary(extra),
     entries,

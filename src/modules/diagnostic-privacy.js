@@ -7,7 +7,7 @@ const EVENT_PATTERN = /^(?:app|auth|calendar|comment|comments|console|contractor
 const MODULES = new Set(['app','auth','calendar','comments','contractors','data.refresh','devices','diagnostics','fuel','jobs','nameplate','network','offline','photos','protocol','push','sms','storage']);
 const NUMBER_FIELDS = Object.freeze(['retry_count','retryCount','attempt','attempts','entryCount','queueTotal','queuePending','queueErrors','failedCount','successCount','processed','count','total','pending','errors','local','uploading','failed','completed','skipped','delivered','durationMs','elapsedMs']);
 const BOOL_FIELDS = Object.freeze(['online','offline','partial','immediate','retryable','queueActive','success']);
-const SUMMARY_NUMBER_FIELDS = Object.freeze(['total','pending','local','uploading','error','errors','completed','failed','retryCount','count','attempts']);
+const SUMMARY_NUMBER_FIELDS = Object.freeze(['total','pending','local','uploading','error','errors','completed','failed','retryCount','count','attempts','retrying','prepared','storageUploaded','conflict','syncing']);
 
 function safeNumber(value) {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1e9 ? value : null;
