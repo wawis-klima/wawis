@@ -1,5 +1,5 @@
 'use strict';
-/* WAWIS DESIGN LAB 0.4 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
+/* WAWIS DESIGN LAB 0.5 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
 (() => {
   const $=x=>document.getElementById(x);
   const STORE='wawis-design-lab-concept2-v02';
@@ -132,9 +132,18 @@
     $('modal-backdrop').classList.remove('hidden');f.elements.client.focus();
   }
   function close(){$('modal-backdrop').classList.add('hidden')}
+  function chooseJob(id){
+    if(!jobs.some(j=>j.id===id))return;
+    selected=id;
+    document.querySelectorAll('.lab-job-table tr[data-job], .lab-mobile-job-cards .jobcard[data-job]').forEach(el=>{
+      el.classList.toggle('selected',el.dataset.job===selected);
+      if(el.tagName==='TR')el.setAttribute('aria-selected',String(el.dataset.job===selected));
+    });
+    details();
+  }
   document.addEventListener('click',e=>{
     const b=e.target.closest('button');
-    if(!b){const row=e.target.closest('tr[data-job]');if(row){selected=row.dataset.job;list();details();}return;}
+    if(!b){const row=e.target.closest('tr[data-job]');if(row)chooseJob(row.dataset.job);return;}
     if (window.WawisLabPanels && (b.dataset.demoAction||b.dataset.demoClient||b.dataset.demoDevice||b.dataset.demoTab||b.dataset.demoSms||b.dataset.demoDay||b.dataset.demoVehicle)) {
       const action=window.WawisLabPanels.action(b);
       const destinations={'goto-devices':'Urządzenia','goto-contractors':'Kontrahenci','goto-sms':'SMS serwis','goto-calendar':'Kalendarz'};
@@ -147,7 +156,7 @@
     if(b.dataset.sort){sortDir=sortKey===b.dataset.sort&&sortDir==='asc'?'desc':'asc';sortKey=b.dataset.sort;page=1;list();return;}
     if(b.dataset.page){page=Math.max(1,page+(b.dataset.page==='next'?1:-1));list();return;}
     if(b.dataset.filter){filter=(filter===b.dataset.filter)?null:b.dataset.filter;page=1;render();return;}
-    if(b.dataset.job){selected=b.dataset.job;render();if(window.innerWidth<731)toast('Wybrano '+selected+'. Szczegóły można sprawdzić na desktopie.');return;}
+    if(b.dataset.job){chooseJob(b.dataset.job);if(window.innerWidth<731)toast('Wybrano '+selected+'. Szczegóły można sprawdzić na desktopie.');return;}
     if(b.dataset.action==='edit'){edit(selectedJob());return;}
     if(b.dataset.action==='protocol'){toast('Protokół jest tylko prezentacją graficzną — bez generowania PDF.');return;}
   });
