@@ -1,3 +1,8 @@
+## 12.85
+- Naprawiono poziome przepełnienie kreatora urządzeń MULTI-SPLIT na iPhonie dla długich nazw modeli JZ i JW.
+- Zapewniono kurczliwe kolumny, skrócone długie etykiety, pionowy scroll treści, widoczne nagłówek i stopkę.
+- Test Playwright na 375/390/414 px sprawdza rzeczywiste pozycje kart i przycisków w krokach 2 oraz 3.
+
 ## 12.84
 - Administrator może usuwać pojedyncze JW w zestawie multi-split na desktopie i mobile, z potwierdzeniem i zachowaniem minimum dwóch JW.
 - RPC transakcyjnie aktualizuje pola urządzeń, logiczne przypisanie tabliczek i ręczne potwierdzenia; nie przenosi plików pozostałych jednostek.
