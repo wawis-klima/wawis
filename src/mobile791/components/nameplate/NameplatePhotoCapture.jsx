@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { analyzeNameplatePhotoQuality } from "../../modules/nameplate-quality.js";
 import { readMobileNameplate } from "../../modules/nameplate-reader.js";
 import { supabase } from "../../lib/supabase.js";
@@ -715,7 +716,7 @@ export default function NameplatePhotoCapture({
         />
       </div>
 
-      {verification ? (
+      {verification && typeof document !== "undefined" ? createPortal(
         <NameplateVerificationReview
           verification={verification}
           fieldLabel={fieldLabel}
@@ -740,17 +741,19 @@ export default function NameplatePhotoCapture({
           onManual={switchVerificationToManual}
           onCancel={() => setVerification(null)}
           compatibilityError={compatibilityError}
-        />
+        />,
+        document.body,
       ) : null}
 
-      {cropSource ? (
+      {cropSource && typeof document !== "undefined" ? createPortal(
         <CropEditor
           source={cropSource}
           fieldLabel={fieldLabel}
           onCancel={clearCropSource}
           onRetake={handleRetake}
           onConfirm={handleCropConfirm}
-        />
+        />,
+        document.body,
       ) : null}
     </>
   );
