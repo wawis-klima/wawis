@@ -1,5 +1,5 @@
 'use strict';
-/* WAWIS DESIGN LAB 0.5 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
+/* WAWIS DESIGN LAB 0.6 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
 (() => {
   const $=x=>document.getElementById(x);
   const STORE='wawis-design-lab-concept2-v02';
@@ -38,7 +38,7 @@
     photos:i%4===0?0:3,devices:i%7===0?3:1,note:i%5===0?'Przygotować miejsce pod montaż. Kontakt z klientem w dniu montażu.':''
   }));
   const read=()=>{try{const x=JSON.parse(localStorage.getItem(STORE));if(Array.isArray(x)&&x.length&&x.every(y=>typeof y.id==='string'&&typeof y.client==='string'))return x}catch(e){}return set()};
-  let jobs=read(),mode='Montaże',role='admin',selected=jobs[0].id,filter=null,query='',editing=null,sortKey='date',sortDir='desc',page=1;
+  let jobs=read(),mode='Montaże',role='admin',selected=jobs[0].id,filter=null,query='',editing=null,sortKey='completed_at',sortDir='desc',page=1;
   const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(jobs))}catch(e){}};
   let toastTimer;
   function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3400)}
@@ -99,8 +99,8 @@
     const currentRows=visible.slice((page-1)*12,page*12);
     if(currentRows.length&&!currentRows.some(j=>j.id===selected))selected=currentRows[0].id;
     $('total-items').textContent=visible.length+' pozycji';
-    const desktopTable='<div class="lab-job-table-wrap"><table class="lab-job-table" aria-label="Tabela montaży"><thead><tr><th><button class="lab-sort" type="button" data-sort="client">Klient / adres ↕</button></th><th>Status</th><th>Monterzy</th><th>Tabliczki JW/JZ</th><th>Faktura VAT</th><th><button class="lab-sort" type="button" data-sort="date">Data montażu ↕</button></th><th><button class="lab-sort" type="button" data-sort="completed_at">Data zakończenia ↕</button></th><th>Urządzenie</th><th>Płatność</th></tr></thead><tbody>'+currentRows.map(j=>
-       '<tr data-job="'+escape(j.id)+'" class="'+(selected===j.id?'selected':'')+'"><td class="lab-client-cell"><button type="button" data-job="'+escape(j.id)+'" class="lab-client-select"><b>'+escape(j.client)+'</b><small>'+escape(j.city)+', '+escape(j.street)+'</small></button></td><td>'+statusTag(j)+'</td><td>'+installersTag(j)+'</td><td>'+plateTag(j)+'</td><td>'+invoiceTag(j)+'</td><td><span class="lab-table-date">'+escape(j.date||'—')+'</span></td><td><span class="lab-table-date '+(!j.completed_at?'empty':'')+'">'+escape(j.completed_at||'—')+'</span></td><td><span class="lab-table-model" title="'+escape(j.model)+'">'+escape(j.model)+'</span></td><td><span class="lab-payment">'+escape(j.payment)+'</span></td></tr>'
+    const desktopTable='<div class="lab-job-table-wrap"><table class="lab-job-table" aria-label="Tabela montaży"><thead><tr><th><button class="lab-sort" type="button" data-sort="client">Klient / adres ↕</button></th><th>Status</th><th>Monterzy</th><th>Tabliczki JW/JZ</th><th>Faktura VAT</th><th><button class="lab-sort" type="button" data-sort="completed_at">Data zakończenia ↕</button></th></tr></thead><tbody>'+currentRows.map(j=>
+       '<tr data-job="'+escape(j.id)+'" class="'+(selected===j.id?'selected':'')+'"><td class="lab-client-cell"><button type="button" data-job="'+escape(j.id)+'" class="lab-client-select"><b>'+escape(j.client)+'</b><small>'+escape(j.city)+', '+escape(j.street)+'</small></button></td><td>'+statusTag(j)+'</td><td>'+installersTag(j)+'</td><td>'+plateTag(j)+'</td><td>'+invoiceTag(j)+'</td><td><span class="lab-table-date '+(!j.completed_at?'empty':'')+'">'+escape(j.completed_at||'—')+'</span></td></tr>'
     ).join('')+'</tbody></table></div><nav class="lab-job-pages" aria-label="Strony tabeli"><span>Strona '+page+' z '+pages+' · '+visible.length+' montaży</span><button type="button" data-page="prev" '+(page===1?'disabled':'')+' aria-label="Poprzednia strona">‹</button><button type="button" data-page="next" '+(page===pages?'disabled':'')+' aria-label="Następna strona">›</button></nav>';
     const mobileCards='<div class="lab-mobile-job-cards">'+visible.map(j=>'<button class="jobcard '+(j.id===selected?'selected':'')+'" type="button" data-job="'+escape(j.id)+'"><span class="housebox">'+ico.house+'</span><span class="jobtext"><strong>'+escape(j.client)+'</strong><small>'+escape(j.city)+' · '+escape(j.date)+' · '+escape(j.model)+'</small></span>'+iconbadge(j.status)+'<span class="arrow">›</span></button>').join('')+'</div>';
     $('joblist').innerHTML=visible.length?desktopTable+mobileCards:'<div class="lab-no-jobs">Nie ma montaży spełniających kryteria.</div>';
