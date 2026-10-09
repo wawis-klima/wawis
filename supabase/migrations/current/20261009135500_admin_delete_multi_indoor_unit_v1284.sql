@@ -17,7 +17,7 @@ begin
     from pg_catalog.regexp_split_to_table(coalesce(p_line, ''), '[|]') as t(part)
   loop
     if v_part ~* '^JW[1-5][[:space:]]*:' then
-      v_number := (pg_catalog.substring(v_part from '^JW([1-5])'))::integer;
+      v_number := (pg_catalog.substring(v_part, '^JW([1-5])'))::integer;
       if v_number = p_unit then
         continue;
       end if;
@@ -106,13 +106,13 @@ begin
   -- Prefer explicit photo assignment; legacy nameplates may still use paths.
   select coalesce(max((pg_catalog.substring(
     coalesce(nullif(pg_catalog.lower(p.unit_ref), ''),
-      pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, '') from '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))),
+      pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))),
     '^jw-([1-5])$'))::integer), 0)
   into v_photo_count
   from public.photos p
   where p.job_id = p_job_id
     and coalesce(nullif(p.device_index, 0),
-      (pg_catalog.substring(coalesce(p.storage_path, '') from '/nameplates/device-([0-9]+)_'))::integer
+      (pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-([0-9]+)_'))::integer
     ) = p_device_index
     and (p.photo_kind = 'nameplate' or p.storage_path ~ '/nameplates/device-[0-9]+_');
 
@@ -133,10 +133,10 @@ begin
   from public.photos p
   where p.job_id = p_job_id
     and coalesce(nullif(p.device_index, 0),
-      (pg_catalog.substring(coalesce(p.storage_path, '') from '/nameplates/device-([0-9]+)_'))::integer
+      (pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-([0-9]+)_'))::integer
     ) = p_device_index
     and coalesce(nullif(pg_catalog.lower(p.unit_ref), ''),
-      pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, '') from '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))) = 'jw-' || p_unit_number::text
+      pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))) = 'jw-' || p_unit_number::text
     and (p.photo_kind = 'nameplate' or p.storage_path ~ '/nameplates/device-[0-9]+_');
 
   v_models[p_device_index] := private.remove_indoor_segment_v1284(v_model_line, p_unit_number);
@@ -171,10 +171,10 @@ begin
     from public.photos p
     where p.job_id = p_job_id
       and coalesce(nullif(p.device_index, 0),
-        (pg_catalog.substring(coalesce(p.storage_path, '') from '/nameplates/device-([0-9]+)_'))::integer
+        (pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-([0-9]+)_'))::integer
       ) = p_device_index
       and coalesce(nullif(pg_catalog.lower(p.unit_ref), ''),
-        pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, '') from '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))) = 'jw-' || v_unit::text
+        pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))) = 'jw-' || v_unit::text
       and (p.photo_kind = 'nameplate' or p.storage_path ~ '/nameplates/device-[0-9]+_')
       and not (p.id = any(v_moved_ids));
 
