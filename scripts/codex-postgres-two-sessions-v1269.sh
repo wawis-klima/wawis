@@ -284,10 +284,8 @@ SQL
 [[ "$(pg -c "select count(*) from public.photos where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == '4' ]] || exit 27
 [[ "$(pg -c "select count(*) from public.nameplate_manual_verifications where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == '0' ]] || exit 28
 [[ "$(pg -c "select device_model from public.jobs where id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == 'JW1: A | JW2: B | JW3: C | JZ: OUT' ]] || exit 29
-first="$(grep -E '^pid=[0-9]+
- "$WORK/jw-a.out" | head -1)"
-second="$(grep -E '^pid=[0-9]+
- "$WORK/jw-b.out" | head -1)"
+first="$(grep -E 'pid=[0-9]+' "$WORK/jw-a.out" | head -1)"
+second="$(grep -E 'pid=[0-9]+' "$WORK/jw-b.out" | head -1)"
 [[ -n "$first" && -n "$second" && "$first" != "$second" ]] || exit 30
 echo "PASS JW 12.84: two independent sessions prevent duplicate deletion; JZ and JW1–JW3 remain, nameplates reindex safely"
 
