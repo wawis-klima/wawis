@@ -36,6 +36,36 @@ async function getPageVisualHealth(page) {
   });
 }
 
+// A visible element in the DOM can still be covered by an overlay (OCR in
+// WAWIS 12.85). Test hit targets in the actual rendered desktop/mobile surfaces.
+async function getVisibleActionHealth(page, surfaceSelector) {
+  return page.evaluate((selector) => {
+    const root = document.querySelector(selector);
+    if (!root) return { found: false, checked: 0, blocked: [] };
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = document.documentElement.clientHeight;
+    const targets = [...root.querySelectorAll('button, input, select, textarea, [role="button"]')]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return rect.width >= 12 && rect.height >= 12
+          && rect.left >= 0 && rect.right <= viewportWidth
+          && rect.top >= 0 && rect.bottom <= viewportHeight
+          && style.display !== 'none' && style.visibility !== 'hidden'
+          && style.opacity !== '0' && style.pointerEvents !== 'none'
+          && !element.disabled && element.getAttribute('aria-hidden') !== 'true';
+      }).slice(0, 80);
+    const blocked = targets.filter((element) => {
+      const rect = element.getBoundingClientRect();
+      const topmost = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return !topmost || (topmost !== element && !element.contains(topmost));
+    }).map((element) => ({
+      label: String(element.getAttribute('aria-label') || element.textContent || element.tagName).trim().slice(0, 60),
+    }));
+    return { found: true, checked: targets.length, blocked };
+  }, surfaceSelector);
+}
+
 test.describe('release visual desktop', () => {
   test.use({ viewport: { width: 1440, height: 1000 } });
 
@@ -74,6 +104,11 @@ test.describe('release visual desktop', () => {
     expect(health.bodyFontSize).toBeGreaterThanOrEqual(12);
     expect(health.horizontalOverflow).toBeLessThanOrEqual(2);
     expect(health.extremeText).toEqual([]);
+
+    const desktopActions = await getVisibleActionHealth(page, '.desktopJobsListPane');
+    expect(desktopActions.found).toBe(true);
+    expect(desktopActions.checked).toBeGreaterThan(0);
+    expect(desktopActions.blocked).toEqual([]);
 
     await page.screenshot({ path: path.join(artifactsDir, 'desktop-release-visual.png'), fullPage: true });
   });
@@ -158,6 +193,11 @@ test.describe('@mobile release visual iPhone', () => {
       protocolBackground: 'rgb(255, 255, 255)',
       protocolTextAlignedLeft: true,
     });
+
+    const mobileActions = await getVisibleActionHealth(page, '.mobileProtocolWizard');
+    expect(mobileActions.found).toBe(true);
+    expect(mobileActions.checked).toBeGreaterThan(0);
+    expect(mobileActions.blocked).toEqual([]);
 
     await page.screenshot({ path: path.join(artifactsDir, 'mobile-release-visual.png'), fullPage: true });
   });
