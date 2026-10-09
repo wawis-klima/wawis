@@ -2,7 +2,7 @@
   "policy_enforced_from": "10.60",
   "version": "12.77",
   "scope": "full",
-  "release_branch": "fix/fakturownia-verification-v1277",
+  "release_branch": "release/v12.77",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -15,9 +15,9 @@
     "file_name": "klima-app-v12.77.zip"
   },
   "main_protection": {
-    "source_branch": "fix/fakturownia-verification-v1277",
-    "ready_for_main": false,
-    "status": "PENDING_CI",
+    "source_branch": "release/v12.77",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,8 +35,8 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "Fakturownia 12.77: OID rejection and safe manual number link; Codex acceptance P0 maintained",
-    "release_ci": "PENDING: exact SHA CI, closure group(s), E2E as required, build",
-    "external_provider_tests": "NOT VERIFIED — user will issue real invoices today; no test billing or payment changes",
+    "release_ci": "REQUIRED — exact SHA PR checks, grouped regression, Playwright both platforms, Closure Gate and production build",
+    "external_provider_tests": "EXTERNAL — no real invoices created by CI; user to issue and verify live invoices today",
     "front_and_backend": "Desktop form and Supabase Fakturownia Edge Function; no SQL schema changes, no payment module changes",
     "mobile_touch": "EXTERNAL — verify mobile version after production deployment, mobile business behavior unchanged"
   }
