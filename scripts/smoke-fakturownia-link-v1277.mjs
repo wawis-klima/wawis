@@ -15,6 +15,20 @@ assert.equal(inspectInvoiceBuyer({...sample,buyer_name:'Tadeusz Ruda'},buyer).co
 assert.equal(inspectInvoiceBuyer({...sample,buyer_city:'Zawiercie'},buyer).code,'BUYER_CITY_MISMATCH');
 assert.equal(inspectInvoiceBuyer({...sample,buyer_post_code:'00-001'},buyer).code,'BUYER_POSTAL_MISMATCH');
 
+const gusBuyer={name:'DIAMOND SP. Z O.O.',street:'Półanki 62B',city:'Krakow',postCode:'',taxNo:'6762129480'};
+const gusInvoice={...sample,number:'7/10/2026',buyer_name:'PRZEDSIĘBIORSTWO PRODUKCYJNO HANDLOWO USŁUGOWE DIAMOND SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ',
+  buyer_street:'Półanki 62B',buyer_city:'Kraków',buyer_post_code:'30-858',buyer_tax_no:'6762129480'};
+assert.equal(inspectInvoiceBuyer(gusInvoice,gusBuyer).ok,true,'Full GUS company name and postal correction accepted by valid exact NIP');
+assert.equal(inspectInvoiceBuyer(gusInvoice,gusBuyer).code,'VERIFIED_BY_NIP','Company match uses NIP');
+assert.equal(inspectInvoiceBuyer({...gusInvoice,buyer_name:'Inna nazwa',buyer_street:'Nowa 7'},gusBuyer).ok,true,'Legal name/address change alone not identity for valid identical NIP');
+assert.equal(inspectInvoiceBuyer({...gusInvoice,buyer_tax_no:'6762129472'},gusBuyer).code,'BUYER_TAX_MISMATCH','Other NIP is rejected');
+assert.equal(inspectInvoiceBuyer({...gusInvoice,buyer_tax_no:''},gusBuyer).code,'BUYER_TAX_MISMATCH','Missing invoice NIP rejected for business');
+assert.equal(inspectInvoiceBuyer(gusInvoice,{...gusBuyer,taxNo:'6762129490'}).code,'BUYER_TAX_MISMATCH','Incorrect WAWIS NIP blocked');
+assert.equal(inspectInvoiceBuyer(gusInvoice,{...gusBuyer,taxNo:''}).code,'BUYER_TAX_MISMATCH','Private job cannot claim corporate invoice');
+assert.equal(inspectInvoiceBuyer(sample,buyer).code,'VERIFIED','Private buyer original strict match preserved');
+assert.equal(inspectInvoiceBuyer({...sample,buyer_name:'Tadeusz Rudek'},buyer).ok,false,'Different private name still blocked');
+
+
 const inspect=(invoice)=>inspectManualInvoiceMatch(invoice,{jobId,clientId:String(clientId),invoiceNumber:number});
 assert.equal(inspect(sample).ok,true);
 assert.equal(inspect({...sample,oid:buildJobInvoiceOid(jobId)}).ok,true);
