@@ -98,7 +98,7 @@ function isSharedDependency(file) {
 function isGlobalReleaseInfrastructure(file) {
   const lower = String(file || '').toLowerCase();
   return /^\.github\/workflows\/pr-checks\.yml$/.test(lower)
-    || /^scripts\/(?:release-impact|run-pr-checks|run-test-group|test-groups|verify-closure-evidence|run-pr-playwright|release-policy-gate|smoke-release-impact)(?:\.[cm]?js)$/.test(lower);
+    || /^scripts\/(?:release-impact|run-pr-checks|run-test-group|test-groups|verify-closure-evidence|run-pr-playwright|run-release|release-policy-gate|smoke-release-impact)(?:\.[cm]?js)$/.test(lower);
 }
 
 function includeGroups(initial, extras) {
