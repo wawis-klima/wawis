@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { transform } from 'esbuild';
-import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch } from '../supabase/functions/fakturownia-client/invoice-match.js';
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation } from '../supabase/functions/fakturownia-client/invoice-match.js';
 const jobId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const otherJobId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const contractorId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -19,18 +19,18 @@ assert.equal(inspect({...sample,status:'draft'}).code,'NOT_ISSUED_VAT');
 assert.equal(inspect(null).code,'NOT_FOUND');
 const src=fs.readFileSync(new URL('../supabase/functions/fakturownia-client/index.ts',import.meta.url),'utf8')
   .replace(/^import \{ createClient \} from "npm:\@supabase\/supabase-js\@[^"]+";?\s*$/m,'')
-  .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch \} from "\.\/invoice-match\.js";?\s*$/m,'');
+  .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation \} from "\.\/invoice-match\.js";?\s*$/m,'');
 assert(!src.includes('import {'),'Test executes actual Edge source with mocked imports');
 const compiled=(await transform(src,{loader:'ts',target:'es2022',format:'iife'})).code;
 async function run(label, opts={}, expected={}) {
- const {action='link_by_number',invoices=[sample],clients=[{id:clientId,external_id:contractorId}],status='Zakończone',role='Administrator'}=opts;
+ const {action='link_by_number',invoices=[sample],clients=[{id:clientId,external_id:contractorId}],status='Zakończone',role='Administrator',alreadyLinked=[]}=opts;
  let handler;const calls=[];
- const adminDb={from(table){return {select(){return this;},eq(){return this;},async maybeSingle(){
+ const adminDb={from(table){return {select(){return this;},eq(){return this;},async in(){return {data:alreadyLinked.map(id=>({vat_invoice_fakturownia_invoice_id:id})),error:null};},async maybeSingle(){
     return {data:table==='profiles'?{role}:table==='jobs'?{id:jobId,contractor_id:contractorId,status,vat_invoice_fakturownia_confirmed:false}:null,error:null};
  }};}};
  const env={SUPABASE_URL:'https://fake.supabase.test',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',FAKTUROWNIA_API_TOKEN:'placeholder'};
  const sandbox={
-   buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,
+   buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,findInvoiceCandidatesForManualConfirmation,
    createClient(_url,key){return key==='anon'?{auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}}}:adminDb;},
    Deno:{serve(f){handler=f;},env:{get(k){return env[k]||'';}}},
    async fetch(value,options){
@@ -50,6 +50,7 @@ async function run(label, opts={}, expected={}) {
  assert.equal(res.status,expected.http||200,label+' HTTP');
  if(expected.found!==undefined)assert.equal(out.found,expected.found,label+' found');
  if(expected.code)assert.equal(out.reasonCode,expected.code,label+' refusal');
+ if(expected.candidates!==undefined)assert.equal(out.candidates?.length,expected.candidates,label+' candidate count');
  if(expected.error)assert.match(String(out.error||''),expected.error,label+' error');
  assert.equal(calls.filter(x=>x.method!=='GET').length,0,label+' no Fakturownia writes');
  if(action==='link_by_number'&&role==='Administrator'&&status==='Zakończone'&&clients.length===1&&clients[0].external_id===contractorId){
@@ -70,9 +71,19 @@ await run('foreign external customer',{clients:[{id:55,external_id:'other'}]}, {
 await run('unfinished job',{status:'W trakcie'}, {http:400,error:/zakończonym/});
 await run('worker forbidden',{role:'Pracownik'}, {http:403,error:/administrator/});
 await run('auto OID absent',{action:'verify',invoices:[]}, {found:false,code:'OID_NOT_FOUND'});
-await run('auto OID accepted',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}]}, {found:true,code:'VERIFIED'});
+await run('auto OID accepted',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}]}, {found:true,code:'VERIFIED',candidates:0});
+await run('auto missing OID suggests one invoice',{action:'verify',invoices:[sample]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
+await run('auto missing OID suggests choices but does not assign',{action:'verify',invoices:[sample,{...sample,id:992,number:'FV/10/2026/18'}]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:2});
+await run('auto excludes invoice linked to different installation',{action:'verify',invoices:[sample],alreadyLinked:['991']}, {found:false,code:'OID_NOT_FOUND',candidates:0});
+await run('auto excludes wrong customer',{action:'verify',invoices:[{...sample,client_id:77}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
+await run('auto excludes unrelated OID',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(otherJobId)}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
+await run('auto excludes draft and proforma',{action:'verify',invoices:[{...sample,kind:'proforma'}, {...sample,id:992,kind:'vat',status:'draft'}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
+await run('auto fails closed on ambiguous client',{action:'verify',invoices:[sample],clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
 const ui=fs.readFileSync(new URL('../src/components/JobDetailsPanel.jsx',import.meta.url),'utf8');
 assert.match(ui,/setInvoiceVerificationMessage\(result\?\.reason/);
 assert.match(ui,/onSubmit=\{linkInvoiceByNumber\}/);
 assert.match(ui,/!selectedJob\.vat_invoice_fakturownia_confirmed/);
+assert.match(ui,/invoiceVerificationCandidates\.map/);
+assert.match(ui,/onClick=\{\(\) => void confirmInvoiceNumber\(candidate\.invoiceNumber\)\}/);
+assert.match(ui,/setInvoiceVerificationCandidates\(Array\.isArray\(result\?\.candidates\)/);
 console.log('PASS V12.77 mocked provider integration & UI wiring (no real invoices created)');
