@@ -1,5 +1,5 @@
 ## 12.86
-- Naprawiono kolejność warstw: ekran weryfikacji tabliczki po kadrowaniu na iPhonie (z-index 13000) jest ponad formularzem urządzenia (9999), zamiast pod nim (1300).
+- Naprawiono kolejność warstw: ekran weryfikacji tabliczki po kadrowaniu na iPhonie (z-index 13000) jest ponad formularzem urządzenia (9999), zamiast pod nim (1300). Kadrowanie i weryfikacja używają React Portal poza przewijanym/przycinanym kreatorem.
 - Test Playwright sprawdza rzeczywiste `elementFromPoint` dla okna po wyborze z galerii; smoke blokuje ponowne ustawienie zbyt niskiej warstwy.
 - Nie zmieniono OCR, AI, bazy ani zapisu zdjęć; test na fizycznym iPhonie pozostaje do potwierdzenia po wdrożeniu.
 
