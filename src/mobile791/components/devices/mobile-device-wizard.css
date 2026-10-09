@@ -1070,6 +1070,8 @@
 }
 .mobileDeviceWizardModal .mobileDeviceWizardBody {
   grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: max-content;
+  align-content: start;
   min-height: 0;
 }
 .mobileDeviceWizardModal .mobileDeviceWizardBody > *,
