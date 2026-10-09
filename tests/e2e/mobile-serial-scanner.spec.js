@@ -268,6 +268,17 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.getByText('Tryb: Multi', { exact: true })).toBeVisible();
     await expect(page.locator('.mobileMultiOutdoorCard')).toBeVisible();
     await expect(page.locator('.mobileMultiIndoorCard')).toHaveCount(3);
+    const heights = await page.evaluate(() => ({
+      outdoor: document.querySelector('.mobileMultiOutdoorCard')?.getBoundingClientRect().height || 0,
+      indoor: [...document.querySelectorAll('.mobileMultiIndoorCard')].map((row) => row.getBoundingClientRect().height),
+    }));
+    expect(heights.outdoor).toBeGreaterThan(60);
+    expect(heights.outdoor).toBeLessThanOrEqual(150);
+    expect(heights.indoor).toHaveLength(3);
+    for (const height of heights.indoor) {
+      expect(height).toBeGreaterThan(50);
+      expect(height).toBeLessThanOrEqual(110);
+    }
 
     const assertInsideViewport = async (label) => {
       const result = await page.evaluate(() => {
