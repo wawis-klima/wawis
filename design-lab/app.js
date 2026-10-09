@@ -38,7 +38,7 @@
     photos:i%4===0?0:3,devices:i%7===0?3:1,note:i%5===0?'Przygotować miejsce pod montaż. Kontakt z klientem w dniu montażu.':''
   }));
   const read=()=>{try{const x=JSON.parse(localStorage.getItem(STORE));if(Array.isArray(x)&&x.length&&x.every(y=>typeof y.id==='string'&&typeof y.client==='string'))return x}catch(e){}return set()};
-  let jobs=read(),mode='Montaże',role='admin',selected=jobs[0].id,filter=null,query='',editing=null;
+  let jobs=read(),mode='Montaże',role='admin',selected=jobs[0].id,filter=null,query='',editing=null,sortKey='date',sortDir='desc',page=1;
   const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(jobs))}catch(e){}};
   let toastTimer;
   function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3400)}
@@ -89,10 +89,18 @@
   const statusTag=j=>'<span class="lab-job-status '+statusType[j.status]+'"><span class="lab-status-mark">'+ico[statusType[j.status]]+'</span>'+escape(j.status)+'</span>';
   function list(){
     const visible=jobs.filter(j=>(filter===null||j.status===filter)&&[j.client,j.city,j.street,j.model,j.id,j.installer].some(x=>String(x).toLowerCase().includes(query.toLowerCase()))).map(demoMeta);
+    visible.sort((a,b)=>{
+      const av=String(a[sortKey]||''),bv=String(b[sortKey]||'');
+      const comparison=av.localeCompare(bv,'pl',{numeric:true});
+      return sortDir==='asc'?comparison:-comparison;
+    });
+    const pages=Math.max(1,Math.ceil(visible.length/12));
+    page=Math.min(Math.max(1,page),pages);
+    const currentRows=visible.slice((page-1)*12,page*12);
     $('total-items').textContent=visible.length+' pozycji';
-    const desktopTable='<div class="lab-job-table-wrap"><table class="lab-job-table" aria-label="Tabela montaży"><thead><tr><th>Klient / adres</th><th>Status</th><th>Monterzy</th><th>Tabliczki JW/JZ</th><th>Faktura VAT</th><th>Data montażu</th><th>Data zakończenia</th><th>Urządzenie</th><th>Płatność</th></tr></thead><tbody>'+visible.map(j=>
+    const desktopTable='<div class="lab-job-table-wrap"><table class="lab-job-table" aria-label="Tabela montaży"><thead><tr><th><button class="lab-sort" type="button" data-sort="client">Klient / adres ↕</button></th><th>Status</th><th>Monterzy</th><th>Tabliczki JW/JZ</th><th>Faktura VAT</th><th><button class="lab-sort" type="button" data-sort="date">Data montażu ↕</button></th><th><button class="lab-sort" type="button" data-sort="completed_at">Data zakończenia ↕</button></th><th>Urządzenie</th><th>Płatność</th></tr></thead><tbody>'+currentRows.map(j=>
        '<tr data-job="'+escape(j.id)+'" class="'+(selected===j.id?'selected':'')+'"><td class="lab-client-cell"><button type="button" data-job="'+escape(j.id)+'" class="lab-client-select"><b>'+escape(j.client)+'</b><small>'+escape(j.city)+', '+escape(j.street)+'</small></button></td><td>'+statusTag(j)+'</td><td>'+installersTag(j)+'</td><td>'+plateTag(j)+'</td><td>'+invoiceTag(j)+'</td><td><span class="lab-table-date">'+escape(j.date||'—')+'</span></td><td><span class="lab-table-date '+(!j.completed_at?'empty':'')+'">'+escape(j.completed_at||'—')+'</span></td><td><span class="lab-table-model" title="'+escape(j.model)+'">'+escape(j.model)+'</span></td><td><span class="lab-payment">'+escape(j.payment)+'</span></td></tr>'
-    ).join('')+'</tbody></table></div>';
+    ).join('')+'</tbody></table></div><nav class="lab-job-pages" aria-label="Strony tabeli"><span>Strona '+page+' z '+pages+' · '+visible.length+' montaży</span><button type="button" data-page="prev" '+(page===1?'disabled':'')+' aria-label="Poprzednia strona">‹</button><button type="button" data-page="next" '+(page===pages?'disabled':'')+' aria-label="Następna strona">›</button></nav>';
     const mobileCards='<div class="lab-mobile-job-cards">'+visible.map(j=>'<button class="jobcard '+(j.id===selected?'selected':'')+'" type="button" data-job="'+escape(j.id)+'"><span class="housebox">'+ico.house+'</span><span class="jobtext"><strong>'+escape(j.client)+'</strong><small>'+escape(j.city)+' · '+escape(j.date)+' · '+escape(j.model)+'</small></span>'+iconbadge(j.status)+'<span class="arrow">›</span></button>').join('')+'</div>';
     $('joblist').innerHTML=visible.length?desktopTable+mobileCards:'<div class="lab-no-jobs">Nie ma montaży spełniających kryteria.</div>';
   }
@@ -135,7 +143,9 @@
     }
     if(b.dataset.module){mode=b.dataset.module;render();return;}
     if(b.dataset.role){role=b.dataset.role;render();return;}
-    if(b.dataset.filter){filter=(filter===b.dataset.filter)?null:b.dataset.filter;render();return;}
+    if(b.dataset.sort){sortDir=sortKey===b.dataset.sort&&sortDir==='asc'?'desc':'asc';sortKey=b.dataset.sort;page=1;list();return;}
+    if(b.dataset.page){page=Math.max(1,page+(b.dataset.page==='next'?1:-1));list();return;}
+    if(b.dataset.filter){filter=(filter===b.dataset.filter)?null:b.dataset.filter;page=1;render();return;}
     if(b.dataset.job){selected=b.dataset.job;render();if(window.innerWidth<731)toast('Wybrano '+selected+'. Szczegóły można sprawdzić na desktopie.');return;}
     if(b.dataset.action==='edit'){edit(selectedJob());return;}
     if(b.dataset.action==='protocol'){toast('Protokół jest tylko prezentacją graficzną — bez generowania PDF.');return;}
@@ -162,7 +172,7 @@
   $('notify-btn').addEventListener('click',()=>toast('W laboratorium powiadomienia są wyłączone.'));
   $('search').addEventListener('input',e=>{
     const pos=e.target.selectionStart;
-    query=e.target.value;list();
+    query=e.target.value;page=1;list();
     const input=$('search');input.focus();try{input.setSelectionRange(pos,pos)}catch(e){}
   });
   $('editform').addEventListener('submit',e=>{
