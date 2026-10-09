@@ -378,14 +378,14 @@ export default function JobDetailsPanel({
     }
   }
 
-  async function verifyPendingFakturowniaInvoice() {
+  async function verifyPendingFakturowniaInvoice(force = false) {
     const pending = fakturowniaVerificationRef.current;
-    if (!isAdmin || !isCompletedJob || !selectedJobId || !pending || fakturowniaVerificationBusyRef.current) return;
+    if (!isAdmin || !isCompletedJob || !selectedJobId || (!pending && !force) || fakturowniaVerificationBusyRef.current) return;
     if (selectedJob?.vat_invoice_fakturownia_confirmed) {
       fakturowniaVerificationRef.current = null;
       return;
     }
-    if (String(pending.jobId || '') !== selectedJobId) return;
+    if (pending && String(pending.jobId || '') !== selectedJobId) return;
 
     fakturowniaVerificationBusyRef.current = true;
     setFakturowniaVerifying(true);
@@ -393,7 +393,7 @@ export default function JobDetailsPanel({
       const result = await verifyFakturowniaInvoice({
         supabase,
         jobId: selectedJobId,
-        clientId: pending.clientId,
+        clientId: pending?.clientId || '',
       });
 
       if (!result?.found || !result?.invoiceId) {
@@ -546,11 +546,9 @@ export default function JobDetailsPanel({
             </div>
           ) : null}
           <div className="desktopInvoiceVerificationButtonsV1277">
-            {fakturowniaVerificationRef.current ? (
-              <button type="button" className="btn ghostBtn" onClick={() => void verifyPendingFakturowniaInvoice()} disabled={fakturowniaVerifying || manualInvoiceBusy}>
-                {fakturowniaVerifying ? 'Sprawdzam…' : 'Sprawdź ponownie'}
-              </button>
-            ) : null}
+            <button type="button" className="btn ghostBtn" onClick={() => void verifyPendingFakturowniaInvoice(true)} disabled={fakturowniaVerifying || manualInvoiceBusy}>
+              {fakturowniaVerifying ? 'Sprawdzam…' : 'Sprawdź wystawioną fakturę'}
+            </button>
             <button type="button" className="btn ghostBtn" onClick={() => setManualInvoiceExpanded((value) => !value)} disabled={manualInvoiceBusy}>
               {manualInvoiceExpanded ? 'Ukryj powiązanie' : 'Powiąż fakturę po numerze'}
             </button>
