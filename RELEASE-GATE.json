@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.74",
+  "version": "12.75",
   "scope": "full",
-  "release_branch": "release/v12.74",
+  "release_branch": "release/v12.75",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Codex D8 RED PGlite worker UPSERT 42501; GREEN after own-only SELECT policy. Supabase production migration 20261008200351 diagnostic_worker_upsert_rls_v1274 successfully applied and production pg_policies verified read-only. Codex D2/D5 runtime race and queue regression green on CI #37835981482. Physical worker PostgREST session remains EXTERNAL."
+    "notes": "Closure Gate / CI mechanism only. No Supabase schema, Edge or customer data changes. Preserve observational production telemetry from WAWIS 12.74."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.74.zip"
+    "file_name": "klima-app-v12.75.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.74",
+    "source_branch": "release/v12.75",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Supabase migration registry 20261008200351 and pg_policies, final PR #297 WAWIS PR checks, Vercel success, public app-version.json",
-    "notes": "RLS fixture tested, production rule to verify after migration; real-device employee PostgREST receipt remains external unless tested."
+    "evidence_source": "GitHub PR #298 CI exact HEAD, repository ruleset 23334033, Vercel final SHA, public app-version.json",
+    "notes": "No health/PUSH claim from CI-only change. No additional manual device deployment needed."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -35,11 +35,11 @@
   "release_mode": "standard",
   "production_verification": {
     "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — Codex D2/D5/D8 dynamic regressions, prior P0 D1/D3, groups selected by critical path, dual-session PostgreSQL, Playwright mobile/desktop, Closure Gate and build",
+    "release_ci": "REQUIRED — Codex G1/G2 dynamic negative acceptance; all full group regressions, both Playwright E2E, dual-session PostgreSQL, Closure Gate fail-closed and Vercel build",
     "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
     "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
     "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "RLS migration ID 20261008200351 deployed and pg_policies SELECT-own readback verified. Client-only D2/D5 queue + ACK will deploy via Vercel after final CI. Verify exact main SHA and version 12.74.",
-    "mobile_touch": "EXTERNAL — verify new reports and silent upload on real employee device after next sign-in; do not claim physical PostgREST test until verified"
+    "front_and_backend": "CI-only gate/classifier and source-commit evidence. No SQL/Edge. GitHub active ruleset 23334033 explicitly requires PR + strict targeted-checks. Verify merged SHA, Vercel and 12.75 after green CI.",
+    "mobile_touch": "EXTERNAL — mobile interface unchanged; verify reported version 12.75 on iPhone after deploy"
   }
 }
