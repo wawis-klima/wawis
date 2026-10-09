@@ -1,5 +1,5 @@
 'use strict';
-/* WAWIS DESIGN LAB 0.3 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
+/* WAWIS DESIGN LAB 0.4 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
 (() => {
   const $=x=>document.getElementById(x);
   const STORE='wawis-design-lab-concept2-v02';
@@ -98,9 +98,9 @@
   }
   const fact=(icon,main,desc)=>'<div class="fact"><span class="facticon">'+(ico[icon]||ico.doc)+'</span><div class="facttext"><b>'+escape(main)+'</b><small>'+escape(desc)+'</small></div></div>';
   function details(){
-    const j=selectedJob();
+    const j=demoMeta(selectedJob());
     if(!j){$('details').innerHTML='';return;}
-    $('details').innerHTML='<div class="detail-top"><div class="detail-eyebrow">KARTA MONTAŻU · '+escape(j.id)+'</div><div class="detail-titleline"><h2>'+escape(j.client)+'</h2><span class="statusbadge '+statusType[j.status]+'">'+ico[statusType[j.status]]+escape(j.status)+'</span></div><div class="detail-address">'+escape(j.street)+', '+escape(j.city)+'</div></div><div class="detail-content"><div class="detail-section"><div class="sectionheading">Podstawowe informacje</div><div class="facts">'+fact('date',j.date,'Termin montażu')+fact('Użytkownik',j.installer,'Przypisany')+fact('pin',j.city,'Miasto')+fact('doc',j.devices+' kpl.','Urządzenia')+'</div></div><div class="detail-section"><div class="sectionheading">Urządzenia <small>'+j.devices+' kpl.</small></div><div class="device-preview"><div class="unit-illustration"></div><div><b>'+escape(j.model)+'</b><small>Jednostka wewnętrzna + zewnętrzna · DEMO</small></div></div></div><div class="detail-section"><div class="sectionheading">Zdjęcia <small>'+j.photos+' plików</small></div><div class="photoplace">'+ico.photo+'<span>'+ (j.photos?'Przykładowe zdjęcia (demo)':'Brak zdjęć w tym zleceniu')+'</span></div></div><div class="detail-section"><div class="sectionheading">Uwagi</div><div class="notes">'+escape(j.note||'Brak dodatkowych uwag.')+'</div></div></div><div class="detail-actions"><button class="outlinebtn" type="button" data-action="protocol">▣ Protokół (demo)</button><button class="primarybtn" type="button" data-action="edit">✎ Edytuj</button></div>';
+    $('details').innerHTML='<div class="detail-top"><div class="detail-eyebrow">KARTA MONTAŻU · '+escape(j.id)+'</div><div class="detail-titleline"><h2>'+escape(j.client)+'</h2><span class="statusbadge '+statusType[j.status]+'">'+ico[statusType[j.status]]+escape(j.status)+'</span></div><div class="detail-address">'+escape(j.street)+', '+escape(j.city)+'</div></div><div class="detail-content"><div class="detail-section"><div class="sectionheading">Podstawowe informacje</div><div class="facts">'+fact('date',j.date,'Termin montażu')+fact('Użytkownik',j.installer,'Przypisany')+fact('pin',j.city,'Miasto')+fact('doc',j.devices+' kpl.','Urządzenia')+fact('date',j.completed_at||'—','Data zakończenia')+fact('Użytkownik',j.crew.join(', '),'Monterzy')+fact('doc',j.invoiceIssued&&j.status==='Zakończone'?'Wystawiona':j.status==='Zakończone'?'Niewystawiona':'—','Faktura VAT')+fact('doc',j.plateTotal?j.plateCount+'/'+j.plateTotal:'Brak','Tabliczki JW/JZ')+fact('doc',j.payment,'Płatność')+'</div></div><div class="detail-section"><div class="sectionheading">Urządzenia <small>'+j.devices+' kpl.</small></div><div class="device-preview"><div class="unit-illustration"></div><div><b>'+escape(j.model)+'</b><small>Jednostka wewnętrzna + zewnętrzna · DEMO</small></div></div></div><div class="detail-section"><div class="sectionheading">Zdjęcia <small>'+j.photos+' plików</small></div><div class="photoplace">'+ico.photo+'<span>'+ (j.photos?'Przykładowe zdjęcia (demo)':'Brak zdjęć w tym zleceniu')+'</span></div></div><div class="detail-section"><div class="sectionheading">Uwagi</div><div class="notes">'+escape(j.note||'Brak dodatkowych uwag.')+'</div></div></div><div class="detail-actions"><button class="outlinebtn" type="button" data-action="protocol">▣ Protokół (demo)</button><button class="primarybtn" type="button" data-action="edit">✎ Edytuj</button></div>';
   }
   function other(){
     const el=$('other-panel');
@@ -125,7 +125,7 @@
   function close(){$('modal-backdrop').classList.add('hidden')}
   document.addEventListener('click',e=>{
     const b=e.target.closest('button');
-    if(!b)return;
+    if(!b){const row=e.target.closest('tr[data-job]');if(row){selected=row.dataset.job;list();details();}return;}
     if (window.WawisLabPanels && (b.dataset.demoAction||b.dataset.demoClient||b.dataset.demoDevice||b.dataset.demoTab||b.dataset.demoSms||b.dataset.demoDay||b.dataset.demoVehicle)) {
       const action=window.WawisLabPanels.action(b);
       const destinations={'goto-devices':'Urządzenia','goto-contractors':'Kontrahenci','goto-sms':'SMS serwis','goto-calendar':'Kalendarz'};
