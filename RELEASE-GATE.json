@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.85",
+  "version": "12.86",
   "scope": "full",
-  "release_branch": "release/v12.85",
+  "release_branch": "release/v12.86",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.85.zip"
+    "file_name": "klima-app-v12.86.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.85",
+    "source_branch": "release/v12.86",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "UI-1285: mobile multi-split wizard overflow regression for long Mitsubishi JZ and JW labels",
+    "codex_audit": "UI-1286: verification overlay z-index 1300 below device modal 9999 after nameplate crop; direct iPhone hit-test regression",
     "release_ci": "REQUIRED: exact head SHA all impacted regression groups, Codex acceptance, dual PostgreSQL session, Playwright, Closure Gate and production build",
-    "external_provider_tests": "EXTERNAL: user validates layout on a physical iPhone",
-    "front_and_backend": "Mobile CSS containment and Playwright iPhone viewport tests; no Supabase schema changes",
-    "mobile_touch": "EXTERNAL: confirm 12.85, multi-split steps 2 and 3 without horizontal clipping"
+    "external_provider_tests": "EXTERNAL: verify actual Mitsubishi and Rotenso nameplate photos on a physical iPhone after deployment",
+    "front_and_backend": "Mobile nameplate verification z-index above device wizard and Playwright interaction test; no OCR/AI logic or Supabase schema changes",
+    "mobile_touch": "EXTERNAL: confirm 12.86 and visible Sprawdź tabliczkę screen after crop, then model/SN and tabliczka dodana status"
   }
 }
