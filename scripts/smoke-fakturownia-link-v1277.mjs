@@ -2,12 +2,19 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { transform } from 'esbuild';
-import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation } from '../supabase/functions/fakturownia-client/invoice-match.js';
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, inspectInvoiceBuyer } from '../supabase/functions/fakturownia-client/invoice-match.js';
 const jobId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const otherJobId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const contractorId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const clientId=55, number='FV/10/2026/17';
-const sample={id:991,number,client_id:clientId,kind:'vat',status:'issued',oid:''};
+const sample={id:991,number,client_id:clientId,kind:'vat',status:'issued',oid:'',buyer_name:'Tadeusz Rudy',buyer_street:'Częstochowska 12/99',buyer_city:'Łazy',buyer_post_code:'42-450',buyer_tax_no:''};
+const buyer={name:'Tadeusz Rudy',street:'Częstochowska 12/99 Lazy',city:'Łazy',postCode:'42-450',taxNo:''};
+assert.equal(inspectInvoiceBuyer(sample,buyer).ok,true,'PL accent, city suffix and house number match');
+assert.equal(inspectInvoiceBuyer({...sample,buyer_street:'Częstochowska 12/98'},buyer).code,'BUYER_ADDRESS_MISMATCH');
+assert.equal(inspectInvoiceBuyer({...sample,buyer_name:'Tadeusz Ruda'},buyer).code,'BUYER_NAME_MISMATCH');
+assert.equal(inspectInvoiceBuyer({...sample,buyer_city:'Zawiercie'},buyer).code,'BUYER_CITY_MISMATCH');
+assert.equal(inspectInvoiceBuyer({...sample,buyer_post_code:'00-001'},buyer).code,'BUYER_POSTAL_MISMATCH');
+
 const inspect=(invoice)=>inspectManualInvoiceMatch(invoice,{jobId,clientId:String(clientId),invoiceNumber:number});
 assert.equal(inspect(sample).ok,true);
 assert.equal(inspect({...sample,oid:buildJobInvoiceOid(jobId)}).ok,true);
@@ -26,18 +33,24 @@ async function run(label, opts={}, expected={}) {
  const {action='link_by_number',invoices=[sample],clients=[{id:clientId,external_id:contractorId}],status='Zakończone',role='Administrator',alreadyLinked=[],suppliedClientId=String(clientId)}=opts;
  let handler;const calls=[];
  const adminDb={from(table){return {select(){return this;},eq(){return this;},async in(){return {data:alreadyLinked.map(id=>({vat_invoice_fakturownia_invoice_id:id})),error:null};},async maybeSingle(){
-    return {data:table==='profiles'?{role}:table==='jobs'?{id:jobId,contractor_id:contractorId,status,vat_invoice_fakturownia_confirmed:false}:null,error:null};
+    return {data:table==='profiles'?{role}:table==='jobs'?{id:jobId,contractor_id:contractorId,client:'Tadeusz Rudy',city:'42-450 Łazy',street:'Częstochowska 12/99 Lazy',status,vat_invoice_fakturownia_confirmed:false}:table==='contractors'?{id:contractorId,company_name:'Tadeusz Rudy',city:'42-450 Łazy',street:'Częstochowska 12/99 Lazy',nip:null,addresses:[]}:null,error:null};
  }};}};
  const env={SUPABASE_URL:'https://fake.supabase.test',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',FAKTUROWNIA_API_TOKEN:'placeholder'};
  const sandbox={
-   buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,findInvoiceCandidatesForManualConfirmation,
+   buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,findInvoiceCandidatesForManualConfirmation,inspectInvoiceBuyer,
    createClient(_url,key){return key==='anon'?{auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}}}:adminDb;},
    Deno:{serve(f){handler=f;},env:{get(k){return env[k]||'';}}},
    async fetch(value,options){
       const u=new URL(String(value)),method=options?.method||'GET';
       calls.push({path:u.pathname,method,params:u.searchParams});
       if(u.pathname==='/clients.json')return new Response(JSON.stringify(clients),{status:200});
-      if(u.pathname==='/invoices.json')return new Response(JSON.stringify(invoices),{status:200});
+      if(u.pathname==='/invoices.json'){
+         const matched=u.searchParams.has('oid')?invoices.filter(i=>i.oid===u.searchParams.get('oid')):invoices;
+         return new Response(JSON.stringify(matched),{status:200});
+      }
+      if(/^\/invoices\/\d+\.json$/.test(u.pathname)){
+        const id=u.pathname.match(/\d+/)[0];return new Response(JSON.stringify(invoices.find(i=>String(i.id)===id)||{}),{status:200});
+      }
       throw Error('Unexpected API call '+u.pathname);
    },
    URL,URLSearchParams,Request,Response,Headers,AbortController,DOMException,setTimeout,clearTimeout,console,JSON,Array,String,Boolean,Object,Number,Intl,Date,encodeURIComponent,
@@ -66,21 +79,25 @@ await run('draft blocked',{invoices:[{...sample,status:'draft'}]}, {found:false,
 await run('proforma blocked',{invoices:[{...sample,kind:'proforma'}]}, {found:false,code:'NOT_ISSUED_VAT'});
 await run('no invoice',{invoices:[]}, {found:false,code:'NOT_FOUND'});
 await run('duplicate number',{invoices:[sample,{...sample,id:992}]}, {found:false,code:'DUPLICATE_NUMBER'});
-await run('ambiguous client',{clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:false,code:'CLIENT_NOT_LINKED'});
-await run('foreign external customer',{clients:[{id:55,external_id:'other'}]}, {found:false,code:'CLIENT_NOT_LINKED'});
+await run('ambiguous customer index but exact buyer verified',{clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:true});
+await run('missing external mapping but buyer verified',{clients:[{id:55,external_id:'other'}]}, {found:true});
 await run('unfinished job',{status:'W trakcie'}, {http:400,error:/zakończonym/});
 await run('worker forbidden',{role:'Pracownik'}, {http:403,error:/administrator/});
-await run('auto OID absent',{action:'verify',invoices:[]}, {found:false,code:'OID_NOT_FOUND'});
+await run('auto OID absent',{action:'verify',invoices:[]}, {found:false,code:'NO_MATCHING_BUYER'});
 await run('auto OID accepted',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}]}, {found:true,code:'VERIFIED',candidates:0});
 await run('auto missing OID suggests one invoice',{action:'verify',invoices:[sample]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
 await run('on-demand verification works without browser client id',{action:'verify',invoices:[sample],suppliedClientId:''}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
-await run('forged browser client id blocked',{action:'verify',invoices:[sample],suppliedClientId:'999'}, {found:false,code:'CLIENT_MISMATCH',candidates:0});
+await run('browser client id ignored in favor of verified buyer',{action:'verify',invoices:[sample],suppliedClientId:'999'}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
 await run('auto missing OID suggests choices but does not assign',{action:'verify',invoices:[sample,{...sample,id:992,number:'FV/10/2026/18'}]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:2});
-await run('auto excludes invoice linked to different installation',{action:'verify',invoices:[sample],alreadyLinked:['991']}, {found:false,code:'OID_NOT_FOUND',candidates:0});
-await run('auto excludes wrong customer',{action:'verify',invoices:[{...sample,client_id:77}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
-await run('auto excludes unrelated OID',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(otherJobId)}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
-await run('auto excludes draft and proforma',{action:'verify',invoices:[{...sample,kind:'proforma'}, {...sample,id:992,kind:'vat',status:'draft'}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
-await run('auto fails closed on ambiguous client',{action:'verify',invoices:[sample],clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:false,code:'CLIENT_NOT_LINKED',candidates:0});
+await run('auto excludes invoice linked to different installation',{action:'verify',invoices:[sample],alreadyLinked:['991']}, {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('auto excludes wrong customer',{action:'verify',invoices:[{...sample,client_id:77}]}, {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('auto excludes unrelated OID',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(otherJobId)}]}, {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('auto excludes draft and proforma',{action:'verify',invoices:[{...sample,kind:'proforma'}, {...sample,id:992,kind:'vat',status:'draft'}]}, {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('ambiguous external id still shows buyer-verified candidates',{action:'verify',invoices:[sample],clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
+await run('no external id and real invoice buyer matches',{action:'verify',invoices:[sample],clients:[]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
+await run('no external id and wrong buyer address refused',{action:'verify',invoices:[{...sample,buyer_street:'Częstochowska 12/98'}],clients:[]}, {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('no external id and exact OID accepted',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}],clients:[]}, {found:true,code:'VERIFIED',candidates:0});
+await run('manual linking without external id rejects changed buyer address',{invoices:[{...sample,buyer_street:'Inna 10'}],clients:[]}, {found:false,code:'BUYER_ADDRESS_MISMATCH'});
 const ui=fs.readFileSync(new URL('../src/components/JobDetailsPanel.jsx',import.meta.url),'utf8');
 assert.match(ui,/setInvoiceVerificationMessage\(result\?\.reason/);
 assert.match(ui,/onSubmit=\{linkInvoiceByNumber\}/);
@@ -89,4 +106,4 @@ assert.match(ui,/invoiceVerificationCandidates\.map/);
 assert.match(ui,/verifyPendingFakturowniaInvoice\(true\)/,'Existing job can be checked without creating new invoice');
 assert.match(ui,/onClick=\{\(\) => void confirmInvoiceNumber\(candidate\.invoiceNumber\)\}/);
 assert.match(ui,/setInvoiceVerificationCandidates\(Array\.isArray\(result\?\.candidates\)/);
-console.log('PASS V12.77 mocked provider integration & UI wiring (no real invoices created)');
+console.log('PASS V12.79 strict buyer identity and old private client without external_id (no real invoices created)');

@@ -10,6 +10,15 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1279 (9 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| FAKT-1279-CLIENT-ID | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-link-v1277.mjs`: istniejąca faktura klienta bez external_id, nadal widoczna po odczycie buyer_name+adres. |
+| FAKT-1279-INVOICE-BUYER | FIXED-UNVERIFIED | Dokładne dopasowanie nazwy, ulicy/numeru oraz miejscowości/kodu i NIP; odrzucanie pomyłek adresowych. |
+| FAKT-1279-EXPLICIT-ADMIN | FIXED-UNVERIFIED | Bez OID tylko propozycja numeru, ponowna walidacja przy zatwierdzaniu i istniejące RPC SQL unikatowości. |
+| FAKT-1279-LIVE | EXTERNAL | Potwierdzenie na rzeczywistych dokumentach przez administratora. |
+
 ## Faktury — FAKT-1278 (9 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
