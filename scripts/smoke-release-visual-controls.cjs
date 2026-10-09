@@ -12,6 +12,8 @@ const releaseRunner = read('scripts/run-release.cjs');
 assert(spec.includes('desktop-release-visual.png'), 'Brak obowiązkowego screenshota desktopowego.');
 assert(spec.includes('mobile-release-visual.png'), 'Brak obowiązkowego screenshota mobilnego.');
 assert(spec.includes('horizontalOverflow'), 'Test wyglądu nie sprawdza poziomego przepełnienia.');
+assert(spec.includes('getVisibleActionHealth'), 'Test wyglądu musi sprawdzać klikalność widocznych przycisków.');
+assert(spec.includes('elementFromPoint'), 'Test wyglądu nie wykrywa zasłoniętych przycisków ani nakładek.');
 assert(spec.includes('times new roman'), 'Test wyglądu nie wykrywa braku głównego CSS.');
 assert(spec.includes('extremeText'), 'Test wyglądu nie kontroluje skrajnych rozmiarów tekstu.');
 assert(verifier.includes('readPngSize'), 'Brak kontroli poprawności i wymiarów PNG.');

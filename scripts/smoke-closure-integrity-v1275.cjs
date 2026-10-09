@@ -39,12 +39,19 @@ assert(interop.interaction_flows.includes('device-photo-nameplate'));
 assert(interop.groups.includes('nameplates') && interop.groups.includes('photos'));
 same(interop.e2e, ['mobile']);
 same(interop.groups, interop.pr_groups);
-// Unrelated CSS still stays fast and must not run the entire inventory.
-const fast = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
-assert.equal(fast.profile, 'fast-ui');
-assert.equal(fast.needs_playwright, false);
-same(fast.groups, fast.pr_groups);
-assert(!fast.groups.includes('infra'));
+// Other graphical modules also require real interaction E2E.  This is
+// platform-specific, so the mobile sidebar does not trigger desktop runs.
+const sidebar = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
+assert.equal(sidebar.profile, 'targeted');
+assert.equal(sidebar.needs_playwright, true);
+same(sidebar.visual_surfaces, ['mobile']);
+same(sidebar.e2e, ['mobile']);
+same(sidebar.groups, sidebar.pr_groups);
+assert(!sidebar.groups.includes('infra'));
+const desktopStyles = classifyEffectiveFiles(['src/components/fuel/fuel-panel.css']);
+same(desktopStyles.visual_surfaces, ['desktop']);
+same(desktopStyles.e2e, ['desktop']);
+assert(desktopStyles.groups.includes('fuel'));
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(),'wawis-closure-1275-'));
 const paths = Object.fromEntries(['impact','grouped','e2e','result','changed'].map(x=>[x,path.join(temp,x+'.json')]));
@@ -121,7 +128,7 @@ try {
  rejected=gate();
  assert.notEqual(rejected.status,0,'partial grouped result should fail closed');
 
- console.log('PASS CODEX G1/G2 C5/C6: global/shared dependencies, E2E for risky global CSS, fast path for independent CSS, and eight CI integrity/NO-GO mutations.');
+ console.log('PASS CODEX G1/G2 C5/C6: global/shared dependencies, platform E2E for all module styles and eight CI integrity/NO-GO mutations.');
 } finally {
  fs.rmSync(temp,{recursive:true,force:true});
 }

@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 12.88
+- 12.89
+
+Wersja 12.89: uogólniono zabezpieczenia graficzne dla wszystkich modułów. Zmiany CSS oraz współdzielone grafiki UI wymuszają testy E2E właściwego interfejsu (mobile/desktop). Scenariusze wizualne weryfikują geometrię i interaktywność przycisków, a klasyfikacja jest sprawdzana fail-closed w CI i Closure Gate. Bez zmian funkcjonalnych aplikacji i bazy.
+
 
 Wersja 12.88: stała ochrona współdziałania modułów w automatycznych testach wydania. Zmiany elementów łączących moduły (w tym sam CSS kreatora i nakładek) dobierają testy konsumenckie i wymagane Playwright E2E zamiast ścieżki FAST/MICRO UI. Mapa: urządzenia↔zdjęcia/OCR, urządzenia↔protokół, klient↔faktura, SMS↔historia, zakończenie↔push. Dodatkowe regresje i kontrola GO/NO-GO; bez zmian działania aplikacji.
 
@@ -942,6 +945,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.89` — obowiązkowa kontrola graficznych regresji wszystkich modułów.
 - wersja `12.88` — automatyczna regresja współdziałania modułów (również po CSS), wymuszona przed wydaniem.
 - wersja `12.87` — jasny wygląd kadrowania tabliczki w mobilnym kreatorze, zachowany odczyt OCR.
 - wersja `12.86` — naprawa niewidocznego okna odczytu tabliczki po kadrowaniu; automatyczny test hit-test na iPhonie i walidacja warstw CSS.

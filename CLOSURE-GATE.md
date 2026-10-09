@@ -31,6 +31,10 @@ Nie każda kosmetyczna zmiana potrzebuje wszystkich czterech warstw. Zmiana TARG
 - Przed GO mapowane zależności muszą być pokryte uruchomionymi grupami testów i wymaganymi E2E; brak, pominięcie albo błąd to NO-GO. `run-pr-checks.cjs` niezależnie porównuje listę przepływów z rzeczywistym diffem.
 - Niewykryta wcześniej zależność musi być dopisana do mapy oraz testu klasyfikacji w tym samym wydaniu. Niezależne kosmetyczne zmiany zachowują szybki profil.
 
+## Zmiany graficzne wszystkich modułów
+
+Od WAWIS 12.89 wszystkie zmiany CSS/SCSS/LESS interfejsu oraz współdzielonych assetów graficznych obowiązkowo kierujemy do E2E odpowiedniej platformy (lub obu przy stylach globalnych), niezależnie od tego, czy dotyczą OCR, paliwa, kontrahentów, SMS, kalendarza, tabel lub nawigacji. Wymagany zakres zapisujemy w `visual_surfaces` i weryfikujemy w obu bramkach. E2E sprawdzają geometrię, horyzontalne przepełnienie i dostępność przycisków z `elementFromPoint` w scenariuszach wizualnych. Nie zastępuje to ręcznej oceny wyglądu na rzeczywistym telefonie ani dopisania testu dla nowego stanu modułu.
+
 ## Dowody CI
 
 Każdy PR do main zapisuje artefakt **wawis-closure-evidence** zawierający co najmniej:

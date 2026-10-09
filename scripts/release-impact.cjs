@@ -253,6 +253,53 @@ function requireCrossModuleRegression(base, files) {
   };
 }
 
+// Release 12.89: all graphical UI changes must prove that their actual
+// interface still works.  This is wider than the named cross-module seams:
+// tables, menus, cards, controls and overlays can break from CSS alone.
+function isVisualUIFile(file) {
+  const normalized = String(file || '').replace(/\\/g, '/').toLowerCase();
+  return /^src\/.*\.(?:css|scss|less)$/.test(normalized)
+    || /^public\/.*\.(?:css|scss|less)$/.test(normalized)
+    || /^src\/assets\/.*\.(?:svg|png|jpe?g|gif|webp)$/.test(normalized)
+    || /^public\/(?:icons?|images?|assets)\/.*\.(?:svg|png|jpe?g|gif|webp)$/.test(normalized);
+}
+
+function visualPlatformsFor(files) {
+  const platforms = new Set();
+  for (const file of files) {
+    if (!isVisualUIFile(file)) continue;
+    const normalized = String(file).toLowerCase();
+    if (normalized.startsWith('src/mobile791/')) platforms.add('mobile');
+    else if (normalized.startsWith('src/components/') || normalized.startsWith('src/desktop/')) platforms.add('desktop');
+    else {
+      // Global styles and shared imagery can affect both interfaces.
+      platforms.add('mobile');
+      platforms.add('desktop');
+    }
+  }
+  return ['mobile', 'desktop'].filter((platform) => platforms.has(platform));
+}
+
+function requireVisualInteractionRegression(base, files) {
+  const visualSurfaces = visualPlatformsFor(files);
+  if (!visualSurfaces.length) return { ...base, visual_surfaces: [] };
+  const groups = includeGroups(base.groups, includeGroups(selectDomainGroups(files), visualSurfaces));
+  const platforms = includeGroups(base.platforms, visualSurfaces);
+  const e2e = includeGroups(base.e2e, visualSurfaces);
+  return {
+    ...base,
+    profile: base.profile === 'fast-ui' ? 'targeted' : base.profile,
+    reason: base.reason + ' Wizualna zmiana interfejsu: obowiązkowa kontrola geometrii, widoczności i interakcji w Playwright.',
+    groups,
+    pr_groups: groups,
+    platforms,
+    scope: scopeFromPlatforms(platforms),
+    e2e,
+    needs_playwright: true,
+    visual_surfaces: visualSurfaces,
+  };
+}
+
 function scopeFromPlatforms(platforms) {
   const mobile = platforms.includes('mobile');
   const desktop = platforms.includes('desktop');
@@ -262,7 +309,7 @@ function scopeFromPlatforms(platforms) {
 
 function classifyEffectiveFiles(effectiveFiles) {
   const platforms = detectPlatforms(effectiveFiles);
-  const finalize = (result) => requireCrossModuleRegression(result, effectiveFiles);
+  const finalize = (result) => requireVisualInteractionRegression(requireCrossModuleRegression(result, effectiveFiles), effectiveFiles);
   const scope = scopeFromPlatforms(platforms);
 
   if (effectiveFiles.length === 0) {
@@ -396,6 +443,7 @@ if (require.main === module) {
   console.log(`Finalne grupy: ${impact.groups.join(', ')}`);
   console.log(`E2E: ${impact.e2e.length ? impact.e2e.join(', ') : 'pominięte'}`);
   console.log(`Testy współdziałania: ${impact.interaction_flows.length ? impact.interaction_flows.join(', ') : 'brak dodatkowych'}`);
+  console.log(`Kontrola graficzna: ${impact.visual_surfaces.length ? impact.visual_surfaces.join(', ') : 'nie dotyczy'}`);
 }
 
 module.exports = {
@@ -409,4 +457,7 @@ module.exports = {
   isGlobalReleaseInfrastructure,
   detectCrossModuleFlows,
   requireCrossModuleRegression,
+  isVisualUIFile,
+  visualPlatformsFor,
+  requireVisualInteractionRegression,
 };
