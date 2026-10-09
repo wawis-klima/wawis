@@ -1,3 +1,12 @@
+## 12.81
+- Po skutecznym automatycznym odnalezieniu faktury WAWIS nie pobiera już listy kandydatów do ręcznego powiązania ani nie sprawdza ich ponownie w bazie.
+- Po przygotowaniu wystawiania wykorzystujemy identyfikator klienta Fakturowni zapamiętany na serwerze, więc pomijamy zbędne wyszukiwanie kartoteki przez API.
+- „Sprawdź wystawioną fakturę” i „Powiąż fakturę po numerze” pozostają działającymi funkcjami awaryjnymi, zwiniętymi pod subtelnym odnośnikiem „Opcje awaryjne”.
+- Zachowany tryb awaryjny po błędzie: komunikaty, propozycje dokumentów i ręczne powiązanie są nadal dostępne dla administratora.
+- Nie zmieniono zasad wykrywania jedynej nowej faktury VAT ani weryfikacji OID, danych nabywcy, daty wystawienia czy zakazu podwójnego przypisania.
+- Nie zmieniono żadnych zasad płatności i nie wystawiano testowych faktur w Fakturowni.
+- Wykonywalne testy nowej ścieżki i UI w stałych grupach CI; rzeczywisty pomiar czasu działania wymaga testu użytkownika po produkcyjnym wdrożeniu.
+
 ## 12.80
 - Automatyczne potwierdzenie po powrocie z Fakturowni: pre-invoice snapshot zapisany po stronie serwera, przechowywany do 2h, działa po odświeżeniu.
 - Tylko dokładnie jedna nowa wystawiona faktura VAT z tym samym nabywcą, client_id, datą utworzenia, bez obcego OID i powiązania z innym montażem, może zostać potwierdzona bez klikania.
