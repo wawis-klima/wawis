@@ -1,5 +1,5 @@
 'use strict';
-/* WAWIS DESIGN LAB 0.2 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
+/* WAWIS DESIGN LAB 0.3 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
 (() => {
   const $=x=>document.getElementById(x);
   const STORE='wawis-design-lab-concept2-v02';
