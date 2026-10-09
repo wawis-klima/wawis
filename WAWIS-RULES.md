@@ -58,6 +58,13 @@ Pliki wygenerowane wyłącznie przez podbicie wersji oraz dokumentacja wydania n
 - Jeżeli pojawia się nowa zależność, dodajemy ją do mapy i testu `scripts/smoke-release-impact-v1063.cjs` **w tym samym wydaniu**, zanim uznamy problem za zamknięty.
 - Zielony build, samo `toBeVisible` bez sprawdzenia zasłaniania lub statyczny grep **nie stanowią dowodu**, że współdziałanie działa. Dla błędów nakładek obowiązkowy jest test interakcji/hit-test.
 
+### Graficzna kontrola wszystkich modułów (WAWIS 12.89+)
+
+- Wszystkie zmiany arkuszy CSS/SCSS/LESS aplikacji (w tym kolumny, menu, karty, pop-upy, przyciski, przewijanie, stopki i responsywność) oraz współdzielonych grafik interfejsu wymuszają E2E właściwej platformy przez `scripts/release-impact.cjs`. Nie ograniczamy tej zasady do OCR ani pięciu znanych przepływów.
+- Zmiana stylów mobilnych uruchamia Playwright mobile, desktopowych Playwright desktop, stylów globalnych oraz współdzielonych grafik obie platformy. Zmiana graficzna NIE kwalifikuje się do MICRO UI bez E2E; statyczne zasoby niezwiązane z interfejsem pozostają w szybkiej ścieżce.
+- `release-impact.json.visual_surfaces` wskazuje wymagane platformy, a `run-pr-checks.cjs` i `verify-closure-evidence.cjs` niezależnie odtwarzają klasyfikację i odmawiają GO przy usunięciu/zmianie tego pola.
+- Playwright w scenariuszach wyglądu sprawdza nie tylko geometrię i przepełnienie, ale również `elementFromPoint` dla widocznych przycisków na kontrolowanych ekranach desktop i mobile. Przy zmianie konkretnego modułu należy rozwijać jego scenariusz o kontrolę krytycznych interakcji i stanu, a nie uznawać samego uruchomienia Playwright za kompletny audyt każdego ekranu.
+
 ### MICRO UI
 
 - CSS-only,
