@@ -1,3 +1,9 @@
+## 12.86
+- Naprawiono niewidoczne po kadrowaniu okno odczytu i weryfikacji tabliczki w mobilnym kreatorze urządzeń Single/Multi.
+- Kadrowanie i potwierdzenie renderowane są nad kreatorem niezależnie od jego overflow i przyklejonej stopki.
+- Testy Playwright wymagają fizycznej dostępności ekranów (elementFromPoint), obecności portali w body i poprawnego przejścia kadrowanie → odczyt → potwierdzenie.
+- Nie zmieniono silnika OCR, uprawnień, bazy ani zapisanych tabliczek.
+
 ## 12.85
 - Naprawiono poziome przepełnienie kreatora urządzeń MULTI-SPLIT na iPhonie dla długich nazw modeli JZ i JW.
 - Zapewniono kurczliwe kolumny, skrócone długie etykiety, pionowy scroll treści, widoczne nagłówek i stopkę.
