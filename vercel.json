@@ -8,5 +8,24 @@
     }
   },
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src public package.json package-lock.json index.html vite.config.js vite.config.mjs supabase api scripts vercel.json .github",
-  "buildCommand": "node scripts/vercel-deploy-guard.cjs && WAWIS_STANDARD_DEPLOY_GATE='node scripts/release-policy-gate.cjs --deploy' bash scripts/deploy-gate-router.sh && npm run build"
+  "buildCommand": "node scripts/design-lab-deploy-gate.cjs && npm run build",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'none'; img-src 'self' data: blob:; font-src 'self' data:; worker-src 'none'; child-src 'none'; frame-src 'none'; object-src 'none'; form-action 'none'; base-uri 'self'; upgrade-insecure-requests"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        }
+      ]
+    }
+  ]
 }
