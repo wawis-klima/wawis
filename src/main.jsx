@@ -100,6 +100,7 @@ function isMobileRuntime() {
 }
 
 async function boot() {
+  window.__wawisBootTrace?.mark?.('imports')
   const useMobile791 = isMobileRuntime()
   const [appModule, , , diagnosticsModule] = await Promise.all([
     useMobile791 ? import('./mobile791/App.jsx') : import('./App.jsx'),
@@ -108,6 +109,7 @@ async function boot() {
     useMobile791 ? import('./mobile791/modules/diagnostics.js') : import('./modules/diagnostics.js'),
   ])
 
+  window.__wawisBootTrace?.mark?.('modules-ready')
   if (useMobile791) {
     await import('./mobile791/mobile.css')
     await import('./mobile791/v1048-runtime-fix.css')
@@ -121,11 +123,14 @@ async function boot() {
     await import('./mobile791/v1198-new-job-compact.css')
   }
 
+  window.__wawisBootTrace?.mark?.('styles-ready')
   diagnosticsModule.installDiagnosticConsoleCapture()
   diagnosticsModule.installGlobalDiagnosticHandlers()
   diagnosticsModule.logDiagnostic('app.boot', { runtime: useMobile791 ? 'mobile' : 'desktop' })
 
+  window.__wawisBootTrace?.mark?.('diagnostics-ready')
   const App = appModule.default
+  window.__wawisBootTrace?.mark?.('render-requested')
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <App />
@@ -134,10 +139,12 @@ async function boot() {
 }
 
 boot().catch((error) => {
+  window.__wawisBootTrace?.fail?.('boot-failed')
   console.error('Nie udało się uruchomić aplikacji Wawis.', error)
   const root = document.getElementById('root')
   if (root) {
-    root.innerHTML = '<div style="font-family:system-ui;padding:24px;color:#991b1b">Nie udało się uruchomić aplikacji. Odśwież stronę albo sprawdź konsolę błędów.</div>'
+    root.innerHTML = '<div style="font-family:system-ui;padding:24px;color:#991b1b">Nie udało się uruchomić aplikacji. Odśwież stronę albo pobierz raport startu. <button type="button" id="wawis-boot-report">Pobierz raport startu</button></div>'
+    document.getElementById('wawis-boot-report')?.addEventListener('click', () => window.__wawisBootTrace?.download?.())
   }
 })
 

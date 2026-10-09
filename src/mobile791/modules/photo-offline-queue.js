@@ -1,3 +1,4 @@
+import { summarizePhotoDiagnosticQueue } from '../../modules/diagnostics-package4.js';
 const DB_NAME = 'wawis-mobile-photo-queue';
 const DB_VERSION = 3;
 const STORE_NAME = 'queued-photos';
@@ -240,16 +241,9 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
   }
 }
 
-export async function getPhotoQueueSummary() {
+export async function getPhotoQueueSummary(userId = '') {
   const items = await listPhotoQueueItems();
-  return items.reduce((summary, item) => {
-    summary.total += 1;
-    const status = String(item.upload_status || 'local').toLowerCase();
-    if (status === 'uploading') summary.uploading += 1;
-    else if (status === 'error') summary.error += 1;
-    else summary.local += 1;
-    return summary;
-  }, { total: 0, local: 0, uploading: 0, error: 0 });
+  return summarizePhotoDiagnosticQueue(items, userId);
 }
 
 export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {

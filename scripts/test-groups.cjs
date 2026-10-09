@@ -33,6 +33,7 @@ const GROUPS = {
     'node scripts/smoke-diagnostics-p0-privacy-v1273.mjs',
     'node scripts/smoke-diagnostics-ingest-queue-v1274.mjs',
     'node scripts/smoke-diagnostic-worker-rls-v1274.mjs',
+    'node scripts/smoke-diagnostics-package4-v1276.mjs',
     'npm run test:smoke:v1120-stability',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
@@ -247,6 +248,7 @@ const GROUPS = {
     'npm run test:smoke:sms-shared-source',
   ],
   infra: [
+    'node scripts/smoke-postgres-readiness-v1276.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',

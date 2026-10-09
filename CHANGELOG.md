@@ -1,3 +1,11 @@
+## 12.76
+- Stabilizacja testu dwusesyjnego Codexa: kontener PostgreSQL uznawany jest za gotowy dopiero po udanym SELECT 1 we właściwej bazie fixture; pg_isready nie gwarantował jeszcze utworzenia bazy. Dodano wykonywalne scenariusze negatywne readiness do infra CI.
+- Codex C7: panel mobilny sprawdza prawdziwy wynik refreshAll (ok/partial/fail/stale); desktop odróżnia brak wpisów od nieudanego odczytu i zachowuje ostatni poprawny widok oznaczony jako nieaktualny.
+- Codex C8: przed importem App działa bezpieczny, ulotny rejestr etapów startu; w razie awarii pobrania modułu dostępny jest techniczny raport bez danych klientów, a normalny raport zawiera przefiltrowane czasy etapów.
+- Codex C9: istniejące kolejki zdjęć i zmian offline są prezentowane tylko agregatami bieżącego konta, bez identyfikatorów, nazw plików, treści operacji i nowych kolejnych systemów synchronizacji.
+- Codex C10: test PUSH opisuje przyjęcie przez usługę, a nie potwierdzenie wyświetlenia; aktywna subskrypcja nie jest już prezentowana jako pewna dostawa.
+- Wykonywalny reproduktor Codexa C7–C10 i regresje obecnych pakietów 1–3 obowiązują w Closure Gate. Odbiór telefonu i autentyczne receipts pozostają EXTERNAL.
+
 ## 12.75
 - Pakiet 3 audytu Codexa G1/G2: ujednolicono `groups` i `pr_groups` w Closure Gate, eliminując rozbieżność między deklarowanym a wykonywanym zakresem testów.
 - Zmiany w mechanizmach Closure Gate uruchamiają pełne grupy regresji; współdzielone moduły wybierają testy desktop/mobile, a lokalne zmiany wymagają testów domenowych.

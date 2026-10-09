@@ -5,11 +5,14 @@ import { downloadDiagnosticReportImmediate, logDiagnostic } from '../../modules/
 import { sendTestPush } from '../../modules/push-subscriptions.js';
 import { supabase } from '../../lib/supabase.js';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
+import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
+import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosticQueue } from '../../../modules/diagnostics-package4.js';
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
 
 export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null, onBack = () => {} }) {
   const [queueSummary, setQueueSummary] = useState(EMPTY_QUEUE);
+  const [offlineSummary, setOfflineSummary] = useState({ total: 0, pending: 0, syncing: 0, conflict: 0, error: 0 });
   const [pushBusy, setPushBusy] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [refreshBusy, setRefreshBusy] = useState(false);
@@ -19,23 +22,27 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
     let mounted = true;
     const refreshQueue = async () => {
       try {
-        const summary = await getPhotoQueueSummary();
-        if (mounted) setQueueSummary(summary || EMPTY_QUEUE);
+        const owner = String(sessionUser?.id || '').trim();
+        if (!owner) { if (mounted) { setQueueSummary(EMPTY_QUEUE); setOfflineSummary({ total: 0, pending: 0, syncing: 0, conflict: 0, error: 0 }); } return; }
+        const [summary, operations] = await Promise.all([getPhotoQueueSummary(owner), listOfflineJobOperations(owner)]);
+        if (mounted) { setQueueSummary(summary || EMPTY_QUEUE); setOfflineSummary(summarizeOfflineDiagnosticQueue(operations)); }
       } catch (error) {
         if (mounted) setQueueSummary(EMPTY_QUEUE);
       }
     };
     void refreshQueue();
     window.addEventListener(PHOTO_QUEUE_CHANGED_EVENT, refreshQueue);
+    window.addEventListener(JOB_OFFLINE_CHANGED_EVENT, refreshQueue);
     window.addEventListener('online', refreshQueue);
     window.addEventListener('offline', refreshQueue);
     return () => {
       mounted = false;
       window.removeEventListener(PHOTO_QUEUE_CHANGED_EVENT, refreshQueue);
+      window.removeEventListener(JOB_OFFLINE_CHANGED_EVENT, refreshQueue);
       window.removeEventListener('online', refreshQueue);
       window.removeEventListener('offline', refreshQueue);
     };
-  }, []);
+  }, [sessionUser?.id]);
 
   async function handleTestPush() {
     if (!sessionUser || profile?.role !== 'Administrator') return;
@@ -43,12 +50,7 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
     setMessage('');
     try {
       const result = await sendTestPush({ supabase, sessionUser, targetCurrentDevice: true });
-      const delivered = Number(result?.delivered || 0);
-      if (delivered > 0) {
-        setMessage('Test push został wysłany na ten telefon.');
-      } else {
-        setMessage(`Test push nie został dostarczony. ${result?.reason || 'Sprawdź status push i spróbuj ponownie.'}`);
-      }
+      setMessage(getPushAcceptanceMessage(result, { currentDevice: true }));
     } catch (error) {
       logDiagnostic('diagnostic.mobile.panel.push-test.failed', { error });
       setMessage(`Nie udało się wysłać testowego push: ${error?.message || 'nieznany błąd'}`);
@@ -66,6 +68,7 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         role: profile?.role || 'Administrator',
         currentJobId: selectedJobId || '',
         queueSummary,
+        offlineOperations: offlineSummary,
         extra: { module: 'mobile-diagnostics-panel' },
       });
       setMessage('Raport diagnostyczny został pobrany.');
@@ -81,8 +84,10 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
     setRefreshBusy(true);
     setMessage('');
     try {
-      await refreshAll?.(sessionUser, { preserveJobDetails: true });
-      setMessage('Dane zostały odświeżone.');
+      const result = typeof refreshAll === 'function' ? await refreshAll(sessionUser, { preserveJobDetails: true }) : null;
+      const feedback = getRefreshFeedback(result);
+      if (feedback.status !== 'ok') logDiagnostic('diagnostic.mobile.panel.refresh.warning', { partial: feedback.status === 'partial' });
+      setMessage(feedback.message);
     } catch (error) {
       logDiagnostic('diagnostic.mobile.panel.refresh.failed', { error });
       setMessage(`Nie udało się odświeżyć danych: ${error?.message || 'nieznany błąd'}`);
@@ -114,8 +119,14 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         <article className="mobileDiagnosticsMetric">
           <span>Kolejka zdjęć</span>
           <strong>{queueSummary.total}</strong>
-          <small>Lokalne {queueSummary.local} · Wysyłane {queueSummary.uploading} · Błędy {queueSummary.error}</small>
+          <small>Lokalne {queueSummary.local} · Wysyłane {queueSummary.uploading} · Błędy {queueSummary.error} · Ponawiane {queueSummary.retrying || 0}</small>
         </article>
+      </section>
+
+      <section className="mobileDiagnosticsCard">
+        <h2>Zmiany offline — to konto</h2>
+        <p>Oczekuje: {offlineSummary.pending} · Wysyłane: {offlineSummary.syncing} · Konflikty: {offlineSummary.conflict} · Błędy: {offlineSummary.error}</p>
+        <p>Etapy zdjęć: przygotowane {queueSummary.prepared || 0} · wysłane do Storage {queueSummary.storageUploaded || 0}. Szczegóły pozostają w Centrum synchronizacji.</p>
       </section>
 
       <section className="mobileDiagnosticsCard">

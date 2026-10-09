@@ -299,7 +299,7 @@ export default function App() {
     userId: sessionUser?.id || '',
     appVersion: APP_VERSION,
     platform: 'mobile',
-    getQueueSummary: getPhotoQueueSummary,
+    getQueueSummary: () => getPhotoQueueSummary(sessionUser?.id || ''),
   }), [sessionUser?.id]);
   const photoSyncStatus = usePhotoSyncStatus(profile?.id || sessionUser?.id || "");
   offlineSyncContextRef.current = { profile, profiles, jobs, sessionUser };

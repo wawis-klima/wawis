@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.75",
+  "version": "12.76",
   "scope": "full",
-  "release_branch": "release/v12.75",
+  "release_branch": "release/v12.76",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Closure Gate / CI mechanism only. No Supabase schema, Edge or customer data changes. Preserve observational production telemetry from WAWIS 12.74."
+    "notes": "Diagnostics package4: observable statuses; production telemetry baseline not read. Informational only."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.75.zip"
+    "file_name": "klima-app-v12.76.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.75",
+    "source_branch": "release/v12.76",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR #298 CI exact HEAD, repository ruleset 23334033, Vercel final SHA, public app-version.json",
-    "notes": "No health/PUSH claim from CI-only change. No additional manual device deployment needed."
+    "evidence_source": "GitHub exact HEAD PR CI + Vercel public version and physical iPhone verification",
+    "notes": "No production health or PUSH delivery claim before external receipt."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,12 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "P0-01 P1-01 P1-02 P1-03 P1-05 P1-06 P2-01",
-    "release_ci": "REQUIRED — Codex G1/G2 dynamic negative acceptance; all full group regressions, both Playwright E2E, dual-session PostgreSQL, Closure Gate fail-closed and Vercel build",
-    "jw_guard_migration": "20261008131504 completion_jw_index_guard_v1269 — ACTIVE",
-    "legacy_fuel_migration": "20261008131524 disable_legacy_fuel_rpc_v1269 — ACTIVE; old RPC denied",
-    "external_provider_tests": "NOT VERIFIED — test tenant Fakturownia and physical iPhone PUSH require separate evidence",
-    "front_and_backend": "CI-only gate/classifier and source-commit evidence. No SQL/Edge. GitHub active ruleset 23334033 explicitly requires PR + strict targeted-checks. Verify merged SHA, Vercel and 12.75 after green CI.",
-    "mobile_touch": "EXTERNAL — mobile interface unchanged; verify reported version 12.75 on iPhone after deploy"
+    "codex_audit": "C7 C8 C9 C10 — original WAWIS 12.72 diagnostic audit; packages 1–3 must remain green",
+    "release_ci": "REQUIRED — runtime Codex C7-C10 fixture, cumulative core/targeted/full regressions, Playwright mobile+desktop, dual PostgreSQL, Closure Gate and build",
+    "external_provider_tests": "NOT VERIFIED — physical iPhone PWA PUSH receipts and original provider services",
+    "front_and_backend": "Frontend and privacy-safe local diagnostics only. No Supabase RLS/migrations/Edge change in 12.76.",
+    "mobile_touch": "EXTERNAL — confirm iPhone version 12.76 after green CI and deployment"
   }
 }

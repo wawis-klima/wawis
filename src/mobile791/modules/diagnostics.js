@@ -1,3 +1,4 @@
+import { readSafeBootTrace } from '../../modules/diagnostics-package4.js';
 import { APP_VERSION } from '../version.js';
 import {
   DIAGNOSTIC_RECENT_HOURS,
@@ -173,9 +174,10 @@ export async function loadRemoteDiagnosticEvents({
   limit = 30,
   sinceHours = null,
   olderThanHours = null,
+  strictAvailable = false,
   now = Date.now(),
 } = {}) {
-  if (!supabase) return [];
+  if (!supabase) { if (strictAvailable) throw new Error('DIAGNOSTIC_SOURCE_UNAVAILABLE'); return []; }
   const maxRows = Math.min(Math.max(Number(limit) || 30, 1), 100);
   const buildQuery = (withModule = true) => {
     let query = supabase
@@ -195,7 +197,7 @@ export async function loadRemoteDiagnosticEvents({
     ({ data, error } = await buildQuery(false));
   }
   if (error) {
-    if (isRemoteDiagnosticsUnavailable(error)) return [];
+    if (isRemoteDiagnosticsUnavailable(error) && !strictAvailable) return [];
     throw error;
   }
   return (data || []).map((entry) => ({
@@ -276,6 +278,7 @@ function buildDiagnosticReportSnapshot({
   appVersion = '',
   role = '',
   queueSummary = null,
+  offlineOperations = null,
   currentJobId = '',
   extra = {},
 } = {}, storage = null) {
@@ -316,6 +319,8 @@ function buildDiagnosticReportSnapshot({
     runtime,
     storage,
     photoQueue: sanitizeDiagnosticSummary(queueSummary),
+    offlineOperations: sanitizeDiagnosticSummary(offlineOperations),
+    boot: readSafeBootTrace(),
     overview: getDiagnosticOverview(),
     extra: sanitizeDiagnosticSummary(extra),
     entries,

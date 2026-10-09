@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { APP_VERSION } from '../../version.js';
 import {
   clearDiagnosticLog,
@@ -8,6 +8,7 @@ import {
   loadRemoteDiagnosticEvents,
   loadStorageBackupOverview,
   loadPushSubscriptionOverview,
+  getDiagnosticSyncStatus,
   logDiagnostic,
 } from '../../modules/diagnostics.js';
 import {
@@ -16,6 +17,7 @@ import {
   partitionDiagnosticEntries,
 } from '../../modules/diagnostics-core.js';
 import { sendTestPush } from '../../modules/push-subscriptions.js';
+import { settleDiagnosticSection, getPushAcceptanceMessage } from '../../modules/diagnostics-package4.js';
 import { supabase } from '../../lib/supabase.js';
 
 function formatDateTime(value) {
@@ -42,10 +44,23 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [pushTestBusy, setPushTestBusy] = useState(false);
   const [message, setMessage] = useState('');
-  const [remoteRecentEvents, setRemoteRecentEvents] = useState([]);
-  const [remoteHistoryEvents, setRemoteHistoryEvents] = useState([]);
-  const [backupOverview, setBackupOverview] = useState({ total: 0, pending: 0, errors: 0, completed: 0, lastCompletedAt: '' });
-  const [pushSubscriptionOverview, setPushSubscriptionOverview] = useState([]);
+  const loadSequence = useRef(0);
+  const [remoteSections, setRemoteSections] = useState({
+    recent: { status: 'unknown', value: [], lastSuccessAt: '' },
+    history: { status: 'unknown', value: [], lastSuccessAt: '' },
+    backup: { status: 'unknown', value: { total: 0, pending: 0, errors: 0, completed: 0, lastCompletedAt: '' }, lastSuccessAt: '' },
+    push: { status: 'unknown', value: [], lastSuccessAt: '' },
+  });
+  const remoteRecentEvents = remoteSections.recent.value;
+  const remoteHistoryEvents = remoteSections.history.value;
+  const backupOverview = remoteSections.backup.value;
+  const pushSubscriptionOverview = remoteSections.push.value;
+  const diagnosticSync = getDiagnosticSyncStatus();
+  const labelStatus = (section) => {
+    if (section.status === 'unknown') return 'Jeszcze nie pobrano';
+    if (section.status === 'error') return section.lastSuccessAt ? 'Błąd odczytu — poprzednie dane' : 'Błąd odczytu — brak potwierdzenia';
+    return (section.status === 'empty' ? 'Pobrano — brak wpisów' : 'Pobrano') + ' · ' + formatDateTime(section.lastSuccessAt);
+  };
 
   function refresh() {
     setOverview(getDiagnosticOverview());
@@ -54,16 +69,21 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
 
   async function refreshServerData() {
     if (profile?.role !== 'Administrator') return;
-    const [recentEvents, historyEvents, backup, pushOverview] = await Promise.all([
-      loadRemoteDiagnosticEvents({ supabase, limit: 100, sinceHours: DIAGNOSTIC_RECENT_HOURS }).catch(() => []),
-      loadRemoteDiagnosticEvents({ supabase, limit: 100, olderThanHours: DIAGNOSTIC_RECENT_HOURS }).catch(() => []),
-      loadStorageBackupOverview({ supabase }).catch(() => ({ total: 0, pending: 0, errors: 0, completed: 0, lastCompletedAt: '' })),
-      loadPushSubscriptionOverview({ supabase }).catch(() => []),
+    const requestId = ++loadSequence.current;
+    const keys = ['recent', 'history', 'backup', 'push'];
+    const results = await Promise.allSettled([
+      loadRemoteDiagnosticEvents({ supabase, limit: 100, sinceHours: DIAGNOSTIC_RECENT_HOURS, strictAvailable: true }),
+      loadRemoteDiagnosticEvents({ supabase, limit: 100, olderThanHours: DIAGNOSTIC_RECENT_HOURS, strictAvailable: true }),
+      loadStorageBackupOverview({ supabase }),
+      loadPushSubscriptionOverview({ supabase }),
     ]);
-    setRemoteRecentEvents(recentEvents);
-    setRemoteHistoryEvents(historyEvents);
-    setBackupOverview(backup);
-    setPushSubscriptionOverview(pushOverview);
+    if (requestId !== loadSequence.current) return;
+    const timestamp = new Date().toISOString();
+    setRemoteSections(previous => {
+      const next = { ...previous };
+      keys.forEach((key, index) => { next[key] = settleDiagnosticSection(previous[key], results[index], timestamp); });
+      return next;
+    });
   }
 
   function refreshEverything() {
@@ -78,6 +98,7 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
     window.addEventListener('online', handleNetwork);
     window.addEventListener('offline', handleNetwork);
     return () => {
+      loadSequence.current += 1;
       window.removeEventListener('online', handleNetwork);
       window.removeEventListener('offline', handleNetwork);
     };
@@ -153,15 +174,8 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
     setMessage('');
     try {
       const result = await sendTestPush({ supabase, targetCurrentDevice: false });
-      const delivered = Number(result?.delivered || 0);
-      const failed = Number(result?.failed || 0);
-      const skipped = Number(result?.skipped || 0);
-      logDiagnostic('diagnostic.push-test.sent', { delivered, failed, skipped });
-      if (delivered > 0) {
-        setMessage(`Test push wysłany. Dostarczono do ${delivered} aktywnych urządzeń administratora${failed ? `, błędy: ${failed}` : ''}.`);
-      } else {
-        setMessage(`Test push nie został dostarczony. ${result?.reason || `Pominięto: ${skipped}, błędy: ${failed}.`}`);
-      }
+      logDiagnostic('diagnostic.push-test.sent', { delivered: Number(result?.delivered || 0), failed: Number(result?.failed || 0), skipped: Number(result?.skipped || 0) });
+      setMessage(getPushAcceptanceMessage(result));
     } catch (error) {
       logDiagnostic('diagnostic.push-test.failed', { error });
       setMessage(`Nie udało się wysłać testowego push: ${error?.message || 'nieznany błąd'}`);
@@ -240,11 +254,13 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
             <h2>Status PUSH zespołu</h2>
             <span>Aktywne urządzenia: {pushSubscriptionOverview.reduce((sum, row) => sum + row.activeSubscriptions, 0)}</span>
           </div>
+          <p className="muted">Subskrypcje PUSH zespołu: {labelStatus(remoteSections.push)}. Subskrypcja i przyjęcie przez dostawcę nie potwierdzają wyświetlenia PUSH na telefonie.</p>
           <div className="diagnosticsEventList">
+            {remoteSections.push.status === 'error' ? <div role="alert">Błąd pobierania subskrypcji. Poprzednie dane mogą być nieaktualne.</div> : null}
             {pushSubscriptionOverview.length ? pushSubscriptionOverview.map((row) => (
               <div className="diagnosticsEventRow" key={row.userId}>
                 <strong className={row.activeSubscriptions > 0 ? 'diagnosticsOk' : 'diagnosticsError'}>
-                  {row.fullName} · {row.activeSubscriptions > 0 ? 'PUSH ON' : 'BRAK PUSH'}
+                  {row.fullName} · {row.activeSubscriptions > 0 ? 'Subskrypcja aktywna' : 'Brak aktywnej subskrypcji'}
                 </strong>
                 <span>
                   {row.role}
@@ -254,7 +270,7 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
                   {row.lastSeenAt ? ` · ostatnio: ${formatDateTime(row.lastSeenAt)}` : ''}
                 </span>
               </div>
-            )) : <div className="muted">Brak danych o subskrypcjach PUSH.</div>}
+            )) : <div className="muted">{remoteSections.push.status === 'empty' ? 'Brak zapisanych subskrypcji.' : 'Brak potwierdzonych danych o subskrypcjach.'}</div>}
           </div>
         </section>
       ) : null}
@@ -276,21 +292,24 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
           <h2>Cicha diagnostyka urządzeń</h2>
           <span>Automatyczne zgłoszenia bez danych klientów</span>
         </div>
-        {renderEventGroups(remoteRecentGroups, { remote: true })}
+        <p className="muted">24 h: {labelStatus(remoteSections.recent)} · Starsze: {labelStatus(remoteSections.history)} · Synchronizacja z serwerem: {diagnosticSync.status} · Ostatni sukces wysyłania: {formatDateTime(diagnosticSync.lastSuccessAt)}</p>
+        {remoteSections.recent.status === 'error' ? <div role="alert">Nie udało się pobrać zdarzeń. Pokazano wcześniejszą próbkę, jeśli była dostępna.</div> : null}
+        {remoteSections.recent.status === 'unknown' ? <div className="muted">Brak potwierdzonego odczytu zdarzeń centralnych.</div> : renderEventGroups(remoteRecentGroups, { remote: true })}
         <details className="diagnosticsHistoryDetails">
           <summary>Historia centralna starsza niż 24 godziny</summary>
-          {renderEventGroups(remoteHistoryGroups, { remote: true })}
+          {remoteSections.history.status === 'error' ? <div role="alert">Starsza historia jest nieaktualna lub niedostępna.</div> : null}
+          {remoteSections.history.status === 'unknown' ? <div className="muted">Nie pobrano jeszcze historii.</div> : renderEventGroups(remoteHistoryGroups, { remote: true })}
         </details>
       </section>
 
       <section className="diagnosticsEventsCard">
         <div className="diagnosticsEventsHeader">
           <h2>Kopie zdjęć i protokołów</h2>
-          <span>Ostatnia kopia: {formatDateTime(backupOverview.lastCompletedAt)}</span>
+          <span>{labelStatus(remoteSections.backup)} · Ostatnia kopia: {formatDateTime(backupOverview.lastCompletedAt)}</span>
         </div>
         <div className="diagnosticsEventList">
           <div className="diagnosticsEventRow">
-            <strong>Skopiowane: {backupOverview.completed} z {backupOverview.total}</strong>
+            <strong>{remoteSections.backup.status === 'error' || remoteSections.backup.status === 'unknown' ? 'Brak aktualnego potwierdzenia' : 'Skopiowane: ' + backupOverview.completed + ' z ' + backupOverview.total}</strong>
             <span>Oczekuje: {backupOverview.pending} · Błędy: {backupOverview.errors}</span>
           </div>
         </div>
