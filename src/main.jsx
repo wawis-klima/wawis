@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import { APP_VERSION } from './version.js'
 import { requestUpdateReload } from './modules/update-reload-guard.js'
 
+const IS_DESIGN_LAB = import.meta.env.VITE_WAWIS_DESIGN_LAB === '1'
+
 const VERSION_CHECK_COOLDOWN_MS = 5000
 let versionCheckInFlight = false
 let lastVersionCheckAt = 0
@@ -148,5 +150,7 @@ boot().catch((error) => {
   }
 })
 
-registerOfflineWorker()
-installVersionResumeGuard()
+if (!IS_DESIGN_LAB) {
+  registerOfflineWorker()
+  installVersionResumeGuard()
+}
