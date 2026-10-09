@@ -9,6 +9,9 @@ const formSource = read('src', 'mobile791', 'components', 'modals', 'JobFormModa
 const wizardSource = read('src', 'mobile791', 'components', 'devices', 'MobileDeviceWizard.jsx');
 const wizardStyles = read('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
 const captureSource = read('src', 'mobile791', 'components', 'nameplate', 'NameplatePhotoCapture.jsx');
+assert.match(captureSource, /import \{ createPortal \} from ["']react-dom["']/, 'Nameplate modals must use React portal.');
+assert.match(captureSource, /verification && typeof document !== ["']undefined["'] \? createPortal\(/, 'Verification must render outside wizard clipping.');
+assert.match(captureSource, /cropSource && typeof document !== ["']undefined["'] \? createPortal\(/, 'Crop modal must render outside wizard clipping.');
 const captureStyles = read('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
 // Regression: the OCR verification layer must render above the 9999 device wizard overlay.
 assert.match(captureStyles, /\.nameplateVerifyModal\s*\{[^}]*z-index:\s*13000\s*;/, 'Nameplate verification must not be hidden behind the device wizard.');
