@@ -52,3 +52,22 @@ export function inspectManualInvoiceMatch(invoice, { jobId, clientId, invoiceNum
   }
   return { ok: true, code: "VERIFIED", reason: "" };
 }
+
+/** Candidates are advisory only: never call the confirmation RPC from a suggestion. */
+export function findInvoiceCandidatesForManualConfirmation(invoices, { jobId, clientId, limit = 5 }) {
+  if (!Array.isArray(invoices) || !clientId || !jobId) return [];
+  const expectedOid = buildJobInvoiceOid(jobId);
+  const seen = new Set();
+  const results = [];
+  for (const invoice of invoices) {
+    const id = normalizeInvoiceText(invoice?.id);
+    const number = normalizeInvoiceText(invoice?.number);
+    const oid = normalizeInvoiceText(invoice?.oid);
+    if (!id || !number || seen.has(id) || normalizeInvoiceText(invoice?.client_id) !== normalizeInvoiceText(clientId)) continue;
+    if (!isIssuedVatInvoiceRecord(invoice) || (oid && oid !== expectedOid)) continue;
+    seen.add(id);
+    results.push({ invoiceId: id, invoiceNumber: number, issueDate: normalizeInvoiceText(invoice?.issue_date) });
+    if (results.length >= limit) break;
+  }
+  return results;
+}
