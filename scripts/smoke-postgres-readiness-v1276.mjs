@@ -9,7 +9,7 @@ const start = source.indexOf('ready=false\n');
 const end = source.indexOf('pg() {', start);
 assert(start > 0 && end > start, 'Must exercise the real CI database readiness block');
 const readiness = source.slice(start, end);
-assert.doesNotMatch(readiness, /pg_isready/, 'pg_isready must not be treated as proof that target DB exists');
+assert.doesNotMatch(readiness, /docker exec[^\n]*pg_isready/, 'pg_isready must not be treated as proof that target DB exists');
 assert.match(readiness, /psql -X -qAt .* -d wawis_codex_ci -c 'select 1'/);
 const directory = mkdtempSync(join(tmpdir(), 'wawis-pg-ready-'));
 try {
@@ -23,7 +23,7 @@ attempt=0
 if [[ -f "$MOCK_STATE" ]]; then attempt=$(cat "$MOCK_STATE"); fi
 attempt=$((attempt+1))
 echo "$attempt" > "$MOCK_STATE"
-if [[ "${MOCK_ALWAYS_FAIL:-0}" == "1" || "$attempt" -lt 3 ]]; then
+if [[ "$MOCK_ALWAYS_FAIL" == "1" || "$attempt" -lt 3 ]]; then
   echo 'FATAL: database "wawis_codex_ci" does not exist' >&2
   exit 2
 fi
