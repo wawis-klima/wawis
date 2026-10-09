@@ -1,3 +1,10 @@
+## 12.79
+- Naprawiono regresję klienta bez external_id: brak dopasowania kartoteki Fakturowni nie blokuje odczytu wystawionych faktur.
+- Porównanie danych nabywcy faktury z WAWIS: nazwa/osoba, ulica i numer, miejscowość/kod pocztowy, NIP.
+- Brak OID: tylko propozycja numeru do zatwierdzenia; przy potwierdzeniu ponowne sprawdzenie faktury z API, a unikatowy invoice_id w SQL blokuje podwójne przypisanie.
+- Ograniczona paginacja do ostatnich 30 dni, pełne szczegóły dokumentów po ID, zero modyfikacji faktur w Fakturowni.
+- Brak zmian płatności. Test rzeczywistych faktur po wdrożeniu pozostaje EXTERNAL.
+
 ## 12.78
 - Po braku OID WAWIS weryfikuje wystawione faktury właściwego klienta z ostatnich 30 dni.
 - Faktury bez OID są pokazywane jako propozycje z numerem i datą; zatwierdzenie wymaga decyzji administratora, z ponownym sprawdzeniem przez Fakturownię.
