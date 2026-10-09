@@ -133,7 +133,7 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
     await expect(page.getByRole('heading', { name: 'Zdjęcia' })).toBeVisible();
   });
 
-  test('e-mail i telefon są wyśrodkowane, a cztery podstawowe wiersze są niższe', async ({ page }) => {
+  test('e-mail i telefon są wyśrodkowane, trzy krótkie wiersze pozostają niskie, adres może rosnąć', async ({ page }) => {
     await seedAdminNotes(page);
     await loginWithoutReset(page, ADMIN);
     await page.locator('.statusActionButton[title="Zakończone"]').click();
@@ -153,17 +153,20 @@ test.describe('@mobile 11.03 zwarte dane i komentarz administratora', () => {
       return {
         emailCenterDifference: centerDifference('.contactEmailInfoItem', '.contactEmailInfoItem .emailLink'),
         phoneCenterDifference: centerDifference('.contactPhoneInfoItem', '.contactPhoneInfoItem .phoneLink'),
-        rowHeights: [
+        compactRowHeights: [
           rowHeight('.contactEmailInfoItem'),
           rowHeight('.contactPhoneInfoItem'),
-          rowHeight('.contactAddressInfoItem'),
           rowHeight('.jobDateInfoItemV995'),
         ],
+        addressRowHeight: rowHeight('.contactAddressInfoItem'),
+        addressTextHeight: rowHeight('.contactAddressInfoItem .addressLink'),
       };
     });
 
     expect(geometry.emailCenterDifference).toBeLessThanOrEqual(2);
     expect(geometry.phoneCenterDifference).toBeLessThanOrEqual(2);
-    expect(Math.max(...geometry.rowHeights)).toBeLessThanOrEqual(32);
+    expect(Math.max(...geometry.compactRowHeights)).toBeLessThanOrEqual(32);
+    expect(geometry.addressRowHeight).toBeGreaterThanOrEqual(geometry.addressTextHeight);
+    expect(geometry.addressRowHeight).toBeGreaterThan(32);
   });
 });
