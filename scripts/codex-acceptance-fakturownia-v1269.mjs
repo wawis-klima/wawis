@@ -6,7 +6,7 @@ import { transform } from 'esbuild';
 const raw = fs.readFileSync(new URL('../supabase/functions/fakturownia-client/index.ts',import.meta.url),'utf8');
 const src = raw
  .replace(/^import \{ createClient \} from "npm:\@supabase\/supabase-js\@[^"]+";?\s*$/m,'')
- .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation \} from "\.\/invoice-match\.js";?\s*$/m,'');
+ .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, isIssuedVatInvoiceRecord \} from "\.\/invoice-match\.js";?\s*$/m,'');
 assert(!src.includes('import {'),'Edge imports must be mocked to execute exact current handler');
 const compiled = (await transform(src,{loader:'ts',target:'es2022',format:'iife'})).code;
 const jobId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -14,12 +14,13 @@ const contractorId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 async function scenario(label, resolver, expected) {
   let handler;
   const calls=[];
-  const job={id:jobId,contractor_id:contractorId,client:'Nowa Spółka',title:'Nowa Spółka',email:'shared@example.test',city:'Zawiercie',street:'Testowa 1',device_model:'Rotenso',payment_method:'cash'};
+  const job={id:jobId,contractor_id:contractorId,client:'Nowa Spółka',title:'Nowa Spółka',email:'shared@example.test',city:'Zawiercie',street:'Testowa 1',device_model:'Rotenso',payment_method:'cash',status:'Zakończone',vat_invoice_fakturownia_confirmed:false};
   const contractor={id:contractorId,company_name:'Nowa Spółka',nip:'1234567890',email:'shared@example.test',city:'Zawiercie',street:'Testowa 1'};
   const db={
     from(table){
       return {
         select(){return this;},eq(){return this;},
+        async upsert(value){return {data:value,error:null};},
         async maybeSingle(){return {data:table==='profiles'?{role:'Administrator'}:table==='jobs'?job:table==='contractors'?contractor:null,error:null};}
       };
     }
@@ -33,6 +34,7 @@ async function scenario(label, resolver, expected) {
     findIssuedVatInvoiceForJob:()=>null,
     inspectManualInvoiceMatch:()=>({ok:false}),
     findInvoiceCandidatesForManualConfirmation:()=>[],
+    isIssuedVatInvoiceRecord:()=>true,
     Deno:{serve(fn){handler=fn;},env:{get(name){return ({
       SUPABASE_URL:'https://fake.supabase.test',SUPABASE_ANON_KEY:'anon',
       SUPABASE_SERVICE_ROLE_KEY:'service',FAKTUROWNIA_API_TOKEN:'test-token',
