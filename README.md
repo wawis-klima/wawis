@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.74
+- 12.75
+
+Wersja 12.75: pakiet 3 audytu Codexa — Closure Gate: jedna autorytatywna lista obowiązkowych grup, pełny zestaw regresji dla zmian w samej bramce, objęcie mobile/desktop przez wspólne moduły, ścisłe dowody CI powiązane z SHA źródłowego PR oraz testy negatywne podszywania się pod inne grupy i commit. Zachowany szybki profil prostych zmian CSS.
 
 Wersja 12.74: pakiet 2 audytu Codexa C3/C4 (P1): bezpieczny upsert diagnostyki pracowników z SELECT tylko własnych wpisów, trwała kolejka pojedynczych zdarzeń, ACK per ID bez nadpisywania podczas asynchronicznej odpowiedzi, najstarsze błędy wysyłane najpierw, ochrona niewysłanych błędów przed wypieraniem, licznik odrzuconych zdarzeń i jawny status błędu synchronizacji. Testy wykonawcze D2/D5/D8 oraz ochrona pakietu 1.
 
@@ -909,7 +911,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.74` — wiarygodne raportowanie diagnostyki pracowników, bez strat zdarzeń w toku synchronizacji, RED→GREEN C3/C4.
+- wersja `12.75` — niezależna kontrola zakresu testów i zgodności dowodów Closure Gate z SHA źródłowego PR.
 - wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
 - wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
 - wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.
