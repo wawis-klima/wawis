@@ -1,7 +1,7 @@
 {
-  "name": "Wawis klimatyzacja",
-  "short_name": "Wawis klima",
-  "description": "Aplikacja do katalogowania montaży klimatyzatorów.",
+  "name": "WAWIS DESIGN LAB — demo",
+  "short_name": "WAWIS LAB",
+  "description": "Laboratorium grafiki WAWIS — syntetyczne dane, bez połączenia z produkcją.",
   "lang": "pl",
   "start_url": "/",
   "scope": "/",
@@ -27,5 +27,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "id": "/design-lab-demo"
 }
