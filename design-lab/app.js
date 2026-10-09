@@ -59,10 +59,42 @@
   }
   function iconbadge(s){return '<span class="righticon '+statusType[s]+'">'+ico[statusType[s]]+'</span>'}
   function selectedJob(){return jobs.find(x=>x.id===selected)||jobs[0]}
+  const fakeInstallers=[
+    ['MA'],['MB','MC'],['MC'],['MA','MD'],['MB'],['MD'],['MA','MB'],['MC','MD']
+  ];
+  function demoMeta(j){
+    const idNo=Number(String(j.id||'').match(/\d+$/)?.[0]||1),idx=(Math.max(1,idNo)-1);
+    const crew=Array.isArray(j.crew)&&j.crew.length?j.crew:fakeInstallers[idx%fakeInstallers.length];
+    const finished=j.status==='Zakończone';
+    const count=finished?2:(j.status==='W trakcie'?(idx%3===0?2:1):j.status==='Nowe'?0:1);
+    let completion=j.completed_at||'';
+    if(finished&&!completion){
+      const date=new Date(j.date+'T12:00:00');
+      if(!Number.isNaN(date.getTime())){date.setDate(date.getDate()+1+(idx%2));completion=date.toISOString().slice(0,10)}
+    }
+    const issued=typeof j.vat_invoice_issued==='boolean'?j.vat_invoice_issued:finished&&idx%2===0;
+    return {...j,crew,plateCount:count,plateTotal:count?2:0,completed_at:finished?completion:'',invoiceIssued:issued,payment:j.payment||(idx%2===0?'Gotówka':'Przelew')};
+  }
+  const plateTag=j=>{
+    const name=j.plateTotal===0?'Brak urządzeń':j.plateCount===j.plateTotal?'Potwierdzone':'Niepotwierdzone';
+    const cl=j.plateTotal===0?'none':j.plateCount===j.plateTotal?'ok':'warn';
+    const note=j.plateTotal?j.plateCount+'/'+j.plateTotal:'—';
+    const plateTitle=j.plateTotal===0?'Brak tabliczek JW i JZ':j.plateCount===2?'JW i JZ potwierdzone':'Potwierdzono JW, oczekuje JZ';
+    return '<span class="lab-plate-badge '+cl+'" title="'+escape(plateTitle)+'"><span class="lab-plate-dot"></span><span>'+name+'</span><small>'+note+'</small></span>';
+  };
+  const invoiceTag=j=>j.status!=='Zakończone'
+    ?'<span class="lab-muted-cell" title="Faktury widoczne dla zakończonych montaży">—</span>'
+    :'<span class="lab-invoice '+(j.invoiceIssued?'issued':'missing')+'" title="'+(j.invoiceIssued?'Faktura VAT wystawiona':'Faktura VAT niewystawiona')+'"><span class="lab-invoice-dot"></span>'+(j.invoiceIssued?'Wystawiona':'Brak')+'</span>';
+  const installersTag=j=>'<div class="lab-installers" title="Monterzy: '+escape(j.crew.join(', '))+'">'+j.crew.map(name=>'<span class="lab-installer" aria-label="Monter '+escape(name)+'">'+escape(name)+'</span>').join('')+'</div>';
+  const statusTag=j=>'<span class="lab-job-status '+statusType[j.status]+'"><span class="lab-status-mark">'+ico[statusType[j.status]]+'</span>'+escape(j.status)+'</span>';
   function list(){
-    const visible=jobs.filter(j=>(filter===null||j.status===filter)&&[j.client,j.city,j.model,j.id].some(x=>String(x).toLowerCase().includes(query.toLowerCase())));
+    const visible=jobs.filter(j=>(filter===null||j.status===filter)&&[j.client,j.city,j.street,j.model,j.id,j.installer].some(x=>String(x).toLowerCase().includes(query.toLowerCase()))).map(demoMeta);
     $('total-items').textContent=visible.length+' pozycji';
-    $('joblist').innerHTML=visible.length?visible.map(j=>'<button class="jobcard '+(j.id===selected?'selected':'')+'" type="button" data-job="'+escape(j.id)+'"><span class="housebox">'+ico.house+'</span><span class="jobtext"><strong>'+escape(j.client)+'</strong><small>'+escape(j.city)+' · '+escape(j.date)+' · '+escape(j.model)+'</small></span>'+iconbadge(j.status)+'<span class="arrow">›</span></button>').join(''):'<div class="empty">Nie ma montaży w tym widoku.</div>';
+    const desktopTable='<div class="lab-job-table-wrap"><table class="lab-job-table" aria-label="Tabela montaży"><thead><tr><th>Klient / adres</th><th>Status</th><th>Monterzy</th><th>Tabliczki JW/JZ</th><th>Faktura VAT</th><th>Data montażu</th><th>Data zakończenia</th><th>Urządzenie</th><th>Płatność</th></tr></thead><tbody>'+visible.map(j=>
+       '<tr data-job="'+escape(j.id)+'" class="'+(selected===j.id?'selected':'')+'"><td class="lab-client-cell"><button type="button" data-job="'+escape(j.id)+'" class="lab-client-select"><b>'+escape(j.client)+'</b><small>'+escape(j.city)+', '+escape(j.street)+'</small></button></td><td>'+statusTag(j)+'</td><td>'+installersTag(j)+'</td><td>'+plateTag(j)+'</td><td>'+invoiceTag(j)+'</td><td><span class="lab-table-date">'+escape(j.date||'—')+'</span></td><td><span class="lab-table-date '+(!j.completed_at?'empty':'')+'">'+escape(j.completed_at||'—')+'</span></td><td><span class="lab-table-model" title="'+escape(j.model)+'">'+escape(j.model)+'</span></td><td><span class="lab-payment">'+escape(j.payment)+'</span></td></tr>'
+    ).join('')+'</tbody></table></div>';
+    const mobileCards='<div class="lab-mobile-job-cards">'+visible.map(j=>'<button class="jobcard '+(j.id===selected?'selected':'')+'" type="button" data-job="'+escape(j.id)+'"><span class="housebox">'+ico.house+'</span><span class="jobtext"><strong>'+escape(j.client)+'</strong><small>'+escape(j.city)+' · '+escape(j.date)+' · '+escape(j.model)+'</small></span>'+iconbadge(j.status)+'<span class="arrow">›</span></button>').join('')+'</div>';
+    $('joblist').innerHTML=visible.length?desktopTable+mobileCards:'<div class="lab-no-jobs">Nie ma montaży spełniających kryteria.</div>';
   }
   const fact=(icon,main,desc)=>'<div class="fact"><span class="facticon">'+(ico[icon]||ico.doc)+'</span><div class="facttext"><b>'+escape(main)+'</b><small>'+escape(desc)+'</small></div></div>';
   function details(){
