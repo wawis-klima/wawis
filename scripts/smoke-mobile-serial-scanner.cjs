@@ -13,6 +13,12 @@ assert.match(captureSource, /import \{ createPortal \} from ["']react-dom["']/, 
 assert.match(captureSource, /verification && typeof document !== ["']undefined["'] \? createPortal\(/, 'Verification must render outside wizard clipping.');
 assert.match(captureSource, /cropSource && typeof document !== ["']undefined["'] \? createPortal\(/, 'Crop modal must render outside wizard clipping.');
 const captureStyles = read('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
+// WAWIS 12.87: prevent a dark crop screen returning in the light mobile wizard.
+assert.match(captureStyles, /\.nameplateCropModal\s*\{[^}]*background:\s*#f8fafc\s*;/, 'Crop surface must remain light.');
+assert.match(captureStyles, /\.nameplateCropHeader\s*\{[^}]*background:\s*#ffffff\s*;/, 'Crop header must remain light.');
+assert.match(captureStyles, /\.nameplateCropFooter\s*\{[^}]*background:\s*#ffffff\s*;/, 'Crop footer must remain light.');
+assert.match(captureStyles, /\.nameplateCropFooter \.btn\.primary\s*\{[^}]*background:\s*#2563eb\s*;/, 'Save crop action must remain readable.');
+assert.match(captureStyles, /\.nameplateCropBox\s*\{[^}]*box-shadow:\s*0 0 0 9999px/, 'Crop contrast mask must remain.');
 // Regression: the OCR verification layer must render above the 9999 device wizard overlay.
 assert.match(captureStyles, /\.nameplateVerifyModal\s*\{[^}]*z-index:\s*13000\s*;/, 'Nameplate verification must not be hidden behind the device wizard.');
 const detailsSource = read('src', 'mobile791', 'components', 'JobDetailsPanel.jsx');
