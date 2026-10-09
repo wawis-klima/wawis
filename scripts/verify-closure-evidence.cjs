@@ -56,7 +56,7 @@ try {
     }).trim().split(/\r?\n/).filter(Boolean);
     const expectedImpact = classifyRelease({ baseRef: impact.base_ref || 'origin/main', changedFiles: changed });
     const orderedEqual = (a,b) => Array.isArray(a) && Array.isArray(b) && sameOrdered(a,b);
-    for (const field of ['changed_files', 'effective_files', 'generated_only_files', 'groups', 'pr_groups', 'platforms', 'e2e']) {
+    for (const field of ['changed_files', 'effective_files', 'generated_only_files', 'groups', 'pr_groups', 'platforms', 'e2e', 'interaction_flows', 'visual_surfaces']) {
       if (!orderedEqual(impact[field], expectedImpact[field])) throw new Error(`Zmieniony/nieaktualny release impact: ${field}`);
     }
     for (const field of ['profile', 'scope', 'needs_playwright']) {
