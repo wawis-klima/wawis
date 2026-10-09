@@ -360,6 +360,84 @@ Deno.serve(async (request: Request) => {
   }
 });
 
+
+type TrustedBuyer = { name: string; street: string; city: string; postCode: string; taxNo: string };
+
+async function getTrustedJobBuyer(adminClient: ReturnType<typeof createClient>, jobId: string) {
+  const { data: job, error: jobError } = await adminClient.from("jobs")
+    .select("id, contractor_id, client, title, city, street, status, vat_invoice_fakturownia_confirmed")
+    .eq("id", jobId).maybeSingle();
+  if (jobError) throw new Error("Nie udało się odczytać montażu z WAWIS.");
+  if (!job) return null;
+  const contractorId = normalizeText(job.contractor_id);
+  let contractor: Record<string, unknown> | null = null;
+  if (contractorId) {
+    const { data, error } = await adminClient.from("contractors")
+      .select("id, company_name, city, street, nip, addresses")
+      .eq("id", contractorId).maybeSingle();
+    if (error) throw new Error("Nie udało się odczytać nabywcy montażu.");
+    contractor = data;
+  }
+  const primary = getPrimaryAddress(contractor);
+  const city = splitPostalCity(primary.city || contractor?.city || job.city);
+  const buyer: TrustedBuyer = {
+    name: normalizeText(contractor?.company_name || job.client || job.title),
+    street: normalizeText(primary.street || contractor?.street || job.street),
+    city: city.city,
+    postCode: city.postalCode,
+    taxNo: digitsOnly(contractor?.nip),
+  };
+  return { job, buyer, externalId: contractorId || ("job-" + jobId) };
+}
+
+async function findOptionalTrustedClientId(apiToken: string, externalId: string): Promise<string> {
+  const clients = (await fakturowniaGetClients(apiToken, { external_id: externalId }))
+    .filter((client) => normalizeText(client.id) && normalizeText(client.external_id) === externalId);
+  return clients.length === 1 ? normalizeText(clients[0].id) : "";
+}
+
+async function hydrateInvoice(apiToken: string, invoice: FakturowniaInvoice): Promise<FakturowniaInvoice> {
+  const id = normalizeText(invoice.id);
+  if (!/^[0-9]+$/.test(id)) throw new Error("Fakturownia zwróciła nieprawidłowy identyfikator dokumentu.");
+  const value = await fakturowniaRequest<unknown>(
+    "/invoices/" + encodeURIComponent(id) + ".json", apiToken, { method: "GET" });
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Fakturownia zwróciła nieprawidłowe szczegóły faktury.");
+  }
+  return value as FakturowniaInvoice;
+}
+
+async function getRecentIssuedInvoices(apiToken: string, clientId: string) {
+  const invoices: FakturowniaInvoice[] = [];
+  const MAX_PAGES = 5;
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const chunk = await fakturowniaGetInvoices(apiToken, {
+      ...(clientId ? { client_id: clientId } : {}),
+      period: "last_30_days", page: String(page), per_page: "100", order: "updated_at.desc",
+    });
+    invoices.push(...chunk);
+    if (chunk.length < 100) return { invoices, complete: true };
+  }
+  return { invoices, complete: false };
+}
+
+async function hydrateLikelyBuyerInvoices(
+  apiToken: string, invoices: FakturowniaInvoice[], buyer: TrustedBuyer,
+): Promise<FakturowniaInvoice[]> {
+  const comparable = (x: unknown) => normalizeText(x).toLocaleLowerCase("pl-PL")
+    .replace(/ł/g, "l").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const results: FakturowniaInvoice[] = [];
+  for (const invoice of invoices) {
+    if (comparable(invoice.buyer_name) !== comparable(buyer.name)) continue;
+    if (!invoice.buyer_street || (!invoice.buyer_city && !invoice.buyer_post_code)) {
+      if (results.length >= 15) break;
+      results.push(await hydrateInvoice(apiToken, invoice));
+    } else results.push(invoice);
+    if (results.length >= 50) break;
+  }
+  return results;
+}
+
 async function fakturowniaGetClients(apiToken: string, params: Record<string, string>): Promise<FakturowniaClient[]> {
   const query = new URLSearchParams(params);
   const result = await fakturowniaRequest<unknown>(`/clients.json?${query.toString()}`, apiToken, { method: "GET" });
