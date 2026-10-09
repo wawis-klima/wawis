@@ -74,3 +74,14 @@ export async function lookupFakturowniaInvoiceByNumber({ supabase, jobId, invoic
     body: { action: 'link_by_number', jobId: normalizedJobId, invoiceNumber: normalizedNumber },
   });
 }
+
+/** Cheap server-owned check; never exposes historical invoice identifiers. */
+export async function hasPendingFakturowniaInvoice({ supabase, jobId }) {
+  const normalizedJobId = String(jobId || '').trim();
+  if (!normalizedJobId) return false;
+  const data = await invokeFakturowniaClient({
+    supabase,
+    body: { action: 'pending', jobId: normalizedJobId },
+  });
+  return Boolean(data?.pending);
+}
