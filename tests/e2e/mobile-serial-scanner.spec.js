@@ -313,7 +313,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     }
     await page.screenshot({ path: testInfo.outputPath('v12.85-mitsubishi-multi-split.png') });
     await page.locator('.mobileMultiIndoorCard').first().click();
-    await expect(page.getByText('Jednostka wewnętrzna JW1')).toBeVisible();
+    await expect(page.locator('.mobileDeviceModeChip')).toContainText('Jednostka wewnętrzna JW1');
     await page.setViewportSize({ width: 390, height: 844 });
     await assertInsideViewport('step3 JW1');
   });
