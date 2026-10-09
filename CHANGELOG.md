@@ -1,3 +1,8 @@
+## 12.90
+- Skrócono tekst adresu na mobilnej liście montaży i w rozwiniętych szczegółach do „miejscowość, ulica i numer” bez kodu pocztowego.
+- Link Google Maps nadal korzysta z pełnego adresu, a dane klienta, protokoły i faktury nie są zmieniane.
+- Test Playwright sprawdza listę, szczegóły, pełny URL map, dopasowanie tekstu i widoczność sąsiednich danych.
+
 ## 12.89
 - Rozszerzono automatyczny dobór testów na zmiany wyglądu dowolnego modułu: CSS, menu, tabele, przyciski, okna, przewijanie, karty i grafiki UI.
 - Zmiana stylów wymusza Playwright dla mobilnej, desktopowej lub obu platform; UI CSS nie może przejść przez FAST/MICRO UI bez testów interakcyjnych.

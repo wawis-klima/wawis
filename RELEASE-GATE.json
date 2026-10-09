@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.89",
-  "scope": "full",
-  "release_branch": "release/v12.89",
+  "version": "12.90",
+  "scope": "mobile",
+  "release_branch": "release/v12.90",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.89.zip"
+    "file_name": "klima-app-v12.90.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.89",
+    "source_branch": "release/v12.90",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "UI-1289: all CSS and shared UI graphic edits must run platform visual E2E, assert real hit targets, and resist evidence tampering",
-    "release_ci": "REQUIRED exact HEAD all group regressions, Codex SQL races, mobile+desktop Playwright, Closure Gate and build; no green claim prior to checks",
+    "codex_audit": "UI-1290: mobile job address display strips postcode without altering stored/map/protocol address",
+    "release_ci": "REQUIRED exact HEAD targeted groups + mobile Playwright + Closure Gate before merge",
     "external_provider_tests": "EXTERNAL visual acceptance on physical devices and provider checks when functionality changes",
-    "front_and_backend": "Release policy and visual E2E only; business logic, OCR, provider APIs and Supabase schema untouched",
-    "mobile_touch": "No runtime UI changes; visible version 12.89 must match deployed version"
+    "front_and_backend": "Only mobile address presentation; no database, provider, protocol or invoice logic changes",
+    "mobile_touch": "Check visible v12.90 after deployment, address display and clickable Google Maps link"
   }
 }

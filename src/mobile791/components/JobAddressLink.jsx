@@ -1,5 +1,5 @@
 import React from "react";
-import { getGoogleMapsUrl, getJobAddress } from "../utils/jobHelpers.jsx";
+import { getGoogleMapsUrl, getJobAddress, getJobDisplayAddress } from "../utils/jobHelpers.jsx";
 
 export default function JobAddressLink({
   job,
@@ -10,8 +10,8 @@ export default function JobAddressLink({
   ariaLabel,
   linkRef,
 }) {
-  const address = getJobAddress(job);
-  const mapsUrl = getGoogleMapsUrl(address);
+  const address = getJobDisplayAddress(job);
+  const mapsUrl = getGoogleMapsUrl(getJobAddress(job));
 
   if (!mapsUrl) {
     return <span ref={linkRef} className={className}>{emptyLabel}</span>;

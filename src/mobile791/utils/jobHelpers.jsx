@@ -71,6 +71,15 @@ export function getJobAddress(job) {
   return addressParts.length ? addressParts.join(", ") : "";
 }
 
+// Format skrócony wyłącznie dla ekranów mobilnych: pełny adres pozostaje
+// bez zmian dla Map Google, protokołu, faktury i zapisu klienta.
+export function getJobDisplayAddress(job) {
+  const city = String(getJobCity(job) || "").replace(/^\s*\d{2}[-– ]?\d{3}\s*/u, "").trim();
+  const street = getJobStreet(job);
+  const addressParts = [city, street].filter((part) => part && part !== "-");
+  return addressParts.join(", ");
+}
+
 export function getGoogleMapsUrl(jobOrAddress) {
   const address = typeof jobOrAddress === "string" ? jobOrAddress.trim() : getJobAddress(jobOrAddress);
   if (!address) return "";
