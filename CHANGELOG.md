@@ -1,3 +1,10 @@
+## 12.89
+- Rozszerzono automatyczny dobór testów na zmiany wyglądu dowolnego modułu: CSS, menu, tabele, przyciski, okna, przewijanie, karty i grafiki UI.
+- Zmiana stylów wymusza Playwright dla mobilnej, desktopowej lub obu platform; UI CSS nie może przejść przez FAST/MICRO UI bez testów interakcyjnych.
+- Scenariusze wizualne sprawdzają klikalność widocznych elementów przez hit-test, a nie wyłącznie ich obecność w DOM.
+- Nowe pole `visual_surfaces` jest obowiązkowo sprawdzane przez niezależny runner i Closure Gate. Dodane testy negatywne selektora i aktualizacja polityki.
+- Reguła dotyczy wszystkich modułów, nie tylko odczytu tabliczek. Brak zmian logiki biznesowej i migracji.
+
 ## 12.88
 - Wprowadzono regułę testowania powiązanych przepływów między modułami: kreator→tabliczka/OCR→zapis, urządzenie→protokół, klient→faktura, SMS→historia, montaż→push.
 - Zmiana w obszarze powiązanego przepływu (również CSS, scroll i z-index) wymusza jego grupy regresyjne i Playwright zamiast FAST UI/MICRO UI.
