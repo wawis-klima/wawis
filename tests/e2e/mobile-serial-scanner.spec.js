@@ -102,6 +102,21 @@ async function selectNameplateAndCrop(page, input) {
 
   const verifyModal = page.locator('.nameplateVerifyModal');
   await expect(verifyModal).toBeVisible();
+
+  // Regression: visible in DOM is not enough. Verify that the nameplate
+  // review is hit-testable above the device wizard after the crop disappears.
+  await expect.poll(() => page.evaluate(() => {
+    const review = document.querySelector('.nameplateVerifyModal');
+    const heading = review?.querySelector('.nameplateVerifyHeader');
+    if (!heading) return false;
+    const bounds = heading.getBoundingClientRect();
+    const topmost = document.elementFromPoint(
+      bounds.left + bounds.width / 2,
+      bounds.top + bounds.height / 2,
+    );
+    return Boolean(topmost && review.contains(topmost));
+  }), { timeout: 5_000 }).toBe(true);
+
   const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
   const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
 
@@ -476,6 +491,17 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     const verifyModal = page.locator('.nameplateVerifyModal');
     await expect(verifyModal).toBeVisible();
+    await expect.poll(() => page.evaluate(() => {
+      const review = document.querySelector('.nameplateVerifyModal');
+      const heading = review?.querySelector('.nameplateVerifyHeader');
+      if (!heading) return false;
+      const bounds = heading.getBoundingClientRect();
+      const topmost = document.elementFromPoint(
+        bounds.left + bounds.width / 2,
+        bounds.top + bounds.height / 2,
+      );
+      return Boolean(topmost && review.contains(topmost));
+    }), { timeout: 5_000 }).toBe(true);
     const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
     const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
 
