@@ -21,7 +21,7 @@ function sameOrdered(a, b) {
   return Array.isArray(a) && Array.isArray(b)
     && a.length === b.length && a.every((value, index) => value === b[index]);
 }
-for (const field of ['changed_files', 'effective_files', 'generated_only_files', 'groups', 'pr_groups', 'platforms', 'e2e', 'interaction_flows']) {
+for (const field of ['changed_files', 'effective_files', 'generated_only_files', 'groups', 'pr_groups', 'platforms', 'e2e', 'interaction_flows', 'visual_surfaces']) {
   if (!sameOrdered(impact[field], expected[field])) {
     throw new Error(`NO-GO: release impact ${field} różni się od niezależnej klasyfikacji diff`);
   }
