@@ -138,7 +138,11 @@ Deno.serve(async (request: Request) => {
       let complete = true;
       let automaticBlockReason = "";
       if (!foundInvoice) {
-        const recent = await getRecentIssuedInvoices(apiToken, trustedClientId);
+        const { data: preparedAttempt, error: preparedError } = await adminClient
+          .from("fakturownia_invoice_attempts").select("client_id").eq("job_id", jobId).maybeSingle();
+        if (preparedError) throw new Error("Nie udało się odczytać przygotowanego wystawiania faktury.");
+        const recent = await getRecentIssuedInvoices(apiToken,
+          normalizeText(preparedAttempt?.client_id) || trustedClientId);
         complete = recent.complete;
         // Only a recorded, complete server snapshot allows zero-click confirmation.
         // A sole invoice matching the buyer is NOT enough when the customer can have many jobs.
@@ -481,8 +485,11 @@ async function tryAutoMatchPreparedInvoice({
     return no("Upłynął bezpieczny czas automatycznej weryfikacji (2 godziny).");
   }
   if (!current.complete) return no("Niepełna lista faktur — bezpieczne potwierdzenie automatyczne jest niedostępne.");
-  const expectedBuyer = JSON.stringify(attempt.buyer_snapshot);
-  if (expectedBuyer !== JSON.stringify(buyer)) return no("Dane klienta zmieniono podczas wystawiania faktury.");
+  const snapshot = attempt.buyer_snapshot || {};
+  const buyerFields: Array<keyof TrustedBuyer> = ["name", "street", "city", "postCode", "taxNo"];
+  if (buyerFields.some((field) => normalizeText(snapshot[field]) !== normalizeText(buyer[field]))) {
+    return no("Dane klienta zmieniono podczas wystawiania faktury.");
+  }
   const cid = normalizeText(attempt.client_id);
   if (!cid) return no("Brak identyfikatora klienta zapisanego przy rozpoczęciu.");
   // Current scan must use the client captured at prepare-time; never trust current browser input.
