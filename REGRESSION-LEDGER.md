@@ -10,6 +10,16 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1281 (9 października 2026)
+
+| ID | Stan przed CI | Testy i warunki |
+|---|---|---|
+| FAKT-1281-SUCCESS-FAST | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-auto-v1280.mjs`: po znalezieniu jednej nowej wystawionej faktury bez OID zwracamy `VERIFIED` i nie odpytujemy o kandydatów do ręcznego powiązania. |
+| FAKT-1281-CUSTOMER-FAST | FIXED-UNVERIFIED | Ten sam test: po zapisaniu snapshotu klienta nie ma zbędnego GET `/clients.json` podczas weryfikacji, w razie braku snapshotu pozostała wcześniejsza ścieżka. |
+| FAKT-1281-EMERGENCY | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-v1281.mjs`: przyciski awaryjne domyślnie schowane i odtwarzane przez dostępny dla administratora przycisk „Opcje awaryjne”. |
+| FAKT-1281-SAFETY | REQUIRED | Wszystkie dotychczasowe scenariusze 12.80: dwa dokumenty, inny klient/instalacja, konflikt, brak OID, duplikat ID. |
+| FAKT-1281-LIVE | EXTERNAL | Rzeczywisty pomiar czasu na następnej fakturze po wdrożeniu, bez obietnicy konkretnej liczby sekund. |
+
 ## Faktury — FAKT-1280 (9 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
