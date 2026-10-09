@@ -173,6 +173,8 @@
   font-size: 9px;
 }
 
+/* WAWIS 12.87 — jasny, spójny z kreatorem wygląd kadrowania.
+   Ciemna maska pozostaje wyłącznie na zdjęciu poza ramką, aby czytelnie wskazać wybór. */
 /* Mobilne kadrowanie tabliczki po wykonaniu zdjęcia. */
 .nameplateCropModal {
   position: fixed;
@@ -181,8 +183,8 @@
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   min-height: 100dvh;
-  color: #f8fafc;
-  background: #020617;
+  color: #132039;
+  background: #f8fafc;
   overscroll-behavior: contain;
 }
 
@@ -192,7 +194,8 @@
   justify-content: space-between;
   gap: 16px;
   padding: max(14px, env(safe-area-inset-top)) 16px 10px;
-  background: rgba(2, 6, 23, 0.96);
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
 }
 
 .nameplateCropHeader > div {
@@ -202,13 +205,14 @@
 }
 
 .nameplateCropHeader strong {
+  color: #132039;
   font-size: 18px;
   line-height: 1.15;
 }
 
 .nameplateCropHeader span {
   overflow: hidden;
-  color: #cbd5e1;
+  color: #64748b;
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -220,15 +224,15 @@
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid #334155;
+  border: 1px solid #cbd5e1;
   border-radius: 999px;
-  background: #0f172a;
-  color: #fff;
+  background: #ffffff;
+  color: #334155;
 }
 
 .nameplateCropHelp {
   padding: 8px 18px 12px;
-  color: #cbd5e1;
+  color: #64748b;
   font-size: 12px;
   line-height: 1.35;
   text-align: center;
@@ -251,7 +255,7 @@
   max-height: 100%;
   overflow: hidden;
   line-height: 0;
-  background: #000;
+  background: #e2e8f0;
 }
 
 .nameplateCropImageWrap > img {
@@ -268,7 +272,7 @@
 .nameplateCropBox {
   position: absolute;
   z-index: 2;
-  border: 2px solid #38bdf8;
+  border: 2px solid #2563eb;
   border-radius: 3px;
   box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.67), 0 0 0 1px rgba(255, 255, 255, 0.45) inset;
   cursor: move;
@@ -334,10 +338,10 @@
 .nameplateCropError {
   margin: 8px 14px 0;
   padding: 9px 11px;
-  border: 1px solid #f87171;
+  border: 1px solid #fecaca;
   border-radius: 10px;
-  background: rgba(127, 29, 29, 0.72);
-  color: #fee2e2;
+  background: #fef2f2;
+  color: #b91c1c;
   font-size: 11px;
   line-height: 1.35;
 }
@@ -347,7 +351,8 @@
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 10px;
   padding: 12px 14px max(14px, env(safe-area-inset-bottom));
-  background: rgba(2, 6, 23, 0.96);
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
 }
 
 .nameplateCropFooter .btn {
@@ -358,9 +363,19 @@
 }
 
 .nameplateCropFooter .btn.secondary {
-  border-color: #475569;
-  background: #0f172a;
-  color: #f8fafc;
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #132039;
+}
+
+.nameplateCropFooter .btn.primary {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.nameplateCropFooter .btn:disabled {
+  opacity: 0.6;
 }
 
 @media (orientation: landscape) and (max-height: 540px) {
@@ -427,17 +442,17 @@
 .nameplateQualityWarning {
   margin: 8px 14px 0;
   padding: 10px 12px;
-  border: 1px solid #fbbf24;
+  border: 1px solid #fcd34d;
   border-radius: 12px;
-  background: rgba(120, 53, 15, 0.76);
-  color: #fef3c7;
+  background: #fffbeb;
+  color: #92400e;
   font-size: 11px;
   line-height: 1.35;
 }
 
 .nameplateQualityWarningTitle {
   margin-bottom: 5px;
-  color: #fff7ed;
+  color: #92400e;
   font-size: 12px;
   font-weight: 900;
 }
@@ -454,8 +469,8 @@
   padding: 6px 9px;
   border: 1px solid #fcd34d;
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: #ffffff;
+  color: #92400e;
   font: inherit;
   font-size: 10px;
   font-weight: 900;
