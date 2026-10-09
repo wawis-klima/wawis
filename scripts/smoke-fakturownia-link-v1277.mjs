@@ -52,7 +52,7 @@ async function run(label, opts={}, expected={}) {
  if(expected.code)assert.equal(out.reasonCode,expected.code,label+' refusal');
  if(expected.error)assert.match(String(out.error||''),expected.error,label+' error');
  assert.equal(calls.filter(x=>x.method!=='GET').length,0,label+' no Fakturownia writes');
- if(action==='link_by_number'&&role==='Administrator'&&status==='Zakończone'&&clients.length===1){
+ if(action==='link_by_number'&&role==='Administrator'&&status==='Zakończone'&&clients.length===1&&clients[0].external_id===contractorId){
    assert(calls.some(x=>x.path==='/invoices.json'&&x.params.get('number')===number),'Search by exact invoice number');
  }
  console.log('PASS V12.77 '+label);
