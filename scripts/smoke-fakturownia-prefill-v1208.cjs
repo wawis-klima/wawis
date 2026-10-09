@@ -31,7 +31,7 @@ assert.match(edge, /url\.searchParams\.set\("client_id", clientId\)/);
 assert.match(edge, /url\.searchParams\.set\("invoice\[oid\]", invoiceOid\)/, "Formularz musi dostać OID konkretnego montażu.");
 assert.match(edge, /invoice\[positions\]\[0\]\[name\]/);
 assert.match(edge, /invoice\[positions\]\[0\]\[tax\]/);
-assert.match(edge, /url\.searchParams\.set\("invoice\\[positions\\]\\[0\\]\\[quantity\\]", "1"\)/,
+assert.ok(edge.includes('url.searchParams.set("invoice[positions][0][quantity]", "1");'),
   'Ilość na pozycji faktury musi domyślnie wynosić dokładnie 1.');
 assert.match(edge, /invoice\[payment_type\]/);
 assert.match(edge, /invoice\[payment_to_kind\]/);
