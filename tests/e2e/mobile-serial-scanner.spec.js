@@ -87,6 +87,10 @@ async function selectNameplateAndCrop(page, input) {
   await input.setInputFiles(genericNameplateEvidence);
   const cropModal = page.locator('.nameplateCropModal');
   await expect(cropModal).toBeVisible();
+  // Both full-screen stages must escape the modal overflow and sticky footer.
+  await expect.poll(() => page.evaluate(() => (
+    document.querySelector('.nameplateCropModal')?.parentElement === document.body
+  ))).toBe(true);
   await expect(page.getByText('Dopasuj kadr', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Zapisz kadr' }).click();
 
@@ -102,6 +106,9 @@ async function selectNameplateAndCrop(page, input) {
 
   const verifyModal = page.locator('.nameplateVerifyModal');
   await expect(verifyModal).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (
+    document.querySelector('.nameplateVerifyModal')?.parentElement === document.body
+  ))).toBe(true);
 
   // Regression: visible in DOM is not enough. Verify that the nameplate
   // review is hit-testable above the device wizard after the crop disappears.
@@ -491,6 +498,9 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
 
     const verifyModal = page.locator('.nameplateVerifyModal');
     await expect(verifyModal).toBeVisible();
+    await expect.poll(() => page.evaluate(() => (
+      document.querySelector('.nameplateVerifyModal')?.parentElement === document.body
+    ))).toBe(true);
     await expect.poll(() => page.evaluate(() => {
       const review = document.querySelector('.nameplateVerifyModal');
       const heading = review?.querySelector('.nameplateVerifyHeader');
