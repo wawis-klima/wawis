@@ -463,10 +463,12 @@
 
 
 /* v11.22 — mobilne potwierdzanie tabliczki po lokalnym odczycie i fallbacku AI. */
+/* Verification must be above the app modal (z-index: 9999), just like cropping.
+   A lower value makes OCR run invisibly behind the device wizard on iOS. */
 .nameplateVerifyModal {
   position: fixed;
   inset: 0;
-  z-index: 1300;
+  z-index: 13000;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   background: #f8fafc;
