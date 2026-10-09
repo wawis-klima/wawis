@@ -80,7 +80,7 @@ await run('auto excludes invoice linked to different installation',{action:'veri
 await run('auto excludes wrong customer',{action:'verify',invoices:[{...sample,client_id:77}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
 await run('auto excludes unrelated OID',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(otherJobId)}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
 await run('auto excludes draft and proforma',{action:'verify',invoices:[{...sample,kind:'proforma'}, {...sample,id:992,kind:'vat',status:'draft'}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
-await run('auto fails closed on ambiguous client',{action:'verify',invoices:[sample],clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
+await run('auto fails closed on ambiguous client',{action:'verify',invoices:[sample],clients:[{id:55,external_id:contractorId},{id:56,external_id:contractorId}]}, {found:false,code:'CLIENT_NOT_LINKED',candidates:0});
 const ui=fs.readFileSync(new URL('../src/components/JobDetailsPanel.jsx',import.meta.url),'utf8');
 assert.match(ui,/setInvoiceVerificationMessage\(result\?\.reason/);
 assert.match(ui,/onSubmit=\{linkInvoiceByNumber\}/);
