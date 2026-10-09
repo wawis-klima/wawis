@@ -16,6 +16,28 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - FIXED-UNVERIFIED — poprawka istnieje, ale Closure Gate nie potwierdził jeszcze pełnego scenariusza.
 - CLOSED — poprawka i trwały test regresyjny przeszły Closure Gate.
 
+## Audyt Codexa — pakiet 3 Closure Gate (12.75), G1/G2 + C13
+
+Potwierdzone przed zmianą:
+- Dwa kontrakty `groups=getReleaseGroups('full')` i `pr_groups=selectDomainGroups` dla `critical` mogły być rozbieżne. PR wykonywał `pr_groups`, a pełniejsza lista pojawiała się w klasyfikatorze; nie była twardą gwarancją wykonania.
+- Przebieg na PR mógł przechowywać w dowodach `GITHUB_SHA` wskazujące syntetyczny merge GitHub zamiast jawnie potwierdzać konkretny `pull_request.head.sha`. Brak odrębnego porównania źródłowego HEAD.
+- Aktywny ruleset GitHub `Wawis` (id 23334033, sprawdzony 2026-10-09) już wymaga `targeted-checks`, PR i strict-status-checks dla domyślnej gałęzi. Zmiana ochrony repozytorium nie jest potrzebna.
+
+Zasady końcowe:
+- `groups` = `pr_groups` dla wszystkich profili, bez deklarowania pełnego uruchomienia, gdy CI działa tylko selektywnie.
+- Zmiana samej bramki/test runnera/CI wymusza `getReleaseGroups('full')`; wspólne moduły obejmują obie platformy i potrzebne regresje domeny. CSS-only pozostaje ścieżką szybką; optymalizację P2 pomijania SQL/ZIP dla innych zmian odłożono do czasu wiarygodnego porównania pokrycia.
+- CI pobiera źródłowy PR HEAD i wymaga jego zgodności z `git rev-parse HEAD` oraz `git_head_sha` dowodów grouped/E2E; `GITHUB_SHA`, `GITHUB_RUN_ID`, `GITHUB_RUN_ATTEMPT` pozostają weryfikowane.
+- Gate i runner osobno rekonstruują zakres z oryginalnego diff i odrzucają podmieniony `impact`.
+
+| ID | Stan | Reprodukcja i trwały test |
+|---|---|---|
+| CODEX-CLOSURE-G1 | gotowe do CI | `scripts/smoke-closure-integrity-v1275.cjs`: przykłady globalnej zmiany bramki, współdzielonej diagnostyki, specyficznego SMS i CSS, nie można zawęzić `groups/pr_groups`. |
+| CODEX-CLOSURE-G2 | gotowe do CI | ten sam skrypt: niezależna kontrola podmienionego `release-impact.json`, obcego grouped/E2E HEAD, podmienionych `effective_files` i `all_passed=false`; niedopuszczenie do runnera. |
+| CODEX-CLOSURE-C13 | częściowo / świadomie ograniczone | istniejący profil `fast-ui` zachowany bez Playwright i pełnych SQL. Nie rozluźniono krytycznych testów dla innych zmian bez pomiarów. |
+| CODEX-GITHUB-RULESET | stan zweryfikowany odczytem API | `https://github.com/wawis-klima/wawis/rules/23334033` — aktywny `targeted-checks`, PR, strict policy. |
+
+Odbiór wydania wymaga zielonego pełnego CI dla aktualnego HEAD PR, Closure Gate, Playwright mobile/desktop, dwusesyjnego PostgreSQL i build, następnie potwierdzonego merge/Vercel/wersji 12.75. Historyczne dowody nie wystarczają. Bramka nadal nie zastępuje ręcznego sprawdzenia realnych telefonów/PUSH.
+
 ## Audyt Codexa 12.72 — P1 diagnostyka, pakiet 2 (12.74)
 
 Zgłoszenia C3/C4 — reprodukcje wymagane przed naprawą (RED) i po naprawie (GREEN):
