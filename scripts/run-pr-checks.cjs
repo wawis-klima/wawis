@@ -11,6 +11,10 @@ if (!fs.existsSync(changedFileListPath) || !fs.existsSync(impactPath)) {
 const changedFiles = fs.readFileSync(changedFileListPath, 'utf8')
   .split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
 const impact = JSON.parse(fs.readFileSync(impactPath, 'utf8'));
+const trustedBase = 'origin/' + (process.env.GITHUB_BASE_REF || 'main');
+if (impact.base_ref !== trustedBase) {
+  throw new Error('NO-GO: release impact base_ref must match trusted PR base ' + trustedBase);
+}
 const expected = classifyRelease({ baseRef: impact.base_ref || 'origin/main', changedFiles });
 
 function sameOrdered(a, b) {
