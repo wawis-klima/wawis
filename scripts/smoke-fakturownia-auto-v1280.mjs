@@ -112,6 +112,15 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
     const prepare=await call('prepare');
     assert.equal(prepare.status,200,label+': prepare successful');
     assert(prepare.invoiceUrl,label+': Fakturownia URL');
+    const formUrl=new URL(prepare.invoiceUrl);
+    assert.equal(formUrl.pathname,'/invoices/new',label+': existing Fakturownia form');
+    assert.equal(formUrl.searchParams.get('invoice[positions][0][quantity]'),'1',label+': quantity defaults to 1');
+    assert(formUrl.searchParams.get('invoice[positions][0][name]'),label+': item description preserved');
+    assert(formUrl.searchParams.get('invoice[positions][0][tax]'),label+': VAT tax preserved');
+    for(const key of ['invoice[positions][0][price_net]','invoice[positions][0][price_gross]',
+      'invoice[positions][0][total_price]','invoice[positions][0][total_price_gross]'])
+      assert.equal(formUrl.searchParams.has(key),false,label+': no amount prefill '+key);
+
     assert.equal(tableAttempt.client_id,clientId,label+': baseline client');
     assert.deepEqual(Array.from(tableAttempt.baseline_invoice_ids),['900'],label+': persisted pre-invoice snapshot');
     assert.equal((await call('pending')).pending,true,label+': can recover attempt after reload');
