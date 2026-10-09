@@ -89,9 +89,31 @@ Deno.serve(async (request: Request) => {
 
     if (action === "verify") {
       const jobId = normalizeText(body.jobId);
-      const clientId = normalizeText(body.clientId);
       if (!isUuid(jobId)) return json({ error: "Brak prawidłowego identyfikatora montażu do weryfikacji." }, 400);
-      if (!clientId) return json({ error: "Brak identyfikatora klienta Fakturowni do weryfikacji." }, 400);
+      const { data: verifiedJob, error: verifiedJobError } = await adminClient.from("jobs")
+        .select("id, contractor_id, status, vat_invoice_fakturownia_confirmed")
+        .eq("id", jobId).maybeSingle();
+      if (verifiedJobError || !verifiedJob) return json({ error: "Nie znaleziono montażu." }, 404);
+      if (verifiedJob.status !== "Zakończone") return json({ error: "Weryfikację faktury można wykonać tylko dla zakończonego montażu." }, 400);
+      if (verifiedJob.vat_invoice_fakturownia_confirmed) return json({
+        ok: true, found: false, reasonCode: "ALREADY_CONFIRMED",
+        reason: "WAWIS już potwierdził fakturę dla tego montażu. Nie jest konieczna ponowna kontrola.",
+        candidates: [],
+      });
+      const expectedExternalId = normalizeText(verifiedJob.contractor_id) || `job-${jobId}`;
+      const verifiedClients = (await fakturowniaGetClients(apiToken, { external_id: expectedExternalId }))
+        .filter((row) => normalizeText(row?.id) && normalizeText(row?.external_id) === expectedExternalId);
+      if (verifiedClients.length !== 1) return json({
+        ok: true, found: false, reasonCode: "CLIENT_NOT_LINKED",
+        reason: "Nie udało się jednoznacznie zidentyfikować klienta w Fakturowni. Zatrzymano wyszukiwanie.",
+        candidates: [],
+      });
+      const clientId = normalizeText(verifiedClients[0].id);
+      if (normalizeText(body.clientId) && normalizeText(body.clientId) !== clientId) return json({
+        ok: true, found: false, reasonCode: "CLIENT_MISMATCH",
+        reason: "Identyfikator klienta z wcześniejszej sesji nie zgadza się z kartoteką Fakturowni. Zatrzymano wyszukiwanie.",
+        candidates: [],
+      });
 
       const invoiceOid = buildJobInvoiceOid(jobId);
       const invoices = await fakturowniaGetInvoices(apiToken, {
@@ -115,39 +137,25 @@ Deno.serve(async (request: Request) => {
       // to which job: show possible issued VAT documents for this trusted client, and
       // require a separate explicit admin click before the existing confirmation RPC.
       if (!foundInvoice && sameOid.length === 0) {
-        const { data: job, error: jobError } = await adminClient.from("jobs")
-          .select("id, contractor_id, status, vat_invoice_fakturownia_confirmed")
-          .eq("id", jobId).maybeSingle();
-        if (jobError || !job || job.status !== "Zakończone" || job.vat_invoice_fakturownia_confirmed) {
-          reason = "Nie udało się bezpiecznie sprawdzić kartoteki zakończonego montażu.";
-        } else {
-          const expectedExternalId = normalizeText(job.contractor_id) || `job-${jobId}`;
-          const clientMatches = (await fakturowniaGetClients(apiToken, { external_id: expectedExternalId }))
-            .filter((row) => normalizeText(row?.id) && normalizeText(row?.external_id) === expectedExternalId);
-          if (clientMatches.length !== 1 || normalizeText(clientMatches[0].id) !== clientId) {
-            reason = "Identyfikator klienta w Fakturowni nie jest jednoznaczny. Dla bezpieczeństwa WAWIS nie proponuje faktur do powiązania.";
-          } else {
-            const recentInvoices = await fakturowniaGetInvoices(apiToken, {
-              client_id: clientId,
-              period: "last_30_days",
-              page: "1",
-              per_page: "100",
-              order: "issue_date.desc",
-            });
-            const safeList = findInvoiceCandidatesForManualConfirmation(recentInvoices, { jobId, clientId, limit: 6 });
-            if (safeList.length) {
-              const { data: boundJobs, error: boundError } = await adminClient.from("jobs")
-                .select("vat_invoice_fakturownia_invoice_id")
-                .in("vat_invoice_fakturownia_invoice_id", safeList.map((row) => row.invoiceId));
-              if (boundError) throw new Error("Nie udało się sprawdzić istniejących powiązań faktur.");
-              const alreadyLinked = new Set((boundJobs || []).map((row) => normalizeText(row.vat_invoice_fakturownia_invoice_id)));
-              candidates = safeList.filter((row) => !alreadyLinked.has(row.invoiceId)).slice(0, 5);
-            }
-            reason = candidates.length
-              ? "Brak identyfikatora OID. Znaleziono niedawno wystawione faktury tego klienta — wybierz właściwy dokument, aby bezpiecznie potwierdzić powiązanie."
-              : "Brak identyfikatora OID i brak niepowiązanych wystawionych faktur tego klienta z ostatnich 30 dni. Możesz wpisać numer faktury ręcznie.";
-          }
+        const recentInvoices = await fakturowniaGetInvoices(apiToken, {
+          client_id: clientId,
+          period: "last_30_days",
+          page: "1",
+          per_page: "100",
+          order: "issue_date.desc",
+        });
+        const safeList = findInvoiceCandidatesForManualConfirmation(recentInvoices, { jobId, clientId, limit: 6 });
+        if (safeList.length) {
+          const { data: boundJobs, error: boundError } = await adminClient.from("jobs")
+            .select("vat_invoice_fakturownia_invoice_id")
+            .in("vat_invoice_fakturownia_invoice_id", safeList.map((row) => row.invoiceId));
+          if (boundError) throw new Error("Nie udało się sprawdzić istniejących powiązań faktur.");
+          const alreadyLinked = new Set((boundJobs || []).map((row) => normalizeText(row.vat_invoice_fakturownia_invoice_id)));
+          candidates = safeList.filter((row) => !alreadyLinked.has(row.invoiceId)).slice(0, 5);
         }
+        reason = candidates.length
+          ? "Brak identyfikatora OID. Znaleziono niedawno wystawione faktury tego klienta — wybierz właściwy dokument, aby bezpiecznie potwierdzić powiązanie."
+          : "Brak identyfikatora OID i brak niepowiązanych wystawionych faktur tego klienta z ostatnich 30 dni. Możesz wpisać numer faktury ręcznie.";
       }
 
       return json({
