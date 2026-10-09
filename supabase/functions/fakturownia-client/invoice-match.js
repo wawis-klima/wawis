@@ -103,10 +103,37 @@ function nipKey(value) {
 }
 
 /**
- * A buyer needs exact name, street incl. house number, and matching city/postal code.
- * Name or phone alone can NEVER assign an invoice. Empty buyer fields fail closed.
+ * Company identity: use a matching, structurally valid NIP as authoritative.
+ * GUS can expand the legal company name or correct its address and postal code
+ * after opening the Fakturownia form. Do not reject a genuine invoice for these
+ * differences when both NIPs match and the existing job/creation safeguards pass.
+ *
+ * Private customer: still requires exact name, house number and locality.
+ * An absent or different company NIP ALWAYS fails closed; never fall back to a
+ * loose company-name or address match in that situation.
  */
+function validPolishNip(value) {
+  const nip = nipKey(value);
+  if (!/^\d{10}$/.test(nip)) return false;
+  const weights = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+  const checksum = weights.reduce((sum, weight, index) => sum + weight * Number(nip[index]), 0) % 11;
+  return checksum === Number(nip[9]);
+}
+
 export function inspectInvoiceBuyer(invoice, buyer) {
+  const expectedNip = nipKey(buyer?.taxNo);
+  const actualNip = nipKey(invoice?.buyer_tax_no);
+  if (expectedNip || actualNip) {
+    if (!expectedNip || !validPolishNip(expectedNip)) {
+      return { ok: false, code: "BUYER_TAX_MISMATCH", reason: "NIP nabywcy w montażu jest brakujący lub nieprawidłowy. Nie można automatycznie potwierdzić faktury." };
+    }
+    if (actualNip !== expectedNip || !validPolishNip(actualNip)) {
+      return { ok: false, code: "BUYER_TAX_MISMATCH", reason: "NIP nabywcy na fakturze różni się od NIP-u w WAWIS albo jest nieprawidłowy." };
+    }
+    // The provider's client_id, exact invoice number, issued VAT status, OID
+    // and server-owned per-job snapshot are checked by caller as before.
+    return { ok: true, code: "VERIFIED_BY_NIP", reason: "" };
+  }
   if (!buyer?.name || !buyer?.street || !buyer?.city) {
     return { ok: false, code: "BUYER_DETAILS_MISSING", reason: "Montaz nie ma pelnych danych nabywcy do bezpiecznej weryfikacji." };
   }
@@ -129,11 +156,6 @@ export function inspectInvoiceBuyer(invoice, buyer) {
   }
   if (!invoiceTown && !invoicePost) {
     return { ok: false, code: "BUYER_LOCATION_MISSING", reason: "Brak miejscowosci i kodu pocztowego nabywcy w danych faktury." };
-  }
-  const expectedNip = nipKey(buyer.taxNo);
-  const invoiceNip = nipKey(invoice?.buyer_tax_no);
-  if ((expectedNip && expectedNip !== invoiceNip) || (!expectedNip && invoiceNip)) {
-    return { ok: false, code: "BUYER_TAX_MISMATCH", reason: "Dane NIP nabywcy na fakturze i montazu sa rozne." };
   }
   return { ok: true, code: "VERIFIED", reason: "" };
 }

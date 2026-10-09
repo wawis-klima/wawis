@@ -1,3 +1,11 @@
+## 12.82
+- Faktury firmowe: tożsamość nabywcy weryfikowana przez dwa zgodne, poprawne formalnie polskie NIP-y zamiast wymagania dosłownej zgodności nazw i adresów po pobraniu danych z GUS.
+- Bez zmian w istniejącym serwerowym snapshotcie wystawiania, wymogu dokładnie jednej nowej faktury, statusu wystawiona VAT, client_id, OID oraz unikatowości powiązania ID faktury.
+- Brak NIP-u na fakturze firmowej, inny NIP, NIP o błędnej sumie kontrolnej i NIP firmy u montażu prywatnego pozostają blokowane.
+- Dla osób prywatnych nie zmienia się dotychczasowa ścisła weryfikacja nazwiska, ulicy/numeru, miejscowości i kodu pocztowego.
+- Test end-to-end Edge z atrapą Fakturowni dla DIAMOND: WAWIS nazwa skrócona, Fakturownia pełna nazwa GUS i inny kod pocztowy, zgodny NIP — automatyczne potwierdzenie; negatywne przypadki.
+- Bez zmian płatności, bez generowania testowych faktur. Ostateczny test z rzeczywistą fakturą administratora pozostaje EXTERNAL.
+
 ## 12.81
 - Po skutecznym automatycznym odnalezieniu faktury WAWIS nie pobiera już listy kandydatów do ręcznego powiązania ani nie sprawdza ich ponownie w bazie.
 - Po przygotowaniu wystawiania wykorzystujemy identyfikator klienta Fakturowni zapamiętany na serwerze, więc pomijamy zbędne wyszukiwanie kartoteki przez API.

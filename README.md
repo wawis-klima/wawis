@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.81
+- 12.82
+
+Wersja 12.82: Fakturownia — faktury firmowe z danymi nabywcy zaktualizowanymi przez GUS mogą być automatycznie potwierdzane mimo różnic w nazwie prawnej, adresie czy kodzie pocztowym, gdy dokładnie zgadza się prawidłowy NIP. Brak NIP-u, inny NIP, fałszywy klient Fakturowni i niejednoznaczny montaż wciąż powodują odmowę. Klienci prywatni nadal wymagają sprawdzenia nazwiska i adresu. Płatności bez zmian.
 
 Wersja 12.81: Fakturownia — zwijane „Opcje awaryjne” zamiast dwóch przycisków podczas zwykłego wystawiania; po jednoznacznym automatycznym potwierdzeniu pomijamy wyszukiwanie dodatkowych faktur do ręcznego powiązania oraz zbędne zapytanie o zewnętrzną kartotekę klienta, jeśli jest on już zapamiętany podczas przygotowania dokumentu. Zabezpieczenia i płatności bez zmian.
 
@@ -926,6 +928,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.82` — Fakturownia: weryfikacja firm po poprawnym NIP nawet po aktualizacji danych przez GUS; dotychczasowe zabezpieczenia pozostały.
 - wersja `12.81` — Fakturownia: ukryte pod menu przyciski awaryjne, przyspieszona weryfikacja pozytywna bez osłabienia kontroli montażu.
 - wersja `12.80` — Fakturownia: serwerowy zapis stanu przed wystawieniem, automatyczne potwierdzenie jednoznacznie nowej faktury VAT po powrocie bez wpisywania numeru.
 - wersja `12.79` — Fakturownia: faktury wystawione dla klientów bez mapowania external_id są znajdowane i bezpiecznie porównywane z danymi nabywcy na montażu.
