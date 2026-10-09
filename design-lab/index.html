@@ -1,34 +1,41 @@
 <!doctype html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#edf3fb">
-<meta name="description" content="WAWIS DESIGN LAB — niezależny prototyp graficzny z danymi demonstracyjnymi">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; form-action 'none'; object-src 'none'; base-uri 'none'">
-<title>WAWIS DESIGN LAB — prototyp</title>
-<link rel="stylesheet" href="./style.css">
-<script src="./app.js" defer></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f2ea">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; form-action 'none'; worker-src 'none'; manifest-src 'none'; object-src 'none'; base-uri 'self'">
+<title>WAWIS DESIGN LAB — Koncepcja 2</title>
+<link rel="stylesheet" href="./style.css"><script src="./app.js" defer></script>
 </head>
 <body>
-<div class="lab-ribbon"><span class="ribbon-dot"></span> WAWIS DESIGN LAB <span class="ribbon-divider">/</span> TYLKO DEMO — BRAK POŁĄCZENIA Z PRODUKCJĄ</div>
-<div id="root" class="app-shell">
- <aside class="sidebar" aria-label="Nawigacja">
-  <div class="brand"><div class="brand-logo">W</div><div><div class="brand-name">WAWIS <span>design</span></div><div class="brand-sub">Warsztat interfejsu</div></div></div>
-  <div class="sidebar-label">PRZESTRZEŃ ROBOCZA</div>
-  <nav id="module-nav" class="module-nav"></nav>
-  <div class="sidebar-bottom"><div class="sidebar-lab-label"><span class="status-pulse"></span> Tryb demonstracyjny</div><p>Wszystkie dane są fikcyjne. Operacje nie są wysyłane do żadnego serwera.</p><div class="version">DESIGN LAB 0.1 · baza WAWIS 12.76</div></div>
- </aside>
- <main class="workspace">
-  <header class="topbar"><div class="breadcrumbs"><span>WAWIS</span><b>/</b><strong id="crumb">Montaże</strong></div><div class="top-actions"><span class="mock-state">● Offline demo</span><button class="avatar" title="Konto demonstracyjne" type="button">DL</button></div></header>
-  <div class="canvas">
-    <div class="page-heading"><div><div class="eyebrow">NOWE PODEJŚCIE DO PRACY</div><h1 id="page-title">Montaże <span class="heading-accent">/ Przegląd</span></h1><p id="page-subtitle">Projekt nowego interfejsu. Możesz bezpiecznie sprawdzać wszystkie warianty widoku.</p></div><div class="heading-actions"><button type="button" id="reset-demo" class="btn secondary">↺ Reset danych</button><button type="button" id="new-job" class="btn primary">＋ Nowy montaż</button></div></div>
-    <section class="design-toolbar" aria-label="Warianty projektu"><div class="toolbar-title"><span class="palette-dot">◈</span><div><b>Projekt wyglądu</b><small>Porównuj dwa warianty na tych samych danych</small></div></div><div class="segmented" role="group" aria-label="Wariant wyglądu"><button data-theme="modern" aria-pressed="true" type="button">Koncepcja A</button><button data-theme="classic" aria-pressed="false" type="button">Koncepcja B</button></div></section>
-    <div id="app-content" aria-live="polite"></div>
-    <footer class="footnote">WAWIS DESIGN LAB <span>•</span> Prototyp wizualny <span>•</span> bez prawdziwych klientów, SMS, PUSH i faktur</footer>
-  </div>
- </main>
+<div class="labstrip"><span class="safedot"></span> WAWIS DESIGN LAB <span class="striptext">projekt graficzny · fikcyjne dane · bez połączenia z produkcją</span><span class="ver">KONCEPCJA 2 / 0.2</span></div>
+<header class="topnav">
+  <img src="./logo.png" alt="WAWIS Chłodnictwo i Klimatyzacja" class="brandlogo">
+  <nav id="desktop-nav" class="desktopnav" aria-label="Menu główne"></nav>
+  <div class="topright"><button class="headericon" id="notify-btn" title="Powiadomienia wyłączone (demo)" aria-label="Powiadomienia">♧</button><div class="avatar">DL</div></div>
+</header>
+<main class="main">
+<section class="hero">
+  <div class="hero-text"><p class="eyebrow">PRZESTRZEŃ ROBOCZA</p><h1 id="main-title">Montaże</h1><p id="main-sub">Zarządzaj montażami, zleceniami<br> i dokumentacją w jednym miejscu.</p></div><div class="hero-image" aria-hidden="true"></div>
+</section>
+<div class="phonehead"><img src="./logo.png" alt="WAWIS" class="mobile-logo"><div class="roleline"><span class="green-dot"></span> <span id="role-caption">Administrator</span></div></div>
+<div class="greeting"><div><div class="greeting-intro">Dzień dobry,</div><b id="greeting-name">Administrator</b><p>Twoje instalacje w jednym miejscu.</p></div><div class="mini-hero" aria-hidden="true"></div></div>
+<div class="mobile-module-nav" id="mobile-nav" aria-label="Moduły mobilne"></div>
+<div class="rolebar"><span>Podgląd wersji mobilnej</span><div class="rolebuttons"><button class="role-active" data-role="admin" type="button">Administrator</button><button data-role="worker" type="button">Pracownik</button></div></div>
+<section class="work" id="work">
+<div class="listpane">
+ <div class="panelheading"><div><h2 id="list-title">Lista montaży</h2><p id="list-subtitle">Wyszukaj, filtruj i zarządzaj zleceniami montażowymi.</p></div><span id="total-items" class="total"></span></div>
+ <div class="searchwrap" id="searchwrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.2"/><path d="m16 16 5 5"/></svg><input type="search" id="search" autocomplete="off" placeholder="Szukaj klienta, miasta, modelu…" aria-label="Szukaj montaży"></div>
+ <div id="statusbar" class="statusbar" role="group" aria-label="Status montażu"></div>
+ <div class="mobile-section-head"><h2>Montaże</h2></div>
+ <div id="joblist" class="joblist"></div>
 </div>
-<div class="modal-backdrop hidden" id="modal"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-top"><div><div class="eyebrow">WYŁĄCZNIE SYMULACJA</div><h2 id="modal-title">Nowy montaż</h2></div><button id="modal-close" class="icon-btn" aria-label="Zamknij" type="button">✕</button></div><form id="job-form"><div class="form-grid"><label>Nazwa demonstracyjna<input name="client" required placeholder="Np. Klient testowy 41" maxlength="80"></label><label>Miejscowość<input name="city" placeholder="Zawiercie" maxlength="50"></label><label>Termin<input name="date" type="date" value="2026-10-12" required></label><label>Status<select name="status"><option>Nowe</option><option>W trakcie</option><option>Niezrealizowane</option><option>Zakończone</option></select></label><label class="full-width">Model urządzenia<input name="model" placeholder="Np. Rotenso Imoto 3,5 kW" maxlength="100"></label></div><div class="modal-actions"><button type="button" class="btn secondary" id="modal-cancel">Anuluj</button><button type="submit" class="btn primary">Zapisz w demonstracji</button></div></form></div></div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="detailpane" id="details"></div>
+</section>
+<section class="otherpanel hidden" id="other-panel"></section>
+<div class="fineprint">WAWIS DESIGN LAB · Podgląd wyglądu aplikacji. Wszystkie dane demonstracyjne. Działania nie trafiają na serwer.</div>
+</main>
+<div id="modal-backdrop" class="modal-backdrop hidden"><section class="modal" aria-labelledby="modal-title" role="dialog" aria-modal="true"><div class="modalheader"><div><small>WAWIS DESIGN LAB · EDYCJA W DEMO</small><h2 id="modal-title">Montaż</h2></div><button type="button" id="close-modal" aria-label="Zamknij">×</button></div><form id="editform"><label>Klient<input required name="client" maxlength="70" autocomplete="off"></label><label>Miejscowość<input required name="city" maxlength="60" autocomplete="off"></label><label>Termin<input required type="date" name="date"></label><label>Model urządzenia<input required name="model" maxlength="80"></label><label>Status<select name="status"><option>Nowe</option><option>W trakcie</option><option>Zakończone</option><option>Niezrealizowane</option></select></label><div class="modalfooter"><button class="outlinebtn" type="button" id="cancel-modal">Anuluj</button><button class="primarybtn" type="submit">Zapisz w demo</button></div></form></section></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body></html>
