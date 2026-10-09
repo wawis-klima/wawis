@@ -85,6 +85,11 @@ try {
  assert.notEqual(rejected.status,0,'forged subset reached actual regression runner');
  assert.match(rejected.stderr,/NO-GO|różni się/i);
 
+ write('impact',{...impact,base_ref:'HEAD'});
+ rejected=gate();
+ assert.notEqual(rejected.status,0,'forged base_ref should be NO-GO');
+ rejected=runner();
+ assert.notEqual(rejected.status,0,'runner accepted forged base_ref');
  write('impact',impact);
  write('grouped',{...grouped,git_head_sha:'f'.repeat(40)});
  rejected=gate();
@@ -106,7 +111,7 @@ try {
  rejected=gate();
  assert.notEqual(rejected.status,0,'partial grouped result should fail closed');
 
- console.log('PASS CODEX G1/G2 C5/C6: global/shared group selection, CSS fast path, and six CI integrity/NO-GO mutations.');
+ console.log('PASS CODEX G1/G2 C5/C6: global/shared group selection, CSS fast path, and eight CI integrity/NO-GO mutations.');
 } finally {
  fs.rmSync(temp,{recursive:true,force:true});
 }
