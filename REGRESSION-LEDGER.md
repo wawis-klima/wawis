@@ -16,6 +16,17 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - FIXED-UNVERIFIED — poprawka istnieje, ale Closure Gate nie potwierdził jeszcze pełnego scenariusza.
 - CLOSED — poprawka i trwały test regresyjny przeszły Closure Gate.
 
+## Audyt Codexa 12.72 — pakiet 4 C7–C10 (12.76)
+
+| ID | Stan przed CI | Reproduktor / ograniczenie |
+|---|---|---|
+| CODEX-DIAG-C7 | FIXED-UNVERIFIED | `scripts/smoke-diagnostics-package4-v1276.mjs` wykonuje rzeczywisty mobilny handler dla `ok:false`, partial i success oraz desktopowy `refreshServerData` z timeout/empty/unavailable; zachowuje ostatni poprawny stan ze znakiem stale. |
+| CODEX-DIAG-C8 | FIXED-UNVERIFIED | Ten sam runtime smoke wykonuje wczesny inline boot observer i scenariusz błędu modułu, testuje fallback i filtruje PII; fizyczny biały ekran iPhone/Safari = EXTERNAL. |
+| CODEX-DIAG-C9 | PARTIAL / EXTERNAL | Wykonawcze agregaty zdjęć i operacji offline, właściciel bieżącej sesji, raport bez identyfikatorów i treści; pełne potwierdzenia ACK i correlation ID każdej operacji nie są dodane (istniejące Centrum synchronizacji). |
+| CODEX-DIAG-C10 | PARTIAL / EXTERNAL | Wykonawczy kontrprzykład przyjęto-u-dostawcy ≠ wyświetlono-na-telefonie; bez nowego backendu receipts i bez realnego iPhone. |
+
+Do CLOSED wymagane są: aktualny zielony CI dokładnego HEAD PR, Closure Gate, oba E2E, dwusesyjny PostgreSQL i build, a do twierdzenia o dostawie PUSH także rzeczywiste potwierdzenia urządzenia. Nie wysyłać PUSH/SMS/faktur w testach bez jawnej zgody.
+
 ## Audyt Codexa — pakiet 3 Closure Gate (12.75), G1/G2 + C13
 
 Potwierdzone przed zmianą:

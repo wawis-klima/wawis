@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.75
+- 12.76
+
+Wersja 12.76: pakiet 4 audytu Codexa C7–C10: rzeczywisty wynik odświeżania mobile, rozróżnienie pustego widoku od awarii telemetrii desktop, przedimportowy bezpieczny raport startu, agregaty synchronizacji bieżącego konta i ostrożne nazwy etapów PUSH. Bez nowego panelu, zmian SQL/Edge i bez rzeczywistych wysyłek.
 
 Wersja 12.75: pakiet 3 audytu Codexa — Closure Gate: jedna autorytatywna lista obowiązkowych grup, pełny zestaw regresji dla zmian w samej bramce, objęcie mobile/desktop przez wspólne moduły, ścisłe dowody CI powiązane z SHA źródłowego PR oraz testy negatywne podszywania się pod inne grupy i commit. Zachowany szybki profil prostych zmian CSS.
 
@@ -911,7 +913,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.75` — niezależna kontrola zakresu testów i zgodności dowodów Closure Gate z SHA źródłowego PR.
+- wersja `12.76` — pakiet 4 Codexa: wiarygodne statusy, awaria startu, kolejka offline i nazewnictwo PUSH bez fałszywego potwierdzenia dostawy.
 - wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
 - wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
 - wersja `12.66` — Pakiet 1 audytu: blokada niejednoznacznego dopasowania klientów w Fakturowni, konflikty notatek i idempotentne dostawy paliwa.
