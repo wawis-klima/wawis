@@ -108,6 +108,7 @@ const GROUPS = {
     'node scripts/smoke-worker-contractor-update-v1089.cjs',
     'node scripts/smoke-supabase-security-hardening-v1090.mjs',
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
+    'node scripts/smoke-fakturownia-link-v1277.mjs',
   ],
   push: [
     'node scripts/codex-acceptance-push-v1269.mjs',
@@ -202,6 +203,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-private-person-v1204.cjs',
     'node scripts/smoke-fakturownia-lock-v1205.cjs',
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
+    'node scripts/smoke-fakturownia-link-v1277.mjs',
     'node scripts/smoke-fakturownia-prefill-v1208.cjs',
     'node scripts/smoke-desktop-vat-invoice-v1184.cjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
