@@ -128,6 +128,7 @@ export default function JobDetailsPanel({
   const [fakturowniaOpening, setFakturowniaOpening] = React.useState(false);
   const [fakturowniaVerifying, setFakturowniaVerifying] = React.useState(false);
   const [invoiceVerificationMessage, setInvoiceVerificationMessage] = React.useState('');
+  const [invoiceVerificationCandidates, setInvoiceVerificationCandidates] = React.useState([]);
   const [manualInvoiceExpanded, setManualInvoiceExpanded] = React.useState(false);
   const [manualInvoiceNumber, setManualInvoiceNumber] = React.useState('');
   const [manualInvoiceBusy, setManualInvoiceBusy] = React.useState(false);
@@ -147,6 +148,7 @@ export default function JobDetailsPanel({
     setFakturowniaOpening(false);
     setFakturowniaVerifying(false);
     setInvoiceVerificationMessage('');
+    setInvoiceVerificationCandidates([]);
     setManualInvoiceExpanded(false);
     setManualInvoiceNumber('');
     setManualInvoiceBusy(false);
@@ -340,13 +342,18 @@ export default function JobDetailsPanel({
     if (activeInvoiceJobIdRef.current === selectedJobId) {
       setInvoiceVerificationMessage(`Potwierdzono fakturę VAT ${String(result.invoiceNumber || '').trim()} w Fakturowni.`);
       setManualInvoiceExpanded(false);
+      setInvoiceVerificationCandidates([]);
     }
   }
 
   async function linkInvoiceByNumber(event) {
     event.preventDefault();
-    if (!isAdmin || !isCompletedJob || !selectedJobId || manualInvoiceBusy || selectedJob?.vat_invoice_fakturownia_confirmed) return;
-    const number = manualInvoiceNumber.trim();
+    await confirmInvoiceNumber(manualInvoiceNumber);
+  }
+
+  async function confirmInvoiceNumber(invoiceNumber) {
+    if (!isAdmin || !isCompletedJob || !selectedJobId || manualInvoiceBusy || fakturowniaVerifying || selectedJob?.vat_invoice_fakturownia_confirmed) return;
+    const number = String(invoiceNumber || '').trim();
     if (!number) {
       setInvoiceVerificationMessage('Wpisz numer faktury z Fakturowni.');
       return;
@@ -391,6 +398,7 @@ export default function JobDetailsPanel({
 
       if (!result?.found || !result?.invoiceId) {
         if (activeInvoiceJobIdRef.current === selectedJobId) {
+          setInvoiceVerificationCandidates(Array.isArray(result?.candidates) ? result.candidates : []);
           setInvoiceVerificationMessage(result?.reason || 'Nie znaleziono wystawionej faktury. Możesz spróbować ponownie lub powiązać dokument po numerze.');
         }
         return;
@@ -427,6 +435,7 @@ export default function JobDetailsPanel({
 
     setFakturowniaOpening(true);
     setInvoiceVerificationMessage('');
+    setInvoiceVerificationCandidates([]);
     try {
       const prepared = await prepareFakturowniaInvoice({
         supabase,
@@ -521,6 +530,21 @@ export default function JobDetailsPanel({
       {isAdmin && isCompletedJob && !selectedJob.vat_invoice_fakturownia_confirmed ? (
         <div className="desktopInvoiceVerificationToolsV1277" aria-label="Weryfikacja faktury w Fakturowni">
           {invoiceVerificationMessage ? <p role="status" className="desktopInvoiceVerificationFeedbackV1277">{invoiceVerificationMessage}</p> : null}
+          {invoiceVerificationCandidates.length ? (
+            <div className="desktopInvoiceCandidatesV1278" aria-label="Znalezione faktury tego klienta wymagające zatwierdzenia">
+              {invoiceVerificationCandidates.map((candidate) => (
+                <div className="desktopInvoiceCandidateRowV1278" key={candidate.invoiceId}>
+                  <span><strong>{candidate.invoiceNumber}</strong>{candidate.issueDate ? ` · data wystawienia ${candidate.issueDate}` : ''}</span>
+                  <button type="button" className="btn ghostBtn"
+                    disabled={manualInvoiceBusy || fakturowniaVerifying}
+                    onClick={() => void confirmInvoiceNumber(candidate.invoiceNumber)}>
+                    Potwierdź powiązanie
+                  </button>
+                </div>
+              ))}
+              <small>To faktury znalezione dla klienta, niepotwierdzone jeszcze dla tego montażu. Sprawdź numer przed zatwierdzeniem.</small>
+            </div>
+          ) : null}
           <div className="desktopInvoiceVerificationButtonsV1277">
             {fakturowniaVerificationRef.current ? (
               <button type="button" className="btn ghostBtn" onClick={() => void verifyPendingFakturowniaInvoice()} disabled={fakturowniaVerifying || manualInvoiceBusy}>
