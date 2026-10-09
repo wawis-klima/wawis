@@ -10,6 +10,15 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1278 (9 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| FAKT-1278-OID-MISSING | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-link-v1277.mjs`: rzeczywisty kod Edge, klient z unikatowym external_id, wystawiona faktura bez OID wyświetlana jako kandydat, bez automatycznego potwierdzenia. |
+| FAKT-1278-WRONG-JOB | FIXED-UNVERIFIED | Ten sam test: obcy OID, inny klient, proforma, szkic, niejednoznaczna kartoteka, faktura powiązana z innym montażem — wszystkie wykluczone. |
+| FAKT-1278-ADMIN-ACK | FIXED-UNVERIFIED | UI pokazuje numer i wymaga osobnego kliknięcia administratora; końcowe RPC z unikatowym invoice ID chroni przed duplikacją. |
+| FAKT-1278-LIVE | EXTERNAL | Weryfikacja rzeczywistych dokumentów przez administratora. |
+
 ## Faktury — FAKT-1277 (9 października 2026)
 
 | ID | Stan przed CI | Reproduktor / blokady |

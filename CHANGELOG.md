@@ -1,3 +1,10 @@
+## 12.78
+- Po braku OID WAWIS weryfikuje wystawione faktury właściwego klienta z ostatnich 30 dni.
+- Faktury bez OID są pokazywane jako propozycje z numerem i datą; zatwierdzenie wymaga decyzji administratora, z ponownym sprawdzeniem przez Fakturownię.
+- Wykluczone faktury obcego klienta, innego montażu, szkice, proformy i już powiązane dokumenty; ścisłe dopasowanie OID nadal automatycznie potwierdza dokument.
+- Płatności bez zmian; żadnych testowych faktur ani modyfikacji istniejących dokumentów.
+- Wykonywalne testy Edge Mock oraz pełna kontrola wydania; test na realnej fakturze pozostaje EXTERNAL.
+
 ## 12.77
 - Fakturownia: po nieudanej kontroli OID pokazujemy administratorowi rzeczywistą przyczynę i umożliwiamy ponowienie.
 - Powiązanie po numerze tylko dla zakończonego montażu; Edge Function sprawdza identyczny numer, wystawiony dokument VAT, autorytatywną kartotekę klienta po external_id oraz brak obcego OID.

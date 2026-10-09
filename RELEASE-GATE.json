@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.77",
+  "version": "12.78",
   "scope": "full",
-  "release_branch": "release/v12.77",
+  "release_branch": "release/v12.78",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.77.zip"
+    "file_name": "klima-app-v12.78.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.77",
+    "source_branch": "release/v12.78",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "Fakturownia 12.77: OID rejection and safe manual number link; Codex acceptance P0 maintained",
-    "release_ci": "REQUIRED — exact SHA PR checks, grouped regression, Playwright both platforms, Closure Gate and production build",
-    "external_provider_tests": "EXTERNAL — no real invoices created by CI; user to issue and verify live invoices today",
-    "front_and_backend": "Desktop form and Supabase Fakturownia Edge Function; no SQL schema changes, no payment module changes",
-    "mobile_touch": "EXTERNAL — verify mobile version after production deployment, mobile business behavior unchanged"
+    "codex_audit": "FAKT-1278 OID missing provider fallback with exact client and verified manual choice",
+    "release_ci": "REQUIRED — current exact PR SHA, complete critical regression groups, both Playwright, closure evidence, build",
+    "external_provider_tests": "EXTERNAL — real Fakturownia invoice must be verified by admin; no provider invoice created or modified in CI",
+    "front_and_backend": "Admin desktop UI and Fakturownia Supabase Edge; no SQL/payment change",
+    "mobile_touch": "EXTERNAL — confirm current version on iPhone, mobile business behavior unchanged"
   }
 }
