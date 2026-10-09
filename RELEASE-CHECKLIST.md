@@ -19,6 +19,9 @@ Ta checklista dotyczy aktualnego uproszczonego procesu wydania. Historia zmian n
 - [ ] `scripts/release-impact.cjs` klasyfikuje zmianę jako `fast-ui`, `targeted` albo `critical`.
 - [ ] Dla kandydata MICRO UI `scripts/micro-ui-policy.cjs` potwierdza CSS-only.
 - [ ] Każdy naprawiony wcześniej błąd ma trwały test regresyjny odtwarzający jego mechanizm.
+- [ ] Sprawdzono zależności zmienionego modułu: jego wejście, moduły konsumujące wynik i końcowy zapis/rezultat.
+- [ ] `release-impact.json.interaction_flows` zawiera wymagane powiązane przepływy; jeśli brak nowej zależności w mapie, uzupełniono mapę i jej negatywne testy przed merge.
+- [ ] Zmiany CSS/scroll/modal w przepływach krytycznych przeszły Playwright, łącznie z hit-testem klikalności i widoczności ponad innymi warstwami; nie zastosowano FAST/MICRO UI.
 - [ ] Testy obejmują kontrprzykłady i granice istotne dla zmienianego kodu, a nie wyłącznie obecność fragmentów źródła.
 
 ## 3. Jedyna obowiązkowa bramka CI

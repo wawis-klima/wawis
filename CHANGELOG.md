@@ -1,3 +1,10 @@
+## 12.88
+- Wprowadzono regułę testowania powiązanych przepływów między modułami: kreator→tabliczka/OCR→zapis, urządzenie→protokół, klient→faktura, SMS→historia, montaż→push.
+- Zmiana w obszarze powiązanego przepływu (również CSS, scroll i z-index) wymusza jego grupy regresyjne i Playwright zamiast FAST UI/MICRO UI.
+- Wzmocniono weryfikację release-impact.json o listę interaction_flows i negatywne testy, chroniące przed wyłączaniem dodatkowych testów.
+- Zasada trwale zapisana w WAWIS-RULES, CLOSURE-GATE i RELEASE-CHECKLIST oraz pilnowana przez release-policy-gate.
+- Zmiana samego procesu CI/testów — bez nowych funkcji produktu i migracji bazy.
+
 ## 12.87
 - Ujednolicono ekran kadrowania tabliczek z jasnym motywem mobilnego formularza: białe nagłówek i stopka, jasne tło, granatowy tekst i niebieska akcja zapisu.
 - Zachowano ciemną maskę wyłącznie na zdjęciu poza zaznaczonym kadrem; ostrzeżenia jakości zdjęcia i błędy są czytelne na jasnym tle.

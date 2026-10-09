@@ -49,6 +49,15 @@ Pliki wygenerowane wyłącznie przez podbicie wersji oraz dokumentacja wydania n
 - `scripts/verify-closure-evidence.cjs` działa fail-closed: brak dowodu, pominięta grupa lub niezaliczony test oznacza NO-GO.
 - Workflow archiwizuje komplet dowodów jako artefakt `wawis-closure-evidence`.
 
+### Testy współdziałania modułów — zasada obowiązkowa
+
+- **Nie testujemy tylko edytowanego ekranu.** Zmiana musi zachować cały powiązany przepływ od działania użytkownika do zapisu/wyniku oraz przejście między modułami.
+- `scripts/release-impact.cjs` wybiera automatycznie **testy konsumentów zmienionego komponentu** według mapy `CROSS_MODULE_FLOWS` (np. kreator urządzeń → zdjęcie → kadrowanie → OCR/AI → potwierdzenie → zapis; montaż → protokół; klient → faktura; SMS → wysyłka → historia; zakończenie montażu → push).
+- Zmiana CSS, overlay, scrolla albo układu w obszarze takiego przepływu **nie jest FAST UI ani MICRO UI**. Uruchamia powiązane grupy i prawdziwe Playwright E2E (w tym sprawdzenie, czy okna są na wierzchu i da się w nie kliknąć).
+- Utrzymujemy proporcje: niezależne CSS pozostaje FAST/MICRO UI, testy z mapy uruchamiane są bez powtarzania komend.
+- Jeżeli pojawia się nowa zależność, dodajemy ją do mapy i testu `scripts/smoke-release-impact-v1063.cjs` **w tym samym wydaniu**, zanim uznamy problem za zamknięty.
+- Zielony build, samo `toBeVisible` bez sprawdzenia zasłaniania lub statyczny grep **nie stanowią dowodu**, że współdziałanie działa. Dla błędów nakładek obowiązkowy jest test interakcji/hit-test.
+
 ### MICRO UI
 
 - CSS-only,

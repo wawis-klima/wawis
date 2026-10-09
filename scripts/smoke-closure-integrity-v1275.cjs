@@ -30,7 +30,17 @@ for (const shared of ['src/modules/diagnostics.js', 'src/modules/diagnostic-priv
 const sms = classifyEffectiveFiles(['supabase/functions/generate-service-sms-queue/index.ts']);
 assert(sms.groups.includes('sms') && sms.groups.includes('roles') && sms.groups.includes('infra'));
 same(sms.groups,sms.pr_groups);
-const fast = classifyEffectiveFiles(['src/mobile791/styles.css']);
+// Global mobile CSS can cover modals: after the 12.85 OCR regression it
+// must exercise the real cross-module flow, not the generic fast-ui path.
+const interop = classifyEffectiveFiles(['src/mobile791/styles.css']);
+assert.equal(interop.profile, 'targeted');
+assert.equal(interop.needs_playwright, true);
+assert(interop.interaction_flows.includes('device-photo-nameplate'));
+assert(interop.groups.includes('nameplates') && interop.groups.includes('photos'));
+same(interop.e2e, ['mobile']);
+same(interop.groups, interop.pr_groups);
+// Unrelated CSS still stays fast and must not run the entire inventory.
+const fast = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
 assert.equal(fast.profile, 'fast-ui');
 assert.equal(fast.needs_playwright, false);
 same(fast.groups, fast.pr_groups);
@@ -111,7 +121,7 @@ try {
  rejected=gate();
  assert.notEqual(rejected.status,0,'partial grouped result should fail closed');
 
- console.log('PASS CODEX G1/G2 C5/C6: global/shared group selection, CSS fast path, and eight CI integrity/NO-GO mutations.');
+ console.log('PASS CODEX G1/G2 C5/C6: global/shared dependencies, E2E for risky global CSS, fast path for independent CSS, and eight CI integrity/NO-GO mutations.');
 } finally {
  fs.rmSync(temp,{recursive:true,force:true});
 }

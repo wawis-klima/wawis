@@ -25,6 +25,7 @@ function run(headRef) {
 try {
   for (const file of [
     'scripts/release-policy-gate.cjs',
+    'scripts/release-impact.cjs',
     'app-version.json',
     'public/app-version.json',
     'package.json',

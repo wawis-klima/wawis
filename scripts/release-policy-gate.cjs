@@ -78,6 +78,10 @@ function main() {
   assert(checklist.includes('Jedyna obowiązkowa bramka CI'), 'NO-GO: checklista nie opisuje uproszczonej bramki CI');
   assert(rules.includes('Closure Gate'), 'NO-GO: WAWIS-RULES.md nie wymaga Closure Gate');
   assert(closureGate.includes('Każdy potwierdzony błąd'), 'NO-GO: CLOSURE-GATE.md nie wymaga trwałego testu regresyjnego');
+  assert(rules.includes('Testy współdziałania modułów'), 'NO-GO: WAWIS-RULES.md musi wymagać kontroli zależności między modułami');
+  assert(checklist.includes('release-impact.json.interaction_flows'), 'NO-GO: checklista musi wymagać prześledzenia zależnych przepływów');
+  assert(closureGate.includes('Regresje współdziałania modułów'), 'NO-GO: Closure Gate nie opisuje regresji współdziałania');
+  assert(read('scripts/release-impact.cjs').includes('CROSS_MODULE_FLOWS'), 'NO-GO: nie ma mapy zależności modułów w selektorze testów');
   assert(prWorkflow.includes('Verify Closure Gate'), 'NO-GO: workflow PR nie uruchamia Closure Gate');
   assert(prWorkflow.includes('wawis-closure-evidence'), 'NO-GO: workflow PR nie archiwizuje dowodów Closure Gate');
   assert(String(vercel.buildCommand || '').includes('release-policy-gate.cjs --deploy'), 'NO-GO: Vercel nie wymaga deploy gate');
