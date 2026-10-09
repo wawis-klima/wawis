@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.85",
+  "version": "12.86",
   "scope": "full",
-  "release_branch": "release/v12.85",
+  "release_branch": "release/v12.86",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.85.zip"
+    "file_name": "klima-app-v12.86.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.85",
+    "source_branch": "release/v12.86",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "UI-1285: mobile multi-split wizard overflow regression for long Mitsubishi JZ and JW labels",
-    "release_ci": "REQUIRED: exact head SHA all impacted regression groups, Codex acceptance, dual PostgreSQL session, Playwright, Closure Gate and production build",
-    "external_provider_tests": "EXTERNAL: user validates layout on a physical iPhone",
-    "front_and_backend": "Mobile CSS containment and Playwright iPhone viewport tests; no Supabase schema changes",
-    "mobile_touch": "EXTERNAL: confirm 12.85, multi-split steps 2 and 3 without horizontal clipping"
+    "codex_audit": "UI-1286: mobile nameplate crop → verification overlay hidden beneath wizard, Single/Multi and iPhone",
+    "release_ci": "REQUIRED: exact HEAD CI, mobile Playwright, Codex acceptance, Closure Gate and production build",
+    "external_provider_tests": "EXTERNAL: real iPhone and real Mitsubishi/Rotenso nameplate recognition including AI fallback",
+    "front_and_backend": "React portals and overlay stacking fix; OCR backend and Supabase schema unchanged",
+    "mobile_touch": "EXTERNAL: verify 12.86 on physical iPhone, crop → OCR review → confirm → JZ tabliczka dodana"
   }
 }
