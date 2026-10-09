@@ -56,6 +56,7 @@ const GROUPS = {
     'npm run test:smoke:delete',
     'npm run test:smoke:device-save',
     'npm run test:smoke:job-multi-indoor',
+    'npm run test:smoke:single-jw-delete',
     'npm run test:smoke:job-device-type-switch',
     'npm run test:smoke:device-delete',
     'npm run test:smoke:job-auto-contractor',
