@@ -76,3 +76,93 @@
 .lab-job-pages>button{height:31px;min-width:34px;background:#fffdf9;border:1px solid #e4dfd7;color:#32618e;border-radius:8px;font-size:21px}
 .lab-job-pages>button:disabled{opacity:.34;cursor:default}
 @media(max-width:730px){.lab-job-pages{display:none}}
+
+
+/* WAWIS DESIGN LAB 0.5: stały układ roboczy 62/38. Szczegóły klienta zawsze po PRAWEJ. */
+@media(min-width:731px){
+  .work{
+    display:grid;
+    grid-template-columns:minmax(0, 1.62fr) minmax(325px, 1fr);
+    align-items:start;
+    gap:14px;
+    width:100%;
+  }
+  .work>.listpane,.work>.detailpane{
+    min-width:0;
+    width:auto;
+    max-width:100%;
+    margin:0;
+  }
+  .listpane{overflow:hidden}
+  .joblist{
+    overflow:visible;
+    min-width:0;
+    max-width:100%;
+    padding:0 0 10px;
+  }
+  .lab-job-table-wrap{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#c9d9e7 #f9f5ee;
+  }
+  .lab-job-table{min-width:1120px}
+  .lab-job-table th:first-child,
+  .lab-job-table td:first-child{
+    position:sticky;
+    left:0;
+    z-index:2;
+    box-shadow:2px 0 7px -5px #1b42675e;
+  }
+  .lab-job-table thead th:first-child{z-index:3;background:#f8f5ef}
+  .lab-job-table tbody tr.selected td:first-child{background:#f0f8ff}
+  .lab-job-table tbody tr:hover td:first-child{background:#f5f9fc}
+  .detailpane{
+    display:block;
+    position:sticky;
+    top:99px;
+    max-height:calc(100vh - 115px);
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#d6cec0 transparent;
+  }
+  .detail-top{padding:18px 19px 16px}
+  .detail-titleline h2{font-size:18px}
+  .detail-content{
+    display:block;
+    padding:15px 19px 0;
+  }
+  .detail-content .detail-section,
+  .detail-content .detail-section:nth-child(3),
+  .detail-content .detail-section:last-child{
+    display:block;
+    border:0;
+    border-bottom:1px solid #f0ece7;
+    padding:0 0 14px;
+    margin:0 0 14px;
+    grid-column:auto;
+  }
+  .detail-content .detail-section:last-child{border-bottom:0;margin-bottom:0}
+  .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 12px}
+  .detail-actions{padding:11px 19px 18px;display:flex;justify-content:stretch;gap:9px}
+  .detail-actions button{flex:1;min-width:0}
+}
+@media(min-width:731px) and (max-width:1190px){
+  .work{grid-template-columns:minmax(0,1.3fr) minmax(315px,1fr);gap:10px}
+  .lab-job-table{min-width:1120px}
+  .detail-top{padding:15px 13px}
+  .detail-content{padding:14px 13px 0}
+  .detail-actions{padding:9px 13px 15px}
+  .detailpane{top:86px;max-height:calc(100vh - 98px)}
+}
+@media(max-width:730px){
+  .work{display:block}
+  .detailpane{display:none}
+  .lab-job-table-wrap{display:none}
+}
