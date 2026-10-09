@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.76",
+  "version": "12.77",
   "scope": "full",
-  "release_branch": "release/v12.76",
+  "release_branch": "fix/fakturownia-verification-v1277",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,12 +12,12 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.76.zip"
+    "file_name": "klima-app-v12.77.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.76",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
+    "source_branch": "fix/fakturownia-verification-v1277",
+    "ready_for_main": false,
+    "status": "PENDING_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "C7 C8 C9 C10 — original WAWIS 12.72 diagnostic audit; packages 1–3 must remain green",
-    "release_ci": "REQUIRED — runtime Codex C7-C10 fixture, cumulative core/targeted/full regressions, Playwright mobile+desktop, dual PostgreSQL, Closure Gate and build",
-    "external_provider_tests": "NOT VERIFIED — physical iPhone PWA PUSH receipts and original provider services",
-    "front_and_backend": "Frontend and privacy-safe local diagnostics only. No Supabase RLS/migrations/Edge change in 12.76.",
-    "mobile_touch": "EXTERNAL — confirm iPhone version 12.76 after green CI and deployment"
+    "codex_audit": "Fakturownia 12.77: OID rejection and safe manual number link; Codex acceptance P0 maintained",
+    "release_ci": "PENDING: exact SHA CI, closure group(s), E2E as required, build",
+    "external_provider_tests": "NOT VERIFIED — user will issue real invoices today; no test billing or payment changes",
+    "front_and_backend": "Desktop form and Supabase Fakturownia Edge Function; no SQL schema changes, no payment module changes",
+    "mobile_touch": "EXTERNAL — verify mobile version after production deployment, mobile business behavior unchanged"
   }
 }
