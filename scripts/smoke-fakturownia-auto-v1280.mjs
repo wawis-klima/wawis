@@ -26,7 +26,7 @@ assert(!source.includes('import {'),'Execute exact current Edge source');
 const compiled=(await transform(source,{loader:'ts',target:'es2022',format:'iife'})).code;
 async function run(label,{after=[newInvoice],competing=false,otherJob=false,wrongBuyer=false,
   expired=false,changedBuyer=false,existingAlready=false,noSavedBaseline=false,withoutOid=true,
-  providerMutations=false}={},expected) {
+  providerMutations=false,companyGus=false,companyWrongNip=false,companyMissingNip=false}={},expected) {
   let handler;
   const recorded=[];
   let manualCandidateDbReads=0;
@@ -37,6 +37,16 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
     device_model:'Rotenso',payment_method:'cash',vat_invoice_fakturownia_confirmed:false};
   const contractor={id:contractorId,company_name:'Tadeusz Rudy',city:'42-450 Łazy',
     street:'Częstochowska 12/99 Lazy',nip:null,addresses:[]};
+  if (companyGus) {
+    job.client='Diamond Sp Z.O.O';
+    job.title='Diamond Sp Z.O.O';
+    job.city='Krakow';
+    job.street='Półanki 62B';
+    contractor.company_name='Diamond Sp Z.O.O';
+    contractor.city='Krakow';
+    contractor.street='Półanki 62B';
+    contractor.nip='6762129480';
+  }
   function from(table) {
     const q={eqs:{},negs:{}};
     const builder={
@@ -108,7 +118,14 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
     if(expired)tableAttempt.expires_at=new Date(now-1000).toISOString();
   }
   if(changedBuyer) contractor.street='Inna 5';
-  activeInvoices=[baseline,...after.map(x=>wrongBuyer?{...x,buyer_street:'Częstochowska 12/98'}:x)];
+  activeInvoices=[baseline,...after.map(x=>{
+    if(companyGus){
+      return {...x,buyer_name:'PRZEDSIĘBIORSTWO PRODUKCYJNO HANDLOWO USŁUGOWE DIAMOND SPÓŁKA Z OGRANICZONĄ ODPOWIEDZIALNOŚCIĄ',
+        buyer_street:'Półanki 62B',buyer_city:'Kraków',buyer_post_code:'30-858',
+        buyer_tax_no:companyMissingNip?'':companyWrongNip?'6762129472':'6762129480'};
+    }
+    return wrongBuyer?{...x,buyer_street:'Częstochowska 12/98'}:x;
+  })];
   const apiCallsBeforeVerify=recorded.length;
   const result=await call('verify');
   assert.equal(result.status,200,label+': verify endpoint');
@@ -131,6 +148,12 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
   console.log('PASS V12.80 '+label);
 }
 await run('single newly issued VAT with no OID auto-confirmed',{}, {found:true,code:'VERIFIED',invoiceId:'991'});
+await run('GUS company full legal name and postal change => auto-confirm by NIP',{companyGus:true},
+  {found:true,code:'VERIFIED',invoiceId:'991',candidates:0});
+await run('GUS company changed NIP => fail closed',{companyGus:true,companyWrongNip:true},
+  {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('GUS company missing invoice NIP => fail closed',{companyGus:true,companyMissingNip:true},
+  {found:false,code:'NO_MATCHING_BUYER',candidates:0});
 await run('new OID also automatically verified',{after:[invoice(991,5000,{oid:buildJobInvoiceOid(jobId)})]}, {found:true,code:'VERIFIED',invoiceId:'991'});
 await run('two new issued invoices => no auto',{after:[newInvoice,invoice(992,6000)]},{found:false,code:'OID_MISSING_CANDIDATES',candidates:3});
 await run('other job same client prepared => no auto',{competing:true},{found:false,code:'OID_MISSING_CANDIDATES'});
