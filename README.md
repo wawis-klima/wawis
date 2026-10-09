@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 12.86
 
-Wersja 12.86: naprawiono niewidoczne okno weryfikacji tabliczki po kadrowaniu zdjęcia na telefonie. Warstwa potwierdzania była pod modalem urządzenia (1300 < 9999), przez co wyglądało, jakby OCR w ogóle nie startował. Okno ma teraz wyższy poziom (13000), a testy smoke i Playwright sprawdzają jego rzeczywistą widoczność ponad kreatorem. Bez zmian w logice OCR/AI i Supabase; finalny test na fizycznym iPhonie pozostaje do wykonania.
+Wersja 12.86: naprawiono niewidoczne okno weryfikacji tabliczki po kadrowaniu zdjęcia na telefonie. Warstwa potwierdzania była pod modalem urządzenia (1300 < 9999), przez co wyglądało, jakby OCR w ogóle nie startował. Okno ma teraz wyższy poziom (13000) i jest renderowane przez React Portal bezpośrednio w document.body, poza przewijanym i przycinanym kreatorem. Testy smoke i Playwright sprawdzają jego rzeczywistą widoczność ponad kreatorem. Bez zmian w logice OCR/AI i Supabase; finalny test na fizycznym iPhonie pozostaje do wykonania.
 
 Wersja 12.85: naprawiono ucinanie i poziome rozjechanie kreatora MULTI-SPLIT na iPhonie przy długich nazwach Mitsubishi. Karty JZ/JW oraz nagłówek i stopka mieszczą się na szerokości ekranu; zawartość przewija się pionowo wewnątrz okna. Test Playwright mierzy elementy przy szerokościach 375, 390 i 414 px.
 
