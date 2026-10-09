@@ -106,6 +106,7 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
     assert.equal((await call('pending')).pending,true,label+': can recover attempt after reload');
     if(expired)tableAttempt.expires_at=new Date(now-1000).toISOString();
   }
+  if(changedBuyer) contractor.street='Inna 5';
   activeInvoices=[baseline,...after.map(x=>wrongBuyer?{...x,buyer_street:'Częstochowska 12/98'}:x)];
   const result=await call('verify');
   assert.equal(result.status,200,label+': verify endpoint');
