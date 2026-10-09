@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "../../version";
 import { IconFilter, IconPlus, IconRefresh } from "../ui";
-import { getJobAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
+import { getJobDisplayAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
 import JobsPagination from "./JobsPagination.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
@@ -279,7 +279,7 @@ export default function MobileJobsLayout({
                   <div className="mobileJobGrid mobileJobGridSingleField">
                     <div className="mobileJobAddressBlock">
                       <span className="mobileJobLabel">Adres</span>
-                      <div className="mobileJobValue mobileJobAddressValue">{getJobAddress(job) || "Brak adresu"}</div>
+                      <div className="mobileJobValue mobileJobAddressValue">{getJobDisplayAddress(job) || "Brak adresu"}</div>
                     </div>
                   </div>
                   <div className="mobileJobFooter">
