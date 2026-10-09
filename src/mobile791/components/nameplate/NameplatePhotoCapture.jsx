@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { analyzeNameplatePhotoQuality } from "../../modules/nameplate-quality.js";
 import { readMobileNameplate } from "../../modules/nameplate-reader.js";
 import { supabase } from "../../lib/supabase.js";
@@ -645,6 +646,9 @@ export default function NameplatePhotoCapture({
 
   const previewUrl = localPreviewUrl || existingPhotoUrl;
   const hasPhoto = Boolean(file || existingPhotoUrl);
+  // Render full-screen OCR and crop overlays outside the clipped device wizard.
+  // iOS Safari may otherwise put them beneath its sticky footer after cropping.
+  const overlayRoot = typeof document !== "undefined" ? document.body : null;
   const statusLabel = compact
     ? (verified ? "Potwierdzona" : file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zapisana" : "Brak")
     : (verified ? "Tabliczka potwierdzona" : file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zdjęcie zapisane" : "Brak zdjęcia");
@@ -715,7 +719,7 @@ export default function NameplatePhotoCapture({
         />
       </div>
 
-      {verification ? (
+      {verification && overlayRoot ? createPortal(
         <NameplateVerificationReview
           verification={verification}
           fieldLabel={fieldLabel}
@@ -740,17 +744,19 @@ export default function NameplatePhotoCapture({
           onManual={switchVerificationToManual}
           onCancel={() => setVerification(null)}
           compatibilityError={compatibilityError}
-        />
+        />,
+        overlayRoot,
       ) : null}
 
-      {cropSource ? (
+      {cropSource && overlayRoot ? createPortal(
         <CropEditor
           source={cropSource}
           fieldLabel={fieldLabel}
           onCancel={clearCropSource}
           onRetake={handleRetake}
           onConfirm={handleCropConfirm}
-        />
+        />,
+        overlayRoot,
       ) : null}
     </>
   );
