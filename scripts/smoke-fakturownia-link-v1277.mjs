@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { transform } from 'esbuild';
-import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, inspectInvoiceBuyer } from '../supabase/functions/fakturownia-client/invoice-match.js';
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, inspectInvoiceBuyer, isIssuedVatInvoiceRecord } from '../supabase/functions/fakturownia-client/invoice-match.js';
 const jobId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const otherJobId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const contractorId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
