@@ -31,6 +31,8 @@ assert.match(edge, /url\.searchParams\.set\("client_id", clientId\)/);
 assert.match(edge, /url\.searchParams\.set\("invoice\[oid\]", invoiceOid\)/, "Formularz musi dostać OID konkretnego montażu.");
 assert.match(edge, /invoice\[positions\]\[0\]\[name\]/);
 assert.match(edge, /invoice\[positions\]\[0\]\[tax\]/);
+assert.match(edge, /url\.searchParams\.set\("invoice\\[positions\\]\\[0\\]\\[quantity\\]", "1"\)/,
+  'Ilość na pozycji faktury musi domyślnie wynosić dokładnie 1.');
 assert.match(edge, /invoice\[payment_type\]/);
 assert.match(edge, /invoice\[payment_to_kind\]/);
 assert.match(edge, /invoice\[status\]/);
@@ -42,8 +44,8 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(
   edge.slice(edge.indexOf('function buildInvoiceFormUrl'), edge.indexOf('function compactObject')),
-  /quantity|price_net|price_gross|total_price/i,
-  'Prefill formularza nie może wysyłać ilości ani kwoty.',
+  /price_net|price_gross|total_price|\bprice\b/i,
+  'Prefill formularza nie może wpisywać żadnej ceny ani wartości faktury.',
 );
 
-console.log('OK: v12.09 Fakturownia positions prefill bez automatycznego tworzenia faktury.');
+console.log('OK: v12.83 Fakturownia — pozycja quantity=1, nazwa/VAT/płatność bez zmian, żadnej ceny ani tworzenia faktury przez API.');
