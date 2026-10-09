@@ -68,3 +68,11 @@
   .joblist{padding:0;overflow:visible}
   .lab-mobile-job-cards .jobcard{display:flex}
 }
+
+.lab-sort{font:inherit;font-weight:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;white-space:nowrap}
+.lab-sort:hover{color:#148adc}
+.lab-job-pages{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:12px 17px 5px}
+.lab-job-pages>span{font-size:11px;color:#74869a;margin-right:8px}
+.lab-job-pages>button{height:31px;min-width:34px;background:#fffdf9;border:1px solid #e4dfd7;color:#32618e;border-radius:8px;font-size:21px}
+.lab-job-pages>button:disabled{opacity:.34;cursor:default}
+@media(max-width:730px){.lab-job-pages{display:none}}
