@@ -252,6 +252,7 @@ const GROUPS = {
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-release-automation-v1061.cjs',
     'node scripts/smoke-release-impact-v1063.cjs',
+    'node scripts/smoke-closure-integrity-v1275.cjs',
     'node scripts/smoke-closure-gate-v1257.cjs',
     'node scripts/smoke-closure-evidence-negative-v1258.cjs',
     'node scripts/smoke-release-policy-negative-v1258.cjs',
