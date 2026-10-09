@@ -6,7 +6,7 @@ function tradeNameCandidate(value) {
   const candidate = String(value || '').replace(/\s+/g, ' ').trim();
   if (candidate.length < 2 || candidate.length > MAX_TRADE_NAME_LENGTH) return '';
   if (!/\p{L}/u.test(candidate)) return '';
-  if (/^(?:spółka|sp\.|nip|regon|pesel|oddział|filia|siedziba|adres|ulica|kod pocztowy|właściciel|wspólnicy)\b/iu.test(candidate)) return '';
+  if (/^(?:spółka|sp\.|nip|regon|pesel|oddział|filia|siedziba|adres|ulica|kod pocztowy|właściciel|wspólnicy)(?:\s|$|[.,])/iu.test(candidate)) return '';
   return candidate;
 }
 

@@ -71,6 +71,7 @@ test.describe('@mobile 12.92 długie nazwy klientów na kartach montaży', () =>
     });
     expect(size.height).toBeLessThanOrEqual(size.lineHeight * 2 + 2);
     expect(size.overflow).toBeLessThanOrEqual(2);
+    await page.locator('.statusActionButton[title="Nowe"]').click();
     await expect(page.locator('.mobileJobCard .mobileJobClient').filter({ hasText: 'Klient Testowy A' }).first()).toHaveText('Klient Testowy A');
   });
 });
