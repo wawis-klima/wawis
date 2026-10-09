@@ -166,3 +166,15 @@
   .detailpane{display:none}
   .lab-job-table-wrap{display:none}
 }
+
+
+/* WAWIS DESIGN LAB 0.6 — sześć roboczych kolumn, bez daty montażu, modelu i płatności. */
+@media(min-width:731px){
+  .lab-job-table{min-width:860px}
+  .lab-job-table th:nth-child(1){width:25%}
+  .lab-job-table th:nth-child(2){width:15%}
+  .lab-job-table th:nth-child(3){width:13%}
+  .lab-job-table th:nth-child(4){width:18%}
+  .lab-job-table th:nth-child(5){width:14%}
+  .lab-job-table th:nth-child(6){width:15%}
+}
