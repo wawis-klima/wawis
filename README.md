@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.85
+- 12.86
+
+Wersja 12.86: naprawiono znikający ekran odczytu i weryfikacji tabliczki po kadrowaniu na iPhonie. Kadrowanie i potwierdzanie są renderowane poza przycinanym kreatorem urządzeń, dzięki czemu „Zapisz jednostkę” nie zasłania odczytu; test iPhone sprawdza rzeczywistą dostępność obu ekranów. Bez zmian w logice OCR i danych produkcyjnych.
 
 Wersja 12.85: naprawiono ucinanie i poziome rozjechanie kreatora MULTI-SPLIT na iPhonie przy długich nazwach Mitsubishi. Karty JZ/JW oraz nagłówek i stopka mieszczą się na szerokości ekranu; zawartość przewija się pionowo wewnątrz okna. Test Playwright mierzy elementy przy szerokościach 375, 390 i 414 px.
 
@@ -934,6 +936,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.86` — mobilna weryfikacja tabliczki jest widoczna ponad kreatorem po kadrowaniu i nie ginie za stopką.
 - wersja `12.85` — poprawka mobilnego kreatora MULTI-SPLIT: brak obciętych pól i poziomego rozjechania przy długich modelach; nowy test iPhone E2E.
 - wersja `12.84` — administrator usuwa pojedyncze JW w MULTI-SPLIT; zachowane JZ oraz pozostałe JW/tabliczki, numeracja transakcyjna, minimum 2 JW.
 - wersja `12.83` — Fakturownia: domyślna ilość `1` dla pozycji usługi w formularzu wystawiania; bez zmian cen, VAT i płatności.
