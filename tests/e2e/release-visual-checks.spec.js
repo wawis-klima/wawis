@@ -44,25 +44,54 @@ async function getVisibleActionHealth(page, surfaceSelector) {
     if (!root) return { found: false, checked: 0, blocked: [] };
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = document.documentElement.clientHeight;
-    const targets = [...root.querySelectorAll('button, input, select, textarea, [role="button"]')]
+    const candidates = [...root.querySelectorAll('button, input, select, textarea, [role="button"]')]
       .filter((element) => {
         const rect = element.getBoundingClientRect();
         const style = getComputedStyle(element);
         return rect.width >= 12 && rect.height >= 12
-          && rect.left >= 0 && rect.right <= viewportWidth
-          && rect.top >= 0 && rect.bottom <= viewportHeight
+          && rect.left < viewportWidth && rect.right > 0
+          && rect.top < viewportHeight && rect.bottom > 0
           && style.display !== 'none' && style.visibility !== 'hidden'
           && style.opacity !== '0' && style.pointerEvents !== 'none'
           && !element.disabled && element.getAttribute('aria-hidden') !== 'true';
       }).slice(0, 80);
-    const blocked = targets.filter((element) => {
+    function withinVisibleClips(element, x, y) {
+      for (let ancestor = element.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        const style = getComputedStyle(ancestor);
+        const bounds = ancestor.getBoundingClientRect();
+        if (/auto|scroll|hidden|clip/.test(style.overflowX) && (x < bounds.left || x > bounds.right)) return false;
+        if (/auto|scroll|hidden|clip/.test(style.overflowY) && (y < bounds.top || y > bounds.bottom)) return false;
+      }
+      return true;
+    }
+    const blocked = [];
+    let checked = 0;
+    for (const element of candidates) {
       const rect = element.getBoundingClientRect();
-      const topmost = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-      return !topmost || (topmost !== element && !element.contains(topmost));
-    }).map((element) => ({
-      label: String(element.getAttribute('aria-label') || element.textContent || element.tagName).trim().slice(0, 60),
-    }));
-    return { found: true, checked: targets.length, blocked };
+      // A scrollable table can have controls in the DOM but clipped outside
+      // the visible scrollport. Those are not actionable until the user scrolls.
+      const fractions = [[.5, .5], [.25, .25], [.75, .25], [.25, .75], [.75, .75]];
+      const points = fractions.map(([fx, fy]) => ({
+        x: rect.left + rect.width * fx,
+        y: rect.top + rect.height * fy,
+      })).filter(({ x, y }) =>
+        x >= 0 && y >= 0 && x < viewportWidth && y < viewportHeight
+        && withinVisibleClips(element, x, y)
+      );
+      if (!points.length) continue;
+      checked += 1;
+      const hittable = points.some(({ x, y }) => {
+        const topmost = document.elementFromPoint(x, y);
+        return topmost && (topmost === element || element.contains(topmost));
+      });
+      if (!hittable) {
+        blocked.push({
+          label: String(element.getAttribute('aria-label') || element.textContent || element.tagName).trim().slice(0, 60),
+          reason: 'no unobstructed hit target inside visible scrollport',
+        });
+      }
+    }
+    return { found: true, checked, blocked };
   }, surfaceSelector);
 }
 
