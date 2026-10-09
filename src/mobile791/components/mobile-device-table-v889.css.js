@@ -482,6 +482,26 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     display: none !important;
   }
 }
+/* WAWIS 12.84: single JW removal without widening compact mobile columns. */
+ .jobDevicesTableV888 .deviceUnitDocumentationRow:has(.deviceUnitDocumentationRemoveBtn) {
+  position: relative !important;
+  padding-bottom: 38px !important;
+}
+.jobDevicesTableV888 .deviceUnitDocumentationRemoveBtn {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  min-width: 42px;
+  padding: 5px 7px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fff5f5;
+  color: #b91c1c;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.jobDevicesTableV888 .deviceUnitDocumentationRemoveBtn:disabled { opacity: .5; cursor: default; }
 `;
 
 export default MOBILE_DEVICE_TABLE_V889_CSS;

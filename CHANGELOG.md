@@ -1,3 +1,8 @@
+## 12.84
+- Administrator może usuwać pojedyncze JW w zestawie multi-split na desktopie i mobile, z potwierdzeniem i zachowaniem minimum dwóch JW.
+- RPC transakcyjnie aktualizuje pola urządzeń, logiczne przypisanie tabliczek i ręczne potwierdzenia; nie przenosi plików pozostałych jednostek.
+- Test `test:smoke:single-jw-delete` sprawdza uprawnienia, RPC i zachowanie JZ oraz pozostałych JW.
+
 ## 12.83
 - Formularz nowej faktury w Fakturowni dostaje dodatkowy parametr `invoice[positions][0][quantity]=1` wraz z wcześniej wprowadzanymi nazwą usługi oraz stawką VAT.
 - Użytkownik nadal sam uzupełnia cenę; WAWIS nie przekazuje ceny netto, brutto ani sumy faktury.

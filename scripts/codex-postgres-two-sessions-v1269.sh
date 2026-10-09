@@ -184,4 +184,109 @@ for p in note fuel push; do
   [[ -n "$first" && -n "$second" && "$first" != "$second" ]] || { echo "NO-GO: non-independent sessions: $p $first/$second"; exit 15; }
   echo "SESSION EVIDENCE $p: $first / $second"
 done
+
+# WAWIS 12.84 — real PostgreSQL checks of single JW delete:
+# phantom JW4/JW5 with already uploaded nameplates; two separate sessions
+# must never delete JW5 on retry of the original JW4 request.
+pg <<'SQL'
+alter table public.jobs add column device_serial_number text;
+create table public.photos (
+  id uuid primary key,
+  job_id uuid not null,
+  photo_kind text not null,
+  device_index integer not null,
+  unit_ref text not null,
+  storage_path text,
+  image_url text
+);
+create table public.nameplate_manual_verifications (
+  id uuid primary key,
+  job_id uuid not null,
+  device_index integer not null,
+  unit_ref text not null,
+  unique(job_id,device_index,unit_ref)
+);
+insert into public.jobs(id,status,device_model,device_serial_number)
+values (
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+  'W trakcie',
+  'JW1: A | JW2: B | JW3: C | JZ: OUT',
+  'JW1: 11 | JW2: 22 | JW3: 33 | JZ: ZZ'
+);
+insert into public.photos(id,job_id,photo_kind,device_index,unit_ref,storage_path)
+select ('cccccccc-0000-4000-8000-' || lpad(i::text,12,'0'))::uuid,
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'::uuid,
+  'nameplate',1,
+  case when i=0 then 'jz' else 'jw-'||i::text end,
+  'ci/nameplates/device-1_' || (case when i=0 then 'jz' else 'jw-'||i::text end) || '_ci.jpg'
+from generate_series(0,5) as i;
+insert into public.nameplate_manual_verifications(id,job_id,device_index,unit_ref)
+values('bbbbbbbb-0000-4000-8000-000000000005','eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',1,'jw-5');
+SQL
+pg < "$ROOT/supabase/migrations/current/20261009135500_admin_delete_multi_indoor_unit_v1284.sql"
+
+# A removes JW4, B is an exact stale request from a second backend session.
+pg >"$WORK/jw-a.out" 2>"$WORK/jw-a.err" <<'SQL' &
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+select 'pid='||pg_backend_pid();
+select public.admin_delete_job_indoor_unit(
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',1,4,
+  'JW1: A | JW2: B | JW3: C | JZ: OUT',
+  'JW1: 11 | JW2: 22 | JW3: 33 | JZ: ZZ',
+  array['cccccccc-0000-4000-8000-000000000004']::uuid[]
+);
+select pg_sleep(1);
+commit;
+SQL
+a=$!
+sleep .15
+set +e
+pg >"$WORK/jw-b.out" 2>"$WORK/jw-b.err" <<'SQL' &
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+select 'pid='||pg_backend_pid();
+select public.admin_delete_job_indoor_unit(
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',1,4,
+  'JW1: A | JW2: B | JW3: C | JZ: OUT',
+  'JW1: 11 | JW2: 22 | JW3: 33 | JZ: ZZ',
+  array['cccccccc-0000-4000-8000-000000000004']::uuid[]
+);
+commit;
+SQL
+b=$!
+wait "$a"; ra=$?
+wait "$b"; rb=$?
+set -e
+[[ "$ra" -eq 0 && "$rb" -ne 0 ]] || { echo "NO-GO: two JW delete calls returned $ra/$rb"; cat "$WORK/jw-a.err" "$WORK/jw-b.err"; exit 21; }
+grep -q 'Tabliczka wybranej JW została zmieniona' "$WORK/jw-b.err" || { cat "$WORK/jw-b.err"; exit 22; }
+[[ "$(pg -c "select id from public.photos where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee' and unit_ref='jw-4'")" == 'cccccccc-0000-4000-8000-000000000005' ]] || exit 23
+[[ "$(pg -c "select count(*) from public.photos where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee' and unit_ref='jw-5'")" == '0' ]] || exit 24
+[[ "$(pg -c "select count(*) from public.photos where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee' and unit_ref in ('jz','jw-1','jw-2','jw-3')")" == '4' ]] || exit 25
+[[ "$(pg -c "select count(*) from public.nameplate_manual_verifications where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee' and unit_ref='jw-4'")" == '1' ]] || exit 26
+
+# Second intentional deletion of the shifted JW4 is now legal with the new
+# exact photo ID, leaving the original three correct indoor units and JZ.
+pg <<'SQL'
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+select public.admin_delete_job_indoor_unit(
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',1,4,
+  'JW1: A | JW2: B | JW3: C | JZ: OUT',
+  'JW1: 11 | JW2: 22 | JW3: 33 | JZ: ZZ',
+  array['cccccccc-0000-4000-8000-000000000005']::uuid[]
+);
+commit;
+SQL
+[[ "$(pg -c "select count(*) from public.photos where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == '4' ]] || exit 27
+[[ "$(pg -c "select count(*) from public.nameplate_manual_verifications where job_id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == '0' ]] || exit 28
+[[ "$(pg -c "select device_model from public.jobs where id='eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'")" == 'JW1: A | JW2: B | JW3: C | JZ: OUT' ]] || exit 29
+first="$(grep -E 'pid=[0-9]+' "$WORK/jw-a.out" | head -1)"
+second="$(grep -E 'pid=[0-9]+' "$WORK/jw-b.out" | head -1)"
+[[ -n "$first" && -n "$second" && "$first" != "$second" ]] || exit 30
+echo "PASS JW 12.84: two independent sessions prevent duplicate deletion; JZ and JW1–JW3 remain, nameplates reindex safely"
+
 echo "PASS all Codex dual-session races — disposable real PostgreSQL"

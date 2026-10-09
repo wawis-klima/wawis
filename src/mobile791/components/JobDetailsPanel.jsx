@@ -117,6 +117,7 @@ function DeviceUnitDocumentationRow({
   manualVerification = null,
   manualVerificationBusy = false,
   onToggleManualVerification,
+  onDeleteIndoorUnit,
 }) {
   const photoUrl = photo?.thumbnail_image_url || photo?.local_preview_url || photo?.image_url || photo?.signed_url || photo?.original_image_url || '';
   const uploadStatus = String(photo?.upload_status || '').trim();
@@ -210,6 +211,18 @@ function DeviceUnitDocumentationRow({
       >
         <span aria-hidden="true">{effectiveReady ? '✓' : isFailed ? '!' : isUploading ? '↻' : isLocal ? '•' : '—'}</span>
       </div>
+      {isAdmin && typeof onDeleteIndoorUnit === 'function' ? (
+        <button
+          type="button"
+          className="deviceUnitDocumentationRemoveBtn"
+          disabled={Boolean(busy || manualVerificationBusy || isUploading)}
+          onClick={(event) => { event.stopPropagation(); onDeleteIndoorUnit(); }}
+          onKeyDown={(event) => event.stopPropagation()}
+          aria-label={`Usuń jednostkę ${unitCode}`}
+        >
+          Usuń
+        </button>
+      ) : null}
       {isAdmin && !isReady ? (
         <button
           type="button"
@@ -254,6 +267,7 @@ export default function JobDetailsPanel({
   openSerialNumbersJob,
   deleteJob,
   deleteDeviceFromJob,
+  deleteIndoorUnitFromJob,
   setSelectedJob,
   setJobs,
   requestClearAdminNote,
@@ -599,7 +613,14 @@ export default function JobDetailsPanel({
                 {jobDevices.length ? jobDevices.map((device, deviceOffset) => {
                   const deviceIndex = deviceOffset + 1;
                   const isExpanded = expandedDeviceIndexes.includes(deviceIndex);
-                  const indoorUnits = getDeviceIndoorUnits(device, { keepEmpty: true });
+                  const photoIndoorNumbers = nameplatePhotos
+                    .map((photo) => getNameplatePhotoMetadata(photo))
+                    .filter((meta) => Number(meta.device_index) === deviceIndex && /^jw-[1-5]$/.test(String(meta.unit_ref || '')))
+                    .map((meta) => Number(String(meta.unit_ref).split('-')[1]));
+                  const indoorUnits = getDeviceIndoorUnits(device, {
+                    keepEmpty: true,
+                    minimumLength: Math.max(1, ...photoIndoorNumbers),
+                  });
                   const isMultiSplit = indoorUnits.length > 1;
                   const outdoorModel = getDeviceOutdoorModel(device) || (!isMultiSplit ? indoorUnits[0]?.model : '') || String(device?.model || '').trim();
                   const outdoorPhoto = getLatestNameplatePhotoForUnit(nameplatePhotos, deviceIndex, 'jz');
@@ -690,6 +711,9 @@ export default function JobDetailsPanel({
                               manualVerification={unit.manualVerification}
                               manualVerificationBusy={manualVerificationBusyKey === `${deviceIndex}:${unit.unitRef}`}
                               onToggleManualVerification={(approved) => handleToggleManualVerification(deviceIndex, unit.unitRef, approved)}
+                               onDeleteIndoorUnit={isAdmin && indoorRows.length > 2
+                                 ? () => deleteIndoorUnitFromJob?.(selectedJob, deviceIndex, unit.unitNumber)
+                                 : null}
                             />
                           ))}
                         </div>

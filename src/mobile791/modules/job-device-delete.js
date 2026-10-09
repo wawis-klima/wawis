@@ -1,5 +1,5 @@
 import { getJobDeviceRows } from './job-devices.js';
-import { PHOTO_BUCKET } from './photos.js';
+import { PHOTO_BUCKET, getNameplatePhotoMetadata } from './photos.js';
 
 function normalizeIndex(value) {
   return Math.max(0, Number.parseInt(String(value || ''), 10) || 0);
@@ -51,5 +51,47 @@ export async function deleteJobDeviceRecord({
     devices: currentDevices.filter((_, index) => index !== normalizedDeviceIndex - 1),
     device_model: rpcData?.device_model || '',
     device_serial_number: rpcData?.device_serial_number || '',
+  };
+}
+
+export async function deleteJobIndoorUnitRecord({ supabase, job, deviceIndex, unitNumber, isAdmin = false }) {
+  if (!supabase || !job?.id) throw new Error('Brak montażu do usunięcia jednostki JW.');
+  if (!isAdmin) throw new Error('Tylko administrator może usuwać jednostki JW.');
+  const d = Number(deviceIndex), u = Number(unitNumber);
+  if (!Number.isInteger(d) || d < 1 || d > getJobDeviceRows(job).length
+    || !Number.isInteger(u) || u < 1 || u > 5) {
+    throw new Error('Nieprawidłowy numer urządzenia lub jednostki JW.');
+  }
+  // Always send the exact photo identities for the clicked JW. If another tab
+  // already deleted it, the server rejects this stale request rather than
+  // deleting the JW that moved into the same ordinal slot.
+  const allPhotos = [...(Array.isArray(job.photos) ? job.photos : []),
+    ...(Array.isArray(job.nameplatePhotosMeta) ? job.nameplatePhotosMeta : [])];
+  const targetIds = [...new Set(allPhotos.filter((photo) => {
+    const meta = getNameplatePhotoMetadata(photo);
+    return Number(meta.device_index) === d && String(meta.unit_ref) === `jw-${u}` && photo?.id;
+  }).map((photo) => String(photo.id)))].sort();
+  const { data, error } = await supabase.rpc('admin_delete_job_indoor_unit', {
+    p_job_id: job.id,
+    p_device_index: d,
+    p_unit_number: u,
+    p_expected_model: job.device_model ?? null,
+    p_expected_serial: job.device_serial_number ?? null,
+    p_expected_photo_ids: targetIds,
+  });
+  if (error) throw error;
+  const paths = normalizeStoragePaths(data?.cleanup_storage_paths);
+  if (paths.length) {
+    const { error: storageError } = await supabase.storage.from(PHOTO_BUCKET).remove(paths);
+    if (storageError && !/not\s*found/i.test(String(storageError.message || ''))) {
+      console.warn('Jednostkę usunięto, lecz czyszczenie nieużywanej tabliczki w Storage nie powiodło się.', storageError.message);
+    }
+  }
+  const device_model = data?.device_model || '';
+  const device_serial_number = data?.device_serial_number || '';
+  return {
+    jobId: String(job.id), deviceIndex: d, deletedUnitNumber: u,
+    device_model, device_serial_number,
+    devices: getJobDeviceRows({ ...job, device_model, device_serial_number }),
   };
 }

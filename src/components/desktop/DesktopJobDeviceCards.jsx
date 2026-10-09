@@ -127,6 +127,7 @@ function UnitRow({
   manualVerification,
   manualVerificationBusy,
   onToggleManualVerification,
+  onDeleteIndoorUnit,
 }) {
   const photo = photoEntry?.photo || null;
   const photoUrl = getPhotoUrl(photo);
@@ -196,6 +197,18 @@ function UnitRow({
               : (manualVerification ? 'Cofnij ręczne' : 'Potwierdź ręcznie')}
           </button>
         ) : null}
+        {typeof onDeleteIndoorUnit === 'function' ? (
+          <button
+            type="button"
+            className="btn ghostBtn desktopDeviceIndoorDeleteBtn"
+            disabled={Boolean(disabled || manualVerificationBusy)}
+            onClick={onDeleteIndoorUnit}
+            aria-label={`Usuń jednostkę ${labelText}`}
+            title={`Usuń tylko jednostkę ${labelText}, bez usuwania całego urządzenia`}
+          >
+            Usuń
+          </button>
+        ) : null}
         {!photo && !manualVerification ? (
           <span className="desktopDeviceManualVerifyNote">Możesz potwierdzić bez zdjęcia.</span>
         ) : null}
@@ -255,6 +268,7 @@ function DesktopJobDeviceCardsContent({
   manualVerifications = [],
   onManualVerificationChanged,
   onDeleteDevice,
+  onDeleteIndoorUnit,
 }) {
   const safeDevices = Array.isArray(devices) ? devices.filter(Boolean) : [];
   const photoMap = useMemo(() => buildPhotoMap(photos), [photos]);
@@ -344,6 +358,8 @@ function DesktopJobDeviceCardsContent({
                   manualVerification={getManualNameplateVerification(manualVerifications, deviceIndex, `jw-${unit.unitNumber || unitOffset + 1}`)}
                   manualVerificationBusy={manualVerificationBusyKey === `${deviceIndex}:jw-${unit.unitNumber || unitOffset + 1}`}
                   onToggleManualVerification={(approved) => toggleManualVerification(deviceIndex, `jw-${unit.unitNumber || unitOffset + 1}`, approved)}
+                  onDeleteIndoorUnit={presentation.isMulti && presentation.indoorUnits.length > 2 && typeof onDeleteIndoorUnit === 'function'
+                    ? () => onDeleteIndoorUnit(deviceIndex, unit.unitNumber || unitOffset + 1) : null}
                 />
               ))}
             </div>

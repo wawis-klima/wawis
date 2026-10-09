@@ -518,6 +518,7 @@ export default function App() {
     saveEditedJob,
     deleteJob,
     deleteDeviceFromJob,
+    deleteIndoorUnitFromJob,
     updateStatus,
     saveAdminNote,
     requestClearAdminNote,
@@ -1102,6 +1103,7 @@ export default function App() {
               openSerialNumbersJob={openSerialNumbersJob}
               deleteJob={deleteJob}
               deleteDeviceFromJob={deleteDeviceFromJob}
+              deleteIndoorUnitFromJob={deleteIndoorUnitFromJob}
               setSelectedJob={setSelectedJob}
               setSelectedJobByUpdater={setSelectedJob}
               setJobs={setJobs}

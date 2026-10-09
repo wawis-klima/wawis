@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.83
+- 12.84
+
+Wersja 12.84: administrator może usunąć pojedynczą jednostkę JW z układu MULTI-SPLIT na desktopie i telefonie. Osobne potwierdzenie chroni JZ i pozostałe JW. Transakcyjna operacja w bazie zmienia numerację tabliczek i ręcznych potwierdzeń bez przenoszenia plików Storage. Zachowano minimum dwóch JW.
 
 Wersja 12.83: WAWIS przekazuje do formularza nowej faktury Fakturowni domyślną ilość `1` w pierwszej pozycji obok istniejącej nazwy usługi i stawki VAT. Nie uzupełnia ceny ani wartości brutto; operator nadal wprowadza kwotę ręcznie. Bez zmian płatności, potwierdzania faktur i zabezpieczeń powiązania.
 
@@ -930,6 +932,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.84` — administrator usuwa pojedyncze JW w MULTI-SPLIT; zachowane JZ oraz pozostałe JW/tabliczki, numeracja transakcyjna, minimum 2 JW.
 - wersja `12.83` — Fakturownia: domyślna ilość `1` dla pozycji usługi w formularzu wystawiania; bez zmian cen, VAT i płatności.
 - wersja `12.82` — Fakturownia: weryfikacja firm po poprawnym NIP nawet po aktualizacji danych przez GUS; dotychczasowe zabezpieczenia pozostały.
 - wersja `12.81` — Fakturownia: ukryte pod menu przyciski awaryjne, przyspieszona weryfikacja pozytywna bez osłabienia kontroli montażu.

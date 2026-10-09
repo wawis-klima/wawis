@@ -100,6 +100,7 @@ export default function JobDetailsPanel({
   openSerialNumbersJob,
   deleteJob,
   deleteDeviceFromJob,
+  deleteIndoorUnitFromJob,
   setSelectedJob,
   requestClearAdminNote,
   openPreview,
@@ -758,6 +759,7 @@ export default function JobDetailsPanel({
                 manualVerifications={selectedJob.nameplateVerifications || []}
                 onManualVerificationChanged={handleManualNameplateVerificationChanged}
                 onDeleteDevice={isAdmin ? (deviceIndex) => deleteDeviceFromJob?.(selectedJob, deviceIndex) : null}
+                onDeleteIndoorUnit={isAdmin ? (deviceIndex, unitNumber) => deleteIndoorUnitFromJob?.(selectedJob, deviceIndex, unitNumber) : null}
               />
             </div>
           ) : null}

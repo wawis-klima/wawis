@@ -29,7 +29,7 @@ import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-de
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
-import { deleteJobDeviceRecord } from "../modules/job-device-delete.js";
+import { deleteJobDeviceRecord, deleteJobIndoorUnitRecord } from "../modules/job-device-delete.js";
 
 
 const NAMEPLATE_SAVE_TIMEOUT_MS = 15000;
@@ -576,6 +576,44 @@ export function useSelectedJobActions({
     }
   }
 
+  function deleteIndoorUnitFromJob(job, deviceIndex, unitNumber) {
+    if (!isAdmin || !job?.id) return;
+    const d = Number(deviceIndex), u = Number(unitNumber);
+    if (!Number.isInteger(d) || !Number.isInteger(u)) return;
+    openConfirmDialog({
+      variant: "delete",
+      title: `Usunąć JW${u}?`,
+      message: `Usuniesz tylko JW${u} z urządzenia ${d}, wraz z jej tabliczką i potwierdzeniem. JZ i pozostałe jednostki JW zostaną zachowane i poprawnie przenumerowane. Tej operacji nie można cofnąć.`,
+      confirmLabel: `Usuń JW${u}`,
+      onConfirm: async () => {
+        setBusy(true);
+        try {
+          return await runConfirmAction(async () => {
+            const result = await deleteJobIndoorUnitRecord({ supabase, job, deviceIndex: d, unitNumber: u, isAdmin });
+            const patchJob = (current) => (
+              !current || String(current.id) !== String(job.id) ? current : {
+                ...current,
+                devices: result.devices,
+                device_model: result.device_model,
+                device_serial_number: result.device_serial_number,
+                detailsLoaded: false,
+              }
+            );
+            setJobs((prev) => prev.map(patchJob));
+            setSelectedJob((prev) => patchJob(prev));
+            await Promise.all([reloadJobSummary?.(job.id), reloadJobDetails?.(job.id, { force: true })]);
+            return true;
+          });
+        } catch (error) {
+          alert(normalizeDatabaseErrorMessage(error, 'Nie udało się usunąć jednostki JW.'));
+          return false;
+        } finally {
+          setBusy(false);
+        }
+      },
+    });
+  }
+
   function deleteDeviceFromJob(job, deviceIndex) {
     if (!isAdmin || !job?.id) return;
     const normalizedDeviceIndex = Math.max(1, Number(deviceIndex) || 1);
@@ -1083,6 +1121,7 @@ export function useSelectedJobActions({
     saveEditedJob,
     deleteJob,
     deleteDeviceFromJob,
+    deleteIndoorUnitFromJob,
     updateStatus,
     saveAdminNote,
     requestClearAdminNote,
