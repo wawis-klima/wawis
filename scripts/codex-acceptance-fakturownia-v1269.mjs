@@ -6,7 +6,7 @@ import { transform } from 'esbuild';
 const raw = fs.readFileSync(new URL('../supabase/functions/fakturownia-client/index.ts',import.meta.url),'utf8');
 const src = raw
  .replace(/^import \{ createClient \} from "npm:\@supabase\/supabase-js\@[^"]+";?\s*$/m,'')
- .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch \} from "\.\/invoice-match\.js";?\s*$/m,'');
+ .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation \} from "\.\/invoice-match\.js";?\s*$/m,'');
 assert(!src.includes('import {'),'Edge imports must be mocked to execute exact current handler');
 const compiled = (await transform(src,{loader:'ts',target:'es2022',format:'iife'})).code;
 const jobId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
@@ -32,6 +32,7 @@ async function scenario(label, resolver, expected) {
     buildJobInvoiceOid:id=>'WAWIS-JOB-'+id,
     findIssuedVatInvoiceForJob:()=>null,
     inspectManualInvoiceMatch:()=>({ok:false}),
+    findInvoiceCandidatesForManualConfirmation:()=>[],
     Deno:{serve(fn){handler=fn;},env:{get(name){return ({
       SUPABASE_URL:'https://fake.supabase.test',SUPABASE_ANON_KEY:'anon',
       SUPABASE_SERVICE_ROLE_KEY:'service',FAKTUROWNIA_API_TOKEN:'test-token',
