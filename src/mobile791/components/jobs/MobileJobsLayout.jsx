@@ -1,5 +1,5 @@
 import { getCustomerCardDisplayName } from "../../../utils/customerCardDisplayName.js";
-import "../../../styles/mobile-job-card-name-v1292.css";
+import "../../styles/mobile-job-card-name-v1292.css";
 import React, { useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "../../version";
 import { IconFilter, IconPlus, IconRefresh } from "../ui";

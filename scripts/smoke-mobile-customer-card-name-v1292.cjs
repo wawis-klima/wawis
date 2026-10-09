@@ -23,7 +23,6 @@ async function main() {
   assert.equal(label(''), '');
 
   const sourcePaths = [
-    'src/components/jobs/MobileJobsLayout.jsx',
     'src/mobile791/components/jobs/MobileJobsLayout.jsx',
   ];
   for (const p of sourcePaths) {
@@ -33,7 +32,7 @@ async function main() {
     assert.match(source, /mobile-job-card-name-v1292\.css/);
     assert.doesNotMatch(source, /job\.client\s*=/);
   }
-  const style = read('src/styles/mobile-job-card-name-v1292.css');
+  const style = read('src/mobile791/styles/mobile-job-card-name-v1292.css');
   assert.match(style, /-webkit-line-clamp:\s*2/);
   assert.match(style, /overflow-wrap:\s*anywhere/);
   assert.match(style, /mobileJobDate[\s\S]*?flex:\s*0 0 auto/);
