@@ -1,3 +1,8 @@
+## 12.86
+- Naprawiono kolejność warstw: ekran weryfikacji tabliczki po kadrowaniu na iPhonie (z-index 13000) jest ponad formularzem urządzenia (9999), zamiast pod nim (1300).
+- Test Playwright sprawdza rzeczywiste `elementFromPoint` dla okna po wyborze z galerii; smoke blokuje ponowne ustawienie zbyt niskiej warstwy.
+- Nie zmieniono OCR, AI, bazy ani zapisu zdjęć; test na fizycznym iPhonie pozostaje do potwierdzenia po wdrożeniu.
+
 ## 12.85
 - Naprawiono poziome przepełnienie kreatora urządzeń MULTI-SPLIT na iPhonie dla długich nazw modeli JZ i JW.
 - Zapewniono kurczliwe kolumny, skrócone długie etykiety, pionowy scroll treści, widoczne nagłówek i stopkę.
