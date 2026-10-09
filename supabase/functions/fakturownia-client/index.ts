@@ -1,10 +1,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2.105.4";
-import { buildJobInvoiceOid, findIssuedVatInvoiceForJob } from "./invoice-match.js";
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch } from "./invoice-match.js";
 
 type SyncInvoiceClientRequest = {
-  action?: "prepare" | "verify";
+  action?: "prepare" | "verify" | "link_by_number";
   jobId?: string;
   clientId?: string | number;
+  invoiceNumber?: string;
 };
 
 type FakturowniaClient = {
@@ -99,15 +100,72 @@ Deno.serve(async (request: Request) => {
         order: "updated_at.desc",
       });
       const foundInvoice = findIssuedVatInvoiceForJob(invoices, { jobId, clientId });
-
+      const sameOid = invoices.filter((invoice) => normalizeText(invoice?.oid) === invoiceOid);
+      const reason = foundInvoice
+        ? ""
+        : sameOid.some((invoice) => normalizeText(invoice.client_id) !== clientId)
+          ? "Znaleziono fakturę z identyfikatorem montażu, ale przypisano ją do innego klienta. Sprawdź dane w Fakturowni."
+          : sameOid.length
+            ? "Znaleziony dokument nie jest wystawioną fakturą VAT. Sprawdź rodzaj i status dokumentu."
+            : "Nie znaleziono wystawionej faktury z identyfikatorem tego montażu. Jeśli dokument już istnieje, użyj opcji „Powiąż po numerze”.";
       return json({
         ok: true,
         found: Boolean(foundInvoice?.id),
+        reason,
+        reasonCode: foundInvoice ? "VERIFIED" : sameOid.length ? "MISMATCH" : "OID_NOT_FOUND",
         invoiceOid,
         invoiceId: normalizeText(foundInvoice?.id),
         invoiceNumber: normalizeText(foundInvoice?.number),
         invoiceStatus: normalizeText(foundInvoice?.status),
         invoiceKind: normalizeText(foundInvoice?.kind),
+      });
+    }
+
+    if (action === "link_by_number") {
+      const jobId = normalizeText(body.jobId);
+      const invoiceNumber = normalizeText(body.invoiceNumber);
+      if (!isUuid(jobId)) return json({ error: "Nieprawidłowy identyfikator montażu." }, 400);
+      if (!invoiceNumber || invoiceNumber.length > 100) return json({ error: "Podaj prawidłowy numer faktury (maksymalnie 100 znaków)." }, 400);
+
+      const { data: job, error: jobError } = await adminClient
+        .from("jobs")
+        .select("id, contractor_id, status, vat_invoice_fakturownia_confirmed")
+        .eq("id", jobId)
+        .maybeSingle();
+      if (jobError || !job) return json({ error: "Nie znaleziono montażu." }, 404);
+      if (job.status !== "Zakończone") return json({ error: "Fakturę można powiązać tylko z zakończonym montażem." }, 400);
+      if (job.vat_invoice_fakturownia_confirmed) return json({ error: "Ta karta ma już potwierdzoną fakturę. Powiązania nie można zmienić." }, 409);
+
+      // Tożsamość klienta pochodzi z bazy WAWIS, nigdy z clientId podanego przez przeglądarkę.
+      const expectedExternalId = normalizeText(job.contractor_id) || `job-${jobId}`;
+      const candidates = await fakturowniaGetClients(apiToken, { external_id: expectedExternalId });
+      const clients = candidates.filter((client) =>
+        normalizeText(client?.external_id) === expectedExternalId && normalizeText(client?.id));
+      if (clients.length !== 1) {
+        return json({ ok: true, found: false, reasonCode: "CLIENT_NOT_LINKED",
+          reason: "Nie udało się jednoznacznie powiązać klienta WAWIS z kartoteką Fakturowni. Otwórz najpierw „Wystaw fakturę” dla tego montażu lub popraw kartotekę." });
+      }
+      const trustedClientId = normalizeText(clients[0].id);
+      const invoices = await fakturowniaGetInvoices(apiToken, {
+        number: invoiceNumber, page: "1", per_page: "100",
+      });
+      // Fakturownia może ograniczyć wynik. Bez kompletności nie wolno stwierdzić unikatowości.
+      if (invoices.length >= 100) return json({ error: "Wyszukiwanie zwróciło zbyt wiele faktur. Zweryfikuj numer bezpośrednio w Fakturowni." }, 409);
+      const exactMatches = invoices.filter((invoice) => normalizeText(invoice?.number) === invoiceNumber);
+      if (exactMatches.length > 1) return json({ ok: true, found: false, reasonCode: "DUPLICATE_NUMBER",
+        reason: "Znaleziono więcej niż jedną fakturę o tym numerze. Powiązanie zostało zablokowane." });
+      const invoice = exactMatches[0] || null;
+      const verdict = inspectManualInvoiceMatch(invoice, {
+        jobId, clientId: trustedClientId, invoiceNumber,
+      });
+      if (!verdict.ok) return json({ ok: true, found: false, reasonCode: verdict.code, reason: verdict.reason });
+
+      return json({
+        ok: true, found: true, reasonCode: "VERIFIED",
+        invoiceId: normalizeText(invoice?.id),
+        invoiceNumber: normalizeText(invoice?.number),
+        invoiceStatus: normalizeText(invoice?.status),
+        invoiceKind: normalizeText(invoice?.kind),
       });
     }
 
