@@ -114,7 +114,7 @@ async function selectNameplateAndCrop(page, input) {
       bounds.left + bounds.width / 2,
       bounds.top + bounds.height / 2,
     );
-    return Boolean(topmost && review.contains(topmost));
+    return Boolean(topmost && review.contains(topmost) && review.parentElement === document.body);
   }), { timeout: 5_000 }).toBe(true);
 
   const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
@@ -500,7 +500,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
         bounds.left + bounds.width / 2,
         bounds.top + bounds.height / 2,
       );
-      return Boolean(topmost && review.contains(topmost));
+      return Boolean(topmost && review.contains(topmost) && review.parentElement === document.body);
     }), { timeout: 5_000 }).toBe(true);
     const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
     const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
