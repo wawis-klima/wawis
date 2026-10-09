@@ -37,7 +37,7 @@
     "codex_audit": "UI-1286: verification overlay z-index 1300 below device modal 9999 after nameplate crop; direct iPhone hit-test regression",
     "release_ci": "REQUIRED: exact head SHA all impacted regression groups, Codex acceptance, dual PostgreSQL session, Playwright, Closure Gate and production build",
     "external_provider_tests": "EXTERNAL: verify actual Mitsubishi and Rotenso nameplate photos on a physical iPhone after deployment",
-    "front_and_backend": "Mobile nameplate verification z-index above device wizard and Playwright interaction test; no OCR/AI logic or Supabase schema changes",
+    "front_and_backend": "Mobile nameplate crop/verification React Portals with z-index above wizard; Playwright interaction/portal regression; no OCR/AI logic or Supabase schema changes",
     "mobile_touch": "EXTERNAL: confirm 12.86 and visible Sprawdź tabliczkę screen after crop, then model/SN and tabliczka dodana status"
   }
 }
