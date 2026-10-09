@@ -23,6 +23,14 @@ Dla zmian funkcjonalnych stosujemy, odpowiednio do ryzyka:
 
 Nie każda kosmetyczna zmiana potrzebuje wszystkich czterech warstw. Zmiana TARGETED lub CRITICAL nie może być zamknięta wyłącznie testem statycznym typu regex/assert.match.
 
+## Regresje współdziałania modułów (WAWIS 12.88+)
+
+- Każda zmiana modułu wymaga oceny **jego zależności do odbiorców wyniku**, nie tylko testów jego własnych funkcji.
+- Mapa `CROSS_MODULE_FLOWS` w `scripts/release-impact.cjs` zamienia zmianę komponentu współdzielonego (także CSS, scroll, modal) na wymagane testy modułów konsumenckich i E2E odpowiedniej platformy. Lista wymuszonych zależności trafia do `release-impact.json.interaction_flows`.
+- Przykład obowiązkowy: zmiana w kreatorze urządzeń wymaga testu **galeria → kadr → widoczny i klikalny odczyt → potwierdzenie → zapis jednostki**. Samo istnienie DOM, poprawny build lub `toBeVisible` nie wystarczą, jeżeli nakładka może być przykryta lub obcięta.
+- Przed GO mapowane zależności muszą być pokryte uruchomionymi grupami testów i wymaganymi E2E; brak, pominięcie albo błąd to NO-GO. `run-pr-checks.cjs` niezależnie porównuje listę przepływów z rzeczywistym diffem.
+- Niewykryta wcześniej zależność musi być dopisana do mapy oraz testu klasyfikacji w tym samym wydaniu. Niezależne kosmetyczne zmiany zachowują szybki profil.
+
 ## Dowody CI
 
 Każdy PR do main zapisuje artefakt **wawis-closure-evidence** zawierający co najmniej:
