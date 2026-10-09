@@ -19,33 +19,33 @@ assert.equal(isCriticalPath('supabase/migrations/current/example.sql'), true);
 assert.equal(isCriticalPath('.github/workflows/release-checks.yml'), true);
 assert.equal(isCriticalPath('src/mobile791/components/jobs/MobileJobsLayout.jsx'), false);
 
-const fastMobile = classifyEffectiveFiles(['src/mobile791/v1048-runtime-fix.css']);
-assert.equal(fastMobile.profile, 'fast-ui');
-assert.equal(fastMobile.scope, 'mobile');
-assert.deepEqual(fastMobile.e2e, []);
-assert.equal(fastMobile.needs_playwright, false);
-assert(fastMobile.groups.includes('ui-fast-mobile'));
-assert(!fastMobile.groups.includes('photos'));
+// Every UI style change can affect positions, stacking and hit targets.
+// Force E2E on the affected platform; even an isolated sidebar CSS change
+// cannot silently disable interaction checks.
+const visualMobile = classifyEffectiveFiles(['src/mobile791/v1048-runtime-fix.css']);
+assert.equal(visualMobile.profile, 'targeted');
+assert.equal(visualMobile.scope, 'mobile');
+assert.deepEqual(visualMobile.visual_surfaces, ['mobile']);
+assert.deepEqual(visualMobile.e2e, ['mobile']);
+assert.equal(visualMobile.needs_playwright, true);
+assert(visualMobile.groups.includes('mobile'));
 
-const microMobile = classifyMicroUi({ impact: { ...fastMobile, effective_files: ['src/mobile791/v1048-runtime-fix.css'] } });
-assert.equal(microMobile.micro_ui, true);
+const microMobile = classifyMicroUi({ impact: { ...visualMobile, effective_files: ['src/mobile791/v1048-runtime-fix.css'] } });
+assert.equal(microMobile.micro_ui, false);
 assert.equal(microMobile.scope, 'mobile');
-assert(microMobile.groups.includes('ui-fast-core'));
-assert(microMobile.groups.includes('ui-fast-mobile'));
 assert.equal(isMicroUiFile('src/mobile791/v1048-runtime-fix.css'), true);
 assert.equal(isMicroUiFile('src/mobile791/components/jobs/MobileJobsLayout.jsx'), false);
 assert.equal(isMicroUiFile('supabase/style.css'), false);
 
-const fastGlobal = classifyEffectiveFiles(['src/styles.css']);
-assert.equal(fastGlobal.profile, 'fast-ui');
-assert.equal(fastGlobal.scope, 'full');
-assert(fastGlobal.groups.includes('ui-fast-mobile'));
-assert(fastGlobal.groups.includes('ui-fast-desktop'));
-const microGlobal = classifyMicroUi({ impact: { ...fastGlobal, effective_files: ['src/styles.css'] } });
-assert.equal(microGlobal.micro_ui, true);
+const visualGlobal = classifyEffectiveFiles(['src/styles.css']);
+assert.equal(visualGlobal.profile, 'targeted');
+assert.equal(visualGlobal.scope, 'full');
+assert.deepEqual(visualGlobal.visual_surfaces, ['mobile', 'desktop']);
+assert.deepEqual(visualGlobal.e2e, ['mobile', 'desktop']);
+assert(visualGlobal.groups.includes('mobile') && visualGlobal.groups.includes('desktop'));
+const microGlobal = classifyMicroUi({ impact: { ...visualGlobal, effective_files: ['src/styles.css'] } });
+assert.equal(microGlobal.micro_ui, false);
 assert.equal(microGlobal.scope, 'full');
-assert(microGlobal.groups.includes('ui-fast-mobile'));
-assert(microGlobal.groups.includes('ui-fast-desktop'));
 
 const presentationAsset = classifyEffectiveFiles(['public/logo.png']);
 assert.equal(presentationAsset.profile, 'fast-ui');
@@ -90,10 +90,26 @@ assert(pushFlow.interaction_flows.includes('job-completion-push'));
 assert(pushFlow.groups.includes('push') && pushFlow.groups.includes('jobs'));
 assert(pushFlow.e2e.includes('mobile'));
 
-const unrelatedCss = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
-assert.equal(unrelatedCss.profile, 'fast-ui');
-assert.equal(unrelatedCss.needs_playwright, false);
-assert.deepEqual(unrelatedCss.interaction_flows, []);
+const sidebarCss = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
+assert.equal(sidebarCss.profile, 'targeted');
+assert.equal(sidebarCss.needs_playwright, true);
+assert.deepEqual(sidebarCss.interaction_flows, []);
+assert.deepEqual(sidebarCss.visual_surfaces, ['mobile']);
+assert.deepEqual(sidebarCss.e2e, ['mobile']);
+
+const desktopCss = classifyEffectiveFiles(['src/components/fuel/fuel-panel.css']);
+assert.equal(desktopCss.profile, 'targeted');
+assert.deepEqual(desktopCss.visual_surfaces, ['desktop']);
+assert.deepEqual(desktopCss.e2e, ['desktop']);
+assert(desktopCss.groups.includes('fuel'));
+const sharedLogo = classifyEffectiveFiles(['src/assets/logo.svg']);
+assert.equal(sharedLogo.profile, 'targeted');
+assert.deepEqual(sharedLogo.visual_surfaces, ['mobile', 'desktop']);
+assert.deepEqual(sharedLogo.e2e, ['mobile', 'desktop']);
+// Static assets without a UI surface remain FAST UI and avoid Playwright.
+const staticImage = classifyEffectiveFiles(['public/logo.png']);
+assert.equal(staticImage.profile, 'fast-ui');
+assert.equal(staticImage.needs_playwright, false);
 
 const targetedMobile = classifyEffectiveFiles(['src/mobile791/components/jobs/MobileJobsLayout.jsx']);
 assert.equal(targetedMobile.profile, 'targeted');
@@ -144,4 +160,4 @@ assert.equal(fs.existsSync('.github/workflows/micro-ui-archive.yml'), false, 'MI
 assert.equal(fs.existsSync('.github/workflows/post-deploy-checks.yml'), false, 'Nie może wrócić osobny blokujący post-deploy workflow');
 assert.equal(fs.existsSync('.github/workflows/release-checks.yml'), false, 'Nie może wrócić dublujący final release workflow');
 
-console.log('WAWIS release impact smoke OK: FAST/MICRO for unrelated CSS; mandatory cross-module groups + Playwright for interaction seams; no duplicate runners');
+console.log('WAWIS release impact smoke OK: all module styles and UI graphics trigger platform E2E; cross-module flows and version/docs remain intact');
