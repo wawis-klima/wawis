@@ -10,6 +10,16 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1283 (9 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| FAKT-1283-QUANTITY | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-prefill-v1208.cjs`: pierwsza pozycja ma dosłownie `invoice[positions][0][quantity]=1`. |
+| FAKT-1283-PREPARE | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-auto-v1280.mjs`: mock prawdziwej Edge Function sprawdza URL formularza i ilość dokładnie `1`. |
+| FAKT-1283-PRICE-GUARD | FIXED-UNVERIFIED | Brak pól cen netto/brutto i sumy faktury oraz jakiegokolwiek tworzenia faktur przez API. |
+| FAKT-1283-NONREGRESSION | REQUIRED | Pełne testy WAWIS, Fakturownia v12.80–12.82, Podwójna sesja PG, Playwright i Closure Gate. |
+| FAKT-1283-LIVE | EXTERNAL | Przeglądarka Fakturowni: po „Wystaw fakturę” sprawdzić, czy pole ilości faktycznie wyświetla `1`; dokument zapisuje wyłącznie użytkownik. |
+
 ## Faktury — FAKT-1282 (9 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
