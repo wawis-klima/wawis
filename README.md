@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 12.87
+- 12.88
+
+Wersja 12.88: stała ochrona współdziałania modułów w automatycznych testach wydania. Zmiany elementów łączących moduły (w tym sam CSS kreatora i nakładek) dobierają testy konsumenckie i wymagane Playwright E2E zamiast ścieżki FAST/MICRO UI. Mapa: urządzenia↔zdjęcia/OCR, urządzenia↔protokół, klient↔faktura, SMS↔historia, zakończenie↔push. Dodatkowe regresje i kontrola GO/NO-GO; bez zmian działania aplikacji.
+
 
 Wersja 12.87: ekran kadrowania tabliczki na iPhonie ma jasne tło, biały nagłówek i stopkę oraz niebieski przycisk „Zapisz kadr”. Jedynie fragment zdjęcia poza ramką jest przyciemniony, aby kadr pozostał czytelny. Testy pilnują kolorów i zachowania przepływu do odczytu OCR. Bez zmian logiki OCR/AI i danych.
 
@@ -939,6 +942,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.88` — automatyczna regresja współdziałania modułów (również po CSS), wymuszona przed wydaniem.
 - wersja `12.87` — jasny wygląd kadrowania tabliczki w mobilnym kreatorze, zachowany odczyt OCR.
 - wersja `12.86` — naprawa niewidocznego okna odczytu tabliczki po kadrowaniu; automatyczny test hit-test na iPhonie i walidacja warstw CSS.
 - wersja `12.85` — poprawka mobilnego kreatora MULTI-SPLIT: brak obciętych pól i poziomego rozjechania przy długich modelach; nowy test iPhone E2E.
