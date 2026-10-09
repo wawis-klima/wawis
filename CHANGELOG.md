@@ -1,3 +1,11 @@
+## 12.80
+- Automatyczne potwierdzenie po powrocie z Fakturowni: pre-invoice snapshot zapisany po stronie serwera, przechowywany do 2h, działa po odświeżeniu.
+- Tylko dokładnie jedna nowa wystawiona faktura VAT z tym samym nabywcą, client_id, datą utworzenia, bez obcego OID i powiązania z innym montażem, może zostać potwierdzona bez klikania.
+- Gdy jest kilka nowych faktur, równoległy drugi montaż klienta, niekompletna lista albo zmienione dane: odmowa automatyczna i wyjaśnienie, pozostaje istniejące ręczne potwierdzanie.
+- RLS: migrowana tabela prób wystawienia dostępna wyłącznie serwisowej Edge Function.
+- Płatności bez zmian; zero wystawionych fikcyjnych faktur.
+- CI: testy z atrapą dostawcy, Codex, regresje, Playwright, Closure Gate, build; rzeczywisty odbiór u użytkownika nadal EXTERNAL.
+
 ## 12.79
 - Naprawiono regresję klienta bez external_id: brak dopasowania kartoteki Fakturowni nie blokuje odczytu wystawionych faktur.
 - Porównanie danych nabywcy faktury z WAWIS: nazwa/osoba, ulica i numer, miejscowość/kod pocztowy, NIP.

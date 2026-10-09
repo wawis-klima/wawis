@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.79",
+  "version": "12.80",
   "scope": "full",
-  "release_branch": "release/v12.79",
+  "release_branch": "release/v12.80",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.79.zip"
+    "file_name": "klima-app-v12.80.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.79",
+    "source_branch": "release/v12.80",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "FAKT-1279 historical client without external_id: exact buyer snapshot reconciliation",
-    "release_ci": "REQUIRED — exact SHA PR checks, critical regression, desktop/mobile E2E, Closure Gate and build",
-    "external_provider_tests": "EXTERNAL — no actual invoices created; buyer-snapshot match against the user's real Fakturownia documents still to be verified",
-    "front_and_backend": "Supabase Fakturownia Edge only; no migrations or payment changes; frontend version bump",
-    "mobile_touch": "EXTERNAL — verify production version on client devices"
+    "codex_audit": "FAKT-1280 durable server baseline, automatic reconciliation only for one new issued VAT, concurrent attempts and duplicates excluded",
+    "release_ci": "REQUIRED — exact SHA, all impacted regression groups, Playwright desktop/mobile, Closure Gate, production build",
+    "external_provider_tests": "EXTERNAL — user will issue next real invoice and confirm zero-click status after returning; no test invoices created",
+    "front_and_backend": "Desktop UI & Supabase Fakturownia Edge & additive invoice snapshot migration, no payment changes",
+    "mobile_touch": "EXTERNAL — confirm visible version 12.80 on production clients"
   }
 }

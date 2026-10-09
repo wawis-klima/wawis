@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { transform } from 'esbuild';
-import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, inspectInvoiceBuyer } from '../supabase/functions/fakturownia-client/invoice-match.js';
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, inspectInvoiceBuyer, isIssuedVatInvoiceRecord } from '../supabase/functions/fakturownia-client/invoice-match.js';
 const jobId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const otherJobId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const contractorId='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -26,7 +26,7 @@ assert.equal(inspect({...sample,status:'draft'}).code,'NOT_ISSUED_VAT');
 assert.equal(inspect(null).code,'NOT_FOUND');
 const src=fs.readFileSync(new URL('../supabase/functions/fakturownia-client/index.ts',import.meta.url),'utf8')
   .replace(/^import \{ createClient \} from "npm:\@supabase\/supabase-js\@[^"]+";?\s*$/m,'')
-  .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation \} from "\.\/invoice-match\.js";?\s*$/m,'');
+  .replace(/^import \{ buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, isIssuedVatInvoiceRecord \} from "\.\/invoice-match\.js";?\s*$/m,'');
 assert(!src.includes('import {'),'Test executes actual Edge source with mocked imports');
 const compiled=(await transform(src,{loader:'ts',target:'es2022',format:'iife'})).code;
 async function run(label, opts={}, expected={}) {
@@ -37,7 +37,7 @@ async function run(label, opts={}, expected={}) {
  }};}};
  const env={SUPABASE_URL:'https://fake.supabase.test',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',FAKTUROWNIA_API_TOKEN:'placeholder'};
  const sandbox={
-   buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,findInvoiceCandidatesForManualConfirmation,inspectInvoiceBuyer,
+   buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,findInvoiceCandidatesForManualConfirmation,inspectInvoiceBuyer,isIssuedVatInvoiceRecord,
    createClient(_url,key){return key==='anon'?{auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}}}:adminDb;},
    Deno:{serve(f){handler=f;},env:{get(k){return env[k]||'';}}},
    async fetch(value,options){

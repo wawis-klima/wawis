@@ -1,8 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.105.4";
-import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation } from "./invoice-match.js";
+import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, isIssuedVatInvoiceRecord } from "./invoice-match.js";
 
 type SyncInvoiceClientRequest = {
-  action?: "prepare" | "verify" | "link_by_number";
+  action?: "prepare" | "verify" | "link_by_number" | "pending";
   jobId?: string;
   clientId?: string | number;
   invoiceNumber?: string;
@@ -30,6 +30,7 @@ type FakturowniaInvoice = {
   client_id?: number | string;
   oid?: string;
   issue_date?: string;
+  created_at?: string;
   buyer_name?: string;
   buyer_street?: string;
   buyer_city?: string;
@@ -92,6 +93,16 @@ Deno.serve(async (request: Request) => {
     const body = (await request.json()) as SyncInvoiceClientRequest;
     const action = normalizeText(body.action || "prepare").toLowerCase();
 
+    if (action === "pending") {
+      const jobId = normalizeText(body.jobId);
+      if (!isUuid(jobId)) return json({ error: "Nieprawidłowy montaż." }, 400);
+      const { data: attempt, error: attemptError } = await adminClient
+        .from("fakturownia_invoice_attempts")
+        .select("job_id, expires_at").eq("job_id", jobId).maybeSingle();
+      if (attemptError) throw new Error("Nie udało się sprawdzić rozpoczętej faktury.");
+      return json({ ok: true, pending: Boolean(attempt && Date.parse(attempt.expires_at) > Date.now()) });
+    }
+
     if (action === "verify") {
       const jobId = normalizeText(body.jobId);
       if (!isUuid(jobId)) return json({ error: "Brak prawidłowego identyfikatora montażu." }, 400);
@@ -125,9 +136,24 @@ Deno.serve(async (request: Request) => {
       }
       let candidates: Array<{ invoiceId: string; invoiceNumber: string; issueDate: string }> = [];
       let complete = true;
+      let automaticBlockReason = "";
       if (!foundInvoice) {
-        const recent = await getRecentIssuedInvoices(apiToken, trustedClientId);
+        const { data: preparedAttempt, error: preparedError } = await adminClient
+          .from("fakturownia_invoice_attempts").select("client_id").eq("job_id", jobId).maybeSingle();
+        if (preparedError) throw new Error("Nie udało się odczytać przygotowanego wystawiania faktury.");
+        const recent = await getRecentIssuedInvoices(apiToken,
+          normalizeText(preparedAttempt?.client_id) || trustedClientId);
         complete = recent.complete;
+        // Only a recorded, complete server snapshot allows zero-click confirmation.
+        // A sole invoice matching the buyer is NOT enough when the customer can have many jobs.
+        const outcome = await tryAutoMatchPreparedInvoice({
+          adminClient, apiToken, jobId, buyer: trusted.buyer, current: recent,
+        });
+        if (outcome.invoice) {
+          foundInvoice = outcome.invoice;
+        } else {
+          automaticBlockReason = outcome.reason;
+        }
         const details = await hydrateLikelyBuyerInvoices(apiToken, recent.invoices, trusted.buyer);
         const matching = findInvoiceCandidatesForManualConfirmation(details, {
           jobId, clientId: trustedClientId, buyer: trusted.buyer, limit: 50,
@@ -150,9 +176,9 @@ Deno.serve(async (request: Request) => {
           : complete ? "NO_MATCHING_BUYER" : "SCAN_INCOMPLETE",
         reason: foundInvoice ? ""
           : candidates.length
-            ? "Nie znaleziono OID, ale znaleziono faktury z potwierdzonymi danymi nabywcy. Wybierz właściwy numer."
+            ? (automaticBlockReason ? automaticBlockReason + " " : "") + "Znaleziono faktury klienta. Wybierz właściwy numer."
             : complete
-              ? "Nie znaleziono faktury z jednocześnie zgodną nazwą, ulicą i miejscowością nabywcy. Sprawdź adres na wydruku lub wpisz numer faktury."
+              ? (automaticBlockReason ? automaticBlockReason + " " : "") + "Nie znaleziono faktury z jednoznacznie zgodnymi danymi nabywcy."
               : "Nie udało się przejrzeć pełnej listy ostatnich faktur. Wpisz dokładny numer dokumentu.",
       });
     }
@@ -322,6 +348,33 @@ Deno.serve(async (request: Request) => {
     const clientId = normalizeText(savedClient?.id || matchedClient?.id);
     if (!clientId) return json({ error: "Fakturownia nie zwróciła identyfikatora klienta." }, 502);
 
+    // Captured BEFORE the user opens the Fakturownia form. This is the only
+    // trusted signal that an invoice belongs to this WAWIS creation attempt
+    // when the provider web form drops the OID parameter.
+    const verifiedJob = await getTrustedJobBuyer(adminClient, jobId);
+    if (!verifiedJob || verifiedJob.job.status !== "Zakończone") {
+      return json({ error: "Automatyczne wystawianie wymaga zakończonego montażu." }, 409);
+    }
+    if (!verifiedJob.job.vat_invoice_fakturownia_confirmed) {
+      const before = await getRecentIssuedInvoices(apiToken, clientId);
+      if (!before.complete) {
+        return json({ error: "Fakturownia zwróciła zbyt wiele dokumentów do bezpiecznego zapamiętania stanu. Spróbuj ponownie później." }, 409);
+      }
+      const started = new Date();
+      const { error: trackingError } = await adminClient
+        .from("fakturownia_invoice_attempts")
+        .upsert({
+          job_id: jobId,
+          client_id: clientId,
+          prepared_by: authData.user.id,
+          buyer_snapshot: verifiedJob.buyer,
+          baseline_invoice_ids: before.invoices.map((row) => normalizeText(row.id)).filter(Boolean),
+          started_at: started.toISOString(),
+          expires_at: new Date(started.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+        }, { onConflict: "job_id" });
+      if (trackingError) throw new Error("Nie udało się zapamiętać rozpoczętego wystawiania faktury. Formularz nie został otwarty.");
+    }
+
     // Formularz pozostaje po stronie Fakturowni. Każdy montaż dostaje własny OID,
     // dzięki czemu późniejsza weryfikacja nie zgaduje po "pierwszej nowej fakturze klienta".
     const invoiceOid = buildJobInvoiceOid(jobId);
@@ -405,6 +458,79 @@ async function hydrateInvoice(apiToken: string, invoice: FakturowniaInvoice): Pr
     throw new Error("Fakturownia zwróciła nieprawidłowe szczegóły faktury.");
   }
   return value as FakturowniaInvoice;
+}
+
+
+type AutoMatchResult = { invoice: FakturowniaInvoice | null; reason: string };
+
+async function tryAutoMatchPreparedInvoice({
+  adminClient, apiToken, jobId, buyer, current,
+}: {
+  adminClient: ReturnType<typeof createClient>;
+  apiToken: string;
+  jobId: string;
+  buyer: TrustedBuyer;
+  current: { invoices: FakturowniaInvoice[]; complete: boolean };
+}): Promise<AutoMatchResult> {
+  const no = (reason: string): AutoMatchResult => ({ invoice: null, reason });
+  const { data: attempt, error } = await adminClient.from("fakturownia_invoice_attempts")
+    .select("job_id, client_id, buyer_snapshot, baseline_invoice_ids, started_at, expires_at")
+    .eq("job_id", jobId).maybeSingle();
+  if (error) throw new Error("Nie można odczytać rozpoczętego wystawiania faktury.");
+  if (!attempt) return no("Brak wcześniejszego rozpoczęcia wystawiania faktury w WAWIS.");
+  const startedMs = Date.parse(attempt.started_at);
+  const expiresMs = Date.parse(attempt.expires_at);
+  if (!Number.isFinite(startedMs) || !Number.isFinite(expiresMs)
+      || Date.now() > expiresMs || Date.now() < startedMs) {
+    return no("Upłynął bezpieczny czas automatycznej weryfikacji (2 godziny).");
+  }
+  if (!current.complete) return no("Niepełna lista faktur — bezpieczne potwierdzenie automatyczne jest niedostępne.");
+  const snapshot = attempt.buyer_snapshot || {};
+  const buyerFields: Array<keyof TrustedBuyer> = ["name", "street", "city", "postCode", "taxNo"];
+  if (buyerFields.some((field) => normalizeText(snapshot[field]) !== normalizeText(buyer[field]))) {
+    return no("Dane klienta zmieniono podczas wystawiania faktury.");
+  }
+  const cid = normalizeText(attempt.client_id);
+  if (!cid) return no("Brak identyfikatora klienta zapisanego przy rozpoczęciu.");
+  // Current scan must use the client captured at prepare-time; never trust current browser input.
+  const { data: otherAttempts, error: otherError } = await adminClient.from("fakturownia_invoice_attempts")
+    .select("job_id").eq("client_id", cid)
+    .gt("expires_at", new Date().toISOString()).neq("job_id", jobId).limit(1);
+  if (otherError) throw new Error("Nie udało się sprawdzić równoczesnych prób wystawiania.");
+  if (otherAttempts?.length) return no("Inne zlecenie tego klienta ma jednocześnie otwarte wystawianie faktury.");
+  const { data: job, error: jobError } = await adminClient.from("jobs")
+    .select("contractor_id").eq("id", jobId).maybeSingle();
+  if (jobError || !job) return no("Brak danych montażu do kontroli kolizji.");
+  if (job.contractor_id) {
+    const { data: competingJobs, error: competingError } = await adminClient.from("jobs")
+      .select("id").eq("contractor_id", job.contractor_id)
+      .eq("status", "Zakończone").eq("vat_invoice_issued", false)
+      .neq("id", jobId).limit(1);
+    if (competingError) throw new Error("Nie można zweryfikować innych montaży klienta.");
+    if (competingJobs?.length) return no("Klient ma inny zakończony montaż bez wystawionej faktury.");
+  }
+  const baseline = new Set(Array.isArray(attempt.baseline_invoice_ids) ? attempt.baseline_invoice_ids.map(normalizeText) : []);
+  const newer = current.invoices.filter((row) => normalizeText(row.id)
+    && normalizeText(row.client_id) === cid && !baseline.has(normalizeText(row.id))
+    && isIssuedVatInvoiceRecord(row));
+  if (newer.length !== 1) return no(newer.length
+    ? "Od rozpoczęcia wystawiania pojawiło się kilka faktur tego klienta."
+    : "Nie wykryto jeszcze nowej wystawionej faktury tego klienta.");
+  const invoice = await hydrateInvoice(apiToken, newer[0]);
+  const createdMs = Date.parse(normalizeText(invoice.created_at));
+  if (!Number.isFinite(createdMs) || createdMs < startedMs - 60_000 || createdMs > Date.now() + 60_000) {
+    return no("Fakturownia nie zwróciła wiarygodnej daty utworzenia nowej faktury.");
+  }
+  if (normalizeText(invoice.client_id) !== cid) return no("Nowa faktura ma innego klienta.");
+  const verdict = inspectManualInvoiceMatch(invoice, {
+    jobId, clientId: cid, buyer, invoiceNumber: normalizeText(invoice.number),
+  });
+  if (!verdict.ok) return no("Nowa faktura nie przeszła kontroli danych nabywcy.");
+  const { data: existing, error: existingError } = await adminClient.from("jobs")
+    .select("id").eq("vat_invoice_fakturownia_invoice_id", normalizeText(invoice.id)).limit(1);
+  if (existingError) throw new Error("Nie udało się sprawdzić, czy faktura jest już powiązana.");
+  if (existing?.length) return no("Faktura jest już powiązana z innym montażem.");
+  return { invoice, reason: "" };
 }
 
 async function getRecentIssuedInvoices(apiToken: string, clientId: string) {

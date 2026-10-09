@@ -10,7 +10,7 @@ import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canMan
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 import { confirmVatInvoiceFromFakturownia, saveVatInvoiceStatus } from "../modules/jobs-crud.js";
-import { prepareFakturowniaInvoice, verifyFakturowniaInvoice, lookupFakturowniaInvoiceByNumber } from "../modules/fakturownia.js";
+import { prepareFakturowniaInvoice, verifyFakturowniaInvoice, lookupFakturowniaInvoiceByNumber, hasPendingFakturowniaInvoice } from "../modules/fakturownia.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -162,25 +162,40 @@ export default function JobDetailsPanel({
   }, [selectedJobId, selectedJobIsCompleted]);
 
   React.useEffect(() => {
-    if (!isAdmin || !selectedJobId) return undefined;
+    if (!isAdmin || !selectedJobId || !selectedJobIsCompleted
+        || selectedJob?.vat_invoice_fakturownia_confirmed) return undefined;
 
     let timer = null;
+    let disposed = false;
     const verifyAfterReturn = () => {
-      if (document.visibilityState === 'hidden' || !fakturowniaVerificationRef.current) return;
+      if (document.visibilityState === 'hidden') return;
       if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        void verifyPendingFakturowniaInvoice();
+      timer = window.setTimeout(async () => {
+        // A prepared attempt remains available after a hard reload or tab close.
+        // Do not scan unrelated historical invoices on every desktop focus.
+        try {
+          const pending = fakturowniaVerificationRef.current
+            || await hasPendingFakturowniaInvoice({ supabase, jobId: selectedJobId });
+          if (pending && !disposed && activeInvoiceJobIdRef.current === selectedJobId) {
+            void verifyPendingFakturowniaInvoice(true);
+          }
+        } catch (error) {
+          console.warn('Nie udało się sprawdzić rozpoczętej faktury.', error);
+        }
       }, 700);
     };
 
+    // Also recover the just-issued invoice when the WAWIS page was reloaded.
+    verifyAfterReturn();
     window.addEventListener('focus', verifyAfterReturn);
     document.addEventListener('visibilitychange', verifyAfterReturn);
     return () => {
+      disposed = true;
       if (timer) window.clearTimeout(timer);
       window.removeEventListener('focus', verifyAfterReturn);
       document.removeEventListener('visibilitychange', verifyAfterReturn);
     };
-  }, [isAdmin, selectedJobId, supabase]);
+  }, [isAdmin, selectedJobId, selectedJobIsCompleted, selectedJob?.vat_invoice_fakturownia_confirmed, supabase]);
 
   React.useEffect(() => {
     if (!commentHasUnsavedWork) return undefined;

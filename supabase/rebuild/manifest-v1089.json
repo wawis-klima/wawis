@@ -118,7 +118,8 @@
     "supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql",
     "supabase/migrations/current/20261008131504_completion_jw_index_guard_v1269.sql",
     "supabase/migrations/current/20261008131524_disable_legacy_fuel_rpc_v1269.sql",
-    "supabase/migrations/20261008200351_diagnostic_worker_upsert_rls_v1274.sql"
+    "supabase/migrations/20261008200351_diagnostic_worker_upsert_rls_v1274.sql",
+    "supabase/migrations/current/20261009095500_fakturownia_invoice_attempt_v1280.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
