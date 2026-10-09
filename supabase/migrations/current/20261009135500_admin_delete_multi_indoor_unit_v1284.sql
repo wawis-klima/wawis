@@ -38,7 +38,10 @@ revoke all on function private.remove_indoor_segment_v1284(text, integer) from p
 create or replace function public.admin_delete_job_indoor_unit(
   p_job_id uuid,
   p_device_index integer,
-  p_unit_number integer
+  p_unit_number integer,
+  p_expected_model text,
+  p_expected_serial text,
+  p_expected_photo_ids uuid[]
 )
 returns jsonb
 language plpgsql
@@ -80,6 +83,12 @@ begin
   for update;
   if not found then
     raise exception 'Nie znaleziono montażu.' using errcode = 'P0002';
+  end if;
+  -- The caller must have an up-to-date view. A queued/double-clicked delete
+  -- cannot silently target the next JW after the numbering shifts.
+  if coalesce(v_model, '') <> coalesce(p_expected_model, '')
+     or coalesce(v_serial, '') <> coalesce(p_expected_serial, '') then
+    raise exception 'Dane urządzenia zmieniły się. Odśwież montaż przed usunięciem JW.' using errcode = '40001';
   end if;
 
   v_models := pg_catalog.regexp_split_to_array(pg_catalog.replace(coalesce(v_model, ''), E'\r', ''), E'\n');
@@ -126,7 +135,7 @@ begin
     raise exception 'Multi-split musi zachować co najmniej dwie jednostki JW; wskazana jednostka musi istnieć.' using errcode = '22023';
   end if;
 
-  select coalesce(pg_catalog.array_agg(p.id), array[]::uuid[]),
+  select coalesce(pg_catalog.array_agg(p.id order by p.id), array[]::uuid[]),
          coalesce(pg_catalog.array_agg(distinct p.storage_path)
            filter (where coalesce(p.storage_path, '') <> ''), array[]::text[])
   into v_target_ids, v_storage_paths
@@ -138,6 +147,18 @@ begin
     and coalesce(nullif(pg_catalog.lower(p.unit_ref), ''),
       pg_catalog.lower(pg_catalog.substring(coalesce(p.storage_path, ''), '/nameplates/device-[0-9]+_(jw-[0-9]+)_'))) = 'jw-' || p_unit_number::text
     and (p.photo_kind = 'nameplate' or p.storage_path ~ '/nameplates/device-[0-9]+_');
+
+  if v_target_ids is distinct from (
+    select coalesce(pg_catalog.array_agg(e.photo_id order by e.photo_id), array[]::uuid[])
+    from pg_catalog.unnest(coalesce(p_expected_photo_ids, array[]::uuid[])) as e(photo_id)
+  ) then
+    raise exception 'Tabliczka wybranej JW została zmieniona. Odśwież montaż przed usunięciem.' using errcode = '40001';
+  end if;
+  if pg_catalog.cardinality(v_target_ids) = 0
+     and private.remove_indoor_segment_v1284(v_model_line, p_unit_number) = v_model_line
+     and private.remove_indoor_segment_v1284(v_serial_line, p_unit_number) = v_serial_line then
+    raise exception 'Nie można usunąć JW bez zapisanych danych ani tabliczki.' using errcode = '23514';
+  end if;
 
   v_models[p_device_index] := private.remove_indoor_segment_v1284(v_model_line, p_unit_number);
   v_serials[p_device_index] := private.remove_indoor_segment_v1284(v_serial_line, p_unit_number);
@@ -206,8 +227,8 @@ begin
 end;
 $$;
 
-revoke all on function public.admin_delete_job_indoor_unit(uuid, integer, integer) from public, anon;
-grant execute on function public.admin_delete_job_indoor_unit(uuid, integer, integer) to authenticated;
+revoke all on function public.admin_delete_job_indoor_unit(uuid, integer, integer, text, text, uuid[]) from public, anon;
+grant execute on function public.admin_delete_job_indoor_unit(uuid, integer, integer, text, text, uuid[]) to authenticated;
 
-comment on function public.admin_delete_job_indoor_unit(uuid, integer, integer) is
+comment on function public.admin_delete_job_indoor_unit(uuid, integer, integer, text, text, uuid[]) is
   'WAWIS 12.84: admin-only atomic removal of one JW; other units, outdoor JZ and storage paths are preserved.';

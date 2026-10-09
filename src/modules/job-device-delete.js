@@ -1,5 +1,5 @@
 import { getJobDeviceRows } from './job-devices.js';
-import { PHOTO_BUCKET } from './photos.js';
+import { PHOTO_BUCKET, getNameplatePhotoMetadata } from './photos.js';
 
 function normalizeIndex(value) {
   return Math.max(0, Number.parseInt(String(value || ''), 10) || 0);
@@ -62,12 +62,22 @@ export async function deleteJobIndoorUnitRecord({ supabase, job, deviceIndex, un
     || !Number.isInteger(u) || u < 1 || u > 5) {
     throw new Error('Nieprawidłowy numer urządzenia lub jednostki JW.');
   }
-  // Atomic admin-only RPC: update jobs, photo assignments and manual verifications.
-  // Do not rename storage files of remaining units.
+  // Always send the exact photo identities for the clicked JW. If another tab
+  // already deleted it, the server rejects this stale request rather than
+  // deleting the JW that moved into the same ordinal slot.
+  const allPhotos = [...(Array.isArray(job.photos) ? job.photos : []),
+    ...(Array.isArray(job.nameplatePhotosMeta) ? job.nameplatePhotosMeta : [])];
+  const targetIds = [...new Set(allPhotos.filter((photo) => {
+    const meta = getNameplatePhotoMetadata(photo);
+    return Number(meta.device_index) === d && String(meta.unit_ref) === `jw-${u}` && photo?.id;
+  }).map((photo) => String(photo.id)))].sort();
   const { data, error } = await supabase.rpc('admin_delete_job_indoor_unit', {
     p_job_id: job.id,
     p_device_index: d,
     p_unit_number: u,
+    p_expected_model: job.device_model ?? null,
+    p_expected_serial: job.device_serial_number ?? null,
+    p_expected_photo_ids: targetIds,
   });
   if (error) throw error;
   const paths = normalizeStoragePaths(data?.cleanup_storage_paths);

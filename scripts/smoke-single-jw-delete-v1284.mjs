@@ -18,6 +18,9 @@ for (const pattern of [
   /public\.current_user_is_admin\(\)/,
   /for update;/,
   /v_indoor_count < 3/,
+  /p_expected_photo_ids uuid\[\]/,
+  /v_target_ids is distinct from/,
+  /coalesce\(v_model, ''\) <> coalesce\(p_expected_model, ''\)/,
   /private\.remove_indoor_segment_v1284/,
   /for v_unit in reverse v_indoor_count/,
   /not \(p\.id = any\(v_moved_ids\)\)/,
@@ -48,7 +51,11 @@ for (const [label, remove] of [['desktop', desktopDelete], ['mobile', mobileDele
     rpc: async (method, params) => {
       rpcCalls++;
       assert.equal(method, 'admin_delete_job_indoor_unit');
-      assert.deepEqual(params, { p_job_id: 'demo-job', p_device_index: 1, p_unit_number: 4 });
+      assert.deepEqual(params, {
+        p_job_id: 'demo-job', p_device_index: 1, p_unit_number: 4,
+        p_expected_model: job.device_model, p_expected_serial: job.device_serial_number,
+        p_expected_photo_ids: [],
+      });
       return { data: saved, error: null };
     },
     storage: {
