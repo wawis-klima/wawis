@@ -1,27 +1,17 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.71
+- 12.91
 
 ## Tryb
 - mobile
 
 ## Podsumowanie
-- zakres: dotknięcie numeru wersji na iPhonie otwiera istniejącą diagnostykę
-- testy GitHub CI: do weryfikacji przed merge
-- Playwright mobile: do weryfikacji przed merge
-- Closure Gate: do weryfikacji przed merge
-- produkcyjny deployment: do potwierdzenia osobno po zielonym CI
-- aktywna wersja i SHA: potwierdzenie wymagane po wdrożeniu
-- fizyczny iPhone: ręczne potwierdzenie nawigacji i pobierania raportu wymagane
-- uwaga: gałąź testowa release/v12.70 i PR #292 pozostają bez zmian
-
-## Zakres implementacji
-- Wersja w mobilnym pasku narzędzi jest przyciskiem z etykietą dostępności.
-- Diagnostyka mobilna ładowana jest na żądanie, bez nowego przycisku i bez zmian w desktopie.
-- Raport diagnostyczny, kolejka zdjęć, odświeżanie i powrót do montaży.
-- Test PUSH dostępny tylko administratorowi.
-- Test regresyjny scripts/smoke-mobile-version-diagnostics-v1271.mjs.
+- Zmiana mobilnego wiersza ADRES: własny układ etykieta u góry, wartość pod etykietą, brak elipsy i redukcji fontu.
+- E-mail, telefon, data oraz otwarcie linku Google Maps bez zmian.
+- Dodano testy: `scripts/smoke-mobile-address-wrap-v1291.cjs` w grupie mobile oraz Playwright w `tests/e2e/mobile-v1104-contact-autofit.spec.js`.
+- GitHub CI i mobile E2E: do zweryfikowania po uruchomieniu PR checks.
+- Produkcyjny Vercel oraz wersja na telefonie: wymagają osobnego potwierdzenia; nie stwierdzono sukcesu przed otrzymaniem dowodu.
 
 ## Dowód
-- Wyniki PR GitHub Actions oraz produkcyjny status Vercel należy zweryfikować po uruchomieniu odpowiednich działań; ten plik nie stwierdza ich sukcesu z góry.
+- Nie wolno uznać wdrożenia za ukończone, zanim testy i faktyczny build produkcyjny nie potwierdzą wersji 12.91.
