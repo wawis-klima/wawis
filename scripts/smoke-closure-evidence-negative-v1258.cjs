@@ -19,7 +19,7 @@ function run() {
     impactPath, groupedPath, e2ePath, resultPath,
   ], {
     cwd: root,
-    env: { ...process.env, GITHUB_SHA: '', GITHUB_RUN_ID: '', GITHUB_RUN_ATTEMPT: '' },
+    env: { ...process.env, GITHUB_SHA: '', GITHUB_RUN_ID: '', GITHUB_RUN_ATTEMPT: '', WAWIS_PR_HEAD_SHA: '' },
     encoding: 'utf8',
   });
 }
@@ -42,7 +42,7 @@ function writeE2e(runs=[
 
 try {
   fs.writeFileSync(impactPath, JSON.stringify({
-    profile:'critical',scope:'full',pr_groups:['sms'],needs_playwright:true,
+    profile:'critical',scope:'full',groups:['sms'],pr_groups:['sms'],needs_playwright:true,
     e2e:['mobile','desktop'],effective_files:['src/components/sms/SmsPanel.jsx'],
   },null,2));
 
