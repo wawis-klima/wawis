@@ -254,7 +254,7 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
             <h2>Status PUSH zespołu</h2>
             <span>Aktywne urządzenia: {pushSubscriptionOverview.reduce((sum, row) => sum + row.activeSubscriptions, 0)}</span>
           </div>
-          <p className="muted">{labelStatus(remoteSections.push)}. Subskrypcja i przyjęcie przez dostawcę nie potwierdzają wyświetlenia PUSH na telefonie.</p>
+          <p className="muted">Subskrypcje PUSH zespołu: {labelStatus(remoteSections.push)}. Subskrypcja i przyjęcie przez dostawcę nie potwierdzają wyświetlenia PUSH na telefonie.</p>
           <div className="diagnosticsEventList">
             {remoteSections.push.status === 'error' ? <div role="alert">Błąd pobierania subskrypcji. Poprzednie dane mogą być nieaktualne.</div> : null}
             {pushSubscriptionOverview.length ? pushSubscriptionOverview.map((row) => (
