@@ -14,7 +14,7 @@ assert.match(diagnostics, /select\('user_id, is_active, device_label, last_seen_
 assert.doesNotMatch(diagnostics, /select\([^\n]*endpoint[^\n]*p256dh[^\n]*auth/, 'Widok statusu PUSH nie może pobierać kluczy subskrypcji.');
 
 const panel = read('src/components/diagnostics/DiagnosticsPanel.jsx');
-assert.match(panel, /Subskrypcje PUSH zespołu/);
+assert.match(panel, /Status PUSH zespołu/);
 assert.match(panel, /Brak aktywnej subskrypcji/);
 assert.match(panel, /Subskrypcja aktywna/);
 assert.match(panel, /nie potwierdzają wyświetlenia PUSH/, 'Aktywna subskrypcja nie jest dowodem wyświetlenia powiadomienia.');
