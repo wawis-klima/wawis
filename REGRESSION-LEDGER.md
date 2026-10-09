@@ -10,6 +10,15 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1280 (9 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| FAKT-1280-SNAPSHOT | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-auto-v1280.mjs`: trwały zapis istniejących faktur przy otwarciu formularza; sprawdzenie pending po przeładowaniu. |
+| FAKT-1280-ONE-INVOICE | FIXED-UNVERIFIED | Po wystawieniu jednego nowego dokumentu VAT brak OID nie blokuje automatycznego potwierdzenia. |
+| FAKT-1280-SAFETY | FIXED-UNVERIFIED | Odmowa przy 2 nowych fakturach, kolizjach tego samego klienta, zmianie nabywcy, błędnym adresie, już przypisanym ID, starym dokumencie lub wygaśnięciu okna. |
+| FAKT-1280-LIVE | EXTERNAL | Rzeczywista faktura wystawiona/drukowana w Fakturowni musi automatycznie dostać status wystawiona po powrocie do WAWIS. |
+
 ## Faktury — FAKT-1279 (9 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
