@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 12.79
+- 12.80
+
+Wersja 12.80: Fakturownia — po kliknięciu „Wystaw fakturę” WAWIS zapisuje na serwerze listę faktur istniejących przed wejściem do Fakturowni. Po powrocie (także po odświeżeniu) automatycznie potwierdza dokładnie jedną nową, wystawioną fakturę VAT po pełnej kontroli nabywcy, czasu, klienta i montażu. Gdy powiązanie jest niejednoznaczne, pokazuje przyczynę i zachowuje ręczną możliwość wyboru. Bez zmian w płatnościach.
+
 
 Wersja 12.79: Fakturownia — naprawa blokady wyszukiwania istniejących faktur po braku external_id klienta. Backend odczytuje dane nabywcy z WAWIS i porównuje je z fakturą (nazwisko/nazwa, ulica i numer, miasto/kod, NIP). Brak zewnętrznego identyfikatora klienta nie zatrzymuje już przeszukiwania. Numer dokumentu bez OID jest proponowany do potwierdzenia przez administratora, z ponowną walidacją przy zapisie. Bez zmian w płatnościach.
 
@@ -921,6 +924,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.80` — Fakturownia: serwerowy zapis stanu przed wystawieniem, automatyczne potwierdzenie jednoznacznie nowej faktury VAT po powrocie bez wpisywania numeru.
 - wersja `12.79` — Fakturownia: faktury wystawione dla klientów bez mapowania external_id są znajdowane i bezpiecznie porównywane z danymi nabywcy na montażu.
 - wersja `12.78` — Fakturownia: brak OID nie kończy szukania; WAWIS odnajduje dokumenty klienta do jawnego potwierdzenia, bez ryzykownego automatycznego dopasowania.
 - wersja `12.77` — Fakturownia: szczegółowe powody braku automatycznego potwierdzenia, ponawianie kontroli i powiązanie wystawionej faktury po numerze z ochroną kontrahenta i montażu. Bez zmian płatności.
