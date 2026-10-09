@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.90
+- 12.91
+
+Wersja 12.91: w mobilnych szczegółach montażu pełny adres jest wyświetlany pod etykietą ADRES i zawija się na kilka linii bez wielokropka ani zmniejszania czcionki. E-mail, telefon, data i otwieranie Google Maps pozostają bez zmian. Dodano regresje smoke i Playwright dla długich adresów.
 
 Wersja 12.90: w mobilnych kartach montaży i w polu ADRES wyświetlamy miejscowość oraz ulicę z numerem, bez kodu pocztowego. Pełny zapis adresu zachowano dla Google Maps, danych klienta, protokołów i faktur. Dodano regresję Playwright dla tego przypadku i zachowano dopasowanie długich adresów do szerokości telefonu.
 
@@ -947,6 +949,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.
 - wersja `12.89` — obowiązkowa kontrola graficznych regresji wszystkich modułów.
 - wersja `12.88` — automatyczna regresja współdziałania modułów (również po CSS), wymuszona przed wydaniem.

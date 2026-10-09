@@ -19,45 +19,54 @@ async function seedAutoFitJob(page) {
   }, STORE_KEY);
 }
 
-test.describe('@mobile 11.04 automatyczne dopasowanie kontaktu', () => {
-  test('zmniejsza tylko przepełniony e-mail i adres oraz zachowuje jedną linię', async ({ page }) => {
+test.describe('@mobile 12.91 adres widoczny bez ucinania', () => {
+  test('zawija długi adres pod etykietą, zachowuje Google Maps i nie zmienia e-maila', async ({ page }) => {
     await seedAutoFitJob(page);
     await loginWithoutReset(page, ADMIN);
     await page.locator('.statusActionButton[title="Zakończone"]').click();
     await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
 
     const email = page.locator('.contactEmailInfoItem .emailLink');
-    const address = page.locator('.contactAddressInfoItem .addressLink');
-    await expect(email).toHaveAttribute('data-auto-fit', 'reduced');
-    await expect(address).toHaveAttribute('data-auto-fit', 'reduced');
+    const addressRow = page.locator('.contactAddressInfoItem');
+    const address = addressRow.locator('.addressLink');
+    const addressLabel = addressRow.locator('.infoLabel');
 
-    const geometry = await page.locator('.mobileInlineJobDetails').evaluate((root) => {
-      const inspect = (selector, maximumFontSize) => {
-        const element = root.querySelector(selector);
-        const container = element.parentElement;
-        const style = getComputedStyle(element);
-        return {
-          fontSize: Number.parseFloat(style.fontSize),
-          lineHeight: Number.parseFloat(style.lineHeight),
-          height: element.getBoundingClientRect().height,
-          clientWidth: element.clientWidth,
-          scrollWidth: element.scrollWidth,
-          containerWidth: container.clientWidth,
-          maximumFontSize,
-        };
-      };
+    await expect(email).toHaveAttribute('data-auto-fit', 'reduced');
+    await expect(address).not.toHaveAttribute('data-auto-fit', /.+/);
+    await expect(address).toHaveText('Zawiercie, Aleja Generała Władysława Sikorskiego 112a');
+    await expect(address).toHaveCSS('white-space', 'normal');
+    await expect(address).toHaveCSS('text-overflow', 'clip');
+    await expect(address).toHaveCSS('font-size', '13.5px');
+    await expect(address).toHaveAttribute('href', /Aleja/);
+    const visual = await addressRow.evaluate((row) => {
+      const label = row.querySelector('.infoLabel');
+      const addressElement = row.querySelector('.addressLink');
+      const labelRect = label.getBoundingClientRect();
+      const addressRect = addressElement.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
+      const style = getComputedStyle(addressElement);
+      const rootRect = document.querySelector('.mobileInlineJobDetails').getBoundingClientRect();
       return {
-        email: inspect('.contactEmailInfoItem .emailLink', 12.5),
-        address: inspect('.contactAddressInfoItem .addressLink', 13.5),
+        labelBottom: labelRect.bottom,
+        addressTop: addressRect.top,
+        addressBottom: addressRect.bottom,
+        addressHeight: addressRect.height,
+        lineHeight: Number.parseFloat(style.lineHeight),
+        rowBottom: rowRect.bottom,
+        addressLeft: addressRect.left,
+        addressRight: addressRect.right,
+        rootRight: rootRect.right,
+        scrollWidth: addressElement.scrollWidth,
+        clientWidth: addressElement.clientWidth,
       };
     });
-
-    for (const item of [geometry.email, geometry.address]) {
-      expect(item.fontSize).toBeGreaterThanOrEqual(10.5);
-      expect(item.fontSize).toBeLessThan(item.maximumFontSize);
-      expect(item.height).toBeLessThan(item.lineHeight * 1.6);
-      expect(item.clientWidth).toBeLessThanOrEqual(item.containerWidth + 1);
-    }
+    expect(visual.addressTop).toBeGreaterThanOrEqual(visual.labelBottom);
+    expect(visual.addressHeight).toBeGreaterThan(visual.lineHeight * 1.5);
+    expect(visual.rowBottom).toBeGreaterThanOrEqual(visual.addressBottom);
+    expect(visual.addressRight).toBeLessThanOrEqual(visual.rootRight + 1);
+    expect(visual.scrollWidth).toBeLessThanOrEqual(visual.clientWidth + 2);
+    await expect(page.locator('.mobileInlineJobDetails .contactPhoneInfoItem')).toBeVisible();
+    await expect(page.locator('.mobileInlineJobDetails .jobDateInfoItemV995')).toBeVisible();
 
     await page.getByRole('button', { name: 'Zamknij', exact: true }).click();
     await page.locator('.statusActionButton[title="W trakcie"]').click();

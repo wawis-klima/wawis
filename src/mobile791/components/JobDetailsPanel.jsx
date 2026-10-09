@@ -1,7 +1,7 @@
 import React from "react";
 import MOBILE_DEVICE_TABLE_V889_CSS from "./mobile-device-table-v889.css.js";
 import { IconCalendar, IconCamera, IconCheckCircle, IconClock, IconFileText, IconImage, IconMail, IconMapPin, IconMessageCircle, IconPhone, IconUsers } from "./ui.jsx";
-import { getInitials, getJobDisplayAddress, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
+import { getInitials, getViewerNames, renderInitialBadges } from "../utils/jobHelpers.jsx";
 import JobAddressLink from "./JobAddressLink.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, canWorkerRestartJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
@@ -324,7 +324,6 @@ export default function JobDetailsPanel({
   const [viewersExpanded, setViewersExpanded] = React.useState(!selectedJobIsCompleted);
   const [commentsExpandedOverride, setCommentsExpandedOverride] = React.useState(null);
   const emailAutoFitRef = useAutoFitSingleLineText(String(selectedJob?.email || ''), { maxFontSize: 12.5 });
-  const addressAutoFitRef = useAutoFitSingleLineText(getJobDisplayAddress(selectedJob || {}), { maxFontSize: 13.5 });
 
   React.useEffect(() => {
     setExpandedDeviceIndexes([]);
@@ -579,8 +578,7 @@ export default function JobDetailsPanel({
               <div className="infoValue">
                 <JobAddressLink
                   job={selectedJob}
-                  className="addressLink autoFitSingleLineText"
-                  linkRef={addressAutoFitRef}
+                  className="addressLink"
                   emptyLabel="Brak adresu"
                   title="Kliknij, aby otworzyć adres w Google Maps"
                 />

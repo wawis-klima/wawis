@@ -246,6 +246,7 @@ const GROUPS = {
     'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:mobile-ui-copy',
     'npm run test:smoke:mobile-style-bootstrap',
+    'node scripts/smoke-mobile-address-wrap-v1291.cjs',
     'npm run test:smoke:mobile-admin-header',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:mobile-new-job-no-devices',

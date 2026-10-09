@@ -1,3 +1,9 @@
+## 12.91
+- Mobilne szczegóły montażu: pole ADRES jest umieszczone na osobnej linii i zawija pełną miejscowość oraz ulicę/numer, bez wielokropka i zmniejszania czcionki.
+- Wiersz adresu automatycznie zwiększa wysokość; pozostaje klikalnym odnośnikiem do Google Maps.
+- E-mail, telefon, data, kod pocztowy w danych źródłowych i inne moduły pozostają bez zmian.
+- Test smoke i mobilny Playwright zabezpieczają długie adresy, geometrię oraz działanie sąsiednich pól.
+
 ## 12.90
 - Skrócono tekst adresu na mobilnej liście montaży i w rozwiniętych szczegółach do „miejscowość, ulica i numer” bez kodu pocztowego.
 - Link Google Maps nadal korzysta z pełnego adresu, a dane klienta, protokoły i faktury nie są zmieniane.
