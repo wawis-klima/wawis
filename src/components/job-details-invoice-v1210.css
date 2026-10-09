@@ -55,3 +55,9 @@
 .desktopInvoiceCandidateRowV1278{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
 .desktopInvoiceCandidateRowV1278 .btn{min-height:28px;padding:5px 10px;font-size:11px}
 .desktopInvoiceCandidatesV1278 small{font-size:11px;line-height:1.4;color:#875a21}
+
+/* v12.81: emergency recovery is available without cluttering the invoice header. */
+.desktopInvoiceEmergencyToggleV1281{display:inline-flex;align-items:center;gap:5px;padding:4px 0;background:transparent;border:0;color:#64748b;font-size:11px;font-weight:600;cursor:pointer}
+.desktopInvoiceEmergencyToggleV1281:hover{color:#334155;text-decoration:underline}
+.desktopInvoiceEmergencyToggleV1281:focus-visible{outline:2px solid #2563eb;outline-offset:3px;border-radius:3px}
+.desktopInvoiceEmergencyContentsV1281{display:grid;gap:8px;padding:6px 0 2px}

@@ -112,7 +112,13 @@ Deno.serve(async (request: Request) => {
       if (trusted.job.vat_invoice_fakturownia_confirmed) return json({ ok:true,found:false,reasonCode:"ALREADY_CONFIRMED",reason:"Faktura została już potwierdzona.",candidates:[] });
       // An Fakturownia customer external_id can be absent or unsearchable for old invoices.
       // It is an optional hint, never a required identity for an already issued invoice.
-      const trustedClientId = await findOptionalTrustedClientId(apiToken, trusted.externalId);
+      // A server-owned prepare snapshot already pins the correct Fakturownia
+      // client. Do not repeat the provider's client search on a normal return.
+      const { data: preparedAttempt, error: preparedError } = await adminClient
+        .from("fakturownia_invoice_attempts").select("client_id").eq("job_id", jobId).maybeSingle();
+      if (preparedError) throw new Error("Nie udało się odczytać przygotowanego wystawiania faktury.");
+      const trustedClientId = normalizeText(preparedAttempt?.client_id)
+        || await findOptionalTrustedClientId(apiToken, trusted.externalId);
       const invoiceOid = buildJobInvoiceOid(jobId);
       const rawOid = await fakturowniaGetInvoices(apiToken, {
         oid: invoiceOid, page: "1", per_page: "100", order: "updated_at.desc",
@@ -138,11 +144,7 @@ Deno.serve(async (request: Request) => {
       let complete = true;
       let automaticBlockReason = "";
       if (!foundInvoice) {
-        const { data: preparedAttempt, error: preparedError } = await adminClient
-          .from("fakturownia_invoice_attempts").select("client_id").eq("job_id", jobId).maybeSingle();
-        if (preparedError) throw new Error("Nie udało się odczytać przygotowanego wystawiania faktury.");
-        const recent = await getRecentIssuedInvoices(apiToken,
-          normalizeText(preparedAttempt?.client_id) || trustedClientId);
+        const recent = await getRecentIssuedInvoices(apiToken, trustedClientId);
         complete = recent.complete;
         // Only a recorded, complete server snapshot allows zero-click confirmation.
         // A sole invoice matching the buyer is NOT enough when the customer can have many jobs.
@@ -150,21 +152,24 @@ Deno.serve(async (request: Request) => {
           adminClient, apiToken, jobId, buyer: trusted.buyer, current: recent,
         });
         if (outcome.invoice) {
+          // A single new VAT invoice was already checked against the baseline,
+          // buyer, job, status, time and global invoice ID. Avoid the expensive
+          // manual-candidates scan once the safe automatic result is known.
           foundInvoice = outcome.invoice;
         } else {
           automaticBlockReason = outcome.reason;
-        }
-        const details = await hydrateLikelyBuyerInvoices(apiToken, recent.invoices, trusted.buyer);
-        const matching = findInvoiceCandidatesForManualConfirmation(details, {
-          jobId, clientId: trustedClientId, buyer: trusted.buyer, limit: 50,
-        });
-        if (matching.length) {
-          const { data: assigned, error: assignedError } = await adminClient.from("jobs")
-            .select("vat_invoice_fakturownia_invoice_id")
-            .in("vat_invoice_fakturownia_invoice_id", matching.map((row) => row.invoiceId));
-          if (assignedError) throw new Error("Nie można sprawdzić powiązań znalezionych faktur.");
-          const taken = new Set((assigned || []).map((row) => normalizeText(row.vat_invoice_fakturownia_invoice_id)));
-          candidates = matching.filter((row) => !taken.has(row.invoiceId)).slice(0, 5);
+          const details = await hydrateLikelyBuyerInvoices(apiToken, recent.invoices, trusted.buyer);
+          const matching = findInvoiceCandidatesForManualConfirmation(details, {
+            jobId, clientId: trustedClientId, buyer: trusted.buyer, limit: 50,
+          });
+          if (matching.length) {
+            const { data: assigned, error: assignedError } = await adminClient.from("jobs")
+              .select("vat_invoice_fakturownia_invoice_id")
+              .in("vat_invoice_fakturownia_invoice_id", matching.map((row) => row.invoiceId));
+            if (assignedError) throw new Error("Nie można sprawdzić powiązań znalezionych faktur.");
+            const taken = new Set((assigned || []).map((row) => normalizeText(row.vat_invoice_fakturownia_invoice_id)));
+            candidates = matching.filter((row) => !taken.has(row.invoiceId)).slice(0, 5);
+          }
         }
       }
       return json({

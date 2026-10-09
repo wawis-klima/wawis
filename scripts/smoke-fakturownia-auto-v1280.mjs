@@ -29,6 +29,7 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
   providerMutations=false}={},expected) {
   let handler;
   const recorded=[];
+  let manualCandidateDbReads=0;
   let tableAttempt=null;
   let activeInvoices=[baseline];
   const job={id:jobId,contractor_id:contractorId,client:'Tadeusz Rudy',title:'Tadeusz Rudy',
@@ -51,7 +52,7 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
         if(table==='fakturownia_invoice_attempts')return {data:tableAttempt,error:null};
         return {data:null,error:null};
       },
-      async in(){return {data:existingAlready?[{vat_invoice_fakturownia_invoice_id:'991'}]:[],error:null};},
+      async in(){manualCandidateDbReads++;return {data:existingAlready?[{vat_invoice_fakturownia_invoice_id:'991'}]:[],error:null};},
       async limit(){
         if(table==='fakturownia_invoice_attempts')return {data:competing?[{job_id:'other-job'}]:[],error:null};
         if(table==='jobs'&&q.eqs.vat_invoice_issued===false)return {data:otherJob?[{id:'other-job'}]:[],error:null};
@@ -108,8 +109,20 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
   }
   if(changedBuyer) contractor.street='Inna 5';
   activeInvoices=[baseline,...after.map(x=>wrongBuyer?{...x,buyer_street:'Częstochowska 12/98'}:x)];
+  const apiCallsBeforeVerify=recorded.length;
   const result=await call('verify');
   assert.equal(result.status,200,label+': verify endpoint');
+  const verifyingCalls=recorded.slice(apiCallsBeforeVerify);
+  if(!noSavedBaseline){
+    assert.equal(verifyingCalls.filter(r=>r.path==='/clients.json').length,0,
+      label+': no redundant external client lookup after prepare snapshot');
+  }
+  if(expected.found){
+    assert.equal(manualCandidateDbReads,0,
+      label+': no manual-candidates database scan after automatic match');
+    assert.equal(result.candidates.length,0,
+      label+': verified invoice does not return manual candidate list');
+  }
   assert.equal(result.found,expected.found,label+': found');
   if(expected.code)assert.equal(result.reasonCode,expected.code,label+': reason');
   if(expected.invoiceId)assert.equal(result.invoiceId,expected.invoiceId,label+': invoice id');
@@ -134,4 +147,4 @@ await run('missing provider creation timestamp => no auto',{after:[invoice(991,5
 const ui=fs.readFileSync(new URL('../src/components/JobDetailsPanel.jsx',import.meta.url),'utf8');
 assert.match(ui,/hasPendingFakturowniaInvoice/,'Auto-check persists across reload');
 assert.match(ui,/void verifyPendingFakturowniaInvoice\(true\)/,'Focus automatically verifies');
-console.log('PASS V12.80: server baseline and zero-click verified invoice, negative scenarios');
+console.log('PASS V12.81: 12.80 safety preserved, zero redundant customer lookup, manual candidate scan skipped on auto success');
