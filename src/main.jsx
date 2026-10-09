@@ -5,6 +5,33 @@ import { requestUpdateReload } from './modules/update-reload-guard.js'
 
 const IS_DESIGN_LAB = import.meta.env.VITE_WAWIS_DESIGN_LAB === '1'
 
+function prepareDesignLabSession() {
+  if (!IS_DESIGN_LAB || typeof window === 'undefined') return
+  try {
+    // Użytkownik z istniejącego fixture obu mocków; żadnego rzeczywistego loginu.
+    window.localStorage.setItem('klima-mock-supabase-session', JSON.stringify({
+      access_token: 'mock-token-mock-admin-1',
+      user: { id: 'mock-admin-1' },
+    }))
+  } catch {
+    // Brak pamięci przeglądarki nie przełącza na produkcyjny backend.
+  }
+  // W LAB linki i nowe okna nie mogą prowadzić do zewnętrznych dostawców.
+  window.open = () => null
+  document.addEventListener('click', (event) => {
+    const anchor = event.target?.closest?.('a[href]')
+    if (!anchor) return
+    try {
+      const url = new URL(anchor.getAttribute('href'), window.location.href)
+      if (url.origin !== window.location.origin) event.preventDefault()
+    } catch {
+      event.preventDefault()
+    }
+  }, true)
+}
+
+prepareDesignLabSession()
+
 const VERSION_CHECK_COOLDOWN_MS = 5000
 let versionCheckInFlight = false
 let lastVersionCheckAt = 0
