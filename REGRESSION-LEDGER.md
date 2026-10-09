@@ -10,6 +10,15 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1282 (9 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| FAKT-1282-GUS-NAME | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-link-v1277.mjs`: firma DIAMOND, skrócona nazwa WAWIS i pełna GUS, inny kod, zgodny poprawny NIP → poprawne rozpoznanie. |
+| FAKT-1282-GUS-AUTO | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-auto-v1280.mjs`: serwerowy snapshot i nowa faktura VAT z pełną nazwą GUS → automatyczne potwierdzenie. |
+| FAKT-1282-NIP-REFUSE | FIXED-UNVERIFIED | Inny lub brakujący NIP firmy blokowane; osoby prywatne nadal wymagają zgodnych danych i adresu. |
+| FAKT-1282-LIVE | EXTERNAL | Odbiór istniejącej faktury DIAMOND przez administratora; bez zmian płatności. |
+
 ## Faktury — FAKT-1281 (9 października 2026)
 
 | ID | Stan przed CI | Testy i warunki |
