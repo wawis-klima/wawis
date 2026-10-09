@@ -53,8 +53,7 @@ export async function verifyFakturowniaInvoice({ supabase, jobId, clientId }) {
   const normalizedJobId = String(jobId || '').trim();
   const normalizedClientId = String(clientId || '').trim();
   if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
-  if (!normalizedClientId) throw new Error('Brak identyfikatora klienta Fakturowni.');
-
+  // When opened from an existing job after reload, the trusted client is resolved on the server.
   return invokeFakturowniaClient({
     supabase,
     body: {
