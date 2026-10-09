@@ -1,9 +1,10 @@
 {
-  "version": "12.69",
-  "summary": "Kontrola odbiorcza audytu Codexa — testy pakietów 1–3.",
+  "version": "12.92",
+  "summary": "Krótsze etykiety długich nazw firm na mobilnych kartach montaży.",
   "changes": [
-    "Naprawa oryginalnego testu tabliczek.",
-    "Wykonywalne kontrprzykłady Fakturowni i PUSH.",
-    "Obowiązkowa mapa ustalenie → test → wynik i ograniczenia."
+    "Jednoznaczna nazwa handlowa w cudzysłowie lub nawiasie pokazywana jako etykieta, np. POWERMAT.",
+    "Długie nazwy bez pewnej marki skracają jedynie formy prawne i zajmują maksymalnie dwie linie.",
+    "Bez zmian oryginalnej nazwy klienta, faktur, protokołów i wyszukiwania.",
+    "Automatyczne testy smoke i mobilne Playwright."
   ]
 }

@@ -32,3 +32,5 @@ assert.match(e2e, /toHaveCSS\('white-space', 'normal'\)/);
 assert.match(e2e, /contactPhoneInfoItem/);
 assert.match(e2e, /jobDateInfoItemV995/);
 console.log('OK 12.91: mobile address wrap + map link + isolation + E2E regression.');
+
+require('node:child_process').execFileSync(process.execPath, ['scripts/smoke-mobile-customer-card-name-v1292.cjs'], { cwd: root, stdio: 'inherit' });

@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.91",
+  "version": "12.92",
   "scope": "mobile",
-  "release_branch": "release/v12.91",
+  "release_branch": "release/v12.92",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.91.zip"
+    "file_name": "klima-app-v12.92.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.91",
+    "source_branch": "release/v12.92",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "Zmiana UI 12.91: pełny adres w szczegółach mobile bez ellipsis; nie przeprowadzono nowego niezależnego audytu Codex",
-    "release_ci": "REQUIRED exact HEAD targeted groups + mobile Playwright + Closure Gate before merge",
-    "external_provider_tests": "Nie dotyczy zmian serwera; fizyczny test na iPhonie pozostaje EXTERNAL",
-    "front_and_backend": "Wyłącznie mobilny widok ADRES; bez zmian backendu, rekordów i danych dla Google Maps",
-    "mobile_touch": "Sprawdź widoczną wersję 12.91, wielowierszowy adres i kliknięcie Google Maps"
+    "codex_audit": "Zmiana prezentacji etykiety nazwy klienta na mobilnych kartach; bez ponownego audytu Codex.",
+    "release_ci": "REQUIRED exact HEAD targeted groups + mobile/desktop Playwright + Closure Gate before merge.",
+    "external_provider_tests": "Bez zmian serwera/bazy; ocena na fizycznym iPhonie pozostaje EXTERNAL.",
+    "front_and_backend": "Wyłącznie etykieta na mobilnej liście; oryginalna nazwa nadal używana w bazie, wyszukiwaniu, protokołach i fakturach.",
+    "mobile_touch": "Sprawdź wersję 12.92, POWERMAT zamiast długiej nazwy, 2 linie i poprawne otwieranie szczegółów."
   }
 }

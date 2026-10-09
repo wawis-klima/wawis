@@ -1,0 +1,17 @@
+/* v12.92: mobilna lista montaży – nazwa klienta maksymalnie w dwóch wierszach. */
+@media (max-width: 900px) {
+  .mobileJobTop > .mobileJobClient {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobileJobTop > .mobileJobDate {
+    flex: 0 0 auto;
+  }
+}
