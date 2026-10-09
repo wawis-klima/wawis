@@ -242,6 +242,71 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
   });
 
 
+  test('v12.85 — długie modele Mitsubishi nie rozciągają okna MULTI-SPLIT na iPhonie', async ({ page }, testInfo) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
+    await page.evaluate((storeKey) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      const job = (store.jobs || []).find((item) => item.id === 'mock-job-002');
+      if (!job) throw new Error('Brak testowego montażu multi-split.');
+      job.device_model = [
+        'JW1: Mitsubishi Electric MSZ-EF MSZ-EF25VGK2W 0.026 kW',
+        'JW2: Mitsubishi Electric MSZ-EF MSZ-EF25VGKW',
+        'JW3: Mitsubishi Electric MSZ-EF MSZ-EF25VGKW',
+        'JZ: Mitsubishi Electric MXZ MXZ-3F68VF4-E1 Cooling capacity: 6.8 kW; Heating capacity: 8.6 kW',
+      ].join(' | ');
+      job.device_serial_number = 'JW1: 60000345 | JW2: 4001751 | JW3: 4009320 | JZ: 49P1705D';
+      delete job.devices;
+      window.localStorage.setItem(storeKey, JSON.stringify(store));
+    }, MOCK_STORE_KEY);
+
+    await page.reload();
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
+    await page.locator('.mobileDeviceOverviewOpen').first().click();
+    await expect(page.getByText('Tryb: Multi', { exact: true })).toBeVisible();
+    await expect(page.locator('.mobileMultiOutdoorCard')).toBeVisible();
+    await expect(page.locator('.mobileMultiIndoorCard')).toHaveCount(3);
+
+    const assertInsideViewport = async (label) => {
+      const result = await page.evaluate(() => {
+        const viewport = document.documentElement.clientWidth;
+        const selectors = [
+          '.mobileDeviceWizardModal',
+          '.mobileDeviceWizard',
+          '.mobileDeviceWizardHeader',
+          '.mobileDeviceWizardBody',
+          '.mobileMultiOutdoorCard',
+          '.mobileMultiIndoorCard',
+          '.mobileDeviceWizardFooter',
+          '.mobileDeviceWizardSecondaryAction',
+        ];
+        const rects = selectors.flatMap((selector) =>
+          [...document.querySelectorAll(selector)].map((element) => {
+            const { left, right } = element.getBoundingClientRect();
+            return { selector, left, right };
+          }));
+        return { viewport, pageWidth: document.documentElement.scrollWidth, rects };
+      });
+      expect(result.pageWidth, label).toBeLessThanOrEqual(result.viewport + 1);
+      for (const rect of result.rects) {
+        expect(rect.left, `${label}: ${rect.selector} left`).toBeGreaterThanOrEqual(-1);
+        expect(rect.right, `${label}: ${rect.selector} right`).toBeLessThanOrEqual(result.viewport + 1);
+      }
+    };
+
+    for (const width of [375, 390, 414]) {
+      await page.setViewportSize({ width, height: 844 });
+      await assertInsideViewport(`multi step2 ${width}px`);
+    }
+    await page.screenshot({ path: testInfo.outputPath('v12.85-mitsubishi-multi-split.png') });
+    await page.locator('.mobileMultiIndoorCard').first().click();
+    await expect(page.getByText('Jednostka wewnętrzna JW1')).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await assertInsideViewport('step3 JW1');
+  });
+
   test('v11.38 — Krok 2 zaczyna od tabliczek, a Marka i Model są pod nimi bez pola Moc', async ({ page }) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
