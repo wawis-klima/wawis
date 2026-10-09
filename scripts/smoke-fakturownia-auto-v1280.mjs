@@ -122,7 +122,7 @@ await run('new OID also automatically verified',{after:[invoice(991,5000,{oid:bu
 await run('two new issued invoices => no auto',{after:[newInvoice,invoice(992,6000)]},{found:false,code:'OID_MISSING_CANDIDATES',candidates:3});
 await run('other job same client prepared => no auto',{competing:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('other incomplete invoice job => no auto',{otherJob:true},{found:false,code:'OID_MISSING_CANDIDATES'});
-await run('changed buyer address => no auto',{changedBuyer:true},{found:false,code:'OID_MISSING_CANDIDATES'});
+await run('changed buyer address => no auto',{changedBuyer:true},{found:false,code:'NO_MATCHING_BUYER'});
 await run('wrong invoice address => no auto',{wrongBuyer:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('expired server attempt => no auto',{expired:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('no persisted baseline => no auto',{noSavedBaseline:true},{found:false,code:'OID_MISSING_CANDIDATES'});
