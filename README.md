@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.76
+- 12.77
+
+Wersja 12.77: Fakturownia — konkretny komunikat po nieudanej weryfikacji OID, kontrolowane powiązanie wystawionej faktury po numerze, sprawdzanie tożsamości klienta po zaufanym external_id, blokady złego kontrahenta, obcego OID, nieprawidłowego rodzaju/statusu i duplikatu numeru; odrębny test regresji z mockiem API. Bez zmian w płatnościach. Test realnych nowo wystawianych faktur pozostaje EXTERNAL.
 
 Wersja 12.76: pakiet 4 audytu Codexa C7–C10: rzeczywisty wynik odświeżania mobile, rozróżnienie pustego widoku od awarii telemetrii desktop, przedimportowy bezpieczny raport startu, agregaty synchronizacji bieżącego konta i ostrożne nazwy etapów PUSH. Bez nowego panelu, zmian SQL/Edge i bez rzeczywistych wysyłek.
 
