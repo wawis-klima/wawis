@@ -41,6 +41,9 @@ const resultPath = process.argv[5] || 'closure-gate-result.json';
 
 try {
   const impact = readJson(impactPath);
+  if (process.env.WAWIS_PR_HEAD_SHA && impact.base_ref !== 'origin/' + (process.env.GITHUB_BASE_REF || 'main')) {
+    throw new Error('Nieautoryzowany base_ref w release impact');
+  }
   // Verify the gate was not fed a reduced or stale "impact.json".
   // Only CI has the trusted PR HEAD; fixture tests can test evidence in isolation.
   if (process.env.WAWIS_PR_HEAD_SHA) {
