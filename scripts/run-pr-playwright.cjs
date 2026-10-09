@@ -16,6 +16,8 @@ if (!impact?.needs_playwright) {
     schema_version: 2,
     type: 'e2e',
     git_sha: String(process.env.GITHUB_SHA || '').trim() || null,
+  git_head_sha: String(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' })).trim(),
+    git_head_sha: String(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' })).trim(),
     git_run_id: String(process.env.GITHUB_RUN_ID || '').trim() || null,
     git_run_attempt: String(process.env.GITHUB_RUN_ATTEMPT || '').trim() || null,
     platforms: [],
