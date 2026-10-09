@@ -1,7 +1,7 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "12.83",
+  "version": "12.84",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",
@@ -59,6 +59,7 @@
     "test:smoke:job-auto-contractor": "node scripts/smoke-job-auto-contractor-create.cjs",
     "test:smoke:device-delete": "node scripts/smoke-device-delete.cjs",
     "test:smoke:admin-delete-job-device": "node scripts/smoke-admin-delete-job-device-v973.cjs",
+    "test:smoke:single-jw-delete": "node scripts/smoke-single-jw-delete-v1284.mjs",
     "release:desktop:sandbox": "node scripts/run-release.cjs desktop-sandbox",
     "test:smoke:assignment-push": "node scripts/smoke-assignment-push.cjs",
     "test:smoke:push-delivery-receipts": "node scripts/smoke-push-delivery-receipts-v1265.mjs",
