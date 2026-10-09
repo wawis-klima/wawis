@@ -110,6 +110,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
     'node scripts/smoke-fakturownia-link-v1277.mjs',
     'node scripts/smoke-fakturownia-auto-v1280.mjs',
+    'node scripts/smoke-fakturownia-v1281.mjs',
   ],
   push: [
     'node scripts/codex-acceptance-push-v1269.mjs',
@@ -206,6 +207,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-p0-v1260.mjs',
     'node scripts/smoke-fakturownia-link-v1277.mjs',
     'node scripts/smoke-fakturownia-auto-v1280.mjs',
+    'node scripts/smoke-fakturownia-v1281.mjs',
     'node scripts/smoke-fakturownia-prefill-v1208.cjs',
     'node scripts/smoke-desktop-vat-invoice-v1184.cjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
