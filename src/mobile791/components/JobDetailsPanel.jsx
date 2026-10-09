@@ -117,6 +117,7 @@ function DeviceUnitDocumentationRow({
   manualVerification = null,
   manualVerificationBusy = false,
   onToggleManualVerification,
+  onDeleteIndoorUnit,
 }) {
   const photoUrl = photo?.thumbnail_image_url || photo?.local_preview_url || photo?.image_url || photo?.signed_url || photo?.original_image_url || '';
   const uploadStatus = String(photo?.upload_status || '').trim();
@@ -210,6 +211,18 @@ function DeviceUnitDocumentationRow({
       >
         <span aria-hidden="true">{effectiveReady ? '✓' : isFailed ? '!' : isUploading ? '↻' : isLocal ? '•' : '—'}</span>
       </div>
+      {isAdmin && typeof onDeleteIndoorUnit === 'function' ? (
+        <button
+          type="button"
+          className="deviceUnitDocumentationRemoveBtn"
+          disabled={Boolean(busy || manualVerificationBusy || isUploading)}
+          onClick={(event) => { event.stopPropagation(); onDeleteIndoorUnit(); }}
+          onKeyDown={(event) => event.stopPropagation()}
+          aria-label={`Usuń jednostkę ${unitCode}`}
+        >
+          Usuń
+        </button>
+      ) : null}
       {isAdmin && !isReady ? (
         <button
           type="button"
@@ -254,6 +267,7 @@ export default function JobDetailsPanel({
   openSerialNumbersJob,
   deleteJob,
   deleteDeviceFromJob,
+  deleteIndoorUnitFromJob,
   setSelectedJob,
   setJobs,
   requestClearAdminNote,
@@ -690,6 +704,9 @@ export default function JobDetailsPanel({
                               manualVerification={unit.manualVerification}
                               manualVerificationBusy={manualVerificationBusyKey === `${deviceIndex}:${unit.unitRef}`}
                               onToggleManualVerification={(approved) => handleToggleManualVerification(deviceIndex, unit.unitRef, approved)}
+                               onDeleteIndoorUnit={isAdmin && indoorRows.length > 2
+                                 ? () => deleteIndoorUnitFromJob?.(selectedJob, deviceIndex, unit.unitNumber)
+                                 : null}
                             />
                           ))}
                         </div>

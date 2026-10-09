@@ -10901,3 +10901,19 @@ img.previewImage{
   .smsHistoryErrorWide{grid-column:1 / -1}
 }
 
+
+/* WAWIS 12.84: small per-unit deletion action in multi-split cards. */
+.desktopDeviceIndoorDeleteBtn{
+  display:inline-flex;
+  margin-top:5px;
+  min-height:28px;
+  padding:4px 9px;
+  border:1px solid #fecaca;
+  border-radius:8px;
+  background:#fff7f7;
+  color:#b91c1c;
+  font-size:11px;
+  font-weight:800;
+}
+.desktopDeviceIndoorDeleteBtn:hover{background:#fee2e2;}
+.desktopDeviceIndoorDeleteBtn:disabled{opacity:.5;cursor:not-allowed;}
