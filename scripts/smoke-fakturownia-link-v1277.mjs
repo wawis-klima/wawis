@@ -23,7 +23,7 @@ const src=fs.readFileSync(new URL('../supabase/functions/fakturownia-client/inde
 assert(!src.includes('import {'),'Test executes actual Edge source with mocked imports');
 const compiled=(await transform(src,{loader:'ts',target:'es2022',format:'iife'})).code;
 async function run(label, opts={}, expected={}) {
- const {action='link_by_number',invoices=[sample],clients=[{id:clientId,external_id:contractorId}],status='Zakończone',role='Administrator',alreadyLinked=[]}=opts;
+ const {action='link_by_number',invoices=[sample],clients=[{id:clientId,external_id:contractorId}],status='Zakończone',role='Administrator',alreadyLinked=[],suppliedClientId=String(clientId)}=opts;
  let handler;const calls=[];
  const adminDb={from(table){return {select(){return this;},eq(){return this;},async in(){return {data:alreadyLinked.map(id=>({vat_invoice_fakturownia_invoice_id:id})),error:null};},async maybeSingle(){
     return {data:table==='profiles'?{role}:table==='jobs'?{id:jobId,contractor_id:contractorId,status,vat_invoice_fakturownia_confirmed:false}:null,error:null};
@@ -45,7 +45,7 @@ async function run(label, opts={}, expected={}) {
  vm.runInNewContext(compiled,sandbox,{timeout:3000,filename:'fakturownia-client.ts'});
  const res=await handler(new Request('https://edge.test/functions/v1/fakturownia-client',{method:'POST',
    headers:{Authorization:'Bearer token','Content-Type':'application/json'},
-   body:JSON.stringify({action,jobId,clientId:String(clientId),invoiceNumber:number})}));
+   body:JSON.stringify({action,jobId,clientId:suppliedClientId,invoiceNumber:number})}));
  const out=await res.json();
  assert.equal(res.status,expected.http||200,label+' HTTP');
  if(expected.found!==undefined)assert.equal(out.found,expected.found,label+' found');
@@ -73,6 +73,8 @@ await run('worker forbidden',{role:'Pracownik'}, {http:403,error:/administrator/
 await run('auto OID absent',{action:'verify',invoices:[]}, {found:false,code:'OID_NOT_FOUND'});
 await run('auto OID accepted',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}]}, {found:true,code:'VERIFIED',candidates:0});
 await run('auto missing OID suggests one invoice',{action:'verify',invoices:[sample]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
+await run('on-demand verification works without browser client id',{action:'verify',invoices:[sample],suppliedClientId:''}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
+await run('forged browser client id blocked',{action:'verify',invoices:[sample],suppliedClientId:'999'}, {found:false,code:'CLIENT_MISMATCH',candidates:0});
 await run('auto missing OID suggests choices but does not assign',{action:'verify',invoices:[sample,{...sample,id:992,number:'FV/10/2026/18'}]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:2});
 await run('auto excludes invoice linked to different installation',{action:'verify',invoices:[sample],alreadyLinked:['991']}, {found:false,code:'OID_NOT_FOUND',candidates:0});
 await run('auto excludes wrong customer',{action:'verify',invoices:[{...sample,client_id:77}]}, {found:false,code:'OID_NOT_FOUND',candidates:0});
@@ -84,6 +86,7 @@ assert.match(ui,/setInvoiceVerificationMessage\(result\?\.reason/);
 assert.match(ui,/onSubmit=\{linkInvoiceByNumber\}/);
 assert.match(ui,/!selectedJob\.vat_invoice_fakturownia_confirmed/);
 assert.match(ui,/invoiceVerificationCandidates\.map/);
+assert.match(ui,/verifyPendingFakturowniaInvoice\(true\)/,'Existing job can be checked without creating new invoice');
 assert.match(ui,/onClick=\{\(\) => void confirmInvoiceNumber\(candidate\.invoiceNumber\)\}/);
 assert.match(ui,/setInvoiceVerificationCandidates\(Array\.isArray\(result\?\.candidates\)/);
 console.log('PASS V12.77 mocked provider integration & UI wiring (no real invoices created)');
