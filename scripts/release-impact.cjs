@@ -165,6 +165,94 @@ function selectDomainGroups(files) {
   return [...selected];
 }
 
+// Contract: a change to one component of an interaction must also test its
+// consumers and the final user action. This specifically prevents CSS-only
+// changes from hiding OCR/review dialogs without running an actual E2E flow.
+// Keep the list focused on known cross-module seams; unrelated CSS stays FAST UI.
+const CROSS_MODULE_FLOWS = [
+  {
+    id: 'device-photo-nameplate',
+    files: [
+      /^src\/mobile791\/components\/devices\//,
+      /^src\/mobile791\/components\/nameplate\//,
+      /^src\/mobile791\/components\/modals\/(?:AppModal|JobFormModal)\.jsx$/,
+      /^src\/mobile791\/modules\/(?:nameplate|photos|job-devices)/,
+      /^src\/mobile791\/styles\.css$/,
+    ],
+    groups: ['jobs', 'photos', 'nameplates', 'mobile'],
+    e2e: ['mobile'],
+  },
+  {
+    id: 'device-protocol-completion',
+    files: [
+      /^src\/mobile791\/components\/devices\/MobileDeviceWizard\.jsx$/,
+      /^src\/mobile791\/components\/devices\/mobile-device-wizard\.css$/,
+      /^src\/mobile791\/components\/modals\/ProtocolTestModal\.jsx$/,
+      /^src\/mobile791\/modules\/(?:job-device-completion|job-protocol|protocol)/,
+      /^src\/modules\/(?:job-device-completion|job-protocol|protocol)/,
+    ],
+    groups: ['jobs', 'nameplates', 'protocol', 'mobile'],
+    e2e: ['mobile'],
+  },
+  {
+    id: 'customer-invoice',
+    files: [
+      /^src\/components\/modals\/JobFormModal\.jsx$/,
+      /^src\/(?:components|modules)\/[^\n]*fakturownia/i,
+      /^src\/(?:components|modules)\/[^\n]*invoice/i,
+    ],
+    groups: ['jobs', 'roles', 'desktop'],
+    e2e: ['desktop'],
+  },
+  {
+    id: 'sms-queue-delivery-history',
+    files: [
+      /^src\/(?:mobile791\/)?components\/[^\n]*SmsPanel\.jsx$/,
+      /^src\/modules\/(?:service-sms|sms-)/,
+      /^supabase\/functions\/[^\n]*sms/i,
+    ],
+    groups: ['sms', 'jobs', 'roles'],
+    e2e: ['desktop', 'mobile'],
+  },
+  {
+    id: 'job-completion-push',
+    files: [
+      /^src\/mobile791\/hooks\/useSelectedJobActions\.js$/,
+      /^src\/mobile791\/modules\/(?:push|job-completion)/,
+      /^supabase\/functions\/[^\n]*push/i,
+    ],
+    groups: ['jobs', 'push', 'roles', 'mobile'],
+    e2e: ['mobile'],
+  },
+];
+
+function detectCrossModuleFlows(files) {
+  return CROSS_MODULE_FLOWS.filter((flow) =>
+    files.some((file) => flow.files.some((pattern) => pattern.test(String(file).replace(/\\/g, '/'))))
+  );
+}
+
+function requireCrossModuleRegression(base, files) {
+  const flows = detectCrossModuleFlows(files);
+  const names = flows.map((flow) => flow.id);
+  if (!flows.length) return { ...base, interaction_flows: [] };
+  const groups = includeGroups(base.groups, flows.flatMap((flow) => flow.groups));
+  const platforms = includeGroups(base.platforms, flows.flatMap((flow) => flow.e2e));
+  const e2e = includeGroups(base.e2e, flows.flatMap((flow) => flow.e2e));
+  return {
+    ...base,
+    profile: base.profile === 'fast-ui' ? 'targeted' : base.profile,
+    reason: base.reason + ' Obowiązkowa regresja współdziałania modułów: ' + names.join(', ') + '.',
+    groups,
+    pr_groups: groups,
+    platforms,
+    scope: scopeFromPlatforms(platforms),
+    e2e,
+    needs_playwright: true,
+    interaction_flows: names,
+  };
+}
+
 function scopeFromPlatforms(platforms) {
   const mobile = platforms.includes('mobile');
   const desktop = platforms.includes('desktop');
@@ -174,11 +262,12 @@ function scopeFromPlatforms(platforms) {
 
 function classifyEffectiveFiles(effectiveFiles) {
   const platforms = detectPlatforms(effectiveFiles);
+  const finalize = (result) => requireCrossModuleRegression(result, effectiveFiles);
   const scope = scopeFromPlatforms(platforms);
 
   if (effectiveFiles.length === 0) {
     const groups = ['ui-fast-core'];
-    return {
+    return finalize({
       profile: 'fast-ui',
       reason: 'W diffie są wyłącznie automatyczne pliki wersji lub dokumentacja wydania.',
       groups,
@@ -187,7 +276,7 @@ function classifyEffectiveFiles(effectiveFiles) {
       scope,
       e2e: [],
       needs_playwright: false,
-    };
+    });
   }
 
   if (effectiveFiles.some(isCriticalPath)) {
@@ -199,7 +288,7 @@ function classifyEffectiveFiles(effectiveFiles) {
       ]);
     // groups and pr_groups are one authoritative CI contract. No separate
     // "full release" assertion while the PR executes only a hidden subset.
-    return {
+    return finalize({
       profile: 'critical',
       reason: fullInventory
         ? 'Zmiana mechanizmu Closure Gate — pełny zestaw testów dla wszystkich modułów.'
@@ -210,14 +299,14 @@ function classifyEffectiveFiles(effectiveFiles) {
       scope: 'full',
       e2e: ['mobile', 'desktop'],
       needs_playwright: true,
-    };
+    });
   }
 
   if (effectiveFiles.every(isPresentationOnly)) {
     const groups = ['ui-fast-core'];
     if (platforms.includes('mobile')) groups.push('ui-fast-mobile');
     if (platforms.includes('desktop')) groups.push('ui-fast-desktop');
-    return {
+    return finalize({
       profile: 'fast-ui',
       reason: 'Zmiana obejmuje wyłącznie warstwę prezentacji (CSS lub statyczne assety).',
       groups,
@@ -226,14 +315,14 @@ function classifyEffectiveFiles(effectiveFiles) {
       scope,
       e2e: [],
       needs_playwright: false,
-    };
+    });
   }
 
   const groups = selectDomainGroups(effectiveFiles);
   for (const platform of platforms) {
     if (!groups.includes(platform)) groups.push(platform);
   }
-  return {
+  return finalize({
     profile: 'targeted',
     reason: 'Zmiana funkcjonalna frontendu bez plików krytycznych — uruchamiane są tylko powiązane regresje i właściwe E2E.',
     groups,
@@ -242,7 +331,7 @@ function classifyEffectiveFiles(effectiveFiles) {
     scope,
     e2e: [...platforms],
     needs_playwright: platforms.length > 0,
-  };
+  });
 }
 
 function getChangedFiles(baseRef) {
@@ -306,6 +395,7 @@ if (require.main === module) {
   console.log(`PR grupy: ${impact.pr_groups.join(', ')}`);
   console.log(`Finalne grupy: ${impact.groups.join(', ')}`);
   console.log(`E2E: ${impact.e2e.length ? impact.e2e.join(', ') : 'pominięte'}`);
+  console.log(`Testy współdziałania: ${impact.interaction_flows.length ? impact.interaction_flows.join(', ') : 'brak dodatkowych'}`);
 }
 
 module.exports = {
@@ -317,4 +407,6 @@ module.exports = {
   selectDomainGroups,
   isSharedDependency,
   isGlobalReleaseInfrastructure,
+  detectCrossModuleFlows,
+  requireCrossModuleRegression,
 };
