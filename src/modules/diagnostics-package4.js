@@ -25,7 +25,7 @@ export function getPushAcceptanceMessage(result, { currentDevice = false } = {})
 export function summarizePhotoDiagnosticQueue(items = [], userId = '') {
   const owner = String(userId || '').trim();
   return items.reduce((out, item) => {
-    if (owner && String(item?.user_id || item?.uploaded_by || '').trim() !== owner) return out;
+    if (!owner || String(item?.user_id || item?.uploaded_by || '').trim() !== owner) return out;
     out.total++;
     const state = String(item?.upload_status || 'local').toLowerCase();
     if (state === 'uploading') out.uploading++;

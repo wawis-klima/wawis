@@ -5,6 +5,7 @@ import { downloadDiagnosticReportImmediate, logDiagnostic } from '../../modules/
 import { sendTestPush } from '../../modules/push-subscriptions.js';
 import { supabase } from '../../lib/supabase.js';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
+import { getPushAcceptanceMessage } from '../../../modules/diagnostics-package4.js';
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
 
@@ -17,16 +18,22 @@ export default function MobileDiagnosticButton({ profile = null, selectedJobId =
   useEffect(() => {
     let mounted = true;
     const refresh = async () => {
-      const summary = await getPhotoQueueSummary();
-      if (mounted) setQueueSummary(summary || EMPTY_QUEUE);
+      const owner = String(sessionUser?.id || '').trim();
+      if (!owner) { if (mounted) setQueueSummary(EMPTY_QUEUE); return; }
+      try {
+        const summary = await getPhotoQueueSummary(owner);
+        if (mounted) setQueueSummary(summary || EMPTY_QUEUE);
+      } catch {
+        if (mounted) setQueueSummary(EMPTY_QUEUE);
+      }
     };
-    refresh();
+    void refresh();
     window.addEventListener(PHOTO_QUEUE_CHANGED_EVENT, refresh);
     return () => {
       mounted = false;
       window.removeEventListener(PHOTO_QUEUE_CHANGED_EVENT, refresh);
     };
-  }, []);
+  }, [sessionUser?.id]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -42,12 +49,7 @@ export default function MobileDiagnosticButton({ profile = null, selectedJobId =
     setPushBusy(true);
     try {
       const result = await sendTestPush({ supabase, sessionUser, targetCurrentDevice: true });
-      const delivered = Number(result?.delivered || 0);
-      if (delivered > 0) {
-        window.alert('Test push został wysłany na ten telefon. Powiadomienie powinno pojawić się systemowo na iPhonie.');
-      } else {
-        window.alert(`Test push nie został dostarczony. ${result?.reason || 'Sprawdź status push i spróbuj ponownie.'}`);
-      }
+      window.alert(getPushAcceptanceMessage(result, { currentDevice: true }));
     } catch (error) {
       logDiagnostic('diagnostic.mobile.push-test.failed', { error });
       window.alert(`Nie udało się wysłać testowego push: ${error?.message || 'nieznany błąd'}`);

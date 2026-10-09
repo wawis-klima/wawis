@@ -72,6 +72,12 @@ const photos = summarizePhotoDiagnosticQueue([
  {id:'legacy',upload_status:'error'},
 ], 'A');
 assert.equal(photos.total,1);
+assert.equal(summarizePhotoDiagnosticQueue([{user_id:'A',upload_status:'error'}], '').total,0,'unresolved session cannot expose other accounts');
+const legacyButton=read('src/mobile791/components/diagnostics/MobileDiagnosticButton.jsx');
+assert.match(legacyButton,/getPhotoQueueSummary\(owner\)/,'legacy mobile report must use current account');
+assert.match(legacyButton,/getPushAcceptanceMessage\(result, \{ currentDevice: true \}\)/,'legacy push test cannot promise phone delivery');
+const appSource=read('src/mobile791/App.jsx');
+assert.match(appSource,/getQueueSummary: \(\) => getPhotoQueueSummary\(sessionUser\?\.id \|\| ''\)/,'silent telemetry must use the current account');
 assert.equal(photos.retrying,1);
 assert.equal(photos.prepared,1);
 assert.equal(photos.storageUploaded,0);
