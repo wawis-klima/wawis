@@ -717,6 +717,7 @@ function buildInvoiceFormUrl({
   // Nie wysyłamy POST /invoices.json, więc samo kliknięcie w WAWIS nie tworzy dokumentu.
   url.searchParams.set("invoice[positions][0][name]", positionName);
   url.searchParams.set("invoice[positions][0][tax]", String(tax));
+  url.searchParams.set("invoice[positions][0][quantity]", "1");
 
   if (paymentType) url.searchParams.set("invoice[payment_type]", paymentType);
   if (paymentToKind) url.searchParams.set("invoice[payment_to_kind]", paymentToKind);
