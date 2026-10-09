@@ -10,6 +10,8 @@ const wizardSource = read('src', 'mobile791', 'components', 'devices', 'MobileDe
 const wizardStyles = read('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
 const captureSource = read('src', 'mobile791', 'components', 'nameplate', 'NameplatePhotoCapture.jsx');
 const captureStyles = read('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
+// Regression: the OCR verification layer must render above the 9999 device wizard overlay.
+assert.match(captureStyles, /\.nameplateVerifyModal\s*\{[^}]*z-index:\s*13000\s*;/, 'Nameplate verification must not be hidden behind the device wizard.');
 const detailsSource = read('src', 'mobile791', 'components', 'JobDetailsPanel.jsx');
 const actionsSource = read('src', 'mobile791', 'hooks', 'useSelectedJobActions.js');
 const requirementsSource = read('src', 'mobile791', 'modules', 'nameplate-requirements.js');
