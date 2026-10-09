@@ -1,3 +1,10 @@
+## 12.83
+- Formularz nowej faktury w Fakturowni dostaje dodatkowy parametr `invoice[positions][0][quantity]=1` wraz z wcześniej wprowadzanymi nazwą usługi oraz stawką VAT.
+- Użytkownik nadal sam uzupełnia cenę; WAWIS nie przekazuje ceny netto, brutto ani sumy faktury.
+- Sposób płatności, status faktury, termin przelewu, identyfikator OID, snapshot faktur i wszystkie reguły automatycznego potwierdzania pozostają bez zmian.
+- Dodano test regresyjny sprawdzający parametr ilości w rzeczywistym URL przygotowywanym przez Edge Function oraz utrzymano test zakazu wysyłania kwot i tworzenia dokumentów przez API.
+- Brak migracji SQL i zmian w istniejących fakturach. Test w przeglądarce Fakturowni po wdrożeniu pozostaje EXTERNAL.
+
 ## 12.82
 - Faktury firmowe: tożsamość nabywcy weryfikowana przez dwa zgodne, poprawne formalnie polskie NIP-y zamiast wymagania dosłownej zgodności nazw i adresów po pobraniu danych z GUS.
 - Bez zmian w istniejącym serwerowym snapshotcie wystawiania, wymogu dokładnie jednej nowej faktury, statusu wystawiona VAT, client_id, OID oraz unikatowości powiązania ID faktury.
