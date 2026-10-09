@@ -1,5 +1,5 @@
 const fs = require('node:fs');
-const { execSync } = require('node:child_process');
+const { execSync, execFileSync } = require('node:child_process');
 const { GROUPS, uniqueCommands } = require('./test-groups.cjs');
 
 const evidencePath = String(process.env.WAWIS_EVIDENCE_PATH || '').trim();
@@ -46,6 +46,7 @@ evidence = {
   schema_version: 2,
   type: 'grouped-checks',
   git_sha: String(process.env.GITHUB_SHA || '').trim() || null,
+  git_head_sha: String(execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' })).trim(),
   git_run_id: String(process.env.GITHUB_RUN_ID || '').trim() || null,
   git_run_attempt: String(process.env.GITHUB_RUN_ATTEMPT || '').trim() || null,
   groups: groupNames,

@@ -1,34 +1,42 @@
 const fs = require('node:fs');
 const { execFileSync } = require('node:child_process');
-const { selectDomainGroups } = require('./release-impact.cjs');
+const { classifyRelease } = require('./release-impact.cjs');
+const { uniqueCommands } = require('./test-groups.cjs');
 
 const changedFileListPath = process.argv[2] || 'changed-files.txt';
 const impactPath = process.argv[3] || 'release-impact.json';
-const changedFiles = fs.existsSync(changedFileListPath)
-  ? fs.readFileSync(changedFileListPath, 'utf8').split(/\r?\n/).map((value) => value.trim()).filter(Boolean)
-  : [];
-
-let impact = null;
-if (fs.existsSync(impactPath)) {
-  impact = JSON.parse(fs.readFileSync(impactPath, 'utf8'));
+if (!fs.existsSync(changedFileListPath) || !fs.existsSync(impactPath)) {
+  throw new Error('NO-GO: brak required changed-files.txt lub release-impact.json');
 }
-
-const groups = Array.isArray(impact?.pr_groups) && impact.pr_groups.length
-  ? impact.pr_groups
-  : selectDomainGroups(changedFiles);
-
-console.log(`Changed files (${changedFiles.length}):`);
-changedFiles.forEach((file) => console.log(`- ${file}`));
-if (impact) {
-  console.log(`Impact: ${impact.profile} / ${impact.scope}`);
-  console.log(`Effective files: ${(impact.effective_files || []).length}`);
+const changedFiles = fs.readFileSync(changedFileListPath, 'utf8')
+  .split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
+const impact = JSON.parse(fs.readFileSync(impactPath, 'utf8'));
+const trustedBase = 'origin/' + (process.env.GITHUB_BASE_REF || 'main');
+if (impact.base_ref !== trustedBase) {
+  throw new Error('NO-GO: release impact base_ref must match trusted PR base ' + trustedBase);
 }
-console.log(`Selected WAWIS PR groups: ${groups.join(', ')}`);
+const expected = classifyRelease({ baseRef: impact.base_ref || 'origin/main', changedFiles });
 
-execFileSync(process.execPath, ['scripts/run-test-group.cjs', ...groups], {
+function sameOrdered(a, b) {
+  return Array.isArray(a) && Array.isArray(b)
+    && a.length === b.length && a.every((value, index) => value === b[index]);
+}
+for (const field of ['changed_files', 'effective_files', 'generated_only_files', 'groups', 'pr_groups', 'platforms', 'e2e']) {
+  if (!sameOrdered(impact[field], expected[field])) {
+    throw new Error(`NO-GO: release impact ${field} różni się od niezależnej klasyfikacji diff`);
+  }
+}
+for (const field of ['profile', 'scope', 'needs_playwright']) {
+  if (impact[field] !== expected[field]) {
+    throw new Error(`NO-GO: release impact ${field} różni się od niezależnej klasyfikacji diff`);
+  }
+}
+if (!sameOrdered(impact.groups, impact.pr_groups) || !impact.groups.length) {
+  throw new Error('NO-GO: groups i pr_groups muszą być identyczną, niepustą listą');
+}
+uniqueCommands(impact.groups); // unknown names fail closed, before running anything
+console.log(`Zmiana: ${changedFiles.length} plików · ${impact.profile} · ${impact.groups.join(', ')}`);
+execFileSync(process.execPath, ['scripts/run-test-group.cjs', ...impact.groups], {
   stdio: 'inherit',
-  env: {
-    ...process.env,
-    WAWIS_EVIDENCE_PATH: process.env.WAWIS_EVIDENCE_PATH || 'closure-evidence.json',
-  },
+  env: { ...process.env, WAWIS_EVIDENCE_PATH: process.env.WAWIS_EVIDENCE_PATH || 'closure-evidence.json' },
 });
