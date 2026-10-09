@@ -1,3 +1,11 @@
+## 12.75
+- Pakiet 3 audytu Codexa G1/G2: ujednolicono `groups` i `pr_groups` w Closure Gate, eliminując rozbieżność między deklarowanym a wykonywanym zakresem testów.
+- Zmiany w mechanizmach Closure Gate uruchamiają pełne grupy regresji; współdzielone moduły wybierają testy desktop/mobile, a lokalne zmiany wymagają testów domenowych.
+- Skrypty runnera i finalna bramka niezależnie wyznaczają zakres testów z diffu i odrzucają manipulację plikiem impact.
+- W GitHub Actions checkout dokładnie SHA źródłowego PR; testy i E2E zapisują `git_head_sha`; Gate blokuje dowód innego commita (nadal weryfikuje run ID i GitHub SHA).
+- Wymagany test negatywny Codexa: podszyte grupy, zmieniony zakres plików, nieaktualny HEAD, częściowe wyniki, szybka ścieżka CSS bez zbędnego Playwright/SQL.
+- Aktywny ruleset repozytorium `Wawis` wymaga PR, aktualnego `targeted-checks` i zabrania nie-fast-forward/deletion; nie zmieniano konfiguracji GitHub.
+
 ## 12.74
 - Codex P1 D8: own-only SELECT w tabeli app_diagnostic_events dla bezpiecznego idempotentnego UPSERT pracowników, bez dostępu do cudzych raportów; migracja produkcyjna i rebuild RLS.
 - Codex P1 D2: ACK po identyfikatorze w kolejce pojedynczych wpisów, bez nadpisywania nowszych logów podczas await, ograniczenie nakładających się flush.
