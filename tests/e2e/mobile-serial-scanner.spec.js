@@ -87,6 +87,13 @@ async function selectNameplateAndCrop(page, input) {
   await input.setInputFiles(genericNameplateEvidence);
   const cropModal = page.locator('.nameplateCropModal');
   await expect(cropModal).toBeVisible();
+  // WAWIS 12.87: the full-screen crop controls must match the light device wizard,
+  // while the crop itself stays legible and interactive after the OCR overlay fix.
+  await expect(cropModal).toHaveCSS('background-color', 'rgb(248, 250, 252)');
+  await expect(page.locator('.nameplateCropHeader')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(page.locator('.nameplateCropFooter')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(page.locator('.nameplateCropFooter .btn.primary')).toHaveCSS('color', 'rgb(255, 255, 255)');
+  await expect(page.locator('.nameplateCropFooter .btn.primary')).toHaveCSS('background-color', 'rgb(37, 99, 235)');
   await expect(page.getByText('Dopasuj kadr', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Zapisz kadr' }).click();
 

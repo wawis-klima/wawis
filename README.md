@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 12.86
+- 12.87
+
+Wersja 12.87: ekran kadrowania tabliczki na iPhonie ma jasne tło, biały nagłówek i stopkę oraz niebieski przycisk „Zapisz kadr”. Jedynie fragment zdjęcia poza ramką jest przyciemniony, aby kadr pozostał czytelny. Testy pilnują kolorów i zachowania przepływu do odczytu OCR. Bez zmian logiki OCR/AI i danych.
+
 
 Wersja 12.86: naprawiono niewidoczne okno weryfikacji tabliczki po kadrowaniu zdjęcia na telefonie. Warstwa potwierdzania była pod modalem urządzenia (1300 < 9999), przez co wyglądało, jakby OCR w ogóle nie startował. Okno ma teraz wyższy poziom (13000) i jest renderowane przez React Portal bezpośrednio w document.body, poza przewijanym i przycinanym kreatorem. Testy smoke i Playwright sprawdzają jego rzeczywistą widoczność ponad kreatorem. Bez zmian w logice OCR/AI i Supabase; finalny test na fizycznym iPhonie pozostaje do wykonania.
 
@@ -936,6 +939,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.87` — jasny wygląd kadrowania tabliczki w mobilnym kreatorze, zachowany odczyt OCR.
 - wersja `12.86` — naprawa niewidocznego okna odczytu tabliczki po kadrowaniu; automatyczny test hit-test na iPhonie i walidacja warstw CSS.
 - wersja `12.85` — poprawka mobilnego kreatora MULTI-SPLIT: brak obciętych pól i poziomego rozjechania przy długich modelach; nowy test iPhone E2E.
 - wersja `12.84` — administrator usuwa pojedyncze JW w MULTI-SPLIT; zachowane JZ oraz pozostałe JW/tabliczki, numeracja transakcyjna, minimum 2 JW.
