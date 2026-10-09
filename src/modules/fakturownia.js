@@ -64,3 +64,14 @@ export async function verifyFakturowniaInvoice({ supabase, jobId, clientId }) {
     },
   });
 }
+
+export async function lookupFakturowniaInvoiceByNumber({ supabase, jobId, invoiceNumber }) {
+  const normalizedJobId = String(jobId || '').trim();
+  const normalizedNumber = String(invoiceNumber || '').trim();
+  if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
+  if (!normalizedNumber || normalizedNumber.length > 100) throw new Error('Podaj poprawny numer faktury.');
+  return invokeFakturowniaClient({
+    supabase,
+    body: { action: 'link_by_number', jobId: normalizedJobId, invoiceNumber: normalizedNumber },
+  });
+}

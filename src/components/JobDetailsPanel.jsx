@@ -10,7 +10,7 @@ import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canMan
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 import { confirmVatInvoiceFromFakturownia, saveVatInvoiceStatus } from "../modules/jobs-crud.js";
-import { prepareFakturowniaInvoice, verifyFakturowniaInvoice } from "../modules/fakturownia.js";
+import { prepareFakturowniaInvoice, verifyFakturowniaInvoice, lookupFakturowniaInvoiceByNumber } from "../modules/fakturownia.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -127,12 +127,18 @@ export default function JobDetailsPanel({
   const [vatInvoiceSaving, setVatInvoiceSaving] = React.useState(false);
   const [fakturowniaOpening, setFakturowniaOpening] = React.useState(false);
   const [fakturowniaVerifying, setFakturowniaVerifying] = React.useState(false);
+  const [invoiceVerificationMessage, setInvoiceVerificationMessage] = React.useState('');
+  const [manualInvoiceExpanded, setManualInvoiceExpanded] = React.useState(false);
+  const [manualInvoiceNumber, setManualInvoiceNumber] = React.useState('');
+  const [manualInvoiceBusy, setManualInvoiceBusy] = React.useState(false);
   const selectedJobStatus = String(selectedJob?.status || '');
   const selectedJobIsCompleted = selectedJobStatus === 'Zakończone';
   const [desktopDevicesExpanded, setDesktopDevicesExpanded] = React.useState(!selectedJobIsCompleted);
   const [desktopPhotosExpanded, setDesktopPhotosExpanded] = React.useState(!selectedJobIsCompleted);
   const fakturowniaVerificationRef = React.useRef(null);
   const fakturowniaVerificationBusyRef = React.useRef(false);
+  const activeInvoiceJobIdRef = React.useRef(selectedJobId);
+  activeInvoiceJobIdRef.current = selectedJobId;
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
 
   React.useEffect(() => {
@@ -140,6 +146,10 @@ export default function JobDetailsPanel({
     setVatInvoiceSaving(false);
     setFakturowniaOpening(false);
     setFakturowniaVerifying(false);
+    setInvoiceVerificationMessage('');
+    setManualInvoiceExpanded(false);
+    setManualInvoiceNumber('');
+    setManualInvoiceBusy(false);
     fakturowniaVerificationRef.current = null;
     fakturowniaVerificationBusyRef.current = false;
   }, [selectedJobId]);
@@ -305,6 +315,62 @@ export default function JobDetailsPanel({
   }
 
 
+  async function confirmAndPatchVerifiedInvoice(result) {
+    const saved = await confirmVatInvoiceFromFakturownia({
+      supabase,
+      jobId: selectedJobId,
+      invoiceId: result.invoiceId,
+      invoiceNumber: result.invoiceNumber,
+    });
+    const patchJob = (job) => (
+      job && String(job.id) === selectedJobId
+        ? {
+            ...job,
+            vat_invoice_issued: true,
+            vat_invoice_fakturownia_confirmed: true,
+            vat_invoice_fakturownia_invoice_id: saved?.vat_invoice_fakturownia_invoice_id || String(result.invoiceId),
+            vat_invoice_fakturownia_invoice_number: saved?.vat_invoice_fakturownia_invoice_number || String(result.invoiceNumber || ''),
+            vat_invoice_fakturownia_confirmed_at: saved?.vat_invoice_fakturownia_confirmed_at || job.vat_invoice_fakturownia_confirmed_at || new Date().toISOString(),
+          }
+        : job
+    );
+    setJobs?.((previous) => previous.map(patchJob));
+    setSelectedJobByUpdater?.(patchJob);
+    fakturowniaVerificationRef.current = null;
+    if (activeInvoiceJobIdRef.current === selectedJobId) {
+      setInvoiceVerificationMessage(`Potwierdzono fakturę VAT ${String(result.invoiceNumber || '').trim()} w Fakturowni.`);
+      setManualInvoiceExpanded(false);
+    }
+  }
+
+  async function linkInvoiceByNumber(event) {
+    event.preventDefault();
+    if (!isAdmin || !isCompletedJob || !selectedJobId || manualInvoiceBusy || selectedJob?.vat_invoice_fakturownia_confirmed) return;
+    const number = manualInvoiceNumber.trim();
+    if (!number) {
+      setInvoiceVerificationMessage('Wpisz numer faktury z Fakturowni.');
+      return;
+    }
+    setManualInvoiceBusy(true);
+    setInvoiceVerificationMessage('');
+    try {
+      const result = await lookupFakturowniaInvoiceByNumber({ supabase, jobId: selectedJobId, invoiceNumber: number });
+      if (!result?.found || !result.invoiceId) {
+        if (activeInvoiceJobIdRef.current === selectedJobId) {
+          setInvoiceVerificationMessage(result?.reason || 'Nie udało się jednoznacznie odnaleźć faktury.');
+        }
+        return;
+      }
+      await confirmAndPatchVerifiedInvoice(result);
+    } catch (error) {
+      if (activeInvoiceJobIdRef.current === selectedJobId) {
+        setInvoiceVerificationMessage(`Nie udało się powiązać faktury: ${error?.message || 'błąd połączenia'}`);
+      }
+    } finally {
+      if (activeInvoiceJobIdRef.current === selectedJobId) setManualInvoiceBusy(false);
+    }
+  }
+
   async function verifyPendingFakturowniaInvoice() {
     const pending = fakturowniaVerificationRef.current;
     if (!isAdmin || !isCompletedJob || !selectedJobId || !pending || fakturowniaVerificationBusyRef.current) return;
@@ -323,31 +389,18 @@ export default function JobDetailsPanel({
         clientId: pending.clientId,
       });
 
-      if (!result?.found || !result?.invoiceId) return;
-
-      const saved = await confirmVatInvoiceFromFakturownia({
-        supabase,
-        jobId: selectedJobId,
-        invoiceId: result.invoiceId,
-        invoiceNumber: result.invoiceNumber,
-      });
-      const patchJob = (job) => (
-        job && String(job.id) === selectedJobId
-          ? {
-              ...job,
-              vat_invoice_issued: true,
-              vat_invoice_fakturownia_confirmed: true,
-              vat_invoice_fakturownia_invoice_id: saved?.vat_invoice_fakturownia_invoice_id || String(result.invoiceId),
-              vat_invoice_fakturownia_invoice_number: saved?.vat_invoice_fakturownia_invoice_number || String(result.invoiceNumber || ''),
-              vat_invoice_fakturownia_confirmed_at: saved?.vat_invoice_fakturownia_confirmed_at || job.vat_invoice_fakturownia_confirmed_at || new Date().toISOString(),
-            }
-          : job
-      );
-      setJobs?.((previous) => previous.map(patchJob));
-      setSelectedJobByUpdater?.(patchJob);
-      fakturowniaVerificationRef.current = null;
+      if (!result?.found || !result?.invoiceId) {
+        if (activeInvoiceJobIdRef.current === selectedJobId) {
+          setInvoiceVerificationMessage(result?.reason || 'Nie znaleziono wystawionej faktury. Możesz spróbować ponownie lub powiązać dokument po numerze.');
+        }
+        return;
+      }
+      await confirmAndPatchVerifiedInvoice(result);
     } catch (error) {
       console.warn('Nie udało się automatycznie sprawdzić faktury w Fakturowni.', error);
+      if (activeInvoiceJobIdRef.current === selectedJobId) {
+        setInvoiceVerificationMessage(`Nie udało się sprawdzić faktury: ${error?.message || 'błąd połączenia z Fakturownią'}`);
+      }
     } finally {
       fakturowniaVerificationBusyRef.current = false;
       setFakturowniaVerifying(false);
@@ -373,6 +426,7 @@ export default function JobDetailsPanel({
     }
 
     setFakturowniaOpening(true);
+    setInvoiceVerificationMessage('');
     try {
       const prepared = await prepareFakturowniaInvoice({
         supabase,
@@ -463,6 +517,35 @@ export default function JobDetailsPanel({
           </button>
         </div>
       </div>
+
+      {isAdmin && isCompletedJob && !selectedJob.vat_invoice_fakturownia_confirmed ? (
+        <div className="desktopInvoiceVerificationToolsV1277" aria-label="Weryfikacja faktury w Fakturowni">
+          {invoiceVerificationMessage ? <p role="status" className="desktopInvoiceVerificationFeedbackV1277">{invoiceVerificationMessage}</p> : null}
+          <div className="desktopInvoiceVerificationButtonsV1277">
+            {fakturowniaVerificationRef.current ? (
+              <button type="button" className="btn ghostBtn" onClick={() => void verifyPendingFakturowniaInvoice()} disabled={fakturowniaVerifying || manualInvoiceBusy}>
+                {fakturowniaVerifying ? 'Sprawdzam…' : 'Sprawdź ponownie'}
+              </button>
+            ) : null}
+            <button type="button" className="btn ghostBtn" onClick={() => setManualInvoiceExpanded((value) => !value)} disabled={manualInvoiceBusy}>
+              {manualInvoiceExpanded ? 'Ukryj powiązanie' : 'Powiąż fakturę po numerze'}
+            </button>
+          </div>
+          {manualInvoiceExpanded ? (
+            <form className="desktopInvoiceManualFormV1277" onSubmit={linkInvoiceByNumber}>
+              <label htmlFor="desktopManualInvoiceNumberV1277">Numer wystawionej faktury VAT w Fakturowni</label>
+              <div className="desktopInvoiceManualInputRowV1277">
+                <input id="desktopManualInvoiceNumberV1277" type="text" value={manualInvoiceNumber} maxLength={100} autoComplete="off"
+                  onChange={(event) => setManualInvoiceNumber(event.target.value)} placeholder="Np. FV/2026/10/123" required />
+                <button type="submit" className="btn premiumActionBtn" disabled={manualInvoiceBusy || fakturowniaVerifying || !manualInvoiceNumber.trim()}>
+                  {manualInvoiceBusy ? 'Weryfikuję…' : 'Sprawdź i powiąż'}
+                </button>
+              </div>
+              <small>WAWIS sprawdzi numer, rodzaj dokumentu, klienta i powiązanie z montażem. Nie wystawia ponownie faktury.</small>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
 
       {showReturnToCalendar ? (
         <div className="jobDetailsReturnRow">

@@ -10,6 +10,17 @@ Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które maj�
 - Jeżeli problem wymagał sekwencji zdarzeń, dużego fixture, race condition albo konkretnego stanu UI, reproduktor musi zachować ten warunek.
 - Dowód zamknięcia wskazuje konkretny plik testu; samo `assert.match` źródła nie wystarcza dla błędu funkcjonalnego.
 
+## Faktury — FAKT-1277 (9 października 2026)
+
+| ID | Stan przed CI | Reproduktor / blokady |
+|---|---|---|
+| FAKT-1277-AUTO-REASON | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-link-v1277.mjs`: brak OID zwraca powód; WAWIS wyświetla go oraz umożliwia ponowienie kontroli. |
+| FAKT-1277-MANUAL-LINK | FIXED-UNVERIFIED | Ten sam test wykonuje Edge Handler z atrapą Fakturowni: numer, klient external_id, status VAT, obcy OID i brak dopasowania. |
+| FAKT-1277-UNIQUE-ID | FIXED-UNVERIFIED | `scripts/smoke-fakturownia-p0-v1260.mjs`: kontrola SQL gwarantuje, że ID faktury nie może trafić do dwóch montaży. |
+| FAKT-1277-LIVE | EXTERNAL | Rzeczywiste wystawienie nowych faktur przez administratora i sprawdzenie poprawnego wyświetlenia statusu. Testy automatyczne nie wystawiają realnych dokumentów. |
+
+Bez zmian w oznaczeniach płatności. Do CLOSED: zielone CI dokładnego SHA i test na rzeczywistej fakturze.
+
 ## Statusy
 
 - OPEN — błąd potwierdzony, brak kompletnej poprawki/testu.

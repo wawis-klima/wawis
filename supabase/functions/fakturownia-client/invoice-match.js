@@ -28,3 +28,27 @@ export function findIssuedVatInvoiceForJob(invoices, { jobId, clientId }) {
     && isIssuedVatInvoiceRecord(invoice)
   )) || null;
 }
+
+/**
+ * Returns a refusal reason instead of guessing that an invoice belongs to a job.
+ * An empty OID is allowed ONLY in the explicit administrator number-link flow.
+ */
+export function inspectManualInvoiceMatch(invoice, { jobId, clientId, invoiceNumber }) {
+  if (!invoice || !normalizeInvoiceText(invoice.id)) {
+    return { ok: false, code: "NOT_FOUND", reason: "Nie znaleziono faktury o podanym numerze." };
+  }
+  if (normalizeInvoiceText(invoice.number) !== normalizeInvoiceText(invoiceNumber)) {
+    return { ok: false, code: "NUMBER_MISMATCH", reason: "Numer zwróconej faktury nie zgadza się z wpisanym numerem." };
+  }
+  if (normalizeInvoiceText(invoice.client_id) !== normalizeInvoiceText(clientId)) {
+    return { ok: false, code: "WRONG_CLIENT", reason: "Faktura należy do innego klienta Fakturowni. Nie można jej przypisać do tego montażu." };
+  }
+  if (!isIssuedVatInvoiceRecord(invoice)) {
+    return { ok: false, code: "NOT_ISSUED_VAT", reason: "Dokument nie jest wystawioną fakturą VAT. Powiązanie zostało zablokowane." };
+  }
+  const oid = normalizeInvoiceText(invoice.oid);
+  if (oid && oid !== buildJobInvoiceOid(jobId)) {
+    return { ok: false, code: "OTHER_JOB", reason: "Faktura jest przypisana identyfikatorem OID do innego montażu." };
+  }
+  return { ok: true, code: "VERIFIED", reason: "" };
+}

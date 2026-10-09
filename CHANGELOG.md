@@ -1,3 +1,10 @@
+## 12.77
+- Fakturownia: po nieudanej kontroli OID pokazujemy administratorowi rzeczywistą przyczynę i umożliwiamy ponowienie.
+- Powiązanie po numerze tylko dla zakończonego montażu; Edge Function sprawdza identyczny numer, wystawiony dokument VAT, autorytatywną kartotekę klienta po external_id oraz brak obcego OID.
+- Zachowane SQL: jedna faktura nie może być powiązana z dwoma montażami; już potwierdzonego dokumentu nie można cofnąć.
+- Testy wykonawcze z atrapą Fakturowni w obowiązkowej grupie CI, bez wystawiania dokumentów; realny test na kolejnych fakturach pozostaje EXTERNAL.
+- Nie zmieniono żadnych zasad ani kodu płatności.
+
 ## 12.76
 - Stabilizacja testu dwusesyjnego Codexa: kontener PostgreSQL uznawany jest za gotowy dopiero po udanym SELECT 1 we właściwej bazie fixture; pg_isready nie gwarantował jeszcze utworzenia bazy. Dodano wykonywalne scenariusze negatywne readiness do infra CI.
 - Codex C7: panel mobilny sprawdza prawdziwy wynik refreshAll (ok/partial/fail/stale); desktop odróżnia brak wpisów od nieudanego odczytu i zachowuje ostatni poprawny widok oznaczony jako nieaktualny.

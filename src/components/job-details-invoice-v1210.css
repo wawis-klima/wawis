@@ -39,3 +39,14 @@
 .desktopFakturowniaButton.desktopFakturowniaButtonV1210:disabled{
   opacity:.6;
 }
+
+.desktopInvoiceVerificationToolsV1277{padding:8px 12px 10px;border-bottom:1px solid #e2e8f0}
+.desktopInvoiceVerificationFeedbackV1277{margin:0 0 8px;color:#92400e;font-size:12px;line-height:1.4}
+.desktopInvoiceVerificationButtonsV1277{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.desktopInvoiceVerificationButtonsV1277 .btn{min-height:28px;padding:5px 9px;font-size:11px}
+.desktopInvoiceManualFormV1277{display:grid;gap:7px;max-width:540px;margin-top:10px}
+.desktopInvoiceManualFormV1277 label{font-size:12px;font-weight:700}
+.desktopInvoiceManualInputRowV1277{display:flex;gap:8px;flex-wrap:wrap}
+.desktopInvoiceManualInputRowV1277 input{min-width:190px;flex:1 1 220px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px}
+.desktopInvoiceManualInputRowV1277 .btn{font-size:12px}
+.desktopInvoiceManualFormV1277 small{color:#64748b;font-size:11px}

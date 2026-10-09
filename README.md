@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.76
+- 12.77
+
+Wersja 12.77: Fakturownia — konkretny komunikat po nieudanej weryfikacji OID, kontrolowane powiązanie wystawionej faktury po numerze, sprawdzanie tożsamości klienta po zaufanym external_id, blokady złego kontrahenta, obcego OID, nieprawidłowego rodzaju/statusu i duplikatu numeru; odrębny test regresji z mockiem API. Bez zmian w płatnościach. Test realnych nowo wystawianych faktur pozostaje EXTERNAL.
 
 Wersja 12.76: pakiet 4 audytu Codexa C7–C10: rzeczywisty wynik odświeżania mobile, rozróżnienie pustego widoku od awarii telemetrii desktop, przedimportowy bezpieczny raport startu, agregaty synchronizacji bieżącego konta i ostrożne nazwy etapów PUSH. Bez nowego panelu, zmian SQL/Edge i bez rzeczywistych wysyłek.
 
@@ -913,6 +915,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.77` — Fakturownia: szczegółowe powody braku automatycznego potwierdzenia, ponawianie kontroli i powiązanie wystawionej faktury po numerze z ochroną kontrahenta i montażu. Bez zmian płatności.
 - wersja `12.76` — pakiet 4 Codexa: wiarygodne statusy, awaria startu, kolejka offline i nazewnictwo PUSH bez fałszywego potwierdzenia dostawy.
 - wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
 - wersja `12.67` — pakiet 2: kontrola JW/JZ przy zakończeniu, test modeli tabliczek i numer cyklu pod modelem w module SMS.
