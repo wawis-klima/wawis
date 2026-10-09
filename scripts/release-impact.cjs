@@ -85,6 +85,26 @@ function isGeneratedOnlyChange(baseRef, file) {
   }
 }
 
+
+// Central shared modules are consumed by both interfaces. A change in one
+// must never be classified as desktop-only just because it lives in src/modules.
+function isSharedDependency(file) {
+  const lower = String(file || '').toLowerCase();
+  return /^src\/(?:modules\/(?:diagnostic|diagnostics|push-subscriptions|session-|paginated-read|jobs-fetch|jobs-crud)|lib\/supabase\.)/.test(lower);
+}
+
+// Modifying the release selector or its verifier can invalidate every group's
+// evidence. This is rare and deliberately runs the *full* test inventory.
+function isGlobalReleaseInfrastructure(file) {
+  const lower = String(file || '').toLowerCase();
+  return /^\.github\/workflows\/pr-checks\.yml$/.test(lower)
+    || /^scripts\/(?:release-impact|run-pr-checks|run-test-group|test-groups|verify-closure-evidence|run-pr-playwright|release-policy-gate|smoke-release-impact)(?:\.[cm]?js)$/.test(lower);
+}
+
+function includeGroups(initial, extras) {
+  return [...new Set([...initial, ...extras])];
+}
+
 function isPresentationOnly(file) {
   const lower = file.toLowerCase();
   return /\.(css|scss|less)$/.test(lower)
@@ -95,7 +115,7 @@ function isCriticalPath(file) {
   const lower = file.toLowerCase();
   if (/^(\.github\/|scripts\/|supabase\/|api\/)/.test(lower)) return true;
   if (/^(package(?:-lock)?\.json|vercel\.json|vite\.config\.|version-bump\.cjs|public\/push-sw\.js)/.test(lower)) return true;
-  if (/(auth|session|permission|security|rls|grant|service_role|storage|backup|realtime|push|notification)/.test(lower)) return true;
+  if (/(auth|session|permission|security|rls|grant|service_role|storage|backup|realtime|push|notification|diagnostic)/.test(lower)) return true;
   if (/^src\/(lib|hooks)\//.test(lower) && /(supabase|session|auth|realtime|push)/.test(lower)) return true;
   return false;
 }
@@ -104,7 +124,7 @@ function detectPlatforms(files) {
   const platforms = new Set();
   for (const file of files) {
     const lower = file.toLowerCase();
-    if (lower.startsWith('src/mobile791/') || lower.includes('mobile') || lower.includes('iphone')) platforms.add('mobile');
+    if (lower.startsWith('src/mobile791/') || lower.includes('mobile') || lower.includes('iphone') || isSharedDependency(lower)) platforms.add('mobile');
     if (lower === 'src/styles.css' || lower === 'src/app.css' || lower === 'src/app.jsx') {
       platforms.add('mobile');
       platforms.add('desktop');
@@ -136,8 +156,9 @@ function selectDomainGroups(files) {
     if (/(push|notification|assignment)/.test(lower)) add('push');
     if (/(fuel|paliw|tankow)/.test(lower)) add('fuel');
     if (/(nameplate|tabliczk|ocr|barcode|ean|rotenso)/.test(lower)) add('nameplates');
-    if (/^(src\/(components|modules)|tests\/e2e\/desktop|.*desktop)/.test(lower)) add('desktop');
-    if (lower.startsWith('src/mobile791/') || lower.includes('mobile') || lower.includes('iphone')) add('mobile');
+    if (/^(src\/(components|modules)|tests\/e2e\/desktop|.*desktop)/.test(lower) || isSharedDependency(lower)) add('desktop');
+    if (lower.startsWith('src/mobile791/') || lower.includes('mobile') || lower.includes('iphone') || isSharedDependency(lower)) add('mobile');
+    if (isSharedDependency(lower) && /diagnostic|session|supabase/.test(lower)) add('roles');
   }
 
   return [...selected];
@@ -169,11 +190,21 @@ function classifyEffectiveFiles(effectiveFiles) {
   }
 
   if (effectiveFiles.some(isCriticalPath)) {
+    const fullInventory = effectiveFiles.some(isGlobalReleaseInfrastructure);
+    const required = fullInventory
+      ? getReleaseGroups('full')
+      : includeGroups(selectDomainGroups(effectiveFiles), [
+        'roles', ...(effectiveFiles.some(isSharedDependency) ? ['mobile', 'desktop'] : []),
+      ]);
+    // groups and pr_groups are one authoritative CI contract. No separate
+    // "full release" assertion while the PR executes only a hidden subset.
     return {
       profile: 'critical',
-      reason: 'Zmiana dotyka infrastruktury, backendu, bezpieczeństwa, synchronizacji albo konfiguracji wydania.',
-      groups: getReleaseGroups('full'),
-      pr_groups: selectDomainGroups(effectiveFiles),
+      reason: fullInventory
+        ? 'Zmiana mechanizmu Closure Gate — pełny zestaw testów dla wszystkich modułów.'
+        : 'Zmiana krytyczna — wymagane bezpośrednie regresje domen, uprawnień i zależności wspólnych.',
+      groups: required,
+      pr_groups: required,
       platforms: ['mobile', 'desktop'],
       scope: 'full',
       e2e: ['mobile', 'desktop'],
@@ -283,4 +314,6 @@ module.exports = {
   isCriticalPath,
   isPresentationOnly,
   selectDomainGroups,
+  isSharedDependency,
+  isGlobalReleaseInfrastructure,
 };
