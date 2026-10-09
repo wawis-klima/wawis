@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.83
+- 12.84
+
+Wersja 12.84: administrator może usunąć pojedynczą jednostkę JW z układu MULTI-SPLIT na desktopie i telefonie. Osobne potwierdzenie chroni JZ i pozostałe JW. Transakcyjna operacja w bazie zmienia numerację tabliczek i ręcznych potwierdzeń bez przenoszenia plików Storage. Zachowano minimum dwóch JW.
 
 Wersja 12.83: WAWIS przekazuje do formularza nowej faktury Fakturowni domyślną ilość `1` w pierwszej pozycji obok istniejącej nazwy usługi i stawki VAT. Nie uzupełnia ceny ani wartości brutto; operator nadal wprowadza kwotę ręcznie. Bez zmian płatności, potwierdzania faktur i zabezpieczeń powiązania.
 
