@@ -130,6 +130,7 @@ export default function JobDetailsPanel({
   const [invoiceVerificationMessage, setInvoiceVerificationMessage] = React.useState('');
   const [invoiceVerificationCandidates, setInvoiceVerificationCandidates] = React.useState([]);
   const [manualInvoiceExpanded, setManualInvoiceExpanded] = React.useState(false);
+  const [invoiceEmergencyExpanded, setInvoiceEmergencyExpanded] = React.useState(false);
   const [manualInvoiceNumber, setManualInvoiceNumber] = React.useState('');
   const [manualInvoiceBusy, setManualInvoiceBusy] = React.useState(false);
   const selectedJobStatus = String(selectedJob?.status || '');
@@ -150,6 +151,7 @@ export default function JobDetailsPanel({
     setInvoiceVerificationMessage('');
     setInvoiceVerificationCandidates([]);
     setManualInvoiceExpanded(false);
+    setInvoiceEmergencyExpanded(false);
     setManualInvoiceNumber('');
     setManualInvoiceBusy(false);
     fakturowniaVerificationRef.current = null;
@@ -357,6 +359,7 @@ export default function JobDetailsPanel({
     if (activeInvoiceJobIdRef.current === selectedJobId) {
       setInvoiceVerificationMessage(`Potwierdzono fakturę VAT ${String(result.invoiceNumber || '').trim()} w Fakturowni.`);
       setManualInvoiceExpanded(false);
+      setInvoiceEmergencyExpanded(false);
       setInvoiceVerificationCandidates([]);
     }
   }
@@ -451,6 +454,7 @@ export default function JobDetailsPanel({
     setFakturowniaOpening(true);
     setInvoiceVerificationMessage('');
     setInvoiceVerificationCandidates([]);
+    setInvoiceEmergencyExpanded(false);
     try {
       const prepared = await prepareFakturowniaInvoice({
         supabase,
@@ -560,26 +564,42 @@ export default function JobDetailsPanel({
               <small>To faktury znalezione dla klienta, niepotwierdzone jeszcze dla tego montażu. Sprawdź numer przed zatwierdzeniem.</small>
             </div>
           ) : null}
-          <div className="desktopInvoiceVerificationButtonsV1277">
-            <button type="button" className="btn ghostBtn" onClick={() => void verifyPendingFakturowniaInvoice(true)} disabled={fakturowniaVerifying || manualInvoiceBusy}>
-              {fakturowniaVerifying ? 'Sprawdzam…' : 'Sprawdź wystawioną fakturę'}
-            </button>
-            <button type="button" className="btn ghostBtn" onClick={() => setManualInvoiceExpanded((value) => !value)} disabled={manualInvoiceBusy}>
-              {manualInvoiceExpanded ? 'Ukryj powiązanie' : 'Powiąż fakturę po numerze'}
-            </button>
-          </div>
-          {manualInvoiceExpanded ? (
-            <form className="desktopInvoiceManualFormV1277" onSubmit={linkInvoiceByNumber}>
-              <label htmlFor="desktopManualInvoiceNumberV1277">Numer wystawionej faktury VAT w Fakturowni</label>
-              <div className="desktopInvoiceManualInputRowV1277">
-                <input id="desktopManualInvoiceNumberV1277" type="text" value={manualInvoiceNumber} maxLength={100} autoComplete="off"
-                  onChange={(event) => setManualInvoiceNumber(event.target.value)} placeholder="Np. FV/2026/10/123" required />
-                <button type="submit" className="btn premiumActionBtn" disabled={manualInvoiceBusy || fakturowniaVerifying || !manualInvoiceNumber.trim()}>
-                  {manualInvoiceBusy ? 'Weryfikuję…' : 'Sprawdź i powiąż'}
+          <button
+            type="button"
+            className="desktopInvoiceEmergencyToggleV1281"
+            aria-expanded={invoiceEmergencyExpanded}
+            aria-controls="desktopInvoiceEmergencyToolsV1281"
+            onClick={() => {
+              setInvoiceEmergencyExpanded((expanded) => !expanded);
+              setManualInvoiceExpanded(false);
+            }}
+          >
+            Opcje awaryjne {invoiceEmergencyExpanded ? '▴' : '▾'}
+          </button>
+          {invoiceEmergencyExpanded ? (
+            <div id="desktopInvoiceEmergencyToolsV1281" className="desktopInvoiceEmergencyContentsV1281">
+              <div className="desktopInvoiceVerificationButtonsV1277">
+                <button type="button" className="btn ghostBtn" onClick={() => void verifyPendingFakturowniaInvoice(true)} disabled={fakturowniaVerifying || manualInvoiceBusy}>
+                  {fakturowniaVerifying ? 'Sprawdzam…' : 'Sprawdź wystawioną fakturę'}
+                </button>
+                <button type="button" className="btn ghostBtn" onClick={() => setManualInvoiceExpanded((value) => !value)} disabled={manualInvoiceBusy}>
+                  {manualInvoiceExpanded ? 'Ukryj powiązanie' : 'Powiąż fakturę po numerze'}
                 </button>
               </div>
-              <small>WAWIS sprawdzi numer, rodzaj dokumentu, klienta i powiązanie z montażem. Nie wystawia ponownie faktury.</small>
-            </form>
+              {manualInvoiceExpanded ? (
+                <form className="desktopInvoiceManualFormV1277" onSubmit={linkInvoiceByNumber}>
+                  <label htmlFor="desktopManualInvoiceNumberV1277">Numer wystawionej faktury VAT w Fakturowni</label>
+                  <div className="desktopInvoiceManualInputRowV1277">
+                    <input id="desktopManualInvoiceNumberV1277" type="text" value={manualInvoiceNumber} maxLength={100} autoComplete="off"
+                      onChange={(event) => setManualInvoiceNumber(event.target.value)} placeholder="Np. FV/2026/10/123" required />
+                    <button type="submit" className="btn premiumActionBtn" disabled={manualInvoiceBusy || fakturowniaVerifying || !manualInvoiceNumber.trim()}>
+                      {manualInvoiceBusy ? 'Weryfikuję…' : 'Sprawdź i powiąż'}
+                    </button>
+                  </div>
+                  <small>WAWIS sprawdzi numer, rodzaj dokumentu, klienta i powiązanie z montażem. Nie wystawia ponownie faktury.</small>
+                </form>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ) : null}
