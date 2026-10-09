@@ -1,36 +1,123 @@
 'use strict';
-/* WAWIS DESIGN LAB — wyłącznie prezentacja, bez fetch, Supabase, PWA i integracji. */
-(function () {
-  const KEY='wawis-design-lab-demo-v1';
-  const STATUS=['Nowe','W trakcie','Zakończone','Niezrealizowane'];
-  const CITIES=['Zawiercie','Myszków','Poręba','Pilica','Ogrodzieniec','Łazy'];
-  const MODELS=['Rotenso Imoto I35','Rotenso Roni R35','Mitsubishi MSZ-AY25','Rotenso Teta T35','Rotenso Xo E26','Mitsubishi MSZ-HR35'];
-  const MODULES=[['Montaże','▦'],['Kontrahenci','♙'],['Urządzenia','◈'],['Kalendarz','▣'],['SMS serwis','▤'],['Paliwo','▥'],['Centrum 360','◎'],['Diagnostyka','◇']];
-  const $=id=>document.getElementById(id);
-  const safe=value=>String(value==null?'':value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const seed=()=>Array.from({length:36},(_,i)=>({id:'DEMO-'+String(i+1).padStart(3,'0'),client:'Klient demonstracyjny '+String(i+1).padStart(2,'0'),city:CITIES[i%CITIES.length],street:'ul. Przykładowa '+(i+3),status:STATUS[(i*7+1)%4],date:'2026-10-'+String(7+i%22).padStart(2,'0'),model:MODELS[i%MODELS.length],installer:'Monter '+String.fromCharCode(65+i%3),devices:1+(i%7===0?2:0),photos:i%5===0?0:3,notes:i%4===0?'Przykładowa uwaga do montażu. Treść jest całkowicie fikcyjna.':'',payment:i%2===0?'Przelew':'Gotówka',invoice:i%3===0?'Wystawiona':'Brak'}));
-  const load=()=>{try{const stored=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(stored)&&stored.length&&stored.every(x=>typeof x.id==='string'&&typeof x.client==='string'))return stored}catch(e){}return seed()};
-  let jobs=load();let page='Montaże';let filter='Wszystkie';let query='';let chosen=jobs[0].id;let theme='modern';let toastTimeout=null;let editing=null;
-  const write=()=>{try{localStorage.setItem(KEY,JSON.stringify(jobs))}catch(e){}};
-  const counts=()=>STATUS.map(s=>jobs.filter(j=>j.status===s).length);
-  const badge=s=>'<span class="badge '+({'Nowe':'new','W trakcie':'progress','Zakończone':'done','Niezrealizowane':'missed'}[s]||'new')+'">'+safe(s)+'</span>';
-  const toast=msg=>{const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),3400)};
-  const nav=()=>{$('module-nav').innerHTML=MODULES.map(([name,icon])=>'<button type="button" class="nav-btn '+(page===name?'active':'')+'" data-nav="'+safe(name)+'" title="'+safe(name)+'" aria-label="'+safe(name)+'"><span class="nav-icon">'+icon+'</span><span class="nav-label">'+safe(name)+'</span><span class="nav-arrow">›</span></button>').join('')};
-  function title(){const subtitle={'Montaże':'Projekt nowego interfejsu montaży. Wszystkie dane i działania są demonstracyjne.','Kontrahenci':'Fikcyjni klienci, adresy i powiązane montaże.','Urządzenia':'Wizualny katalog jednostek i numerów seryjnych.','Kalendarz':'Demonstracyjny harmonogram montaży.','SMS serwis':'Wygląd kolejek i historii wiadomości — bez wysyłania SMS.','Paliwo':'Demonstracyjny panel floty i stanu paliwa.','Centrum 360':'Wizualny przegląd najważniejszych informacji o firmie.','Diagnostyka':'Podgląd koncepcyjnego panelu zdrowia bez zbierania danych.'};$('crumb').textContent=page;$('page-title').innerHTML=safe(page)+' <span class="heading-accent">/ Przegląd</span>';$('page-subtitle').textContent=subtitle[page];$('new-job').style.display=page==='Montaże'?'':'none'}
-  function stats(){let c=counts();return '<div class="stats">'+[['Wszystkie montaże',jobs.length,'▦','Dane demonstracyjne'],['W trakcie',c[1],'◷','Przykładowy status'],['Nowe',c[0],'＋','Przygotowane do realizacji'],['Zakończone',c[2],'✓','Bez rzeczywistych protokołów']].map(z=>'<article class="stat"><div class="stat-symbol">'+z[2]+'</div><div class="stat-label">'+z[0]+'</div><div class="stat-value">'+z[1]+'</div><div class="stat-foot">'+z[3]+'</div></article>').join('')+'</div>'}
-  function jobRow(j){return '<button type="button" class="job-card '+(chosen===j.id?'selected':'')+'" data-job="'+safe(j.id)+'"><span class="job-icon">❄</span><span class="job-main"><span class="job-line"><span class="job-name">'+safe(j.client)+'</span><span class="job-status">'+badge(j.status)+'</span></span><span class="job-meta"><span>⌖ '+safe(j.city)+'</span><span>▣ '+safe(j.date)+'</span><span>◈ '+safe(j.model)+'</span></span></span><span class="mini-chevron">›</span></button>'}
-  function current(){return jobs.find(j=>j.id===chosen)||jobs[0]}
-  function details(j){if(!j)return '<section class="panel"><div class="section-empty">Wybierz montaż, aby obejrzeć szczegóły.</div></section>';return '<section class="panel detail-panel"><div class="detail-head"><div class="detail-kicker">KARTA MONTAŻU · '+safe(j.id)+'</div><div class="detail-title"><h2>'+safe(j.client)+'</h2>'+badge(j.status)+'</div><div class="detail-address">⌖ '+safe(j.street)+', '+safe(j.city)+'</div></div><div class="detail-section"><div class="section-title">Podstawowe informacje <span class="count-pill">DEMO</span></div><div class="meta-pairs"><div><small>Termin montażu</small><b>'+safe(j.date)+'</b></div><div><small>Monter</small><b>'+safe(j.installer)+'</b></div><div><small>Forma płatności</small><b>'+safe(j.payment)+'</b></div><div><small>Faktura VAT</small><b>'+safe(j.invoice)+'</b></div></div></div><div class="detail-section"><div class="section-title">Urządzenia <span class="count-pill">'+j.devices+' kpl.</span></div><div class="device-card"><span class="device-visual"></span><div><strong>'+safe(j.model)+'</strong><small>Jednostka wewnętrzna + zewnętrzna · '+safe(j.id)+'</small></div></div></div><div class="detail-section"><div class="section-title">Zdjęcia <span class="count-pill">'+j.photos+' pliki</span></div>'+(j.photos?'<div class="photos">'+['Jednostka JW','Jednostka JZ','Tabliczka'].map(t=>'<div class="photo-box"><div class="photo-art"></div><small>'+t+'</small></div>').join('')+'</div>':'<div class="section-empty">Brak zdjęć w tym scenariuszu</div>')+'</div>'+(j.notes?'<div class="detail-section"><div class="section-title">Uwagi</div><p class="detail-address">'+safe(j.notes)+'</p></div>':'')+'<div class="detail-actions"><button class="btn secondary" data-action="protocol" type="button">▤ Protokół (demo)</button><button class="btn primary" data-action="edit" type="button">✎ Edytuj</button></div></section>'}
-  function renderJobs(){let matched=jobs.filter(j=>(filter==='Wszystkie'||j.status===filter)&&[j.client,j.city,j.model,j.id].some(v=>v.toLowerCase().includes(query.toLowerCase())));if(matched.length&&!matched.some(j=>j.id===chosen))chosen=matched[0].id;return stats()+'<div class="main-grid"><section class="panel"><div class="panel-head"><div><h2>Lista montaży</h2><p>Wybierz kartę, aby obejrzeć szczegóły</p></div><span class="count-pill">'+matched.length+' pozycji</span></div><div class="search-area"><input id="search-jobs" class="search-input" aria-label="Szukaj montaży" placeholder="⌕  Szukaj klienta, miasta, modelu…" value="'+safe(query)+'"></div><div class="filters">'+['Wszystkie',...STATUS].map(x=>'<button class="filter-btn '+(filter===x?'active':'')+'" data-filter="'+safe(x)+'" type="button">'+safe(x)+'</button>').join('')+'</div><div class="job-list">'+(matched.length?matched.map(jobRow).join(''):'<div class="section-empty"><span class="empty-icon">⌕</span>Brak montaży spełniających kryteria.</div>')+'</div></section>'+details(matched.find(j=>j.id===chosen))+'</div>'}
-  function table(cols,rows){return '<div class="panel standalone-panel table-wrapper"><div class="panel-head"><div><h2>'+safe(page)+'</h2><p>Przykładowe dane do projektowania układu i hierarchii informacji</p></div><span class="count-pill">DEMO</span></div><div class="table-wrap"><table class="demo-table"><thead><tr>'+cols.map(c=>'<th>'+safe(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></div>'}
-  function otherPage(){if(page==='Kontrahenci')return stats()+table(['Kontrahent','Miejscowość','Montaże','Telefon'],Array.from({length:15},(_,i)=>['<strong>Kontrahent demonstracyjny '+String(i+1).padStart(2,'0')+'</strong>',safe(CITIES[i%6]),String(1+i%4),'<span class="count-pill">dane fikcyjne</span>']));if(page==='Urządzenia')return table(['Model urządzenia','Jednostki','Montaż','Stan'],Array.from({length:18},(_,i)=>['<strong>'+safe(MODELS[i%6])+'</strong>','JW + JZ','DEMO-'+String(i+1).padStart(3,'0'),badge('Zakończone')]));if(page==='SMS serwis')return table(['Odbiorca','Termin','Status','Treść'],Array.from({length:12},(_,i)=>['<strong>Klient demonstracyjny '+String(i+1).padStart(2,'0')+'</strong>','2026-10-'+String(10+i).padStart(2,'0'),badge(i%3===0?'Zakończone':'Nowe'),'<span class="count-pill">NIE WYSYŁANO</span>']))+'<div class="soft-hint">🔒 Moduł przedstawia wyłącznie przykładowy wygląd. Żaden numer telefonu nie jest używany i żaden SMS nie zostaje wysłany.</div>';if(page==='Paliwo')return '<div class="stats">'+[['Zbiornik', '5 000 l','▥','Wartość demonstracyjna'],['Pozostało','3 620 l','◷','Bez zapisu do systemu'],['Tankowania','18','▦','Przykładowe rekordy'],['Flota','5','◇','Pojazdy demonstracyjne']].map(z=>'<article class="stat"><div class="stat-symbol">'+z[2]+'</div><div class="stat-label">'+z[0]+'</div><div class="stat-value">'+z[1]+'</div><div class="stat-foot">'+z[3]+'</div></article>').join('')+'</div>'+table(['Pojazd','Data','Litry','Rodzaj'],['Doblo 1','Doblo 2','Vivaro','Master','Podnośnik'].map((p,i)=>['<strong>'+p+'</strong>','2026-10-'+String(2+i).padStart(2,'0'),String(42+i*7)+' l','Do pełna']));if(page==='Kalendarz'){let cells=Array.from({length:35},(_,i)=>{let day=i-3;let hl=day>0&&day<=31&&day%4===0;return '<div class="calendar-cell '+(hl?'highlight':'')+'">'+(day>0&&day<=31?'<strong>'+day+'</strong>'+(hl?'◈ Montaż demo':''):'')+'</div>'}).join('');return '<section class="panel standalone-panel"><div class="panel-head"><div><h2>Październik 2026</h2><p>Kalendarz jest statyczną wizualizacją planu</p></div><span class="count-pill">12 zaplanowanych</span></div><div class="calendar-grid">'+cells+'</div></section>'}if(page==='Centrum 360')return stats()+'<div class="main-grid"><section class="panel"><div class="panel-head"><div><h2>Aktywność zespołu</h2><p>Przykładowe wyniki tygodnia</p></div></div><div class="small-chart">'+[43,70,60,90,75,40,65,84,47,72,52,78].map(h=>'<div class="chart-bar bar-h'+h+'"></div>').join('')+'</div></section><section class="panel"><div class="panel-head"><div><h2>Priorytety</h2><p>Projekt układu informacji</p></div></div><div class="soft-hint">◈ 4 montaże wymagają uwagi<br>◎ 2 terminy w tym tygodniu<br>✓ 7 zakończonych prac</div></section></div>';return '<div class="stats">'+[['Stan danych','OK','✓','Dane demonstracyjne'],['Kolejka','0','▦','Brak rzeczywistych operacji'],['Telemetria','OFF','◇','Nie zbieramy danych'],['PUSH','OFF','♧','Powiadomienia wyłączone']].map(z=>'<article class="stat"><div class="stat-symbol">'+z[2]+'</div><div class="stat-label">'+z[0]+'</div><div class="stat-value">'+z[1]+'</div><div class="stat-foot">'+z[3]+'</div></article>').join('')+'</div><div class="soft-hint">W tej wersji diagnostyka jest tylko projektem graficznym. Brak połączeń z prawdziwymi kontami, urządzeniami i usługami.</div>'}
-  function render(){nav();title();$('app-content').innerHTML=page==='Montaże'?renderJobs():otherPage()}
-  function openModal(j){editing=j||null;$('modal-title').textContent=editing?'Edytuj montaż (demo)':'Nowy montaż';let f=$('job-form');f.reset();f.elements.client.value=editing?editing.client:'';f.elements.city.value=editing?editing.city:'';f.elements.date.value=editing?editing.date:'2026-10-12';f.elements.status.value=editing?editing.status:'Nowe';f.elements.model.value=editing?editing.model:'';$('modal').classList.remove('hidden');f.elements.client.focus()}
-  function closeModal(){$('modal').classList.add('hidden')}
-  document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.nav){page=b.dataset.nav;filter='Wszystkie';query='';render();window.scrollTo({top:0,behavior:'smooth'})}else if(b.dataset.filter){filter=b.dataset.filter;render()}else if(b.dataset.job){chosen=b.dataset.job;render()}else if(b.dataset.theme){theme=b.dataset.theme;document.body.classList.toggle('variant-classic',theme==='classic');document.querySelectorAll('[data-theme]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.theme===theme)));toast(theme==='classic'?'Wybrano koncepcję B':'Wybrano koncepcję A')}else if(b.dataset.action==='edit'){openModal(current())}else if(b.dataset.action==='protocol'){toast('Podgląd demonstracyjny — prawdziwy protokół nie jest generowany.')}});
-  $('new-job').addEventListener('click',()=>openModal(null));$('modal-close').addEventListener('click',closeModal);$('modal-cancel').addEventListener('click',closeModal);$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-  $('reset-demo').addEventListener('click',()=>{jobs=seed();chosen=jobs[0].id;filter='Wszystkie';query='';try{localStorage.removeItem(KEY)}catch(e){}render();toast('Przywrócono fikcyjne dane początkowe.')});
-  $('job-form').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;const client=f.elements.client.value.trim();if(!client)return;let city=f.elements.city.value.trim()||'Zawiercie',status=f.elements.status.value,date=f.elements.date.value,model=f.elements.model.value.trim()||MODELS[0];if(editing){Object.assign(editing,{client,city,status,date,model});chosen=editing.id}else{let id='DEMO-'+String(jobs.length+1).padStart(3,'0');jobs.unshift({id,client,city,street:'ul. Przykładowa 1',status,date,model,installer:'Monter A',devices:1,photos:0,notes:'',payment:'Przelew',invoice:'Brak'});chosen=id}write();filter='Wszystkie';query='';closeModal();render();toast('Zapisano tylko dane demonstracyjne — produkcja bez zmian.')});
-  $('app-content').addEventListener('input',e=>{if(e.target.id!=='search-jobs')return;const pos=e.target.selectionStart;query=e.target.value;render();const input=$('search-jobs');if(input){input.focus();input.setSelectionRange(pos,pos)}});
+/* WAWIS DESIGN LAB 0.2 — bez sieci, Supabase, SMS, PUSH, PWA i faktur. */
+(() => {
+  const $=x=>document.getElementById(x);
+  const STORE='wawis-design-lab-concept2-v02';
+  const statusNames=['Nowe','W trakcie','Zakończone','Niezrealizowane'];
+  const modules=['Montaże','Kontrahenci','Urządzenia','Kalendarz','SMS serwis','Panel paliwa','Centrum 360','Diagnostyka'];
+  const towns=['Zakopane','Wieliczka','Kraków','Piaseczno','Oświęcim','Zawiercie','Myszków','Poręba','Ogrodzieniec','Łazy','Pilica'];
+  const models=['Rotenso Imoto I35','Rotenso Roni R35','Mitsubishi MSZ-AP25','Rotenso Teta T35','Rotenso Xo E26','Mitsubishi MSZ-HR35'];
+  const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const svg=(inner,extra='')=>'<svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linejoin="round" stroke-linecap="round" '+extra+'>'+inner+'</svg>';
+  const ico={
+    Montaże:svg('<path d="M7 8 24 25M11 5 5 11l5 5 6-6-5-5ZM25 6 13 18m7-12 6 6m-2-8 3 3"/>'),
+    Kontrahenci:svg('<path d="M12 14a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM3 27v-3c0-5 4-8 9-8s9 3 9 8v3ZM24 8a4 4 0 0 1 0 8m1 2c3 1 4 3 4 7v2"/>'),
+    Urządzenia:svg('<rect x="5" y="5" width="22" height="20" rx="3"/><circle cx="16" cy="16" r="6"/><circle cx="16" cy="16" r="1.2"/><path d="M16 10v4m0 3v5m-5-9 3 2m5 3 3 2m-11-1 3-3m5-1 3-3M5 28h22"/>'),
+    Kalendarz:svg('<rect x="4" y="7" width="24" height="21" rx="3"/><path d="M10 4v7M22 4v7M4 13h24"/><path d="M10 18h2m6 0h2m-10 6h2" class="accent" stroke="#128eec"/>'),
+    'SMS serwis':svg('<path d="M5 6h22v16H14l-7 5v-5H5Z"/><circle cx="11" cy="14" r="1" fill="#188eea" stroke="none"/><circle cx="16" cy="14" r="1" fill="#188eea" stroke="none"/><circle cx="21" cy="14" r="1" fill="#188eea" stroke="none"/>'),
+    'Panel paliwa':svg('<rect x="5" y="4" width="14" height="24" rx="2"/><path d="M5 12h14m-14 16h17M22 7l5 5v10c0 4-3 4-3 0v-3c0-2-2-3-5-3"/><path d="M9 8h6"/>'),
+    'Centrum 360':svg('<ellipse cx="16" cy="16" rx="13" ry="8" transform="rotate(-35 16 16)"/><ellipse cx="16" cy="16" rx="13" ry="8" transform="rotate(35 16 16)"/><circle cx="16" cy="16" r="3.5" stroke="#1687ce"/><path d="M14 16h4"/>'),
+    Diagnostyka:svg('<rect x="3" y="5" width="26" height="21" rx="3"/><path d="M7 16h5l2-5 3 10 3-7 2 2h3M10 29h12"/>'),
+    Użytkownik:svg('<circle cx="16" cy="10" r="5"/><path d="M6 29v-4c0-6 4-9 10-9s10 3 10 9v4"/>'),
+    house:svg('<path d="m4 15 12-10 12 10M8 13v15h16V13M13 28V18h6v10"/>'),
+    date:svg('<rect x="4" y="6" width="24" height="22" rx="3"/><path d="M4 12h24M10 3v7M22 3v7m-12 9h3m5 0h3" />'),
+    pin:svg('<path d="M16 29S6 18 6 12a10 10 0 0 1 20 0c0 6-10 17-10 17Z"/><circle cx="16" cy="12" r="3.2"/>'),
+    doc:svg('<path d="M9 3h12l6 6v20H9zM21 3v7h6M13 16h10m-10 5h10"/>'),
+    photo:svg('<rect x="3" y="5" width="26" height="22" rx="3"/><circle cx="11" cy="12" r="2"/><path d="m5 24 8-7 5 4 4-5 5 8"/>'),
+    new:svg('<path d="M8 3h12l6 6v20H8Z"/><path d="M20 3v7h6M12 14h7"/><path d="M22 19v9m-4.5-4.5h9" class="accent" stroke="#0a9ae7"/>'),
+    progress:svg('<path d="M16 3a13 13 0 1 0 13 13"/><path class="accent" stroke="#1099ea" d="M16 3a13 13 0 0 1 13 13"/><path d="M16 9v8l6 5"/>'),
+    done:svg('<circle cx="16" cy="16" r="13"/><path d="m9 17 5 5 10-12" stroke="#0a98e5" stroke-width="2.4"/>'),
+    missed:svg('<circle cx="16" cy="16" r="13"/><path d="m11 11 10 10m0-10L11 21"/>')
+  };
+  const statusType={'Nowe':'new','W trakcie':'progress','Zakończone':'done','Niezrealizowane':'missed'};
+  const set=()=>Array.from({length:36},(_,i)=>({
+    id:'DEMO-'+String(i+1).padStart(3,'0'),client:'Klient demonstracyjny '+String(i+1).padStart(2,'0'),
+    city:towns[i%towns.length],street:'ul. Przykładowa '+(i+12),
+    date:'2026-10-'+String(7+i%21).padStart(2,'0'),status:statusNames[[1,0,3,2,1,0,2,1,3][i%9]],
+    model:models[i%models.length],installer:'Monter '+String.fromCharCode(65+i%4),
+    photos:i%4===0?0:3,devices:i%7===0?3:1,note:i%5===0?'Przygotować miejsce pod montaż. Kontakt z klientem w dniu montażu.':''
+  }));
+  const read=()=>{try{const x=JSON.parse(localStorage.getItem(STORE));if(Array.isArray(x)&&x.length&&x.every(y=>typeof y.id==='string'&&typeof y.client==='string'))return x}catch(e){}return set()};
+  let jobs=read(),mode='Montaże',role='admin',selected=jobs[0].id,filter=null,query='',editing=null;
+  const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(jobs))}catch(e){}};
+  let toastTimer;
+  function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3400)}
+  const icoLabel=(name)=>ico[name]||ico.doc;
+  function nav(){
+    $('desktop-nav').innerHTML=modules.map(m=>'<button type="button" class="navitem '+(mode===m?'active':'')+'" data-module="'+escape(m)+'" aria-current="'+(mode===m?'page':'false')+'"><span class="ic">'+icoLabel(m)+'</span><span>'+escape(m)+'</span></button>').join('');
+    const allowed=role==='admin'?['Montaże','Kontrahenci','Panel paliwa']:['Montaże','Panel paliwa'];
+    if(!allowed.includes(mode) && window.innerWidth<731)mode='Montaże';
+    $('mobile-nav').innerHTML=allowed.map(m=>'<button class="mobmod '+(mode===m?'active':'')+'" type="button" data-module="'+escape(m)+'">'+icoLabel(m)+'<span>'+escape(m==='Panel paliwa'?'Paliwo':m)+'</span></button>').join('');
+    document.querySelectorAll('[data-role]').forEach(x=>x.classList.toggle('role-active',x.dataset.role===role));
+    $('role-caption').textContent=role==='admin'?'Administrator':'Pracownik';
+    $('greeting-name').textContent=role==='admin'?'Administrator':'Monter';
+    $('main-title').textContent=mode;
+    $('main-sub').innerHTML=mode==='Montaże'?'Zarządzaj montażami, zleceniami<br> i dokumentacją w jednym miejscu.':escape('Podgląd graficzny modułu '+mode);
+  }
+  function statusbar(){
+    $('statusbar').innerHTML=statusNames.map(s=>'<button class="statusbutton '+(filter===s?'active':'')+'" type="button" data-filter="'+escape(s)+'" data-status="'+escape(s)+'" aria-label="'+escape(s)+'" title="'+escape(s)+'" aria-pressed="'+(filter===s?'true':'false')+'">'+ico[statusType[s]]+'</button>').join('');
+  }
+  function iconbadge(s){return '<span class="righticon '+statusType[s]+'">'+ico[statusType[s]]+'</span>'}
+  function selectedJob(){return jobs.find(x=>x.id===selected)||jobs[0]}
+  function list(){
+    const visible=jobs.filter(j=>(filter===null||j.status===filter)&&[j.client,j.city,j.model,j.id].some(x=>String(x).toLowerCase().includes(query.toLowerCase())));
+    $('total-items').textContent=visible.length+' pozycji';
+    $('joblist').innerHTML=visible.length?visible.map(j=>'<button class="jobcard '+(j.id===selected?'selected':'')+'" type="button" data-job="'+escape(j.id)+'"><span class="housebox">'+ico.house+'</span><span class="jobtext"><strong>'+escape(j.client)+'</strong><small>'+escape(j.city)+' · '+escape(j.date)+' · '+escape(j.model)+'</small></span>'+iconbadge(j.status)+'<span class="arrow">›</span></button>').join(''):'<div class="empty">Nie ma montaży w tym widoku.</div>';
+  }
+  const fact=(icon,main,desc)=>'<div class="fact"><span class="facticon">'+(ico[icon]||ico.doc)+'</span><div class="facttext"><b>'+escape(main)+'</b><small>'+escape(desc)+'</small></div></div>';
+  function details(){
+    const j=selectedJob();
+    if(!j){$('details').innerHTML='';return;}
+    $('details').innerHTML='<div class="detail-top"><div class="detail-eyebrow">KARTA MONTAŻU · '+escape(j.id)+'</div><div class="detail-titleline"><h2>'+escape(j.client)+'</h2><span class="statusbadge '+statusType[j.status]+'">'+ico[statusType[j.status]]+escape(j.status)+'</span></div><div class="detail-address">'+escape(j.street)+', '+escape(j.city)+'</div></div><div class="detail-content"><div class="detail-section"><div class="sectionheading">Podstawowe informacje</div><div class="facts">'+fact('date',j.date,'Termin montażu')+fact('Użytkownik',j.installer,'Przypisany')+fact('pin',j.city,'Miasto')+fact('doc',j.devices+' kpl.','Urządzenia')+'</div></div><div class="detail-section"><div class="sectionheading">Urządzenia <small>'+j.devices+' kpl.</small></div><div class="device-preview"><div class="unit-illustration"></div><div><b>'+escape(j.model)+'</b><small>Jednostka wewnętrzna + zewnętrzna · DEMO</small></div></div></div><div class="detail-section"><div class="sectionheading">Zdjęcia <small>'+j.photos+' plików</small></div><div class="photoplace">'+ico.photo+'<span>'+ (j.photos?'Przykładowe zdjęcia (demo)':'Brak zdjęć w tym zleceniu')+'</span></div></div><div class="detail-section"><div class="sectionheading">Uwagi</div><div class="notes">'+escape(j.note||'Brak dodatkowych uwag.')+'</div></div></div><div class="detail-actions"><button class="outlinebtn" type="button" data-action="protocol">▣ Protokół (demo)</button><button class="primarybtn" type="button" data-action="edit">✎ Edytuj</button></div>';
+  }
+  function other(){
+    const el=$('other-panel');
+    el.innerHTML='<h2>'+escape(mode)+'</h2><p>Podgląd wyglądu modułu na przykładowych danych. Żadna operacja nie korzysta z produkcji.</p><div class="otherlist">'+Array.from({length:9},(_,i)=>{const m=mode==='Panel paliwa'?['Doblo 1','Doblo 2','Vivaro','Master','Podnośnik'][i%5]:(mode==='Urządzenia'?models[i%models.length]:'Pozycja demonstracyjna '+String(i+1).padStart(2,'0'));return '<div class="othercard"><b>'+escape(m)+'</b><p>'+escape(mode==='Panel paliwa'?'Stan tankowania · dane demo':towns[i%towns.length]+' · przykładowy rekord')+'</p></div>'}).join('')+'</div>';
+  }
+  function render(){
+    nav();
+    const isJobs=mode==='Montaże';
+    $('work').classList.toggle('hidden',!isJobs);
+    $('other-panel').classList.toggle('hidden',isJobs);
+    if(isJobs){statusbar();list();details()}else other();
+  }
+  function edit(j){
+    editing=j||null;
+    const f=$('editform');
+    f.reset();
+    $('modal-title').textContent=editing?'Edytuj montaż — demo':'Nowy montaż — demo';
+    const x=editing||{client:'',city:'Zawiercie',date:'2026-10-09',model:'',status:'Nowe'};
+    for(const k of ['client','city','date','model','status'])f.elements[k].value=x[k];
+    $('modal-backdrop').classList.remove('hidden');f.elements.client.focus();
+  }
+  function close(){$('modal-backdrop').classList.add('hidden')}
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('button');
+    if(!b)return;
+    if(b.dataset.module){mode=b.dataset.module;render();return;}
+    if(b.dataset.role){role=b.dataset.role;render();return;}
+    if(b.dataset.filter){filter=(filter===b.dataset.filter)?null:b.dataset.filter;render();return;}
+    if(b.dataset.job){selected=b.dataset.job;render();if(window.innerWidth<731)toast('Wybrano '+selected+'. Szczegóły można sprawdzić na desktopie.');return;}
+    if(b.dataset.action==='edit'){edit(selectedJob());return;}
+    if(b.dataset.action==='protocol'){toast('Protokół jest tylko prezentacją graficzną — bez generowania PDF.');return;}
+  });
+  $('notify-btn').addEventListener('click',()=>toast('W laboratorium powiadomienia są wyłączone.'));
+  $('search').addEventListener('input',e=>{
+    const pos=e.target.selectionStart;
+    query=e.target.value;list();
+    const input=$('search');input.focus();try{input.setSelectionRange(pos,pos)}catch(e){}
+  });
+  $('editform').addEventListener('submit',e=>{
+    e.preventDefault();
+    const form=e.currentTarget;
+    const data=Object.fromEntries(new FormData(form).entries());
+    if(editing)Object.assign(editing,data);
+    else{const j={id:'DEMO-'+String(jobs.length+1).padStart(3,'0'),...data,installer:'Monter A',street:'ul. Przykładowa 1',photos:0,devices:1,note:''};jobs.unshift(j);selected=j.id}
+    save();filter=null;query='';$('search').value='';close();render();toast('Dane zapisano wyłącznie w demonstracji.');
+  });
+  $('close-modal').addEventListener('click',close);
+  $('cancel-modal').addEventListener('click',close);
+  $('modal-backdrop').addEventListener('click',e=>{if(e.target.id==='modal-backdrop')close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
   render();
 })();
