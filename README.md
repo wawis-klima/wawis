@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 12.77
+- 12.78
+
+Wersja 12.78: poprawka przyczyny braku automatycznego rozpoznania faktury w Fakturowni: po braku OID WAWIS pobiera wystawione faktury z ostatnich 30 dni przypisane do zweryfikowanej kartoteki klienta i pokazuje numery do jednoznacznego zatwierdzenia przez administratora. Automatyczny zapis jest zachowany wyłącznie przy pewnym dopasowaniu OID. Zablokowane dokumenty innego klienta, obce OID, duplikaty i dokumenty już powiązane. Płatności bez zmian.
+
 
 Wersja 12.77: Fakturownia — konkretny komunikat po nieudanej weryfikacji OID, kontrolowane powiązanie wystawionej faktury po numerze, sprawdzanie tożsamości klienta po zaufanym external_id, blokady złego kontrahenta, obcego OID, nieprawidłowego rodzaju/statusu i duplikatu numeru; odrębny test regresji z mockiem API. Bez zmian w płatnościach. Test realnych nowo wystawianych faktur pozostaje EXTERNAL.
 
@@ -915,6 +918,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `12.78` — Fakturownia: brak OID nie kończy szukania; WAWIS odnajduje dokumenty klienta do jawnego potwierdzenia, bez ryzykownego automatycznego dopasowania.
 - wersja `12.77` — Fakturownia: szczegółowe powody braku automatycznego potwierdzenia, ponawianie kontroli i powiązanie wystawionej faktury po numerze z ochroną kontrahenta i montażu. Bez zmian płatności.
 - wersja `12.76` — pakiet 4 Codexa: wiarygodne statusy, awaria startu, kolejka offline i nazewnictwo PUSH bez fałszywego potwierdzenia dostawy.
 - wersja `12.68` — pakiet 3: weryfikacja odbiorców PUSH na serwerze, atomowe blokowanie duplikatów zdarzeń i numerowanie ponownych przypisań.
