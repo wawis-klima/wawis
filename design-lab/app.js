@@ -72,7 +72,7 @@
   }
   function other(){
     const el=$('other-panel');
-    el.innerHTML='<h2>'+escape(mode)+'</h2><p>Podgląd wyglądu modułu na przykładowych danych. Żadna operacja nie korzysta z produkcji.</p><div class="otherlist">'+Array.from({length:9},(_,i)=>{const m=mode==='Panel paliwa'?['Doblo 1','Doblo 2','Vivaro','Master','Podnośnik'][i%5]:(mode==='Urządzenia'?models[i%models.length]:'Pozycja demonstracyjna '+String(i+1).padStart(2,'0'));return '<div class="othercard"><b>'+escape(m)+'</b><p>'+escape(mode==='Panel paliwa'?'Stan tankowania · dane demo':towns[i%towns.length]+' · przykładowy rekord')+'</p></div>'}).join('')+'</div>';
+    el.innerHTML=window.WawisLabPanels.render({mode,role,jobs});
   }
   function render(){
     nav();
@@ -94,12 +94,38 @@
   document.addEventListener('click',e=>{
     const b=e.target.closest('button');
     if(!b)return;
+    if (window.WawisLabPanels && (b.dataset.demoAction||b.dataset.demoClient||b.dataset.demoDevice||b.dataset.demoTab||b.dataset.demoSms||b.dataset.demoDay||b.dataset.demoVehicle)) {
+      const action=window.WawisLabPanels.action(b);
+      const destinations={'goto-devices':'Urządzenia','goto-contractors':'Kontrahenci','goto-sms':'SMS serwis','goto-calendar':'Kalendarz'};
+      if(destinations[action])mode=destinations[action];
+      if(action==='toast')toast('Funkcja demonstracyjna — bez zapisu do produkcji.');
+      render();return;
+    }
     if(b.dataset.module){mode=b.dataset.module;render();return;}
     if(b.dataset.role){role=b.dataset.role;render();return;}
     if(b.dataset.filter){filter=(filter===b.dataset.filter)?null:b.dataset.filter;render();return;}
     if(b.dataset.job){selected=b.dataset.job;render();if(window.innerWidth<731)toast('Wybrano '+selected+'. Szczegóły można sprawdzić na desktopie.');return;}
     if(b.dataset.action==='edit'){edit(selectedJob());return;}
     if(b.dataset.action==='protocol'){toast('Protokół jest tylko prezentacją graficzną — bez generowania PDF.');return;}
+  });
+  document.addEventListener('input',e=>{
+    const kind=e.target?.dataset?.demoSearch;
+    if(!kind)return;
+    const pos=e.target.selectionStart;
+    window.WawisLabPanels.searchChange(kind,e.target.value);
+    other();
+    const input=document.querySelector('[data-demo-search="'+kind+'"]');
+    if(input){input.focus();try{input.setSelectionRange(pos,pos)}catch(e){}}
+  });
+  document.addEventListener('change',e=>{
+    const kind=e.target?.dataset?.demoSelect;
+    if(!kind)return;
+    window.WawisLabPanels.selectChange(kind,e.target.value);other();
+  });
+  document.addEventListener('submit',e=>{
+    if(e.target.id!=='demo-client-form'&&e.target.id!=='demo-fuel-form')return;
+    e.preventDefault();
+    if(window.WawisLabPanels.form(e)){other();toast('Zapisano tylko w demonstracji.');}
   });
   $('notify-btn').addEventListener('click',()=>toast('W laboratorium powiadomienia są wyłączone.'));
   $('search').addEventListener('input',e=>{
