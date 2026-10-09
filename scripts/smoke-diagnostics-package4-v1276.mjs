@@ -107,6 +107,12 @@ events.error({target:{tagName:'SCRIPT',src:'/assets/missing-file.js'}});
 assert.equal(fakeWindow.__wawisBootTrace.snapshot().failed,true);
 assert.equal(fakeWindow.__wawisBootTrace.snapshot().stage,'module-load-failed');
 assert.equal(buttons.length,1);
+// A late lazy-import error must not replace an already rendered application.
+fakeWindow.__wawisBootTrace.mark('render-requested');
+fakeRoot.textContent='APP LOADED';
+events.error({target:{tagName:'SCRIPT',src:'/assets/lazy-component.js'}});
+assert.equal(fakeRoot.textContent,'APP LOADED');
+assert.equal(buttons.length,1);
 globalThis.window = {__wawisBootTrace:{snapshot:()=>({
  stage:'module-load-failed',failed:true,durationMs:50,
  steps:[{stage:'imports',durationMs:5},{stage:'CLIENT SECRET',durationMs:11}],message:'Jan Testowy / Bearer secret',
