@@ -1,3 +1,5 @@
+import { getCustomerCardDisplayName } from "../../utils/customerCardDisplayName.js";
+import "../../styles/mobile-job-card-name-v1292.css";
 import React from "react";
 import { APP_VERSION } from "../../version";
 import { IconFilter, IconLogout, IconPlus, IconRefresh, IconUser } from "../ui";
@@ -129,7 +131,7 @@ export default function MobileJobsLayout({
           <div key={job.id} className={`mobileJobCard ${selectedJob?.id === job.id ? "activeMobileJobCard" : ""}`}>
             <button type="button" className="mobileJobCardButton" onClick={() => setSelectedJob(job)}>
               <div className="mobileJobTop">
-                <strong className="mobileJobClient">{job.client || job.title}</strong>
+                <strong className="mobileJobClient" title={String(job.client || job.title || "Bez klienta")} aria-label={String(job.client || job.title || "Bez klienta")}>{getCustomerCardDisplayName(job.client || job.title || "Bez klienta")}</strong>
                 <span className="mobileJobDate">{getJobListDate(job) ? formatDate(getJobListDate(job)) : (String(job?.status || "") === "Zakończone" ? "Brak daty" : "-")}</span>
               </div>
               <div className="mobileJobGrid mobileJobGridSingleField">
