@@ -1,7 +1,7 @@
 ## 13.02
 - Mobilna edycja administratora: przycisk rozpoznawania mowy ma tylko ikonę mikrofonu, z zachowaną etykietą dostępności; nagłówek bez nakładania tekstu.
 - Nazwa klienta używa pola rozszerzającego wysokość do dwóch wierszy przy długim tekście bez zmian wartości w bazie. Telefon i NIP obok siebie w równych kolumnach z przerwą 8 px.
-- Przerwy pionowe powiększono do 5 px; komentarz administratora do 112 px w typowym iPhonie. Na niższych ekranach przewijanie zabezpiecza dostęp do zapisu.
+- Przerwy pionowe powiększono do 4 px; komentarz administratora ma 104 px, żeby cały formularz zmieścił się na ekranie iPhone’a. Na niższych ekranach przewijanie zabezpiecza dostęp do zapisu.
 - Playwright kontroluje wysokość nazwy, proporcje pól telefon/NIP, kolizje nagłówka, dostępność mikrofonu i widoczność komentarza. Bez zmian uprawnień, zapisu, OCR, protokołu, pracownika, desktopu i tworzenia nowego montażu.
 
 ## 13.01
