@@ -1,3 +1,8 @@
+## 13.01
+- Mobile / Administrator / Edytuj montaż: Nagłówek, Wprowadź głosowo i Zamknij w jednym wierszu; Telefon oraz NIP obok siebie; przycisk głosowy 32 px, pozostałe pola 32 px, font 13 px, odstępy 3 px.
+- Komentarz administratora 104 px (wcześniej 54 px) — około dwukrotnie większe pole, z możliwością przewinięcia długiej treści i ręcznego powiększania.
+- E2E iPhone weryfikuje układ w jednym ekranie i widoczność Zapisz zmiany. Na krótkich ekranach pozwalamy przewinąć formularz, bez obcinania zapisu. Pracownik, nowy montaż, desktop i działanie zapisu/daty bez zmian.
+
 ## 13.00
 - Mobile / Administrator / Edytuj montaż: wysokość pól 38 → 34 px, przerwy 5 → 4 px, font treści pól 16 → 14 px, nagłówek 19 → 17 px. Przyciski, data, status, adres i komentarz mają spójne, mniejsze proporcje.
 - Test Playwright na mobilnym ekranie weryfikuje rzeczywiste rozmiary, czcionki i brak overflow; regresja pracownika, desktopu i działania kalendarza pozostaje wymagana.

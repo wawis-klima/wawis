@@ -1,9 +1,9 @@
 {
-  "version": "13.00",
-  "summary": "Mniejsze pola i czcionki w mobilnej edycji montażu administratora",
+  "version": "13.01",
+  "summary": "Edytuj montaż administratora: całość na jednym ekranie i większy komentarz",
   "changes": [
-    "Pola 34 px i odstępy 4 px; czcionka formularza 14 px, nagłówek 17 px.",
-    "Zmniejszone proporcje przycisków, adresu, statusu, daty i komentarza administratora.",
-    "Playwright sprawdza wysokość pól oraz rzeczywiste rozmiary czcionek; dane i widok pracownika bez zmian."
+    "Zamknij i Wprowadź głosowo w jednym rzędzie z nagłówkiem, Telefon i NIP obok siebie; pola 32 px i tekst 13 px.",
+    "Komentarz administratora ma 104 px zamiast 54 px i można go wewnętrznie przewijać oraz powiększać.",
+    "Zapis na ekranie typowego iPhone’a; krótkie ekrany zachowują przewijanie. Pracownik i desktop bez zmian."
   ]
 }

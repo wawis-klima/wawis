@@ -136,7 +136,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         phoneHeight:phone?.height,
         nipHeight:nip?.height,
         phoneGap:phone && email ? phone.top-email.bottom : -1,
-        nipGap:nip && phone ? nip.top-phone.bottom : -1,
+        nipRowDelta:nip && phone ? Math.abs(nip.top-phone.top) : 999,
+        nipColumnGap:nip && phone ? nip.left-phone.right : -1,
         closeHeight:rect('.jobHead > .btn')?.height,
         voiceHeight:rect('.voiceClientMainBtn')?.height,
         dateHeight:rect('.installationDateInputShell')?.height,
@@ -156,8 +157,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     }
     expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(2);
     expect(compactLayout.phoneGap).toBeLessThanOrEqual(6);
-    expect(compactLayout.nipGap).toBeGreaterThanOrEqual(2);
-    expect(compactLayout.nipGap).toBeLessThanOrEqual(6);
+    expect(compactLayout.nipRowDelta).toBeLessThanOrEqual(2);
+    expect(compactLayout.nipColumnGap).toBeGreaterThanOrEqual(2);
     for (const key of ['fontSize','addressFont','statusFont','dateFont','noteFont']) {
       expect(compactLayout[key], key + ' must be visibly smaller on mobile').toBeGreaterThanOrEqual(13);
       expect(compactLayout[key], key + ' must no longer be 16px').toBeLessThanOrEqual(14.5);
@@ -165,6 +166,34 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactLayout.headingFont).toBeLessThanOrEqual(18);
     expect(compactLayout.voiceFont).toBeLessThanOrEqual(14);
     expect(compactLayout.overflow).toBeLessThanOrEqual(2);
+    // WAWIS 13.01: full admin form, save button and enlarged comment fit iPhone 14.
+    const oneScreen = await modal.evaluate(el => {
+      const box = node => node.getBoundingClientRect();
+      const header = box(el.querySelector('.jobHead h2'));
+      const close = box(el.querySelector('.jobHead > .btn'));
+      const note = el.querySelector('.adminNoteTextareaCompact');
+      const noteRect = box(note);
+      const saveRect = box(el.querySelector('.saveJobBtn'));
+      const content = box(el.querySelector('form'));
+      const shell = box(el);
+      return {
+        headerCenter: header.y+header.height/2,
+        closeCenter: close.y+close.height/2,
+        noteHeight:noteRect.height,
+        noteFont:parseFloat(getComputedStyle(note).fontSize),
+        saveBottom:saveRect.bottom,
+        modalBottom:shell.bottom,
+        contentBottom:content.bottom,
+        scrollOverflow:el.scrollHeight-el.clientHeight,
+        viewportHeight:window.innerHeight,
+      };
+    });
+    expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
+    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(102);
+    expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
+    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.modalBottom+2);
+    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.viewportHeight+2);
+    expect(oneScreen.scrollOverflow).toBeLessThanOrEqual(3);
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
     const dateText = modal.locator('.adminDateVisibleLabelV1297');
     const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
