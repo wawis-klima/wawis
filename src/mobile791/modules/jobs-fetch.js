@@ -23,7 +23,9 @@ async function getCurrentProfile({ supabase, user, existingProfile = null, onPro
     id: user.id,
     full_name: user.user_metadata?.full_name || user.email || 'Użytkownik',
     email: user.email,
-    role: user.user_metadata?.role || 'Pracownik',
+    // Never trust mutable auth user_metadata for privilege escalation during a 504.
+    // A server-verified or previously cached profile is handled independently.
+    role: 'Pracownik',
   };
 
   const result = await safeRead(
