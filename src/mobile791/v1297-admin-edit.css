@@ -327,3 +327,80 @@
     background:#fff!important;
   }
 }
+
+/* WAWIS 13.01: measured iPhone 14 overflow fix — compact two-column phone/NIP,
+   three-piece top row (title, voice and close), full-width note and save.
+   Works with existing display:contents wrappers; no JSX or data flow changes. */
+@media (max-width:700px) {
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    display:grid!important;
+    grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) 66px!important;
+    column-gap:5px!important;
+    row-gap:2px!important;
+    align-items:center!important;
+    min-width:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) > .jobHead,
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) > .jobFormGeneralFields,
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) > .jobFormAdminFields {
+    display:contents!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) > .jobHead > h2 {
+    grid-column:1!important;
+    grid-row:1!important;
+    font-size:15px!important;
+    line-height:1.1!important;
+    margin:0!important;
+    white-space:nowrap!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) > .jobHead > .btn {
+    grid-column:3!important;
+    grid-row:1!important;
+    width:66px!important;
+    min-width:0!important;
+    height:32px!important;
+    min-height:32px!important;
+    padding:3px 4px!important;
+    font-size:11px!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .jobFormGeneralFields > * {
+    grid-column:1 / -1!important;
+    min-width:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .jobFormGeneralFields > .voiceClientInput {
+    grid-column:2!important;
+    grid-row:1!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .voiceClientMainBtn {
+    width:100%!important;
+    min-width:0!important;
+    height:32px!important;
+    min-height:32px!important;
+    padding:3px 4px!important;
+    font-size:10.5px!important;
+    white-space:nowrap!important;
+    line-height:1!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .jobFormGeneralFields > input[placeholder="Telefon klienta / SMS"] {
+    grid-column:1!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .jobFormGeneralFields > input.jobNipCompactInput {
+    grid-column:2 / 4!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .jobFormAdminFields > .adminNoteInputBlock {
+    grid-column:1 / -1!important;
+    min-width:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) > .row.rightAlign {
+    grid-column:1 / -1!important;
+    width:100%!important;
+    margin:2px 0 0!important;
+  }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:104px!important;
+    min-height:104px!important;
+    max-height:170px!important;
+  }
+}
