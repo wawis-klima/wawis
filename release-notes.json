@@ -1,9 +1,9 @@
 {
-  "version": "12.97",
-  "summary": "Uproszczona mobilna edycja administratora i wyśrodkowana data na iPhonie.",
+  "version": "12.98",
+  "summary": "Bardziej kompaktowy mobilny formularz Edytuj montaż dla administratora.",
   "changes": [
-    "Data montażu w edycji administratora wyśrodkowana pionowo i poziomo, z zachowaniem natywnego kalendarza, Wyczyść i Zapisz zmiany.",
-    "Usunięto z formularza admina sekcje Urządzenia w montażu i Instalatorzy (opcjonalnie), bez zmiany zapisanych danych.",
-    "Tabliczki dostępne w osobnym kreatorze; konto pracownika i desktop bez zmian."
+    "Pola 44 px i odstępy 7 px skracają formularz.",
+    "Natywny wybór daty iOS oraz czytelny tekst 16 px bez zmian funkcjonalnych.",
+    "Tylko edycja administratora na mobile; pracownik, nowy montaż i desktop bez zmian."
   ]
 }
