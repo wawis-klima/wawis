@@ -18,7 +18,7 @@ assert.ok(permissions.includes('isWorkerLockedCompletedJob'), 'UI nie chroni zak
 assert.ok(form.includes("main_technician_id: form.main_technician_id || ''"), 'Nowy montaż pracownika kasuje głównego technika.');
 assert.ok(form.includes('viewers: [...new Set((form.viewers || []).filter(Boolean))]'), 'Nowy montaż pracownika kasuje dodatkowych instalatorów.');
 assert.ok(form.includes('profile.id, ...getAssignedUserIdsFromForm(resolvedForm)'), 'Brak dostępu twórcy i wybranych instalatorów.');
-assert.ok(modal.includes('(editingJobId || !isAdmin) ? ('), 'Pracownik nie widzi wyboru instalatorów przy dodawaniu montażu.');
+assert.ok(!modal.includes('Instalatorzy (opcjonalnie)'), 'Mobilny formularz nie może przywracać listy instalatorów.');
 assert.ok(details.includes('{canEditSelectedJob ? ('), 'Pracownik nie ma przycisku edycji aktywnego montażu.');
 assert.ok(details.includes("isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'"), 'Brak jasnej akcji edycji danych klienta dla pracownika.');
 assert.ok(!details.includes('{canEditSelectedJob && isAdmin ? ('), 'Przycisk edycji klienta nadal jest ograniczony tylko do administratora.');
@@ -31,7 +31,7 @@ assert.ok(form.includes('createContractorFromWorkerJobForm({ supabase, form: lin
 assert.ok(modal.includes("contractor_id: editingJobId ? prev.contractor_id : ''"), 'Wprowadzanie danych głosem podczas edycji nadal odpina kartotekę klienta.');
 assert.ok(modal.includes("field === 'client' && prev.contractor_id && !editingJobId"), 'Ręczna zmiana nazwy klienta podczas edycji nadal odpina kartotekę zamiast ją nadpisać.');
 assert.ok(form.includes('installers_confirmed: Array.isArray(job.installer_ids)'), 'Stary montaż nie rozróżnia potwierdzonej listy monterów od job_access.');
-assert.ok(modal.includes('Potwierdź monterów tego montażu'), 'Brak jawnego potwierdzenia monterów dla historycznego montażu.');
+assert.ok(!modal.includes('Potwierdź monterów tego montażu'), 'Potwierdzenie listy monterów nie powinno wracać do mobilnej edycji danych klienta.');
 assert.ok(details.includes('installersConfirmed = Array.isArray(selectedJob.installer_ids)'), 'Karta montażu nadal traktuje job_access jak listę monterów.');
 assert.ok(edge.includes('callerIsStaff'), 'Push nie rozpoznaje pracownika jako członka zespołu.');
 assert.ok(edge.includes('Tylko pracownik lub administrator może wysyłać przypisania push.'), 'Push przypisania nadal jest tylko dla administratora.');
