@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.95",
+  "version": "12.96",
   "scope": "mobile",
-  "release_branch": "release/v12.95",
+  "release_branch": "release/v12.96",
   "baseline_diagnostics": {
-    "checked": true,
+    "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Frontend visual-only worker actions/edit + shared payment select text. Live diagnostics not reread for this change."
+    "notes": "Visual-only native iOS date text fix; no live diagnostic query for this UI task."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.95.zip"
+    "file_name": "klima-app-v12.96.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.95",
+    "source_branch": "release/v12.96",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR exact CI + Vercel READY + real iPhone",
-    "notes": "Verify v12.95 on worker phone and check admin layout unchanged."
+    "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
+    "notes": "Confirm 12.96 on employee iPhone: date centered and native picker works. Administrator unchanged."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Employee-only detail buttons and edit styles; admin edit/actions unchanged. Shared protocol payment placeholder trimmed.",
-    "release_ci": "REQUIRED — PR exact SHA targeted checks, mobile and desktop Playwright, Closure Gate, production build",
-    "post_deploy": "EXTERNAL — Vercel READY exact SHA, public version 12.95 and physical iPhone"
+    "code": "Worker-only date label overlay in edit modal; transparent full-size native input retains picker and save behavior; no changes for administrator.",
+    "release_ci": "REQUIRED exact PR HEAD targeted regression, browser geometry E2E, Closure Gate, production build.",
+    "post_deploy": "EXTERNAL — Vercel READY exact SHA, displayed public/app version 12.96, real iPhone check."
   }
 }
