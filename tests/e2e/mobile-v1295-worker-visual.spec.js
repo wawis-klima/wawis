@@ -95,7 +95,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await nativeDate.fill('2026-10-16');
     await expect(nativeDate).toHaveValue('2026-10-16');
     await expect(dateText).toContainText(/16 paź/i);
-    await modal.getByRole('button', { name: 'Wyczyść' }).click();
+    await modal.locator('.installationDateClearBtn').click();
     await expect(dateText).toHaveText('Wybierz datę');
     await expect(nativeDate).toHaveValue('');
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeAttached();
@@ -110,7 +110,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await expect(method.locator('option')).toHaveCount(3);
   });
 
-  test('administrator zachowuje układ akcji i formularz bez klas pracownika', async ({ page }) => {
+  test('administrator zachowuje akcje, ale edycja nie pokazuje urządzeń i monterów oraz centruje datę', async ({ page }) => {
     await openActive(page, ADMIN);
     const actions = page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons');
     await expect(actions).toBeVisible();
@@ -119,8 +119,37 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     const modal = page.locator('.formModal');
     await expect(modal).toBeVisible();
     await expect(modal).not.toHaveClass(/workerMobileEditModalV1295/);
+    await expect(modal).toHaveClass(/adminMobileEditModalV1297/);
     await expect(modal.locator('.workerDateVisibleLabelV1296')).toHaveCount(0);
-    await expect(modal.locator('input.installationDateNativeInput[type="date"]')).not.toHaveCSS('opacity', '0');
+    await expect(modal.locator('.jobDevicesSection')).toHaveCount(0);
+    await expect(modal.getByRole('heading', { name: /Instalatorzy/ })).toHaveCount(0);
+    await expect(modal.locator('.viewerGrid')).toHaveCount(0);
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
+    const dateText = modal.locator('.adminDateVisibleLabelV1297');
+    const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
+    await expect(dateText).toBeVisible();
+    await expect(nativeDate).toHaveCSS('opacity', '0');
+    const geometry = await modal.evaluate((el) => {
+      const shell = el.querySelector('.installationDateInputShell').getBoundingClientRect();
+      const label = el.querySelector('.adminDateVisibleLabelV1297').getBoundingClientRect();
+      const input = el.querySelector('.installationDateNativeInput').getBoundingClientRect();
+      return {
+        center: Math.abs(shell.top + shell.height / 2 - label.top - label.height / 2),
+        hitArea: Math.abs(shell.width - input.width) + Math.abs(shell.height - input.height),
+        verticalAlignment: getComputedStyle(el.querySelector('.adminDateVisibleLabelV1297')).alignItems,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    expect(geometry.center).toBeLessThanOrEqual(2);
+    // Obszar inputu pokrywa wnętrze powłoki; po 1px ramki na krawędź daje do 4px sumy różnic.
+    expect(geometry.hitArea).toBeLessThanOrEqual(4);
+    expect(geometry.verticalAlignment).toBe('center');
+    expect(geometry.overflow).toBeLessThanOrEqual(2);
+    await nativeDate.fill('2026-10-16');
+    await expect(dateText).toContainText(/16 paź/i);
+    await modal.locator('.installationDateClearBtn').click();
+    await expect(nativeDate).toHaveValue('');
+    await expect(dateText).toHaveText('Wybierz datę');
+    await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
   });
 });

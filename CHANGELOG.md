@@ -1,3 +1,8 @@
+## 12.97
+- Mobile / Administrator / Edytuj montaż: usunięto z tego formularza osadzoną sekcję „Urządzenia w montażu” i listę „Instalatorzy (opcjonalnie)”; nie usunięto urządzeń ani zapisanych przypisań.
+- Osobny kreator Tabliczki pozostaje dostępny z karty montażu. Data montażu jest wyśrodkowana także na iPhonie administratora z pełnowymiarowym, klikalnym natywnym polem iOS.
+- Formularz mobilny pracownika i desktop bez zmian. Testy smoke, Playwright oraz release gate kontrolują izolację ról i przepływy połączonych modułów; brak migracji Supabase.
+
 ## 12.96
 - iPhone / Pracownik / Edytuj montaż: właściwa wartość daty (np. 10 paź 2026) jest wyśrodkowana w pionie i w poziomie wewnątrz pola, zamiast u góry.
 - Tylko dla mobilnej edycji pracownika: przezroczysty natywny input daty zapewnia pełny obszar dotyku i natywny kalendarz iOS, a warstwa aria-hidden wyświetla dokładnie tę samą wartość.

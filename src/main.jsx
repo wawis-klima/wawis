@@ -122,6 +122,7 @@ async function boot() {
     await import('./mobile791/v1092-inline-width.css')
     await import('./mobile791/v1198-new-job-compact.css')
     await import('./mobile791/v1295-worker-ui.css')
+    await import('./mobile791/v1297-admin-edit.css')
   }
 
   window.__wawisBootTrace?.mark?.('styles-ready')

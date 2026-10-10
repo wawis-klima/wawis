@@ -21,13 +21,7 @@ assert.ok(voice.includes('continuous: true'), 'Sesja komentarza powinna nasłuch
 
 assert.ok(css.includes('min-height:68px!important'), 'Pole komentarza nadal jest zbyt wysokie na mobile.');
 
-const installerCount = (modal.match(/Instalatorzy \(opcjonalnie\)/g) || []).length;
-assert.equal(installerCount, 1, 'Sekcja instalatorów powinna występować dokładnie raz w mobilnym formularzu.');
-assert.match(
-  modal,
-  /\{\(editingJobId \|\| !isAdmin\) \? \(\s*<>\s*<h4>Instalatorzy \(opcjonalnie\)<\/h4>/,
-  'Pracownik ma widzieć instalatorów również podczas tworzenia nowego montażu.',
-);
+assert.ok(!modal.includes('Instalatorzy (opcjonalnie)'), 'Formularz mobilny nie powinien wyświetlać listy instalatorów.');
 
 assert.ok(voice.includes('export function appendVoiceNoteText'), 'Brak helpera dopisywania kolejnych nagrań.');
 

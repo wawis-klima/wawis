@@ -17,7 +17,9 @@ assert.ok(desktopJobForm.includes('Komentarz administratora'), 'Nowy formularz s
 assert.ok(desktopJobForm.includes('Instalatorzy (opcjonalnie)'), 'Nowy formularz stracił przydział instalatorów.');
 assert.ok(desktopJobForm.includes('Zapisz zlecenie'), 'Nowy formularz stracił zapis zlecenia.');
 
-assert.ok(mobileJobForm.includes('<div className="jobDevicesSection">'), 'Mobile stracił sekcję urządzeń mimo desktopowego zakresu zmiany.');
+// 12.97: mobile edits job data only; JZ/JW remain available through the dedicated wizard.
+assert.ok(!mobileJobForm.includes('<div className="jobDevicesSection">'), 'Mobile admin edit must not embed device editor.');
+assert.ok(mobileJobForm.includes('<MobileDeviceWizard'), 'Separate mobile JZ/JW wizard must remain available.');
 assert.ok(jobsForm.includes('device_model: deviceFields.device_model || null'), 'Zapis nowego zlecenia nie obsługuje pustego modelu urządzenia.');
 assert.ok(jobsForm.includes('device_serial_number: deviceFields.device_serial_number || null'), 'Zapis nowego zlecenia nie obsługuje pustego numeru seryjnego.');
 

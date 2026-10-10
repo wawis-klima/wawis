@@ -1,0 +1,49 @@
+/* WAWIS 12.97 — iPhone: centered iOS date for administrator edit only.
+   Native input remains above the aria-hidden display so tapping still opens iOS picker. */
+@media (max-width: 700px) {
+  .formModal.adminMobileEditModalV1297 .installationDateInputShell {
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    isolation:isolate;
+  }
+  .adminMobileEditModalV1297 .adminDateVisibleLabelV1297 {
+    position:absolute!important;
+    inset:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    height:100%!important;
+    box-sizing:border-box!important;
+    padding:0 10px!important;
+    margin:0!important;
+    font-size:16px!important;
+    font-weight:400!important;
+    line-height:1.25!important;
+    color:#0f172a!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+    pointer-events:none!important;
+    z-index:0!important;
+  }
+  .adminMobileEditModalV1297 .installationDateNativeInput {
+    position:absolute!important;
+    inset:0!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    max-height:none!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    opacity:0!important;
+    cursor:pointer!important;
+    z-index:1!important;
+  }
+  .adminMobileEditModalV1297 .installationDateInputShell:focus-within {
+    outline:2px solid #93c5fd;
+    outline-offset:1px;
+  }
+}

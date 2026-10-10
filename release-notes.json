@@ -1,9 +1,9 @@
 {
-  "version": "12.96",
-  "summary": "Wyrównanie daty w mobilnej edycji pracownika na iPhonie.",
+  "version": "12.97",
+  "summary": "Uproszczona mobilna edycja administratora i wyśrodkowana data na iPhonie.",
   "changes": [
-    "Data wewnątrz pola jest wyśrodkowana, a nie przesunięta do góry.",
-    "Kalendarz systemowy iOS, zmiana, Wyczyść i zapisywanie daty pozostają aktywne.",
-    "Bez zmian formularza administratora i nowego montażu."
+    "Data montażu w edycji administratora wyśrodkowana pionowo i poziomo, z zachowaniem natywnego kalendarza, Wyczyść i Zapisz zmiany.",
+    "Usunięto z formularza admina sekcje Urządzenia w montażu i Instalatorzy (opcjonalnie), bez zmiany zapisanych danych.",
+    "Tabliczki dostępne w osobnym kreatorze; konto pracownika i desktop bez zmian."
   ]
 }

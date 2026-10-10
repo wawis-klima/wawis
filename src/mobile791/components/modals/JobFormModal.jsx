@@ -690,7 +690,7 @@ export default function JobFormModal({
         warnBeforeUnload={Boolean(jobFormDirty || busy)}
       onClose={handleClose}
       overlayClassName="formOverlay"
-      contentClassName={`card modal formModal${editingJobId && !isAdmin ? " workerMobileEditModalV1295" : ""}`}
+      contentClassName={`card modal formModal${editingJobId && !isAdmin ? " workerMobileEditModalV1295" : ""}${editingJobId && isAdmin ? " adminMobileEditModalV1297" : ""}`}
     >
       <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>
         <div className="jobHead">
@@ -839,6 +839,11 @@ export default function JobFormModal({
             className="installationDateInputShell"
             style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: 50, overflow: 'hidden', border: '1px solid #cfdbea', borderRadius: 16, background: '#fff', boxSizing: 'border-box', marginTop: 8 }}
           >
+            {editingJobId && isAdmin ? (
+              <span className="adminDateVisibleLabelV1297" aria-hidden="true">
+                {formatWorkerInstallationDate(jobForm.installation_date)}
+              </span>
+            ) : null}
             {editingJobId && !isAdmin ? (
               <span className="workerDateVisibleLabelV1296" aria-hidden="true">
                 {formatWorkerInstallationDate(jobForm.installation_date)}
@@ -855,193 +860,6 @@ export default function JobFormModal({
           </div>
         </div>
         </div>
-        {editingJobId && (isAdmin || serialOnlyMode) ? (
-        <div className="jobDevicesSection">
-          <div className="jobDevicesHeader">
-            <div>
-              <strong>Urządzenia w montażu</strong>
-              <span>{serialOnlyMode ? 'Ustaw rzeczywistą liczbę urządzeń i dodaj zdjęcie każdej tabliczki.' : 'Wybierz typ single-split albo multi-split. Do każdej JZ i JW dodaj osobne zdjęcie tabliczki.'}</span>
-            </div>
-            <button type="button" className="btn jobDeviceAddBtn" onClick={addDeviceRow} aria-label="Dodaj kolejne urządzenie">
-              {serialOnlyMode ? '+ Dodaj kolejny komplet JZ/JW' : '+ Dodaj urządzenie'}
-            </button>
-          </div>
-          <div className="jobDevicesList">
-            {jobDevices.map((device, index) => {
-              const deviceType = getDeviceType(device);
-              const isMultiSplit = deviceType === DEVICE_TYPE_MULTI;
-              const indoorSerials = getDeviceIndoorSerials(device, { keepEmpty: true });
-              const indoorModels = getDeviceIndoorModels(device, {
-                keepEmpty: true,
-                minimumLength: indoorSerials.length,
-              });
-              const pendingNameplatePhotos = Array.isArray(jobForm.pending_nameplate_photos) ? jobForm.pending_nameplate_photos : [];
-              const outdoorNameplateDocument = pendingNameplatePhotos.find((item) => Number(item.deviceIndex) === index && item.unitRef === 'jz') || null;
-              const outdoorExistingNameplate = getExistingNameplatePhoto(index, 'jz');
-              return (
-                <div className="jobDeviceRow" key={`job-device-${index}`}>
-                  <div className="jobDeviceRowTitle">
-                    <strong>Urządzenie {index + 1}</strong>
-                    {jobDevices.length > 1 ? (
-                      <button
-                        type="button"
-                        className="fieldClearBtn jobDeviceRemoveBtn"
-                        onClick={() => removeDeviceRow(index)}
-                      >
-                        Usuń
-                      </button>
-                    ) : null}
-                  </div>
-                  <div className="jobDeviceTypeBlock">
-                    <div>
-                      <strong>Typ urządzenia</strong>
-                      <span>{isMultiSplit ? 'Multi-split: jedna JZ i kilka jednostek wewnętrznych.' : 'Single-split: jedna JZ i jedna jednostka wewnętrzna.'}</span>
-                    </div>
-                    <div className="jobDeviceTypeToggle" role="group" aria-label={`Typ urządzenia ${index + 1}`}>
-                      <button
-                        type="button"
-                        className={`jobDeviceTypeOption${!isMultiSplit ? ' active' : ''}`}
-                        onClick={() => updateDeviceType(index, DEVICE_TYPE_SINGLE)}
-                      >
-                        Single-split
-                      </button>
-                      <button
-                        type="button"
-                        className={`jobDeviceTypeOption${isMultiSplit ? ' active' : ''}`}
-                        onClick={() => updateDeviceType(index, DEVICE_TYPE_MULTI)}
-                      >
-                        Multi-split
-                      </button>
-                    </div>
-                  </div>
-                  <div className="jobDeviceFieldsGrid">
-                    <div className="jobUnitDocumentationCard jobOutdoorDocumentationCard">
-                      <div className="jobUnitDocumentationTitle">
-                        <strong>Jednostka zewnętrzna JZ</strong>
-                        {!serialOnlyMode ? <span>Dane tekstowe są opcjonalne.</span> : null}
-                      </div>
-                      {!serialOnlyMode ? (<>
-                        <label className="inputLabel">
-                          <span>Model JZ (opcjonalnie)</span>
-                          <input
-                            className="input"
-                            placeholder="np. I35Xo R14"
-                            value={getDeviceOutdoorModel(device)}
-                            onChange={(e) => updateDeviceField(index, "outdoor_model", e.target.value)}
-                          />
-                        </label>
-                        <label className="inputLabel">
-                          <span>Numer seryjny JZ (opcjonalnie)</span>
-                          <input
-                            className="input"
-                            placeholder="Możesz pozostawić puste"
-                            value={device.outdoor_serial_number || ''}
-                            onChange={(e) => updateDeviceField(index, "outdoor_serial_number", e.target.value)}
-                          />
-                        </label>
-                      </>) : null}
-                      <NameplatePhotoCapture
-                        fieldLabel={`Jednostka zewnętrzna JZ — urządzenie ${index + 1}`}
-                        file={outdoorNameplateDocument?.file || null}
-                        existingPhotoUrl={String(outdoorExistingNameplate?.uploadStatus || '').toLowerCase() === 'error' ? '' : (outdoorExistingNameplate?.url || '')}
-                        jobId={editingJobId}
-                        unitRef="jz"
-                        currentModel={getDeviceOutdoorModel(device)}
-                        currentSerial={device.outdoor_serial_number || ''}
-                        verified={Boolean(outdoorNameplateDocument?.verified || String(outdoorExistingNameplate?.ocrStatus || '').toLowerCase() === 'approved')}
-                        onSelect={(file, reading) => applyNameplatePhoto(index, 'jz', file, reading)}
-                        onRemove={() => removePendingNameplatePhoto(index, 'jz')}
-                      />
-                    </div>
-                    <div className={`jobIndoorUnitsBlock${isMultiSplit ? ' multi' : ' single'}`}>
-                      <div className="jobIndoorUnitsHeader">
-                        <div>
-                          <strong>{isMultiSplit ? 'Jednostki wewnętrzne multi-split' : 'Jednostka wewnętrzna'}</strong>
-                          <span>
-                            {isMultiSplit
-                              ? `Do jednego urządzenia multi możesz dopisać maksymalnie ${MAX_INDOOR_UNITS_PER_DEVICE} jednostek wewnętrznych.`
-                              : 'W trybie single-split pokazujemy tylko jedną jednostkę wewnętrzną.'}
-                          </span>
-                        </div>
-                        {isMultiSplit ? (
-                          <button
-                            type="button"
-                            className="btn secondary jobIndoorUnitAddBtn"
-                            onClick={() => addIndoorUnit(index)}
-                            disabled={indoorSerials.length >= MAX_INDOOR_UNITS_PER_DEVICE}
-                          >
-                            + Dodaj tylko jednostkę wewnętrzną
-                          </button>
-                        ) : null}
-                      </div>
-                      <div className="jobIndoorUnitsList">
-                        {indoorSerials.map((serial, indoorIndex) => {
-                          const unitRef = `jw-${indoorIndex + 1}`;
-                          const nameplateDocument = pendingNameplatePhotos.find((item) => Number(item.deviceIndex) === index && item.unitRef === unitRef) || null;
-                          const existingNameplate = getExistingNameplatePhoto(index, unitRef);
-                          return (
-                            <div className="jobIndoorUnitField jobUnitDocumentationCard" key={`job-device-${index}-indoor-${indoorIndex}`}>
-                              <div className="jobUnitDocumentationTitle">
-                                <strong>{isMultiSplit ? `Jednostka wewnętrzna JW ${indoorIndex + 1}` : 'Jednostka wewnętrzna JW'}</strong>
-                                {isMultiSplit && indoorSerials.length > 1 ? (
-                                  <button
-                                    type="button"
-                                    className="fieldClearBtn jobIndoorUnitRemoveBtn"
-                                    onClick={() => removeIndoorUnit(index, indoorIndex)}
-                                  >
-                                    Usuń JW
-                                  </button>
-                                ) : null}
-                              </div>
-                              {!serialOnlyMode ? (<>
-                                <label className="inputLabel">
-                                  <span>Model {isMultiSplit ? `JW ${indoorIndex + 1}` : 'JW'} (opcjonalnie)</span>
-                                  <input
-                                    className="input jobIndoorUnitModelInput"
-                                    placeholder="np. I35Xi R14"
-                                    value={indoorModels[indoorIndex] || ''}
-                                    onChange={(e) => updateIndoorUnitField(index, indoorIndex, 'model', e.target.value)}
-                                  />
-                                </label>
-                                <label className="inputLabel">
-                                  <span>Numer seryjny {isMultiSplit ? `JW ${indoorIndex + 1}` : 'JW'} (opcjonalnie)</span>
-                                  <input
-                                    className="input"
-                                    placeholder="Możesz pozostawić puste"
-                                    value={serial || ''}
-                                    onChange={(e) => updateIndoorUnitField(index, indoorIndex, 'serial', e.target.value)}
-                                  />
-                                </label>
-                              </>) : null}
-                              <NameplatePhotoCapture
-                                fieldLabel={`${isMultiSplit ? `Jednostka wewnętrzna JW ${indoorIndex + 1}` : 'Jednostka wewnętrzna JW'} — urządzenie ${index + 1}`}
-                                file={nameplateDocument?.file || null}
-                                existingPhotoUrl={String(existingNameplate?.uploadStatus || '').toLowerCase() === 'error' ? '' : (existingNameplate?.url || '')}
-                                jobId={editingJobId}
-                                unitRef={unitRef}
-                                currentModel={indoorModels[indoorIndex] || ''}
-                                currentSerial={serial || ''}
-                                verified={Boolean(nameplateDocument?.verified || String(existingNameplate?.ocrStatus || '').toLowerCase() === 'approved')}
-                                onSelect={(file, reading) => applyNameplatePhoto(index, unitRef, file, reading)}
-                                onRemove={() => removePendingNameplatePhoto(index, unitRef)}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    {!serialOnlyMode && device.legacy_serial_number && !getDeviceIndoorSerials(device).length && !device.outdoor_serial_number ? (
-                      <div className="jobDeviceLegacySerialNote">
-                        Stary zapis numeru seryjnego: <strong>{device.legacy_serial_number}</strong>. Zostanie zachowany, jeśli nie wpiszesz numerów JW/JZ.
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        ) : null}
         {isAdmin && editingJobId ? (
           <div className="jobFormAdminFields" hidden={serialOnlyMode}>
             <div className="inputLabel adminNoteInputBlock" style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}>
@@ -1070,32 +888,6 @@ export default function JobFormModal({
                 onChange={(e) => updateField("admin_note", e.target.value)}
               />
             </div>
-            {(editingJobId || !isAdmin) ? (
-              <>
-                <h4>Instalatorzy (opcjonalnie)</h4>
-                {editingJobId && jobForm.installers_confirmed === false ? (
-                  <div className="workerReadOnlyNote" role="status">
-                    <strong>Potwierdź monterów tego montażu.</strong> To starszy wpis: zaznaczenia poniżej są tylko podpowiedzią z dawnego dostępu do zlecenia i nie trafią do nowego protokołu, dopóki ich nie potwierdzisz.
-                    <div className="row" style={{ marginTop: 8 }}>
-                      <button type="button" className="btn" onClick={() => setJobForm((prev) => ({ ...prev, installers_confirmed: true }))}>
-                        Potwierdź tę listę
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-                <div className="viewerGrid">
-                  {profiles.map((person) => {
-                    const active = jobForm.viewers.includes(person.id);
-                    return (
-                      <button type="button" key={person.id} className={`viewer ${active ? "active" : ""}`} onClick={() => setJobForm((prev) => ({ ...prev, installers_confirmed: true, viewers: active ? prev.viewers.filter((id) => id !== person.id) : [...prev.viewers, person.id] }))}>
-                        <div>{person.full_name}</div>
-                        <small>{person.role}</small>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            ) : null}
           </div>
         ) : null}
         <div className="row rightAlign">

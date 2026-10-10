@@ -15,6 +15,6 @@ assert.match(desktop, /desktopJobFormCreate/, 'Desktopowy nowy formularz musi mi
 assert.match(css, /v12\.02 desktop: krótszy formularz nowego montażu bez wyboru instalatorów/, 'Brak desktopowego bloku kompaktowego v12.02.');
 assert.match(css, /desktopJobFormCreate[\s\S]*min-height:40px !important/, 'Pola nowego formularza desktop mają być niższe.');
 assert.match(css, /desktopAdminNoteTextarea[\s\S]*min-height:60px !important/, 'Komentarz administratora ma być niższy w nowym formularzu.');
-assert.match(mobile, /Instalatorzy \(opcjonalnie\)/, 'Zmiana ma dotyczyć tylko desktopu; mobile pozostaje bez zmian.');
+assert.doesNotMatch(mobile, /Instalatorzy \(opcjonalnie\)/, 'Od 12.97 lista instalatorów nie jest częścią także mobilnej edycji administratora.');
 
 console.log('OK: v12.02 desktop bez instalatorów i z krótszym formularzem.');

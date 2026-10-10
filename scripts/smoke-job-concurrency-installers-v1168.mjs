@@ -9,6 +9,7 @@ import {
   normalizeInstallerIds,
 } from '../src/modules/jobs-assignment.js';
 import { buildJobEditChangeSet } from '../src/modules/jobs-form.js';
+import { buildJobEditChangeSet as buildMobileJobEditChangeSet } from '../src/mobile791/modules/jobs-form.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
@@ -76,6 +77,18 @@ const phoneEdit = buildJobEditChangeSet({
   normalizeStatus,
 });
 assert.deepEqual(Object.keys(phoneEdit.fields).sort(), ['phone', 'sms_recipient_phone']);
+
+// WAWIS 12.97: hidden JZ/JW fields must not be rewritten on admin mobile edit.
+const protectedAdminEdit = buildMobileJobEditChangeSet({
+  form: { ...commonForm, phone: '700800900', devices: [{ model: 'Unintentional model change', serial_number: 'BAD-SN' }] },
+  baseJob,
+  isAdmin: true,
+  normalizeStatus,
+  includeDeviceChanges: false,
+});
+assert.deepEqual(Object.keys(protectedAdminEdit.fields).sort(), ['phone', 'sms_recipient_phone']);
+assert.equal(protectedAdminEdit.fields.device_model, undefined);
+assert.equal(protectedAdminEdit.fields.device_serial_number, undefined);
 assert.equal(phoneEdit.fields.status, undefined);
 assert.equal(phoneEdit.fields.main_technician_id, undefined);
 assert.equal(phoneEdit.expected.phone, '600100200');
@@ -118,8 +131,9 @@ assert.match(protocolInstallerFunction, /job\?\.installer_ids/);
 assert.doesNotMatch(protocolInstallerFunction, /job\?\.viewers|job\.viewers/);
 
 const mobileForm = read('src', 'mobile791', 'components', 'modals', 'JobFormModal.jsx');
-assert.match(mobileForm, /Potwierdź monterów tego montażu/);
-assert.match(mobileForm, /installers_confirmed: true/);
+// 12.97: mobilny formularz danych nie modyfikuje już listy monterów; zapis współbieżny i protokół pozostają aktywne.
+assert.doesNotMatch(mobileForm, /Potwierdź monterów tego montażu/);
+assert.doesNotMatch(mobileForm, /Instalatorzy \\(opcjonalnie\\)/);
 
 const desktopForm = read('src', 'components', 'modals', 'JobFormModal.jsx');
 // 12.02: instalatorzy są przypisywani później z widoku montażu, nie z desktopowego formularza.
