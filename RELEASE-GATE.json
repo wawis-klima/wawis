@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
-    "notes": "Verify 13.01 on real admin iPhone: header+close same row; 32px controls, 13px font, 110px visible admin comment and save without scrolling on standard iPhone; shorter devices scroll safely. Native date picker and worker/desktop unchanged."
+    "notes": "Verify 13.01 on real admin iPhone: header+close same row; 32px controls, 13px font, 104px visible admin comment and save without scrolling on standard iPhone; shorter devices scroll safely. Native date picker and worker/desktop unchanged."
   },
   "archive": {
     "source_of_truth": "github-main",
