@@ -226,7 +226,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactRow.noteHeight).toBeGreaterThanOrEqual(102);
     const micButton = modal.getByRole('button', { name:'Wprowadź głosowo' });
     await expect(micButton).toBeVisible();
-    await expect(micButton.locator('span')).toHaveCount(0);
+    await expect(micButton.locator('span[aria-hidden="true"]')).toHaveText('🎤');
+    await expect(micButton).toHaveText('🎤');
     const clientName = modal.locator('textarea.adminClientNameV1302');
     const originalName = await clientName.inputValue();
     await expect(clientName).toBeVisible();
