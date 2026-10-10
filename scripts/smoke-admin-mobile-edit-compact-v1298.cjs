@@ -26,4 +26,8 @@ assert.match(fit, /height:110px!important/);
 assert.match(fit, /min-height:110px!important/);
 assert.match(fit, /max-height:740px/);
 assert.doesNotMatch(fit, /\.workerMobileEditModalV1295|\.jobFormCreateMode/);
+assert.match(fit, /measured iPhone 14 overflow fix/);
+assert.match(fit, /grid-template-columns:minmax\\(0,1.2fr\\) minmax\\(0,1.4fr\\) 66px!important/);
+assert.match(fit, /input\\[placeholder="Telefon klienta \\/ SMS"\\]/);
+assert.match(fit, /height:104px!important/);
 console.log('OK admin-only compact edit, preserved worker/desktop/create and native iOS date');
