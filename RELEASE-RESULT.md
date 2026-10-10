@@ -1,15 +1,16 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.96
+- 12.97
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Pracownik: widoczna data montażu wyśrodkowana pionowo/poziomo w ekranie Edytuj montaż.
-- Wciąż działa natywne pole daty iOS, zmiana daty, Wyczyść i Zapisz zmiany.
-- Administrator: bez zmian. Formularz tworzenia montażu: bez zmian. Brak migracji i zmian uprawnień.
+- Administrator / Edytuj montaż: wyśrodkowana data iOS z natywnym pickerem, czyszczeniem i zapisem.
+- Usunięte tylko z mobilnego formularza edycji: „Urządzenia w montażu” i „Instalatorzy (opcjonalnie)”.
+- Kreator Tabliczki/JZ/JW i zapis przydziałów pozostają w pozostałych ścieżkach aplikacji. Pracownik i desktop bez zmian.
 
 ## Dowód
-- Wymagane: zielone testy PR na dokładnym SHA, E2E tekstu daty i zachowania obu ról, Closure Gate, build, merge i Vercel READY.
+- Wymagane: zielone kontrole PR na dokładnym SHA, smoke i E2E geometrii obu ról, powiązane testy OCR/protokołu, Closure Gate, build, merge oraz Vercel READY.
+- Test iOS na fizycznym urządzeniu oraz weryfikacja wersji produkcyjnej po wdrożeniu pozostają zewnętrznym krokiem kontrolnym.
