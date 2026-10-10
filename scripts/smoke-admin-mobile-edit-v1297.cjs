@@ -22,7 +22,9 @@ assert.doesNotMatch(edit, /className="viewerGrid"/, 'No installer buttons in adm
 assert.match(edit, /if \(serialOnlyMode\) \{[\s\S]*?<MobileDeviceWizard/, 'Separate nameplate wizard retained');
 assert.match(edit, /saveEditedJob\(snapshot\)/, 'Normal save retained');
 assert.match(actions, /serialOnlyMode\s*\?\s*saveJobDeviceSerialsRecord/, 'Separate device save retained');
-assert.match(jobSave, /const updateInstallers = expectedInstallerIds !== null/, 'Installers saved through concurrency logic only when changed');
+assert.match(jobSave, /const updateInstallers = !isAdmin && \(expectedInstallerIds !== null/, 'Admin modal must not write hidden installers');
+assert.match(jobSave, /includeDeviceChanges: !isAdmin/, 'Admin modal must not write hidden device fields');
+assert.match(jobSave, /if \(includeDeviceChanges\)/, 'Separate device-saving path stays intact');
 assert.match(css, /\.adminMobileEditModalV1297 \.adminDateVisibleLabelV1297/, 'Admin-only center rules');
 assert.match(css, /\.adminMobileEditModalV1297 \.installationDateNativeInput/, 'Full-size interactive native input');
 assert.match(css, /opacity:0!important/, 'Hide native text above centered label');
