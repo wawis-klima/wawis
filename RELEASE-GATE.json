@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.92",
+  "version": "12.93",
   "scope": "mobile",
-  "release_branch": "release/v12.92",
+  "release_branch": "release/v12.93",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.92.zip"
+    "file_name": "klima-app-v12.93.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.92",
+    "source_branch": "release/v12.93",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -34,10 +34,10 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "Zmiana prezentacji etykiety nazwy klienta na mobilnych kartach; bez ponownego audytu Codex.",
+    "codex_audit": "Zmiana CSS prezentacji adresu w mobilnych szczegółach; brak ingerencji w dane źródłowe.",
     "release_ci": "REQUIRED exact HEAD targeted groups + mobile/desktop Playwright + Closure Gate before merge.",
-    "external_provider_tests": "Bez zmian serwera/bazy; ocena na fizycznym iPhonie pozostaje EXTERNAL.",
-    "front_and_backend": "Wyłącznie etykieta na mobilnej liście; oryginalna nazwa nadal używana w bazie, wyszukiwaniu, protokołach i fakturach.",
-    "mobile_touch": "Sprawdź wersję 12.92, POWERMAT zamiast długiej nazwy, 2 linie i poprawne otwieranie szczegółów."
+    "external_provider_tests": "Brak zmian backendu; wizualna weryfikacja na fizycznym iPhonie: EXTERNAL.",
+    "front_and_backend": "ADRES z lewej etykieta, po prawej wartość; długi adres zawija się bez obcinania, link Google Maps zachowany.",
+    "mobile_touch": "Sprawdź wersję 12.93, krótki adres po prawej; długi adres zawinięty w prawej kolumnie bez ucinania oraz działający link Google Maps."
   }
 }

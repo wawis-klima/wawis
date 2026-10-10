@@ -1,3 +1,8 @@
+## 12.93
+- Mobilne szczegóły montażu: etykieta ADRES po lewej, treść adresu po prawej, jak w danych kontaktowych.
+- Długi adres zawija się w prawej kolumnie bez obcinania i zachowuje klikalny link Google Maps.
+- Zachowano niezmienione e-mail, telefon, datę i pozostałe moduły; test smoke i mobilny Playwright kontrolują układ i interakcje.
+
 ## 12.92
 - Odporność CI: realny PostgreSQL 16 dla testów Codexa pobierany z publicznego ECR, zapasowo z Google mirror, bez pomijania testów przy awarii.
 - Krótkie nazwy klientów bez zmian. Długie nazwy z jedną nazwą handlową w cudzysłowie lub jednoznacznym nawiasie prezentowane jako sama nazwa marki, np. POWERMAT.

@@ -19,8 +19,8 @@ async function seedAutoFitJob(page) {
   }, STORE_KEY);
 }
 
-test.describe('@mobile 12.91 adres widoczny bez ucinania', () => {
-  test('zawija długi adres pod etykietą, zachowuje Google Maps i nie zmienia e-maila', async ({ page }) => {
+test.describe('@mobile 12.93 adres po prawej bez ucinania', () => {
+  test('zawija długi adres po prawej od etykiety, zachowuje Google Maps i nie zmienia e-maila', async ({ page }) => {
     await seedAutoFitJob(page);
     await loginWithoutReset(page, ADMIN);
     await page.locator('.statusActionButton[title="Zakończone"]').click();
@@ -35,6 +35,7 @@ test.describe('@mobile 12.91 adres widoczny bez ucinania', () => {
     await expect(address).not.toHaveAttribute('data-auto-fit', /.+/);
     await expect(address).toHaveText('Zawiercie, Aleja Generała Władysława Sikorskiego 112a');
     await expect(address).toHaveCSS('white-space', 'normal');
+    await expect(address).toHaveCSS('text-align', 'right');
     await expect(address).toHaveCSS('text-overflow', 'clip');
     await expect(address).toHaveCSS('font-size', '13.5px');
     await expect(address).toHaveAttribute('href', /Aleja/);
@@ -47,11 +48,14 @@ test.describe('@mobile 12.91 adres widoczny bez ucinania', () => {
       const style = getComputedStyle(addressElement);
       const rootRect = document.querySelector('.mobileInlineJobDetails').getBoundingClientRect();
       return {
+        labelLeft: labelRect.left,
+        labelRight: labelRect.right,
         labelBottom: labelRect.bottom,
         addressTop: addressRect.top,
         addressBottom: addressRect.bottom,
         addressHeight: addressRect.height,
         lineHeight: Number.parseFloat(style.lineHeight),
+        rowRight: rowRect.right,
         rowBottom: rowRect.bottom,
         addressLeft: addressRect.left,
         addressRight: addressRect.right,
@@ -60,7 +64,9 @@ test.describe('@mobile 12.91 adres widoczny bez ucinania', () => {
         clientWidth: addressElement.clientWidth,
       };
     });
-    expect(visual.addressTop).toBeGreaterThanOrEqual(visual.labelBottom);
+    expect(visual.addressLeft).toBeGreaterThanOrEqual(visual.labelRight);
+    expect(visual.addressTop).toBeLessThanOrEqual(visual.labelBottom);
+    expect(visual.rowRight - visual.addressRight).toBeLessThanOrEqual(2);
     expect(visual.addressHeight).toBeGreaterThan(visual.lineHeight * 1.5);
     expect(visual.rowBottom).toBeGreaterThanOrEqual(visual.addressBottom);
     expect(visual.addressRight).toBeLessThanOrEqual(visual.rootRight + 1);
@@ -97,6 +103,7 @@ test.describe('@mobile 12.90 skrócony adres na karcie montażu', () => {
 
     const address = page.locator('.mobileInlineJobDetails .contactAddressInfoItem .addressLink');
     await expect(address).toHaveText('Zawiercie, Armii Krajowej 47/5');
+    await expect(address).toHaveCSS('text-align', 'right');
     await expect(address).toHaveAttribute('href', /42-400%20Zawiercie%2C%20Armii%20Krajowej%2047%2F5/);
     const sizes = await address.evaluate((node) => ({ scroll: node.scrollWidth, client: node.clientWidth }));
     expect(sizes.scroll).toBeLessThanOrEqual(sizes.client + 2);
