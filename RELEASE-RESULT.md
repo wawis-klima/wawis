@@ -1,16 +1,16 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.94
+- 12.95
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Profil potwierdzony przez Supabase i montaże pobierają się równocześnie.
-- Niepotwierdzony profil po timeout 504 nie odblokowuje uprawnień.
-- Przy wolnym serwerze po 7 sekundach komunikat i ręczny retry bez kasowania danych.
-- Regresja dwóch kolejności odpowiedzi i timeoutu 504.
+- Pracownik: Edytuj/Zamknij po lewej, Tabliczki/Protokół/Zakończ po prawej.
+- Pracownik: kompaktowa edycja, wyrównane Data montażu i Wyczyść; modal pozostaje przewijalny.
+- Administrator: układy przycisków i edycji bez zmian.
+- Obie role: Gotówka lub przelew zamiast Wybierz: gotówka lub przelew.
 
 ## Dowód
-- Wymagany zielony PR CI dla dokładnego SHA, testy Playwright, Closure Gate, build oraz weryfikacja produkcyjnego wdrożenia i wersji 12.94.
+- Wymagane: PR CI exact SHA, testy Playwright i Closure Gate, produkcyjny build, następnie Vercel READY i weryfikacja widocznej wersji.
