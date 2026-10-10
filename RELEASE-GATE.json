@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.98",
+  "version": "12.99",
   "scope": "mobile",
-  "release_branch": "release/v12.98",
+  "release_branch": "release/v12.99",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.98.zip"
+    "file_name": "klima-app-v12.99.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.98",
+    "source_branch": "release/v12.99",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
-    "notes": "Verify 12.98 on real admin iPhone: date centered, picker, no embedded devices/installers, Tabliczki and assignments intact. Check worker unaffected."
+    "notes": "Verify 12.99 on real admin iPhone: date centered, picker, no embedded devices/installers, Tabliczki and assignments intact. Check worker unaffected."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -36,6 +36,6 @@
   "production_verification": {
     "code": "Admin-only mobile edit form: remove devices and installers UI; center date via native iOS picker overlay without changing stored data.",
     "release_ci": "REQUIRED exact PR HEAD targeted regression, linked device/protocol consumer tests, iPhone browser geometry E2E, Closure Gate, production build.",
-    "post_deploy": "EXTERNAL — Vercel READY exact SHA, displayed public/app version 12.98, real administrator iPhone check."
+    "post_deploy": "EXTERNAL — Vercel READY exact SHA, displayed public/app version 12.99, real administrator iPhone check."
   }
 }
