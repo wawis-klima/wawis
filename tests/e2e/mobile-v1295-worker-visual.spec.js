@@ -69,6 +69,35 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(layout.modalRight).toBeLessThanOrEqual(layout.width + 2);
     expect(layout.overflow).toBeLessThanOrEqual(2);
     expect(layout.scroll).toBe('auto');
+    const dateText = modal.locator('.workerDateVisibleLabelV1296');
+    const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
+    await expect(dateText).toBeVisible();
+    await expect(nativeDate).toHaveCSS('opacity', '0');
+    // Previous regression checked the heading/clear but missed the actual
+    // rendered date text, which iOS WebKit was painting at the top.
+    const center = await modal.evaluate((el) => {
+      const shell = el.querySelector('.installationDateInputShell').getBoundingClientRect();
+      const displayed = el.querySelector('.workerDateVisibleLabelV1296').getBoundingClientRect();
+      const input = el.querySelector('.installationDateNativeInput').getBoundingClientRect();
+      const shellCenter = shell.top + shell.height / 2;
+      const labelCenter = displayed.top + displayed.height / 2;
+      return {
+        centerDelta: Math.abs(shellCenter - labelCenter),
+        inputHeightDelta: Math.abs(shell.height - input.height),
+        inputWidthDelta: Math.abs(shell.width - input.width),
+        textAlign: getComputedStyle(el.querySelector('.workerDateVisibleLabelV1296')).alignItems,
+      };
+    });
+    expect(center.centerDelta).toBeLessThanOrEqual(2);
+    expect(center.inputHeightDelta).toBeLessThanOrEqual(2);
+    expect(center.inputWidthDelta).toBeLessThanOrEqual(2);
+    expect(center.textAlign).toBe('center');
+    await nativeDate.fill('2026-10-16');
+    await expect(nativeDate).toHaveValue('2026-10-16');
+    await expect(dateText).toContainText(/16 paź/i);
+    await modal.getByRole('button', { name: 'Wyczyść' }).click();
+    await expect(dateText).toHaveText('Wybierz datę');
+    await expect(nativeDate).toHaveValue('');
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeAttached();
   });
 
@@ -90,6 +119,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     const modal = page.locator('.formModal');
     await expect(modal).toBeVisible();
     await expect(modal).not.toHaveClass(/workerMobileEditModalV1295/);
+    await expect(modal.locator('.workerDateVisibleLabelV1296')).toHaveCount(0);
+    await expect(modal.locator('input.installationDateNativeInput[type="date"]')).not.toHaveCSS('opacity', '0');
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
   });
 });
