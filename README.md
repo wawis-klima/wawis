@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.01
+- 13.02
+
+WAWIS 13.02: mobilna edycja administratora — tylko ikona mikrofonu w nagłówku (nadal dostępna głosowo i dla czytnika ekranu); długa nazwa klienta przechodzi automatycznie w dwa wiersze; telefon i NIP mają równe kolumny 50/50 z odstępem 8 px. Odstępy w pionie zwiększono do 3 px, a komentarz administratora pozostał czytelny na wysokości 104 px, z bezpiecznym przewijaniem na mniejszych ekranach. Nowe E2E weryfikuje geometrię, dostępność mikrofonu, dwuwierszową nazwę i brak kolizji. Pracownik, nowy montaż i desktop bez zmian.
 
 WAWIS 13.01: jednookienkowa mobilna edycja montażu administratora na typowym iPhonie: nagłówek, Wprowadź głosowo i Zamknij w jednym wierszu; Telefon i NIP obok siebie, mniejsze pola 32 px, czcionka 13 px, krótsze odstępy i wyższy komentarz administratora 104 px (poprzednio 54 px). Zapis pozostaje na końcu widoku, a na mniejszych ekranach formularz można przewijać. Test Playwright kontroluje rozmiar komentarza, wyrównanie nagłówka i zamknięcia oraz widoczność przycisku zapisu w jednym ekranie.
 
@@ -969,7 +971,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.01` — jednookienkowa mobilna edycja montażu administratora, z wyższym komentarzem i mniejszymi polami.
+- wersja `13.02` — mikrofon bez podpisu, dwuwierszowa nazwa klienta, telefon/NIP 50/50 i czytelniejsze odstępy.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.

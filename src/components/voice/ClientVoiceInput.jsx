@@ -321,7 +321,7 @@ function PreviewField({ label, value, onChange, placeholder = '', transformValue
   );
 }
 
-export default function ClientVoiceInput({ onApply, buttonLabel = 'Wprowadź głosowo', disabled = false }) {
+export default function ClientVoiceInput({ onApply, buttonLabel = 'Wprowadź głosowo', disabled = false, iconOnly = false }) {
   const recognitionRef = useRef(null);
   const sessionActiveRef = useRef(false);
   const manualStopRef = useRef(false);
@@ -523,9 +523,9 @@ export default function ClientVoiceInput({ onApply, buttonLabel = 'Wprowadź gł
 
   return (
     <div className="voiceClientInput">
-      <button type="button" className={`btn voiceClientMainBtn${listening ? ' isListening' : ''}`} onClick={startFullCapture} disabled={disabled || listening}>
+      <button type="button" className={`btn voiceClientMainBtn${listening ? ' isListening' : ''}${iconOnly ? ' voiceClientIconOnlyV1302' : ''}`} onClick={startFullCapture} disabled={disabled || listening} aria-label={iconOnly ? (listening ? 'Słucham…' : buttonLabel) : undefined} title={iconOnly ? (listening ? 'Słucham…' : buttonLabel) : undefined}>
         <MicGlyph />
-        <span>{listening ? 'Słucham…' : buttonLabel}</span>
+        {!iconOnly ? <span>{listening ? 'Słucham…' : buttonLabel}</span> : null}
       </button>
 
       {previewOpen ? (

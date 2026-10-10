@@ -1,9 +1,10 @@
 {
-  "version": "13.01",
-  "summary": "Edytuj montaż administratora: całość na jednym ekranie i większy komentarz",
+  "version": "13.02",
+  "summary": "Czytelniejsza mobilna edycja montażu administratora z telefonem/NIP 50/50",
   "changes": [
-    "Zamknij i Wprowadź głosowo w jednym rzędzie z nagłówkiem, Telefon i NIP obok siebie; pola 32 px i tekst 13 px.",
-    "Komentarz administratora ma 104 px zamiast 54 px i można go wewnętrznie przewijać oraz powiększać.",
-    "Zapis na ekranie typowego iPhone’a; krótkie ekrany zachowują przewijanie. Pracownik i desktop bez zmian."
+    "Mikrofon bez widocznego napisu, bez nakładania na tytuł.",
+    "Długa nazwa klienta rozwija pole do dwóch wierszy; telefon i NIP równe, oddzielone o 8 px.",
+    "Nieco większe przerwy pionowe (3 px) i komentarz administratora 104 px, przy zachowanym przewijaniu na małych ekranach.",
+    "Testy rzeczywistej geometrii iPhone i izolacji ról."
   ]
 }
