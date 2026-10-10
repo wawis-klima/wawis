@@ -57,5 +57,5 @@ assert.match(modal, /appendVoiceNoteText\(prev\.admin_note, value\)/);
 assert.doesNotMatch(modal, /VoiceFieldButton/);
 assert.match(speech1303, /\.adminNoteHeaderActionsV1303 \.voiceFieldMicBtn/);
 assert.match(speech1303, /height:108px!important/);
-assert.match(speech1303, /max-height:780px/);
+assert.match(speech1303, /max-height:620px/);
 assert.doesNotMatch(speech1303, /workerMobileEditModalV1295|jobFormCreateMode|desktopJobForm/);
