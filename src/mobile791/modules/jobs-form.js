@@ -369,7 +369,7 @@ function valuesMatch(left, right) {
   return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
 }
 
-export function buildJobEditChangeSet({ form = {}, baseJob = {}, isAdmin = false, normalizeStatus }) {
+export function buildJobEditChangeSet({ form = {}, baseJob = {}, isAdmin = false, normalizeStatus, includeDeviceChanges = true }) {
   const fields = {};
   const expected = {};
   const add = (field, nextValue, baseValue) => {
@@ -420,13 +420,16 @@ export function buildJobEditChangeSet({ form = {}, baseJob = {}, isAdmin = false
     if (!valuesMatch(nextAddressId, baseAddressId)) add('contractor_address_id', nextAddressId, baseJob.contractor_address_id);
   }
 
-  const deviceFields = serializeJobDevicesToFields(form);
-  const nextDeviceModel = normalizeEditText(deviceFields.device_model) || null;
-  const nextDeviceSerial = normalizeEditText(deviceFields.device_serial_number) || null;
-  const baseDeviceModel = normalizeEditText(baseJob.device_model) || null;
-  const baseDeviceSerial = normalizeEditText(baseJob.device_serial_number) || null;
-  if (!valuesMatch(nextDeviceModel, baseDeviceModel)) add('device_model', nextDeviceModel, baseJob.device_model);
-  if (!valuesMatch(nextDeviceSerial, baseDeviceSerial)) add('device_serial_number', nextDeviceSerial, baseJob.device_serial_number);
+  // Dedicated Tabliczki wizard owns device writes; normal admin mobile edit only saves client/job fields.
+  if (includeDeviceChanges) {
+    const deviceFields = serializeJobDevicesToFields(form);
+    const nextDeviceModel = normalizeEditText(deviceFields.device_model) || null;
+    const nextDeviceSerial = normalizeEditText(deviceFields.device_serial_number) || null;
+    const baseDeviceModel = normalizeEditText(baseJob.device_model) || null;
+    const baseDeviceSerial = normalizeEditText(baseJob.device_serial_number) || null;
+    if (!valuesMatch(nextDeviceModel, baseDeviceModel)) add('device_model', nextDeviceModel, baseJob.device_model);
+    if (!valuesMatch(nextDeviceSerial, baseDeviceSerial)) add('device_serial_number', nextDeviceSerial, baseJob.device_serial_number);
+  }
 
   if (isAdmin) {
     const nextAdminNote = normalizeEditText(form.admin_note) || null;
@@ -503,6 +506,7 @@ export async function saveEditedJobRecord({
     baseJob: originalJob,
     isAdmin,
     normalizeStatus,
+    includeDeviceChanges: !isAdmin,
   });
 
   const expectedInstallerIds = Array.isArray(originalJob.installer_ids)
@@ -511,12 +515,15 @@ export async function saveEditedJobRecord({
   const baselineInstallerIds = expectedInstallerIds ?? getLegacyInstallerSuggestionIds(originalJob);
   const nextInstallerIds = getAssignedUserIdsFromForm(resolvedForm);
   const installerSelectionChanged = !valuesMatch(nextInstallerIds, baselineInstallerIds);
-  const updateInstallers = expectedInstallerIds !== null
+  // Admin no longer edits installers in this mobile modal; never mutate hidden assignments.
+  const updateInstallers = !isAdmin && (expectedInstallerIds !== null
     ? installerSelectionChanged
-    : Boolean(resolvedForm.installers_confirmed || installerSelectionChanged);
+    : Boolean(resolvedForm.installers_confirmed || installerSelectionChanged));
 
   const previousAssignedUserIds = expectedInstallerIds ?? getAssignedUserIdsFromJob(originalJob);
-  const newlyAssignedUserIds = nextInstallerIds.filter((userId) => !previousAssignedUserIds.includes(userId));
+  const newlyAssignedUserIds = updateInstallers
+    ? nextInstallerIds.filter((userId) => !previousAssignedUserIds.includes(userId))
+    : [];
 
   const result = await saveJobConcurrentPatch({
     supabase,
