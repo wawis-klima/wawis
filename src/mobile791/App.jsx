@@ -62,6 +62,29 @@ const jobFormModalFallback = (
   <div className="card authCard">Trwa ładowanie formularza montażu...</div>
 );
 
+function StartupLoadingScreen({ errorMsg, onRetry }) {
+  const [isSlow, setIsSlow] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => setIsSlow(true), 7000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="page">
+      <div className="card authCard" role="status" aria-live="polite">
+        <p>{errorMsg || "Logowanie zakończone. Trwa ładowanie danych..."}</p>
+        {isSlow ? (
+          <>
+            <p>Serwer odpowiada wolniej niż zwykle. Możesz ponowić pobieranie bez wylogowania i bez usuwania danych z telefonu.</p>
+            <button className="btn primary" type="button" onClick={onRetry}>Ponów pobieranie danych</button>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 const JOBS_PAGE_SIZE = 10;
 const JOB_DETAILS_TIMEOUT_MS = 3200;
 const JOB_DETAILS_RETRY_DELAYS_MS = Object.freeze([0, 500]);
@@ -1331,7 +1354,9 @@ export default function App() {
   }
 
   if (!profile) {
-    return <div className="page"><div className="card authCard">{errorMsg || "Logowanie zakończone. Trwa ładowanie danych..."}</div></div>;
+    return <StartupLoadingScreen errorMsg={errorMsg} onRetry={() => {
+      void refreshAll(sessionUser, { silent: false, preserveJobDetails: true, autoRetryTransient: true });
+    }} />;
   }
 
   const isWorker = profile?.role === "Pracownik";
