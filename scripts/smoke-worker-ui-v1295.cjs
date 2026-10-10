@@ -18,4 +18,10 @@ assert(css.includes('max-height:calc(100dvh - 24px)'), 'Small iPhone modal must 
 assert(boot.includes("await import('./mobile791/v1295-worker-ui.css')"), 'Stylesheet loaded last');
 assert(protocol.includes('>Gotówka lub przelew</option>'), 'Payment copy');
 assert(!protocol.includes('Wybierz: gotówka lub przelew'), 'Old payment copy');
-console.log('OK: worker-only UI layout and edit; administrator unchanged; shared payment copy');
+assert(edit.includes('workerDateVisibleLabelV1296'), 'Centered display for iOS date is missing');
+assert(edit.includes('formatWorkerInstallationDate(jobForm.installation_date)'), 'Date display must track controlled form state');
+assert(edit.includes('editingJobId && !isAdmin ? ('), 'Worker-only date display guard');
+assert(css.includes('.workerMobileEditModalV1295 .workerDateVisibleLabelV1296'), 'Role-scoped center CSS absent');
+assert(css.includes('.workerMobileEditModalV1295 .installationDateNativeInput'), 'Native date input kept interactive');
+assert(css.includes('opacity:0!important'), 'The iOS native input text must not overlap the centered text');
+console.log('OK: worker-only UI, editable native iOS date with centered value, admin unchanged, payment copy');
