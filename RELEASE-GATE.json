@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.94",
+  "version": "12.95",
   "scope": "mobile",
-  "release_branch": "release/v12.94",
+  "release_branch": "release/v12.95",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": true,
+    "last_24h": false,
     "result": "INFO",
-    "notes": "2026-10-10: Supabase PostgREST timeout manager i Auth 504; poprawka mobilnego startu bez migracji bazy."
+    "notes": "Frontend visual-only worker actions/edit + shared payment select text. Live diagnostics not reread for this change."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.94.zip"
+    "file_name": "klima-app-v12.95.zip"
   },
   "main_protection": {
-    "source_branch": "release/v12.94",
+    "source_branch": "release/v12.95",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub exact HEAD PR CI + Vercel public version and physical iPhone verification",
-    "notes": "Po PR CI i Closure Gate: potwierdzić Vercel READY dla 12.94 i uruchomienie na fizycznym iPhonie."
+    "evidence_source": "GitHub PR exact CI + Vercel READY + real iPhone",
+    "notes": "Verify v12.95 on worker phone and check admin layout unchanged."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,9 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "baseline": "Zbadano kod 12.93 i logi Supabase: wolna odpowiedź PostgREST/Auth powoduje długie oczekiwanie mobilne.",
-    "code": "Równoległe ładowanie profilu potwierdzonego przez Supabase i montaży; retry po 7 s; bez zmian Supabase.",
-    "release_ci": "REQUIRED — exact PR HEAD: WAWIS PR checks / targeted-checks, Playwright, Closure Gate, build.",
-    "post_deploy": "EXTERNAL — weryfikacja Vercel READY + wersji aplikacji 12.94 i zachowania na iPhonie."
+    "code": "Employee-only detail buttons and edit styles; admin edit/actions unchanged. Shared protocol payment placeholder trimmed.",
+    "release_ci": "REQUIRED — PR exact SHA targeted checks, mobile and desktop Playwright, Closure Gate, production build",
+    "post_deploy": "EXTERNAL — Vercel READY exact SHA, public version 12.95 and physical iPhone"
   }
 }
