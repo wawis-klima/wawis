@@ -194,6 +194,52 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.modalBottom+2);
     expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.viewportHeight+2);
     expect(oneScreen.scrollOverflow).toBeLessThanOrEqual(3);
+    // 13.02: microphone-only header, balanced phone/NIP and measured two-line client.
+    const compactRow = await modal.evaluate(el => {
+      const rect = selector => el.querySelector(selector)?.getBoundingClientRect();
+      const client = rect('textarea.adminClientNameV1302');
+      const phone = rect('.adminContactPairV1302 input[placeholder="Telefon klienta / SMS"]');
+      const nip = rect('.adminContactPairV1302 .jobNipCompactInput');
+      const title = rect('.jobHead h2');
+      const mic = rect('.voiceClientIconOnlyV1302');
+      const close = rect('.jobHead > .btn');
+      const note = rect('.adminNoteTextareaCompact');
+      return {
+        clientHeight:client?.height,
+        phoneWidth:phone?.width,
+        nipWidth:nip?.width,
+        pairGap:nip && phone ? nip.left-phone.right : -1,
+        pairTop:nip && phone ? Math.abs(nip.top-phone.top) : 999,
+        titleRight:title?.right,
+        micLeft:mic?.left,
+        micRight:mic?.right,
+        closeLeft:close?.left,
+        noteHeight:note?.height,
+      };
+    });
+    expect(compactRow.titleRight).toBeLessThanOrEqual(compactRow.micLeft+1);
+    expect(compactRow.micRight).toBeLessThanOrEqual(compactRow.closeLeft+1);
+    expect(Math.abs(compactRow.phoneWidth - compactRow.nipWidth)).toBeLessThanOrEqual(2);
+    expect(compactRow.pairTop).toBeLessThanOrEqual(2);
+    expect(compactRow.pairGap).toBeGreaterThanOrEqual(7);
+    expect(compactRow.pairGap).toBeLessThanOrEqual(11);
+    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(110);
+    const micButton = modal.getByRole('button', { name:'Wprowadź głosowo' });
+    await expect(micButton).toBeVisible();
+    await expect(micButton.locator('span')).toHaveCount(0);
+    const clientName = modal.locator('textarea.adminClientNameV1302');
+    const originalName = await clientName.inputValue();
+    await expect(clientName).toBeVisible();
+    await clientName.fill('PRZEDSIĘBIORSTWO HANDLOWE POWMAT SPÓŁKA JAWNA ZAKŁAD PRODUKCYJNY W ZAWIERCIU');
+    await expect.poll(async () => clientName.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThan(compactRow.clientHeight + 8);
+    const longNameMetrics = await clientName.evaluate(el => ({
+      height:el.getBoundingClientRect().height,
+      overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+    }));
+    expect(longNameMetrics.height).toBeLessThanOrEqual(58);
+    expect(longNameMetrics.overflow).toBeLessThanOrEqual(2);
+    await clientName.fill(originalName);
+    await expect.poll(async () => clientName.evaluate(el => el.getBoundingClientRect().height)).toBeLessThanOrEqual(34);
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
     const dateText = modal.locator('.adminDateVisibleLabelV1297');
     const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
