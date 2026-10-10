@@ -9,6 +9,7 @@ import {
   normalizeInstallerIds,
 } from '../src/modules/jobs-assignment.js';
 import { buildJobEditChangeSet } from '../src/modules/jobs-form.js';
+import { buildJobEditChangeSet as buildMobileJobEditChangeSet } from '../src/mobile791/modules/jobs-form.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
@@ -78,7 +79,7 @@ const phoneEdit = buildJobEditChangeSet({
 assert.deepEqual(Object.keys(phoneEdit.fields).sort(), ['phone', 'sms_recipient_phone']);
 
 // WAWIS 12.97: hidden JZ/JW fields must not be rewritten on admin mobile edit.
-const protectedAdminEdit = buildJobEditChangeSet({
+const protectedAdminEdit = buildMobileJobEditChangeSet({
   form: { ...commonForm, phone: '700800900', devices: [{ model: 'Unintentional model change', serial_number: 'BAD-SN' }] },
   baseJob,
   isAdmin: true,
