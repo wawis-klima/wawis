@@ -228,17 +228,21 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     const adminNoteMic = modal.getByRole('button', { name:'Nagraj głosowo: Komentarz administratora' });
     await expect(adminNoteMic).toBeVisible();
     await expect(adminNoteMic).toBeEnabled();
-    const noteMicGeometry = await modal.evaluate(el => {
-      const title = el.querySelector('.adminNoteLabelRow > span').getBoundingClientRect();
-      const clear = el.querySelector('.adminNoteHeaderActionsV1303 .fieldClearBtn')?.getBoundingClientRect();
-      const mic = el.querySelector('.adminNoteHeaderActionsV1303 .voiceFieldMicBtn').getBoundingClientRect();
-      const note = el.querySelector('.adminNoteTextareaCompact').getBoundingClientRect();
-      return { titleRight:title.right, clearRight:clear?.right, micLeft:mic.left, micHeight:mic.height, noteWidth:note.width, parentWidth:note.parentElement.getBoundingClientRect().width };
-    });
-    expect(noteMicGeometry.micHeight).toBeGreaterThanOrEqual(26);
-    expect(noteMicGeometry.micLeft).toBeGreaterThanOrEqual(noteMicGeometry.titleRight);
-    if (noteMicGeometry.clearRight !== undefined) expect(noteMicGeometry.micLeft).toBeGreaterThanOrEqual(noteMicGeometry.clearRight);
-    expect(Math.abs(noteMicGeometry.noteWidth-noteMicGeometry.parentWidth)).toBeLessThanOrEqual(2);
+    // Use locator boxes: missing nodes fail explicitly, without throwing from a nested DOM measurement.
+    const noteTitleBox = await modal.locator('.adminNoteLabelRow > span').boundingBox();
+    const noteMicBox = await adminNoteMic.boundingBox();
+    const noteFieldBox = await modal.locator('.adminNoteTextareaCompact').boundingBox();
+    const noteParentBox = await modal.locator('.adminNoteInputBlock').boundingBox();
+    const clearButton = modal.locator('.adminNoteHeaderActionsV1303 .fieldClearBtn');
+    const clearBox = await clearButton.count() ? await clearButton.boundingBox() : null;
+    expect(noteTitleBox, 'Comment heading must render').not.toBeNull();
+    expect(noteMicBox, 'Dictation mic must render').not.toBeNull();
+    expect(noteFieldBox, 'Comment textarea must render').not.toBeNull();
+    expect(noteParentBox, 'Comment block must render').not.toBeNull();
+    expect(noteMicBox.height).toBeGreaterThanOrEqual(26);
+    expect(noteMicBox.x).toBeGreaterThanOrEqual(noteTitleBox.x + noteTitleBox.width);
+    if (clearBox) expect(noteMicBox.x).toBeGreaterThanOrEqual(clearBox.x + clearBox.width);
+    expect(Math.abs(noteFieldBox.width-noteParentBox.width)).toBeLessThanOrEqual(2);
     await adminNoteMic.click();
     const recordingDialog = page.getByRole('dialog', { name:'Nagrywanie: Komentarz administratora' });
     await expect(recordingDialog).toBeVisible();
