@@ -506,3 +506,20 @@
     min-height:104px!important;
   }
 }
+
+/* WAWIS 13.03 — admin edit only: note dictation in header and taller textarea. */
+/* Preserve the larger note while keeping the entire editor visible on iPhone 14. */
+@media (max-width:700px) {
+  .formModal.adminMobileEditModalV1297 { padding-top:4px!important; padding-bottom:4px!important; }
+}
+
+@media (max-width:700px) {
+  .formModal.adminMobileEditModalV1297 .adminNoteLabelRow { min-height:28px!important; gap:6px!important; }
+  .formModal.adminMobileEditModalV1297 .adminNoteLabelRow > span { flex:1 1 auto!important; min-width:0!important; white-space:nowrap!important; }
+  .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 { display:flex!important; flex:0 0 auto!important; align-items:center!important; justify-content:flex-end!important; gap:7px!important; min-width:0!important; }
+  .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 .voiceFieldMicBtn { flex:0 0 28px!important; width:28px!important; min-width:28px!important; height:28px!important; min-height:28px!important; padding:5px!important; border-radius:10px!important; }
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact { height:108px!important; min-height:108px!important; max-height:170px!important; }
+}
+@media (max-width:700px) and (max-height:620px) {
+  .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact { height:104px!important; min-height:104px!important; }
+}

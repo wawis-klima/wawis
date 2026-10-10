@@ -1,10 +1,9 @@
 {
-  "version": "13.02",
-  "summary": "Czytelniejsza mobilna edycja montażu administratora z telefonem/NIP 50/50",
+  "version": "13.03",
+  "summary": "Dyktowanie komentarza administratora i lekko większe pole notatki w mobilnej edycji",
   "changes": [
-    "Mikrofon bez widocznego napisu, bez nakładania na tytuł.",
-    "Długa nazwa klienta rozwija pole do dwóch wierszy; telefon i NIP równe, oddzielone o 8 px.",
-    "Nieco większe przerwy pionowe (3 px) i komentarz administratora 104 px, przy zachowanym przewijaniu na małych ekranach.",
-    "Testy rzeczywistej geometrii iPhone i izolacji ról."
+    "Mikrofon przy nagłówku Komentarz administratora; nagranie dopisuje rozpoznany tekst do dotychczasowego komentarza.",
+    "Wysokość komentarza 108 px na typowym iPhonie, 104 px na krótkich ekranach i bezpieczne przewijanie.",
+    "Bez zmian edycji pracownika, nowego montażu i desktopu, z testami regresji geometrii."
   ]
 }

@@ -223,7 +223,31 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactRow.pairTop).toBeLessThanOrEqual(2);
     expect(compactRow.pairGap).toBeGreaterThanOrEqual(7);
     expect(compactRow.pairGap).toBeLessThanOrEqual(11);
-    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(102);
+    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(106);
+    // 13.03: microphone lives in the administrator-note heading; textarea stays full width.
+    const adminNoteMic = modal.getByRole('button', { name:'Nagraj głosowo: Komentarz administratora' });
+    await expect(adminNoteMic).toBeVisible();
+    await expect(adminNoteMic).toBeEnabled();
+    // Use locator boxes: missing nodes fail explicitly, without throwing from a nested DOM measurement.
+    const noteTitleBox = await modal.locator('.adminNoteLabelRow > span').boundingBox();
+    const noteMicBox = await adminNoteMic.boundingBox();
+    const noteFieldBox = await modal.locator('.adminNoteTextareaCompact').boundingBox();
+    const noteParentBox = await modal.locator('.adminNoteInputBlock').boundingBox();
+    const clearButton = modal.locator('.adminNoteHeaderActionsV1303 .fieldClearBtn');
+    const clearBox = await clearButton.count() ? await clearButton.boundingBox() : null;
+    expect(noteTitleBox, 'Comment heading must render').not.toBeNull();
+    expect(noteMicBox, 'Dictation mic must render').not.toBeNull();
+    expect(noteFieldBox, 'Comment textarea must render').not.toBeNull();
+    expect(noteParentBox, 'Comment block must render').not.toBeNull();
+    expect(noteMicBox.height).toBeGreaterThanOrEqual(26);
+    expect(noteMicBox.x).toBeGreaterThanOrEqual(noteTitleBox.x + noteTitleBox.width);
+    if (clearBox) expect(noteMicBox.x).toBeGreaterThanOrEqual(clearBox.x + clearBox.width);
+    expect(Math.abs(noteFieldBox.width-noteParentBox.width)).toBeLessThanOrEqual(2);
+    await adminNoteMic.click();
+    const recordingDialog = page.getByRole('dialog', { name:'Nagrywanie: Komentarz administratora' });
+    await expect(recordingDialog).toBeVisible();
+    await recordingDialog.getByRole('button', { name:'Anuluj' }).click();
+    await expect(recordingDialog).toHaveCount(0);
     const micButton = modal.getByRole('button', { name:'Wprowadź głosowo' });
     await expect(micButton).toBeVisible();
     await expect(micButton.locator('span[aria-hidden="true"]')).toHaveText('🎤');

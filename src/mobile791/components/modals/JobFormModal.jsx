@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
-import ClientVoiceInput from "../../../components/voice/ClientVoiceInput.jsx";
+import ClientVoiceInput, { VoiceNoteButton, appendVoiceNoteText } from "../../../components/voice/ClientVoiceInput.jsx";
 import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
 import { lookupCompanyByNip, normalizeGusNip } from "../../modules/gus-bir.js";
 import {
@@ -905,16 +905,23 @@ export default function JobFormModal({
                 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%', minWidth: 0 }}
               >
                 <span style={{ margin: 0 }}>Komentarz administratora</span>
-                {jobForm.admin_note ? (
-                  <button
-                    type="button"
-                    className="fieldClearBtn"
-                    style={{ flex: '0 0 auto', alignSelf: 'center', whiteSpace: 'nowrap' }}
-                    onClick={() => updateField("admin_note", "")}
-                  >
-                    Wyczyść komentarz
-                  </button>
-                ) : null}
+                <div className="adminNoteHeaderActionsV1303">
+                  {jobForm.admin_note ? (
+                    <button
+                      type="button"
+                      className="fieldClearBtn"
+                      style={{ flex: '0 0 auto', alignSelf: 'center', whiteSpace: 'nowrap' }}
+                      onClick={() => updateField("admin_note", "")}
+                    >
+                      Wyczyść komentarz
+                    </button>
+                  ) : null}
+                  <VoiceNoteButton
+                    label="Komentarz administratora"
+                    onValue={(value) => setJobForm((prev) => ({ ...prev, admin_note: appendVoiceNoteText(prev.admin_note, value) }))}
+                    disabled={busy}
+                  />
+                </div>
               </div>
               <textarea
                 rows={2}

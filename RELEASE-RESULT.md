@@ -1,17 +1,16 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.02
+- 13.03
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Mobilny administrator / Edytuj montaż: sam mikrofon obok nagłówka i Zamknij, bez nachodzenia elementów.
-- Automatycznie jedno- lub dwuwierszowa nazwa klienta; Telefon i NIP po 50% szerokości, odstępy 8px w poziomie i 3px w pionie.
-- Komentarz administratora 104px na normalnym iPhonie; na krótszych ekranach zachowano przewijanie i dostęp do Zapisz zmiany.
-- Bez zmiany danych, OCR, protokołów, edycji pracownika, tworzenia montażu i desktopu.
+- Mobile / Administrator / Edytuj montaż: mikrofon obok nagłówka Komentarz administratora, sesja dyktowania i dopisywanie do istniejącego komentarza.
+- Pole komentarza 108 px na zwykłym iPhonie, 104 px na krótszym; pełna szerokość textarea.
+- Brak zmian w uprawnieniach, zapisie montażu, edycji pracownika, nowym montażu, desktopie, OCR i protokole.
 
-## Dowód
-- Wymagane: zielone CI na dokładnym SHA, geometrię Playwright iPhone (długa nazwa, dwa pola, mikrofon bez podpisu, komentarz), regresje współdziałania, Closure Gate i build, Vercel READY.
-- Fizyczny iPhone użytkownika pozostaje końcowym sprawdzeniem wyglądu.
+## Weryfikacja
+- Wymagane: zielone CI dokładnego SHA, Playwright iPhone, build, Vercel READY.
+- Sprawdzenie na fizycznym iPhonie pozostaje osobnym krokiem; nie jest tutaj potwierdzone.

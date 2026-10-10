@@ -1,3 +1,8 @@
+## 13.03
+- Mobilny administrator / Edytuj montaż: osobny mikrofon w nagłówku komentarza, sesja nagrywania z jawnym zakończeniem i dopisaniem transkrypcji do istniejącego tekstu.
+- Komentarz 108 px na standardowym iPhonie (było 104 px); na ekranach niższych niż 781 px zachowana wysokość 104 px i przewijanie. Pełna szerokość pola bez zwężania.
+- Rozszerzone testy regresyjne: izolacja do edycji istniejącego montażu administratora, dostępność mikrofonu i modalu, brak kolizji, kontrola wysokości oraz zgodność starszych testów. Pracownik, nowy montaż, desktop, OCR i protokoły bez zmian.
+
 ## 13.02
 - Mobilna edycja administratora: przycisk rozpoznawania mowy ma tylko ikonę mikrofonu, z zachowaną etykietą dostępności; nagłówek bez nakładania tekstu.
 - Nazwa klienta używa pola rozszerzającego wysokość do dwóch wierszy przy długim tekście bez zmian wartości w bazie. Telefon i NIP obok siebie w równych kolumnach z przerwą 8 px.

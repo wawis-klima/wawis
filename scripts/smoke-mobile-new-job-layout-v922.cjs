@@ -4,7 +4,7 @@ function forbid(text, needle, label){ if(text.includes(needle)) throw new Error(
 const modal = fs.readFileSync('src/mobile791/components/modals/JobFormModal.jsx','utf8');
 const css = fs.readFileSync('src/mobile791/styles.css','utf8');
 forbid(modal, 'adminNoteVoiceFieldRow', 'stary układ komentarz + mikrofon');
-forbid(modal, 'VoiceNoteButton', 'mikrofon komentarza mobile');
+if(!modal.includes('VoiceNoteButton') || !modal.includes('adminNoteHeaderActionsV1303')) throw new Error('Brak mikrofonu komentarza tylko w edycji administratora');
 forbid(modal, 'VoiceFieldButton', 'mikrofony przy polach mobile');
 need(modal, 'adminNoteTextareaCompact', 'kompaktowe pole komentarza administratora');
 need(modal, '{jobForm.admin_note ? (', 'czyszczenie komentarza tylko gdy jest treść');

@@ -47,3 +47,15 @@ assert.match(scope, /gap:8px!important/);
 assert.match(scope, /height:104px!important/);
 assert.doesNotMatch(scope, /workerMobileEditModalV1295|jobFormCreateMode/);
 console.log('OK admin-only compact edit, preserved worker/desktop/create and native iOS date');
+
+// WAWIS 13.03: microphone only for existing admin note edits; full-width taller note.
+const speech1303 = css.split('/* WAWIS 13.03')[1];
+assert.ok(speech1303, 'Missing 13.03 styles');
+assert.match(modal, /import ClientVoiceInput, \{ VoiceNoteButton, appendVoiceNoteText \}/);
+assert.match(modal, /\{isAdmin && editingJobId \? \([\s\S]*?adminNoteHeaderActionsV1303[\s\S]*?<VoiceNoteButton/);
+assert.match(modal, /appendVoiceNoteText\(prev\.admin_note, value\)/);
+assert.doesNotMatch(modal, /VoiceFieldButton/);
+assert.match(speech1303, /\.adminNoteHeaderActionsV1303 \.voiceFieldMicBtn/);
+assert.match(speech1303, /height:108px!important/);
+assert.match(speech1303, /max-height:620px/);
+assert.doesNotMatch(speech1303, /workerMobileEditModalV1295|jobFormCreateMode|desktopJobForm/);
