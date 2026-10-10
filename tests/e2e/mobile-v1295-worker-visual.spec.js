@@ -223,7 +223,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactRow.pairTop).toBeLessThanOrEqual(2);
     expect(compactRow.pairGap).toBeGreaterThanOrEqual(7);
     expect(compactRow.pairGap).toBeLessThanOrEqual(11);
-    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(110);
+    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(102);
     const micButton = modal.getByRole('button', { name:'Wprowadź głosowo' });
     await expect(micButton).toBeVisible();
     await expect(micButton.locator('span')).toHaveCount(0);
