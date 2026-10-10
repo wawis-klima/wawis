@@ -1,9 +1,9 @@
 {
-  "version": "12.98",
-  "summary": "Bardziej kompaktowy mobilny formularz Edytuj montaż dla administratora.",
+  "version": "12.99",
+  "summary": "Realne zmniejszenie mobilnego formularza Edytuj montaż administratora",
   "changes": [
-    "Pola 44 px i odstępy 7 px skracają formularz.",
-    "Natywny wybór daty iOS oraz czytelny tekst 16 px bez zmian funkcjonalnych.",
-    "Tylko edycja administratora na mobile; pracownik, nowy montaż i desktop bez zmian."
+    "Pola formularza 38 px, odstępy 5 px, a przyciski Zamknij i Wprowadź głosowo niższe.",
+    "Dodano obowiązkowy test Playwright, który mierzy wysokości i przerwy na ekranie, a nie tylko odczytuje CSS.",
+    "Zachowano tekst 16 px, kalendarz, zapis oraz niezmienione konto pracownika i desktop."
   ]
 }
