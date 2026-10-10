@@ -13,7 +13,7 @@ assert.match(imports, /@import '\.\/v1291-mobile-address-wrap\.css';/);
 assert.match(jsx, /className="addressLink"/);
 assert.doesNotMatch(jsx, /addressAutoFitRef|className="addressLink autoFitSingleLineText"/);
 assert.match(jsx, /title="Kliknij, aby otworzyć adres w Google Maps"/);
-assert.match(css, /contactAddressInfoItem\\.contactInfoItem|contactInfoItem\\.contactAddressInfoItem/);
+assert.match(css, /contactAddressInfoItem\.contactInfoItem|contactInfoItem\.contactAddressInfoItem/);
 for (const rule of [
   'grid-template-columns: 78px minmax(0, 1fr) !important;',
   'grid-template-rows: auto !important;',
