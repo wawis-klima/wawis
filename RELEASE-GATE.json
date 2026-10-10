@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.02",
+  "version": "13.03",
   "scope": "mobile",
-  "release_branch": "release/v13.02",
+  "release_branch": "release/v13.03",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
@@ -12,12 +12,12 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.02.zip"
+    "file_name": "klima-app-v13.03.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.02",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
+    "source_branch": "release/v13.03",
+    "ready_for_main": false,
+    "status": "PENDING_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
-    "notes": "Verify 13.02 on iPhone: header title, icon-only accessible microphone and close do not overlap; long client name expands up to two lines; phone and NIP equal widths; gaps slightly increased and note 104px. Worker/create/desktop unchanged. Confirm actual visual result on physical device."
+    "notes": "Do zweryfikowania po CI i produkcyjnym wdrożeniu: mikrofon obok Komentarza administratora, rozpoznawanie mowy dopisujące do istniejącego tekstu, 118px na standardowym iPhonie i 104px na krótkim. Zachowany dostęp do zapisu i brak kolizji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Admin-only mobile edit form: remove devices and installers UI; center date via native iOS picker overlay without changing stored data.",
+    "code": "Existing mobile admin edit: note voice mic in heading + 118px textarea. Worker/create/desktop unchanged.",
     "release_ci": "REQUIRED exact PR HEAD targeted regression, linked device/protocol consumer tests, iPhone browser geometry E2E, Closure Gate, production build.",
-    "post_deploy": "EXTERNAL — Vercel READY exact SHA, displayed public/app version 13.02, real administrator iPhone check."
+    "post_deploy": "EXTERNAL — wymagane Vercel READY exact SHA, public/app-version 13.03 i sprawdzenie wyglądu na fizycznym iPhonie."
   }
 }
