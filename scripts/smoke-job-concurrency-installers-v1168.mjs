@@ -118,8 +118,9 @@ assert.match(protocolInstallerFunction, /job\?\.installer_ids/);
 assert.doesNotMatch(protocolInstallerFunction, /job\?\.viewers|job\.viewers/);
 
 const mobileForm = read('src', 'mobile791', 'components', 'modals', 'JobFormModal.jsx');
-assert.match(mobileForm, /Potwierdź monterów tego montażu/);
-assert.match(mobileForm, /installers_confirmed: true/);
+// 12.97: mobilny formularz danych nie modyfikuje już listy monterów; zapis współbieżny i protokół pozostają aktywne.
+assert.doesNotMatch(mobileForm, /Potwierdź monterów tego montażu/);
+assert.doesNotMatch(mobileForm, /Instalatorzy \\(opcjonalnie\\)/);
 
 const desktopForm = read('src', 'components', 'modals', 'JobFormModal.jsx');
 // 12.02: instalatorzy są przypisywani później z widoku montażu, nie z desktopowego formularza.
