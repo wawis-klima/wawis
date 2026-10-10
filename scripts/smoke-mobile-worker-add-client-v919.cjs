@@ -23,7 +23,7 @@ assert.ok(layout.includes('onClick={logout}'), 'Badge pracownika nie wylogowuje 
 
 assert.match(app, /isAdmin=\{isAdmin\}/, 'JobFormModal nie dostaje informacji o roli.');
 assert.ok(modal.includes('adminNoteTextareaCompact'), 'Brak pola komentarza administratora.');
-assert.ok(!modal.includes('VoiceNoteButton') && !modal.includes('VoiceFieldButton'), 'Mobile nie powinien mieć mikrofonów przy pojedynczych polach.');
+assert.ok(modal.includes('VoiceNoteButton') && !modal.includes('VoiceFieldButton'), '13.03: tylko komentarz administratora ma własny mikrofon.');
 assert.ok(modal.includes('<ClientVoiceInput'), 'Mobile powinien zachować główny przycisk Wprowadź głosowo.');
 assert.ok(modal.includes('{isAdmin && editingJobId ? (') && modal.includes('jobFormAdminFields'), 'Pola administracyjne nie są ukryte przed pracownikiem.');
 assert.ok(modal.includes('isAdmin ? "Zapisz zlecenie" : "Dodaj klienta"'), 'Formularz pracownika nie ma właściwej akcji Dodaj klienta.');

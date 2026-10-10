@@ -14,8 +14,8 @@ assert.ok(modal.includes('window.setTimeout') && modal.includes('refreshPostalCo
 assert.match(modal, /postalLookupAttemptRef/, 'Lookup nie może zapętlać ponowień dla tego samego adresu.');
 assert.match(modal, /value=\{cityAddressParts\.postalCode\}/, 'Pole kodu ma być kontrolowane i od razu odświeżać wartość.');
 assert.match(modal, /<ClientVoiceInput/, 'Główny przycisk Wprowadź głosowo ma pozostać.');
-assert.doesNotMatch(modal, /VoiceFieldButton|VoiceNoteButton/, 'Przy polach nie może być osobnych mikrofonów.');
-assert.doesNotMatch(modal, /normalizeVoiceEmail|normalizeVoicePhone|appendVoiceNoteText/, 'Stara logika mikrofonów przy polach ma być usunięta.');
+assert.ok(modal.includes('VoiceNoteButton') && !modal.includes('VoiceFieldButton'), '13.03: mikrofon tylko przy komentarzu administratora.');
+assert.doesNotMatch(modal, /normalizeVoiceEmail|normalizeVoicePhone/, 'Stara logika mikrofonów przy polach ma być usunięta.');
 assert.match(css, /min-height:36px !important/, 'Pola formularza mają być niższe.');
 assert.match(css, /grid-template-columns:minmax\(0,1fr\) 104px !important/, 'Miejscowość i kod mają być w kompaktowym dwukolumnowym układzie.');
 assert.match(main, /v1198-new-job-compact\.css/, 'Kompaktowy CSS musi być ładowany jako ostatni override mobile.');

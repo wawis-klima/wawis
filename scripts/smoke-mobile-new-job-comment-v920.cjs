@@ -9,7 +9,7 @@ const modal = read('src', 'mobile791', 'components', 'modals', 'JobFormModal.jsx
 const voice = read('src', 'components', 'voice', 'ClientVoiceInput.jsx');
 const css = read('src', 'mobile791', 'styles.css');
 
-assert.ok(!modal.includes('VoiceNoteButton') && !modal.includes('VoiceFieldButton'), 'Mobile nie powinien mieć mikrofonów przy pojedynczych polach i komentarzach.');
+assert.ok(modal.includes('VoiceNoteButton') && !modal.includes('VoiceFieldButton'), '13.03: tylko komentarz administratora ma własny mikrofon.');
 assert.ok(modal.includes('adminNoteTextareaCompact'), 'Brak kompaktowego pola komentarza administratora.');
 assert.match(modal, /<textarea[\s\S]*?rows=\{2\}[\s\S]*?adminNoteTextareaCompact/, 'Komentarz administratora powinien mieć kompaktowe 2 wiersze.');
 assert.ok(modal.includes('<ClientVoiceInput'), 'Główny przycisk Wprowadź głosowo musi pozostać.');

@@ -19,7 +19,7 @@ assert.ok(voice.includes('Zakończ nagrywanie'), 'Brak ręcznego zakończenia na
 assert.ok(voice.includes('Na komputerze użyj Chrome lub Edge'), 'Brak czytelnego komunikatu dla nieobsługiwanej przeglądarki desktopowej.');
 assert.ok(css.includes('@media (min-width: 901px)'), 'CSS komentarza nie jest ograniczony do desktopu.');
 assert.ok(css.includes('.desktopAdminNoteVoiceRow{grid-template-columns:minmax(0,1fr) 44px;align-items:start;}'), 'Mikrofon desktopowego komentarza nie ma prawej kolumny.');
-assert.ok(!mobileModal.includes('VoiceNoteButton') && !mobileModal.includes('VoiceFieldButton'), 'Mobile ma używać tylko jednego głównego wejścia głosowego.');
+assert.ok(mobileModal.includes('VoiceNoteButton') && !mobileModal.includes('VoiceFieldButton') && mobileModal.includes('adminNoteHeaderActionsV1303'), '13.03: mobile ma mikrofon komentarza admina.');
 assert.ok(mobileModal.includes('<ClientVoiceInput'), 'Główny przycisk głosowy mobile został naruszony.');
 
 assert.ok(voice.includes('export function appendVoiceNoteText'), 'Brak współdzielonego helpera dopisywania komentarza.');
