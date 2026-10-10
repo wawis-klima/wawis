@@ -1,6 +1,6 @@
 ## 13.01
-- Mobile / Administrator / Edytuj montaż: Zamknij po prawej od nagłówka, zamiast pod nim; przycisk głosowy 32 px, pozostałe pola 32 px, font 13 px, odstępy 3 px.
-- Komentarz administratora 110 px (wcześniej 54 px) — około dwukrotnie większe pole, z możliwością przewinięcia długiej treści i ręcznego powiększania.
+- Mobile / Administrator / Edytuj montaż: Nagłówek, Wprowadź głosowo i Zamknij w jednym wierszu; Telefon oraz NIP obok siebie; przycisk głosowy 32 px, pozostałe pola 32 px, font 13 px, odstępy 3 px.
+- Komentarz administratora 104 px (wcześniej 54 px) — około dwukrotnie większe pole, z możliwością przewinięcia długiej treści i ręcznego powiększania.
 - E2E iPhone weryfikuje układ w jednym ekranie i widoczność Zapisz zmiany. Na krótkich ekranach pozwalamy przewinąć formularz, bez obcinania zapisu. Pracownik, nowy montaż, desktop i działanie zapisu/daty bez zmian.
 
 ## 13.00
