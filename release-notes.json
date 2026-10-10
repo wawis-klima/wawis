@@ -1,10 +1,9 @@
 {
-  "version": "12.95",
-  "summary": "Uporządkowany mobilny widok pracownika bez zmiany wyglądu administratora.",
+  "version": "12.96",
+  "summary": "Wyrównanie daty w mobilnej edycji pracownika na iPhonie.",
   "changes": [
-    "Pracownik: Edytuj/Zamknij po lewej oraz Tabliczki/Protokół/Zakończ po prawej.",
-    "Pracownik: kompaktowa edycja montażu z wyrównaną datą i przyciskiem Wyczyść.",
-    "Administrator: istniejący układ pozostaje bez zmian.",
-    "Protokół obydwu ról: Gotówka lub przelew bez słowa Wybierz."
+    "Data wewnątrz pola jest wyśrodkowana, a nie przesunięta do góry.",
+    "Kalendarz systemowy iOS, zmiana, Wyczyść i zapisywanie daty pozostają aktywne.",
+    "Bez zmian formularza administratora i nowego montażu."
   ]
 }
