@@ -76,6 +76,18 @@ const phoneEdit = buildJobEditChangeSet({
   normalizeStatus,
 });
 assert.deepEqual(Object.keys(phoneEdit.fields).sort(), ['phone', 'sms_recipient_phone']);
+
+// WAWIS 12.97: hidden JZ/JW fields must not be rewritten on admin mobile edit.
+const protectedAdminEdit = buildJobEditChangeSet({
+  form: { ...commonForm, phone: '700800900', devices: [{ model: 'Unintentional model change', serial_number: 'BAD-SN' }] },
+  baseJob,
+  isAdmin: true,
+  normalizeStatus,
+  includeDeviceChanges: false,
+});
+assert.deepEqual(Object.keys(protectedAdminEdit.fields).sort(), ['phone', 'sms_recipient_phone']);
+assert.equal(protectedAdminEdit.fields.device_model, undefined);
+assert.equal(protectedAdminEdit.fields.device_serial_number, undefined);
 assert.equal(phoneEdit.fields.status, undefined);
 assert.equal(phoneEdit.fields.main_technician_id, undefined);
 assert.equal(phoneEdit.expected.phone, '600100200');
