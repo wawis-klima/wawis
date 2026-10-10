@@ -7,7 +7,7 @@
 - mobile
 
 ## Zakres
-- Administrator / mobilna edycja montażu: Zamknij w jednym wierszu z nagłówkiem, pola 32 px/13 px, mniejsze odstępy; komentarz administratora 110 px zamiast 54 px.
+- Administrator / mobilna edycja montażu: Zamknij i Wprowadź głosowo w jednym wierszu z nagłówkiem; Telefon i NIP w jednym wierszu, pola 32 px/13 px, mniejsze odstępy; komentarz administratora 104 px zamiast 54 px.
 - Standardowy iPhone: cały formularz razem z Zapisz zmiany na jednym ekranie; dla mniejszych ekranów awaryjne przewijanie z dostępnym zapisem.
 - Pracownik, tworzenie nowego montażu, desktop, dane klienta, edycja i kalendarz bez zmian.
 
