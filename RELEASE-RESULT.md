@@ -8,7 +8,7 @@
 
 ## Zakres
 - Mobilny administrator / Edytuj montaż: sam mikrofon obok nagłówka i Zamknij, bez nachodzenia elementów.
-- Automatycznie jedno- lub dwuwierszowa nazwa klienta; Telefon i NIP po 50% szerokości, odstępy 8px w poziomie i 4px w pionie.
+- Automatycznie jedno- lub dwuwierszowa nazwa klienta; Telefon i NIP po 50% szerokości, odstępy 8px w poziomie i 3px w pionie.
 - Komentarz administratora 104px na normalnym iPhonie; na krótszych ekranach zachowano przewijanie i dostęp do Zapisz zmiany.
 - Bez zmiany danych, OCR, protokołów, edycji pracownika, tworzenia montażu i desktopu.
 
