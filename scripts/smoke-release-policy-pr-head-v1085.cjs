@@ -62,6 +62,18 @@ try {
   assert.notEqual(wrongBranch.status, 0, 'PR z niewłaściwej gałęzi musi dostać NO-GO');
   assert.match(`${wrongBranch.stdout}\n${wrongBranch.stderr}`, /PR pochodzi z/);
 
+  // Regression 12.94: old PR gate allowed wrong protected source branch,
+  // while Vercel --deploy refused the exact same release.
+  const mismatchedSource = {
+    ...goodGate,
+    main_protection: { ...goodGate.main_protection, source_branch: 'release/v0.00' },
+  };
+  fs.writeFileSync(gatePath, JSON.stringify(mismatchedSource, null, 2) + '\n');
+  const wrongSource = run(expectedBranch);
+  assert.notEqual(wrongSource.status, 0, 'Błędny source_branch musi zostać wykryty przed wdrożeniem');
+  assert.match(`${wrongSource.stdout}\n${wrongSource.stderr}`, /źródło wdrożenia/);
+  fs.writeFileSync(gatePath, JSON.stringify(goodGate, null, 2) + '\n');
+
   const correctBranch = run(expectedBranch);
   assert.equal(correctBranch.status, 0, `${correctBranch.stdout}\n${correctBranch.stderr}`);
   assert.match(correctBranch.stdout, new RegExp(`WAWIS RELEASE GATE: GO — ${appVersion}`));
