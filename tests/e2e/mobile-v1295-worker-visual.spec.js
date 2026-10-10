@@ -124,6 +124,36 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await expect(modal.locator('.jobDevicesSection')).toHaveCount(0);
     await expect(modal.getByRole('heading', { name: /Instalatorzy/ })).toHaveCount(0);
     await expect(modal.locator('.viewerGrid')).toHaveCount(0);
+    // WAWIS 12.99: assert actual rendered geometry, not merely CSS source existence.
+    const compactLayout = await modal.evaluate((el) => {
+      const rect = (selector) => el.querySelector(selector)?.getBoundingClientRect();
+      const email = rect('input[placeholder="Email klienta"]');
+      const phone = rect('input[placeholder="Telefon klienta / SMS"]');
+      const nip = rect('input.jobNipCompactInput');
+      const input = el.querySelector('input[placeholder="Email klienta"]');
+      return {
+        emailHeight:email?.height,
+        phoneHeight:phone?.height,
+        nipHeight:nip?.height,
+        phoneGap:phone && email ? phone.top-email.bottom : -1,
+        nipGap:nip && phone ? nip.top-phone.bottom : -1,
+        closeHeight:rect('.jobHead > .btn')?.height,
+        voiceHeight:rect('.voiceClientMainBtn')?.height,
+        dateHeight:rect('.installationDateInputShell')?.height,
+        fontSize:input ? parseFloat(getComputedStyle(input).fontSize) : 0,
+        overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+      };
+    });
+    for (const k of ['emailHeight','phoneHeight','nipHeight','closeHeight','voiceHeight','dateHeight']) {
+      expect(compactLayout[k], k + ' must actually render in compact size').toBeGreaterThanOrEqual(35);
+      expect(compactLayout[k], k + ' must not render with old large size').toBeLessThanOrEqual(40);
+    }
+    expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(3);
+    expect(compactLayout.phoneGap).toBeLessThanOrEqual(8);
+    expect(compactLayout.nipGap).toBeGreaterThanOrEqual(3);
+    expect(compactLayout.nipGap).toBeLessThanOrEqual(8);
+    expect(compactLayout.fontSize).toBeGreaterThanOrEqual(16);
+    expect(compactLayout.overflow).toBeLessThanOrEqual(2);
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
     const dateText = modal.locator('.adminDateVisibleLabelV1297');
     const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
