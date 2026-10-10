@@ -973,7 +973,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.02` — mikrofon bez podpisu, dwuwierszowa nazwa klienta, telefon/NIP 50/50 i czytelniejsze odstępy.
+- wersja `13.03` — mikrofon dyktowania komentarza administratora i pole 118 px w edycji mobilnej; poprzednia treść pozostaje zachowana.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.
