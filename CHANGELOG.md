@@ -1,3 +1,8 @@
+## 12.99
+- Mobile / Administrator / Edytuj montaż: pola obniżone z 44 px do 38 px, odstępy z 7 px do 5 px, przyciski i sekcje bardziej zwarte.
+- Poprawka po zgłoszeniu, że 12.98 nadal wygląda prawie tak samo: wymagana jest kontrola rzeczywistych rozmiarów w przeglądarce, a nie samo wyszukiwanie reguł CSS.
+- Playwright na iPhonie mierzy wysokość pól, przerwy między nimi, wysokość przycisków i daty, 16 px tekst oraz brak poziomego przepełnienia. Pracownik, tworzenie montażu, desktop i działanie natywnego kalendarza bez zmian.
+
 ## 12.98
 - Mobile / Administrator / Edytuj montaż: pola o wysokości 44 px, odstępy 7 px zamiast dużych przerw, mniejsze marginesy i przyciski.
 - Tekst pól 16 px zapobiega powiększaniu iOS; natywny kalendarz pozostaje interaktywny.
