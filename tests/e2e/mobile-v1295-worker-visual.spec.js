@@ -165,6 +165,34 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactLayout.headingFont).toBeLessThanOrEqual(18);
     expect(compactLayout.voiceFont).toBeLessThanOrEqual(14);
     expect(compactLayout.overflow).toBeLessThanOrEqual(2);
+    // WAWIS 13.01: full admin form, save button and enlarged comment fit iPhone 14.
+    const oneScreen = await modal.evaluate(el => {
+      const box = node => node.getBoundingClientRect();
+      const header = box(el.querySelector('.jobHead h2'));
+      const close = box(el.querySelector('.jobHead > .btn'));
+      const note = el.querySelector('.adminNoteTextareaCompact');
+      const noteRect = box(note);
+      const saveRect = box(el.querySelector('.saveJobBtn'));
+      const content = box(el.querySelector('form'));
+      const shell = box(el);
+      return {
+        headerCenter: header.y+header.height/2,
+        closeCenter: close.y+close.height/2,
+        noteHeight:noteRect.height,
+        noteFont:parseFloat(getComputedStyle(note).fontSize),
+        saveBottom:saveRect.bottom,
+        modalBottom:shell.bottom,
+        contentBottom:content.bottom,
+        scrollOverflow:el.scrollHeight-el.clientHeight,
+        viewportHeight:window.innerHeight,
+      };
+    });
+    expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
+    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(108);
+    expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
+    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.modalBottom+2);
+    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.viewportHeight+2);
+    expect(oneScreen.scrollOverflow).toBeLessThanOrEqual(3);
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
     const dateText = modal.locator('.adminDateVisibleLabelV1297');
     const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
