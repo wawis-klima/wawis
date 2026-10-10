@@ -206,3 +206,124 @@
   }
 
 }
+
+/* WAWIS 13.01 — single-screen admin mobile editor with a readable, taller note.
+   One-row heading/close saves a full line; only edit+admin+mobile is affected. */
+@media (max-width:700px) {
+  .formModal.adminMobileEditModalV1297 {
+    max-height:calc(100dvh - 16px)!important;
+    padding:7px 10px 9px!important;
+  }
+  .formModal.adminMobileEditModalV1297 form {
+    gap:3px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .jobHead {
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 88px!important;
+    align-items:center!important;
+    gap:6px!important;
+    margin:0 0 2px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .jobHead h2 {
+    font-size:16px!important;
+    line-height:1.12!important;
+    min-width:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 .jobHead > .btn {
+    width:88px!important;
+    min-width:0!important;
+    height:32px!important;
+    min-height:32px!important;
+    padding:5px 8px!important;
+    border-radius:10px!important;
+    font-size:12px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .voiceClientInput { margin:0!important; }
+  .formModal.adminMobileEditModalV1297 .voiceClientMainBtn {
+    height:32px!important;
+    min-height:32px!important;
+    padding:4px 10px!important;
+    font-size:12px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form input.input:not(textarea),
+  html body .formModal.adminMobileEditModalV1297 form select.input {
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+    padding:4px 9px!important;
+    font-size:13px!important;
+    line-height:1.15!important;
+    margin:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 .postalCityFieldRow {
+    gap:4px!important;
+    grid-template-columns:minmax(0,1fr) 100px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .jobAddressPicker {
+    margin:1px 0 0!important;
+  }
+  .formModal.adminMobileEditModalV1297 .jobAddressPicker > span {
+    margin:0 0 2px 3px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .inputLabel > span,
+  .formModal.adminMobileEditModalV1297 .installationDateLabelRow > span,
+  .formModal.adminMobileEditModalV1297 .adminNoteLabelRow > span {
+    font-size:10.5px!important;
+    line-height:1.1!important;
+  }
+  .formModal.adminMobileEditModalV1297 .installationDateField,
+  .formModal.adminMobileEditModalV1297 .adminNoteInputBlock { margin:1px 0 0!important; }
+  .formModal.adminMobileEditModalV1297 .installationDateLabelRow,
+  .formModal.adminMobileEditModalV1297 .adminNoteLabelRow {
+    min-height:19px!important;
+    gap:5px!important;
+    margin:0 0 2px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .fieldClearBtn {
+    font-size:10.5px!important;
+    padding:2px 0!important;
+  }
+  .formModal.adminMobileEditModalV1297 .installationDateInputShell {
+    height:32px!important;
+    min-height:32px!important;
+    max-height:32px!important;
+    margin:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 .adminDateVisibleLabelV1297 {
+    font-size:13px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .adminNoteTextareaCompact {
+    height:110px!important;
+    min-height:110px!important;
+    max-height:170px!important;
+    margin:0!important;
+    padding:7px 9px!important;
+    font-size:13px!important;
+    line-height:1.35!important;
+    resize:vertical!important;
+    overflow-y:auto!important;
+  }
+  .formModal.adminMobileEditModalV1297 .row.rightAlign {
+    margin:2px 0 0!important;
+    padding:0!important;
+  }
+  .formModal.adminMobileEditModalV1297 .saveJobBtn {
+    min-height:38px!important;
+    height:38px!important;
+    padding:6px 10px!important;
+    font-size:13px!important;
+  }
+}
+/* Short iPhones: keep a scrollable form rather than clip the textarea or save button. */
+@media (max-width:700px) and (max-height:740px) {
+  .formModal.adminMobileEditModalV1297 {
+    max-height:calc(100dvh - 12px)!important;
+    overflow-y:auto!important;
+  }
+  .formModal.adminMobileEditModalV1297 .row.rightAlign {
+    position:sticky!important;
+    bottom:0!important;
+    z-index:2!important;
+    background:#fff!important;
+  }
+}
