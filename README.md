@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.99
+- 13.00
+
+WAWIS 13.00: na iPhonie edycja montażu administratora ma czcionkę pól 14 px zamiast 16 px, wysokość 34 px zamiast 38 px i odstępy 4 px zamiast 5 px. Nagłówek, przyciski, status, adres, data i komentarz administratora też są wizualnie mniejsze. Playwright mierzy faktyczną wysokość i font każdego typu pola; nie zmieniono funkcji, pracownika ani desktopu.
 
 WAWIS 12.99: realnie zmniejszone pola w mobilnej edycji administratora (38 px) i przerwy (5 px), również Zamknij i Wprowadź głosowo. Test Playwright mierzy faktyczne wysokości i odstępy na symulowanym iPhonie; wcześniejsze 12.98 sprawdzało wyłącznie obecność stylów. Konto pracownika, formularz tworzenia i desktop bez zmian.
 
@@ -965,7 +967,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.99` — naprawa zbyt dużych pól formularza Edytuj montaż na mobilnym koncie administratora; weryfikacja rzeczywistej geometrii Playwright.
+- wersja `13.00` — mniejsze pola i czcionki mobilnego formularza Edytuj montaż administratora, z testem rzeczywistych wymiarów.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.
