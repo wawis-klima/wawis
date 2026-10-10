@@ -47,6 +47,22 @@ export default function JobFormModal({
   saveEditedJob,
   busy,
 }) {
+  // WAWIS 13.02: expand the admin edit client field only when its text wraps.
+  // The persisted client value remains a single line of text; only its display is multiline.
+  const adminClientNameRefV1302 = useRef(null);
+  useEffect(() => {
+    if (!showModal || !editingJobId || !isAdmin) return undefined;
+    const field = adminClientNameRefV1302.current;
+    if (!field) return undefined;
+    const fit = () => {
+      field.style.height = '32px';
+      field.style.height = `${Math.min(56, Math.max(32, field.scrollHeight))}px`;
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [showModal, editingJobId, isAdmin, jobForm.client]);
+
   const contractorOptions = useMemo(
     () => [...contractors].sort((left, right) => String(left?.company_name || '').localeCompare(String(right?.company_name || ''), 'pl')),
     [contractors],
@@ -709,8 +725,20 @@ export default function JobFormModal({
           </div>
         ) : null}
         <div className="jobFormGeneralFields" hidden={serialOnlyMode}>
-        {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} /> : null}
-        <input className="input" placeholder="Klient" value={jobForm.client} onChange={(e) => updateField("client", e.target.value)} />
+        {editingJobId ? <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} iconOnly={isAdmin} /> : null}
+        {editingJobId && isAdmin ? (
+          <textarea
+            ref={adminClientNameRefV1302}
+            rows={1}
+            className="input adminClientNameV1302"
+            aria-label="Klient"
+            placeholder="Klient"
+            value={jobForm.client}
+            onChange={(e) => updateField("client", e.target.value.replace(/[\r\n]+/g, ' '))}
+          />
+        ) : (
+          <input className="input" placeholder="Klient" value={jobForm.client} onChange={(e) => updateField("client", e.target.value)} />
+        )}
         {contractorSuggestions.length ? (
           <div className="jobContractorSuggestions">
             <div className="jobContractorSuggestionsTitle">Czy chodzi o tego kontrahenta?</div>
@@ -737,14 +765,23 @@ export default function JobFormModal({
           </div>
         ) : null}
         <input className="input" placeholder="Email klienta" value={jobForm.email} onChange={(e) => updateField("email", e.target.value)} />
-        <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
-        <input
-          className="input jobNipCompactInput"
-          inputMode="numeric"
-          placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"}
-          value={jobForm.nip || ''}
-          onChange={(e) => updateField("nip", e.target.value)}
-        />
+        {editingJobId && isAdmin ? (
+          <div className="adminContactPairV1302">
+            <input className="input" placeholder="Telefon klienta / SMS" aria-label="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
+            <input className="input jobNipCompactInput" inputMode="numeric" aria-label="NIP (opcjonalnie)" placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"} value={jobForm.nip || ''} onChange={(e) => updateField("nip", e.target.value)} />
+          </div>
+        ) : (
+          <>
+            <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
+            <input
+              className="input jobNipCompactInput"
+              inputMode="numeric"
+              placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"}
+              value={jobForm.nip || ''}
+              onChange={(e) => updateField("nip", e.target.value)}
+            />
+          </>
+        )}
         {gusLookupMessage ? <small className="jobNipLookupStatus" role="status">{gusLookupMessage}</small> : null}
         {linkedContractor ? (
           <label className="inputLabel jobAddressPicker">
