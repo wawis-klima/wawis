@@ -48,14 +48,14 @@
   }
 }
 
-/* WAWIS 12.99: measured compact admin edit; v12.98 only tightened margins, not field boxes.
-   38px visible controls, 5px row gaps, and 16px text (avoid iOS input zoom).
+/* WAWIS 13.00: visibly smaller mobile admin edit, including typography.
+   34px visible controls, 4px row gaps and 14px text; native iOS date and editing remain functional.
    Worker edit, new montage, desktop and native iOS date behavior stay untouched. */
 @media (max-width:700px) {
   .formModal.adminMobileEditModalV1297 {
     max-height:calc(100dvh - 24px)!important;
     margin:0 auto!important;
-    padding:10px 12px 12px!important;
+    padding:9px 11px 11px!important;
     border-radius:18px!important;
     overflow-x:hidden!important;
     overflow-y:auto!important;
@@ -64,27 +64,28 @@
   .adminMobileEditModalV1297 form {
     display:flex!important;
     flex-direction:column!important;
-    gap:5px!important;
+    gap:4px!important;
     min-width:0!important;
   }
   .adminMobileEditModalV1297 .jobHead {
     display:flex!important;
     flex-direction:column!important;
     align-items:stretch!important;
-    gap:5px!important;
-    margin:0 0 3px!important;
+    gap:4px!important;
+    margin:0 0 2px!important;
   }
   .adminMobileEditModalV1297 .jobHead h2 {
     margin:0!important;
-    font-size:19px!important;
+    font-size:17px!important;
     line-height:1.18!important;
   }
   .adminMobileEditModalV1297 .jobHead > .btn {
     width:100%!important;
-    min-height:38px!important;
+    min-height:34px!important;
+    height:34px!important;
     margin:0!important;
-    padding:6px 11px!important;
-    font-size:15px!important;
+    padding:5px 10px!important;
+    font-size:13px!important;
     line-height:1.15!important;
     border-radius:10px!important;
   }
@@ -94,11 +95,11 @@
   }
   .adminMobileEditModalV1297 .voiceClientMainBtn {
     width:100%!important;
-    min-height:38px!important;
-    height:38px!important;
+    min-height:34px!important;
+    height:34px!important;
     margin:0!important;
-    padding:6px 12px!important;
-    font-size:14px!important;
+    padding:5px 11px!important;
+    font-size:13px!important;
     line-height:1.2!important;
     border-radius:10px!important;
   }
@@ -106,12 +107,12 @@
   .adminMobileEditModalV1297 select.input {
     width:100%!important;
     min-width:0!important;
-    height:38px!important;
-    min-height:38px!important;
+    height:34px!important;
+    min-height:34px!important;
     margin:0!important;
-    padding:6px 11px!important;
+    padding:5px 10px!important;
     border-radius:10px!important;
-    font-size:16px!important;
+    font-size:14px!important;
     line-height:1.2!important;
     box-sizing:border-box!important;
   }
@@ -124,8 +125,8 @@
   }
   .adminMobileEditModalV1297 .postalCityFieldRow {
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) 112px!important;
-    gap:5px!important;
+    grid-template-columns:minmax(0,1fr) 105px!important;
+    gap:4px!important;
     margin:0!important;
     min-width:0!important;
   }
@@ -136,8 +137,8 @@
   .adminMobileEditModalV1297 .installationDateLabelRow,
   .adminMobileEditModalV1297 .adminNoteLabelRow {
     gap:6px!important;
-    min-height:22px!important;
-    margin:0 0 3px!important;
+    min-height:20px!important;
+    margin:0 0 2px!important;
   }
   .adminMobileEditModalV1297 .installationDateLabelRow > span,
   .adminMobileEditModalV1297 .adminNoteLabelRow > span {
@@ -147,19 +148,19 @@
   }
   .adminMobileEditModalV1297 .installationDateInputShell {
     width:100%!important;
-    height:38px!important;
-    min-height:38px!important;
-    max-height:38px!important;
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
     margin:0!important;
     border-radius:10px!important;
   }
   .adminMobileEditModalV1297 .adminNoteTextareaCompact {
     margin:0!important;
-    height:60px!important;
-    min-height:60px!important;
-    padding:7px 11px!important;
+    height:54px!important;
+    min-height:54px!important;
+    padding:6px 10px!important;
     border-radius:10px!important;
-    font-size:16px!important;
+    font-size:14px!important;
     box-sizing:border-box!important;
   }
   .adminMobileEditModalV1297 .row.rightAlign {
@@ -168,8 +169,40 @@
   }
   .adminMobileEditModalV1297 .saveJobBtn {
     width:100%!important;
-    min-height:40px!important;
-    padding:6px 12px!important;
+    min-height:38px!important;
+    padding:5px 11px!important;
     border-radius:10px!important;
   }
+
+  /* Explicit admin-only specificity also wins on iPhones with large display settings. */
+  html body .formModal.adminMobileEditModalV1297 form .input:not(textarea),
+  html body .formModal.adminMobileEditModalV1297 form select.input {
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+    font-size:14px!important;
+    line-height:1.15!important;
+    padding:4px 10px!important;
+    margin:0!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form .jobNipCompactInput {
+    font-size:13px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .adminDateVisibleLabelV1297 {
+    font-size:14px!important;
+    line-height:1.15!important;
+  }
+  .formModal.adminMobileEditModalV1297 .inputLabel > span,
+  .formModal.adminMobileEditModalV1297 .installationDateLabelRow > span,
+  .formModal.adminMobileEditModalV1297 .adminNoteLabelRow > span {
+    font-size:11px!important;
+    line-height:1.2!important;
+  }
+  .formModal.adminMobileEditModalV1297 .fieldClearBtn {
+    font-size:11px!important;
+  }
+  .formModal.adminMobileEditModalV1297 .saveJobBtn {
+    font-size:13px!important;
+  }
+
 }

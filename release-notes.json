@@ -1,9 +1,9 @@
 {
-  "version": "12.99",
-  "summary": "Realne zmniejszenie mobilnego formularza Edytuj montaż administratora",
+  "version": "13.00",
+  "summary": "Mniejsze pola i czcionki w mobilnej edycji montażu administratora",
   "changes": [
-    "Pola formularza 38 px, odstępy 5 px, a przyciski Zamknij i Wprowadź głosowo niższe.",
-    "Dodano obowiązkowy test Playwright, który mierzy wysokości i przerwy na ekranie, a nie tylko odczytuje CSS.",
-    "Zachowano tekst 16 px, kalendarz, zapis oraz niezmienione konto pracownika i desktop."
+    "Pola 34 px i odstępy 4 px; czcionka formularza 14 px, nagłówek 17 px.",
+    "Zmniejszone proporcje przycisków, adresu, statusu, daty i komentarza administratora.",
+    "Playwright sprawdza wysokość pól oraz rzeczywiste rozmiary czcionek; dane i widok pracownika bez zmian."
   ]
 }

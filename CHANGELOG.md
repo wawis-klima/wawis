@@ -1,3 +1,8 @@
+## 13.00
+- Mobile / Administrator / Edytuj montaż: wysokość pól 38 → 34 px, przerwy 5 → 4 px, font treści pól 16 → 14 px, nagłówek 19 → 17 px. Przyciski, data, status, adres i komentarz mają spójne, mniejsze proporcje.
+- Test Playwright na mobilnym ekranie weryfikuje rzeczywiste rozmiary, czcionki i brak overflow; regresja pracownika, desktopu i działania kalendarza pozostaje wymagana.
+- Zmiany wyłącznie w CSS edycji administratora, bez migracji, modyfikacji danych i uprawnień.
+
 ## 12.99
 - Mobile / Administrator / Edytuj montaż: pola obniżone z 44 px do 38 px, odstępy z 7 px do 5 px, przyciski i sekcje bardziej zwarte.
 - Poprawka po zgłoszeniu, że 12.98 nadal wygląda prawie tak samo: wymagana jest kontrola rzeczywistych rozmiarów w przeglądarce, a nie samo wyszukiwanie reguł CSS.
