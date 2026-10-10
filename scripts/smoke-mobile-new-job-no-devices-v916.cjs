@@ -11,22 +11,10 @@ const wizard = read('src', 'mobile791', 'components', 'devices', 'MobileDeviceWi
 const details = read('src', 'mobile791', 'components', 'JobDetailsPanel.jsx');
 const detailCss = read('src', 'mobile791', 'v1103-completed-note-compact.css');
 
-const deviceSectionIndex = form.indexOf('<div className="jobDevicesSection">');
-assert.ok(deviceSectionIndex > 0, 'Mobilny formularz stracił sekcję urządzeń całkowicie.');
-const preceding = form.slice(Math.max(0, deviceSectionIndex - 100), deviceSectionIndex);
-assert.match(
-  preceding,
-  /\{editingJobId\s*&&\s*\(isAdmin\s*\|\|\s*serialOnlyMode\)\s*\?\s*\(\s*$/,
-  'Sekcja urządzeń w mobile ma być widoczna tylko administratorowi lub w osobnym trybie Tabliczki, nie w zwykłej edycji klienta pracownika.',
-);
-
+assert.doesNotMatch(form, /<div className="jobDevicesSection">/, 'Edycja danych klienta na telefonie nie może zawierać kreatora urządzeń.');
+assert.doesNotMatch(form, /Instalatorzy \\(opcjonalnie\\)/, 'Mobilna edycja administratora nie może zawierać listy instalatorów.');
 assert.match(form, /editingJobId \? "Edytuj montaż" : \(isAdmin \? "Nowy montaż \/ zlecenie" : "Dodaj nowego klienta"\)/, 'Brak rozróżnienia trybu edycji, nowego montażu administratora i nowego klienta pracownika.');
 assert.ok(form.includes('Komentarz administratora'), 'Nowy mobilny formularz musi zachować komentarz administratora.');
-assert.match(
-  form,
-  /\{\(editingJobId \|\| !isAdmin\) \? \(\s*<>\s*<h4>Instalatorzy \(opcjonalnie\)<\/h4>/,
-  'W 10.60 wybór instalatorów musi być dostępny przy edycji oraz podczas tworzenia montażu przez pracownika.',
-);
 assert.ok(form.includes('Zapisz zlecenie'), 'Nowy mobilny formularz musi zachować zapis zlecenia.');
 
 assert.match(form, /if \(serialOnlyMode\) \{[\s\S]*?<MobileDeviceWizard/, 'Osobny kreator urządzeń/tabliczek po utworzeniu montażu musi pozostać dostępny.');
@@ -37,4 +25,4 @@ assert.match(detailCss, /\.workerCreatedAtInfoValue\s*\{[\s\S]*justify-content:\
 assert.ok(jobsForm.includes('device_model: deviceFields.device_model || null'), 'Nowe zlecenie musi dać się zapisać bez modelu urządzenia.');
 assert.ok(jobsForm.includes('device_serial_number: deviceFields.device_serial_number || null'), 'Nowe zlecenie musi dać się zapisać bez numeru seryjnego urządzenia.');
 
-console.log('Mobile new-job 10.60 smoke OK: create without devices; worker installer selection and post-create device/nameplate flow preserved');
+console.log('Mobile new-job smoke OK: editing form without device and installer sections; separate nameplate wizard remains');
