@@ -1,16 +1,15 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.95
+- 12.96
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Pracownik: Edytuj/Zamknij po lewej, Tabliczki/Protokół/Zakończ po prawej.
-- Pracownik: kompaktowa edycja, wyrównane Data montażu i Wyczyść; modal pozostaje przewijalny.
-- Administrator: układy przycisków i edycji bez zmian.
-- Obie role: Gotówka lub przelew zamiast Wybierz: gotówka lub przelew.
+- Pracownik: widoczna data montażu wyśrodkowana pionowo/poziomo w ekranie Edytuj montaż.
+- Wciąż działa natywne pole daty iOS, zmiana daty, Wyczyść i Zapisz zmiany.
+- Administrator: bez zmian. Formularz tworzenia montażu: bez zmian. Brak migracji i zmian uprawnień.
 
 ## Dowód
-- Wymagane: PR CI exact SHA, testy Playwright i Closure Gate, produkcyjny build, następnie Vercel READY i weryfikacja widocznej wersji.
+- Wymagane: zielone testy PR na dokładnym SHA, E2E tekstu daty i zachowania obu ról, Closure Gate, build, merge i Vercel READY.

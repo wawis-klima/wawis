@@ -1,3 +1,9 @@
+## 12.96
+- iPhone / Pracownik / Edytuj montaż: właściwa wartość daty (np. 10 paź 2026) jest wyśrodkowana w pionie i w poziomie wewnątrz pola, zamiast u góry.
+- Tylko dla mobilnej edycji pracownika: przezroczysty natywny input daty zapewnia pełny obszar dotyku i natywny kalendarz iOS, a warstwa aria-hidden wyświetla dokładnie tę samą wartość.
+- Zmiana daty, jej wyczyszczenie i zapis zachowują istniejące działanie; administrator, formularz nowego montażu i moduł protokołu bez zmian.
+- Test E2E mierzy środek wyświetlanej daty, obszar pola natywnego, zmianę i czyszczenie oraz izolację administratora. Brak migracji bazy i zmian uprawnień.
+
 ## 12.95
 - Mobile pracownik: Edytuj i Zamknij w lewej kolumnie; Tabliczki, Protokół i Zakończ w prawej.
 - Mobile pracownik: zwarta edycja danych klienta, wyrównane Data montażu / Wyczyść, przewijanie bez wyjścia poza ekran.
