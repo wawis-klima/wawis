@@ -1,3 +1,8 @@
+## 12.98
+- Mobile / Administrator / Edytuj montaż: pola o wysokości 44 px, odstępy 7 px zamiast dużych przerw, mniejsze marginesy i przyciski.
+- Tekst pól 16 px zapobiega powiększaniu iOS; natywny kalendarz pozostaje interaktywny.
+- Ściśle ograniczono CSS do mobilnej edycji administratora; formularz pracownika, nowy montaż i desktop bez zmian. Dodano kontrolę regresyjną.
+
 ## 12.97
 - Mobile / Administrator / Edytuj montaż: usunięto z tego formularza osadzoną sekcję „Urządzenia w montażu” i listę „Instalatorzy (opcjonalnie)”; nie usunięto urządzeń ani zapisanych przypisań.
 - Osobny kreator Tabliczki pozostaje dostępny z karty montażu. Data montażu jest wyśrodkowana także na iPhonie administratora z pełnowymiarowym, klikalnym natywnym polem iOS.
