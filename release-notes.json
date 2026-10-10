@@ -4,7 +4,7 @@
   "changes": [
     "Mikrofon bez widocznego napisu, bez nakładania na tytuł.",
     "Długa nazwa klienta rozwija pole do dwóch wierszy; telefon i NIP równe, oddzielone o 8 px.",
-    "Nieco większe przerwy pionowe i komentarz administratora 112 px, przy zachowanym przewijaniu na małych ekranach.",
+    "Nieco większe przerwy pionowe i komentarz administratora 104 px, przy zachowanym przewijaniu na małych ekranach.",
     "Testy rzeczywistej geometrii iPhone i izolacji ról."
   ]
 }
