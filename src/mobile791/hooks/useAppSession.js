@@ -244,6 +244,13 @@ export function useAppSession({
         : await loadStartupChangeHead({ supabase });
       if (!isCurrentRefreshRequest()) return { ok: true, ignoredOlderResponse: true };
 
+      const applyProfileFirst = async (freshProfile) => {
+        if (!freshProfile || String(freshProfile.id || '') !== userId || !isCurrentRefreshRequest()) return;
+        // Only the server-confirmed current-session profile may expose role actions.
+        profileRef.current = freshProfile;
+        setProfile(freshProfile);
+      };
+
       const applyJobsFirst = async (freshJobs, activeUser = user) => {
         if (!Array.isArray(freshJobs) || !isCurrentSession()) return;
         // Starsza odpowiedź nie może nadpisać nowszej, już zastosowanej odpowiedzi.
@@ -295,6 +302,7 @@ export function useAppSession({
         existingJobs: jobsRef.current,
         preserveJobDetails,
         onJobsReady: (freshJobs) => applyJobsFirst(freshJobs, activeUser),
+        onProfileReady: (freshProfile) => applyProfileFirst(freshProfile),
       });
 
       const loadServerPayloadOnce = (activeUser) => {

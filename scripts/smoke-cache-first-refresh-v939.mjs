@@ -110,3 +110,6 @@ const desktopAuth = read('src/modules/auth.js');
 assert.match(desktopAuth, /Promise\.race\(\[\s*supabase\.auth\.signOut\(\{ scope: 'local' \}\)/, 'Desktop logout nie może czekać na wolny endpoint Auth.');
 
 console.log('OK: cache-first pokazuje snapshot, odświeża z Supabase i blokuje nadpisanie nowszego stanu starszą odpowiedzią.');
+
+// Każde uruchomienie cache-first sprawdza też obie kolejności startu mobile i timeout 504.
+await import('./smoke-mobile-startup-v1294.mjs');

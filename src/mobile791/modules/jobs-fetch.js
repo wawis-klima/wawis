@@ -18,12 +18,14 @@ async function safeRead(queryPromiseFactory, fallbackValue) {
   return result;
 }
 
-async function getCurrentProfile({ supabase, user, existingProfile = null }) {
+async function getCurrentProfile({ supabase, user, existingProfile = null, onProfileReady = null }) {
   const fallback = existingProfile || {
     id: user.id,
     full_name: user.user_metadata?.full_name || user.email || 'Użytkownik',
     email: user.email,
-    role: user.user_metadata?.role || 'Pracownik',
+    // Never trust mutable auth user_metadata for privilege escalation during a 504.
+    // A server-verified or previously cached profile is handled independently.
+    role: 'Pracownik',
   };
 
   const result = await safeRead(
@@ -35,6 +37,12 @@ async function getCurrentProfile({ supabase, user, existingProfile = null }) {
     fallback,
   );
   if (result.error) throw result.error;
+
+  // Only a profile confirmed by PostgREST may unlock role-dependent screens early.
+  // A local cached profile is hydrated separately; auth metadata is not proof of role.
+  if (result.data && !result.stale && typeof onProfileReady === 'function') {
+    await onProfileReady(result.data);
+  }
 
   let me = result.data || fallback;
   if (!result.data && !result.stale) {
@@ -371,13 +379,19 @@ export async function refreshAppData({
   existingJobs = [],
   preserveJobDetails = true,
   onJobsReady = null,
+  onProfileReady = null,
 }) {
   if (!supabase || !user) return null;
 
-  // Start krytyczny ma tylko jedno zapytanie: lista montaży.
-  // Profile, uprawnienia i powiadomienia ruszają dopiero po pokazaniu listy,
-  // żeby chwilowo wolny PostgREST nie spowalniał samego wejścia do aplikacji.
-  const { jobsData } = await getJobsData({ supabase });
+  // Independent critical requests start together. A slow jobs endpoint must
+  // not postpone verification of the logged-in user's profile (or vice versa).
+  // Other ancillary requests still run only after the provisional jobs list.
+  const jobsPromise = getJobsData({ supabase });
+  const profilePromise = getCurrentProfile({ supabase, user, existingProfile, onProfileReady });
+  // Handle an early profile rejection while waiting for jobs. Promise.all below
+  // still propagates the same error via the original promise.
+  void profilePromise.catch(() => {});
+  const { jobsData } = await jobsPromise;
 
   // Provisional list uses the viewers already cached on the phone. It is
   // applied immediately; fresh job_access follows independently below.
@@ -391,7 +405,6 @@ export async function refreshAppData({
     await onJobsReady(provisionalJobs);
   }
 
-  const profilePromise = getCurrentProfile({ supabase, user, existingProfile });
   const teamPromise = getTeamProfiles({ supabase, existingProfiles });
   const accessPromise = getAccessData({ supabase, existingJobs });
   const notificationsPromise = getNotificationsData({ supabase, user, existingNotifications });

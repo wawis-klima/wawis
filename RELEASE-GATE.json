@@ -1,18 +1,18 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "12.93",
+  "version": "12.94",
   "scope": "mobile",
-  "release_branch": "release/v12.93",
+  "release_branch": "release/v12.94",
   "baseline_diagnostics": {
     "checked": true,
-    "last_24h": false,
+    "last_24h": true,
     "result": "INFO",
-    "notes": "Diagnostics package4: observable statuses; production telemetry baseline not read. Informational only."
+    "notes": "2026-10-10: Supabase PostgREST timeout manager i Auth 504; poprawka mobilnego startu bez migracji bazy."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v12.93.zip"
+    "file_name": "klima-app-v12.94.zip"
   },
   "main_protection": {
     "source_branch": "release/v12.93",
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub exact HEAD PR CI + Vercel public version and physical iPhone verification",
-    "notes": "No production health or PUSH delivery claim before external receipt."
+    "notes": "Po PR CI i Closure Gate: potwierdzić Vercel READY dla 12.94 i uruchomienie na fizycznym iPhonie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,10 +34,9 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "codex_audit": "Zmiana CSS prezentacji adresu w mobilnych szczegółach; brak ingerencji w dane źródłowe.",
-    "release_ci": "REQUIRED exact HEAD targeted groups + mobile/desktop Playwright + Closure Gate before merge.",
-    "external_provider_tests": "Brak zmian backendu; wizualna weryfikacja na fizycznym iPhonie: EXTERNAL.",
-    "front_and_backend": "ADRES z lewej etykieta, po prawej wartość; długi adres zawija się bez obcinania, link Google Maps zachowany.",
-    "mobile_touch": "Sprawdź wersję 12.93, krótki adres po prawej; długi adres zawinięty w prawej kolumnie bez ucinania oraz działający link Google Maps."
+    "baseline": "Zbadano kod 12.93 i logi Supabase: wolna odpowiedź PostgREST/Auth powoduje długie oczekiwanie mobilne.",
+    "code": "Równoległe ładowanie profilu potwierdzonego przez Supabase i montaży; retry po 7 s; bez zmian Supabase.",
+    "release_ci": "REQUIRED — exact PR HEAD: WAWIS PR checks / targeted-checks, Playwright, Closure Gate, build.",
+    "post_deploy": "EXTERNAL — weryfikacja Vercel READY + wersji aplikacji 12.94 i zachowania na iPhonie."
   }
 }
