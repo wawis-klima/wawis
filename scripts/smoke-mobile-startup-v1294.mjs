@@ -87,6 +87,7 @@ function start({ supabase, user }, events) {
   const events = [];
   const payload = await waitFor(start(state, events), 'profil 504');
   assert.ok(payload.jobs.length > 0);
+  assert.equal(payload.profile.role, 'Pracownik', 'nie wolno awansować z user_metadata bez profilu Supabase');
   assert.equal(events.some((event) => event.startsWith('profile:')), false,
     '504 / profil niezweryfikowany nie może odblokować roli admina');
 }
