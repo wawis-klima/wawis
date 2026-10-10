@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.96
+- 12.97
+
+WAWIS 12.97: mobilna edycja administratora ma wyśrodkowaną datę montażu (natywny kalendarz iOS bez zmian), bez sekcji „Urządzenia w montażu” i „Instalatorzy (opcjonalnie)”. Osobny przycisk Tabliczki/kreator urządzeń, zapis danych i przypisania monterów pozostają aktywne. Formularz pracownika i desktop niezmienione.
 
 WAWIS 12.96: w mobilnym formularzu Edytuj montaż pracownika data jest naprawdę wyśrodkowana pionowo i poziomo. Na iPhonie nakładka tekstowa pokazuje wartość daty, a pełnowymiarowe natywne pole pozostaje klikalne (systemowy wybór daty iOS). Wyczyść i zapis nadal działają. Administrator i formularz dodawania montażu bez zmian.
 
