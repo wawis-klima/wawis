@@ -7,6 +7,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-style-bootstrap',
     'npm run test:smoke:mobile-admin-header',
     'npm run test:smoke:mobile-version-diagnostics',
+    'npm run test:smoke:admin-mobile-edit-compact',
   ],
   'ui-fast-desktop': [
     'npm run test:smoke:desktop-refresh',

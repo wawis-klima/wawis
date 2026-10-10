@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.97
+- 12.98
+
+WAWIS 12.98: w mobilnej edycji montażu administratora zmniejszono wysokość pól do 44 px oraz pionowe odstępy do 7 px. Przyciski i marginesy także są bardziej zwarte. Zachowano 16-pikselowy tekst pól, natywny wybór daty iOS oraz osobne style pracownika, tworzenia montażu i desktopu.
 
 WAWIS 12.97: mobilna edycja administratora ma wyśrodkowaną datę montażu (natywny kalendarz iOS bez zmian), bez sekcji „Urządzenia w montażu” i „Instalatorzy (opcjonalnie)”. Osobny przycisk Tabliczki/kreator urządzeń, zapis danych i przypisania monterów pozostają aktywne. Formularz pracownika i desktop niezmienione.
 
@@ -961,7 +963,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.97` — mobilna edycja administratora: poprawne wyśrodkowanie daty na iOS, bez wbudowanych sekcji urządzeń i instalatorów; kreator Tabliczki pozostaje osobno.
+- wersja `12.98` — kompaktowy mobilny formularz edycji administratora (pola 44 px, odstępy 7 px), bez zmian w działaniach i pozostałych rolach.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.
