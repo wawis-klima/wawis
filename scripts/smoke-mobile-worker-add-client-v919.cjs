@@ -34,7 +34,7 @@ assert.ok(jobsForm.includes("main_technician_id: resolvedForm.main_technician_id
 assert.ok(!jobsForm.includes('main_technician_id: profile.id'), 'Kod nie powinien automatycznie wymuszać twórcy jako głównego montera.');
 assert.ok(jobsForm.includes('profile.id, ...getAssignedUserIdsFromForm(resolvedForm)'), 'Twórca i wybrani instalatorzy nie trafiają wspólnie do job_access.');
 assert.ok(jobsForm.includes('assignedUserIds.length && shouldSendAssignmentPushForInstallationDate'), 'Brak push do instalatorów wybranych przez pracownika.');
-assert.ok(modal.includes('(editingJobId || !isAdmin) ? ('), 'Pracownik nie widzi wyboru instalatorów przy tworzeniu montażu.');
+assert.ok(!modal.includes('Instalatorzy (opcjonalnie)'), 'Edycja mobilna nie może przywracać listy instalatorów; przepływ przypisań pozostaje w module zapisów.');
 assert.ok(sql.includes('security definer'), 'Funkcja worker create contractor nie ma kontrolowanego SECURITY DEFINER.');
 assert.ok(sql.includes('returns jsonb'), 'Funkcja pracownika zwraca zbyt szeroki rekord contractors.');
 assert.ok(sql.includes("jsonb_build_object("), 'Funkcja nie ogranicza odpowiedzi do bezpiecznego snapshotu danych wpisanych przez pracownika.');
