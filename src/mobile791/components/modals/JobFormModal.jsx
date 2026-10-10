@@ -680,7 +680,7 @@ export default function JobFormModal({
         warnBeforeUnload={Boolean(jobFormDirty || busy)}
       onClose={handleClose}
       overlayClassName="formOverlay"
-      contentClassName="card modal formModal"
+      contentClassName={`card modal formModal${editingJobId && !isAdmin ? " workerMobileEditModalV1295" : ""}`}
     >
       <form onSubmit={handleSubmit} className={`${serialOnlyMode ? "jobSerialOnlyForm " : ""}${!editingJobId ? "jobFormCreateMode" : ""}`.trim()}>
         <div className="jobHead">

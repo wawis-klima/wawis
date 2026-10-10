@@ -1,0 +1,78 @@
+/* WAWIS 12.95: styles only for the employee mobile view. */
+@media (max-width: 700px) {
+  .mobileInlineJobDetails .detailActionsBottom.mobileFourButtons.workerDetailsActionGridV1295 {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(38px,auto)!important;
+    align-items:stretch!important;
+    gap:7px!important;
+    margin-top:9px!important;
+  }
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .mobileActionCompact {
+    width:100%!important;max-width:none!important;min-width:0!important;min-height:38px!important;box-sizing:border-box!important;
+  }
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .workerActionEditV1295{grid-column:1!important;grid-row:1!important}
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .workerActionCloseV1295{grid-column:1!important;grid-row:2!important}
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .workerActionNameplatesV1295{grid-column:2!important;grid-row:1!important}
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .workerActionProtocolV1295{grid-column:2!important;grid-row:2!important}
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .workerActionFinishV1295{grid-column:2!important;grid-row:3!important}
+
+  .formModal.workerMobileEditModalV1295 {
+    width:min(100%,480px)!important;max-width:100%!important;max-height:calc(100dvh - 24px)!important;
+    overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;
+    margin:0 auto!important;padding:12px 14px 14px!important;border-radius:18px!important;box-sizing:border-box!important;
+  }
+  .workerMobileEditModalV1295 form {display:flex!important;flex-direction:column!important;gap:7px!important;min-width:0!important;}
+  .workerMobileEditModalV1295 .jobHead {
+    display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+    gap:8px!important;margin:0 0 5px!important;min-width:0!important;
+  }
+  .workerMobileEditModalV1295 .jobHead h2 {margin:0!important;min-width:0!important;font-size:20px!important;line-height:1.18!important}
+  .workerMobileEditModalV1295 .jobHead > .btn {
+    width:auto!important;min-width:84px!important;max-width:40%!important;min-height:38px!important;
+    padding:7px 12px!important;font-size:14px!important;border-radius:12px!important;
+  }
+  .workerMobileEditModalV1295 .voiceClientInput {margin:0!important;min-width:0!important}
+  .workerMobileEditModalV1295 .voiceClientMainBtn {
+    width:100%!important;min-height:42px!important;height:42px!important;margin:0!important;
+    padding:7px 12px!important;font-size:14px!important;line-height:1.2!important;border-radius:12px!important;
+  }
+  .workerMobileEditModalV1295 .input,
+  .workerMobileEditModalV1295 select.input {
+    width:100%!important;min-width:0!important;height:44px!important;min-height:44px!important;
+    margin:0!important;padding:8px 11px!important;border-radius:12px!important;
+    font-size:16px!important;line-height:1.2!important;box-sizing:border-box!important;
+  }
+  .workerMobileEditModalV1295 .jobAddressPicker {margin:0!important;min-width:0!important}
+  .workerMobileEditModalV1295 .postalCityFieldRow {
+    display:grid!important;grid-template-columns:minmax(0,1fr) 112px!important;
+    gap:7px!important;margin:0!important;min-width:0!important;
+  }
+  .workerMobileEditModalV1295 .installationDateField {
+    display:block!important;width:100%!important;margin:3px 0 0!important;min-width:0!important;
+  }
+  .workerMobileEditModalV1295 .installationDateLabelRow {
+    display:flex!important;flex-direction:row!important;justify-content:space-between!important;
+    align-items:center!important;gap:8px!important;min-height:29px!important;
+    margin:0 0 4px!important;width:100%!important;
+  }
+  .workerMobileEditModalV1295 .installationDateLabelRow > span {
+    display:inline-block!important;margin:0!important;font-size:12px!important;line-height:1.2!important;
+  }
+  .workerMobileEditModalV1295 .installationDateClearBtn {
+    display:inline-flex!important;align-items:center!important;min-height:29px!important;
+    padding:4px 2px!important;margin:0!important;font-size:12px!important;line-height:1.2!important;
+  }
+  .workerMobileEditModalV1295 .installationDateInputShell {
+    display:block!important;width:100%!important;min-width:0!important;height:44px!important;
+    min-height:44px!important;max-height:44px!important;margin:0!important;border-radius:12px!important;overflow:hidden!important;
+  }
+  .workerMobileEditModalV1295 .installationDateNativeInput {
+    width:100%!important;height:44px!important;min-height:44px!important;margin:0!important;
+    padding:0 11px!important;font-size:16px!important;line-height:1.2!important;text-align:left!important;box-sizing:border-box!important;
+  }
+  .workerMobileEditModalV1295 .row.rightAlign {margin:4px 0 0!important;padding:0!important}
+  .workerMobileEditModalV1295 .saveJobBtn {
+    width:100%!important;min-height:44px!important;padding:9px 12px!important;font-size:15px!important;border-radius:12px!important;
+  }
+}

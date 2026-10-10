@@ -1,10 +1,10 @@
 {
-  "version": "12.94",
-  "summary": "Szybszy i czytelniejszy start WAWIS mobile przy wolnym Supabase.",
+  "version": "12.95",
+  "summary": "Uporządkowany mobilny widok pracownika bez zmiany wyglądu administratora.",
   "changes": [
-    "Profil potwierdzony przez bazę i lista montaży pobierają się niezależnie.",
-    "Rola użytkownika nie jest odblokowywana przed potwierdzeniem profilu z Supabase lub prawidłowego cache.",
-    "Po 7 sekundach wolnego startu pojawia się komunikat i ponowienie bez wylogowania.",
-    "Bez zmian w bazie, SMS, płatnościach i kolejce offline; regresja timeoutów 504."
+    "Pracownik: Edytuj/Zamknij po lewej oraz Tabliczki/Protokół/Zakończ po prawej.",
+    "Pracownik: kompaktowa edycja montażu z wyrównaną datą i przyciskiem Wyczyść.",
+    "Administrator: istniejący układ pozostaje bez zmian.",
+    "Protokół obydwu ról: Gotówka lub przelew bez słowa Wybierz."
   ]
 }

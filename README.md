@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.94
+- 12.95
+
+WAWIS 12.95: mobilna edycja pracownika jest bardziej zwarta; przyciski w szczegółach montażu pracownika mają dwie uporządkowane kolumny. Administrator zachowuje dotychczasowy układ. W protokole obie role widzą krótszy opis wyboru płatności.
 
 Wersja 12.94: poprawiony start WAWIS na iPhonie przy wolnej odpowiedzi Supabase. Potwierdzony przez bazę profil jest pobierany równolegle z listą montaży, więc powolne pobieranie zleceń nie blokuje wejścia do aplikacji. Przy braku potwierdzonego profilu ekran pozostaje bezpiecznie zablokowany, ale po 7 sekundach pokazuje jasny komunikat i przycisk ponowienia bez wylogowania. Cache-first, uprawnienia oraz kolejki offline pozostają bez zmian. Dodano trwały test obu kolejności odpowiedzi i timeoutu profilu.
 
@@ -955,7 +957,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.94` — szybki start mobilny: profil serwera i montaże pobierane niezależnie, a wolna odpowiedź nie ukrywa informacji o postępie.
+- wersja `12.95` — kompaktowy formularz edycji i uporządkowane akcje pracownika; krótszy tekst płatności w protokole.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.

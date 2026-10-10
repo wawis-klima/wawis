@@ -745,15 +745,15 @@ export default function JobDetailsPanel({
             ) : null}
           </div>
 
-          <div className="detailActions detailActionsBottom mobileFourButtons">
+          <div className={`detailActions detailActionsBottom mobileFourButtons${!isAdmin ? " workerDetailsActionGridV1295" : ""}`}>
             {canEditSelectedJob ? (
-              <button className="btn mobileActionCompact" onClick={() => openEditJob(selectedJob)}>
+              <button className="btn mobileActionCompact workerActionEditV1295" onClick={() => openEditJob(selectedJob)}>
                 <span className="desktopLabel">{isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'}</span>
                 <span className="mobileLabel">Edytuj</span>
               </button>
             ) : null}
             {canEditSelectedJob ? (
-              <button className="btn mobileActionCompact workerSerialNumbersBtn" onClick={() => openSerialNumbersJob(selectedJob)}>
+              <button className="btn mobileActionCompact workerSerialNumbersBtn workerActionNameplatesV1295" onClick={() => openSerialNumbersJob(selectedJob)}>
                 <span className="desktopLabel">{isAdmin ? 'Dodaj / edytuj urządzenia i tabliczki' : 'Uzupełnij urządzenia i tabliczki'}</span>
                 <span className="mobileLabel">{isAdmin ? 'Urządzenia' : 'Tabliczki'}</span>
               </button>
@@ -777,7 +777,7 @@ export default function JobDetailsPanel({
             ) : null}
             {canFinishJob ? (
               <button
-                className="btn premiumActionBtn finishJobBtn mobileActionCompact"
+                className="btn premiumActionBtn finishJobBtn mobileActionCompact workerActionFinishV1295"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
                 disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolReadyForCompletion || (workerProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
                 title={!hasConfiguredDevices
@@ -804,7 +804,7 @@ export default function JobDetailsPanel({
               </button>
             ) : null}
             {selectedJobSupportsProtocol && protocolLoading ? (
-              <button type="button" className="btn premiumActionBtn protocolTestButton mobileActionCompact" disabled>
+              <button type="button" className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295" disabled>
                 <span className="desktopLabel">Sprawdzam protokół...</span>
                 <span className="mobileLabel">Sprawdzam...</span>
               </button>
@@ -812,7 +812,7 @@ export default function JobDetailsPanel({
             {selectedJobSupportsProtocol && !protocolLoading && protocolBackendAvailable ? (
               <button
                 type="button"
-                className="btn premiumActionBtn protocolTestButton mobileActionCompact"
+                className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
                 onClick={() => setProtocolTestOpen(true)}
                 title={protocolRecord
                   ? "Otwórz zapisany protokół"
@@ -827,7 +827,7 @@ export default function JobDetailsPanel({
             {selectedJobSupportsProtocol && !protocolLoading && !protocolRecord && !protocolBackendAvailable ? (
               <button
                 type="button"
-                className="btn premiumActionBtn protocolTestButton mobileActionCompact"
+                className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
                 onClick={() => setProtocolReloadKey((value) => value + 1)}
                 title="Sprawdź ponownie dostępność protokołu"
               >
@@ -835,7 +835,7 @@ export default function JobDetailsPanel({
                 <span className="mobileLabel">Sprawdź</span>
               </button>
             ) : null}
-            <button className="btn mobileActionCompact" onClick={() => setSelectedJob(null)}>
+            <button className="btn mobileActionCompact workerActionCloseV1295" onClick={() => setSelectedJob(null)}>
               <span className="desktopLabel">Zamknij</span>
               <span className="mobileLabel">Zamknij</span>
             </button>
