@@ -21,6 +21,16 @@ import {
 import NameplatePhotoCapture from "../nameplate/NameplatePhotoCapture.jsx";
 import MobileDeviceWizard from "../devices/MobileDeviceWizard.jsx";
 
+
+// iOS can paint the native date text too high. Keep the system date picker
+// interactive beneath a consistently centered, read-only display layer.
+function formatWorkerInstallationDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+  if (!match) return 'Wybierz datę';
+  const day = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
+  return new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'short', year: 'numeric' }).format(day);
+}
+
 export default function JobFormModal({
   showModal,
   closeJobModal,
@@ -829,9 +839,15 @@ export default function JobFormModal({
             className="installationDateInputShell"
             style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: 50, overflow: 'hidden', border: '1px solid #cfdbea', borderRadius: 16, background: '#fff', boxSizing: 'border-box', marginTop: 8 }}
           >
+            {editingJobId && !isAdmin ? (
+              <span className="workerDateVisibleLabelV1296" aria-hidden="true">
+                {formatWorkerInstallationDate(jobForm.installation_date)}
+              </span>
+            ) : null}
             <input
               className="installationDateNativeInput"
               style={{ display: 'block', width: '100%', minWidth: 0, maxWidth: '100%', height: '100%', boxSizing: 'border-box', border: 0, outline: 0, background: 'transparent', padding: '0 12px', font: 'inherit', color: 'inherit' }}
+              aria-label={editingJobId && !isAdmin ? "Data montażu" : undefined}
               type="date"
               value={jobForm.installation_date || ""}
               onChange={(e) => updateField("installation_date", e.target.value)}
