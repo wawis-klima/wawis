@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 13.02
 
-WAWIS 13.02: mobilna edycja administratora — tylko ikona mikrofonu w nagłówku (nadal dostępna głosowo i dla czytnika ekranu); długa nazwa klienta przechodzi automatycznie w dwa wiersze; telefon i NIP mają równe kolumny 50/50 z odstępem 8 px. Zwiększono odstępy w pionie, a komentarz administratora do 112 px, z bezpiecznym przewijaniem na mniejszych ekranach. Nowe E2E weryfikuje geometrię, dostępność mikrofonu, dwuwierszową nazwę i brak kolizji. Pracownik, nowy montaż i desktop bez zmian.
+WAWIS 13.02: mobilna edycja administratora — tylko ikona mikrofonu w nagłówku (nadal dostępna głosowo i dla czytnika ekranu); długa nazwa klienta przechodzi automatycznie w dwa wiersze; telefon i NIP mają równe kolumny 50/50 z odstępem 8 px. Odstępy w pionie zwiększono do 4 px, a komentarz administratora pozostał czytelny na wysokości 104 px, z bezpiecznym przewijaniem na mniejszych ekranach. Nowe E2E weryfikuje geometrię, dostępność mikrofonu, dwuwierszową nazwę i brak kolizji. Pracownik, nowy montaż i desktop bez zmian.
 
 WAWIS 13.01: jednookienkowa mobilna edycja montażu administratora na typowym iPhonie: nagłówek, Wprowadź głosowo i Zamknij w jednym wierszu; Telefon i NIP obok siebie, mniejsze pola 32 px, czcionka 13 px, krótsze odstępy i wyższy komentarz administratora 104 px (poprzednio 54 px). Zapis pozostaje na końcu widoku, a na mniejszych ekranach formularz można przewijać. Test Playwright kontroluje rozmiar komentarza, wyrównanie nagłówka i zamknięcia oraz widoczność przycisku zapisu w jednym ekranie.
 
