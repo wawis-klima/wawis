@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.92
+- 12.93
+
+Wersja 12.93: w mobilnych szczegółach montażu pole ADRES ma etykietę z lewej strony i wartość wyrównaną do prawej w tym samym wierszu. Długi adres zawija się po prawej i nie ucina numeru, zachowując przejście do Google Maps. Testy regresji sprawdzają geometrię i brak zmian w sąsiednich polach.
 
 Wersja 12.92: testy dwóch sesji PostgreSQL 16 korzystają z publicznego mirrora obrazu, aby unikać limitów Docker Hub, bez obniżania wymagań CI. Na mobilnych kartach montaży długie nazwy klientów z jednoznaczną nazwą handlową w cudzysłowie lub nawiasie są skracane (np. POWERMAT); pozostałe ograniczamy do dwóch linii i skracamy wyłącznie formy prawne. Pełna nazwa nadal pozostaje w danych, szczegółach, protokołach i fakturach. Dodano testy jednostkowe, smoke i Playwright na iPhonie.
 

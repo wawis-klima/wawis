@@ -1,16 +1,16 @@
-/* WAWIS 12.91 — pełny adres na osobnej linii w mobilnych szczegółach montażu.
-   Wyjątek tylko dla adresu: e-mail, telefon i data zachowują dotychczasowy układ. */
+/* WAWIS 12.93 — adres po prawej od etykiety, bez ucinania długich ulic.
+   Dotyczy tylko adresu w mobilnych szczegółach montażu. */
 @media (max-width: 700px) {
   .mobileInlineJobDetails .detailMeta > .infoItem.contactInfoItem.contactAddressInfoItem {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: auto auto !important;
+    grid-template-columns: 78px minmax(0, 1fr) !important;
+    grid-template-rows: auto !important;
+    column-gap: 4px !important;
+    align-items: center !important;
     height: auto !important;
-    min-height: 0 !important;
+    min-height: 34px !important;
     max-height: none !important;
-    padding: 6px 0 !important;
-    row-gap: 5px !important;
-    align-items: start !important;
+    padding: 3px 0 !important;
   }
 
   .mobileInlineJobDetails .contactAddressInfoItem .infoLabel {
@@ -19,12 +19,12 @@
   }
 
   .mobileInlineJobDetails .contactAddressInfoItem .infoValue {
-    display: block !important;
+    display: flex !important;
     width: 100% !important;
     min-width: 0 !important;
     overflow: visible !important;
-    justify-content: flex-start !important;
-    text-align: left !important;
+    justify-content: flex-end !important;
+    text-align: right !important;
   }
 
   .mobileInlineJobDetails .contactAddressInfoItem .addressLink {
@@ -42,6 +42,12 @@
     text-overflow: clip !important;
     overflow-wrap: anywhere !important;
     word-break: normal !important;
-    text-align: left !important;
+    text-align: right !important;
+  }
+}
+
+@media (max-width: 370px) {
+  .mobileInlineJobDetails .detailMeta > .infoItem.contactInfoItem.contactAddressInfoItem {
+    grid-template-columns: 72px minmax(0, 1fr) !important;
   }
 }
