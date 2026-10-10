@@ -98,9 +98,10 @@ function main() {
   assert(lastFixBody && !/uzupełnij opis/i.test(lastFixBody), 'NO-GO: README ma placeholder aktualnej poprawki');
   assert(changelogSection && !/uzupełnij opis/i.test(changelogSection), 'NO-GO: CHANGELOG ma brak/placeholder aktualnej wersji');
 
+  // Catch a stale release source in PR CI, before Vercel evaluates --deploy.
+  assert(String(gate.main_protection?.source_branch || '').trim() === configuredReleaseBranch, 'NO-GO: źródło wdrożenia nie jest właściwą gałęzią release');
   if (deployMode) {
     assert(gate.main_protection?.ready_for_main === true, 'NO-GO: release nie jest oznaczony jako gotowy do main');
-    assert(String(gate.main_protection?.source_branch || '').trim() === configuredReleaseBranch, 'NO-GO: źródło wdrożenia nie jest właściwą gałęzią release');
   }
 
   const mode = deployMode ? 'deploy' : 'pre-release';
