@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
-    "notes": "Do zweryfikowania po CI i produkcyjnym wdrożeniu: mikrofon obok Komentarza administratora, rozpoznawanie mowy dopisujące do istniejącego tekstu, 118px na standardowym iPhonie i 104px na krótkim. Zachowany dostęp do zapisu i brak kolizji."
+    "notes": "Do zweryfikowania po CI i produkcyjnym wdrożeniu: mikrofon obok Komentarza administratora, rozpoznawanie mowy dopisujące do istniejącego tekstu, 112px na standardowym iPhonie i 104px na krótkim. Zachowany dostęp do zapisu i brak kolizji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,7 +34,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Existing mobile admin edit: note voice mic in heading + 118px textarea. Worker/create/desktop unchanged.",
+    "code": "Existing mobile admin edit: note voice mic in heading + 112px textarea. Worker/create/desktop unchanged.",
     "release_ci": "REQUIRED exact PR HEAD targeted regression, linked device/protocol consumer tests, iPhone browser geometry E2E, Closure Gate, production build.",
     "post_deploy": "EXTERNAL — wymagane Vercel READY exact SHA, public/app-version 13.03 i sprawdzenie wyglądu na fizycznym iPhonie."
   }
