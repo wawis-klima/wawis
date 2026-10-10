@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
-    "notes": "Verify 13.02 on iPhone: header title, icon-only accessible microphone and close do not overlap; long client name expands up to two lines; phone and NIP equal widths; gaps slightly increased and note 112px. Worker/create/desktop unchanged. Confirm actual visual result on physical device."
+    "notes": "Verify 13.02 on iPhone: header title, icon-only accessible microphone and close do not overlap; long client name expands up to two lines; phone and NIP equal widths; gaps slightly increased and note 104px. Worker/create/desktop unchanged. Confirm actual visual result on physical device."
   },
   "archive": {
     "source_of_truth": "github-main",
