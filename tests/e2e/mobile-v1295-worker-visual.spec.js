@@ -141,7 +141,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(geometry.center).toBeLessThanOrEqual(2);
-    expect(geometry.hitArea).toBeLessThanOrEqual(2);
+    // Obszar inputu pokrywa wnętrze powłoki; po 1px ramki na krawędź daje do 4px sumy różnic.
+    expect(geometry.hitArea).toBeLessThanOrEqual(4);
     expect(geometry.verticalAlignment).toBe('center');
     expect(geometry.overflow).toBeLessThanOrEqual(2);
     await nativeDate.fill('2026-10-16');
