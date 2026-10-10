@@ -56,6 +56,6 @@ assert.match(modal, /\{isAdmin && editingJobId \? \([\s\S]*?adminNoteHeaderActio
 assert.match(modal, /appendVoiceNoteText\(prev\.admin_note, value\)/);
 assert.doesNotMatch(modal, /VoiceFieldButton/);
 assert.match(speech1303, /\.adminNoteHeaderActionsV1303 \.voiceFieldMicBtn/);
-assert.match(speech1303, /height:112px!important/);
+assert.match(speech1303, /height:108px!important/);
 assert.match(speech1303, /max-height:780px/);
 assert.doesNotMatch(speech1303, /workerMobileEditModalV1295|jobFormCreateMode|desktopJobForm/);

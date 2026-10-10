@@ -3,7 +3,7 @@
   "summary": "Dyktowanie komentarza administratora i lekko większe pole notatki w mobilnej edycji",
   "changes": [
     "Mikrofon przy nagłówku Komentarz administratora; nagranie dopisuje rozpoznany tekst do dotychczasowego komentarza.",
-    "Wysokość komentarza 112 px na typowym iPhonie, 104 px na krótkich ekranach i bezpieczne przewijanie.",
+    "Wysokość komentarza 108 px na typowym iPhonie, 104 px na krótkich ekranach i bezpieczne przewijanie.",
     "Bez zmian edycji pracownika, nowego montażu i desktopu, z testami regresji geometrii."
   ]
 }

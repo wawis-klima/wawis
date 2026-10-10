@@ -1,7 +1,7 @@
 ## Aktualna wersja
 - 13.03
 
-WAWIS 13.03: mobilna edycja administratora — mikrofon obok nagłówka „Komentarz administratora” uruchamia sesję dyktowania i dopisuje nowy tekst do istniejącego. Pole komentarza zwiększono z 104 do 112 px na standardowym iPhonie; na krótszych ekranach pozostaje 104 px z bezpiecznym przewijaniem. Pracownik, nowy montaż, desktop oraz reszta formularza bez zmian.
+WAWIS 13.03: mobilna edycja administratora — mikrofon obok nagłówka „Komentarz administratora” uruchamia sesję dyktowania i dopisuje nowy tekst do istniejącego. Pole komentarza zwiększono z 104 do 108 px na standardowym iPhonie; na krótszych ekranach pozostaje 104 px z bezpiecznym przewijaniem. Pracownik, nowy montaż, desktop oraz reszta formularza bez zmian.
 
 WAWIS 13.02: mobilna edycja administratora — tylko ikona mikrofonu w nagłówku (nadal dostępna głosowo i dla czytnika ekranu); długa nazwa klienta przechodzi automatycznie w dwa wiersze; telefon i NIP mają równe kolumny 50/50 z odstępem 8 px. Odstępy w pionie zwiększono do 3 px, a komentarz administratora pozostał czytelny na wysokości 104 px, z bezpiecznym przewijaniem na mniejszych ekranach. Nowe E2E weryfikuje geometrię, dostępność mikrofonu, dwuwierszową nazwę i brak kolizji. Pracownik, nowy montaż i desktop bez zmian.
 
@@ -973,7 +973,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.03` — mikrofon dyktowania komentarza administratora i pole 112 px w edycji mobilnej; poprzednia treść pozostaje zachowana.
+- wersja `13.03` — mikrofon dyktowania komentarza administratora i pole 108 px w edycji mobilnej; poprzednia treść pozostaje zachowana.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.
