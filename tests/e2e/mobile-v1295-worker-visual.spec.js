@@ -95,7 +95,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await nativeDate.fill('2026-10-16');
     await expect(nativeDate).toHaveValue('2026-10-16');
     await expect(dateText).toContainText(/16 paź/i);
-    await modal.getByRole('button', { name: 'Wyczyść' }).click();
+    await modal.locator('.installationDateClearBtn').click();
     await expect(dateText).toHaveText('Wybierz datę');
     await expect(nativeDate).toHaveValue('');
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeAttached();
@@ -146,7 +146,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(geometry.overflow).toBeLessThanOrEqual(2);
     await nativeDate.fill('2026-10-16');
     await expect(dateText).toContainText(/16 paź/i);
-    await modal.getByRole('button', { name: 'Wyczyść' }).click();
+    await modal.locator('.installationDateClearBtn').click();
     await expect(nativeDate).toHaveValue('');
     await expect(dateText).toHaveText('Wybierz datę');
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
