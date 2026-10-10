@@ -1,3 +1,10 @@
+## 12.95
+- Mobile pracownik: Edytuj i Zamknij w lewej kolumnie; Tabliczki, Protokół i Zakończ w prawej.
+- Mobile pracownik: zwarta edycja danych klienta, wyrównane Data montażu / Wyczyść, przewijanie bez wyjścia poza ekran.
+- Administrator: dotychczasowy układ przycisków i formularz edycji bez zmian, dzięki selektorom tylko dla pracownika.
+- Protokół (obie role): placeholder Gotówka lub przelew; wartości opcji, zapis, płatności, PDF pozostają bez zmian.
+- Test regresyjny musi sprawdzać geometrię oraz izolację ról. Brak migracji Supabase i zmian RLS.
+
 ## 12.94
 - Mobile/start: sprawdzony profil użytkownika i lista montaży pobierają się równolegle; wolne zapytanie montaży nie zatrzymuje renderowania aplikacji po poprawnym uwierzytelnieniu.
 - Dane poboczne nadal uruchamiają się po liście montaży; zachowane cache-first, ochrona ról, sesji i kolejki offline.
