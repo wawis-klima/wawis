@@ -44,6 +44,6 @@ assert.match(modal, /adminClientNameRefV1302/);
 assert.match(scope, /grid-template-columns:minmax\(0,1fr\) 38px 68px!important/);
 assert.match(scope, /grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)!important/);
 assert.match(scope, /gap:8px!important/);
-assert.match(scope, /height:112px!important/);
+assert.match(scope, /height:104px!important/);
 assert.doesNotMatch(scope, /workerMobileEditModalV1295|jobFormCreateMode/);
 console.log('OK admin-only compact edit, preserved worker/desktop/create and native iOS date');
