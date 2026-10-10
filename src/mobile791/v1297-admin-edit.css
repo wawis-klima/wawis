@@ -508,6 +508,11 @@
 }
 
 /* WAWIS 13.03 — admin edit only: note dictation in header and taller textarea. */
+/* Preserve the larger note while keeping the entire editor visible on iPhone 14. */
+@media (max-width:700px) {
+  .formModal.adminMobileEditModalV1297 { padding-top:4px!important; padding-bottom:4px!important; }
+}
+
 @media (max-width:700px) {
   .formModal.adminMobileEditModalV1297 .adminNoteLabelRow { min-height:28px!important; gap:6px!important; }
   .formModal.adminMobileEditModalV1297 .adminNoteLabelRow > span { flex:1 1 auto!important; min-width:0!important; white-space:nowrap!important; }
