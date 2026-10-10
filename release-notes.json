@@ -1,10 +1,10 @@
 {
-  "version": "12.92",
-  "summary": "Krótsze etykiety długich nazw firm na mobilnych kartach montaży.",
+  "version": "12.94",
+  "summary": "Szybszy i czytelniejszy start WAWIS mobile przy wolnym Supabase.",
   "changes": [
-    "Jednoznaczna nazwa handlowa w cudzysłowie lub nawiasie pokazywana jako etykieta, np. POWERMAT.",
-    "Długie nazwy bez pewnej marki skracają jedynie formy prawne i zajmują maksymalnie dwie linie.",
-    "Bez zmian oryginalnej nazwy klienta, faktur, protokołów i wyszukiwania.",
-    "Automatyczne testy smoke i mobilne Playwright."
+    "Profil potwierdzony przez bazę i lista montaży pobierają się niezależnie.",
+    "Rola użytkownika nie jest odblokowywana przed potwierdzeniem profilu z Supabase lub prawidłowego cache.",
+    "Po 7 sekundach wolnego startu pojawia się komunikat i ponowienie bez wylogowania.",
+    "Bez zmian w bazie, SMS, płatnościach i kolejce offline; regresja timeoutów 504."
   ]
 }

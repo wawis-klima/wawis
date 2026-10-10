@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 12.93
+- 12.94
+
+Wersja 12.94: poprawiony start WAWIS na iPhonie przy wolnej odpowiedzi Supabase. Potwierdzony przez bazę profil jest pobierany równolegle z listą montaży, więc powolne pobieranie zleceń nie blokuje wejścia do aplikacji. Przy braku potwierdzonego profilu ekran pozostaje bezpiecznie zablokowany, ale po 7 sekundach pokazuje jasny komunikat i przycisk ponowienia bez wylogowania. Cache-first, uprawnienia oraz kolejki offline pozostają bez zmian. Dodano trwały test obu kolejności odpowiedzi i timeoutu profilu.
 
 Wersja 12.93: w mobilnych szczegółach montażu pole ADRES ma etykietę z lewej strony i wartość wyrównaną do prawej w tym samym wierszu. Długi adres zawija się po prawej i nie ucina numeru, zachowując przejście do Google Maps. Testy regresji sprawdzają geometrię i brak zmian w sąsiednich polach.
 
@@ -953,7 +955,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `12.93` — adres w mobilnych szczegółach montażu wyrównany do prawej z pełnym zawijaniem długich ulic.
+- wersja `12.94` — szybki start mobilny: profil serwera i montaże pobierane niezależnie, a wolna odpowiedź nie ukrywa informacji o postępie.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
 - wersja `12.91` — pełny, wielowierszowy adres na mobilnej karcie montażu bez obcinania.
 - wersja `12.90` — krótszy adres na mobilnych kartach i szczegółach montażu, bez utraty pełnych danych.

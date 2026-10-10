@@ -1,3 +1,9 @@
+## 12.94
+- Mobile/start: sprawdzony profil użytkownika i lista montaży pobierają się równolegle; wolne zapytanie montaży nie zatrzymuje renderowania aplikacji po poprawnym uwierzytelnieniu.
+- Dane poboczne nadal uruchamiają się po liście montaży; zachowane cache-first, ochrona ról, sesji i kolejki offline.
+- Jeśli profil nie jest dostępny, po 7 sekundach pojawia się komunikat o wolnym serwerze i przycisk ponowienia bez wylogowania.
+- Dodano test integracyjny opóźnionych montaży, opóźnionego profilu i błędu 504; standardowe kontrole CI / Playwright / Closure Gate są wymagane przed wdrożeniem.
+
 ## 12.93
 - Mobilne szczegóły montażu: etykieta ADRES po lewej, treść adresu po prawej, jak w danych kontaktowych.
 - Długi adres zawija się w prawej kolumnie bez obcinania i zachowuje klikalny link Google Maps.
