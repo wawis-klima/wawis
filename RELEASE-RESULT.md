@@ -1,15 +1,15 @@
 # RELEASE RESULT
 
 ## Wersja
-- 12.99
+- 13.00
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Administrator / Edytuj montaż / iPhone: 38 px pól zamiast 44 px, przerwy 5 px zamiast 7 px, zwężone przyciski i sekcje.
-- Font w polach 16 px, natywny kalendarz iOS i istniejące dane bez zmian. Pracownik, desktop i formularz dodawania niezależne.
+- Mobile administrator / Edytuj montaż: pola 34 px wysokości, odstępy 4 px i tekst pól 14 px; zmniejszone etykiety, nagłówek, przyciski, status, wybór adresu i data.
+- Bez zmian w danych klienta, zapisie, natywnym kalendarzu, mobilnym pracowniku i desktopie.
 
 ## Dowód
-- Do potwierdzenia: CI i Playwright realnie mierzące wysokości pól i odstępy, PostgreSQL testy współbieżności, build produkcyjny, Vercel READY, numer wersji 12.99.
-- Fizyczny iPhone użytkownika stanowi końcową kontrolę wizualną.
+- Wymagane: zielone CI na SHA, Playwright geometrii i fontu, testy współbieżności, release gate, build, Vercel READY.
+- Końcowe porównanie wizualne na fizycznym iPhonie po instalacji wersji 13.00.
