@@ -1,16 +1,17 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.01
+- 13.02
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Administrator / mobilna edycja montażu: Zamknij i Wprowadź głosowo w jednym wierszu z nagłówkiem; Telefon i NIP w jednym wierszu, pola 32 px/13 px, mniejsze odstępy; komentarz administratora 104 px zamiast 54 px.
-- Standardowy iPhone: cały formularz razem z Zapisz zmiany na jednym ekranie; dla mniejszych ekranów awaryjne przewijanie z dostępnym zapisem.
-- Pracownik, tworzenie nowego montażu, desktop, dane klienta, edycja i kalendarz bez zmian.
+- Mobilny administrator / Edytuj montaż: sam mikrofon obok nagłówka i Zamknij, bez nachodzenia elementów.
+- Automatycznie jedno- lub dwuwierszowa nazwa klienta; Telefon i NIP po 50% szerokości, odstępy 8px w poziomie i 5px w pionie.
+- Komentarz administratora 112px na normalnym iPhonie; na krótszych ekranach zachowano przewijanie i dostęp do Zapisz zmiany.
+- Bez zmiany danych, OCR, protokołów, edycji pracownika, tworzenia montażu i desktopu.
 
 ## Dowód
-- Wymagane: zielone CI na dokładnym SHA, test pomiaru realnego rozkładu formularza i widoczności Zapisz zmiany, pozostałe regresje Playwright, testy współbieżności, build, Vercel READY.
-- Fizyczny iPhone użytkownika: wizualna kontrola po aktualizacji.
+- Wymagane: zielone CI na dokładnym SHA, geometrię Playwright iPhone (długa nazwa, dwa pola, mikrofon bez podpisu, komentarz), regresje współdziałania, Closure Gate i build, Vercel READY.
+- Fizyczny iPhone użytkownika pozostaje końcowym sprawdzeniem wyglądu.
