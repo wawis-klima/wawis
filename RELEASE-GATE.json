@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.13",
+  "version": "13.14",
   "scope": "mobile",
-  "release_branch": "release/v13.13",
+  "release_branch": "release/v13.14",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobile admin edit CSS-only typography/spacing and microphone visuals; no data or API change."
+    "notes": "Mobile admin edit only: redundant clearing actions removed; field and textarea geometry adjusted. No data, backend, OCR or roles changes."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.13.zip"
+    "file_name": "klima-app-v13.14.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.13",
+    "source_branch": "release/v13.14",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "On iPhone version 13.13: Edit existing admin job, review spacing, 2 slim microphones, date picker, voice note and Save."
+    "notes": "EXTERNAL: after green PR and READY production deployment, check iPhone UI version 13.14, date picker, note mic and save."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Admin mobile editor field geometry and 2 matching 16px SVG microphone icons (28px button); voice parsing/notes unmodified.",
-    "release_ci": "REQUIRED green targeted-checks with mobile Playwright geometries and click targets for both mic controls, note and iOS date, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — Vercel READY merge SHA and iPhone UI on 13.13."
+    "code": "Admin mobile edit: clear buttons absent, date remains editable, note microphone unobstructed and comment/spacing responsive.",
+    "release_ci": "REQUIRED green PR targeted-checks incl. mobile Playwright, cross-module interaction regression, Closure Gate and build.",
+    "post_deploy": "EXTERNAL — Vercel READY for merged SHA plus physical iPhone UI check on 13.14."
   }
 }
