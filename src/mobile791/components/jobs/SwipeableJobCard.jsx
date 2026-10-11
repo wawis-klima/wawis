@@ -53,7 +53,7 @@ export default function SwipeableJobCard({
     if (!g.horizontal) {
       if (g.vertical) {
         suppressClick.current = true;
-        window.setTimeout(() => { suppressClick.current = false; }, 0);
+        window.setTimeout(() => { suppressClick.current = false; }, 400);
       }
       return;
     }
@@ -71,7 +71,7 @@ export default function SwipeableJobCard({
     else onClose();
     setOffset(null);
     suppressClick.current = true;
-    window.setTimeout(() => { suppressClick.current = false; }, 0);
+    window.setTimeout(() => { suppressClick.current = false; }, 400);
   }
 
   function pointerCancel() { gesture.current = null; setOffset(null); }
