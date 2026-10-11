@@ -4,7 +4,8 @@ const { defaultBrowserType: _ignored, ...iphone14 } = devices['iPhone 14'];
 test.use(iphone14);
 async function swipe(page, frame, dx, dy=0) {
   const b = await frame.boundingBox();
-  const x = b.x+b.width*0.65, y=b.y+b.height/2;
+  // On closing, start on the visible card, not on a revealed phone/maps link.
+  const x = b.x+b.width*(dx > 0 ? 0.25 : 0.65), y=b.y+b.height/2;
   await page.mouse.move(x,y); await page.mouse.down();
   await page.mouse.move(x+dx,y+dy,{steps:10}); await page.mouse.up();
 }
