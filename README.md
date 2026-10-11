@@ -996,6 +996,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.14` — mobilna edycja administratora: usunięte zbędne przyciski Wyczyść przy dacie i komentarzu, większe pole notatki i odstępy (data i mikrofon bez zmian).
 - wersja `13.13` — ujednolicona edycja mobilna administratora z nowym montażem, oba mikrofony 16 px i regresje iPhone.
 - wersja `13.12` — dyskretny mikrofon 16 px przy komentarzu nowego montażu, mniej pustych odstępów i test geometrii/kliknięcia na iPhonie.
 - wersja `13.11` — mikrofon obok nagłówka Komentarz nowego montażu; testy dyktowania i układu iPhone.
