@@ -1,3 +1,8 @@
+## 13.06
+- Mobilny kreator urządzeń: potwierdzenie odrzucenia niezapisanych zmian jest ponad formularzem, dzięki czemu „Wstecz” i „Zamknij” nie blokują wyjścia.
+- Testy E2E: wejście przez gest i przez szczegóły montażu; potwierdzenie ma rzeczywistą klikalność (elementFromPoint), „Wróć” zachowuje formularz, „Zamknij bez zapisu” wychodzi.
+- Bez zmian logiki danych, OCR, protokołów, uprawnień i działania samego gestu.
+
 ## 13.05
 - Mobilna lista montaży: przesunięcie w prawo odsłania Tabliczki i Protokół; przesunięcie w lewo nadal daje Zadzwoń i Nawiguj.
 - Tabliczki: istniejący kreator w trybie tabliczek, po pobraniu szczegółów zlecenia; Protokół: istniejący modal dopiero po sprawdzeniu zapisu protokołu.
