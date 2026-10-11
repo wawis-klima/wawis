@@ -1,9 +1,9 @@
 {
-  "version": "13.04",
-  "summary": "Szybkie akcje po przesunięciu mobilnej karty montażu",
+  "version": "13.05",
+  "summary": "Szybkie Tabliczki i Protokół po przesunięciu karty w prawo",
   "changes": [
-    "Przesunięcie w lewo odsłania Zadzwoń i Nawiguj, o ile są dostępne dane.",
-    "Przesunięcie w prawo chowa akcje; pionowe przewijanie i tap pozostają bez zmian.",
-    "Bez modyfikowania statusów, danych zleceń, uprawnień, desktopu ani backendu."
+    "W prawo: istniejące akcje Tabliczki i Protokół, zgodnie z dostępnością dla roli i statusu.",
+    "W lewo: nadal telefon i nawigacja, bez zmian.",
+    "Bez zmian Supabase, protokołów PDF, OCR i desktopu; rozszerzone testy iPhone."
   ]
 }

@@ -223,6 +223,7 @@ function EmployeeMobileOnlyBlock({ profile, logout }) {
 
 export default function App() {
   const [selectedJob, setSelectedJob] = useState(null);
+  const [quickProtocolRequest, setQuickProtocolRequest] = useState(null);
   const selectedJobIdRef = useRef(null);
   const jobDetailsRequestsRef = useRef(new Map());
   const jobSummaryRequestsRef = useRef(new Map());
@@ -667,12 +668,13 @@ export default function App() {
             if (!isSessionTokenCurrent(sessionToken)) return null;
 
             const cleanDetails = { ...details, detailsLoadError: '' };
-            let mergedJob = null;
-            setJobs((prev) => prev.map((job) => {
-              if (String(job.id) !== targetId) return job;
-              mergedJob = mergeJobDetailsForMobile(job, cleanDetails);
-              return mergedJob;
-            }));
+            // Return the loaded job deterministically. React may execute a
+            // functional state updater later; a value assigned inside setJobs
+            // is not reliable for quick actions awaiting this request.
+            const mergedJob = mergeJobDetailsForMobile(targetJob, cleanDetails);
+            setJobs((prev) => prev.map((job) => (
+              String(job.id) === targetId ? mergeJobDetailsForMobile(job, cleanDetails) : job
+            )));
             setSelectedJob((prev) => (prev && String(prev.id) === targetId ? mergeJobDetailsForMobile(prev, cleanDetails) : prev));
 
             // Szczegóły są gotowe od razu, a podpisy miniatur robią się dopiero
@@ -1359,6 +1361,38 @@ export default function App() {
     }} />;
   }
 
+  async function handleQuickNameplates(job) {
+    if (!job || !canEditResolvedJob(job)) return;
+    // A summary card does not necessarily carry the devices/photos required by
+    // the existing serial-only editor. Load details before opening that editor.
+    try {
+      // Use the existing guarded/retrying details loader; its resolved value
+      // is now deterministic and includes current devices and nameplates.
+      const resolved = job.detailsLoaded
+        ? job
+        : await reloadJobDetails(String(job.id), { background: true });
+      if (!resolved) {
+        window.alert("Nie udało się pobrać szczegółów montażu. Otwórz kartę i spróbuj ponownie.");
+        return;
+      }
+      openSerialNumbersJob(resolved);
+    } catch {
+      window.alert("Nie udało się pobrać urządzeń i tabliczek. Spróbuj ponownie z karty montażu.");
+    }
+  }
+
+  function handleQuickProtocol(job) {
+    if (!job) return;
+    const supportsProtocol = job.status === "Zakończone" || (!isAdmin && job.status === "W trakcie");
+    if (!supportsProtocol) return;
+    setSelectedJob((current) => String(current?.id || "") === String(job.id) ? current : job);
+    setQuickProtocolRequest({ jobId: String(job.id), nonce: Date.now() });
+  }
+
+  function completeQuickProtocolRequest(nonce) {
+    setQuickProtocolRequest((current) => current?.nonce === nonce ? null : current);
+  }
+
   const isWorker = profile?.role === "Pracownik";
   const shouldBlockWorkerDesktop = isWorker && (!isMobile || !isProbablyPhoneDevice);
 
@@ -1411,6 +1445,8 @@ export default function App() {
             setJobsPage={setJobsPage}
             selectedJob={selectedJob}
             setSelectedJob={setSelectedJob}
+            onQuickNameplates={handleQuickNameplates}
+            onQuickProtocol={handleQuickProtocol}
             formatDate={formatDate}
             toggleSort={toggleSort}
             getSortLabel={getSortLabel}
@@ -1482,6 +1518,8 @@ export default function App() {
             <JobDetailsPanel
               selectedJob={selectedJob}
               isAdmin={isAdmin}
+              quickProtocolRequest={quickProtocolRequest}
+              onQuickProtocolRequestHandled={completeQuickProtocolRequest}
               busy={busy}
               profiles={profiles}
               formatDate={formatDate}

@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.04",
+  "version": "13.05",
   "scope": "mobile",
-  "release_branch": "release/v13.04",
+  "release_branch": "release/v13.05",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.04.zip"
+    "file_name": "klima-app-v13.05.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.04",
+    "source_branch": "release/v13.05",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact SHA, Vercel READY, physical iPhone",
-    "notes": "Zewnętrzna kontrola: swipe prawo/lewo, wertykalne przewijanie, Zadzwoń, Nawiguj, tap, obie role i wersja 13.04."
+    "notes": "Sprawdzić oba kierunki swipe, rolę pracownika/admina, otwieranie kreatora tabliczek i protokołu, statusy oraz wersję 13.05."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Swipe-to-reveal Call and Navigate actions on mobile job cards only. No data mutation.",
-    "release_ci": "Required exact PR HEAD targeted regressions, mobile iPhone E2E, Closure Gate and production build.",
-    "post_deploy": "External: Vercel READY exact SHA, /app-version.json 13.04, physical iPhone gesture spot-check."
+    "code": "Mobile right swipe: Tabliczki and Protokół via existing gated flows; left swipe unchanged.",
+    "release_ci": "REQUIRED exact PR HEAD green targeted regression, linked consumers, Playwright mobile iPhone, Closure Gate and build.",
+    "post_deploy": "EXTERNAL — Vercel READY exact merge SHA, app-version.json 13.05, physical iPhone quick-action spot-check."
   }
 }

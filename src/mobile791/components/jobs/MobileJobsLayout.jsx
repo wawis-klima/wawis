@@ -63,10 +63,12 @@ export default function MobileJobsLayout({
   inlineDetailsPanel = null,
   formatDate,
   profiles,
+  onQuickNameplates = () => {},
+  onQuickProtocol = () => {},
 }) {
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
   const [filterOpen, setFilterOpen] = useState(Boolean(query));
-  const [swipedJobId, setSwipedJobId] = useState("");
+  const [swipedJob, setSwipedJob] = useState({ id: "", side: "" });
   const filterInputRef = useRef(null);
   const jobCardRefs = useRef(new Map());
   const pendingScrollJobIdRef = useRef("");
@@ -75,7 +77,7 @@ export default function MobileJobsLayout({
     if (query) setFilterOpen(true);
   }, [query]);
 
-  useEffect(() => setSwipedJobId(""), [desktopStatusFilter, query, jobsCurrentPage]);
+  useEffect(() => setSwipedJob({ id: "", side: "" }), [desktopStatusFilter, query, jobsCurrentPage]);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -126,7 +128,7 @@ export default function MobileJobsLayout({
   }
 
   function toggleJobDetails(job) {
-    setSwipedJobId("");
+    setSwipedJob({ id: "", side: "" });
     const clickedJobId = String(job?.id || "");
     const renderedSelectedJobId = String(selectedJob?.id || "");
 
@@ -271,7 +273,14 @@ export default function MobileJobsLayout({
           const isSelected = String(selectedJob?.id || "") === String(job?.id || "");
           return (
             <React.Fragment key={job.id}>
-              <SwipeableJobCard job={job} open={swipedJobId === String(job.id)} onOpen={() => setSwipedJobId(String(job.id))} onClose={() => setSwipedJobId("")}>
+              <SwipeableJobCard job={job} isAdmin={isAdmin}
+                openSide={swipedJob.id === String(job.id) ? swipedJob.side : ""}
+                onOpenLeft={() => setSwipedJob({ id: String(job.id), side: "left" })}
+                onOpenRight={() => setSwipedJob({ id: String(job.id), side: "right" })}
+                onClose={() => setSwipedJob({ id: "", side: "" })}
+                onNameplates={onQuickNameplates}
+                onProtocol={onQuickProtocol}
+              >
               <div
                 ref={(node) => {
                   const jobId = String(job?.id || "");

@@ -1,15 +1,16 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.04
+- 13.05
 
 ## Tryb
-- mobile / standard
+- mobile
 
 ## Zakres
-- Swipe karty montażu w lewo: Zadzwoń i Nawiguj; w prawo: ukryj działania.
-- Brak zmian w danych klientów, statusach, protokołach, OCR, uprawnieniach i desktopie.
+- Przesunięcie w prawo: Tabliczki i Protokół, wyłącznie kiedy pozwalają na to aktualne uprawnienia i status.
+- Przesunięcie w lewo: istniejące Zadzwoń i Nawiguj bez zmian.
+- Protokół sprawdzany przed wejściem w istniejący modal; tabliczki ładowane w oryginalnym formularzu.
 
 ## Weryfikacja
-- Wymagane: PR green targeted CI, Playwright iPhone, Closure Gate, Vercel READY i wyświetlana wersja 13.04.
-- Sprawdzenie fizycznego iPhone'a pozostaje osobnym krokiem.
+- Wymagane: zielone CI dokładnego SHA, Playwright mobile, Closure Gate, Vercel READY i sprawdzenie wersji.
+- Fizyczny iPhone pozostaje osobnym testem terenowym.
