@@ -687,7 +687,7 @@ export default function JobDetailsPanel({
                             ) : null}
                         </div>
                       </div>
-                      <SmoothCollapse open={isExpanded} id={`job-device-details-${deviceIndex}`}>
+                      <SmoothCollapse open={isExpanded} id={`job-device-details-${deviceIndex}`} keepMounted>
                         <div className="jobDeviceDocumentationBody">
                         <div className="deviceUnitDocumentationTableHeader" aria-hidden="true">
                           <span>Urządzenie</span>

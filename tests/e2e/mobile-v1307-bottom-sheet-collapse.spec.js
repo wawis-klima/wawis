@@ -16,6 +16,11 @@ async function openSheet(page, card) {
   await card.getByRole('button', { name: /Więcej opcji dla/ }).click();
   const sheet = page.locator('.wawisQuickSheet');
   await expect(sheet).toBeVisible();
+  // Wait for the 250-ms entrance animation: hit tests and drags must run
+  // against the panel's final position, never a frame outside the viewport.
+  await sheet.evaluate(async (node) => {
+    await Promise.all(node.getAnimations().map((animation) => animation.finished.catch(() => {})));
+  });
   return sheet;
 }
 
