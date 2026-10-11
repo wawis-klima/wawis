@@ -5,6 +5,8 @@ import { APP_VERSION } from "../../version";
 import { IconFilter, IconPlus, IconRefresh } from "../ui";
 import { getJobDisplayAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
 import JobsPagination from "./JobsPagination.jsx";
+import SwipeableJobCard from "./SwipeableJobCard.jsx";
+import "./swipeable-job-card.css";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
 const MobileDiagnosticsPanel = React.lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
@@ -64,6 +66,7 @@ export default function MobileJobsLayout({
 }) {
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
   const [filterOpen, setFilterOpen] = useState(Boolean(query));
+  const [swipedJobId, setSwipedJobId] = useState("");
   const filterInputRef = useRef(null);
   const jobCardRefs = useRef(new Map());
   const pendingScrollJobIdRef = useRef("");
@@ -71,6 +74,8 @@ export default function MobileJobsLayout({
   useEffect(() => {
     if (query) setFilterOpen(true);
   }, [query]);
+
+  useEffect(() => setSwipedJobId(""), [desktopStatusFilter, query, jobsCurrentPage]);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -121,6 +126,7 @@ export default function MobileJobsLayout({
   }
 
   function toggleJobDetails(job) {
+    setSwipedJobId("");
     const clickedJobId = String(job?.id || "");
     const renderedSelectedJobId = String(selectedJob?.id || "");
 
@@ -265,6 +271,7 @@ export default function MobileJobsLayout({
           const isSelected = String(selectedJob?.id || "") === String(job?.id || "");
           return (
             <React.Fragment key={job.id}>
+              <SwipeableJobCard job={job} open={swipedJobId === String(job.id)} onOpen={() => setSwipedJobId(String(job.id))} onClose={() => setSwipedJobId("")}>
               <div
                 ref={(node) => {
                   const jobId = String(job?.id || "");
@@ -290,6 +297,7 @@ export default function MobileJobsLayout({
                   </div>
                 </button>
               </div>
+              </SwipeableJobCard>
 
               {isSelected && inlineDetailsPanel ? (
                 <div className="mobileInlineJobDetails" data-inline-job-details={job.id}>

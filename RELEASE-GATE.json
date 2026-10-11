@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.03",
+  "version": "13.04",
   "scope": "mobile",
-  "release_branch": "release/v13.03",
+  "release_branch": "release/v13.04",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Role-scoped mobile UI change; no live database diagnostic query for this visual task."
+    "notes": "Mobile gesture UI; information-only diagnostics baseline, not queried."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.03.zip"
+    "file_name": "klima-app-v13.04.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.03",
+    "source_branch": "release/v13.04",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR exact HEAD CI, Vercel READY, physical iPhone",
-    "notes": "Do zweryfikowania po CI i produkcyjnym wdrożeniu: mikrofon obok Komentarza administratora, rozpoznawanie mowy dopisujące do istniejącego tekstu, 108px na standardowym iPhonie i 104px na krótkim. Zachowany dostęp do zapisu i brak kolizji."
+    "evidence_source": "GitHub PR exact SHA, Vercel READY, physical iPhone",
+    "notes": "Zewnętrzna kontrola: swipe prawo/lewo, wertykalne przewijanie, Zadzwoń, Nawiguj, tap, obie role i wersja 13.04."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Existing mobile admin edit: note voice mic in heading + 108px textarea. Worker/create/desktop unchanged.",
-    "release_ci": "REQUIRED exact PR HEAD targeted regression, linked device/protocol consumer tests, iPhone browser geometry E2E, Closure Gate, production build.",
-    "post_deploy": "EXTERNAL — wymagane Vercel READY exact SHA, public/app-version 13.03 i sprawdzenie wyglądu na fizycznym iPhonie."
+    "code": "Swipe-to-reveal Call and Navigate actions on mobile job cards only. No data mutation.",
+    "release_ci": "Required exact PR HEAD targeted regressions, mobile iPhone E2E, Closure Gate and production build.",
+    "post_deploy": "External: Vercel READY exact SHA, /app-version.json 13.04, physical iPhone gesture spot-check."
   }
 }

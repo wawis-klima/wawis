@@ -1,9 +1,9 @@
 {
-  "version": "13.03",
-  "summary": "Dyktowanie komentarza administratora i lekko większe pole notatki w mobilnej edycji",
+  "version": "13.04",
+  "summary": "Szybkie akcje po przesunięciu mobilnej karty montażu",
   "changes": [
-    "Mikrofon przy nagłówku Komentarz administratora; nagranie dopisuje rozpoznany tekst do dotychczasowego komentarza.",
-    "Wysokość komentarza 108 px na typowym iPhonie, 104 px na krótkich ekranach i bezpieczne przewijanie.",
-    "Bez zmian edycji pracownika, nowego montażu i desktopu, z testami regresji geometrii."
+    "Przesunięcie w lewo odsłania Zadzwoń i Nawiguj, o ile są dostępne dane.",
+    "Przesunięcie w prawo chowa akcje; pionowe przewijanie i tap pozostają bez zmian.",
+    "Bez modyfikowania statusów, danych zleceń, uprawnień, desktopu ani backendu."
   ]
 }

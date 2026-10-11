@@ -1,16 +1,15 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.03
+- 13.04
 
 ## Tryb
-- mobile
+- mobile / standard
 
 ## Zakres
-- Mobile / Administrator / Edytuj montaż: mikrofon obok nagłówka Komentarz administratora, sesja dyktowania i dopisywanie do istniejącego komentarza.
-- Pole komentarza 108 px na zwykłym iPhonie, 104 px na krótszym; pełna szerokość textarea.
-- Brak zmian w uprawnieniach, zapisie montażu, edycji pracownika, nowym montażu, desktopie, OCR i protokole.
+- Swipe karty montażu w lewo: Zadzwoń i Nawiguj; w prawo: ukryj działania.
+- Brak zmian w danych klientów, statusach, protokołach, OCR, uprawnieniach i desktopie.
 
 ## Weryfikacja
-- Wymagane: zielone CI dokładnego SHA, Playwright iPhone, build, Vercel READY.
-- Sprawdzenie na fizycznym iPhonie pozostaje osobnym krokiem; nie jest tutaj potwierdzone.
+- Wymagane: PR green targeted CI, Playwright iPhone, Closure Gate, Vercel READY i wyświetlana wersja 13.04.
+- Sprawdzenie fizycznego iPhone'a pozostaje osobnym krokiem.
