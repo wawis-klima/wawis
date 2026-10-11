@@ -29,6 +29,8 @@ test.describe('@mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje', 
       const card = await mountCard(page, user);
       await expect(card.locator('.wawisQuickMenuTrigger')).toHaveCount(0);
       await expect(page.locator('.wawisQuickSheet')).toHaveCount(0);
+      await expect(page.locator('.wawisQuickSheetOverlay')).toHaveCount(0);
+      await expect(card.getByRole('button', { name: /Więcej opcji dla/ })).toHaveCount(0);
       const top = card.locator('.mobileJobTop');
       const rightInset = await top.evaluate(el => getComputedStyle(el).paddingRight);
       expect(rightInset).not.toBe('32px');
