@@ -1,3 +1,9 @@
+## 13.06
+- Naprawiono blokowanie „Wstecz” / „Zamknij” w mobilnym kreatorze urządzeń: dialog odrzucenia zmian był renderowany pod kreatorem przy identycznym z-index.
+- Potwierdzenie niezapisanych zmian ma teraz wyższą warstwę, pozostaje klikalne i nie omija ochrony przed utratą danych.
+- Playwright na iPhone: gest w prawo → Tabliczki i zwykłe Tabliczki, nawigacja wstecz, Anuluj, Zamknij bez zapisu, rzeczywisty hit-test.
+- Brak zmian logiki OCR, zapisu jednostek, uprawnień, Supabase i desktopu.
+
 ## 13.05
 - Mobilna lista montaży: przesunięcie w prawo odsłania Tabliczki i Protokół; przesunięcie w lewo nadal daje Zadzwoń i Nawiguj.
 - Tabliczki: istniejący kreator w trybie tabliczek, po pobraniu szczegółów zlecenia; Protokół: istniejący modal dopiero po sprawdzeniu zapisu protokołu.
