@@ -151,12 +151,14 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       };
     });
-    for (const k of ['emailHeight','phoneHeight','nipHeight','closeHeight','voiceHeight','dateHeight']) {
+    for (const k of ['emailHeight','phoneHeight','nipHeight','closeHeight','dateHeight']) {
       expect(compactLayout[k], k + ' must actually render in compact size').toBeGreaterThanOrEqual(32);
       expect(compactLayout[k], k + ' must not render with old large size').toBeLessThanOrEqual(36);
     }
-    expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(2);
-    expect(compactLayout.phoneGap).toBeLessThanOrEqual(6);
+    expect(compactLayout.voiceHeight).toBe(28);
+    expect(compactLayout.emailHeight).toBe(36);
+    expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(4);
+    expect(compactLayout.phoneGap).toBeLessThanOrEqual(8);
     expect(compactLayout.nipRowDelta).toBeLessThanOrEqual(2);
     expect(compactLayout.nipColumnGap).toBeGreaterThanOrEqual(2);
     for (const key of ['fontSize','addressFont','statusFont','dateFont','noteFont']) {
@@ -239,7 +241,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(noteMicBox, 'Dictation mic must render').not.toBeNull();
     expect(noteFieldBox, 'Comment textarea must render').not.toBeNull();
     expect(noteParentBox, 'Comment block must render').not.toBeNull();
-    expect(noteMicBox.height).toBeGreaterThanOrEqual(26);
+    expect(noteMicBox.height).toBe(28);
     expect(noteMicBox.x).toBeGreaterThanOrEqual(noteTitleBox.x + noteTitleBox.width);
     if (clearBox) expect(noteMicBox.x).toBeGreaterThanOrEqual(clearBox.x + clearBox.width);
     expect(Math.abs(noteFieldBox.width-noteParentBox.width)).toBeLessThanOrEqual(2);
@@ -250,8 +252,34 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await expect(recordingDialog).toHaveCount(0);
     const micButton = modal.getByRole('button', { name:'Wprowadź głosowo' });
     await expect(micButton).toBeVisible();
-    await expect(micButton.locator('span[aria-hidden="true"]')).toHaveText('🎤');
-    await expect(micButton).toHaveText('🎤');
+    await expect(micButton.locator('span[aria-hidden="true"]')).toBeHidden();
+    const matchingMicrophones = await modal.evaluate(el => {
+      const header = el.querySelector('.voiceClientIconOnlyV1302');
+      const note = el.querySelector('.adminNoteHeaderActionsV1303 .voiceFieldMicBtn');
+      const a = header.getBoundingClientRect();
+      const b = note.getBoundingClientRect();
+      const hit = (button, box) => {
+        const target = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return target === button || button.contains(target);
+      };
+      const styles = [header, note].map(button => {
+        const css = getComputedStyle(button);
+        return { icon:css.backgroundImage, iconSize:css.backgroundSize, background:css.backgroundColor, border:css.borderTopWidth };
+      });
+      return { header:{width:a.width,height:a.height,hit:hit(header,a)}, note:{width:b.width,height:b.height,hit:hit(note,b)}, styles };
+    });
+    for (const type of ['header','note']) {
+      expect(matchingMicrophones[type].width).toBe(28);
+      expect(matchingMicrophones[type].height).toBe(28);
+      expect(matchingMicrophones[type].hit).toBe(true);
+    }
+    expect(matchingMicrophones.styles[0].icon).toBe(matchingMicrophones.styles[1].icon);
+    for (const icon of matchingMicrophones.styles) {
+      expect(icon.icon).toContain('data:image/svg+xml');
+      expect(icon.iconSize).toBe('16px 16px');
+      expect(icon.border).toBe('0px');
+    }
+    await expect(modal.locator('.adminNoteHeaderActionsV1303 .voiceFieldMicBtn > span[aria-hidden="true"]')).toBeHidden();
     const clientName = modal.locator('textarea.adminClientNameV1302');
     const originalName = await clientName.inputValue();
     await expect(clientName).toBeVisible();
@@ -264,7 +292,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(longNameMetrics.height).toBeLessThanOrEqual(58);
     expect(longNameMetrics.overflow).toBeLessThanOrEqual(2);
     await clientName.fill(originalName);
-    await expect.poll(async () => clientName.evaluate(el => el.getBoundingClientRect().height)).toBeLessThanOrEqual(34);
+    await expect.poll(async () => clientName.evaluate(el => el.getBoundingClientRect().height)).toBeLessThanOrEqual(38);
     await expect(modal.getByRole('heading', { name:'Edytuj montaż' })).toBeVisible();
     const dateText = modal.locator('.adminDateVisibleLabelV1297');
     const nativeDate = modal.locator('input.installationDateNativeInput[type="date"]');
