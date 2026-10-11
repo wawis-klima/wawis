@@ -669,3 +669,52 @@
     overflow-y:auto!important;
   }
 }
+
+/* WAWIS 13.13: date on one line, matching create form, preserves native iOS tap. */
+@media (max-width:700px) {
+  html body .formModal.adminMobileEditModalV1297 .installationDateField {
+    display:grid!important;
+    grid-template-columns:auto minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:6px!important;
+    margin:1px 0 0!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .installationDateLabelRow {
+    display:contents!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .installationDateLabelRow > span:first-child {
+    grid-column:1!important;
+    grid-row:1!important;
+    white-space:nowrap!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .installationDateInputShell {
+    grid-column:2!important;
+    grid-row:1!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .installationDateClearBtn {
+    grid-column:3!important;
+    grid-row:1!important;
+    margin:0!important;
+    white-space:nowrap!important;
+  }
+}
+/* iPhone 14 and shorter: retain one-screen ergonomics while using 13px / 36px fields. */
+@media (max-width:700px) and (max-height:860px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:3px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:94px!important;
+    min-height:94px!important;
+    max-height:170px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .saveJobBtn {
+    height:42px!important;
+    min-height:42px!important;
+  }
+}

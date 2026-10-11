@@ -191,7 +191,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
-    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(102);
+    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(92);
     expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
     expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.modalBottom+2);
     expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.viewportHeight+2);
@@ -225,7 +225,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactRow.pairTop).toBeLessThanOrEqual(2);
     expect(compactRow.pairGap).toBeGreaterThanOrEqual(7);
     expect(compactRow.pairGap).toBeLessThanOrEqual(11);
-    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(106);
+    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(92);
     // 13.03: microphone lives in the administrator-note heading; textarea stays full width.
     const adminNoteMic = modal.getByRole('button', { name:'Nagraj głosowo: Komentarz administratora' });
     await expect(adminNoteMic).toBeVisible();
