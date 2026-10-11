@@ -52,23 +52,46 @@
     border: 0; border-radius: 13px; background: #e9f1fc; color: #1b4c79;
     text-align: left; font-size: 13px; font-weight: 750; cursor: pointer;
   }
-  .mobileInlineJobDetails { animation: wawisDetailEnter .22s ease-out both; }
+  .mobileInlineJobDetails { animation: wawisDetailEnter .38s cubic-bezier(.22, .8, .26, 1) both; }
+  /* 13.08: noticeably smooth height/opacity/slide, while keeping button taps immediate. */
   .wawisSmoothCollapse {
     display: grid; min-width: 0; grid-template-rows: 0fr; opacity: 0;
-    pointer-events: none; transition: grid-template-rows .26s ease, opacity .19s ease;
+    pointer-events: none;
+    transition: grid-template-rows .44s cubic-bezier(.22, .8, .24, 1),
+                opacity .38s ease;
   }
   .wawisSmoothCollapse.isOpen { grid-template-rows: 1fr; opacity: 1; pointer-events: auto; }
   .wawisSmoothCollapseInner {
     min-width: 0; min-height: 0; overflow: hidden;
-    visibility: hidden; transition: visibility 0s linear .26s;
+    visibility: hidden; opacity: .15; transform: translateY(-10px);
+    transition: transform .40s cubic-bezier(.22, .8, .24, 1),
+                opacity .34s ease,
+                visibility 0s linear .44s;
   }
   .wawisSmoothCollapse.isOpen .wawisSmoothCollapseInner {
-    visibility: visible; transition-delay: 0s;
+    visibility: visible; opacity: 1; transform: translateY(0);
+    transition-delay: 0s;
+  }
+  /* Rotate the chevrons so the movement is visible even on empty sections. */
+  .mobileInlineJobDetails .adminNoteToggleChevron {
+    display: inline-block;
+    transition: transform .4s cubic-bezier(.22, .8, .24, 1);
+  }
+  .mobileInlineJobDetails [aria-expanded="true"] > .adminNoteToggleChevron {
+    transform: rotate(180deg);
+  }
+  .mobileInlineJobDetails .jobDevicesTableV888 .jobDeviceDocumentationToggle::after {
+    transition: transform .4s cubic-bezier(.22, .8, .24, 1) !important;
   }
   @keyframes wawisSheetEnter { from { transform: translateY(100%); opacity: .65; } to { transform: translateY(0); opacity: 1; } }
-  @keyframes wawisDetailEnter { from { transform: translateY(-5px); opacity: .5; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes wawisDetailEnter { from { transform: translateY(-10px); opacity: .3; } to { transform: translateY(0); opacity: 1; } }
 }
 @media (prefers-reduced-motion: reduce) {
   .wawisQuickSheet, .mobileInlineJobDetails { animation: none !important; }
-  .wawisSmoothCollapse { transition: none !important; }
+  .wawisSmoothCollapse,
+  .wawisSmoothCollapseInner,
+  .mobileInlineJobDetails .adminNoteToggleChevron,
+  .mobileInlineJobDetails .jobDevicesTableV888 .jobDeviceDocumentationToggle::after {
+    transition: none !important;
+  }
 }

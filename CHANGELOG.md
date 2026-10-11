@@ -1,3 +1,10 @@
+## 13.08
+- Na iPhonie rozwijanie i zwijanie urządzeń, zdjęć, komentarzy, monterów i notatek trwa około 0,44 s zamiast 0,26 s i pokazuje subtelne przesunięcie zawartości, zanikanie oraz obrót strzałki.
+- Dłuższy czas utrzymania zawartości podczas zwijania jest zgodny z animacją, aby ukrycie w DOM nie urywało przejścia.
+- Otwarcie całej karty ma czytelniejsze wejście około 0,38 s; gesty przesuwania, panel szybkich działań i formularze zachowują dotychczasowe działanie.
+- Playwright mobile sprawdza przejścia w czasie, widoczność w trakcie animacji, zwijanie oraz „Ogranicz ruch” (prefers-reduced-motion).
+- Bez zmian bazowych, OCR, PDF, SMS, Vercel projektu, ról i desktopu.
+
 ## 13.07
 - Dodano panel szybkich działań wysuwany od dołu po dotknięciu „···” na mobilnej karcie montażu; zachowano dotychczasowe przesunięcia karty w obie strony.
 - Akcje telefonu, nawigacji, tabliczek i protokołu używają istniejących ścieżek oraz dotychczasowej kontroli ról/statusów; dostęp do szczegółów montażu nie jest zastępowany.

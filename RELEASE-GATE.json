@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.07",
+  "version": "13.08",
   "scope": "mobile",
-  "release_branch": "release/v13.07",
+  "release_branch": "release/v13.08",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "UI gestures and collapsible sections only; information-only baseline, not queried."
+    "notes": "Mobile UI animation-only refinement; informational diagnostics."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.07.zip"
+    "file_name": "klima-app-v13.08.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.07",
+    "source_branch": "release/v13.08",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR exact SHA, Vercel READY, physical iPhone",
-    "notes": "Na iPhonie: panel ···, zamknięcie gestem i przyciskiem, Tabliczki/Wstecz/Zamknij, Protokół, animacje urządzeń/zdjęć/komentarzy; wersja 13.07."
+    "evidence_source": "GitHub PR exact SHA, Vercel READY, iPhone spot check",
+    "notes": "Na iPhonie: płynna animacja w obie strony w Urządzeniach, Zdjęciach, Komentarzach; rotacja strzałek i nadal działające Tabliczki/Wstecz/Zamknij; wersja 13.08."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile quick actions bottom sheet and animated collapsible job sections; existing rights, swipe and wizard guards unchanged.",
-    "release_ci": "REQUIRED exact PR HEAD green targeted groups, Playwright mobile iPhone, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, app-version.json 13.07, physical iPhone gesture and wizard spot-check."
+    "code": "Mobile 0.44s section transitions, inner slide/opacity and toggle chevron rotation; previous controls unchanged.",
+    "release_ci": "REQUIRED exact PR HEAD green mobile Playwright, Closure Gate and build.",
+    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, app-version.json 13.08, physical iPhone motion spot-check."
   }
 }
