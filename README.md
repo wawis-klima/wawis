@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.05
+- 13.06
+
+WAWIS 13.06: przyciski „Wstecz” i „Zamknij” w mobilnym kreatorze urządzeń działają także po zmianach wymagających potwierdzenia odrzucenia; modal potwierdzenia jest nad pełnoekranowym kreatorem. Testy Playwright sprawdzają zamykanie po wejściu zwykłym i gestem, faktyczną klikalność potwierdzenia oraz zachowanie powrotu bez utraty edycji.
+
 
 WAWIS 13.05: gest mobilnej karty w prawo odsłania Tabliczki i Protokół. Tabliczki wykorzystują obecny formularz po bezpiecznym dociągnięciu danych urządzeń; Protokół wykorzystuje obecny modal po odczycie zapisanych danych. Uprawnienia i dostępność zależna od statusu są zachowane. Gest w lewo (Telefon/Nawiguj), zwykły tap i scroll w pionie działają bez zmian; bez zmian backendu i desktopu.
 
@@ -977,7 +980,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.05` — gest w prawo udostępnia Tabliczki i Protokół z kontrolą ról i danych, a gest w lewo nadal pokazuje telefon i nawigację.
+- wersja `13.06` — poprawa warstwy potwierdzenia zamknięcia kreatora urządzeń na iPhonie; regresje dla obu ścieżek wejścia.
 - wersja `13.04` — gest przesunięcia kart montaży w lewo odsłania telefon i nawigację, bez zmiany zwykłego dotknięcia i przewijania.
 - wersja `13.03` — mikrofon dyktowania komentarza administratora i pole 108 px w edycji mobilnej; poprzednia treść pozostaje zachowana.
 - wersja `12.92` — automatyczne skracanie długich nazw firm na mobilnych kartach bez zmian danych.
