@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.11
+- 13.12
+
+WAWIS 13.12: w mobilnym nowym montażu i dodawaniu klienta mikrofon przy „Komentarz” jest dyskretną, jednokolorową ikoną 16 px bez ramki (przycisk 28 px). Skrócono niepotrzebne odstępy nad komentarzem i przed zapisem; pole komentarza i logika dyktowania pozostają bez zmian. Dodano kontrole geometrii ikony i wiersza dla administratora i pracownika na iPhonie.
 
 WAWIS 13.11: w mobilnym formularzu nowego montażu/nowego klienta przy „Komentarz” jest mały mikrofon. Działa identycznie jak dyktowanie komentarza administratora: podgląd nagrania, Zakończ nagrywanie, anulowanie i automatyczne dopisanie tekstu do zwykłego komentarza. Nie ogranicza miejsca w polu i działa dla obu ról.
 

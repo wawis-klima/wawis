@@ -1,3 +1,8 @@
+## 13.12
+- Mobile: mikrofon nowego montażu/nowego klienta 28 × 28 px, neutralna ikona wektorowa 16 px bez dużego tła i obramowania.
+- Oszczędność pionowego miejsca nad komentarzem i przy zapisie, bez skracania obszaru tekstowego.
+- Zachowano nagrywanie i dopisywanie komentarza, przycisk Wyczyść, obie role i desktop; testy geometrii iPhone.
+
 ## 13.11
 - Dodano mikrofon obok „Komentarz” w mobilnym formularzu nowego montażu administratora oraz nowego klienta pracownika.
 - Ponownie wykorzystano VoiceNoteButton, podgląd nagrywania i rozpoznawanie głosu z komentarza administratora.

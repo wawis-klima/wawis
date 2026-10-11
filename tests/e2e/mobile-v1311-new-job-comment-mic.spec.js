@@ -32,6 +32,8 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
         return {
           micLeft: mic.left, titleRight: title.right, micRight: mic.right,
           parentRight: parent.right, textWidth: textarea.width, parentWidth: parent.width,
+          micWidth: mic.width, micHeight: mic.height,
+          rowHeight: rect('.workerNewClientCommentLabelRow').height,
           overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
         };
       });
@@ -39,6 +41,9 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
       expect(geometry.micRight).toBeLessThanOrEqual(geometry.parentRight + 2);
       expect(Math.abs(geometry.textWidth - geometry.parentWidth)).toBeLessThanOrEqual(3);
       expect(geometry.overflow).toBeLessThanOrEqual(2);
+      expect(geometry.micWidth).toBeLessThanOrEqual(30);
+      expect(geometry.micHeight).toBeLessThanOrEqual(30);
+      expect(geometry.rowHeight).toBeLessThanOrEqual(32);
       await comment.fill('Komentarz wpisany ręcznie');
       await expect(modal.locator('.workerNewClientCommentLabelRow .fieldClearBtn')).toBeVisible();
       await mic.click();
