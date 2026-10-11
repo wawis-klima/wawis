@@ -171,6 +171,16 @@ function selectDomainGroups(files) {
 // Keep the list focused on known cross-module seams; unrelated CSS stays FAST UI.
 const CROSS_MODULE_FLOWS = [
   {
+    id: 'mobile-job-sheet-collapse',
+    files: [
+      /^src\/mobile791\/components\/jobs\/(?:MobileJobsLayout|MobileQuickActionsSheet|SmoothCollapse)\.jsx$/,
+      /^src\/mobile791\/components\/jobs\/mobile-interactions-v1307\.css$/,
+      /^src\/mobile791\/components\/JobDetailsPanel\.jsx$/,
+    ],
+    groups: ['jobs', 'photos', 'nameplates', 'protocol', 'roles', 'mobile'],
+    e2e: ['mobile'],
+  },
+  {
     id: 'device-photo-nameplate',
     files: [
       /^src\/mobile791\/components\/devices\//,

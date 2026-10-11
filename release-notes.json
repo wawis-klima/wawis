@@ -1,9 +1,10 @@
 {
-  "version": "13.05",
-  "summary": "Szybkie Tabliczki i Protokół po przesunięciu karty w prawo",
+  "version": "13.07",
+  "summary": "Dolny panel szybkich działań i płynne rozwijane sekcje montaży",
   "changes": [
-    "W prawo: istniejące akcje Tabliczki i Protokół, zgodnie z dostępnością dla roli i statusu.",
-    "W lewo: nadal telefon i nawigacja, bez zmian.",
-    "Bez zmian Supabase, protokołów PDF, OCR i desktopu; rozszerzone testy iPhone."
+    "Trzy kropki na karcie mobilnej otwierają panel z telefonu, nawigacji, tabliczek, protokołu i szczegółów.",
+    "Urządzenia, zdjęcia, komentarze, monterzy i notatka rozwijają się i zwijają z krótką animacją.",
+    "Dotychczasowe gesty przesuwania, dostęp zależny od roli/statusu oraz ochrona niezapisanych danych bez zmian.",
+    "Testy Playwright iPhone, brak modyfikacji bazowych funkcji backendu i desktopu."
   ]
 }

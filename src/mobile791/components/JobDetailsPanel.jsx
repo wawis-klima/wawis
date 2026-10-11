@@ -12,6 +12,7 @@ import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { blockUnsavedWork } from "../../modules/update-reload-guard.js";
 import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
+import SmoothCollapse from "./jobs/SmoothCollapse.jsx";
 
 const PROTOCOL_READ_TIMEOUT_MS = 3200;
 const PROTOCOL_READ_RETRY_DELAYS_MS = Object.freeze([0, 500]);
@@ -686,7 +687,8 @@ export default function JobDetailsPanel({
                             ) : null}
                         </div>
                       </div>
-                      <div id={`job-device-details-${deviceIndex}`} className="jobDeviceDocumentationBody" hidden={!isExpanded}>
+                      <SmoothCollapse open={isExpanded} id={`job-device-details-${deviceIndex}`} keepMounted>
+                        <div className="jobDeviceDocumentationBody">
                         <div className="deviceUnitDocumentationTableHeader" aria-hidden="true">
                           <span>Urządzenie</span>
                           <span>Model / moc</span>
@@ -738,6 +740,7 @@ export default function JobDetailsPanel({
                           <span>{missingCount ? `Brakuje ${missingCount} ${missingCount === 1 ? 'tabliczki lub potwierdzenia' : 'tabliczek lub potwierdzeń'}` : 'Komplet tabliczek potwierdzony'}</span>
                         </div>
                       </div>
+                      </SmoothCollapse>
                     </section>
                   );
                 }) : (
@@ -911,8 +914,8 @@ export default function JobDetailsPanel({
         ) : (
           <h4 className="sectionHeadingWithIcon"><IconFileText /><span>Komentarz administratora</span></h4>
         )}
-        {showAdminNoteContents ? (
-          <div className="adminNoteContent" id={`admin-note-content-${selectedJobId}`}>
+        <SmoothCollapse open={showAdminNoteContents} id={`admin-note-content-${selectedJobId}`}>
+          <div className="adminNoteContent">
             <div className="muted adminNoteText">{selectedJob.admin_note || "Brak komentarza."}</div>
             {canManageSelectedAdminNote ? (
               <div className="row leftAlign adminNoteActions">
@@ -927,7 +930,7 @@ export default function JobDetailsPanel({
               </div>
             ) : null}
           </div>
-        ) : null}
+        </SmoothCollapse>
       </section>
 
       {showDetailsLoading ? (
@@ -960,8 +963,8 @@ export default function JobDetailsPanel({
         ) : (
           <h4 className="sectionHeadingWithIcon"><IconCamera /><span>Zdjęcia</span></h4>
         )}
-        {(!photosCollapsible || photosExpanded) ? (
-          <div id={`photos-content-${selectedJobId}`}>
+        <SmoothCollapse open={!photosCollapsible || photosExpanded} id={`photos-content-${selectedJobId}`}>
+          <div>
           <div className="thumbGrid">
         {regularPhotos.map((photo, index) => {
           const uploadStatus = String(photo.upload_status || "").trim();
@@ -1063,7 +1066,7 @@ export default function JobDetailsPanel({
           </div>
         ) : null}
           </div>
-        ) : null}
+        </SmoothCollapse>
       </section>
 
       {(canManageSelectedJobViewers || (!isAdmin && isCompletedJob)) ? (
@@ -1084,8 +1087,8 @@ export default function JobDetailsPanel({
           ) : (
             <h4 className="sectionHeadingWithIcon"><IconUsers /><span>Monterzy</span></h4>
           )}
-          {showViewersContents ? (
-            <div id={`viewers-content-${selectedJobId}`}>
+          <SmoothCollapse open={showViewersContents} id={`viewers-content-${selectedJobId}`}>
+            <div>
               {!installersConfirmed ? (
               <div className="muted" role="status" style={{ marginBottom: 8 }}>
                 Lista monterów w tym starszym montażu nie została jeszcze potwierdzona. Zaznaczenia są podpowiedzią z dawnego dostępu do zlecenia.
@@ -1118,7 +1121,7 @@ export default function JobDetailsPanel({
                 <div className="infoValue">{renderInitialBadges(getViewerNames(selectedJob, profiles))}</div>
               )}
             </div>
-          ) : null}
+          </SmoothCollapse>
         </section>
       ) : null}
 
@@ -1142,8 +1145,8 @@ export default function JobDetailsPanel({
         ) : (
           <h4 className="sectionHeadingWithIcon"><IconMessageCircle /><span>Komentarze i pytania</span></h4>
         )}
-        {showCommentsContents ? (
-          <div id={`comments-content-${selectedJobId}`}>
+        <SmoothCollapse open={showCommentsContents} id={`comments-content-${selectedJobId}`}>
+          <div>
             <div className="comments">
             {comments.map((comment) => (
               <div key={comment.id} className="comment">
@@ -1178,7 +1181,7 @@ export default function JobDetailsPanel({
               </>
             ) : null}
           </div>
-        ) : null}
+        </SmoothCollapse>
       </section>
 
       {isAdmin ? (

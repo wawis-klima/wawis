@@ -1,3 +1,10 @@
+## 13.07
+- Dodano panel szybkich działań wysuwany od dołu po dotknięciu „···” na mobilnej karcie montażu; zachowano dotychczasowe przesunięcia karty w obie strony.
+- Akcje telefonu, nawigacji, tabliczek i protokołu używają istniejących ścieżek oraz dotychczasowej kontroli ról/statusów; dostęp do szczegółów montażu nie jest zastępowany.
+- Płynne otwieranie i zamykanie sekcji urządzeń, zdjęć, komentarzy, monterów i notatki; ukryte elementy nie mogą otrzymać fokusu. Ustawienie systemowe ograniczonego ruchu wyłącza animacje.
+- Nowe testy Playwright iPhone sprawdzają dialog, gest zamknięcia, uprawnienia, prawdziwy kreator tabliczek, rozwijanie, hit-test i brak poziomego przepełnienia; regresje 13.04–13.06 pozostają obowiązkowe.
+- Zmiana mobilna bez modyfikacji Supabase, OCR, zapisów, PDF, push, service workera poza numerem cache i desktopu.
+
 ## 13.06
 - Naprawiono blokowanie „Wstecz” / „Zamknij” w mobilnym kreatorze urządzeń: dialog odrzucenia zmian był renderowany pod kreatorem przy identycznym z-index.
 - Potwierdzenie niezapisanych zmian ma teraz wyższą warstwę, pozostaje klikalne i nie omija ochrony przed utratą danych.

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.06",
+  "version": "13.07",
   "scope": "mobile",
-  "release_branch": "release/v13.06",
+  "release_branch": "release/v13.07",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobile gesture UI; information-only diagnostics baseline, not queried."
+    "notes": "UI gestures and collapsible sections only; information-only baseline, not queried."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.06.zip"
+    "file_name": "klima-app-v13.07.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.06",
+    "source_branch": "release/v13.07",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub PR exact SHA, Vercel READY, physical iPhone",
-    "notes": "Zewnętrzny test iPhone: otwórz Tabliczki przez gest i zwykle, dodaj urządzenie, Wstecz, Zamknij, potwierdź lub anuluj. Weryfikuj 13.06."
+    "notes": "Na iPhonie: panel ···, zamknięcie gestem i przyciskiem, Tabliczki/Wstecz/Zamknij, Protokół, animacje urządzeń/zdjęć/komentarzy; wersja 13.07."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile device wizard: discard confirmation overlay is above wizard, preserving unsaved-change guard.",
-    "release_ci": "REQUIRED exact PR HEAD green targeted regression, linked consumer tests, Playwright mobile iPhone, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — Vercel READY exact merge SHA, app-version.json 13.06, physical iPhone close/back spot-check."
+    "code": "Mobile quick actions bottom sheet and animated collapsible job sections; existing rights, swipe and wizard guards unchanged.",
+    "release_ci": "REQUIRED exact PR HEAD green targeted groups, Playwright mobile iPhone, Closure Gate and build.",
+    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, app-version.json 13.07, physical iPhone gesture and wizard spot-check."
   }
 }

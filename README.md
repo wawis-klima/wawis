@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.06
+- 13.07
+
+WAWIS 13.07: na mobilnych kartach montaży przycisk „···” otwiera wysuwany od dołu panel szybkich działań: telefon, nawigacja, tabliczki, protokół i szczegóły. Panel respektuje status zlecenia i uprawnienia pracownika. Sekcje urządzeń, zdjęć, komentarzy, notatek i monterów rozwijają się i zwijają płynnie; zachowane są gesty kart, kontrola niezapisanych danych i obsługa iPhone. Bez zmian backendu, OCR, PDF, ról i desktopu.
 
 WAWIS 13.06: poprawiono zamykanie mobilnego kreatora urządzeń i tabliczek. Potwierdzenie odrzucenia niezapisanych zmian pojawia się ponad kreatorem, a nie pod nim. Działa zarówno wejście z gestu w prawo, jak i zwykłe Tabliczki; testy sprawdzają strzałkę, Zamknij i klikalność potwierdzenia na iPhonie. Bez zmian OCR, danych, uprawnień i desktopu.
 
@@ -979,6 +981,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.07` — mobilny panel szybkich działań z dołu oraz płynne rozwijanie sekcji z kontrolą ról i regresjami gestów.
 - wersja `13.06` — naprawiono niewidoczne potwierdzenie zamknięcia kreatora urządzeń i tabliczek na telefonie; regresje iPhone dla obu ścieżek wejścia.
 - wersja `13.05` — gest w prawo udostępnia Tabliczki i Protokół z kontrolą ról i danych, a gest w lewo nadal pokazuje telefon i nawigację.
 - wersja `13.04` — gest przesunięcia kart montaży w lewo odsłania telefon i nawigację, bez zmiany zwykłego dotknięcia i przewijania.
