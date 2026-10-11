@@ -1,3 +1,10 @@
+## 13.13
+- Mobile admin: pola edycji montażu 36px, font 13px, spójne z tworzeniem montażu, wyrównane odstępy i promienie.
+- Mikrofon w górnym wierszu i obok komentarza administratora zastąpione tą samą ikoną wektorową 16px w przycisku 28px bez dużej ramki jak w formularzu dodawania.
+- Data iOS i przycisk Wyczyść w jednym rzędzie; na niższych iPhone'ach oszczędniejsze pionowe odstępy i komentarz 94px, by formularz z zapisem mieścił się bez przewijania.
+- Zachowano edycję NIP/telefonu, rozwijanie długiej nazwy, datę iOS, zapis, dyktowanie, pole komentarza i role.
+- Playwright mierzy geometrię, czcionkę, widoczność, klikalność obu mikrofonów i nieprzesłonięty zapis.
+
 ## 13.12
 - Mobile: mikrofon nowego montażu/nowego klienta 28 × 28 px, neutralna ikona wektorowa 16 px bez dużego tła i obramowania.
 - Oszczędność pionowego miejsca nad komentarzem i przy zapisie, bez skracania obszaru tekstowego.
