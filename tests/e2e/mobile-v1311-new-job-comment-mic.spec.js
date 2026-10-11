@@ -22,6 +22,7 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
       await expect(mic).toBeVisible();
       await expect(mic).toBeEnabled();
       await expect(comment).toBeVisible();
+      await expect(modal.getByRole('button', { name: /Zapisz zlecenie|Dodaj klienta/ })).toBeEnabled();
       const geometry = await modal.evaluate(el => {
         const rect = (selector) => el.querySelector(selector).getBoundingClientRect();
         const title = rect('.workerNewClientCommentLabelRow > span');
