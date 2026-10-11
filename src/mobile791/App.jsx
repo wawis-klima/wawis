@@ -1365,13 +1365,17 @@ export default function App() {
     // A summary card does not necessarily carry the devices/photos required by
     // the existing serial-only editor. Load details before opening that editor.
     try {
-      const resolved = job.detailsLoaded
-        ? job
-        : await reloadJobDetails(String(job.id), { background: true });
-      if (!resolved) {
-        window.alert("Nie udało się pobrać szczegółów montażu. Otwórz kartę i spróbuj ponownie.");
-        return;
-      }
+      // reloadJobDetails may resolve before React applies its setJobs updater,
+      // so its returned mergedJob is not guaranteed to exist. Load the record
+      // directly here and pass the resolved object to the existing editor.
+      const resolved = job.detailsLoaded ? job : mergeJobDetailsForMobile(job, await loadJobDetailsData({
+        supabase,
+        jobId: String(job.id),
+        team: profiles,
+        getSignedPhotoUrl,
+        supabaseUrl,
+        deferThumbnailSigning: true,
+      }));
       openSerialNumbersJob(resolved);
     } catch {
       window.alert("Nie udało się pobrać urządzeń i tabliczek. Spróbuj ponownie z karty montażu.");
