@@ -1,3 +1,8 @@
+## 13.04
+- Mobilna lista montaży: przeciągnięcie karty w lewo odsłania „Zadzwoń” i „Nawiguj”, w prawo chowa akcje.
+- Bez zmiany statusu, zapisu zlecenia ani uprawnień; brak danych kontaktowych wyłącza daną akcję. Zwykły tap, pionowy scroll, karty z długimi nazwami i desktop pozostają bez zmian.
+- Test Playwright iPhone dla administratora/pracownika, klikalności odsłoniętych akcji, przewijania, szerokości ekranu i braku mutacji danych.
+
 ## 13.03
 - Mobilny administrator / Edytuj montaż: osobny mikrofon w nagłówku komentarza, sesja nagrywania z jawnym zakończeniem i dopisaniem transkrypcji do istniejącego tekstu.
 - Komentarz 108 px na standardowym iPhonie (było 104 px); na ekranach niższych niż 781 px zachowana wysokość 104 px i przewijanie. Pełna szerokość pola bez zwężania.

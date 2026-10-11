@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.03
+- 13.04
+
+WAWIS 13.04: mobilne karty montaży przesuwane w lewo odsłaniają „Zadzwoń” i „Nawiguj”, jeżeli dostępne są telefon i adres. Przesunięcie w prawo chowa akcje, pionowe przewijanie działa jak dotychczas, a zwykłe tapnięcie rozwija szczegóły. Brak operacji na danych/statusach, bez zmian desktopu, Supabase, ról, OCR i protokołów. Wprowadzono testy E2E dla obu ról.
 
 WAWIS 13.03: mobilna edycja administratora — mikrofon obok nagłówka „Komentarz administratora” uruchamia sesję dyktowania i dopisuje nowy tekst do istniejącego. Pole komentarza zwiększono z 104 do 108 px na standardowym iPhonie; na krótszych ekranach pozostaje 104 px z bezpiecznym przewijaniem. Pracownik, nowy montaż, desktop oraz reszta formularza bez zmian.
 
