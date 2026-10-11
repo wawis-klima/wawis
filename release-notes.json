@@ -1,10 +1,10 @@
 {
-  "version": "13.11",
-  "summary": "Mikrofon obok komentarza w formularzu nowego montażu",
+  "version": "13.14",
+  "summary": "Czytelniejsza mobilna edycja montażu administratora",
   "changes": [
-    "Niewielka ikona mikrofonu obok nagłówka Komentarz w mobilnym formularzu.",
-    "Można dyktować komentarz: Zakończ nagrywanie dodaje rozpoznane słowa do istniejącej treści.",
-    "Bez zwężenia pola, z zachowaniem Wyczyść i poprawnych zapisów.",
-    "Testy E2E iPhone dla obu ról, nagrywania, anulowania i transkrypcji."
+    "Usunięto zbędne Wyczyść przy dacie i Wyczyść komentarz obok mikrofonu w edycji administratora.",
+    "Zwiększono odstępy między polami oraz wysokość komentarza na wyższych ekranach.",
+    "Zachowano edycję daty w iOS, dyktowanie komentarza, zapis i role.",
+    "Test E2E: brak resetów, geometria formularza i nadal aktywne pole daty."
   ]
 }

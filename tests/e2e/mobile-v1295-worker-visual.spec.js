@@ -225,7 +225,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactRow.pairTop).toBeLessThanOrEqual(2);
     expect(compactRow.pairGap).toBeGreaterThanOrEqual(7);
     expect(compactRow.pairGap).toBeLessThanOrEqual(11);
-    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(92);
+    expect(compactRow.noteHeight).toBeGreaterThanOrEqual(94);
     // 13.03: microphone lives in the administrator-note heading; textarea stays full width.
     const adminNoteMic = modal.getByRole('button', { name:'Nagraj głosowo: Komentarz administratora' });
     await expect(adminNoteMic).toBeVisible();
@@ -235,15 +235,14 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     const noteMicBox = await adminNoteMic.boundingBox();
     const noteFieldBox = await modal.locator('.adminNoteTextareaCompact').boundingBox();
     const noteParentBox = await modal.locator('.adminNoteInputBlock').boundingBox();
-    const clearButton = modal.locator('.adminNoteHeaderActionsV1303 .fieldClearBtn');
-    const clearBox = await clearButton.count() ? await clearButton.boundingBox() : null;
+    // 13.14: removed the redundant clear-note action; microphone stays unobstructed.
+    await expect(modal.locator('.adminNoteHeaderActionsV1303 .fieldClearBtn')).toHaveCount(0);
     expect(noteTitleBox, 'Comment heading must render').not.toBeNull();
     expect(noteMicBox, 'Dictation mic must render').not.toBeNull();
     expect(noteFieldBox, 'Comment textarea must render').not.toBeNull();
     expect(noteParentBox, 'Comment block must render').not.toBeNull();
     expect(noteMicBox.height).toBe(28);
     expect(noteMicBox.x).toBeGreaterThanOrEqual(noteTitleBox.x + noteTitleBox.width);
-    if (clearBox) expect(noteMicBox.x).toBeGreaterThanOrEqual(clearBox.x + clearBox.width);
     expect(Math.abs(noteFieldBox.width-noteParentBox.width)).toBeLessThanOrEqual(2);
     await adminNoteMic.click();
     const recordingDialog = page.getByRole('dialog', { name:'Nagrywanie: Komentarz administratora' });
@@ -316,9 +315,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(geometry.overflow).toBeLessThanOrEqual(2);
     await nativeDate.fill('2026-10-16');
     await expect(dateText).toContainText(/16 paź/i);
-    await modal.locator('.installationDateClearBtn').click();
-    await expect(nativeDate).toHaveValue('');
-    await expect(dateText).toHaveText('Wybierz datę');
+    await expect(modal.locator('.installationDateClearBtn')).toHaveCount(0);
+    await expect(nativeDate).toHaveValue('2026-10-16');
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
   });
 });

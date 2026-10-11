@@ -1,3 +1,8 @@
+## 13.14
+- Mobile administrator / Edytuj montaż: usunięto dwa zbędne przyciski czyszczenia daty i komentarza. Bez kasowania istniejących danych.
+- Pole komentarza wyższe na dużych iPhone'ach (124 px), zwiększone odstępy pól (7 px); niższe ekrany zachowują kompaktowy układ i dostęp do Zapisz zmiany.
+- Mikrofon, edytowalna data iOS, zapis i role pozostają bez zmian. Rozszerzono test E2E administratora o brak obu przycisków.
+
 ## 13.13
 - Mobile admin: pola edycji montażu 36px, font 13px, spójne z tworzeniem montażu, wyrównane odstępy i promienie.
 - Mikrofon w górnym wierszu i obok komentarza administratora zastąpione tą samą ikoną wektorową 16px w przycisku 28px bez dużej ramki jak w formularzu dodawania.
