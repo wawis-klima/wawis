@@ -872,7 +872,7 @@ export default function JobFormModal({
             style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%', minWidth: 0 }}
           >
             <span style={{ margin: 0 }}>Data montażu</span>
-            {jobForm.installation_date ? (
+            {(!editingJobId || !isAdmin) && jobForm.installation_date ? (
               <button
                 type="button"
                 className="fieldClearBtn installationDateClearBtn"
@@ -917,16 +917,6 @@ export default function JobFormModal({
               >
                 <span style={{ margin: 0 }}>Komentarz administratora</span>
                 <div className="adminNoteHeaderActionsV1303">
-                  {jobForm.admin_note ? (
-                    <button
-                      type="button"
-                      className="fieldClearBtn"
-                      style={{ flex: '0 0 auto', alignSelf: 'center', whiteSpace: 'nowrap' }}
-                      onClick={() => updateField("admin_note", "")}
-                    >
-                      Wyczyść komentarz
-                    </button>
-                  ) : null}
                   <VoiceNoteButton
                     label="Komentarz administratora"
                     onValue={(value) => setJobForm((prev) => ({ ...prev, admin_note: appendVoiceNoteText(prev.admin_note, value) }))}
@@ -935,9 +925,9 @@ export default function JobFormModal({
                 </div>
               </div>
               <textarea
-                rows={2}
+                rows={4}
                 className="input textarea textareaNoTop adminNoteTextareaCompact"
-                style={{ width: '100%', minWidth: 0, height: 68, minHeight: 68, maxHeight: 108, marginTop: 8, resize: 'vertical', boxSizing: 'border-box' }}
+                style={{ width: '100%', minWidth: 0, height: 120, minHeight: 94, maxHeight: 180, marginTop: 8, resize: 'vertical', boxSizing: 'border-box' }}
                 placeholder="Komentarz administratora"
                 value={jobForm.admin_note}
                 onChange={(e) => updateField("admin_note", e.target.value)}
