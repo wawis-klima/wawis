@@ -668,12 +668,13 @@ export default function App() {
             if (!isSessionTokenCurrent(sessionToken)) return null;
 
             const cleanDetails = { ...details, detailsLoadError: '' };
-            let mergedJob = null;
-            setJobs((prev) => prev.map((job) => {
-              if (String(job.id) !== targetId) return job;
-              mergedJob = mergeJobDetailsForMobile(job, cleanDetails);
-              return mergedJob;
-            }));
+            // Return the loaded job deterministically. React may execute a
+            // functional state updater later; a value assigned inside setJobs
+            // is not reliable for quick actions awaiting this request.
+            const mergedJob = mergeJobDetailsForMobile(targetJob, cleanDetails);
+            setJobs((prev) => prev.map((job) => (
+              String(job.id) === targetId ? mergeJobDetailsForMobile(job, cleanDetails) : job
+            )));
             setSelectedJob((prev) => (prev && String(prev.id) === targetId ? mergeJobDetailsForMobile(prev, cleanDetails) : prev));
 
             // Szczegóły są gotowe od razu, a podpisy miniatur robią się dopiero
