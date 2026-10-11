@@ -31,7 +31,15 @@ export default function SwipeableJobCard({ job, open, onOpen, onClose, children 
     const g = gesture.current;
     if (!g || g.id !== e.pointerId) return;
     gesture.current = null;
-    if (!g.horizontal) return;
+    if (!g.horizontal) {
+      // Natural touch scroll is cancelled by the browser; mouse-driven
+      // vertical drags must not accidentally expand a job either.
+      if (g.vertical) {
+        suppressClick.current = true;
+        window.setTimeout(() => { suppressClick.current = false; }, 400);
+      }
+      return;
+    }
     const dx = e.clientX - g.x;
     const shouldOpen = Math.abs(dx) >= 38 ? dx < 0 : g.start + dx < -WIDTH / 2;
     if (shouldOpen) onOpen(); else onClose();
