@@ -30,6 +30,16 @@ async function openNameplates(page, throughSwipe) {
   return wizard;
 }
 
+async function makeRealUnsavedChange(wizard) {
+  // Empty placeholder rows do not count as dirty; set an actual brand/model
+  // to exercise the persisted unsaved-changes guard rather than a false alert.
+  await wizard.getByRole('button', { name: 'Dalej', exact: true }).click();
+  await expect(wizard.getByText('Tryb: Single', { exact: true })).toBeVisible();
+  await wizard.locator('.mobileDeviceWizardSelection').first().click();
+  await wizard.locator('.mobileDevicePickerOverlay').getByRole('button', { name: 'LG', exact: true }).click();
+  await expect(wizard.locator('.mobileDeviceWizardSelectionText').first()).toContainText('LG');
+}
+
 async function assertConfirmAboveWizard(page) {
   const confirm = page.locator('.appModalOverlay.confirmDeleteOverlay');
   await expect(confirm.getByRole('heading', { name: 'Zamknąć bez zapisu?' })).toBeVisible();
@@ -49,6 +59,7 @@ test.describe('@mobile WAWIS 13.06 zamykanie kreatora tabliczek', () => {
     const wizard = await openNameplates(page, true);
     await wizard.getByRole('button', { name: 'Dodaj kolejne urządzenie' }).click();
     await expect(wizard.getByRole('heading', { name: 'Dodaj urządzenie' })).toBeVisible();
+    await makeRealUnsavedChange(wizard);
 
     await wizard.locator('.mobileDeviceWizardClose').click();
     let confirm = await assertConfirmAboveWizard(page);
@@ -66,7 +77,10 @@ test.describe('@mobile WAWIS 13.06 zamykanie kreatora tabliczek', () => {
     const wizard = await openNameplates(page, false);
     await wizard.getByRole('button', { name: 'Dodaj kolejne urządzenie' }).click();
     await expect(wizard.getByRole('heading', { name: 'Dodaj urządzenie' })).toBeVisible();
+    await makeRealUnsavedChange(wizard);
 
+    await wizard.locator('.mobileDeviceWizardBack').click();
+    await expect(wizard.getByText('Krok 1 z 4')).toBeVisible();
     await wizard.locator('.mobileDeviceWizardBack').click();
     await expect(wizard.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
 
