@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.13
+- 13.14
+
+WAWIS 13.14: w mobilnej edycji montażu administratora usunięto przyciski „Wyczyść” obok daty i „Wyczyść komentarz” obok mikrofonu. Zwiększono odstępy i pole komentarza na wyższych ekranach; mniejsze iPhone’y zachowują dostępny zapis i przewijanie. Wybór daty, dyktowanie i zapis działają bez zmian. Nie zmieniono formularzy pracownika, tworzenia montażu ani desktopu.
+
 
 WAWIS 13.13: formularz mobilnej edycji administratora ma spójne z dodawaniem pola 36 px, czcionkę 13 px, promienie i rytm odstępów. Mikrofony w nagłówku i przy komentarzu mają taki sam szary znak wektorowy 16 px jak nowy montaż, bez ramki. Układ telefon/NIP, długa nazwa, data i zapis zachowane; E2E weryfikuje geometrię, oba mikrofony, dyktowanie i klikalność.
 
