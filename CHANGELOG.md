@@ -1,3 +1,11 @@
+## 13.10
+- Usunięto z list mobilnych montaży przycisk „···” i powiązany dolny panel szybkich działań — duplikował czynności już dostępne gestami.
+- Telefon i Nawigacja nadal pod przesunięciem w lewo; Tabliczki i Protokół pod przesunięciem w prawo.
+- Usunięto 32-pikselową rezerwę szerokości na przycisk w górnym wierszu karty; nazwy i daty korzystają z odzyskanego miejsca.
+- Zachowano płynne rozwijanie/zamykanie całych szczegółów z 13.09 i animacje sekcji.
+- Playwright iPhone dla administratora i pracownika: brak menu i duplikatu, oba gesty, prawa, otwarcie tabliczek i animowane szczegóły.
+- Bez zmian baz danych, OCR, PDF, SMS, PUSH i desktopu.
+
 ## 13.09
 - Naprawiono główny problem widoczny na filmie z iPhone'a: po dotknięciu karty montażu całe szczegóły pod kartą były montowane od razu i znikały natychmiast przy zamykaniu.
 - Szczegóły karty teraz otwierają i zamykają się animacją wysokości 0,52 s oraz przesunięciem i zanikiem. Zamykanie pozostawia zawartość na 590 ms tylko na czas przejścia, bez opóźniania stanu danych.

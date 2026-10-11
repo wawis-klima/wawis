@@ -90,21 +90,23 @@ assert(pushFlow.interaction_flows.includes('job-completion-push'));
 assert(pushFlow.groups.includes('push') && pushFlow.groups.includes('jobs'));
 assert(pushFlow.e2e.includes('mobile'));
 
-// WAWIS 13.07: UI quick actions are linked to device, protocol and roles.
-// A mere CSS change must still trigger the true mobile consumer E2E.
-const quickSheetCode = classifyEffectiveFiles(['src/mobile791/components/jobs/MobileQuickActionsSheet.jsx']);
-assert(quickSheetCode.interaction_flows.includes('mobile-job-sheet-collapse'));
+// WAWIS 13.10: no duplicate quick-action sheet. Swipe and full-card motion
+// remain a cross-module seam, including nameplates, protocol and permissions.
+const jobCardCode = classifyEffectiveFiles(['src/mobile791/components/jobs/MobileJobsLayout.jsx']);
+assert(jobCardCode.interaction_flows.includes('mobile-job-swipe-collapse'));
 for (const group of ['jobs', 'photos', 'nameplates', 'protocol', 'roles', 'mobile']) {
-  assert(quickSheetCode.groups.includes(group), 'Missing quick-sheet regression group: ' + group);
+  assert(jobCardCode.groups.includes(group), 'Missing job-card regression group: ' + group);
 }
-assert.deepEqual(quickSheetCode.e2e, ['mobile']);
-const quickSheetCss = classifyEffectiveFiles(['src/mobile791/components/jobs/mobile-interactions-v1307.css']);
-assert.deepEqual(quickSheetCss.visual_surfaces, ['mobile']);
-assert(quickSheetCss.interaction_flows.includes('mobile-job-sheet-collapse'));
-assert(quickSheetCss.needs_playwright);
-assert.equal(classifyMicroUi({ impact: { ...quickSheetCss, effective_files: ['src/mobile791/components/jobs/mobile-interactions-v1307.css'] } }).micro_ui, false);
-const quickSheetUnrelated = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
-assert(!quickSheetUnrelated.interaction_flows.includes('mobile-job-sheet-collapse'));
+assert.deepEqual(jobCardCode.e2e, ['mobile']);
+const inlineMotion = classifyEffectiveFiles(['src/mobile791/components/jobs/InlineJobDetailsMotion.jsx']);
+assert(inlineMotion.interaction_flows.includes('mobile-job-swipe-collapse'));
+const jobCardCss = classifyEffectiveFiles(['src/mobile791/components/jobs/mobile-interactions-v1307.css']);
+assert.deepEqual(jobCardCss.visual_surfaces, ['mobile']);
+assert(jobCardCss.interaction_flows.includes('mobile-job-swipe-collapse'));
+assert(jobCardCss.needs_playwright);
+assert.equal(classifyMicroUi({ impact: { ...jobCardCss, effective_files: ['src/mobile791/components/jobs/mobile-interactions-v1307.css'] } }).micro_ui, false);
+const jobCardUnrelated = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
+assert(!jobCardUnrelated.interaction_flows.includes('mobile-job-swipe-collapse'));
 
 const sidebarCss = classifyEffectiveFiles(['src/mobile791/components/navigation/sidebar.css']);
 assert.equal(sidebarCss.profile, 'targeted');

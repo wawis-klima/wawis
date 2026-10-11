@@ -1,10 +1,10 @@
 {
-  "version": "13.09",
-  "summary": "Płynne rozwijanie i zwijanie całej karty montażu",
+  "version": "13.10",
+  "summary": "Usunięcie zbędnego menu z trzema kropkami na kartach montaży",
   "changes": [
-    "Całe szczegóły klienta pod kartą wysuwają się stopniowo, a nie pojawiają natychmiast.",
-    "Równie płynne zamykanie — szczegóły nie znikają skokowo przy dotknięciu karty lub przycisku Zamknij.",
-    "Zachowane wszystkie poprzednie gesty, panel szybkich akcji, uprawnienia i wewnętrzne sekcje.",
-    "Testy iPhone mierzą oba kierunki ruchu oraz uwzględniają ustawienie Ogranicz ruch."
+    "Z kart montaży znika przycisk „···” i duplikujący funkcje panel.",
+    "Gest w lewo nadal udostępnia Telefon i Nawigację; gest w prawo Tabliczki i Protokół.",
+    "Powiększono dostępną szerokość górnej części karty po usunięciu przycisku.",
+    "Zachowano animowane szczegóły z 13.09 i wszystkie dotychczasowe uprawnienia."
   ]
 }
