@@ -123,6 +123,8 @@
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:20px}
 .appModalOverlay{z-index:9999;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .formOverlay,.previewOverlay,.confirmDeleteOverlay,.mobileRegisterOverlay{z-index:9999 !important;}
+/* v13.06: discard confirmation must sit above the device wizard (which is portaled later in DOM). */
+.appModalOverlay.confirmDeleteOverlay{z-index:15000 !important;}
 .modal{width:min(760px,100%);max-height:90vh;overflow:auto}
 .previewModalSurface{width:auto;max-width:min(96vw,1200px);max-height:96vh;overflow:visible}
 .confirmDeleteModal{max-width:min(560px,100%)}
