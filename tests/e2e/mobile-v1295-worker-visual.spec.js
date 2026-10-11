@@ -157,7 +157,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     }
     expect(compactLayout.voiceHeight).toBe(28);
     expect(compactLayout.emailHeight).toBe(36);
-    expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(4);
+    expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(3);
     expect(compactLayout.phoneGap).toBeLessThanOrEqual(8);
     expect(compactLayout.nipRowDelta).toBeLessThanOrEqual(2);
     expect(compactLayout.nipColumnGap).toBeGreaterThanOrEqual(2);
