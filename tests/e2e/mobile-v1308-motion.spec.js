@@ -57,7 +57,8 @@ test.describe('@mobile WAWIS 13.08 płynność przejścia na iPhonie', () => {
     await card.locator('.mobileJobCardButton').click();
     const toggle = page.getByRole('button', { name: 'Rozwiń komentarz administratora' });
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    const arrow = toggle.locator('.adminNoteToggleChevron');
+    // Stable locator: accessible name changes from Rozwiń to Zwiń on click.
+    const arrow = page.locator('.adminNoteSectionCollapsible .adminNoteToggleChevron').first();
     await expect(arrow).toBeVisible();
     await toggle.click();
     await expect(page.locator('[id^="admin-note-content-"]')).toHaveClass(/isOpen/);
