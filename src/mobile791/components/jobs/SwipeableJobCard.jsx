@@ -12,7 +12,8 @@ export default function SwipeableJobCard({ job, open, onOpen, onClose, children 
   useEffect(() => setOffset(null), [open, job?.id]);
   function pointerDown(e) {
     if (e.pointerType === "mouse" && e.button !== 0) return;
-    if (!e.target.closest(".wawisSwipeForeground")) return;
+    // Allow closing by dragging from the revealed actions too; a plain tap still opens the link.
+    if (!e.target.closest(".wawisSwipeForeground") && !e.target.closest(".wawisSwipeActions")) return;
     gesture.current = { id: e.pointerId, x: e.clientX, y: e.clientY, start: open ? -WIDTH : 0, horizontal: false, vertical: false };
   }
   function pointerMove(e) {

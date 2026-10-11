@@ -62,6 +62,6 @@ test.describe('@mobile 13.04 swipe montaży',()=>{
     await expect(frame).toHaveClass(/isOpen/);
     await expect(frame.getByRole('link')).toHaveCount(0);
     await expect(frame.getByText('Brak tel.')).toBeVisible();
-    await expect(frame.getByText('Brak adresu')).toBeVisible();
+    await expect(frame.locator('.wawisSwipeAction.isDisabled').getByText('Brak adresu')).toBeVisible();
   });
 });
