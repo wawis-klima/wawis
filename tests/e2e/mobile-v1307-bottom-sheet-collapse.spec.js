@@ -12,82 +12,48 @@ async function mountCard(page, user = WORKER, status = 'W trakcie', client = 'Kl
   await expect(card).toBeVisible();
   return card;
 }
-async function openSheet(page, card) {
-  await card.getByRole('button', { name: /Więcej opcji dla/ }).click();
-  const sheet = page.locator('.wawisQuickSheet');
-  await expect(sheet).toBeVisible();
-  // Wait for the 250-ms entrance animation: hit tests and drags must run
-  // against the panel's final position, never a frame outside the viewport.
-  await sheet.evaluate(async (node) => {
-    await Promise.all(node.getAnimations().map((animation) => animation.finished.catch(() => {})));
-  });
-  return sheet;
+
+async function swipe(page, frame, dx) {
+  const bounds = await frame.boundingBox();
+  const x = bounds.x + bounds.width * (dx > 0 ? 0.25 : 0.65);
+  const y = bounds.y + bounds.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + dx, y, { steps: 10 });
+  await page.mouse.up();
 }
 
-test.describe('@mobile WAWIS 13.07 dolny panel i animowane sekcje', () => {
-  test('pracownik: panel ma działające skróty, prawdziwy hit-test i nie rozwija karty automatycznie', async ({ page }) => {
-    const card = await mountCard(page);
-    const sheet = await openSheet(page, card);
-    await expect(page.locator('.mobileInlineJobDetails')).toHaveCount(0);
-    await expect(sheet.getByRole('link', { name: 'Zadzwoń' })).toHaveAttribute('href', /^tel:/);
-    await expect(sheet.getByRole('link', { name: 'Nawigacja' })).toHaveAttribute('href', /google\.com\/maps\/search/);
-    await expect(sheet.getByRole('button', { name: 'Tabliczki' })).toBeEnabled();
-    await expect(sheet.getByRole('button', { name: 'Protokół' })).toBeEnabled();
-    const geometry = await sheet.evaluate((el) => {
-      const button = el.querySelector('.wawisQuickSheetTile:not(:disabled)');
-      const rect = button.getBoundingClientRect();
-      return {
-        hit: el.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
-        bottom: Math.round(el.getBoundingClientRect().bottom),
-        viewport: window.innerHeight,
-        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      };
-    });
-    expect(geometry.hit).toBe(true);
-    expect(Math.abs(geometry.bottom - geometry.viewport)).toBeLessThanOrEqual(2);
-    expect(geometry.overflow).toBeLessThanOrEqual(2);
-    await sheet.getByRole('button', { name: /Pokaż szczegóły montażu/ }).click();
-    await expect(sheet).toHaveCount(0);
-    await expect(page.locator('.mobileInlineJobDetails')).toBeVisible();
+test.describe('@mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje', () => {
+  test('na obu rolach nie ma trzech kropek ani dolnego panelu; karta ma całą powierzchnię klikalną', async ({ page }) => {
+    for (const user of [WORKER, ADMIN]) {
+      const card = await mountCard(page, user);
+      await expect(card.locator('.wawisQuickMenuTrigger')).toHaveCount(0);
+      await expect(page.locator('.wawisQuickSheet')).toHaveCount(0);
+      const top = card.locator('.mobileJobTop');
+      const rightInset = await top.evaluate(el => getComputedStyle(el).paddingRight);
+      expect(rightInset).not.toBe('32px');
+      await card.locator('.mobileJobCardButton').click();
+      await expect(page.locator('.mobileInlineJobDetails')).toBeVisible();
+      await card.locator('.mobileJobCardButton').click();
+      await expect(page.locator('.wawisInlineJobMotion.isOpen')).toHaveCount(0);
+      await expect(page.locator('.mobileInlineJobDetails')).toHaveCount(0);
+    }
   });
 
-  test('panel zamyka się przyciskiem, tapnięciem tła i pociągnięciem uchwytu w dół', async ({ page }) => {
+  test('zachowane przesunięcia w obu kierunkach i uprawnienia dla urządzeń/protokołu', async ({ page }) => {
     const card = await mountCard(page);
-    let sheet = await openSheet(page, card);
-    await sheet.getByRole('button', { name: 'Zamknij szybkie działania' }).click();
-    await expect(sheet).toHaveCount(0);
-    sheet = await openSheet(page, card);
-    await page.locator('.wawisQuickSheetOverlay').click({ position: { x: 5, y: 5 } });
-    await expect(sheet).toHaveCount(0);
-    sheet = await openSheet(page, card);
-    const handle = sheet.locator('.wawisQuickSheetHandleArea');
-    const bounds = await handle.boundingBox();
-    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 12);
-    await page.mouse.down();
-    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 130, { steps: 8 });
-    await page.mouse.up();
-    await expect(sheet).toHaveCount(0);
-    await card.locator('.mobileJobCardButton').click();
-    await expect(page.locator('.mobileInlineJobDetails')).toBeVisible();
-  });
-
-  test('obie role: zablokowane działania pozostają wyłączone również w dolnym panelu', async ({ page }) => {
-    const adminCard = await mountCard(page, ADMIN);
-    let sheet = await openSheet(page, adminCard);
-    await expect(sheet.getByRole('button', { name: 'Tabliczki' })).toBeEnabled();
-    await expect(sheet.getByRole('button', { name: 'Protokół' })).toBeDisabled();
-    await sheet.getByRole('button', { name: 'Zamknij szybkie działania' }).click();
-    const workerDone = await mountCard(page, WORKER, 'Zakończone', 'Klient Testowy C Zakończony');
-    sheet = await openSheet(page, workerDone);
-    await expect(sheet.getByRole('button', { name: 'Tabliczki' })).toBeDisabled();
-    await expect(sheet.getByRole('button', { name: 'Protokół' })).toBeEnabled();
-  });
-
-  test('Tabliczki z panelu uruchamiają istniejący kreator i jego Zamknij działa', async ({ page }) => {
-    const card = await mountCard(page);
-    const sheet = await openSheet(page, card);
-    await sheet.getByRole('button', { name: 'Tabliczki' }).click();
-    await expect(sheet).toHaveCount(0);
+    const frame = card.locator('xpath=..').locator('xpath=..');
+    await swipe(page, frame, -110);
+    await expect(frame).toHaveClass(/isLeftOpen/);
+    await expect(frame.getByRole('link', { name: 'Zadzwoń do klienta' })).toHaveAttribute('href', /^tel:/);
+    await expect(frame.getByRole('link', { name: 'Nawiguj do klienta' })).toHaveAttribute('href', /google\.com\/maps\/search/);
+    await swipe(page, frame, 115);
+    await expect(frame).not.toHaveClass(/isOpen/);
+    await swipe(page, frame, 108);
+    await expect(frame).toHaveClass(/isRightOpen/);
+    await expect(frame.getByRole('button', { name: 'Otwórz tabliczki montażu' })).toBeEnabled();
+    await expect(frame.getByRole('button', { name: 'Otwórz protokół montażu' })).toBeEnabled();
+    await frame.getByRole('button', { name: 'Otwórz tabliczki montażu' }).click();
     const wizard = page.locator('.mobileDeviceWizardOverlay .mobileDeviceWizard');
     await expect(wizard).toBeVisible({ timeout: 20000 });
     await wizard.locator('.mobileDeviceWizardClose').click();
