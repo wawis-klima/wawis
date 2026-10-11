@@ -73,12 +73,14 @@
     transition-delay: 0s;
   }
   /* Rotate the chevrons so the movement is visible even on empty sections. */
-  .mobileInlineJobDetails .adminNoteToggleChevron {
+  /* Keep WAWIS 11.03 directions, but override its 120ms CSS animation. */
+  .mobileInlineJobDetails .adminNoteToggle .adminNoteToggleChevron {
     display: inline-block;
-    transition: transform .4s cubic-bezier(.22, .8, .24, 1);
+    transform: rotate(-90deg) !important;
+    transition: transform .4s cubic-bezier(.22, .8, .24, 1) !important;
   }
-  .mobileInlineJobDetails [aria-expanded="true"] > .adminNoteToggleChevron {
-    transform: rotate(180deg);
+  .mobileInlineJobDetails .adminNoteToggle[aria-expanded="true"] .adminNoteToggleChevron {
+    transform: rotate(0deg) !important;
   }
   .mobileInlineJobDetails .jobDevicesTableV888 .jobDeviceDocumentationToggle::after {
     transition: transform .4s cubic-bezier(.22, .8, .24, 1) !important;
