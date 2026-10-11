@@ -9,6 +9,7 @@ import SwipeableJobCard from "./SwipeableJobCard.jsx";
 import "./swipeable-job-card.css";
 import "./mobile-interactions-v1307.css";
 import MobileQuickActionsSheet from "./MobileQuickActionsSheet.jsx";
+import InlineJobDetailsMotion from "./InlineJobDetailsMotion.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
 const MobileDiagnosticsPanel = React.lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
@@ -75,6 +76,26 @@ export default function MobileJobsLayout({
   const filterInputRef = useRef(null);
   const jobCardRefs = useRef(new Map());
   const pendingScrollJobIdRef = useRef("");
+  // Remember the previous inline details tree while the exit animation runs.
+  // Without this, setSelectedJob(null) unmounts the panel immediately.
+  const lastInlineDetailsRef = useRef(null);
+  const [, forceExitCleanup] = useState(0);
+  const selectedJobId = String(selectedJob?.id || "");
+  if (selectedJobId && inlineDetailsPanel) {
+    lastInlineDetailsRef.current = { id: selectedJobId, panel: inlineDetailsPanel };
+  }
+
+  useEffect(() => {
+    if (selectedJobId || !lastInlineDetailsRef.current) return undefined;
+    const closingId = lastInlineDetailsRef.current.id;
+    const timer = window.setTimeout(() => {
+      if (lastInlineDetailsRef.current?.id === closingId) {
+        lastInlineDetailsRef.current = null;
+        forceExitCleanup((value) => value + 1);
+      }
+    }, 590);
+    return () => window.clearTimeout(timer);
+  }, [selectedJobId]);
 
   useEffect(() => {
     if (query) setFilterOpen(true);
@@ -316,10 +337,12 @@ export default function MobileJobsLayout({
               </div>
               </SwipeableJobCard>
 
-              {isSelected && inlineDetailsPanel ? (
-                <div className="mobileInlineJobDetails" data-inline-job-details={job.id}>
-                  {inlineDetailsPanel}
-                </div>
+              {(isSelected && inlineDetailsPanel) || (!selectedJobId && lastInlineDetailsRef.current?.id === String(job.id)) ? (
+                <InlineJobDetailsMotion open={isSelected && Boolean(inlineDetailsPanel)} jobId={String(job.id)}>
+                  <div className="mobileInlineJobDetails" data-inline-job-details={job.id}>
+                    {isSelected ? inlineDetailsPanel : lastInlineDetailsRef.current?.panel}
+                  </div>
+                </InlineJobDetailsMotion>
               ) : null}
             </React.Fragment>
           );
