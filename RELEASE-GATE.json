@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.11",
+  "version": "13.12",
   "scope": "mobile",
-  "release_branch": "release/v13.11",
+  "release_branch": "release/v13.12",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobile create-job comment mic using existing VoiceNoteButton; no backend changes."
+    "notes": "Mobile new-job comment microphone size and spacing correction, no backend change."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.11.zip"
+    "file_name": "klima-app-v13.12.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.11",
+    "source_branch": "release/v13.12",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "Na iPhonie 13.11: Nowy montaż -> mikrofon przy Komentarzu, dyktowanie, zakończenie nagrania, sprawdzenie dopisanego tekstu."
+    "notes": "iPhone 13.12: Nowy montaż → drobny mikrofon bez ramki przy Komentarzu, kontrola widoczności Zapisz zlecenie i działającego dyktowania."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "VoiceNoteButton beside new-job comment; append-only to worker_comment, no form size change.",
-    "release_ci": "REQUIRED exact PR HEAD green mobile Playwright for both roles, voice transcript, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, versions 13.11 and real iPhone test."
+    "code": "Compact vector mic (16 px) in 28 px button by new-job comment, smaller vertical spacing; VoiceNoteButton still appends text.",
+    "release_ci": "REQUIRED exact PR HEAD green targeted-checks including mobile Playwright, voice dictation, geometry and click target; Closure Gate and build.",
+    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, app-version 13.12 and real iPhone check."
   }
 }
