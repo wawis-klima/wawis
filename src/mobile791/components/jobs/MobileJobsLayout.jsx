@@ -7,6 +7,8 @@ import { getJobDisplayAddress, getJobTypeClass, getJobTypeLabel, getViewerNames,
 import JobsPagination from "./JobsPagination.jsx";
 import SwipeableJobCard from "./SwipeableJobCard.jsx";
 import "./swipeable-job-card.css";
+import "./mobile-interactions-v1307.css";
+import MobileQuickActionsSheet from "./MobileQuickActionsSheet.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
 const MobileDiagnosticsPanel = React.lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
@@ -69,6 +71,7 @@ export default function MobileJobsLayout({
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
   const [filterOpen, setFilterOpen] = useState(Boolean(query));
   const [swipedJob, setSwipedJob] = useState({ id: "", side: "" });
+  const [quickActionsJobId, setQuickActionsJobId] = useState("");
   const filterInputRef = useRef(null);
   const jobCardRefs = useRef(new Map());
   const pendingScrollJobIdRef = useRef("");
@@ -77,7 +80,7 @@ export default function MobileJobsLayout({
     if (query) setFilterOpen(true);
   }, [query]);
 
-  useEffect(() => setSwipedJob({ id: "", side: "" }), [desktopStatusFilter, query, jobsCurrentPage]);
+  useEffect(() => { setSwipedJob({ id: "", side: "" }); setQuickActionsJobId(""); }, [desktopStatusFilter, query, jobsCurrentPage]);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -305,6 +308,11 @@ export default function MobileJobsLayout({
                     <div className={`jobTypeTag jobTypeTagFooter ${getJobTypeClass(job)}`}>{getJobTypeLabel(job)}</div>
                   </div>
                 </button>
+                <button type="button" className="wawisQuickMenuTrigger"
+                  aria-label={`Więcej opcji dla ${String(job.client || job.title || "klienta")}`}
+                  aria-haspopup="dialog" aria-expanded={quickActionsJobId === String(job.id)}
+                  onClick={(event) => { event.stopPropagation(); setSwipedJob({ id: "", side: "" }); setQuickActionsJobId(String(job.id)); }}
+                ><span aria-hidden="true">···</span></button>
               </div>
               </SwipeableJobCard>
 
@@ -317,6 +325,15 @@ export default function MobileJobsLayout({
           );
         })}
       </div>
+
+      <MobileQuickActionsSheet
+        job={jobsPageRows.find((job) => String(job.id) === quickActionsJobId) || null}
+        isAdmin={isAdmin}
+        onClose={() => setQuickActionsJobId("")}
+        onNameplates={onQuickNameplates}
+        onProtocol={onQuickProtocol}
+        onShowDetails={(job) => { pendingScrollJobIdRef.current = String(job.id); setSelectedJob(job); }}
+      />
 
       <JobsPagination
         currentPage={jobsCurrentPage}
