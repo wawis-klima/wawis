@@ -55,6 +55,19 @@ async function assertConfirmAboveWizard(page) {
 }
 
 test.describe('@mobile WAWIS 13.06 zamykanie kreatora tabliczek', () => {
+  test('puste dodawanie: strzałka i Zamknij pozwalają bezpośrednio wyjść bez ukrytego okna', async ({ page }) => {
+    const wizard = await openNameplates(page, true);
+    await wizard.getByRole('button', { name: 'Dodaj kolejne urządzenie' }).click();
+    await expect(wizard.getByRole('heading', { name: 'Dodaj urządzenie' })).toBeVisible();
+    await wizard.locator('.mobileDeviceWizardBack').click();
+    await expect(wizard.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
+    await wizard.getByRole('button', { name: 'Dodaj kolejne urządzenie' }).click();
+    await wizard.locator('.mobileDeviceWizardClose').click();
+    await expect(wizard).toHaveCount(0);
+    await expect(page.locator('.appModalOverlay.confirmDeleteOverlay')).toHaveCount(0);
+  });
+
+
   test('wejście przez gest: Zamknij pokazuje dostępne potwierdzenie niezapisanych danych', async ({ page }) => {
     const wizard = await openNameplates(page, true);
     await wizard.getByRole('button', { name: 'Dodaj kolejne urządzenie' }).click();
