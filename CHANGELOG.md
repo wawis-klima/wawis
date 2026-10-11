@@ -1,3 +1,9 @@
+## 13.05
+- Mobilna lista montaży: przesunięcie w prawo odsłania Tabliczki i Protokół; przesunięcie w lewo nadal daje Zadzwoń i Nawiguj.
+- Tabliczki: istniejący kreator w trybie tabliczek, po pobraniu szczegółów zlecenia; Protokół: istniejący modal dopiero po sprawdzeniu zapisu protokołu.
+- Zachowane blokady ról/statusów (m.in. pracownik nie edytuje zakończonych, administrator nie otwiera protokołu w trakcie), dotknięcie, przewijanie, brak zapisów przy samym geście.
+- Nowe Playwright @mobile: gesty w obu kierunkach, obie role, ukończone zlecenie, uruchamianie prawdziwych okien, hit-test i geometria.
+
 ## 13.04
 - Mobilna lista montaży: przeciągnięcie karty w lewo odsłania „Zadzwoń” i „Nawiguj”, w prawo chowa akcje.
 - Bez zmiany statusu, zapisu zlecenia ani uprawnień; brak danych kontaktowych wyłącza daną akcję. Zwykły tap, pionowy scroll, karty z długimi nazwami i desktop pozostają bez zmian.

@@ -260,6 +260,8 @@ function getPhotoUploadStatusLabel(photo = {}) {
 export default function JobDetailsPanel({
   selectedJob,
   isAdmin,
+  quickProtocolRequest = null,
+  onQuickProtocolRequestHandled = () => {},
   busy,
   profiles,
   formatDate,
@@ -297,6 +299,7 @@ export default function JobDetailsPanel({
   const [protocolMessage, setProtocolMessage] = React.useState("");
   const [protocolBackendAvailable, setProtocolBackendAvailable] = React.useState(true);
   const [protocolReloadKey, setProtocolReloadKey] = React.useState(0);
+  const [protocolCheckedJobId, setProtocolCheckedJobId] = React.useState("");
   const [expandedDeviceIndexes, setExpandedDeviceIndexes] = React.useState([]);
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
@@ -355,6 +358,7 @@ export default function JobDetailsPanel({
   React.useEffect(() => {
     let cancelled = false;
     setProtocolTestOpen(false);
+    setProtocolCheckedJobId("");
     setProtocolRecord(null);
     setProtocolMessage("");
     setProtocolBackendAvailable(true);
@@ -404,6 +408,7 @@ export default function JobDetailsPanel({
       }
 
       if (cancelled) return;
+      setProtocolBackendAvailable(false);
       if (isTransientSupabaseError(lastError)) {
         // Nie pokazujemy użytkownikowi AbortError/timeoutu. Protokół jest funkcją
         // dodatkową, więc po chwilowej awarii zostawiamy bezpieczny przycisk retry.
@@ -413,11 +418,24 @@ export default function JobDetailsPanel({
         setProtocolMessage(lastError?.message || "Nie udało się sprawdzić protokołu.");
       }
     })().finally(() => {
-      if (!cancelled) setProtocolLoading(false);
+      if (!cancelled) {
+        setProtocolCheckedJobId(selectedJobId);
+        setProtocolLoading(false);
+      }
     });
 
     return () => { cancelled = true; };
   }, [protocolReloadKey, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, supabase]);
+
+  React.useEffect(() => {
+    if (!quickProtocolRequest || String(quickProtocolRequest.jobId) !== selectedJobId) return;
+    if (!selectedJobSupportsProtocol || !selectedJob?.detailsLoaded) return;
+    if (protocolCheckedJobId !== selectedJobId || protocolLoading) return;
+    // Same safety gate as the existing action: never show an editable protocol
+    // while its stored record cannot be checked.
+    if (protocolBackendAvailable) setProtocolTestOpen(true);
+    onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
+  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, onQuickProtocolRequestHandled]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;

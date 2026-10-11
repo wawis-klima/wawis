@@ -1,12 +1,16 @@
-/* WAWIS 13.04 — mobilny swipe-to-reveal, pionowy scroll zostaje. */
+/* WAWIS 13.05 — two-sided swipe; original left contact actions preserved. */
 @media(max-width:700px){
   .mobileJobsShellV959 .wawisSwipeFrame{position:relative;overflow:hidden;max-width:100%;border-radius:16px;touch-action:pan-y;isolation:isolate}
-  .mobileJobsShellV959 .wawisSwipeActions{position:absolute;inset:0 0 0 auto;width:144px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:#edf3f9}
-  .mobileJobsShellV959 .wawisSwipeAction{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:48px;padding:6px 2px;color:#16548d;text-decoration:none;font-size:10px;font-weight:700;text-align:center;border-left:1px solid #dce6f1}
+  .mobileJobsShellV959 .wawisSwipeActions{position:absolute;top:0;bottom:0;width:144px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:#edf3f9}
+  .mobileJobsShellV959 .wawisSwipeActions.isLeft{left:0;right:auto}
+  .mobileJobsShellV959 .wawisSwipeActions.isRight{right:0;left:auto}
+  .mobileJobsShellV959 .wawisSwipeAction{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:48px;padding:6px 2px;border:0;border-right:1px solid #dce6f1;border-radius:0;color:#16548d;text-decoration:none;font-size:10px;font-weight:700;text-align:center;cursor:pointer;font-family:inherit}
   .mobileJobsShellV959 .wawisSwipeAction.isPhone{background:#e8f5f1;color:#126749}
   .mobileJobsShellV959 .wawisSwipeAction.isMap{background:#e9f0fc;color:#21568e}
-  .mobileJobsShellV959 .wawisSwipeAction.isDisabled{color:#8491a0;background:#edf0f4}
-  .mobileJobsShellV959 .wawisSwipeAction .inlineIcon{width:20px;height:20px}
+  .mobileJobsShellV959 .wawisSwipeAction.isNameplates{background:#e9f0fc;color:#21568e}
+  .mobileJobsShellV959 .wawisSwipeAction.isProtocol{background:#eef1ff;color:#51449a}
+  .mobileJobsShellV959 .wawisSwipeAction.isDisabled,.mobileJobsShellV959 .wawisSwipeAction:disabled{color:#8491a0;background:#edf0f4;cursor:not-allowed}
+  .mobileJobsShellV959 .wawisSwipeAction .inlineIcon{width:20px;height:20px;flex:none}
   .mobileJobsShellV959 .wawisSwipeAction:focus-visible{outline:2px solid #1d4ed8;outline-offset:-3px}
   .mobileJobsShellV959 .wawisSwipeForeground{position:relative;z-index:1;width:100%;transition:transform 180ms ease-out}
   .mobileJobsShellV959 .wawisSwipeFrame.isDragging .wawisSwipeForeground{transition:none}
