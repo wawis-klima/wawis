@@ -15,7 +15,7 @@ export default function SmoothCollapse({ open, id, children, keepMounted = false
     } else {
       setExpanded(false);
       if (keepMounted) setMounted(true);
-      else timer = window.setTimeout(() => setMounted(false), 310);
+      else timer = window.setTimeout(() => setMounted(false), 490);
     }
     return () => {
       if (frame) window.cancelAnimationFrame(frame);
