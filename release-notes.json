@@ -1,10 +1,10 @@
 {
-  "version": "13.10",
-  "summary": "Usunięcie zbędnego menu z trzema kropkami na kartach montaży",
+  "version": "13.11",
+  "summary": "Mikrofon obok komentarza w formularzu nowego montażu",
   "changes": [
-    "Z kart montaży znika przycisk „···” i duplikujący funkcje panel.",
-    "Gest w lewo nadal udostępnia Telefon i Nawigację; gest w prawo Tabliczki i Protokół.",
-    "Powiększono dostępną szerokość górnej części karty po usunięciu przycisku.",
-    "Zachowano animowane szczegóły z 13.09 i wszystkie dotychczasowe uprawnienia."
+    "Niewielka ikona mikrofonu obok nagłówka Komentarz w mobilnym formularzu.",
+    "Można dyktować komentarz: Zakończ nagrywanie dodaje rozpoznane słowa do istniejącej treści.",
+    "Bez zwężenia pola, z zachowaniem Wyczyść i poprawnych zapisów.",
+    "Testy E2E iPhone dla obu ról, nagrywania, anulowania i transkrypcji."
   ]
 }

@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.10
+- 13.11
+
+WAWIS 13.11: w mobilnym formularzu nowego montażu/nowego klienta przy „Komentarz” jest mały mikrofon. Działa identycznie jak dyktowanie komentarza administratora: podgląd nagrania, Zakończ nagrywanie, anulowanie i automatyczne dopisanie tekstu do zwykłego komentarza. Nie ogranicza miejsca w polu i działa dla obu ról.
 
 WAWIS 13.10: usunięto zdublowany przycisk „···” z mobilnych kart montaży oraz powiązany panel szybkich działań. Telefon i nawigacja pozostają pod gestem w lewo, a Tabliczki i Protokół pod gestem w prawo. Rozwijanie szczegółów na dotknięcie karty pozostaje płynne jak w 13.09. Bez zmian Supabase, OCR, PDF, ról i desktopu.
 
@@ -987,6 +989,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.11` — mikrofon obok nagłówka Komentarz nowego montażu; testy dyktowania i układu iPhone.
 - wersja `13.10` — usunięto zbędne trzy kropki i wysuwany panel, zachowano gesty oraz animowane szczegóły montażu.
 - wersja `13.09` — rzeczywiście płynne otwieranie i zamykanie pełnych szczegółów klienta na liście montaży, naprawa natychmiastowego odmontowania; test iPhone z pomiarem ruchu.
 - wersja `13.08` — wyraźnie płynniejsze otwieranie/zamykanie sekcji na iPhonie, obracane strzałki i testy czasu animacji; bez zmian funkcji.
