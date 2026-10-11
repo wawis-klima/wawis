@@ -1,10 +1,10 @@
 {
-  "version": "13.08",
-  "summary": "Wyraźniej płynne rozwijanie i zwijanie sekcji mobilnych",
+  "version": "13.09",
+  "summary": "Płynne rozwijanie i zwijanie całej karty montażu",
   "changes": [
-    "Urządzenia, zdjęcia, monterzy i komentarze rozwijają się oraz zwijają przez około 0,44 sekundy.",
-    "Zawartość delikatnie przesuwa się i pojawia, a strzałki sekcji obracają się, również gdy sekcja jest pusta.",
-    "Wolniejsze, czytelniejsze pojawianie się szczegółów karty; szybkie reakcje przycisków i dotychczasowe gesty bez zmian.",
-    "Respektuje iOS Ogranicz ruch; testy iPhone oraz pełna regresja uprawnień, protokołów i urządzeń."
+    "Całe szczegóły klienta pod kartą wysuwają się stopniowo, a nie pojawiają natychmiast.",
+    "Równie płynne zamykanie — szczegóły nie znikają skokowo przy dotknięciu karty lub przycisku Zamknij.",
+    "Zachowane wszystkie poprzednie gesty, panel szybkich akcji, uprawnienia i wewnętrzne sekcje.",
+    "Testy iPhone mierzą oba kierunki ruchu oraz uwzględniają ustawienie Ogranicz ruch."
   ]
 }

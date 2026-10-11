@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.08",
+  "version": "13.09",
   "scope": "mobile",
-  "release_branch": "release/v13.08",
+  "release_branch": "release/v13.09",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobile UI animation-only refinement; informational diagnostics."
+    "notes": "Full-card motion only; no data or backend change."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.08.zip"
+    "file_name": "klima-app-v13.09.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.08",
+    "source_branch": "release/v13.09",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub PR exact SHA, Vercel READY, iPhone spot check",
-    "notes": "Na iPhonie: płynna animacja w obie strony w Urządzeniach, Zdjęciach, Komentarzach; rotacja strzałek i nadal działające Tabliczki/Wstecz/Zamknij; wersja 13.08."
+    "evidence_source": "GitHub PR exact SHA, Vercel READY and physical iPhone",
+    "notes": "Na liście Zakończone tapnij kartę, obserwuj 0.52s wzrost wysokości i analogiczne zwijanie; sprawdź Wstecz/Zamknij, swipe i v13.09."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile 0.44s section transitions, inner slide/opacity and toggle chevron rotation; previous controls unchanged.",
-    "release_ci": "REQUIRED exact PR HEAD green mobile Playwright, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, app-version.json 13.08, physical iPhone motion spot-check."
+    "code": "Mobile entire installation detail panel now animates opening and closing; last JSX retained during exit.",
+    "release_ci": "REQUIRED exact PR HEAD green Playwright mobile including measured card open/close, Closure Gate and production build.",
+    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, app-version.json 13.09, physical iPhone spot check."
   }
 }

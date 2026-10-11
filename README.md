@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.08
+- 13.09
+
+WAWIS 13.09: płynne rozwijanie **całych szczegółów montażu pod kartą klienta na liście**, a nie tylko sekcji wewnętrznych. Dodano dwukierunkową animację wysokości (0,52 s), lekkie przesunięcie i stopniowe pojawianie/zamykanie. Zamknięcie karty nie odmontowuje już natychmiast szczegółów, lecz kończy animację przed usunięciem z DOM. Zachowano gesty, przyciski, prawa, urządzenia, OCR i protokoły oraz obsługę iOS „Ogranicz ruch”.
 
 WAWIS 13.08: wyraźniej płynne rozwijanie i zwijanie mobilnych sekcji montażu. Czas zmiany wysokości wydłużony z 0,26 do 0,44 sekundy, dodano delikatne przesunięcie i zanikanie zawartości oraz obrót strzałek. Karty montażu mają spokojniejsze wejście. Nie zmieniono logiki montaży, gestów kart, uprawnień, formularza urządzeń, OCR ani PDF; ustawienie iOS „Ogranicz ruch” nadal respektowane.
 
@@ -983,6 +985,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.09` — rzeczywiście płynne otwieranie i zamykanie pełnych szczegółów klienta na liście montaży, naprawa natychmiastowego odmontowania; test iPhone z pomiarem ruchu.
 - wersja `13.08` — wyraźnie płynniejsze otwieranie/zamykanie sekcji na iPhonie, obracane strzałki i testy czasu animacji; bez zmian funkcji.
 - wersja `13.07` — mobilny panel szybkich działań z dołu oraz płynne rozwijanie sekcji z kontrolą ról i regresjami gestów.
 - wersja `13.06` — naprawiono niewidoczne potwierdzenie zamknięcia kreatora urządzeń i tabliczek na telefonie; regresje iPhone dla obu ścieżek wejścia.

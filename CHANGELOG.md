@@ -1,3 +1,10 @@
+## 13.09
+- Naprawiono główny problem widoczny na filmie z iPhone'a: po dotknięciu karty montażu całe szczegóły pod kartą były montowane od razu i znikały natychmiast przy zamykaniu.
+- Szczegóły karty teraz otwierają i zamykają się animacją wysokości 0,52 s oraz przesunięciem i zanikiem. Zamykanie pozostawia zawartość na 590 ms tylko na czas przejścia, bez opóźniania stanu danych.
+- Obsługiwane są zarówno kliknięcie karty, jak i zamknięcie ze szczegółów; usunięty problem jednokierunkowej animacji z 13.08.
+- Playwright iPhone sprawdza faktyczne pośrednie wysokości przy otwieraniu/zamykaniu, zamknięcie po ponownym dotknięciu, brak utraty uprawnień i „Ogranicz ruch”.
+- Bez zmian działania panelu szybkich akcji, gestów, Supabase, urządzeń, OCR, protokołu PDF, ról i desktopu.
+
 ## 13.08
 - Na iPhonie rozwijanie i zwijanie urządzeń, zdjęć, komentarzy, monterów i notatek trwa około 0,44 s zamiast 0,26 s i pokazuje subtelne przesunięcie zawartości, zanikanie oraz obrót strzałki.
 - Dłuższy czas utrzymania zawartości podczas zwijania jest zgodny z animacją, aby ukrycie w DOM nie urywało przejścia.
