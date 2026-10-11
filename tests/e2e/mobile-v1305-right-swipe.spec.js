@@ -23,7 +23,85 @@ async function card(page, user = WORKER, status = 'W trakcie', name = 'Klient Te
   return jobCard.locator('xpath=..').locator('xpath=..');
 }
 
+
+async function changeWizardBrand(wizard) {
+  // Change persisted device data, not only transient wizard navigation state.
+  if (await wizard.locator('.mobileDeviceOverviewOpen').count()) {
+    await wizard.locator('.mobileDeviceOverviewOpen').first().click();
+  }
+  if (await wizard.getByRole('heading', { name: 'Dodaj urządzenie', exact: true }).count()
+    && await wizard.getByRole('button', { name: 'Dalej', exact: true }).count()) {
+    await wizard.getByRole('button', { name: 'Single', exact: false }).click();
+    await wizard.getByRole('button', { name: 'Dalej', exact: true }).click();
+  }
+  if (await wizard.locator('.mobileMultiOutdoorCard').count()) {
+    await wizard.locator('.mobileMultiOutdoorCard').click();
+  }
+  await wizard.locator('.mobileDeviceWizardSelection').filter({ hasText: 'Marka' }).click();
+  const picker = wizard.locator('.mobileDevicePickerOverlay');
+  await picker.getByRole('button', { name: 'Inna marka', exact: true }).click();
+  await picker.getByPlaceholder('np. AUX').fill('WAWIS-ZAMKNIECIE-TEST');
+  await picker.getByRole('button', { name: 'Zapisz', exact: true }).click();
+  await expect(picker).toHaveCount(0);
+}
+
+async function expectActionableDiscardConfirmation(page) {
+  const confirm = page.locator('.confirmDeleteOverlay');
+  await expect(confirm.getByRole('heading', { name: 'Zamknąć bez zapisu?' })).toBeVisible();
+  const confirmButton = confirm.getByRole('button', { name: 'Zamknij bez zapisu' });
+  await expect(confirmButton).toBeVisible();
+  // Visibility alone misses the original defect: confirmation was behind the wizard.
+  expect(await confirmButton.evaluate((button) => {
+    const rect = button.getBoundingClientRect();
+    const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return hit === button || button.contains(hit);
+  })).toBe(true);
+  return confirm;
+}
+
 test.describe('@mobile WAWIS 13.05 swipe w prawo', () => {
+
+  test('v13.06: po geście Tabliczki -> Zamknij pokazuje klikalne potwierdzenie bez utraty danych', async ({ page }) => {
+    const frame = await card(page);
+    await swipe(page, frame, 108);
+    await frame.getByRole('button', { name: 'Otwórz tabliczki montażu' }).click();
+    const wizard = page.locator('.mobileDeviceWizardOverlay .mobileDeviceWizard');
+    await expect(wizard).toBeVisible();
+    await changeWizardBrand(wizard);
+
+    await wizard.locator('.mobileDeviceWizardClose').click();
+    const confirm = await expectActionableDiscardConfirmation(page);
+    await confirm.getByRole('button', { name: 'Wróć', exact: true }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(wizard).toBeVisible();
+
+    await wizard.locator('.mobileDeviceWizardClose').click();
+    const secondConfirm = await expectActionableDiscardConfirmation(page);
+    await secondConfirm.getByRole('button', { name: 'Zamknij bez zapisu' }).click();
+    await expect(wizard).toHaveCount(0);
+    await expect(page.locator('.mobileDeviceWizardOverlay')).toHaveCount(0);
+  });
+
+  test('v13.06: zwykłe Tabliczki -> strzałka wstecz kończy na dostępnym potwierdzeniu', async ({ page }) => {
+    const frame = await card(page);
+    await frame.locator('.mobileJobCardButton').click();
+    await expect(page.locator('.mobileInlineJobDetails')).toBeVisible();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
+    const wizard = page.locator('.mobileDeviceWizardOverlay .mobileDeviceWizard');
+    await expect(wizard).toBeVisible();
+    await changeWizardBrand(wizard);
+
+    // Walk back through nested steps until the parent form requests confirmation.
+    const confirm = page.locator('.confirmDeleteOverlay');
+    for (let index = 0; index < 5; index += 1) {
+      await wizard.locator('.mobileDeviceWizardBack').click();
+      if (await confirm.count()) break;
+    }
+    const actionable = await expectActionableDiscardConfirmation(page);
+    await actionable.getByRole('button', { name: 'Zamknij bez zapisu' }).click();
+    await expect(wizard).toHaveCount(0);
+  });
+
   test('pracownik: gest odsłania tabliczki i otwiera istniejący kreator bez rozwijania karty', async ({ page }) => {
     const frame = await card(page);
     await swipe(page, frame, 108);
