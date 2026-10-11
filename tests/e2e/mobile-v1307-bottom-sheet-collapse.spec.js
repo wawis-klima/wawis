@@ -89,7 +89,7 @@ test.describe('@mobile WAWIS 13.07 dolny panel i animowane sekcje', () => {
     await expect(wizard).toHaveCount(0);
   });
 
-  test('urządzenia: panel składa się i rozkłada bez odmontowania dokumentacji', async ({ page }) => {
+  test('urządzenia: panel składa się płynnie i odtwarza dokumentację po rozwinięciu', async ({ page }) => {
     const card = await mountCard(page, WORKER, 'W trakcie', 'Klient Testowy Multi-Split');
     await card.locator('.mobileJobCardButton').click();
     const toggle = page.locator('.jobDeviceDocumentationToggle').first();
@@ -105,6 +105,8 @@ test.describe('@mobile WAWIS 13.07 dolny panel i animowane sekcje', () => {
     await toggle.click();
     await expect(target).not.toHaveClass(/isOpen/);
     await expect(target).toHaveAttribute('aria-hidden', 'true');
+    await expect(target.locator('.jobDeviceDocumentationBody')).toHaveCount(0);
+    await toggle.click();
     await expect(target.locator('.jobDeviceDocumentationBody')).toHaveCount(1);
   });
 
