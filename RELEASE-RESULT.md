@@ -1,16 +1,18 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.05
+- 13.07
 
 ## Tryb
-- mobile
+- mobile / standard (JSX + CSS)
 
 ## Zakres
-- Przesunięcie w prawo: Tabliczki i Protokół, wyłącznie kiedy pozwalają na to aktualne uprawnienia i status.
-- Przesunięcie w lewo: istniejące Zadzwoń i Nawiguj bez zmian.
-- Protokół sprawdzany przed wejściem w istniejący modal; tabliczki ładowane w oryginalnym formularzu.
+- Dolny panel szybkich działań uruchamiany przyciskiem „···” na karcie montażu; zamykany krzyżykiem, poza panelem, Escape lub przeciągnięciem uchwytu w dół.
+- Uprawnienia dla Tabliczek i Protokołu bez zmian; telefon i mapa z istniejących danych.
+- Animowane zwijanie i rozwijanie dokumentacji urządzeń, zdjęć, komentarzy, monterów i notatki administratora.
+- Bez zmian Supabase, OCR, protokołów PDF, ról i widoku desktopowego.
 
 ## Weryfikacja
-- Wymagane: zielone CI dokładnego SHA, Playwright mobile, Closure Gate, Vercel READY i sprawdzenie wersji.
-- Fizyczny iPhone pozostaje osobnym testem terenowym.
+- Wymagane przed merge: zielony PR CI z Playwright mobile, pełny Closure Gate i build.
+- Po merge: Vercel READY dokładnego SHA, /app-version.json 13.07 i test na fizycznym iPhonie.
+- Niniejszy plik nie jest dowodem wykonania testów ani deploymentu.
