@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput, { VoiceNoteButton, appendVoiceNoteText } from "../../../components/voice/ClientVoiceInput.jsx";
+import "./new-job-comment-mic-v1311.css";
 import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
 import { lookupCompanyByNip, normalizeGusNip } from "../../modules/gus-bir.js";
 import {
@@ -835,15 +836,25 @@ export default function JobFormModal({
           <div className="inputLabel workerNewClientCommentBlock" style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}>
             <div className="fieldLabelRow workerNewClientCommentLabelRow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%' }}>
               <span style={{ margin: 0 }}>Komentarz</span>
-              {jobForm.worker_comment ? (
-                <button
-                  type="button"
-                  className="fieldClearBtn"
-                  onClick={() => updateField("worker_comment", "")}
-                >
-                  Wyczyść
-                </button>
-              ) : null}
+              <div className="workerNewClientCommentMicActions">
+                {jobForm.worker_comment ? (
+                  <button
+                    type="button"
+                    className="fieldClearBtn"
+                    onClick={() => updateField("worker_comment", "")}
+                  >
+                    Wyczyść
+                  </button>
+                ) : null}
+                <VoiceNoteButton
+                  label="Komentarz do montażu"
+                  onValue={(value) => setJobForm((prev) => ({
+                    ...prev,
+                    worker_comment: appendVoiceNoteText(prev.worker_comment, value),
+                  }))}
+                  disabled={busy}
+                />
+              </div>
             </div>
             <textarea
               rows={3}
