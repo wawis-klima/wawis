@@ -110,9 +110,10 @@ test.describe('@mobile WAWIS 13.07 dolny panel i animowane sekcje', () => {
     await toggle.click();
     await expect(target).not.toHaveClass(/isOpen/);
     await expect(target).toHaveAttribute('aria-hidden', 'true');
-    await expect(target.locator('.jobDeviceDocumentationBody')).toHaveCount(0);
-    await toggle.click();
     await expect(target.locator('.jobDeviceDocumentationBody')).toHaveCount(1);
+    await expect(target.locator('.deviceUnitDocumentationRow').first()).toBeHidden();
+    await toggle.click();
+    await expect(target.locator('.deviceUnitDocumentationRow').first()).toBeVisible();
   });
 
   test('zakończone: zdjęcia, komentarz i monterzy mają dwukierunkową animację', async ({ page }) => {
