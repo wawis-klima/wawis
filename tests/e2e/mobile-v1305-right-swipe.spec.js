@@ -42,8 +42,16 @@ test.describe('@mobile WAWIS 13.05 swipe w prawo', () => {
     });
     expect(geometry.hit).toBe(true);
     expect(geometry.overflow).toBeLessThanOrEqual(2);
+    const quickActionAlerts = [];
+    page.on('dialog', async (dialog) => {
+      quickActionAlerts.push(dialog.message());
+      await dialog.dismiss();
+    });
     await frame.getByRole('button', { name: 'Otwórz tabliczki montażu' }).click();
-    await expect(page.getByRole('heading', { name: 'Zdjęcia tabliczek znamionowych' })).toBeVisible();
+    await expect.poll(async () => {
+      if (await page.getByRole('heading', { name: 'Zdjęcia tabliczek znamionowych' }).isVisible()) return 'opened';
+      return quickActionAlerts.at(-1) || 'waiting-for-modal';
+    }, { timeout: 20000, message: 'Quick nameplates must open the editor without app errors' }).toBe('opened');
     await expect(page.locator('.mobileInlineJobDetails')).toHaveCount(0);
   });
 
