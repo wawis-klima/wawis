@@ -1,16 +1,16 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.05
+- 13.06
 
 ## Tryb
 - mobile
 
 ## Zakres
-- Przesunięcie w prawo: Tabliczki i Protokół, wyłącznie kiedy pozwalają na to aktualne uprawnienia i status.
-- Przesunięcie w lewo: istniejące Zadzwoń i Nawiguj bez zmian.
-- Protokół sprawdzany przed wejściem w istniejący modal; tabliczki ładowane w oryginalnym formularzu.
+- Potwierdzenie odrzucenia edycji urządzeń wyświetlane nad pełnoekranowym kreatorem.
+- „Wstecz” i „Zamknij” prowadzą do dostępnego okna potwierdzenia, bez wpływu na dane ani OCR.
+- Regresja Playwright: wejście przez przesunięcie karty i zwykłe wejście w Tabliczki, powrót oraz potwierdzenie odrzucenia.
 
 ## Weryfikacja
-- Wymagane: zielone CI dokładnego SHA, Playwright mobile, Closure Gate, Vercel READY i sprawdzenie wersji.
-- Fizyczny iPhone pozostaje osobnym testem terenowym.
+- Do potwierdzenia na PR: wymagane zielone CI dokładnego SHA, Playwright mobile, powiązane regresje i build.
+- Wdrożenie: Vercel READY, kontrola /app-version.json (13.06) i fizyczny iPhone — niepotwierdzone w tej gałęzi.
