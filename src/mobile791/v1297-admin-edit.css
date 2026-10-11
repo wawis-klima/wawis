@@ -737,3 +737,45 @@
     margin-top:0!important;
   }
 }
+
+/* WAWIS 13.14 — only administrator's existing-job editor: no redundant clears,
+   more comfortable field rhythm and more room for notes on taller iPhones. */
+@media (max-width:700px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:7px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .installationDateField {
+    grid-template-columns:auto minmax(0,1fr)!important;
+    column-gap:10px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .adminNoteLabelRow {
+    gap:10px!important;
+    margin-bottom:3px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .adminNoteLabelRow > span {
+    flex:1 1 auto!important;
+    min-width:0!important;
+    white-space:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 {
+    flex:0 0 28px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:124px!important;
+    min-height:124px!important;
+    max-height:180px!important;
+    margin-top:6px!important;
+  }
+}
+/* Compact heights keep save visible; the taller screens gain most of the extra space. */
+@media (max-width:700px) and (max-height:860px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:4px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:96px!important;
+    min-height:96px!important;
+    margin-top:4px!important;
+  }
+}
