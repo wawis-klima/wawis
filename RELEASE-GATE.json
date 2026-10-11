@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.10",
+  "version": "13.11",
   "scope": "mobile",
-  "release_branch": "release/v13.10",
+  "release_branch": "release/v13.11",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Removal of duplicate mobile UI only; no backend changes."
+    "notes": "Mobile create-job comment mic using existing VoiceNoteButton; no backend changes."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.10.zip"
+    "file_name": "klima-app-v13.11.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.10",
+    "source_branch": "release/v13.11",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "Na iPhonie v13.10: brak ···, gest w lewo Telefon/Nawigacja, w prawo Tabliczki/Protokół, tap rozsuwanie szczegółów."
+    "notes": "Na iPhonie 13.11: Nowy montaż -> mikrofon przy Komentarzu, dyktowanie, zakończenie nagrania, sprawdzenie dopisanego tekstu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Duplicate three-dots quick-action trigger and bottom sheet removed; swipe interactions remain.",
-    "release_ci": "REQUIRED exact PR HEAD green Playwright mobile (both roles, both swipe directions, nameplate permissions), Closure Gate and production build.",
-    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, all app-version markers 13.10, physical iPhone spot check."
+    "code": "VoiceNoteButton beside new-job comment; append-only to worker_comment, no form size change.",
+    "release_ci": "REQUIRED exact PR HEAD green mobile Playwright for both roles, voice transcript, Closure Gate and build.",
+    "post_deploy": "EXTERNAL — Vercel READY matching merge SHA, versions 13.11 and real iPhone test."
   }
 }

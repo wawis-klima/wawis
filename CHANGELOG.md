@@ -1,3 +1,11 @@
+## 13.11
+- Dodano mikrofon obok „Komentarz” w mobilnym formularzu nowego montażu administratora oraz nowego klienta pracownika.
+- Ponownie wykorzystano VoiceNoteButton, podgląd nagrywania i rozpoznawanie głosu z komentarza administratora.
+- Dyktowany tekst dopisywany jest do worker_comment bez nadpisania istniejącego komentarza i bez zmiany uprawnień.
+- Pole ma pełną szerokość; przycisk Wyczyść pozostaje dostępny; mikrofon wyłączany w trakcie zapisu.
+- Nowe testy iPhone: obie role, okno nagrywania, anulowanie, pełna szerokość, symulowana transkrypcja.
+- Bez zmian API, OCR, PDF, backendu, desktopu i zapisów zleceń.
+
 ## 13.10
 - Usunięto z list mobilnych montaży przycisk „···” i powiązany dolny panel szybkich działań — duplikował czynności już dostępne gestami.
 - Telefon i Nawigacja nadal pod przesunięciem w lewo; Tabliczki i Protokół pod przesunięciem w prawo.
