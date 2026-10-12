@@ -415,6 +415,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     previousSignatureRef.current = "";
     setDraftHasSignature(false);
     setMessage("");
+    // Starsze protokoły nie mają osobno zapisanego podpisu i zachowują dotychczasowy przebieg edycji.
+    if (!savedRecord?.signature_path || !savedRecord?.signed_snapshot) return;
     try {
       const snapshot = getCurrentSigningSnapshot();
       if (!canReuseProtocolSignature(savedRecord, snapshot)) {
