@@ -193,7 +193,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
     // 13.17: on short iPhones use the same comfortable field rhythm as new-job.
     // Vertical scrolling is intentional; do not reintroduce 3px / 94px compact fallbacks.
-    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(135);
+    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(115);
     expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
     expect(oneScreen.scrollOverflow).toBeGreaterThanOrEqual(0);
     await expect(modal).toHaveCSS('overflow-y', 'auto');
@@ -349,7 +349,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(layout.gap).toBeGreaterThanOrEqual(8);
-    expect(layout.noteHeight).toBeGreaterThanOrEqual(135);
+    expect(layout.noteHeight).toBeGreaterThanOrEqual(115);
+    expect(layout.noteHeight).toBeLessThanOrEqual(125);
     expect(layout.saveBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
     expect(layout.saveBottom).toBeLessThanOrEqual(layout.modalBottom + 2);
     expect(layout.modalOverflow).toBeLessThanOrEqual(3);
@@ -373,7 +374,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       horizontalOverflow:document.documentElement.scrollWidth - document.documentElement.clientWidth,
     }));
     expect(sizes.gap).toBeGreaterThanOrEqual(8);
-    expect(sizes.noteHeight).toBeGreaterThanOrEqual(135);
+    expect(sizes.noteHeight).toBeGreaterThanOrEqual(115);
+    expect(sizes.noteHeight).toBeLessThanOrEqual(125);
     expect(sizes.scrollMode).toBe('auto');
     expect(sizes.horizontalOverflow).toBeLessThanOrEqual(2);
     await modal.getByRole('button', { name: 'Zapisz zmiany' }).scrollIntoViewIfNeeded();
@@ -394,7 +396,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
     }));
     expect(metrics.gap).toBeGreaterThanOrEqual(8);
-    expect(metrics.noteHeight).toBeGreaterThanOrEqual(135);
+    expect(metrics.noteHeight).toBeGreaterThanOrEqual(115);
+    expect(metrics.noteHeight).toBeLessThanOrEqual(125);
     expect(metrics.scrollMode).toBe('auto');
     expect(metrics.horizontalOverflow).toBeLessThanOrEqual(2);
     await modal.getByRole('button', { name: 'Zapisz zmiany' }).scrollIntoViewIfNeeded();
@@ -429,8 +432,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(layout.rowGap).toBeGreaterThanOrEqual(9);
-    expect(layout.noteHeight).toBeGreaterThanOrEqual(142);
-    expect(layout.noteHeight).toBeLessThanOrEqual(158);
+    expect(layout.noteHeight).toBeGreaterThanOrEqual(123);
+    expect(layout.noteHeight).toBeLessThanOrEqual(133);
     expect(Math.abs(layout.noteWidth - layout.noteParentWidth)).toBeLessThanOrEqual(2);
     expect(layout.saveBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
     expect(layout.saveBottom).toBeLessThanOrEqual(layout.modalBottom + 2);

@@ -802,9 +802,9 @@
   }
 }
 
-/* WAWIS 13.17 — spacing follows the working new-job form instead of compressing
+/* WAWIS 13.18 — spacing follows the working new-job form instead of compressing
    the admin editor below 740 CSS-px. On short iOS PWA viewports, scroll the
-   modal rather than undoing the user's requested larger comment and row gaps.
+   modal rather than undoing the user's requested readable comment and row gaps.
    Admin existing-job modal only. Worker/create/desktop untouched. */
 @media (max-width:700px) {
   html body .formModal.adminMobileEditModalV1297 {
@@ -818,8 +818,8 @@
     margin-bottom:2px!important;
   }
   html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
-    height:140px!important;
-    min-height:140px!important;
+    height:120px!important;
+    min-height:120px!important;
     max-height:180px!important;
     margin-top:6px!important;
   }
@@ -830,8 +830,8 @@
     row-gap:10px!important;
   }
   html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
-    height:148px!important;
-    min-height:148px!important;
+    height:128px!important;
+    min-height:128px!important;
     margin-top:8px!important;
   }
 }

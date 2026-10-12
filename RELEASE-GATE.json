@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.17",
+  "version": "13.18",
   "scope": "mobile",
-  "release_branch": "release/v13.17",
+  "release_branch": "release/v13.18",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Tylko mobile admin edit: porównanie do dodawania montażu; min. 8px odstępów, komentarz min. 140px niezależnie od wysokości viewportu; scroll przy małych ekranach."
+    "notes": "Tylko mobile admin edit: komentarz krótszy o wiersz (120 px, na wysokich ekranach 128 px), bez zmiany odstępów i fontów; zachowane przewijanie małych ekranów."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.17.zip"
+    "file_name": "klima-app-v13.18.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.17",
+    "source_branch": "release/v13.18",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "EXTERNAL: po zielonym CI i produkcyjnym READY zweryfikować na fizycznym iPhonie wersję 13.17, odstępy i komentarz oraz datę, mikrofon i zapis."
+    "notes": "EXTERNAL: sprawdzić produkcyjne 13.18 na fizycznym iPhonie, widoczny przycisk zapisu, mikrofon i datę; Vercel READY."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "iPhone admin edit: rowGap >=8px, adminNote >=135px for 390×700, 402×740, 390×844; 430×932 tall, scroll-safe save.",
+    "code": "390×700, 402×740, 390×844: rowGap >=8px, note 115–125px; 430×932: rowGap >=9px, note 123–133px; save accessible and scroll safe.",
     "release_ci": "REQUIRED green PR targeted-checks incl. mobile Playwright 390×700, 402×740, 390×844, 430×932, cross-module regression, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — verify production version 13.17, service-worker, physical iPhone editor visually."
+    "post_deploy": "EXTERNAL — zweryfikować wersję 13.18 i service-worker na produkcji oraz wizualnie ekran iPhone."
   }
 }
