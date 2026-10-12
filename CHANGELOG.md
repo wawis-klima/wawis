@@ -1,3 +1,9 @@
+## 13.21
+- Mobile, Nowy montaż: administrator widzi „Komentarz administratora”; tekst i dyktowanie zapisują jobs.admin_note w operacji tworzenia montażu.
+- Pracownik zachowuje zwykły „Komentarz” zapisywany do tabeli comments / „Komentarze i pytania”; administrator nie tworzy duplikatu w historii komentarzy.
+- Pole „Wyczyść” działa na właściwym polu bieżącej roli. Edycja istniejącego montażu i desktop bez zmian; brak nowej migracji SQL.
+- Trwałe smoke i E2E iPhone obu ról weryfikują routing, mikrofon, wyświetlanie i zapis; wymagana bramka Closure Gate, build oraz weryfikacja wdrożenia.
+
 ## 13.20
 - Desktop, Montaże: w tabelach **W trakcie**, **Niezrealizowane** i **Zakończone** adres pod klientem nie zawiera kodu pocztowego, lecz zachowuje miejscowość, ulicę i numer domu.
 - Korekta dotyczy wyłącznie renderowania trzech statusów: kod pocztowy pozostaje w danych, dokumentach i fakturach; widok **Nowe**, pozostałe moduły i mobile bez zmian.

@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.20
+- 13.21
+
+WAWIS 13.21: mobilny formularz nowego montażu zapisuje komentarz administratora do jobs.admin_note (sekcja Komentarz administratora); komentarz pracownika nadal trafia do sekcji Komentarze i pytania. Wpis ręczny i głosowy, bez powielania; edycja istniejącego montażu i desktop bez zmian.
 
 WAWIS 13.20: desktopowe listy W trakcie, Niezrealizowane i Zakończone pokazują miejscowość, ulicę i numer bez kodu pocztowego; pełne dane pozostają zapisane, widok Nowe i mobile bez zmian.
 
@@ -1009,6 +1011,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.21` — komentarz w nowym montażu trafia do właściwej sekcji: administrator do admin_note, pracownik do comments, również głosowo.
 - wersja `13.20` — kod pocztowy ukryty w trzech desktopowych listach montaży, bez zmian danych, dokumentów i mobile.
 - wersja `13.19` — minimalnie zmniejszono odstępy w mobilnej edycji montażu administratora (6/8 px); komentarz, mikrofon i data bez zmian.
 - wersja `13.18` — pole komentarza edycji administratora zmniejszone o jeden wiersz, bez ściskania pól i odstępów.

@@ -17,8 +17,9 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
   for (const [roleName, who] of [['administrator', ADMIN], ['pracownik', WORKER]]) {
     test(roleName + ': mikrofon działa obok Komentarza, bez ograniczenia szerokości pola', async ({ page }) => {
       const modal = await createModal(page, who);
-      const mic = modal.getByRole('button', { name: 'Nagraj głosowo: Komentarz do montażu' });
-      const comment = modal.locator('textarea[placeholder="Komentarz do montażu"]');
+      const label = roleName === 'administrator' ? 'Komentarz administratora' : 'Komentarz do montażu';
+      const mic = modal.getByRole('button', { name: `Nagraj głosowo: ${label}` });
+      const comment = modal.locator(`textarea[placeholder="${label}"]`);
       await expect(mic).toBeVisible();
       await expect(mic).toBeEnabled();
       await expect(comment).toBeVisible();
@@ -53,7 +54,7 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
       await comment.fill('Komentarz wpisany ręcznie');
       await expect(modal.locator('.workerNewClientCommentLabelRow .fieldClearBtn')).toBeVisible();
       await mic.click();
-      const dialog = page.getByRole('dialog', { name: 'Nagrywanie: Komentarz do montażu' });
+      const dialog = page.getByRole('dialog', { name: `Nagrywanie: ${label}` });
       await expect(dialog).toBeVisible();
       await dialog.getByRole('button', { name: 'Anuluj' }).click();
       await expect(dialog).toHaveCount(0);
@@ -61,7 +62,7 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
     });
   }
 
-  test('dyktowany tekst dopisywany jest do komentarza, bez zamiany na komentarz administratora', async ({ page }) => {
+  test('administrator: dyktowany tekst trafia do komentarza administratora', async ({ page }) => {
     await page.addInitScript(() => {
       class MockRecognition {
         start() {
@@ -78,10 +79,10 @@ test.describe('@mobile WAWIS 13.11 komentarz głosowy w nowym montażu', () => {
       window.SpeechRecognition = MockRecognition;
     });
     const modal = await createModal(page, ADMIN);
-    const comment = modal.locator('textarea[placeholder="Komentarz do montażu"]');
+    const comment = modal.locator('textarea[placeholder="Komentarz administratora"]');
     await comment.fill('Wpis ręczny');
-    await modal.getByRole('button', { name: 'Nagraj głosowo: Komentarz do montażu' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Nagrywanie: Komentarz do montażu' });
+    await modal.getByRole('button', { name: 'Nagraj głosowo: Komentarz administratora' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Nagrywanie: Komentarz administratora' });
     await expect(dialog.getByText(/Dodatkowy opis montażu/)).toBeVisible();
     await dialog.getByRole('button', { name: 'Zakończ nagrywanie' }).click();
     await expect(dialog).toHaveCount(0);

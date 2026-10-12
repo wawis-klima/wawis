@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.20",
-  "scope": "desktop",
-  "release_branch": "release/v13.20",
+  "version": "13.21",
+  "scope": "mobile",
+  "release_branch": "release/v13.21",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Izolowana zmiana wyświetlania adresów w trzech tabelach Montaże desktop; diagnostyka wyłącznie informacyjna."
+    "notes": "Izolowana poprawka mobilnego formularza nowego montażu: rozdzielenie notatki administratora od komentarza pracownika."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.20.zip"
+    "file_name": "klima-app-v13.21.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.20",
+    "source_branch": "release/v13.21",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "Zweryfikować zielony PR checks/Closure Gate, Vercel READY i wersję 13.20 na produkcji; desktop: 3 statusy bez kodu pocztowego, widok Nowe bez zmian."
+    "notes": "EXTERNAL: zweryfikować 13.21, właściwy SHA Vercel, notatkę administratora i komentarz pracownika na fizycznym iPhonie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Desktop: adresy bez kodów pocztowych dla W trakcie, Niezrealizowane i Zakończone; miejscowość i ulica zostają. Nowe bez zmian.",
-    "release_ci": "REQUIRED: targeted-checks + Closure Gate + desktop E2E + build.",
-    "post_deploy": "EXTERNAL: zielony Vercel READY i wersja 13.20, kontrola adresów na desktopie."
+    "code": "Mobile: administrator -> jobs.admin_note i Komentarz administratora; pracownik -> comments i Komentarze i pytania; wpisy ręczne, głosowe i czyszczenie; brak duplikatów i regresji.",
+    "release_ci": "REQUIRED: zielony PR targeted-checks, jobs smoke, E2E iPhone dwóch ról, Closure Gate i build.",
+    "post_deploy": "EXTERNAL: Vercel READY dokładnego SHA, wersja 13.21 oraz kontrole ról na fizycznym iPhonie."
   }
 }
