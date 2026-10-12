@@ -1,3 +1,8 @@
+## 13.16
+- Poprawiono realną regresję wyglądu edycji montażu administratora: na wysokości CSS 741–860 px reguła kompaktowa nadpisywała zwiększony komentarz i odstępy z 13.15.
+- Na iPhonie 390×844 odstępy 9 px, komentarz 140 px; powyżej 860 px: 10 px i 148 px; poniżej 741 px zachowane przewijanie.
+- Playwright: kontrola geometrii, dostępnego zapisu i mikrofonu na 390×844; osobna kontrola 390×700 oraz istniejące 430×932. Bez zmian danych, uprawnień, desktopu i nowego montażu.
+
 ## 13.15
 - Mobilna edycja istniejącego montażu administratora na wysokim iPhonie: odstępy pól 7 → 10 px, komentarz 124 → 148 px, większy odstęp od etykiety.
 - Na krótszych ekranach zachowany sprawdzony, kompaktowy układ z przewijaniem; bez zmian pracownika, nowego montażu i desktopu.
