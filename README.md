@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.18
+- 13.19
+
+WAWIS 13.19: minimalnie zmniejszono pionowe odstępy w mobilnej edycji montażu administratora (8 → 6 px; na wyższych iPhone’ach 10 → 8 px). Pole komentarza 120/128 px, czcionki, pozostałe pola, mikrofon i data bez zmian. Testy 390×700, 402×740, 390×844, 430×932.
 
 WAWIS 13.18: mobilna edycja istniejącego montażu administratora — pole komentarza mniejsze o około jeden wiersz (140 → 120 px; na wyższych iPhone'ach 148 → 128 px), odstępy 8/10 px bez zmian. Małe ekrany nadal można przewijać; przycisk zapisu ma pozostać widoczny i klikalny. Testy 390×700, 402×740, 390×844, 430×932.
 
