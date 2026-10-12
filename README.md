@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.17
+- 13.18
+
+WAWIS 13.18: mobilna edycja istniejącego montażu administratora — pole komentarza mniejsze o około jeden wiersz (140 → 120 px; na wyższych iPhone'ach 148 → 128 px), odstępy 8/10 px bez zmian. Małe ekrany nadal można przewijać; przycisk zapisu ma pozostać widoczny i klikalny. Testy 390×700, 402×740, 390×844, 430×932.
 
 WAWIS 13.17: po porównaniu ze sprawdzonym formularzem dodawania przywrócono większe odstępy (minimum 8 px) i komentarz (140 px) w edycji administratora również na krótszych viewportach iPhone PWA. Krótkie ekrany przewijają formularz, bez wpływu na nowy montaż. Testy 390×700, 402×740, 390×844, 430×932.
 
@@ -1002,6 +1004,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.18` — pole komentarza edycji administratora zmniejszone o jeden wiersz, bez ściskania pól i odstępów.
 - wersja `13.17` — usunięto ciasny wariant edycji administratora przy małej wysokości iPhone; układ odniesiony do dodawania montażu.
 - wersja `13.16` — widoczne odstępy i komentarz na rzeczywistych iPhone’ach; poprawiona reguła 741–860 px, kontrola 390×844.
 - wersja `13.15` — większe odstępy 10 px i pole komentarza 148 px w edycji administratora na wysokich iPhone’ach; mniejsze ekrany zachowują układ i zapis.
