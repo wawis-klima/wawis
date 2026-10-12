@@ -783,3 +783,21 @@
     margin-top:0!important;
   }
 }
+
+/* WAWIS 13.16 — undo the invisible small-viewport fallback on standalone iPhone.
+   Heights 741–860px have ample room (including screenshot-sized 844px), but were
+   mistakenly forced to 3px gaps and 94px notes. Keep <=740px genuinely compact. */
+@media (max-width:700px) and (min-height:741px) and (max-height:860px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:9px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .adminNoteLabelRow {
+    margin-bottom:2px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:140px!important;
+    min-height:140px!important;
+    max-height:180px!important;
+    margin-top:6px!important;
+  }
+}

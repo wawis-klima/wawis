@@ -320,6 +320,64 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
   });
 
+
+  test('administrator: iPhone 390x844 pokazuje większy komentarz i odstępy bez zasłaniania zapisu', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openActive(page, ADMIN);
+    await page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons')
+      .getByRole('button', { name: 'Edytuj', exact: true }).click();
+    const modal = page.locator('.formModal.adminMobileEditModalV1297');
+    await expect(modal).toBeVisible();
+    const layout = await modal.evaluate(root => {
+      const form = root.querySelector('form:not(.jobSerialOnlyForm)');
+      const note = root.querySelector('.adminNoteTextareaCompact').getBoundingClientRect();
+      const save = root.querySelector('.saveJobBtn');
+      const saveBox = save.getBoundingClientRect();
+      const target = document.elementFromPoint(saveBox.left + saveBox.width / 2, saveBox.top + saveBox.height / 2);
+      return {
+        gap:parseFloat(getComputedStyle(form).rowGap),
+        noteHeight:note.height,
+        saveBottom:saveBox.bottom,
+        viewportHeight:window.innerHeight,
+        modalBottom:root.getBoundingClientRect().bottom,
+        modalOverflow:root.scrollHeight - root.clientHeight,
+        horizontalOverflow:document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        saveClickable:save === target || save.contains(target),
+      };
+    });
+    expect(layout.gap).toBeGreaterThanOrEqual(8);
+    expect(layout.noteHeight).toBeGreaterThanOrEqual(135);
+    expect(layout.saveBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
+    expect(layout.saveBottom).toBeLessThanOrEqual(layout.modalBottom + 2);
+    expect(layout.modalOverflow).toBeLessThanOrEqual(3);
+    expect(layout.horizontalOverflow).toBeLessThanOrEqual(2);
+    expect(layout.saveClickable).toBe(true);
+    await expect(modal.getByRole('button', { name: 'Nagraj głosowo: Komentarz administratora' })).toBeEnabled();
+    await expect(modal.getByRole('button', { name: 'Zapisz zmiany' })).toBeEnabled();
+  });
+
+  test('administrator: niskie okno 390x700 nadal ma kompaktowy formularz i dostępny zapis', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 700 });
+    await openActive(page, ADMIN);
+    await page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons')
+      .getByRole('button', { name: 'Edytuj', exact: true }).click();
+    const modal = page.locator('.formModal.adminMobileEditModalV1297');
+    await expect(modal).toBeVisible();
+    const sizes = await modal.evaluate(root => ({
+      gap:parseFloat(getComputedStyle(root.querySelector('form:not(.jobSerialOnlyForm)')).rowGap),
+      noteHeight:root.querySelector('.adminNoteTextareaCompact').getBoundingClientRect().height,
+      scrollMode:getComputedStyle(root).overflowY,
+      horizontalOverflow:document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    }));
+    expect(sizes.gap).toBeLessThanOrEqual(4);
+    expect(sizes.noteHeight).toBeGreaterThanOrEqual(92);
+    expect(sizes.noteHeight).toBeLessThanOrEqual(105);
+    expect(sizes.scrollMode).toBe('auto');
+    expect(sizes.horizontalOverflow).toBeLessThanOrEqual(2);
+    await modal.getByRole('button', { name: 'Zapisz zmiany' }).scrollIntoViewIfNeeded();
+    await expect(modal.getByRole('button', { name: 'Zapisz zmiany' })).toBeVisible();
+  });
+
   test('administrator: wyższy iPhone daje większe odstępy, komentarz i widoczny zapis', async ({ page }) => {
     await page.setViewportSize({ width: 430, height: 932 });
     await openActive(page, ADMIN);

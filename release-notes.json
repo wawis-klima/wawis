@@ -1,10 +1,10 @@
 {
-  "version": "13.15",
-  "summary": "Większe odstępy i komentarz w edycji montażu administratora",
+  "version": "13.16",
+  "summary": "Widoczne odstępy i większy komentarz na iPhonie",
   "changes": [
-    "Na wyższych iPhone’ach odstępy między polami zwiększone z 7 do 10 px.",
-    "Pole komentarza administratora powiększone ze 124 do 148 px.",
-    "Krótsze ekrany zachowują kompaktowy układ i przewijanie; bez zmian logiki daty, dyktowania, zapisu, ról i desktopu.",
-    "Nowy test Playwright sprawdza geometrię oraz klikalność zapisu i mikrofonu."
+    "Naprawiono regułę CSS, która przy wysokości ekranu do 860 px przywracała stary ciasny wygląd formularza edycji administratora.",
+    "Na iPhone 390×844 odstępy między polami mają 9 px, a komentarz 140 px.",
+    "Bardzo małe ekrany do 740 px zachowują przewijany, kompaktowy układ.",
+    "Testy Playwright 390×844, 390×700 i 430×932 weryfikują geometrię i dostęp do przycisku zapisu."
   ]
 }
