@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.14",
+  "version": "13.15",
   "scope": "mobile",
-  "release_branch": "release/v13.14",
+  "release_branch": "release/v13.15",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobile admin edit only: redundant clearing actions removed; field and textarea geometry adjusted. No data, backend, OCR or roles changes."
+    "notes": "Tylko mobilna edycja administratora: większe odstępy i komentarz na wysokich ekranach. Bez zmian danych, OCR, uprawnień."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.14.zip"
+    "file_name": "klima-app-v13.15.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.14",
+    "source_branch": "release/v13.15",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "EXTERNAL: after green PR and READY production deployment, check iPhone UI version 13.14, date picker, note mic and save."
+    "notes": "EXTERNAL: after green PR and READY production deployment, verify physical iPhone version 13.15, layout, date picker, dictation mic and save."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Admin mobile edit: clear buttons absent, date remains editable, note microphone unobstructed and comment/spacing responsive.",
+    "code": "On tall iPhone admin edit, comment 148px and row spacing 10px; short iPhone scroll-safe; notes, date, microphones and save usable.",
     "release_ci": "REQUIRED green PR targeted-checks incl. mobile Playwright, cross-module interaction regression, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — Vercel READY for merged SHA plus physical iPhone UI check on 13.14."
+    "post_deploy": "EXTERNAL — Vercel READY for merged SHA plus physical iPhone UI check on 13.15."
   }
 }
