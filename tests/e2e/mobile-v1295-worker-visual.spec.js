@@ -191,7 +191,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
-    // 13.17: on short iPhones use the same comfortable field rhythm as new-job.
+    // 13.19: on short iPhones keep readable spacing (6px), and a scrollable editor.
     // Vertical scrolling is intentional; do not reintroduce 3px / 94px compact fallbacks.
     expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(115);
     expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
@@ -348,7 +348,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         saveClickable:save === target || save.contains(target),
       };
     });
-    expect(layout.gap).toBeGreaterThanOrEqual(8);
+    expect(layout.gap).toBe(6);
     expect(layout.noteHeight).toBeGreaterThanOrEqual(115);
     expect(layout.noteHeight).toBeLessThanOrEqual(125);
     expect(layout.saveBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
@@ -373,7 +373,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       scrollMode:getComputedStyle(root).overflowY,
       horizontalOverflow:document.documentElement.scrollWidth - document.documentElement.clientWidth,
     }));
-    expect(sizes.gap).toBeGreaterThanOrEqual(8);
+    expect(sizes.gap).toBe(6);
     expect(sizes.noteHeight).toBeGreaterThanOrEqual(115);
     expect(sizes.noteHeight).toBeLessThanOrEqual(125);
     expect(sizes.scrollMode).toBe('auto');
@@ -395,7 +395,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       scrollMode:getComputedStyle(root).overflowY,
       horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
     }));
-    expect(metrics.gap).toBeGreaterThanOrEqual(8);
+    expect(metrics.gap).toBe(6);
     expect(metrics.noteHeight).toBeGreaterThanOrEqual(115);
     expect(metrics.noteHeight).toBeLessThanOrEqual(125);
     expect(metrics.scrollMode).toBe('auto');
@@ -431,7 +431,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
     });
-    expect(layout.rowGap).toBeGreaterThanOrEqual(9);
+    expect(layout.rowGap).toBe(8);
     expect(layout.noteHeight).toBeGreaterThanOrEqual(123);
     expect(layout.noteHeight).toBeLessThanOrEqual(133);
     expect(Math.abs(layout.noteWidth - layout.noteParentWidth)).toBeLessThanOrEqual(2);
