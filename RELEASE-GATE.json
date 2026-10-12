@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.16",
+  "version": "13.17",
   "scope": "mobile",
-  "release_branch": "release/v13.16",
+  "release_branch": "release/v13.17",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobile admin: naprawa nadpisania CSS dla wysokości 741–860 px. Komentarz 140 px, odstępy 9 px; małe telefony zachowują wariant bezpieczny."
+    "notes": "Tylko mobile admin edit: porównanie do dodawania montażu; min. 8px odstępów, komentarz min. 140px niezależnie od wysokości viewportu; scroll przy małych ekranach."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.16.zip"
+    "file_name": "klima-app-v13.17.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.16",
+    "source_branch": "release/v13.17",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "EXTERNAL: Verify production version 13.16, iPhone 390×844 note, save and mic; physical iPhone remains user validation."
+    "notes": "EXTERNAL: po zielonym CI i produkcyjnym READY zweryfikować na fizycznym iPhonie wersję 13.17, odstępy i komentarz oraz datę, mikrofon i zapis."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile admin edit on 390×844: grid row gap >=8px, note >=135px, save clickable; 390×700 compact and scrollable.",
-    "release_ci": "REQUIRED green PR targeted-checks incl. mobile Playwright, cross-module interaction regression, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — check production app version 13.16, service-worker and physical iPhone UI."
+    "code": "iPhone admin edit: rowGap >=8px, adminNote >=135px for 390×700, 402×740, 390×844; 430×932 tall, scroll-safe save.",
+    "release_ci": "REQUIRED green PR targeted-checks incl. mobile Playwright 390×700, 402×740, 390×844, 430×932, cross-module regression, Closure Gate and build.",
+    "post_deploy": "EXTERNAL — verify production version 13.17, service-worker, physical iPhone editor visually."
   }
 }
