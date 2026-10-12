@@ -8,15 +8,17 @@ import {
   renderInitialBadges,
 } from "../utils/jobHelpers.jsx";
 import { getJobNameplateVerificationSummary } from "../modules/nameplate-verification.js";
+import { formatDesktopJobsTableAddress } from "../modules/desktop-jobs-table-address.js";
 
 function renderClientCell({ job }) {
   const address = getJobAddress(job);
+  const tableAddress = formatDesktopJobsTableAddress(address, getJobTypeLabel(job));
 
   return (
     <div className="desktopCellContent desktopClientCellContent">
       <div className="desktopClientCell">
         <span className="desktopClientName">{job.client || job.title}</span>
-        <span className="desktopClientAddress">{address || "Brak adresu"}</span>
+        <span className="desktopClientAddress">{tableAddress || "Brak adresu"}</span>
       </div>
     </div>
   );

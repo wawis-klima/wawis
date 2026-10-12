@@ -17,5 +17,44 @@ assert.match(appStyles, /twoColDesktopStatusLeft:not\(\.singleModuleColumn\)[\s\
 assert.match(appStyles, /@media \(min-width:1400px\)[\s\S]*minmax\(0,1\.15fr\)[\s\S]*minmax\(560px,1fr\)/, 'Na szerszych monitorach lewa tabela ma pozostać poszerzona, a panel szczegółów ma zachować co najmniej 560px.');
 assert.match(appStyles, /\.desktopDetailColumnTight[\s\S]*min-width:500px;/, 'Kolumna szczegółów po prawej stronie ma mieć wymuszoną czytelną szerokość.');
 
-console.log('Desktop jobs layout width smoke OK');
-process.exit(0);
+const { pathToFileURL } = require('node:url');
+
+assert.match(columnsSource, /formatDesktopJobsTableAddress\\(address, getJobTypeLabel\\(job\\)\\)/,
+  'Tylko desktopowa komórka klienta ma wyświetlać adres po skróceniu kodu pocztowego.');
+
+(async () => {
+  const moduleUrl = pathToFileURL(path.join(root, 'src', 'modules', 'desktop-jobs-table-address.js')).href;
+  const { formatDesktopJobsTableAddress } = await import(moduleUrl);
+
+  for (const status of ['W trakcie', 'Niezrealizowane', 'Zakończone']) {
+    assert.equal(
+      formatDesktopJobsTableAddress('42-400 Zawiercie, Obrońców Poczty 12', status),
+      'Zawiercie, Obrońców Poczty 12',
+      `Kod pocztowy nie może być wyświetlany na desktopowej liście: ${status}.`,
+    );
+    assert.equal(
+      formatDesktopJobsTableAddress('42-436 Pilica, Zarzecze 37 N', status),
+      'Pilica, Zarzecze 37 N',
+      `Zniknąć może wyłącznie kod, nie miejscowość i numer domu: ${status}.`,
+    );
+    assert.equal(
+      formatDesktopJobsTableAddress('Zawiercie, 42-400-lecia 5', status),
+      'Zawiercie, 42-400-lecia 5',
+      `Kod w środku nazwy ulicy nie może zostać usunięty: ${status}.`,
+    );
+    assert.equal(formatDesktopJobsTableAddress('Zawiercie, 3 Maja 7', status), 'Zawiercie, 3 Maja 7');
+    assert.equal(formatDesktopJobsTableAddress('42-400, Zawiercie, 3 Maja 7', status), 'Zawiercie, 3 Maja 7');
+    assert.equal(formatDesktopJobsTableAddress('42-400', status), '');
+  }
+  assert.equal(
+    formatDesktopJobsTableAddress('42-400 Zawiercie, Obrońców Poczty 12', 'Nowe'),
+    '42-400 Zawiercie, Obrońców Poczty 12',
+    'Nie zmieniaj widoku Nowe, którego użytkownik nie wskazał.',
+  );
+  assert.equal(formatDesktopJobsTableAddress('', 'W trakcie'), '');
+  console.log('Desktop jobs layout width + postal code display smoke OK');
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
