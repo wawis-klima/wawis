@@ -801,3 +801,37 @@
     margin-top:6px!important;
   }
 }
+
+/* WAWIS 13.17 — spacing follows the working new-job form instead of compressing
+   the admin editor below 740 CSS-px. On short iOS PWA viewports, scroll the
+   modal rather than undoing the user's requested larger comment and row gaps.
+   Admin existing-job modal only. Worker/create/desktop untouched. */
+@media (max-width:700px) {
+  html body .formModal.adminMobileEditModalV1297 {
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:8px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 .adminNoteLabelRow {
+    margin-bottom:2px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:140px!important;
+    min-height:140px!important;
+    max-height:180px!important;
+    margin-top:6px!important;
+  }
+}
+/* Preserve the roomier tall-iPhone variant from 13.15. */
+@media (max-width:700px) and (min-height:861px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:10px!important;
+  }
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
+    height:148px!important;
+    min-height:148px!important;
+    margin-top:8px!important;
+  }
+}
