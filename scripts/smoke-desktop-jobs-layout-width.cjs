@@ -19,7 +19,7 @@ assert.match(appStyles, /\.desktopDetailColumnTight[\s\S]*min-width:500px;/, 'Ko
 
 const { pathToFileURL } = require('node:url');
 
-assert.match(columnsSource, /formatDesktopJobsTableAddress\\(address, getJobTypeLabel\\(job\\)\\)/,
+assert.match(columnsSource, /formatDesktopJobsTableAddress\(address, getJobTypeLabel\(job\)\)/,
   'Tylko desktopowa komórka klienta ma wyświetlać adres po skróceniu kodu pocztowego.');
 
 (async () => {
