@@ -842,7 +842,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                       </div>
                     ))}
                   </div>
-                ) : null
+                ) : null}
               </section>
             ) : null}
             {message ? <div className="protocolTestMessage" role="status">{message}</div> : null}
