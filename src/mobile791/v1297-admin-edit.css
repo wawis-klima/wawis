@@ -742,7 +742,7 @@
    more comfortable field rhythm and more room for notes on taller iPhones. */
 @media (max-width:700px) {
   html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
-    row-gap:7px!important;
+    row-gap:10px!important;
   }
   html body .formModal.adminMobileEditModalV1297 .installationDateField {
     grid-template-columns:auto minmax(0,1fr)!important;
@@ -762,10 +762,10 @@
     flex:0 0 28px!important;
   }
   html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .adminNoteTextareaCompact {
-    height:124px!important;
-    min-height:124px!important;
+    height:148px!important;
+    min-height:148px!important;
     max-height:180px!important;
-    margin-top:6px!important;
+    margin-top:8px!important;
   }
 }
 /* Compact-height iPhones must retain the proven one-screen vertical budget.

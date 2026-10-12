@@ -319,4 +319,44 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await expect(nativeDate).toHaveValue('2026-10-16');
     await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
   });
+
+  test('administrator: wyższy iPhone daje większe odstępy, komentarz i widoczny zapis', async ({ page }) => {
+    await page.setViewportSize({ width: 430, height: 932 });
+    await openActive(page, ADMIN);
+    await page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons')
+      .getByRole('button', { name: 'Edytuj', exact: true }).click();
+    const modal = page.locator('.formModal.adminMobileEditModalV1297');
+    await expect(modal).toBeVisible();
+    const layout = await modal.evaluate((root) => {
+      const rect = (selector) => root.querySelector(selector)?.getBoundingClientRect();
+      const form = root.querySelector('form:not(.jobSerialOnlyForm)');
+      const save = root.querySelector('.saveJobBtn');
+      const saveRect = save.getBoundingClientRect();
+      const hit = document.elementFromPoint(saveRect.left + saveRect.width / 2, saveRect.top + saveRect.height / 2);
+      return {
+        rowGap: parseFloat(getComputedStyle(form).rowGap),
+        noteHeight: rect('.adminNoteTextareaCompact')?.height,
+        noteWidth: rect('.adminNoteTextareaCompact')?.width,
+        noteParentWidth: rect('.adminNoteInputBlock')?.width,
+        saveBottom: saveRect.bottom,
+        modalBottom: root.getBoundingClientRect().bottom,
+        viewportHeight: window.innerHeight,
+        saveClickable: hit === save || save.contains(hit),
+        scrollOverflow: root.scrollHeight - root.clientHeight,
+        horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    expect(layout.rowGap).toBeGreaterThanOrEqual(9);
+    expect(layout.noteHeight).toBeGreaterThanOrEqual(142);
+    expect(layout.noteHeight).toBeLessThanOrEqual(158);
+    expect(Math.abs(layout.noteWidth - layout.noteParentWidth)).toBeLessThanOrEqual(2);
+    expect(layout.saveBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
+    expect(layout.saveBottom).toBeLessThanOrEqual(layout.modalBottom + 2);
+    expect(layout.saveClickable).toBe(true);
+    expect(layout.scrollOverflow).toBeLessThanOrEqual(3);
+    expect(layout.horizontalOverflow).toBeLessThanOrEqual(2);
+    await expect(modal.getByRole('button', { name: 'Zapisz zmiany' })).toBeEnabled();
+    await expect(modal.getByRole('button', { name: 'Nagraj głosowo: Komentarz administratora' })).toBeEnabled();
+  });
+
 });
