@@ -1,10 +1,10 @@
 {
-  "version": "13.16",
-  "summary": "Widoczne odstępy i większy komentarz na iPhonie",
+  "version": "13.17",
+  "summary": "Edycja administratora — takie same wygodne odstępy jak w dodawaniu montażu",
   "changes": [
-    "Naprawiono regułę CSS, która przy wysokości ekranu do 860 px przywracała stary ciasny wygląd formularza edycji administratora.",
-    "Na iPhone 390×844 odstępy między polami mają 9 px, a komentarz 140 px.",
-    "Bardzo małe ekrany do 740 px zachowują przewijany, kompaktowy układ.",
-    "Testy Playwright 390×844, 390×700 i 430×932 weryfikują geometrię i dostęp do przycisku zapisu."
+    "Edycja administratora nie wraca do ciasnych 3 px odstępów i 94 px komentarza na krótkich ekranach iPhone.",
+    "Teraz wszystkie iPhone’y: odstępy minimum 8 px, komentarz minimum 140 px; na wysokich 10 px/148 px.",
+    "Krótszy ekran pozwala przewijać formularz, zamiast zmniejszać odstępy lub pole komentarza.",
+    "Zachowano bez zmian nowy montaż, datę, dyktowanie, zapis i formularz pracownika; regresja 390×700, 402×740, 390×844 i 430×932."
   ]
 }

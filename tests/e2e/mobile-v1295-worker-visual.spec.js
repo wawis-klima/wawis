@@ -191,11 +191,14 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
-    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(92);
+    // 13.17: on short iPhones use the same comfortable field rhythm as new-job.
+    // Vertical scrolling is intentional; do not reintroduce 3px / 94px compact fallbacks.
+    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(135);
     expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
-    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.modalBottom+2);
-    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.viewportHeight+2);
-    expect(oneScreen.scrollOverflow).toBeLessThanOrEqual(3);
+    expect(oneScreen.scrollOverflow).toBeGreaterThanOrEqual(0);
+    await expect(modal).toHaveCSS('overflow-y', 'auto');
+    await modal.getByRole('button', { name:'Zapisz zmiany' }).scrollIntoViewIfNeeded();
+    await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
     // 13.02: microphone-only header, balanced phone/NIP and measured two-line client.
     const compactRow = await modal.evaluate(el => {
       const rect = selector => el.querySelector(selector)?.getBoundingClientRect();
@@ -356,7 +359,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     await expect(modal.getByRole('button', { name: 'Zapisz zmiany' })).toBeEnabled();
   });
 
-  test('administrator: niskie okno 390x700 nadal ma kompaktowy formularz i dostępny zapis', async ({ page }) => {
+  test('administrator: niskie okno 390x700 zachowuje duży komentarz i przewijanie', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 700 });
     await openActive(page, ADMIN);
     await page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons')
@@ -369,13 +372,34 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       scrollMode:getComputedStyle(root).overflowY,
       horizontalOverflow:document.documentElement.scrollWidth - document.documentElement.clientWidth,
     }));
-    expect(sizes.gap).toBeLessThanOrEqual(4);
-    expect(sizes.noteHeight).toBeGreaterThanOrEqual(92);
-    expect(sizes.noteHeight).toBeLessThanOrEqual(105);
+    expect(sizes.gap).toBeGreaterThanOrEqual(8);
+    expect(sizes.noteHeight).toBeGreaterThanOrEqual(135);
     expect(sizes.scrollMode).toBe('auto');
     expect(sizes.horizontalOverflow).toBeLessThanOrEqual(2);
     await modal.getByRole('button', { name: 'Zapisz zmiany' }).scrollIntoViewIfNeeded();
     await expect(modal.getByRole('button', { name: 'Zapisz zmiany' })).toBeVisible();
+  });
+
+  test('administrator: iPhone PWA 402x740 używa odstępów dodawania zamiast ciasnego wariantu', async ({ page }) => {
+    await page.setViewportSize({ width: 402, height: 740 });
+    await openActive(page, ADMIN);
+    await page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons')
+      .getByRole('button', { name: 'Edytuj', exact: true }).click();
+    const modal = page.locator('.formModal.adminMobileEditModalV1297');
+    await expect(modal).toBeVisible();
+    const metrics = await modal.evaluate(root => ({
+      gap:parseFloat(getComputedStyle(root.querySelector('form:not(.jobSerialOnlyForm)')).rowGap),
+      noteHeight:root.querySelector('.adminNoteTextareaCompact').getBoundingClientRect().height,
+      scrollMode:getComputedStyle(root).overflowY,
+      horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+    }));
+    expect(metrics.gap).toBeGreaterThanOrEqual(8);
+    expect(metrics.noteHeight).toBeGreaterThanOrEqual(135);
+    expect(metrics.scrollMode).toBe('auto');
+    expect(metrics.horizontalOverflow).toBeLessThanOrEqual(2);
+    await modal.getByRole('button', { name: 'Zapisz zmiany' }).scrollIntoViewIfNeeded();
+    await expect(modal.getByRole('button', { name: 'Zapisz zmiany' })).toBeEnabled();
+    await expect(modal.getByRole('button', { name: 'Nagraj głosowo: Komentarz administratora' })).toBeEnabled();
   });
 
   test('administrator: wyższy iPhone daje większe odstępy, komentarz i widoczny zapis', async ({ page }) => {
