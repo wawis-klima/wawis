@@ -1,3 +1,8 @@
+## 13.20
+- Desktop, Montaże: w tabelach **W trakcie**, **Niezrealizowane** i **Zakończone** adres pod klientem nie zawiera kodu pocztowego, lecz zachowuje miejscowość, ulicę i numer domu.
+- Korekta dotyczy wyłącznie renderowania trzech statusów: kod pocztowy pozostaje w danych, dokumentach i fakturach; widok **Nowe**, pozostałe moduły i mobile bez zmian.
+- Regresja formattera desktopowego w `scripts/smoke-desktop-jobs-layout-width.cjs` sprawdza wszystkie trzy statusy, brak kodu, nazwy ulic zawierające liczby, puste adresy oraz niezmieniony status **Nowe**.
+
 ## 13.19
 - Edycja montażu administratora na mobile: pionowe odstępy wierszy 8 → 6 px, a na wysokich ekranach 10 → 8 px, aby przycisk „Zapisz zmiany” miał więcej miejsca od dołu.
 - Pole komentarza pozostaje na wysokości 120/128 px; nie zmieniono czcionek, szerokości i wysokości pozostałych pól, daty, mikrofonu, dodawania montażu ani konta pracownika.

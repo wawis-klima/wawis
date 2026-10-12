@@ -2,6 +2,13 @@
 
 Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które mają zapobiegać ich powrotowi.
 
+## UI-DESKTOP-1320 — kod pocztowy w tabelach Montaże (12 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| UI-DESKTOP-1320-ADDRESS | FIXED-UNVERIFIED | `scripts/smoke-desktop-jobs-layout-width.cjs`: uruchomienie `formatDesktopJobsTableAddress` na rzeczywistych przykładach dla W trakcie, Niezrealizowane i Zakończone, kontrprzykłady brak kodu, pusty adres, nazwa ulicy zawierająca liczby, status Nowe niezmieniony. |
+| UI-DESKTOP-1320-VISUAL | REQUIRED | Desktopowe E2E w PR CI + potwierdzenie produkcyjnego wyglądu tabeli po Vercel READY. |
+
 ## Zasada
 
 - Każdy potwierdzony błąd otrzymuje stabilne ID.

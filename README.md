@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.19
+- 13.20
+
+WAWIS 13.20: desktopowe listy W trakcie, Niezrealizowane i Zakończone pokazują miejscowość, ulicę i numer bez kodu pocztowego; pełne dane pozostają zapisane, widok Nowe i mobile bez zmian.
+
 
 WAWIS 13.19: minimalnie zmniejszono pionowe odstępy w mobilnej edycji montażu administratora (8 → 6 px; na wyższych iPhone’ach 10 → 8 px). Pole komentarza 120/128 px, czcionki, pozostałe pola, mikrofon i data bez zmian. Testy 390×700, 402×740, 390×844, 430×932.
 
@@ -1006,6 +1009,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.20` — kod pocztowy ukryty w trzech desktopowych listach montaży, bez zmian danych, dokumentów i mobile.
 - wersja `13.19` — minimalnie zmniejszono odstępy w mobilnej edycji montażu administratora (6/8 px); komentarz, mikrofon i data bez zmian.
 - wersja `13.18` — pole komentarza edycji administratora zmniejszone o jeden wiersz, bez ściskania pól i odstępów.
 - wersja `13.17` — usunięto ciasny wariant edycji administratora przy małej wysokości iPhone; układ odniesiony do dodawania montażu.

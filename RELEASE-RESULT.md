@@ -1,15 +1,14 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.11
+- 13.20
 
 ## Zakres
-- Dyktowanie komentarza przy tworzeniu nowego montażu dla obu ról.
-- Gotowy VoiceNoteButton + appendVoiceNoteText, bez zmian API i backendu.
-- Kompaktowa ikona w nagłówku; textarea pozostaje pełnej szerokości.
-- Testy iPhone: dwie role, modal, anulowanie, mock transkrypcji i pozycja przycisku.
+- Desktopowe Montaże: ukrycie kodów pocztowych wyłącznie w widokach W trakcie, Niezrealizowane i Zakończone.
+- Miejscowość, ulica i numer domu pozostają; brak zmian danych, formularzy, faktur, PDF, mobile oraz tabeli Nowe.
+- Trwały regresyjny test formattera w `scripts/smoke-desktop-jobs-layout-width.cjs`.
 
 ## Bramki
-- Przed merge: zielony dokładny PR SHA, Closure Gate i build.
-- Po merge: Vercel READY dokładnego SHA oraz zgodność wersji 13.11.
-- Realny iPhone wymaga osobnego sprawdzenia.
+- Przed merge: zielony PR checks / targeted-checks i Closure Gate z E2E oraz buildem.
+- Po merge: Vercel READY właściwego commita, porównanie wersji 13.20.
+- Manualny odbiór rzeczywistych adresów w desktopie: trzy statusy bez kodu pocztowego, Nowe niezmienione.

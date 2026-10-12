@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.19",
-  "scope": "mobile",
-  "release_branch": "release/v13.19",
+  "version": "13.20",
+  "scope": "desktop",
+  "release_branch": "release/v13.20",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Tylko edycja istniejącego montażu administratora mobile: zmiana odstępów 8/10 na 6/8 px; komentarz 120/128 px i pozostałe pola bez zmian."
+    "notes": "Izolowana zmiana wyświetlania adresów w trzech tabelach Montaże desktop; diagnostyka wyłącznie informacyjna."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.19.zip"
+    "file_name": "klima-app-v13.20.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.19",
+    "source_branch": "release/v13.20",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "EXTERNAL: kontrola wersji 13.19 i service worker na produkcji, na fizycznym iPhonie odstępy 6/8 px oraz widoczność zapisu, mikrofonu i daty."
+    "notes": "Zweryfikować zielony PR checks/Closure Gate, Vercel READY i wersję 13.20 na produkcji; desktop: 3 statusy bez kodu pocztowego, widok Nowe bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "390×700, 402×740, 390×844: rowGap 6px, note 115–125px; 430×932: rowGap 8px, note 123–133px; save accessible and scroll safe.",
-    "release_ci": "REQUIRED green PR targeted-checks incl. mobile Playwright 390×700, 402×740, 390×844, 430×932, cross-module regression, Closure Gate and build.",
-    "post_deploy": "EXTERNAL — zweryfikować wersję 13.19 i service worker na produkcji oraz wizualnie ekran iPhone."
+    "code": "Desktop: adresy bez kodów pocztowych dla W trakcie, Niezrealizowane i Zakończone; miejscowość i ulica zostają. Nowe bez zmian.",
+    "release_ci": "REQUIRED: targeted-checks + Closure Gate + desktop E2E + build.",
+    "post_deploy": "EXTERNAL: zielony Vercel READY i wersja 13.20, kontrola adresów na desktopie."
   }
 }
