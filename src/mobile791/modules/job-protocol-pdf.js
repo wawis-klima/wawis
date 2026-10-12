@@ -198,7 +198,7 @@ function formatPaymentDate(value) {
   return match ? `${match[3]}.${match[2]}.${match[1]}` : normalizeText(value);
 }
 
-export function buildJobProtocolData({ job = {}, profiles = [], signedAt = new Date(), payment = null, note = "" } = {}) {
+export function buildJobProtocolData({ job = {}, profiles = [], signedAt = new Date(), payment = null, note = "", addressCorrection = false } = {}) {
   const photos = Array.isArray(job?.photos) ? job.photos : [];
   const deviceRows = getProtocolDeviceRows(job);
   const nameplateCompletion = getJobNameplateCompletion(job, { allowLocal: true });
@@ -218,6 +218,7 @@ export function buildJobProtocolData({ job = {}, profiles = [], signedAt = new D
     completedAt: formatProtocolDateTime(job?.completed_at),
     completedBy: getCompletedBy(job, profiles),
     signedAt: formatProtocolDateTime(signedAt),
+    addressCorrection: Boolean(addressCorrection),
     deviceRows,
     readyNameplateCount: nameplateCompletion.readyCount,
     requiredNameplateCount: nameplateCompletion.requiredCount,
@@ -689,7 +690,7 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   y += legalLayout.cardHeight + legalBottomGap;
 
   y = addPageIfNeeded(doc, y, confirmationSectionHeight);
-  drawSectionTitle(doc, "Potwierdzenie klienta", y);
+  drawSectionTitle(doc, data.addressCorrection ? "Potwierdzenie klienta — korekta adresu" : "Potwierdzenie klienta", y);
   drawCard(doc, y + 8, 132);
   doc.setFont(FONT_FAMILY, "normal");
   doc.setFontSize(9);
@@ -719,7 +720,9 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
   doc.line(installerSignatureLeft, clientSignatureLineY, installerSignatureLeft + clientSignatureWidth, clientSignatureLineY);
   doc.setFontSize(7.3);
   doc.setTextColor(0, 0, 0);
-  doc.text("Podpis klienta złożony palcem na ekranie telefonu", clientSignatureLeft, y + 129);
+  doc.text(data.addressCorrection
+    ? `Korekta adresu — podpis klienta z ${data.signedAt}`
+    : "Podpis klienta złożony palcem na ekranie telefonu", clientSignatureLeft, y + 129);
   doc.text("Pieczątka i podpis instalatora", installerSignatureLeft + (clientSignatureWidth / 2), y + 129, { align: "center" });
 
   endPrintSafeArea(doc);
@@ -751,9 +754,9 @@ export async function generateJobProtocolPdf({ job, profiles, signatureDataUrl, 
   return { fileName, shared: false };
 }
 
-export async function createJobProtocolPdfFile({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null, note = "" }) {
+export async function createJobProtocolPdfFile({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null, note = "", addressCorrection = false }) {
   if (!signatureDataUrl) throw new Error("Złóż podpis klienta przed utworzeniem PDF.");
-  const data = buildJobProtocolData({ job, profiles, signedAt, payment, note });
+  const data = buildJobProtocolData({ job, profiles, signedAt, payment, note, addressCorrection });
   const doc = await buildPdfDocument({ data, signatureDataUrl });
   const fileName = getProtocolFileName(data);
   const pdfBlob = doc.output("blob");

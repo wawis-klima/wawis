@@ -1,3 +1,11 @@
+## 13.22
+- Mobile: podpisy od tej wersji zapisujemy osobno jako prywatne PNG w Supabase, ze snapshotem podpisanych danych; starsze protokoły pozostają bez odzyskiwania podpisu.
+- Zmiana tylko adresu umożliwia wydanie nowego PDF z zachowanym podpisem i datą pierwotnego podpisania; PDF zawiera oznaczenie korekty.
+- „Podpisz ponownie” pozwala zastąpić zapisany podpis; anulowanie przywraca poprzedni.
+- Zmiana danych klienta innych niż adres, płatności, uwag, urządzeń lub warunków wymaga nowego podpisu.
+- Oryginalny PDF jest zachowywany, a poprzednie wersje można pobrać z historii protokołu.
+- Nowa migracja `20261012141000_protocol_signature_address_correction_v1322.sql` jest wymagana przed wdrożeniem. Nowy test regresji podpisu, zachowania historii i starych protokołów.
+
 ## 13.21
 - Mobile, Nowy montaż: administrator widzi „Komentarz administratora”; tekst i dyktowanie zapisują jobs.admin_note w operacji tworzenia montażu.
 - Pracownik zachowuje zwykły „Komentarz” zapisywany do tabeli comments / „Komentarze i pytania”; administrator nie tworzy duplikatu w historii komentarzy.

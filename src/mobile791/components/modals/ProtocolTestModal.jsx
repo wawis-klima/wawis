@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppModal from "./AppModal.jsx";
 import { buildJobProtocolData, createJobProtocolPdfFile } from "../../modules/job-protocol-pdf.js";
 import { getLegacyInstallerSuggestionIds } from "../../modules/jobs-assignment.js";
+import { canReuseProtocolSignature, createProtocolSigningSnapshot, hasProtocolAddressCorrection } from "../../modules/protocol-signature-reuse.js";
 import {
   downloadStoredJobProtocol,
   formatStoredProtocolDate,
+  loadStoredProtocolSignature,
   openStoredJobProtocolPdfPreview,
   storeJobProtocol,
 } from "../../modules/job-protocol-storage.js";
@@ -186,6 +188,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const editScrollBaselineRef = useRef(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef(null);
+  const previousSignatureRef = useRef("");
   const openedAtRef = useRef(new Date());
   const paymentDraftBaselineRef = useRef(JSON.stringify(getProtocolPaymentDraft(job)));
   const noteBaselineRef = useRef(String(protocolRecord?.note || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH));
@@ -200,6 +203,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [hasSignature, setHasSignature] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState("");
+  const [reusedSignature, setReusedSignature] = useState(false);
   const [draftHasSignature, setDraftHasSignature] = useState(false);
   const [signatureCanvasReady, setSignatureCanvasReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -238,6 +242,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setHasSignature(false);
     setSignatureOpen(false);
     setSignatureDataUrl("");
+    setReusedSignature(false);
+    previousSignatureRef.current = "";
     setDraftHasSignature(false);
     setSignatureCanvasReady(false);
     setIsGenerating(false);
@@ -368,6 +374,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     if (!hasSignature && !signatureDataUrl) return;
     setHasSignature(false);
     setSignatureDataUrl("");
+    setReusedSignature(false);
+    previousSignatureRef.current = "";
     setDraftHasSignature(false);
     setMessage("");
   }
@@ -388,20 +396,55 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setNoteOpen(false);
   }
 
-  function beginEditingStoredProtocol() {
-    // Po rozbudowaniu formularza ustawiamy jego ostatnią sekcję tuż nad sticky footerem.
-    // scrollIntoView wybiera prawdziwy kontener przewijania Safari, zamiast zgadywać scrollTop.
+  function getCurrentSigningSnapshot() {
+    const payment = normalizePaymentConfirmation(paymentDraft);
+    return createProtocolSigningSnapshot(buildJobProtocolData({
+      job: protocolJobForDocument, profiles, signedAt: openedAtRef.current,
+      payment, note: protocolNote,
+    }));
+  }
+
+  async function beginEditingStoredProtocol() {
+    // Wcześniejsze protokoły bez oddzielnego podpisu nadal wymagają nowego podpisu.
     editScrollBaselineRef.current = { pending: true };
     setEditing(true);
     setActionMenuOpen(false);
     setHasSignature(false);
     setSignatureDataUrl("");
+    setReusedSignature(false);
+    previousSignatureRef.current = "";
     setDraftHasSignature(false);
     setMessage("");
+    // Starsze protokoły nie mają osobno zapisanego podpisu i zachowują dotychczasowy przebieg edycji.
+    if (!savedRecord?.signature_path || !savedRecord?.signed_snapshot) return;
+    try {
+      const snapshot = getCurrentSigningSnapshot();
+      if (!canReuseProtocolSignature(savedRecord, snapshot)) {
+        setMessage("Ten protokół wymaga nowego podpisu. Automatyczne zachowanie podpisu dotyczy wyłącznie nowych protokołów i korekt adresu.");
+        return;
+      }
+      const image = await loadStoredProtocolSignature({ supabase, record: savedRecord });
+      setSignatureDataUrl(image);
+      setHasSignature(true);
+      setReusedSignature(true);
+      setMessage(hasProtocolAddressCorrection(savedRecord, snapshot)
+        ? "Poprzedni podpis zachowany. Nowy PDF zostanie oznaczony jako korekta adresu; oryginał pozostanie w historii."
+        : "Podpis klienta zachowany. Możesz go zastąpić przyciskiem Podpisz ponownie.");
+    } catch (error) {
+      setMessage(error?.message || "Nie udało się załadować podpisu. Poproś klienta o nowy podpis.");
+    }
   }
 
   function openSignature() {
-    setDraftHasSignature(Boolean(signatureDataUrl));
+    if (reusedSignature) {
+      previousSignatureRef.current = signatureDataUrl;
+      setSignatureDataUrl("");
+      setHasSignature(false);
+      setReusedSignature(false);
+      setDraftHasSignature(false);
+    } else {
+      setDraftHasSignature(Boolean(signatureDataUrl));
+    }
     setSignatureCanvasReady(false);
     setMessage("");
     setSignatureOpen(true);
@@ -410,6 +453,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   function closeSignature() {
     drawingRef.current = false;
     lastPointRef.current = null;
+    if (previousSignatureRef.current) {
+      setSignatureDataUrl(previousSignatureRef.current);
+      setHasSignature(true);
+      setReusedSignature(true);
+      setDraftHasSignature(true);
+      previousSignatureRef.current = "";
+    }
     setSignatureOpen(false);
   }
 
@@ -496,6 +546,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   function confirmSignature() {
     if (!draftHasSignature || !signatureCanvasReady || !canvasRef.current) return;
     setSignatureDataUrl(getTrimmedSignatureDataUrl(canvasRef.current));
+    setReusedSignature(false);
+    previousSignatureRef.current = "";
     setHasSignature(true);
     setSignatureOpen(false);
     setMessage("");
@@ -525,12 +577,18 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           { phase: "payment", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
         const updatedJob = { ...protocolJobForDocument, ...paymentPatch };
-        const signedAt = new Date();
+        const signedSnapshot = getCurrentSigningSnapshot();
+        const reuseStoredSignature = reusedSignature && Boolean(savedRecord);
+        if (reuseStoredSignature && !canReuseProtocolSignature(savedRecord, signedSnapshot)) {
+          throw new Error("Zmieniono dane inne niż adres. Poproś klienta o ponowny podpis.");
+        }
+        const addressCorrection = reuseStoredSignature && hasProtocolAddressCorrection(savedRecord, signedSnapshot);
+        const signedAt = reuseStoredSignature ? new Date(savedRecord.signed_at) : new Date();
         progress.phase = "pdf";
         setSaveProgressLabel("Tworzę PDF…");
         await waitForProtocolUiPaint();
         const result = await withProtocolSaveTimeout(
-          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl, signedAt, payment, note: protocolNoteValue }),
+          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl, signedAt, payment, note: protocolNoteValue, addressCorrection }),
           { phase: "pdf", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
         progress.phase = "storage";
@@ -545,10 +603,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           note: protocolNoteValue,
           replaceExisting: Boolean(savedRecord),
           expectedStoragePath: savedRecord?.storage_path || "",
+          signatureDataUrl: reuseStoredSignature ? "" : signatureDataUrl,
+          reuseStoredSignature,
+          signedSnapshot,
         });
-        return { paymentPatch, record, protocolNoteValue };
+        return { paymentPatch, record, protocolNoteValue, reused: reuseStoredSignature };
       })();
-      const { paymentPatch, record, protocolNoteValue } = await withProtocolSaveTimeout(saveOperation, {
+      const { paymentPatch, record, protocolNoteValue, reused } = await withProtocolSaveTimeout(saveOperation, {
         phase: () => progress.phase,
         timeoutMs: PROTOCOL_SAVE_TOTAL_TIMEOUT_MS,
       });
@@ -562,11 +623,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       setNoteOpen(Boolean(noteBaselineRef.current.trim()));
       setHasSignature(false);
       setSignatureDataUrl("");
+      setReusedSignature(false);
+      previousSignatureRef.current = "";
       setDraftHasSignature(false);
       setActionMenuOpen(false);
       setMessage(
         wasReplacement
-          ? "Protokół został zaktualizowany i podpisany ponownie."
+          ? reused ? "Zapisano korektę protokołu z zachowanym podpisem. Poprzedni PDF jest dostępny w historii." : "Protokół został zaktualizowany i podpisany ponownie."
           : protocolIsCompleted
             ? "Protokół został zapisany przy zakończonym zleceniu."
             : "Protokół został zapisany. Możesz teraz zakończyć zlecenie po spełnieniu pozostałych warunków."
@@ -595,19 +658,19 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     }
   }
 
-  async function runSavedAction(action) {
+  async function runSavedAction(action, targetRecord = savedRecord) {
     if (!savedRecord || actionBusy) return;
     setActionBusy(action);
     setMessage("");
     try {
       if (action === "download") {
-        await downloadStoredJobProtocol({ supabase, record: savedRecord });
+        await downloadStoredJobProtocol({ supabase, record: targetRecord });
         setMessage("Pobieranie protokołu zostało uruchomione.");
       } else if (action === "email") {
         const result = await sendJobProtocolEmail({ supabase, record: savedRecord, job: protocolJob });
         setMessage(`Protokół został wysłany z ${result.senderEmail} do ${result.recipientEmail}.`);
       } else {
-        await openStoredJobProtocolPdfPreview({ supabase, record: savedRecord });
+        await openStoredJobProtocolPdfPreview({ supabase, record: targetRecord });
         setMessage("PDF został otwarty w podglądzie iOS. Użyj Udostępnij i wybierz Phomemo.");
       }
     } catch (error) {
@@ -619,7 +682,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
 
   const paymentDraftDirty = paymentReady && JSON.stringify(paymentDraft) !== paymentDraftBaselineRef.current;
   const protocolNoteDirty = protocolNote !== noteBaselineRef.current;
-  const protocolHasUnsavedWork = Boolean(open && (isGenerating || hasSignature || draftHasSignature || paymentDraftDirty || protocolNoteDirty));
+  const protocolHasUnsavedWork = Boolean(open && (isGenerating || (hasSignature && !reusedSignature) || (draftHasSignature && !reusedSignature) || paymentDraftDirty || protocolNoteDirty));
   const storedPayment = paymentReady ? getPaymentDraftFromJob(protocolJob) : { enabled: false, amount: "", method: "", paidDate: "" };
   const paymentVisible = editing ? paymentDraft : storedPayment;
   const recipientEmail = getJobProtocolRecipientEmail(protocolJob);
@@ -752,10 +815,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               <div className={`protocolTestSignatureStatus${hasSignature || (savedRecord && !editing) ? " ready" : ""}`}>
                 {hasSignature || (savedRecord && !editing) ? <div>
                   <strong>{savedRecord && !editing ? "Protokół podpisany i zapisany" : "Podpis klienta zapisany"}</strong>
-                  {savedRecord && !editing ? null : <span>Możesz zapisać protokół PDF albo zmienić podpis.</span>}
+                  {savedRecord && !editing ? null : <span>{reusedSignature ? "Zachowano wcześniejszy podpis klienta. Możesz podpisać ponownie." : "Możesz zapisać protokół PDF albo zmienić podpis."}</span>}
                 </div> : null}
                 {editing ? (
-                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !paymentReady || Boolean(paymentLoadError)}>{hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
+                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !paymentReady || Boolean(paymentLoadError)}>{reusedSignature ? "Podpisz ponownie" : hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
                 ) : (
                   <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol} disabled={!paymentReady || Boolean(paymentLoadError)}>Uzupełnij protokół</button>
                 )}
@@ -771,6 +834,17 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                   <span>{canSendEmail ? `Do: ${recipientEmail}` : "Uzupełnij prawidłowy e-mail klienta w zleceniu."}</span>
                 </div>
                 <button type="button" className="btn" onClick={() => runSavedAction("download")} disabled={Boolean(actionBusy)}>{actionBusy === "download" ? "Pobieram..." : "Zapisz PDF w telefonie"}</button>
+                {savedRecord.revision_history?.length ? (
+                  <div className="protocolPreviousVersions">
+                    <strong>Poprzednie wersje protokołu</strong>
+                    {savedRecord.revision_history.map((entry, index) => (
+                      <div key={`${entry.storage_path}-${index}`} className="protocolPreviousVersion">
+                        <span>{`Wersja ${index + 1} · ${formatStoredProtocolDate(entry.signed_at)}`}</span>
+                        <button type="button" className="btn" disabled={Boolean(actionBusy)} onClick={() => runSavedAction("download", entry)}>Pobierz starszy PDF</button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </section>
             ) : null}
             {message ? <div className="protocolTestMessage" role="status">{message}</div> : null}

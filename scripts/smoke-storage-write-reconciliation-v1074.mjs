@@ -125,7 +125,7 @@ async function saveProtocol(supabase, replaceExisting = false) {
   const saved = await saveProtocol(supabase, true);
   assert.notEqual(saved.storage_path, oldPath);
   assert.ok(supabase.files.has(saved.storage_path), 'Nowy PDF musi istnieć po potwierdzonym update rekordu.');
-  assert.equal(supabase.files.has(oldPath), false, 'Stary PDF wolno usunąć dopiero po potwierdzeniu nowego rekordu.');
+  assert.equal(supabase.files.has(oldPath), true, 'Stary PDF musi pozostać jako niezmienny oryginał w historii korekt.');
 }
 
 {

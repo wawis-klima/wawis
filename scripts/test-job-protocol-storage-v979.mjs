@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { createProtocolSigningSnapshot } from '../src/mobile791/modules/protocol-signature-reuse.js';
 import {
   JOB_PROTOCOLS_BUCKET,
+  JOB_PROTOCOL_SIGNATURES_BUCKET,
   JOB_PROTOCOLS_TABLE,
   PROTOCOL_WRITE_CONFLICT,
   loadJobProtocolRecord,
@@ -74,10 +76,10 @@ const supabase = {
   },
   storage: {
     from(bucket) {
-      assert.equal(bucket, JOB_PROTOCOLS_BUCKET);
+      assert.ok([JOB_PROTOCOLS_BUCKET, JOB_PROTOCOL_SIGNATURES_BUCKET].includes(bucket));
       return {
         async upload(path, blob, options) {
-          assert.equal(options.contentType, 'application/pdf');
+          assert.equal(options.contentType, bucket === JOB_PROTOCOL_SIGNATURES_BUCKET ? 'image/png' : 'application/pdf');
           assert.equal(options.upsert, false);
           lastUploadedPath = path;
           objects.set(path, blob);
@@ -138,7 +140,9 @@ assert.deepEqual(lastUpdateFilters, [
   ['id', 'protocol-1'],
   ['storage_path', firstStoragePath],
 ], 'Replacement must be CAS-bound to both record id and the exact protocol version the user edited.');
-assert.equal(objects.has(firstStoragePath), false);
+assert.equal(objects.has(firstStoragePath), true, 'Signed original PDF must stay in immutable history.');
+assert.equal(replaced.revision_history.length, 1);
+assert.equal(replaced.revision_history[0].storage_path, firstStoragePath);
 assert.equal(objects.get(replaced.storage_path), replacementBlob);
 assert.equal(protocolRecordReadCount, 3, 'Successful replacement must use only its initial protocol read.');
 
@@ -237,4 +241,37 @@ const inProgressSaved = await storeJobProtocol({
 });
 assert.equal(inProgressSaved.job_id, '22222222-2222-4222-8222-222222222222');
 assert.equal(rows.length, 2);
+
+const freshJob = { id: '33333333-3333-4333-8333-333333333333', status: 'W trakcie' };
+const freshSignedAt = new Date('2026-10-12T14:00:00.000Z');
+const snapshot = createProtocolSigningSnapshot({
+  client: 'Test klient', address: 'Zawiercie, Pierwsza 1',
+  payment: { enabled: true, method: 'cash', amount: 250, paidDate: '2026-10-12' },
+});
+const pngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lK0AAAAASUVORK5CYII=';
+const fresh = await storeJobProtocol({
+  supabase, job: freshJob, pdfBlob, fileName: 'nowy.pdf',
+  signedAt: freshSignedAt, signatureDataUrl: pngDataUrl, signedSnapshot: snapshot,
+});
+assert.ok(fresh.signature_path.startsWith(freshJob.id + '/signature-'));
+assert.ok(objects.has(fresh.signature_path), 'Nowy podpis musi być zapisany w prywatnym bucketcie.');
+const corrected = await storeJobProtocol({
+  supabase, job: freshJob, pdfBlob: replacementBlob, fileName: 'korekta.pdf',
+  signedAt: new Date('2026-10-12T15:00:00.000Z'),
+  replaceExisting: true, expectedStoragePath: fresh.storage_path,
+  reuseStoredSignature: true, signedSnapshot: { ...snapshot, address: 'Zawiercie, Druga 2' },
+});
+assert.equal(corrected.signature_path, fresh.signature_path);
+assert.equal(corrected.signed_at, freshSignedAt.toISOString(), 'Zachowujemy oryginalną datę podpisania.');
+assert.equal(corrected.revision_history.at(-1).storage_path, fresh.storage_path);
+assert.ok(objects.has(fresh.storage_path), 'Oryginał PDF musi pozostać dostępny.');
+await assert.rejects(
+  storeJobProtocol({
+    supabase, job: freshJob, pdfBlob, fileName: 'nieautoryzowana-zmiana.pdf',
+    replaceExisting: true, expectedStoragePath: corrected.storage_path,
+    reuseStoredSignature: true,
+    signedSnapshot: { ...snapshot, address: 'Zawiercie, Druga 2', payment: { ...snapshot.payment, amount: 999 } },
+  }),
+  /Dane podpisanego protokołu zmieniły się poza adresem/,
+);
 console.log('PASS test-job-protocol-storage-v979');
