@@ -835,3 +835,17 @@
     margin-top:8px!important;
   }
 }
+
+/* WAWIS 13.19 — slightly tighter vertical rhythm in admin existing-job edit.
+   A small 2px reduction per row creates room under Save without changing inputs,
+   note height, typography, microphone or other roles/forms. */
+@media (max-width:700px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:6px!important;
+  }
+}
+@media (max-width:700px) and (min-height:861px) {
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) {
+    row-gap:8px!important;
+  }
+}
