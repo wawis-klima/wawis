@@ -1,10 +1,10 @@
 {
-  "version": "13.18",
-  "summary": "Edycja administratora — komentarz o jeden wiersz niższy",
+  "version": "13.19",
+  "summary": "Minimalnie mniejsze odstępy w mobilnej edycji montażu administratora",
   "changes": [
-    "Pole komentarza w mobilnej edycji istniejącego montażu administratora zmniejszono z 140 do 120 px, na wysokich iPhone’ach ze 148 do 128 px.",
-    "Odstępy między wierszami pozostają 8/10 px; nie zmieniono rozmiarów czcionek ani pozostałych pól.",
-    "Zachowano przewijanie na krótszych ekranach, przycisk Zapisz zmiany, mikrofon i wybór daty.",
-    "Testy geometrii i dostępności zapisu 390×700, 402×740, 390×844, 430×932; bez zmian w tworzeniu montażu, pracowniku, desktopie i OCR."
+    "Wyłącznie w formularzu Edytuj montaż administratora na iPhonie: pionowe odstępy pomiędzy wierszami 8 → 6 px; na wyższych ekranach 10 → 8 px.",
+    "Nie zmieniono pola komentarza (120/128 px), czcionek, wysokości pól, przycisku zapisu, daty ani mikrofonów.",
+    "Krótsze ekrany nadal przewijają formularz; testy 390×700, 402×740, 390×844 i 430×932 kontrolują widoczne odstępy, pole komentarza i dostępność przycisku zapisu.",
+    "Bez zmian w formularzu dodawania montażu, panelu pracownika, desktopie, OCR, uprawnieniach i danych."
   ]
 }
