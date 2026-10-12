@@ -138,7 +138,9 @@ assert.deepEqual(lastUpdateFilters, [
   ['id', 'protocol-1'],
   ['storage_path', firstStoragePath],
 ], 'Replacement must be CAS-bound to both record id and the exact protocol version the user edited.');
-assert.equal(objects.has(firstStoragePath), false);
+assert.equal(objects.has(firstStoragePath), true, 'Signed original PDF must stay in immutable history.');
+assert.equal(replaced.revision_history.length, 1);
+assert.equal(replaced.revision_history[0].storage_path, firstStoragePath);
 assert.equal(objects.get(replaced.storage_path), replacementBlob);
 assert.equal(protocolRecordReadCount, 3, 'Successful replacement must use only its initial protocol read.');
 

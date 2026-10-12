@@ -16,7 +16,7 @@ assert.match(modal, /overlayClassName="protocolSignatureOverlay"/);
 assert.match(modal, /contentClassName="protocolSignatureModal"/);
 assert.match(modal, /className="protocolSignatureScreen"/);
 assert.doesNotMatch(modal, /Podpis zostanie złożony na osobnym, nieruchomym ekranie\./);
-assert.match(modal, />\{hasSignature \? "Zmień podpis" : "Podpis klienta"\}<\/button>/);
+assert.match(modal, />\{reusedSignature \? "Podpisz ponownie" : hasSignature \? "Zmień podpis" : "Podpis klienta"\}<\/button>/);
 assert.match(modal, /Zatwierdź podpis/);
 assert.match(modal, /signatureDataUrl,/);
 assert.doesNotMatch(modal, /className="protocolTestSignatureCanvas"/, 'Pole podpisu nie może pozostać w przewijanej treści protokołu.');

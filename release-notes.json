@@ -1,11 +1,12 @@
 {
-  "version": "13.21",
-  "summary": "Poprawny zapis komentarza administratora podczas dodawania nowego montażu na iPhonie",
+  "version": "13.22",
+  "summary": "Podpis klienta zachowany przy korekcie adresu dla nowych protokołów",
   "changes": [
-    "Nowy montaż administratora: pole Komentarz administratora i mikrofon zapisują do jobs.admin_note.",
-    "Nowy montaż pracownika: zwykły Komentarz nadal trafia do sekcji Komentarze i pytania.",
-    "Wykluczono jednoczesne dodanie komentarza admina do zwykłych komentarzy; czyszczenie dotyczy tylko bieżącego pola.",
-    "Edycja istniejącego montażu, desktop, OCR, protokoły i schemat Supabase pozostają bez zmian.",
-    "Regresje smoke oraz iPhone E2E dla obu ról, zapisu i odczytu sekcji docelowej."
+    "Od wersji 13.22 podpisy przechowywane osobno w prywatnym bucketcie, bez odzyskiwania ze starszych PDF.",
+    "Korekta wyłącznie adresu może zachować pierwotny podpis i datę; PDF jest oznaczony jako korekta.",
+    "Akcja Podpisz ponownie pozwala złożyć nowy podpis, a anulowanie zachowuje dotychczasowy.",
+    "Istotne zmiany danych i płatności wymagają nowego podpisu.",
+    "Poprzednie wersje PDF są przechowywane i można je pobrać.",
+    "Wymagana migracja Supabase 20261012141000_protocol_signature_address_correction_v1322.sql."
   ]
 }

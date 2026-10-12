@@ -142,7 +142,7 @@ assert.match(pdfModule, /drawSectionTitle\(doc, "Uwagi", y\)/);
 assert.match(pdfModule, /y \+= tableHeight \+ 20;[\s\S]*drawSectionTitle\(doc, "Potwierdzenie zapłaty", y\)/, 'Potwierdzenie zapłaty ma zachować taki sam górny oddech jak wcześniejsze sekcje.');
 assert.match(pdfModule, /y \+= paymentCardHeight \+ 20;/, 'Sekcja po płatności musi mieć wyrównany górny odstęp.');
 assert.match(pdfModule, /y \+= noteCardHeight \+ 20;/, 'Informacje i ustalenia muszą mieć wyrównany górny odstęp po uwadze.');
-assert.match(pdfModule, /createJobProtocolPdfFile\(\{ job, profiles, signatureDataUrl, signedAt = new Date\(\), payment = null, note = "" \}\)/);
+assert.match(pdfModule, /createJobProtocolPdfFile\(\{ job, profiles, signatureDataUrl, signedAt = new Date\(\), payment = null, note = "", addressCorrection = false \}\)/);
 assert.match(protocolNoteSql, /add column if not exists note text/i);
 assert.match(protocolNoteSql, /char_length\(note\) <= 300/i);
 assert.doesNotMatch(paymentModule, /Zapłacono całość|Wpłacono zaliczkę|PAYMENT_KINDS|getPaymentKindLabel/);

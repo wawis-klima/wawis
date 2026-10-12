@@ -87,6 +87,7 @@ const GROUPS = {
     'node scripts/smoke-photo-zero-byte-v1096.mjs',
   ],
   protocol: [
+    'node scripts/smoke-protocol-signature-reuse-v1322.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-worker-protocol-gate-v1226.cjs',
     'npm run test:smoke:mobile-protocol',

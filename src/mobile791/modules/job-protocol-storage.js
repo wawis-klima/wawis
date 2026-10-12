@@ -4,11 +4,13 @@ import {
   retryTransientProtocolOperation,
   withProtocolSaveTimeout,
 } from "./protocol-save-timeout.js";
+import { canReuseProtocolSignature } from "./protocol-signature-reuse.js";
 
 const PROTOCOLS_TABLE = "job_protocols";
 const PROTOCOLS_BUCKET = "job-protocols";
+const SIGNATURES_BUCKET = "job-protocol-signatures";
 const PDF_MIME_TYPE = "application/pdf";
-const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_bytes, signed_at, created_at, created_by, note";
+const PROTOCOL_RECORD_COLUMNS = "id, job_id, storage_path, file_name, file_size_bytes, signed_at, created_at, created_by, note, signature_path, signed_snapshot, revision_history, correction_kind";
 const PROTOCOL_CLEANUP_TIMEOUT_MS = 5_000;
 export const PROTOCOL_WRITE_CONFLICT = "PROTOCOL_WRITE_CONFLICT";
 const PRINT_IMAGE_MIME_TYPE = "image/png";
@@ -27,6 +29,9 @@ function normalizeRecord(record) {
     file_name: normalizeText(record.file_name) || "wawis-protokol.pdf",
     storage_path: normalizeText(record.storage_path),
     note: normalizeText(record.note).slice(0, 300),
+    signature_path: normalizeText(record.signature_path),
+    signed_snapshot: record.signed_snapshot || null,
+    revision_history: Array.isArray(record.revision_history) ? record.revision_history : [],
   };
 }
 
@@ -68,6 +73,40 @@ function getProtocolStoragePath(jobId, signedAt) {
   return `${jobId}/protocol-${timestamp}-${suffix}.pdf`;
 }
 
+function decodePngSignature(dataUrl) {
+  if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(dataUrl || ""))) throw new Error("Nieprawidłowy format podpisu klienta.");
+  const raw = atob(dataUrl.split(",")[1]);
+  if (!raw.length || raw.length > 2_000_000) throw new Error("Podpis klienta jest zbyt duży.");
+  return new Blob([Uint8Array.from(raw, (symbol) => symbol.charCodeAt(0))], { type: "image/png" });
+}
+async function uploadProtocolSignature({ supabase, jobId, signatureDataUrl, timeoutMs }) {
+  const unique = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+  const path = `${jobId}/signature-${unique}.png`;
+  const result = await withProtocolSaveTimeout(
+    supabase.storage.from(SIGNATURES_BUCKET).upload(path, decodePngSignature(signatureDataUrl), {
+      contentType: "image/png", cacheControl: "3600", upsert: false,
+    }),
+    { phase: "signature-upload", timeoutMs },
+  );
+  if (result.error) throw result.error;
+  return path;
+}
+export async function loadStoredProtocolSignature({ supabase, record }) {
+  const path = normalizeText(record?.signature_path);
+  if (!path || !record?.job_id || !path.startsWith(`${record.job_id}/`)) throw new Error("Starszy protokół nie ma oddzielnie zapisanego podpisu.");
+  const { data, error } = await withProtocolSaveTimeout(
+    supabase.storage.from(SIGNATURES_BUCKET).download(path),
+    { phase: "signature-download", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
+  );
+  if (error) throw error;
+  if (!(data instanceof Blob) || data.type !== "image/png" || !data.size || data.size > 2_000_000) throw new Error("Nie udało się odczytać podpisu klienta.");
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Nie udało się załadować podpisu."));
+    reader.readAsDataURL(data);
+  });
+}
 function addAbortSignal(query, controller) {
   if (!controller || typeof query?.abortSignal !== "function") return query;
   return query.abortSignal(controller.signal);
@@ -161,6 +200,9 @@ export async function storeJobProtocol({
   note = "",
   replaceExisting = false,
   expectedStoragePath = "",
+  signatureDataUrl = "",
+  reuseStoredSignature = false,
+  signedSnapshot = null,
   timeoutMs = PROTOCOL_SAVE_STEP_TIMEOUT_MS,
   uploadTimeoutMs = PROTOCOL_SAVE_UPLOAD_TIMEOUT_MS,
 }) {
@@ -183,7 +225,10 @@ export async function storeJobProtocol({
     throw createProtocolWriteConflict({ activeRecord: existing.record, attemptedStoragePath: expectedExistingStoragePath });
   }
 
+  if (reuseStoredSignature && !canReuseProtocolSignature(existing.record, signedSnapshot)) throw new Error("Dane podpisanego protokołu zmieniły się poza adresem. Poproś klienta o nowy podpis.");
   const createdBy = await getAuthenticatedUserId(supabase, timeoutMs);
+  const signaturePath = reuseStoredSignature ? existing.record.signature_path : signatureDataUrl ? await uploadProtocolSignature({ supabase, jobId: job.id, signatureDataUrl, timeoutMs: uploadTimeoutMs }) : "";
+  const effectiveSignedAt = reuseStoredSignature ? new Date(existing.record.signed_at) : signedAt;
   const storagePath = getProtocolStoragePath(job.id, signedAt);
   const normalizedFileName = normalizeText(fileName) || "wawis-protokol.pdf";
   const uploadResult = await withProtocolSaveTimeout(
@@ -203,7 +248,14 @@ export async function storeJobProtocol({
     storage_path: storagePath,
     file_name: normalizedFileName,
     file_size_bytes: pdfBlob.size,
-    signed_at: signedAt.toISOString(),
+    signed_at: effectiveSignedAt.toISOString(),
+    signature_path: signaturePath || null,
+    signed_snapshot: signedSnapshot,
+    correction_kind: reuseStoredSignature ? "address_correction" : null,
+    revision_history: existing.record ? [
+      ...existing.record.revision_history,
+      { storage_path: existing.record.storage_path, file_name: existing.record.file_name, signed_at: existing.record.signed_at, archived_at: new Date().toISOString(), correction_kind: existing.record.correction_kind || null },
+    ] : [],
     created_by: createdBy,
     note: normalizeText(note).slice(0, 300) || null,
   };
@@ -220,9 +272,6 @@ export async function storeJobProtocol({
     if (writeResult.error) {
       const reconciliation = await reconcileProtocolWrite({ supabase, jobId: job.id, timeoutMs });
       if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
-        if (existing.record.storage_path !== storagePath) {
-          removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
-        }
         return reconciliation.record;
       }
       if (reconciliation.confirmed && reconciliation.record) {
@@ -255,17 +304,11 @@ export async function storeJobProtocol({
 
   const savedRecord = normalizeRecord(writeResult?.data);
   if (protocolRecordUsesStoragePath(savedRecord, storagePath)) {
-    if (existing.record && existing.record.storage_path !== storagePath) {
-      removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
-    }
     return savedRecord;
   }
 
   const reconciliation = await reconcileProtocolWrite({ supabase, jobId: job.id, timeoutMs });
   if (protocolRecordUsesStoragePath(reconciliation.record, storagePath)) {
-    if (existing.record && existing.record.storage_path !== storagePath) {
-      removeProtocolFilesBestEffort(supabase, [existing.record.storage_path]);
-    }
     return reconciliation.record;
   }
   if (reconciliation.confirmed && reconciliation.record) {
@@ -519,3 +562,4 @@ export function formatStoredProtocolDate(value) {
 
 export const JOB_PROTOCOLS_TABLE = PROTOCOLS_TABLE;
 export const JOB_PROTOCOLS_BUCKET = PROTOCOLS_BUCKET;
+export const JOB_PROTOCOL_SIGNATURES_BUCKET = SIGNATURES_BUCKET;

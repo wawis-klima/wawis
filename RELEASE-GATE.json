@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.21",
+  "version": "13.22",
   "scope": "mobile",
-  "release_branch": "release/v13.21",
+  "release_branch": "release/v13.22",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Izolowana poprawka mobilnego formularza nowego montażu: rozdzielenie notatki administratora od komentarza pracownika."
+    "notes": "Nowe podpisy protokołu zapisywane osobno; korekta adresu, historia PDF, starsze dokumenty bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.21.zip"
+    "file_name": "klima-app-v13.22.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.21",
+    "source_branch": "release/v13.22",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, physical iPhone",
-    "notes": "EXTERNAL: zweryfikować 13.21, właściwy SHA Vercel, notatkę administratora i komentarz pracownika na fizycznym iPhonie."
+    "notes": "EXTERNAL: zielone CI i Vercel READY SHA 13.22; test nowego podpisu, korekty adresu, ponownego podpisu i wersji PDF na iPhonie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile: administrator -> jobs.admin_note i Komentarz administratora; pracownik -> comments i Komentarze i pytania; wpisy ręczne, głosowe i czyszczenie; brak duplikatów i regresji.",
-    "release_ci": "REQUIRED: zielony PR targeted-checks, jobs smoke, E2E iPhone dwóch ról, Closure Gate i build.",
-    "post_deploy": "EXTERNAL: Vercel READY dokładnego SHA, wersja 13.21 oraz kontrole ról na fizycznym iPhonie."
+    "code": "Nowe protokoły: podpis PNG, snapshot podpisanych danych, korekta tylko adresu, oryginalny PDF zachowany, ponowny podpis, stary protokół nie wymaga migracji podpisu.",
+    "release_ci": "REQUIRED: targeted-checks, Closure Gate, protocol smoke, mobile E2E, build; migracja SQL przed produkcją.",
+    "post_deploy": "EXTERNAL: Supabase migration potwierdzona, Vercel READY właściwego SHA i wersja 13.22 oraz fizyczny test iPhone."
   }
 }

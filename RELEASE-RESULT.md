@@ -1,13 +1,16 @@
-# RELEASE RESULT — WAWIS 13.21 (przygotowanie)
+# RELEASE RESULT
+
+## Wersja
+- 13.22 (przygotowanie — nie potwierdza wdrożenia)
 
 ## Zakres
-- Mobilny nowy montaż: administrator ma własne pole „Komentarz administratora”, zapisywane do jobs.admin_note.
-- Pracownik nadal tworzy zwykły komentarz w comments. Ręczne wpisy, dyktowanie i czyszczenie kierowane zgodnie z rolą.
-- Bez zmian w Supabase SQL, desktopie i edycji istniejącego montażu.
+- Nowe podpisy klienta: prywatny PNG oraz snapshot podpisanych danych.
+- Korekta samego adresu z zachowanym podpisem i datą pierwotnego podpisu.
+- Podpisz ponownie, z anulowaniem bez utraty dotychczasowego podpisu.
+- Zachowanie poprzednich PDF i możliwość pobrania wersji z historii.
+- Starsze protokoły bez zmian i bez automatycznego odzyskiwania podpisu.
 
-## Bramka przed produkcją
-- Zielony GitHub PR WAWIS PR checks / targeted-checks wraz z Closure Gate.
-- Playwright mobile dla dwóch ról, po zapisie w mocku sprawdzenie admin_note oraz comments.
-- Zielony Vercel READY dokładnego SHA i potwierdzenie 13.21 na fizycznym iPhonie.
-
-Stan testów i wdrożenia należy potwierdzić zewnętrznie; plik nie deklaruje zakończenia testów.
+## Bramki
+- Zielone CI PR: targeted checks, Closure Gate, E2E i build.
+- Addytywna migracja Supabase przed opublikowaniem aplikacji.
+- Vercel READY dokładnego SHA oraz kontrola na fizycznym iPhonie.
