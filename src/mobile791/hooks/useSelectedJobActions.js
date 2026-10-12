@@ -310,7 +310,9 @@ export function useSelectedJobActions({
         });
       }
 
-      if (String(form.worker_comment || '').trim() && createdJob?.id) {
+      // Komentarz administratora zapisuje addJobRecord w jobs.admin_note;
+      // do sekcji zwykłych komentarzy dodajemy wyłącznie wpis pracownika.
+      if (!isAdmin && String(form.worker_comment || '').trim() && createdJob?.id) {
         try {
           await addJobComment({
             supabase,

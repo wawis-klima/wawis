@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { STATUSES } from "../../utils/jobHelpers.jsx";
+import { getNewJobCommentConfig } from "../../modules/new-job-comment.js";
 import AppModal from "./AppModal.jsx";
 import ClientVoiceInput, { VoiceNoteButton, appendVoiceNoteText } from "../../../components/voice/ClientVoiceInput.jsx";
 import "./new-job-comment-mic-v1311.css";
@@ -48,6 +49,7 @@ export default function JobFormModal({
   saveEditedJob,
   busy,
 }) {
+  const newJobCommentConfig = getNewJobCommentConfig(isAdmin);
   // WAWIS 13.02: expand the admin edit client field only when its text wraps.
   // The persisted client value remains a single line of text; only its display is multiline.
   const adminClientNameRefV1302 = useRef(null);
@@ -835,22 +837,22 @@ export default function JobFormModal({
         {!editingJobId ? (
           <div className="inputLabel workerNewClientCommentBlock" style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}>
             <div className="fieldLabelRow workerNewClientCommentLabelRow" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, width: '100%' }}>
-              <span style={{ margin: 0 }}>Komentarz</span>
+              <span style={{ margin: 0 }}>{newJobCommentConfig.label}</span>
               <div className="workerNewClientCommentMicActions">
-                {jobForm.worker_comment ? (
+                {jobForm[newJobCommentConfig.field] ? (
                   <button
                     type="button"
                     className="fieldClearBtn"
-                    onClick={() => updateField("worker_comment", "")}
+                    onClick={() => updateField(newJobCommentConfig.field, "")}
                   >
                     Wyczyść
                   </button>
                 ) : null}
                 <VoiceNoteButton
-                  label="Komentarz do montażu"
+                  label={newJobCommentConfig.voiceLabel}
                   onValue={(value) => setJobForm((prev) => ({
                     ...prev,
-                    worker_comment: appendVoiceNoteText(prev.worker_comment, value),
+                    [newJobCommentConfig.field]: appendVoiceNoteText(prev[newJobCommentConfig.field], value),
                   }))}
                   disabled={busy}
                 />
@@ -860,9 +862,9 @@ export default function JobFormModal({
               rows={3}
               className="input textarea textareaNoTop workerNewClientCommentTextarea"
               style={{ width: '100%', minWidth: 0, minHeight: 76, maxHeight: 130, margin: 0, resize: 'vertical', boxSizing: 'border-box' }}
-              placeholder="Komentarz do montażu"
-              value={jobForm.worker_comment || ''}
-              onChange={(e) => updateField("worker_comment", e.target.value)}
+              placeholder={newJobCommentConfig.placeholder}
+              value={jobForm[newJobCommentConfig.field] || ''}
+              onChange={(e) => updateField(newJobCommentConfig.field, e.target.value)}
             />
           </div>
         ) : null}
