@@ -1,14 +1,13 @@
-# RELEASE RESULT
-
-## Wersja
-- 13.20
+# RELEASE RESULT — WAWIS 13.21 (przygotowanie)
 
 ## Zakres
-- Desktopowe Montaże: ukrycie kodów pocztowych wyłącznie w widokach W trakcie, Niezrealizowane i Zakończone.
-- Miejscowość, ulica i numer domu pozostają; brak zmian danych, formularzy, faktur, PDF, mobile oraz tabeli Nowe.
-- Trwały regresyjny test formattera w `scripts/smoke-desktop-jobs-layout-width.cjs`.
+- Mobilny nowy montaż: administrator ma własne pole „Komentarz administratora”, zapisywane do jobs.admin_note.
+- Pracownik nadal tworzy zwykły komentarz w comments. Ręczne wpisy, dyktowanie i czyszczenie kierowane zgodnie z rolą.
+- Bez zmian w Supabase SQL, desktopie i edycji istniejącego montażu.
 
-## Bramki
-- Przed merge: zielony PR checks / targeted-checks i Closure Gate z E2E oraz buildem.
-- Po merge: Vercel READY właściwego commita, porównanie wersji 13.20.
-- Manualny odbiór rzeczywistych adresów w desktopie: trzy statusy bez kodu pocztowego, Nowe niezmienione.
+## Bramka przed produkcją
+- Zielony GitHub PR WAWIS PR checks / targeted-checks wraz z Closure Gate.
+- Playwright mobile dla dwóch ról, po zapisie w mocku sprawdzenie admin_note oraz comments.
+- Zielony Vercel READY dokładnego SHA i potwierdzenie 13.21 na fizycznym iPhonie.
+
+Stan testów i wdrożenia należy potwierdzić zewnętrznie; plik nie deklaruje zakończenia testów.

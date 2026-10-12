@@ -1,9 +1,11 @@
 {
-  "version": "13.20",
-  "summary": "Usunięcie kodów pocztowych z trzech list desktopowych Montaże",
+  "version": "13.21",
+  "summary": "Poprawny zapis komentarza administratora podczas dodawania nowego montażu na iPhonie",
   "changes": [
-    "Adres pod nazwą klienta w desktopowych tabelach W trakcie, Niezrealizowane i Zakończone wyświetla tylko miejscowość, ulicę i numer domu.",
-    "Nie usuwamy ani nie zmieniamy kodów pocztowych w bazie danych i formularzach, fakturach, dokumentach PDF, wyszukiwaniu czy na urządzeniach mobilnych.",
-    "Nowe pozostaje bez zmian; rozszerzono trwałą regresję desktopowej listy montaży."
+    "Nowy montaż administratora: pole Komentarz administratora i mikrofon zapisują do jobs.admin_note.",
+    "Nowy montaż pracownika: zwykły Komentarz nadal trafia do sekcji Komentarze i pytania.",
+    "Wykluczono jednoczesne dodanie komentarza admina do zwykłych komentarzy; czyszczenie dotyczy tylko bieżącego pola.",
+    "Edycja istniejącego montażu, desktop, OCR, protokoły i schemat Supabase pozostają bez zmian.",
+    "Regresje smoke oraz iPhone E2E dla obu ról, zapisu i odczytu sekcji docelowej."
   ]
 }
