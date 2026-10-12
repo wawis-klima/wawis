@@ -1,3 +1,8 @@
+## 13.17
+- Porównano mobilny formularz dodawania montażu (pola 36 px, odstępy ok. 6 px, komentarz 104 px) z edycją administratora. Usunięto nadpisanie do 3 px / 94 px na krótkich ekranach.
+- Edycja administratora: odstępy między rzędami minimum 8 px i komentarz 140 px na każdym iPhonie; powyżej 860 px: 10 px i 148 px. Krótkie ekrany przewijają formularz zamiast go ściskać.
+- Dodano test 402×740 i zmieniono test 390×700, zachowano 390×844 i 430×932. Bez zmian w nowym montażu, edycji pracownika, desktopie, danych i OCR.
+
 ## 13.16
 - Poprawiono realną regresję wyglądu edycji montażu administratora: na wysokości CSS 741–860 px reguła kompaktowa nadpisywała zwiększony komentarz i odstępy z 13.15.
 - Na iPhonie 390×844 odstępy 9 px, komentarz 140 px; powyżej 860 px: 10 px i 148 px; poniżej 741 px zachowane przewijanie.
