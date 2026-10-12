@@ -1,3 +1,8 @@
+## 13.19
+- Edycja montażu administratora na mobile: pionowe odstępy wierszy 8 → 6 px, a na wysokich ekranach 10 → 8 px, aby przycisk „Zapisz zmiany” miał więcej miejsca od dołu.
+- Pole komentarza pozostaje na wysokości 120/128 px; nie zmieniono czcionek, szerokości i wysokości pozostałych pól, daty, mikrofonu, dodawania montażu ani konta pracownika.
+- Zaktualizowano Playwright 390×700, 402×740, 390×844 i 430×932 z weryfikacją rzeczywistych odstępów, komentarza, przewijania i dostępności zapisu.
+
 ## 13.18
 - Mobilna edycja istniejącego montażu administratora: skrócono pole komentarza o około jeden wiersz z 140 do 120 px, a na ekranach wyższych niż 860 px ze 148 do 128 px.
 - Zachowano wygodne odstępy 8/10 px, rozmiary pól i czcionek, działanie mikrofonu, daty i zapisu; bez zmian w formularzu nowego montażu i koncie pracownika.
