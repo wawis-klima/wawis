@@ -191,11 +191,14 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       };
     });
     expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
-    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(92);
+    // 13.17: on short iPhones use the same comfortable field rhythm as new-job.
+    // Vertical scrolling is intentional; do not reintroduce 3px / 94px compact fallbacks.
+    expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(135);
     expect(oneScreen.noteFont).toBeGreaterThanOrEqual(12.5);
-    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.modalBottom+2);
-    expect(oneScreen.saveBottom).toBeLessThanOrEqual(oneScreen.viewportHeight+2);
-    expect(oneScreen.scrollOverflow).toBeLessThanOrEqual(3);
+    expect(oneScreen.scrollOverflow).toBeGreaterThanOrEqual(0);
+    await expect(modal).toHaveCSS('overflow-y', 'auto');
+    await modal.getByRole('button', { name:'Zapisz zmiany' }).scrollIntoViewIfNeeded();
+    await expect(modal.getByRole('button', { name:'Zapisz zmiany' })).toBeEnabled();
     // 13.02: microphone-only header, balanced phone/NIP and measured two-line client.
     const compactRow = await modal.evaluate(el => {
       const rect = selector => el.querySelector(selector)?.getBoundingClientRect();
