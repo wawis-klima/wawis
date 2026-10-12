@@ -1,3 +1,8 @@
+## 13.15
+- Mobilna edycja istniejącego montażu administratora na wysokim iPhonie: odstępy pól 7 → 10 px, komentarz 124 → 148 px, większy odstęp od etykiety.
+- Na krótszych ekranach zachowany sprawdzony, kompaktowy układ z przewijaniem; bez zmian pracownika, nowego montażu i desktopu.
+- Test Playwright 430×932: mierzone odstępy, komentarz, brak ucięcia zapisu, klikalność i mikrofon; pozostałe regresje bez zmian.
+
 ## 13.14
 - Mobile administrator / Edytuj montaż: usunięto dwa zbędne przyciski czyszczenia daty i komentarza. Bez kasowania istniejących danych.
 - Pole komentarza wyższe na dużych iPhone'ach (124 px), zwiększone odstępy pól (7 px); niższe ekrany zachowują kompaktowy układ i dostęp do Zapisz zmiany.
