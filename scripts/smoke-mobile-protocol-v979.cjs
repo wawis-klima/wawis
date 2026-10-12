@@ -251,7 +251,7 @@ assert.match(pdfModule, /doc\.addImage\(signatureDataUrl, "PNG", signatureX, sig
 assert.match(pdfModule, /doc\.line\(clientSignatureLeft, clientSignatureLineY, clientSignatureLeft \+ clientSignatureWidth, clientSignatureLineY\)/);
 assert.match(pdfModule, /const installerSignatureLeft = CONTENT_RIGHT - clientSignatureWidth/);
 assert.match(pdfModule, /doc\.line\(installerSignatureLeft, clientSignatureLineY, installerSignatureLeft \+ clientSignatureWidth, clientSignatureLineY\)/);
-assert.match(pdfModule, /doc\.text\("Podpis klienta złożony palcem na ekranie telefonu", clientSignatureLeft, y \+ 129\)/);
+assert.match(pdfModule, /Korekta adresu — podpis klienta z/, "Korekta musi być wyraźnie oznaczona.");
 assert.match(pdfModule, /doc\.text\("Pieczątka i podpis instalatora", installerSignatureLeft \+ \(clientSignatureWidth \/ 2\), y \+ 129, \{ align: "center" \}\)/);
 assert.match(pdfModule, /doc\.text\("INFORMACJA O PRZETWARZANIU DANYCH OSOBOWYCH", PAGE_WIDTH \/ 2, y \+ layout\.titleOffset, \{ align: "center" \}\)/);
 assert.match(pdfModule, /const availableLegalCardHeight = Math\.max/);
