@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.22
+- 13.23
+
+WAWIS 13.23: mobilny aktywny montaż (administrator i pracownik) pokazuje przycisk „Protokół” pod „Urządzenia/Tabliczki”. „Zakończ” aktywuje się dopiero po zapisaniu podpisanego protokołu oraz kompletnych urządzeń. Administrator ma także kontrolę protokołu przy zmianie statusu. Desktop i dane bez zmian.
 
 WAWIS 13.22: nowe podpisy protokołów są zapisywane w prywatnym magazynie i powiązane z wersją dokumentu. Korekta samego adresu może zachować podpis z pierwotną datą i adnotacją w PDF; dostępny jest przycisk Podpisz ponownie. Istotne zmiany wymagają nowego podpisu. Poprzednie wersje PDF pozostają do pobrania. Protokoły sprzed 13.22 pozostają bez zmian i nie mają automatycznie odzyskanego podpisu.
 
