@@ -1,7 +1,7 @@
 ## 13.23
 - Mobile: protokół dostępny w montażu „W trakcie” również dla administratora.
 - W widoku administratora układ Edytuj/Urządzenia, Usuń/Protokół, Zamknij/Zakończ.
-- Przycisk zakończenia nieaktywny bez kompletnej dokumentacji urządzeń i podpisanego protokołu właściwego montażu.
+- Kolejność obowiązkowa: najpierw kompletna i zsynchronizowana dokumentacja tabliczek, potem aktywny „Protokół”, na końcu „Zakończ” po zapisaniu podpisu klienta.
 - Mobilna akcja administratora przed zapisem statusu sprawdza zapisany protokół. Kontrola pracownika w bazie pozostaje aktywna.
 - Bez zmian desktopu, OCR i bazy danych.
 
