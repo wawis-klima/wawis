@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.24",
+  "version": "13.25",
   "scope": "desktop",
-  "release_branch": "release/v13.24",
+  "release_branch": "release/v13.25",
   "baseline_diagnostics": {
-    "checked": false,
-    "last_24h": false,
+    "checked": true,
+    "last_24h": true,
     "result": "INFO",
-    "notes": "Desktop: krótszy stan pustych zdjęć i wcięcie pustej tabeli; bez zmian danych, mobilnej logiki i bazy."
+    "notes": "Supabase edge_logs: GET /rest/v1/photos i /rest/v1/comments zwracały HTTP 200; logi runtime Vercel niedostępne (403). Diagnoza kodu: pierwszy cykl szczegółów może zostać pominięty, a AbortSignal nie wymusza rozstrzygnięcia Promise."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.24.zip"
+    "file_name": "klima-app-v13.25.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.24",
+    "source_branch": "release/v13.25",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, fizyczny iPhone",
-    "notes": "Po wdrożeniu sprawdzić wersję 13.24, krótki komunikat w Zdjęciach montażu oraz wcięcie pustej tabeli na desktopie."
+    "notes": "Po zielonym CI i wdrożeniu: sprawdzić wersję 13.25; po świeżym zalogowaniu otworzyć montaż ze zdjęciami i komentarzami bez zmiany karty oraz sprawdzić działanie Ponów."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile: Protokół pod Urządzenia/Tabliczki, blokada Zakończ do poprawnych urządzeń i zapisanego podpisanego protokołu; admin sprawdzany także przy zmianie statusu.",
-    "release_ci": "REQUIRED: targeted-checks, Closure Gate, mobile+desktop E2E, build oraz regresja współdziałania montaż-protokół-push.",
-    "post_deploy": "EXTERNAL: Vercel READY poprawnego SHA, wersja 13.24 w aplikacji i test na fizycznym iPhonie obu ról."
+    "code": "Desktop: ponów pominięte ładowanie zdjęć i komentarzy po starcie sesji oraz zastosuj twardy timeout do nierozstrzygniętych zapytań. Bez zmian w Supabase, mobile i protokołach.",
+    "release_ci": "Wymagane zielone targeted-checks, testy desktop/photos, E2E desktop i build przed merge do main.",
+    "post_deploy": "Vercel READY właściwego SHA, wersja 13.25 oraz test po nowym logowaniu do aplikacji na desktopie."
   }
 }
