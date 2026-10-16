@@ -23,6 +23,7 @@ import { addJobComment, deleteJobComment, withTimeout } from "../modules/jobs-co
 import { getLegacyInstallerSuggestionIds, normalizeInstallerIds, toggleJobViewer } from "../modules/jobs-assignment.js";
 import { deleteJobPhoto, getNameplatePhotoMetadata, isLocalQueuedPhoto, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
+import { loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
@@ -750,7 +751,7 @@ export function useSelectedJobActions({
       return;
     }
 
-    if (workerFinishing || workerRestarting) setBusy(true);
+    if (completingNow || workerRestarting) setBusy(true);
     try {
       if (workerFinishing) {
         let verificationJob = job;
@@ -785,6 +786,20 @@ export function useSelectedJobActions({
           }
           const missingLabel = formatMissingNameplateMessage(completion);
           alert(`Nie można zakończyć zlecenia. Dodaj wymagane zdjęcia tabliczek znamionowych: ${missingLabel}.`);
+          return;
+        }
+      }
+
+      // Mobilny administrator także musi mieć podpisany protokół — niezależnie od UI.
+      if (completingNow && isAdmin) {
+        const protocol = await loadJobProtocolRecord({ supabase, jobId, timeoutMs: 5000 });
+        const record = protocol.record;
+        if (!protocol.backendAvailable
+          || String(record?.job_id || "") !== String(jobId)
+          || !record?.signed_at
+          || !record?.storage_path
+          || Number(record?.file_size_bytes || 0) <= 0) {
+          alert('Najpierw wypełnij, podpisz i zapisz protokół klienta, aby zakończyć zlecenie.');
           return;
         }
       }
@@ -832,7 +847,7 @@ export function useSelectedJobActions({
       }
       alert(normalizeDatabaseErrorMessage(error));
     } finally {
-      if (workerFinishing || workerRestarting) setBusy(false);
+      if (completingNow || workerRestarting) setBusy(false);
     }
   }
 
