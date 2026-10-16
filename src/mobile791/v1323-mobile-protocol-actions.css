@@ -14,6 +14,8 @@
   .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionCloseV1295 {grid-column:1!important;grid-row:3!important;}
   .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionFinishV1295 {grid-column:2!important;grid-row:3!important;}
   .mobileInlineJobDetails .adminProtocolActionGridV1323 > .calendarReturnBtn {grid-column:1/-1!important;grid-row:4!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .protocolTestButton:disabled,
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .protocolTestButton:disabled,
   .mobileInlineJobDetails .adminProtocolActionGridV1323 > .finishJobBtn:disabled,
   .mobileInlineJobDetails .workerDetailsActionGridV1295 > .finishJobBtn:disabled {
     background:#e2e8f0!important;color:#64748b!important;border-color:#cbd5e1!important;
