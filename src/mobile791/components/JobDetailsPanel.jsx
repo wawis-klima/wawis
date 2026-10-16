@@ -322,6 +322,12 @@ export default function JobDetailsPanel({
   const selectedJobStatus = String(selectedJob?.status || "");
   const selectedJobIsCompleted = selectedJobStatus === "Zakończone";
   const selectedJobSupportsProtocol = selectedJobIsCompleted || selectedJobStatus === "W trakcie";
+  // Protokół wolno rozpocząć dopiero po komplecie tabliczek na serwerze.
+  // W przeciwieństwie do zakończenia offline, zdjęcia wyłącznie lokalne nie wystarczają.
+  const protocolNameplatesReady = selectedJobIsCompleted || (
+    Boolean(selectedJob?.detailsLoaded)
+    && getJobNameplateCompletion(selectedJob).isComplete
+  );
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
   const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
@@ -434,9 +440,14 @@ export default function JobDetailsPanel({
     if (protocolCheckedJobId !== selectedJobId || protocolLoading) return;
     // Same safety gate as the existing action: never show an editable protocol
     // while its stored record cannot be checked.
+    if (!protocolNameplatesReady) {
+      setProtocolMessage("Najpierw uzupełnij i zsynchronizuj wymagane tabliczki znamionowe.");
+      onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
+      return;
+    }
     if (protocolBackendAvailable) setProtocolTestOpen(true);
     onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
-  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, onQuickProtocolRequestHandled]);
+  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolNameplatesReady, onQuickProtocolRequestHandled]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
@@ -806,11 +817,11 @@ export default function JobDetailsPanel({
               <button
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact workerActionFinishV1295"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
-                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
+                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolNameplatesReady || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
                 title={!hasConfiguredDevices
                   ? 'Dodaj urządzenie przed zakończeniem'
-                  : !effectiveNameplateComplete
-                    ? 'Uzupełnij wymagane tabliczki przed zakończeniem'
+                  : !effectiveNameplateComplete || !protocolNameplatesReady
+                    ? 'Najpierw uzupełnij i zsynchronizuj tabliczki znamionowe'
                     : completionProtocolRequired && !protocolRecord
                       ? 'Wypełnij i zapisz protokół przed zakończeniem'
                       : 'Zakończ zlecenie'}
@@ -840,8 +851,11 @@ export default function JobDetailsPanel({
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
-                onClick={() => setProtocolTestOpen(true)}
-                title={protocolRecord
+                disabled={busy || !protocolNameplatesReady}
+                onClick={() => { if (protocolNameplatesReady) setProtocolTestOpen(true); }}
+                title={!protocolNameplatesReady
+                  ? "Najpierw dodaj i zsynchronizuj wymagane tabliczki znamionowe"
+                  : protocolRecord
                   ? "Otwórz zapisany protokół"
                   : selectedJobIsCompleted
                     ? "Utwórz protokół dla zakończonego zlecenia"
@@ -855,8 +869,9 @@ export default function JobDetailsPanel({
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
-                onClick={() => setProtocolReloadKey((value) => value + 1)}
-                title="Sprawdź ponownie dostępność protokołu"
+                disabled={!protocolNameplatesReady || busy}
+                onClick={() => { if (protocolNameplatesReady) setProtocolReloadKey((value) => value + 1); }}
+                title={protocolNameplatesReady ? "Sprawdź ponownie dostępność protokołu" : "Najpierw dodaj wymagane tabliczki"}
               >
                 <span className="desktopLabel">Sprawdź protokół</span>
                 <span className="mobileLabel">Sprawdź</span>
@@ -878,17 +893,20 @@ export default function JobDetailsPanel({
               {isAdmin
                 ? (protocolReadyForCompletion ? 'Urządzenia i protokół są gotowe. Możesz zakończyć zlecenie.' : 'Urządzenia są dodane. Uzupełnij protokół, aby zakończyć zlecenie.')
                 : hasLocallySavedNameplates
-                  ? 'Wszystkie wymagane tabliczki są zapisane na telefonie. Zakończenie poczeka na ich synchronizację.'
+                  ? 'Tabliczki zapisano na telefonie. Zaczekaj na synchronizację przed protokołem.'
                   : 'Wszystkie wymagane zdjęcia tabliczek są zapisane.'}
             </div>
+          ) : null}
+          {completionProtocolRequired && !protocolNameplatesReady ? (
+            <div className="finishNameplateRequirement missing">Krok 1/3: uzupełnij i zsynchronizuj tabliczki. Dopiero potem aktywuje się „Protokół”.</div>
           ) : null}
           {completionProtocolRequired && protocolLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam zapisany protokół klienta…</div>
           ) : null}
-          {completionProtocolRequired && !protocolLoading && !protocolRecord ? (
+          {completionProtocolRequired && protocolNameplatesReady && !protocolLoading && !protocolRecord ? (
             <div className="finishNameplateRequirement missing">Najpierw wypełnij, podpisz i zapisz protokół klienta, aby zakończyć zlecenie.</div>
           ) : null}
-          {completionProtocolRequired && !protocolLoading && protocolRecord ? (
+          {completionProtocolRequired && protocolNameplatesReady && !protocolLoading && protocolRecord ? (
             <div className="finishNameplateRequirement ready">Protokół klienta jest zapisany.</div>
           ) : null}
           {isWorkerCompletedLock ? (
