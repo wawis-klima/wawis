@@ -1383,7 +1383,7 @@ export default function App() {
 
   function handleQuickProtocol(job) {
     if (!job) return;
-    const supportsProtocol = job.status === "Zakończone" || (!isAdmin && job.status === "W trakcie");
+    const supportsProtocol = job.status === "Zakończone" || job.status === "W trakcie";
     if (!supportsProtocol) return;
     setSelectedJob((current) => String(current?.id || "") === String(job.id) ? current : job);
     setQuickProtocolRequest({ jobId: String(job.id), nonce: Date.now() });
