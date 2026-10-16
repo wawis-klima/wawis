@@ -17,6 +17,7 @@ for (const relativePath of [
   const cacheApplyCandidates = [
     source.indexOf('setJobs(cached.jobs)', cacheReadIndex),
     source.indexOf('setJobs(restoredJobs)', cacheReadIndex),
+    source.indexOf('setJobs((previous) => preserveJobDetails', cacheReadIndex),
   ].filter((index) => index >= 0);
   const cacheApplyIndex = cacheApplyCandidates.length ? Math.min(...cacheApplyCandidates) : -1;
 
@@ -43,10 +44,11 @@ for (const relativePath of [
     const serverApplyCandidates = [
       source.indexOf('setJobs(payload.jobs)', serverRequestIndex),
       source.indexOf('setJobs(finalJobs)', serverRequestIndex),
+      source.indexOf('setJobs((previous) => preserveJobDetails', serverRequestIndex),
     ].filter((index) => index >= 0);
     const serverApplyIndex = serverApplyCandidates.length ? Math.min(...serverApplyCandidates) : -1;
     assert(serverRequestIndex > cacheApplyIndex, `${relativePath}: po snapshotcie musi rozpocząć się odczyt Supabase.`);
-    assert(serverApplyIndex > serverRequestIndex, `${relativePath}: Supabase musi podmienić wcześniej pokazany snapshot.`);
+    assert(serverApplyIndex > serverRequestIndex, `${relativePath}: Supabase musi podmienić wcześniej pokazany snapshot bez utraty nowszych szczegółów.`);
   }
 
   assert.match(source, /lastAppliedServerRequestIdRef/);
