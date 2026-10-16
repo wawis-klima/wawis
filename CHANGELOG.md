@@ -1,5 +1,6 @@
 ## 13.25
 - Desktop: pierwsze otwarcie montażu po logowaniu nie może na stałe zatrzymać się na „Ładowanie zdjęć” / „Ładowanie komentarzy”.
+- Spóźniony snapshot listy z etapu logowania nie może nadpisać zdjęć i komentarzy pobranych w międzyczasie; zachowana jest aktualna informacja o statusie montażu.
 - Gdy rozruch sesji pominął pierwsze pobranie, aplikacja automatycznie powtarza je raz po zsynchronizowaniu wybranej karty.
 - Żądanie nieodpowiadające na AbortSignal również kończy się po twardym limicie czasu, z istniejącym retry i komunikatem „Ponów”.
 - Dodano test regresyjny nierozstrzygniętego zapytania i ścieżki pierwszego ładowania. Bez zmiany danych, przechowywania zdjęć ani mobilnego UI.
