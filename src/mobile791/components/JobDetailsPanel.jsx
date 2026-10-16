@@ -321,7 +321,7 @@ export default function JobDetailsPanel({
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobStatus = String(selectedJob?.status || "");
   const selectedJobIsCompleted = selectedJobStatus === "Zakończone";
-  const selectedJobSupportsProtocol = selectedJobIsCompleted || (!isAdmin && selectedJobStatus === "W trakcie");
+  const selectedJobSupportsProtocol = selectedJobIsCompleted || selectedJobStatus === "W trakcie";
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
   const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
@@ -469,8 +469,14 @@ export default function JobDetailsPanel({
   const showCommentsContents = commentsExpanded;
   const isWorkerCompletedLock = isWorkerLockedCompletedJob(selectedJob, isAdmin);
   const canFinishJob = canWorkerFinishJob(selectedJob, isAdmin);
-  const workerProtocolRequired = !isAdmin && canFinishJob;
-  const protocolReadyForCompletion = !workerProtocolRequired || Boolean(protocolRecord);
+  const completionProtocolRequired = canFinishJob;
+  // Zakończenie tylko po sprawdzeniu podpisanego protokołu dla bieżącego zlecenia.
+  const protocolReadyForCompletion = !completionProtocolRequired || (
+    protocolCheckedJobId === selectedJobId
+    && String(protocolRecord?.job_id || "") === selectedJobId
+    && Boolean(protocolRecord?.signed_at && protocolRecord?.storage_path)
+    && Number(protocolRecord?.file_size_bytes || 0) > 0
+  );
   const canRestartJob = canWorkerRestartJob(selectedJob, isAdmin);
   const workerStartLabel = String(selectedJob.status || '') === 'Nowe' ? 'Rozpocznij' : 'Rozpocznij ponownie';
   const canEditSelectedJob = canEditJob(selectedJob, isAdmin);
@@ -766,7 +772,7 @@ export default function JobDetailsPanel({
             ) : null}
           </div>
 
-          <div className={`detailActions detailActionsBottom mobileFourButtons${!isAdmin ? " workerDetailsActionGridV1295" : ""}`}>
+          <div className={`detailActions detailActionsBottom mobileFourButtons${!isAdmin ? " workerDetailsActionGridV1295" : ""}${isAdmin && canFinishJob ? " adminProtocolActionGridV1323" : ""}`}>
             {canEditSelectedJob ? (
               <button className="btn mobileActionCompact workerActionEditV1295" onClick={() => openEditJob(selectedJob)}>
                 <span className="desktopLabel">{isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'}</span>
@@ -800,12 +806,12 @@ export default function JobDetailsPanel({
               <button
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact workerActionFinishV1295"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
-                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolReadyForCompletion || (workerProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
+                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
                 title={!hasConfiguredDevices
                   ? 'Dodaj urządzenie przed zakończeniem'
                   : !effectiveNameplateComplete
                     ? 'Uzupełnij wymagane tabliczki przed zakończeniem'
-                    : workerProtocolRequired && !protocolRecord
+                    : completionProtocolRequired && !protocolRecord
                       ? 'Wypełnij i zapisz protokół przed zakończeniem'
                       : 'Zakończ zlecenie'}
               >
@@ -870,19 +876,19 @@ export default function JobDetailsPanel({
           {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement ready">
               {isAdmin
-                ? 'Urządzenia są dodane. Możesz zakończyć zlecenie.'
+                ? (protocolReadyForCompletion ? 'Urządzenia i protokół są gotowe. Możesz zakończyć zlecenie.' : 'Urządzenia są dodane. Uzupełnij protokół, aby zakończyć zlecenie.')
                 : hasLocallySavedNameplates
                   ? 'Wszystkie wymagane tabliczki są zapisane na telefonie. Zakończenie poczeka na ich synchronizację.'
                   : 'Wszystkie wymagane zdjęcia tabliczek są zapisane.'}
             </div>
           ) : null}
-          {workerProtocolRequired && protocolLoading ? (
+          {completionProtocolRequired && protocolLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam zapisany protokół klienta…</div>
           ) : null}
-          {workerProtocolRequired && !protocolLoading && !protocolRecord ? (
+          {completionProtocolRequired && !protocolLoading && !protocolRecord ? (
             <div className="finishNameplateRequirement missing">Najpierw wypełnij, podpisz i zapisz protokół klienta, aby zakończyć zlecenie.</div>
           ) : null}
-          {workerProtocolRequired && !protocolLoading && protocolRecord ? (
+          {completionProtocolRequired && !protocolLoading && protocolRecord ? (
             <div className="finishNameplateRequirement ready">Protokół klienta jest zapisany.</div>
           ) : null}
           {isWorkerCompletedLock ? (
