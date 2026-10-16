@@ -33,9 +33,9 @@ assert.equal(packageJson.scripts['test:smoke:mobile-protocol-print'], 'node scri
 
 assert.match(jobDetails, /const selectedJobStatus = String\(selectedJob\?\.status \|\| ""\);/);
 assert.match(jobDetails, /const selectedJobIsCompleted = selectedJobStatus === "Zakończone";/);
-assert.match(jobDetails, /const selectedJobSupportsProtocol = selectedJobIsCompleted \|\| \(!isAdmin && selectedJobStatus === "W trakcie"\);/);
+assert.match(jobDetails, /const selectedJobSupportsProtocol = selectedJobIsCompleted \|\| selectedJobStatus === "W trakcie";/);
 assert.match(jobDetails, /\{selectedJobSupportsProtocol && !protocolLoading && protocolBackendAvailable \? \(/);
-assert.match(jobDetails, /workerProtocolRequired/);
+assert.match(jobDetails, /completionProtocolRequired/);
 assert.match(jobDetails, /protocolReadyForCompletion/);
 assert.match(jobDetails, /Wypełnij i zapisz protokół przed zakończeniem/);
 assert.match(jobDetails, /<span className="mobileLabel">Protokół<\/span>/);
