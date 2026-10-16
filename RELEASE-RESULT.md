@@ -1,16 +1,14 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.22 (przygotowanie — nie potwierdza wdrożenia)
+- 13.25 (przygotowanie — nie potwierdza wdrożenia)
 
 ## Zakres
-- Nowe podpisy klienta: prywatny PNG oraz snapshot podpisanych danych.
-- Korekta samego adresu z zachowanym podpisem i datą pierwotnego podpisu.
-- Podpisz ponownie, z anulowaniem bez utraty dotychczasowego podpisu.
-- Zachowanie poprzednich PDF i możliwość pobrania wersji z historii.
-- Starsze protokoły bez zmian i bez automatycznego odzyskiwania podpisu.
+- Desktop: poprawka pierwszego pobierania zdjęć i komentarzy po logowaniu.
+- Jednorazowy retry, gdy inicjalna próba została pominięta podczas synchronizacji sesji.
+- Twardy timeout nierozstrzygniętego Promise z ponowieniem i komunikatem „Ponów”.
+- Test regresyjny, bez zmian Supabase, mobile i protokołów.
 
 ## Bramki
-- Zielone CI PR: targeted checks, Closure Gate, E2E i build.
-- Addytywna migracja Supabase przed opublikowaniem aplikacji.
-- Vercel READY dokładnego SHA oraz kontrola na fizycznym iPhonie.
+- Wymagane zielone CI PR (targeted-checks, E2E desktop, build).
+- Po merge do main potwierdzenie Vercel READY i test na zalogowanym desktopie.
