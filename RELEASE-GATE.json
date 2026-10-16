@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "INFO",
-    "notes": "Supabase edge_logs: GET /rest/v1/photos i /rest/v1/comments zwracały HTTP 200; logi runtime Vercel niedostępne (403). Diagnoza kodu: pierwszy cykl szczegółów może zostać pominięty, a AbortSignal nie wymusza rozstrzygnięcia Promise."
+    "notes": "Supabase edge_logs: GET /rest/v1/photos i /rest/v1/comments zwracały HTTP 200; logi runtime Vercel niedostępne (403). Diagnoza kodu: pierwszy cykl szczegółów może zostać pominięty, a AbortSignal nie wymusza rozstrzygnięcia Promise. Dodatkowy wyścig: późny snapshot logowania nadpisywał świeżo pobrane dane szczegółów."
   },
   "drive_backup": {
     "required": false,
@@ -34,7 +34,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Desktop: ponów pominięte ładowanie zdjęć i komentarzy po starcie sesji oraz zastosuj twardy timeout do nierozstrzygniętych zapytań. Bez zmian w Supabase, mobile i protokołach.",
+    "code": "Desktop: ponów pominięte ładowanie zdjęć i komentarzy po starcie sesji oraz zastosuj twardy timeout do nierozstrzygniętych zapytań. Bez zmian w Supabase, mobile i protokołach. Ochrona przed stale snapshotem przy refreshAll.",
     "release_ci": "Wymagane zielone targeted-checks, testy desktop/photos, E2E desktop i build przed merge do main.",
     "post_deploy": "Vercel READY właściwego SHA, wersja 13.25 oraz test po nowym logowaniu do aplikacji na desktopie."
   }
