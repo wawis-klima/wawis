@@ -292,10 +292,11 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     await download.saveAs('test-results/wawis-protokol-v979-worker.pdf');
   });
 
-  test('administrator na telefonie również tworzy protokół tylko dla zakończonego zlecenia', async ({ page }) => {
+  test('administrator na telefonie widzi zablokowany protokół do czasu dodania tabliczek', async ({ page }) => {
     await resetMockSupabase(page);
     await openJob(page, ADMIN, 'W trakcie', 'Klient Testowy B');
-    await expect(page.locator('.protocolTestButton')).toHaveCount(0);
+    await expect(page.locator('.protocolTestButton')).toBeVisible();
+    await expect(page.locator('.protocolTestButton')).toBeDisabled();
 
     await page.getByRole('button', { name: 'Zamknij', exact: true }).click();
     await page.locator('.statusActionButton[title="Zakończone"]').click();
