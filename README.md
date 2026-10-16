@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.24
+- 13.25
+
+WAWIS 13.25: desktop — po zalogowaniu pominięte pierwsze ładowanie zdjęć i komentarzy jest wznawiane bez przechodzenia do innego montażu. Gdy zapytanie nie odpowiada, twardy limit czasu gwarantuje zakończenie próby, ponowienie i czytelny komunikat „Ponów”. Zdjęcia, protokoły, baza danych i aplikacja mobilna bez zmian.
 
 WAWIS 13.24: desktop — w sekcji „Zdjęcia montażu” przy braku fotografii wyświetlany jest tylko komunikat „Brak zdjęć”; komunikaty pustych tabel montaży mają czytelne wcięcie od lewej. Pozostałe funkcje bez zmian.
 
@@ -1017,6 +1019,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.25` — desktop: pierwsze pobranie zdjęć i komentarzy po logowaniu, kontrolowany retry oraz twardy timeout.
 - wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).
 - wersja `13.23` — mobilny Protokół pod Urządzenia/Tabliczki, zablokowane Zakończ do podpisu i zapisu protokołu oraz kompletu urządzeń, dla obu ról.
 - wersja `13.22` — podpis zachowany po korekcie adresu tylko dla protokołów od tej wersji, ponowny podpis i historia PDF bez usuwania oryginału.
