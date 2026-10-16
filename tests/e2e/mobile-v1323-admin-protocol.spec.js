@@ -42,4 +42,49 @@ test.describe('@mobile 13.23 — protokół przed zakończeniem', () => {
     await expect(actions.locator('.workerActionProtocolV1295')).toHaveAttribute('title', /Najpierw dodaj/);
     await expect(page.getByText(/Krok 1\/3: uzupełnij i zsynchronizuj tabliczki/)).toBeVisible();
   });
+  test('kolejne etapy: zapisane JW/JZ → aktywny Protokół → podpisany protokół → aktywne Zakończ', async ({ page }) => {
+    await resetMockSupabase(page);
+    await page.evaluate(() => {
+      const key = 'klima-mock-supabase-store-v3';
+      const store = JSON.parse(localStorage.getItem(key) || '{}');
+      for (const unitRef of ['jz', 'jw-1']) {
+        store.photos.push({
+          id: 'mock-stage-plate-' + unitRef, job_id: 'mock-job-002',
+          photo_kind: 'nameplate', device_index: 1, unit_ref: unitRef,
+          storage_path: 'mock-job-002/nameplates/device-1_' + unitRef + '_test.jpg',
+          upload_status: 'uploaded', created_at: '2026-10-16T06:00:00.000Z',
+        });
+      }
+      localStorage.setItem(key, JSON.stringify(store));
+    });
+    await loginWithoutReset(page, ADMIN);
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
+
+    const actions = page.locator('.mobileInlineJobDetails .adminProtocolActionGridV1323');
+    const protocol = actions.locator('.workerActionProtocolV1295');
+    const finish = actions.locator('.workerActionFinishV1295');
+    await expect(protocol).toBeEnabled();
+    await expect(finish).toBeDisabled();
+    await protocol.click();
+    await expect(page.locator('.protocolPaymentMethodField select')).toBeVisible();
+
+    await page.evaluate(() => {
+      const key = 'klima-mock-supabase-store-v3';
+      const store = JSON.parse(localStorage.getItem(key) || '{}');
+      store.job_protocols = [{
+        id: 'mock-signed-protocol', job_id: 'mock-job-002',
+        storage_path: 'mock-job-002/signed-protocol.pdf',
+        file_name: 'protokol-testowy.pdf', file_size_bytes: 12500,
+        signed_at: '2026-10-16T06:05:00.000Z', created_at: '2026-10-16T06:05:00.000Z',
+        created_by: 'mock-admin-1',
+      }];
+      localStorage.setItem(key, JSON.stringify(store));
+    });
+    await page.reload();
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy B', { exact: true }).click();
+    await expect(page.locator('.mobileInlineJobDetails .adminProtocolActionGridV1323 .workerActionFinishV1295')).toBeEnabled();
+  });
+
 });
