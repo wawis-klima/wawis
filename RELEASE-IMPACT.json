@@ -16,8 +16,10 @@
     "scripts/smoke-desktop-initial-details-v1325.mjs",
     "scripts/test-groups.cjs",
     "src/App.jsx",
+    "src/hooks/useAppSession.js",
     "src/mobile791/version.js",
     "src/modules/details-deadline.js",
+    "src/modules/job-details-preservation.js",
     "src/version.js"
   ],
   "generated_only_files": [
@@ -39,10 +41,12 @@
     "scripts/smoke-desktop-initial-details-v1325.mjs",
     "scripts/test-groups.cjs",
     "src/App.jsx",
-    "src/modules/details-deadline.js"
+    "src/hooks/useAppSession.js",
+    "src/modules/details-deadline.js",
+    "src/modules/job-details-preservation.js"
   ],
   "profile": "targeted",
-  "reason": "Desktop: ponowienie pominiętego pierwszego pobrania montażu, ograniczenie czasu oczekiwania, bez backendu i mobilnych zmian.",
+  "reason": "Desktop: odzyskiwanie pierwszego pobrania oraz ochrona załadowanych zdjęć/komentarzy przed nadpisaniem przez spóźniony snapshot logowania.",
   "groups": [
     "core",
     "jobs",
