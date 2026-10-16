@@ -77,7 +77,8 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     const finishButton = page.getByRole('button', { name: 'Zakończ', exact: true });
     await expect(finishButton).toBeVisible();
     await expect(finishButton).toBeDisabled();
-    await expect(page.getByText(/Najpierw wypełnij, podpisz i zapisz protokół klienta/)).toBeVisible();
+    await expect(page.locator('.protocolTestButton')).toBeDisabled();
+    await expect(page.getByText(/Krok 1\/3: uzupełnij i zsynchronizuj tabliczki/)).toBeVisible();
   });
 
   test('pracownik tworzy protokół, wysyła go z biuro@wawis.pl i pobiera PDF', async ({ page }) => {
