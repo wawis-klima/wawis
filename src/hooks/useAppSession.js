@@ -9,6 +9,7 @@ import {
   subscribeToAuthState,
 } from "../modules/auth.js";
 import { loadJobSummaryData, refreshAppData } from "../modules/jobs.js";
+import { preserveLatestLoadedJobDetails } from "../modules/job-details-preservation.js";
 import { loadAppDataSnapshot, saveAppDataSnapshot } from "../modules/app-data-snapshot.js";
 import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
@@ -164,14 +165,25 @@ export function useAppSession({
           profileRef.current = cached.profile;
           profilesRef.current = cachedProfiles;
           notificationsRef.current = cachedNotifications;
-          jobsRef.current = cached.jobs;
+          const cachedJobs = preserveJobDetails
+            ? preserveLatestLoadedJobDetails(cached.jobs, jobsRef.current)
+            : cached.jobs;
+          jobsRef.current = cachedJobs;
           setSessionUserForGeneration(user);
           setProfile(cached.profile);
           setProfiles(cachedProfiles);
-          setJobs(cached.jobs);
+          setJobs((previous) => preserveJobDetails
+            ? preserveLatestLoadedJobDetails(cachedJobs, previous)
+            : cachedJobs);
           setNotifications(cachedNotifications);
           if (selectedJobIdRef?.current) {
-            setSelectedJob(cached.jobs.find((job) => String(job.id) === String(selectedJobIdRef.current)) || null);
+            const selectedId = String(selectedJobIdRef.current);
+            setSelectedJob((previous) => {
+              const incoming = cachedJobs.find((job) => String(job.id) === selectedId) || null;
+              return incoming && preserveJobDetails
+                ? preserveLatestLoadedJobDetails([incoming], [previous])[0]
+                : incoming;
+            });
           }
         }
       }
@@ -185,11 +197,22 @@ export function useAppSession({
 
         coreJobsApplied = true;
         lastAppliedServerRequestIdRef.current = Math.max(lastAppliedServerRequestIdRef.current, refreshRequestId);
-        jobsRef.current = freshJobs;
+        const latestJobs = preserveJobDetails
+          ? preserveLatestLoadedJobDetails(freshJobs, jobsRef.current)
+          : freshJobs;
+        jobsRef.current = latestJobs;
         setSessionUserForGeneration(activeUser);
-        setJobs(freshJobs);
+        setJobs((previous) => preserveJobDetails
+          ? preserveLatestLoadedJobDetails(latestJobs, previous)
+          : latestJobs);
         if (selectedJobIdRef?.current) {
-          setSelectedJob(freshJobs.find((job) => String(job.id) === String(selectedJobIdRef.current)) || null);
+          const selectedId = String(selectedJobIdRef.current);
+          setSelectedJob((previous) => {
+            const incoming = latestJobs.find((job) => String(job.id) === selectedId) || null;
+            return incoming && preserveJobDetails
+              ? preserveLatestLoadedJobDetails([incoming], [previous])[0]
+              : incoming;
+          });
         }
         if (errorMsgRef.current) setErrorMsg('');
 
@@ -197,7 +220,7 @@ export function useAppSession({
           userId: activeUser?.id || userId,
           profile: getProfileFallback(activeUser),
           profiles: profilesRef.current,
-          jobs: freshJobs,
+          jobs: latestJobs,
           notifications: notificationsRef.current,
           serverFetchedAtMs: Date.now(),
         });
@@ -272,18 +295,25 @@ export function useAppSession({
       profileRef.current = payload.profile;
       profilesRef.current = payload.profiles;
       notificationsRef.current = payload.notifications;
-      jobsRef.current = payload.jobs;
+      // Pełny snapshot może dotrzeć PO pobraniu szczegółów wybranej karty.
+      // Nie wolno wtedy cofnąć detailsLoaded i wyczyścić zdjęć/komentarzy.
+      const finalJobs = preserveJobDetails
+        ? preserveLatestLoadedJobDetails(payload.jobs, jobsRef.current)
+        : payload.jobs;
+      jobsRef.current = finalJobs;
 
       setSessionUserForGeneration(payload.sessionUser);
       setProfile(payload.profile);
       setProfiles(payload.profiles);
-      setJobs(payload.jobs);
+      setJobs((previous) => preserveJobDetails
+        ? preserveLatestLoadedJobDetails(finalJobs, previous)
+        : finalJobs);
       setNotifications(payload.notifications);
       void saveAppDataSnapshot({
         userId: payload.sessionUser?.id || activeUser?.id || user.id,
         profile: payload.profile,
         profiles: payload.profiles,
-        jobs: payload.jobs,
+        jobs: finalJobs,
         notifications: payload.notifications,
         serverFetchedAtMs,
         changeCursor: changeCursorRef.current,
@@ -291,7 +321,13 @@ export function useAppSession({
       if (!silent || errorMsgRef.current) setErrorMsg('');
 
       if (selectedJobIdRef?.current) {
-        setSelectedJob(payload.jobs.find((job) => String(job.id) === String(selectedJobIdRef.current)) || null);
+        const selectedId = String(selectedJobIdRef.current);
+        setSelectedJob((previous) => {
+          const incoming = finalJobs.find((job) => String(job.id) === selectedId) || null;
+          return incoming && preserveJobDetails
+            ? preserveLatestLoadedJobDetails([incoming], [previous])[0]
+            : incoming;
+        });
       }
       return { ok: true, transient: false, coreJobsApplied: true };
     } catch (error) {

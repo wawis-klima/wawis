@@ -13,6 +13,7 @@ import { normalizeStatus, STATUSES } from "./utils/jobPermissions.js";
 import { supabase, supabaseUrl, LOGOUT_FLAG_KEY, isSupabaseConfigured } from "./lib/supabase.js";
 import { EMPTY_JOB_FORM, loadJobDetailsData, loadJobSummaryData } from "./modules/jobs.js";
 import { loadContractors } from "./modules/contractors-fetch.js";
+import { runWithAbortableDeadline } from "./modules/details-deadline.js";
 import {
   formatDate,
   getNextSortValue,
@@ -117,6 +118,8 @@ export default function App() {
   const selectedJobIdRef = useRef(null);
   const jobDetailsRequestsRef = useRef(new Map());
   const jobDetailsAutoLoadRef = useRef('');
+  const jobDetailsStartupRecoveryRef = useRef('');
+  const selectedJobRef = useRef(null);
   const jobSummaryRequestsRef = useRef(new Map());
   const jobsRef = useRef([]);
   const profilesRef = useRef([]);
@@ -203,6 +206,8 @@ export default function App() {
   useEffect(() => {
     jobDetailsRequestsRef.current.clear();
     jobSummaryRequestsRef.current.clear();
+    jobDetailsAutoLoadRef.current = '';
+    jobDetailsStartupRecoveryRef.current = '';
     setDetailsLoadingJobId(null);
   }, [sessionUser?.id]);
 
@@ -332,8 +337,19 @@ export default function App() {
     const sessionToken = captureCurrentSessionToken();
     if (!targetId || !supabase || !isSessionTokenCurrent(sessionToken)) return null;
 
-    const targetJob = jobsRef.current.find((job) => String(job.id) === targetId);
-    if (!targetJob) return null;
+    // Po logowaniu wybrana karta może wyprzedzić synchronizację jobsRef.
+    const targetJob = jobsRef.current.find((job) => String(job.id) === targetId)
+      || (String(selectedJobRef.current?.id || '') === targetId ? selectedJobRef.current : null);
+    if (!targetJob) {
+      if (options.showMissingError) {
+        const message = 'Nie udało się rozpocząć pobierania zdjęć i komentarzy. Kliknij „Ponów”.';
+        setSelectedJob((prev) => (
+          prev && String(prev.id) === targetId ? { ...prev, detailsLoaded: false, detailsLoadError: message } : prev
+        ));
+        logDiagnostic('job.details.startup_missing', { jobId: targetId });
+      }
+      return null;
+    }
     if (targetJob.detailsLoaded && !options.force) return targetJob;
 
     const requestKey = `${sessionToken.generation}:${sessionToken.userId}:${targetId}`;
@@ -352,20 +368,22 @@ export default function App() {
         }
 
         const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-        const timeoutId = typeof window !== 'undefined'
-          ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_TIMEOUT_MS)
-          : null;
 
         try {
-          const details = await loadJobDetailsData({
-            supabase,
-            jobId: targetId,
-            team: profilesRef.current,
-            getSignedPhotoUrl,
-            supabaseUrl,
-            signal: controller?.signal || null,
-            deferThumbnailSigning: true,
-          });
+          // AbortSignal nie gwarantuje zakończenia wiszącego Promise.
+          // Twardy deadline musi zawsze zwolnić spinner i uruchomić retry.
+          const details = await runWithAbortableDeadline(
+            (signal) => loadJobDetailsData({
+              supabase,
+              jobId: targetId,
+              team: profilesRef.current,
+              getSignedPhotoUrl,
+              supabaseUrl,
+              signal,
+              deferThumbnailSigning: true,
+            }),
+            { controller, timeoutMs: JOB_DETAILS_TIMEOUT_MS },
+          );
           if (!isSessionTokenCurrent(sessionToken)) return null;
 
           const cleanDetails = { ...details, detailsLoadError: '' };
@@ -437,8 +455,6 @@ export default function App() {
           });
           console.warn('Nie udało się pobrać szczegółów montażu.', error?.message || error);
           return null;
-        } finally {
-          if (timeoutId !== null && typeof window !== 'undefined') window.clearTimeout(timeoutId);
         }
       }
 
@@ -585,6 +601,7 @@ export default function App() {
 
   useEffect(() => {
     selectedJobIdRef.current = selectedJob?.id || null;
+    selectedJobRef.current = selectedJob;
   }, [selectedJob]);
 
   useEffect(() => {
@@ -683,6 +700,7 @@ export default function App() {
     // (wewnątrz reloadJobDetails nadal działa retry), więc nie ma pętli.
     if (jobDetailsAutoLoadRef.current === selectedId) return;
     jobDetailsAutoLoadRef.current = selectedId;
+    jobDetailsStartupRecoveryRef.current = '';
 
     if (selectedJob.detailsLoadError) {
       const clearStaleDetailsError = (job) => (
@@ -694,7 +712,21 @@ export default function App() {
       setSelectedJob((prev) => clearStaleDetailsError(prev));
     }
 
-    void reloadJobDetails(selectedId, { force: true });
+    void reloadJobDetails(selectedId, { force: true }).then((loaded) => {
+      if (loaded) return;
+      // Jeśli pierwsze pobranie pominięto podczas startu sesji, wykonaj
+      // jeszcze jedną próbę bez przechodzenia do innego montażu.
+      setTimeout(() => {
+        if (jobDetailsAutoLoadRef.current !== selectedId || String(selectedJobIdRef.current || '') !== selectedId) return;
+        const latestJob = jobsRef.current.find((job) => String(job.id) === selectedId)
+          || (String(selectedJobRef.current?.id || '') === selectedId ? selectedJobRef.current : null);
+        if (latestJob?.detailsLoaded || latestJob?.detailsLoadError) return;
+        if (jobDetailsStartupRecoveryRef.current === selectedId) return;
+        jobDetailsStartupRecoveryRef.current = selectedId;
+        logDiagnostic('job.details.startup_recovery', { jobId: selectedId });
+        void reloadJobDetails(selectedId, { force: true, showMissingError: true });
+      }, 500);
+    });
   }, [activeModule, selectedJob?.id, selectedJob?.detailsLoaded, reloadJobDetails]);
 
   function openJobInJobsModule(jobLike, options = {}) {

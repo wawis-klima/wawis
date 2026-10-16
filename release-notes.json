@@ -1,12 +1,10 @@
 {
-  "version": "13.22",
-  "summary": "Podpis klienta zachowany przy korekcie adresu dla nowych protokołów",
+  "version": "13.25",
+  "summary": "Desktop: niezawodne ładowanie zdjęć i komentarzy przy pierwszym montażu po logowaniu",
   "changes": [
-    "Od wersji 13.22 podpisy przechowywane osobno w prywatnym bucketcie, bez odzyskiwania ze starszych PDF.",
-    "Korekta wyłącznie adresu może zachować pierwotny podpis i datę; PDF jest oznaczony jako korekta.",
-    "Akcja Podpisz ponownie pozwala złożyć nowy podpis, a anulowanie zachowuje dotychczasowy.",
-    "Istotne zmiany danych i płatności wymagają nowego podpisu.",
-    "Poprzednie wersje PDF są przechowywane i można je pobrać.",
-    "Wymagana migracja Supabase 20261012141000_protocol_signature_address_correction_v1322.sql."
+    "Pominięte pierwsze pobieranie jest wznawiane automatycznie, bez przełączania montażu.",
+    "Twardy timeout obsługuje również połączenia ignorujące AbortSignal.",
+    "Po nieskutecznym retry użytkownik widzi komunikat i przycisk Ponów.",
+    "Nowy test regresyjny. Bez zmian danych, zdjęć, protokołów i UI mobilnego."
   ]
 }
