@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.23
+- 13.24
+
+WAWIS 13.24: desktop — w sekcji „Zdjęcia montażu” przy braku fotografii wyświetlany jest tylko komunikat „Brak zdjęć”; komunikaty pustych tabel montaży mają czytelne wcięcie od lewej. Pozostałe funkcje bez zmian.
 
 WAWIS 13.23: mobilny aktywny montaż (administrator i pracownik) pokazuje przycisk „Protokół” pod „Urządzenia/Tabliczki”. „Protokół” staje się aktywny dopiero po zsynchronizowaniu kompletu wymaganych tabliczek, a „Zakończ” dopiero po zapisaniu podpisanego protokołu. Administrator ma także kontrolę protokołu przy zmianie statusu. Desktop i dane bez zmian.
 
