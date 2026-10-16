@@ -1017,6 +1017,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).
 - wersja `13.23` — mobilny Protokół pod Urządzenia/Tabliczki, zablokowane Zakończ do podpisu i zapisu protokołu oraz kompletu urządzeń, dla obu ról.
 - wersja `13.22` — podpis zachowany po korekcie adresu tylko dla protokołów od tej wersji, ponowny podpis i historia PDF bez usuwania oryginału.
 - wersja `13.21` — komentarz w nowym montażu trafia do właściwej sekcji: administrator do admin_note, pracownik do comments, również głosowo.
