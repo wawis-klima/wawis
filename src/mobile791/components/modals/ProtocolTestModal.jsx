@@ -178,7 +178,7 @@ function getTrimmedSignatureDataUrl(canvas) {
   return trimmed.toDataURL("image/png");
 }
 
-export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, onClose, onSaved, onPaymentLoaded }) {
+export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, canWriteProtocol = true, onClose, onSaved, onPaymentLoaded }) {
   const canvasRef = useRef(null);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
@@ -554,6 +554,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   async function createPdf() {
+    if (!canWriteProtocol) {
+      setMessage('Najpierw zapisz komplet tabliczek znamionowych JW/JZ. Dopiero wtedy można wystawić protokół.');
+      return;
+    }
     if (!paymentReady || paymentLoadError) {
       setMessage(paymentLoadError
         ? `Nie można zapisać protokołu bez aktualnych danych płatności: ${paymentLoadError}`
@@ -856,7 +860,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               {savedRecord && !editing ? (
                 <button type="button" className="btn primary protocolTestGenerate" onClick={() => setActionMenuOpen((value) => !value)} disabled={Boolean(actionBusy)}>Drukuj lub wyślij</button>
               ) : (
-                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!hasSignature || isGenerating || !paymentReady || Boolean(paymentLoadError)} aria-busy={isGenerating}>{isGenerating ? (saveProgressLabel || "Zapisuję protokół…") : "Zapisz protokół"}</button>
+                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!canWriteProtocol || !hasSignature || isGenerating || !paymentReady || Boolean(paymentLoadError)} aria-busy={isGenerating}>{isGenerating ? (saveProgressLabel || "Zapisuję protokół…") : "Zapisz protokół"}</button>
               )}
             </div>
           </div>
