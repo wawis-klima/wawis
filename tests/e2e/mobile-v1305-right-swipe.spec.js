@@ -30,7 +30,7 @@ test.describe('@mobile WAWIS 13.05 swipe w prawo', () => {
     await expect(frame).toHaveClass(/isRightOpen/);
     await expect(page.locator('.mobileInlineJobDetails')).toHaveCount(0);
     await expect(frame.getByRole('button', { name: 'Otwórz tabliczki montażu' })).toBeEnabled();
-    await expect(frame.getByRole('button', { name: 'Otwórz protokół montażu' })).toBeEnabled();
+    await expect(frame.getByRole('button', { name: 'Otwórz protokół montażu' })).toBeDisabled();
     await page.waitForTimeout(220);
     const geometry = await frame.evaluate(el => {
       const action = el.querySelector('.wawisSwipeAction.isNameplates');
@@ -51,11 +51,13 @@ test.describe('@mobile WAWIS 13.05 swipe w prawo', () => {
     await expect(page.locator('.mobileInlineJobDetails')).toHaveCount(0);
   });
 
-  test('pracownik: szybki Protokół otwiera właściwy modal po sprawdzeniu zapisu', async ({ page }) => {
+  test('pracownik: szybki Protokół czeka na komplet zsynchronizowanych tabliczek', async ({ page }) => {
     const frame = await card(page);
     await swipe(page, frame, 110);
-    await frame.getByRole('button', { name: 'Otwórz protokół montażu' }).click();
-    await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible({ timeout: 20000 });
+    const protocol = frame.getByRole('button', { name: 'Otwórz protokół montażu' });
+    await expect(protocol).toBeDisabled();
+    await expect(protocol).toHaveAttribute('title', /Najpierw uzupełnij/);
+    await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
   });
 
   test('administrator: protokół aktywnego zlecenia zachowuje dotychczasowe ograniczenie', async ({ page }) => {
