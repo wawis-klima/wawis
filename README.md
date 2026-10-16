@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.23
+- 13.24
+
+WAWIS 13.24: desktop — w sekcji „Zdjęcia montażu” przy braku fotografii wyświetlany jest tylko komunikat „Brak zdjęć”; komunikaty pustych tabel montaży mają czytelne wcięcie od lewej. Pozostałe funkcje bez zmian.
 
 WAWIS 13.23: mobilny aktywny montaż (administrator i pracownik) pokazuje przycisk „Protokół” pod „Urządzenia/Tabliczki”. „Protokół” staje się aktywny dopiero po zsynchronizowaniu kompletu wymaganych tabliczek, a „Zakończ” dopiero po zapisaniu podpisanego protokołu. Administrator ma także kontrolę protokołu przy zmianie statusu. Desktop i dane bez zmian.
 
@@ -1015,6 +1017,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).
 - wersja `13.23` — mobilny Protokół pod Urządzenia/Tabliczki, zablokowane Zakończ do podpisu i zapisu protokołu oraz kompletu urządzeń, dla obu ról.
 - wersja `13.22` — podpis zachowany po korekcie adresu tylko dla protokołów od tej wersji, ponowny podpis i historia PDF bez usuwania oryginału.
 - wersja `13.21` — komentarz w nowym montażu trafia do właściwej sekcji: administrator do admin_note, pracownik do comments, również głosowo.

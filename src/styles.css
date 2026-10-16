@@ -10917,3 +10917,14 @@ img.previewImage{
 }
 .desktopDeviceIndoorDeleteBtn:hover{background:#fee2e2;}
 .desktopDeviceIndoorDeleteBtn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* WAWIS 13.24: czytelne stany puste w widoku desktopowym. */
+@media (min-width: 701px) {
+  .desktopJobsTableCard > .statusTableHint {
+    padding-left: 24px;
+  }
+  .desktopPhotosSectionContent .thumbGrid > .desktopPhotosEmptyMessage {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
