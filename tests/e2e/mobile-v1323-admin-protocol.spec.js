@@ -37,7 +37,9 @@ test.describe('@mobile 13.23 — protokół przed zakończeniem', () => {
     expect(rects.finish.y).toBeGreaterThan(rects.protocol.y);
     expect(rects.overflow).toBeLessThanOrEqual(2);
     await expect(actions.locator('.workerActionFinishV1295')).toBeDisabled();
-    await actions.locator('.workerActionProtocolV1295').click();
-    await expect(page.locator('.protocolPaymentMethodField select')).toBeVisible();
+    // Nie można wystawić protokołu przed zapisaniem wymaganych tabliczek.
+    await expect(actions.locator('.workerActionProtocolV1295')).toBeDisabled();
+    await expect(actions.locator('.workerActionProtocolV1295')).toHaveAttribute('title', /Najpierw dodaj/);
+    await expect(page.getByText(/Krok 1\/3: uzupełnij i zsynchronizuj tabliczki/)).toBeVisible();
   });
 });
