@@ -1,3 +1,8 @@
+## 13.24
+- Desktop: „Zdjęcia montażu” przy braku zdjęć pokazuje wyłącznie „Brak zdjęć”, bez długiego opisu tabliczek.
+- Desktop: komunikaty o braku klientów w tabelach montaży odsunięte o 24 px od lewej krawędzi.
+- Bez zmian logiki zapisu, mobilnej obsługi zleceń i bazy danych.
+
 ## 13.23
 - Mobile: protokół dostępny w montażu „W trakcie” również dla administratora.
 - W widoku administratora układ Edytuj/Urządzenia, Usuń/Protokół, Zamknij/Zakończ.
