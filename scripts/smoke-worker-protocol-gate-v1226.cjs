@@ -19,11 +19,13 @@ assert.match(migration, /storage\.objects[\s\S]*o\.name = p\.storage_path/);
 assert.match(migration, /job_protocols_insert_completed_job[\s\S]*current_user_can_write_job_protocol\(job_id\)/);
 assert.match(migration, /job_protocols_storage_insert_completed_job[\s\S]*current_user_can_write_job_protocol/);
 
-assert.match(panel, /const workerProtocolRequired = !isAdmin && canFinishJob/);
-assert.match(panel, /const protocolReadyForCompletion = !workerProtocolRequired \|\| Boolean\(protocolRecord\)/);
-assert.match(panel, /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolReadyForCompletion/);
+assert.match(panel, /const completionProtocolRequired = canFinishJob/);
+assert.match(panel, /const protocolReadyForCompletion = !completionProtocolRequired \|\| \(/);
+assert.match(panel, /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolNameplatesReady \|\| !protocolReadyForCompletion/);
 assert.match(panel, /Najpierw wypełnij, podpisz i zapisz protokół klienta/);
-assert.match(panel, /selectedJobSupportsProtocol = selectedJobIsCompleted \|\| \(!isAdmin && selectedJobStatus === "W trakcie"\)/);
+assert.match(panel, /protocolCheckedJobId === selectedJobId/);
+assert.match(panel, /adminProtocolActionGridV1323/);
+assert.match(panel, /selectedJobSupportsProtocol = selectedJobIsCompleted \|\| selectedJobStatus === "W trakcie"/);
 
 assert.match(storage, /\["W trakcie", "Zakończone"\]\.includes\(status\)/);
 assert.match(modal, /Wypełnij, podpisz i zapisz protokół przed zakończeniem montażu/);

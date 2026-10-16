@@ -1,0 +1,24 @@
+/* WAWIS 13.23 — protokół mobilnego administratora pod urządzeniami. */
+@media (max-width:700px) {
+  .mobileInlineJobDetails .detailActionsBottom.mobileFourButtons.adminProtocolActionGridV1323 {
+    display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    align-items:stretch!important;gap:6px!important;
+  }
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .mobileActionCompact {
+    width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;
+  }
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionEditV1295 {grid-column:1!important;grid-row:1!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionNameplatesV1295 {grid-column:2!important;grid-row:1!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .deleteCardBtn {grid-column:1!important;grid-row:2!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionProtocolV1295 {grid-column:2!important;grid-row:2!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionCloseV1295 {grid-column:1!important;grid-row:3!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .workerActionFinishV1295 {grid-column:2!important;grid-row:3!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .calendarReturnBtn {grid-column:1/-1!important;grid-row:4!important;}
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .protocolTestButton:disabled,
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .protocolTestButton:disabled,
+  .mobileInlineJobDetails .adminProtocolActionGridV1323 > .finishJobBtn:disabled,
+  .mobileInlineJobDetails .workerDetailsActionGridV1295 > .finishJobBtn:disabled {
+    background:#e2e8f0!important;color:#64748b!important;border-color:#cbd5e1!important;
+    box-shadow:none!important;opacity:1!important;cursor:not-allowed!important;
+  }
+}

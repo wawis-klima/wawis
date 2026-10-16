@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { getGoogleMapsUrl } from "../../utils/jobHelpers.jsx";
 import { canEditJob } from "../../utils/jobPermissions.js";
+import { getJobNameplateCompletion } from "../../modules/nameplate-requirements.js";
 import { IconCamera, IconFileText, IconMapPin, IconPhone } from "../ui.jsx";
 
 const WIDTH = 144;
@@ -9,7 +10,7 @@ const SWIPE_THRESHOLD = 38;
 // Swipe right = job tools; swipe left = existing contact actions.
 // Actions reuse the same editing / protocol flows and do not modify the job.
 export default function SwipeableJobCard({
-  job, isAdmin, openSide = "", onOpenLeft, onOpenRight, onClose, onNameplates, onProtocol, children,
+  job, protocolJob = job, isAdmin, openSide = "", onOpenLeft, onOpenRight, onClose, onNameplates, onProtocol, children,
 }) {
   const gesture = useRef(null);
   const suppressClick = useRef(false);
@@ -19,7 +20,11 @@ export default function SwipeableJobCard({
   const mapsHref = getGoogleMapsUrl(job);
   const canOpenNameplates = canEditJob(job, isAdmin);
   const status = String(job?.status || "").trim();
-  const canOpenProtocol = status === "Zakończone" || (!isAdmin && status === "W trakcie");
+  const canOpenProtocol = status === "Zakończone" || (
+    status === "W trakcie"
+    && Boolean(protocolJob?.detailsLoaded)
+    && getJobNameplateCompletion(protocolJob).isComplete
+  );
   const base = openSide === "left" ? -WIDTH : openSide === "right" ? WIDTH : 0;
 
   useEffect(() => setOffset(null), [openSide, job?.id]);
@@ -98,7 +103,7 @@ export default function SwipeableJobCard({
         </button>
         <button type="button" className="wawisSwipeAction isProtocol" tabIndex={openSide === "right" ? 0 : -1}
           disabled={!canOpenProtocol} onClick={() => { onClose(); onProtocol(job); }}
-          aria-label="Otwórz protokół montażu" title={canOpenProtocol ? "Otwórz protokół montażowy" : "Protokół jest niedostępny dla tego statusu i roli"}>
+          aria-label="Otwórz protokół montażu" title={canOpenProtocol ? "Otwórz protokół montażowy" : status === "W trakcie" ? "Najpierw uzupełnij i zsynchronizuj tabliczki znamionowe" : "Protokół jest niedostępny dla tego statusu"}>
           <IconFileText /><span>Protokół</span>
         </button>
       </div>

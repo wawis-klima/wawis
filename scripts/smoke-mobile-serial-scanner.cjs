@@ -134,7 +134,7 @@ assert.doesNotMatch(detailsSource, /Dodaj brakujące tabliczki/);
 assert.match(detailsSource, /mobileLabel">\{isAdmin \? 'Urządzenia' : 'Tabliczki'\}/);
 assert.match(
   detailsSource,
-  /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolReadyForCompletion \|\| \(workerProtocolRequired && \(protocolLoading \|\| !protocolBackendAvailable\)\)\}/,
+  /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolNameplatesReady \|\| !protocolReadyForCompletion \|\| \(completionProtocolRequired && \(protocolLoading \|\| !protocolBackendAvailable\)\)\}/,
 );
 assert.match(detailsSource, /DeviceUnitDocumentationRow/);
 assert.match(detailsSource, /role="button"/);

@@ -1,3 +1,10 @@
+## 13.23
+- Mobile: protokół dostępny w montażu „W trakcie” również dla administratora.
+- W widoku administratora układ Edytuj/Urządzenia, Usuń/Protokół, Zamknij/Zakończ.
+- Kolejność obowiązkowa: najpierw kompletna i zsynchronizowana dokumentacja tabliczek, potem aktywny „Protokół”, na końcu „Zakończ” po zapisaniu podpisu klienta.
+- Mobilna akcja administratora przed zapisem statusu sprawdza zapisany protokół. Kontrola pracownika w bazie pozostaje aktywna.
+- Bez zmian desktopu, OCR i bazy danych.
+
 ## 13.22
 - Mobile: podpisy od tej wersji zapisujemy osobno jako prywatne PNG w Supabase, ze snapshotem podpisanych danych; starsze protokoły pozostają bez odzyskiwania podpisu.
 - Zmiana tylko adresu umożliwia wydanie nowego PDF z zachowanym podpisem i datą pierwotnego podpisania; PDF zawiera oznaczenie korekty.

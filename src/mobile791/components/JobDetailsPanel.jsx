@@ -6,7 +6,7 @@ import JobAddressLink from "./JobAddressLink.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, canWorkerRestartJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
 import { getNameplatePhotoMetadata } from "../modules/photos.js";
-import { getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
+import { areJobNameplatesReadyForProtocol, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
 import { getManualNameplateVerification, setManualNameplateVerification } from "../../modules/nameplate-verification.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -321,7 +321,13 @@ export default function JobDetailsPanel({
   const commentHasUnsavedWork = Boolean(selectedJobId && (currentCommentDraft.trim() || commentSaving));
   const selectedJobStatus = String(selectedJob?.status || "");
   const selectedJobIsCompleted = selectedJobStatus === "Zakończone";
-  const selectedJobSupportsProtocol = selectedJobIsCompleted || (!isAdmin && selectedJobStatus === "W trakcie");
+  const selectedJobSupportsProtocol = selectedJobIsCompleted || selectedJobStatus === "W trakcie";
+  // Protokół wolno rozpocząć dopiero po komplecie tabliczek na serwerze.
+  // W przeciwieństwie do zakończenia offline, zdjęcia wyłącznie lokalne nie wystarczają.
+  const protocolNameplatesReady = selectedJobIsCompleted || (
+    Boolean(selectedJob?.detailsLoaded)
+    && areJobNameplatesReadyForProtocol(selectedJob)
+  );
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
   const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
@@ -434,9 +440,14 @@ export default function JobDetailsPanel({
     if (protocolCheckedJobId !== selectedJobId || protocolLoading) return;
     // Same safety gate as the existing action: never show an editable protocol
     // while its stored record cannot be checked.
+    if (!protocolNameplatesReady) {
+      setProtocolMessage("Najpierw uzupełnij i zsynchronizuj wymagane tabliczki znamionowe.");
+      onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
+      return;
+    }
     if (protocolBackendAvailable) setProtocolTestOpen(true);
     onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
-  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, onQuickProtocolRequestHandled]);
+  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolNameplatesReady, onQuickProtocolRequestHandled]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
@@ -469,8 +480,14 @@ export default function JobDetailsPanel({
   const showCommentsContents = commentsExpanded;
   const isWorkerCompletedLock = isWorkerLockedCompletedJob(selectedJob, isAdmin);
   const canFinishJob = canWorkerFinishJob(selectedJob, isAdmin);
-  const workerProtocolRequired = !isAdmin && canFinishJob;
-  const protocolReadyForCompletion = !workerProtocolRequired || Boolean(protocolRecord);
+  const completionProtocolRequired = canFinishJob;
+  // Zakończenie tylko po sprawdzeniu podpisanego protokołu dla bieżącego zlecenia.
+  const protocolReadyForCompletion = !completionProtocolRequired || (
+    protocolCheckedJobId === selectedJobId
+    && String(protocolRecord?.job_id || "") === selectedJobId
+    && Boolean(protocolRecord?.signed_at && protocolRecord?.storage_path)
+    && Number(protocolRecord?.file_size_bytes || 0) > 0
+  );
   const canRestartJob = canWorkerRestartJob(selectedJob, isAdmin);
   const workerStartLabel = String(selectedJob.status || '') === 'Nowe' ? 'Rozpocznij' : 'Rozpocznij ponownie';
   const canEditSelectedJob = canEditJob(selectedJob, isAdmin);
@@ -766,7 +783,7 @@ export default function JobDetailsPanel({
             ) : null}
           </div>
 
-          <div className={`detailActions detailActionsBottom mobileFourButtons${!isAdmin ? " workerDetailsActionGridV1295" : ""}`}>
+          <div className={`detailActions detailActionsBottom mobileFourButtons${!isAdmin ? " workerDetailsActionGridV1295" : ""}${isAdmin && canFinishJob ? " adminProtocolActionGridV1323" : ""}`}>
             {canEditSelectedJob ? (
               <button className="btn mobileActionCompact workerActionEditV1295" onClick={() => openEditJob(selectedJob)}>
                 <span className="desktopLabel">{isAdmin ? 'Edytuj montaż' : 'Edytuj dane klienta'}</span>
@@ -800,12 +817,12 @@ export default function JobDetailsPanel({
               <button
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact workerActionFinishV1295"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
-                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolReadyForCompletion || (workerProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
+                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolNameplatesReady || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
                 title={!hasConfiguredDevices
                   ? 'Dodaj urządzenie przed zakończeniem'
-                  : !effectiveNameplateComplete
-                    ? 'Uzupełnij wymagane tabliczki przed zakończeniem'
-                    : workerProtocolRequired && !protocolRecord
+                  : !effectiveNameplateComplete || !protocolNameplatesReady
+                    ? 'Najpierw uzupełnij i zsynchronizuj tabliczki znamionowe'
+                    : completionProtocolRequired && !protocolRecord
                       ? 'Wypełnij i zapisz protokół przed zakończeniem'
                       : 'Zakończ zlecenie'}
               >
@@ -834,8 +851,11 @@ export default function JobDetailsPanel({
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
-                onClick={() => setProtocolTestOpen(true)}
-                title={protocolRecord
+                disabled={busy || !protocolNameplatesReady}
+                onClick={() => { if (protocolNameplatesReady) setProtocolTestOpen(true); }}
+                title={!protocolNameplatesReady
+                  ? "Najpierw dodaj i zsynchronizuj wymagane tabliczki znamionowe"
+                  : protocolRecord
                   ? "Otwórz zapisany protokół"
                   : selectedJobIsCompleted
                     ? "Utwórz protokół dla zakończonego zlecenia"
@@ -849,8 +869,9 @@ export default function JobDetailsPanel({
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
-                onClick={() => setProtocolReloadKey((value) => value + 1)}
-                title="Sprawdź ponownie dostępność protokołu"
+                disabled={!protocolNameplatesReady || busy}
+                onClick={() => { if (protocolNameplatesReady) setProtocolReloadKey((value) => value + 1); }}
+                title={protocolNameplatesReady ? "Sprawdź ponownie dostępność protokołu" : "Najpierw dodaj wymagane tabliczki"}
               >
                 <span className="desktopLabel">Sprawdź protokół</span>
                 <span className="mobileLabel">Sprawdź</span>
@@ -870,19 +891,22 @@ export default function JobDetailsPanel({
           {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement ready">
               {isAdmin
-                ? 'Urządzenia są dodane. Możesz zakończyć zlecenie.'
+                ? (protocolReadyForCompletion ? 'Urządzenia i protokół są gotowe. Możesz zakończyć zlecenie.' : 'Urządzenia są dodane. Uzupełnij protokół, aby zakończyć zlecenie.')
                 : hasLocallySavedNameplates
-                  ? 'Wszystkie wymagane tabliczki są zapisane na telefonie. Zakończenie poczeka na ich synchronizację.'
+                  ? 'Tabliczki zapisano na telefonie. Zaczekaj na synchronizację przed protokołem.'
                   : 'Wszystkie wymagane zdjęcia tabliczek są zapisane.'}
             </div>
           ) : null}
-          {workerProtocolRequired && protocolLoading ? (
+          {completionProtocolRequired && !protocolNameplatesReady ? (
+            <div className="finishNameplateRequirement missing">Krok 1/3: uzupełnij i zsynchronizuj tabliczki. Dopiero potem aktywuje się „Protokół”.</div>
+          ) : null}
+          {completionProtocolRequired && protocolLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam zapisany protokół klienta…</div>
           ) : null}
-          {workerProtocolRequired && !protocolLoading && !protocolRecord ? (
+          {completionProtocolRequired && protocolNameplatesReady && !protocolLoading && !protocolRecord ? (
             <div className="finishNameplateRequirement missing">Najpierw wypełnij, podpisz i zapisz protokół klienta, aby zakończyć zlecenie.</div>
           ) : null}
-          {workerProtocolRequired && !protocolLoading && protocolRecord ? (
+          {completionProtocolRequired && protocolNameplatesReady && !protocolLoading && protocolRecord ? (
             <div className="finishNameplateRequirement ready">Protokół klienta jest zapisany.</div>
           ) : null}
           {isWorkerCompletedLock ? (
@@ -1194,7 +1218,8 @@ export default function JobDetailsPanel({
       ) : null}
       </div>
       <ProtocolTestModal
-        open={protocolTestOpen}
+        open={protocolTestOpen && protocolNameplatesReady}
+        canWriteProtocol={protocolNameplatesReady}
         job={selectedJob}
         profiles={profiles}
         supabase={supabase}

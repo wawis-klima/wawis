@@ -54,7 +54,7 @@ test.describe('@mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje', 
     await swipe(page, frame, 108);
     await expect(frame).toHaveClass(/isRightOpen/);
     await expect(frame.getByRole('button', { name: 'Otwórz tabliczki montażu' })).toBeEnabled();
-    await expect(frame.getByRole('button', { name: 'Otwórz protokół montażu' })).toBeEnabled();
+    await expect(frame.getByRole('button', { name: 'Otwórz protokół montażu' })).toBeDisabled();
     await frame.getByRole('button', { name: 'Otwórz tabliczki montażu' }).click();
     const wizard = page.locator('.mobileDeviceWizardOverlay .mobileDeviceWizard');
     await expect(wizard).toBeVisible({ timeout: 20000 });

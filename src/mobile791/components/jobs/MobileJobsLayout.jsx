@@ -295,7 +295,7 @@ export default function MobileJobsLayout({
           const isSelected = String(selectedJob?.id || "") === String(job?.id || "");
           return (
             <React.Fragment key={job.id}>
-              <SwipeableJobCard job={job} isAdmin={isAdmin}
+              <SwipeableJobCard job={job} protocolJob={isSelected ? selectedJob : job} isAdmin={isAdmin}
                 openSide={swipedJob.id === String(job.id) ? swipedJob.side : ""}
                 onOpenLeft={() => setSwipedJob({ id: String(job.id), side: "left" })}
                 onOpenRight={() => setSwipedJob({ id: String(job.id), side: "right" })}

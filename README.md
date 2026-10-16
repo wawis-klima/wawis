@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.22
+- 13.23
+
+WAWIS 13.23: mobilny aktywny montaż (administrator i pracownik) pokazuje przycisk „Protokół” pod „Urządzenia/Tabliczki”. „Protokół” staje się aktywny dopiero po zsynchronizowaniu kompletu wymaganych tabliczek, a „Zakończ” dopiero po zapisaniu podpisanego protokołu. Administrator ma także kontrolę protokołu przy zmianie statusu. Desktop i dane bez zmian.
 
 WAWIS 13.22: nowe podpisy protokołów są zapisywane w prywatnym magazynie i powiązane z wersją dokumentu. Korekta samego adresu może zachować podpis z pierwotną datą i adnotacją w PDF; dostępny jest przycisk Podpisz ponownie. Istotne zmiany wymagają nowego podpisu. Poprzednie wersje PDF pozostają do pobrania. Protokoły sprzed 13.22 pozostają bez zmian i nie mają automatycznie odzyskanego podpisu.
 
@@ -1013,6 +1015,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.23` — mobilny Protokół pod Urządzenia/Tabliczki, zablokowane Zakończ do podpisu i zapisu protokołu oraz kompletu urządzeń, dla obu ról.
 - wersja `13.22` — podpis zachowany po korekcie adresu tylko dla protokołów od tej wersji, ponowny podpis i historia PDF bez usuwania oryginału.
 - wersja `13.21` — komentarz w nowym montażu trafia do właściwej sekcji: administrator do admin_note, pracownik do comments, również głosowo.
 - wersja `13.20` — kod pocztowy ukryty w trzech desktopowych listach montaży, bez zmian danych, dokumentów i mobile.
