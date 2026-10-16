@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.23",
-  "scope": "mobile",
-  "release_branch": "release/v13.23",
+  "version": "13.24",
+  "scope": "desktop",
+  "release_branch": "release/v13.24",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Mobilna bramka protokołu dla obu ról, bez zmiany danych, migracji bazy i desktopu."
+    "notes": "Desktop: krótszy stan pustych zdjęć i wcięcie pustej tabeli; bez zmian danych, mobilnej logiki i bazy."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.23.zip"
+    "file_name": "klima-app-v13.24.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.23",
+    "source_branch": "release/v13.24",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "GitHub green PR, Vercel READY, fizyczny iPhone",
-    "notes": "Po wdrożeniu sprawdzić nową wersję 13.23, podpis protokołu i zmianę stanu przycisku Zakończ na telefonie."
+    "notes": "Po wdrożeniu sprawdzić wersję 13.24, krótki komunikat w Zdjęciach montażu oraz wcięcie pustej tabeli na desktopie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -36,6 +36,6 @@
   "production_verification": {
     "code": "Mobile: Protokół pod Urządzenia/Tabliczki, blokada Zakończ do poprawnych urządzeń i zapisanego podpisanego protokołu; admin sprawdzany także przy zmianie statusu.",
     "release_ci": "REQUIRED: targeted-checks, Closure Gate, mobile+desktop E2E, build oraz regresja współdziałania montaż-protokół-push.",
-    "post_deploy": "EXTERNAL: Vercel READY poprawnego SHA, wersja 13.23 w aplikacji i test na fizycznym iPhonie obu ról."
+    "post_deploy": "EXTERNAL: Vercel READY poprawnego SHA, wersja 13.24 w aplikacji i test na fizycznym iPhonie obu ról."
   }
 }
