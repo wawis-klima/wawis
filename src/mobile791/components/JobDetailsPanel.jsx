@@ -6,7 +6,7 @@ import JobAddressLink from "./JobAddressLink.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, canWorkerRestartJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
 import { getNameplatePhotoMetadata } from "../modules/photos.js";
-import { getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
+import { areJobNameplatesReadyForProtocol, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
 import { getManualNameplateVerification, setManualNameplateVerification } from "../../modules/nameplate-verification.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -326,7 +326,7 @@ export default function JobDetailsPanel({
   // W przeciwieństwie do zakończenia offline, zdjęcia wyłącznie lokalne nie wystarczają.
   const protocolNameplatesReady = selectedJobIsCompleted || (
     Boolean(selectedJob?.detailsLoaded)
-    && getJobNameplateCompletion(selectedJob).isComplete
+    && areJobNameplatesReadyForProtocol(selectedJob)
   );
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
@@ -1218,7 +1218,8 @@ export default function JobDetailsPanel({
       ) : null}
       </div>
       <ProtocolTestModal
-        open={protocolTestOpen}
+        open={protocolTestOpen && protocolNameplatesReady}
+        canWriteProtocol={protocolNameplatesReady}
         job={selectedJob}
         profiles={profiles}
         supabase={supabase}
