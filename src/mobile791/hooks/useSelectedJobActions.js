@@ -753,7 +753,7 @@ export function useSelectedJobActions({
 
     if (completingNow || workerRestarting) setBusy(true);
     try {
-      if (workerFinishing) {
+      if (completingNow) {
         let verificationJob = job;
         try {
           const verification = await loadJobNameplatePhotosData({ supabase, jobId });
@@ -780,7 +780,7 @@ export function useSelectedJobActions({
         const completion = getJobNameplateCompletion(verificationJob);
         if (!completion.isComplete) {
           const localCompletion = getJobNameplateCompletion(job, { allowLocal: true });
-          if (localCompletion.isComplete) {
+          if (workerFinishing && localCompletion.isComplete) {
             await queueStatusOffline({ job, status, reason: 'waiting-for-photo-sync' });
             return;
           }
