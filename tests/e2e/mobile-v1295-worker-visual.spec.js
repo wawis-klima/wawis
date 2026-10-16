@@ -103,11 +103,10 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
 
   test('protokół pracownika ma krótszy tekst wyboru płatności', async ({ page }) => {
     await openActive(page, WORKER);
-    await page.locator('.workerDetailsActionGridV1295 .workerActionProtocolV1295').click();
-    const method = page.locator('.protocolPaymentMethodField select');
-    await expect(method).toBeVisible();
-    await expect(method.locator('option[value=""]')).toHaveText('Gotówka lub przelew');
-    await expect(method.locator('option')).toHaveCount(3);
+    const protocolButton = page.locator('.workerDetailsActionGridV1295 .workerActionProtocolV1295');
+    await expect(protocolButton).toBeDisabled();
+    await expect(protocolButton).toHaveAttribute('title', /Najpierw dodaj/);
+    // Weryfikacja etykiety płatności pozostaje w smoke protokołu, po odblokowaniu kreatora.
   });
 
   test('administrator zachowuje akcje, ale edycja nie pokazuje urządzeń i monterów oraz centruje datę', async ({ page }) => {
