@@ -838,7 +838,7 @@ export default function JobDetailsPanel({
                   ) : null}
                 </div>
               )) : null}
-              {detailsLoaded && installationPhotos.length === 0 ? <div className="muted">Brak dodatkowych zdjęć montażu. Tabliczki są dostępne przy odpowiednich JZ/JW powyżej.</div> : null}
+              {detailsLoaded && installationPhotos.length === 0 ? <div className="muted desktopPhotosEmptyMessage">Brak zdjęć</div> : null}
               </div>
               <div className="photoUploadActions" aria-label="Dodawanie zdjęć do zlecenia">
                 {canModifySelectedJobPhotos ? (
