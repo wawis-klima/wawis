@@ -13,15 +13,12 @@
     "public/app-version.json",
     "public/push-sw.js",
     "release-notes.json",
-    "scripts/smoke-diagnostics-clarity-v1013.mjs",
-    "scripts/smoke-photo-push-stability-v1120.cjs",
+    "scripts/smoke-desktop-initial-details-v1325.mjs",
     "scripts/test-groups.cjs",
-    "src/components/diagnostics/DiagnosticsPanel.jsx",
-    "src/mobile791/App.jsx",
+    "src/App.jsx",
     "src/mobile791/version.js",
-    "src/modules/diagnostics.js",
-    "src/version.js",
-    "supabase/migrations/current/stability-hardening-v11.20.sql"
+    "src/modules/details-deadline.js",
+    "src/version.js"
   ],
   "generated_only_files": [
     "CHANGELOG.md",
@@ -29,8 +26,8 @@
     "RELEASE-GATE.json",
     "RELEASE-RESULT.md",
     "app-version.json",
-    "package-lock.json",
     "public/app-version.json",
+    "package-lock.json",
     "public/push-sw.js",
     "release-notes.json",
     "src/mobile791/version.js",
@@ -39,45 +36,29 @@
   "effective_files": [
     "RELEASE-IMPACT.json",
     "package.json",
-    "scripts/smoke-diagnostics-clarity-v1013.mjs",
-    "scripts/smoke-photo-push-stability-v1120.cjs",
+    "scripts/smoke-desktop-initial-details-v1325.mjs",
     "scripts/test-groups.cjs",
-    "src/components/diagnostics/DiagnosticsPanel.jsx",
-    "src/mobile791/App.jsx",
-    "src/modules/diagnostics.js",
-    "supabase/migrations/current/stability-hardening-v11.20.sql"
+    "src/App.jsx",
+    "src/modules/details-deadline.js"
   ],
-  "profile": "critical",
-  "reason": "Zmiana dotyka backendu Supabase, RLS/grantów, PUSH, diagnostyki i krytycznej konfiguracji wydania.",
+  "profile": "targeted",
+  "reason": "Desktop: ponowienie pominiętego pierwszego pobrania montażu, ograniczenie czasu oczekiwania, bez backendu i mobilnych zmian.",
   "groups": [
     "core",
     "jobs",
     "photos",
-    "protocol",
-    "roles",
-    "push",
-    "fuel",
-    "nameplates",
-    "desktop",
-    "mobile",
-    "infra"
+    "desktop"
   ],
   "pr_groups": [
     "core",
-    "infra",
     "photos",
-    "roles",
-    "push",
-    "desktop",
-    "mobile"
-  ],
-  "platforms": [
-    "mobile",
     "desktop"
   ],
-  "scope": "full",
+  "platforms": [
+    "desktop"
+  ],
+  "scope": "desktop",
   "e2e": [
-    "mobile",
     "desktop"
   ],
   "needs_playwright": true
