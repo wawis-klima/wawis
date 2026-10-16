@@ -8,6 +8,7 @@ import PreviewModal from "./components/modals/PreviewModal";
 import { createJobAccessors } from "./utils/jobAccessors.js";
 import { countSmsDueToday } from "../modules/sms.js";
 import { normalizeStatus, STATUSES } from "./utils/jobPermissions.js";
+import { areJobNameplatesReadyForProtocol } from "./modules/nameplate-requirements.js";
 import { supabase, supabaseUrl, LOGOUT_FLAG_KEY, isSupabaseConfigured } from "./lib/supabase.js";
 import { EMPTY_JOB_FORM, loadJobDetailsData, loadJobSummaryData } from "./modules/jobs.js";
 import { loadContractors } from "./modules/contractors-fetch.js";
@@ -1381,12 +1382,23 @@ export default function App() {
     }
   }
 
-  function handleQuickProtocol(job) {
+  async function handleQuickProtocol(job) {
     if (!job) return;
     const supportsProtocol = job.status === "Zakończone" || job.status === "W trakcie";
     if (!supportsProtocol) return;
-    setSelectedJob((current) => String(current?.id || "") === String(job.id) ? current : job);
-    setQuickProtocolRequest({ jobId: String(job.id), nonce: Date.now() });
+    try {
+      // Także skrót pod gestem musi respektować pierwszy krok.
+      const resolved = await reloadJobDetails(String(job.id), { force: true, background: true });
+      if (!resolved) throw new Error("Brak aktualnych szczegółów montażu");
+      if (job.status !== "Zakończone" && !areJobNameplatesReadyForProtocol(resolved)) {
+        window.alert("Najpierw dodaj i zsynchronizuj komplet tabliczek znamionowych JW/JZ. Dopiero wtedy odblokuje się Protokół.");
+        return;
+      }
+      setSelectedJob((current) => String(current?.id || "") === String(job.id) ? current : resolved);
+      setQuickProtocolRequest({ jobId: String(job.id), nonce: Date.now() });
+    } catch {
+      window.alert("Nie udało się sprawdzić tabliczek. Odśwież montaż i spróbuj ponownie.");
+    }
   }
 
   function completeQuickProtocolRequest(nonce) {
