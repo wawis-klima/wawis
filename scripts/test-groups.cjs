@@ -84,6 +84,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-photo-idempotency',
     'npm run test:smoke:photo-preview-gallery-separation',
     'npm run test:smoke:desktop-photo-thumbnails',
+    'npm run test:smoke:desktop-initial-details',
     'node scripts/smoke-photo-zero-byte-v1096.mjs',
   ],
   protocol: [
@@ -234,6 +235,7 @@ const GROUPS = {
     'npm run test:smoke:center360-personalization',
     'npm run test:smoke:dashboard-metrics',
     'npm run test:smoke:desktop-refresh',
+    'npm run test:smoke:desktop-initial-details',
     'npm run test:smoke:desktop-jobs-layout-width',
     'npm run test:smoke:desktop-job-details-polish',
     'npm run test:smoke:desktop-global-search',
