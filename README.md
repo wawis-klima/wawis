@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 13.27
+- 13.28
 
 WAWIS 13.25: desktop — naprawa wyścigu podczas logowania: spóźniony snapshot listy nie usuwa pobranych już zdjęć i komentarzy, a pominięte pierwsze ładowanie jest wznawiane bez przechodzenia do innego montażu. Gdy zapytanie nie odpowiada, twardy limit czasu gwarantuje zakończenie próby, ponowienie i czytelny komunikat „Ponów”. Zdjęcia, protokoły, baza danych i aplikacja mobilna bez zmian.
 
@@ -1019,7 +1019,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.27` — porównanie SN z Code 128 i OCR nadruku, blokada automatycznego potwierdzania rozbieżności i ręczna kontrola niepewnych odczytów.
+- wersja `13.28` — przy rozbieżności numerów SN najpierw ślepy odczyt AI nadruku; ręczne sprawdzenie wyłącznie gdy brak wiarygodnego rozstrzygnięcia.
 - wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).
 - wersja `13.23` — mobilny Protokół pod Urządzenia/Tabliczki, zablokowane Zakończ do podpisu i zapisu protokołu oraz kompletu urządzeń, dla obu ról.
 - wersja `13.22` — podpis zachowany po korekcie adresu tylko dla protokołów od tej wersji, ponowny podpis i historia PDF bez usuwania oryginału.
