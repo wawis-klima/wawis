@@ -99,7 +99,7 @@ assert.match(apiSource, /!visualSerialOnly && Array\.isArray\(barcodeValues\)/);
 assert.match(apiSource, /!visualSerialOnly && Array\.isArray\(barcodeDetections\)/);
 assert.match(apiSource, /Przeczytaj wyłącznie nadrukowany numer/);
 assert.match(photo, /serialCheck\?\.status === "ai_resolved"/);
-assert.match(photo, /reading\.serialCheck\?\.status === 'conflict'/);
+assert.match(photo, /serialCheck\?\.status === "conflict"/);
 assert.match(photo, /requiresNameplateSerialReview\(verification\) && !verification\.serialReviewed/);
 assert.match(photo, /Sprawdziłem numer SN znak po znaku/);
 console.log('Nameplate dual-serial confirmation OK: match, conflict, weak OCR, missing data, AI, explicit review.');
