@@ -155,7 +155,7 @@ export default async function handler(req, res) {
       'Nie wymyślaj rodziny modelu. model_family wpisz tylko, gdy nazwa lub jednoznaczny kod są czytelne; w przeciwnym razie może pozostać pusta.',
       'EAN jest osobnym polem. Zwróć go tylko wtedy, gdy widzisz EAN/PC-EAN/GTIN albo czytnik kodów dostarczył format ean_13. Nigdy nie twórz EAN-u z numeru seryjnego.',
       visualSerialOnly
-        ? 'To jest niezależny trzeci odczyt SN. Przeczytaj wyłącznie nadrukowany numer przy S/N lub SERIAL. Nie dekoduj kodów kreskowych jako numeru, nie zgaduj z EAN ani z modelu. Jeśli nadruk jest nieczytelny, zwróć pusty serial_number i confidence.serial_number=0.'
+        ? 'To jest niezależny trzeci odczyt SN. Przeczytaj wyłącznie nadrukowany numer przy S/N lub SERIAL. W raw_text zapisz dokładnie widoczne oznaczenie S/N: oraz odczytany numer, ale tylko gdy jest rzeczywiście czytelny na nadruku. Nie dekoduj kodów kreskowych jako numeru, nie zgaduj z EAN ani z modelu. Jeśli nadruk jest nieczytelny, zwróć pusty serial_number i confidence.serial_number=0.'
         : 'Numer seryjny jest osobnym polem. Jeżeli czytnik kodów dostarczył Code 128 z alfanumerycznym numerem, potraktuj ten wynik jako twardy SN i przepisz go bez zmian.',
       'Nie mieszaj numeru seryjnego, EAN-u i kodu modelu. Każde pole ma własne źródło.',
       'Jeżeli znak jest niepewny, pozostaw pole puste albo zaznacz niepewność w uncertain_characters. Nie zastępuj niepewnego znaku innym na podstawie podobieństwa.',
