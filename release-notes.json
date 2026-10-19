@@ -1,10 +1,10 @@
 {
-  "version": "13.27",
-  "summary": "Podwójna kontrola SN: Code 128 i OCR nadruku tabliczki",
+  "version": "13.28",
+  "summary": "AI rozstrzyga niezgodny numer seryjny przed ręczną weryfikacją",
   "changes": [
-    "Odczyt nadruku SN jest uruchamiany również wtedy, gdy kod kreskowy został poprawnie zdekodowany.",
-    "Tylko zgodne wyniki dwóch niezależnych odczytów są automatycznie potwierdzane.",
-    "Rozbieżności nie uzupełniają pola SN; wymagane jest przepisanie wartości ze zdjęcia oraz potwierdzenie.",
-    "Numer z jednego źródła, także AI, wymaga ręcznej kontroli; pozostałe walidacje JW/JZ i protokołu pozostają bez zmian."
+    "Code128 i OCR są porównywane; jeśli nie ma zgodności, aplikacja najpierw uruchamia niezależny odczyt AI nadruku SN.",
+    "AI nie otrzymuje zgadywanych numerów z lokalnych czytników ani podpowiedzi dekodera.",
+    "Tylko pewny wynik AI potwierdzony widoczną transkrypcją S/N i zgodny z lokalnym odczytem może być automatycznie przyjęty.",
+    "Przy niepewnym odczycie lub awarii AI zostaje ręczne potwierdzenie; wymagania JW/JZ, zdjęć i protokołu pozostają bez zmian."
   ]
 }
