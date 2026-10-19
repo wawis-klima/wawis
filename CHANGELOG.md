@@ -1,3 +1,10 @@
+## 13.27
+- Mobile: zawsze uruchamiaj OCR nadruku SN niezależnie od powodzenia odczytu Code 128; porównaj numery znak po znaku.
+- Niezgodność numerów: pokaż obie wartości bez automatycznego wyboru; wymagaj ręcznego przepisania i potwierdzenia na podstawie zdjęcia.
+- Jedno źródło/AI/słaby OCR: wymagana ręczna kontrola SN, bez fałszywej informacji o dwukrotnym potwierdzeniu.
+- Zgodne Code 128 + wiarygodny OCR: automatyczny status potwierdzony; późniejsza ręczna zmiana numeru ponownie wymaga kontroli.
+- Regresje jednostkowe i Playwright, wersjonowanie oraz cache mobilny. Bez migracji Supabase.
+
 ## 13.26
 - Mobile: przy różnych seriach JW i JZ ostrzeżenie podczas weryfikacji tabliczki oraz jawne „Zapisz mimo ostrzeżenia” przy zapisie urządzeń.
 - Zakończenie montażu na mobile i desktopie: osobne potwierdzenie niezgodnych serii, przy zachowaniu wymagań JW/JZ, zdjęć i protokołu.
