@@ -12,7 +12,7 @@ const candidate = (overrides = {}) => ({
   ocrSerial: sn,
   ocrVotes: 2,
   ocrConfidence: 84,
-  ocrRawText: `Model I50Xi R14\\nSN: ${sn}`,
+  ocrRawText: `Model I50Xi R14\nSN: ${sn}`,
   ...overrides,
 });
 
@@ -31,7 +31,7 @@ assert.equal(requiresNameplateSerialReview({ reading: { serialCheck: conflict } 
 const noisyOcr = reconcileNameplateSerial(candidate({ ocrSerial: '99999999999', ocrVotes: 1 }));
 assert.equal(noisyOcr.status, 'single_source');
 assert.equal(noisyOcr.serialNumber, sn, 'One noisy OCR vote must not override barcode.');
-const noSnLabel = reconcileNameplateSerial(candidate({ ocrRawText: `MODEL I50Xi R14\\n${sn}` }));
+const noSnLabel = reconcileNameplateSerial(candidate({ ocrRawText: `MODEL I50Xi R14\n${sn}` }));
 assert.equal(noSnLabel.status, 'single_source');
 const lowConfidence = reconcileNameplateSerial(candidate({ ocrConfidence: 40 }));
 assert.equal(lowConfidence.status, 'single_source');
@@ -57,12 +57,12 @@ assert.equal(requiresNameplateSerialReview({ reading: null }), true);
 
 const reader = readFileSync('src/mobile791/modules/nameplate-reader.js', 'utf8');
 const photo = readFileSync('src/mobile791/components/nameplate/NameplatePhotoCapture.jsx', 'utf8');
-assert.match(reader, /scanDesktopNameplateBarcodes\\(file/);
-assert.match(reader, /scanDesktopNameplateSerialText\\(file/);
-assert.doesNotMatch(reader, /if \\(!serialNumber\\) \\{\\s*try \\{\\s*serialTextResult/, 'OCR must run even when barcode returned a serial.');
+assert.match(reader, /scanDesktopNameplateBarcodes\(file/);
+assert.match(reader, /scanDesktopNameplateSerialText\(file/);
+assert.doesNotMatch(reader, /if \(!serialNumber\) \{\s*try \{\s*serialTextResult/, 'OCR must run even when barcode returned a serial.');
 assert.match(reader, /const serialCheck = reconcileNameplateSerial/);
-assert.match(reader, /serialCheck\\.status === 'conflict'/);
-assert.match(photo, /reading\\.serialCheck\\?\\.status === 'conflict'/);
-assert.match(photo, /requiresNameplateSerialReview\\(verification\\) && !verification\\.serialReviewed/);
+assert.match(reader, /serialCheck\.status === 'conflict'/);
+assert.match(photo, /reading\.serialCheck\?\.status === 'conflict'/);
+assert.match(photo, /requiresNameplateSerialReview\(verification\) && !verification\.serialReviewed/);
 assert.match(photo, /Sprawdziłem numer SN znak po znaku/);
 console.log('Nameplate dual-serial confirmation OK: match, conflict, weak OCR, missing data, AI, explicit review.');
