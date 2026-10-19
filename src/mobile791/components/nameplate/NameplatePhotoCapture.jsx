@@ -427,16 +427,25 @@ function NameplateVerificationReview({
               <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
             ) : null}
             {readingMismatch ? <div className="nameplateVerifyMismatch" role="alert">{readingMismatch}</div> : null}
-            {serialCheck?.status === "conflict" ? (
+            {serialCheck?.status === "ai_resolved" ? (
+              <div className="nameplateVerifyReady" role="status">
+                <strong>AI rozstrzygnęła odczyt numeru SN.</strong>
+                <div>Numer: <code>{serialCheck.serialNumber}</code></div>
+                AI niezależnie odczytała nadruk i potwierdziła jeden z lokalnych wyników.
+                {serialCheck.barcodeSerial && serialCheck.ocrSerial && serialCheck.barcodeSerial !== serialCheck.ocrSerial
+                  ? " Drugi odczyt lokalny był niezgodny." : ""}
+              </div>
+            ) : serialCheck?.status === "conflict" ? (
               <div className="nameplateVerifyMismatch" role="alert">
-                <strong>Niezgodny numer seryjny — wymagane sprawdzenie</strong>
-                <div>Kod kreskowy: <code>{serialCheck.barcodeSerial}</code></div>
-                <div>Nadruk po SN: <code>{serialCheck.ocrSerial}</code></div>
-                Odczyty są różne. Przepisz prawidłowy numer ze zdjęcia i potwierdź ręcznie.
+                <strong>Niezgodny numer seryjny — AI nie rozstrzygnęła odczytu</strong>
+                {serialCheck.barcodeSerial ? <div>Kod kreskowy: <code>{serialCheck.barcodeSerial}</code></div> : null}
+                {serialCheck.ocrSerial ? <div>OCR nadruku SN: <code>{serialCheck.ocrSerial}</code></div> : null}
+                {serialCheck.aiSerial ? <div>Odczyt AI: <code>{serialCheck.aiSerial}</code></div> : null}
+                Sprawdź nadruk SN na zdjęciu, wpisz właściwy numer i potwierdź ręcznie.
               </div>
             ) : needsSerialReview ? (
               <div className="nameplateVerifyWarning" role="status">
-                Numer seryjny nie został niezależnie potwierdzony przez kod kreskowy i OCR.
+                AI nie potwierdziła numeru z wystarczającą pewnością.
                 Sprawdź go znak po znaku z nadrukiem SN na zdjęciu.
               </div>
             ) : (
