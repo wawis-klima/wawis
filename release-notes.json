@@ -1,10 +1,10 @@
 {
-  "version": "13.25",
-  "summary": "Desktop: niezawodne ładowanie zdjęć i komentarzy przy pierwszym montażu po logowaniu",
+  "version": "13.26",
+  "summary": "Potwierdzany zapis różnych serii JW/JZ oraz zakończenie montażu",
   "changes": [
-    "Pominięte pierwsze pobieranie jest wznawiane automatycznie, bez przełączania montażu.",
-    "Twardy timeout obsługuje również połączenia ignorujące AbortSignal.",
-    "Po nieskutecznym retry użytkownik widzi komunikat i przycisk Ponów.",
-    "Nowy test regresyjny. Bez zmian danych, zdjęć, protokołów i UI mobilnego."
+    "Niezgodność serii JW/JZ to ostrzeżenie w weryfikacji tabliczki, nie twarda blokada.",
+    "Zapis urządzenia wymaga świadomego wybrania „Zapisz mimo ostrzeżenia”.",
+    "Zakończenie montażu przy niezgodności serii wymaga osobnego potwierdzenia na mobile i desktopie.",
+    "Wymogi kompletnych tabliczek oraz podpisanego protokołu pozostają bez zmian."
   ]
 }
