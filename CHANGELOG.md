@@ -1,3 +1,9 @@
+## 13.26
+- Mobile: przy różnych seriach JW i JZ ostrzeżenie podczas weryfikacji tabliczki oraz jawne „Zapisz mimo ostrzeżenia” przy zapisie urządzeń.
+- Zakończenie montażu na mobile i desktopie: osobne potwierdzenie niezgodnych serii, przy zachowaniu wymagań JW/JZ, zdjęć i protokołu.
+- Ręczna zmiana modelu jednej jednostki nie nadpisuje istniejącego modelu drugiej jednostki.
+- Testy regresji iPhone, shared completion validator, smoke. Bez migracji i zmian Supabase.
+
 ## 13.25
 - Desktop: pierwsze otwarcie montażu po logowaniu nie może na stałe zatrzymać się na „Ładowanie zdjęć” / „Ładowanie komentarzy”.
 - Spóźniony snapshot listy z etapu logowania nie może nadpisać zdjęć i komentarzy pobranych w międzyczasie; zachowana jest aktualna informacja o statusie montażu.
