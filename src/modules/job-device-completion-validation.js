@@ -12,7 +12,7 @@ function nonEmpty(values = []) {
   return (Array.isArray(values) ? values : []).map((value) => String(value || '').trim()).filter(Boolean);
 }
 
-export function validateJobDevicesForCompletion(job = {}) {
+export function validateJobDevicesForCompletion(job = {}, { allowSinglePairMismatch = false } = {}) {
   const devices = normalizeJobDevices(job);
   if (!devices.length) {
     return { ok: false, code: 'missing_devices', message: 'Najpierw dodaj urządzenie z jednostką wewnętrzną (JW) i zewnętrzną (JZ).' };
@@ -48,7 +48,7 @@ export function validateJobDevicesForCompletion(job = {}) {
       outdoorModel,
       indoorModel: indoorModels[0],
     });
-    if (mismatch) {
+    if (mismatch && !allowSinglePairMismatch) {
       return {
         ok: false,
         code: 'single_pair_mismatch',

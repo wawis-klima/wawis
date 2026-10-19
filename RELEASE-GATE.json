@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.25",
-  "scope": "desktop",
-  "release_branch": "release/v13.25",
+  "version": "13.26",
+  "scope": "full",
+  "release_branch": "release/v13.26",
   "baseline_diagnostics": {
-    "checked": true,
-    "last_24h": true,
+    "checked": false,
+    "last_24h": false,
     "result": "INFO",
-    "notes": "Supabase edge_logs: GET /rest/v1/photos i /rest/v1/comments zwracały HTTP 200; logi runtime Vercel niedostępne (403). Diagnoza kodu: pierwszy cykl szczegółów może zostać pominięty, a AbortSignal nie wymusza rozstrzygnięcia Promise. Dodatkowy wyścig: późny snapshot logowania nadpisywał świeżo pobrane dane szczegółów."
+    "notes": "Bez nowych pomiarów produkcyjnych; zakres ograniczony do frontendu. Wymagana zielona bramka CI oraz test po wdrożeniu na telefonie."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.25.zip"
+    "file_name": "klima-app-v13.26.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.25",
+    "source_branch": "release/v13.26",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub green PR, Vercel READY, fizyczny iPhone",
-    "notes": "Po zielonym CI i wdrożeniu: sprawdzić wersję 13.25; po świeżym zalogowaniu otworzyć montaż ze zdjęciami i komentarzami bez zmiany karty oraz sprawdzić działanie Ponów."
+    "evidence_source": "GitHub zielone CI, Vercel READY, test fizycznego iPhone",
+    "notes": "Po wdrożeniu sprawdzić wersję 13.26, ostrzeżenia OCR JW Imoto/JZ Versu Mirror, zapis urządzenia i świadome potwierdzenie przy Zakończ."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Desktop: ponów pominięte ładowanie zdjęć i komentarzy po starcie sesji oraz zastosuj twardy timeout do nierozstrzygniętych zapytań. Bez zmian w Supabase, mobile i protokołach. Ochrona przed stale snapshotem przy refreshAll.",
-    "release_ci": "Wymagane zielone targeted-checks, testy desktop/photos, E2E desktop i build przed merge do main.",
-    "post_deploy": "Vercel READY właściwego SHA, wersja 13.25 oraz test po nowym logowaniu do aplikacji na desktopie."
+    "code": "Mobile: ostrzeżenie zamiast blokady podczas zapisu różnych serii JW/JZ. Mobile i desktop: niezależne potwierdzenie niezgodności przy zakończeniu, pozostałe walidacje nadal obowiązują.",
+    "release_ci": "Wymagane zielone targeted-checks, job completion smoke, mobile E2E i build przed merge.",
+    "post_deploy": "Vercel READY właściwego SHA, wersja 13.26 i test na zalogowanym iPhonie oraz desktopie."
   }
 }

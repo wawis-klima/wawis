@@ -204,7 +204,7 @@ export function getSingleSplitModelFamilyMismatch({
     indoorFamily: indoorCandidates.length === 1 ? indoorCandidates[0] : '',
     outdoorFamilies: outdoorCandidates,
     indoorFamilies: indoorCandidates,
-    message: `Niezgodny zestaw Single: JZ to ${outdoorLabel}, a JW to ${indoorLabel}. Jednostka zewnętrzna i wewnętrzna muszą być z kompatybilnej serii.`,
+    message: `Niezgodny zestaw Single: JZ to ${outdoorLabel}, a JW to ${indoorLabel}. Sprawdź zgodność techniczną jednostki zewnętrznej i wewnętrznej przed uruchomieniem zestawu.`,
   };
 }
 

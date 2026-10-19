@@ -714,7 +714,16 @@ export function useSelectedJobActions({
     }
 
     if (completingNow) {
-      const deviceValidation = validateJobDevicesForCompletion(job);
+      let deviceValidation = validateJobDevicesForCompletion(job);
+      if (!deviceValidation.ok && deviceValidation.code === 'single_pair_mismatch') {
+        const confirmed = window.confirm(
+          `Uwaga — różne serie JW/JZ. ${deviceValidation.message}\n\n`
+          + 'Sprawdź modele i numery seryjne na obu tabliczkach oraz zgodność techniczną zestawu. '
+          + 'Czy mimo ostrzeżenia chcesz zakończyć zlecenie?',
+        );
+        if (!confirmed) return;
+        deviceValidation = validateJobDevicesForCompletion(job, { allowSinglePairMismatch: true });
+      }
       if (!deviceValidation.ok) {
         alert(`Nie można zakończyć zlecenia. ${deviceValidation.message}`);
         return;

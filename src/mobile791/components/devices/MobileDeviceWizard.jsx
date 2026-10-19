@@ -364,6 +364,7 @@ export default function MobileDeviceWizard({
   const [activeUnitRef, setActiveUnitRef] = useState('jz');
   const [picker, setPicker] = useState(null);
   const [selectedType, setSelectedType] = useState(DEVICE_TYPE_SINGLE);
+  const [pendingMismatchConfirmation, setPendingMismatchConfirmation] = useState('');
 
   const safeDevices = Array.isArray(devices) && devices.length ? devices : [];
   const activeDevice = safeDevices[activeDeviceIndex] || safeDevices[0] || null;
@@ -448,7 +449,11 @@ export default function MobileDeviceWizard({
     onSetUnitDescriptor?.(activeDeviceIndex, activeUnitRef, formatDescriptor(descriptor));
     if (screen === 'single') {
       const otherUnitRef = activeUnitRef === 'jz' ? 'jw-1' : 'jz';
-      onSetUnitDescriptor?.(activeDeviceIndex, otherUnitRef, formatDescriptor(descriptor));
+      // Fill the second unit only when it is empty. Never overwrite a scanned
+      // or manually corrected JW/JZ model with the model of its paired unit.
+      if (!String(getUnitModel(activeDevice, otherUnitRef) || '').trim()) {
+        onSetUnitDescriptor?.(activeDeviceIndex, otherUnitRef, formatDescriptor(descriptor));
+      }
     }
     setPicker(null);
   }
@@ -485,13 +490,21 @@ export default function MobileDeviceWizard({
     return mismatch?.message || '';
   }
 
+  // Require an explicit second action for an unusual pair, without blocking
+  // entry of the models that are actually printed on the nameplates.
+  const mismatchWarnings = safeDevices.flatMap((device, index) => {
+    const mismatch = getSingleMismatch(device);
+    return mismatch ? [{ index, message: mismatch.message }] : [];
+  });
+  const mismatchSignature = mismatchWarnings.map(({ index, message }) => `${index}:${message}`).join('|');
+  const mismatchReviewVisible = mismatchWarnings.length > 0 && pendingMismatchConfirmation === mismatchSignature;
+
   function handleSubmit() {
-    const mismatchIndex = safeDevices.findIndex((device) => Boolean(getSingleMismatch(device)));
-    if (mismatchIndex >= 0) {
-      const mismatch = getSingleMismatch(safeDevices[mismatchIndex]);
-      window.alert(`Urządzenie ${mismatchIndex + 1}: ${mismatch.message}`);
+    if (mismatchWarnings.length && !mismatchReviewVisible) {
+      setPendingMismatchConfirmation(mismatchSignature);
       return;
     }
+    setPendingMismatchConfirmation('');
     onSubmit?.();
   }
 
@@ -661,8 +674,16 @@ export default function MobileDeviceWizard({
           })}
         </div>
         <button type="button" className="mobileDeviceWizardSecondaryAction mobileDeviceAddAnother" onClick={startAddingDevice}>+ Dodaj kolejne urządzenie</button>
+        {mismatchReviewVisible ? (
+          <div className="mobileDevicePairWarning" role="alert">
+            <strong>Sprawdź różne serie jednostek</strong>
+            {mismatchWarnings.map(({ index, message }) => <p key={index}>Urządzenie {index + 1}: {message}</p>)}
+            <small>Jeżeli modele i numery seryjne są zgodne z tabliczkami, możesz je zapisać mimo ostrzeżenia. Zgodność techniczną zestawu potwierdź osobno.</small>
+            <button type="button" className="mobileDevicePairWarningCancel" onClick={() => setPendingMismatchConfirmation('')}>Wróć do edycji</button>
+          </div>
+        ) : null}
       </div>
-      <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" disabled={busy} onClick={handleSubmit}>{busy ? 'Zapisuję…' : submitLabel}</button></div>
+      <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" disabled={busy} onClick={handleSubmit}>{busy ? 'Zapisuję…' : mismatchReviewVisible ? 'Zapisz mimo ostrzeżenia' : submitLabel}</button></div>
     </div>
   );
 }

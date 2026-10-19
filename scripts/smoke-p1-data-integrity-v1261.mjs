@@ -171,7 +171,42 @@ await check('F04 completion rejects missing or mismatched JW/JZ and accepts vali
     }],
   });
   assert.equal(mismatch.ok, false);
+  assert.equal(mismatch.code, 'single_pair_mismatch');
   assert.match(mismatch.message, /niezgod|kompatybil/i);
+
+  const mixedSeriesJob = {
+    devices: [{
+      device_type: 'single-split',
+      outdoor_model: 'Rotenso Versu Mirror 5,3 kW (VM50Xo R16)',
+      outdoor_serial_number: 'VERSU-JZ-001',
+      indoor_models: ['Rotenso Imoto 5,3 kW (I50Xi R14)'],
+      indoor_serial_numbers: ['IMOTO-JW-001'],
+    }],
+  };
+  assert.equal(
+    validator.validateJobDevicesForCompletion(mixedSeriesJob).code,
+    'single_pair_mismatch',
+    'Mieszany zestaw musi wymagac świadomego potwierdzenia.',
+  );
+  assert.equal(
+    validator.validateJobDevicesForCompletion(mixedSeriesJob, { allowSinglePairMismatch: true }).ok,
+    true,
+    'Potwierdzony zestaw Imoto + Versu Mirror musi przechodzić walidację zakończenia.',
+  );
+  assert.equal(
+    validator.validateJobDevicesForCompletion({
+      devices: [{ ...mixedSeriesJob.devices[0], indoor_models: [''] }],
+    }, { allowSinglePairMismatch: true }).code,
+    'missing_indoor',
+    'Potwierdzenie różnic serii nie może zwolnić z wymagania modelu JW.',
+  );
+  assert.equal(
+    validator.validateJobDevicesForCompletion({
+      devices: [{ ...mixedSeriesJob.devices[0], outdoor_model: '' }],
+    }, { allowSinglePairMismatch: true }).code,
+    'missing_outdoor',
+    'Potwierdzenie różnic serii nie może zwolnić z wymagania modelu JZ.',
+  );
 
   const multi = validator.validateJobDevicesForCompletion({
     devices: [{

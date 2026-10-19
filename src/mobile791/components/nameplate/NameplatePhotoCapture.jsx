@@ -360,11 +360,14 @@ function NameplateVerificationReview({
   if (!verification) return null;
 
   const progressValue = Math.max(0, Math.min(100, Number(verification.progress?.progress || 0)));
-  const mismatchMessage = verification.reading?.mismatch?.message || compatibilityError || "";
+  // The OCR/image mismatch is a hard error. A warning about different Single
+  // model families is advisory: the installer can confirm the actual nameplate.
+  const readingMismatch = verification.reading?.mismatch?.message || "";
+  const compatibilityWarning = compatibilityError || "";
   const noNameplateEvidence = Boolean(verification.reading?.noNameplateEvidence);
   const modelReady = Boolean(String(verification.modelValue || "").trim());
   const serialReady = Boolean(String(verification.serialNumber || "").trim());
-  const canConfirm = !verification.busy && !mismatchMessage && !noNameplateEvidence && modelReady && serialReady;
+  const canConfirm = !verification.busy && !readingMismatch && !noNameplateEvidence && modelReady && serialReady;
   const methodLabel = noNameplateEvidence
     ? (verification.reading?.aiAttempted ? "AI nie potwierdziła tabliczki" : "Nie wykryto tabliczki")
     : verification.reading?.method === "ai"
@@ -418,7 +421,13 @@ function NameplateVerificationReview({
             {verification.reading?.aiAttempted && verification.reading?.aiError ? (
               <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
             ) : null}
-            {mismatchMessage ? <div className="nameplateVerifyMismatch" role="alert">{mismatchMessage}</div> : null}
+            {readingMismatch ? <div className="nameplateVerifyMismatch" role="alert">{readingMismatch}</div> : null}
+            {compatibilityWarning ? (
+              <div className="nameplateVerifyWarning" role="alert">
+                {compatibilityWarning} Możesz zapisać faktyczny zestaw po sprawdzeniu danych z obu tabliczek.
+                Zgodność techniczną jednostek trzeba potwierdzić osobno.
+              </div>
+            ) : null}
           </>
         )}
 
@@ -465,7 +474,9 @@ function NameplateVerificationReview({
         >
           {noNameplateEvidence ? "Zrób zdjęcie ponownie" : (verification.busy || !modelReady || !serialReady ? "Wpisz ręcznie" : "Zrób zdjęcie ponownie")}
         </button>
-        <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>Potwierdź</button>
+        <button type="button" className="btn primary" disabled={!canConfirm} onClick={onConfirm}>
+          {compatibilityWarning && !readingMismatch ? "Potwierdź mimo ostrzeżenia" : "Potwierdź"}
+        </button>
       </div>
     </div>
   );
@@ -607,7 +618,7 @@ export default function NameplatePhotoCapture({
   }
 
   function confirmVerification() {
-    if (!verification?.file || verification.busy || verification.reading?.mismatch || compatibilityError) return;
+    if (!verification?.file || verification.busy || verification.reading?.mismatch || verification.reading?.noNameplateEvidence) return;
     const modelValue = String(verification.modelValue || "").replace(/\s+/g, " ").trim();
     const serialNumber = String(verification.serialNumber || "").replace(/\s+/g, "").trim().toUpperCase();
     if (!modelValue || !serialNumber) return;
