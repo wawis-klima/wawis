@@ -63,7 +63,14 @@ export function resolveNameplateSerialWithVisualAi(serialCheck = {}, aiResult = 
     (barcodeSerial && aiSerial === barcodeSerial)
     || (ocrSerial && aiSerial === ocrSerial)
   ));
-  const confirmedByAi = Boolean(matchesOne && confidence >= 0.90
+  // Check that the AI explicitly transcribed the printed S/N value in its
+  // visual evidence; a confident guess based on barcode-shaped pixels is not
+  // enough to automatically resolve a disagreement.
+  const rawText = String(aiResult?.aiResult?.raw_text || '');
+  const printedLabel = rawText.match(/(?:^|\b)(?:S\s*[/.-]?\s*N|SERIAL)\s*[:=._-]?\s*([A-Z0-9][A-Z0-9._/-]{9,39})/i);
+  const printedEvidence = Boolean(printedLabel
+    && normalizeNameplateSerial(printedLabel[1]) === aiSerial);
+  const confirmedByAi = Boolean(matchesOne && printedEvidence && confidence >= 0.90
     && Array.isArray(uncertain) && uncertain.length === 0);
   if (confirmedByAi) {
     return {
