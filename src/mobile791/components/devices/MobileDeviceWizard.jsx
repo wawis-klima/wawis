@@ -449,7 +449,11 @@ export default function MobileDeviceWizard({
     onSetUnitDescriptor?.(activeDeviceIndex, activeUnitRef, formatDescriptor(descriptor));
     if (screen === 'single') {
       const otherUnitRef = activeUnitRef === 'jz' ? 'jw-1' : 'jz';
-      onSetUnitDescriptor?.(activeDeviceIndex, otherUnitRef, formatDescriptor(descriptor));
+      // Fill the second unit only when it is empty. Never overwrite a scanned
+      // or manually corrected JW/JZ model with the model of its paired unit.
+      if (!String(getUnitModel(activeDevice, otherUnitRef) || '').trim()) {
+        onSetUnitDescriptor?.(activeDeviceIndex, otherUnitRef, formatDescriptor(descriptor));
+      }
     }
     setPicker(null);
   }
