@@ -49,6 +49,46 @@ export function withNameplateAiSerialCandidate(serialCheck = {}, aiSerial = '') 
   };
 }
 
+// The third check is intentionally blind: the AI sees only the picture, not
+// Code128/OCR candidates. A high-confidence visual read that exactly matches
+// one of the independent candidates can resolve a disagreement.
+export function resolveNameplateSerialWithVisualAi(serialCheck = {}, aiResult = {}) {
+  const aiSerial = normalizeNameplateSerial(aiResult?.aiResult?.serial_number);
+  const confidence = Number(aiResult?.aiResult?.confidence?.serial_number ?? 0);
+  const uncertain = aiResult?.aiResult?.uncertain_characters || [];
+  const barcodeSerial = normalizeNameplateSerial(serialCheck.barcodeSerial);
+  const ocrSerial = normalizeNameplateSerial(serialCheck.ocrSerial);
+  if (serialCheck.status === 'confirmed') return serialCheck;
+  const matchesOne = Boolean(aiSerial && (
+    (barcodeSerial && aiSerial === barcodeSerial)
+    || (ocrSerial && aiSerial === ocrSerial)
+  ));
+  const confirmedByAi = Boolean(matchesOne && confidence >= 0.90
+    && Array.isArray(uncertain) && uncertain.length === 0);
+  if (confirmedByAi) {
+    return {
+      ...serialCheck,
+      status: 'ai_resolved',
+      serialNumber: aiSerial,
+      aiSerial,
+      aiConfidence: confidence,
+    };
+  }
+  if (serialCheck.status === 'conflict') {
+    return { ...serialCheck, serialNumber: '', aiSerial, aiConfidence: confidence };
+  }
+  // AI-only results and uncertain/disagreeing AI outputs are never auto-approved.
+  if (aiSerial && serialCheck.serialNumber && aiSerial !== normalizeNameplateSerial(serialCheck.serialNumber)) {
+    return { ...serialCheck, status: 'conflict', serialNumber: '', aiSerial, aiConfidence: confidence };
+  }
+  return {
+    ...withNameplateAiSerialCandidate(serialCheck, aiSerial),
+    aiSerial,
+    aiConfidence: confidence,
+  };
+}
+
 export function requiresNameplateSerialReview({ reading = null, serialManuallyChanged = false } = {}) {
-  return Boolean(serialManuallyChanged || reading?.serialCheck?.status !== 'confirmed');
+  const status = reading?.serialCheck?.status;
+  return Boolean(serialManuallyChanged || (status !== 'confirmed' && status !== 'ai_resolved'));
 }
