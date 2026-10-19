@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## MOBILE-1327 — ten sam obraz, rozbieżne odczyty numeru SN (19 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| MOBILE-1327-DOUBLE | FIXED-UNVERIFIED | `scripts/smoke-nameplate-serial-dual-v1327.mjs`: rozpoznanie numeru przez Code 128 i OCR niezależnie, dokładny wynik obydwu metod oznacza automatyczne potwierdzenie. |
+| MOBILE-1327-CONFLICT | FIXED-UNVERIFIED | Ten sam test: dwa rozbieżne kandydaty nie wypełniają pola SN, oba są widoczne; wymagane ręczne wpisanie i potwierdzenie ze zdjęcia. |
+| MOBILE-1327-WEAK | FIXED-UNVERIFIED | Ten sam test: OCR z jedną próbą/bez etykiety/niska pewność lub jeden czytnik/AI nie są błędnie pokazywane jako podwójnie potwierdzone. |
+| MOBILE-1327-MOBILE | FIXED-UNVERIFIED | `tests/e2e/mobile-serial-scanner.spec.js`: ręczna akceptacja SN jest zablokowana bez zaznaczenia kontroli. |
+| MOBILE-1327-LIVE | EXTERNAL | Po wdrożeniu sprawdzić na rzeczywistej tabliczce Code 128, odczyt nadruku, ostrzeżenie i numer 13.27 na fizycznym iPhonie. |
+
+
 ## MOBILE-1326 — różne serie JW/JZ (19 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
