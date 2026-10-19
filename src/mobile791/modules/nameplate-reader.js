@@ -9,7 +9,7 @@ import {
   scanDesktopNameplateSerialText,
 } from '../../modules/desktop-nameplate-model-ocr.js';
 import { lookupNameplateProductByEan } from '../../modules/nameplate-product-catalog.js';
-import { reconcileNameplateSerial, withNameplateAiSerialCandidate } from './nameplate-serial-verification.js';
+import { reconcileNameplateSerial, resolveNameplateSerialWithVisualAi } from './nameplate-serial-verification.js';
 
 const BARCODE_SCAN_TIMEOUT_MS = 95000;
 const MODEL_OCR_TIMEOUT_MS = 60000;
@@ -316,7 +316,7 @@ export async function readMobileNameplate({
   });
   localReading.evidence = evidence;
 
-  if (serialCheck.status === 'conflict' || isMobileNameplateReadingComplete(localReading) || localMismatch) {
+  if (serialCheck.status === 'confirmed' && (isMobileNameplateReadingComplete(localReading) || localMismatch)) {
     onProgress?.({
       progress: 100,
       label: localMismatch ? 'Odczyt zakończony — sprawdź zgodność jednostki' : 'Tabliczka odczytana lokalnie',
@@ -346,11 +346,14 @@ export async function readMobileNameplate({
     };
   }
 
+  const needsSerialAi = serialCheck.status !== 'confirmed';
   onProgress?.({
     progress: 8,
-    label: weakEvidenceFallback
-      ? 'Wykryto słabe ślady tabliczki — sprawdzam bezpiecznie przez AI…'
-      : 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…',
+    label: needsSerialAi
+      ? 'Numer SN nie został zgodnie odczytany — weryfikuję nadruk przez AI…'
+      : weakEvidenceFallback
+        ? 'Wykryto słabe ślady tabliczki — sprawdzam bezpiecznie przez AI…'
+        : 'Wykryto ślady tabliczki, ale odczyt jest niepełny — uruchamiam AI…',
     method: 'ai',
   });
   try {
@@ -359,6 +362,7 @@ export async function readMobileNameplate({
         file,
         supabase,
         barcodeInfo: { ...barcodeInfo, rotensoModel: exactModel },
+        visualSerialOnly: needsSerialAi,
         targetUnit: getTargetLabel(targetUnit),
         jobId,
         onProgress: (state) => onProgress?.({ ...state, method: 'ai' }),
@@ -367,13 +371,16 @@ export async function readMobileNameplate({
       'Analiza AI nie odpowiedziała w ciągu 60 sekund.',
     );
 
-    const finalExactModel = aiResult.exactModel || exactModel || null;
+    // A blind AI serial read must not overwrite a locally confirmed model.
+    const finalExactModel = exactModel || aiResult.exactModel || null;
     const exactModelFields = resultFromExactModel(finalExactModel);
-    const manufacturer = aiResult.manufacturer || exactModelFields.manufacturer;
-    const model = aiResult.model || exactModelFields.model;
-    const power = aiResult.power || exactModelFields.power;
+    const manufacturer = exactModelFields.manufacturer || aiResult.manufacturer;
+    const model = exactModelFields.model || aiResult.model;
+    const power = exactModelFields.power || aiResult.power;
     const modelValue = buildResolvedModelValue({ manufacturer, model, power }) || localModel.modelValue;
-    const finalSerialCheck = withNameplateAiSerialCandidate(serialCheck, aiResult.serialNumber);
+    const finalSerialCheck = needsSerialAi
+      ? resolveNameplateSerialWithVisualAi(serialCheck, aiResult)
+      : serialCheck;
     const finalSerial = finalSerialCheck.serialNumber;
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
     const aiTrustedModel = Boolean(
