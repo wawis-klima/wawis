@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## MOBILE-1326 — różne serie JW/JZ (19 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| MOBILE-1326-SAVE | FIXED-UNVERIFIED | `tests/e2e/mobile-serial-scanner.spec.js`: zapis JW Rotenso Imoto + JZ Rotenso Versu Mirror wymaga dwóch świadomych kroków; można wrócić do edycji bez zapisu. |
+| MOBILE-1326-FINISH | FIXED-UNVERIFIED | `scripts/smoke-p1-data-integrity-v1261.mjs`: shared validator blokuje mismatch domyślnie, przy jawnym wyjątku przepuszcza Imoto/Versu Mirror, ale nadal blokuje brak JW i JZ. |
+| MOBILE-1326-LIVE | EXTERNAL | Po zielonym CI i Vercel READY sprawdzić na fizycznym iPhonie przycisk potwierdzenia tabliczki, zapis oraz niezależną zgodę przy zakończeniu; potwierdzić wersję 13.26. |
+
+
 Ten plik jest trwałym rejestrem potwierdzonych błędów i testów, które mają zapobiegać ich powrotowi.
 
 ## UI-DESKTOP-1320 — kod pocztowy w tabelach Montaże (12 października 2026)
