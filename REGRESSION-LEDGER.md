@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## MOBILE-1328 — AI po rozbieżności SN (19 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| MOBILE-1328-ESCALATE | FIXED-UNVERIFIED | `scripts/smoke-nameplate-serial-dual-v1327.mjs`: niezgodny lub pojedynczy odczyt Code128/OCR kieruje do AI w trybie visual_only; dwa zgodne niezależne źródła nie uruchamiają dodatkowego AI. |
+| MOBILE-1328-BLIND | FIXED-UNVERIFIED | API ignoruje podpowiedzi barcodeValues/barcodeDetections w visual_only, a klient nie wysyła ich w tym trybie. |
+| MOBILE-1328-RESOLVE | FIXED-UNVERIFIED | Ten sam test: AI ze zgodnym numerem, wysoką pewnością, bez niepewnych znaków i jawną transkrypcją S/N daje automatyczne rozstrzygnięcie. |
+| MOBILE-1328-MANUAL | FIXED-UNVERIFIED | AI niepewna, inny numer, brak nadruku, brak odpowiedzi lub zgadywanie: bez automatycznej akceptacji; konieczna ręczna kontrola. |
+| MOBILE-1328-LIVE | EXTERNAL | Potwierdzić działanie na rzeczywistym iPhonie i tabliczce w wersji 13.28. |
+
+
 ## MOBILE-1327 — ten sam obraz, rozbieżne odczyty numeru SN (19 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
