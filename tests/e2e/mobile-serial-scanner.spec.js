@@ -139,6 +139,10 @@ async function selectNameplateAndCrop(page, input) {
   manualVerificationCounter += 1;
   await modelInput.fill(`Rotenso E2E ${manualVerificationCounter}`);
   await serialInput.fill(`E2ESERIAL${String(manualVerificationCounter).padStart(4, '0')}`);
+  const review = page.locator('.nameplateSerialReviewCheck input');
+  await expect(review).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
+  await review.check();
   await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
   await expect(verifyModal).toBeHidden();
 }
@@ -535,6 +539,11 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
       await serialInput.fill(SYNTHETIC_ROTENSO_SERIAL);
     }
 
+    const serialReview = page.locator('.nameplateSerialReviewCheck input');
+    if (await serialReview.isVisible()) {
+      await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
+      await serialReview.check();
+    }
     await page.getByRole('button', { name: 'Potwierdź', exact: true }).click();
     await expect(verifyModal).toBeHidden();
     await expect(page.getByText('Potwierdzona', { exact: true })).toBeVisible();
