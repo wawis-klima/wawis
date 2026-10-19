@@ -42,6 +42,7 @@ const GROUPS = {
   jobs: [
     'node scripts/codex-acceptance-note-sql-v1269.mjs',
     'node scripts/smoke-package2-jw-jz-cycle-v1267.mjs',
+    'node scripts/smoke-nameplate-serial-dual-v1327.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-postal-code-v1196.mjs',
@@ -148,6 +149,7 @@ const GROUPS = {
   ],
   nameplates: [
     'node scripts/smoke-package2-jw-jz-cycle-v1267.mjs',
+    'node scripts/smoke-nameplate-serial-dual-v1327.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:mobile-serial-scanner',
