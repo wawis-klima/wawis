@@ -272,6 +272,33 @@
 .mobileDeviceOverviewBadge { padding: 5px 8px; border-radius: 999px; background: #edf4ff; color: var(--wizard-blue); font-size: 10px; font-weight: 900; }
 .mobileDeviceOverviewRemove { width: 100%; padding: 8px; border: 0; border-top: 1px solid #f0f2f6; background: #fff; color: #dc2626; font-size: 10px; font-weight: 800; cursor: pointer; }
 .mobileDeviceAddAnother { margin-top: 3px; }
+
+/* Different Single-family models are a review warning, not a data-entry blocker. */
+.mobileDevicePairWarning {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.mobileDevicePairWarning strong { font-size: 13px; }
+.mobileDevicePairWarning p { margin: 0; }
+.mobileDevicePairWarning small { font-size: 11px; }
+.mobileDevicePairWarningCancel {
+  justify-self: start;
+  border: 0;
+  padding: 4px 0;
+  background: transparent;
+  color: #9a3412;
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .mobileDeviceWizardHint { padding: 10px 12px; border-radius: 13px; background: #f6f8fc; color: #64748b; font-size: 10px; line-height: 1.45; }
 
 .mobileDeviceWizardFooter {
