@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import {
   reconcileNameplateSerial,
   withNameplateAiSerialCandidate,
+  resolveNameplateSerialWithVisualAi,
   requiresNameplateSerialReview,
 } from '../src/mobile791/modules/nameplate-serial-verification.js';
 
@@ -52,6 +53,32 @@ assert.equal(withNameplateAiSerialCandidate(onlyPrinted, sn).status, 'single_sou
 const aiOnly = withNameplateAiSerialCandidate(absent, sn);
 assert.equal(aiOnly.status, 'single_source');
 assert.equal(aiOnly.serialNumber, sn);
+const trustedAi = (serialNumber, confidence = 0.96, rawText = `S/N: ${serialNumber}`, uncertainCharacters = []) => ({
+  aiResult: {
+    serial_number: serialNumber,
+    confidence: { serial_number: confidence },
+    raw_text: rawText,
+    uncertain_characters: uncertainCharacters,
+  },
+});
+const aiMatchesBarcode = resolveNameplateSerialWithVisualAi(conflict, trustedAi(corruptedCode));
+assert.equal(aiMatchesBarcode.status, 'ai_resolved');
+assert.equal(aiMatchesBarcode.serialNumber, corruptedCode);
+assert.equal(requiresNameplateSerialReview({ reading: { serialCheck: aiMatchesBarcode } }), false);
+const aiMatchesOcr = resolveNameplateSerialWithVisualAi(conflict, trustedAi(sn));
+assert.equal(aiMatchesOcr.status, 'ai_resolved');
+assert.equal(aiMatchesOcr.serialNumber, sn);
+assert.equal(resolveNameplateSerialWithVisualAi(conflict, trustedAi('98765432109')).status, 'conflict');
+assert.equal(resolveNameplateSerialWithVisualAi(conflict, trustedAi(sn, 0.65)).status, 'conflict');
+assert.equal(resolveNameplateSerialWithVisualAi(conflict, trustedAi(sn, 0.99, 'Model I50Xi R14')).status, 'conflict');
+assert.equal(resolveNameplateSerialWithVisualAi(conflict, trustedAi(sn, 0.99, `S/N: ${sn}`, ['0/O'])).status, 'conflict');
+assert.equal(resolveNameplateSerialWithVisualAi(absent, trustedAi(sn)).status, 'single_source', 'AI alone never becomes confirmed');
+const barcodeAndAi = resolveNameplateSerialWithVisualAi(onlyBarcode, trustedAi(sn));
+assert.equal(barcodeAndAi.status, 'ai_resolved');
+const contradicted = resolveNameplateSerialWithVisualAi(onlyBarcode, trustedAi('98765432109'));
+assert.equal(contradicted.status, 'conflict');
+assert.equal(contradicted.serialNumber, '');
+
 assert.equal(requiresNameplateSerialReview({ reading: { serialCheck: confirmed }, serialManuallyChanged: true }), true);
 assert.equal(requiresNameplateSerialReview({ reading: null }), true);
 
@@ -61,8 +88,18 @@ assert.match(reader, /scanDesktopNameplateBarcodes\(file/);
 assert.match(reader, /scanDesktopNameplateSerialText\(file/);
 assert.doesNotMatch(reader, /if \(!serialNumber\) \{\s*try \{\s*serialTextResult/, 'OCR must run even when barcode returned a serial.');
 assert.match(reader, /const serialCheck = reconcileNameplateSerial/);
-assert.match(reader, /serialCheck\.status === 'conflict'/);
-assert.match(photo, /reading\.serialCheck\?\.status === 'conflict'/);
+assert.match(reader, /const needsSerialAi = serialCheck\.status !== 'confirmed'/);
+assert.match(reader, /visualSerialOnly: needsSerialAi/, 'AI must run blind for an unconfirmed serial.');
+assert.match(reader, /resolveNameplateSerialWithVisualAi\(serialCheck, aiResult\)/);
+const aiClient = readFileSync('src/modules/desktop-nameplate-ai.js', 'utf8');
+assert.match(aiClient, /visualSerialOnly \? \{\} : barcodeInfo/);
+assert.match(aiClient, /serialReadMode: visualSerialOnly \? 'visual_only'/);
+const apiSource = readFileSync('api/read-nameplate-ai.js', 'utf8');
+assert.match(apiSource, /!visualSerialOnly && Array\.isArray\(barcodeValues\)/);
+assert.match(apiSource, /!visualSerialOnly && Array\.isArray\(barcodeDetections\)/);
+assert.match(apiSource, /Przeczytaj wyłącznie nadrukowany numer/);
+assert.match(photo, /serialCheck\?\.status === "ai_resolved"/);
+assert.match(photo, /serialCheck\?\.status === "conflict"/);
 assert.match(photo, /requiresNameplateSerialReview\(verification\) && !verification\.serialReviewed/);
 assert.match(photo, /Sprawdziłem numer SN znak po znaku/);
 console.log('Nameplate dual-serial confirmation OK: match, conflict, weak OCR, missing data, AI, explicit review.');

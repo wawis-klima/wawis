@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.27",
-  "scope": "mobile",
-  "release_branch": "release/v13.27",
+  "version": "13.28",
+  "scope": "full",
+  "release_branch": "release/v13.28",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Odczyt SN bez logowania pełnych numerów; analiza statyczna ścieżki Code128/OCR z 13.26 i regresje na gałęzi wydania."
+    "notes": "Oparto zakres na analizie ścieżki WAWIS 13.27: dla niezgodnego SN aplikacja pomijała AI; weryfikacja przed wdrożeniem przez testy i CI."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.27.zip"
+    "file_name": "klima-app-v13.28.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.27",
+    "source_branch": "release/v13.28",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub targeted-checks, Vercel READY, test na iPhonie",
-    "notes": "Sprawdzić wersję 13.27, dwa zgodne odczyty SN, konflikt i pojedyncze źródło. Nie zapisywać błędnego numeru."
+    "evidence_source": "GitHub zielone CI, Vercel READY, fizyczny iPhone",
+    "notes": "Sprawdzić wersję 13.28 i wykonanie dodatkowego AI tylko dla niepewnego SN. Przetestować brak odpowiedzi AI i wynik sprzeczny."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile: niezależny odczyt Code 128 i OCR nadruku SN, przy rozbieżności nie wpisuj domyślnie numeru, wyświetl obie wersje i wymagaj potwierdzenia ręcznego.",
-    "release_ci": "Zielone smoke-nameplate-serial-dual, mobile-serial-scanner, iPhone Playwright, Closure Gate i build.",
-    "post_deploy": "Vercel READY SHA z PR i 13.27 na mobilnej aplikacji; wymagany praktyczny test dwóch metod na prawdziwej tabliczce."
+    "code": "Mobile+API: 3-etapowa analiza SN — Code128/OCR nadruku, niezależny od podpowiedzi AI przy niepewności, ręczne potwierdzenie dopiero gdy AI nie rozstrzyga.",
+    "release_ci": "Wymagane zielone targeted-checks, regresja serial-dual, E2E mobilne i desktopowe, build oraz Closure Gate.",
+    "post_deploy": "Vercel READY właściwego SHA, wersja 13.28 w aplikacji na iPhonie i test na tabliczce, której wyniki lokalne się różnią."
   }
 }

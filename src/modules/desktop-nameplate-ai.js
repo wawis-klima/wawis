@@ -217,8 +217,11 @@ export function normalizeNameplateAiResult(payload = {}, barcodeInfo = {}) {
   };
 }
 
-export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo = {}, targetUnit = '', jobId = '', onProgress } = {}) {
+export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo = {}, targetUnit = '', jobId = '', onProgress, visualSerialOnly = false } = {}) {
   if (!file) throw new Error('Brakuje wykadrowanego zdjęcia tabliczki.');
+  // In serial verification mode, AI must not be shown the values that it is
+  // supposed to independently verify. Keep model lookup independent as well.
+  const aiBarcodeInfo = visualSerialOnly ? {} : barcodeInfo;
   onProgress?.({ progress: 10, label: 'Przygotowanie kadru do AI…' });
   const imageDataUrl = await fileToDataUrl(file);
   const sessionResult = await supabase?.auth?.getSession?.();
@@ -233,8 +236,9 @@ export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo =
     },
     body: JSON.stringify({
       imageDataUrl,
-      barcodeValues: barcodeInfo.values || barcodeInfo.detections?.map((item) => item.value) || [],
-      barcodeDetections: (barcodeInfo.detections || []).map((item) => ({
+      barcodeValues: aiBarcodeInfo.values || aiBarcodeInfo.detections?.map((item) => item.value) || [],
+      serialReadMode: visualSerialOnly ? 'visual_only' : 'normal',
+      barcodeDetections: (aiBarcodeInfo.detections || []).map((item) => ({
         value: item.value || '',
         format: item.format || '',
         source: item.source || '',
@@ -247,5 +251,5 @@ export async function readDesktopNameplateWithAi({ file, supabase, barcodeInfo =
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload?.error || 'Nie udało się odczytać tabliczki przez AI.');
   onProgress?.({ progress: 100, label: 'Analiza AI zakończona' });
-  return normalizeNameplateAiResult(payload, barcodeInfo);
+  return normalizeNameplateAiResult(payload, aiBarcodeInfo);
 }
