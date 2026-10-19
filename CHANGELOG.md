@@ -1,3 +1,10 @@
+## 13.28
+- Mobile: niezgodność Code 128 i OCR nadruku SN oraz wynik z jednego źródła najpierw kierują do AI, zamiast od razu żądać ręcznego sprawdzenia.
+- Nowy tryb visual_only: AI nie otrzymuje numerów z dekodera ani podpowiedzi kodów kreskowych; serwer odrzuca te podpowiedzi również gdy klient je dośle.
+- Automatyczne rozstrzygnięcie wyłącznie gdy wysoka pewność AI, jawny nadruk S/N w transkrypcji, brak niepewnych znaków i identyczny wynik jednego z niezależnych lokalnych czytników.
+- Brak rozstrzygnięcia, konflikt lub awaria AI nadal wymagają korekty i potwierdzenia ręcznego. Bez automatycznego wyboru niepewnego numeru.
+- Zachowane reguły kompletności JW/JZ i protokołu. Regresje pozytywne i negatywne dla trzeciego odczytu AI.
+
 ## 13.27
 - Mobile: zawsze uruchamiaj OCR nadruku SN niezależnie od powodzenia odczytu Code 128; porównaj numery znak po znaku.
 - Niezgodność numerów: pokaż obie wartości bez automatycznego wyboru; wymagaj ręcznego przepisania i potwierdzenia na podstawie zdjęcia.
