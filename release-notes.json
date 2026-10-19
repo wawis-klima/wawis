@@ -1,10 +1,10 @@
 {
-  "version": "13.26",
-  "summary": "Potwierdzany zapis różnych serii JW/JZ oraz zakończenie montażu",
+  "version": "13.27",
+  "summary": "Podwójna kontrola SN: Code 128 i OCR nadruku tabliczki",
   "changes": [
-    "Niezgodność serii JW/JZ to ostrzeżenie w weryfikacji tabliczki, nie twarda blokada.",
-    "Zapis urządzenia wymaga świadomego wybrania „Zapisz mimo ostrzeżenia”.",
-    "Zakończenie montażu przy niezgodności serii wymaga osobnego potwierdzenia na mobile i desktopie.",
-    "Wymogi kompletnych tabliczek oraz podpisanego protokołu pozostają bez zmian."
+    "Odczyt nadruku SN jest uruchamiany również wtedy, gdy kod kreskowy został poprawnie zdekodowany.",
+    "Tylko zgodne wyniki dwóch niezależnych odczytów są automatycznie potwierdzane.",
+    "Rozbieżności nie uzupełniają pola SN; wymagane jest przepisanie wartości ze zdjęcia oraz potwierdzenie.",
+    "Numer z jednego źródła, także AI, wymaga ręcznej kontroli; pozostałe walidacje JW/JZ i protokołu pozostają bez zmian."
   ]
 }
