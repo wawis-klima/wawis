@@ -439,7 +439,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.screenshot({ path: testInfo.outputPath('v11.34-step2-compact.png'), fullPage: true });
   });
 
-  test('v11.37 — Single blokuje zapis, gdy JZ i JW mają różne rodziny modelu', async ({ page }) => {
+  test('v13.26 — Single ostrzega o różnych seriach i pozwala zapisać faktyczny zestaw', async ({ page }) => {
     await resetMockSupabase(page);
     await loginWithoutReset(page, WORKER);
 
@@ -447,8 +447,8 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
       const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
       const job = (store.jobs || []).find((item) => item.id === 'mock-job-002');
       if (job) {
-        job.device_model = 'JW: Rotenso Ukura 3,5 kW U35Xi R17 | JZ: Rotenso Imoto 3,5 kW I35Xo R14';
-        job.device_serial_number = 'JW: UKURA-JW-001 | JZ: IMOTO-JZ-001';
+        job.device_model = 'JW: Rotenso Imoto 5,3 kW (I50Xi R14) | JZ: Rotenso Versu Mirror 5,3 kW (VM50Xo R16)';
+        job.device_serial_number = 'JW: IMOTO-JW-001 | JZ: VERSU-JZ-001';
         delete job.devices;
       }
       window.localStorage.setItem(storeKey, JSON.stringify(store));
@@ -459,18 +459,24 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.getByText('Klient Testowy B', { exact: true }).click();
     await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
     await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
 
-    let dialogMessage = '';
-    page.once('dialog', async (dialog) => {
-      dialogMessage = dialog.message();
-      await dialog.dismiss();
-    });
     await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
-    await expect.poll(() => dialogMessage, { timeout: 5_000 }).toContain('Niezgodny zestaw Single');
-    expect(dialogMessage).toContain('JZ to Imoto');
-    expect(dialogMessage).toContain('JW to Ukura');
-    await expect(page.locator('.mobileDeviceWizard')).toBeVisible();
+    await expect(page.locator('.mobileDevicePairWarning')).toContainText('JZ to Versu Mirror');
+    await expect(page.locator('.mobileDevicePairWarning')).toContainText('JW to Imoto');
+    await expect(page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia' })).toBeVisible();
+    // The first click must not save: the installer can still return to the form.
+    await page.getByRole('button', { name: 'Wróć do edycji' }).click();
+    await expect(page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' })).toBeVisible();
+    await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
+    await page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia' }).click();
+    await expect(page.locator('.mobileDeviceWizard')).toBeHidden({ timeout: 20_000 });
+
+    const savedJob = await page.evaluate((storeKey) => {
+      const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+      return (store.jobs || []).find((item) => item.id === 'mock-job-002') || null;
+    }, MOCK_STORE_KEY);
+    expect(savedJob?.device_model).toContain('Imoto');
+    expect(savedJob?.device_model).toContain('Versu Mirror');
   });
 
   test('automatycznie odczytuje prawdziwe pola modelu i SN z czytelnej tabliczki Rotenso', async ({ page }) => {
