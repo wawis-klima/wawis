@@ -279,7 +279,7 @@ export function extractSerialNumberFromOcrText(rawText = '') {
 
 export async function scanDesktopNameplateSerialText(file, { onProgress, maxDimension = 3000 } = {}) {
   if (!file || !String(file.type || '').startsWith('image/')) throw new Error('Brak prawidłowego zdjęcia tabliczki.');
-  onProgress?.({ progress: 50, label: 'Kod seryjny nie został odczytany z kresek — sprawdzam nadruk SN…' });
+  onProgress?.({ progress: 50, label: 'Weryfikuję nadruk SN niezależnie od kodu kreskowego…' });
   const image = await loadImage(file);
   const passes = [
     { region: { yRatio: 0.34, heightRatio: 0.64, threshold: 150 }, psm: '11', label: 'Szukam oznaczenia SN w dolnej części etykiety…' },

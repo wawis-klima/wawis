@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.26",
-  "scope": "full",
-  "release_branch": "release/v13.26",
+  "version": "13.27",
+  "scope": "mobile",
+  "release_branch": "release/v13.27",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "INFO",
-    "notes": "Bez nowych pomiarów produkcyjnych; zakres ograniczony do frontendu. Wymagana zielona bramka CI oraz test po wdrożeniu na telefonie."
+    "notes": "Odczyt SN bez logowania pełnych numerów; analiza statyczna ścieżki Code128/OCR z 13.26 i regresje na gałęzi wydania."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.26.zip"
+    "file_name": "klima-app-v13.27.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.26",
+    "source_branch": "release/v13.27",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub zielone CI, Vercel READY, test fizycznego iPhone",
-    "notes": "Po wdrożeniu sprawdzić wersję 13.26, ostrzeżenia OCR JW Imoto/JZ Versu Mirror, zapis urządzenia i świadome potwierdzenie przy Zakończ."
+    "evidence_source": "GitHub targeted-checks, Vercel READY, test na iPhonie",
+    "notes": "Sprawdzić wersję 13.27, dwa zgodne odczyty SN, konflikt i pojedyncze źródło. Nie zapisywać błędnego numeru."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile: ostrzeżenie zamiast blokady podczas zapisu różnych serii JW/JZ. Mobile i desktop: niezależne potwierdzenie niezgodności przy zakończeniu, pozostałe walidacje nadal obowiązują.",
-    "release_ci": "Wymagane zielone targeted-checks, job completion smoke, mobile E2E i build przed merge.",
-    "post_deploy": "Vercel READY właściwego SHA, wersja 13.26 i test na zalogowanym iPhonie oraz desktopie."
+    "code": "Mobile: niezależny odczyt Code 128 i OCR nadruku SN, przy rozbieżności nie wpisuj domyślnie numeru, wyświetl obie wersje i wymagaj potwierdzenia ręcznego.",
+    "release_ci": "Zielone smoke-nameplate-serial-dual, mobile-serial-scanner, iPhone Playwright, Closure Gate i build.",
+    "post_deploy": "Vercel READY SHA z PR i 13.27 na mobilnej aplikacji; wymagany praktyczny test dwóch metod na prawdziwej tabliczce."
   }
 }

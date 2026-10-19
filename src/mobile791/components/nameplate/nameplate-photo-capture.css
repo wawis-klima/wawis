@@ -669,6 +669,33 @@
   color: #166534;
 }
 
+.nameplateSerialReviewCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 9px 0;
+  padding: 10px 12px;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 700;
+  cursor: pointer;
+}
+.nameplateSerialReviewCheck input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #b45309;
+}
+.nameplateVerifyMismatch code {
+  overflow-wrap: anywhere;
+  font-size: inherit;
+}
+
 .nameplateVerifyFooter {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

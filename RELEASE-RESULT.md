@@ -1,13 +1,14 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.26 (przygotowanie — nie potwierdza wdrożenia)
+- 13.27 (przygotowanie — nie potwierdza wdrożenia)
 
 ## Zakres
-- Mobile: ostrzeżenie o różnych seriach JW/JZ nie blokuje odczytu tabliczki ani zapisu urządzenia po świadomym potwierdzeniu.
-- Mobile i desktop: zakończenie montażu z niezgodnymi seriami możliwe po osobnym potwierdzeniu, przy zachowaniu blokad brakujących modeli, tabliczek i protokołu.
-- Różne modele obu jednostek są zachowane bez automatycznego nadpisywania.
+- Potwierdzanie SN wyłącznie gdy niezależny odczyt Code 128 i OCR nadruku zgadzają się.
+- Ostrzeżenie o niezgodnych numerach, brak automatycznego prefill, ręczna korekta i check na zdjęciu.
+- Dla pojedynczego źródła / AI odczyt pozostaje tylko propozycją do ręcznej akceptacji.
+- Zachowana obsługa różnych serii jednostek i wymagane dane protokołu.
 
 ## Bramki
 - Wymagane zielone CI PR (targeted-checks, E2E mobile, build, Closure Gate).
-- Po merge do main potwierdzenie Vercel READY i test fizycznego iPhone.
+- Po merge Vercel READY dla tego samego SHA i sprawdzenie 13.27 na iPhonie.

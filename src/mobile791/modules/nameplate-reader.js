@@ -9,6 +9,7 @@ import {
   scanDesktopNameplateSerialText,
 } from '../../modules/desktop-nameplate-model-ocr.js';
 import { lookupNameplateProductByEan } from '../../modules/nameplate-product-catalog.js';
+import { reconcileNameplateSerial, withNameplateAiSerialCandidate } from './nameplate-serial-verification.js';
 
 const BARCODE_SCAN_TIMEOUT_MS = 95000;
 const MODEL_OCR_TIMEOUT_MS = 60000;
@@ -232,25 +233,31 @@ export async function readMobileNameplate({
   }
 
   let exactModel = barcodeInfo.rotensoModel || null;
-  let serialNumber = normalizeSerial(barcodeInfo.serialNumber);
   let serialTextResult = null;
   let modelTextResult = null;
 
-  if (!serialNumber) {
-    try {
-      serialTextResult = await withTimeout(
-        scanDesktopNameplateSerialText(file, {
-          onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
-          maxDimension: MOBILE_IMAGE_MAX_DIMENSION,
-        }),
-        SERIAL_OCR_TIMEOUT_MS,
-        'Lokalny odczyt numeru seryjnego trwał zbyt długo.',
-      );
-      serialNumber = normalizeSerial(serialTextResult?.serialNumber);
-    } catch (error) {
-      serialTextResult = { serialNumber: '', error: error?.message || 'Nie odczytano numeru seryjnego lokalnie.' };
-    }
+  // Always read the printed SN independently, even if Code 128 decoded a
+  // plausible serial. A barcode alone must not masquerade as a verified SN.
+  try {
+    serialTextResult = await withTimeout(
+      scanDesktopNameplateSerialText(file, {
+        onProgress: (state) => onProgress?.({ ...state, method: 'local' }),
+        maxDimension: MOBILE_IMAGE_MAX_DIMENSION,
+      }),
+      SERIAL_OCR_TIMEOUT_MS,
+      'Weryfikacja nadruku SN trwała zbyt długo.',
+    );
+  } catch (error) {
+    serialTextResult = { serialNumber: '', error: error?.message || 'Nie odczytano nadruku SN lokalnie.' };
   }
+  const serialCheck = reconcileNameplateSerial({
+    barcodeSerial: barcodeInfo.serialNumber,
+    ocrSerial: serialTextResult?.serialNumber,
+    ocrVotes: serialTextResult?.votes,
+    ocrConfidence: serialTextResult?.confidence,
+    ocrRawText: serialTextResult?.rawText,
+  });
+  const serialNumber = serialCheck.serialNumber;
 
   if (!exactModel) {
     try {
@@ -289,6 +296,7 @@ export async function readMobileNameplate({
     method: 'local',
     ...localModel,
     serialNumber,
+    serialCheck,
     exactModel,
     mismatch: localMismatch,
     barcodeInfo: { ...barcodeInfo, rotensoModel: exactModel },
@@ -308,7 +316,7 @@ export async function readMobileNameplate({
   });
   localReading.evidence = evidence;
 
-  if (isMobileNameplateReadingComplete(localReading) || localMismatch) {
+  if (serialCheck.status === 'conflict' || isMobileNameplateReadingComplete(localReading) || localMismatch) {
     onProgress?.({
       progress: 100,
       label: localMismatch ? 'Odczyt zakończony — sprawdź zgodność jednostki' : 'Tabliczka odczytana lokalnie',
@@ -365,7 +373,8 @@ export async function readMobileNameplate({
     const model = aiResult.model || exactModelFields.model;
     const power = aiResult.power || exactModelFields.power;
     const modelValue = buildResolvedModelValue({ manufacturer, model, power }) || localModel.modelValue;
-    const finalSerial = normalizeSerial(aiResult.serialNumber || serialNumber);
+    const finalSerialCheck = withNameplateAiSerialCandidate(serialCheck, aiResult.serialNumber);
+    const finalSerial = finalSerialCheck.serialNumber;
     const mismatch = getNameplateTargetMismatch(targetUnit, finalExactModel);
     const aiTrustedModel = Boolean(
       aiResult?.modelConfirmedByCatalog
@@ -392,6 +401,7 @@ export async function readMobileNameplate({
       power,
       modelValue,
       serialNumber: finalSerial,
+      serialCheck: finalSerialCheck,
       exactModel: finalExactModel,
       mismatch,
       barcodeInfo: { ...barcodeInfo, rotensoModel: finalExactModel },

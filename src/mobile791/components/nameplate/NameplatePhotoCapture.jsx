@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { analyzeNameplatePhotoQuality } from "../../modules/nameplate-quality.js";
 import { readMobileNameplate } from "../../modules/nameplate-reader.js";
+import { requiresNameplateSerialReview } from "../../modules/nameplate-serial-verification.js";
 import { supabase } from "../../lib/supabase.js";
 import "./nameplate-photo-capture.css";
 
@@ -339,6 +340,7 @@ function NameplateVerificationReview({
   fieldLabel,
   onModelChange,
   onSerialChange,
+  onSerialReviewedChange,
   onConfirm,
   onRetake,
   onManual,
@@ -367,7 +369,10 @@ function NameplateVerificationReview({
   const noNameplateEvidence = Boolean(verification.reading?.noNameplateEvidence);
   const modelReady = Boolean(String(verification.modelValue || "").trim());
   const serialReady = Boolean(String(verification.serialNumber || "").trim());
-  const canConfirm = !verification.busy && !readingMismatch && !noNameplateEvidence && modelReady && serialReady;
+  const serialCheck = verification.reading?.serialCheck || null;
+  const needsSerialReview = requiresNameplateSerialReview(verification);
+  const canConfirm = !verification.busy && !readingMismatch && !noNameplateEvidence
+    && modelReady && serialReady && (!needsSerialReview || verification.serialReviewed);
   const methodLabel = noNameplateEvidence
     ? (verification.reading?.aiAttempted ? "AI nie potwierdziła tabliczki" : "Nie wykryto tabliczki")
     : verification.reading?.method === "ai"
@@ -422,6 +427,23 @@ function NameplateVerificationReview({
               <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
             ) : null}
             {readingMismatch ? <div className="nameplateVerifyMismatch" role="alert">{readingMismatch}</div> : null}
+            {serialCheck?.status === "conflict" ? (
+              <div className="nameplateVerifyMismatch" role="alert">
+                <strong>Niezgodny numer seryjny — wymagane sprawdzenie</strong>
+                <div>Kod kreskowy: <code>{serialCheck.barcodeSerial}</code></div>
+                <div>Nadruk po SN: <code>{serialCheck.ocrSerial}</code></div>
+                Odczyty są różne. Przepisz prawidłowy numer ze zdjęcia i potwierdź ręcznie.
+              </div>
+            ) : needsSerialReview ? (
+              <div className="nameplateVerifyWarning" role="status">
+                Numer seryjny nie został niezależnie potwierdzony przez kod kreskowy i OCR.
+                Sprawdź go znak po znaku z nadrukiem SN na zdjęciu.
+              </div>
+            ) : (
+              <div className="nameplateVerifyReady" role="status">
+                Numer seryjny potwierdzony: Code 128 i nadruk SN dały ten sam wynik.
+              </div>
+            )}
             {compatibilityWarning ? (
               <div className="nameplateVerifyWarning" role="alert">
                 {compatibilityWarning} Możesz zapisać faktyczny zestaw po sprawdzeniu danych z obu tabliczek.
@@ -453,6 +475,16 @@ function NameplateVerificationReview({
             disabled={noNameplateEvidence}
           />
         </label>
+        {!verification.busy && !noNameplateEvidence && needsSerialReview ? (
+          <label className="nameplateSerialReviewCheck">
+            <input
+              type="checkbox"
+              checked={Boolean(verification.serialReviewed)}
+              onChange={(event) => onSerialReviewedChange(event.target.checked)}
+            />
+            <span>Sprawdziłem numer SN znak po znaku z nadrukiem na zdjęciu.</span>
+          </label>
+        ) : null}
         {!verification.busy ? (
           noNameplateEvidence ? (
             <div className="nameplateVerifyHint">To zdjęcie nie może zostać zaakceptowane jako tabliczka. Zrób nowe zdjęcie urządzenia z widoczną tabliczką znamionową.</div>
@@ -567,6 +599,8 @@ export default function NameplatePhotoCapture({
       reading: null,
       modelValue: "",
       serialNumber: "",
+      serialReviewed: false,
+      serialManuallyChanged: false,
     };
     setVerification(initialVerification);
 
@@ -586,7 +620,11 @@ export default function NameplatePhotoCapture({
         progress: { progress: 100, label: "Odczyt zakończony", method: reading.method || "local" },
         reading,
         modelValue: String(reading.modelValue || current.modelValue || "").trim(),
-        serialNumber: String(reading.serialNumber || current.serialNumber || "").trim().toUpperCase(),
+        // Do not prefill either competing serial as if it were correct.
+        serialNumber: reading.serialCheck?.status === 'conflict'
+          ? '' : String(reading.serialNumber || current.serialNumber || "").trim().toUpperCase(),
+        serialReviewed: false,
+        serialManuallyChanged: false,
       } : current);
     } catch (readError) {
       setVerification((current) => current?.file === croppedFile && !current.manualOverride ? {
@@ -607,8 +645,11 @@ export default function NameplatePhotoCapture({
       ...current,
       busy: false,
       manualOverride: true,
+      serialManuallyChanged: true,
+      serialReviewed: false,
       progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
       reading: {
+        ...current.reading,
         method: "manual",
         aiAttempted: false,
         aiError: "",
@@ -618,7 +659,8 @@ export default function NameplatePhotoCapture({
   }
 
   function confirmVerification() {
-    if (!verification?.file || verification.busy || verification.reading?.mismatch || verification.reading?.noNameplateEvidence) return;
+    if (!verification?.file || verification.busy || verification.reading?.mismatch || verification.reading?.noNameplateEvidence
+      || (requiresNameplateSerialReview(verification) && !verification.serialReviewed)) return;
     const modelValue = String(verification.modelValue || "").replace(/\s+/g, " ").trim();
     const serialNumber = String(verification.serialNumber || "").replace(/\s+/g, "").trim().toUpperCase();
     if (!modelValue || !serialNumber) return;
@@ -737,15 +779,21 @@ export default function NameplatePhotoCapture({
             busy: false,
             manualOverride: true,
             progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
-            reading: { method: "manual", aiAttempted: false, aiError: "", mismatch: null },
+            reading: { ...current.reading, method: "manual", aiAttempted: false, aiError: "", mismatch: null },
           } : current)}
           onSerialChange={(serialNumber) => setVerification((current) => current ? {
             ...current,
             serialNumber,
             busy: false,
             manualOverride: true,
+            serialManuallyChanged: true,
+            serialReviewed: false,
             progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
-            reading: { method: "manual", aiAttempted: false, aiError: "", mismatch: null },
+            reading: { ...current.reading, method: "manual", aiAttempted: false, aiError: "", mismatch: null },
+          } : current)}
+          onSerialReviewedChange={(serialReviewed) => setVerification((current) => current ? {
+            ...current,
+            serialReviewed: Boolean(serialReviewed),
           } : current)}
           onConfirm={confirmVerification}
           onRetake={retakeVerificationPhoto}
