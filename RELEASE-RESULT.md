@@ -1,14 +1,14 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.27 (przygotowanie — nie potwierdza wdrożenia)
+- 13.28 (przygotowanie — nie potwierdza wdrożenia)
 
 ## Zakres
-- Potwierdzanie SN wyłącznie gdy niezależny odczyt Code 128 i OCR nadruku zgadzają się.
-- Ostrzeżenie o niezgodnych numerach, brak automatycznego prefill, ręczna korekta i check na zdjęciu.
-- Dla pojedynczego źródła / AI odczyt pozostaje tylko propozycją do ręcznej akceptacji.
-- Zachowana obsługa różnych serii jednostek i wymagane dane protokołu.
+- Niepełna lub rozbieżna weryfikacja numeru SN: kod kreskowy i OCR, a następnie niezależny od podpowiedzi wizualny odczyt AI.
+- Tylko wysoka zgodność AI z jednym z odczytów i jednoznacznie przepisany nadruk S/N daje automatyczne potwierdzenie.
+- Przy braku wiarygodnego rozstrzygnięcia monter nadal musi sprawdzić i potwierdzić SN; błędny odczyt nie jest zapisywany automatycznie.
+- API nie przekazuje niezweryfikowanych kodów w trybie niezależnej weryfikacji, pozostałe funkcje pozostają bez zmian.
 
 ## Bramki
-- Wymagane zielone CI PR (targeted-checks, E2E mobile, build, Closure Gate).
-- Po merge Vercel READY dla tego samego SHA i sprawdzenie 13.27 na iPhonie.
+- Zielone CI PR, testy regresji AI, wymagane mobile i desktop E2E, Closure Gate oraz produkcyjny build.
+- Po merge potwierdzenie Vercel READY dla SHA i test 13.28 na iPhonie.
