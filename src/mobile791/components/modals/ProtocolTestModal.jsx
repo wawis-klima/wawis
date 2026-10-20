@@ -752,9 +752,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                     <span className="protocolTestDeviceModel">{formatProtocolDevicePreviewModel(row.model)}</span>
                     <span className="protocolTestDeviceMeta">
                       <span className="protocolTestDeviceType">
-                        {String(row.unitType || "")
-                          .replace(/^Jednostka zewnętrzna/, "Jednostka Z")
-                          .replace(/^Jednostka wewnętrzna/, "Jednostka W")}
+                        {row.unit === "JZ" ? "Jednostka Z" : "Jednostka W"} · urządzenie {row.deviceIndex || 1}
                       </span>
                       <span className="protocolTestDeviceSerial">S/N: {row.serialNumber}</span>
                     </span>
