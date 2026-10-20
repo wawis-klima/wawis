@@ -23,7 +23,7 @@
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
-    "result": "PENDING",
+    "result": "EXTERNAL",
     "evidence_source": "Vercel READY, aktywna wersja 13.32 i kontrola podglądu protokołu na iPhonie",
     "notes": "Potwierdzić mniejszy kwadrat JZ/JW, model bez kW, rewizję tylko w nazwie modelu oraz pełny numer S/N w jednej linii. PDF bez zmian."
   },
