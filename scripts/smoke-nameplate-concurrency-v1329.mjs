@@ -49,9 +49,9 @@ assert.match(actionSource, /loadJobNameplatePhotosData\(\{ supabase, jobId: job\
 assert.match(actionSource, /select\('id,status,device_model,device_serial_number'\)/);
 
 // Wykonaj prawdziwy kod licznika z kreatora, nie tylko statyczny regex:
-const getPhotoStateSource = wizardSource.match(/function getPhotoState\\([\\s\\S]*?\\n}\\n/)?.[0];
+const getPhotoStateSource = wizardSource.match(/function getPhotoState\([\s\S]*?\n}\n/)?.[0];
 assert.ok(getPhotoStateSource, 'getPhotoState must remain independently testable');
-const getPhotoState = new Function(`${getPhotoStateSource}\\nreturn getPhotoState;`)();
+const getPhotoState = new Function(`${getPhotoStateSource}\nreturn getPhotoState;`)();
 const saved = (deviceIndex, unitRef) => ({ deviceIndex, unitRef, storagePath: `fixture/job/nameplates/device-${deviceIndex + 1}_${unitRef}.jpg`, url: '', ocrStatus: 'approved' });
 const existingPhotos = [
   saved(0, 'jw-1'), saved(0, 'jz'),
