@@ -43,6 +43,14 @@ const SIGNATURE_BASE_WIDTH = 2.45;
 const SIGNATURE_WIDTH_SMOOTHING = 0.72;
 const PROTOCOL_NOTE_MAX_LENGTH = 300;
 
+function formatProtocolDevicePreviewModel(model) {
+  return String(model || "")
+    .replace(/\s+\d+(?:[.,]\d+)?\s*kW\b/gi, "")
+    .replace(/\s*\(([^()]+)\)\s*$/, " $1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function getProtocolPaymentDraft(job = {}) {
   return { ...getPaymentDraftFromJob(job), enabled: true };
 }
@@ -741,8 +749,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 {protocolData.deviceRows.length ? protocolData.deviceRows.map((row, index) => (
                   <div className="protocolTestDeviceRow" key={`${row.unit}-${index}`}>
                     <strong>{row.unit}</strong>
-                    <span className="protocolTestDeviceModel">{row.model}</span>
-                    <span className="protocolTestDeviceMeta">{row.unitType} · Rewizja: {row.revision} · S/N: {row.serialNumber}</span>
+                    <span className="protocolTestDeviceModel">{formatProtocolDevicePreviewModel(row.model)}</span>
+                    <span className="protocolTestDeviceMeta">
+                      <span className="protocolTestDeviceType">
+                        {row.unit === "JZ" ? "Jednostka Z" : "Jednostka W"} · urządzenie {row.deviceIndex || 1}
+                      </span>
+                      <span className="protocolTestDeviceSerial">S/N: {row.serialNumber}</span>
+                    </span>
                   </div>
                 )) : <div className="protocolTestEmpty">Brak urządzeń w karcie zlecenia.</div>}
               </div>

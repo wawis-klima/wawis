@@ -23,6 +23,16 @@ assert.doesNotMatch(modal, /className="protocolTestSignatureCanvas"/, 'Pole podp
 
 assert.match(wizardCss, /\.mobileProtocolWizard \.protocolTestDetails\s*\{[\s\S]*?grid-template-columns:\s*1fr\s*!important;/);
 assert.match(wizardCss, /\.mobileProtocolWizard \.protocolTestDeviceHeader\s*\{\s*display:\s*none\s*!important;/);
+assert.match(modal, /function formatProtocolDevicePreviewModel\(model\)/, 'Podgląd musi formatować nazwę niezależnie od danych PDF.');
+assert.match(modal, /\.replace\(\/\\s\+\\d\+\(\?:\[\.,\]\\d\+\)\?\\s\*kW\\b\/gi, ""\)/, 'W podglądzie nie powinno być mocy w kW.');
+assert.match(modal, /formatProtocolDevicePreviewModel\(row\.model\)/);
+assert.match(modal, /row\.unit === "JZ" \? "Jednostka Z" : "Jednostka W"/, 'W podglądzie ma być Jednostka Z/W.');
+assert.match(modal, /urządzenie \{row\.deviceIndex \|\| 1\}/, 'Numer urządzenia musi być widoczny również dla jednego urządzenia.');
+assert.match(modal, /className="protocolTestDeviceType"/);
+assert.match(modal, /className="protocolTestDeviceSerial">S\/N: \{row\.serialNumber\}/);
+assert.doesNotMatch(modal, /Rewizja: \{row\.revision\} · S\/N/, 'Nie powtarzaj rewizji w podglądzie.');
+assert.match(wizardCss, /\.mobileProtocolWizard \.protocolTestDeviceSerial\s*\{[^}]*white-space:\s*nowrap;/);
+assert.match(wizardCss, /\.mobileProtocolWizard \.protocolTestDeviceRow > strong\s*\{[^}]*width:\s*36px;[^}]*height:\s*36px;/);
 assert.match(wizardCss, /\.protocolSignatureOverlay\s*\{[\s\S]*?overflow:\s*hidden\s*!important;[\s\S]*?overscroll-behavior:\s*none\s*!important;/);
 assert.match(wizardCss, /\.protocolSignatureModal\s*\{[\s\S]*?height:\s*100dvh\s*!important;[\s\S]*?overflow:\s*hidden\s*!important;/);
 assert.match(wizardCss, /\.protocolSignatureCanvas\s*\{[\s\S]*?touch-action:\s*none\s*!important;/);

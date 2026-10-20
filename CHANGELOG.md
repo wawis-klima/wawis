@@ -1,3 +1,9 @@
+## 13.32
+- Mobile / podgląd protokołu: skrócona nazwa modelu, np. „Rotenso Imoto I26Xo R15” (bez mocy kW, bez nawiasów), mniejszy kwadrat JZ/JW.
+- Drugi wiersz pokazuje „Jednostka Z/W · urządzenie N”; rewizja pozostaje w nazwie modelu, bez duplikatu.
+- Numer seryjny S/N w oddzielnym wierszu o responsywnej czcionce, bez zawijania; nie zmieniano PDF ani danych źródłowych.
+- Regresja układu: `scripts/smoke-mobile-protocol-layout-v984.cjs`.
+
 ## 13.31
 - Mobile: szczegóły montażu — data i godzina ostatniego protokołu widoczne wyłącznie administratorowi; pracownik widzi tylko „Protokół zapisany”.
 - Bez zmian w zapisie podpisów, statusie montażu i powiadomieniach PUSH. Test regresyjny ról w `scripts/smoke-mobile-ui-copy.cjs`.

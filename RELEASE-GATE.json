@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.31",
+  "version": "13.32",
   "scope": "mobile",
-  "release_branch": "release/v13.31",
+  "release_branch": "release/v13.32",
   "baseline_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "result": "ERRORS_CONFIRMED",
-    "notes": "Punkt wyjścia 13.30: PUSH do administratora po podpisaniu protokołu; zmiana 13.31 ograniczona do tekstu komunikatu w widoku mobilnym. Otwarty problem tabliczek z 13.29 nadal wymaga niezależnej diagnostyki."
+    "checked": false,
+    "last_24h": false,
+    "result": "NOT_RUN",
+    "notes": "Zmiana UI 13.32: kompaktny widok jednostek w mobilnym podglądzie protokołu. Diagnostyka produkcyjna nie była sprawdzana."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.31.zip"
+    "file_name": "klima-app-v13.32.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.31",
+    "source_branch": "release/v13.32",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "WAWIS PR checks / targeted-checks, Vercel READY i rzeczywista notyfikacja na iPhone administratora",
-    "notes": "Potwierdzić wersję 13.31 w aplikacji: administrator widzi datę i godzinę ostatniego protokołu; pracownik widzi tylko „Protokół zapisany”. Sprawdzić brak regresji zapisu podpisu i PUSH."
+    "evidence_source": "Vercel READY, aktywna wersja 13.32 i kontrola podglądu protokołu na iPhonie",
+    "notes": "Potwierdzić mniejszy kwadrat JZ/JW, model bez kW, rewizję tylko w nazwie modelu oraz pełny numer S/N w jednej linii. PDF bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Role-based display of saved protocol status in mobile JobDetailsPanel; admin sees timestamp, worker sees generic confirmation. No changes to server/push logic.",
-    "release_ci": "WAWIS PR checks / targeted-checks, smoke-mobile-ui-copy, mobile-protocol, role access i build.",
-    "post_deploy": "Vercel READY właściwego SHA; 13.31 widoczna na iPhonie; admin otrzymuje datę podpisu w widoku, pracownik wyłącznie „Protokół zapisany”."
+    "code": "Only mobile ProtocolTestModal.jsx and scoped wizard CSS changed for the device row; PDF-generation code untouched.",
+    "release_ci": "Targeted protocol-layout smoke, mobile protocol smoke, build and WAWIS PR checks.",
+    "post_deploy": "Version 13.32 visible on iPhone; model without kW; serial not wrapped; existing PDF and signature unaffected."
   }
 }

@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.31
+- 13.32
+
+WAWIS 13.32: mobilny podgląd protokołu skraca model (bez kW i nawiasów), zmniejsza JZ/JW oraz wyświetla „Jednostka Z/W · urządzenie N” z osobnym, niezawijanym S/N. Rewizja widnieje tylko w nazwie modelu; PDF, podpis, PUSH i dane niezmienione.
 
 WAWIS 13.31: w mobilnych szczegółach montażu tylko administrator widzi datę i godzinę ostatniej wersji protokołu; pracownik widzi wyłącznie potwierdzenie „Protokół zapisany”. Zapis, podpis oraz prywatne PUSH do administratora pozostają bez zmian.
 
@@ -1027,6 +1029,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.32` — kompaktowe karty urządzeń w mobilnym podglądzie protokołu, bez mocy kW, duplikacji rewizji i zawijania S/N.
 - wersja `13.31` — rozdzielenie komunikatu o zapisanym protokole w mobile: administrator widzi datę i godzinę, pracownik tylko „Protokół zapisany”.
 - wersja `13.30` — automatyczny PUSH wyłącznie do administratora po zapisaniu podpisanego protokołu; bez konieczności kończenia montażu i bez dodatkowych komunikatów pracownika.
 - wersja `13.29` — mobilny kreator tabliczek odświeża rekord i zdjęcia z Supabase, rozpoznaje je po storage_path i bezpiecznie rozwiązuje niezależne zapisy bez nadpisywania cudzych zmian.

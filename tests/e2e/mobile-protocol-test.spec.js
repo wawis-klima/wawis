@@ -176,7 +176,25 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     await noteInput.fill(protocolNote);
     await expect(page.locator('.protocolNoteCounter')).toHaveText(`${protocolNote.length}/300`);
 
-    await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true }).first()).toBeVisible();
+    // Nowy wygląd: model bez mocy, nazwa jednostki z numerem nawet dla pojedynczego urządzenia.
+    await expect(protocolModal.getByText('LG Mock', { exact: true }).first()).toBeVisible();
+    await expect(protocolModal.getByText('LG Mock 3.5 kW', { exact: true })).toHaveCount(0);
+    await expect(protocolModal.locator('.protocolTestDeviceType').first()).toHaveText('Jednostka Z · urządzenie 1');
+    const deviceVisual = await protocolModal.locator('.protocolTestDeviceRow').first().evaluate((row) => {
+      const badge = row.querySelector('strong');
+      const serial = row.querySelector('.protocolTestDeviceSerial');
+      const badgeRect = badge?.getBoundingClientRect();
+      return {
+        badgeWidth: badgeRect?.width || 0,
+        serialWhiteSpace: serial ? getComputedStyle(serial).whiteSpace : '',
+        serialWidth: serial?.clientWidth || 0,
+        serialScrollWidth: serial?.scrollWidth || 0,
+      };
+    });
+    expect(deviceVisual.badgeWidth).toBeGreaterThan(0);
+    expect(deviceVisual.badgeWidth).toBeLessThanOrEqual(36);
+    expect(deviceVisual.serialWhiteSpace).toBe('nowrap');
+    expect(deviceVisual.serialScrollWidth).toBeLessThanOrEqual(deviceVisual.serialWidth + 1);
     await expect(protocolModal.getByText('Zapisana w systemie', { exact: true })).toHaveCount(0);
     await expect(protocolModal.getByText('STATUS', { exact: true })).toHaveCount(0);
     await expect(protocolModal.getByText(/S\/N: Brak numeru seryjnego/).first()).toBeVisible();
