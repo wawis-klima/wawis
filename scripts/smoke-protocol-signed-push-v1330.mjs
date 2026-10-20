@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = (name) => readFileSync(new URL("../" + name, import.meta.url), "utf8");
+const sql = read("supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql");
+const edge = read("supabase/functions/send-protocol-signed-push/index.ts");
+assert.match(sql, /after insert or update of signature_path on public\.job_protocols/i);
+assert.match(sql, /on conflict\(job_id\) do nothing/i);
+assert.match(sql, /private\.retry_protocol_signed_push_events_v1330/i);
+assert.match(edge, /\.eq\("role", "Administrator"\)/);
+assert.match(edge, /eventKey: "job_protocol_signed:" \+ job\.id/);
+assert.match(edge, /title: "Protokół podpisany"/);
+console.log("PASS: WAWIS 13.30 admin PUSH");
