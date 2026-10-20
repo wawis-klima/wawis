@@ -1021,6 +1021,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.29` — mobilny kreator tabliczek odświeża rekord i zdjęcia z Supabase, rozpoznaje je po storage_path i bezpiecznie rozwiązuje niezależne zapisy bez nadpisywania cudzych zmian.
 - wersja `13.28` — przy rozbieżności numerów SN najpierw ślepy odczyt AI nadruku; ręczne sprawdzenie wyłącznie gdy brak wiarygodnego rozstrzygnięcia.
 - wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).
 - wersja `13.23` — mobilny Protokół pod Urządzenia/Tabliczki, zablokowane Zakończ do podpisu i zapisu protokołu oraz kompletu urządzeń, dla obu ról.
