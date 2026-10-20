@@ -148,6 +148,7 @@ const GROUPS = {
     'node scripts/smoke-audit-fixes-v1088.mjs',
   ],
   nameplates: [
+    'npm run test:smoke:nameplate-concurrency-v1329',
     'node scripts/smoke-package2-jw-jz-cycle-v1267.mjs',
     'node scripts/smoke-nameplate-serial-dual-v1327.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
