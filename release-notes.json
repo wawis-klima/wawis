@@ -1,10 +1,9 @@
 {
-  "version": "13.28",
-  "summary": "AI rozstrzyga niezgodny numer seryjny przed ręczną weryfikacją",
+  "version": "13.32",
+  "summary": "Kompaktowe modele i numery seryjne w mobilnym protokole",
   "changes": [
-    "Code128 i OCR są porównywane; jeśli nie ma zgodności, aplikacja najpierw uruchamia niezależny odczyt AI nadruku SN.",
-    "AI nie otrzymuje zgadywanych numerów z lokalnych czytników ani podpowiedzi dekodera.",
-    "Tylko pewny wynik AI potwierdzony widoczną transkrypcją S/N i zgodny z lokalnym odczytem może być automatycznie przyjęty.",
-    "Przy niepewnym odczycie lub awarii AI zostaje ręczne potwierdzenie; wymagania JW/JZ, zdjęć i protokołu pozostają bez zmian."
+    "Mniejsze kafelki JZ/JW i skrócona nazwa modelu, np. Rotenso Imoto I26Xo R15.",
+    "Pod nazwą tylko Jednostka Z/W i numer urządzenia — bez powtórzenia rewizji.",
+    "Numer S/N w jednym wierszu; PDF, dane tabliczek, podpis oraz PUSH bez zmian."
   ]
 }
