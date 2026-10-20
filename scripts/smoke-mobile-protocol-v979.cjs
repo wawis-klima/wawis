@@ -280,7 +280,8 @@ assert.match(pdfModule, /getProtocolModelRevision/, 'Protocol must expose model 
 assert.match(pdfModule, /Rewizja:/);
 assert.match(pdfModule, /S\/N:/);
 assert.match(modal, /row\.unitType/);
-assert.match(modal, /row\.revision/);
+assert.match(modal, /formatProtocolDevicePreviewModel\(row\.model\)/, 'Rewizja w podglądzie pozostaje w nazwie modelu, bez zdublowanego tekstu.');
+assert.doesNotMatch(modal, /Rewizja: \{row\.revision\}/, 'Podgląd ma nie powielać oznaczenia rewizji.');
 assert.match(modal, /row\.serialNumber/);
 assert.doesNotMatch(pdfModule, /doc\.text\("STATUS"/, 'Protocol PDF must not render a nameplate status column.');
 assert.doesNotMatch(pdfModule, /Zapisana w systemie|Zapisana na telefonie|Błąd wysyłania/, 'Protocol PDF module must not expose nameplate storage status.');
