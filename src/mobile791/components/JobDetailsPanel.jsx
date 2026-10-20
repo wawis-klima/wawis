@@ -914,7 +914,9 @@ export default function JobDetailsPanel({
           ) : null}
           {selectedJobSupportsProtocol && protocolRecord ? (
             <div className="protocolStoredStatus" role="status">
-              Ostatnia wersja protokołu{formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at) ? ` · ${formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at)}` : ""}
+              {isAdmin
+                ? <>Ostatnia wersja protokołu{formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at) ? ` · ${formatStoredProtocolDate(protocolRecord.signed_at || protocolRecord.created_at)}` : ""}</>
+                : "Protokół zapisany"}
             </div>
           ) : null}
           {selectedJobSupportsProtocol && protocolMessage ? <div className="protocolActionMessage" role="status">{protocolMessage}</div> : null}
