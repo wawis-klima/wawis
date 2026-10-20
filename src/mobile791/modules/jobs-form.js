@@ -9,6 +9,7 @@ import { applyAutoLinkedContractorToJobForm } from './job-contractors.js';
 import { DEVICE_TYPE_SINGLE, ensureJobFormDevices, getJobDeviceRows, serializeJobDevicesToFields } from './job-devices.js';
 import { getNameplatePhotoMetadata } from './photos.js';
 import { insertJobIdempotently } from '../../modules/job-create-idempotency.js';
+import { reconcileConcurrentDevicePatch } from './job-device-concurrency.js';
 
 
 export function normalizeWorkerCreateStatus(status) {
@@ -576,12 +577,37 @@ export async function saveJobDeviceSerialsRecord({
     expected.device_serial_number = originalJob.device_serial_number ?? null;
   }
 
-  const result = await saveJobConcurrentPatch({
-    supabase,
-    editingJobId,
-    fields,
-    expected,
-  });
-  return { ...(result || {}), jobId: editingJobId };
+  try {
+    const result = await saveJobConcurrentPatch({
+      supabase,
+      editingJobId,
+      fields,
+      expected,
+    });
+    return { ...(result || {}), jobId: editingJobId };
+  } catch (conflictError) {
+    // Serwer porównuje cały tekst device_model / device_serial_number.
+    // Jeśli zapisano już wcześniejszą porcję tabliczek, lokalny snapshot bywa
+    // przestarzały mimo braku drugiego edytora. Ponownie pobierz źródło prawdy,
+    // scal tylko niekolidujące wiersze i wykonaj ponowny atomowy CAS.
+    if (!/JOB_EDIT_CONFLICT:/i.test(String(conflictError?.message || ''))) throw conflictError;
+    const { data: currentJob, error: loadError } = await supabase
+      .from('jobs')
+      .select('device_model,device_serial_number')
+      .eq('id', editingJobId)
+      .maybeSingle();
+    if (loadError || !currentJob) throw conflictError;
+
+    const reconciled = reconcileConcurrentDevicePatch({ fields, expected, current: currentJob });
+    if (!reconciled) throw conflictError; // Rzeczywisty konflikt: nic nie nadpisujemy.
+
+    const result = await saveJobConcurrentPatch({
+      supabase,
+      editingJobId,
+      fields: reconciled.fields,
+      expected: reconciled.expected,
+    });
+    return { ...(result || {}), jobId: editingJobId };
+  }
 }
 
