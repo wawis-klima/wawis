@@ -21,7 +21,7 @@ import {
 } from "../modules/jobs.js";
 import { addJobComment, deleteJobComment, withTimeout } from "../modules/jobs-comments.js";
 import { getLegacyInstallerSuggestionIds, normalizeInstallerIds, toggleJobViewer } from "../modules/jobs-assignment.js";
-import { deleteJobPhoto, getNameplatePhotoMetadata, isLocalQueuedPhoto, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
+import { deleteJobPhoto, getNameplatePhotoMetadata, getSignedPhotoUrl, isLocalQueuedPhoto, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
@@ -415,18 +415,70 @@ export function useSelectedJobActions({
     openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: false });
   }
 
-  function openSerialNumbersJob(job) {
+  async function openSerialNumbersJob(job) {
     if (!job) return;
     if (!canEditResolvedJob(job)) {
       alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
       return;
     }
     const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(job.contractor_id || '')) || null;
-    const nextForm = {
-      ...buildEditJobForm({ job, profiles, normalizeStatus }),
-      nip: linkedContractor?.nip || '',
-    };
-    openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: true });
+
+    if (isBrowserOffline()) {
+      // Dotychczasowa kolejka offline pozostaje dostępna. Nie udajemy jednak,
+      // że brak zdjęć w cache oznacza brak tabliczek na serwerze.
+      const offlineForm = { ...buildEditJobForm({ job, profiles, normalizeStatus }), nip: linkedContractor?.nip || '' };
+      openEditJobForm({ jobId: job.id, form: offlineForm, baseJob: job, serialOnly: true });
+      return;
+    }
+
+    setBusy(true);
+    try {
+      // Każde otwarcie kreatora zaczyna się od aktualnego stanu serwera;
+      // inaczej poprzedni udany zapis sam wywołuje JOB_EDIT_CONFLICT.
+      const currentRead = await settleWithin(Promise.all([
+        supabase.from('jobs')
+          .select('id,status,device_model,device_serial_number')
+          .eq('id', job.id)
+          .single(),
+        loadJobNameplatePhotosData({ supabase, jobId: job.id }),
+      ]), NAMEPLATE_VERIFY_TIMEOUT_MS, 'nameplate-open');
+      if (currentRead.timedOut) throw new Error('Odczyt urządzeń z serwera trwa zbyt długo. Spróbuj ponownie za chwilę.');
+      const [jobResponse, photoResult] = currentRead.value;
+      if (jobResponse.error || !jobResponse.data) throw jobResponse.error || new Error('Nie udało się pobrać aktualnego montażu.');
+
+      const currentJob = { ...job, ...jobResponse.data, photos: photoResult.photos || [] };
+      if (!canEditResolvedJob(currentJob)) {
+        alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
+        return;
+      }
+
+      const photoUrls = await settleWithin(Promise.all((photoResult.photos || []).map(async (photo) => {
+        if (String(photo.photo_kind || '').toLowerCase() !== 'nameplate' || !photo.storage_path) return photo;
+        try {
+          const url = await getSignedPhotoUrl({
+            storagePath: photo.storage_path,
+            supabase,
+            transform: { width: 400, quality: 72, resize: 'contain' },
+          });
+          return { ...photo, thumbnail_image_url: url || '' };
+        } catch {
+          return photo; // storage_path wciąż poprawnie oznacza zapisane zdjęcie.
+        }
+      })), 4000, 'nameplate-preview');
+      const readyJob = photoUrls.timedOut
+        ? currentJob
+        : { ...currentJob, photos: photoUrls.value };
+      const nextForm = {
+        ...buildEditJobForm({ job: readyJob, profiles, normalizeStatus }),
+        nip: linkedContractor?.nip || '',
+      };
+      openEditJobForm({ jobId: job.id, form: nextForm, baseJob: currentJob, serialOnly: true });
+    } catch (error) {
+      logDiagnostic('nameplate.open.refresh.failed', { jobId: job.id, error });
+      alert('Nie udało się potwierdzić aktualnych urządzeń i tabliczek na serwerze. Nie zapisuj ich ponownie na ślepo. ' + String(error?.message || 'Spróbuj ponownie za chwilę.'));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function saveEditedJob(formOverride) {
