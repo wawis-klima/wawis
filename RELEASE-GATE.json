@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.28",
-  "scope": "full",
-  "release_branch": "release/v13.28",
+  "version": "13.29",
+  "scope": "mobile",
+  "release_branch": "release/v13.29",
   "baseline_diagnostics": {
-    "checked": false,
-    "last_24h": false,
-    "result": "INFO",
-    "notes": "Oparto zakres na analizie ścieżki WAWIS 13.27: dla niezgodnego SN aplikacja pomijała AI; weryfikacja przed wdrożeniem przez testy i CI."
+    "checked": true,
+    "last_24h": true,
+    "result": "ERRORS_CONFIRMED",
+    "notes": "20.10 około 11:43–11:47: JOB_EDIT_CONFLICT:device_model; 11:51 timeout upload/weryfikacja; pięć tabliczek zapisanych w prywatnym storage pomimo błędnego licznika mobilnego."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.28.zip"
+    "file_name": "klima-app-v13.29.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.28",
+    "source_branch": "release/v13.29",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub zielone CI, Vercel READY, fizyczny iPhone",
-    "notes": "Sprawdzić wersję 13.28 i wykonanie dodatkowego AI tylko dla niepewnego SN. Przetestować brak odpowiedzi AI i wynik sprzeczny."
+    "evidence_source": "WAWIS PR checks / targeted-checks, Vercel READY, fizyczny iPhone",
+    "notes": "Po wdrożeniu potwierdzić wersję 13.29 i trzy urządzenia w montażu: JW/JZ urządzeń 1 i 2 rozpoznane z storage_path, JW3 rozpoznane, brak JZ3. Zapisać brakującą JZ3, zweryfikować 6/6, podpisać protokół i dopiero zakończyć montaż."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile+API: 3-etapowa analiza SN — Code128/OCR nadruku, niezależny od podpowiedzi AI przy niepewności, ręczne potwierdzenie dopiero gdy AI nie rozstrzyga.",
-    "release_ci": "Wymagane zielone targeted-checks, regresja serial-dual, E2E mobilne i desktopowe, build oraz Closure Gate.",
-    "post_deploy": "Vercel READY właściwego SHA, wersja 13.28 w aplikacji na iPhonie i test na tabliczce, której wyniki lokalne się różnią."
+    "code": "Mobile: aktualny odczyt urządzeń i tabliczek przed edycją; bezpieczne CAS po konflikcie; rozpoznawanie photo storage_path.",
+    "release_ci": "Zielone WAWIS PR checks / targeted-checks, testy 13.29, mobile E2E, build i Closure Gate wymagane.",
+    "post_deploy": "Vercel READY prawidłowego SHA, wersja 13.29 na iPhonie i rzeczywisty test montażu z trzema urządzeniami; bez powtarzania zapisanych tabliczek."
   }
 }
