@@ -98,7 +98,7 @@
     "test:smoke:mobile-ui-copy": "node scripts/smoke-mobile-ui-copy.cjs",
     "test:smoke:e2e-mobile": "node scripts/smoke-e2e-mobile.cjs",
     "test:e2e:mobile": "node scripts/run-playwright-mobile.cjs",
-    "test:smoke:mobile-serial-scanner": "node scripts/smoke-mobile-serial-scanner.cjs",
+    "test:smoke:mobile-serial-scanner": "node scripts/smoke-mobile-serial-scanner.cjs && node scripts/smoke-nameplate-concurrency-v1329.mjs",
     "test:smoke:empty-device-serial": "node scripts/smoke-empty-device-serial-hotfix.cjs",
     "test:smoke:nameplate-rendering": "node scripts/smoke-nameplate-image-rendering.cjs",
     "test:smoke:nameplate-finish-verification": "node scripts/smoke-nameplate-finish-verification.cjs",
