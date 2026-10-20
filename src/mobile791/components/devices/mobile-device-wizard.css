@@ -668,7 +668,7 @@
   font-size: 13px !important;
   font-weight: 900 !important;
 }
-.mobileProtocolWizard .protocolTestDeviceMeta {
+.mobileProtocolWizard .protocolTestDeviceRow > .protocolTestDeviceMeta {
   display: flex !important;
   flex-direction: column;
   gap: 3px;
