@@ -62,7 +62,10 @@ function getExistingNameplatePhotos(job = {}) {
         timestamp,
         deviceIndex: Number(metadata.device_index) - 1,
         unitRef: String(metadata.unit_ref),
-        url: photo.image_url || photo.signed_url || photo.original_image_url || '',
+        url: photo.thumbnail_image_url || photo.signed_url || photo.image_url || photo.original_image_url || '',
+        // Prywatny bucket: image_url celowo jest pusty. storage_path jest trwałym
+        // dowodem zapisania tabliczki i nie zależy od ważności podpisanego URL.
+        storagePath: String(photo.storage_path || ''),
         uploadStatus: String(photo.upload_status || ''),
         ocrStatus: String(photo.ocr_status || ''),
         ocrCheckedAt: photo.ocr_checked_at || null,
