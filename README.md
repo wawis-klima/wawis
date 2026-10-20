@@ -1025,6 +1025,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.30` — automatyczny PUSH wyłącznie do administratora po zapisaniu podpisanego protokołu; bez konieczności kończenia montażu i bez dodatkowych komunikatów pracownika.
 - wersja `13.29` — mobilny kreator tabliczek odświeża rekord i zdjęcia z Supabase, rozpoznaje je po storage_path i bezpiecznie rozwiązuje niezależne zapisy bez nadpisywania cudzych zmian.
 - wersja `13.28` — przy rozbieżności numerów SN najpierw ślepy odczyt AI nadruku; ręczne sprawdzenie wyłącznie gdy brak wiarygodnego rozstrzygnięcia.
 - wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).
