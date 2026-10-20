@@ -39,7 +39,7 @@ assertMigrationCoverage();
 
 const platformSql = `create role anon;create role authenticated;create role service_role;create role supabase_admin;
 create schema auth;create schema storage;create schema extensions;create schema private;create schema cron;create schema net;
-create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000) returns bigint language sql as $select 1::bigint$;
+create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000) returns bigint language sql as $fn$select 1::bigint$fn$;
 create function extensions.gen_random_bytes(integer) returns bytea language sql volatile as $fn$select decode(repeat('ab',$1),'hex')$fn$;
 create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email text);
 create function auth.uid() returns uuid language sql as $$select null::uuid$$;
