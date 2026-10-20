@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.28
+- 13.29
+
+WAWIS 13.29: naprawa fałszywego konfliktu przy zapisie tabliczek i brakujących liczników dla zapisanych zdjęć w prywatnym storage. Kreator pobiera świeże dane urządzeń oraz zdjęcia z serwera; przy rzeczywistym konflikcie tych samych urządzeń nie nadpisuje zmian. Test: scripts/smoke-nameplate-concurrency-v1329.mjs.
 
 WAWIS 13.25: desktop — naprawa wyścigu podczas logowania: spóźniony snapshot listy nie usuwa pobranych już zdjęć i komentarzy, a pominięte pierwsze ładowanie jest wznawiane bez przechodzenia do innego montażu. Gdy zapytanie nie odpowiada, twardy limit czasu gwarantuje zakończenie próby, ponowienie i czytelny komunikat „Ponów”. Zdjęcia, protokoły, baza danych i aplikacja mobilna bez zmian.
 
