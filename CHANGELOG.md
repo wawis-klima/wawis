@@ -1,3 +1,7 @@
+## 13.31
+- Mobile: szczegóły montażu — data i godzina ostatniego protokołu widoczne wyłącznie administratorowi; pracownik widzi tylko „Protokół zapisany”.
+- Bez zmian w zapisie podpisów, statusie montażu i powiadomieniach PUSH. Test regresyjny ról w `scripts/smoke-mobile-ui-copy.cjs`.
+
 ## 13.30
 - Supabase: PUSH tylko do administratora po podpisaniu i zapisaniu protokołu, bez konieczności kończenia montażu.
 - Serwerowy trigger, prywatne zdarzenie z tokenem, ochrona przed duplikatami i retry. Interfejs pracownika bez zmian.
