@@ -527,6 +527,7 @@ export default function NameplatePhotoCapture({
   fieldLabel,
   file = null,
   existingPhotoUrl = "",
+  existingPhotoPresent = false,
   onSelect,
   onRemove,
   compact = false,
@@ -707,10 +708,10 @@ export default function NameplatePhotoCapture({
     : "";
 
   const previewUrl = localPreviewUrl || existingPhotoUrl;
-  const hasPhoto = Boolean(file || existingPhotoUrl);
+  const hasPhoto = Boolean(file || existingPhotoPresent || existingPhotoUrl);
   const statusLabel = compact
-    ? (verified ? "Potwierdzona" : file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zapisana" : "Brak")
-    : (verified ? "Tabliczka potwierdzona" : file ? "Nowe zdjęcie" : existingPhotoUrl ? "Zdjęcie zapisane" : "Brak zdjęcia");
+    ? (verified ? "Potwierdzona" : file ? "Nowe zdjęcie" : hasPhoto ? "Zapisana" : "Brak")
+    : (verified ? "Tabliczka potwierdzona" : file ? "Nowe zdjęcie" : hasPhoto ? "Zdjęcie zapisane" : "Brak zdjęcia");
 
   return (
     <>
@@ -718,7 +719,7 @@ export default function NameplatePhotoCapture({
         <button
           type="button"
           className="nameplateCaptureSummary"
-          onClick={() => (previewUrl ? setShowPreview((current) => !current) : cameraInputRef.current?.click())}
+          onClick={() => (previewUrl ? setShowPreview((current) => !current) : !hasPhoto ? cameraInputRef.current?.click() : null)}
           aria-expanded={showPreview}
         >
           <span className="nameplateCaptureSummaryText">

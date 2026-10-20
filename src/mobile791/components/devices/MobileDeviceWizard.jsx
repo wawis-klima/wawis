@@ -135,11 +135,13 @@ function getUnitModel(device, unitRef) {
 function getPhotoState({ pendingPhotos, existingPhotos, deviceIndex, unitRef }) {
   const pending = pendingPhotos.find((item) => Number(item.deviceIndex) === Number(deviceIndex) && String(item.unitRef) === unitRef) || null;
   const existing = existingPhotos.find((item) => Number(item.deviceIndex) === Number(deviceIndex) && String(item.unitRef) === unitRef) || null;
-  const existingUrl = String(existing?.uploadStatus || '').toLowerCase() === 'error' ? '' : (existing?.url || '');
+  const validStoredPhoto = String(existing?.uploadStatus || '').toLowerCase() !== 'error'
+    && Boolean(existing?.storagePath || existing?.url);
+  const existingUrl = validStoredPhoto ? (existing?.url || '') : '';
   return {
     file: pending?.file || null,
     existingUrl,
-    hasPhoto: Boolean(pending?.file || existingUrl),
+    hasPhoto: Boolean(pending?.file || validStoredPhoto),
     verified: Boolean(
       pending?.verified
       || String(pending?.ocrStatus || '').toLowerCase() === 'approved'
@@ -516,6 +518,7 @@ export default function MobileDeviceWizard({
         fieldLabel={label}
         file={photoState.file}
         existingPhotoUrl={photoState.existingUrl}
+        existingPhotoPresent={photoState.hasPhoto}
         jobId={jobId}
         unitRef={unitRef}
         currentModel={activeDevice ? getUnitModel(activeDevice, unitRef) : ''}
