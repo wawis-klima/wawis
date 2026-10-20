@@ -38,7 +38,8 @@ function assertMigrationCoverage() {
 assertMigrationCoverage();
 
 const platformSql = `create role anon;create role authenticated;create role service_role;create role supabase_admin;
-create schema auth;create schema storage;create schema extensions;create schema private;create schema cron;
+create schema auth;create schema storage;create schema extensions;create schema private;create schema cron;create schema net;
+create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000) returns bigint language sql as $fn$select 1::bigint$fn$;
 create function extensions.gen_random_bytes(integer) returns bytea language sql volatile as $fn$select decode(repeat('ab',$1),'hex')$fn$;
 create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email text);
 create function auth.uid() returns uuid language sql as $$select null::uuid$$;
@@ -60,7 +61,9 @@ async function runPass(pass) {
     for (const file of manifest.files) {
       current = file;
       let sql = fs.readFileSync(new URL(file, root), 'utf8');
-      sql = sql.replace(/create extension if not exists (?:pgcrypto|pg_cron)[^;]*;/gi, '');
+      // PGlite does not bundle the Supabase pg_net extension; emulate its API only here.
+      // Production migration keeps CREATE EXTENSION and the real asynchronous HTTP request.
+      sql = sql.replace(/create extension if not exists (?:pgcrypto|pg_cron|pg_net)[^;]*;/gi, '');
       await db.exec(sql);
       console.log(`PASS [rebuild ${pass}] ${file}`);
     }

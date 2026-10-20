@@ -1,5 +1,9 @@
 ## Aktualna wersja
-- 13.29
+- 13.30
+
+WAWIS 13.30: wyłącznie administrator otrzymuje PUSH po pierwszym prawidłowym zapisie podpisanego protokołu, bez oczekiwania na zakończenie montażu. Zdarzenie jest wyzwalane przez bazę danych, nie przez aplikację pracownika; bez nowych komunikatów. Serwerowa weryfikacja tokenu, deduplikacja na montaż i urządzenie, ponawianie co trzy minuty do 48 godzin.
+
+
 
 WAWIS 13.29: naprawa fałszywego konfliktu przy zapisie tabliczek i brakujących liczników dla zapisanych zdjęć w prywatnym storage. Kreator pobiera świeże dane urządzeń oraz zdjęcia z serwera; przy rzeczywistym konflikcie tych samych urządzeń nie nadpisuje zmian. Test: scripts/smoke-nameplate-concurrency-v1329.mjs.
 
@@ -1021,6 +1025,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.30` — automatyczny PUSH wyłącznie do administratora po zapisaniu podpisanego protokołu; bez konieczności kończenia montażu i bez dodatkowych komunikatów pracownika.
 - wersja `13.29` — mobilny kreator tabliczek odświeża rekord i zdjęcia z Supabase, rozpoznaje je po storage_path i bezpiecznie rozwiązuje niezależne zapisy bez nadpisywania cudzych zmian.
 - wersja `13.28` — przy rozbieżności numerów SN najpierw ślepy odczyt AI nadruku; ręczne sprawdzenie wyłącznie gdy brak wiarygodnego rozstrzygnięcia.
 - wersja `13.24` — desktop: krótkie „Brak zdjęć” w sekcji zdjęć montażu i dodatkowe wcięcie komunikatu pustej tabeli (24 px).

@@ -1,7 +1,7 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "13.29",
+  "version": "13.30",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",
@@ -21,6 +21,7 @@
     "test:smoke:version": "node scripts/smoke-version-ui.cjs",
     "test:smoke:delete": "node scripts/smoke-job-delete.cjs",
     "test:smoke:device-save": "node scripts/smoke-job-device-save.cjs",
+    "test:smoke:protocol-signed-push-v1330": "node scripts/smoke-protocol-signed-push-v1330.mjs",
     "test:smoke:nameplate-concurrency-v1329": "node scripts/smoke-nameplate-concurrency-v1329.mjs",
     "test:smoke:admin-worker": "node scripts/smoke-role-access.cjs",
     "test:smoke:sms-client-details": "node scripts/smoke-sms-client-details.cjs",

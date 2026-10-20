@@ -19,3 +19,6 @@ verify_jwt = false
 
 [functions.push-delivery-receipt]
 verify_jwt = false
+
+[functions.send-protocol-signed-push]
+verify_jwt = false

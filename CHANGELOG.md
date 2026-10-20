@@ -1,3 +1,7 @@
+## 13.30
+- Supabase: PUSH tylko do administratora po podpisaniu i zapisaniu protokołu, bez konieczności kończenia montażu.
+- Serwerowy trigger, prywatne zdarzenie z tokenem, ochrona przed duplikatami i retry. Interfejs pracownika bez zmian.
+
 ## 13.29
 - Mobile: zapisywanie tabliczek po innym udanym zapisie nie blokuje się na przestarzałym stanie formularza; odczytywany jest aktualny stan z serwera, a nienakładające się zmiany są bezpiecznie scalane i weryfikowane atomowo.
 - Mobile: kreator pobiera przy otwarciu aktualne modele i tabliczki, również zapisane w prywatnym bucketcie z pustym image_url; licznik wykorzystuje storage_path, a podgląd osobny podpisany URL.
