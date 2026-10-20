@@ -48,4 +48,28 @@ assert.match(wizardSource, /existing\?\.storagePath \|\| existing\?\.url/);
 assert.match(actionSource, /loadJobNameplatePhotosData\(\{ supabase, jobId: job\.id \}\)/);
 assert.match(actionSource, /select\('id,status,device_model,device_serial_number'\)/);
 
+// Wykonaj prawdziwy kod licznika z kreatora, nie tylko statyczny regex:
+const getPhotoStateSource = wizardSource.match(/function getPhotoState\\([\\s\\S]*?\\n}\\n/)?.[0];
+assert.ok(getPhotoStateSource, 'getPhotoState must remain independently testable');
+const getPhotoState = new Function(`${getPhotoStateSource}\\nreturn getPhotoState;`)();
+const saved = (deviceIndex, unitRef) => ({ deviceIndex, unitRef, storagePath: `fixture/job/nameplates/device-${deviceIndex + 1}_${unitRef}.jpg`, url: '', ocrStatus: 'approved' });
+const existingPhotos = [
+  saved(0, 'jw-1'), saved(0, 'jz'),
+  saved(1, 'jw-1'), saved(1, 'jz'),
+  saved(2, 'jw-1'),
+];
+const photoPresent = (deviceIndex, unitRef) => getPhotoState({
+  pendingPhotos: [], existingPhotos, deviceIndex, unitRef,
+}).hasPhoto;
+assert.deepEqual(
+  [0, 1, 2].map((idx) => ['jw-1', 'jz'].filter((unitRef) => photoPresent(idx, unitRef)).length),
+  [2, 2, 1],
+  'private-bucket photo paths without image_url must show 2/2, 2/2 and 1/2'
+);
+assert.equal(photoPresent(2, 'jz'), false, 'genuinely missing third JZ stays missing');
+assert.equal(getPhotoState({
+  pendingPhotos: [], existingPhotos: [saved(2, 'jw-1')], deviceIndex: 2, unitRef: 'jw-1',
+}).verified, true, 'confirmed OCR stays confirmed without a signed preview URL');
+assert.match(fs.readFileSync(new URL('../src/mobile791/components/nameplate/NameplatePhotoCapture.jsx', import.meta.url), 'utf8'), /existingPhotoPresent = false/);
+
 console.log('PASS mobile 13.29 nameplate conflict, three-device merge and saved-photo detection');
