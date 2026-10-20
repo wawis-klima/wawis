@@ -1,3 +1,8 @@
+## 13.29
+- Mobile: zapisywanie tabliczek po innym udanym zapisie nie blokuje się na przestarzałym stanie formularza; odczytywany jest aktualny stan z serwera, a nienakładające się zmiany są bezpiecznie scalane i weryfikowane atomowo.
+- Mobile: kreator pobiera przy otwarciu aktualne modele i tabliczki, również zapisane w prywatnym bucketcie z pustym image_url; licznik wykorzystuje storage_path, a podgląd osobny podpisany URL.
+- Utrzymane twarde zabezpieczenie przed nadpisaniem dwóch różnych zmian tego samego urządzenia; testy: scripts/smoke-nameplate-concurrency-v1329.mjs.
+
 ## 13.28
 - Mobile: niezgodność Code 128 i OCR nadruku SN oraz wynik z jednego źródła najpierw kierują do AI, zamiast od razu żądać ręcznego sprawdzenia.
 - Nowy tryb visual_only: AI nie otrzymuje numerów z dekodera ani podpowiedzi kodów kreskowych; serwer odrzuca te podpowiedzi również gdy klient je dośle.
