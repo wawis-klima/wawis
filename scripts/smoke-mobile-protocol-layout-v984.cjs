@@ -26,8 +26,8 @@ assert.match(wizardCss, /\.mobileProtocolWizard \.protocolTestDeviceHeader\s*\{\
 assert.match(modal, /function formatProtocolDevicePreviewModel\(model\)/, 'Podgląd musi formatować nazwę niezależnie od danych PDF.');
 assert.match(modal, /\.replace\(\/\\s\+\\d\+\(\?:\[\.,\]\\d\+\)\?\\s\*kW\\b\/gi, ""\)/, 'W podglądzie nie powinno być mocy w kW.');
 assert.match(modal, /formatProtocolDevicePreviewModel\(row\.model\)/);
-assert.match(modal, /\.replace\(\/\^Jednostka zewnętrzna\/, "Jednostka Z"\)/);
-assert.match(modal, /\.replace\(\/\^Jednostka wewnętrzna\/, "Jednostka W"\)/);
+assert.match(modal, /row\.unit === "JZ" \? "Jednostka Z" : "Jednostka W"/, 'W podglądzie ma być Jednostka Z/W.');
+assert.match(modal, /urządzenie \{row\.deviceIndex \|\| 1\}/, 'Numer urządzenia musi być widoczny również dla jednego urządzenia.');
 assert.match(modal, /className="protocolTestDeviceType"/);
 assert.match(modal, /className="protocolTestDeviceSerial">S\/N: \{row\.serialNumber\}/);
 assert.doesNotMatch(modal, /Rewizja: \{row\.revision\} · S\/N/, 'Nie powtarzaj rewizji w podglądzie.');
