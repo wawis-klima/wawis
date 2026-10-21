@@ -155,6 +155,66 @@ test.describe('@mobile queue fencing / owner / recovery', () => {
     } finally { await ctx.close(); }
   });
 
+  test('spóźniony worker po nieudanym CAS nie wykonuje storage.upload', async ({page}) => {
+    await setup(page);
+    const ready = await page.evaluate(async() => {
+      const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+      const photos=await import('/src/mobile791/modules/photos.js');
+      for(const x of await q.listPhotoQueueItems()) await q.deletePhotoQueueItem(x.id);
+      const id='local-photo-upload-stale-upload-cas';
+      const saved=await q.savePhotoQueueItem({
+        id,job_id:'jobCAS',uploaded_by:'ownerCAS',user_id:'ownerCAS',
+        upload_key:'cas-upload-key',file_fingerprint:'real-hash',
+        planned_storage_path:'jobCAS/nameplates/one.jpg',photo_kind:'nameplate',device_index:1,unit_ref:'jz',
+        local_file:new File(['important-CAS-file'],'nameplate.jpg',{type:'image/jpeg'}),
+      });
+      if(!saved)throw new Error('Fixture not persisted');
+      window.__casUploadCount=0;
+      window.__compressionWaiting=false;
+      window.__casAdapter={
+        auth:{async getUser(){return{data:{user:{id:'ownerCAS'}},error:null}}},
+        from(table){
+          if(table!=='photos')throw new Error('Unexpected table');
+          return {select(){return this},eq(){return this},async maybeSingle(){return{data:null,error:null}}}
+        },
+        storage:{from(){return{async upload(){window.__casUploadCount++;return{data:null,error:null}}}}}
+      };
+      photos.retryQueuedJobPhoto({
+        supabase:window.__casAdapter,profile:{id:'ownerCAS'},
+        photo:{id,job_id:'jobCAS',photo_kind:'nameplate'},
+        setJobs:()=>{},setSelectedJob:()=>{},
+        compressImageFn:file=>new Promise(resolve=>{
+          window.__resumeCompression=()=>resolve({file,originalSize:file.size,uploadSize:file.size,savedPercent:0,compressed:false});
+          window.__compressionWaiting=true;
+        }),
+      });
+      return true;
+    });
+    expect(ready).toBe(true);
+    await expect.poll(()=>page.evaluate(()=>Boolean(window.__compressionWaiting))).toBe(true);
+    const b=await page.evaluate(async()=>{
+      const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+      const id='local-photo-upload-stale-upload-cas';
+      const current=(await q.listPhotoQueueItems()).find(x=>x.id===id);
+      const guard={expectedLeaseOwner:current.lease_owner,expectedGeneration:current.attempt_generation};
+      const expired=await q.updatePhotoQueueItem(id,{lease_until:'2000-01-01T00:00:00.000Z'},guard);
+      const next=await q.claimPhotoQueueItem(id);
+      return{expired,owner:next.lease_owner,gen:next.attempt_generation};
+    });
+    expect(b.expired).toBe(true);
+    await page.evaluate(()=>window.__resumeCompression());
+    await page.waitForTimeout(250);
+    const finished=await page.evaluate(async()=>{
+      const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+      const r=(await q.listPhotoQueueItems()).find(x=>x.id==='local-photo-upload-stale-upload-cas');
+      return{network:window.__casUploadCount,owner:r.lease_owner,gen:r.attempt_generation,bytes:await r.local_file.text()};
+    });
+    expect(finished.network).toBe(0);
+    expect(finished.owner).toBe(b.owner);
+    expect(finished.gen).toBe(b.gen);
+    expect(finished.bytes).toBe('important-CAS-file');
+  });
+
   test('error 403 jest zachowany, a automatyczne wznowienie nie wysyła go ponownie', async ({ page }) => {
     await setup(page);
     const result=await page.evaluate(async () => {
