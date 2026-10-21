@@ -1,4 +1,4 @@
-import { claimPhotoQueueItem, deletePhotoQueueItem, hydratePhotoQueueItem, listPhotoQueueItems, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
+import { claimPhotoQueueItem, deletePhotoQueueItem, hydratePhotoQueueItem, listPhotoQueueItems, recoverStalePhotoQueueItems, releaseClaimedPhotoQueueItem, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
@@ -1516,9 +1516,13 @@ export async function restorePersistedJobPhotos({
       const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
       photo = await ensureQueuedPhotoIdentity(photo);
       if (!photoSessionIsCurrent(isSessionCurrent)) return hydratedPhotos;
+      // Dla dopasowania starej JZ/JW zachowujemy trwały status z IndexedDB.
+      // Hydrate celowo pokazuje "uploading" jako "local" w UI, ale taka
+      // prezentacja nie może wyłączyć dopasowania do już zapisanej tabliczki.
+      const reconciliationPhoto = { ...photo, upload_status: record.upload_status || photo.upload_status };
       const serverPhoto = await findExistingServerPhotoForQueuedPhoto({
         supabase,
-        queuedPhoto: photo,
+        queuedPhoto: reconciliationPhoto,
         allowLegacyNameplate,
       });
       if (!photoSessionIsCurrent(isSessionCurrent)) return hydratedPhotos;
@@ -1526,7 +1530,7 @@ export async function restorePersistedJobPhotos({
         await reconcileQueuedPhotoFromServer({
           supabase,
           supabaseUrl,
-          queuedPhoto: photo,
+          queuedPhoto: reconciliationPhoto,
           serverPhoto,
           setJobs: guardedSetJobs,
           setSelectedJob: guardedSetSelectedJob,
@@ -1581,9 +1585,10 @@ async function runPersistedPhotoUploads({
   for (const queuedRecord of records) {
     if (isBrowserOffline() || !photoSessionIsCurrent(isSessionCurrent)) break;
     const record = await claimPhotoQueueItem(queuedRecord.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS, force: includeErrors });
-    if (!photoSessionIsCurrent(isSessionCurrent)) break;
     if (!record) continue;
-    let queuedPhoto = hydratePhotoQueueItem(record, createLocalPreviewUrl);
+    try {
+      if (!photoSessionIsCurrent(isSessionCurrent)) break;
+      let queuedPhoto = hydratePhotoQueueItem(record, createLocalPreviewUrl);
     if (!queuedPhoto) continue;
     // hydratePhotoQueueItem zamienia status "uploading" na "local" dla zwykłego odtworzenia UI.
     // Tutaj rekord został właśnie atomowo przejęty przez worker kolejki; zachowujemy jego status,
@@ -1645,6 +1650,12 @@ async function runPersistedPhotoUploads({
       const latestItems = await listPhotoQueueItems();
       const latest = latestItems.find((item) => String(item.id) === String(record.id));
       if (String(latest?.upload_status || '').toLowerCase() === 'error') failed += 1;
+    }
+    } finally {
+      // Nawet gdy sesja zostanie anulowana między claim() a odpowiedzią serwera,
+      // nie zostawiamy 3-minutowego lease na porzuconym rekordzie. Releasujemy
+      // wyłącznie własny claim; udany upload lub cudzy nowy lease są nietykalne.
+      await releaseClaimedPhotoQueueItem(record.id, record);
     }
   }
   if (failed > 0) guardedOnPhotoUploadError?.(new Error(`Nie udało się wysłać ${failed} zdjęć z kolejki.`));

@@ -50,8 +50,8 @@ async function countQueuedPhotos(page) {
   }));
 }
 
-async function putLegacyQueuedNameplateError(page) {
-  await page.evaluate(() => new Promise((resolve, reject) => {
+async function putLegacyQueuedNameplateError(page, { uploadStatus = 'error', leaseUntil = '' } = {}) {
+  await page.evaluate(({ uploadStatus, leaseUntil }) => new Promise((resolve, reject) => {
     const request = indexedDB.open('wawis-mobile-photo-queue');
     request.onerror = () => reject(request.error);
     request.onupgradeneeded = () => {
@@ -69,8 +69,10 @@ async function putLegacyQueuedNameplateError(page) {
         created_at: '2026-07-30T05:00:00.000Z',
         uploaded_by: 'mock-worker-1',
         uploader_name: 'Pracownik Testowy',
-        upload_status: 'error',
-        upload_status_label: 'Błąd wysyłania',
+        upload_status: uploadStatus,
+        upload_status_label: uploadStatus === 'uploading' ? 'Wysyłanie' : 'Błąd wysyłania',
+        lease_until: leaseUntil,
+        lease_owner: leaseUntil ? 'przerwana-sesja-testowa' : '',
         upload_error: 'Testowy stary błąd po udanym wysłaniu.',
         local_file_name: 'legacy-jz.jpg',
         local_file_type: 'image/jpeg',
@@ -91,7 +93,7 @@ async function putLegacyQueuedNameplateError(page) {
       };
       transaction.onerror = () => reject(transaction.error);
     };
-  }));
+  }), { uploadStatus, leaseUntil });
 }
 
 test.describe('@mobile iPhone — odporność danych', () => {
@@ -171,6 +173,47 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await expect(outdoorRow).not.toContainText('Błąd wysyłania');
     await expect(outdoorRow).toHaveAttribute('role', 'button');
     await expect(outdoorRow).toHaveAttribute('aria-label', /Otwórz tabliczkę znamionową JZ/);
+  });
+
+
+  test('osierocona 3-minutowa blokada nie ukrywa zapisanej na serwerze JZ', async ({ page }) => {
+    await installControllableNetworkState(page);
+    await resetMockSupabase(page);
+    await setLogicalOnlineState(page, true);
+    await loginWithoutReset(page, WORKER);
+
+    // Dwa przejścia odtwarzają najtrudniejszy scenariusz bez losowania:
+    // serwer ma już tabliczkę, poprzednia sesja zostawiła aktywny lease.
+    for (let run = 0; run < 2; run += 1) {
+      await page.evaluate(({ storeKey }) => {
+        const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
+        store.photos = (store.photos || []).filter((p) => p.id !== 'mock-server-nameplate-jz');
+        store.photos.push({
+          id: 'mock-server-nameplate-jz',
+          job_id: 'mock-job-002',
+          image_url: '',
+          storage_path: 'mock-job-002/nameplates/device-1_jz_MOCK-MIT-002_server.jpg',
+          uploaded_by: 'mock-worker-1',
+          created_at: '2026-07-30T05:01:00.000Z',
+        });
+        const serialized = JSON.stringify(store);
+        window.localStorage.setItem(storeKey, serialized);
+        window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
+      }, { storeKey: MOCK_STORE_KEY });
+      await putLegacyQueuedNameplateError(page, {
+        uploadStatus: 'uploading',
+        leaseUntil: new Date(Date.now() + 180_000).toISOString(),
+      });
+
+      await page.reload();
+      await page.locator('.statusActionButton[title="W trakcie"]').click();
+      await page.getByText('Klient Testowy B', { exact: true }).click();
+      await expect.poll(() => countQueuedPhotos(page), { timeout: 15_000 }).toBe(0);
+      await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
+      const jz = page.locator('.deviceUnitDocumentationRow').filter({ hasText: 'JZ' }).first();
+      await expect(jz).toContainText('Zapisano w systemie');
+      await expect(jz).not.toContainText('Błąd wysyłania');
+    }
   });
 
   test('zakończone zlecenie zwija monterów i puste komentarze, ale rozwija istniejącą historię', async ({ page }) => {
