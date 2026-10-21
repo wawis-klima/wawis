@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## WAWIS-P0-01 — bezpieczeństwo starej kolejki tabliczek (21 października 2026)
+
+| ID | Stan | Reproduktor / warunek zamknięcia |
+|---|---|---|
+| WAWIS-P0-01-DIFFERENT | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js`: inna tabliczka tego samego montażu/JZ i właściciela sprzed pięciu minut nie usuwa File z IndexedDB; przypadki error/uploading oraz reload. RED z audytu 13.39, nowy trwały E2E czeka na wykonanie w CI. |
+| WAWIS-P0-01-EXACT | FIXED-UNVERIFIED | Ten sam test: zdjęcie uzgadnia się wyłącznie po dokładnej ścieżce operacji, bez dopasowania po samych metadanych. |
+| WAWIS-P0-01-SAFETY | REQUIRED | Wykonanie nowego E2E na prawdziwym IndexedDB, regresje photos/nameplates/protocol, Closure Gate, test dwóch kart i aktualizacja PWA ze starymi kolejkami przed CLOSED/GO. |
+| WAWIS-P0-01-STAGING | NOT VERIFIED | Test na izolowanym Supabase i fizycznym iPhonie nieprzeprowadzony; nie zmieniać produkcyjnego IndexedDB, RLS ani Storage podczas tej poprawki. |
+
 ## MOBILE-1328 — AI po rozbieżności SN (19 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
