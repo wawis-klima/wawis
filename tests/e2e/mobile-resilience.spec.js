@@ -176,6 +176,49 @@ test.describe('@mobile iPhone — odporność danych', () => {
   });
 
 
+  test('anulowany worker oddaje własny lease bez usuwania zdjęcia i bez naruszenia następnego workera', async ({ page }) => {
+    await resetMockSupabase(page);
+    await putLegacyQueuedNameplateError(page);
+
+    const result = await page.evaluate(async () => {
+      const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+      const id = 'local-photo-upload-legacy-jz-error';
+      const first = await queue.claimPhotoQueueItem(id);
+      const blocked = await queue.claimPhotoQueueItem(id);
+      const releasedFirst = await queue.releaseClaimedPhotoQueueItem(id, first);
+      const second = await queue.claimPhotoQueueItem(id);
+      const staleRelease = await queue.releaseClaimedPhotoQueueItem(id, first);
+      const afterStale = (await queue.listPhotoQueueItems()).find((p) => p.id === id);
+      const releasedSecond = await queue.releaseClaimedPhotoQueueItem(id, second);
+      const remaining = (await queue.listPhotoQueueItems()).find((p) => p.id === id);
+      return {
+        firstOwner: first?.lease_owner || '',
+        blocked: blocked === null,
+        releasedFirst,
+        secondOwner: second?.lease_owner || '',
+        staleRelease,
+        ownerAfterStale: afterStale?.lease_owner || '',
+        releasedSecond,
+        remainingStatus: remaining?.upload_status || '',
+        remainingError: remaining?.upload_error || '',
+        remainingFile: Boolean(remaining?.local_file),
+      };
+    });
+
+    expect(result.firstOwner).toBeTruthy();
+    expect(result.blocked).toBe(true);
+    expect(result.releasedFirst).toBe(true);
+    expect(result.secondOwner).toBeTruthy();
+    expect(result.secondOwner).not.toBe(result.firstOwner);
+    expect(result.staleRelease).toBe(false);
+    expect(result.ownerAfterStale).toBe(result.secondOwner);
+    expect(result.releasedSecond).toBe(true);
+    expect(result.remainingStatus).toBe('error');
+    expect(result.remainingError).toBeTruthy();
+    expect(result.remainingFile).toBe(true);
+    expect(await countQueuedPhotos(page)).toBe(1);
+  });
+
   test('osierocona 3-minutowa blokada nie ukrywa zapisanej na serwerze JZ', async ({ page }) => {
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
