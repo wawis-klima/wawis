@@ -180,6 +180,8 @@ export async function updatePhotoQueueItem(photoId, patch = {}, guard = {}) {
           && String(current.lease_owner || '') !== String(guard.expectedLeaseOwner || '')) return;
         if (Object.prototype.hasOwnProperty.call(guard, 'expectedGeneration')
           && Number(current.attempt_generation || 0) !== Number(guard.expectedGeneration || 0)) return;
+        if (Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseUntil')
+          && String(current.lease_until || '') !== String(guard.expectedLeaseUntil || '')) return;
         // Nie pozwalamy starszej sesji nadpisać postępu aktywnego workera.
         if (!Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
           && current.upload_status === 'uploading'
@@ -264,7 +266,7 @@ export async function recoverStalePhotoQueueItems(nowMs = Date.now()) {
       upload_status_label: 'Zapisano na telefonie',
       lease_until: '',
       lease_owner: '',
-    }, { expectedLeaseOwner: item.lease_owner || '', expectedGeneration: Number(item.attempt_generation || 0) });
+    }, { expectedLeaseOwner: item.lease_owner || '', expectedGeneration: Number(item.attempt_generation || 0), expectedLeaseUntil: item.lease_until || '' });
     if (!restored) continue;
     recovered += 1;
   }
