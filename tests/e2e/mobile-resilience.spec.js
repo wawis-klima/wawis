@@ -267,6 +267,13 @@ test.describe('@mobile iPhone — odporność danych', () => {
         uploadStatus: 'uploading',
         leaseUntil: new Date(Date.now() + 180_000).toISOString(),
       });
+      const beforeReload = await page.evaluate(async () => {
+        const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+        const local = (await queue.listPhotoQueueItems()).find((p) => p.id === 'local-photo-upload-legacy-jz-error');
+        return { present: Boolean(local), leaseUntil: local?.lease_until || '' };
+      });
+      expect(beforeReload.present).toBe(true);
+      expect(Date.parse(beforeReload.leaseUntil)).toBeGreaterThan(Date.now());
 
       await page.reload();
       await page.locator('.statusActionButton[title="W trakcie"]').click();
@@ -289,9 +296,15 @@ test.describe('@mobile iPhone — odporność danych', () => {
           bytes: local?.local_file ? await local.local_file.text() : null,
           status: local?.upload_status || '',
           leaseUntil: Date.parse(local?.lease_until || ''),
+          expectedPath: local?.planned_storage_path || '',
+          serverPaths: (window.__KLIMA_MOCK_SUPABASE__?.getStore()?.photos || [])
+            .filter((photo) => photo.job_id === 'mock-job-002')
+            .map((photo) => photo.storage_path),
         };
       });
-      expect(preserved.count).toBe(1);
+      // Komunikat ma pokazać, czy lokalny Blob zniknął po rzeczywistym
+      // potwierdzeniu tej samej ścieżki, czy po niepoprawnym skojarzeniu.
+      expect(preserved.count, `run=${run}, paths=${JSON.stringify(preserved.serverPaths)}, expected=${preserved.expectedPath}`).toBe(1);
       expect(preserved.bytes).toBe('legacy-jz');
       expect(preserved.status).toBe('uploading');
       expect(preserved.leaseUntil).toBeGreaterThan(Date.now());
