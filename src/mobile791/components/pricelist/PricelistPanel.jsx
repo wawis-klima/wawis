@@ -3,6 +3,12 @@ import { grossPriceWithEightPercentVat, PRICE_LIST_GROUPS, PRICE_LIST_TOTAL_ROWS
 
 const money = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 });
 
+// Skracamy wyłącznie etykiety dwóch grup Multi. Nazwy źródłowe i ceny pozostają bez zmian.
+const mobileMultiLabels = {
+  "Rotenso Hiro — jednostki zewnętrzne Multi": "Rotenso Hiro Multi Jedn. Zew.",
+  "Rotenso Hiro / IMOTO — jednostki wewnętrzne Multi": "Rotenso Hiro Imoto Multi Jedn. Wew.",
+};
+
 export default function PricelistPanel() {
   // Zawsze startuj ze wszystkimi modelami zamkniętymi. Można otworzyć tylko jeden naraz.
   const [expandedGroup, setExpandedGroup] = useState(null);
@@ -20,7 +26,9 @@ export default function PricelistPanel() {
                 setExpandedGroup((current) => current === group.name ? null : group.name);
               }}
             >
-              <span>{group.name}</span>
+              <span className={mobileMultiLabels[group.name] ? "wawisPricelistCompactMulti" : undefined}>
+                {mobileMultiLabels[group.name] || group.name}
+              </span>
               <span className="wawisPricelistCount">{group.rows.length}</span>
             </summary>
             <div className="wawisPricelistGrid" role="table" aria-label={group.name}>
