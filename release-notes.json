@@ -1,9 +1,9 @@
 {
-  "version": "13.38",
-  "summary": "Niższe karty modeli w mobilnym Cenniku",
+  "version": "13.39",
+  "summary": "Stabilniejsze wznowienie mobilnej kolejki zdjęć",
   "changes": [
-    "Białe karty: min. 44 px zamiast 48 px; padding pionowy 7 px zamiast 9 px.",
-    "Długie nazwy nadal zawijają się bez obcinania; nie zmieniamy wielkości czcionki ani liczników.",
-    "Bez zmian 36 cen netto, VAT, menu, tabel cen oraz innych modułów."
+    "Kolejka zdjęć nie przerywa uzgadniania podczas aktualizacji licznika.",
+    "Osierocone przejęcia zwalniane bez usunięcia zdjęcia i bez naruszenia innej sesji.",
+    "Historyczne tabliczki JZ/JW uzgadniane na podstawie statusu z pamięci telefonu; rozszerzone testy Playwright."
   ]
 }
