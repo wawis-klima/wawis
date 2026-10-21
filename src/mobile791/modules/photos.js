@@ -805,12 +805,28 @@ function isZeroBytePhotoError(error) {
 // lokalnej kopii po samym dopasowaniu storage_path.
 const validatedRemotePhotoRows = new WeakSet();
 
-async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile }) {
+async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile, throwOnTransient = false }) {
   if (!storagePath || !uploadFile || !globalThis.crypto?.subtle?.digest
     || !Number.isFinite(uploadFile.size) || uploadFile.size <= 0) return false;
   try {
-    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET).download(storagePath);
-    if (error || !remoteFile || remoteFile.size !== uploadFile.size || remoteFile.size <= 0) return false;
+    // Nie wolno używać odpowiedzi HTTP/CDN z poprzedniej wersji obiektu jako
+    // dowodu obecności bajtów. Nonce omija współdzielony cache CDN, no-store
+    // lokalny cache przeglądarki. Obie opcje obsługuje aktualne storage-js.
+    const nonce = `integrity-${Date.now()}-${globalThis.crypto?.randomUUID?.() || Math.random()}`;
+    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET)
+      .download(storagePath, { cacheNonce: nonce }, { cache: 'no-store' });
+    if (error) {
+      const status = Number(error.statusCode || error.status || error.code || 0);
+      if (throwOnTransient && (status === 408 || status === 429 || status >= 500)) {
+        const transient = new Error(error.message || 'Chwilowy błąd odczytu zdjęcia z serwera.');
+        transient.status = status;
+        transient.statusCode = status;
+        transient.cause = error;
+        throw transient;
+      }
+      return false;
+    }
+    if (!remoteFile || remoteFile.size !== uploadFile.size || remoteFile.size <= 0) return false;
     const [localBytes, remoteBytes] = await Promise.all([uploadFile.arrayBuffer(), remoteFile.arrayBuffer()]);
     const [localDigest, remoteDigest] = await Promise.all([
       globalThis.crypto.subtle.digest('SHA-256', localBytes),
@@ -818,6 +834,7 @@ async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile }) {
     ]);
     return bytesToHex(new Uint8Array(localDigest)) === bytesToHex(new Uint8Array(remoteDigest));
   } catch (error) {
+    if (throwOnTransient && isRetryablePhotoUploadError(error)) throw error;
     console.warn('Nie udało się potwierdzić integralności Storage — lokalna kopia pozostaje.', error?.message || error);
     return false;
   }
@@ -1120,7 +1137,7 @@ async function performQueuedPhotoUpload({
 
     if (uploadError && isDuplicateStorageError(uploadError)) {
       // 409 nie oznacza, że istniejący obiekt zawiera nasze bajty.
-      if (!(await verifyStorageObjectBytes({ supabase, storagePath, uploadFile }))) {
+      if (!(await verifyStorageObjectBytes({ supabase, storagePath, uploadFile, throwOnTransient: true }))) {
         throw new Error('Konflikt ścieżki Storage: istniejący plik nie został potwierdzony. Zachowano kopię na telefonie.');
       }
       const existingAfterStorageConflict = await findServerPhotoByStoragePath({ supabase, jobId, storagePath });
@@ -1195,7 +1212,7 @@ async function performQueuedPhotoUpload({
     const finalStoragePath = getPhotoStoragePath({ photo: insertedPhoto, supabaseUrl }) || storagePath;
     // Nawet udany INSERT po ACK uploadu nie jest dowodem integralności
     // ostatniej lokalnej kopii. Weryfikujemy też końcowy obiekt Storage.
-    if (!(await verifyStorageObjectBytes({ supabase, storagePath: finalStoragePath, uploadFile }))) {
+    if (!(await verifyStorageObjectBytes({ supabase, storagePath: finalStoragePath, uploadFile, throwOnTransient: true }))) {
       throw new Error('Serwer nie potwierdził zawartości zdjęcia. Lokalny plik został zachowany do ponownej weryfikacji.');
     }
     const signedUrl = await getSignedPhotoUrl({ storagePath: finalStoragePath, fallbackUrl: insertedPhoto.image_url || localPreviewUrl, supabase });
