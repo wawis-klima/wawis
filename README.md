@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.39
+- 13.40
+
+WAWIS 13.40: poprawka P0 bezpieczeństwa mobilnej kolejki zdjęć. Historyczne tabliczki JZ/JW nie są już uznawane za wysłane tylko na podstawie zgodnego montażu, jednostki, użytkownika i czasu. Lokalny File pozostaje w IndexedDB, dopóki serwer nie potwierdzi dokładnej ścieżki operacji. Dodano Playwright: error/uploading, dwie karty, przeładowanie i poprawne uzgodnienie. Bez zmian w Supabase, rolach, OCR, PDF i desktopie.
 
 WAWIS 13.39: stabilne odtwarzanie i wznawianie mobilnej kolejki zdjęć. Główny synchronizator nie jest anulowany zmianą licznika oczekujących zdjęć, porzucony proces zwalnia tylko swój lease, a starsze wpisy JZ/JW są porównywane z serwerem według oryginalnego statusu. Regresje E2E dla 3-minutowego lease i własności blokady. Bez zmian w danych klientów, PDF, OCR, rolach i cenach.
 
@@ -1043,6 +1045,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
 - wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.
 - wersja `13.38` — kompaktowe białe karty w Cenniku mobilnym (min. 44 px, padding 7 px); bez zmian funkcjonalnych.
 - wersja `13.37` — skrócenie dwóch nazw Hiro Multi w Cenniku mobilnym do Jedn. Zew. / Jedn. Wew., bez zmian pozostałych modeli.

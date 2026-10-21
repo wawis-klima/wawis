@@ -1,3 +1,9 @@
+## 13.40
+- P0 / mobile: przywracanie historycznych tabliczek nie dopasowuje już zdjęcia po samym montażu, urządzeniu, jednostce, autorze i czasie. Wymagana jest dokładna zgodność ścieżki operacji na serwerze.
+- Ochrona danych IndexedDB: przed usunięciem lokalnego File sprawdzana jest ścieżka zapisanego zdjęcia. Przy niejednoznacznym wyniku lokalny plik pozostaje do wznowienia.
+- Regresje Playwright mobile: inny plik tej samej jednostki sprzed 5 minut (error/uploading), reload i dwie karty; prawidłowe pojednanie identycznej operacji.
+- Bez zmian schematu bazy, Supabase Storage, RLS, OCR, PDF, ról i desktopu. Wydanie wymaga zielonego Closure Gate oraz potwierdzenia dokładnego SHA.
+
 ## 13.39
 - Mobile / zdjęcia i tabliczki: zlikwidowano anulowanie aktywnego uzgadniania zdjęć przez zmianę licznika lokalnej kolejki. Interwał ponawiania ma odrębny efekt.
 - Przejęcie zdjęcia w IndexedDB ma właściciela lease; przy przerwaniu zwalniamy jedynie własną blokadę, nie usuwamy pliku ani obcej operacji, z zachowaniem wcześniejszego statusu błędu.
