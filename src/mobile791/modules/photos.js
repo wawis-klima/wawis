@@ -533,7 +533,7 @@ async function digestBytes(bytes) {
 }
 
 export async function getPhotoFileFingerprint(file) {
-  if (!file) return '';
+  if (!file || !globalThis.crypto?.subtle?.digest) return '';
   try {
     const bytes = await file.arrayBuffer();
     return await digestBytes(bytes);
@@ -805,16 +805,11 @@ function isZeroBytePhotoError(error) {
 // lokalnej kopii po samym dopasowaniu storage_path.
 const validatedRemotePhotoRows = new WeakSet();
 
-async function verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }) {
-  const expectedPath = String(queuedPhoto?.planned_storage_path || queuedPhoto?.storage_path || '').trim();
-  if (!expectedPath || expectedPath !== String(serverPhoto?.storage_path || '').trim()) return false;
-  if (!queuedPhoto?.__localFile || !globalThis.crypto?.subtle?.digest) return false;
+async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile }) {
+  if (!storagePath || !uploadFile || !globalThis.crypto?.subtle?.digest
+    || !Number.isFinite(uploadFile.size) || uploadFile.size <= 0) return false;
   try {
-    const uploadFile = queuedPhoto.__preparedFile || (queuedPhoto.photo_kind === 'nameplate'
-      ? (await prepareNameplatePhotoForUpload(queuedPhoto.__localFile)).file
-      : (await preparePhotoForUpload(queuedPhoto.__localFile)).file);
-    if (!uploadFile || !Number.isFinite(uploadFile.size) || uploadFile.size <= 0) return false;
-    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET).download(expectedPath);
+    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET).download(storagePath);
     if (error || !remoteFile || remoteFile.size !== uploadFile.size || remoteFile.size <= 0) return false;
     const [localBytes, remoteBytes] = await Promise.all([uploadFile.arrayBuffer(), remoteFile.arrayBuffer()]);
     const [localDigest, remoteDigest] = await Promise.all([
@@ -823,7 +818,21 @@ async function verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }) {
     ]);
     return bytesToHex(new Uint8Array(localDigest)) === bytesToHex(new Uint8Array(remoteDigest));
   } catch (error) {
-    console.warn('Nie potwierdzono integralności zdjęcia w Storage — zachowano lokalny plik.', error?.message || error);
+    console.warn('Nie udało się potwierdzić integralności Storage — lokalna kopia pozostaje.', error?.message || error);
+    return false;
+  }
+}
+
+async function verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }) {
+  const path = String(queuedPhoto?.planned_storage_path || queuedPhoto?.storage_path || '').trim();
+  if (!path || path !== String(serverPhoto?.storage_path || '').trim() || !queuedPhoto?.__localFile) return false;
+  try {
+    const uploadFile = queuedPhoto.__preparedFile || (queuedPhoto.photo_kind === 'nameplate'
+      ? (await prepareNameplatePhotoForUpload(queuedPhoto.__localFile)).file
+      : (await preparePhotoForUpload(queuedPhoto.__localFile)).file);
+    return verifyStorageObjectBytes({ supabase, storagePath: path, uploadFile });
+  } catch (error) {
+    console.warn('Nie udało się przygotować pliku do porównania z serwerem.', error?.message || error);
     return false;
   }
 }
@@ -1110,6 +1119,10 @@ async function performQueuedPhotoUpload({
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     if (uploadError && isDuplicateStorageError(uploadError)) {
+      // 409 nie oznacza, że istniejący obiekt zawiera nasze bajty.
+      if (!(await verifyStorageObjectBytes({ supabase, storagePath, uploadFile }))) {
+        throw new Error('Konflikt ścieżki Storage: istniejący plik nie został potwierdzony. Zachowano kopię na telefonie.');
+      }
       const existingAfterStorageConflict = await findServerPhotoByStoragePath({ supabase, jobId, storagePath });
       if (existingAfterStorageConflict) {
         return reconcileQueuedPhotoFromServer({
@@ -1145,13 +1158,9 @@ async function performQueuedPhotoUpload({
 
     if (insertResult.error) {
       if (isZeroBytePhotoError(insertResult.error)) {
-        const { error: removeCorruptStorageError } = await supabase.storage.from(PHOTO_BUCKET).remove([storagePath]);
-        if (removeCorruptStorageError && !/not\s*found/i.test(removeCorruptStorageError.message || '')) {
-          console.warn('Nie udało się usunąć pustego pliku 0 B ze storage.', removeCorruptStorageError.message);
-        } else {
-          storageExists = false;
-          await updatePhotoQueueItem(localPhotoId, { upload_stage: 'prepared' }, photoQueueWriteGuard(queuedPhoto));
-        }
+        // Nie usuwamy automatycznie obiektu Storage: starsza próba mogłaby
+        // w tej chwili skasować obiekt właśnie zapisany przez nowego workera.
+        // Rekord IndexedDB z File pozostaje do świadomego odzyskania.
         const zeroByteError = new Error('Zdjęcie dotarło do serwera jako pusty plik 0 B. Spróbuj ponownie albo zrób zdjęcie jeszcze raz.');
         zeroByteError.code = PHOTO_ZERO_BYTES_ERROR_CODE;
         throw zeroByteError;
@@ -1184,6 +1193,11 @@ async function performQueuedPhotoUpload({
       created_at: new Date().toISOString(),
     };
     const finalStoragePath = getPhotoStoragePath({ photo: insertedPhoto, supabaseUrl }) || storagePath;
+    // Nawet udany INSERT po ACK uploadu nie jest dowodem integralności
+    // ostatniej lokalnej kopii. Weryfikujemy też końcowy obiekt Storage.
+    if (!(await verifyStorageObjectBytes({ supabase, storagePath: finalStoragePath, uploadFile }))) {
+      throw new Error('Serwer nie potwierdził zawartości zdjęcia. Lokalny plik został zachowany do ponownej weryfikacji.');
+    }
     const signedUrl = await getSignedPhotoUrl({ storagePath: finalStoragePath, fallbackUrl: insertedPhoto.image_url || localPreviewUrl, supabase });
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     const photoForUi = {
@@ -1598,7 +1612,9 @@ export async function restorePersistedJobPhotos({
       // Dla dopasowania starej JZ/JW zachowujemy trwały status z IndexedDB.
       // Hydrate celowo pokazuje "uploading" jako "local" w UI, ale taka
       // prezentacja nie może wyłączyć dopasowania do już zapisanej tabliczki.
-      const reconciliationPhoto = { ...photo, upload_status: record.upload_status || photo.upload_status };
+      // Restore nie może użyć cudzego lease_owner odczytanego z IDB jako
+      // uprawnienia do skasowania zdjęcia — musi przejąć własny claim.
+      const reconciliationPhoto = { ...photo, upload_status: record.upload_status || photo.upload_status, lease_owner: '' };
       const serverPhoto = await findExistingServerPhotoForQueuedPhoto({
         supabase,
         queuedPhoto: reconciliationPhoto,
