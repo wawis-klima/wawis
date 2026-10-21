@@ -58,5 +58,10 @@ assert.match(css,/\.moduleSwitcherMobile \.moduleSwitcherBtn\s*\{[\s\S]*?min-hei
 assert.match(css,/text-overflow:clip !important/);
 assert.doesNotMatch(css,/text-overflow:ellipsis/);
 assert.match(panel,/grossPriceWithEightPercentVat\(net\)/);
+assert.match(panel,/const \[expandedGroup, setExpandedGroup\] = useState\(null\)/, 'Wszystkie grupy powinny startować zwinięte.');
+assert.match(panel,/open=\{expandedGroup === group\.name\}/, 'Tylko jedna grupa może być otwarta jednocześnie.');
+assert.match(panel,/event\.preventDefault\(\)/, 'Natywne details nie może przełączać się niezależnie od stanu React.');
+assert.match(panel,/setExpandedGroup\(\(current\) => current === group\.name \? null : group\.name\)/, 'Kliknięcie drugiej grupy zwija pierwszą, a kliknięcie aktywnej ją zamyka.');
+assert.doesNotMatch(panel,/open=\{Boolean\(phrase\) \|\| index === 0\}/, 'Pierwsza grupa ani wyniki wyszukiwania nie powinny otwierać się automatycznie.');
 assert.doesNotMatch(panel,/23%|katalogow/i);
 console.log("WAWIS 13.33 cennik: PASS — 36 cen netto, 10 grup, VAT 8%, admin 4 menu, pracownik 3, bez skracania napisów.");
