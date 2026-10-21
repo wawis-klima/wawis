@@ -1,13 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.35 (przygotowanie — nie potwierdza wdrożenia)
+- 13.36 (przygotowanie do kontroli; nie potwierdza wdrożenia)
 
 ## Zakres
-- Mobilny Cennik: usunięto nagłówek „Cennik”, opis informacyjny i wyszukiwarkę.
-- Na początku ekranu są bezpośrednio grupy modeli. Odstępy między kartami bez zmian.
-- Zachowano 36 pozycji, VAT 8%, rozwijanie jednej grupy, menu admin 4 / pracownik 3.
+- Tylko CSS mobilnego Cennika: delikatnie zmniejszone odstępy i wysokości nagłówków kart.
+- Mniejsze liczniki pozycji, ale zachowane pełne nazwy, czcionka 13 px i minimalna strefa dotykowa 48 px.
+- Zachowane rozwijanie jednej grupy, wszystkie 36 cen, VAT, menu admina/pracownika i odstępy wewnątrz tabel.
 
-## Wymagane kontrole
-- CI WAWIS PR checks (regresje, smoke ceny, test mobilny dla ról i zwijania, Closure Gate, build).
-- Następnie merge do main, Vercel READY z SHA merge i potwierdzenie wersji 13.35.
+## Kontrola
+- WAWIS PR checks / targeted-checks, Playwright szerokości 320–430 px, test braku obcinania nazw, Closure Gate, build.
+- Po sukcesie merge main i Vercel READY z pasującym SHA.
