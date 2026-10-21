@@ -531,13 +531,9 @@ export async function getPhotoFileFingerprint(file) {
     const bytes = await file.arrayBuffer();
     return await digestBytes(bytes);
   } catch {
-    const fallback = new TextEncoder().encode([
-      file.name || 'zdjecie.jpg',
-      file.type || 'image/jpeg',
-      Number(file.size || 0),
-      Number(file.lastModified || 0),
-    ].join('|'));
-    return digestBytes(fallback);
+    // Metadane pliku NIE są odciskiem jego bajtów. Dwa różne zdjęcia
+    // mogą mieć identyczną nazwę, rozmiar i mtime. Nie deduplikujemy ich.
+    return '';
   }
 }
 
@@ -551,19 +547,25 @@ function buildPhotoUnitKey({ jobId, metadata = {} }) {
   ].join(':');
 }
 
-export async function createPhotoUploadIdentity({ file, jobId, metadata = {} }) {
+export async function createPhotoUploadIdentity({ file, jobId, metadata = {}, uploaderId = '' }) {
   const fileFingerprint = await getPhotoFileFingerprint(file);
+  const fingerprintStatus = fileFingerprint ? 'verified' : 'read_error';
+  // Gdy nie można odczytać bajtów, każda operacja dostaje niepowtarzalny
+  // identyfikator zamiast kolidującego "hasha" nazwy/rozmiaru/daty.
+  const nonce = fileFingerprint ? '' : (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}-${Math.random()}`);
   const unitKey = buildPhotoUnitKey({ jobId, metadata });
   const identitySource = [
     String(jobId || ''),
     metadata.photo_kind || 'photo',
     Number(metadata.device_index || 0),
     String(metadata.unit_ref || ''),
-    fileFingerprint,
+    String(uploaderId || ''),
+    fileFingerprint || `unique-read-error:${nonce}`,
   ].join('|');
   const uploadKey = await digestBytes(new TextEncoder().encode(identitySource));
   return {
     fileFingerprint,
+    fingerprintStatus,
     uploadKey,
     unitKey,
     localId: `${LOCAL_UPLOAD_PREFIX}${uploadKey}`,
@@ -583,11 +585,11 @@ function getJobDocumentationPhotoMetadata(document = {}) {
   };
 }
 
-export async function prepareJobDocumentationPhotoIdentities({ jobId, documents = [] } = {}) {
+export async function prepareJobDocumentationPhotoIdentities({ jobId, documents = [], uploaderId = '' } = {}) {
   const validDocuments = (documents || []).filter((document) => document?.file);
   return Promise.all(validDocuments.map(async (document) => {
     const metadata = getJobDocumentationPhotoMetadata(document);
-    const identity = await createPhotoUploadIdentity({ file: document.file, jobId, metadata });
+    const identity = await createPhotoUploadIdentity({ file: document.file, jobId, metadata, uploaderId });
     const plannedStoragePath = buildPhotoStoragePath(jobId, {
       id: identity.localId,
       upload_key: identity.uploadKey,
@@ -698,7 +700,7 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
   const localPreviewUrl = createLocalPreviewUrl(file);
   const resolvedIdentity = identity?.uploadKey
     ? identity
-    : await createPhotoUploadIdentity({ file, jobId, metadata });
+    : await createPhotoUploadIdentity({ file, jobId, metadata, uploaderId: uploaderId || profile?.id });
   const queuedPhoto = {
     id: resolvedIdentity.localId,
     job_id: jobId,
@@ -710,6 +712,7 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
     upload_key: resolvedIdentity.uploadKey,
     unit_key: resolvedIdentity.unitKey,
     file_fingerprint: resolvedIdentity.fileFingerprint,
+    fingerprint_status: resolvedIdentity.fingerprintStatus || 'verified',
     legacy_queue_item: false,
     uploaded_by: uploaderId || profile.id,
     created_at: createdAt,
@@ -736,7 +739,8 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
 
 async function ensureQueuedPhotoIdentity(queuedPhoto) {
   if (!queuedPhoto?.__localFile) return queuedPhoto;
-  if (queuedPhoto.upload_key && queuedPhoto.file_fingerprint && queuedPhoto.planned_storage_path) return queuedPhoto;
+  if (queuedPhoto.upload_key && queuedPhoto.planned_storage_path
+    && (queuedPhoto.file_fingerprint || queuedPhoto.fingerprint_status === 'read_error')) return queuedPhoto;
   const metadata = {
     photo_kind: queuedPhoto.photo_kind || '',
     device_index: Number(queuedPhoto.device_index || 0),
@@ -746,6 +750,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
     file: queuedPhoto.__localFile,
     jobId: queuedPhoto.job_id,
     metadata,
+    uploaderId: queuedPhoto.user_id || queuedPhoto.uploaded_by,
   });
   const wasLegacyQueueItem = !queuedPhoto.upload_key || !queuedPhoto.planned_storage_path;
   const normalized = {
@@ -753,6 +758,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
     upload_key: queuedPhoto.upload_key || identity.uploadKey,
     unit_key: queuedPhoto.unit_key || identity.unitKey,
     file_fingerprint: queuedPhoto.file_fingerprint || identity.fileFingerprint,
+    fingerprint_status: queuedPhoto.fingerprint_status || identity.fingerprintStatus,
     legacy_queue_item: Boolean(queuedPhoto.legacy_queue_item || wasLegacyQueueItem),
   };
   normalized.planned_storage_path = queuedPhoto.planned_storage_path || buildPhotoStoragePath(queuedPhoto.job_id, normalized);
@@ -761,6 +767,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
     upload_key: normalized.upload_key,
     unit_key: normalized.unit_key,
     file_fingerprint: normalized.file_fingerprint,
+    fingerprint_status: normalized.fingerprint_status,
     planned_storage_path: normalized.planned_storage_path,
     legacy_queue_item: normalized.legacy_queue_item,
   });
@@ -1402,7 +1409,7 @@ export async function uploadJobDocumentationPhotos({
 
   const preparedDocuments = validDocuments.every((document) => document?.uploadIdentity?.plannedStoragePath)
     ? validDocuments
-    : await prepareJobDocumentationPhotoIdentities({ jobId, documents: validDocuments });
+    : await prepareJobDocumentationPhotoIdentities({ jobId, documents: validDocuments, uploaderId });
 
   const queuedCandidates = await Promise.all(preparedDocuments.map((document) => createQueuedPhoto({
     file: document.file,

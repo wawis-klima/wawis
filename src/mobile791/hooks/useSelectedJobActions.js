@@ -519,7 +519,7 @@ export function useSelectedJobActions({
       // na upload. Dzięki temu timeout może potwierdzić dokładnie nowy plik, a nie
       // starszą tabliczkę tej samej JW/JZ.
       const preparedPendingDocuments = pendingDocuments.length
-        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments })
+        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments, uploaderId: profile?.id })
         : [];
 
       const uploadPromise = uploadJobDocumentationPhotos({

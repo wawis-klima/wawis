@@ -87,6 +87,7 @@ function toSerializableRecord(photo = {}) {
     upload_key: photo.upload_key || '',
     unit_key: photo.unit_key || '',
     file_fingerprint: photo.file_fingerprint || '',
+    fingerprint_status: photo.fingerprint_status || '',
     planned_storage_path: photo.planned_storage_path || photo.storage_path || '',
     legacy_queue_item: Boolean(photo.legacy_queue_item),
     local_file_name: photo.local_file_name || localFile?.name || 'zdjecie.jpg',
@@ -119,13 +120,44 @@ function toSerializableRecord(photo = {}) {
 
 export async function savePhotoQueueItem(photo) {
   if (!photo?.id || !(photo.__localFile || photo.local_file)) return false;
+  const db = await openQueueDb();
+  if (!db) return false;
   try {
-    await withStore('readwrite', (store) => store.put(toSerializableRecord(photo)));
-    dispatchQueueChanged();
-    return true;
+    const saved = await new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(String(photo.id));
+      let accepted = false;
+      request.onsuccess = () => {
+        const previous = request.result;
+        const next = toSerializableRecord(photo);
+        if (previous) {
+          // Nawet poprawny duplikat nie może nadpisać aktywnego lease,
+          // przygotowanego File ani informacji o nieudanej wysyłce.
+          const sameOwner = String(previous.user_id || previous.uploaded_by || '')
+            === String(next.user_id || next.uploaded_by || '');
+          const sameVerifiedBytes = Boolean(previous.file_fingerprint && next.file_fingerprint)
+            && previous.file_fingerprint === next.file_fingerprint
+            && previous.fingerprint_status !== 'read_error'
+            && next.fingerprint_status !== 'read_error';
+          accepted = sameOwner && sameVerifiedBytes;
+          return;
+        }
+        store.add(next);
+        accepted = true;
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się sprawdzić istniejącego zdjęcia.'));
+      transaction.oncomplete = () => resolve(accepted);
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zapisać zdjęcia w pamięci telefonu.'));
+      transaction.onabort = transaction.onerror;
+    });
+    if (saved) dispatchQueueChanged();
+    return saved;
   } catch (error) {
     console.warn('Nie udało się zapisać zdjęcia w pamięci telefonu.', error?.message || error);
     return false;
+  } finally {
+    db.close();
   }
 }
 
@@ -325,6 +357,7 @@ export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {
     upload_key: record.upload_key || '',
     unit_key: record.unit_key || '',
     file_fingerprint: record.file_fingerprint || '',
+    fingerprint_status: record.fingerprint_status || '',
     legacy_queue_item: Boolean(record.legacy_queue_item),
     uploaded_by: record.uploaded_by || '',
     user_id: record.user_id || record.uploaded_by || '',
