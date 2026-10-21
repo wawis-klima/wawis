@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { grossPriceWithEightPercentVat, PRICE_LIST_GROUPS, PRICE_LIST_TOTAL_ROWS } from "./pricelist-data.js";
-import "./pricelist-mobile.css";
 
 const money = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 });
 
