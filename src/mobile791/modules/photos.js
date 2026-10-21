@@ -1446,10 +1446,8 @@ export async function uploadJobPhotos({
   const queuedCandidates = await Promise.all(files.map((file) => createQueuedPhoto({ file, jobId, profile, uploaderId })));
   if (!photoSessionIsCurrent(isSessionCurrent)) return { queuedCount: 0, uploadedCount: 0, failedCount: 0, ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
-  queuedPhotos.forEach((photo) => {
-    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
-    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
-  });
+  // UI nie może wyświetlać "Zapisano na telefonie" przed zakończeniem
+  // transakcji IndexedDB.
   const persistenceResults = await Promise.all(queuedPhotos.map(async (photo) => ({
     photo,
     saved: await savePhotoQueueItem(photo),
@@ -1457,8 +1455,20 @@ export async function uploadJobPhotos({
   const persistedPhotos = persistenceResults.filter((item) => item.saved).map((item) => item.photo);
   const failedPhotos = persistenceResults.filter((item) => !item.saved).map((item) => item.photo);
 
+  persistedPhotos.forEach((photo) => {
+    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
+    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
+  });
   failedPhotos.forEach((photo) => {
-    applyPhotoRemoval({ photo, setJobs, setSelectedJob });
+    // Zostawiamy File w pamięci bieżącej karty, żeby ręczne "Ponów"
+    // mogło ponownie wykonać transakcję IDB. NIE oznaczamy go jako trwały.
+    const unsafePhoto = {
+      ...photo, local_persistence_failed: true,
+      upload_status: 'error', upload_status_label: 'Nie zapisano na telefonie',
+      upload_error: 'Nie można zapisać zdjęcia w pamięci telefonu. Nie zamykaj karty; użyj Ponów lub wybierz plik ponownie.',
+    };
+    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, unsafePhoto)));
+    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, unsafePhoto) : prev));
   });
 
   if (failedPhotos.length) {
@@ -1532,14 +1542,19 @@ export async function uploadJobDocumentationPhotos({
   if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
 
-  queuedPhotos.forEach((photo) => {
-    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
-    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
-  });
-
   const persisted = await Promise.all(queuedPhotos.map((photo) => savePhotoQueueItem(photo)));
   const failedToPersist = persisted.filter((saved) => !saved).length;
+  queuedPhotos.forEach((photo, index) => {
+    const displayed = persisted[index] ? photo : {
+      ...photo, local_persistence_failed: true,
+      upload_status: 'error', upload_status_label: 'Nie zapisano na telefonie',
+      upload_error: 'Brak trwałej kopii w pamięci telefonu — nie zamykaj formularza, ponów zapis.',
+    };
+    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, displayed)));
+    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, displayed) : prev));
+  });
   if (failedToPersist) {
+    onPhotoUploadError?.(new Error('Nie udało się trwale zapisać tabliczek na telefonie. Nie zamykaj formularza.'));
     return { uploadedCount: 0, queuedCount: queuedPhotos.length - failedToPersist, failedCount: failedToPersist, photos: [] };
   }
 
@@ -1833,6 +1848,25 @@ export function retryQueuedJobPhoto({
     if (!photoSessionIsCurrent(isSessionCurrent)) return;
     const record = records.find((item) => String(item.id) === String(photo.id));
     if (record) queuedPhoto = hydratePhotoQueueItem(record, createLocalPreviewUrl);
+
+    // Rekord nie istnieje po nieudanej transakcji IDB. Ponów musi NAJPIERW
+    // trwale zachować File, a dopiero potem rozpoczynać upload.
+    if (!record && queuedPhoto?.__localFile && queuedPhoto.local_persistence_failed) {
+      const restored = await savePhotoQueueItem({
+        ...queuedPhoto, upload_status: 'local',
+        upload_status_label: 'Zapisano na telefonie', upload_error: '',
+        local_persistence_failed: false,
+      });
+      if (!restored) {
+        onPhotoUploadError?.(new Error('Ponowny zapis w pamięci telefonu nie powiódł się. Nie zamykaj karty.'), photo);
+        return;
+      }
+      queuedPhoto = { ...queuedPhoto, local_persistence_failed: false };
+    }
+    if (!record && !queuedPhoto?.local_persistence_failed && !queuedPhoto?.__localFile) {
+      onPhotoUploadError?.(new Error('Brak lokalnego pliku. Wybierz zdjęcie ponownie.'), photo);
+      return;
+    }
 
     if (!queuedPhoto?.__localFile) {
       const missingFilePatch = {
