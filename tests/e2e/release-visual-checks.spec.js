@@ -229,6 +229,11 @@ test.describe('@mobile release visual iPhone', () => {
     const allGroups = page.locator('.wawisPricelistGroup');
     await expect(allGroups).toHaveCount(10);
     await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
+    // Dwie długie nazwy Hiro skrócone dokładnie tak samo na każdym mobilnym rozmiarze.
+    await expect(page.locator('.wawisPricelistCompactMulti')).toHaveText([
+      'Rotenso Hiro Multi Jedn. Zew.',
+      'Rotenso Hiro Imoto Multi Jedn. Wew.',
+    ]);
     // Kompaktowość bez obcinania nazw i zmniejszania stref dotykowych poniżej 44 px.
     for (const width of [320, 375, 390, 430]) {
       await page.setViewportSize({ width, height: 844 });
@@ -264,6 +269,26 @@ test.describe('@mobile release visual iPhone', () => {
           rows,
         };
       });
+      const labels = await page.locator('.wawisPricelistCompactMulti').evaluateAll((nodes) =>
+        nodes.map(node => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return {
+            label: node.textContent.trim(),
+            height: rect.height,
+            lineHeight: parseFloat(style.lineHeight),
+            scrollWidth: node.scrollWidth,
+            clientWidth: node.clientWidth,
+            whiteSpace: style.whiteSpace,
+          };
+        })
+      );
+      expect(labels).toHaveLength(2);
+      for (const label of labels) {
+        expect(label.whiteSpace).toBe('nowrap');
+        expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+        expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth + 1);
+      }
       expect(compact.count).toBe(10);
       expect(compact.declaredGap).toBeLessThanOrEqual(7);
       expect(compact.maxGap).toBeLessThanOrEqual(8);
