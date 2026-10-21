@@ -221,7 +221,10 @@ test.describe('@mobile release visual iPhone', () => {
       await inspectMenuRow(page, names);
     }
     await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
-    await expect(page.getByRole('heading', { name: 'Cennik', exact: true })).toBeVisible();
+    await expect(page.locator('.wawisPricelist')).toBeVisible();
+    await expect(page.locator('.wawisPricelistIntro')).toHaveCount(0);
+    await expect(page.locator('.wawisPricelistSearch')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Cennik', exact: true })).toHaveCount(0);
     await expect(page.getByText(/36 pozycji z cennika WAWIS/)).toBeVisible();
     const allGroups = page.locator('.wawisPricelistGroup');
     await expect(allGroups).toHaveCount(10);
@@ -241,8 +244,8 @@ test.describe('@mobile release visual iPhone', () => {
     // Ponowne kliknięcie tej samej grupy ją zamyka.
     await imoto.locator('summary').click();
     await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
-    await page.getByPlaceholder('Np. Imoto, Roni, 3,5 kW').fill('Hiro');
-    await expect(page.locator('.wawisPricelistGroup')).toHaveCount(2);
+    // Brak wyszukiwarki: po zamknięciu IMOTO nadal widać wszystkie modele.
+    await expect(page.locator('.wawisPricelistGroup')).toHaveCount(10);
     await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
     const hiroOutdoor = page.locator('.wawisPricelistGroup').filter({ has: page.locator('summary', { hasText: 'jednostki zewnętrzne Multi' }) });
     await hiroOutdoor.locator('summary').click();
@@ -262,7 +265,10 @@ test.describe('@mobile release visual iPhone', () => {
       await inspectMenuRow(page,names);
     }
     await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
-    await expect(page.getByRole('heading', { name: 'Cennik',exact: true })).toBeVisible();
+    await expect(page.locator('.wawisPricelist')).toBeVisible();
+    await expect(page.locator('.wawisPricelistIntro')).toHaveCount(0);
+    await expect(page.locator('.wawisPricelistSearch')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Cennik', exact: true })).toHaveCount(0);
     await expect(page.getByText(/36 pozycji z cennika WAWIS/)).toBeVisible();
     await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
     await inspectMenuRow(page,names);
