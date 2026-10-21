@@ -1,13 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.34 (PR, przed zakończeniem produkcyjnego wdrożenia)
+- 13.35 (przygotowanie — nie potwierdza wdrożenia)
 
-## Zmiana
-- Mobile Cennik: stan początkowy wszystkich grup zwinięty; zawsze co najwyżej jedna grupa rozwinięta.
-- Kliknięcie innej grupy zwija poprzednią, ponowne kliknięcie tej samej zwija ją.
-- Bez zmian w 36 cenach, VAT, przyciskach menu, rolach, backendzie, PDF, PUSH.
+## Zakres
+- Mobilny Cennik: usunięto nagłówek „Cennik”, opis informacyjny i wyszukiwarkę.
+- Na początku ekranu są bezpośrednio grupy modeli. Odstępy między kartami bez zmian.
+- Zachowano 36 pozycji, VAT 8%, rozwijanie jednej grupy, menu admin 4 / pracownik 3.
 
-## Weryfikacja przed wdrożeniem
-- WAWIS PR checks: smoke Cennika, Playwright (administrator/pracownik), Closure Gate i build.
-- Po zielonym CI: merge do main i potwierdzenie Vercel READY z tym samym SHA.
+## Wymagane kontrole
+- CI WAWIS PR checks (regresje, smoke ceny, test mobilny dla ról i zwijania, Closure Gate, build).
+- Następnie merge do main, Vercel READY z SHA merge i potwierdzenie wersji 13.35.

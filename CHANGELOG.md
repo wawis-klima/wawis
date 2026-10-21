@@ -1,3 +1,9 @@
+## 13.35
+- Mobile / Cennik: usunięto górny panel z nagłówkiem, opisem „Ceny po rabacie…” i wyszukiwarką.
+- Lista modeli jest pierwszym elementem pod menu. Nie zmieniono wysokości kart ani odstępów między modelami.
+- Zachowano wszystkie 10 grup, 36 pozycji, ceny netto i 8% VAT, automatyczne zwijanie oraz pełne napisy czterech przycisków.
+- Testy: admin i pracownik widzą modele bez górnego panelu; sekwencja UKURA → IMOTO i istniejące regresje modułów.
+
 ## 13.34
 - Mobile / Cennik: wszystkie 10 grup Rotenso domyślnie zwinięte.
 - Kliknięcie jednego modelu otwiera go i automatycznie zwija poprzedni. Ponowne kliknięcie aktywnego modelu zamyka go.

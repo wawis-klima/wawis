@@ -58,6 +58,9 @@ assert.match(css,/\.moduleSwitcherMobile \.moduleSwitcherBtn\s*\{[\s\S]*?min-hei
 assert.match(css,/text-overflow:clip !important/);
 assert.doesNotMatch(css,/text-overflow:ellipsis/);
 assert.match(panel,/grossPriceWithEightPercentVat\(net\)/);
+assert.match(panel,/\{PRICE_LIST_GROUPS\.map\(\(group\) => \(/, 'Lista modeli ma wyświetlać wszystkie grupy.');
+assert.doesNotMatch(panel,/wawisPricelistIntro|wawisPricelistSearch|wawis-pricelist-search|Szukaj modelu lub mocy|Ceny po rabacie|<h1>Cennik<\/h1>/, 'Usuwamy cały górny blok tytułu, opisu i wyszukiwarki.');
+assert.doesNotMatch(panel,/useMemo|setQuery|const phrase =|matchName|Nie znaleziono modelu/, 'Wyszukiwanie i filtrowanie muszą zostać usunięte, nie tylko ukryte.');
 assert.match(panel,/const \[expandedGroup, setExpandedGroup\] = useState\(null\)/, 'Wszystkie grupy powinny startować zwinięte.');
 assert.match(panel,/open=\{expandedGroup === group\.name\}/, 'Tylko jedna grupa może być otwarta jednocześnie.');
 assert.match(panel,/event\.preventDefault\(\)/, 'Natywne details nie może przełączać się niezależnie od stanu React.');
