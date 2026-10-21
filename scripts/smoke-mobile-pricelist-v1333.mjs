@@ -57,7 +57,7 @@ assert.match(css,/\.moduleSwitcherMobile\.isWorker\s*\{\s*grid-template-columns:
 assert.match(css,/\.moduleSwitcherMobile \.moduleSwitcherBtn\s*\{[\s\S]*?min-height:44px !important/);
 assert.match(css,/text-overflow:clip !important/);
 assert.match(css,/\.wawisPricelistGroups \{ display:grid; gap:7px;/, 'Grupy muszą mieć mniejsze odstępy.');
-assert.match(css,/\.wawisPricelistGroupTitle \{[^}]*min-height:48px;[^}]*padding:9px 11px;/, 'Karty mają być niższe, ale z wygodnym obszarem dotykowym.');
+assert.match(css,/\.wawisPricelistGroupTitle \{[^}]*min-height:44px;[^}]*padding:7px 11px;/, 'Karty mają mniejsze pionowe wypełnienie i strefę dotyku co najmniej 44 px.');
 assert.match(css,/\.wawisPricelistCount \{[^}]*min-width:22px; height:22px;/, 'Licznik pozycji ma być kompaktowy.');
 assert.match(css,/\.wawisPricelistGroupTitle \{[^}]*font-size:13px;/, 'Nie zmieniamy wielkości czcionki modeli.');
 assert.doesNotMatch(css,/text-overflow:ellipsis/);
@@ -76,4 +76,4 @@ assert.match(panel,/event\.preventDefault\(\)/, 'Natywne details nie może prze�
 assert.match(panel,/setExpandedGroup\(\(current\) => current === group\.name \? null : group\.name\)/, 'Kliknięcie drugiej grupy zwija pierwszą, a kliknięcie aktywnej ją zamyka.');
 assert.doesNotMatch(panel,/open=\{Boolean\(phrase\) \|\| index === 0\}/, 'Pierwsza grupa ani wyniki wyszukiwania nie powinny otwierać się automatycznie.');
 assert.doesNotMatch(panel,/23%|katalogow/i);
-console.log("WAWIS 13.33 cennik: PASS — 36 cen netto, 10 grup, VAT 8%, admin 4 menu, pracownik 3, bez skracania napisów.");
+console.log("WAWIS 13.38 cennik: PASS — 36 cen netto, 10 grup, VAT 8%, admin 4 menu, pracownik 3, bez skracania napisów.");

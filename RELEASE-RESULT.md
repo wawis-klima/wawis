@@ -1,14 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.37 (przygotowanie — do potwierdzenia po CI i Vercel)
+- 13.38 (przygotowanie — do potwierdzenia po CI i Vercel)
 
 ## Zakres
-- Mobile / Cennik: skrócone wyłącznie dwie etykiety grup Hiro Multi.
-- „Rotenso Hiro Multi Jedn. Zew.” i „Rotenso Hiro Imoto Multi Jedn. Wew.” wyświetlane w jednym wierszu.
-- Bez zmian w danych, 36 cenach, VAT, menu, rolach, protokołach i backendzie.
+- Mobile / Cennik: wysokość białych kart grup Rotenso min. 44 px zamiast 48 px; padding pionowy 7 px zamiast 9 px.
+- Wysokość długich dwuwierszowych nazw pozostaje elastyczna, bez obcinania.
+- Bez zmian rozmiaru czcionki, liczników, przerw między kartami, danych, 36 cen, VAT, ról, protokołów, PUSH i backendu.
 
 ## Kontrola
-- Testy mobilne Playwright 320–430 px: jednoznaczne napisy, jedna linia bez obcięć.
-- Smoke ceny, role, układ kart, zamykanie grup; Closure Gate i build.
-- Po sukcesie merge do main, Vercel READY z nowym SHA.
+- Smoke CSS + ceny i role; Playwright iPhone 320–430px (min. 44 px, padding 7 px, brak overflow, rozwijanie).
+- Po zielonym CI: merge do main i Vercel READY z nowym SHA; potwierdzić aplikację 13.38.

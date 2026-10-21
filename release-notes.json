@@ -1,9 +1,9 @@
 {
-  "version": "13.37",
-  "summary": "Jednowierszowe nazwy grup Hiro Multi w Cenniku",
+  "version": "13.38",
+  "summary": "Niższe karty modeli w mobilnym Cenniku",
   "changes": [
-    "Rotenso Hiro Multi Jedn. Zew.",
-    "Rotenso Hiro Imoto Multi Jedn. Wew.",
-    "Bez zmian cen, VAT i układu innych kart."
+    "Białe karty: min. 44 px zamiast 48 px; padding pionowy 7 px zamiast 9 px.",
+    "Długie nazwy nadal zawijają się bez obcinania; nie zmieniamy wielkości czcionki ani liczników.",
+    "Bez zmian 36 cen netto, VAT, menu, tabel cen oraz innych modułów."
   ]
 }
