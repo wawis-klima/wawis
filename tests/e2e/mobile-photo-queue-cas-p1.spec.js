@@ -110,6 +110,51 @@ test.describe('@mobile queue fencing / owner / recovery', () => {
     expect(result.bytes).toBe('important-original-blob');
   });
 
+  test('ręczne Ponów w drugiej karcie nie przejmuje aktywnego lease pierwszego workera', async ({ browser }) => {
+    const ctx = await browser.newContext(iphone14);
+    try {
+      const a = await ctx.newPage(), b = await ctx.newPage();
+      await setup(a); await setup(b);
+      const owner = await a.evaluate(async () => {
+        const q = await import('/src/mobile791/modules/photo-offline-queue.js');
+        for (const x of await q.listPhotoQueueItems()) await q.deletePhotoQueueItem(x.id);
+        const id = 'local-photo-upload-foreign-lease';
+        const saved = await q.savePhotoQueueItem({
+          id, job_id:'claim-j1', uploaded_by:'worker1', upload_key:'claim-id',
+          photo_kind:'nameplate',device_index:1,unit_ref:'jz',
+          planned_storage_path:'claim-j1/nameplates/claim-id.jpg',
+          local_file:new File(['precious-bytes'],'test.jpg',{type:'image/jpeg'}),
+        });
+        if(!saved) throw new Error('Fixture failed');
+        const claim=await q.claimPhotoQueueItem(id);
+        return {lease_owner:claim.lease_owner, attempt_generation:claim.attempt_generation};
+      });
+      const tried = await b.evaluate(async () => {
+        const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+        const photos=await import('/src/mobile791/modules/photos.js');
+        const p=(await q.listPhotoQueueItems()).find(x=>x.id==='local-photo-upload-foreign-lease');
+        let networkRequests=0;
+        const adapter={
+          auth:{getUser:async()=>({data:{user:{id:'worker1'}},error:null})},
+          from(){throw new Error('Ponów MUST NOT reach database while foreign lease active')},
+          storage:{from(){return{upload:async()=>{networkRequests++;return{data:null,error:null}}}}}
+        };
+        const attempted=photos.retryQueuedJobPhoto({
+          supabase:adapter,profile:{id:'worker1'},photo:p,
+          setJobs:()=>{},setSelectedJob:()=>{}
+        });
+        await new Promise(resolve=>setTimeout(resolve,250));
+        const current=(await q.listPhotoQueueItems()).find(x=>x.id===p.id);
+        return {attempted,networkRequests,bytes:await current.local_file.text(),
+          lease_owner:current.lease_owner,gen:current.attempt_generation};
+      });
+      expect(tried.networkRequests).toBe(0);
+      expect(tried.lease_owner).toBe(owner.lease_owner);
+      expect(tried.gen).toBe(owner.attempt_generation);
+      expect(tried.bytes).toBe('precious-bytes');
+    } finally { await ctx.close(); }
+  });
+
   test('error 403 jest zachowany, a automatyczne wznowienie nie wysyła go ponownie', async ({ page }) => {
     await setup(page);
     const result=await page.evaluate(async () => {
