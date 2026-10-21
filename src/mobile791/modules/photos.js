@@ -776,7 +776,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
   };
   normalized.planned_storage_path = queuedPhoto.planned_storage_path || buildPhotoStoragePath(queuedPhoto.job_id, normalized);
   normalized.storage_path = normalized.planned_storage_path;
-  await updatePhotoQueueItem(queuedPhoto.id, {
+  const identityPersisted = await updatePhotoQueueItem(queuedPhoto.id, {
     upload_key: normalized.upload_key,
     unit_key: normalized.unit_key,
     file_fingerprint: normalized.file_fingerprint,
@@ -784,7 +784,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
     planned_storage_path: normalized.planned_storage_path,
     legacy_queue_item: normalized.legacy_queue_item,
   }, photoQueueWriteGuard(queuedPhoto));
-  return normalized;
+  return identityPersisted ? normalized : null;
 }
 
 const PHOTO_RECONCILIATION_SELECT = 'id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at';
@@ -992,7 +992,7 @@ async function performQueuedPhotoUpload({
 
   const allowLegacyNameplate = Boolean(queuedPhoto.legacy_queue_item || !queuedPhoto.upload_key || !queuedPhoto.planned_storage_path);
   queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
-  if (!photoSessionIsCurrent(isSessionCurrent)) return null;
+  if (!queuedPhoto || !photoSessionIsCurrent(isSessionCurrent)) return null;
   const jobId = queuedPhoto.job_id;
   const localPhotoId = queuedPhoto.id;
   const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url;
@@ -1064,7 +1064,7 @@ async function performQueuedPhotoUpload({
     setSelectedJob,
     updater: uploadingPatch,
   });
-  await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto));
+  if (!(await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto)))) return null;
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
   let storagePath = queuedPhoto.planned_storage_path || buildPhotoStoragePath(jobId, queuedPhoto);
@@ -1120,7 +1120,7 @@ async function performQueuedPhotoUpload({
       }),
     });
 
-    await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto));
+    if (!(await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto)))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     const { error: uploadError } = await supabase.storage
@@ -1129,10 +1129,10 @@ async function performQueuedPhotoUpload({
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     if (uploadError && !isDuplicateStorageError(uploadError)) throw uploadError;
     storageExists = true;
-    await updatePhotoQueueItem(localPhotoId, {
+    if (!(await updatePhotoQueueItem(localPhotoId, {
       upload_stage: 'storage_uploaded',
       lease_until: new Date(Date.now() + PHOTO_UPLOAD_LEASE_MS).toISOString(),
-    }, photoQueueWriteGuard(queuedPhoto));
+    }, photoQueueWriteGuard(queuedPhoto)))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     if (uploadError && isDuplicateStorageError(uploadError)) {
@@ -1299,16 +1299,21 @@ async function uploadQueuedPhoto(options = {}) {
     return activePhotoUploadPromises.get(lockKey);
   }
   const uploadPromise = (async () => {
-    const alreadyClaimed = Boolean(queuedPhoto.lease_owner);
-    const claim = alreadyClaimed ? queuedPhoto : await claimPhotoQueueItem(queuedPhoto.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS });
-    if (!claim) return null;
+    // Hydrated rekord z obcym lease_owner NIE stanowi claim. Wyłącznie
+    // bezpośrednio otrzymany token z atomowego claimPhotoQueueItem jest ważny.
+    const trustedClaim = options.trustedQueueClaim || null;
+    const ownClaim = !trustedClaim;
+    const claim = trustedClaim || await claimPhotoQueueItem(queuedPhoto.id, {
+      leaseMs: PHOTO_UPLOAD_LEASE_MS, force: options.manualRetry === true,
+    });
+    if (!claim || String(claim.id) !== String(queuedPhoto.id)) return null;
     try {
       return await performQueuedPhotoUpload({
         ...options,
         queuedPhoto: { ...queuedPhoto, lease_owner: claim.lease_owner, attempt_generation: claim.attempt_generation },
       });
     } finally {
-      if (!alreadyClaimed) await releaseClaimedPhotoQueueItem(queuedPhoto.id, claim);
+      if (ownClaim) await releaseClaimedPhotoQueueItem(queuedPhoto.id, claim);
     }
   })().finally(() => {
     if (activePhotoUploadPromises.get(lockKey) === uploadPromise) {
@@ -1625,6 +1630,7 @@ export async function restorePersistedJobPhotos({
     if (supabase && !isBrowserOffline()) {
       const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
       photo = await ensureQueuedPhotoIdentity(photo);
+      if (!photo) continue;
       if (!photoSessionIsCurrent(isSessionCurrent)) return hydratedPhotos;
       // Dla dopasowania starej JZ/JW zachowujemy trwały status z IndexedDB.
       // Hydrate celowo pokazuje "uploading" jako "local" w UI, ale taka
@@ -1710,6 +1716,7 @@ async function runPersistedPhotoUploads({
     queuedPhoto.attempt_generation = record.attempt_generation;
     const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
     queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
+    if (!queuedPhoto) continue;
     if (!photoSessionIsCurrent(isSessionCurrent)) break;
 
     const serverPhoto = await findExistingServerPhotoForQueuedPhoto({
@@ -1749,6 +1756,7 @@ async function runPersistedPhotoUploads({
       supabase,
       profile,
       queuedPhoto,
+      trustedQueueClaim: record,
       compressImageFn,
       setJobs: guardedSetJobs,
       setSelectedJob: guardedSetSelectedJob,
@@ -1852,6 +1860,7 @@ export function retryQueuedJobPhoto({
       supabase,
       profile,
       queuedPhoto,
+      manualRetry: true,
       compressImageFn: effectiveCompressImageFn,
       setJobs,
       setSelectedJob,
