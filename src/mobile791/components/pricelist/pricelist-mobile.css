@@ -9,6 +9,12 @@
 .wawisPricelistGroup { overflow:hidden; min-width:0; border:1px solid #dce5ef; background:#fff; border-radius:15px; }
 .wawisPricelistGroupTitle { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:48px; padding:9px 11px; box-sizing:border-box; cursor:pointer; color:#172b45; font-weight:850; font-size:13px; line-height:1.3; }
 .wawisPricelistGroupTitle > span:first-child { flex:1; min-width:0; overflow-wrap:break-word; }
+.wawisPricelistGroupTitle .wawisPricelistCompactMulti {
+  white-space:nowrap;
+  overflow-wrap:normal;
+  font-size:clamp(11.5px, 3.25vw, 13px);
+  letter-spacing:-.15px;
+}
 .wawisPricelistGroupTitle::marker { color:#4a6280; }
 .wawisPricelistCount { display:inline-flex; justify-content:center; align-items:center; flex-shrink:0; min-width:22px; height:22px; border-radius:9px; background:#edf3fc; color:#385b8e; font-size:11px; font-weight:850; }
 .wawisPricelistGrid { min-width:0; width:100%; padding:0 7px 8px; box-sizing:border-box; }

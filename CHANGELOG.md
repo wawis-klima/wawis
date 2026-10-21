@@ -1,3 +1,9 @@
+## 13.37
+- Mobile / Cennik: dwie nazwy grup skrócono do „Rotenso Hiro Multi Jedn. Zew.” oraz „Rotenso Hiro Imoto Multi Jedn. Wew.”.
+- Tylko wyświetlane etykiety są krótsze; nazwy danych źródłowych, 36 cen, stawka VAT, liczba jednostek, odstępy kart, rozmiary licznika, autozwijanie i menu są nietknięte.
+- Lokalna adaptacja czcionki tylko dla dwóch grup Multi pozwala zmieścić je w jednym wierszu bez ucinania.
+- Regresja na ekranach mobilnych 320/375/390/430 px, brak zawijania i overflow, niezmienione klikanie kart i menu.
+
 ## 13.36
 - Mobilny Cennik: odstępy między modelami 10 → 7 px, karty niższe dzięki paddingowi 13 → 9 px przy zachowaniu minimum 48 px wysokości nagłówka.
 - Nie zmieniono czcionki nazw (13 px), pełnych etykiet, modeli, ich kolejności ani cen. Liczniki pozycji zmniejszone 24 → 22 px.

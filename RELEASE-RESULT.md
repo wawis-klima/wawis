@@ -1,13 +1,14 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.36 (przygotowanie do kontroli; nie potwierdza wdrożenia)
+- 13.37 (przygotowanie — do potwierdzenia po CI i Vercel)
 
 ## Zakres
-- Tylko CSS mobilnego Cennika: delikatnie zmniejszone odstępy i wysokości nagłówków kart.
-- Mniejsze liczniki pozycji, ale zachowane pełne nazwy, czcionka 13 px i minimalna strefa dotykowa 48 px.
-- Zachowane rozwijanie jednej grupy, wszystkie 36 cen, VAT, menu admina/pracownika i odstępy wewnątrz tabel.
+- Mobile / Cennik: skrócone wyłącznie dwie etykiety grup Hiro Multi.
+- „Rotenso Hiro Multi Jedn. Zew.” i „Rotenso Hiro Imoto Multi Jedn. Wew.” wyświetlane w jednym wierszu.
+- Bez zmian w danych, 36 cenach, VAT, menu, rolach, protokołach i backendzie.
 
 ## Kontrola
-- WAWIS PR checks / targeted-checks, Playwright szerokości 320–430 px, test braku obcinania nazw, Closure Gate, build.
-- Po sukcesie merge main i Vercel READY z pasującym SHA.
+- Testy mobilne Playwright 320–430 px: jednoznaczne napisy, jedna linia bez obcięć.
+- Smoke ceny, role, układ kart, zamykanie grup; Closure Gate i build.
+- Po sukcesie merge do main, Vercel READY z nowym SHA.
