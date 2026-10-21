@@ -1,9 +1,9 @@
 {
-  "version": "13.39",
-  "summary": "Stabilniejsze wznowienie mobilnej kolejki zdjęć",
+  "version": "13.40",
+  "summary": "P0: bezpieczne uzgadnianie starych zdjęć tabliczek",
   "changes": [
-    "Kolejka zdjęć nie przerywa uzgadniania podczas aktualizacji licznika.",
-    "Osierocone przejęcia zwalniane bez usunięcia zdjęcia i bez naruszenia innej sesji.",
-    "Historyczne tabliczki JZ/JW uzgadniane na podstawie statusu z pamięci telefonu; rozszerzone testy Playwright."
+    "Brak automatycznego usunięcia niewysłanego zdjęcia po dopasowaniu wyłącznie metadanych tej samej jednostki.",
+    "Usunięcie lokalnego File dopiero przy dopasowaniu dokładnej ścieżki przesłanej operacji.",
+    "Regresje Playwright IndexedDB: dwie karty, ponowne otwarcie, błąd wysyłania i poprawne potwierdzenie."
   ]
 }
