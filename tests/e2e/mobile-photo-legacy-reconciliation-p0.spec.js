@@ -120,6 +120,7 @@ test.describe('@mobile P0 — legacy tabliczki w trwałej kolejce', () => {
       expect(first.remainingCount).toBe(1);
       expect(first.preservedId).toBe(true);
       expect(first.preservedOriginalBytes).toBe('WAWIS-NEW-NAMEPLATE-CONTENT-P0');
+      expect(first.preservedStatus).toBe(status);
       expect(first.displayedServerIds).toEqual([]);
       expect(first.displayedLocalIds).toEqual(['legacy-photo-p0-synthetic']);
 
