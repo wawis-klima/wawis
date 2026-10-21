@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.36",
+  "version": "13.37",
   "scope": "mobile",
-  "release_branch": "release/v13.36",
+  "release_branch": "release/v13.37",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Wyłącznie CSS kart mobilnego Cennika; bez danych, Supabase, fakturowania lub protokołów."
+    "notes": "Tylko etykiety dwóch grup Hiro Multi w mobilnym Cenniku, bez backendu i zmian danych."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.36.zip"
+    "file_name": "klima-app-v13.37.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.36",
+    "source_branch": "release/v13.37",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY z produkcyjnym SHA main oraz wersja 13.36 na iPhone",
-    "notes": "Zatwierdzić mniejsze przerwy, pełne nazwy w kartach, rozwijanie, czytelność na rzeczywistym iPhonie."
+    "evidence_source": "Vercel READY SHA produkcyjny i aktywna wersja 13.37 na iPhonie",
+    "notes": "Na kartach Hiro widoczne krótkie Jedn. Zew./Jedn. Wew. w jednej linii; liczby i ceny bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Zmiana tylko wizualnych rozmiarów kart mobilnego Cennika; menu, dane cenowe i backend bez zmian.",
-    "release_ci": "Smoke 36 cen + kompaktowa stylizacja CSS, Playwright 320–430 px i karty min 44 px bez ucięć, Closure Gate, build.",
-    "post_deploy": "Vercel READY dla SHA merge, wersja 13.36 na iPhonie, pełne nazwy bez obcięć."
+    "code": "Mobile-only display label mapping for two Hiro Multi groups + narrow viewport CSS; price source unchanged.",
+    "release_ci": "Smoke 36 cen + E2E iPhone 320–430 px for one-line labels and menu + Closure Gate + build.",
+    "post_deploy": "Vercel READY matching new main SHA, version 13.37 and labels visible on iPhone."
   }
 }
