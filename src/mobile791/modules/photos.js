@@ -803,8 +803,6 @@ function isZeroBytePhotoError(error) {
 // P0-R1: rekord bazy i poprawny signed URL nie potwierdzają istnienia
 // konkretnych bajtów w prywatnym Storage. Nigdy nie kasujemy ostatniej
 // lokalnej kopii po samym dopasowaniu storage_path.
-const validatedRemotePhotoRows = new WeakSet();
-
 async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile, throwOnTransient = false }) {
   if (!storagePath || !uploadFile || !globalThis.crypto?.subtle?.digest
     || !Number.isFinite(uploadFile.size) || uploadFile.size <= 0) return false;
@@ -925,17 +923,16 @@ async function reconcileQueuedPhotoFromServer({
     console.warn('Niepotwierdzona tożsamość tabliczki na serwerze; zachowano lokalną kopię.');
     return null;
   }
-  if (!validatedRemotePhotoRows.has(serverPhoto)
-    && !(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) {
-    return null;
-  }
-  if (!photoSessionIsCurrent(isSessionCurrent)) return null;
   // Reconciliation z odtworzenia również musi przejąć własny lease.
   // NIGDY nie usuwamy pliku, nad którym pracuje inna karta/worker.
   const ownClaim = queuedPhoto.lease_owner ? null : await claimPhotoQueueItem(queuedPhoto.id);
   const effectiveClaim = ownClaim || (queuedPhoto.lease_owner ? queuedPhoto : null);
   if (!effectiveClaim) return null;
   try {
+    // Dopiero własny atomowy claim uprawnia do kosztownego sprawdzania bajtów.
+    // Zawsze ponownie weryfikujemy Storage; żaden cache JS nie zastępuje ACK.
+    if (!photoSessionIsCurrent(isSessionCurrent)
+      || !(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url || '';
     const photoForUi = await createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl });
@@ -970,8 +967,8 @@ async function findExistingServerPhotoForQueuedPhoto({ supabase, queuedPhoto, al
   // Nigdy nie ufamy samemu job/unit/uploader/time; dokładna ścieżka jest
   // wymagana również przed przekazaniem rekordu do reconciliation.
   if (!serverPhoto || String(serverPhoto.storage_path || '').trim() !== storagePath) return null;
-  if (!(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) return null;
-  validatedRemotePhotoRows.add(serverPhoto);
+  // Sprawdzanie bajtów jest wykonywane wyłącznie przez reconcile po
+  // uzyskaniu lease; bez tej blokady inne okno wykonywało drogie readback.
   return serverPhoto;
 }
 
