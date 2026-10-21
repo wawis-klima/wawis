@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './styles.css'
+// Menu Cennik musi mieć swój bezpieczny układ już przy pierwszym starcie aplikacji.
+import './components/pricelist/pricelist-mobile.css'
 import './styles/desktop-jobs-table.css'
 import './v1056-new-job-spacing.css'
 import './v1062-contractors-mobile.css'
