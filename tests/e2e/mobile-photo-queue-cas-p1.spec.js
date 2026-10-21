@@ -79,6 +79,37 @@ test.describe('@mobile queue fencing / owner / recovery', () => {
     } finally { await ctx.close(); }
   });
 
+  test('stary snapshot nie kasuje przedłużonego lease tej samej generacji', async ({ page }) => {
+    await setup(page);
+    const result = await page.evaluate(async () => {
+      const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+      for (const old of await queue.listPhotoQueueItems()) await queue.deletePhotoQueueItem(old.id);
+      await queue.savePhotoQueueItem({
+        id: 'lease-extension', job_id: 'cas-job', uploaded_by: 'ownerA',
+        local_file: new File(['important-original-blob'], 'photo.jpg', { type: 'image/jpeg' }),
+      });
+      const claim = await queue.claimPhotoQueueItem('lease-extension');
+      const guard = { expectedLeaseOwner: claim.lease_owner, expectedGeneration: claim.attempt_generation };
+      const staleLease = '2000-01-01T00:00:00.000Z';
+      const renewedLease = new Date(Date.now() + 180_000).toISOString();
+      const madeStale = await queue.updatePhotoQueueItem('lease-extension', { lease_until: staleLease }, guard);
+      const renewed = await queue.updatePhotoQueueItem('lease-extension', { lease_until: renewedLease }, guard);
+      const staleReset = await queue.updatePhotoQueueItem('lease-extension', { upload_status: 'local', lease_owner: '' },
+        { ...guard, expectedLeaseUntil: staleLease });
+      const latest = (await queue.listPhotoQueueItems()).find(r => r.id === 'lease-extension');
+      return { madeStale, renewed, staleReset, status: latest.upload_status,
+        owner: latest.lease_owner, expectedOwner: claim.lease_owner,
+        bytes: await latest.local_file.text(), leaseUntil: latest.lease_until, renewedLease };
+    });
+    expect(result.madeStale).toBe(true);
+    expect(result.renewed).toBe(true);
+    expect(result.staleReset).toBe(false);
+    expect(result.status).toBe('uploading');
+    expect(result.owner).toBe(result.expectedOwner);
+    expect(result.leaseUntil).toBe(result.renewedLease);
+    expect(result.bytes).toBe('important-original-blob');
+  });
+
   test('error 403 jest zachowany, a automatyczne wznowienie nie wysyła go ponownie', async ({ page }) => {
     await setup(page);
     const result=await page.evaluate(async () => {
