@@ -97,6 +97,7 @@
     "test:smoke:photo-cross-device-sync": "node scripts/smoke-photo-cross-device-sync.cjs",
     "test:smoke:mobile-photo-sync-indicator": "node scripts/smoke-mobile-photo-sync-indicator.cjs",
     "test:smoke:mobile-ui-copy": "node scripts/smoke-mobile-ui-copy.cjs",
+    "test:smoke:mobile-pricelist": "node scripts/smoke-mobile-pricelist-v1333.mjs",
     "test:smoke:e2e-mobile": "node scripts/smoke-e2e-mobile.cjs",
     "test:e2e:mobile": "node scripts/run-playwright-mobile.cjs",
     "test:smoke:mobile-serial-scanner": "node scripts/smoke-mobile-serial-scanner.cjs && node scripts/smoke-nameplate-concurrency-v1329.mjs",
