@@ -321,7 +321,7 @@ test.describe('@mobile release visual iPhone', () => {
     // Brak wyszukiwarki: po zamknięciu IMOTO nadal widać wszystkie modele.
     await expect(page.locator('.wawisPricelistGroup')).toHaveCount(10);
     await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
-    const hiroOutdoor = page.locator('.wawisPricelistGroup').filter({ has: page.locator('summary', { hasText: 'jednostki zewnętrzne Multi' }) });
+    const hiroOutdoor = page.locator('.wawisPricelistGroup').filter({ has: page.locator('summary', { hasText: 'Rotenso Hiro Multi Jedn. Zew.' }) });
     await hiroOutdoor.locator('summary').click();
     await expect(page.getByText('Liczba jednostek')).toBeVisible();
     await expect(page.getByText('5 JW', {exact: true})).toBeVisible();
