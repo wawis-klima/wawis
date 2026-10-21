@@ -1,0 +1,145 @@
+import { devices, expect, test } from '@playwright/test';
+
+const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+test.use(iphone14);
+
+// Blank document on the SAME origin as Vite: actual application modules and
+// real browser IndexedDB, but no mounted app, timers or production accounts.
+async function openIsolatedBrowserFixture(page) {
+  await page.route('**/__wawis_p0_queue_fixture__', (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html',
+    body: '<!doctype html><html lang="pl"><head><meta charset="utf-8"></head><body>P0 IndexedDB fixture</body></html>',
+  }));
+  await page.goto('/__wawis_p0_queue_fixture__');
+}
+
+async function restoreWithSyntheticServer({ seed, status, remote }) {
+  const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+  const photos = await import('/src/mobile791/modules/photos.js');
+  const id = 'legacy-photo-p0-synthetic';
+  const jobId = 'job-p0-synthetic';
+  const ownerId = 'worker-p0-synthetic';
+  const original = 'WAWIS-NEW-NAMEPLATE-CONTENT-P0';
+
+  if (seed) {
+    for (const entry of await queue.listPhotoQueueItems()) {
+      await queue.deletePhotoQueueItem(entry.id);
+    }
+    const file = new File([original], 'new-nameplate.jpg', { type: 'image/jpeg', lastModified: 1 });
+    const saved = await queue.savePhotoQueueItem({
+      id,
+      job_id: jobId,
+      uploaded_by: ownerId,
+      user_id: ownerId,
+      created_at: new Date().toISOString(),
+      photo_kind: 'nameplate',
+      device_index: 1,
+      unit_ref: 'jz',
+      upload_status: status,
+      legacy_queue_item: true,
+      // Legacy: no upload_key or planned_storage_path.
+      local_file: file,
+    });
+    if (!saved) throw new Error('Nie zapisano lokalnego File w IndexedDB.');
+  }
+  const before = await queue.listPhotoQueueItems();
+  const queued = before.find((entry) => entry.id === id);
+  if (!queued) throw new Error('Brak pierwotnego rekordu legacy przed restore.');
+
+  const remotePhoto = {
+    id: remote === 'exact' ? 'server-exact-photo' : 'server-old-different-photo',
+    job_id: jobId,
+    uploaded_by: ownerId,
+    created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    photo_kind: 'nameplate',
+    device_index: 1,
+    unit_ref: 'jz',
+    storage_path: remote === 'exact'
+      ? queued.planned_storage_path
+      : `${jobId}/nameplates/device-1_jz_old-other-content.jpg`,
+    image_url: '',
+  };
+  const serverPhotos = remote === 'none' ? [] : [remotePhoto];
+  const supabase = {
+    from(name) {
+      if (name !== 'photos') throw new Error(`Nieoczekiwana tabela: ${name}`);
+      const filters = [];
+      const query = {
+        select() { return this; },
+        eq(field, value) { filters.push([field, value]); return this; },
+        async maybeSingle() {
+          return { data: serverPhotos.find((photo) => filters.every(([key, value]) => photo[key] === value)) || null, error: null };
+        },
+        then(onSuccess, onError) {
+          const data = serverPhotos.filter((photo) => filters.every(([key, value]) => photo[key] === value));
+          return Promise.resolve({ data, error: null }).then(onSuccess, onError);
+        },
+      };
+      return query;
+    },
+    storage: {
+      from(bucket) {
+        if (bucket !== 'job-photos') throw new Error(`Nieoczekiwany bucket: ${bucket}`);
+        return {
+          async createSignedUrl(path) {
+            return { data: { signedUrl: `https://photos.example.invalid/${encodeURIComponent(path)}` }, error: null };
+          },
+        };
+      },
+    },
+  };
+
+  let jobs = [{ id: jobId, photos: [] }];
+  let selectedJob = { id: jobId, photos: [] };
+  await photos.restorePersistedJobPhotos({
+    supabase,
+    supabaseUrl: 'https://example.invalid',
+    profile: { id: ownerId },
+    setJobs: (update) => { jobs = update(jobs); },
+    setSelectedJob: (update) => { selectedJob = update(selectedJob); },
+  });
+  const remaining = await queue.listPhotoQueueItems();
+  const current = remaining.find((entry) => entry.id === id);
+  return {
+    remainingCount: remaining.length,
+    preservedId: Boolean(current),
+    preservedOriginalBytes: current?.local_file ? await current.local_file.text() : null,
+    preservedStatus: current?.upload_status || null,
+    recordedPath: current?.planned_storage_path || null,
+    displayedServerIds: (selectedJob.photos || []).filter((photo) => photo.upload_status === 'uploaded').map((photo) => photo.id),
+    displayedLocalIds: (selectedJob.photos || []).filter((photo) => photo.upload_status !== 'uploaded').map((photo) => photo.id),
+  };
+}
+
+test.describe('@mobile P0 — legacy tabliczki w trwałej kolejce', () => {
+  for (const status of ['error', 'uploading']) {
+    test(`inny plik z tej samej jednostki nie usuwa niewysłanego File (${status}), także po reload`, async ({ page }) => {
+      await openIsolatedBrowserFixture(page);
+      const first = await page.evaluate(restoreWithSyntheticServer, { seed: true, status, remote: 'different' });
+      expect(first.remainingCount).toBe(1);
+      expect(first.preservedId).toBe(true);
+      expect(first.preservedOriginalBytes).toBe('WAWIS-NEW-NAMEPLATE-CONTENT-P0');
+      expect(first.displayedServerIds).toEqual([]);
+      expect(first.displayedLocalIds).toEqual(['legacy-photo-p0-synthetic']);
+
+      await page.reload();
+      const second = await page.evaluate(restoreWithSyntheticServer, { seed: false, status, remote: 'different' });
+      expect(second.remainingCount).toBe(1);
+      expect(second.preservedOriginalBytes).toBe('WAWIS-NEW-NAMEPLATE-CONTENT-P0');
+      expect(second.displayedServerIds).toEqual([]);
+    });
+  }
+
+  test('dokładnie potwierdzona ścieżka tej operacji uzgadnia legacy po reload', async ({ page }) => {
+    await openIsolatedBrowserFixture(page);
+    const first = await page.evaluate(restoreWithSyntheticServer, { seed: true, status: 'error', remote: 'none' });
+    expect(first.remainingCount).toBe(1);
+    expect(first.recordedPath).toContain('job-p0-synthetic/nameplates/');
+
+    await page.reload();
+    const confirmed = await page.evaluate(restoreWithSyntheticServer, { seed: false, status: 'error', remote: 'exact' });
+    expect(confirmed.remainingCount).toBe(0);
+    expect(confirmed.displayedServerIds).toEqual(['server-exact-photo']);
+  });
+});
