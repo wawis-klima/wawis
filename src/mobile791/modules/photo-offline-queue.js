@@ -102,6 +102,7 @@ function toSerializableRecord(photo = {}) {
     documentation_label: photo.documentation_label || '',
     ocr_status: photo.ocr_status || '',
     ocr_checked_at: photo.ocr_checked_at || null,
+    attempt_generation: Number(photo.attempt_generation || 0),
     retry_count: Number(photo.retry_count || 0),
     last_attempt_at: photo.last_attempt_at || '',
     next_attempt_at: photo.next_attempt_at || '',
@@ -161,7 +162,7 @@ export async function savePhotoQueueItem(photo) {
   }
 }
 
-export async function updatePhotoQueueItem(photoId, patch = {}) {
+export async function updatePhotoQueueItem(photoId, patch = {}, guard = {}) {
   if (!photoId) return false;
   const db = await openQueueDb();
   if (!db) return false;
@@ -174,6 +175,14 @@ export async function updatePhotoQueueItem(photoId, patch = {}) {
       request.onsuccess = () => {
         const current = request.result;
         if (!current) return;
+        if (Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
+          && String(current.lease_owner || '') !== String(guard.expectedLeaseOwner || '')) return;
+        if (Object.prototype.hasOwnProperty.call(guard, 'expectedGeneration')
+          && Number(current.attempt_generation || 0) !== Number(guard.expectedGeneration || 0)) return;
+        // Nie pozwalamy starszej sesji nadpisać postępu aktywnego workera.
+        if (!Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
+          && current.upload_status === 'uploading'
+          && Date.parse(current.lease_until || '') > Date.now()) return;
         store.put({ ...current, ...patch, id: String(photoId) });
         didUpdate = true;
       };
@@ -192,15 +201,41 @@ export async function updatePhotoQueueItem(photoId, patch = {}) {
   }
 }
 
-export async function deletePhotoQueueItem(photoId) {
+export async function deletePhotoQueueItem(photoId, guard = {}) {
   if (!photoId) return false;
+  const db = await openQueueDb();
+  if (!db) return false;
   try {
-    await withStore('readwrite', (store) => store.delete(String(photoId)));
-    dispatchQueueChanged();
-    return true;
+    const deleted = await new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(String(photoId));
+      let didDelete = false;
+      request.onsuccess = () => {
+        const current = request.result;
+        if (!current) return;
+        if (Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
+          && String(current.lease_owner || '') !== String(guard.expectedLeaseOwner || '')) return;
+        if (Object.prototype.hasOwnProperty.call(guard, 'expectedGeneration')
+          && Number(current.attempt_generation || 0) !== Number(guard.expectedGeneration || 0)) return;
+        if (!Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
+          && current.upload_status === 'uploading'
+          && Date.parse(current.lease_until || '') > Date.now()) return;
+        store.delete(String(photoId));
+        didDelete = true;
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się odczytać zdjęcia do usunięcia.'));
+      transaction.oncomplete = () => resolve(didDelete);
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się usunąć zdjęcia.'));
+      transaction.onabort = transaction.onerror;
+    });
+    if (deleted) dispatchQueueChanged();
+    return deleted;
   } catch (error) {
     console.warn('Nie udało się usunąć zdjęcia z lokalnej kolejki.', error?.message || error);
     return false;
+  } finally {
+    db.close();
   }
 }
 
@@ -223,11 +258,13 @@ export async function recoverStalePhotoQueueItems(nowMs = Date.now()) {
     if (String(item.upload_status || '').toLowerCase() !== 'uploading') continue;
     const leaseUntil = Date.parse(item.lease_until || '');
     if (Number.isFinite(leaseUntil) && leaseUntil > nowMs) continue;
-    await updatePhotoQueueItem(item.id, {
+    const restored = await updatePhotoQueueItem(item.id, {
       upload_status: 'local',
       upload_status_label: 'Zapisano na telefonie',
       lease_until: '',
-    });
+      lease_owner: '',
+    }, { expectedLeaseOwner: item.lease_owner || '', expectedGeneration: Number(item.attempt_generation || 0) });
+    if (!restored) continue;
     recovered += 1;
   }
   return recovered;
@@ -260,6 +297,7 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
           lease_owner: typeof crypto !== 'undefined' && crypto.randomUUID
             ? crypto.randomUUID()
             : `${nowMs}:${Math.random()}`,
+          attempt_generation: Number(current.attempt_generation || 0) + 1,
         };
         store.put(storedClaim);
         // Poprzedni status nie trafia do IndexedDB: jest potrzebny tylko temu workerowi
@@ -295,7 +333,8 @@ export async function releaseClaimedPhotoQueueItem(photoId, claimed = {}) {
       request.onsuccess = () => {
         const current = request.result;
         if (!current || current.upload_status !== 'uploading'
-          || String(current.lease_owner || '') !== leaseOwner) return;
+          || String(current.lease_owner || '') !== leaseOwner
+          || Number(current.attempt_generation || 0) !== Number(claimed.attempt_generation || 0)) return;
         const previousStatus = String(claimed.__previous_upload_status || 'local').toLowerCase();
         const restoreError = previousStatus === 'error';
         store.put({
@@ -377,6 +416,8 @@ export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {
     documentation_label: record.documentation_label || '',
     ocr_status: record.ocr_status || '',
     ocr_checked_at: record.ocr_checked_at || null,
+    attempt_generation: Number(record.attempt_generation || 0),
+    lease_owner: record.lease_owner || '',
     retry_count: Number(record.retry_count || 0),
     last_attempt_at: record.last_attempt_at || '',
     next_attempt_at: record.next_attempt_at || '',
