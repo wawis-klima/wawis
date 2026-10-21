@@ -156,6 +156,97 @@ const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone
 test.describe('@mobile release visual iPhone', () => {
   test.use(iphone14);
 
+  async function inspectMenuRow(page, expectedLabels) {
+    const menu = page.locator('.moduleSwitcherMobile');
+    await expect(menu).toBeVisible();
+    const info = await menu.evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      const buttons = [...element.querySelectorAll('button')];
+      const data = buttons.map(button => {
+        const label = button.querySelector('.moduleSwitcherLabel');
+        const b = button.getBoundingClientRect();
+        const t = label?.getBoundingClientRect();
+        const fontSize = Number.parseFloat(getComputedStyle(button).fontSize);
+        const cx = b.left + b.width / 2;
+        const cy = b.top + b.height / 2;
+        const target = document.elementFromPoint(cx, cy);
+        return {
+          text: label?.textContent?.trim(),
+          buttonLeft: b.left,
+          buttonRight: b.right,
+          buttonTop: b.top,
+          buttonHeight: b.height,
+          labelLeft: t?.left,
+          labelRight: t?.right,
+          fontSize,
+          overflow: getComputedStyle(button).overflowX,
+          textOverflow: getComputedStyle(button).textOverflow,
+          whiteSpace: getComputedStyle(button).whiteSpace,
+          clickable: target === button || button.contains(target),
+        };
+      });
+      return {
+        labels: data.map(item => item.text),
+        menuLeft: bounds.left,
+        menuRight: bounds.right,
+        viewportWidth: document.documentElement.clientWidth,
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        data,
+      };
+    });
+    expect(info.labels).toEqual(expectedLabels);
+    expect(info.pageOverflow).toBeLessThanOrEqual(2);
+    expect(info.menuLeft).toBeGreaterThanOrEqual(-1);
+    expect(info.menuRight).toBeLessThanOrEqual(info.viewportWidth + 1);
+    for (const item of info.data) {
+      expect(item.buttonTop).toBeCloseTo(info.data[0].buttonTop, 0);
+      expect(item.buttonHeight).toBeGreaterThanOrEqual(43);
+      expect(item.fontSize).toBeGreaterThanOrEqual(10);
+      expect(item.buttonLeft).toBeGreaterThanOrEqual(info.menuLeft - 1);
+      expect(item.buttonRight).toBeLessThanOrEqual(info.menuRight + 1);
+      expect(item.labelLeft).toBeGreaterThanOrEqual(item.buttonLeft - .5);
+      expect(item.labelRight).toBeLessThanOrEqual(item.buttonRight + .5);
+      expect(item.textOverflow).not.toBe('ellipsis');
+      expect(item.whiteSpace).toBe('nowrap');
+      expect(item.clickable).toBe(true);
+    }
+    return info;
+  }
+
+  test('administrator ma cztery pełne nazwy przycisków w jednym rzędzie na wąskim iPhonie', async ({ page }) => {
+    await login(page, ADMIN);
+    const names = ['Montaże','Kontrahenci','Paliwo','Cennik'];
+    for (const width of [320, 360, 375, 390, 430]) {
+      await page.setViewportSize({ width, height: 780 });
+      await inspectMenuRow(page, names);
+    }
+    await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
+    await expect(page.getByRole('heading', { name: 'Cennik', exact: true })).toBeVisible();
+    await expect(page.getByText(/36 pozycji z cennika WAWIS/)).toBeVisible();
+    await expect(page.locator('.wawisPricelistGroup')).toHaveCount(10);
+    await expect(page.getByRole('row', { name: /2,6 kW 65–80 m³ 2.*150 zł 2.*322 zł/ })).toBeVisible();
+    await page.getByPlaceholder('Np. Imoto, Roni, 3,5 kW').fill('Hiro');
+    await expect(page.locator('.wawisPricelistGroup')).toHaveCount(2);
+    await expect(page.getByText('Liczba jednostek')).toBeVisible();
+    await expect(page.getByText('5 JW', {exact: true})).toBeVisible();
+    await inspectMenuRow(page,names);
+    await page.locator('.moduleSwitcherMobile button[data-module="jobs"]').click();
+    await expect(page.locator('.mobileJobsShellV943')).toBeVisible();
+  });
+
+  test('pracownik ma trzy pełne nazwy przycisków i dostęp do cennika, bez Kontrahentów', async ({ page }) => {
+    await login(page, WORKER);
+    const names = ['Montaże','Paliwo','Cennik'];
+    for (const width of [320,375,390]) {
+      await page.setViewportSize({ width, height: 780 });
+      await inspectMenuRow(page,names);
+    }
+    await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
+    await expect(page.getByRole('heading', { name: 'Cennik',exact: true })).toBeVisible();
+    await expect(page.getByText(/36 pozycji z cennika WAWIS/)).toBeVisible();
+    await inspectMenuRow(page,names);
+  });
+
   test('pełna aplikacja mobilna ma załadowany CSS, nie wychodzi poza ekran i zapisuje screenshot kontrolny', async ({ page }) => {
     ensureArtifactsDir();
     await resetMockSupabase(page);
