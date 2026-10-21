@@ -1,3 +1,11 @@
+## 13.41
+- P0-R2: błąd odczytu bajtów nie generuje już fałszywego hasha z nazwy/rozmiaru/daty. Każda niepotwierdzona zawartość dostaje unikatową operację.
+- P0-R2/P1-C1: kolejka IndexedDB nie nadpisuje istniejącego Blob ani lease przez store.put. Nowe identyfikatory obejmują właściciela.
+- P0-R1: exact path metadanych nie wystarcza do DELETE. Sprawdzenie rzeczywistego Storage download i SHA-256 przygotowanego uploadu; brak/0B/403/5xx/inne bajty zachowują lokalną kopię.
+- P1-C2: trwały błąd 403 nie jest automatycznie ponawiany po claim; transient serwera i sieci mają odroczony retry.
+- P1-C3: operacje update/delete wymagają aktywnego lease owner i attempt_generation, a spóźniony worker nie może naruszyć nowszego wpisu.
+- Regresje Browser/IDB dla utraty hasha, Storage object integrity, dwóch kart i starych lease. Bez migracji Supabase, RLS i zmian backendu.
+
 ## 13.40
 - P0 / mobile: przywracanie historycznych tabliczek nie dopasowuje już zdjęcia po samym montażu, urządzeniu, jednostce, autorze i czasie. Wymagana jest dokładna zgodność ścieżki operacji na serwerze.
 - Ochrona danych IndexedDB: przed usunięciem lokalnego File sprawdzana jest ścieżka zapisanego zdjęcia. Przy niejednoznacznym wyniku lokalny plik pozostaje do wznowienia.

@@ -951,6 +951,11 @@ export function createMockSupabaseClient() {
           async download(path) {
             const stored = storageObjects.get(`${bucket}/${path}`);
             if (stored instanceof Blob) return { data: stored, error: null };
+            if (bucket === 'job-photos') {
+              // Mock nie może podawać sztucznego PDF zamiast brakującego zdjęcia:
+              // to maskowałoby utratę pliku podczas reconciliation.
+              return { data: null, error: { statusCode: 404, message: 'Storage object not found' } };
+            }
             return { data: new Blob(['%PDF-1.4 mock protocol'], { type: 'application/pdf' }), error: null };
           },
           async remove(paths = []) {

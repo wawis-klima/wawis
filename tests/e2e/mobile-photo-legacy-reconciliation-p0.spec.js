@@ -55,7 +55,7 @@ async function restoreWithSyntheticServer({ seed, status, remote }) {
     photo_kind: 'nameplate',
     device_index: 1,
     unit_ref: 'jz',
-    storage_path: remote === 'exact'
+    storage_path: ['exact', 'missing', 'differentBytes', 'denied', 'serverError', 'empty'].includes(remote)
       ? queued.planned_storage_path
       : `${jobId}/nameplates/device-1_jz_old-other-content.jpg`,
     image_url: '',
@@ -84,6 +84,15 @@ async function restoreWithSyntheticServer({ seed, status, remote }) {
         return {
           async createSignedUrl(path) {
             return { data: { signedUrl: `https://photos.example.invalid/${encodeURIComponent(path)}` }, error: null };
+          },
+          async download(path) {
+            if (path !== remotePhoto.storage_path || remote === 'missing') {
+              return { data: null, error: { statusCode: 404, message: 'Object not found' } };
+            }
+            if (remote === 'denied') return { data: null, error: { statusCode: 403, message: 'Forbidden' } };
+            if (remote === 'serverError') return { data: null, error: { statusCode: 503, message: 'Storage unavailable' } };
+            if (remote === 'empty') return { data: new Blob([]), error: null };
+            return { data: new Blob([remote === 'differentBytes' ? 'WAWIS-OTHER-NAMEPLATE-CONTENT!' : original], { type: 'image/jpeg' }), error: null };
           },
         };
       },
@@ -154,6 +163,21 @@ test.describe('@mobile P0 — legacy tabliczki w trwałej kolejce', () => {
       await context.close();
     }
   });
+
+
+  for (const remote of ['missing', 'differentBytes', 'denied', 'serverError', 'empty']) {
+    test(`P0-R1: zgodna ścieżka, ale brak wiarygodnych bajtów Storage (${remote}) nie usuwa Blob`, async ({ page }) => {
+      await openIsolatedBrowserFixture(page);
+      const result = await page.evaluate(restoreWithSyntheticServer, { seed: true, status: 'error', remote });
+      expect(result.remainingCount).toBe(1);
+      expect(result.preservedOriginalBytes).toBe('WAWIS-NEW-NAMEPLATE-CONTENT-P0');
+      expect(result.displayedServerIds).toEqual([]);
+      await page.reload();
+      const repeated = await page.evaluate(restoreWithSyntheticServer, { seed: false, status: 'error', remote });
+      expect(repeated.remainingCount).toBe(1);
+      expect(repeated.preservedOriginalBytes).toBe('WAWIS-NEW-NAMEPLATE-CONTENT-P0');
+    });
+  }
 
   for (const status of ['error', 'uploading']) {
     test(`dokładnie potwierdzona ścieżka uzgadnia legacy po reload (${status})`, async ({ page }) => {
