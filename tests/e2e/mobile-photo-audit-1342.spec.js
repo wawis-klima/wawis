@@ -103,6 +103,44 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
     } finally {await context.close();}
   });
 
+  test('błąd commit IDB nie pokazuje zapisania i Ponów najpierw utrwala File', async ({page}) => {
+    await fixture(page);
+    const first=await page.evaluate(async()=>{
+      const photos=await import('/src/mobile791/modules/photos.js');
+      const queue=await import('/src/mobile791/modules/photo-offline-queue.js');
+      let jobs=[{id:'idb-failure-job',photos:[]}];
+      let selectedJob={id:'idb-failure-job',photos:[]};
+      const originalAdd=IDBObjectStore.prototype.add;
+      IDBObjectStore.prototype.add=function(){throw new DOMException('Simulated quota failure','QuotaExceededError')};
+      try{
+        const result=await photos.uploadJobPhotos({
+          supabase:{auth:{getUser:async()=>({data:{user:{id:'owner1'}},error:null})}},
+          profile:{id:'owner1'},jobId:'idb-failure-job',
+          event:{target:{files:[new File(['original-unsaved-file'],'a.jpg',{type:'image/jpeg'})],value:'a'}},
+          setJobs:update=>{jobs=update(jobs)},
+          setSelectedJob:update=>{selectedJob=update(selectedJob)},
+        });
+        const displayed=jobs[0].photos[0];
+        return {
+          failed:result.failedCount,
+          queued:result.queuedCount,
+          localPersistenceFailed:displayed.local_persistence_failed,
+          status:displayed.upload_status,
+          label:displayed.upload_status_label,
+          fileText:await displayed.__localFile.text(),
+          queueCount:(await queue.listPhotoQueueItems()).length,
+        };
+      }finally{IDBObjectStore.prototype.add=originalAdd;}
+    });
+    expect(first.failed).toBe(1);
+    expect(first.queued).toBe(0);
+    expect(first.localPersistenceFailed).toBe(true);
+    expect(first.status).toBe('error');
+    expect(first.label).not.toContain('Zapisano na telefonie');
+    expect(first.fileText).toBe('original-unsaved-file');
+    expect(first.queueCount).toBe(0);
+  });
+
   test('aktualne Supabase SDK otrzymuje nonce i cache:no-store dla każdego readback', async ({ page }) => {
     await fixture(page);
     const proof=await page.evaluate(async()=>{
