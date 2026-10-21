@@ -1,15 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.33 (przygotowanie — nie potwierdza wdrożenia)
+- 13.34 (PR, przed zakończeniem produkcyjnego wdrożenia)
 
-## Zakres
-- Mobile: 36 pozycji cennika Rotenso w grupach; netto po rabacie i brutto 8%.
-- Cztery kolumny: moc/model, kubatura lub liczba JW, netto, brutto 8%.
-- Administrator: pełne nazwy Montaże / Kontrahenci / Paliwo / Cennik w jednym rzędzie.
-- Pracownik: Montaże / Paliwo / Cennik. Desktop bez zmiany.
-- Bez modyfikacji danych klientów, PDF, backendu ani autoryzacji.
+## Zmiana
+- Mobile Cennik: stan początkowy wszystkich grup zwinięty; zawsze co najwyżej jedna grupa rozwinięta.
+- Kliknięcie innej grupy zwija poprzednią, ponowne kliknięcie tej samej zwija ją.
+- Bez zmian w 36 cenach, VAT, przyciskach menu, rolach, backendzie, PDF, PUSH.
 
-## Bramki
-- GitHub PR checks / targeted-checks: ceny i VAT, role, napisy 320–430 px, E2E oraz Closure Gate.
-- Po zielonym CI merge do main; Vercel READY dla właściwego SHA.
+## Weryfikacja przed wdrożeniem
+- WAWIS PR checks: smoke Cennika, Playwright (administrator/pracownik), Closure Gate i build.
+- Po zielonym CI: merge do main i potwierdzenie Vercel READY z tym samym SHA.
