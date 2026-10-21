@@ -62,6 +62,11 @@ assert.match(css,/\.wawisPricelistCount \{[^}]*min-width:22px; height:22px;/, 'L
 assert.match(css,/\.wawisPricelistGroupTitle \{[^}]*font-size:13px;/, 'Nie zmieniamy wielkości czcionki modeli.');
 assert.doesNotMatch(css,/text-overflow:ellipsis/);
 assert.match(panel,/grossPriceWithEightPercentVat\(net\)/);
+assert.match(panel,/"Rotenso Hiro Multi Jedn\. Zew\."/, 'Zewnętrzne Multi mają skróconą etykietę.');
+assert.match(panel,/"Rotenso Hiro Imoto Multi Jedn\. Wew\."/, 'Wewnętrzne Multi mają skróconą etykietę.');
+assert.match(panel,/mobileMultiLabels\[group\.name\] \|\| group\.name/, 'Skrócone etykiety dotyczą wyłącznie widoku, nie danych.');
+assert.match(css,/\.wawisPricelistGroupTitle \.wawisPricelistCompactMulti\s*\{[^}]*white-space:nowrap;/, 'Obie nazwy Multi mają mieścić się w jednym wierszu.');
+assert.match(css,/\.wawisPricelistGroupTitle \.wawisPricelistCompactMulti\s*\{[^}]*font-size:clamp\(11\.5px, 3\.25vw, 13px\);/, 'Nie zmieniamy czcionki pozostałych modeli.');
 assert.match(panel,/\{PRICE_LIST_GROUPS\.map\(\(group\) => \(/, 'Lista modeli ma wyświetlać wszystkie grupy.');
 assert.doesNotMatch(panel,/wawisPricelistIntro|wawisPricelistSearch|wawis-pricelist-search|Szukaj modelu lub mocy|Ceny po rabacie|<h1>Cennik<\/h1>/, 'Usuwamy cały górny blok tytułu, opisu i wyszukiwarki.');
 assert.doesNotMatch(panel,/useMemo|setQuery|const phrase =|matchName|Nie znaleziono modelu/, 'Wyszukiwanie i filtrowanie muszą zostać usunięte, nie tylko ukryte.');
