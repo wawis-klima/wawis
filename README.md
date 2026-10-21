@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.40
+- 13.41
+
+WAWIS 13.41: weryfikacja integralności zdjęć przed usunięciem lokalnej kopii; przy nieudanym odczycie File żaden fingerprint oparty tylko na metadanych nie zastępuje identyfikatora zawartości. Oddzielne operacje właścicieli, atomowe zapisy kolejki bez nadpisywania Blob, zabezpieczenia owner/generation dla aktywnych workerów, kontrola trwałych 403 i ponowień błędów sieciowych. Testy IndexedDB, Storage 404/403/503/niewłaściwe bajty i dwóch kart. Bez migracji Supabase, zmian RLS ani ingerencji w dane klientów.
 
 WAWIS 13.40: poprawka P0 bezpieczeństwa mobilnej kolejki zdjęć. Historyczne tabliczki JZ/JW nie są już uznawane za wysłane tylko na podstawie zgodnego montażu, jednostki, użytkownika i czasu. Lokalny File pozostaje w IndexedDB, dopóki serwer nie potwierdzi dokładnej ścieżki operacji. Dodano Playwright: error/uploading, dwie karty, przeładowanie i poprawne uzgodnienie. Bez zmian w Supabase, rolach, OCR, PDF i desktopie.
 
@@ -1045,6 +1047,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
 - wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
 - wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.
 - wersja `13.38` — kompaktowe białe karty w Cenniku mobilnym (min. 44 px, padding 7 px); bez zmian funkcjonalnych.

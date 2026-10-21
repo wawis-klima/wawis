@@ -1,9 +1,9 @@
 {
-  "version": "13.40",
-  "summary": "P0: bezpieczne uzgadnianie starych zdjęć tabliczek",
+  "version": "13.41",
+  "summary": "P0 integralność i bezpieczeństwo lokalnej kolejki zdjęć",
   "changes": [
-    "Brak automatycznego usunięcia niewysłanego zdjęcia po dopasowaniu wyłącznie metadanych tej samej jednostki.",
-    "Usunięcie lokalnego File dopiero przy dopasowaniu dokładnej ścieżki przesłanej operacji.",
-    "Regresje Playwright IndexedDB: dwie karty, ponowne otwarcie, błąd wysyłania i poprawne potwierdzenie."
+    "Brak nadpisania niewysłanego pliku przez kolizję metadanych zdjęć.",
+    "Bezpieczne usunięcie lokalnej kopii dopiero po zgodności bajtów Storage.",
+    "Kontrola owner/generation workerów oraz poprawne ponawianie błędów."
   ]
 }

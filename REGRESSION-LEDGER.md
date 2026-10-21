@@ -1,5 +1,17 @@
 # WAWIS — Regression Ledger
 
+## WAWIS-1341 — integralność lokalnych zdjęć po audycie 13.40 (21 października 2026)
+
+| ID | Status przed CI | Reproduktor / warunek zamknięcia |
+|---|---|---|
+| P0-R1-STORAGE | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js`: 404/403/503/0B/inny SHA zachowuje Blob, poprawne bajty uzgadniają. |
+| P0-R2-FINGERPRINT | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-integrity-p0-r2.spec.js`: różne File z tymi samymi metadanymi i NotReadableError nie nadpisują się, także po reload. |
+| P1-C1-OWNER | FIXED-UNVERIFIED | Owner w upload identity, transakcyjny enqueue nie zastępuje Blob i lease. |
+| P1-C2-403 | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-queue-cas-p1.spec.js`: trwały error/403 nie jest automatycznie ponawiany. |
+| P1-C3-LEASE | FIXED-UNVERIFIED | Dwie karty, A expired, B claim, spóźnione update/delete/release A nie usuwają Blob B. |
+| WAWIS-1341-LIVE | EXTERNAL | Izolowany Supabase actual byte integrity, iPhone PWA, prod SHA 13.41. |
+| WAWIS-1341-CLOSURE | REQUIRED | Zielone CI dokładnego SHA, Playwright, Closure Gate, build, Vercel READY; brak skip wymaganego testu. |
+
 ## WAWIS-P0-01 — bezpieczeństwo starej kolejki tabliczek (21 października 2026)
 
 | ID | Stan | Reproduktor / warunek zamknięcia |
