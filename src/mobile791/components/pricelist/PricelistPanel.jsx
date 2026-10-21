@@ -5,6 +5,8 @@ const money = new Intl.NumberFormat("pl-PL", { maximumFractionDigits: 2 });
 
 export default function PricelistPanel() {
   const [query, setQuery] = useState("");
+  // Zawsze startuj ze wszystkimi modelami zamkniętymi. Można otworzyć tylko jeden naraz.
+  const [expandedGroup, setExpandedGroup] = useState(null);
   const phrase = query.trim().toLocaleLowerCase("pl-PL");
   const groups = useMemo(() => PRICE_LIST_GROUPS.map((group) => {
     const matchName = group.name.toLocaleLowerCase("pl-PL").includes(phrase);
@@ -34,9 +36,17 @@ export default function PricelistPanel() {
       </div>
 
       <div className="wawisPricelistGroups">
-        {groups.map((group, index) => (
-          <details key={group.name} className="wawisPricelistGroup" open={Boolean(phrase) || index === 0}>
-            <summary className="wawisPricelistGroupTitle">
+        {groups.map((group) => (
+          <details key={group.name} className="wawisPricelistGroup" open={expandedGroup === group.name}>
+            <summary
+              className="wawisPricelistGroupTitle"
+              onClick={(event) => {
+                // Zapobiegamy niezależnemu przełączaniu natywnego <details>.
+                // Stan React zamyka poprzednią grupę zanim otworzy następną.
+                event.preventDefault();
+                setExpandedGroup((current) => current === group.name ? null : group.name);
+              }}
+            >
               <span>{group.name}</span>
               <span className="wawisPricelistCount">{group.rows.length}</span>
             </summary>
