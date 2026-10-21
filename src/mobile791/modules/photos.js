@@ -799,31 +799,17 @@ async function findServerPhotoByStoragePath({ supabase, jobId, storagePath }) {
 
 async function findLegacyServerNameplate({ supabase, queuedPhoto }) {
   if (!supabase || queuedPhoto?.photo_kind !== 'nameplate') return null;
-  const status = String(queuedPhoto.upload_status || '').toLowerCase();
-  if (status !== 'error' && status !== 'uploading') return null;
-  try {
-    const { data, error } = await supabase
-      .from('photos')
-      .select(PHOTO_RECONCILIATION_SELECT)
-      .eq('job_id', queuedPhoto.job_id);
-    if (error) throw error;
-    const queuedCreatedAt = Date.parse(queuedPhoto.created_at || '');
-    const earliestMatchingTime = Number.isFinite(queuedCreatedAt) ? queuedCreatedAt - (10 * 60 * 1000) : Number.NEGATIVE_INFINITY;
-    const candidates = (Array.isArray(data) ? data : []).filter((photo) => {
-      const metadata = getNameplatePhotoMetadata(photo);
-      const remoteCreatedAt = Date.parse(photo.created_at || '');
-      const uploaderMatches = !queuedPhoto.uploaded_by || !photo.uploaded_by || String(photo.uploaded_by) === String(queuedPhoto.uploaded_by);
-      return metadata.photo_kind === 'nameplate'
-        && Number(metadata.device_index) === Number(queuedPhoto.device_index)
-        && String(metadata.unit_ref) === String(queuedPhoto.unit_ref)
-        && uploaderMatches
-        && (!Number.isFinite(remoteCreatedAt) || remoteCreatedAt >= earliestMatchingTime);
-    });
-    return candidates.sort((left, right) => Date.parse(right.created_at || '') - Date.parse(left.created_at || ''))[0] || null;
-  } catch (error) {
-    console.warn('Nie udało się porównać starego lokalnego błędu tabliczki z serwerem.', error?.message || error);
-    return null;
-  }
+  // P0: starsze zdjęcia z tej samej jednostki i podobnego czasu NIE są
+  // dowodem zakończenia uploadu. Zachowujemy Blob z IndexedDB, jeżeli nie
+  // istnieje zapis pod dokładną ścieżką powiązaną z tą operacją.
+  // ensureQueuedPhotoIdentity wyznacza ją dla starych rekordów z bajtów File.
+  const storagePath = String(queuedPhoto.planned_storage_path || queuedPhoto.storage_path || '').trim();
+  if (!storagePath) return null;
+  return findServerPhotoByStoragePath({
+    supabase,
+    jobId: queuedPhoto.job_id,
+    storagePath,
+  });
 }
 
 async function createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl }) {
@@ -858,6 +844,13 @@ async function reconcileQueuedPhotoFromServer({
   isSessionCurrent = () => true,
 }) {
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
+  // Ostatnia zapora przed zastąpieniem obrazu i trwałym DELETE lokalnego File:
+  // nawet błędny adapter/nieoczekiwany readback nie może uzgodnić innej ścieżki.
+  const expectedPath = String(queuedPhoto.planned_storage_path || queuedPhoto.storage_path || '').trim();
+  if (!expectedPath || String(serverPhoto?.storage_path || '').trim() !== expectedPath) {
+    console.warn('Niepotwierdzona tożsamość tabliczki na serwerze; zachowano lokalną kopię.');
+    return null;
+  }
   const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url || '';
   const photoForUi = await createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl });
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
@@ -879,11 +872,16 @@ async function reconcileQueuedPhotoFromServer({
 }
 
 async function findExistingServerPhotoForQueuedPhoto({ supabase, queuedPhoto, allowLegacyNameplate = false }) {
-  const storagePath = queuedPhoto.planned_storage_path || queuedPhoto.storage_path || '';
-  const exactPhoto = await findServerPhotoByStoragePath({ supabase, jobId: queuedPhoto.job_id, storagePath });
-  if (exactPhoto) return exactPhoto;
-  if (allowLegacyNameplate) return findLegacyServerNameplate({ supabase, queuedPhoto });
-  return null;
+  const storagePath = String(queuedPhoto.planned_storage_path || queuedPhoto.storage_path || '').trim();
+  if (!storagePath) return null;
+  const serverPhoto = allowLegacyNameplate && queuedPhoto.photo_kind === 'nameplate'
+    ? await findLegacyServerNameplate({ supabase, queuedPhoto })
+    : await findServerPhotoByStoragePath({ supabase, jobId: queuedPhoto.job_id, storagePath });
+  // Nigdy nie ufamy samemu job/unit/uploader/time; dokładna ścieżka jest
+  // wymagana również przed przekazaniem rekordu do reconciliation.
+  return serverPhoto && String(serverPhoto.storage_path || '').trim() === storagePath
+    ? serverPhoto
+    : null;
 }
 
 async function performQueuedPhotoUpload({
