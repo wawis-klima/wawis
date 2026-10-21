@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.33",
+  "version": "13.34",
   "scope": "mobile",
-  "release_branch": "release/v13.33",
+  "release_branch": "release/v13.34",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Mobile cennik + cztery w pełni czytelne przyciski na iPhone. Bez zmian danych i protokołów. Diagnostyka produkcji nie była uruchamiana."
+    "notes": "Kompaktowa zmiana stanu rozwijanych grup mobilnego cennika, bez zmiany danych i innych modułów."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.33.zip"
+    "file_name": "klima-app-v13.34.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.33",
+    "source_branch": "release/v13.34",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY, produkcyjny SHA i wersja 13.33 na iPhone",
-    "notes": "Cztery pełne napisy w jednym rzędzie, pracownik trzy przyciski, poprawne ceny brutto 8%."
+    "evidence_source": "Vercel READY z SHA nowej wersji 13.34 i potwierdzenie aktywnej wersji na iPhonie",
+    "notes": "Sprawdzić 10 zamkniętych grup, UKURA otwarta → IMOTO otwarta i UKURA zamknięta → IMOTO zamknięta po ponownym kliknięciu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile-only pricelist and navigation, no Supabase/RLS/auth/PDF/storage changes. Source: 2025 CENNIK KLIMA MONTAZ 2026.docx.",
-    "release_ci": "36-price VAT smoke, admin/worker navigation, 320–430 px menu text geometry hit-test, targeted checks and Closure Gate.",
-    "post_deploy": "Vercel READY matching 13.33 main commit; user iPhone menu full labels and prices visually validated."
+    "code": "Zmiana wyłącznie stanu jednej otwartej grupy w mobilnym PricelistPanel. Wszystkie ceny, przyciski menu, role i backend bez zmian.",
+    "release_ci": "Smoke 36 cen/8% VAT, test sekwencji akordeonu (Playwright), admin/worker, Closure Gate i build.",
+    "post_deploy": "Vercel READY z nowym commit SHA main, wersja 13.34 widoczna na iPhone."
   }
 }

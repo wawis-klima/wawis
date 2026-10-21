@@ -223,10 +223,29 @@ test.describe('@mobile release visual iPhone', () => {
     await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
     await expect(page.getByRole('heading', { name: 'Cennik', exact: true })).toBeVisible();
     await expect(page.getByText(/36 pozycji z cennika WAWIS/)).toBeVisible();
-    await expect(page.locator('.wawisPricelistGroup')).toHaveCount(10);
+    const allGroups = page.locator('.wawisPricelistGroup');
+    await expect(allGroups).toHaveCount(10);
+    await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
+    const ukura = allGroups.filter({ has: page.locator('summary', { hasText: 'Rotenso UKURA H' }) });
+    const imoto = allGroups.filter({ has: page.locator('summary', { hasText: 'Rotenso IMOTO' }) });
+    // UKURA otwarta po kliknięciu.
+    await ukura.locator('summary').click();
+    await expect(ukura).toHaveAttribute('open', '');
+    await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(1);
     await expect(page.getByRole('row', { name: /2,6 kW 65–80 m³ 2.*150 zł 2.*322 zł/ })).toBeVisible();
+    // Rozwinięcie IMOTO automatycznie zwija UKURA.
+    await imoto.locator('summary').click();
+    await expect(imoto).toHaveAttribute('open', '');
+    await expect(ukura).not.toHaveAttribute('open', '');
+    await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(1);
+    // Ponowne kliknięcie tej samej grupy ją zamyka.
+    await imoto.locator('summary').click();
+    await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
     await page.getByPlaceholder('Np. Imoto, Roni, 3,5 kW').fill('Hiro');
     await expect(page.locator('.wawisPricelistGroup')).toHaveCount(2);
+    await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
+    const hiroOutdoor = page.locator('.wawisPricelistGroup').filter({ has: page.locator('summary', { hasText: 'jednostki zewnętrzne Multi' }) });
+    await hiroOutdoor.locator('summary').click();
     await expect(page.getByText('Liczba jednostek')).toBeVisible();
     await expect(page.getByText('5 JW', {exact: true})).toBeVisible();
     await inspectMenuRow(page,names);
@@ -245,6 +264,7 @@ test.describe('@mobile release visual iPhone', () => {
     await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
     await expect(page.getByRole('heading', { name: 'Cennik',exact: true })).toBeVisible();
     await expect(page.getByText(/36 pozycji z cennika WAWIS/)).toBeVisible();
+    await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
     await inspectMenuRow(page,names);
   });
 

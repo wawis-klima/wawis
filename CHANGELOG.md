@@ -1,3 +1,9 @@
+## 13.34
+- Mobile / Cennik: wszystkie 10 grup Rotenso domyślnie zwinięte.
+- Kliknięcie jednego modelu otwiera go i automatycznie zwija poprzedni. Ponowne kliknięcie aktywnego modelu zamyka go.
+- Wyszukiwanie nie otwiera już automatycznie grup. Bez zmian w cenach, VAT, rolach, menu mobilnym i desktopie.
+- Testy: rzeczywista sekwencja kliknięć w Playwright (UKURA → IMOTO → ponowne IMOTO; filtry) oraz istniejący test 36 cen i VAT.
+
 ## 13.33
 - Mobile: cennik Rotenso na podstawie pliku „2025 CENNIK KLIMA MONTAZ 2026.docx” — 36 pozycji z 10 grup, ceny netto po rabacie i obliczone brutto VAT 8%.
 - Administrator: Montaże / Kontrahenci / Paliwo / Cennik w jednym rzędzie bez wielokropków i ucięć, pracownik: Montaże / Paliwo / Cennik. Wysokość przycisków minimum 44 px.
