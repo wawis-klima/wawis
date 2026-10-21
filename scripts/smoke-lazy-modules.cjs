@@ -33,8 +33,8 @@ assert.match(jobsPanelSource, /const DesktopJobsLayout = lazy\(\(\) => import\("
 assert.match(jobsPanelSource, /<Suspense fallback=\{jobsLayoutFallback\}>/);
 assert.match(jobsPanelSource, /Trwa ładowanie widoku montaży/);
 
-// Mobile worker navigation is intentionally limited to jobs + fuel.
-assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel"\]\.includes\(module\.id\)/);
+// Mobile worker navigation permits jobs + fuel + read-only pricelist, never contractors.
+assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel", "pricelist"\]\.includes\(module\.id\)/);
 // Devices remain an administrator desktop module in the sidebar, not in the compact mobile switcher.
 assert.match(adminDesktopShellSource, /key:\s*["']devices["']/);
 assert.match(adminDesktopShellSource, /label:\s*["']Urządzenia["']/);
