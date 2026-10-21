@@ -1672,8 +1672,9 @@ async function runPersistedPhotoUploads({
     // hydratePhotoQueueItem zamienia status "uploading" na "local" dla zwykłego odtworzenia UI.
     // Tutaj rekord został właśnie atomowo przejęty przez worker kolejki; zachowujemy jego status,
     // aby stara tabliczka z błędem mogła zostać bezpiecznie uzgodniona z kopią już obecną na serwerze.
-    queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status,
-      lease_owner: record.lease_owner, attempt_generation: record.attempt_generation };
+    queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status };
+    queuedPhoto.lease_owner = record.lease_owner;
+    queuedPhoto.attempt_generation = record.attempt_generation;
     const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
     queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
     if (!photoSessionIsCurrent(isSessionCurrent)) break;
