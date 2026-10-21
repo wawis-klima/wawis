@@ -155,15 +155,17 @@ test.describe('@mobile P0 — legacy tabliczki w trwałej kolejce', () => {
     }
   });
 
-  test('dokładnie potwierdzona ścieżka tej operacji uzgadnia legacy po reload', async ({ page }) => {
-    await openIsolatedBrowserFixture(page);
-    const first = await page.evaluate(restoreWithSyntheticServer, { seed: true, status: 'error', remote: 'none' });
-    expect(first.remainingCount).toBe(1);
-    expect(first.recordedPath).toContain('job-p0-synthetic/nameplates/');
+  for (const status of ['error', 'uploading']) {
+    test(`dokładnie potwierdzona ścieżka uzgadnia legacy po reload (${status})`, async ({ page }) => {
+      await openIsolatedBrowserFixture(page);
+      const first = await page.evaluate(restoreWithSyntheticServer, { seed: true, status, remote: 'none' });
+      expect(first.remainingCount).toBe(1);
+      expect(first.recordedPath).toContain('job-p0-synthetic/nameplates/');
 
-    await page.reload();
-    const confirmed = await page.evaluate(restoreWithSyntheticServer, { seed: false, status: 'error', remote: 'exact' });
-    expect(confirmed.remainingCount).toBe(0);
-    expect(confirmed.displayedServerIds).toEqual(['server-exact-photo']);
-  });
+      await page.reload();
+      const confirmed = await page.evaluate(restoreWithSyntheticServer, { seed: false, status, remote: 'exact' });
+      expect(confirmed.remainingCount).toBe(0);
+      expect(confirmed.displayedServerIds).toEqual(['server-exact-photo']);
+    });
+  }
 });
