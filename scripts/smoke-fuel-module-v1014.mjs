@@ -277,7 +277,7 @@ assert.match(panel, /Zapisz korektę/);
 assert.match(panel, /Nietypowo szybkie ponowne tankowanie/);
 assert.match(panel, /updateFuelEntry/);
 assert.match(desktopApp, /showVehicleOverview=\{!isMobile\}/, 'Zestawienie floty i raport mają być tylko na desktopie.');
-assert.match(mobileApp, /!\["jobs", "fuel"\]\.includes\(activeModule\)/, 'Pracownik mobilny ma móc pozostać w module Paliwo.');
+assert.match(mobileApp, /!\["jobs", "fuel", "pricelist"\]\.includes\(activeModule\)/, 'Pracownik mobilny ma móc pozostać w modułach Montaże, Paliwo i Cennik.');
 assert.match(mobileApp, /isAdmin && isMobile && activeModule === "devices"/, 'Administrator mobilny ma być wyprowadzany z modułu Urządzenia.');
 assert.doesNotMatch(mobileLayout, /Widzisz wszystkie tankowania|Widzisz wyłącznie własne tankowania/, 'Mobilny moduł paliwa nie powinien marnować miejsca na opis.');
 assert.doesNotMatch(mainLayout, /Testowy rejestr paliwa/, 'Moduł paliwa nie jest już testowy.');
