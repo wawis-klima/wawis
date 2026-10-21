@@ -787,6 +787,34 @@ function isZeroBytePhotoError(error) {
   return code === PHOTO_ZERO_BYTES_ERROR_CODE || message.includes(PHOTO_ZERO_BYTES_ERROR_CODE);
 }
 
+// P0-R1: rekord bazy i poprawny signed URL nie potwierdzają istnienia
+// konkretnych bajtów w prywatnym Storage. Nigdy nie kasujemy ostatniej
+// lokalnej kopii po samym dopasowaniu storage_path.
+const validatedRemotePhotoRows = new WeakSet();
+
+async function verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }) {
+  const expectedPath = String(queuedPhoto?.planned_storage_path || queuedPhoto?.storage_path || '').trim();
+  if (!expectedPath || expectedPath !== String(serverPhoto?.storage_path || '').trim()) return false;
+  if (!queuedPhoto?.__localFile || !globalThis.crypto?.subtle?.digest) return false;
+  try {
+    const uploadFile = queuedPhoto.__preparedFile || (queuedPhoto.photo_kind === 'nameplate'
+      ? (await prepareNameplatePhotoForUpload(queuedPhoto.__localFile)).file
+      : (await preparePhotoForUpload(queuedPhoto.__localFile)).file);
+    if (!uploadFile || !Number.isFinite(uploadFile.size) || uploadFile.size <= 0) return false;
+    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET).download(expectedPath);
+    if (error || !remoteFile || remoteFile.size !== uploadFile.size || remoteFile.size <= 0) return false;
+    const [localBytes, remoteBytes] = await Promise.all([uploadFile.arrayBuffer(), remoteFile.arrayBuffer()]);
+    const [localDigest, remoteDigest] = await Promise.all([
+      globalThis.crypto.subtle.digest('SHA-256', localBytes),
+      globalThis.crypto.subtle.digest('SHA-256', remoteBytes),
+    ]);
+    return bytesToHex(new Uint8Array(localDigest)) === bytesToHex(new Uint8Array(remoteDigest));
+  } catch (error) {
+    console.warn('Nie potwierdzono integralności zdjęcia w Storage — zachowano lokalny plik.', error?.message || error);
+    return false;
+  }
+}
+
 async function findServerPhotoByStoragePath({ supabase, jobId, storagePath }) {
   if (!supabase || !jobId || !storagePath) return null;
   try {
@@ -858,6 +886,11 @@ async function reconcileQueuedPhotoFromServer({
     console.warn('Niepotwierdzona tożsamość tabliczki na serwerze; zachowano lokalną kopię.');
     return null;
   }
+  if (!validatedRemotePhotoRows.has(serverPhoto)
+    && !(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) {
+    return null;
+  }
+  if (!photoSessionIsCurrent(isSessionCurrent)) return null;
   const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url || '';
   const photoForUi = await createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl });
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
@@ -886,9 +919,10 @@ async function findExistingServerPhotoForQueuedPhoto({ supabase, queuedPhoto, al
     : await findServerPhotoByStoragePath({ supabase, jobId: queuedPhoto.job_id, storagePath });
   // Nigdy nie ufamy samemu job/unit/uploader/time; dokładna ścieżka jest
   // wymagana również przed przekazaniem rekordu do reconciliation.
-  return serverPhoto && String(serverPhoto.storage_path || '').trim() === storagePath
-    ? serverPhoto
-    : null;
+  if (!serverPhoto || String(serverPhoto.storage_path || '').trim() !== storagePath) return null;
+  if (!(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) return null;
+  validatedRemotePhotoRows.add(serverPhoto);
+  return serverPhoto;
 }
 
 async function performQueuedPhotoUpload({
