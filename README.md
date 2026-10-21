@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.33
+- 13.34
+
+WAWIS 13.34: Cennik mobilny startuje z zamkniętymi wszystkimi grupami; kliknięcie jednej grupy zamyka poprzednią, ponowne kliknięcie zamyka aktywną. Bez zmian w cenach, VAT, wyszukiwaniu i menu.
 
 WAWIS 13.33: nowy cennik Rotenso w mobilnej aplikacji dla administratora i pracowników (36 pozycji z DOCX, cena netto i automatyczne brutto 8%). Górne menu: administrator Montaże / Kontrahenci / Paliwo / Cennik w jednym rzędzie, pracownik Montaże / Paliwo / Cennik; napisy bez skracania. Bez zmian w desktopie i backendzie.
 
@@ -1031,6 +1033,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.34` — cennik mobilny: wszystkie modele zwinięte na starcie, automatyczne zwijanie poprzednio otwartego modelu, przełączanie jednej grupy naraz.
 - wersja `13.33` — mobilny moduł Cennik z 36 pozycjami i VAT 8%; cztery przyciski admina mieszczą się w jednym rzędzie z pełnymi napisami, również na wąskim iPhonie.
 - wersja `13.32` — kompaktowe karty urządzeń w mobilnym podglądzie protokołu, bez mocy kW, duplikacji rewizji i zawijania S/N.
 - wersja `13.31` — rozdzielenie komunikatu o zapisanym protokole w mobile: administrator widzi datę i godzinę, pracownik tylko „Protokół zapisany”.
