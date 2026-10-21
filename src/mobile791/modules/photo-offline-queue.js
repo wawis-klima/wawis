@@ -107,6 +107,7 @@ function toSerializableRecord(photo = {}) {
     last_attempt_at: photo.last_attempt_at || '',
     next_attempt_at: photo.next_attempt_at || '',
     lease_until: photo.lease_until || '',
+    lease_owner: photo.lease_owner || '',
     upload_stage: photo.upload_stage || 'queued',
     prepared_file: preparedFile,
     prepared_file_name: photo.prepared_file_name || preparedFile?.name || '',
