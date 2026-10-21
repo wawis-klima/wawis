@@ -155,7 +155,7 @@ test.describe('@mobile iPhone — odporność danych', () => {
     )), { timeout: 15_000 }).toBe(1);
   });
 
-  test('serwerowa tabliczka usuwa stary lokalny błąd i nie jest oznaczana jako brakująca', async ({ page }) => {
+  test('same metadane bez pliku Storage zachowują stary Blob, a serwerowa JZ pozostaje widoczna', async ({ page }) => {
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
     await setLogicalOnlineState(page, true);
@@ -183,7 +183,15 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy B', { exact: true }).click();
 
-    await expect.poll(() => countQueuedPhotos(page), { timeout: 30_000 }).toBe(0);
+    // Rekord photos i identyczna ścieżka bez obiektu w Storage nie są ACK.
+    // Stary File nie może zostać usunięty tylko dla uzyskania zielonego testu.
+    await expect.poll(() => countQueuedPhotos(page), { timeout: 30_000 }).toBe(1);
+    const preserved = await page.evaluate(async () => {
+      const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+      const local = (await queue.listPhotoQueueItems()).find(x => x.id === 'local-photo-upload-legacy-jz-error');
+      return local?.local_file ? await local.local_file.text() : null;
+    });
+    expect(preserved).toBe('legacy-jz');
     await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
     const outdoorRow = page.locator('.deviceUnitDocumentationRow').filter({ hasText: 'JZ' }).first();
     await expect(outdoorRow).toContainText('Zapisano w systemie');
