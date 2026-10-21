@@ -132,6 +132,29 @@ test.describe('@mobile P0 — legacy tabliczki w trwałej kolejce', () => {
     });
   }
 
+
+  test('dwie karty nie uzgadniają lokalnego File z obcą tabliczką tej samej jednostki', async ({ browser }) => {
+    const context = await browser.newContext(iphone14);
+    try {
+      const firstPage = await context.newPage();
+      const secondPage = await context.newPage();
+      await openIsolatedBrowserFixture(firstPage);
+      await openIsolatedBrowserFixture(secondPage);
+
+      const first = await firstPage.evaluate(restoreWithSyntheticServer, { seed: true, status: 'error', remote: 'different' });
+      const second = await secondPage.evaluate(restoreWithSyntheticServer, { seed: false, status: 'error', remote: 'different' });
+      const firstAgain = await firstPage.evaluate(restoreWithSyntheticServer, { seed: false, status: 'error', remote: 'different' });
+
+      for (const state of [first, second, firstAgain]) {
+        expect(state.remainingCount).toBe(1);
+        expect(state.preservedOriginalBytes).toBe('WAWIS-NEW-NAMEPLATE-CONTENT-P0');
+        expect(state.displayedServerIds).toEqual([]);
+      }
+    } finally {
+      await context.close();
+    }
+  });
+
   test('dokładnie potwierdzona ścieżka tej operacji uzgadnia legacy po reload', async ({ page }) => {
     await openIsolatedBrowserFixture(page);
     const first = await page.evaluate(restoreWithSyntheticServer, { seed: true, status: 'error', remote: 'none' });
