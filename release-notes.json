@@ -1,10 +1,9 @@
 {
-  "version": "13.34",
-  "summary": "Cennik: rozwijanie tylko jednego modelu naraz",
+  "version": "13.35",
+  "summary": "Cennik zaczyna się bezpośrednio od listy modeli",
   "changes": [
-    "Wszystkie modele Cennika początkowo zwinięte.",
-    "Rozwinięcie IMOTO zwija wcześniej otwartą UKURĘ i odwrotnie.",
-    "Ponowne kliknięcie rozwiniętego modelu go zamyka.",
-    "Ceny, menu oraz inne moduły bez zmian."
+    "Usunięty górny panel z napisem Cennik, opisem i wyszukiwarką.",
+    "Modele są pierwszą zawartością ekranu pod menu mobilnym.",
+    "Odstępy i rozmiary kart, ceny, VAT oraz automatyczne zwijanie bez zmian."
   ]
 }
