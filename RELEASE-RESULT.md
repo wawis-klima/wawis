@@ -1,14 +1,15 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.32 (przygotowanie — nie potwierdza wdrożenia)
+- 13.33 (przygotowanie — nie potwierdza wdrożenia)
 
 ## Zakres
-- Mobile: skrócenie widocznej nazwy modelu bez kW i nawiasów, mniejsza ikona JZ/JW.
-- Jednostka Z/W · urządzenie N bez powtórzonej rewizji.
-- S/N w osobnym, niełamanym wierszu i responsywnej czcionce.
-- Bez zmian w PDF, bazie danych, podpisie i PUSH.
+- Mobile: 36 pozycji cennika Rotenso w grupach; netto po rabacie i brutto 8%.
+- Cztery kolumny: moc/model, kubatura lub liczba JW, netto, brutto 8%.
+- Administrator: pełne nazwy Montaże / Kontrahenci / Paliwo / Cennik w jednym rzędzie.
+- Pracownik: Montaże / Paliwo / Cennik. Desktop bez zmiany.
+- Bez modyfikacji danych klientów, PDF, backendu ani autoryzacji.
 
 ## Bramki
-- Wymagane zielone CI PR i smoke protokołu, build aplikacji, Vercel READY oraz potwierdzenie wersji 13.32 na telefonie.
-- Przygotowanie PR nie oznacza wdrożenia produkcyjnego.
+- GitHub PR checks / targeted-checks: ceny i VAT, role, napisy 320–430 px, E2E oraz Closure Gate.
+- Po zielonym CI merge do main; Vercel READY dla właściwego SHA.
