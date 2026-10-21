@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.37",
+  "version": "13.38",
   "scope": "mobile",
-  "release_branch": "release/v13.37",
+  "release_branch": "release/v13.38",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Tylko etykiety dwóch grup Hiro Multi w mobilnym Cenniku, bez backendu i zmian danych."
+    "notes": "Tylko CSS mobilnego Cennika: min-height 44 px i padding 7 px; testy regresyjne. Bez zmian danych i backendu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.37.zip"
+    "file_name": "klima-app-v13.38.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.37",
+    "source_branch": "release/v13.38",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY SHA produkcyjny i aktywna wersja 13.37 na iPhonie",
-    "notes": "Na kartach Hiro widoczne krótkie Jedn. Zew./Jedn. Wew. w jednej linii; liczby i ceny bez zmian."
+    "evidence_source": "Vercel READY produkcyjnego SHA i widoczna wersja 13.38 na iPhonie",
+    "notes": "Karty cennika niższe, strefa dotyku co najmniej 44 px; długie etykiety i rozwiniecie działają."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile-only display label mapping for two Hiro Multi groups + narrow viewport CSS; price source unchanged.",
-    "release_ci": "Smoke 36 cen + E2E iPhone 320–430 px for one-line labels and menu + Closure Gate + build.",
-    "post_deploy": "Vercel READY matching new main SHA, version 13.37 and labels visible on iPhone."
+    "code": "CSS: nagłówki kart Cennika mobile min 48→44px, padding pionowy 9→7px. Dane i logika nietknięte.",
+    "release_ci": "Smoke cen i CSS, E2E mobile 320–430px (rozmiar, brak overflow, dotyk i otwieranie), Closure Gate, build.",
+    "post_deploy": "Vercel READY matching main SHA oraz wersja 13.38 na iPhonie."
   }
 }

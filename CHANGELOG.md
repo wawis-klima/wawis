@@ -1,3 +1,9 @@
+## 13.38
+- Mobilny Cennik: niższe białe karty nazw modeli — minimalna wysokość 48 → 44 px, padding pionowy 9 → 7 px.
+- Tekst 13 px, liczniki, nazwy, rozwijanie, odstępy między kartami i tabele cen pozostają bez zmian. Dwuwierszowe nazwy nadal rozwijają się naturalnie, bez ucinania.
+- Weryfikacja CSS, testy E2E iPhone 320/375/390/430 px, kontrola dotyku min. 44 px, przepełnienia i działania rozwijania.
+- Bez zmian desktopu, Supabase, PUSH, protokołów i danych.
+
 ## 13.37
 - Mobile / Cennik: dwie nazwy grup skrócono do „Rotenso Hiro Multi Jedn. Zew.” oraz „Rotenso Hiro Imoto Multi Jedn. Wew.”.
 - Tylko wyświetlane etykiety są krótsze; nazwy danych źródłowych, 36 cen, stawka VAT, liczba jednostek, odstępy kart, rozmiary licznika, autozwijanie i menu są nietknięte.

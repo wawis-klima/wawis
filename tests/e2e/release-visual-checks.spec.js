@@ -247,6 +247,8 @@ test.describe('@mobile release visual iPhone', () => {
           return {
             top: rect.top,
             height: rect.height,
+            minHeightStyle: parseFloat(getComputedStyle(header).minHeight),
+            paddingTopStyle: parseFloat(getComputedStyle(header).paddingTop),
             labelHeight: labelRect.height,
             labelScrollHeight: label.scrollHeight,
             labelClientHeight: label.clientHeight,
@@ -297,6 +299,8 @@ test.describe('@mobile release visual iPhone', () => {
       expect(compact.pageOverflow).toBeLessThanOrEqual(2);
       for (const row of compact.rows) {
         expect(row.height).toBeGreaterThanOrEqual(44);
+        expect(row.minHeightStyle).toBe(44);
+        expect(row.paddingTopStyle).toBe(7);
         expect(row.fontSize).toBeGreaterThanOrEqual(13);
         expect(row.labelScrollWidth).toBeLessThanOrEqual(row.labelClientWidth + 1);
         expect(row.labelScrollHeight).toBeLessThanOrEqual(row.labelClientHeight + 1);
