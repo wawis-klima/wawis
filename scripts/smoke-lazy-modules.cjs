@@ -8,6 +8,7 @@ const jobsPanelSource = fs.readFileSync(path.join(root, 'src', 'components', 'Jo
 const contractorsPanelSource = fs.readFileSync(path.join(root, 'src', 'components', 'contractors', 'ContractorsPanel.jsx'), 'utf8');
 const devicesPanelSource = fs.readFileSync(path.join(root, 'src', 'components', 'devices', 'DevicesPanel.jsx'), 'utf8');
 const moduleSwitcherSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'ModuleSwitcher.jsx'), 'utf8');
+const mobileModuleSwitcherSource = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'layout', 'ModuleSwitcher.jsx'), 'utf8');
 const authenticatedLayoutSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AppAuthenticatedLayout.jsx'), 'utf8');
 const adminDesktopShellSource = fs.readFileSync(path.join(root, 'src', 'components', 'layout', 'AdminDesktopShell.jsx'), 'utf8');
 
@@ -33,8 +34,11 @@ assert.match(jobsPanelSource, /const DesktopJobsLayout = lazy\(\(\) => import\("
 assert.match(jobsPanelSource, /<Suspense fallback=\{jobsLayoutFallback\}>/);
 assert.match(jobsPanelSource, /Trwa ładowanie widoku montaży/);
 
-// Mobile worker navigation permits jobs + fuel + read-only pricelist, never contractors.
-assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel", "pricelist"\]\.includes\(module\.id\)/);
+// Desktop behavior remains unchanged; the pricelist is mobile-only.
+assert.match(moduleSwitcherSource, /isAdmin \? true : \["jobs", "fuel"\]\.includes\(module\.id\)/);
+// Mobile worker navigation adds a read-only pricelist, never contractors.
+assert.match(mobileModuleSwitcherSource, /isAdmin \? true : \["jobs", "fuel", "pricelist"\]\.includes\(module\.id\)/);
+assert.doesNotMatch(mobileModuleSwitcherSource, /\["jobs", "fuel", "contractors"/);
 // Devices remain an administrator desktop module in the sidebar, not in the compact mobile switcher.
 assert.match(adminDesktopShellSource, /key:\s*["']devices["']/);
 assert.match(adminDesktopShellSource, /label:\s*["']Urządzenia["']/);
