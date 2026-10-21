@@ -231,7 +231,8 @@ test.describe('@mobile release visual iPhone', () => {
     await expect(page.getByText('5 JW', {exact: true})).toBeVisible();
     await inspectMenuRow(page,names);
     await page.locator('.moduleSwitcherMobile button[data-module="jobs"]').click();
-    await expect(page.locator('.mobileJobsShellV943')).toBeVisible();
+    await expect(page.locator('.moduleSwitcherMobile button[data-module="jobs"]')).toHaveClass(/active/);
+    await expect(page.locator('.statusActionButton[title="Zakończone"]')).toBeVisible();
   });
 
   test('pracownik ma trzy pełne nazwy przycisków i dostęp do cennika, bez Kontrahentów', async ({ page }) => {
