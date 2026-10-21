@@ -80,7 +80,7 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
       });
       const pending=pageNew.evaluate(async()=>{
         const queue=await import('/src/mobile791/modules/photo-offline-queue.js');
-        try {await queue.savePhotoQueueItem({id:'blocked-new',local_file:new File(['important'],'a.jpg')});return 'unexpected-success';}
+        try {return await queue.savePhotoQueueItem({id:'blocked-new',local_file:new File(['important'],'a.jpg')});}
         catch(e){return e.name||'error'}
       });
       await expect.poll(async()=>pageOld.evaluate(()=>{
@@ -88,7 +88,7 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
       })).toBe(3);
       const outcome=await pending;
       // Oczekiwany fail-closed: zapis nie jest potwierdzony, dopóki stara karta blokuje upgrade.
-      expect(outcome).not.toBe('unexpected-success');
+      expect(outcome).toBe(false);
       await pageOld.evaluate(()=>window.__heldV3.close());
       const upgraded=await pageNew.evaluate(async()=>{
         const queue=await import('/src/mobile791/modules/photo-offline-queue.js');
@@ -144,7 +144,7 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
   test('aktualne Supabase SDK otrzymuje nonce i cache:no-store dla każdego readback', async ({ page }) => {
     await fixture(page);
     const proof=await page.evaluate(async()=>{
-      const {createClient}=await import('@supabase/supabase-js');
+      const {createClient}=await import('/tests/e2e/fixtures/supabase-storage-sdk-bridge.js');
       const calls=[];
       const client=createClient('https://storage-proof.example.invalid','public-anon-key',{
         auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
