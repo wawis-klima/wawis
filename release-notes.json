@@ -1,9 +1,9 @@
 {
-  "version": "13.41",
-  "summary": "P0 integralność i bezpieczeństwo lokalnej kolejki zdjęć",
+  "version": "13.42",
+  "summary": "P0: integracja cache-safe Storage i blokada starych klientów kolejki zdjęć",
   "changes": [
-    "Brak nadpisania niewysłanego pliku przez kolizję metadanych zdjęć.",
-    "Bezpieczne usunięcie lokalnej kopii dopiero po zgodności bajtów Storage.",
-    "Kontrola owner/generation workerów oraz poprawne ponawianie błędów."
+    "Fresh Storage SHA-256 readback z cacheNonce i cache:no-store.",
+    "Niedestrukcyjna migracja IndexedDB v3 do v4 blokuje starego workera v3.",
+    "Naprawiono retry z cudzym lease, zatrzymanie na CAS, 503/429, status po błędzie zapisu IDB."
   ]
 }

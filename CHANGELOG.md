@@ -1,3 +1,13 @@
+## 13.42
+- P0-CACHE: pobieranie rzeczywistych bajtów przez Storage download(cacheNonce, cache:no-store) przed SHA-256 oraz usunięciem jedynej lokalnej kopii; brak trwałego wyniku ACK w cache JS.
+- P0-MIXED: niedestrukcyjny upgrade IndexedDB z v3 do v4. Stary kod v3 nie może już otworzyć połączenia po zakończeniu migracji; blokada aktualizacji kończy się błędem, nigdy pozornym zapisem.
+- P1-RETRY/CAS: ręczne Ponów przejmuje własny lease, a odmowa update CAS zatrzymuje upload; dotychczasowy worker propaguje zaufany claim wyłącznie we własnej sesji.
+- P1-TRANSIENT: błędy 429/503 przy Storage 409/readback zachowują kod HTTP i ponawiają z backoff.
+- P1-PERSIST: zdjęcie nie ma statusu Zapisano na telefonie przed pomyślnym commitem IDB; przy błędzie zachowujemy File w bieżącym formularzu i umożliwiamy ponowny zapis.
+- P2: readback dopiero po własnym claim; brak podwójnego sprawdzania w lookup i brak cache pamięci pozytywnych potwierdzeń.
+- Nowe browser E2E: migracja v3/v4, zablokowane upgrade, SDK Supabase z cacheNonce, retry w dwóch kartach, 409+503/429, utrata zapisu IDB.
+- Wymaga niezależnej kontroli na WebKit i fizycznej PWA; bez zmiany backendu Supabase ani RLS.
+
 ## 13.41
 - P0-R2: błąd odczytu bajtów nie generuje już fałszywego hasha z nazwy/rozmiaru/daty. Każda niepotwierdzona zawartość dostaje unikatową operację.
 - P0-R2/P1-C1: kolejka IndexedDB nie nadpisuje istniejącego Blob ani lease przez store.put. Nowe identyfikatory obejmują właściciela.
