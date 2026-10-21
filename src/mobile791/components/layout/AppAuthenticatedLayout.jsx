@@ -38,9 +38,9 @@ export default function AppAuthenticatedLayout({
         <div className="summary premiumSummary">
           <div>
             <div className="summaryHeader">
-              <h1>{activeModule === 'fuel' ? 'Tankowania' : 'Podsumowanie montaży'}</h1>
+              <h1>{activeModule === 'fuel' ? 'Tankowania' : activeModule === 'pricelist' ? 'Cennik' : 'Podsumowanie montaży'}</h1>
             </div>
-            {activeModule === 'fuel' ? null : <p>
+            {activeModule === 'fuel' || activeModule === 'pricelist' ? null : <p>
               {!isAdmin && showAssignedJobsOnly
                 ? "Na dole masz jedną tabelę wszystkich Twoich przypisanych zleceń. Kliknięcie w Twoje imię i nazwisko wraca do pełnej listy."
                 : `Na dole masz tabelę dla sekcji: ${desktopStatusLabels[desktopStatusFilter]}. Kliknięcie w kafelek zmienia widok tabeli.`}
@@ -57,7 +57,7 @@ export default function AppAuthenticatedLayout({
 
       {errorMsg ? <div className="errorBox">{errorMsg}</div> : null}
 
-      <div className={`twoCol twoColDesktopStatusLeft ${["sms", "contractors", "devices", "calendar", "diagnostics", "fuel"].includes(activeModule) ? "singleModuleColumn" : ""}`}>
+      <div className={`twoCol twoColDesktopStatusLeft ${["sms", "contractors", "devices", "calendar", "diagnostics", "fuel", "pricelist"].includes(activeModule) ? "singleModuleColumn" : ""}`}>
         <div>{renderedJobsPanel}</div>
         {!isMobile && detailsPanel ? <div className="desktopDetailColumnTight">{detailsPanel}</div> : null}
       </div>

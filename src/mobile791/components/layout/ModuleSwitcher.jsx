@@ -4,11 +4,12 @@ const MODULES = [
   { id: "jobs", label: "Montaże" },
   { id: "contractors", label: "Kontrahenci" },
   { id: "fuel", label: "Paliwo" },
+  { id: "pricelist", label: "Cennik" },
 ];
 
 export default function ModuleSwitcher({ activeModule, setActiveModule, isAdmin }) {
   const visibleModules = MODULES.filter((module) => (
-    isAdmin ? true : ["jobs", "fuel"].includes(module.id)
+    isAdmin ? true : ["jobs", "fuel", "pricelist"].includes(module.id)
   ));
 
   return (

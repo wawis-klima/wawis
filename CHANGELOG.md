@@ -1,3 +1,10 @@
+## 13.33
+- Mobile: cennik Rotenso na podstawie pliku „2025 CENNIK KLIMA MONTAZ 2026.docx” — 36 pozycji z 10 grup, ceny netto po rabacie i obliczone brutto VAT 8%.
+- Administrator: Montaże / Kontrahenci / Paliwo / Cennik w jednym rzędzie bez wielokropków i ucięć, pracownik: Montaże / Paliwo / Cennik. Wysokość przycisków minimum 44 px.
+- Tabele czterokolumnowe z rozwijanymi grupami; dla Hiro liczba jednostek zamiast kubatury, pozostałe dane w m³, nie m².
+- Tylko mobile: brak zmian desktopu, montaży, protokołów czy Supabase. Regresje szerokości 320–430 px, ról, kliknięć i obliczeń VAT.
+- Smoke: `scripts/smoke-mobile-pricelist-v1333.mjs`. E2E: `tests/e2e/release-visual-checks.spec.js`.
+
 ## 13.32
 - Mobile / podgląd protokołu: skrócona nazwa modelu, np. „Rotenso Imoto I26Xo R15” (bez mocy kW, bez nawiasów), mniejszy kwadrat JZ/JW.
 - Drugi wiersz pokazuje „Jednostka Z/W · urządzenie N”; rewizja pozostaje w nazwie modelu, bez duplikatu.

@@ -1,9 +1,10 @@
 {
-  "version": "13.32",
-  "summary": "Kompaktowe modele i numery seryjne w mobilnym protokole",
+  "version": "13.33",
+  "summary": "Mobilny cennik Rotenso i cztery pełne przyciski w jednym rzędzie",
   "changes": [
-    "Mniejsze kafelki JZ/JW i skrócona nazwa modelu, np. Rotenso Imoto I26Xo R15.",
-    "Pod nazwą tylko Jednostka Z/W i numer urządzenia — bez powtórzenia rewizji.",
-    "Numer S/N w jednym wierszu; PDF, dane tabliczek, podpis oraz PUSH bez zmian."
+    "36 pozycji z cennika DOCX w rozwijanych grupach, netto i brutto 8%.",
+    "Administrator: Montaże, Kontrahenci, Paliwo, Cennik — jeden rząd i pełne napisy.",
+    "Pracownik: Montaże, Paliwo, Cennik. Desktop i backend bez zmian.",
+    "Testy szerokości 320, 360, 375, 390, 430 px."
   ]
 }

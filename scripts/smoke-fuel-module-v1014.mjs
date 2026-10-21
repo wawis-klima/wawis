@@ -211,7 +211,8 @@ assert.match(desktopModules, /id: ["']fuel["']/);
 assert.match(mobileModules, /id: ["']fuel["']/);
 assert.doesNotMatch(mobileModules, /diagnostics|Diag\./i, 'Diagnostyka ma zniknąć wyłącznie z mobilnego menu.');
 assert.doesNotMatch(mobileModules, /Urządzenia/, 'Urządzenia mają być całkowicie usunięte z mobilnego przełącznika.');
-assert.match(mobileModules, /\["jobs", "fuel"\]\.includes\(module\.id\)/, 'Pracownik mobilny ma mieć dokładnie Montaże i Paliwo.');
+assert.match(mobileModules, /\["jobs", "fuel", "pricelist"\]\.includes\(module\.id\)/, 'Pracownik mobilny ma mieć dokładnie Montaże, Paliwo i Cennik.');
+assert.doesNotMatch(mobileModules, /\["jobs", "fuel", "contractors"/, 'Pracownik mobilny nie może zobaczyć Kontrahentów.');
 
 assert.match(baseMigration, /alter table public\.fuel_vehicles enable row level security/i);
 assert.match(baseMigration, /alter table public\.fuel_entries enable row level security/i);
@@ -276,7 +277,7 @@ assert.match(panel, /Zapisz korektę/);
 assert.match(panel, /Nietypowo szybkie ponowne tankowanie/);
 assert.match(panel, /updateFuelEntry/);
 assert.match(desktopApp, /showVehicleOverview=\{!isMobile\}/, 'Zestawienie floty i raport mają być tylko na desktopie.');
-assert.match(mobileApp, /!\["jobs", "fuel"\]\.includes\(activeModule\)/, 'Pracownik mobilny ma móc pozostać w module Paliwo.');
+assert.match(mobileApp, /!\["jobs", "fuel", "pricelist"\]\.includes\(activeModule\)/, 'Pracownik mobilny ma móc pozostać w modułach Montaże, Paliwo i Cennik.');
 assert.match(mobileApp, /isAdmin && isMobile && activeModule === "devices"/, 'Administrator mobilny ma być wyprowadzany z modułu Urządzenia.');
 assert.doesNotMatch(mobileLayout, /Widzisz wszystkie tankowania|Widzisz wyłącznie własne tankowania/, 'Mobilny moduł paliwa nie powinien marnować miejsca na opis.');
 assert.doesNotMatch(mainLayout, /Testowy rejestr paliwa/, 'Moduł paliwa nie jest już testowy.');

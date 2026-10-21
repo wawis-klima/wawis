@@ -50,6 +50,7 @@ const CalendarPanel = lazy(() => import("./components/calendar/CalendarPanel.jsx
 const JobDetailsPanel = lazy(() => import("./components/JobDetailsPanel.jsx"));
 const JobFormModal = lazy(() => import("./components/modals/JobFormModal.jsx"));
 const FuelPanel = lazy(() => import("../components/fuel/FuelPanel.jsx"));
+const PricelistPanel = lazy(() => import("./components/pricelist/PricelistPanel.jsx"));
 
 const adminModuleFallback = (
   <div className="card authCard">Trwa ładowanie modułu...</div>
@@ -1204,13 +1205,13 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!isAdmin && !["jobs", "fuel"].includes(activeModule)) {
+    if (!isAdmin && !["jobs", "fuel", "pricelist"].includes(activeModule)) {
       handleDesktopNavigation("jobs", "orders");
     }
   }, [activeModule, isAdmin]);
 
   useEffect(() => {
-    if (isAdmin && isMobile && activeModule === "devices") {
+    if ((isAdmin && isMobile && activeModule === "devices") || (!isMobile && activeModule === "pricelist")) {
       handleDesktopNavigation("jobs", "orders");
     }
   }, [activeModule, isAdmin, isMobile]);
@@ -1504,6 +1505,8 @@ export default function App() {
                 focusedDateKey={calendarFocusDateKey}
                 onOpenJob={handleOpenJobFromCalendar}
               />
+            ) : activeModule === "pricelist" && isMobile ? (
+              <PricelistPanel />
             ) : activeModule === "fuel" ? (
               <FuelPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}

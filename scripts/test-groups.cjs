@@ -251,6 +251,7 @@ const GROUPS = {
     'node scripts/smoke-contractors-stage4-v1177.mjs',
     'node scripts/smoke-contractors-async-v1175.mjs',
     'npm run test:smoke:mobile-ui-copy',
+    'npm run test:smoke:mobile-pricelist',
     'npm run test:smoke:mobile-style-bootstrap',
     'node scripts/smoke-mobile-address-wrap-v1291.cjs',
     'node scripts/smoke-worker-ui-v1295.cjs',
