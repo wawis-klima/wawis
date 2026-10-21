@@ -56,6 +56,10 @@ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\) !important/)
 assert.match(css,/\.moduleSwitcherMobile\.isWorker\s*\{\s*grid-template-columns:repeat\(3,minmax\(0,1fr\)\) !important/);
 assert.match(css,/\.moduleSwitcherMobile \.moduleSwitcherBtn\s*\{[\s\S]*?min-height:44px !important/);
 assert.match(css,/text-overflow:clip !important/);
+assert.match(css,/\.wawisPricelistGroups \{ display:grid; gap:7px;/, 'Grupy muszą mieć mniejsze odstępy.');
+assert.match(css,/\.wawisPricelistGroupTitle \{[^}]*min-height:48px;[^}]*padding:9px 11px;/, 'Karty mają być niższe, ale z wygodnym obszarem dotykowym.');
+assert.match(css,/\.wawisPricelistCount \{[^}]*min-width:22px; height:22px;/, 'Licznik pozycji ma być kompaktowy.');
+assert.match(css,/\.wawisPricelistGroupTitle \{[^}]*font-size:13px;/, 'Nie zmieniamy wielkości czcionki modeli.');
 assert.doesNotMatch(css,/text-overflow:ellipsis/);
 assert.match(panel,/grossPriceWithEightPercentVat\(net\)/);
 assert.match(panel,/\{PRICE_LIST_GROUPS\.map\(\(group\) => \(/, 'Lista modeli ma wyświetlać wszystkie grupy.');
