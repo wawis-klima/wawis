@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.36
+- 13.37
+
+WAWIS 13.37: skrócone opisy dwóch kart Hiro Multi do „Rotenso Hiro Multi Jedn. Zew.” i „Rotenso Hiro Imoto Multi Jedn. Wew.” — w jednej linii na iPhonie; ceny i nazwy źródłowe niezmienione. Pozostałe karty i menu bez zmian.
 
 WAWIS 13.36: mobilny Cennik ma nieco niższe, ale nadal czytelne karty modeli i mniejsze przerwy między nimi. Rozmiar czcionki, pełne nazwy, odstępy wewnątrz tabel cenowych, menu, ceny oraz rozwijanie jednej grupy pozostają bez zmian.
 
@@ -1037,6 +1039,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.37` — skrócenie dwóch nazw Hiro Multi w Cenniku mobilnym do Jedn. Zew. / Jedn. Wew., bez zmian pozostałych modeli.
 - wersja `13.36` — mniejsze przerwy i niższe karty modeli w Cenniku mobilnym; pełne nazwy i strefy dotyku co najmniej 44 px, bez zmian pozostałych modułów.
 - wersja `13.35` — wyłącznie usunięcie bloku tytułu, opisu i wyszukiwarki z mobilnego Cennika; modele zaczynają się zaraz pod menu.
 - wersja `13.34` — cennik mobilny: wszystkie modele zwinięte na starcie, automatyczne zwijanie poprzednio otwartego modelu, przełączanie jednej grupy naraz.
