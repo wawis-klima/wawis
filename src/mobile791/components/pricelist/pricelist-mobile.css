@@ -1,16 +1,16 @@
-/* WAWIS 13.33 — cennik tylko w mobilnej nawigacji. */
+/* WAWIS 13.36 — czytelny, bardziej zwarty cennik mobilny. */
 .wawisPricelist { display:grid; gap:12px; min-width:0; max-width:100%; }
 .wawisPricelistIntro { padding:14px; background:#fff; border:1px solid #dfe7ef; border-radius:17px; }
 .wawisPricelistIntro h1 { font-size:21px; line-height:1.2; margin:0 0 6px; color:#172b45; }
 .wawisPricelistIntro p { color:#51647c; font-size:12px; line-height:1.45; margin:0 0 12px; }
 .wawisPricelistSearchLabel { display:block; font-size:12px; font-weight:750; color:#34465f; margin:0 0 5px; }
 .wawisPricelistSearch { width:100%; min-width:0; min-height:44px; font-size:16px; color:#172b45; border:1px solid #c9d6e4; border-radius:12px; padding:10px 11px; background:#fff; box-sizing:border-box; }
-.wawisPricelistGroups { display:grid; gap:10px; min-width:0; }
+.wawisPricelistGroups { display:grid; gap:7px; min-width:0; }
 .wawisPricelistGroup { overflow:hidden; min-width:0; border:1px solid #dce5ef; background:#fff; border-radius:15px; }
-.wawisPricelistGroupTitle { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:13px 11px; cursor:pointer; color:#172b45; font-weight:850; font-size:13px; line-height:1.3; }
+.wawisPricelistGroupTitle { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:48px; padding:9px 11px; box-sizing:border-box; cursor:pointer; color:#172b45; font-weight:850; font-size:13px; line-height:1.3; }
 .wawisPricelistGroupTitle > span:first-child { flex:1; min-width:0; overflow-wrap:break-word; }
 .wawisPricelistGroupTitle::marker { color:#4a6280; }
-.wawisPricelistCount { display:inline-flex; justify-content:center; align-items:center; min-width:24px; height:24px; border-radius:10px; background:#edf3fc; color:#385b8e; font-size:11px; font-weight:850; }
+.wawisPricelistCount { display:inline-flex; justify-content:center; align-items:center; flex-shrink:0; min-width:22px; height:22px; border-radius:9px; background:#edf3fc; color:#385b8e; font-size:11px; font-weight:850; }
 .wawisPricelistGrid { min-width:0; width:100%; padding:0 7px 8px; box-sizing:border-box; }
 .wawisPricelistRow { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.05fr); gap:4px; align-items:center; border-top:1px solid #e5ebf3; padding:10px 0; color:#34465f; }
 .wawisPricelistRow > * { min-width:0; font-size:clamp(10px,2.75vw,12px); line-height:1.3; }

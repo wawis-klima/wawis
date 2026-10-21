@@ -229,6 +229,55 @@ test.describe('@mobile release visual iPhone', () => {
     const allGroups = page.locator('.wawisPricelistGroup');
     await expect(allGroups).toHaveCount(10);
     await expect(page.locator('.wawisPricelistGroup[open]')).toHaveCount(0);
+    // Kompaktowość bez obcinania nazw i zmniejszania stref dotykowych poniżej 44 px.
+    for (const width of [320, 375, 390, 430]) {
+      await page.setViewportSize({ width, height: 844 });
+      const compact = await allGroups.evaluateAll((nodes) => {
+        const headers = nodes.map((node) => node.querySelector('summary'));
+        const rows = headers.map((header) => {
+          const rect = header.getBoundingClientRect();
+          const label = header.querySelector('span:first-child');
+          const labelRect = label.getBoundingClientRect();
+          const marker = header.querySelector('.wawisPricelistCount').getBoundingClientRect();
+          return {
+            top: rect.top,
+            height: rect.height,
+            labelHeight: labelRect.height,
+            labelScrollHeight: label.scrollHeight,
+            labelClientHeight: label.clientHeight,
+            labelScrollWidth: label.scrollWidth,
+            labelClientWidth: label.clientWidth,
+            fontSize: parseFloat(getComputedStyle(header).fontSize),
+            markerRight: marker.right,
+            headerRight: rect.right,
+          };
+        });
+        const style = getComputedStyle(nodes[0].parentElement);
+        const gaps = rows.slice(1).map((row, index) => row.top - (rows[index].top + rows[index].height) - 2);
+        return {
+          count: rows.length,
+          maxGap: Math.max(...gaps),
+          declaredGap: parseFloat(style.rowGap || style.gap),
+          maxSingleLine: Math.max(...rows.filter(row => row.labelHeight < 22).map(row => row.height)),
+          maxHeight: Math.max(...rows.map(row => row.height)),
+          pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          rows,
+        };
+      });
+      expect(compact.count).toBe(10);
+      expect(compact.declaredGap).toBeLessThanOrEqual(7);
+      expect(compact.maxGap).toBeLessThanOrEqual(8);
+      expect(compact.maxSingleLine).toBeLessThanOrEqual(55);
+      expect(compact.maxHeight).toBeLessThanOrEqual(85);
+      expect(compact.pageOverflow).toBeLessThanOrEqual(2);
+      for (const row of compact.rows) {
+        expect(row.height).toBeGreaterThanOrEqual(44);
+        expect(row.fontSize).toBeGreaterThanOrEqual(13);
+        expect(row.labelScrollWidth).toBeLessThanOrEqual(row.labelClientWidth + 1);
+        expect(row.labelScrollHeight).toBeLessThanOrEqual(row.labelClientHeight + 1);
+        expect(row.markerRight).toBeLessThanOrEqual(row.headerRight);
+      }
+    }
     const ukura = allGroups.filter({ has: page.locator('summary', { hasText: 'Rotenso UKURA H' }) });
     const imoto = allGroups.filter({ has: page.locator('summary', { hasText: 'Rotenso IMOTO' }) });
     // UKURA otwarta po kliknięciu.

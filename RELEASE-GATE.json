@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.35",
+  "version": "13.36",
   "scope": "mobile",
-  "release_branch": "release/v13.35",
+  "release_branch": "release/v13.36",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Mobile-only: usunięcie nagłówka, opisu i wyszukiwarki Cennika. Pozostałe moduły, ceny i układ menu bez zmian."
+    "notes": "Wyłącznie CSS kart mobilnego Cennika; bez danych, Supabase, fakturowania lub protokołów."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.35.zip"
+    "file_name": "klima-app-v13.36.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.35",
+    "source_branch": "release/v13.36",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY oraz SHA wydania 13.35, aktywna wersja na iPhonie",
-    "notes": "Na wejściu do Cennika od razu lista modeli; brak osobnego panelu nagłówka, opisu i wyszukiwarki. UKURA/IMOTO zwijają się jak dotychczas."
+    "evidence_source": "Vercel READY z produkcyjnym SHA main oraz wersja 13.36 na iPhone",
+    "notes": "Zatwierdzić mniejsze przerwy, pełne nazwy w kartach, rozwijanie, czytelność na rzeczywistym iPhonie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Usunięcie tylko górnego bloku i jego filtrowania z mobilnego PricelistPanel; modele, ceny, VAT, CSS menu i backend nietknięte.",
-    "release_ci": "Testy 36 cen, brak pola search, 10 zwiniętych grup na starcie, Playwright role/akordeon/menu, Closure Gate i build.",
-    "post_deploy": "Vercel READY dla nowego SHA; wersja 13.35 widoczna na iPhonie."
+    "code": "Zmiana tylko wizualnych rozmiarów kart mobilnego Cennika; menu, dane cenowe i backend bez zmian.",
+    "release_ci": "Smoke 36 cen + kompaktowa stylizacja CSS, Playwright 320–430 px i karty min 44 px bez ucięć, Closure Gate, build.",
+    "post_deploy": "Vercel READY dla SHA merge, wersja 13.36 na iPhonie, pełne nazwy bez obcięć."
   }
 }

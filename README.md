@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.35
+- 13.36
+
+WAWIS 13.36: mobilny Cennik ma nieco niższe, ale nadal czytelne karty modeli i mniejsze przerwy między nimi. Rozmiar czcionki, pełne nazwy, odstępy wewnątrz tabel cenowych, menu, ceny oraz rozwijanie jednej grupy pozostają bez zmian.
 
 WAWIS 13.35: mobilny Cennik wyświetla listę modeli zaraz pod menu bez osobnego nagłówka „Cennik”, tekstu informacyjnego i pola wyszukiwania. Nie zmieniają się ceny, odstępy między kartami, menu i automatyczne zwijanie innych modeli.
 
@@ -1035,6 +1037,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.36` — mniejsze przerwy i niższe karty modeli w Cenniku mobilnym; pełne nazwy i strefy dotyku co najmniej 44 px, bez zmian pozostałych modułów.
 - wersja `13.35` — wyłącznie usunięcie bloku tytułu, opisu i wyszukiwarki z mobilnego Cennika; modele zaczynają się zaraz pod menu.
 - wersja `13.34` — cennik mobilny: wszystkie modele zwinięte na starcie, automatyczne zwijanie poprzednio otwartego modelu, przełączanie jednej grupy naraz.
 - wersja `13.33` — mobilny moduł Cennik z 36 pozycjami i VAT 8%; cztery przyciski admina mieszczą się w jednym rzędzie z pełnymi napisami, również na wąskim iPhonie.

@@ -1,3 +1,10 @@
+## 13.36
+- Mobilny Cennik: odstępy między modelami 10 → 7 px, karty niższe dzięki paddingowi 13 → 9 px przy zachowaniu minimum 48 px wysokości nagłówka.
+- Nie zmieniono czcionki nazw (13 px), pełnych etykiet, modeli, ich kolejności ani cen. Liczniki pozycji zmniejszone 24 → 22 px.
+- Długie nazwy pozostają wielowierszowe, bez obcinania; nie wymuszamy zmieszczenia całej listy na ekranie za cenę czytelności.
+- Testy wizualne szerokości 320/375/390/430 px, wszystkich 10 grup, ich stref kliknięć i rozwijania.
+- Desktop, menu czterech przycisków, backend, podpis, PDF oraz paliwo bez zmian.
+
 ## 13.35
 - Mobile / Cennik: usunięto górny panel z nagłówkiem, opisem „Ceny po rabacie…” i wyszukiwarką.
 - Lista modeli jest pierwszym elementem pod menu. Nie zmieniono wysokości kart ani odstępów między modelami.

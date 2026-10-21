@@ -1,9 +1,9 @@
 {
-  "version": "13.35",
-  "summary": "Cennik zaczyna się bezpośrednio od listy modeli",
+  "version": "13.36",
+  "summary": "Czytelniejsze, bardziej zwarte karty modeli w mobilnym Cenniku",
   "changes": [
-    "Usunięty górny panel z napisem Cennik, opisem i wyszukiwarką.",
-    "Modele są pierwszą zawartością ekranu pod menu mobilnym.",
-    "Odstępy i rozmiary kart, ceny, VAT oraz automatyczne zwijanie bez zmian."
+    "Zmniejszono wysokość białych kart i odstępy między nimi, aby łatwiej objąć listę wzrokiem.",
+    "Pełne nazwy i minimum 48 px wygodnego dotyku zostały zachowane; bez sztucznego wymuszania jednego ekranu.",
+    "Ceny, VAT, działanie rozwijania, górne menu i inne moduły bez zmian."
   ]
 }
