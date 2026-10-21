@@ -251,11 +251,30 @@ test.describe('@mobile iPhone — odporność danych', () => {
       await page.reload();
       await page.locator('.statusActionButton[title="W trakcie"]').click();
       await page.getByText('Klient Testowy B', { exact: true }).click();
-      await expect.poll(() => countQueuedPhotos(page), { timeout: 15_000 }).toBe(0);
+      // Obca, starsza tabliczka w tym samym montażu NIE może usuwać
+      // lokalnego pliku przy nadal aktywnym lease (P0-01).
       await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
       const jz = page.locator('.deviceUnitDocumentationRow').filter({ hasText: 'JZ' }).first();
       await expect(jz).toContainText('Zapisano w systemie');
       await expect(jz).not.toContainText('Błąd wysyłania');
+
+      // Weryfikujemy prawdziwe bajty File przechowywane przez IndexedDB,
+      // nie tylko stan/etykietę UI ani statyczną obecność kodu.
+      const preserved = await page.evaluate(async () => {
+        const queue = await import('/src/mobile791/modules/photo-offline-queue.js');
+        const records = await queue.listPhotoQueueItems();
+        const local = records.find((photo) => photo.id === 'local-photo-upload-legacy-jz-error');
+        return {
+          count: records.length,
+          bytes: local?.local_file ? await local.local_file.text() : null,
+          status: local?.upload_status || '',
+          leaseUntil: Date.parse(local?.lease_until || ''),
+        };
+      });
+      expect(preserved.count).toBe(1);
+      expect(preserved.bytes).toBe('legacy-jz');
+      expect(preserved.status).toBe('uploading');
+      expect(preserved.leaseUntil).toBeGreaterThan(Date.now());
     }
   });
 
