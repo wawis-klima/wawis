@@ -1,10 +1,10 @@
 {
-  "version": "13.33",
-  "summary": "Mobilny cennik Rotenso i cztery pełne przyciski w jednym rzędzie",
+  "version": "13.34",
+  "summary": "Cennik: rozwijanie tylko jednego modelu naraz",
   "changes": [
-    "36 pozycji z cennika DOCX w rozwijanych grupach, netto i brutto 8%.",
-    "Administrator: Montaże, Kontrahenci, Paliwo, Cennik — jeden rząd i pełne napisy.",
-    "Pracownik: Montaże, Paliwo, Cennik. Desktop i backend bez zmian.",
-    "Testy szerokości 320, 360, 375, 390, 430 px."
+    "Wszystkie modele Cennika początkowo zwinięte.",
+    "Rozwinięcie IMOTO zwija wcześniej otwartą UKURĘ i odwrotnie.",
+    "Ponowne kliknięcie rozwiniętego modelu go zamyka.",
+    "Ceny, menu oraz inne moduły bez zmian."
   ]
 }
