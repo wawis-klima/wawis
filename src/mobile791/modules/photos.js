@@ -744,6 +744,12 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
   return queuedPhoto;
 }
 
+function photoQueueWriteGuard(photo) {
+  return photo?.lease_owner
+    ? { expectedLeaseOwner: String(photo.lease_owner), expectedGeneration: Number(photo.attempt_generation || 0) }
+    : {};
+}
+
 async function ensureQueuedPhotoIdentity(queuedPhoto) {
   if (!queuedPhoto?.__localFile) return queuedPhoto;
   if (queuedPhoto.upload_key && queuedPhoto.planned_storage_path
@@ -777,7 +783,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
     fingerprint_status: normalized.fingerprint_status,
     planned_storage_path: normalized.planned_storage_path,
     legacy_queue_item: normalized.legacy_queue_item,
-  });
+  }, photoQueueWriteGuard(queuedPhoto));
   return normalized;
 }
 
@@ -898,24 +904,35 @@ async function reconcileQueuedPhotoFromServer({
     return null;
   }
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-  const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url || '';
-  const photoForUi = await createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl });
-  if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-  applyUploadedPhoto({
-    jobId: queuedPhoto.job_id,
-    localPhotoId: queuedPhoto.id,
-    uploadedPhoto: photoForUi,
-    localPreviewUrl,
-    setJobs,
-    setSelectedJob,
-  });
-  await deletePhotoQueueItem(queuedPhoto.id);
+  // Reconciliation z odtworzenia również musi przejąć własny lease.
+  // NIGDY nie usuwamy pliku, nad którym pracuje inna karta/worker.
+  const ownClaim = queuedPhoto.lease_owner ? null : await claimPhotoQueueItem(queuedPhoto.id);
+  const effectiveClaim = ownClaim || (queuedPhoto.lease_owner ? queuedPhoto : null);
+  if (!effectiveClaim) return null;
   try {
-    onPhotoUploaded?.(photoForUi, queuedPhoto);
-  } catch (callbackError) {
-    console.warn('Nie udało się odświeżyć karty po uzgodnieniu zdjęcia z serwerem.', callbackError?.message || callbackError);
+    if (!photoSessionIsCurrent(isSessionCurrent)) return null;
+    const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url || '';
+    const photoForUi = await createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl });
+    if (!photoSessionIsCurrent(isSessionCurrent)) return null;
+    const deleted = await deletePhotoQueueItem(queuedPhoto.id, photoQueueWriteGuard(effectiveClaim));
+    if (!deleted || !photoSessionIsCurrent(isSessionCurrent)) return null;
+    applyUploadedPhoto({
+      jobId: queuedPhoto.job_id,
+      localPhotoId: queuedPhoto.id,
+      uploadedPhoto: photoForUi,
+      localPreviewUrl,
+      setJobs,
+      setSelectedJob,
+    });
+    try {
+      onPhotoUploaded?.(photoForUi, queuedPhoto);
+    } catch (callbackError) {
+      console.warn('Nie udało się odświeżyć karty po uzgodnieniu zdjęcia z serwerem.', callbackError?.message || callbackError);
+    }
+    return photoForUi;
+  } finally {
+    if (ownClaim) await releaseClaimedPhotoQueueItem(queuedPhoto.id, ownClaim);
   }
-  return photoForUi;
 }
 
 async function findExistingServerPhotoForQueuedPhoto({ supabase, queuedPhoto, allowLegacyNameplate = false }) {
@@ -961,7 +978,7 @@ async function performQueuedPhotoUpload({
       upload_error: '',
     };
     applyPhotoUpdate({ jobId, photoId: localPhotoId, setJobs, setSelectedJob, updater: localPatch });
-    await updatePhotoQueueItem(localPhotoId, localPatch);
+    await updatePhotoQueueItem(localPhotoId, localPatch, photoQueueWriteGuard(queuedPhoto));
     return null;
   }
 
@@ -1000,7 +1017,7 @@ async function performQueuedPhotoUpload({
       setSelectedJob,
       updater: sessionPatch,
     });
-    await updatePhotoQueueItem(localPhotoId, sessionPatch);
+    await updatePhotoQueueItem(localPhotoId, sessionPatch, photoQueueWriteGuard(queuedPhoto));
     onPhotoUploadError?.();
     return null;
   }
@@ -1021,7 +1038,7 @@ async function performQueuedPhotoUpload({
     setSelectedJob,
     updater: uploadingPatch,
   });
-  await updatePhotoQueueItem(localPhotoId, uploadingPatch);
+  await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto));
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
   let storagePath = queuedPhoto.planned_storage_path || buildPhotoStoragePath(jobId, queuedPhoto);
@@ -1077,7 +1094,7 @@ async function performQueuedPhotoUpload({
       }),
     });
 
-    await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch });
+    await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto));
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     const { error: uploadError } = await supabase.storage
@@ -1089,7 +1106,7 @@ async function performQueuedPhotoUpload({
     await updatePhotoQueueItem(localPhotoId, {
       upload_stage: 'storage_uploaded',
       lease_until: new Date(Date.now() + PHOTO_UPLOAD_LEASE_MS).toISOString(),
-    });
+    }, photoQueueWriteGuard(queuedPhoto));
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     if (uploadError && isDuplicateStorageError(uploadError)) {
@@ -1133,7 +1150,7 @@ async function performQueuedPhotoUpload({
           console.warn('Nie udało się usunąć pustego pliku 0 B ze storage.', removeCorruptStorageError.message);
         } else {
           storageExists = false;
-          await updatePhotoQueueItem(localPhotoId, { upload_stage: 'prepared' });
+          await updatePhotoQueueItem(localPhotoId, { upload_stage: 'prepared' }, photoQueueWriteGuard(queuedPhoto));
         }
         const zeroByteError = new Error('Zdjęcie dotarło do serwera jako pusty plik 0 B. Spróbuj ponownie albo zrób zdjęcie jeszcze raz.');
         zeroByteError.code = PHOTO_ZERO_BYTES_ERROR_CODE;
@@ -1189,6 +1206,8 @@ async function performQueuedPhotoUpload({
       upload_compressed: Boolean(preparedResult?.compressed),
     };
 
+    const deleted = await deletePhotoQueueItem(localPhotoId, photoQueueWriteGuard(queuedPhoto));
+    if (!deleted || !photoSessionIsCurrent(isSessionCurrent)) return null;
     applyUploadedPhoto({
       jobId,
       localPhotoId,
@@ -1197,7 +1216,6 @@ async function performQueuedPhotoUpload({
       setJobs,
       setSelectedJob,
     });
-    await deletePhotoQueueItem(localPhotoId);
 
     try {
       onPhotoUploaded?.(photoForUi, queuedPhoto);
@@ -1227,6 +1245,8 @@ async function performQueuedPhotoUpload({
         lease_until: '',
         upload_stage: storageExists ? 'storage_uploaded' : (queuedPhoto.upload_stage || 'prepared'),
       };
+    const updated = await updatePhotoQueueItem(localPhotoId, failurePatch, photoQueueWriteGuard(queuedPhoto));
+    if (!updated) return null;
     applyPhotoUpdate({
       jobId,
       photoId: localPhotoId,
@@ -1234,7 +1254,6 @@ async function performQueuedPhotoUpload({
       setSelectedJob,
       updater: (photo) => ({ ...photo, ...failurePatch }),
     });
-    await updatePhotoQueueItem(localPhotoId, failurePatch);
     console.warn('Mobilna kolejka zdjęć: upload zakończył się błędem.', error?.message || error);
     if (!waitingForInternet) onPhotoUploadError?.(error, queuedPhoto);
     return null;
@@ -1248,12 +1267,23 @@ async function uploadQueuedPhoto(options = {}) {
   if (activePhotoUploadPromises.has(lockKey)) {
     return activePhotoUploadPromises.get(lockKey);
   }
-  const uploadPromise = performQueuedPhotoUpload(options)
-    .finally(() => {
-      if (activePhotoUploadPromises.get(lockKey) === uploadPromise) {
-        activePhotoUploadPromises.delete(lockKey);
-      }
-    });
+  const uploadPromise = (async () => {
+    const alreadyClaimed = Boolean(queuedPhoto.lease_owner);
+    const claim = alreadyClaimed ? queuedPhoto : await claimPhotoQueueItem(queuedPhoto.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS });
+    if (!claim) return null;
+    try {
+      return await performQueuedPhotoUpload({
+        ...options,
+        queuedPhoto: { ...queuedPhoto, lease_owner: claim.lease_owner, attempt_generation: claim.attempt_generation },
+      });
+    } finally {
+      if (!alreadyClaimed) await releaseClaimedPhotoQueueItem(queuedPhoto.id, claim);
+    }
+  })().finally(() => {
+    if (activePhotoUploadPromises.get(lockKey) === uploadPromise) {
+      activePhotoUploadPromises.delete(lockKey);
+    }
+  });
   activePhotoUploadPromises.set(lockKey, uploadPromise);
   return uploadPromise;
 }
@@ -1286,8 +1316,11 @@ export async function deleteJobPhoto({
     if ([photo.image_url, photo.signed_url, photo.original_image_url].filter(Boolean).includes(previewImage)) {
       setPreviewImage(null);
     }
+    if (!(await deletePhotoQueueItem(photo.id))) {
+      alert('Zdjęcie jest aktualnie obsługiwane przez kolejkę. Spróbuj ponownie po zakończeniu wysyłki.');
+      return false;
+    }
     applyPhotoRemoval({ photo, setJobs, setSelectedJob });
-    await deletePhotoQueueItem(photo.id);
     return true;
   }
 
@@ -1573,7 +1606,7 @@ export async function restorePersistedJobPhotos({
       });
       if (!photoSessionIsCurrent(isSessionCurrent)) return hydratedPhotos;
       if (serverPhoto) {
-        await reconcileQueuedPhotoFromServer({
+        const reconciled = await reconcileQueuedPhotoFromServer({
           supabase,
           supabaseUrl,
           queuedPhoto: reconciliationPhoto,
@@ -1584,7 +1617,7 @@ export async function restorePersistedJobPhotos({
           isSessionCurrent,
         });
         if (!photoSessionIsCurrent(isSessionCurrent)) return hydratedPhotos;
-        continue;
+        if (reconciled) continue;
       }
     }
 
@@ -1639,7 +1672,8 @@ async function runPersistedPhotoUploads({
     // hydratePhotoQueueItem zamienia status "uploading" na "local" dla zwykłego odtworzenia UI.
     // Tutaj rekord został właśnie atomowo przejęty przez worker kolejki; zachowujemy jego status,
     // aby stara tabliczka z błędem mogła zostać bezpiecznie uzgodniona z kopią już obecną na serwerze.
-    queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status };
+    queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status,
+      lease_owner: record.lease_owner, attempt_generation: record.attempt_generation };
     const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
     queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
     if (!photoSessionIsCurrent(isSessionCurrent)) break;
@@ -1651,7 +1685,7 @@ async function runPersistedPhotoUploads({
     });
     if (!photoSessionIsCurrent(isSessionCurrent)) break;
     if (serverPhoto) {
-      await reconcileQueuedPhotoFromServer({
+      const reconciled = await reconcileQueuedPhotoFromServer({
         supabase,
         supabaseUrl,
         queuedPhoto,
@@ -1662,8 +1696,7 @@ async function runPersistedPhotoUploads({
         isSessionCurrent,
       });
       if (!photoSessionIsCurrent(isSessionCurrent)) break;
-      processed += 1;
-      uploaded += 1;
+      if (reconciled) { processed += 1; uploaded += 1; }
       continue;
     }
 
