@@ -471,6 +471,13 @@ function isNetworkUploadError(error) {
   return /failed to fetch|network|fetch|internet|offline|load failed|connection|abort|timed out|timeout/i.test(rawMessage);
 }
 
+function isRetryablePhotoUploadError(error) {
+  const status = Number(error?.statusCode || error?.status || error?.code || 0);
+  if (status === 403 || status === 401) return false;
+  if (status === 408 || status === 429 || status >= 500) return true;
+  return isNetworkUploadError(error);
+}
+
 function isBrowserOffline() {
   return typeof navigator !== 'undefined' && navigator.onLine === false;
 }
@@ -1201,7 +1208,7 @@ async function performQueuedPhotoUpload({
     return photoForUi;
   } catch (error) {
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-    const waitingForInternet = isBrowserOffline() || isNetworkUploadError(error);
+    const waitingForInternet = isBrowserOffline() || isRetryablePhotoUploadError(error);
     const attemptCount = Number(uploadingPatch.retry_count || 1);
     const failurePatch = waitingForInternet
       ? {
@@ -1660,7 +1667,9 @@ async function runPersistedPhotoUploads({
       continue;
     }
 
-    if (!includeErrors && String(record.upload_status || 'local').toLowerCase() === 'error') {
+    // claim() zmienia status na uploading. Decyzja o automatycznym retry
+    // musi opierać się na stanie SPRZED przejęcia, inaczej trwały 403 wraca w pętli.
+    if (!includeErrors && String(record.__previous_upload_status || record.upload_status || 'local').toLowerCase() === 'error') {
       continue;
     }
 
