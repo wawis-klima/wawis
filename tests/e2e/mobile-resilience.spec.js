@@ -243,24 +243,26 @@ test.describe('@mobile iPhone — odporność danych', () => {
     await loginWithoutReset(page, WORKER);
 
     // Dwa przejścia odtwarzają najtrudniejszy scenariusz bez losowania:
-    // serwer ma już tabliczkę, poprzednia sesja zostawiła aktywny lease.
-    const confirmedStoragePath = await getConfirmedLegacyNameplatePath(page);
+    // serwer ma inną tabliczkę tej jednostki, a poprzedni worker zostawił aktywny lease.
+    // Na serwerze jest INNA tabliczka tej samej jednostki: aktywny lease
+    // lokalnego pliku nie uprawnia do jego usunięcia na podstawie metadanych.
+    const otherStoragePath = 'mock-job-002/nameplates/device-1_jz_MOCK-MIT-002_server.jpg';
     for (let run = 0; run < 2; run += 1) {
-      await page.evaluate(({ storeKey, confirmedStoragePath }) => {
+      await page.evaluate(({ storeKey, otherStoragePath }) => {
         const store = JSON.parse(window.localStorage.getItem(storeKey) || '{}');
         store.photos = (store.photos || []).filter((p) => p.id !== 'mock-server-nameplate-jz');
         store.photos.push({
           id: 'mock-server-nameplate-jz',
           job_id: 'mock-job-002',
           image_url: '',
-          storage_path: confirmedStoragePath,
+          storage_path: otherStoragePath,
           uploaded_by: 'mock-worker-1',
           created_at: '2026-07-30T05:01:00.000Z',
         });
         const serialized = JSON.stringify(store);
         window.localStorage.setItem(storeKey, serialized);
         window.dispatchEvent(new StorageEvent('storage', { key: storeKey, newValue: serialized }));
-      }, { storeKey: MOCK_STORE_KEY, confirmedStoragePath });
+      }, { storeKey: MOCK_STORE_KEY, otherStoragePath });
       await putLegacyQueuedNameplateError(page, {
         uploadStatus: 'uploading',
         leaseUntil: new Date(Date.now() + 180_000).toISOString(),
