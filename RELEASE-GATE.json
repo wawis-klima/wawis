@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.38",
+  "version": "13.39",
   "scope": "mobile",
-  "release_branch": "release/v13.38",
+  "release_branch": "release/v13.39",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Tylko CSS mobilnego Cennika: min-height 44 px i padding 7 px; testy regresyjne. Bez zmian danych i backendu."
+    "notes": "Problem okresowych niepowodzeń mobilnego E2E kolejki zdjęć potwierdzony w przebiegach 13.23 i 13.38; poprawka synchronizatora bez modyfikacji danych i Supabase."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.38.zip"
+    "file_name": "klima-app-v13.39.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.38",
+    "source_branch": "release/v13.39",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY produkcyjnego SHA i widoczna wersja 13.38 na iPhonie",
-    "notes": "Karty cennika niższe, strefa dotyku co najmniej 44 px; długie etykiety i rozwiniecie działają."
+    "evidence_source": "Zielony WAWIS PR checks, produkcyjny Vercel READY i app-version.json 13.39",
+    "notes": "Sprawdzić zgodność SHA, brak regresji synchronizacji tabliczek na mobilnym UI oraz po wyjściu z trybu offline."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "CSS: nagłówki kart Cennika mobile min 48→44px, padding pionowy 9→7px. Dane i logika nietknięte.",
-    "release_ci": "Smoke cen i CSS, E2E mobile 320–430px (rozmiar, brak overflow, dotyk i otwieranie), Closure Gate, build.",
-    "post_deploy": "Vercel READY matching main SHA oraz wersja 13.38 na iPhonie."
+    "code": "Osobny timer ponawiania, atomowe oddawanie wyłącznie własnego lease, oryginalny status przy pojednaniu historycznych JZ/JW.",
+    "release_ci": "Smoke kolejki zdjęć i idempotencji, Playwright mobile: utracony 3-minutowy lease, dwa wznowienia JZ oraz weryfikacja właścicieli i zachowania zdjęcia. Wymagane regresje i Closure Gate.",
+    "post_deploy": "Production READY dla dokładnego commita na main; publiczna wersja 13.39."
   }
 }

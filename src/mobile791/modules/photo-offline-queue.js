@@ -220,13 +220,19 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
         if (String(current.upload_status || '').toLowerCase() === 'uploading'
           && Number.isFinite(leaseUntil) && leaseUntil > nowMs) return;
         if (!force && Number.isFinite(nextAttempt) && nextAttempt > nowMs) return;
-        claimed = {
+        const storedClaim = {
           ...current,
           upload_status: 'uploading',
           upload_status_label: 'Wysyłanie',
           lease_until: new Date(nowMs + Math.max(30000, Number(leaseMs) || 0)).toISOString(),
+          lease_owner: typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${nowMs}:${Math.random()}`,
         };
-        store.put(claimed);
+        store.put(storedClaim);
+        // Poprzedni status nie trafia do IndexedDB: jest potrzebny tylko temu workerowi
+        // do bezpiecznego wycofania porzuconego przejęcia.
+        claimed = { ...storedClaim, __previous_upload_status: current.upload_status || 'local' };
       };
       request.onerror = () => reject(request.error || new Error('Nie udało się przejąć zdjęcia z kolejki.'));
       transaction.oncomplete = () => {
@@ -236,6 +242,49 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
       transaction.onerror = () => reject(transaction.error || new Error('Nie udało się przejąć zdjęcia z kolejki.'));
       transaction.onabort = transaction.onerror;
     });
+  } finally {
+    db.close();
+  }
+}
+
+// Zwolnienie tylko własnego lease. Nigdy nie kasujemy pliku ani rekordu kolejki,
+// jeśli odpowiedź serwera nie potwierdziła jeszcze zapisu.
+export async function releaseClaimedPhotoQueueItem(photoId, claimed = {}) {
+  const leaseOwner = String(claimed.lease_owner || '');
+  if (!photoId || !leaseOwner) return false;
+  const db = await openQueueDb();
+  if (!db) return false;
+  try {
+    const released = await new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(String(photoId));
+      let didRelease = false;
+      request.onsuccess = () => {
+        const current = request.result;
+        if (!current || current.upload_status !== 'uploading'
+          || String(current.lease_owner || '') !== leaseOwner) return;
+        const previousStatus = String(claimed.__previous_upload_status || 'local').toLowerCase();
+        const restoreError = previousStatus === 'error';
+        store.put({
+          ...current,
+          upload_status: restoreError ? 'error' : 'local',
+          upload_status_label: restoreError ? 'Błąd wysyłania' : 'Zapisano na telefonie',
+          lease_until: '',
+          lease_owner: '',
+        });
+        didRelease = true;
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się odczytać blokady zdjęcia.'));
+      transaction.oncomplete = () => resolve(didRelease);
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zwolnić blokady zdjęcia.'));
+      transaction.onabort = transaction.onerror;
+    });
+    if (released) dispatchQueueChanged();
+    return released;
+  } catch (error) {
+    console.warn('Nie udało się zwolnić przerwanego przejęcia zdjęcia.', error?.message || error);
+    return false;
   } finally {
     db.close();
   }

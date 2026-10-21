@@ -1,3 +1,10 @@
+## 13.39
+- Mobile / zdjęcia i tabliczki: zlikwidowano anulowanie aktywnego uzgadniania zdjęć przez zmianę licznika lokalnej kolejki. Interwał ponawiania ma odrębny efekt.
+- Przejęcie zdjęcia w IndexedDB ma właściciela lease; przy przerwaniu zwalniamy jedynie własną blokadę, nie usuwamy pliku ani obcej operacji, z zachowaniem wcześniejszego statusu błędu.
+- Przy odtwarzaniu starych JZ/JW porównanie z istniejącym zdjęciem serwerowym używa pierwotnego stanu rekordu zamiast prezentacyjnego statusu "local".
+- Playwright: powtarzalna próba uzgodnienia JZ mimo 3-minutowej blokady; test kolejnych właścicieli claim i zachowania lokalnego pliku. Smoke zabezpiecza kod przed regresją.
+- Nie zmieniono schematu Supabase, formatów protokołu PDF, OCR/AI, danych, uprawnień, SMS, paliwa, faktur i widoku desktop.
+
 ## 13.38
 - Mobilny Cennik: niższe białe karty nazw modeli — minimalna wysokość 48 → 44 px, padding pionowy 9 → 7 px.
 - Tekst 13 px, liczniki, nazwy, rozwijanie, odstępy między kartami i tabele cen pozostają bez zmian. Dwuwierszowe nazwy nadal rozwijają się naturalnie, bez ucinania.

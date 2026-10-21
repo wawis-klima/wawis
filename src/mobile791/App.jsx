@@ -233,6 +233,7 @@ export default function App() {
   const profilesRef = useRef([]);
   const backgroundDetailsTimersRef = useRef(new Map());
   const offlinePhotoQueueUserRef = useRef('');
+  const photoQueueResumeRef = useRef(null);
   const offlineSyncContextRef = useRef({ profile: null, profiles: [], jobs: [], sessionUser: null });
   const thumbnailRecoveryAttemptsRef = useRef(new Map());
   const thumbnailRecoveryInFlightRef = useRef(new Map());
@@ -332,6 +333,7 @@ export default function App() {
   const offlineSyncUserId = String(profile?.id || sessionUser?.id || '').trim();
   const offlineSyncProfileId = String(profile?.id || '').trim();
   const offlineSyncJobCount = Array.isArray(jobs) ? jobs.length : 0;
+  const hasJobsReadyForQueue = offlineSyncJobCount > 0;
   const hasPendingOfflineWork = (
     photoSyncStatus.queueSummary.local
     + photoSyncStatus.queueSummary.uploading
@@ -921,20 +923,27 @@ export default function App() {
       if (isQueueSessionCurrent()) await performOfflineJobSync();
     }
 
+    // Zmiana licznika kolejki nie może anulować trwającego uzgadniania zdjęcia.
+    photoQueueResumeRef.current = restoreAndResumeQueue;
     void restoreAndResumeQueue();
     const onlineHandler = () => void restoreAndResumeQueue();
     window.addEventListener('online', onlineHandler);
-    const intervalId = hasPendingOfflineWork
-      ? window.setInterval(() => {
-        if (navigator.onLine !== false) void restoreAndResumeQueue();
-      }, 45000)
-      : null;
     return () => {
       cancelled = true;
+      if (photoQueueResumeRef.current === restoreAndResumeQueue) photoQueueResumeRef.current = null;
       window.removeEventListener('online', onlineHandler);
-      if (intervalId !== null) window.clearInterval(intervalId);
     };
-  }, [offlineSyncUserId, offlineSyncProfileId, offlineSyncJobCount, hasPendingOfflineWork, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing, captureCurrentSessionToken, isSessionTokenCurrent]);
+  }, [offlineSyncUserId, offlineSyncProfileId, hasJobsReadyForQueue, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing, captureCurrentSessionToken, isSessionTokenCurrent]);
+
+  // Sam timer jest zależny od liczby oczekujących operacji; jego montaż/cleanup
+  // nie powinien przerywać bieżącego procesu zdjęć ani unieważniać jego sesji.
+  useEffect(() => {
+    if (!offlineSyncUserId || !hasPendingOfflineWork) return undefined;
+    const intervalId = window.setInterval(() => {
+      if (navigator.onLine !== false) void photoQueueResumeRef.current?.();
+    }, 45000);
+    return () => window.clearInterval(intervalId);
+  }, [offlineSyncUserId, hasPendingOfflineWork]);
 
   useEffect(() => () => {
     if (typeof window === 'undefined') return;
