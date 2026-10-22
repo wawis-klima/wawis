@@ -20,10 +20,14 @@ assert.equal(overlayPendingDeviceOperation(oldServer, []).device_model, null);
 
 const app = fs.readFileSync(new URL('../src/mobile791/App.jsx', import.meta.url), 'utf8');
 const photos = fs.readFileSync(new URL('../src/mobile791/modules/photos.js', import.meta.url), 'utf8');
+const operations = fs.readFileSync(new URL('../src/mobile791/modules/job-offline-sync.js', import.meta.url), 'utf8');
 assert.match(app, /jobId: requestedJobId,[\s\S]*?onQueueStart:/, 'manual card sync must pass selected jobId');
 assert.match(app, /const mergeWithPending = \(job\) => overlayPendingDeviceOperation\(/, 'details reload must overlay pending local device');
 assert.match(app, /const nextJob = overlayPendingDeviceOperation\(/, 'summary reload must overlay pending local device');
 assert.match(photos, /const selectedJobId = String\(jobId \|\| ''\)\.trim\(\);/, 'photo queue must accept selected job ID');
 assert.match(photos, /!selectedJobId \|\| String\(record\.job_id \|\| ''\) === selectedJobId/, 'photo queue must restrict retry to selected job');
 assert.match(photos, /if \(existing && !requestedJobId\)/, 'manual retry must not await global worker belonging to unrelated jobs');
+assert.match(app, /performOfflineJobSync\\(\\{ jobId: requestedJobId \\}\\)/, 'manual device sync must also be scoped');
+assert.match(operations, /\\.filter\\(\\(item\\) => !requestedJobId \\|\\| String\\(item\\.job_id \\|\\| ''\\) === requestedJobId\\)/, 'device operation queue filters selected job');
+assert.match(operations, /if \\(String\\(options\\.jobId \\|\\| ''\\)\\.trim\\(\\)\\) return runSync\\(options\\)/, 'selected operation must bypass unrelated global promise');
 console.log('13.47 selected job priority and pending device overlay smoke PASS');
