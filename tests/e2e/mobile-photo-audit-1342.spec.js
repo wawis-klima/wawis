@@ -1,5 +1,6 @@
 import { devices, expect, test } from '@playwright/test';
 import { createServer } from 'node:http';
+import { build } from 'esbuild';
 
 const { defaultBrowserType: _unused, ...iphone14 } = devices['iPhone 14'];
 test.use(iphone14);
@@ -143,75 +144,85 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
   });
 
   test('rzeczywisty HTTP cache: stare 200 nie potwierdza obiektu po 404 na origin', async ({page}) => {
-    let objectExists = true;
-    let originGets = 0;
-    const requests = [];
-    const original = Buffer.from('WAWIS-REAL-HTTP-CACHE-ORIGINAL-BYTES');
-    const server = createServer((req,res) => {
-      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.setHeader('Vary', 'Origin, Access-Control-Request-Headers');
-      // Realne storage-js wysyła dodatkowe nagłówki wersji SDK.
-      // Odzwierciedlamy nagłówki preflight zamiast odrzucać żądanie CORS.
-      res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'authorization,apikey,x-client-info,content-type');
-      res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-      res.setHeader('Access-Control-Allow-Private-Network', 'true');
-      if (req.method === 'OPTIONS') { res.statusCode = 204;res.end();return; }
-      if (req.method !== 'GET' || !req.url?.startsWith('/storage/v1/object/authenticated/job-photos/')) {
-        res.statusCode=404;res.end();return;
+    // Bundle rzeczywistego SDK do przeglądarki, a HTML, SDK i Storage API
+    // serwujemy pod JEDNYM origin. Bez wyłączania CORS/cache w Chromium.
+    const sdk = await build({
+      stdin: {
+        contents: "import {createClient} from '@supabase/supabase-js';window.__sdkCreateClient=createClient;",
+        resolveDir: process.cwd(),
+        sourcefile: 'wawis-storage-proof.js',
+        loader: 'js',
+      },
+      bundle: true, format: 'iife', platform: 'browser', write: false, minify: true,
+    });
+    const sdkBytes=Buffer.from(sdk.outputFiles[0].contents);
+    let objectExists=true, originGets=0;
+    const requests=[];
+    const original=Buffer.from('WAWIS-REAL-HTTP-CACHE-ORIGINAL-BYTES');
+    const server=createServer((req,res)=>{
+      const url=new URL(req.url||'/', 'http://127.0.0.1');
+      if (url.pathname === '/') {
+        res.writeHead(200, {'Content-Type':'text/html;charset=utf-8','Cache-Control':'no-store'});
+        res.end('<!doctype html><html><head><meta charset="utf-8"></head><body><script src="/sdk.js"></script><div>WAWIS real HTTP cache test</div></body></html>');
+        return;
       }
-      originGets += 1;
-      requests.push(String(req.url));
+      if (url.pathname === '/sdk.js') {
+        res.writeHead(200,{'Content-Type':'text/javascript;charset=utf-8','Cache-Control':'no-store'});
+        res.end(sdkBytes);return;
+      }
+      if (req.method !== 'GET' || !url.pathname.startsWith('/storage/v1/object/authenticated/job-photos/')) {
+        res.writeHead(404);res.end();return;
+      }
+      originGets++;
+      requests.push(url.pathname + url.search);
       if (objectExists) {
-        res.statusCode = 200;
-        res.setHeader('Content-Type','image/jpeg');
-        res.setHeader('Cache-Control','private, max-age=3600');
-        res.setHeader('Content-Length', original.length);
+        res.writeHead(200, {
+          'Content-Type':'image/jpeg',
+          'Cache-Control':'private, max-age=3600',
+          'Content-Length':original.length,
+        });
         res.end(original);
       } else {
-        res.statusCode = 404;
-        res.setHeader('Content-Type','application/json');
-        res.setHeader('Cache-Control','no-store');
+        res.writeHead(404,{'Content-Type':'application/json','Cache-Control':'no-store'});
         res.end(JSON.stringify({statusCode:'404',error:'not_found',message:'Object not found'}));
       }
     });
-    await new Promise((resolve,reject) => {
+    await new Promise((resolve,reject)=>{
       server.once('error',reject);
       server.listen(0,'127.0.0.1',resolve);
     });
-    try {
-      await fixture(page);
-      const host = `http://127.0.0.1:${server.address().port}`;
-      const firstRead = await page.evaluate(async ({host})=>{
-        const {createClient}=await import('/tests/e2e/fixtures/supabase-storage-sdk-bridge.js');
-        window.__freshProofClient=createClient(host,'mock-anon-key',{
+    try{
+      const host=`http://127.0.0.1:${server.address().port}`;
+      await page.goto(host+'/');
+      await expect.poll(()=>page.evaluate(()=>typeof window.__sdkCreateClient)).toBe('function');
+      const firstRead=await page.evaluate(({host})=>{
+        window.__freshProofClient=window.__sdkCreateClient(host,'mock-anon-key',{
           auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
         });
-        const {data,error}=await window.__freshProofClient.storage.from('job-photos').download('job1/nameplates/jz.jpg');
-        return {bytes:data?await data.text():null,error:error?.message||null};
+        return window.__freshProofClient.storage.from('job-photos')
+          .download('job1/nameplates/jz.jpg')
+          .then(async({data,error})=>({bytes:data?await data.text():null,error:error?.message||null}));
       },{host});
       expect(firstRead.error).toBeNull();
       expect(firstRead.bytes).toBe(original.toString());
       expect(originGets).toBe(1);
 
       objectExists=false;
-      // Z identycznym URL przeglądarka może mieć poprzednie bajty.
-      // Bezpieczny dowód nie może używać tej odpowiedzi.
-      await page.evaluate(async()=>{
-        await window.__freshProofClient.storage.from('job-photos').download('job1/nameplates/jz.jpg');
-      });
+      // Powtórny stary URL może nadal zwrócić 200 z browser HTTP cache.
+      await page.evaluate(()=>window.__freshProofClient.storage.from('job-photos').download('job1/nameplates/jz.jpg'));
       const beforeFresh=originGets;
       const fresh=await page.evaluate(async()=>{
         const nonce=`fresh-${crypto.randomUUID()}`;
         const {data,error}=await window.__freshProofClient.storage.from('job-photos')
           .download('job1/nameplates/jz.jpg',{cacheNonce:nonce},{cache:'no-store'});
-        return {hasData:Boolean(data),status:Number(error?.statusCode||error?.status||0),nonce};
+        return{hasData:Boolean(data),status:Number(error?.statusCode||error?.status||0),nonce};
       });
       expect(fresh.hasData).toBe(false);
       expect(fresh.status).toBe(404);
       expect(originGets).toBeGreaterThan(beforeFresh);
       expect(requests[requests.length-1]).toContain('cacheNonce=');
       expect(requests[requests.length-1]).toContain(encodeURIComponent(fresh.nonce));
-    } finally {
+    }finally{
       server.closeAllConnections?.();
       await new Promise(resolve=>server.close(resolve));
     }
