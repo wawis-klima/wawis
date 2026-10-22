@@ -1,0 +1,15 @@
+{
+  "analysis_date": "2026-10-22",
+  "timezone": "Europe/Warsaw",
+  "access": "production read-only via connected Supabase/GitHub",
+  "production_mutations": false,
+  "confirmed": [
+    {"version":"13.45","source":"storage_logs","times_utc":["2026-10-22T09:53:09.868Z","2026-10-22T09:53:11.446Z"],"method":"POST","content_type":"multipart/form-data","content_length":0,"status":400,"code":"InvalidRequest","message":"No content provided"},
+    {"version":"13.48","source":"app_diagnostic_events","event":"photos.upload.claim-write.failed","count":4,"code":"PHOTO_QUEUE_STAGE_FAILED","retry_count":2,"first_utc":"2026-10-22T12:29:49.985Z","last_utc":"2026-10-22T12:29:57.022Z"},
+    {"version":"13.48","source":"app_diagnostic_events","event":"photos.queue.claim.failed","count":4,"code":"DIAGNOSTIC_UNCLASSIFIED","first_utc":"2026-10-22T12:59:58.009Z","last_utc":"2026-10-22T12:59:58.022Z"}
+  ],
+  "unknown": ["exact IndexedDB refusal cause on physical iPhone", "physical Safari/PWA acceptance", "recovery of the preserved production-origin phone queue"],
+  "server_constraints_observed": ["photos_storage_path_unique_v882", "devices_source_job_id_key", "devices_serial_number_key"],
+  "existing_trigger_observed": "jobs_sync_device_after_change -> sync_device_from_job_trigger -> sync_device_from_job_row",
+  "sensitive_identifiers_exported": false
+}
