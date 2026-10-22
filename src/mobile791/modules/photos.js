@@ -1714,9 +1714,10 @@ async function runPersistedPhotoUploads({
   let failed = 0;
   for (const queuedRecord of records) {
     if (isBrowserOffline() || !photoSessionIsCurrent(isSessionCurrent)) break;
-    const record = await claimPhotoQueueItem(queuedRecord.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS, force: includeErrors });
-    if (!record) continue;
+    let record = null;
     try {
+      record = await claimPhotoQueueItem(queuedRecord.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS, force: includeErrors });
+      if (!record) continue;
       if (!photoSessionIsCurrent(isSessionCurrent)) break;
       let queuedPhoto = hydratePhotoQueueItem(record, createLocalPreviewUrl);
     if (!queuedPhoto) continue;
@@ -1786,11 +1787,32 @@ async function runPersistedPhotoUploads({
       const latest = latestItems.find((item) => String(item.id) === String(record.id));
       if (String(latest?.upload_status || '').toLowerCase() === 'error') failed += 1;
     }
+    } catch (error) {
+      // Błąd odczytu tożsamości / weryfikacji zdjęcia nie może przerwać całej kolejki.
+      // Zachowujemy bajty IndexedDB, własny lease i czytelny status błędu.
+      failed += 1;
+      const retryable = isRetryablePhotoUploadError(error);
+      if (record) {
+        const failurePatch = {
+          upload_status: retryable ? 'local' : 'error',
+          upload_status_label: retryable ? 'Zapisano na telefonie' : 'Błąd wysyłania',
+          upload_error: retryable
+            ? 'Chwilowy problem z wysyłaniem. Zdjęcie jest bezpieczne na telefonie.'
+            : 'Nie udało się przygotować zdjęcia do synchronizacji. Lokalna kopia pozostaje na telefonie.',
+          next_attempt_at: retryable
+            ? new Date(Date.now() + getPhotoRetryDelayMs(Number(record.retry_count || 0) + 1)).toISOString()
+            : '',
+          lease_until: '',
+        };
+        await updatePhotoQueueItem(record.id, failurePatch, photoQueueWriteGuard(record));
+      }
+      console.warn('PHOTO_QUEUE_PREUPLOAD_FAILED', error?.code || error?.name || 'UNKNOWN');
+      guardedOnPhotoUploadError?.(new Error('PHOTO_QUEUE_PREUPLOAD_FAILED'));
     } finally {
       // Nawet gdy sesja zostanie anulowana między claim() a odpowiedzią serwera,
       // nie zostawiamy 3-minutowego lease na porzuconym rekordzie. Releasujemy
       // wyłącznie własny claim; udany upload lub cudzy nowy lease są nietykalne.
-      await releaseClaimedPhotoQueueItem(record.id, record);
+      if (record) await releaseClaimedPhotoQueueItem(record.id, record);
     }
   }
   if (failed > 0) guardedOnPhotoUploadError?.(new Error(`Nie udało się wysłać ${failed} zdjęć z kolejki.`));
