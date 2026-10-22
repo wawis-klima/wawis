@@ -34,6 +34,7 @@ import { getRequestedJobIdFromLocation } from "./utils/jobSelectionState.js";
 import { deleteOfflineJobOperation, listOfflineJobOperations, makeOfflineJobOperationsRetryableNow, saveOfflineAppSnapshot, updateOfflineJobOperation } from "./modules/job-offline-store.js";
 import { deletePhotoQueueItem, getPhotoQueueSummary } from "./modules/photo-offline-queue.js";
 import { syncOfflineJobOperations } from "./modules/job-offline-sync.js";
+import { overlayPendingDeviceOperation } from "./modules/job-pending-device-overlay.js";
 import { logDiagnostic, startSilentDiagnosticSync } from "./modules/diagnostics.js";
 import { isTransientSupabaseError } from "./modules/supabase-errors.js";
 import { APP_VERSION } from "./version.js";
@@ -672,14 +673,21 @@ export default function App() {
             if (!isSessionTokenCurrent(sessionToken)) return null;
 
             const cleanDetails = { ...details, detailsLoadError: '' };
+            // Odczyt serwerowy może jeszcze nie zawierać lokalnej zmiany z
+            // IndexedDB. Nakładamy ją tylko dopóki trwa odpowiednia operacja.
+            const pendingOperations = await listOfflineJobOperations(sessionToken.userId);
+            if (!isSessionTokenCurrent(sessionToken)) return null;
+            const mergeWithPending = (job) => overlayPendingDeviceOperation(
+              mergeJobDetailsForMobile(job, cleanDetails), pendingOperations,
+            );
             // Return the loaded job deterministically. React may execute a
             // functional state updater later; a value assigned inside setJobs
             // is not reliable for quick actions awaiting this request.
-            const mergedJob = mergeJobDetailsForMobile(targetJob, cleanDetails);
+            const mergedJob = mergeWithPending(targetJob);
             setJobs((prev) => prev.map((job) => (
-              String(job.id) === targetId ? mergeJobDetailsForMobile(job, cleanDetails) : job
+              String(job.id) === targetId ? mergeWithPending(job) : job
             )));
-            setSelectedJob((prev) => (prev && String(prev.id) === targetId ? mergeJobDetailsForMobile(prev, cleanDetails) : prev));
+            setSelectedJob((prev) => (prev && String(prev.id) === targetId ? mergeWithPending(prev) : prev));
 
             // Szczegóły są gotowe od razu, a podpisy miniatur robią się dopiero
             // w tle. Dzięki temu chwilowa awaria Storage nie blokuje całej karty.
@@ -778,21 +786,23 @@ export default function App() {
           return null;
         }
 
+        const pendingOperations = await listOfflineJobOperations(sessionToken.userId);
+        if (!isSessionTokenCurrent(sessionToken)) return null;
         let mergedJob = null;
         setJobs((prev) => {
           const existing = prev.find((job) => String(job.id) === targetId);
-          const nextJob = {
+          const nextJob = overlayPendingDeviceOperation({
             ...(existing || {}),
             ...summary.job,
             viewers: summary.viewers || [],
-          };
+          }, pendingOperations);
           mergedJob = nextJob;
           if (!existing) return [nextJob, ...prev];
           return prev.map((job) => (String(job.id) === targetId ? nextJob : job));
         });
         setSelectedJob((prev) => {
           if (!prev || String(prev.id) !== targetId) return prev;
-          return { ...prev, ...summary.job, viewers: summary.viewers || [] };
+          return overlayPendingDeviceOperation({ ...prev, ...summary.job, viewers: summary.viewers || [] }, pendingOperations);
         });
         return mergedJob;
       } catch (error) {
@@ -1077,6 +1087,7 @@ export default function App() {
       const result = await retryAllPersistedPhotoUploads({
         supabase,
         profile,
+        jobId: requestedJobId,
         setJobs,
         setSelectedJob,
         supabaseUrl,
