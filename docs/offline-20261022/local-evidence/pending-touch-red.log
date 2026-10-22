@@ -1,0 +1,45 @@
+
+Running 1 test using 1 worker
+
+(node:34370) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:34370) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] tests/e2e/mobile-pending-sync-touch.spec.js:4:1 › @mobile pending device manual sync is touchable and preserves intent while offline
+  1) tests/e2e/mobile-pending-sync-touch.spec.js:4:1 › @mobile pending device manual sync is touchable and preserves intent while offline 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 44
+    Received:    24
+
+      12 |  await page.reload();await page.locator('.statusActionButton[title="W trakcie"]').click();await page.getByText('Klient Testowy B',{exact:true}).click();
+      13 |  const button=page.locator('.offlinePendingSyncButton');await expect(button).toBeVisible();
+    > 14 |  const box=await button.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);
+         |                                                          ^
+      15 |  expect(await button.evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));})).toBe(true);
+      16 |  await context.setOffline(true);await button.click();
+      17 |  await expect(page.locator('.offlinePendingSyncMessage')).toContainText('Brak internetu');
+        at /workspace/wawis/tests/e2e/mobile-pending-sync-touch.spec.js:14:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    work/offline-analysis/pending-touch-red/mobile-pending-sync-touch--01ccd-serves-intent-while-offline/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: work/offline-analysis/pending-touch-red/mobile-pending-sync-touch--01ccd-serves-intent-while-offline/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    work/offline-analysis/pending-touch-red/mobile-pending-sync-touch--01ccd-serves-intent-while-offline/trace.zip
+    Usage:
+
+        npx playwright show-trace work/offline-analysis/pending-touch-red/mobile-pending-sync-touch--01ccd-serves-intent-while-offline/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    tests/e2e/mobile-pending-sync-touch.spec.js:4:1 › @mobile pending device manual sync is touchable and preserves intent while offline 

@@ -1,0 +1,25 @@
+{
+  "schema_version": 2,
+  "type": "e2e",
+  "git_sha": null,
+  "git_head_sha": "511bc8e8fa912c8cb80a38a45c0a6dc50dc561a4",
+  "git_run_id": null,
+  "git_run_attempt": null,
+  "platforms": [
+    "mobile",
+    "desktop"
+  ],
+  "runs": [
+    {
+      "platform": "mobile",
+      "script": "scripts/run-playwright-mobile.cjs",
+      "status": "passed"
+    },
+    {
+      "platform": "desktop",
+      "script": "scripts/run-playwright-desktop.cjs",
+      "status": "passed"
+    }
+  ],
+  "all_passed": true
+}

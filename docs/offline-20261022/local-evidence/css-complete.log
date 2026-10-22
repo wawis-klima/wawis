@@ -1,0 +1,5 @@
+
+> klima-app-table-v2@13.38 test:smoke:dist-mobile-css
+> node scripts/verify-dist-mobile-styles.cjs
+
+OK: dist zawiera 25 plik(i) CSS, łącznie 868528 B.

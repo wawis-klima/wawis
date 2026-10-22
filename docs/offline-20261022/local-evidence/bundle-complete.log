@@ -1,0 +1,5 @@
+
+> klima-app-table-v2@13.38 verify:bundle
+> node scripts/verify-bundle-budget.cjs
+
+Bundle budget OK: index-BUu4RgIw.js 9742 B <= 327680 B; vendor chunks present.

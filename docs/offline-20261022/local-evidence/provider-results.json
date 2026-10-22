@@ -1,0 +1,233 @@
+{
+  "source_sha": "511bc8e8fa912c8cb80a38a45c0a6dc50dc561a4",
+  "result": {
+    "jobId": "ddd6cbca-4343-4a53-9e9f-84cc5130bd07",
+    "serial": "FIXTURE-IN / FIXTURE-OUT-ddd6cbca-4343-4a53-9e9f-84cc5130bd07",
+    "duplicateCode": "23505",
+    "sync": {
+      "processed": 1,
+      "synced": 1,
+      "conflicts": 0,
+      "errors": 0,
+      "changedJobIds": [
+        "ddd6cbca-4343-4a53-9e9f-84cc5130bd07"
+      ],
+      "conflictJobIds": []
+    },
+    "again": {
+      "processed": 0,
+      "synced": 0,
+      "conflicts": 0,
+      "errors": 0,
+      "changedJobIds": [],
+      "conflictJobIds": []
+    },
+    "rows": 2,
+    "model": "TEST-MODEL-IN / TEST-MODEL-OUT",
+    "persisted": [
+      true,
+      true
+    ],
+    "dimensions": [
+      [
+        64,
+        64
+      ],
+      [
+        64,
+        64
+      ]
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "storage": false,
+        "status": 201,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "POST",
+        "storage": true,
+        "status": 200,
+        "bytes": 1010
+      },
+      {
+        "method": "POST",
+        "storage": false,
+        "status": 201,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "POST",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "POST",
+        "storage": true,
+        "status": 200,
+        "bytes": 990
+      },
+      {
+        "method": "POST",
+        "storage": false,
+        "status": 201,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "POST",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "PATCH",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": false,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "GET",
+        "storage": true,
+        "status": 200,
+        "bytes": null
+      },
+      {
+        "method": "POST",
+        "storage": false,
+        "status": 201,
+        "bytes": null
+      },
+      {
+        "method": "PATCH",
+        "storage": false,
+        "status": 409,
+        "bytes": null
+      },
+      {
+        "method": "POST",
+        "storage": true,
+        "status": 400,
+        "bytes": 1010
+      }
+    ],
+    "pending": 0,
+    "denied": true
+  },
+  "devices": [
+    {
+      "source": "ddd6cbca-4343-4a53-9e9f-84cc5130bd07",
+      "model": "TEST-MODEL-IN / TEST-MODEL-OUT",
+      "serial": "FIXTURE-IN / FIXTURE-OUT-ddd6cbca-4343-4a53-9e9f-84cc5130bd07"
+    }
+  ],
+  "race": {
+    "sessions": [
+      {
+        "worker": "A",
+        "pid": 238,
+        "winner": 0
+      },
+      {
+        "worker": "B",
+        "pid": 239,
+        "winner": 1
+      }
+    ],
+    "state": {
+      "model": "RACE-B",
+      "devices": 1
+    }
+  }
+}

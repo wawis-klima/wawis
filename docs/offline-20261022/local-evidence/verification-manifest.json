@@ -1,0 +1,49 @@
+{
+  "source_sha": "511bc8e8fa912c8cb80a38a45c0a6dc50dc561a4",
+  "source_branch": "fix/offline-nameplate-durable-outbox-20261022",
+  "created_utc": "2026-10-22T16:34:00.783141+00:00",
+  "provenance": "LOCAL execution, not GitHub CI",
+  "grouped_checks": {
+    "passed": 216,
+    "total": 216
+  },
+  "mobile": {
+    "passed": 140,
+    "skipped": 1,
+    "failed": 0,
+    "skip": "existing WebKit-only layout scenario; WebKit installation blocked by environment egress policy"
+  },
+  "desktop": {
+    "passed": 20,
+    "failed": 0
+  },
+  "local_closure": "GO critical/full",
+  "production_readiness": "NO-GO",
+  "github_ci": "NO-GO before test execution: repository release branch policy",
+  "physical_iphone_safari": "NOT VERIFIED",
+  "physical_iphone_home_screen_pwa": "NOT VERIFIED",
+  "production_mutations": false,
+  "production_deployment": false,
+  "build": "PASS",
+  "bundle_budget": "PASS",
+  "dist_mobile_css": "PASS",
+  "artifacts": {
+    "WYNIKI.md": "4ec98565fe41ca1f09dd92bd3c6208ffda9b7796128aef9d5f9416cda6d0c0f1",
+    "closure-evidence.json": "78b984f9a2fdfdac9a5666fa993a95c3e6f52800e5b16d79ceeafb297cfcd572",
+    "closure-e2e-evidence.json": "ed73d30a4f1991abbfdd2a62e752f056f90d5ade851c39210345a4ea6c16db51",
+    "closure-gate-result.json": "03b868921d6f17c2030b46d100692e35dd140dea1f43bab40f5252e9782a5379",
+    "release-impact.json": "ef50ebb2c779491ecbc6feef9242a1a5c20eadd5b4c89f6aea611cb44c4fd49d",
+    "changed-files.txt": "579d794caa6570a5fed8f0ed40cc43919c070dac0aa685a32fed62af1ef8abf7",
+    "provider-results.json": "eb6a7818c1292f2bbc29ad3ddb70a2d9ee7e659feb85534283671eb56ee96877",
+    "ci-result.json": "6b284aa6f68244df320b5189e04d9e64395979abb9305f2582cfcdfee749188f",
+    "groups-complete.log": "d5954b5d35b794fc41821ea2b184167723feb849a33a74ad937a39d0a68199e2",
+    "e2e-complete.log": "d993ac0de565956db5f602307ad6a6b23577776e75d0ed4768e346a676ab0e38",
+    "build-complete.log": "135704bff698543956ebac7814d58291e5e35ec77580fe3eafe38887f42a243f",
+    "bundle-complete.log": "bc2b0680b7eb437c2e4c78285df2e65f52620e4a3a03043285ce0682be8adf5b",
+    "css-complete.log": "d0b30462954756749e8e55a92e5775111c5a0fe3dbdebccb6c6bbe6675baf876",
+    "closure-complete.log": "34bcd1b4e2797ff01a3f80aacda5685a27c7a4d9570da3bedbce08dc3c539472",
+    "webkit-install.log": "270564d479e215cff6d46ef68f1d1d73565bd886d5c755a8d0bf4e4fb360257b",
+    "pending-touch-red.log": "010bc6ae1c088a336c4c71d21e0952e71040759467671056904766ba456d090c",
+    "pending-touch-green.log": "99eaf186755894a7cf1363f74c81a16dfcd5de2162f7b7b0f952a854460444ee"
+  }
+}

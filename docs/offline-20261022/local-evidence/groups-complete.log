@@ -1,0 +1,1654 @@
+Zmiana: 57 plików · critical · core, jobs, photos, protocol, roles, push, fuel, nameplates, sms, desktop, mobile, infra
+WAWIS grouped checks: core, jobs, photos, protocol, roles, push, fuel, nameplates, sms, desktop, mobile, infra (216 unique commands)
+
+> npm run test:smoke
+
+> klima-app-table-v2@13.38 test:smoke
+> node scripts/smoke-auth-refresh.cjs
+
+Smoke auth+refresh+permissions+lookup+confirmations+sms+contractors+devices+stage10 OK
+
+> npm run test:smoke:version
+
+> klima-app-table-v2@13.38 test:smoke:version
+> node scripts/smoke-version-ui.cjs
+
+Version UI + public metadata smoke OK (13.38)
+
+> npm run test:smoke:lazy
+
+> klima-app-table-v2@13.38 test:smoke:lazy
+> node scripts/smoke-lazy-modules.cjs
+
+Lazy loading smoke OK
+
+> npm run test:smoke:suspense
+
+> klima-app-table-v2@13.38 test:smoke:suspense
+> node scripts/smoke-suspense-fallbacks.cjs
+
+Suspense fallback smoke OK
+
+> npm run test:smoke:selection
+
+> klima-app-table-v2@13.38 test:smoke:selection
+> node scripts/smoke-job-selection.cjs
+
+Job selection smoke OK
+
+> npm run test:smoke:regex-compat
+
+> klima-app-table-v2@13.38 test:smoke:regex-compat
+> node scripts/smoke-regex-compat.cjs
+
+Smoke regex compatibility OK
+
+> npm run test:smoke:technical-refresh
+
+> klima-app-table-v2@13.38 test:smoke:technical-refresh
+> node scripts/smoke-technical-refresh-v977.cjs
+
+PASS smoke-technical-refresh-v977
+
+> npm run test:smoke:reliable-sync
+
+> klima-app-table-v2@13.38 test:smoke:reliable-sync
+> node scripts/smoke-reliable-sync-backup-v1010.mjs
+
+OK: 13.38 zachowuje mechanizmy v10.10 — trwały punkt synchronizacji, przyrostowe odświeżanie, cichą diagnostykę, wznowienia zdjęć i zewnętrzną kopię.
+
+> npm run test:smoke:feed-stale-v1079
+
+> klima-app-table-v2@13.38 test:smoke:feed-stale-v1079
+> node scripts/smoke-mobile-feed-stale-v1079.mjs
+
+OK: 10.79 — wspólny feed całego zespołu z RLS/invoker i serwerowe starzenie statusu bez UPDATE podczas odczytu.
+
+> node scripts/smoke-mobile-offline-resilience-v1075.mjs
+OK: v10.75 ma atomową kolejkę offline i abortowalne timeouty requestów Supabase.
+
+> node scripts/smoke-session-sync-resilience-v1080.mjs
+OK: 10.80 — session generation, pełny body-timeout i atomowa aktualizacja kolejki.
+
+> node scripts/smoke-update-reload-guard-v1081.mjs
+PASS v10.81 update reload guard: modal/protocol work defers SW/version reload until safe close.
+
+> node scripts/smoke-update-reload-guard-v1082.mjs
+PASS v10.82 F1/F2/F13: stable reload blockers, real dirty beforeunload, fuel/comment protection, timer recheck.
+
+> node scripts/smoke-audit-races-v1084.mjs
+GO: 10.84 stale loaders, polling, request order and cursor transaction are guarded.
+
+> npm run test:smoke:diagnostic-report
+
+> klima-app-table-v2@13.38 test:smoke:diagnostic-report
+> node scripts/smoke-diagnostic-report.cjs
+
+OK: raport diagnostyczny jest dostępny na desktopie i telefonie, stosuje zamknięty schemat danych i zawiera stan kolejki zdjęć.
+
+> npm run test:smoke:diagnostics-clarity
+
+> klima-app-table-v2@13.38 test:smoke:diagnostics-clarity
+> node scripts/smoke-diagnostics-clarity-v1013.mjs
+
+OK: v10.13 grupuje identyczne zdarzenia, pokazuje 24 h i historię, przypisuje moduły oraz usuwa podwójne i fałszywe alarmy.
+
+> node scripts/smoke-diagnostic-error-codes-v1272.mjs
+PASS WAWIS 12.72 — kody diagnostyczne zachowują przyczynę i nie wysyłają PII.
+
+> node scripts/smoke-diagnostics-p0-privacy-v1273.mjs
+PASS: P0 D1/D3 privacy + shared-account isolation (desktop/mobile, legacy, signed-out, pending ACK).
+
+> node scripts/smoke-diagnostics-ingest-queue-v1274.mjs
+PASS Codex D2/D5/D8: race ACK, multi-tab append, oldest-first, bounded unsent retention, worker error status, retry & session isolation.
+
+> node scripts/smoke-diagnostic-worker-rls-v1274.mjs
+PASS Codex D8: original upsert RED=42501; worker own insert+retry GREEN; cross-user/anon denied; admin reads.
+
+> node scripts/smoke-diagnostics-package4-v1276.mjs
+Codex package 4 (C7-C10) runtime RED scenarios: PASS; mobile/desktop handlers, boot fallback, privacy, push labels
+
+> npm run test:smoke:v1120-stability
+
+> klima-app-table-v2@13.38 test:smoke:v1120-stability
+> node scripts/smoke-photo-push-stability-v1120.cjs
+
+OK: v11.20 stabilizuje diagnostykę miniaturek, status PUSH, granty, indeksy i RLS.
+
+> npm run test:smoke:startup-chunk
+
+> klima-app-table-v2@13.38 test:smoke:startup-chunk
+> node scripts/smoke-startup-chunk.cjs
+
+Startup chunk smoke OK
+
+> npm run test:smoke:realtime-lite
+
+> klima-app-table-v2@13.38 test:smoke:realtime-lite
+> node scripts/smoke-realtime-refresh-lite.cjs
+
+Realtime refresh lite smoke OK: desktop and mobile use job-scoped realtime and rare global fallback
+
+> node scripts/codex-acceptance-note-sql-v1269.mjs
+PASS CODEX P1-02 — real PostgreSQL RPC, A/B stale edit conflict and persisted winner A
+
+> node scripts/smoke-package2-jw-jz-cycle-v1267.mjs
+PASS v12.69: JW/JZ completeness guarded by SQL, cycles 1–5 and grouping rendered without retry inflation.
+
+> node scripts/smoke-nameplate-serial-dual-v1327.mjs
+Nameplate dual-serial confirmation OK: match, conflict, weak OCR, missing data, AI, explicit review.
+
+> node scripts/smoke-p2-audit-closure-v1262.mjs
+PASS F06 metadata pagination crosses 1000/2501 and is wired into desktop/mobile jobs fetch
+PASS F07 desktop rejects zero-row/not-found status transition
+PASS F07 mobile rejects zero-row/not-found status transition
+PASS F08 desktop retry after lost delete response reuses operation id
+PASS F08 mobile retry after lost delete response reuses operation id
+PASS F09 rebuild manifest covers active root/current migrations and starts before modern schema changes
+PASS smoke-p2-audit-closure-v1262
+
+> node scripts/smoke-p1-data-integrity-v1261.mjs
+PASS F03 create job is idempotent after commit-with-lost-response
+PASS F04 completion rejects missing or mismatched JW/JZ and accepts valid multi-split
+PASS F05 fuel overview/report crosses the 1000-row boundary
+PASS P1 migration timestamp matches production registry
+PASS F10 cash requires amount while transfer may omit it
+PASS smoke-p1-data-integrity-v1261
+
+> node scripts/smoke-postal-code-v1196.mjs
+OK: v11.96 automatyczny kod pocztowy, układ mobile i integracja Fakturowni.
+
+> node scripts/smoke-mobile-form-v1198.cjs
+OK: v11.98 mobile ma automatyczny kod, mniejsze pola i tylko jeden główny przycisk głosowy.
+
+> node scripts/smoke-mobile-postal-wire-v1199.cjs
+OK: v11.99 mobile przekazuje Supabase do automatycznego lookupu kodu pocztowego.
+
+> node scripts/smoke-postal-city-fallback-v1197.cjs
+OK: v11.97 kod pocztowy może zostać dobrany po samej znanej miejscowości.
+
+> node scripts/smoke-job-nip-v1194.cjs
+OK: v11.94 NIP w formularzu desktop/mobile i bezpieczny zapis kontrahenta.
+
+> node scripts/smoke-job-nip-lookup-v1200.cjs
+OK: v12.00 mobile wyszukuje i wiąże kontrahenta po NIP.
+
+> node scripts/smoke-job-form-lookups-v1201.cjs
+OK: v12.01 NIP i automatyczny kod pocztowy działają w mobile i desktop.
+
+> node scripts/smoke-gus-bir-v1206.cjs
+OK: GUS BIR lookup po NIP jest zabezpieczony, bez wartości klucza w kodzie testu.
+
+> node scripts/smoke-desktop-job-form-compact-v1202.cjs
+OK: v12.02 desktop bez instalatorów i z krótszym formularzem.
+
+> node scripts/smoke-contractors-stage3-v1176.mjs
+11.76 contractor stage 3 (K1/K2/K17 + fixed 5-year rule) smoke OK
+
+> npm run test:smoke:delete
+
+> klima-app-table-v2@13.38 test:smoke:delete
+> node scripts/smoke-job-delete.cjs
+
+Job delete smoke OK
+
+> npm run test:smoke:device-save
+
+> klima-app-table-v2@13.38 test:smoke:device-save
+> node scripts/smoke-job-device-save.cjs
+
+Job device/concurrency save smoke OK
+
+> npm run test:smoke:job-multi-indoor
+
+> klima-app-table-v2@13.38 test:smoke:job-multi-indoor
+> node scripts/smoke-job-multi-indoor-units.cjs
+
+Smoke OK: multi-split indoor units are serialized, parsed and wired
+
+> npm run test:smoke:single-jw-delete
+
+> klima-app-table-v2@13.38 test:smoke:single-jw-delete
+> node scripts/smoke-single-jw-delete-v1284.mjs
+
+OK: WAWIS 12.84 — individual JW RPC, admin permission, storage cleanup, unaffected JZ and JW.
+
+> npm run test:smoke:job-device-type-switch
+
+> klima-app-table-v2@13.38 test:smoke:job-device-type-switch
+> node scripts/smoke-job-device-type-switch.cjs
+
+Smoke OK: device type switch single-split/multi-split is wired and preserves multi placeholders
+
+> npm run test:smoke:device-delete
+
+> klima-app-table-v2@13.38 test:smoke:device-delete
+> node scripts/smoke-device-delete.cjs
+
+Device delete smoke OK
+
+> npm run test:smoke:job-auto-contractor
+
+> klima-app-table-v2@13.38 test:smoke:job-auto-contractor
+> node scripts/smoke-job-auto-contractor-create.cjs
+
+Job auto contractor create smoke OK
+
+> npm run test:smoke:contractor-addresses
+
+> klima-app-table-v2@13.38 test:smoke:contractor-addresses
+> node scripts/smoke-contractor-addresses.cjs
+
+OK: wielu adresów klienta, wybór adresu montażu i zachowanie historycznego snapshotu są zabezpieczone.
+
+> npm run test:smoke:worker-shared-job-edit
+
+> klima-app-table-v2@13.38 test:smoke:worker-shared-job-edit
+> node scripts/smoke-worker-shared-job-edit-v1060.cjs
+
+PASS smoke-worker-shared-job-edit-v1060
+
+> npm run test:smoke:job-concurrency-installers
+
+> klima-app-table-v2@13.38 test:smoke:job-concurrency-installers
+> node scripts/smoke-job-concurrency-installers-v1168.mjs
+
+11.68 concurrency + installers smoke OK; 11.71 protocol fallback preserved
+
+> npm run test:smoke:worker-create-status
+
+> klima-app-table-v2@13.38 test:smoke:worker-create-status
+> node scripts/smoke-worker-create-status-v976.cjs
+
+PASS smoke-worker-create-status-v976
+
+> npm run test:smoke:job-completion
+
+> klima-app-table-v2@13.38 test:smoke:job-completion
+> node scripts/smoke-job-completion-tracking-push.cjs
+
+Job completion tracking + admin push smoke OK
+
+> npm run test:smoke:new-job-author-comment
+
+> klima-app-table-v2@13.38 test:smoke:new-job-author-comment
+> node scripts/smoke-new-job-author-comment-v1053.cjs
+
+PASS smoke-new-job-author-comment-v1053 + role-routing-v1321
+
+> node scripts/smoke-photo-queue-stage-diagnostics-v1348.mjs
+Photo queue stage tracing + privacy smoke PASS
+
+> node scripts/smoke-selected-job-sync-v1347.mjs
+13.47 selected job priority and pending device overlay smoke PASS
+
+> node scripts/smoke-mobile-photo-zoom-v1180.mjs
+11.80 mobile photo pinch zoom smoke OK; desktop preview unchanged
+
+> npm run test:smoke:private-photos
+
+> klima-app-table-v2@13.38 test:smoke:private-photos
+> node scripts/smoke-private-photos.cjs
+
+Smoke OK: prywatne zdjęcia + signed URL + RLS storage
+
+> npm run test:smoke:mobile-private-photos
+
+> klima-app-table-v2@13.38 test:smoke:mobile-private-photos
+> node scripts/smoke-mobile-private-photos.cjs
+
+OK mobile private photos smoke
+
+> npm run test:smoke:mobile-photo-compression
+
+> klima-app-table-v2@13.38 test:smoke:mobile-photo-compression
+> node scripts/smoke-mobile-photo-compression.cjs
+
+Mobile photo compression and iOS empty-multipart protection smoke OK
+
+> npm run test:smoke:mobile-photo-upload-rls
+
+> klima-app-table-v2@13.38 test:smoke:mobile-photo-upload-rls
+> node scripts/smoke-mobile-photo-upload-rls.cjs
+
+Mobile photo upload RLS smoke OK
+
+> npm run test:smoke:mobile-photo-visibility-sync
+
+> klima-app-table-v2@13.38 test:smoke:mobile-photo-visibility-sync
+> node scripts/smoke-mobile-photo-visibility-sync.cjs
+
+Mobile photo visibility sync smoke OK
+
+> npm run test:smoke:mobile-thumbnail-recovery
+
+> klima-app-table-v2@13.38 test:smoke:mobile-thumbnail-recovery
+> node scripts/smoke-mobile-thumbnail-recovery-v1012.mjs
+
+OK: 11.12 szczegóły montażu retryują się automatycznie, protokół nie konkuruje z nimi o połączenie, a miniatury zachowują fallback do oryginału.
+
+> npm run test:smoke:photo-cross-device-sync
+
+> klima-app-table-v2@13.38 test:smoke:photo-cross-device-sync
+> node scripts/smoke-photo-cross-device-sync.cjs
+
+Photo cross-device sync smoke OK
+
+> npm run test:smoke:mobile-photo-sync-indicator
+
+> klima-app-table-v2@13.38 test:smoke:mobile-photo-sync-indicator
+> node scripts/smoke-mobile-photo-sync-indicator.cjs
+
+Mobile photo sync indicator smoke OK
+
+> npm run test:smoke:mobile-photo-sync-center
+
+> klima-app-table-v2@13.38 test:smoke:mobile-photo-sync-center
+> node scripts/smoke-mobile-photo-sync-center.cjs
+
+Mobile photo sync center smoke OK
+
+> npm run test:smoke:mobile-offline-photo-queue
+
+> klima-app-table-v2@13.38 test:smoke:mobile-offline-photo-queue
+> node scripts/smoke-mobile-offline-photo-queue.cjs
+
+OK smoke-mobile-offline-photo-queue
+
+> npm run test:smoke:mobile-photo-idempotency
+
+> klima-app-table-v2@13.38 test:smoke:mobile-photo-idempotency
+> node scripts/smoke-mobile-photo-idempotency.cjs
+
+OK smoke-mobile-photo-idempotency
+
+> npm run test:smoke:photo-preview-gallery-separation
+
+> klima-app-table-v2@13.38 test:smoke:photo-preview-gallery-separation
+> node scripts/smoke-photo-preview-gallery-separation-v936.cjs
+
+OK: zdjęcia montażu i tabliczki znamionowe mają oddzielne galerie strzałek na desktopie i mobile.
+
+> npm run test:smoke:desktop-photo-thumbnails
+
+> klima-app-table-v2@13.38 test:smoke:desktop-photo-thumbnails
+> node scripts/smoke-desktop-photo-performance-v968.cjs
+
+Smoke OK: v9.68/v9.69 photo loading is lazy, deduplicated, session-cached and realtime-decoupled on desktop and mobile
+
+> npm run test:smoke:desktop-initial-details
+
+> klima-app-table-v2@13.38 test:smoke:desktop-initial-details
+> node scripts/smoke-desktop-initial-details-v1325.mjs
+
+OK: desktop initial details hard deadline and startup recovery
+
+> node scripts/smoke-photo-zero-byte-v1096.mjs
+PASS v10.96 zero-byte photo guard.
+
+> node scripts/smoke-protocol-signature-reuse-v1322.mjs
+PASS WAWIS 13.22 signature reuse / no legacy migration / PDF revision retention
+
+> node scripts/smoke-worker-protocol-gate-v1226.cjs
+PASS worker protocol completion gate v12.26
+
+> npm run test:smoke:mobile-protocol
+
+> klima-app-table-v2@13.38 test:smoke:mobile-protocol
+> node scripts/smoke-mobile-protocol-v979.cjs
+
+PASS smoke-mobile-protocol-v979
+
+> npm run test:smoke:mobile-protocol-save
+
+> klima-app-table-v2@13.38 test:smoke:mobile-protocol-save
+> node scripts/smoke-mobile-protocol-save-v1011.mjs
+
+PASS smoke-mobile-protocol-save-v1011
+
+> node scripts/smoke-storage-write-reconciliation-v1074.mjs
+PASS smoke-storage-write-reconciliation-v1074
+
+> node scripts/smoke-storage-delayed-commit-v1077.mjs
+PASS smoke-storage-delayed-commit-v1077
+
+> node scripts/smoke-audit-fixes-v1088.mjs
+SOURCE N2 on 10.84: DB job completion guard does not validate JW/JZ nameplates.
+SOURCE N3 on 10.84: a competing protocol record can be accepted as own success and replace is not CAS-bound.
+SOURCE N4 on 10.84: fuel retry has no stable operation UUID in the INSERT.
+SOURCE N5 on 10.84: every retry gets a new request key and provider uncertainty is not reconciled.
+10.88 auxiliary source checks passed; running executable audit scenarios.
+A01 PASS behavioral SQL
+A02 PASS behavioral SQL
+A09 PASS behavioral SQL
+LOCAL PROD-DEFINITION RLS PASS admin read= 1 direct update= 1
+LOCAL PROD-DEFINITION RLS PASS worker read= 1 direct update= 0
+LOCAL PROD-DEFINITION RLS PASS pending read= 0 direct update= 0
+LOCAL PROD-DEFINITION RLS PASS no-profile read= 0 direct update= 0
+LOCAL ANON direct contractor access denied. Scope: selected exact production policies/functions, not entire Supabase.
+A03 SW endpoint/context epoch behavior PASS
+A03 SQL real lifecycle: fresh epoch, endpoint generation1, stale410, tombstone PASS
+A06 owner and conditional cleanup PASS
+A06 two tabs preserve distinct identical fill identities PASS
+A06 real module retry/concurrent same ID and distinct identical fills PASS
+Fuel switched account rejects before INSERT PASS
+devices PASS
+mobile-devices PASS
+contractors PASS
+mobile-contractors PASS
+fuel PASS
+A04 email attempt A/B/A and owner isolation PASS
+A04 fresh module reload PASS
+A04 full Edge handler: lost response + 25h retry delivers exactly once PASS
+A04 replacement PDF does not change existing attempt PASS
+(node:41211) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41219) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+A04 full Edge handler: lost response + 25h retry delivers exactly once PASS
+A04 headers received, body never completes: bounded pending response PASS
+(node:41227) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+A05 concurrent handler PASS
+A05 actual RPC SQL: both orders and new send identity PASS
+A07 archive trigger dependency present
+PASS [rebuild 1] supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS [rebuild 1] supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS [rebuild 1] supabase/setup-job-protocols-v9.79.sql
+PASS [rebuild 1] supabase/setup-fuel-module-v10.14.sql
+PASS [rebuild 1] supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS [rebuild 1] supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS [rebuild 1] supabase/setup-fuel-odometer-source-v10.16.sql
+PASS [rebuild 1] supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS [rebuild 1] supabase/setup-fuel-production-v10.26.sql
+PASS [rebuild 1] supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS [rebuild 1] supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS [rebuild 1] supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS [rebuild 1] supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS [rebuild 1] supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS [rebuild 1] supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS [rebuild 1] supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS [rebuild 1] supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS [rebuild 1] supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS [rebuild 1] supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS [rebuild 1] supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS [rebuild 1] supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS [rebuild 1] supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS [rebuild 1] supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS [rebuild 1] supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS [rebuild 1] supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS [rebuild 1] supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS [rebuild 1] supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS [rebuild 1] supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS [rebuild 1] supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS [rebuild 1] supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS [rebuild 1] supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS [rebuild 1] supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS [rebuild 1] supabase/rebuild/legacy_service_archive_v1089.sql
+PASS [rebuild 1] supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS [rebuild 1] supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS [rebuild 1] supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS [rebuild 1] supabase/migrations/20260917093000_admin_manual_nameplate_completion_v1090.sql
+PASS [rebuild 1] supabase/migrations/20260917101824_audit_invariants.sql
+PASS [rebuild 1] supabase/migrations/20260917101825_audit_restore.sql
+PASS [rebuild 1] supabase/migrations/20260917102820_audit_push_context.sql
+PASS [rebuild 1] supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS [rebuild 1] supabase/migrations/20260917174140_audit_staging_view_guard.sql
+PASS [rebuild 1] supabase/migrations/20260917175255_audit_protocol_retention.sql
+PASS [rebuild 1] supabase/rebuild/audit_final_acl.sql
+PASS [rebuild 1] supabase/migrations/20260917190500_security_hardening_v1090.sql
+PASS [rebuild 1] supabase/migrations/20260917235600_admin_finish_without_nameplates_v1092.sql
+PASS [rebuild 1] supabase/migrations/20260919080000_photo_zero_byte_guard_v1096.sql
+PASS [rebuild 1] supabase/migrations/20260925095000_worker_completed_payment_update_v1142.sql
+PASS [rebuild 1] supabase/migrations/20260928080000_mobile_contractor_overwrite_v1161.sql
+PASS [rebuild 1] supabase/migrations/20260928120000_job_installers_concurrency_v1168.sql
+PASS [rebuild 1] supabase/migrations/current/20260929082000_fixed_service_reminder_years_v1176.sql
+PASS [rebuild 1] supabase/migrations/current/20260929093000_complete_contractors_catalog_v1178.sql
+PASS [rebuild 1] supabase/migrations/current/20260929113000_contractor_normalization_v1179.sql
+PASS [rebuild 1] supabase/migrations/current/20260929144500_rotenso_r18_official_power_correction_v1183.sql
+PASS [rebuild 1] supabase/migrations/current/20260929171500_vat_invoice_status_v1184.sql
+PASS [rebuild 1] supabase/migrations/current/20260930071500_payment_cash_transfer_optional_amount_v1187.sql
+PASS [rebuild 1] supabase/migrations/20260930100831_require_device_before_completion_v1192.sql
+PASS [rebuild 1] supabase/migrations/current/20260930171655_job_contractor_nip_v1194.sql
+PASS [rebuild 1] supabase/migrations/current/20261001071500_vat_invoice_fakturownia_lock_v1205.sql
+PASS [rebuild 1] supabase/migrations/20261002062031_sms_history_safety_stage1_v1218.sql
+PASS [rebuild 1] supabase/migrations/20261002070000_sms_customer_window_dedup_v1217.sql
+PASS [rebuild 1] supabase/migrations/20261002070050_sms_durable_customer_groups_v1219.sql
+PASS [rebuild 1] supabase/migrations/20261002071500_sms_cleanup_rpc_acl_v1217.sql
+PASS [rebuild 1] supabase/migrations/20261002073753_sms_stage3_current_state_calendar_v1220.sql
+PASS [rebuild 1] supabase/migrations/20261002081343_sms_stage4_reliable_delivery_v1221.sql
+PASS [rebuild 1] supabase/migrations/20261002081756_sms_stage4_found_state_fix_v1221.sql
+PASS [rebuild 1] supabase/migrations/20261002090424_sms_stage5_history_legacy_v1222.sql
+PASS [rebuild 1] supabase/migrations/20261002095320_sms_unsent_manual_retry_v1223.sql
+PASS [rebuild 1] supabase/migrations/20261002142000_worker_protocol_before_completion_v1226.sql
+PASS [rebuild 1] supabase/migrations/20261003055805_sms_dismiss_failed_and_delete_unsent_v1232.sql
+PASS [rebuild 1] supabase/migrations/20261003173500_sms_retry_confirmed_undelivered_v1235.sql
+PASS [rebuild 1] supabase/migrations/20261003180500_sms_bulk_remove_old_unsent_v1236.sql
+PASS [rebuild 1] supabase/migrations/20261003184000_sms_retry_after_undelivered_v1237.sql
+PASS [rebuild 1] supabase/migrations/20261004092411_add_job_protocol_note_v1240.sql
+PASS [rebuild 1] supabase/migrations/20261005094500_sms_p0_race_safety_v1242.sql
+PASS [rebuild 1] supabase/migrations/20261005103000_sms_cancel_retry_claim_p1_v1243.sql
+PASS [rebuild 1] supabase/migrations/20261005114500_sms_sent_month_by_send_time_v1244.sql
+PASS [rebuild 1] supabase/migrations/20261005123000_sms_dashboard_queue_count_v1245.sql
+PASS [rebuild 1] supabase/migrations/20261005133000_sms_callback_auth_rotation_v1246.sql
+PASS [rebuild 1] supabase/migrations/20261005134000_sms_group_device_history_v1247.sql
+PASS [rebuild 1] supabase/migrations/20261005135000_sms_fixed_clock_and_legacy_indexes_v1248.sql
+PASS [rebuild 1] supabase/migrations/20261005135500_sms_history_restore_integrity_v1249.sql
+PASS [rebuild 1] supabase/migrations/20261005150842_sms_callback_snapshot_integrity_v1250.sql
+PASS [rebuild 1] supabase/migrations/20261005154104_sms_callback_multi_generation_grace_v1251.sql
+PASS [rebuild 1] supabase/migrations/20261005160818_sms_history_membership_integrity_v1252.sql
+PASS [rebuild 1] supabase/migrations/20261005162129_sms_stable_customer_group_identity_v1253.sql
+PASS [rebuild 1] supabase/migrations/20261005164949_sms_package1_retry_preflight_settings_legacy_v1254.sql
+PASS [rebuild 1] supabase/migrations/20261005173500_sms_package2_history_restore_rebuild_v1255.sql
+PASS [rebuild 1] supabase/migrations/20261005183500_sms_package3_settings_lazy_v1256.sql
+PASS [rebuild 1] supabase/migrations/20261006051947_sms_retry_attempt_lifecycle_v1257.sql
+PASS [rebuild 1] supabase/migrations/20261006054129_sms_retry_chain_attempt_pointer_v1257.sql
+PASS [rebuild 1] supabase/migrations/20261006054752_sms_customer_identity_count_v1257.sql
+PASS [rebuild 1] supabase/migrations/20261006055831_sms_snapshot_customer_identity_v1257.sql
+PASS [rebuild 1] supabase/migrations/current/20261007045546_fakturownia_p0_v1260.sql
+PASS [rebuild 1] supabase/migrations/current/20261007045625_fakturownia_p0_rpc_acl_v1260.sql
+PASS [rebuild 1] supabase/migrations/current/20261007062745_job_create_idempotency_v1261.sql
+PASS [rebuild 1] supabase/migrations/current/20261007071004_p2_status_delete_idempotency_v1262.sql
+PASS [rebuild 1] supabase/migrations/current/20261007071856_p2_restore_snapshot_integrity_v1262.sql
+PASS [rebuild 1] supabase/migrations/current/20261007080329_fuel_tank_stock_v1263.sql
+PASS [rebuild 1] supabase/migrations/current/20261007081052_fuel_tank_admin_only_v1263.sql
+PASS [rebuild 1] supabase/migrations/current/20261007081132_fuel_tank_admin_visibility_v1263.sql
+PASS [rebuild 1] supabase/migrations/20261007124500_push_delivery_receipts_v1265.sql
+PASS [rebuild 1] supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql
+PASS [rebuild 1] supabase/migrations/current/20261008105757_job_device_models_completion_v1267.sql
+PASS [rebuild 1] supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql
+PASS [rebuild 1] supabase/migrations/current/20261008131504_completion_jw_index_guard_v1269.sql
+PASS [rebuild 1] supabase/migrations/current/20261008131524_disable_legacy_fuel_rpc_v1269.sql
+PASS [rebuild 1] supabase/migrations/20261008200351_diagnostic_worker_upsert_rls_v1274.sql
+PASS [rebuild 1] supabase/migrations/current/20261009095500_fakturownia_invoice_attempt_v1280.sql
+PASS [rebuild 1] supabase/migrations/current/20261009135500_admin_delete_multi_indoor_unit_v1284.sql
+PASS [rebuild 1] supabase/migrations/20261012141000_protocol_signature_address_correction_v1322.sql
+PASS [rebuild 1] supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql
+Local dependency rehearsal pass 1 + current SMS schema + fixed-clock window + delete/restore history PASS; this local run alone does not verify staging
+PASS [rebuild 2] supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS [rebuild 2] supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS [rebuild 2] supabase/setup-job-protocols-v9.79.sql
+PASS [rebuild 2] supabase/setup-fuel-module-v10.14.sql
+PASS [rebuild 2] supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS [rebuild 2] supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS [rebuild 2] supabase/setup-fuel-odometer-source-v10.16.sql
+PASS [rebuild 2] supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS [rebuild 2] supabase/setup-fuel-production-v10.26.sql
+PASS [rebuild 2] supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS [rebuild 2] supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS [rebuild 2] supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS [rebuild 2] supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS [rebuild 2] supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS [rebuild 2] supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS [rebuild 2] supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS [rebuild 2] supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS [rebuild 2] supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS [rebuild 2] supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS [rebuild 2] supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS [rebuild 2] supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS [rebuild 2] supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS [rebuild 2] supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS [rebuild 2] supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS [rebuild 2] supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS [rebuild 2] supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS [rebuild 2] supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS [rebuild 2] supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS [rebuild 2] supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS [rebuild 2] supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS [rebuild 2] supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS [rebuild 2] supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS [rebuild 2] supabase/rebuild/legacy_service_archive_v1089.sql
+PASS [rebuild 2] supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS [rebuild 2] supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS [rebuild 2] supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS [rebuild 2] supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS [rebuild 2] supabase/migrations/20260917093000_admin_manual_nameplate_completion_v1090.sql
+PASS [rebuild 2] supabase/migrations/20260917101824_audit_invariants.sql
+PASS [rebuild 2] supabase/migrations/20260917101825_audit_restore.sql
+PASS [rebuild 2] supabase/migrations/20260917102820_audit_push_context.sql
+PASS [rebuild 2] supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS [rebuild 2] supabase/migrations/20260917174140_audit_staging_view_guard.sql
+PASS [rebuild 2] supabase/migrations/20260917175255_audit_protocol_retention.sql
+PASS [rebuild 2] supabase/rebuild/audit_final_acl.sql
+PASS [rebuild 2] supabase/migrations/20260917190500_security_hardening_v1090.sql
+PASS [rebuild 2] supabase/migrations/20260917235600_admin_finish_without_nameplates_v1092.sql
+PASS [rebuild 2] supabase/migrations/20260919080000_photo_zero_byte_guard_v1096.sql
+PASS [rebuild 2] supabase/migrations/20260925095000_worker_completed_payment_update_v1142.sql
+PASS [rebuild 2] supabase/migrations/20260928080000_mobile_contractor_overwrite_v1161.sql
+PASS [rebuild 2] supabase/migrations/20260928120000_job_installers_concurrency_v1168.sql
+PASS [rebuild 2] supabase/migrations/current/20260929082000_fixed_service_reminder_years_v1176.sql
+PASS [rebuild 2] supabase/migrations/current/20260929093000_complete_contractors_catalog_v1178.sql
+PASS [rebuild 2] supabase/migrations/current/20260929113000_contractor_normalization_v1179.sql
+PASS [rebuild 2] supabase/migrations/current/20260929144500_rotenso_r18_official_power_correction_v1183.sql
+PASS [rebuild 2] supabase/migrations/current/20260929171500_vat_invoice_status_v1184.sql
+PASS [rebuild 2] supabase/migrations/current/20260930071500_payment_cash_transfer_optional_amount_v1187.sql
+PASS [rebuild 2] supabase/migrations/20260930100831_require_device_before_completion_v1192.sql
+PASS [rebuild 2] supabase/migrations/current/20260930171655_job_contractor_nip_v1194.sql
+PASS [rebuild 2] supabase/migrations/current/20261001071500_vat_invoice_fakturownia_lock_v1205.sql
+PASS [rebuild 2] supabase/migrations/20261002062031_sms_history_safety_stage1_v1218.sql
+PASS [rebuild 2] supabase/migrations/20261002070000_sms_customer_window_dedup_v1217.sql
+PASS [rebuild 2] supabase/migrations/20261002070050_sms_durable_customer_groups_v1219.sql
+PASS [rebuild 2] supabase/migrations/20261002071500_sms_cleanup_rpc_acl_v1217.sql
+PASS [rebuild 2] supabase/migrations/20261002073753_sms_stage3_current_state_calendar_v1220.sql
+PASS [rebuild 2] supabase/migrations/20261002081343_sms_stage4_reliable_delivery_v1221.sql
+PASS [rebuild 2] supabase/migrations/20261002081756_sms_stage4_found_state_fix_v1221.sql
+PASS [rebuild 2] supabase/migrations/20261002090424_sms_stage5_history_legacy_v1222.sql
+PASS [rebuild 2] supabase/migrations/20261002095320_sms_unsent_manual_retry_v1223.sql
+PASS [rebuild 2] supabase/migrations/20261002142000_worker_protocol_before_completion_v1226.sql
+PASS [rebuild 2] supabase/migrations/20261003055805_sms_dismiss_failed_and_delete_unsent_v1232.sql
+PASS [rebuild 2] supabase/migrations/20261003173500_sms_retry_confirmed_undelivered_v1235.sql
+PASS [rebuild 2] supabase/migrations/20261003180500_sms_bulk_remove_old_unsent_v1236.sql
+PASS [rebuild 2] supabase/migrations/20261003184000_sms_retry_after_undelivered_v1237.sql
+PASS [rebuild 2] supabase/migrations/20261004092411_add_job_protocol_note_v1240.sql
+PASS [rebuild 2] supabase/migrations/20261005094500_sms_p0_race_safety_v1242.sql
+PASS [rebuild 2] supabase/migrations/20261005103000_sms_cancel_retry_claim_p1_v1243.sql
+PASS [rebuild 2] supabase/migrations/20261005114500_sms_sent_month_by_send_time_v1244.sql
+PASS [rebuild 2] supabase/migrations/20261005123000_sms_dashboard_queue_count_v1245.sql
+PASS [rebuild 2] supabase/migrations/20261005133000_sms_callback_auth_rotation_v1246.sql
+PASS [rebuild 2] supabase/migrations/20261005134000_sms_group_device_history_v1247.sql
+PASS [rebuild 2] supabase/migrations/20261005135000_sms_fixed_clock_and_legacy_indexes_v1248.sql
+PASS [rebuild 2] supabase/migrations/20261005135500_sms_history_restore_integrity_v1249.sql
+PASS [rebuild 2] supabase/migrations/20261005150842_sms_callback_snapshot_integrity_v1250.sql
+PASS [rebuild 2] supabase/migrations/20261005154104_sms_callback_multi_generation_grace_v1251.sql
+PASS [rebuild 2] supabase/migrations/20261005160818_sms_history_membership_integrity_v1252.sql
+PASS [rebuild 2] supabase/migrations/20261005162129_sms_stable_customer_group_identity_v1253.sql
+PASS [rebuild 2] supabase/migrations/20261005164949_sms_package1_retry_preflight_settings_legacy_v1254.sql
+PASS [rebuild 2] supabase/migrations/20261005173500_sms_package2_history_restore_rebuild_v1255.sql
+PASS [rebuild 2] supabase/migrations/20261005183500_sms_package3_settings_lazy_v1256.sql
+PASS [rebuild 2] supabase/migrations/20261006051947_sms_retry_attempt_lifecycle_v1257.sql
+PASS [rebuild 2] supabase/migrations/20261006054129_sms_retry_chain_attempt_pointer_v1257.sql
+PASS [rebuild 2] supabase/migrations/20261006054752_sms_customer_identity_count_v1257.sql
+PASS [rebuild 2] supabase/migrations/20261006055831_sms_snapshot_customer_identity_v1257.sql
+PASS [rebuild 2] supabase/migrations/current/20261007045546_fakturownia_p0_v1260.sql
+PASS [rebuild 2] supabase/migrations/current/20261007045625_fakturownia_p0_rpc_acl_v1260.sql
+PASS [rebuild 2] supabase/migrations/current/20261007062745_job_create_idempotency_v1261.sql
+PASS [rebuild 2] supabase/migrations/current/20261007071004_p2_status_delete_idempotency_v1262.sql
+PASS [rebuild 2] supabase/migrations/current/20261007071856_p2_restore_snapshot_integrity_v1262.sql
+PASS [rebuild 2] supabase/migrations/current/20261007080329_fuel_tank_stock_v1263.sql
+PASS [rebuild 2] supabase/migrations/current/20261007081052_fuel_tank_admin_only_v1263.sql
+PASS [rebuild 2] supabase/migrations/current/20261007081132_fuel_tank_admin_visibility_v1263.sql
+PASS [rebuild 2] supabase/migrations/20261007124500_push_delivery_receipts_v1265.sql
+PASS [rebuild 2] supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql
+PASS [rebuild 2] supabase/migrations/current/20261008105757_job_device_models_completion_v1267.sql
+PASS [rebuild 2] supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql
+PASS [rebuild 2] supabase/migrations/current/20261008131504_completion_jw_index_guard_v1269.sql
+PASS [rebuild 2] supabase/migrations/current/20261008131524_disable_legacy_fuel_rpc_v1269.sql
+PASS [rebuild 2] supabase/migrations/20261008200351_diagnostic_worker_upsert_rls_v1274.sql
+PASS [rebuild 2] supabase/migrations/current/20261009095500_fakturownia_invoice_attempt_v1280.sql
+PASS [rebuild 2] supabase/migrations/current/20261009135500_admin_delete_multi_indoor_unit_v1284.sql
+PASS [rebuild 2] supabase/migrations/20261012141000_protocol_signature_address_correction_v1322.sql
+PASS [rebuild 2] supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql
+Local dependency rehearsal pass 2 + current SMS schema + fixed-clock window + delete/restore history PASS; this local run alone does not verify staging
+LF exit 0
+CRLF exit 0
+Audit executable gate: 18/18 local scenarios passed. Staging/browser evidence is separate.
+
+> npm run test:smoke:mobile-protocol-print
+
+> klima-app-table-v2@13.38 test:smoke:mobile-protocol-print
+> node scripts/test-job-protocol-print-image-v1002.mjs
+
+PASS protocol PDF->PNG 3307x4678, 147463 B
+
+> npm run test:smoke:mobile-protocol-layout
+
+> klima-app-table-v2@13.38 test:smoke:mobile-protocol-layout
+> node scripts/smoke-mobile-protocol-layout-v984.cjs
+
+OK: protokół ma uporządkowane dane oraz osobny, nieruchomy ekran podpisu klienta.
+
+> npm run test:smoke:mobile-protocol-email
+
+> klima-app-table-v2@13.38 test:smoke:mobile-protocol-email
+> node scripts/test-job-protocol-email-v987.mjs
+
+PASS test-job-protocol-email-v987
+
+> npm run test:smoke:mobile-payment
+
+> klima-app-table-v2@13.38 test:smoke:mobile-payment
+> node scripts/test-job-payment-confirmation-v986.mjs
+
+PASS test-job-payment-confirmation-v986
+
+> npm run test:smoke:desktop-protocol
+
+> klima-app-table-v2@13.38 test:smoke:desktop-protocol
+> node scripts/smoke-desktop-protocol-v996.cjs
+
+Desktop saved protocol smoke OK
+
+> node scripts/codex-acceptance-fakturownia-v1269.mjs
+PASS P0-01 shared email belongs to other NIP HTTP 500 writes 0
+PASS P0-01 malformed client list HTTP 500 writes 0
+PASS P0-01 exact external_id approved HTTP 200 writes 1
+PASS CODEX P0-01 — executable Edge Function against mocked provider, no external changes
+
+> npm run test:smoke:admin-worker
+
+> klima-app-table-v2@13.38 test:smoke:admin-worker
+> node scripts/smoke-role-access.cjs
+
+Role access smoke OK
+
+> npm run test:smoke:desktop-only
+
+> klima-app-table-v2@13.38 test:smoke:desktop-only
+> node scripts/smoke-desktop-only.cjs
+
+Desktop-only mobile guard smoke OK
+
+> npm run test:smoke:supabase-grants
+
+> klima-app-table-v2@13.38 test:smoke:supabase-grants
+> node scripts/smoke-supabase-grants.cjs
+
+Smoke OK: jawne GRANT i RLS sprawdzone dla 52 public table creation(s) w plikach SQL (17 w rebuild bundle)
+
+> npm run test:smoke:destructive-rls
+
+> klima-app-table-v2@13.38 test:smoke:destructive-rls
+> node scripts/smoke-destructive-rls.cjs
+
+Destructive RLS smoke OK
+
+> node scripts/smoke-worker-contractor-update-v1089.cjs
+PASS smoke-worker-contractor-update-v1089
+
+> node scripts/smoke-supabase-security-hardening-v1090.mjs
+PASS v10.90 Supabase security hardening: ACL, invoker, 15 search_path pins, mutation controls 4/4
+
+> node scripts/smoke-fakturownia-p0-v1260.mjs
+OK: v12.60 P0 — worker nie zmienia pól faktury, a Fakturownia wiąże fakturę z konkretnym jobId.
+
+> node scripts/smoke-fakturownia-link-v1277.mjs
+PASS V12.77 linked by number
+PASS V12.77 correct OID
+PASS V12.77 other job blocked
+PASS V12.77 different client blocked
+PASS V12.77 draft blocked
+PASS V12.77 proforma blocked
+PASS V12.77 no invoice
+PASS V12.77 duplicate number
+PASS V12.77 ambiguous customer index but exact buyer verified
+PASS V12.77 missing external mapping but buyer verified
+PASS V12.77 unfinished job
+PASS V12.77 worker forbidden
+PASS V12.77 auto OID absent
+PASS V12.77 auto OID accepted
+PASS V12.77 auto missing OID suggests one invoice
+PASS V12.77 on-demand verification works without browser client id
+PASS V12.77 browser client id ignored in favor of verified buyer
+PASS V12.77 auto missing OID suggests choices but does not assign
+PASS V12.77 auto excludes invoice linked to different installation
+PASS V12.77 auto excludes wrong customer
+PASS V12.77 auto excludes unrelated OID
+PASS V12.77 auto excludes draft and proforma
+PASS V12.77 ambiguous external id still shows buyer-verified candidates
+PASS V12.77 no external id and real invoice buyer matches
+PASS V12.77 no external id and wrong buyer address refused
+PASS V12.77 no external id and exact OID accepted
+PASS V12.77 manual linking without external id rejects changed buyer address
+PASS V12.79 strict buyer identity and old private client without external_id (no real invoices created)
+
+> node scripts/smoke-fakturownia-auto-v1280.mjs
+PASS V12.80 single newly issued VAT with no OID auto-confirmed
+PASS V12.80 GUS company full legal name and postal change => auto-confirm by NIP
+PASS V12.80 GUS company changed NIP => fail closed
+PASS V12.80 GUS company missing invoice NIP => fail closed
+PASS V12.80 new OID also automatically verified
+PASS V12.80 two new issued invoices => no auto
+PASS V12.80 other job same client prepared => no auto
+PASS V12.80 other incomplete invoice job => no auto
+PASS V12.80 changed buyer address => no auto
+PASS V12.80 wrong invoice address => no auto
+PASS V12.80 expired server attempt => no auto
+PASS V12.80 no persisted baseline => no auto
+PASS V12.80 invoice existed BEFORE prepare => no auto
+PASS V12.80 already linked ID => no auto
+PASS V12.80 draft issued later not auto linked
+PASS V12.80 another job OID not auto linked
+PASS V12.80 missing provider creation timestamp => no auto
+PASS V12.81: 12.80 safety preserved, zero redundant customer lookup, manual candidate scan skipped on auto success
+
+> node scripts/smoke-fakturownia-v1281.mjs
+PASS V12.81: hidden emergency controls, user-triggered fallback, fast-path and unchanged guards
+
+> node scripts/codex-acceptance-push-v1269.mjs
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+PASS CODEX P1-05: foreign recipient rejected without transport
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+PASS CODEX P1-05: valid recipient
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+PASS CODEX P1-06: parallel invocation, one transport
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+PASS CODEX P1-05: disabled staff role
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+PASS CODEX P1-05: legacy NULL
+send-assignment-push invoked {
+  jobId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+  eventType: 'job_assigned',
+  triggeredBy: 'assignment',
+  callerId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  callerRole: 'Administrator'
+}
+Nie udało się utworzyć śledzonej próby PUSH: log error
+PASS CODEX P1-06: failed log blocks transport
+
+> node scripts/smoke-push-recipient-dedupe-v1268.mjs
+PASS v12.68: authorized push event claim, dedupe, reassignment, inactive endpoint and SQL trigger
+
+> node scripts/smoke-push-delivery-receipts-v1265.mjs
+PASS push delivery receipts v12.65
+
+> npm run test:smoke:push-job-deeplink
+
+> klima-app-table-v2@13.38 test:smoke:push-job-deeplink
+> node scripts/smoke-push-job-deeplink-v1121.cjs
+
+OK: push deeplink otwiera właściwy montaż i ustawia jego status/listę.
+
+> npm run test:smoke:assignment-push
+
+> klima-app-table-v2@13.38 test:smoke:assignment-push
+> node scripts/smoke-assignment-push.cjs
+
+Assignment/installer push smoke OK
+
+> npm run test:smoke:push-reliability
+
+> klima-app-table-v2@13.38 test:smoke:push-reliability
+> node scripts/smoke-push-reliability-v917.cjs
+
+PASS smoke-push-reliability-v917
+
+> npm run test:smoke:push-mobile-reassignment
+
+> klima-app-table-v2@13.38 test:smoke:push-mobile-reassignment
+> node scripts/smoke-push-mobile-reassignment-v918.cjs
+
+PASS smoke-push-mobile-reassignment-v918 — credentials verified atomically in PostgreSQL
+
+> npm run test:smoke:push-logout-handoff
+
+> klima-app-table-v2@13.38 test:smoke:push-logout-handoff
+> node scripts/smoke-push-logout-handoff-v1076.mjs
+
+PASS smoke-push-logout-handoff-v1076
+
+> npm run test:smoke:push-safety-v1078
+
+> klima-app-table-v2@13.38 test:smoke:push-safety-v1078
+> node scripts/smoke-push-safety-v1078.mjs
+
+PASS smoke-push-safety-v1078
+
+> npm run test:smoke:comment-admin-push
+
+> klima-app-table-v2@13.38 test:smoke:comment-admin-push
+> node scripts/smoke-comment-admin-push-v937.mjs
+
+OK: komentarz każdego pracownika wysyła bezpieczny, idempotentny push administratorowi i nie cofa zapisu przy awarii push.
+
+> npm run test:smoke:push-toggle
+
+> klima-app-table-v2@13.38 test:smoke:push-toggle
+> node scripts/smoke-push-toggle-v1097.cjs
+
+PASS smoke-push-toggle-v1097
+
+> npm run test:smoke:push-initial-state
+
+> klima-app-table-v2@13.38 test:smoke:push-initial-state
+> node scripts/smoke-push-initial-state-v1098.cjs
+
+PASS smoke-push-initial-state-v1098
+
+> npm run test:smoke:push-display
+
+> klima-app-table-v2@13.38 test:smoke:push-display
+> node scripts/smoke-push-display-v1105.cjs
+
+PASS smoke-push-display-v1105
+
+> npm run test:smoke:desktop-push-disabled
+
+> klima-app-table-v2@13.38 test:smoke:desktop-push-disabled
+> node scripts/smoke-desktop-push-disabled-v1099.cjs
+
+PASS smoke-desktop-push-disabled-v1099
+
+> node scripts/smoke-session-push-gate-v1083.mjs
+PASS v10.83 session/push/E2E gate regression.
+
+> node scripts/smoke-audit-fixes-v1087.mjs
+RED F4 reproduced on 10.84: persisted SW revision=20 rejects fresh-page CLEAR revision=1.
+RED F10 reproduced on 10.84: PushManager operations can wait forever.
+RED F11 reproduced on 10.84: 404/410 cleanup bypasses tombstone.
+GO: 10.87 closes F4/F10/F11 after reproducing exact 10.84 failures.
+
+> node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs
+PASS CODEX P1-03: old non-idempotent fuel RPC denied, replacement allowed
+
+> node scripts/codex-acceptance-fuel-ui-v1269.mjs
+PASS CODEX P1-03 — original FuelPanel handler: committed-lost-response, reload, mismatch, retry same ID
+
+> node scripts/smoke-package1-integrity-v1266.mjs
+PASS v12.66 package 1 notes / idempotent fuel SQL and client / Fakturownia safeguards
+
+> node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs
+PASS fuel tank mobile collapse v12.64
+
+> node scripts/smoke-fuel-tank-stock-v1263.mjs
+PASS fuel tank stock v12.63
+
+> npm run test:smoke:fuel-module
+
+> klima-app-table-v2@13.38 test:smoke:fuel-module
+> node scripts/smoke-fuel-module-v1014.mjs
+
+Fuel production access, monthly report, correction audit, rapid-refill warning and v10.26 regression checks passed.
+
+> npm run test:smoke:mobile-serial-scanner
+
+> klima-app-table-v2@13.38 test:smoke:mobile-serial-scanner
+> node scripts/smoke-mobile-serial-scanner.cjs && node scripts/smoke-nameplate-concurrency-v1329.mjs
+
+Mobile device wizard smoke OK: Single/Multi, full Rotenso catalog with contextual powers, manual nameplate crop, multiple devices, required nameplates before completion
+PASS mobile 13.29 nameplate conflict, three-device merge and saved-photo detection
+
+> npm run test:smoke:nameplate-rendering
+
+> klima-app-table-v2@13.38 test:smoke:nameplate-rendering
+> node scripts/smoke-nameplate-image-rendering.cjs
+
+Nameplate rendering smoke OK: crop overlay matches rendered image, previews use contain, desktop nameplates open from their JZ/JW row, upload preserves cropped-label quality
+
+> npm run test:smoke:nameplate-finish-verification
+
+> klima-app-table-v2@13.38 test:smoke:nameplate-finish-verification
+> node scripts/smoke-nameplate-finish-verification.cjs
+
+Smoke OK: 11.92 blokuje zakończenie bez urządzenia; admin może ominąć zdjęcia dopiero po dodaniu urządzenia.
+
+> npm run test:smoke:nameplate-quality
+
+> klima-app-table-v2@13.38 test:smoke:nameplate-quality
+> node scripts/smoke-nameplate-quality.cjs
+
+OK smoke-nameplate-quality
+
+> npm run test:smoke:nameplate-product-catalog
+
+> klima-app-table-v2@13.38 test:smoke:nameplate-product-catalog
+> node scripts/smoke-nameplate-product-catalog.mjs
+
+Smoke OK: 183 aktualne EAN-y Rotenso + 31 kodów historycznych/aliasów, centralny katalog, import i typy JW/JZ
+
+> npm run test:smoke:rotenso-model-history
+
+> klima-app-table-v2@13.38 test:smoke:rotenso-model-history
+> node scripts/smoke-rotenso-model-history.cjs
+
+OK smoke-rotenso-model-history
+
+> npm run test:smoke:desktop-nameplate-ocr
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-ocr
+> node scripts/smoke-desktop-nameplate-ocr.cjs
+
+Smoke OK: desktop reader uses barcode + focused model OCR + optional AI and keeps compatible persistence
+
+> npm run test:smoke:desktop-nameplate-ai-barcode
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-ai-barcode
+> node scripts/smoke-desktop-nameplate-ai-barcode.cjs
+
+Smoke OK: hard barcodes win, AI reads print, and Rotenso models require exact catalog confirmation
+
+> npm run test:smoke:desktop-nameplate-layout-profiles
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-layout-profiles
+> node scripts/smoke-desktop-nameplate-layout-profiles.cjs
+
+Smoke OK: both label layouts, all 213 catalog model codes and 161 synthetic future revisions work without borrowing an older EAN
+
+> npm run test:smoke:mobile-nameplate-verification
+
+> klima-app-table-v2@13.38 test:smoke:mobile-nameplate-verification
+> node scripts/smoke-mobile-nameplate-ai-gate-v1124.mjs
+
+Smoke OK: 11.36 keeps the verification UI compact and clearly identifies the required JZ/JW nameplate.
+
+> npm run test:smoke:desktop-nameplate-read-resilience
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-read-resilience
+> node scripts/smoke-desktop-nameplate-read-resilience.cjs
+
+Smoke OK: nameplate reader opens fast and blue scan has bounded model-only OCR
+
+> npm run test:smoke:desktop-nameplate-automatic-fallback
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-automatic-fallback
+> node scripts/smoke-desktop-nameplate-automatic-fallback.cjs
+
+Smoke OK: barcodes stay authoritative and blue scan adds model-only local recognition
+
+> npm run test:smoke:desktop-nameplate-ean-separation
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-ean-separation
+> node scripts/smoke-desktop-nameplate-ean-separation.cjs
+
+Smoke OK: EAN and SN stay separate and all Rotenso catalog entries preserve JW/JZ
+
+> npm run test:smoke:desktop-nameplate-verification-status
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-verification-status
+> node scripts/smoke-desktop-nameplate-verification-status.cjs
+
+desktop nameplate verification status smoke: OK
+
+> npm run test:smoke:desktop-nameplate-overview-authority
+
+> klima-app-table-v2@13.38 test:smoke:desktop-nameplate-overview-authority
+> node scripts/test-desktop-nameplate-overview-authority-v1150.mjs
+
+PASS 11.50 desktop nameplate overview authority
+
+> node scripts/smoke-nameplate-ai-auth-v1085.mjs
+GO: 10.85 AI authorization ignores editable metadata and trusts only profiles.role.
+
+> npm run test:smoke:sms-summary
+
+> klima-app-table-v2@13.38 test:smoke:sms-summary
+> node scripts/smoke-sms-summary.cjs
+
+SMS summary smoke OK
+
+> node scripts/smoke-sms-desktop-load-v1225.cjs
+SMS v12.25 desktop load/performance smoke OK
+
+> npm run test:smoke:sms-job-grouping
+
+> klima-app-table-v2@13.38 test:smoke:sms-job-grouping
+> node scripts/smoke-sms-job-grouping.cjs
+
+SMS job grouping smoke OK
+
+> npm run test:smoke:sms-durable-groups
+
+> klima-app-table-v2@13.38 test:smoke:sms-durable-groups
+> node scripts/smoke-sms-durable-groups-v1219.cjs
+
+SMS durable customer groups v12.19 smoke OK
+
+> npm run test:smoke:sms-stage3
+
+> klima-app-table-v2@13.38 test:smoke:sms-stage3
+> node scripts/smoke-sms-stage3-current-state-v1220.cjs
+
+SMS stage 3 current-state/calendar v12.20 smoke OK
+
+> npm run test:smoke:sms-stage4
+
+> klima-app-table-v2@13.38 test:smoke:sms-stage4
+> node scripts/smoke-sms-stage4-reliable-delivery-v1221.cjs
+
+SMS stage 4 reliable delivery v12.21 smoke OK
+
+> npm run test:smoke:sms-stage5
+
+> klima-app-table-v2@13.38 test:smoke:sms-stage5
+> node scripts/smoke-sms-stage5-history-legacy-v1222.cjs
+
+SMS stage 5 history/legacy v12.22 smoke OK
+
+> npm run test:smoke:sms-unsent-retry
+
+> klima-app-table-v2@13.38 test:smoke:sms-unsent-retry
+> node scripts/smoke-sms-unsent-retry-v1223.cjs
+
+SMS v12.23 unsent manual retry smoke OK
+SMS approval/retry routing, canonical grouping, zero-send and double-click regression OK
+
+> npm run test:smoke:sms-log-cleanup
+
+> klima-app-table-v2@13.38 test:smoke:sms-log-cleanup
+> node scripts/smoke-sms-log-cleanup.cjs
+
+SMS history safety stage 1 smoke OK
+
+> npm run test:smoke:sms-shared-source
+
+> klima-app-table-v2@13.38 test:smoke:sms-shared-source
+> node scripts/smoke-sms-shared-source-v1229.cjs
+
+SMS desktop/mobile shared source v12.29 smoke OK
+
+> npm run test:smoke:sms-generator-pagination
+
+> klima-app-table-v2@13.38 test:smoke:sms-generator-pagination
+> node scripts/smoke-sms-generator-pagination-v1229.cjs
+
+SMS generator device pagination v12.29 smoke OK
+
+> npm run test:smoke:sms-test
+
+> klima-app-table-v2@13.38 test:smoke:sms-test
+> node scripts/smoke-sms-test-v1230.cjs
+
+SMS test admin v12.30 smoke OK
+
+> npm run test:smoke:sms-dismiss-delete
+
+> klima-app-table-v2@13.38 test:smoke:sms-dismiss-delete
+> node scripts/smoke-sms-dismiss-delete-v1232.cjs
+
+SMS dismiss/delete safety v12.33 smoke OK
+
+> node scripts/smoke-smsapi-webhook-security-v1085.mjs
+Ignored unknown SMSAPI delivery status {
+  providerMessageId: 'fixture-unknown',
+  status: '999',
+  statusName: 'FUTURE_STATUS'
+}
+PASS: callback authentication helpers and RPC failure propagation; atomic ordering is tested by audit-v1089/sms-race.mjs.
+(node:42664) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+> node scripts/smoke-sms-p0-race-safety-v1242.mjs
+PASS: SMS P0 race safety
+
+> node scripts/smoke-sms-cancel-retry-p1-v1243.mjs
+PASS: SMS P1-01 cancel sees active retry claim
+
+> node scripts/smoke-sms-audit-closure-v1248.mjs
+PASS: SMS audit closure — callback token rotation and group-aware device history
+
+> node scripts/smoke-sms-callback-snapshot-v1250.mjs
+PASS: SMS N-01 callback-first staged snapshot integrity
+
+> node scripts/smoke-sms-callback-multi-rotation-v1251.mjs
+PASS: SMS N-02 preserves callback grace across three consecutive rotations
+
+> node scripts/smoke-sms-history-membership-v1252.mjs
+PASS: SMS N-03 history uses durable group membership, not the current phone
+
+> node scripts/smoke-sms-stable-customer-group-v1253.mjs
+PASS: SMS N-03 stable customer identity survives phone change and blocks reassignment leaks
+
+> node scripts/smoke-sms-package1-v1254.mjs
+PASS: SMS Package 1 retry, preflight, settings fail-closed and legacy callback safety
+
+> node scripts/smoke-sms-package2-v1255.mjs
+PASS: SMS Package 2 legacy restore, paginated history and rebuild parity wiring
+
+> node scripts/smoke-sms-package3-v1256.mjs
+PASS: SMS Package 3 UI, bulk, pagination and lazy-loading regressions
+
+> node scripts/smoke-sms-retry-chain-v1257.mjs
+PASS: SMS-01/SMS-06 retry chain A(error) -> B(error) -> C and stale callback isolation
+
+> node scripts/smoke-sms-customer-identity-pagination-v1257.mjs
+PASS: SMS-02 durable customer identity + SMS-03 jobs pagination >1000
+
+> node scripts/smoke-sms-ui-flow-closure-v1257.mjs
+PASS: SMS-04 partial delete message survives refresh + SMS-05 history reloads after send
+
+> node scripts/smoke-sms-retry-lifecycle-v1257.mjs
+PASS: SMS-01 repeated retry and SMS-06 current-attempt job status lifecycle
+
+> node scripts/smoke-sms-identity-pagination-v1257.mjs
+PASS: SMS-02 stable identity and SMS-03 >1000 jobs pagination
+
+> node scripts/smoke-sms-ui-flow-v1257.mjs
+PASS: SMS-04 partial delete message survives refresh and SMS-05 history is freshly loaded
+
+> node scripts/smoke-sms-history-mutations-v1258.mjs
+PASS: FINAL-SMS-01 retry/unsent-delete refreshes open history and skips closed history
+
+> node scripts/smoke-sms-delete-identity-v1259.mjs
+PASS: SMS 12.59 delete identity + short pending label regressions
+
+> node scripts/smoke-fakturownia-v1195.cjs
+OK: v11.95 bezpiecznie synchronizuje klienta i otwiera formularz Fakturowni.
+
+> node scripts/smoke-fakturownia-verify-v1203.cjs
+OK: Fakturownia verify jest związane z konkretnym montażem przez OID.
+
+> node scripts/smoke-fakturownia-private-person-v1204.cjs
+OK: v12.04 brak NIP => osoba prywatna w Fakturowni, NIP => firma.
+
+> node scripts/smoke-fakturownia-lock-v1205.cjs
+OK: v12.05 potwierdzona faktura Fakturowni jest nieodwracalna, status manualny działa tylko przed potwierdzeniem.
+
+> node scripts/smoke-fakturownia-prefill-v1208.cjs
+OK: v12.83 Fakturownia — pozycja quantity=1, nazwa/VAT/płatność bez zmian, żadnej ceny ani tworzenia faktury przez API.
+
+> node scripts/smoke-desktop-vat-invoice-v1184.cjs
+Desktop VAT invoice/payment badge 11.86 smoke OK
+
+> node scripts/smoke-contractors-k12-v1179.mjs
+11.79 contractor stage 6 K12 normalization smoke OK; K14 intentionally excluded
+
+> node scripts/smoke-contractors-stage5-v1178.mjs
+11.78 contractor stage 5 (K16/K19/K21) smoke OK
+
+> node scripts/smoke-contractors-stage4-v1177.mjs
+11.77 contractor stage 4 (K11/K13) smoke OK
+
+> node scripts/smoke-contractors-async-v1175.mjs
+11.75 contractor async/draft/device isolation smoke OK
+
+> npm run test:smoke:center360
+
+> klima-app-table-v2@13.38 test:smoke:center360
+> node scripts/smoke-center360-data.cjs
+
+Centrum 360 data smoke OK
+
+> npm run test:smoke:center360-personalization
+
+> klima-app-table-v2@13.38 test:smoke:center360-personalization
+> node scripts/smoke-center360-personalization.cjs
+
+Center 360 personalization smoke OK
+
+> npm run test:smoke:dashboard-metrics
+
+> klima-app-table-v2@13.38 test:smoke:dashboard-metrics
+> node scripts/smoke-dashboard-metrics-rpc.cjs
+
+Smoke OK: centralne liczniki Centrum 360 przez RPC
+
+> npm run test:smoke:desktop-refresh
+
+> klima-app-table-v2@13.38 test:smoke:desktop-refresh
+> node scripts/smoke-desktop-refresh.cjs
+
+Desktop refresh smoke OK
+
+> npm run test:smoke:desktop-jobs-layout-width
+
+> klima-app-table-v2@13.38 test:smoke:desktop-jobs-layout-width
+> node scripts/smoke-desktop-jobs-layout-width.cjs
+
+Desktop jobs layout width + postal code display smoke OK
+
+> npm run test:smoke:desktop-job-details-polish
+
+> klima-app-table-v2@13.38 test:smoke:desktop-job-details-polish
+> node scripts/smoke-desktop-job-details-polish.cjs
+
+Desktop job details polish smoke OK
+
+> npm run test:smoke:desktop-global-search
+
+> klima-app-table-v2@13.38 test:smoke:desktop-global-search
+> node scripts/smoke-desktop-global-search.cjs
+
+OK: desktopowe globalne wyszukiwanie obejmuje klienta, telefon, adres, model, numer seryjny, zlecenie i montera.
+
+> npm run test:smoke:desktop-cross-module-panels
+
+> klima-app-table-v2@13.38 test:smoke:desktop-cross-module-panels
+> node scripts/smoke-desktop-cross-module-split-panels.cjs
+
+Desktop cross-module split panels smoke OK
+
+> npm run test:smoke:calendar-width
+
+> klima-app-table-v2@13.38 test:smoke:calendar-width
+> node scripts/smoke-calendar-width.cjs
+
+Calendar width smoke OK
+
+> npm run test:smoke:mobile-ui-copy
+
+> klima-app-table-v2@13.38 test:smoke:mobile-ui-copy
+> node scripts/smoke-mobile-ui-copy.cjs
+
+Mobile UI copy smoke OK
+
+> npm run test:smoke:mobile-pricelist
+
+> klima-app-table-v2@13.38 test:smoke:mobile-pricelist
+> node scripts/smoke-mobile-pricelist-v1333.mjs
+
+WAWIS 13.38 cennik: PASS — 36 cen netto, 10 grup, VAT 8%, admin 4 menu, pracownik 3, bez skracania napisów.
+
+> npm run test:smoke:mobile-style-bootstrap
+
+> klima-app-table-v2@13.38 test:smoke:mobile-style-bootstrap
+> node scripts/smoke-mobile-style-bootstrap.cjs
+
+OK: mobilne style są ładowane przed aplikacją, a index ma bezpieczny fallback.
+
+> node scripts/smoke-mobile-address-wrap-v1291.cjs
+OK 12.93: mobile address right aligned + wrap + map link + isolation + E2E regression.
+OK 12.92: nazwy mobilne, niejednoznaczne, pełne źródło, limit 2 linii, interakcja E2E.
+
+> node scripts/smoke-worker-ui-v1295.cjs
+OK: worker-only UI, editable native iOS date with centered value, admin unchanged, payment copy
+
+> node scripts/smoke-admin-mobile-edit-v1297.cjs
+OK 12.97: admin mobile edit simplified, centered accessible date, native picker, worker isolation, device wizard preserved
+
+> npm run test:smoke:mobile-admin-header
+
+> klima-app-table-v2@13.38 test:smoke:mobile-admin-header
+> node scripts/smoke-mobile-admin-header-v915.cjs
+
+Mobile admin header smoke OK: fixed 100% viewport, safe-area, deterministic grid, 2.5 px equal edge spacing, user logout and offline-safe sync
+
+> npm run test:smoke:mobile-version-diagnostics
+
+> klima-app-table-v2@13.38 test:smoke:mobile-version-diagnostics
+> node scripts/smoke-mobile-version-diagnostics-v1271.mjs
+
+Mobile version -> diagnostics smoke OK (routing, access, report, lazy bundle).
+
+> npm run test:smoke:mobile-new-job-no-devices
+
+> klima-app-table-v2@13.38 test:smoke:mobile-new-job-no-devices
+> node scripts/smoke-mobile-new-job-no-devices-v916.cjs
+
+Mobile new-job smoke OK: editing form without device and installer sections; separate nameplate wizard remains
+
+> npm run test:smoke:mobile-worker-add-client
+
+> klima-app-table-v2@13.38 test:smoke:mobile-worker-add-client
+> node scripts/smoke-mobile-worker-add-client-v919.cjs
+
+PASS smoke-mobile-worker-add-client-v919
+
+> npm run test:smoke:mobile-default-installation-date
+
+> klima-app-table-v2@13.38 test:smoke:mobile-default-installation-date
+> node scripts/test-mobile-default-installation-date-v980.mjs
+
+OK: nowy formularz mobilny domyślnie otrzymuje lokalną datę utworzenia.
+
+> npm run test:smoke:cache-first-refresh
+
+> klima-app-table-v2@13.38 test:smoke:cache-first-refresh
+> node scripts/smoke-cache-first-refresh-v939.mjs
+
+OK: cache-first pokazuje snapshot, odświeża z Supabase i blokuje nadpisanie nowszego stanu starszą odpowiedzią.
+OK: mobile 12.94 — równoległy profil i montaże, brak awansu uprawnień po 504, fallback 7 s.
+
+> node scripts/smoke-postgres-readiness-v1276.mjs
+PASS: PostgreSQL readiness checks actual target database, retries before init and fails closed
+
+> node scripts/smoke-release-automation-v1061.cjs
+WAWIS release automation 10.78 smoke OK — single PR gate + one production Vercel; Drive/ZIP/post-deploy are non-blocking
+
+> node scripts/smoke-release-impact-v1063.cjs
+WAWIS release impact smoke OK: all module styles and UI graphics trigger platform E2E; cross-module flows and version/docs remain intact
+
+> node scripts/smoke-closure-integrity-v1275.cjs
+PASS CODEX G1/G2 C5/C6: global/shared dependencies, platform E2E for all module styles and eight CI integrity/NO-GO mutations.
+
+> node scripts/smoke-closure-gate-v1257.cjs
+PASS: global WAWIS Closure Gate is wired fail-closed and SMS has an explicit domain group
+
+> node scripts/smoke-closure-evidence-negative-v1258.cjs
+PASS: Closure Gate rejects incomplete command evidence and missing/duplicate E2E runs
+
+> node scripts/smoke-release-policy-negative-v1258.cjs
+PASS: release policy rejects PENDING/WAITING and accepts explicit EXTERNAL/REQUIRED states
+
+> node scripts/smoke-migration-history-alignment-v1258.cjs
+PASS: v12.57 migration IDs align with production registry map and fresh rebuild manifest
+
+> node --check scripts/verify-sms-two-session-postgres-v1258.mjs
+
+> node --check scripts/verify-supabase-migration-history-v1258.mjs
+
+> npm run test:smoke:release-runner
+
+> klima-app-table-v2@13.38 test:smoke:release-runner
+> node scripts/smoke-release-runner.cjs
+
+GO: 10.85 release runner smoke matches the current single-pass release contract without side effects.
+
+> npm run test:smoke:release-zip
+
+> klima-app-table-v2@13.38 test:smoke:release-zip
+> node scripts/smoke-release-zip.cjs
+
+Smoke OK: release-zip is pure Node, cross-platform and excludes working files
+
+> npm run test:smoke:release-zip-clean
+
+> klima-app-table-v2@13.38 test:smoke:release-zip-clean
+> node scripts/smoke-release-zip-clean.cjs
+
+Smoke OK: release ZIP excludes logs*, cache, coverage and working files cross-platform
+
+> node scripts/smoke-playwright-runner-fail-closed-v1085.cjs
+GO: 10.85 Playwright runners are cross-platform and fail closed on signals/spawn errors.
+
+> npm run test:smoke:mobile-new-job-sms-defaults
+
+> klima-app-table-v2@13.38 test:smoke:mobile-new-job-sms-defaults
+> node scripts/smoke-mobile-new-job-sms-defaults-v923.cjs
+
+PASS smoke-mobile-new-job-sms-defaults-v923
+
+> npm run test:smoke:sms-street
+
+> klima-app-table-v2@13.38 test:smoke:sms-street
+> node scripts/smoke-sms-street-priority.cjs
+
+SMS street priority smoke OK
+
+> node scripts/audit-v1089/rebuild-rehearsal.mjs
+PASS [rebuild 1] supabase/rebuild/legacy_schema_bootstrap_v1089.sql
+PASS [rebuild 1] supabase/rebuild/legacy_helpers_bootstrap_v1089.sql
+PASS [rebuild 1] supabase/setup-job-protocols-v9.79.sql
+PASS [rebuild 1] supabase/setup-fuel-module-v10.14.sql
+PASS [rebuild 1] supabase/setup-fuel-odometer-photo-v10.15.sql
+PASS [rebuild 1] supabase/setup-fuel-odometer-guard-v10.19.sql
+PASS [rebuild 1] supabase/setup-fuel-odometer-source-v10.16.sql
+PASS [rebuild 1] supabase/setup-fuel-tank-capacity-v10.25.sql
+PASS [rebuild 1] supabase/setup-fuel-production-v10.26.sql
+PASS [rebuild 1] supabase/migrations/nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql
+PASS [rebuild 1] supabase/migrations/current/worker-create-contractor-v9.19.sql
+PASS [rebuild 1] supabase/migrations/20260826152000_admin_delete_job_device.sql
+PASS [rebuild 1] supabase/migrations/20260826190000_nameplate_photo_assignment_safe_delete_v973.sql
+PASS [rebuild 1] supabase/migrations/20260826190500_safe_device_delete_v973_legacy_v972_compat.sql
+PASS [rebuild 1] supabase/migrations/20260907120000_reliable_sync_diagnostics_backup_v1010.sql
+PASS [rebuild 1] supabase/migrations/20260908150000_diagnostics_clarity_v1013.sql
+PASS [rebuild 1] supabase/migrations/20260911072000_worker_job_create_rls_v1050.sql
+PASS [rebuild 1] supabase/migrations/20260911075200_speed_up_desktop_nameplate_overview_v1052.sql
+PASS [rebuild 1] supabase/migrations/20260911133000_worker_read_all_jobs_v1060.sql
+PASS [rebuild 1] supabase/migrations/20260911130500_worker_comment_visible_jobs_v1061.sql
+PASS [rebuild 1] supabase/migrations/20260916095000_push_subscription_atomic_lifecycle_v1078.sql
+PASS [rebuild 1] supabase/migrations/20260916103000_mobile_feed_and_stale_job_maintenance_v1079.sql
+PASS [rebuild 1] supabase/migrations/20260916104500_mobile_feed_rls_invoker_v1079.sql
+PASS [rebuild 1] supabase/migrations/20260916115000_push_lifecycle_history_v1083.sql
+PASS [rebuild 1] supabase/migrations/20260916184000_push_lifecycle_rpc_v1087.sql
+PASS [rebuild 1] supabase/migrations/20260916184100_push_subscription_acl_v1087.sql
+PASS [rebuild 1] supabase/migrations/20260916190000_production_security_baseline_v1085.sql
+PASS [rebuild 1] supabase/migrations/20260916201000_job_completion_nameplate_guard_v1088.sql
+PASS [rebuild 1] supabase/rebuild/20260917044757_n7_v1089_post_replay_schema_gap.sql
+PASS [rebuild 1] supabase/rebuild/20260917045016_n7_v1089_fuel_vehicle_name_gap.sql
+PASS [rebuild 1] supabase/rebuild/20260917045312_n7_v1089_constraints_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045530_n7_v1089_public_helpers_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045604_n7_v1089_admin_core_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045631_n7_v1089_admin_modules_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045646_n7_v1089_private_fuel_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917045924_n7_v1089_function_exactness_fix.sql
+PASS [rebuild 1] supabase/rebuild/20260917050006_n7_v1089_indexes_baseline.sql
+PASS [rebuild 1] supabase/rebuild/legacy_service_archive_v1089.sql
+PASS [rebuild 1] supabase/rebuild/20260917050029_n7_v1089_triggers_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917050109_n7_v1089_rls_policies_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917050129_n7_v1089_storage_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917050212_n7_v1089_acl_grants_baseline.sql
+PASS [rebuild 1] supabase/rebuild/20260917052041_n7_v1089_residual_catalog_acl_reconcile.sql
+PASS [rebuild 1] supabase/migrations/20260917053548_n7_v1089_worker_contractor_read.sql
+PASS [rebuild 1] supabase/migrations/20260917065004_n7_v1089_worker_contractor_contact_update.sql
+PASS [rebuild 1] supabase/migrations/20260917093000_admin_manual_nameplate_completion_v1090.sql
+PASS [rebuild 1] supabase/migrations/20260917101824_audit_invariants.sql
+PASS [rebuild 1] supabase/migrations/20260917101825_audit_restore.sql
+PASS [rebuild 1] supabase/migrations/20260917102820_audit_push_context.sql
+PASS [rebuild 1] supabase/migrations/20260917103411_audit_delivery_atomic.sql
+PASS [rebuild 1] supabase/migrations/20260917174140_audit_staging_view_guard.sql
+PASS [rebuild 1] supabase/migrations/20260917175255_audit_protocol_retention.sql
+PASS [rebuild 1] supabase/rebuild/audit_final_acl.sql
+PASS [rebuild 1] supabase/migrations/20260917190500_security_hardening_v1090.sql
+PASS [rebuild 1] supabase/migrations/20260917235600_admin_finish_without_nameplates_v1092.sql
+PASS [rebuild 1] supabase/migrations/20260919080000_photo_zero_byte_guard_v1096.sql
+PASS [rebuild 1] supabase/migrations/20260925095000_worker_completed_payment_update_v1142.sql
+PASS [rebuild 1] supabase/migrations/20260928080000_mobile_contractor_overwrite_v1161.sql
+PASS [rebuild 1] supabase/migrations/20260928120000_job_installers_concurrency_v1168.sql
+PASS [rebuild 1] supabase/migrations/current/20260929082000_fixed_service_reminder_years_v1176.sql
+PASS [rebuild 1] supabase/migrations/current/20260929093000_complete_contractors_catalog_v1178.sql
+PASS [rebuild 1] supabase/migrations/current/20260929113000_contractor_normalization_v1179.sql
+PASS [rebuild 1] supabase/migrations/current/20260929144500_rotenso_r18_official_power_correction_v1183.sql
+PASS [rebuild 1] supabase/migrations/current/20260929171500_vat_invoice_status_v1184.sql
+PASS [rebuild 1] supabase/migrations/current/20260930071500_payment_cash_transfer_optional_amount_v1187.sql
+PASS [rebuild 1] supabase/migrations/20260930100831_require_device_before_completion_v1192.sql
+PASS [rebuild 1] supabase/migrations/current/20260930171655_job_contractor_nip_v1194.sql
+PASS [rebuild 1] supabase/migrations/current/20261001071500_vat_invoice_fakturownia_lock_v1205.sql
+PASS [rebuild 1] supabase/migrations/20261002062031_sms_history_safety_stage1_v1218.sql
+PASS [rebuild 1] supabase/migrations/20261002070000_sms_customer_window_dedup_v1217.sql
+PASS [rebuild 1] supabase/migrations/20261002070050_sms_durable_customer_groups_v1219.sql
+PASS [rebuild 1] supabase/migrations/20261002071500_sms_cleanup_rpc_acl_v1217.sql
+PASS [rebuild 1] supabase/migrations/20261002073753_sms_stage3_current_state_calendar_v1220.sql
+PASS [rebuild 1] supabase/migrations/20261002081343_sms_stage4_reliable_delivery_v1221.sql
+PASS [rebuild 1] supabase/migrations/20261002081756_sms_stage4_found_state_fix_v1221.sql
+PASS [rebuild 1] supabase/migrations/20261002090424_sms_stage5_history_legacy_v1222.sql
+PASS [rebuild 1] supabase/migrations/20261002095320_sms_unsent_manual_retry_v1223.sql
+PASS [rebuild 1] supabase/migrations/20261002142000_worker_protocol_before_completion_v1226.sql
+PASS [rebuild 1] supabase/migrations/20261003055805_sms_dismiss_failed_and_delete_unsent_v1232.sql
+PASS [rebuild 1] supabase/migrations/20261003173500_sms_retry_confirmed_undelivered_v1235.sql
+PASS [rebuild 1] supabase/migrations/20261003180500_sms_bulk_remove_old_unsent_v1236.sql
+PASS [rebuild 1] supabase/migrations/20261003184000_sms_retry_after_undelivered_v1237.sql
+PASS [rebuild 1] supabase/migrations/20261004092411_add_job_protocol_note_v1240.sql
+PASS [rebuild 1] supabase/migrations/20261005094500_sms_p0_race_safety_v1242.sql
+PASS [rebuild 1] supabase/migrations/20261005103000_sms_cancel_retry_claim_p1_v1243.sql
+PASS [rebuild 1] supabase/migrations/20261005114500_sms_sent_month_by_send_time_v1244.sql
+PASS [rebuild 1] supabase/migrations/20261005123000_sms_dashboard_queue_count_v1245.sql
+PASS [rebuild 1] supabase/migrations/20261005133000_sms_callback_auth_rotation_v1246.sql
+PASS [rebuild 1] supabase/migrations/20261005134000_sms_group_device_history_v1247.sql
+PASS [rebuild 1] supabase/migrations/20261005135000_sms_fixed_clock_and_legacy_indexes_v1248.sql
+PASS [rebuild 1] supabase/migrations/20261005135500_sms_history_restore_integrity_v1249.sql
+PASS [rebuild 1] supabase/migrations/20261005150842_sms_callback_snapshot_integrity_v1250.sql
+PASS [rebuild 1] supabase/migrations/20261005154104_sms_callback_multi_generation_grace_v1251.sql
+PASS [rebuild 1] supabase/migrations/20261005160818_sms_history_membership_integrity_v1252.sql
+PASS [rebuild 1] supabase/migrations/20261005162129_sms_stable_customer_group_identity_v1253.sql
+PASS [rebuild 1] supabase/migrations/20261005164949_sms_package1_retry_preflight_settings_legacy_v1254.sql
+PASS [rebuild 1] supabase/migrations/20261005173500_sms_package2_history_restore_rebuild_v1255.sql
+PASS [rebuild 1] supabase/migrations/20261005183500_sms_package3_settings_lazy_v1256.sql
+PASS [rebuild 1] supabase/migrations/20261006051947_sms_retry_attempt_lifecycle_v1257.sql
+PASS [rebuild 1] supabase/migrations/20261006054129_sms_retry_chain_attempt_pointer_v1257.sql
+PASS [rebuild 1] supabase/migrations/20261006054752_sms_customer_identity_count_v1257.sql
+PASS [rebuild 1] supabase/migrations/20261006055831_sms_snapshot_customer_identity_v1257.sql
+PASS [rebuild 1] supabase/migrations/current/20261007045546_fakturownia_p0_v1260.sql
+PASS [rebuild 1] supabase/migrations/current/20261007045625_fakturownia_p0_rpc_acl_v1260.sql
+PASS [rebuild 1] supabase/migrations/current/20261007062745_job_create_idempotency_v1261.sql
+PASS [rebuild 1] supabase/migrations/current/20261007071004_p2_status_delete_idempotency_v1262.sql
+PASS [rebuild 1] supabase/migrations/current/20261007071856_p2_restore_snapshot_integrity_v1262.sql
+PASS [rebuild 1] supabase/migrations/current/20261007080329_fuel_tank_stock_v1263.sql
+PASS [rebuild 1] supabase/migrations/current/20261007081052_fuel_tank_admin_only_v1263.sql
+PASS [rebuild 1] supabase/migrations/current/20261007081132_fuel_tank_admin_visibility_v1263.sql
+PASS [rebuild 1] supabase/migrations/20261007124500_push_delivery_receipts_v1265.sql
+PASS [rebuild 1] supabase/migrations/current/20261008103135_fuel_tank_idempotency_v1266.sql
+PASS [rebuild 1] supabase/migrations/current/20261008105757_job_device_models_completion_v1267.sql
+PASS [rebuild 1] supabase/migrations/current/20261008113943_push_recipient_dedup_v1268.sql
+PASS [rebuild 1] supabase/migrations/current/20261008131504_completion_jw_index_guard_v1269.sql
+PASS [rebuild 1] supabase/migrations/current/20261008131524_disable_legacy_fuel_rpc_v1269.sql
+PASS [rebuild 1] supabase/migrations/20261008200351_diagnostic_worker_upsert_rls_v1274.sql
+PASS [rebuild 1] supabase/migrations/current/20261009095500_fakturownia_invoice_attempt_v1280.sql
+PASS [rebuild 1] supabase/migrations/current/20261009135500_admin_delete_multi_indoor_unit_v1284.sql
+PASS [rebuild 1] supabase/migrations/20261012141000_protocol_signature_address_correction_v1322.sql
+PASS [rebuild 1] supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql
+Local dependency rehearsal pass 1 + current SMS schema + fixed-clock window + delete/restore history PASS; this local run alone does not verify staging
+
+> node scripts/smoke-audit-fixes-v1086.mjs
+GO: 10.86 F3/F5/F8/F9 behavioral contracts are closed.
+
+> npm run test:smoke:e2e-mobile
+
+> klima-app-table-v2@13.38 test:smoke:e2e-mobile
+> node scripts/smoke-e2e-mobile.cjs
+
+Mobile E2E wiring smoke OK — runner, mock i wymagane scenariusze istnieją bez sprawdzania tekstów UI
+
+> npm run test:smoke:e2e-desktop
+
+> klima-app-table-v2@13.38 test:smoke:e2e-desktop
+> node scripts/smoke-e2e-desktop.cjs
+
+Desktop E2E wiring smoke OK — runner, mock i scenariusze istnieją bez sprawdzania tekstów UI
+
+> npm run test:smoke:remove-resend-email
+
+> klima-app-table-v2@13.38 test:smoke:remove-resend-email
+> node scripts/smoke-remove-resend-email.cjs
+
+Remove Resend email smoke OK
+
+> npm run test:smoke:no-services-module
+
+> klima-app-table-v2@13.38 test:smoke:no-services-module
+> node scripts/smoke-no-services-module.cjs
+
+No services module smoke OK
+WAWIS grouped checks GO: core, jobs, photos, protocol, roles, push, fuel, nameplates, sms, desktop, mobile, infra

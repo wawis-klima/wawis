@@ -1,0 +1,1107 @@
+{
+  "schema_version": 2,
+  "type": "grouped-checks",
+  "git_sha": null,
+  "git_head_sha": "511bc8e8fa912c8cb80a38a45c0a6dc50dc561a4",
+  "git_run_id": null,
+  "git_run_attempt": null,
+  "groups": [
+    "core",
+    "jobs",
+    "photos",
+    "protocol",
+    "roles",
+    "push",
+    "fuel",
+    "nameplates",
+    "sms",
+    "desktop",
+    "mobile",
+    "infra"
+  ],
+  "expected_commands": [
+    "npm run test:smoke",
+    "npm run test:smoke:version",
+    "npm run test:smoke:lazy",
+    "npm run test:smoke:suspense",
+    "npm run test:smoke:selection",
+    "npm run test:smoke:regex-compat",
+    "npm run test:smoke:technical-refresh",
+    "npm run test:smoke:reliable-sync",
+    "npm run test:smoke:feed-stale-v1079",
+    "node scripts/smoke-mobile-offline-resilience-v1075.mjs",
+    "node scripts/smoke-session-sync-resilience-v1080.mjs",
+    "node scripts/smoke-update-reload-guard-v1081.mjs",
+    "node scripts/smoke-update-reload-guard-v1082.mjs",
+    "node scripts/smoke-audit-races-v1084.mjs",
+    "npm run test:smoke:diagnostic-report",
+    "npm run test:smoke:diagnostics-clarity",
+    "node scripts/smoke-diagnostic-error-codes-v1272.mjs",
+    "node scripts/smoke-diagnostics-p0-privacy-v1273.mjs",
+    "node scripts/smoke-diagnostics-ingest-queue-v1274.mjs",
+    "node scripts/smoke-diagnostic-worker-rls-v1274.mjs",
+    "node scripts/smoke-diagnostics-package4-v1276.mjs",
+    "npm run test:smoke:v1120-stability",
+    "npm run test:smoke:startup-chunk",
+    "npm run test:smoke:realtime-lite",
+    "node scripts/codex-acceptance-note-sql-v1269.mjs",
+    "node scripts/smoke-package2-jw-jz-cycle-v1267.mjs",
+    "node scripts/smoke-nameplate-serial-dual-v1327.mjs",
+    "node scripts/smoke-p2-audit-closure-v1262.mjs",
+    "node scripts/smoke-p1-data-integrity-v1261.mjs",
+    "node scripts/smoke-postal-code-v1196.mjs",
+    "node scripts/smoke-mobile-form-v1198.cjs",
+    "node scripts/smoke-mobile-postal-wire-v1199.cjs",
+    "node scripts/smoke-postal-city-fallback-v1197.cjs",
+    "node scripts/smoke-job-nip-v1194.cjs",
+    "node scripts/smoke-job-nip-lookup-v1200.cjs",
+    "node scripts/smoke-job-form-lookups-v1201.cjs",
+    "node scripts/smoke-gus-bir-v1206.cjs",
+    "node scripts/smoke-desktop-job-form-compact-v1202.cjs",
+    "node scripts/smoke-contractors-stage3-v1176.mjs",
+    "npm run test:smoke:delete",
+    "npm run test:smoke:device-save",
+    "npm run test:smoke:job-multi-indoor",
+    "npm run test:smoke:single-jw-delete",
+    "npm run test:smoke:job-device-type-switch",
+    "npm run test:smoke:device-delete",
+    "npm run test:smoke:job-auto-contractor",
+    "npm run test:smoke:contractor-addresses",
+    "npm run test:smoke:worker-shared-job-edit",
+    "npm run test:smoke:job-concurrency-installers",
+    "npm run test:smoke:worker-create-status",
+    "npm run test:smoke:job-completion",
+    "npm run test:smoke:new-job-author-comment",
+    "node scripts/smoke-photo-queue-stage-diagnostics-v1348.mjs",
+    "node scripts/smoke-selected-job-sync-v1347.mjs",
+    "node scripts/smoke-mobile-photo-zoom-v1180.mjs",
+    "npm run test:smoke:private-photos",
+    "npm run test:smoke:mobile-private-photos",
+    "npm run test:smoke:mobile-photo-compression",
+    "npm run test:smoke:mobile-photo-upload-rls",
+    "npm run test:smoke:mobile-photo-visibility-sync",
+    "npm run test:smoke:mobile-thumbnail-recovery",
+    "npm run test:smoke:photo-cross-device-sync",
+    "npm run test:smoke:mobile-photo-sync-indicator",
+    "npm run test:smoke:mobile-photo-sync-center",
+    "npm run test:smoke:mobile-offline-photo-queue",
+    "npm run test:smoke:mobile-photo-idempotency",
+    "npm run test:smoke:photo-preview-gallery-separation",
+    "npm run test:smoke:desktop-photo-thumbnails",
+    "npm run test:smoke:desktop-initial-details",
+    "node scripts/smoke-photo-zero-byte-v1096.mjs",
+    "node scripts/smoke-protocol-signature-reuse-v1322.mjs",
+    "node scripts/smoke-worker-protocol-gate-v1226.cjs",
+    "npm run test:smoke:mobile-protocol",
+    "npm run test:smoke:mobile-protocol-save",
+    "node scripts/smoke-storage-write-reconciliation-v1074.mjs",
+    "node scripts/smoke-storage-delayed-commit-v1077.mjs",
+    "node scripts/smoke-audit-fixes-v1088.mjs",
+    "npm run test:smoke:mobile-protocol-print",
+    "npm run test:smoke:mobile-protocol-layout",
+    "npm run test:smoke:mobile-protocol-email",
+    "npm run test:smoke:mobile-payment",
+    "npm run test:smoke:desktop-protocol",
+    "node scripts/codex-acceptance-fakturownia-v1269.mjs",
+    "npm run test:smoke:admin-worker",
+    "npm run test:smoke:desktop-only",
+    "npm run test:smoke:supabase-grants",
+    "npm run test:smoke:destructive-rls",
+    "node scripts/smoke-worker-contractor-update-v1089.cjs",
+    "node scripts/smoke-supabase-security-hardening-v1090.mjs",
+    "node scripts/smoke-fakturownia-p0-v1260.mjs",
+    "node scripts/smoke-fakturownia-link-v1277.mjs",
+    "node scripts/smoke-fakturownia-auto-v1280.mjs",
+    "node scripts/smoke-fakturownia-v1281.mjs",
+    "node scripts/codex-acceptance-push-v1269.mjs",
+    "node scripts/smoke-push-recipient-dedupe-v1268.mjs",
+    "node scripts/smoke-push-delivery-receipts-v1265.mjs",
+    "npm run test:smoke:push-job-deeplink",
+    "npm run test:smoke:assignment-push",
+    "npm run test:smoke:push-reliability",
+    "npm run test:smoke:push-mobile-reassignment",
+    "npm run test:smoke:push-logout-handoff",
+    "npm run test:smoke:push-safety-v1078",
+    "npm run test:smoke:comment-admin-push",
+    "npm run test:smoke:push-toggle",
+    "npm run test:smoke:push-initial-state",
+    "npm run test:smoke:push-display",
+    "npm run test:smoke:desktop-push-disabled",
+    "node scripts/smoke-session-push-gate-v1083.mjs",
+    "node scripts/smoke-audit-fixes-v1087.mjs",
+    "node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs",
+    "node scripts/codex-acceptance-fuel-ui-v1269.mjs",
+    "node scripts/smoke-package1-integrity-v1266.mjs",
+    "node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs",
+    "node scripts/smoke-fuel-tank-stock-v1263.mjs",
+    "npm run test:smoke:fuel-module",
+    "npm run test:smoke:mobile-serial-scanner",
+    "npm run test:smoke:nameplate-rendering",
+    "npm run test:smoke:nameplate-finish-verification",
+    "npm run test:smoke:nameplate-quality",
+    "npm run test:smoke:nameplate-product-catalog",
+    "npm run test:smoke:rotenso-model-history",
+    "npm run test:smoke:desktop-nameplate-ocr",
+    "npm run test:smoke:desktop-nameplate-ai-barcode",
+    "npm run test:smoke:desktop-nameplate-layout-profiles",
+    "npm run test:smoke:mobile-nameplate-verification",
+    "npm run test:smoke:desktop-nameplate-read-resilience",
+    "npm run test:smoke:desktop-nameplate-automatic-fallback",
+    "npm run test:smoke:desktop-nameplate-ean-separation",
+    "npm run test:smoke:desktop-nameplate-verification-status",
+    "npm run test:smoke:desktop-nameplate-overview-authority",
+    "node scripts/smoke-nameplate-ai-auth-v1085.mjs",
+    "npm run test:smoke:sms-summary",
+    "node scripts/smoke-sms-desktop-load-v1225.cjs",
+    "npm run test:smoke:sms-job-grouping",
+    "npm run test:smoke:sms-durable-groups",
+    "npm run test:smoke:sms-stage3",
+    "npm run test:smoke:sms-stage4",
+    "npm run test:smoke:sms-stage5",
+    "npm run test:smoke:sms-unsent-retry",
+    "npm run test:smoke:sms-log-cleanup",
+    "npm run test:smoke:sms-shared-source",
+    "npm run test:smoke:sms-generator-pagination",
+    "npm run test:smoke:sms-test",
+    "npm run test:smoke:sms-dismiss-delete",
+    "node scripts/smoke-smsapi-webhook-security-v1085.mjs",
+    "node scripts/smoke-sms-p0-race-safety-v1242.mjs",
+    "node scripts/smoke-sms-cancel-retry-p1-v1243.mjs",
+    "node scripts/smoke-sms-audit-closure-v1248.mjs",
+    "node scripts/smoke-sms-callback-snapshot-v1250.mjs",
+    "node scripts/smoke-sms-callback-multi-rotation-v1251.mjs",
+    "node scripts/smoke-sms-history-membership-v1252.mjs",
+    "node scripts/smoke-sms-stable-customer-group-v1253.mjs",
+    "node scripts/smoke-sms-package1-v1254.mjs",
+    "node scripts/smoke-sms-package2-v1255.mjs",
+    "node scripts/smoke-sms-package3-v1256.mjs",
+    "node scripts/smoke-sms-retry-chain-v1257.mjs",
+    "node scripts/smoke-sms-customer-identity-pagination-v1257.mjs",
+    "node scripts/smoke-sms-ui-flow-closure-v1257.mjs",
+    "node scripts/smoke-sms-retry-lifecycle-v1257.mjs",
+    "node scripts/smoke-sms-identity-pagination-v1257.mjs",
+    "node scripts/smoke-sms-ui-flow-v1257.mjs",
+    "node scripts/smoke-sms-history-mutations-v1258.mjs",
+    "node scripts/smoke-sms-delete-identity-v1259.mjs",
+    "node scripts/smoke-fakturownia-v1195.cjs",
+    "node scripts/smoke-fakturownia-verify-v1203.cjs",
+    "node scripts/smoke-fakturownia-private-person-v1204.cjs",
+    "node scripts/smoke-fakturownia-lock-v1205.cjs",
+    "node scripts/smoke-fakturownia-prefill-v1208.cjs",
+    "node scripts/smoke-desktop-vat-invoice-v1184.cjs",
+    "node scripts/smoke-contractors-k12-v1179.mjs",
+    "node scripts/smoke-contractors-stage5-v1178.mjs",
+    "node scripts/smoke-contractors-stage4-v1177.mjs",
+    "node scripts/smoke-contractors-async-v1175.mjs",
+    "npm run test:smoke:center360",
+    "npm run test:smoke:center360-personalization",
+    "npm run test:smoke:dashboard-metrics",
+    "npm run test:smoke:desktop-refresh",
+    "npm run test:smoke:desktop-jobs-layout-width",
+    "npm run test:smoke:desktop-job-details-polish",
+    "npm run test:smoke:desktop-global-search",
+    "npm run test:smoke:desktop-cross-module-panels",
+    "npm run test:smoke:calendar-width",
+    "npm run test:smoke:mobile-ui-copy",
+    "npm run test:smoke:mobile-pricelist",
+    "npm run test:smoke:mobile-style-bootstrap",
+    "node scripts/smoke-mobile-address-wrap-v1291.cjs",
+    "node scripts/smoke-worker-ui-v1295.cjs",
+    "node scripts/smoke-admin-mobile-edit-v1297.cjs",
+    "npm run test:smoke:mobile-admin-header",
+    "npm run test:smoke:mobile-version-diagnostics",
+    "npm run test:smoke:mobile-new-job-no-devices",
+    "npm run test:smoke:mobile-worker-add-client",
+    "npm run test:smoke:mobile-default-installation-date",
+    "npm run test:smoke:cache-first-refresh",
+    "node scripts/smoke-postgres-readiness-v1276.mjs",
+    "node scripts/smoke-release-automation-v1061.cjs",
+    "node scripts/smoke-release-impact-v1063.cjs",
+    "node scripts/smoke-closure-integrity-v1275.cjs",
+    "node scripts/smoke-closure-gate-v1257.cjs",
+    "node scripts/smoke-closure-evidence-negative-v1258.cjs",
+    "node scripts/smoke-release-policy-negative-v1258.cjs",
+    "node scripts/smoke-migration-history-alignment-v1258.cjs",
+    "node --check scripts/verify-sms-two-session-postgres-v1258.mjs",
+    "node --check scripts/verify-supabase-migration-history-v1258.mjs",
+    "npm run test:smoke:release-runner",
+    "npm run test:smoke:release-zip",
+    "npm run test:smoke:release-zip-clean",
+    "node scripts/smoke-playwright-runner-fail-closed-v1085.cjs",
+    "npm run test:smoke:mobile-new-job-sms-defaults",
+    "npm run test:smoke:sms-street",
+    "node scripts/audit-v1089/rebuild-rehearsal.mjs",
+    "node scripts/smoke-audit-fixes-v1086.mjs",
+    "npm run test:smoke:e2e-mobile",
+    "npm run test:smoke:e2e-desktop",
+    "npm run test:smoke:remove-resend-email",
+    "npm run test:smoke:no-services-module"
+  ],
+  "commands": [
+    {
+      "command": "npm run test:smoke",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:version",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:lazy",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:suspense",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:selection",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:regex-compat",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:technical-refresh",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:reliable-sync",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:feed-stale-v1079",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-mobile-offline-resilience-v1075.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-session-sync-resilience-v1080.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-update-reload-guard-v1081.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-update-reload-guard-v1082.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-audit-races-v1084.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:diagnostic-report",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:diagnostics-clarity",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-diagnostic-error-codes-v1272.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-diagnostics-p0-privacy-v1273.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-diagnostics-ingest-queue-v1274.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-diagnostic-worker-rls-v1274.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-diagnostics-package4-v1276.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:v1120-stability",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:startup-chunk",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:realtime-lite",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/codex-acceptance-note-sql-v1269.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-package2-jw-jz-cycle-v1267.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-nameplate-serial-dual-v1327.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-p2-audit-closure-v1262.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-p1-data-integrity-v1261.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-postal-code-v1196.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-mobile-form-v1198.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-mobile-postal-wire-v1199.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-postal-city-fallback-v1197.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-job-nip-v1194.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-job-nip-lookup-v1200.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-job-form-lookups-v1201.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-gus-bir-v1206.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-desktop-job-form-compact-v1202.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-contractors-stage3-v1176.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:delete",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:device-save",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:job-multi-indoor",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:single-jw-delete",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:job-device-type-switch",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:device-delete",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:job-auto-contractor",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:contractor-addresses",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:worker-shared-job-edit",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:job-concurrency-installers",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:worker-create-status",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:job-completion",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:new-job-author-comment",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-photo-queue-stage-diagnostics-v1348.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-selected-job-sync-v1347.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-mobile-photo-zoom-v1180.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:private-photos",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-private-photos",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-photo-compression",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-photo-upload-rls",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-photo-visibility-sync",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-thumbnail-recovery",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:photo-cross-device-sync",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-photo-sync-indicator",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-photo-sync-center",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-offline-photo-queue",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-photo-idempotency",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:photo-preview-gallery-separation",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-photo-thumbnails",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-initial-details",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-photo-zero-byte-v1096.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-protocol-signature-reuse-v1322.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-worker-protocol-gate-v1226.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-protocol",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-protocol-save",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-storage-write-reconciliation-v1074.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-storage-delayed-commit-v1077.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-audit-fixes-v1088.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-protocol-print",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-protocol-layout",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-protocol-email",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-payment",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-protocol",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/codex-acceptance-fakturownia-v1269.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:admin-worker",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-only",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:supabase-grants",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:destructive-rls",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-worker-contractor-update-v1089.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-supabase-security-hardening-v1090.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-p0-v1260.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-link-v1277.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-auto-v1280.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-v1281.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/codex-acceptance-push-v1269.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-push-recipient-dedupe-v1268.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-push-delivery-receipts-v1265.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-job-deeplink",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:assignment-push",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-reliability",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-mobile-reassignment",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-logout-handoff",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-safety-v1078",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:comment-admin-push",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-toggle",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-initial-state",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:push-display",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-push-disabled",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-session-push-gate-v1083.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-audit-fixes-v1087.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/codex-acceptance-fuel-ui-v1269.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-package1-integrity-v1266.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fuel-tank-stock-v1263.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:fuel-module",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-serial-scanner",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:nameplate-rendering",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:nameplate-finish-verification",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:nameplate-quality",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:nameplate-product-catalog",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:rotenso-model-history",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-ocr",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-ai-barcode",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-layout-profiles",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-nameplate-verification",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-read-resilience",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-automatic-fallback",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-ean-separation",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-verification-status",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-nameplate-overview-authority",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-nameplate-ai-auth-v1085.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-summary",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-desktop-load-v1225.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-job-grouping",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-durable-groups",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-stage3",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-stage4",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-stage5",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-unsent-retry",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-log-cleanup",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-shared-source",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-generator-pagination",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-test",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-dismiss-delete",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-smsapi-webhook-security-v1085.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-p0-race-safety-v1242.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-cancel-retry-p1-v1243.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-audit-closure-v1248.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-callback-snapshot-v1250.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-callback-multi-rotation-v1251.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-history-membership-v1252.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-stable-customer-group-v1253.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-package1-v1254.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-package2-v1255.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-package3-v1256.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-retry-chain-v1257.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-customer-identity-pagination-v1257.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-ui-flow-closure-v1257.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-retry-lifecycle-v1257.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-identity-pagination-v1257.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-ui-flow-v1257.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-history-mutations-v1258.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-sms-delete-identity-v1259.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-v1195.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-verify-v1203.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-private-person-v1204.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-lock-v1205.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-fakturownia-prefill-v1208.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-desktop-vat-invoice-v1184.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-contractors-k12-v1179.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-contractors-stage5-v1178.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-contractors-stage4-v1177.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-contractors-async-v1175.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:center360",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:center360-personalization",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:dashboard-metrics",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-refresh",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-jobs-layout-width",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-job-details-polish",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-global-search",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:desktop-cross-module-panels",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:calendar-width",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-ui-copy",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-pricelist",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-style-bootstrap",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-mobile-address-wrap-v1291.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-worker-ui-v1295.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-admin-mobile-edit-v1297.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-admin-header",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-version-diagnostics",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-new-job-no-devices",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-worker-add-client",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-default-installation-date",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:cache-first-refresh",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-postgres-readiness-v1276.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-release-automation-v1061.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-release-impact-v1063.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-closure-integrity-v1275.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-closure-gate-v1257.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-closure-evidence-negative-v1258.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-release-policy-negative-v1258.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-migration-history-alignment-v1258.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "node --check scripts/verify-sms-two-session-postgres-v1258.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node --check scripts/verify-supabase-migration-history-v1258.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:release-runner",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:release-zip",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:release-zip-clean",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-playwright-runner-fail-closed-v1085.cjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:mobile-new-job-sms-defaults",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:sms-street",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/audit-v1089/rebuild-rehearsal.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/smoke-audit-fixes-v1086.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:e2e-mobile",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:e2e-desktop",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:remove-resend-email",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:smoke:no-services-module",
+      "status": "passed"
+    }
+  ],
+  "all_passed": true
+}

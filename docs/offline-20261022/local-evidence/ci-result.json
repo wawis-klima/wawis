@@ -1,0 +1,12 @@
+{
+  "source_sha": "511bc8e8fa912c8cb80a38a45c0a6dc50dc561a4",
+  "run_id": 39813470159,
+  "job_id": 119945670515,
+  "status": "NO-GO",
+  "reason_lines": [
+    "2026-10-22T16:22:35.6478956Z WAWIS RELEASE GATE: NO-GO — NO-GO: PR pochodzi z fix/offline-nameplate-durable-outbox-20261022, oczekiwano release/v13.38",
+    "2026-10-22T16:22:35.7018275Z WAWIS CLOSURE GATE: NO-GO — Brak wymaganego dowodu: closure-evidence.json"
+  ],
+  "url": "https://github.com/wawis-klima/wawis/actions/runs/39813470159",
+  "note": "CI did not execute regression or E2E commands; local evidence is separate."
+}

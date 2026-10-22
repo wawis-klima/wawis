@@ -1,0 +1,199 @@
+Uruchamiam wymagane E2E: mobile
+[WebServer] (node:39163) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 141 tests using 1 worker
+
+(node:39190) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:39190) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/141] tests/e2e/audit-races-v1084.spec.js:4:3 › @mobile 10.84 — wyścigi IndexedDB › stary update kursora nie przywraca starego snapshotu po nowszym zapisie
+[2/141] tests/e2e/audit-races-v1084.spec.js:39:3 › @mobile 10.84 — wyścigi IndexedDB › usunięty rekord kolejki zdjęć nie może zostać wskrzeszony przez spóźniony update
+[3/141] tests/e2e/contractor-xlsx-import-v1177.spec.js:42:1 › K11 mobile: XLSX round-trip zachowuje status Nieaktywny i adresy @mobile
+[4/141] tests/e2e/fuel-module-v1014.spec.js:58:3 › @mobile Tankowania pracownika iPhone › mobilny pracownik ma Paliwo bez desktopowej tabeli samochodów
+[5/141] tests/e2e/mobile-durable-outbox.spec.js:11:1 › @mobile RED/GREEN rollback v4 -> original v3 fails without deleting bytes; compatible v4 reads them
+[6/141] tests/e2e/mobile-durable-outbox.spec.js:29:1 › @mobile RED/GREEN File reserialization failure at claim-write; owned ArrayBuffer survives same failure
+[7/141] tests/e2e/mobile-durable-outbox.spec.js:96:1 › @mobile atomic intent stores JW/JZ bytes, remains offline, reload restores both without AI approval
+[8/141] tests/e2e/mobile-durable-outbox.spec.js:110:1 › @mobile online JW/JZ: bytes -> Storage readback -> metadata -> device -> no duplicate on repeated sync
+[9/141] tests/e2e/mobile-durable-outbox.spec.js:117:43 › @mobile HTTP 400: retains complete intent and bytes, classifies retry, never commits device
+[10/141] tests/e2e/mobile-durable-outbox.spec.js:117:43 › @mobile HTTP 403: retains complete intent and bytes, classifies retry, never commits device
+[11/141] tests/e2e/mobile-durable-outbox.spec.js:117:43 › @mobile HTTP 409: retains complete intent and bytes, classifies retry, never commits device
+[12/141] tests/e2e/mobile-durable-outbox.spec.js:117:43 › @mobile HTTP 429: retains complete intent and bytes, classifies retry, never commits device
+[13/141] tests/e2e/mobile-durable-outbox.spec.js:117:43 › @mobile HTTP 503: retains complete intent and bytes, classifies retry, never commits device
+[14/141] tests/e2e/mobile-durable-outbox.spec.js:126:1 › @mobile disconnect on second photo: first survives, retry adds only missing row and device
+[15/141] tests/e2e/mobile-durable-outbox.spec.js:135:1 › @mobile user change/session cancellation cannot send or acknowledge another user intent
+[16/141] tests/e2e/mobile-durable-outbox.spec.js:144:1 › @mobile empty photo and quota failure cannot close an uncommitted form or replace prior intent
+[17/141] tests/e2e/mobile-durable-outbox.spec.js:153:1 › @mobile two workers claim one intent; stale generation cannot delete or overwrite successor
+[18/141] tests/e2e/mobile-durable-outbox.spec.js:164:1 › @mobile refresh overlay retains intent; protocol blocked until server device and photos acknowledged
+[19/141] tests/e2e/mobile-durable-outbox.spec.js:174:1 › @mobile two independent tabs compete for the durable device intent
+[20/141] tests/e2e/mobile-durable-outbox.spec.js:184:1 › @mobile logout during real queue upload preserves bytes and recovers via Storage conflict on relogin
+[21/141] tests/e2e/mobile-ios-binary-upload-v1346.spec.js:8:1 › @mobile iOS binary nameplate upload bypasses empty multipart
+[22/141] tests/e2e/mobile-manual-photo-priority-v1347.spec.js:8:1 › @mobile P0 manual synchronizacja wybranego montażu omija zawieszony globalny worker
+[23/141] tests/e2e/mobile-manual-sync-v1344.spec.js:3:1 › @mobile v13.44 — ręczna synchronizacja pomija backoff tylko wybranego oczekującego montażu
+[24/141] tests/e2e/mobile-manual-sync-v1344.spec.js:141:1 › @mobile v13.44 — oczekujący montaż i diagnostyka pokazują ręczną synchronizację
+[25/141] tests/e2e/mobile-manual-sync-v1344.spec.js:158:1 › @mobile v13.45 — błąd przygotowania zdjęcia nie zatrzymuje kolejki i zachowuje plik w IndexedDB
+[26/141] tests/e2e/mobile-nameplate-offline-v1343.spec.js:3:1 › @mobile v13.43 — offline można kolejkować sam zapis urządzenia, bez zmian reszty montażu
+[27/141] tests/e2e/mobile-nameplate-offline-v1343.spec.js:21:1 › @mobile v13.43 — zapis urządzenia czeka na konkretną tabliczkę i synchronizuje się u administratora
+[28/141] tests/e2e/mobile-nameplate-robustness-v1123.spec.js:138:3 › @mobile 11.23 — odporność odczytu tabliczek w warunkach terenowych › zdjęcie bez żadnych śladów tabliczki kończy lokalnie i nie uruchamia AI
+[29/141] tests/e2e/mobile-nameplate-robustness-v1123.spec.js:196:3 › @mobile 11.23 — odporność odczytu tabliczek w warunkach terenowych › krzywa tabliczka +12° nadal korzysta z desktopowego prostowania i nie myli EAN z SN
+[30/141] tests/e2e/mobile-nameplate-robustness-v1123.spec.js:212:3 › @mobile 11.23 — odporność odczytu tabliczek w warunkach terenowych › lekko nieostra tabliczka daje ostrzeżenie jakości przed odczytem
+[31/141] tests/e2e/mobile-nameplate-robustness-v1123.spec.js:226:3 › @mobile 11.23 — odporność odczytu tabliczek w warunkach terenowych › nieczytelny SN nie może zostać zastąpiony numerem EAN ani starym numerem urządzenia
+[32/141] tests/e2e/mobile-nameplate-robustness-v1123.spec.js:242:3 › @mobile 11.23 — odporność odczytu tabliczek w warunkach terenowych › tabliczka JZ włożona do pola JW pokazuje niezgodność i blokuje potwierdzenie
+[33/141] tests/e2e/mobile-offline-atomic-v1075.spec.js:3:1 › @mobile v10.75 — wymiana operacji offline jest atomowa przy błędzie IndexedDB
+[34/141] tests/e2e/mobile-offline-atomic-v1075.spec.js:81:1 › @mobile v10.80 — spóźniona aktualizacja nie wskrzesza zastąpionej operacji
+[35/141] tests/e2e/mobile-offline-atomic-v1075.spec.js:134:1 › @mobile v11.64 — konflikt statusu nie pozostaje jako pozornie zakończony montaż
+[36/141] tests/e2e/mobile-pending-sync-touch.spec.js:4:1 › @mobile pending device manual sync is touchable and preserves intent while offline
+[37/141] tests/e2e/mobile-photo-audit-1342.spec.js:17:3 › @mobile audit 13.42: nondestructive IDB upgrade & fresh Storage › baza v3 zachowuje stare File podczas aktualizacji v4; v3 po migracji nie może nic skasować
+[38/141] tests/e2e/mobile-photo-audit-1342.spec.js:69:3 › @mobile audit 13.42: nondestructive IDB upgrade & fresh Storage › blokowana migracja nie usuwa istniejącego Blob; po zamknięciu starej karty następuje upgrade
+[39/141] tests/e2e/mobile-photo-audit-1342.spec.js:108:3 › @mobile audit 13.42: nondestructive IDB upgrade & fresh Storage › błąd commit IDB nie pokazuje zapisania i Ponów najpierw utrwala File
+[40/141] tests/e2e/mobile-photo-audit-1342.spec.js:146:3 › @mobile audit 13.42: nondestructive IDB upgrade & fresh Storage › rzeczywisty HTTP cache: stare 200 nie potwierdza obiektu po 404 na origin
+[41/141] tests/e2e/mobile-photo-audit-1342.spec.js:236:3 › @mobile audit 13.42: nondestructive IDB upgrade & fresh Storage › aktualne Supabase SDK otrzymuje nonce i cache:no-store dla każdego readback
+[42/141] tests/e2e/mobile-photo-integrity-p0-r2.spec.js:15:3 › @mobile P0-R2 — plik nie może zostać nadpisany przez fallback fingerprint › różne File o tych samych metadanych i błędzie arrayBuffer pozostają osobno w IndexedDB
+[43/141] tests/e2e/mobile-photo-integrity-p0-r2.spec.js:66:3 › @mobile P0-R2 — plik nie może zostać nadpisany przez fallback fingerprint › zapis tego samego PK nie podmienia Blob ani ownera lub lease
+[44/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:126:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › inny plik z tej samej jednostki nie usuwa niewysłanego File (error), także po reload
+[45/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:126:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › inny plik z tej samej jednostki nie usuwa niewysłanego File (uploading), także po reload
+[46/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:145:3 › @mobile P0 — legacy tabliczki w trwałej kolejce › dwie karty nie uzgadniają lokalnego File z obcą tabliczką tej samej jednostki
+[47/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:169:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › P0-R1: zgodna ścieżka, ale brak wiarygodnych bajtów Storage (missing) nie usuwa Blob
+[48/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:169:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › P0-R1: zgodna ścieżka, ale brak wiarygodnych bajtów Storage (differentBytes) nie usuwa Blob
+[49/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:169:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › P0-R1: zgodna ścieżka, ale brak wiarygodnych bajtów Storage (denied) nie usuwa Blob
+[50/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:169:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › P0-R1: zgodna ścieżka, ale brak wiarygodnych bajtów Storage (serverError) nie usuwa Blob
+[51/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:169:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › P0-R1: zgodna ścieżka, ale brak wiarygodnych bajtów Storage (empty) nie usuwa Blob
+[52/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:183:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › dokładnie potwierdzona ścieżka uzgadnia legacy po reload (error)
+[53/141] tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js:183:5 › @mobile P0 — legacy tabliczki w trwałej kolejce › dokładnie potwierdzona ścieżka uzgadnia legacy po reload (uploading)
+[54/141] tests/e2e/mobile-photo-queue-cas-p1.spec.js:15:3 › @mobile queue fencing / owner / recovery › dwie karty: spóźniony A nie aktualizuje ani nie kasuje zdjęcia przejętego przez B i C
+[55/141] tests/e2e/mobile-photo-queue-cas-p1.spec.js:82:3 › @mobile queue fencing / owner / recovery › stary snapshot nie kasuje przedłużonego lease tej samej generacji
+[56/141] tests/e2e/mobile-photo-queue-cas-p1.spec.js:113:3 › @mobile queue fencing / owner / recovery › ręczne Ponów w drugiej karcie nie przejmuje aktywnego lease pierwszego workera
+[57/141] tests/e2e/mobile-photo-queue-cas-p1.spec.js:158:3 › @mobile queue fencing / owner / recovery › spóźniony worker po nieudanym CAS nie wykonuje storage.upload
+[58/141] tests/e2e/mobile-photo-queue-cas-p1.spec.js:218:3 › @mobile queue fencing / owner / recovery › error 403 jest zachowany, a automatyczne wznowienie nie wysyła go ponownie
+[59/141] tests/e2e/mobile-photo-storage-conflict-p0.spec.js:83:3 › @mobile P0 — 409 i ACK nie mogą zgubić ostatniej kopii › 409 + inne bajty pod tym samym path nie usuwa File i nie wykonuje INSERT
+[60/141] tests/e2e/mobile-photo-storage-conflict-p0.spec.js:92:3 › @mobile P0 — 409 i ACK nie mogą zgubić ostatniej kopii › 409 + dokładne bajty pozwala dopisać row i bezpiecznie uzgodnić
+[61/141] tests/e2e/mobile-photo-storage-conflict-p0.spec.js:102:5 › @mobile P0 — 409 i ACK nie mogą zgubić ostatniej kopii › konflikt 409 i przejściowy błąd 503 zachowują Blob i ustawiają backoff
+[62/141] tests/e2e/mobile-photo-storage-conflict-p0.spec.js:102:5 › @mobile P0 — 409 i ACK nie mogą zgubić ostatniej kopii › konflikt 409 i przejściowy błąd 429 zachowują Blob i ustawiają backoff
+[63/141] tests/e2e/mobile-photo-storage-conflict-p0.spec.js:114:3 › @mobile P0 — 409 i ACK nie mogą zgubić ostatniej kopii › udany upload/INSERT z brakującym obiektem nie usuwa File
+[64/141] tests/e2e/mobile-photo-two-sessions.spec.js:14:3 › @mobile iPhone — zdjęcia na dwóch sesjach › pracownik dodaje zdjęcie, administrator je widzi, a usunięcie synchronizuje obie sesje
+[65/141] tests/e2e/mobile-photo-two-sessions.spec.js:86:3 › @mobile iPhone — zdjęcia na dwóch sesjach › pracownik widzi testowy Multi-Split 3×JW i dodaje do niego zdjęcie
+[66/141] tests/e2e/mobile-protocol-test.spec.js:74:3 › @mobile protokół i zakończenie zlecenia › pracownik nie może zakończyć bez zapisanego protokołu
+[67/141] tests/e2e/mobile-protocol-test.spec.js:84:3 › @mobile protokół i zakończenie zlecenia › pracownik tworzy protokół, wysyła go z biuro@wawis.pl i pobiera PDF
+[68/141] tests/e2e/mobile-protocol-test.spec.js:314:3 › @mobile protokół i zakończenie zlecenia › administrator na telefonie widzi zablokowany protokół do czasu dodania tabliczek
+[69/141] tests/e2e/mobile-push-logout-handoff-v1076.spec.js:72:1 › @mobile v10.83 — logout offline i konto A→B nie zostawiają starego właściciela endpointu
+[70/141] tests/e2e/mobile-queue-read-failure.spec.js:5:1 › @mobile IndexedDB read failure must never display Everything sent
+[71/141] tests/e2e/mobile-resilience.spec.js:116:3 › @mobile iPhone — odporność danych › lokalne zdjęcie przetrwa ponowne uruchomienie i wyśle się po odzyskaniu internetu
+[72/141] tests/e2e/mobile-resilience.spec.js:158:3 › @mobile iPhone — odporność danych › same metadane bez pliku Storage zachowują stary Blob, a serwerowa JZ pozostaje widoczna
+[73/141] tests/e2e/mobile-resilience.spec.js:204:3 › @mobile iPhone — odporność danych › anulowany worker oddaje własny lease bez usuwania zdjęcia i bez naruszenia następnego workera
+[74/141] tests/e2e/mobile-resilience.spec.js:247:3 › @mobile iPhone — odporność danych › osierocona 3-minutowa blokada nie ukrywa zapisanej na serwerze JZ
+[75/141] tests/e2e/mobile-resilience.spec.js:322:3 › @mobile iPhone — odporność danych › zakończone zlecenie zwija monterów i puste komentarze, ale rozwija istniejącą historię
+[76/141] tests/e2e/mobile-serial-scanner.spec.js:168:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › chowa miniatury tabliczek i pokazuje zdjęcie dopiero po kliknięciu
+[77/141] tests/e2e/mobile-serial-scanner.spec.js:288:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › v12.85 — długie modele Mitsubishi nie rozciągają okna MULTI-SPLIT na iPhonie
+[78/141] tests/e2e/mobile-serial-scanner.spec.js:364:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › v11.38 — Krok 2 zaczyna od tabliczek, a Marka i Model są pod nimi bez pola Moc
+[79/141] tests/e2e/mobile-serial-scanner.spec.js:392:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › v11.34 — kreator urządzeń ma kompaktowe wysokości jak zaakceptowany wzorzec
+[80/141] tests/e2e/mobile-serial-scanner.spec.js:463:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › v13.26 — Single ostrzega o różnych seriach i pozwala zapisać faktyczny zestaw
+[81/141] tests/e2e/mobile-serial-scanner.spec.js:503:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › P1 quota podczas zapisu tabliczki pozostawia formularz i nie ogłasza trwałego zapisu
+[82/141] tests/e2e/mobile-serial-scanner.spec.js:554:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › automatycznie odczytuje prawdziwe pola modelu i SN z czytelnej tabliczki Rotenso
+[83/141] tests/e2e/mobile-serial-scanner.spec.js:620:3 › @mobile iPhone — uproszczony kreator urządzeń bez OCR z kadrowaniem tabliczek › nie pozwala pracownikowi zakończyć zlecenia bez tabliczki JZ i każdej JW
+[84/141] tests/e2e/mobile-supabase-provider.spec.js:8:1 › @mobile actual local Supabase Storage + PostgREST: JW/JZ binary readback, device CAS, RLS, idempotency
+tests/e2e/mobile-supabase-provider.spec.js:8:1 › @mobile actual local Supabase Storage + PostgREST: JW/JZ binary readback, device CAS, RLS, idempotency
+Failed to load resource: the server responded with a status of 409 (Conflict)
+
+Failed to load resource: the server responded with a status of 400 (Bad Request)
+
+[85/141] tests/e2e/mobile-v1091-regressions.spec.js:19:3 › @mobile 10.91 regressions › długi email i adres nie rozszerzają karty ani viewportu iPhone
+[86/141] tests/e2e/mobile-v1091-regressions.spec.js:70:3 › @mobile 10.91 regressions › ręczne potwierdzenie pozostaje opcjonalne, ale admin może zakończyć także bez niego
+[87/141] tests/e2e/mobile-v1092-full-layout.spec.js:44:3 › @mobile 10.92 full WebKit layout › pełny widok Koroś nie może poszerzyć ekranu iPhone
+[88/141] tests/e2e/mobile-v1092-regressions.spec.js:15:3 › @mobile 10.92 regressions › produkcyjny mobilny entrypoint ładuje hardening szerokości 10.90/10.91
+[89/141] tests/e2e/mobile-v1092-regressions.spec.js:21:3 › @mobile 10.92 regressions › administrator może zakończyć bez tabliczek tylko po dodaniu urządzenia
+[90/141] tests/e2e/mobile-v1103-completed-note.spec.js:31:3 › @mobile 11.03 zwarte dane i komentarz administratora › zakończony montaż zwija komentarz, a aktywny pozostawia go otwarty
+[91/141] tests/e2e/mobile-v1103-completed-note.spec.js:54:3 › @mobile 11.03 zwarte dane i komentarz administratora › zdjęcia są domyślnie zwinięte w zakończonych i niezrealizowanych, a w aktywnym pozostają otwarte
+[92/141] tests/e2e/mobile-v1103-completed-note.spec.js:136:3 › @mobile 11.03 zwarte dane i komentarz administratora › e-mail i telefon są wyśrodkowane, trzy krótkie wiersze pozostają niskie, adres może rosnąć
+[93/141] tests/e2e/mobile-v1104-contact-autofit.spec.js:23:3 › @mobile 12.93 adres po prawej bez ucinania › zawija długi adres po prawej od etykiety, zachowuje Google Maps i nie zmienia e-maila
+[94/141] tests/e2e/mobile-v1104-contact-autofit.spec.js:87:3 › @mobile 12.90 skrócony adres na karcie montażu › usuwa kod pocztowy z listy i szczegółów, zachowując pełny adres w linku Google Maps
+[95/141] tests/e2e/mobile-v1292-customer-card-name.spec.js:11:3 › @mobile 12.92 długie nazwy klientów na kartach montaży › wyświetla POWERMAT jako POWERMAT bez zmiany pełnej nazwy oraz zachowuje klikalność
+[96/141] tests/e2e/mobile-v1292-customer-card-name.spec.js:54:3 › @mobile 12.92 długie nazwy klientów na kartach montaży › długie nazwy bez marki zajmują najwyżej dwa wiersze, zwykłe nazwy pozostają bez zmian
+[97/141] tests/e2e/mobile-v1295-worker-visual.spec.js:15:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › pracownik ma akcje w oczekiwanych kolumnach i przycisk zakończenia pozostaje zablokowany
+[98/141] tests/e2e/mobile-v1295-worker-visual.spec.js:45:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › pracownik ma kompaktową edycję i wyrównaną datę bez przekroczenia szerokości iPhone
+[99/141] tests/e2e/mobile-v1295-worker-visual.spec.js:104:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › protokół pracownika ma krótszy tekst wyboru płatności
+[100/141] tests/e2e/mobile-v1295-worker-visual.spec.js:112:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › administrator zachowuje akcje, ale edycja nie pokazuje urządzeń i monterów oraz centruje datę
+[101/141] tests/e2e/mobile-v1295-worker-visual.spec.js:326:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › administrator: iPhone 390x844 pokazuje większy komentarz i odstępy bez zasłaniania zapisu
+[102/141] tests/e2e/mobile-v1295-worker-visual.spec.js:362:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › administrator: niskie okno 390x700 zachowuje duży komentarz i przewijanie
+[103/141] tests/e2e/mobile-v1295-worker-visual.spec.js:384:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › administrator: iPhone PWA 402x740 używa odstępów dodawania zamiast ciasnego wariantu
+[104/141] tests/e2e/mobile-v1295-worker-visual.spec.js:407:3 › @mobile 12.95 — zmiany pracownika bez naruszania administratora › administrator: wyższy iPhone daje większe odstępy, komentarz i widoczny zapis
+[105/141] tests/e2e/mobile-v1304-swipe-jobs.spec.js:21:5 › @mobile 13.04 swipe montaży › worker reveals actions and still expands on tap
+[106/141] tests/e2e/mobile-v1304-swipe-jobs.spec.js:21:5 › @mobile 13.04 swipe montaży › admin reveals actions and still expands on tap
+[107/141] tests/e2e/mobile-v1304-swipe-jobs.spec.js:38:3 › @mobile 13.04 swipe montaży › vertical motion does not open swipe or mutate job
+[108/141] tests/e2e/mobile-v1304-swipe-jobs.spec.js:50:3 › @mobile 13.04 swipe montaży › empty phone and address produce disabled actions, not broken links
+[109/141] tests/e2e/mobile-v1305-right-swipe.spec.js:27:3 › @mobile WAWIS 13.05 swipe w prawo › pracownik: gest odsłania tabliczki i otwiera istniejący kreator bez rozwijania karty
+[110/141] tests/e2e/mobile-v1305-right-swipe.spec.js:54:3 › @mobile WAWIS 13.05 swipe w prawo › pracownik: szybki Protokół czeka na komplet zsynchronizowanych tabliczek
+[111/141] tests/e2e/mobile-v1305-right-swipe.spec.js:63:3 › @mobile WAWIS 13.05 swipe w prawo › administrator: protokół aktywnego zlecenia zachowuje dotychczasowe ograniczenie
+[112/141] tests/e2e/mobile-v1305-right-swipe.spec.js:71:3 › @mobile WAWIS 13.05 swipe w prawo › administrator: zakończony montaż pozwala otworzyć zapisany protokół
+[113/141] tests/e2e/mobile-v1305-right-swipe.spec.js:79:3 › @mobile WAWIS 13.05 swipe w prawo › pracownik: zakończone zlecenie blokuje edycję tabliczek
+[114/141] tests/e2e/mobile-v1305-right-swipe.spec.js:86:3 › @mobile WAWIS 13.05 swipe w prawo › oba kierunki, zamknięcie, zwykły tap i pionowy scroll nie kolidują
+[115/141] tests/e2e/mobile-v1306-device-wizard-close.spec.js:58:3 › @mobile WAWIS 13.06 zamykanie kreatora tabliczek › puste dodawanie: strzałka i Zamknij pozwalają bezpośrednio wyjść bez ukrytego okna
+[116/141] tests/e2e/mobile-v1306-device-wizard-close.spec.js:71:3 › @mobile WAWIS 13.06 zamykanie kreatora tabliczek › wejście przez gest: Zamknij pokazuje dostępne potwierdzenie niezapisanych danych
+[117/141] tests/e2e/mobile-v1306-device-wizard-close.spec.js:89:3 › @mobile WAWIS 13.06 zamykanie kreatora tabliczek › zwykłe Tabliczki: strzałka wraca do listy urządzeń, a Zamknij działa
+[118/141] tests/e2e/mobile-v1307-bottom-sheet-collapse.spec.js:27:3 › @mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje › na obu rolach nie ma trzech kropek ani dolnego panelu; karta ma całą powierzchnię klikalną
+[119/141] tests/e2e/mobile-v1307-bottom-sheet-collapse.spec.js:45:3 › @mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje › zachowane przesunięcia w obu kierunkach i uprawnienia dla urządzeń/protokołu
+[120/141] tests/e2e/mobile-v1307-bottom-sheet-collapse.spec.js:65:3 › @mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje › urządzenia: panel składa się płynnie i odtwarza dokumentację po rozwinięciu
+[121/141] tests/e2e/mobile-v1307-bottom-sheet-collapse.spec.js:87:3 › @mobile WAWIS 13.10 — brak zdublowanego menu, gesty i sekcje › zakończone: zdjęcia, komentarz i monterzy mają dwukierunkową animację
+[122/141] tests/e2e/mobile-v1308-motion.spec.js:20:3 › @mobile WAWIS 13.08 płynność przejścia na iPhonie › urządzenia faktycznie animują wysokość w obie strony przez ponad 0,35 s
+[123/141] tests/e2e/mobile-v1308-motion.spec.js:51:3 › @mobile WAWIS 13.08 płynność przejścia na iPhonie › zakończone: animacja komentarza i obrót strzałki działają bez zmian ról
+[124/141] tests/e2e/mobile-v1308-motion.spec.js:73:3 › @mobile WAWIS 13.08 płynność przejścia na iPhonie › iOS Ogranicz ruch: bez animacji, zawartość nadal otwiera się i zamyka
+[125/141] tests/e2e/mobile-v1309-inline-card-motion.spec.js:17:3 › @mobile WAWIS 13.09 — płynne szczegóły całej karty › pracownik: naprawdę animuje wysokość otwierania i zamykania całych szczegółów
+[126/141] tests/e2e/mobile-v1309-inline-card-motion.spec.js:48:3 › @mobile WAWIS 13.09 — płynne szczegóły całej karty › administrator: Zakończone rozwija się i chowa zarówno z karty jak z przycisku Zamknij
+[127/141] tests/e2e/mobile-v1309-inline-card-motion.spec.js:63:3 › @mobile WAWIS 13.09 — płynne szczegóły całej karty › iOS Ogranicz ruch: animacja wyłączona, otwieranie i zamykanie nadal działa
+[128/141] tests/e2e/mobile-v1311-new-job-comment-mic.spec.js:18:5 › @mobile WAWIS 13.11 komentarz głosowy w nowym montażu › administrator: mikrofon działa obok Komentarza, bez ograniczenia szerokości pola
+[129/141] tests/e2e/mobile-v1311-new-job-comment-mic.spec.js:18:5 › @mobile WAWIS 13.11 komentarz głosowy w nowym montażu › pracownik: mikrofon działa obok Komentarza, bez ograniczenia szerokości pola
+[130/141] tests/e2e/mobile-v1311-new-job-comment-mic.spec.js:65:3 › @mobile WAWIS 13.11 komentarz głosowy w nowym montażu › administrator: dyktowany tekst trafia do komentarza administratora
+[131/141] tests/e2e/mobile-v1321-comment-routing.spec.js:12:5 › @mobile WAWIS 13.21 — komentarz w nowym montażu › administrator: zapis tylko do właściwej sekcji
+[132/141] tests/e2e/mobile-v1321-comment-routing.spec.js:12:5 › @mobile WAWIS 13.21 — komentarz w nowym montażu › pracownik: zapis tylko do właściwej sekcji
+[133/141] tests/e2e/mobile-v1323-admin-protocol.spec.js:8:3 › @mobile 13.23 — protokół przed zakończeniem › administrator ma Protokół pod Urządzenia, a Zakończ pozostaje zablokowany
+[134/141] tests/e2e/mobile-v1323-admin-protocol.spec.js:45:3 › @mobile 13.23 — protokół przed zakończeniem › kolejne etapy: zapisane JW/JZ → aktywny Protokół → podpisany protokół → aktywne Zakończ
+[135/141] tests/e2e/mobile-version-diagnostics-v1271.spec.js:9:3 › @mobile WAWIS — diagnostyka z numeru wersji › pracownik otwiera diagnostykę przez wersję i wraca do montaży
+[136/141] tests/e2e/mobile-version-diagnostics-v1271.spec.js:29:3 › @mobile WAWIS — diagnostyka z numeru wersji › administrator widzi test push w diagnostyce wywołanej wersją
+[137/141] tests/e2e/release-visual-checks.spec.js:216:3 › @mobile release visual iPhone › administrator ma cztery pełne nazwy przycisków w jednym rzędzie na wąskim iPhonie
+[138/141] tests/e2e/release-visual-checks.spec.js:338:3 › @mobile release visual iPhone › pracownik ma trzy pełne nazwy przycisków i dostęp do cennika, bez Kontrahentów
+[139/141] tests/e2e/release-visual-checks.spec.js:355:3 › @mobile release visual iPhone › pełna aplikacja mobilna ma załadowany CSS, nie wychodzi poza ekran i zapisuje screenshot kontrolny
+[140/141] tests/e2e/session-push-isolation-v1083.spec.js:29:1 › mobile @mobile — stale restore A is rejected after B
+[141/141] tests/e2e/session-push-isolation-v1083.spec.js:38:1 › mobile @mobile — stale push token A cannot publish after B
+  1 skipped
+  140 passed (9.1m)
+Uruchamiam wymagane E2E: desktop
+[WebServer] (node:48571) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 20 tests using 1 worker
+
+(node:48599) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:48599) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/20] tests/e2e/audit-v1089.spec.js:2:1 › audit A06 real FuelPanel isolates accounts and preserves distinct pending attempts in two tabs
+[2/20] tests/e2e/audit-v1089.spec.js:25:1 › audit A11 real DevicesPanel rejects old resolve/reject across refresh, account and unmount
+[3/20] tests/e2e/contractor-xlsx-import-v1177.spec.js:31:1 › K11 desktop: XLSX round-trip zachowuje status Nieaktywny i adresy
+[4/20] tests/e2e/desktop-app.spec.js:11:3 › desktop E2E na mock Supabase › reset mock danych przed E2E przywraca stan bazowy
+[5/20] tests/e2e/desktop-app.spec.js:24:3 › desktop E2E na mock Supabase › administrator loguje się i przechodzi przez Montaże, Kalendarz oraz SMS
+[6/20] tests/e2e/desktop-app.spec.js:42:3 › desktop E2E na mock Supabase › Centrum 360 używa tylko głównego wyszukiwania i otwiera wskazanego kontrahenta
+[7/20] tests/e2e/desktop-app.spec.js:63:3 › desktop E2E na mock Supabase › administrator tworzy i edytuje montaż
+[8/20] tests/e2e/desktop-app.spec.js:93:3 › desktop E2E na mock Supabase › administrator usuwa montaż dopiero po potwierdzeniu
+[9/20] tests/e2e/desktop-app.spec.js:113:3 › desktop E2E na mock Supabase › administrator podgląda i wysyła zapisany protokół zakończonego zlecenia
+[10/20] tests/e2e/desktop-app.spec.js:133:3 › desktop E2E na mock Supabase › pracownik loguje się — pracownik na komputerze jest kierowany do aplikacji telefonicznej
+[11/20] tests/e2e/desktop-app.spec.js:142:3 › desktop E2E na mock Supabase › pracownik na desktopie nie widzi modułów administratora
+[12/20] tests/e2e/desktop-device-wizard-polish.spec.js:11:3 › desktop administrator — wąski kreator urządzeń premium › okno urządzeń jest wąskie, zwarte i pozbawione szerokich bocznych pasów
+[13/20] tests/e2e/fuel-module-v1014.spec.js:5:3 › Tankowania 10.22 › administrator zapisuje tankowanie i filtruje historię samochodu na komputerze
+[14/20] tests/e2e/fuel-module-v1014.spec.js:28:3 › Tankowania 10.22 › formularz ostrzega o dużym skoku i blokuje ponad 5000 km bez zdjęcia
+[15/20] tests/e2e/release-visual-checks.spec.js:101:3 › release visual desktop › pełna aplikacja desktopowa ma załadowany CSS, poprawne kolumny i zapisuje screenshot kontrolny
+[16/20] tests/e2e/release-visual-checks.spec.js:145:3 › release visual desktop › panel Diagnostyka jest dostępny i raport nie deklaruje danych klientów
+[17/20] tests/e2e/session-push-isolation-v1083.spec.js:56:1 › desktop — stale restore A is rejected after B
+[18/20] tests/e2e/update-reload-guard-v1082.spec.js:18:3 › v10.82 update reload guard — real React integration › timer ponownie sprawdza bloker, który pojawił się już po zaplanowaniu reloadu
+[19/20] tests/e2e/update-reload-guard-v1082.spec.js:37:3 › v10.82 update reload guard — real React integration › rerender otwartego formularza nie zwalnia blokady, a beforeunload pojawia się dopiero po zmianie danych
+[20/20] tests/e2e/update-reload-guard-v1082.spec.js:63:3 › v10.82 update reload guard — real React integration › paliwo i komentarz inline rejestrują ochronę dopiero po wpisaniu niezapisanych danych
+  20 passed (1.1m)
