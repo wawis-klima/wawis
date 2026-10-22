@@ -1,3 +1,12 @@
+## WAWIS-1346 — iOS / zdjęcia wysyłane z Content-Length: 0 (22.10.2026)
+
+| ID | Stan | Reproduktor / warunek zamknięcia |
+|---|---|---|
+| WAWIS-1346-LIVE | CONFIRMED | iPhone v13.45, dwa nowe zdjęcia, Storage POST 11:53:09 i 11:53:11 CEST: HTTP 400 InvalidRequest \`No content provided\`, \`Content-Length: 0\`; brak rekordów photos i Storage; montaż traci widok urządzeń po odświeżeniu. |
+| WAWIS-1346-BINARY | FIXED-UNVERIFIED | iOS wysyła sprawdzony ArrayBuffer z pełnym \`byteLength\` zamiast multipart FormData. Plik IndexedDB nie jest usuwany bez serwerowego ACK bajtów. |
+| WAWIS-1346-TEST | REQUIRED | \`tests/e2e/mobile-ios-binary-upload-v1346.spec.js\` + \`scripts/smoke-mobile-photo-compression.cjs\`; CI/Playwright i reproduktor produkcyjnego 400. |
+| WAWIS-1346-IPHONELIVE | EXTERNAL | Na fizycznym iPhonie potwierdzić HTTP 2xx + niezerowy body uploadu, 2 zapisane photos, 1 operację device ACK, odblokowany Protokół i brak pozostałych elementów wybranego zlecenia. |
+
 # WAWIS — Regression Ledger
 
 ## WAWIS-1344 — ręczna synchronizacja tabliczek po powrocie internetu
