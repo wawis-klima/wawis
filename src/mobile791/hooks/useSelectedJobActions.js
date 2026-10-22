@@ -29,6 +29,7 @@ import { logDiagnostic } from "../modules/diagnostics.js";
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
+import { isDeviceOnlyOfflineEdit } from "../modules/job-offline-device-edit.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { deleteJobDeviceRecord, deleteJobIndoorUnitRecord } from "../modules/job-device-delete.js";
 
@@ -154,12 +155,15 @@ export function useSelectedJobActions({
   async function queueDeviceSaveOffline(form, pendingDocuments, reason = 'offline') {
     const currentJob = getResolvedJob(editingJobId) || {};
     const deviceFields = serializeJobDevicesToFields(form);
+    const preparedDocuments = pendingDocuments.length
+      ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments, uploaderId: profile?.id })
+      : [];
     const documentationResult = await uploadJobDocumentationPhotos({
       supabase,
       profile,
       isSessionCurrent: capturePhotoSessionGuard(),
       jobId: editingJobId,
-      documents: pendingDocuments,
+      documents: preparedDocuments,
       setJobs,
       setSelectedJob,
       supabaseUrl,
@@ -183,6 +187,9 @@ export function useSelectedJobActions({
           device_model: deviceFields.device_model || '',
           device_serial_number: deviceFields.device_serial_number || '',
         },
+        required_nameplate_paths: preparedDocuments
+          .map((document) => String(document?.uploadIdentity?.plannedStoragePath || '').trim())
+          .filter(Boolean),
       },
     });
     applyOptimisticJobPatch(editingJobId, {
@@ -495,12 +502,14 @@ export function useSelectedJobActions({
 
     try {
       if (isBrowserOffline()) {
-        if (!isAdmin && serialOnlyMode) {
+        const baseJob = jobFormBaseJobRef?.current || getResolvedJob(editingJobId) || {};
+        const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(baseJob.contractor_id || '')) || null;
+        if (isDeviceOnlyOfflineEdit({ form, baseJob, profiles, normalizeStatus, linkedContractor })) {
           await queueDeviceSaveOffline(form, pendingDocuments);
           return;
         }
         logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
-        alert('Pełna edycja montażu wymaga połączenia z internetem. Wprowadzone dane pozostają w formularzu — połącz się z internetem i zapisz ponownie.');
+        alert('Zmiany danych klienta, przypisania, statusu i montażu wymagają internetu. Zapis offline obejmuje tylko urządzenia i tabliczki. Formularz pozostaje otwarty.');
         return;
       }
       const recordSave = serialOnlyMode
@@ -623,8 +632,11 @@ export function useSelectedJobActions({
       }
     } catch (error) {
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
-      if (!isAdmin && serialOnlyMode && isTransientSupabaseError(error)) {
+      if (isTransientSupabaseError(error)) {
         try {
+          const baseJob = jobFormBaseJobRef?.current || getResolvedJob(editingJobId) || {};
+          const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(baseJob.contractor_id || '')) || null;
+          if (!isDeviceOnlyOfflineEdit({ form, baseJob, profiles, normalizeStatus, linkedContractor })) throw error;
           await queueDeviceSaveOffline(form, pendingDocuments, 'transient-error');
           return;
         } catch (queueError) {

@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.42",
+  "version": "13.43",
   "scope": "mobile",
-  "release_branch": "release/v13.42",
+  "release_branch": "release/v13.43",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
@@ -12,10 +12,10 @@
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.42.zip"
+    "file_name": "klima-app-v13.43.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.42",
+    "source_branch": "release/v13.43",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "PR checks SHA, Closure Gate, production Vercel READY SHA, app 13.42, kontrola iPhone/WebKit",
-    "notes": "Oryginalne reproduktory Codexa są w niedostępnym tu /tmp, nie traktować ich jako uruchomionych. Fizyczny Safari/PWA i realny CDN wymagają zewnętrznej kontroli."
+    "evidence_source": "PR checks exact SHA and Closure GO, production Vercel READY SHA, app-version.json 13.43; physical iPhone/WebKit",
+    "notes": "Po zielonym CI sprawdzić wersję i synchronizację po trybie samolotowym na fizycznym iPhonie; backend Supabase i dane niezmienione."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "P0: fresh Storage readback nocache+nonce; nondestructive IDB v4 migration. P1: claim, CAS, 429/503 retry, failed save UI.",
-    "release_ci": "New Playwright on actual browser IndexedDB/SDK, previous photo tests, PostgreSQL dual session, Closure Gate, build.",
-    "post_deploy": "Exact Vercel SHA READY plus iPhone 13.42; CDN cache and old PWA upgrade reproduction are separate checks."
+    "code": "Offline kolejka tylko urządzeń/tabliczek, zdjęcia trwale lokalne i dokładna zależność storage_path, duplikaty SN pozostają konfliktem.",
+    "release_ci": "PR exact SHA: targeted regresje, Playwright mobile, test PostgreSQL, Closure Gate i build.",
+    "post_deploy": "Weryfikować dokładne SHA i wersję 13.43 na Vercel oraz rzeczywistą synchronizację PWA na iPhonie."
   }
 }

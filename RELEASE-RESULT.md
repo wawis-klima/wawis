@@ -1,15 +1,15 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.39 (kandydat — potwierdzić wynik PR CI, merge i Vercel)
+- 13.43 (kandydat — oczekuje na zielone CI, Closure Gate i deployment)
 
 ## Zakres
-- Synchronizacja zdjęć mobilnych nie jest anulowana przez zmianę stanu licznika kolejki.
-- Przerwany proces oddaje wyłącznie własny lease z zachowaniem lokalnego zdjęcia i poprzedniego statusu.
-- Uzgadnianie serwerowych tabliczek JZ/JW ze starą kolejką używa niezmienionego statusu rekordu IndexedDB.
-- Bez zmian w tabelach danych, Supabase, rolach, OCR, protokołach i pozostałych modułach.
+- Offline zapis urządzeń i tabliczek znamionowych w edycji administratora i pracownika, pod warunkiem że pozostałe dane montażu nie zostały zmienione.
+- Zdjęcia tabliczek są zapisywane w lokalnej kolejce; synchronizacja urządzenia czeka na dokładne ścieżki potwierdzone po stronie serwera.
+- Duplikaty numerów seryjnych pozostają konfliktem. Nie zmieniono schematu, RLS ani danych Supabase.
 
 ## Kontrola
-- Test E2E: aktywny porzucony 3-minutowy lease, zdjęcie już na serwerze, dwukrotne odtworzenie; sprawdzenie własności lease i braku kasowania niewysłanego zdjęcia.
-- Smoke offline photo queue i idempotencja, wymagane testy powiązanych modułów, Closure Gate i build.
-- Merge i produkcyjny deploy tylko po zielonym CI; Vercel READY musi wskazywać nowe SHA i wersję 13.39.
+- Build i lokalne testy smoke/regresji bez przeglądarki: PASS.
+- Playwright E2E: wymagany w CI; lokalne środowisko nie ma Chromium.
+- PR checks exact SHA, E2E mobile/desktop i Closure Gate: oczekują na wynik CI.
+- Produkcyjny deploy/Vercel exact SHA i kontrola PWA na iPhonie: do weryfikacji po zielonym CI.

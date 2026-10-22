@@ -1,3 +1,9 @@
+## 13.43
+- Offline zapis urządzeń i tabliczek znamionowych działa w edycji administratora i pracownika, jeśli formularz zmienia wyłącznie urządzenia/tabliczki.
+- Zdjęcia są najpierw trwale kolejkowane na telefonie; aktualizacja urządzenia synchronizuje się dopiero po potwierdzeniu na serwerze dokładnych ścieżek wymaganych zdjęć.
+- Administrator synchronizuje z tej kolejki tylko zmiany urządzeń. Duplikaty numerów seryjnych nadal są odrzucane i przywracają potwierdzone dane serwera; komunikat prosi o unikalny numer, bez sugerowania niepotrzebnej migracji SQL.
+- Dodano E2E IndexedDB/synchronizacji i przypadek konfliktu; build przechodzi. Test przeglądarkowy wymaga ponowienia w CI z dostępnym Chromium.
+
 ## 13.42
 - P0-CACHE: pobieranie rzeczywistych bajtów przez Storage download(cacheNonce, cache:no-store) przed SHA-256 oraz usunięciem jedynej lokalnej kopii; brak trwałego wyniku ACK w cache JS.
 - P0-MIXED: niedestrukcyjny upgrade IndexedDB z v3 do v4. Stary kod v3 nie może już otworzyć połączenia po zakończeniu migracji; blokada aktualizacji kończy się błędem, nigdy pozornym zapisem.

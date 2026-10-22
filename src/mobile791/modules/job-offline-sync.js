@@ -44,6 +44,17 @@ async function readJobForConflictCheck(supabase, jobId) {
 }
 
 async function syncDeviceOperation({ supabase, operation }) {
+  const requiredPaths = [...new Set((operation.payload?.required_nameplate_paths || [])
+    .map((value) => String(value || '').trim()).filter(Boolean))];
+  if (requiredPaths.length) {
+    const verification = await loadJobNameplatePhotosData({ supabase, jobId: operation.job_id });
+    const savedPaths = new Set((verification.photos || []).map((photo) => String(photo?.storage_path || '').trim()).filter(Boolean));
+    if (requiredPaths.some((path) => !savedPaths.has(path))) {
+      const error = new Error('Zapis urządzeń czeka, aż zdjęcia tabliczek zostaną wysłane i potwierdzone.');
+      error.code = 'OFFLINE_DEPENDENCY_WAITING';
+      throw error;
+    }
+  }
   const current = await readJobForConflictCheck(supabase, operation.job_id);
   const desired = operation.payload?.device_fields || {};
   if (sameDeviceFields(current, desired)) return;
@@ -65,7 +76,13 @@ async function syncDeviceOperation({ supabase, operation }) {
     ? updateQuery.is('device_serial_number', null)
     : updateQuery.eq('device_serial_number', current.device_serial_number);
   const { data, error } = await updateQuery.select('id').maybeSingle();
-  if (error) throw error;
+  if (error) {
+    const constraint = String(error?.constraint || error?.details || error?.message || '');
+    if (String(error?.code || '') === '23505' && /devices_serial_number_key/i.test(constraint)) {
+      throw new OfflineConflictError('Numer seryjny jest już przypisany do innego urządzenia. Sprawdź tabliczkę i popraw numer przed ponownym zapisem.', { serverState: current });
+    }
+    throw error;
+  }
   if (!data) throw new OfflineConflictError('Dane urządzenia zmieniły się podczas synchronizacji. Niczego nie nadpisano.');
 }
 
@@ -209,6 +226,7 @@ async function runSync(options = {}) {
 
   await recoverStaleOfflineJobOperations(userId);
   const operations = (await listOfflineJobOperations(userId))
+    .filter((item) => !Array.isArray(options.allowedTypes) || options.allowedTypes.includes(item.type))
     .filter((item) => item.status !== 'conflict')
     .filter((item) => operationIsDue(item))
     .sort((left, right) => operationPriority(left) - operationPriority(right)

@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## WAWIS-1343 — offline zapis urządzeń i tabliczek
+
+| ID | Stan | Reproduktor / warunek zamknięcia |
+|---|---|---|
+| WAWIS-1343-QUEUE | FIXED-UNVERIFIED | `tests/e2e/mobile-nameplate-offline-v1343.spec.js`: tylko edycja urządzeń i fotografie mogą trafić do lokalnej kolejki; zmiana klienta odrzuca zapis offline. |
+| WAWIS-1343-PHOTO-DEPENDENCY | FIXED-UNVERIFIED | Ten sam test sprawdza, że aktualizacja urządzenia czeka na dokładną ścieżkę zdjęcia w Supabase, po czym synchronizuje się; admin wysyła tylko operacje urządzeń. |
+| WAWIS-1343-DUPLICATE | FIXED-UNVERIFIED | `tests/e2e/mobile-nameplate-offline-v1343.spec.js`: odpowiedź 23505 z devices_serial_number_key pozostawia operację w konflikcie i przywraca urządzenie potwierdzone przez serwer. |
+| WAWIS-1343-LIVE | EXTERNAL | Po wydaniu sprawdzić na fizycznym iPhonie tryb samolotowy, ponowne połączenie, synchronizację zdjęć i urządzenia oraz duplikat SN. |
+
 ## WAWIS-1342 — odpowiedź na niezależny audyt FAIL 13.41 (21.10.2026)
 
 | Ustalenie | Status przed CI | Test / kryterium |
