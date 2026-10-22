@@ -1,9 +1,9 @@
 {
-  "version": "13.42",
-  "summary": "P0: integracja cache-safe Storage i blokada starych klientów kolejki zdjęć",
+  "version": "13.38",
+  "summary": "Niższe karty modeli w mobilnym Cenniku",
   "changes": [
-    "Fresh Storage SHA-256 readback z cacheNonce i cache:no-store.",
-    "Niedestrukcyjna migracja IndexedDB v3 do v4 blokuje starego workera v3.",
-    "Naprawiono retry z cudzym lease, zatrzymanie na CAS, 503/429, status po błędzie zapisu IDB."
+    "Białe karty: min. 44 px zamiast 48 px; padding pionowy 7 px zamiast 9 px.",
+    "Długie nazwy nadal zawijają się bez obcinania; nie zmieniamy wielkości czcionki ani liczników.",
+    "Bez zmian 36 cen netto, VAT, menu, tabel cen oraz innych modułów."
   ]
 }

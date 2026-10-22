@@ -1,39 +1,5 @@
 # WAWIS — Regression Ledger
 
-## WAWIS-1342 — odpowiedź na niezależny audyt FAIL 13.41 (21.10.2026)
-
-| Ustalenie | Status przed CI | Test / kryterium |
-|---|---|---|
-| P0-CACHE | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-audit-1342.spec.js`, `tests/e2e/mobile-photo-storage-conflict-p0.spec.js`: nonce/no-store w SDK i ścieżce ACK; wymagany niezależny reproduktor CDN HTTP. |
-| P0-MIXED-VERSIONS | FIXED-UNVERIFIED | Browser E2E v3→v4 zachowuje Blob; stary v3 po upgrade otrzymuje VersionError, próba upgrade blocked nie usuwa zdjęć; wymagany pełny reproduktor rzeczywistego kodu 13.40. |
-| P1-MANUAL-LEASE | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-queue-cas-p1.spec.js`: druga karta Ponów nie używa obcego lease. |
-| P1-STALE-CAS | FIXED-UNVERIFIED | Odmowa CAS w identity/prepared/uploading przerywa wysyłanie; wymaga pełnego sekwencyjnego reproduktora. |
-| P1-503-429 | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-storage-conflict-p0.spec.js`: 409 + 429/503 zachowuje Blob, ustawia next_attempt_at. |
-| P1-IDB-COMMIT | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-audit-1342.spec.js`: QuotaExceeded nie może pokazać Zapisano ani utracić pliku w żywej karcie. |
-| P2-READBACK | FIXED-UNVERIFIED | Reconcile sprawdza bajty po własnym lease, bez WeakSet. |
-| AUDIT-EXTERNAL | NOT VERIFIED | Reproduktor oryginalny Codexa w /tmp nieprzeniesiony; WebKit/iPhone PWA, rzeczywisty CDN/RLS wymagają osobnego dowodu. |
-
-## WAWIS-1341 — integralność lokalnych zdjęć po audycie 13.40 (21 października 2026)
-
-| ID | Status przed CI | Reproduktor / warunek zamknięcia |
-|---|---|---|
-| P0-R1-STORAGE | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js`: 404/403/503/0B/inny SHA zachowuje Blob, poprawne bajty uzgadniają. |
-| P0-R2-FINGERPRINT | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-integrity-p0-r2.spec.js`: różne File z tymi samymi metadanymi i NotReadableError nie nadpisują się, także po reload. |
-| P1-C1-OWNER | FIXED-UNVERIFIED | Owner w upload identity, transakcyjny enqueue nie zastępuje Blob i lease. |
-| P1-C2-403 | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-queue-cas-p1.spec.js`: trwały error/403 nie jest automatycznie ponawiany. |
-| P1-C3-LEASE | FIXED-UNVERIFIED | Dwie karty, A expired, B claim, spóźnione update/delete/release A nie usuwają Blob B. |
-| WAWIS-1341-LIVE | EXTERNAL | Izolowany Supabase actual byte integrity, iPhone PWA, prod SHA 13.41. |
-| WAWIS-1341-CLOSURE | REQUIRED | Zielone CI dokładnego SHA, Playwright, Closure Gate, build, Vercel READY; brak skip wymaganego testu. |
-
-## WAWIS-P0-01 — bezpieczeństwo starej kolejki tabliczek (21 października 2026)
-
-| ID | Stan | Reproduktor / warunek zamknięcia |
-|---|---|---|
-| WAWIS-P0-01-DIFFERENT | FIXED-UNVERIFIED | `tests/e2e/mobile-photo-legacy-reconciliation-p0.spec.js`: inna tabliczka tego samego montażu/JZ i właściciela sprzed pięciu minut nie usuwa File z IndexedDB; przypadki error/uploading oraz reload. RED z audytu 13.39, nowy trwały E2E czeka na wykonanie w CI. |
-| WAWIS-P0-01-EXACT | FIXED-UNVERIFIED | Ten sam test: zdjęcie uzgadnia się wyłącznie po dokładnej ścieżce operacji, bez dopasowania po samych metadanych. |
-| WAWIS-P0-01-SAFETY | REQUIRED | Wykonanie nowego E2E na prawdziwym IndexedDB, regresje photos/nameplates/protocol, Closure Gate, test dwóch kart i aktualizacja PWA ze starymi kolejkami przed CLOSED/GO. |
-| WAWIS-P0-01-STAGING | NOT VERIFIED | Test na izolowanym Supabase i fizycznym iPhonie nieprzeprowadzony; nie zmieniać produkcyjnego IndexedDB, RLS ani Storage podczas tej poprawki. |
-
 ## MOBILE-1328 — AI po rozbieżności SN (19 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
