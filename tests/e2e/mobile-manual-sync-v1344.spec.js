@@ -153,3 +153,63 @@ test('@mobile v13.44 — oczekujący montaż i diagnostyka pokazują ręczną sy
   expect(sources.diagnostics).toContain("await synchronizeNow({ jobId: selectedJobId })");
   expect(sources.syncCenter).toContain('Synchronizuj teraz');
 });
+
+test('@mobile v13.45 — błąd przygotowania zdjęcia nie zatrzymuje kolejki i zachowuje plik w IndexedDB', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    const store = await import('/src/mobile791/modules/photo-offline-queue.js');
+    const { retryAllPersistedPhotoUploads } = await import('/src/mobile791/modules/photos.js');
+    const photoId = 'local-photo-upload-resilience-1345';
+    const userId = 'user-resilience-1345';
+    const originalFile = globalThis.File;
+    const saved = await store.savePhotoQueueItem({
+      id: photoId,
+      job_id: 'job-resilience-1345',
+      uploaded_by: userId,
+      user_id: userId,
+      upload_key: 'resilience-1345',
+      planned_storage_path: 'job-resilience-1345/nameplates/resilience.jpg',
+      photo_kind: 'nameplate',
+      device_index: 1,
+      unit_ref: 'jz',
+      local_file: new originalFile(['test-bytes-1345'], 'nameplate.jpg', { type: 'image/jpeg' }),
+      upload_status: 'local',
+    });
+    let notified = 0;
+    let queueResult = null;
+    let thrown = null;
+    try {
+      globalThis.File = class BrokenFile extends originalFile {
+        constructor() { throw new Error('SIMULATED_WEBKIT_FILE_REHYDRATION_FAILURE'); }
+      };
+      queueResult = await retryAllPersistedPhotoUploads({
+        supabase: {},
+        profile: { id: userId },
+        onPhotoUploadError: () => { notified += 1; },
+      });
+    } catch (error) {
+      thrown = String(error?.message || error);
+    } finally {
+      globalThis.File = originalFile;
+    }
+    const entries = await store.listPhotoQueueItems();
+    const preserved = entries.find((entry) => entry.id === photoId);
+    if (preserved) await store.deletePhotoQueueItem(photoId);
+    return {
+      saved,
+      failed: queueResult?.failed,
+      thrown,
+      notified,
+      remained: Boolean(preserved),
+      size: preserved?.local_file?.size || 0,
+      status: preserved?.upload_status,
+    };
+  });
+  expect(result.saved).toBe(true);
+  expect(result.thrown).toBe(null);
+  expect(result.failed).toBe(1);
+  expect(result.notified).toBeGreaterThan(0);
+  expect(result.remained).toBe(true);
+  expect(result.size).toBeGreaterThan(0);
+  expect(result.status).toBe('error');
+});
