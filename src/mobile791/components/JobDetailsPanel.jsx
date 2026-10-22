@@ -927,7 +927,12 @@ export default function JobDetailsPanel({
           {canFinishJob && !showDetailsLoading && !hasConfiguredDevices ? (
             <div className="finishNameplateRequirement missing">Najpierw dodaj urządzenie (JW/JZ), aby zakończyć zlecenie.</div>
           ) : null}
-          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
+          {canFinishJob && !showDetailsLoading && selectedJob.offline_pending && hasConfiguredDevices ? (
+            <div className="finishNameplateRequirement checking">
+              Urządzenie zapisane na telefonie. Czeka na wysłanie tabliczek i potwierdzenie zapisu w systemie.
+            </div>
+          ) : null}
+          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete && !selectedJob.offline_pending ? (
             <div className="finishNameplateRequirement ready">
               {isAdmin
                 ? (protocolReadyForCompletion ? 'Urządzenia i protokół są gotowe. Możesz zakończyć zlecenie.' : 'Urządzenia są dodane. Uzupełnij protokół, aby zakończyć zlecenie.')
