@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.47
+- 13.48
+
+WAWIS 13.48: bezpieczna diagnostyka etapów wysyłania zdjęć (kolejka, odczyt, przygotowanie, wysyłanie, zapis i weryfikacja) bez identyfikatorów, numerów i danych klienta. Nie usuwa lokalnych zdjęć i nie zmienia RLS. Awaria v13.47: 4 próby bez żądań POST Storage. Trzeba potwierdzić etap awarii na rzeczywistym iPhonie.
 
 WAWIS 13.47: synchronizacja tabliczek z wybranego montażu nie czeka na zaległe zdjęcia innych zleceń. Ręczna próba otrzymuje jobId i używa atomowych blokad IDB. Lokalne urządzenie pozostaje widoczne przy odświeżaniu serwera do czasu potwierdzenia synchronizacji, bez maskowania konfliktów. Komunikat o zapisie offline nie sugeruje gotowości protokołu. Nowe regresje smoke + iPhone E2E. Produkcyjna awaria 13.46 z 22.10.2026: 4 ponawiane zdjęcia z wielu montaży, model zlecenia na serwerze pusty.
 
@@ -1059,7 +1061,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.47` — ręczne pierwszeństwo wybranego montażu, ochrona lokalnych urządzeń przed odświeżeniem i test blokady kolejki.
+- wersja `13.48` — diagnostyka dokładnego etapu awarii lokalnej kolejki zdjęć z ochroną prywatności; ponowne wysłanie na iPhonie bez kasowania danych.
 - wersja `13.46` — binarny transfer zdjęć na iOS (obejście pustego multipart), kontrola bajtów i lokalnego File do ACK.
 - wersja `13.45` — odporne odtwarzanie i synchronizacja zdjęć offline; pliki IndexedDB pozostają do potwierdzenia Storage.
 - wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
