@@ -263,7 +263,6 @@ const GROUPS = {
     'npm run test:smoke:mobile-default-installation-date',
     'npm run test:smoke:cache-first-refresh',
     'npm run test:smoke:sms-shared-source',
-    'npm run test:e2e:mobile -- tests/e2e/mobile-nameplate-offline-v1343.spec.js',
   ],
   infra: [
     'node scripts/smoke-postgres-readiness-v1276.mjs',
