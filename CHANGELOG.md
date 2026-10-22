@@ -1,3 +1,9 @@
+## 13.45
+- Mobile / zdjęcia: wyjątek przy odtwarzaniu lokalnych podglądów nie blokuje kolejnego etapu wysyłania zdjęć i operacji urządzeń.
+- Błąd przygotowania jednej tabliczki jest obsługiwany per rekord, z zachowaniem trwałego pliku w IndexedDB, blokady owner/generation i pozostałych pozycji kolejki.
+- Automatyczny start/ponawianie po powrocie internetu obsługuje odrzucone Promise; diagnostyka podaje stałe kody faz błędu.
+- Playwright: symulowana awaria odtwarzania File po zapisie do IndexedDB nie może usunąć danych ani przerwać kolejki. Bez zmian bazy, RLS, Supabase Storage i PDF.
+
 ## 13.44
 - Mobile: komunikat „Zmiany zapisane na telefonie” zawiera przycisk „Synchronizuj teraz” i pokazuje wynik próby.
 - Ten sam przycisk jest dostępny w Centrum synchronizacji oraz diagnostyce; „Odśwież dane” nadal służy wyłącznie do ponownego pobrania danych.
