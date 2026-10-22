@@ -14,6 +14,13 @@ const DESCRIPTIONS = Object.freeze({
   HTTP_RATE_LIMIT: 'Serwer ograniczył liczbę żądań.',
   PHOTO_THUMBNAIL_RETRY: 'Ponowiono pobieranie miniatury zdjęcia.',
   PHOTO_THUMBNAIL_FAILED: 'Nie udało się pobrać miniatury zdjęcia.',
+  PHOTO_QUEUE_STAGE_FAILED: 'Niepowodzenie na wskazanym etapie synchronizacji zdjęcia.',
+  PHOTO_LOCAL_FILE_READ_FAILED: 'Nie udało się odczytać danych zdjęcia z telefonu.',
+  PHOTO_UPLOAD_BODY_INVALID: 'Bajty zdjęcia są niekompletne lub niedostępne.',
+  PHOTO_UPLOAD_BAD_REQUEST: 'Serwer odrzucił żądanie wysyłki.',
+  PHOTO_UPLOAD_FORBIDDEN: 'Brak uprawnień do przesłania zdjęcia.',
+  PHOTO_UPLOAD_TOO_LARGE: 'Rozmiar zdjęcia przekracza limit.',
+  PHOTO_UPLOAD_TRANSIENT: 'Tymczasowy błąd połączenia przy wysyłce zdjęcia.',
   PUSH_SUBSCRIPTION_SYNC_FAILED: 'Nie udało się zsynchronizować subskrypcji PUSH.',
   DIAGNOSTIC_UNCLASSIFIED: 'Niesklasyfikowane zdarzenie techniczne; sprawdź kontekst zdarzenia.',
 });

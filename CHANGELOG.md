@@ -1,3 +1,8 @@
+## 13.48
+- Mobilny iPhone: bezpieczna diagnostyka błędów kolejki zdjęć pokazuje etap: claim/hydrate/identity/server-lookup/prepare/prepared-write/body/storage/database/verify. Komunikaty nie zawierają danych klientów, ścieżek ani numerów seryjnych.
+- Potwierdzona awaria 13.47: 4 lokalne zdjęcia wielokrotnie próbowane, 0 plików przygotowanych i 0 Storage. Nowa diagnostyka służy ustaleniu konkretnej przyczyny; nie deklarujemy jeszcze naprawienia synchronizacji.
+- Test regresyjny schematu błędów i prywatności w obowiązkowej grupie photos. Bez zmian danych, RLS i istniejących rekordów IndexedDB.
+
 ## 13.47
 - Ręczne „Synchronizuj teraz” otrzymuje identyfikator wybranego montażu, filtruje zdjęcia tej operacji i nie oczekuje na osobny, trwający transfer w tle dla innych montaży. Lease / atomowy claim w IndexedDB pozostają aktywne.
 - Odczyt szczegółów i podsumowania serwera nie nadpisuje oczekującego modelu urządzenia przechowywanego jako lokalna operacja offline; ochrona konfliktu serwera.
