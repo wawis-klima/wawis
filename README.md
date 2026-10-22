@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.44
+- 13.45
+
+WAWIS 13.45: poprawka ciągłości synchronizacji zdjęć offline — awaria odtwarzania podglądu nie blokuje przesyłania plików, a pojedynczy błąd przygotowania tabliczki nie przerywa całej kolejki. Pliki i operacje urządzenia pozostają w pamięci iPhone'a do potwierdzenia serwera. Test regresji WebKit / IndexedDB, bez modyfikacji danych Supabase.
 
 WAWIS 13.44: oczekujący zapis tabliczek ma przycisk „Synchronizuj teraz” na karcie montażu, w Centrum synchronizacji i diagnostyce. Ręczna próba kończy lub wznawia kolejkę zdjęć, pomija odroczenie oczekującej operacji urządzenia i odświeża montaż po potwierdzeniu serwera. Konflikty i aktywne blokady pozostają chronione. Bez zmian schematu i danych w Supabase.
 
@@ -1053,7 +1055,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.44` — ręczne wznowienie synchronizacji tabliczek po powrocie internetu, z widocznym wynikiem i odświeżeniem montażu.
+- wersja `13.45` — odporne odtwarzanie i synchronizacja zdjęć offline; pliki IndexedDB pozostają do potwierdzenia Storage.
 - wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
 - wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
 - wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.

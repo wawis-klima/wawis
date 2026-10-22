@@ -1,15 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.44 (kandydat — oczekuje na zielone CI, Closure Gate i deployment)
+- 13.45 (kandydat — wymaga CI i weryfikacji iPhone)
 
 ## Zakres
-- Ręczna synchronizacja oczekujących tabliczek z karty montażu, Centrum synchronizacji i diagnostyki.
-- Akcja ponawia zdjęcia, pomija backoff wybranej operacji urządzenia i odświeża montaż po potwierdzeniu serwera.
-- Aktywne lease, konflikty i duplikaty numerów seryjnych nadal są chronione. Nie zmieniono schematu, RLS ani danych Supabase.
+- Odporne odtwarzanie/wznawianie zdjęć i operacji urządzenia po błędzie jednej fazy; brak usuwania lokalnych zdjęć bez potwierdzenia z serwera.
+- Obsługa nieobsłużonych obietnic i wyjątków per pozycja kolejki; kody diagnostyczne faz.
+- Bez zmian Supabase, schematu, RLS, danych montażu, OCR i PDF.
 
-## Kontrola
-- Build lokalny: PASS.
-- Nowy Playwright E2E: lokalnie NOT RUN, ponieważ środowisko nie ma Chromium; wymagany w CI.
-- PR checks exact SHA, E2E mobile/desktop i Closure Gate: oczekują na wynik CI.
-- Produkcyjny deploy/Vercel exact SHA i kontrola PWA na iPhonie: do weryfikacji po zielonym CI.
+## Weryfikacja
+- Przed merge: targeted smoke, Playwright mobile/desktop, Closure Gate, build.
+- Fizyczny iPhone z dwoma oczekującymi zdjęciami: konieczna końcowa walidacja po produkcyjnym wdrożeniu.
