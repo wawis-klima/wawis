@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.43
+- 13.44
+
+WAWIS 13.44: oczekujący zapis tabliczek ma przycisk „Synchronizuj teraz” na karcie montażu, w Centrum synchronizacji i diagnostyce. Ręczna próba kończy lub wznawia kolejkę zdjęć, pomija odroczenie oczekującej operacji urządzenia i odświeża montaż po potwierdzeniu serwera. Konflikty i aktywne blokady pozostają chronione. Bez zmian schematu i danych w Supabase.
 
 WAWIS 13.43: urządzenia i tabliczki można zapisać do kolejki offline z konta administratora lub pracownika, o ile pozostałe dane montażu nie zostały zmienione. Zdjęcia są trwale przechowywane lokalnie i aktualizacja urządzenia czeka na ich dokładne potwierdzenie po synchronizacji. Numery seryjne pozostają unikalne; konflikt przywraca dane serwera i pokazuje właściwy komunikat. Bez zmian schematu i danych w Supabase.
 
@@ -1051,7 +1053,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.43` — offline zapis urządzeń/tabliczek i zdjęć dla administratora oraz pracownika, z blokadą zmian pozostałych pól i ochroną unikalności numerów seryjnych.
+- wersja `13.44` — ręczne wznowienie synchronizacji tabliczek po powrocie internetu, z widocznym wynikiem i odświeżeniem montażu.
 - wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
 - wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
 - wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.

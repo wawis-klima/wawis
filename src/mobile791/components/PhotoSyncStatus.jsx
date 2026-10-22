@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppModal from "./modals/AppModal.jsx";
 import { PHOTO_SYNC_CENTER_CSS } from "./photo-sync-center.css.js";
 
@@ -70,15 +70,7 @@ export default function PhotoSyncStatus({
   const operationItems = Array.isArray(status?.operationItems) ? status.operationItems : [];
   const online = status?.connection?.tone !== "offline";
 
-  const retryableItems = useMemo(
-    () => queueItems.filter((item) => String(item.upload_status || "local").toLowerCase() !== "uploading"),
-    [queueItems],
-  );
-  const retryableOperations = useMemo(
-    () => operationItems.filter((item) => item.status !== 'syncing' && item.status !== 'conflict'),
-    [operationItems],
-  );
-  const retryableCount = retryableItems.length + retryableOperations.length;
+  const pendingCount = queueItems.length + operationItems.filter((item) => item.status !== 'conflict').length;
 
   useEffect(() => {
     if (open) void status?.refreshQueueSummary?.();
@@ -87,7 +79,7 @@ export default function PhotoSyncStatus({
   if (!status) return null;
 
   async function handleRetryAll() {
-    if (!online || retryingAll || !retryableCount) return;
+    if (!online || retryingAll || !pendingCount) return;
     setRetryingAll(true);
     try {
       await onRetryAll?.();
@@ -159,10 +151,10 @@ export default function PhotoSyncStatus({
           <button
             type="button"
             className="photoSyncCenterPrimary"
-            disabled={!online || !retryableCount || retryingAll}
+            disabled={!online || !pendingCount || retryingAll}
             onClick={handleRetryAll}
           >
-            {retryingAll ? "Uruchamianie…" : `Wyślij wszystkie${retryableCount ? ` (${retryableCount})` : ""}`}
+            {retryingAll ? "Synchronizuję…" : `Synchronizuj teraz${pendingCount ? ` (${pendingCount})` : ""}`}
           </button>
           <button type="button" className="photoSyncCenterSecondary" onClick={() => status.refreshQueueSummary?.()}>
             Odśwież

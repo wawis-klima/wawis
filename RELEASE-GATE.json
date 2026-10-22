@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.43",
+  "version": "13.44",
   "scope": "mobile",
-  "release_branch": "release/v13.43",
+  "release_branch": "release/v13.44",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Codex FAIL 13.41: P0 cached Storage SHA-256, mixed-version IDB v3 overwrite; P1 retry foreign claim, stale CAS, 429/503, false saved UI. Plan zabezpieczeń przed końcowym GO."
+    "notes": "Fizyczny iPhone 13.43: po powrocie internetu dwa zdjęcia pozostały jako Wysyłane, a jedna operacja urządzenia Oczekuje; odświeżenie diagnostyki nie uruchamia synchronizacji."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.43.zip"
+    "file_name": "klima-app-v13.44.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.43",
+    "source_branch": "release/v13.44",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "PR checks exact SHA and Closure GO, production Vercel READY SHA, app-version.json 13.43; physical iPhone/WebKit",
-    "notes": "Po zielonym CI sprawdzić wersję i synchronizację po trybie samolotowym na fizycznym iPhonie; backend Supabase i dane niezmienione."
+    "evidence_source": "PR checks exact SHA and Closure GO, production Vercel READY SHA, app-version.json 13.44; physical iPhone/WebKit",
+    "notes": "Po zielonym CI użyć Synchronizuj teraz na zachowanej kolejce iPhone'a i potwierdzić aktywację protokołu; backend Supabase i dane niezmienione."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Offline kolejka tylko urządzeń/tabliczek, zdjęcia trwale lokalne i dokładna zależność storage_path, duplikaty SN pozostają konfliktem.",
+    "code": "Ręczna synchronizacja kolejki tabliczek pomija backoff tylko wybranego montażu, zachowuje lease i konflikty oraz odświeża kartę po sukcesie.",
     "release_ci": "PR exact SHA: targeted regresje, Playwright mobile, test PostgreSQL, Closure Gate i build.",
-    "post_deploy": "Weryfikować dokładne SHA i wersję 13.43 na Vercel oraz rzeczywistą synchronizację PWA na iPhonie."
+    "post_deploy": "Weryfikować dokładne SHA i wersję 13.44 na Vercel oraz zachowaną kolejkę PWA z wersji 13.43 na iPhonie."
   }
 }
