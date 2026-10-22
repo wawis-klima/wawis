@@ -92,6 +92,7 @@ test('@mobile v13.43 — zapis urządzenia czeka na konkretną tabliczkę i sync
     await store.updateOfflineJobOperation('device-photo-dependency-retry', { next_attempt_at: '' });
     serverPhotos.push({ id: 'photo-2', storage_path: secondPath, photo_kind: 'nameplate', device_index: 2, unit_ref: 'outdoor' });
     const synced = await syncOfflineJobOperations({ supabase, profile, allowedTypes: ['device'] });
+    const adminServerJob = { ...serverJob };
     const remaining = await store.listOfflineJobOperations(profile.id);
     await store.queueOfflineJobOperation({
       id: 'worker-device-save', user_id: 'worker-photo-dependency', job_id: 'job-photo-dependency', type: 'device',
@@ -122,6 +123,7 @@ test('@mobile v13.43 — zapis urządzenia czeka na konkretną tabliczkę i sync
         && duplicateProjection.device_serial_number === 'WORKER-1'
         && duplicateProjection.offline_conflict === true
         && duplicateProjection.offline_pending === false,
+      adminServerJob,
       serverJob,
     };
   });
@@ -131,8 +133,8 @@ test('@mobile v13.43 — zapis urządzenia czeka na konkretną tabliczkę i sync
   expect(result.secondDependencyWaited).toBe(true);
   expect(result.syncedCount).toBe(1);
   expect(result.remainingDevice).toBe(false);
-  expect(result.serverJob.device_model).toBe('New');
-  expect(result.serverJob.device_serial_number).toBe('NEW-1');
+  expect(result.adminServerJob.device_model).toBe('New');
+  expect(result.adminServerJob.device_serial_number).toBe('NEW-1');
   expect(result.workerSynced).toBe(1);
   expect(result.duplicateConflictCount).toBe(1);
   expect(result.duplicateRestoresServer).toBe(true);
