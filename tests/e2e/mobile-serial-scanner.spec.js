@@ -500,6 +500,50 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     expect(savedJob?.device_model).toContain('Versu Mirror');
   });
 
+  test('P1 quota podczas zapisu tabliczki pozostawia formularz i nie ogłasza trwałego zapisu', async ({ page }) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, WORKER);
+    await page.locator('.statusActionButton[title="W trakcie"]').click();
+    await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+    await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
+    await page.locator('.mobileDeviceOverviewOpen').first().click();
+    await page.locator('.mobileMultiOutdoorCard').click();
+    await selectNameplateAndCrop(page, page.locator('.nameplateGalleryInput'));
+    await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
+    // Po edycji JZ kreator wraca do ekranu Multi, a nie do podsumowania.
+    // Przechodzimy normalnym przyciskiem użytkownika przed próbą zapisu.
+    await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
+    await expect(page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' })).toBeVisible();
+
+    // Real browser IndexedDB; reject the actual transactional add of a Blob
+    // without removing any previously saved record.
+    await page.evaluate(() => {
+      const originalAdd = IDBObjectStore.prototype.add;
+      window.__restorePhotoQueueAdd = () => { IDBObjectStore.prototype.add = originalAdd; };
+      IDBObjectStore.prototype.add = function (...args) {
+        if (this.name === 'queued-photos') throw new DOMException('Simulated quota exhausted', 'QuotaExceededError');
+        return originalAdd.apply(this, args);
+      };
+    });
+    const alerts = [];
+    page.on('dialog', async dialog => { alerts.push(dialog.message()); await dialog.accept(); });
+    await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
+    const override = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia' });
+    if (await override.isVisible()) await override.click();
+    await expect(page.locator('.mobileDeviceWizard')).toBeVisible({ timeout: 20_000 });
+    await expect.poll(() => alerts.some(x => /nie udało się zapisać|nie zamykaj formularza/i.test(x)), {
+      timeout: 15_000,
+    }).toBe(true);
+    const state = await page.evaluate(async () => {
+      const q = await import('/src/mobile791/modules/photo-offline-queue.js');
+      const rows = (await q.listPhotoQueueItems()).filter(x => x.job_id === 'mock-job-005');
+      window.__restorePhotoQueueAdd?.();
+      return { persisted: rows.length, wizardOpen: Boolean(document.querySelector('.mobileDeviceWizard')) };
+    });
+    expect(state.persisted).toBe(0);
+    expect(state.wizardOpen).toBe(true);
+  });
+
   test('automatycznie odczytuje prawdziwe pola modelu i SN z czytelnej tabliczki Rotenso', async ({ page }) => {
     test.setTimeout(150_000);
     await resetMockSupabase(page);

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.41",
+  "version": "13.42",
   "scope": "mobile",
-  "release_branch": "release/v13.41",
+  "release_branch": "release/v13.42",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Audyt 13.40: P0-R1 exact path bez bajtów Storage; P0-R2 metadata-only fingerprint; P1-C1/C2/C3 owner/race/403. Zmiany tylko klienta bez produkcyjnego Supabase."
+    "notes": "Codex FAIL 13.41: P0 cached Storage SHA-256, mixed-version IDB v3 overwrite; P1 retry foreign claim, stale CAS, 429/503, false saved UI. Plan zabezpieczeń przed końcowym GO."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.41.zip"
+    "file_name": "klima-app-v13.42.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.41",
+    "source_branch": "release/v13.42",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "WAWIS PR checks exact SHA / Closure GO, Vercel READY exact main SHA, app-version.json 13.41",
-    "notes": "Sprawdzić retencję Blob, 403, wznowienie po uruchomieniu i 13.41 na fizycznym iPhonie. Nie usuwać danych kolejki klientów."
+    "evidence_source": "PR checks SHA, Closure Gate, production Vercel READY SHA, app 13.42, kontrola iPhone/WebKit",
+    "notes": "Oryginalne reproduktory Codexa są w niedostępnym tu /tmp, nie traktować ich jako uruchomionych. Fizyczny Safari/PWA i realny CDN wymagają zewnętrznej kontroli."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "P0-R1/R2/P1: byte SHA-256 before reconcile delete, owner-scoped identity, CAS lease/generation, 403 backoff.",
-    "release_ci": "Browser IndexedDB P0-R1/R2 and P1 race; mobile photos/nameplates/protocol, PostgreSQL two sessions; Closure Gate and build.",
-    "post_deploy": "READY exact SHA, 13.41 manifest, kontrola na iPhonie; brak zmian bazodanowych."
+    "code": "P0: fresh Storage readback nocache+nonce; nondestructive IDB v4 migration. P1: claim, CAS, 429/503 retry, failed save UI.",
+    "release_ci": "New Playwright on actual browser IndexedDB/SDK, previous photo tests, PostgreSQL dual session, Closure Gate, build.",
+    "post_deploy": "Exact Vercel SHA READY plus iPhone 13.42; CDN cache and old PWA upgrade reproduction are separate checks."
   }
 }

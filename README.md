@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.41
+- 13.42
+
+WAWIS 13.42 (kandydat): usunięcie dwóch P0 z audytu 13.41 — świeży odczyt Storage z cacheNonce i cache:no-store przed SHA-256 oraz niedestrukcyjna migracja kolejki zdjęć IndexedDB v3 → v4 blokująca zapisy ze starej wersji. P1: niezależny claim dla ręcznego Ponów, przerwanie po błędzie CAS, backoff 429/503, uczciwe komunikaty po nieudanym zapisie IndexedDB. Nowe testy browser dla v3/v4, współbieżności i awarii. Bez zmian produkcyjnych w Supabase. Finalne potwierdzenie: dopiero po zielonym Closure Gate i testach aktualizacji PWA.
 
 WAWIS 13.41: weryfikacja integralności zdjęć przed usunięciem lokalnej kopii; przy nieudanym odczycie File żaden fingerprint oparty tylko na metadanych nie zastępuje identyfikatora zawartości. Oddzielne operacje właścicieli, atomowe zapisy kolejki bez nadpisywania Blob, zabezpieczenia owner/generation dla aktywnych workerów, kontrola trwałych 403 i ponowień błędów sieciowych. Testy IndexedDB, Storage 404/403/503/niewłaściwe bajty i dwóch kart. Bez migracji Supabase, zmian RLS ani ingerencji w dane klientów.
 
@@ -1047,6 +1049,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.42` — świeża weryfikacja Storage i bariera IndexedDB v4; retry, CAS, zapis zdjęć.
 - wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
 - wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
 - wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.

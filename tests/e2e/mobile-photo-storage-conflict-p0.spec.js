@@ -43,8 +43,13 @@ async function runStorageConflict({ remoteMode, uploadStatus = 409 }) {
         if(bucket!=='job-photos')throw new Error('Wrong bucket');
         return {
           async upload(){uploads++;return uploadStatus===409?{data:null,error:{statusCode:409,message:'already exists'}}:{data:{},error:null};},
-          async download(){reads++;
+          async download(path,options,fetchOptions){reads++;
+            if(!options?.cacheNonce || fetchOptions?.cache!=='no-store') {
+              return {data:null,error:{statusCode:412,message:'Unsafe cached readback'}};
+            }
             if(remoteMode==='missing')return{data:null,error:{statusCode:404,message:'Not found'}};
+            if(remoteMode==='503')return{data:null,error:{statusCode:503,message:'Temporary Storage outage'}};
+            if(remoteMode==='429')return{data:null,error:{statusCode:429,message:'Rate limited'}};
             return{data:new Blob([remoteMode==='different'?'DIFFERENT-IMAGE-BYTES-P0!':original],{type:'image/jpeg'}),error:null};
           },
           async createSignedUrl(){return{data:{signedUrl:'https://example.invalid/proof'},error:null};},
@@ -68,6 +73,7 @@ async function runStorageConflict({ remoteMode, uploadStatus = 409 }) {
     queued:list.length,
     bytes:list[0]?.local_file ? await list[0].local_file.text():null,
     status:list[0]?.upload_status||null,
+    nextAttemptAt:list[0]?.next_attempt_at||'',
     serverRows:serverRows.length,
     uploaded:result.uploadedCount,
   };
@@ -92,6 +98,19 @@ test.describe('@mobile P0 — 409 i ACK nie mogą zgubić ostatniej kopii', () =
     expect(state.uploaded).toBe(1);
     expect(state.callbacks).toBe(1);
   });
+  for (const remoteMode of ['503','429']) {
+    test(`konflikt 409 i przejściowy błąd ${remoteMode} zachowują Blob i ustawiają backoff`, async ({page}) => {
+      await fixture(page);
+      const state=await page.evaluate(runStorageConflict,{remoteMode});
+      expect(state.uploads).toBe(1);
+      expect(state.inserts).toBe(0);
+      expect(state.queued).toBe(1);
+      expect(state.bytes).toBe('ORIGINAL-IMAGE-BYTES-P0-409');
+      expect(state.status).toBe('local');
+      expect(Date.parse(state.nextAttemptAt)).toBeGreaterThan(Date.now());
+    });
+  }
+
   test('udany upload/INSERT z brakującym obiektem nie usuwa File', async ({page}) => {
     await fixture(page);
     const state=await page.evaluate(runStorageConflict,{remoteMode:'missing',uploadStatus:200});

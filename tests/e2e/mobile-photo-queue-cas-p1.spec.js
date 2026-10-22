@@ -110,6 +110,111 @@ test.describe('@mobile queue fencing / owner / recovery', () => {
     expect(result.bytes).toBe('important-original-blob');
   });
 
+  test('ręczne Ponów w drugiej karcie nie przejmuje aktywnego lease pierwszego workera', async ({ browser }) => {
+    const ctx = await browser.newContext(iphone14);
+    try {
+      const a = await ctx.newPage(), b = await ctx.newPage();
+      await setup(a); await setup(b);
+      const owner = await a.evaluate(async () => {
+        const q = await import('/src/mobile791/modules/photo-offline-queue.js');
+        for (const x of await q.listPhotoQueueItems()) await q.deletePhotoQueueItem(x.id);
+        const id = 'local-photo-upload-foreign-lease';
+        const saved = await q.savePhotoQueueItem({
+          id, job_id:'claim-j1', uploaded_by:'worker1', upload_key:'claim-id',
+          photo_kind:'nameplate',device_index:1,unit_ref:'jz',
+          planned_storage_path:'claim-j1/nameplates/claim-id.jpg',
+          local_file:new File(['precious-bytes'],'test.jpg',{type:'image/jpeg'}),
+        });
+        if(!saved) throw new Error('Fixture failed');
+        const claim=await q.claimPhotoQueueItem(id);
+        return {lease_owner:claim.lease_owner, attempt_generation:claim.attempt_generation};
+      });
+      const tried = await b.evaluate(async () => {
+        const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+        const photos=await import('/src/mobile791/modules/photos.js');
+        const p=(await q.listPhotoQueueItems()).find(x=>x.id==='local-photo-upload-foreign-lease');
+        let networkRequests=0;
+        const adapter={
+          auth:{getUser:async()=>({data:{user:{id:'worker1'}},error:null})},
+          from(){throw new Error('Ponów MUST NOT reach database while foreign lease active')},
+          storage:{from(){return{upload:async()=>{networkRequests++;return{data:null,error:null}}}}}
+        };
+        const attempted=photos.retryQueuedJobPhoto({
+          supabase:adapter,profile:{id:'worker1'},photo:p,
+          setJobs:()=>{},setSelectedJob:()=>{}
+        });
+        await new Promise(resolve=>setTimeout(resolve,250));
+        const current=(await q.listPhotoQueueItems()).find(x=>x.id===p.id);
+        return {attempted,networkRequests,bytes:await current.local_file.text(),
+          lease_owner:current.lease_owner,gen:current.attempt_generation};
+      });
+      expect(tried.networkRequests).toBe(0);
+      expect(tried.lease_owner).toBe(owner.lease_owner);
+      expect(tried.gen).toBe(owner.attempt_generation);
+      expect(tried.bytes).toBe('precious-bytes');
+    } finally { await ctx.close(); }
+  });
+
+  test('spóźniony worker po nieudanym CAS nie wykonuje storage.upload', async ({page}) => {
+    await setup(page);
+    const ready = await page.evaluate(async() => {
+      const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+      const photos=await import('/src/mobile791/modules/photos.js');
+      for(const x of await q.listPhotoQueueItems()) await q.deletePhotoQueueItem(x.id);
+      const id='local-photo-upload-stale-upload-cas';
+      const saved=await q.savePhotoQueueItem({
+        id,job_id:'jobCAS',uploaded_by:'ownerCAS',user_id:'ownerCAS',
+        upload_key:'cas-upload-key',file_fingerprint:'real-hash',
+        planned_storage_path:'jobCAS/nameplates/one.jpg',photo_kind:'nameplate',device_index:1,unit_ref:'jz',
+        local_file:new File(['important-CAS-file'],'nameplate.jpg',{type:'image/jpeg'}),
+      });
+      if(!saved)throw new Error('Fixture not persisted');
+      window.__casUploadCount=0;
+      window.__compressionWaiting=false;
+      window.__casAdapter={
+        auth:{async getUser(){return{data:{user:{id:'ownerCAS'}},error:null}}},
+        from(table){
+          if(table!=='photos')throw new Error('Unexpected table');
+          return {select(){return this},eq(){return this},async maybeSingle(){return{data:null,error:null}}}
+        },
+        storage:{from(){return{async upload(){window.__casUploadCount++;return{data:null,error:null}}}}}
+      };
+      photos.retryQueuedJobPhoto({
+        supabase:window.__casAdapter,profile:{id:'ownerCAS'},
+        photo:{id,job_id:'jobCAS',photo_kind:'nameplate'},
+        setJobs:()=>{},setSelectedJob:()=>{},
+        compressImageFn:file=>new Promise(resolve=>{
+          window.__resumeCompression=()=>resolve({file,originalSize:file.size,uploadSize:file.size,savedPercent:0,compressed:false});
+          window.__compressionWaiting=true;
+        }),
+      });
+      return true;
+    });
+    expect(ready).toBe(true);
+    await expect.poll(()=>page.evaluate(()=>Boolean(window.__compressionWaiting))).toBe(true);
+    const b=await page.evaluate(async()=>{
+      const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+      const id='local-photo-upload-stale-upload-cas';
+      const current=(await q.listPhotoQueueItems()).find(x=>x.id===id);
+      const guard={expectedLeaseOwner:current.lease_owner,expectedGeneration:current.attempt_generation};
+      const expired=await q.updatePhotoQueueItem(id,{lease_until:'2000-01-01T00:00:00.000Z'},guard);
+      const next=await q.claimPhotoQueueItem(id);
+      return{expired,owner:next.lease_owner,gen:next.attempt_generation};
+    });
+    expect(b.expired).toBe(true);
+    await page.evaluate(()=>window.__resumeCompression());
+    await page.waitForTimeout(250);
+    const finished=await page.evaluate(async()=>{
+      const q=await import('/src/mobile791/modules/photo-offline-queue.js');
+      const r=(await q.listPhotoQueueItems()).find(x=>x.id==='local-photo-upload-stale-upload-cas');
+      return{network:window.__casUploadCount,owner:r.lease_owner,gen:r.attempt_generation,bytes:await r.local_file.text()};
+    });
+    expect(finished.network).toBe(0);
+    expect(finished.owner).toBe(b.owner);
+    expect(finished.gen).toBe(b.gen);
+    expect(finished.bytes).toBe('important-CAS-file');
+  });
+
   test('error 403 jest zachowany, a automatyczne wznowienie nie wysyła go ponownie', async ({ page }) => {
     await setup(page);
     const result=await page.evaluate(async () => {

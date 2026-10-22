@@ -1,6 +1,8 @@
 import { summarizePhotoDiagnosticQueue } from '../../modules/diagnostics-package4.js';
 const DB_NAME = 'wawis-mobile-photo-queue';
-const DB_VERSION = 3;
+// v4: niedestrukcyjna bariera migracji. Klient 13.40 otwierający v3
+// otrzymuje VersionError zamiast możliwości usunięcia zdjęcia przejętego przez v4.
+const DB_VERSION = 4;
 const STORE_NAME = 'queued-photos';
 export const PHOTO_QUEUE_CHANGED_EVENT = 'wawis-photo-queue-changed';
 
@@ -27,6 +29,28 @@ function openQueueDb() {
   if (!hasIndexedDb()) return Promise.resolve(null);
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
+    // Jeśli stara karta trzyma połączenie v3, migracja nie może czekać
+    // bez końca i wyświetlać pracownikowi fałszywego "Zapisano".
+    let settled = false;
+    let blockedTimeout = null;
+    const finish = (error, db) => {
+      if (settled) {
+        db?.close();
+        return;
+      }
+      settled = true;
+      if (blockedTimeout !== null) clearTimeout(blockedTimeout);
+      if (error) reject(error);
+      else resolve(db);
+    };
+    request.onblocked = () => {
+      try {
+        window?.dispatchEvent?.(new CustomEvent('wawis-photo-queue-upgrade-blocked'));
+      } catch { /* również w Web Worker */ }
+      blockedTimeout = setTimeout(() => {
+        finish(new Error('Aktualizacja kolejki zdjęć jest blokowana przez starszą kartę WAWIS. Zamknij inne karty i uruchom aplikację ponownie. Zdjęcia nie zostały usunięte.'));
+      }, 5000);
+    };
     request.onupgradeneeded = () => {
       const db = request.result;
       const store = db.objectStoreNames.contains(STORE_NAME)
@@ -38,9 +62,14 @@ function openQueueDb() {
       ensureIndex(store, 'unit_key', 'unit_key');
       ensureIndex(store, 'file_fingerprint', 'file_fingerprint');
       ensureIndex(store, 'next_attempt_at', 'next_attempt_at');
+      // Celowo nie usuwamy ani nie nadpisujemy żadnego rekordu.
     };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.'));
+    request.onsuccess = () => {
+      const db = request.result;
+      db.onversionchange = () => db.close();
+      finish(null, db);
+    };
+    request.onerror = () => finish(request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.'));
   });
 }
 
@@ -122,9 +151,10 @@ function toSerializableRecord(photo = {}) {
 
 export async function savePhotoQueueItem(photo) {
   if (!photo?.id || !(photo.__localFile || photo.local_file)) return false;
-  const db = await openQueueDb();
-  if (!db) return false;
+  let db;
   try {
+    db = await openQueueDb();
+    if (!db) return false;
     const saved = await new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -159,7 +189,7 @@ export async function savePhotoQueueItem(photo) {
     console.warn('Nie udało się zapisać zdjęcia w pamięci telefonu.', error?.message || error);
     return false;
   } finally {
-    db.close();
+    db?.close();
   }
 }
 

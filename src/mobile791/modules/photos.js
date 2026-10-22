@@ -776,7 +776,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
   };
   normalized.planned_storage_path = queuedPhoto.planned_storage_path || buildPhotoStoragePath(queuedPhoto.job_id, normalized);
   normalized.storage_path = normalized.planned_storage_path;
-  await updatePhotoQueueItem(queuedPhoto.id, {
+  const identityPersisted = await updatePhotoQueueItem(queuedPhoto.id, {
     upload_key: normalized.upload_key,
     unit_key: normalized.unit_key,
     file_fingerprint: normalized.file_fingerprint,
@@ -784,7 +784,7 @@ async function ensureQueuedPhotoIdentity(queuedPhoto) {
     planned_storage_path: normalized.planned_storage_path,
     legacy_queue_item: normalized.legacy_queue_item,
   }, photoQueueWriteGuard(queuedPhoto));
-  return normalized;
+  return identityPersisted ? normalized : null;
 }
 
 const PHOTO_RECONCILIATION_SELECT = 'id, job_id, image_url, storage_path, uploaded_by, created_at, photo_kind, device_index, unit_ref, ocr_status, ocr_checked_at';
@@ -803,14 +803,28 @@ function isZeroBytePhotoError(error) {
 // P0-R1: rekord bazy i poprawny signed URL nie potwierdzają istnienia
 // konkretnych bajtów w prywatnym Storage. Nigdy nie kasujemy ostatniej
 // lokalnej kopii po samym dopasowaniu storage_path.
-const validatedRemotePhotoRows = new WeakSet();
-
-async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile }) {
+async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile, throwOnTransient = false }) {
   if (!storagePath || !uploadFile || !globalThis.crypto?.subtle?.digest
     || !Number.isFinite(uploadFile.size) || uploadFile.size <= 0) return false;
   try {
-    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET).download(storagePath);
-    if (error || !remoteFile || remoteFile.size !== uploadFile.size || remoteFile.size <= 0) return false;
+    // Nie wolno używać odpowiedzi HTTP/CDN z poprzedniej wersji obiektu jako
+    // dowodu obecności bajtów. Nonce omija współdzielony cache CDN, no-store
+    // lokalny cache przeglądarki. Obie opcje obsługuje aktualne storage-js.
+    const nonce = `integrity-${Date.now()}-${globalThis.crypto?.randomUUID?.() || Math.random()}`;
+    const { data: remoteFile, error } = await supabase.storage.from(PHOTO_BUCKET)
+      .download(storagePath, { cacheNonce: nonce }, { cache: 'no-store' });
+    if (error) {
+      const status = Number(error.statusCode || error.status || error.code || 0);
+      if (throwOnTransient && (status === 408 || status === 429 || status >= 500)) {
+        const transient = new Error(error.message || 'Chwilowy błąd odczytu zdjęcia z serwera.');
+        transient.status = status;
+        transient.statusCode = status;
+        transient.cause = error;
+        throw transient;
+      }
+      return false;
+    }
+    if (!remoteFile || remoteFile.size !== uploadFile.size || remoteFile.size <= 0) return false;
     const [localBytes, remoteBytes] = await Promise.all([uploadFile.arrayBuffer(), remoteFile.arrayBuffer()]);
     const [localDigest, remoteDigest] = await Promise.all([
       globalThis.crypto.subtle.digest('SHA-256', localBytes),
@@ -818,6 +832,7 @@ async function verifyStorageObjectBytes({ supabase, storagePath, uploadFile }) {
     ]);
     return bytesToHex(new Uint8Array(localDigest)) === bytesToHex(new Uint8Array(remoteDigest));
   } catch (error) {
+    if (throwOnTransient && isRetryablePhotoUploadError(error)) throw error;
     console.warn('Nie udało się potwierdzić integralności Storage — lokalna kopia pozostaje.', error?.message || error);
     return false;
   }
@@ -908,17 +923,16 @@ async function reconcileQueuedPhotoFromServer({
     console.warn('Niepotwierdzona tożsamość tabliczki na serwerze; zachowano lokalną kopię.');
     return null;
   }
-  if (!validatedRemotePhotoRows.has(serverPhoto)
-    && !(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) {
-    return null;
-  }
-  if (!photoSessionIsCurrent(isSessionCurrent)) return null;
   // Reconciliation z odtworzenia również musi przejąć własny lease.
   // NIGDY nie usuwamy pliku, nad którym pracuje inna karta/worker.
   const ownClaim = queuedPhoto.lease_owner ? null : await claimPhotoQueueItem(queuedPhoto.id);
   const effectiveClaim = ownClaim || (queuedPhoto.lease_owner ? queuedPhoto : null);
   if (!effectiveClaim) return null;
   try {
+    // Dopiero własny atomowy claim uprawnia do kosztownego sprawdzania bajtów.
+    // Zawsze ponownie weryfikujemy Storage; żaden cache JS nie zastępuje ACK.
+    if (!photoSessionIsCurrent(isSessionCurrent)
+      || !(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url || '';
     const photoForUi = await createServerPhotoForUi({ supabase, supabaseUrl, serverPhoto, queuedPhoto, localPreviewUrl });
@@ -953,8 +967,8 @@ async function findExistingServerPhotoForQueuedPhoto({ supabase, queuedPhoto, al
   // Nigdy nie ufamy samemu job/unit/uploader/time; dokładna ścieżka jest
   // wymagana również przed przekazaniem rekordu do reconciliation.
   if (!serverPhoto || String(serverPhoto.storage_path || '').trim() !== storagePath) return null;
-  if (!(await verifyRemotePhotoBytes({ supabase, queuedPhoto, serverPhoto }))) return null;
-  validatedRemotePhotoRows.add(serverPhoto);
+  // Sprawdzanie bajtów jest wykonywane wyłącznie przez reconcile po
+  // uzyskaniu lease; bez tej blokady inne okno wykonywało drogie readback.
   return serverPhoto;
 }
 
@@ -975,7 +989,7 @@ async function performQueuedPhotoUpload({
 
   const allowLegacyNameplate = Boolean(queuedPhoto.legacy_queue_item || !queuedPhoto.upload_key || !queuedPhoto.planned_storage_path);
   queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
-  if (!photoSessionIsCurrent(isSessionCurrent)) return null;
+  if (!queuedPhoto || !photoSessionIsCurrent(isSessionCurrent)) return null;
   const jobId = queuedPhoto.job_id;
   const localPhotoId = queuedPhoto.id;
   const localPreviewUrl = queuedPhoto.local_preview_url || queuedPhoto.image_url;
@@ -1047,7 +1061,7 @@ async function performQueuedPhotoUpload({
     setSelectedJob,
     updater: uploadingPatch,
   });
-  await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto));
+  if (!(await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto)))) return null;
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
   let storagePath = queuedPhoto.planned_storage_path || buildPhotoStoragePath(jobId, queuedPhoto);
@@ -1103,7 +1117,7 @@ async function performQueuedPhotoUpload({
       }),
     });
 
-    await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto));
+    if (!(await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto)))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     const { error: uploadError } = await supabase.storage
@@ -1112,15 +1126,15 @@ async function performQueuedPhotoUpload({
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     if (uploadError && !isDuplicateStorageError(uploadError)) throw uploadError;
     storageExists = true;
-    await updatePhotoQueueItem(localPhotoId, {
+    if (!(await updatePhotoQueueItem(localPhotoId, {
       upload_stage: 'storage_uploaded',
       lease_until: new Date(Date.now() + PHOTO_UPLOAD_LEASE_MS).toISOString(),
-    }, photoQueueWriteGuard(queuedPhoto));
+    }, photoQueueWriteGuard(queuedPhoto)))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
     if (uploadError && isDuplicateStorageError(uploadError)) {
       // 409 nie oznacza, że istniejący obiekt zawiera nasze bajty.
-      if (!(await verifyStorageObjectBytes({ supabase, storagePath, uploadFile }))) {
+      if (!(await verifyStorageObjectBytes({ supabase, storagePath, uploadFile, throwOnTransient: true }))) {
         throw new Error('Konflikt ścieżki Storage: istniejący plik nie został potwierdzony. Zachowano kopię na telefonie.');
       }
       const existingAfterStorageConflict = await findServerPhotoByStoragePath({ supabase, jobId, storagePath });
@@ -1195,7 +1209,7 @@ async function performQueuedPhotoUpload({
     const finalStoragePath = getPhotoStoragePath({ photo: insertedPhoto, supabaseUrl }) || storagePath;
     // Nawet udany INSERT po ACK uploadu nie jest dowodem integralności
     // ostatniej lokalnej kopii. Weryfikujemy też końcowy obiekt Storage.
-    if (!(await verifyStorageObjectBytes({ supabase, storagePath: finalStoragePath, uploadFile }))) {
+    if (!(await verifyStorageObjectBytes({ supabase, storagePath: finalStoragePath, uploadFile, throwOnTransient: true }))) {
       throw new Error('Serwer nie potwierdził zawartości zdjęcia. Lokalny plik został zachowany do ponownej weryfikacji.');
     }
     const signedUrl = await getSignedPhotoUrl({ storagePath: finalStoragePath, fallbackUrl: insertedPhoto.image_url || localPreviewUrl, supabase });
@@ -1282,16 +1296,21 @@ async function uploadQueuedPhoto(options = {}) {
     return activePhotoUploadPromises.get(lockKey);
   }
   const uploadPromise = (async () => {
-    const alreadyClaimed = Boolean(queuedPhoto.lease_owner);
-    const claim = alreadyClaimed ? queuedPhoto : await claimPhotoQueueItem(queuedPhoto.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS });
-    if (!claim) return null;
+    // Hydrated rekord z obcym lease_owner NIE stanowi claim. Wyłącznie
+    // bezpośrednio otrzymany token z atomowego claimPhotoQueueItem jest ważny.
+    const trustedClaim = options.trustedQueueClaim || null;
+    const ownClaim = !trustedClaim;
+    const claim = trustedClaim || await claimPhotoQueueItem(queuedPhoto.id, {
+      leaseMs: PHOTO_UPLOAD_LEASE_MS, force: options.manualRetry === true,
+    });
+    if (!claim || String(claim.id) !== String(queuedPhoto.id)) return null;
     try {
       return await performQueuedPhotoUpload({
         ...options,
         queuedPhoto: { ...queuedPhoto, lease_owner: claim.lease_owner, attempt_generation: claim.attempt_generation },
       });
     } finally {
-      if (!alreadyClaimed) await releaseClaimedPhotoQueueItem(queuedPhoto.id, claim);
+      if (ownClaim) await releaseClaimedPhotoQueueItem(queuedPhoto.id, claim);
     }
   })().finally(() => {
     if (activePhotoUploadPromises.get(lockKey) === uploadPromise) {
@@ -1424,10 +1443,8 @@ export async function uploadJobPhotos({
   const queuedCandidates = await Promise.all(files.map((file) => createQueuedPhoto({ file, jobId, profile, uploaderId })));
   if (!photoSessionIsCurrent(isSessionCurrent)) return { queuedCount: 0, uploadedCount: 0, failedCount: 0, ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
-  queuedPhotos.forEach((photo) => {
-    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
-    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
-  });
+  // UI nie może wyświetlać "Zapisano na telefonie" przed zakończeniem
+  // transakcji IndexedDB.
   const persistenceResults = await Promise.all(queuedPhotos.map(async (photo) => ({
     photo,
     saved: await savePhotoQueueItem(photo),
@@ -1435,8 +1452,20 @@ export async function uploadJobPhotos({
   const persistedPhotos = persistenceResults.filter((item) => item.saved).map((item) => item.photo);
   const failedPhotos = persistenceResults.filter((item) => !item.saved).map((item) => item.photo);
 
+  persistedPhotos.forEach((photo) => {
+    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
+    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
+  });
   failedPhotos.forEach((photo) => {
-    applyPhotoRemoval({ photo, setJobs, setSelectedJob });
+    // Zostawiamy File w pamięci bieżącej karty, żeby ręczne "Ponów"
+    // mogło ponownie wykonać transakcję IDB. NIE oznaczamy go jako trwały.
+    const unsafePhoto = {
+      ...photo, local_persistence_failed: true,
+      upload_status: 'error', upload_status_label: 'Nie zapisano na telefonie',
+      upload_error: 'Nie można zapisać zdjęcia w pamięci telefonu. Nie zamykaj karty; użyj Ponów lub wybierz plik ponownie.',
+    };
+    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, unsafePhoto)));
+    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, unsafePhoto) : prev));
   });
 
   if (failedPhotos.length) {
@@ -1510,14 +1539,19 @@ export async function uploadJobDocumentationPhotos({
   if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
 
-  queuedPhotos.forEach((photo) => {
-    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
-    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
-  });
-
   const persisted = await Promise.all(queuedPhotos.map((photo) => savePhotoQueueItem(photo)));
   const failedToPersist = persisted.filter((saved) => !saved).length;
+  queuedPhotos.forEach((photo, index) => {
+    const displayed = persisted[index] ? photo : {
+      ...photo, local_persistence_failed: true,
+      upload_status: 'error', upload_status_label: 'Nie zapisano na telefonie',
+      upload_error: 'Brak trwałej kopii w pamięci telefonu — nie zamykaj formularza, ponów zapis.',
+    };
+    setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, displayed)));
+    setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, displayed) : prev));
+  });
   if (failedToPersist) {
+    onPhotoUploadError?.(new Error('Nie udało się trwale zapisać tabliczek na telefonie. Nie zamykaj formularza.'));
     return { uploadedCount: 0, queuedCount: queuedPhotos.length - failedToPersist, failedCount: failedToPersist, photos: [] };
   }
 
@@ -1608,6 +1642,7 @@ export async function restorePersistedJobPhotos({
     if (supabase && !isBrowserOffline()) {
       const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
       photo = await ensureQueuedPhotoIdentity(photo);
+      if (!photo) continue;
       if (!photoSessionIsCurrent(isSessionCurrent)) return hydratedPhotos;
       // Dla dopasowania starej JZ/JW zachowujemy trwały status z IndexedDB.
       // Hydrate celowo pokazuje "uploading" jako "local" w UI, ale taka
@@ -1693,6 +1728,7 @@ async function runPersistedPhotoUploads({
     queuedPhoto.attempt_generation = record.attempt_generation;
     const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
     queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
+    if (!queuedPhoto) continue;
     if (!photoSessionIsCurrent(isSessionCurrent)) break;
 
     const serverPhoto = await findExistingServerPhotoForQueuedPhoto({
@@ -1732,6 +1768,7 @@ async function runPersistedPhotoUploads({
       supabase,
       profile,
       queuedPhoto,
+      trustedQueueClaim: record,
       compressImageFn,
       setJobs: guardedSetJobs,
       setSelectedJob: guardedSetSelectedJob,
@@ -1809,6 +1846,25 @@ export function retryQueuedJobPhoto({
     const record = records.find((item) => String(item.id) === String(photo.id));
     if (record) queuedPhoto = hydratePhotoQueueItem(record, createLocalPreviewUrl);
 
+    // Rekord nie istnieje po nieudanej transakcji IDB. Ponów musi NAJPIERW
+    // trwale zachować File, a dopiero potem rozpoczynać upload.
+    if (!record && queuedPhoto?.__localFile && queuedPhoto.local_persistence_failed) {
+      const restored = await savePhotoQueueItem({
+        ...queuedPhoto, upload_status: 'local',
+        upload_status_label: 'Zapisano na telefonie', upload_error: '',
+        local_persistence_failed: false,
+      });
+      if (!restored) {
+        onPhotoUploadError?.(new Error('Ponowny zapis w pamięci telefonu nie powiódł się. Nie zamykaj karty.'), photo);
+        return;
+      }
+      queuedPhoto = { ...queuedPhoto, local_persistence_failed: false };
+    }
+    if (!record && !queuedPhoto?.local_persistence_failed && !queuedPhoto?.__localFile) {
+      onPhotoUploadError?.(new Error('Brak lokalnego pliku. Wybierz zdjęcie ponownie.'), photo);
+      return;
+    }
+
     if (!queuedPhoto?.__localFile) {
       const missingFilePatch = {
         upload_status: 'error',
@@ -1835,6 +1891,7 @@ export function retryQueuedJobPhoto({
       supabase,
       profile,
       queuedPhoto,
+      manualRetry: true,
       compressImageFn: effectiveCompressImageFn,
       setJobs,
       setSelectedJob,
