@@ -1,3 +1,4 @@
+import { queueNameplateDeviceIntent, stageIntentPhotos } from '../modules/nameplate-device-intent.js';
 import { useRef, useState } from "react";
 import {
   ADMIN_NOTE_DELETE_ERROR_MESSAGE,
@@ -29,6 +30,7 @@ import { logDiagnostic } from "../modules/diagnostics.js";
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
+import { isDeviceOnlyOfflineEdit } from "../modules/job-offline-device-edit.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { deleteJobDeviceRecord, deleteJobIndoorUnitRecord } from "../modules/job-device-delete.js";
 
@@ -152,47 +154,35 @@ export function useSelectedJobActions({
   }
 
   async function queueDeviceSaveOffline(form, pendingDocuments, reason = 'offline') {
+    const isCurrent = capturePhotoSessionGuard();
     const currentJob = getResolvedJob(editingJobId) || {};
     const deviceFields = serializeJobDevicesToFields(form);
-    const documentationResult = await uploadJobDocumentationPhotos({
-      supabase,
-      profile,
-      isSessionCurrent: capturePhotoSessionGuard(),
-      jobId: editingJobId,
-      documents: pendingDocuments,
-      setJobs,
-      setSelectedJob,
-      supabaseUrl,
-      onPhotoUploaded: onPhotoSyncSuccess,
-      onPhotoUploadError: onPhotoSyncError,
-    });
-    if (documentationResult.failedCount) {
-      throw new Error('Nie udało się zapisać wszystkich tabliczek w pamięci telefonu. Zwolnij miejsce i spróbuj ponownie.');
-    }
-
-    await queueOfflineJobOperation({
-      user_id: profile.id,
-      job_id: editingJobId,
-      type: 'device',
+    const operation = await queueNameplateDeviceIntent({
+      userId: profile.id, jobId: editingJobId,
       base: {
-        device_model: currentJob.device_model || '',
-        device_serial_number: currentJob.device_serial_number || '',
+        device_model: jobFormBaseJobRef?.current?.device_model ?? currentJob.device_model ?? '',
+        device_serial_number: jobFormBaseJobRef?.current?.device_serial_number ?? currentJob.device_serial_number ?? '',
       },
-      payload: {
-        device_fields: {
-          device_model: deviceFields.device_model || '',
-          device_serial_number: deviceFields.device_serial_number || '',
-        },
-      },
+      fields: { device_model: deviceFields.device_model || '', device_serial_number: deviceFields.device_serial_number || '' },
+      documents: pendingDocuments,
     });
+    // The complete intent is already durable. Projection failure cannot lose it.
+    try {
+      await stageIntentPhotos({ operation, supabase, profile, setJobs, setSelectedJob, supabaseUrl,
+        isSessionCurrent: capturePhotoSessionGuard() });
+    } catch (error) {
+      onPhotoSyncError?.(error);
+    }
+    if (!isCurrent()) return true;
     applyOptimisticJobPatch(editingJobId, {
       device_model: deviceFields.device_model || '',
       device_serial_number: deviceFields.device_serial_number || '',
       offline_pending: true,
     });
     resetJobModalState();
-    logDiagnostic('offline.device.queued', { jobId: editingJobId, reason, queuedPhotos: documentationResult.queuedCount });
-    alert('Dane urządzenia zapisano na telefonie. Aplikacja wyśle je automatycznie po odzyskaniu internetu.');
+    logDiagnostic('offline.device.queued', { jobId: editingJobId, reason, queuedPhotos: pendingDocuments.length });
+    alert('Zapisano na telefonie – oczekuje na synchronizację.');
+    if (!isBrowserOffline()) void performOfflineJobSync({ jobId: editingJobId });
     return true;
   }
 
@@ -494,13 +484,21 @@ export function useSelectedJobActions({
     logDiagnostic('nameplate.save.started', { jobId: editingJobId, operationId, serialOnlyMode, pendingCount: getPendingNameplateKeys(pendingDocuments).size });
 
     try {
+      const intentBase = jobFormBaseJobRef?.current || getResolvedJob(editingJobId) || {};
+      const intentContractor = (contractorsCatalog || []).find(item => String(item?.id || '') === String(intentBase.contractor_id || '')) || null;
+      if (isDeviceOnlyOfflineEdit({ form, baseJob: intentBase, profiles, normalizeStatus, linkedContractor: intentContractor })) {
+        await queueDeviceSaveOffline(form, pendingDocuments, isBrowserOffline() ? 'offline' : 'online');
+        return;
+      }
       if (isBrowserOffline()) {
-        if (!isAdmin && serialOnlyMode) {
+        const baseJob = jobFormBaseJobRef?.current || getResolvedJob(editingJobId) || {};
+        const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(baseJob.contractor_id || '')) || null;
+        if (isDeviceOnlyOfflineEdit({ form, baseJob, profiles, normalizeStatus, linkedContractor })) {
           await queueDeviceSaveOffline(form, pendingDocuments);
           return;
         }
         logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
-        alert('Pełna edycja montażu wymaga połączenia z internetem. Wprowadzone dane pozostają w formularzu — połącz się z internetem i zapisz ponownie.');
+        alert('Zmiany danych klienta, przypisania, statusu i montażu wymagają internetu. Zapis offline obejmuje tylko urządzenia i tabliczki. Formularz pozostaje otwarty.');
         return;
       }
       const recordSave = serialOnlyMode
@@ -519,7 +517,7 @@ export function useSelectedJobActions({
       // na upload. Dzięki temu timeout może potwierdzić dokładnie nowy plik, a nie
       // starszą tabliczkę tej samej JW/JZ.
       const preparedPendingDocuments = pendingDocuments.length
-        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments })
+        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments, uploaderId: profile?.id })
         : [];
 
       const uploadPromise = uploadJobDocumentationPhotos({
@@ -552,6 +550,18 @@ export function useSelectedJobActions({
       logDiagnostic('nameplate.save.upload.completed', {
         jobId: editingJobId, operationId, uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount, failedCount: documentationResult.failedCount,
       });
+
+      // Brak commitu IndexedDB oznacza, że File istnieje tylko w pamięci
+      // bieżącego formularza. Dotyczy także admin/full edit: zamknięcie
+      // okna zniszczyłoby ostatnią dostępną kopię pliku.
+      if (documentationResult.failedCount > 0) {
+        logDiagnostic('nameplate.save.modal.kept-open', {
+          jobId: editingJobId, operationId, reason: 'idb-commit-failed',
+          failedCount: documentationResult.failedCount,
+        });
+        alert(`Nie udało się zapisać ${documentationResult.failedCount} zdjęć w pamięci telefonu. Nie zamykaj formularza. Sprawdź pamięć urządzenia i spróbuj zapisać ponownie.`);
+        return;
+      }
 
       const pendingNameplateCount = getPendingNameplateKeys(preparedPendingDocuments).size;
       if (serialOnlyMode && pendingNameplateCount) {
@@ -611,8 +621,11 @@ export function useSelectedJobActions({
       }
     } catch (error) {
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
-      if (!isAdmin && serialOnlyMode && isTransientSupabaseError(error)) {
+      if (isTransientSupabaseError(error)) {
         try {
+          const baseJob = jobFormBaseJobRef?.current || getResolvedJob(editingJobId) || {};
+          const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(baseJob.contractor_id || '')) || null;
+          if (!isDeviceOnlyOfflineEdit({ form, baseJob, profiles, normalizeStatus, linkedContractor })) throw error;
           await queueDeviceSaveOffline(form, pendingDocuments, 'transient-error');
           return;
         } catch (queueError) {

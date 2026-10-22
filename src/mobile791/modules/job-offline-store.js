@@ -40,7 +40,7 @@ function openOfflineDb() {
       ensureIndex(operationStore, 'status', 'status');
       ensureIndex(operationStore, 'next_attempt_at', 'next_attempt_at');
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => { request.result.onversionchange = () => request.result.close(); resolve(request.result); };
     request.onerror = () => reject(request.error || new Error('Nie udało się otworzyć pamięci offline.'));
   });
 }
@@ -49,7 +49,9 @@ async function withStore(storeName, mode, operation) {
   const db = await openOfflineDb();
   if (!db) return null;
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, mode);
+    let transaction;
+    try { transaction = db.transaction(storeName, mode); }
+    catch (error) { db.close(); reject(error); return; }
     const store = transaction.objectStore(storeName);
     let request;
     try {
@@ -267,7 +269,27 @@ async function putOfflineJobOperationAtomically(record) {
               .filter((item) => String(item.user_id) === record.user_id)
               .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
               .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
-            if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
+            if (superseded.some(item => item.status === 'syncing' && Date.parse(item.lease_until || '') > Date.now())) {
+              abortWith(new Error('Trwa synchronizacja poprzedniej zmiany. Zachowaj formularz i ponów zapis po jej zakończeniu.'));
+              return;
+            }
+            if (superseded[0]?.base) {
+              finalRecord = { ...record, base: superseded[0].base };
+              if (record.type === 'device') {
+                const requiredPaths = new Set([
+                  ...superseded.flatMap(item => item.payload?.required_nameplate_paths || []),
+                  ...(record.payload?.required_nameplate_paths || []),
+                ].map((value) => String(value || '').trim()).filter(Boolean));
+                finalRecord.payload = {
+                  ...record.payload,
+                  required_nameplate_paths: [...requiredPaths],
+                  documentation: [...new Map([
+                    ...superseded.flatMap(item => item.payload?.documentation || []),
+                    ...(record.payload?.documentation || []),
+                  ].map(doc => [doc.uploadIdentity?.plannedStoragePath, doc])).values()],
+                };
+              }
+            }
             for (const item of superseded) objectStore.delete(item.id);
             putFinalRecord();
           } catch (error) {
@@ -307,6 +329,8 @@ export async function queueOfflineJobOperation(operation = {}) {
     last_attempt_at: '',
     next_attempt_at: '',
     lease_until: '',
+    lease_owner: '',
+    attempt_generation: 0,
   };
 
   try {
@@ -330,8 +354,8 @@ export async function recoverStaleOfflineJobOperations(userId = '', nowMs = Date
     await updateOfflineJobOperation(record.id, {
       status: 'pending',
       lease_until: '',
-      error: '',
-    });
+      error: '', lease_owner: '',
+    }, { ...offlineOperationGuard(record), expectedLeaseUntil: record.lease_until || '' });
     recovered += 1;
   }
   return recovered;
@@ -359,6 +383,8 @@ export async function claimOfflineJobOperation(operationId, leaseMs = 2 * 60 * 1
         claimed = {
           ...current,
           status: 'syncing',
+          lease_owner: createOfflineOperationId('lease'),
+          attempt_generation: Number(current.attempt_generation || 0) + 1,
           error: '',
           last_attempt_at: new Date(nowMs).toISOString(),
           next_attempt_at: '',
@@ -380,7 +406,8 @@ export async function claimOfflineJobOperation(operationId, leaseMs = 2 * 60 * 1
   }
 }
 
-export async function listOfflineJobOperations(userId = '') {
+export async function listOfflineJobOperations(userId = '', { strict = false } = {}) {
+  if (strict && !hasIndexedDb()) throw new Error('Pamięć zmian na telefonie jest niedostępna.');
   try {
     const records = await withStore(OPERATION_STORE, 'readonly', (store) => store.getAll());
     const normalizedUserId = String(userId || '').trim();
@@ -388,12 +415,76 @@ export async function listOfflineJobOperations(userId = '') {
       .filter((item) => !normalizedUserId || String(item.user_id) === normalizedUserId)
       .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
   } catch (error) {
+    if (strict) throw error;
     console.warn('Nie udało się odczytać kolejki zmian offline.', error?.message || error);
     return [];
   }
 }
 
-export async function updateOfflineJobOperation(operationId, patch = {}) {
+export async function makeOfflineJobOperationsRetryableNow(userId = '', options = {}) {
+  const normalizedUserId = String(userId || '').trim();
+  const normalizedJobId = String(options.jobId || '').trim();
+  const allowedTypes = Array.isArray(options.allowedTypes)
+    ? new Set(options.allowedTypes.map((value) => String(value || '').trim()).filter(Boolean))
+    : null;
+  if (!normalizedUserId) return 0;
+
+  let db;
+  try {
+    db = await openOfflineDb();
+    if (!db) return 0;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(OPERATION_STORE, 'readwrite');
+      const store = transaction.objectStore(OPERATION_STORE);
+      const request = store.getAll();
+      let changed = 0;
+      request.onsuccess = () => {
+        for (const operation of Array.isArray(request.result) ? request.result : []) {
+          if (String(operation?.user_id || '') !== normalizedUserId) continue;
+          if (normalizedJobId && String(operation?.job_id || '') !== normalizedJobId) continue;
+          if (allowedTypes && !allowedTypes.has(String(operation?.type || ''))) continue;
+          const status = String(operation?.status || 'pending').toLowerCase();
+          // Aktywnego workera oraz konfliktu nie przejmujemy. Ręczna akcja ma
+          // jedynie pominąć backoff operacji, która bezpiecznie czeka lub ma błąd.
+          if (status === 'syncing' || status === 'conflict') continue;
+          store.put({
+            ...operation,
+            status: 'pending',
+            error: '',
+            next_attempt_at: '',
+            lease_until: '',
+          });
+          changed += 1;
+        }
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się przygotować zmian do ponownej synchronizacji.'));
+      transaction.oncomplete = () => {
+        if (changed) dispatchOfflineChanged();
+        resolve(changed);
+      };
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się przygotować zmian do ponownej synchronizacji.'));
+      transaction.onabort = transaction.onerror;
+    });
+  } catch (error) {
+    console.warn('Nie udało się wymusić ponowienia zmian offline.', error?.message || error);
+    return 0;
+  } finally {
+    db?.close();
+  }
+}
+
+export function offlineOperationGuard(record) {
+  return { expectedLeaseOwner: record.lease_owner || '', expectedGeneration: Number(record.attempt_generation || 0) };
+}
+
+function permitsOperationWrite(current, guard) {
+  if ('expectedLeaseOwner' in guard && String(current.lease_owner || '') !== String(guard.expectedLeaseOwner)) return false;
+  if ('expectedGeneration' in guard && Number(current.attempt_generation || 0) !== guard.expectedGeneration) return false;
+  if ('expectedLeaseUntil' in guard && String(current.lease_until || '') !== guard.expectedLeaseUntil) return false;
+  return 'expectedLeaseOwner' in guard || !(current.status === 'syncing' && Date.parse(current.lease_until || '') > Date.now());
+}
+
+export async function updateOfflineJobOperation(operationId, patch = {}, guard = {}) {
   if (!operationId) return false;
   let db;
   try {
@@ -406,7 +497,7 @@ export async function updateOfflineJobOperation(operationId, patch = {}) {
       let changed = false;
       request.onsuccess = () => {
         const current = request.result;
-        if (!current) return;
+        if (!current || !permitsOperationWrite(current, guard)) return;
         changed = true;
         store.put({ ...current, ...patch, id: String(operationId) });
       };
@@ -425,16 +516,24 @@ export async function updateOfflineJobOperation(operationId, patch = {}) {
   }
 }
 
-export async function deleteOfflineJobOperation(operationId) {
+export async function deleteOfflineJobOperation(operationId, guard = {}) {
   if (!operationId) return false;
+  const db = await openOfflineDb();
+  if (!db) return false;
   try {
-    await withStore(OPERATION_STORE, 'readwrite', (store) => store.delete(String(operationId)));
-    dispatchOfflineChanged();
-    return true;
-  } catch (error) {
-    console.warn('Nie udało się usunąć zmiany z kolejki offline.', error?.message || error);
-    return false;
-  }
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(OPERATION_STORE, 'readwrite');
+      const store = tx.objectStore(OPERATION_STORE);
+      const req = store.get(String(operationId));
+      let deleted = false;
+      req.onsuccess = () => {
+        if (!req.result || !permitsOperationWrite(req.result, guard)) return;
+        store.delete(String(operationId)); deleted = true;
+      };
+      tx.oncomplete = () => { if (deleted) dispatchOfflineChanged(); resolve(deleted); };
+      tx.onerror = tx.onabort = () => reject(tx.error || new Error('Nie usunięto zmiany offline.'));
+    });
+  } finally { db.close(); }
 }
 
 export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile = {}) {
@@ -469,12 +568,28 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
     for (const operation of jobOperations) {
       const operationStatus = String(operation?.status || 'pending').toLowerCase();
-      const terminalStatusOperation = operation.type === 'status'
+      if (operation.type === 'device' && operationStatus === 'error') {
+        nextJob = { ...nextJob, ...(operation.payload?.device_fields || {}),
+          offline_pending: true, offline_sync_error: true };
+        hasPendingProjection = true;
+        continue;
+      }
+      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'device')
         && (operationStatus === 'conflict' || operationStatus === 'error');
 
       if (terminalStatusOperation) {
-        const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
-        if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
+        if (operation.type === 'status') {
+          const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
+          if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
+        } else {
+          nextJob = {
+            ...nextJob,
+            ...(operation?.server_state || {
+              device_model: operation?.base?.device_model || '',
+              device_serial_number: operation?.base?.device_serial_number || '',
+            }),
+          };
+        }
         if (operationStatus === 'conflict') {
           nextJob = {
             ...nextJob,

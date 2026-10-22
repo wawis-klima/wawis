@@ -124,6 +124,7 @@ export function getJobNameplateCompletion(job = {}, options = {}) {
 
 // Protokół wolno wystawić dopiero po zapisaniu wszystkich zdjęć JW/JZ na serwerze.
 export function areJobNameplatesReadyForProtocol(job = {}) {
+  if (job.offline_pending || job.offline_conflict || job.offline_sync_error) return false;
   const completion = getJobNameplateCompletion(job);
   return completion.hasConfiguredDevices && completion.photosComplete;
 }

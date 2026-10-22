@@ -367,3 +367,20 @@ Dla każdego ustalenia obowiązuje oryginalny scenariusz z audytu Codexa z 2026-
 
 Granice dowodu: nie wykonano testu z prawdziwą Fakturownią, rzeczywistego Web Push na telefonach, testu dwóch niezależnych sesji PG ani produkcyjnego ponowienia paliwa. Wszystkie te elementy wymagają osobnego świadomego odbioru. Przyszły status CLOSED musi wskazywać konkretny numer PR, run, artefakt Closure Gate i potwierdzoną wersję produkcyjną.
 
+
+## 2026-10-22 — kandydat trwałego offline JW/JZ (bez wdrożenia)
+
+Status całości: **NOT CLOSED — fizyczny iPhone Safari/PWA i odzyskanie produkcyjnej kolejki NOT VERIFIED**. Raport: `docs/offline-20261022/RAPORT.md`. Wynik lokalnego Closure jest osobnym artefaktem, nie dowodem odbioru telefonu.
+
+| ID | Ustalenie | Trwały test | Status |
+|---|---|---|---|
+| OFFLINE-20261022-IDB | Oryginalna 13.38/v3 nie otwiera zachowanej bazy v4 | `tests/e2e/mobile-durable-outbox.spec.js` RED/GREEN z `84bd0936`; `mobile-photo-audit-1342.spec.js` | Implemented, awaiting final gate / device |
+| OFFLINE-20261022-BODY | Produkcyjne multipart 0 B, HTTP 400 | `mobile-ios-binary-upload-v1346.spec.js`; `mobile-supabase-provider.spec.js` rzeczywiste JPEG/Storage/readback | Implemented, physical iOS NOT VERIFIED |
+| OFFLINE-20261022-WRITE | Potwierdzone produkcyjne zatrzymanie claim-write przed prepare; szczegółowa przyczyna odmowy nieustalona | `mobile-durable-outbox.spec.js` reprodukcja klasy File rewrite i ArrayBuffer; nowa diagnostyka IDB/fence | Root boundary CONFIRMED; exact device error NOT VERIFIED |
+| OFFLINE-20261022-ATOMIC | Rozdzielony zapis zdjęć/urządzenia pozostawia lukę przy zamknięciu | `mobile-durable-outbox.spec.js` intent, restart, quota, retry po pierwszym pliku | Implemented, awaiting final gate / device |
+| OFFLINE-20261022-FENCE | Spóźniony worker urządzenia bez tokenu mógł modyfikować późniejszy zapis | `mobile-durable-outbox.spec.js` dwa rzeczywiste okna i generacje; oryginalne photo CAS | Implemented, awaiting final gate |
+| OFFLINE-20261022-UI | Refresh i nieudany odczyt IDB mogły fałszywie przedstawić brak/sukces | `mobile-queue-read-failure.spec.js`, overlay i protocol gate w `mobile-durable-outbox.spec.js` | Implemented, awaiting final gate / device |
+
+Poprzednie audyty i asercje pozostają. Fixture testów naprawiono dla ArrayBuffer, getUser, Storage readback i nowego magazynu trwałego intentu. Błąd locatora `.nameplateVerifyWarning.isVisible()` przy dwóch poprawnych ostrzeżeniach naprawiono przez `.first()`; zachowano asercje blokady potwierdzenia i ręcznego przeglądu SN.
+
+| OFFLINE-20261022-TOUCH | Przycisk ręcznej synchronizacji miał 24 px zamiast min. 44 px | `mobile-pending-sync-touch.spec.js`: rzeczywisty pomiar RED/GREEN, elementFromPoint, kliknięcie offline i zachowanie intentu przy błędzie odczytu podczas refreshu | Implemented, awaiting final gate / physical device |

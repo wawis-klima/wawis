@@ -511,6 +511,10 @@ export function createMockSupabaseClient() {
 
   const client = {
     auth: {
+      async getUser() {
+        const user = restoreSession(store.users)?.user || null;
+        return { data: { user }, error: user ? null : { status: 401, message: 'No active fixture session' } };
+      },
       async getSession() {
         return { data: { session: restoreSession(store.users) }, error: null };
       },
@@ -951,6 +955,17 @@ export function createMockSupabaseClient() {
           async download(path) {
             const stored = storageObjects.get(`${bucket}/${path}`);
             if (stored instanceof Blob) return { data: stored, error: null };
+            // Storage-js accepts ArrayBuffer on iOS (raw binary instead of FormData).
+            // The E2E mock must return those same bytes on readback/ACK, otherwise
+            // it invents a false 404 despite a successful upload.
+            if (stored instanceof ArrayBuffer || ArrayBuffer.isView(stored)) {
+              return { data: new Blob([stored]), error: null };
+            }
+            if (bucket === 'job-photos') {
+              // Mock nie może podawać sztucznego PDF zamiast brakującego zdjęcia:
+              // to maskowałoby utratę pliku podczas reconciliation.
+              return { data: null, error: { statusCode: 404, message: 'Storage object not found' } };
+            }
             return { data: new Blob(['%PDF-1.4 mock protocol'], { type: 'application/pdf' }), error: null };
           },
           async remove(paths = []) {

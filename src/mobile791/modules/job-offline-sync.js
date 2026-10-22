@@ -2,15 +2,19 @@ import { addJobComment } from './jobs-comments.js';
 import { loadJobNameplatePhotosData } from './jobs-fetch.js';
 import { getJobNameplateCompletion } from './nameplate-requirements.js';
 import { isTransientSupabaseError } from './supabase-errors.js';
+import { syncIntentPhotos } from './nameplate-device-intent.js';
+import { photoBytesDigest, readPhotoBytes } from './photo-bytes.js';
+import { listPhotoQueueItems } from './photo-offline-queue.js';
 import {
   deleteOfflineJobOperation,
   claimOfflineJobOperation,
   listOfflineJobOperations,
   recoverStaleOfflineJobOperations,
   updateOfflineJobOperation,
+  offlineOperationGuard,
 } from './job-offline-store.js';
 
-let activeSyncPromise = null;
+const activeSyncPromises = new Map();
 const OPERATION_LEASE_MS = 2 * 60 * 1000;
 const MAX_RETRY_DELAY_MS = 30 * 60 * 1000;
 
@@ -43,7 +47,50 @@ async function readJobForConflictCheck(supabase, jobId) {
   return data;
 }
 
-async function syncDeviceOperation({ supabase, operation }) {
+async function syncDeviceOperation({ supabase, operation, profile, isSessionCurrent = () => true, ...options }) {
+  const requireSession = () => {
+    if (!isSessionCurrent()) { const error = new Error('Sesja synchronizacji zmieniła się.'); error.code = 'OFFLINE_SESSION_CHANGED'; throw error; }
+  };
+  requireSession();
+  if (operation.payload?.documentation?.length) {
+    await syncIntentPhotos({ ...options, supabase, operation, profile, isSessionCurrent });
+    requireSession();
+  }
+  const requiredPaths = [...new Set((operation.payload?.required_nameplate_paths || [])
+    .map((value) => String(value || '').trim()).filter(Boolean))];
+  // Legacy intents may predate required_nameplate_paths. Pending photos belonging
+  // to this owner/job still block the device, even without an explicit path list.
+  const queue = await listPhotoQueueItems({ strict: true });
+  if (queue.some(photo => String(photo.user_id || photo.uploaded_by) === String(operation.user_id)
+    && String(photo.job_id) === String(operation.job_id) && photo.photo_kind === 'nameplate')) {
+    const error = new Error('Zapis urządzeń czeka na potwierdzenie zdjęć.');
+    error.code = 'OFFLINE_DEPENDENCY_WAITING'; throw error;
+  }
+  if (requiredPaths.length) {
+    const outstanding = queue.some(photo =>
+      String(photo.user_id || photo.uploaded_by) === String(operation.user_id)
+      && requiredPaths.includes(photo.planned_storage_path));
+    const verification = await loadJobNameplatePhotosData({ supabase, jobId: operation.job_id });
+    const savedPaths = new Set((verification.photos || []).map((photo) => String(photo?.storage_path || '').trim()).filter(Boolean));
+    if (outstanding || requiredPaths.some((path) => !savedPaths.has(path))) {
+      const error = new Error('Zapis urządzeń czeka, aż zdjęcia tabliczek zostaną wysłane i potwierdzone.');
+      error.code = 'OFFLINE_DEPENDENCY_WAITING';
+      throw error;
+    }
+    for (const path of requiredPaths) {
+      requireSession();
+      const { data, error } = await supabase.storage.from('job-photos')
+        .download(path, { cacheNonce: crypto.randomUUID() }, { cache: 'no-store' });
+      if (error) throw error;
+      const bytes = await readPhotoBytes(data);
+      const document = operation.payload?.documentation?.find(doc => doc.uploadIdentity?.plannedStoragePath === path);
+      if (document && await photoBytesDigest(bytes) !== document.sha256) {
+        const error = new Error('Zdjęcie na serwerze ma inną zawartość. Zachowano zmianę lokalną.');
+        error.code = 'PHOTO_REMOTE_INTEGRITY_FAILED'; throw error;
+      }
+    }
+  }
+  requireSession();
   const current = await readJobForConflictCheck(supabase, operation.job_id);
   const desired = operation.payload?.device_fields || {};
   if (sameDeviceFields(current, desired)) return;
@@ -65,8 +112,17 @@ async function syncDeviceOperation({ supabase, operation }) {
     ? updateQuery.is('device_serial_number', null)
     : updateQuery.eq('device_serial_number', current.device_serial_number);
   const { data, error } = await updateQuery.select('id').maybeSingle();
-  if (error) throw error;
+  if (error) {
+    const constraint = String(error?.constraint || error?.details || error?.message || '');
+    if (String(error?.code || '') === '23505' && /devices_serial_number_key/i.test(constraint)) {
+      throw new OfflineConflictError('Numer seryjny jest już przypisany do innego urządzenia. Sprawdź tabliczkę i popraw numer przed ponownym zapisem.', { serverState: current });
+    }
+    throw error;
+  }
   if (!data) throw new OfflineConflictError('Dane urządzenia zmieniły się podczas synchronizacji. Niczego nie nadpisano.');
+  requireSession();
+  const confirmed = await readJobForConflictCheck(supabase, operation.job_id);
+  if (!sameDeviceFields(confirmed, desired)) throw new OfflineConflictError('Serwer nie potwierdził danych urządzenia.', { serverState: confirmed });
 }
 
 async function syncStatusOperation({ supabase, operation, jobs, sendCompletionPush }) {
@@ -203,31 +259,38 @@ async function acknowledgeOperation({ supabase, operation }) {
 async function runSync(options = {}) {
   const { profile } = options;
   const userId = String(profile?.id || '').trim();
-  if (!userId || !options.supabase || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+  const isSessionCurrent = options.isSessionCurrent || (() => true);
+  if (!userId || !isSessionCurrent() || !options.supabase || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
     return { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
   }
 
   await recoverStaleOfflineJobOperations(userId);
+  const requestedJobId = String(options.jobId || '').trim();
   const operations = (await listOfflineJobOperations(userId))
+    .filter((item) => !requestedJobId || String(item.job_id || '') === requestedJobId)
+    .filter((item) => !Array.isArray(options.allowedTypes) || options.allowedTypes.includes(item.type))
     .filter((item) => item.status !== 'conflict')
+    .filter((item) => item.status !== 'error')
     .filter((item) => operationIsDue(item))
     .sort((left, right) => operationPriority(left) - operationPriority(right)
       || String(left.created_at || '').localeCompare(String(right.created_at || '')));
   const result = { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
 
   for (const queuedOperation of operations) {
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) break;
+    if (!isSessionCurrent() || (typeof navigator !== 'undefined' && navigator.onLine === false)) break;
     const operation = await claimOfflineJobOperation(queuedOperation.id, OPERATION_LEASE_MS);
     if (!operation) continue;
     result.processed += 1;
     const attemptCount = Number(operation.retry_count || 1);
     try {
-      const acknowledged = await operationAlreadyAcknowledged({ supabase: options.supabase, operation });
+      // A receipt alone can never ACK a device whose dependent bytes are absent.
+      const acknowledged = operation.type !== 'device' && await operationAlreadyAcknowledged({ supabase: options.supabase, operation });
       if (!acknowledged) {
         await syncSingleOperation({ ...options, operation });
-        await acknowledgeOperation({ supabase: options.supabase, operation });
+        if (!isSessionCurrent()) break;
+        if (operation.type !== 'device') await acknowledgeOperation({ supabase: options.supabase, operation });
       }
-      await deleteOfflineJobOperation(operation.id);
+      if (!isSessionCurrent() || !(await deleteOfflineJobOperation(operation.id, offlineOperationGuard(operation)))) break;
       result.synced += 1;
       if (!result.changedJobIds.includes(operation.job_id)) result.changedJobIds.push(operation.job_id);
     } catch (error) {
@@ -238,13 +301,15 @@ async function runSync(options = {}) {
           lease_until: '',
           next_attempt_at: '',
           server_state: error?.serverState || null,
-        });
+        }, offlineOperationGuard(operation));
         result.conflicts += 1;
         if (!result.conflictJobIds.includes(operation.job_id)) result.conflictJobIds.push(operation.job_id);
         if (!result.changedJobIds.includes(operation.job_id)) result.changedJobIds.push(operation.job_id);
         continue;
       }
-      const waiting = isTransientSupabaseError(error) || error?.code === 'OFFLINE_DEPENDENCY_WAITING';
+      const status = Number(error?.statusCode || error?.status || 0);
+      const waiting = isTransientSupabaseError(error) || status === 429 || status >= 500
+        || ['OFFLINE_DEPENDENCY_WAITING', 'OFFLINE_SESSION_CHANGED'].includes(error?.code);
       await updateOfflineJobOperation(operation.id, {
         status: waiting ? 'pending' : 'error',
         error: error?.message || 'Nie udało się wysłać lokalnej zmiany.',
@@ -252,11 +317,15 @@ async function runSync(options = {}) {
         next_attempt_at: waiting
           ? new Date(Date.now() + retryDelayMs(attemptCount)).toISOString()
           : '',
-      });
+      }, offlineOperationGuard(operation));
       result.errors += 1;
       // Przy awarii połączenia następne operacje również zaczekają. Błąd jednej
       // konkretnej operacji nie blokuje pozostałych zleceń.
       if (isTransientSupabaseError(error)) break;
+    } finally {
+      // A cancelled/expired session releases only its own generation.
+      await updateOfflineJobOperation(operation.id, { status: 'pending', lease_until: '', lease_owner: '' },
+        { ...offlineOperationGuard(operation), expectedLeaseUntil: operation.lease_until });
     }
   }
 
@@ -264,9 +333,15 @@ async function runSync(options = {}) {
 }
 
 export function syncOfflineJobOperations(options = {}) {
-  if (activeSyncPromise) return activeSyncPromise;
-  activeSyncPromise = runSync(options).finally(() => {
-    activeSyncPromise = null;
+  // Ręczna synchronizacja konkretnego montażu nie może utknąć za długim
+  // odczytem innego zlecenia. Claim transakcyjny zapobiega podwójnemu ACK.
+  if (String(options.jobId || '').trim()) return runSync(options);
+  const key = String(options.profile?.id || '');
+  const existing = activeSyncPromises.get(key);
+  if (existing && existing.isCurrent()) return existing.promise;
+  const promise = runSync(options).finally(() => {
+    if (activeSyncPromises.get(key)?.promise === promise) activeSyncPromises.delete(key);
   });
-  return activeSyncPromise;
+  activeSyncPromises.set(key, { promise, isCurrent: options.isSessionCurrent || (() => true) });
+  return promise;
 }

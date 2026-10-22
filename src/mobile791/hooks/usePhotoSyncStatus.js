@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { listPhotoQueueItems, PHOTO_QUEUE_CHANGED_EVENT } from "../modules/photo-offline-queue.js";
 import { JOB_OFFLINE_CHANGED_EVENT, listOfflineJobOperations } from "../modules/job-offline-store.js";
 
@@ -74,6 +74,12 @@ function summarizeOperations(items = []) {
 }
 
 export function usePhotoSyncStatus(profileId = "") {
+  const summaryRequestRef = useRef(0);
+  const ownerRef = useRef(profileId);
+  ownerRef.current = profileId;
+  const [queueReadError, setQueueReadError] = useState(false);
+  const [queueLoaded, setQueueLoaded] = useState(false);
+  const [queueOwner, setQueueOwner] = useState(null);
   const [connection, setConnection] = useState(readConnectionQuality);
   const [syncState, setSyncState] = useState("synced");
   const [lastSyncedAt, setLastSyncedAt] = useState(() => readLastSyncedAt(profileId));
@@ -87,23 +93,31 @@ export function usePhotoSyncStatus(profileId = "") {
   }, [profileId]);
 
   const refreshQueueSummary = useCallback(async () => {
+    const requestId = ++summaryRequestRef.current;
+    const isCurrent = () => requestId === summaryRequestRef.current && ownerRef.current === profileId;
     try {
       const normalizedProfileId = String(profileId || '').trim();
       const [allItems, allOperations] = await Promise.all([
-        listPhotoQueueItems(),
-        listOfflineJobOperations(normalizedProfileId),
+        listPhotoQueueItems({ strict: true }),
+        listOfflineJobOperations(normalizedProfileId, { strict: true }),
       ]);
+      if (!isCurrent()) return { readError: true, stale: true };
       const items = allItems.filter((item) => (
-        !normalizedProfileId || !item.uploaded_by || String(item.uploaded_by) === normalizedProfileId
+        Boolean(normalizedProfileId) && String(item.user_id || item.uploaded_by || '') === normalizedProfileId
       ));
+      setQueueReadError(false);
+      setQueueLoaded(true);
+      setQueueOwner(profileId);
       setQueueItems(items);
       setQueueSummary(summarizeQueue(items));
-      setOperationItems(allOperations);
-      setOperationSummary(summarizeOperations(allOperations));
-      return { photos: items, operations: allOperations };
+      const operations = allOperations.filter(item => normalizedProfileId && String(item.user_id || '') === normalizedProfileId);
+      setOperationItems(operations);
+      setOperationSummary(summarizeOperations(operations));
+      return { photos: items, operations };
     } catch (error) {
+      if (isCurrent()) { setQueueReadError(true); setQueueLoaded(true); }
       console.warn("Nie udało się odświeżyć Centrum synchronizacji zdjęć.", error?.message || error);
-      return [];
+      return { readError: true };
     }
   }, [profileId]);
 
@@ -144,6 +158,9 @@ export function usePhotoSyncStatus(profileId = "") {
   }, [refreshQueueSummary]);
 
   const sync = useMemo(() => {
+    if (queueOwner !== profileId) return { tone: "syncing", label: "Sprawdzam kolejkę…" };
+    if (queueReadError) return { tone: "error", label: "Nie można odczytać pamięci telefonu" };
+    if (!queueLoaded) return { tone: "syncing", label: "Sprawdzam kolejkę…" };
     const localCount = queueSummary.local + queueSummary.uploading + operationSummary.pending + operationSummary.syncing;
     const totalErrors = queueSummary.error + operationSummary.error;
     const totalConflicts = operationSummary.conflict;
@@ -171,15 +188,15 @@ export function usePhotoSyncStatus(profileId = "") {
       return { tone: "error", label: "Błąd synchronizacji zdjęć" };
     }
     return { tone: "synced", label: "Wszystko wysłane" };
-  }, [connection.tone, operationSummary, queueSummary, syncState]);
+  }, [connection.tone, operationSummary, queueSummary, syncState, queueReadError, queueLoaded, queueOwner, profileId]);
 
   return {
     connection,
     sync,
-    queueItems,
-    queueSummary,
-    operationItems,
-    operationSummary,
+    queueItems: queueOwner === profileId ? queueItems : [],
+    queueSummary: queueOwner === profileId ? queueSummary : summarizeQueue(),
+    operationItems: queueOwner === profileId ? operationItems : [],
+    operationSummary: queueOwner === profileId ? operationSummary : summarizeOperations(),
     lastSyncedAt,
     markPhotoSyncing,
     markPhotoSynced,

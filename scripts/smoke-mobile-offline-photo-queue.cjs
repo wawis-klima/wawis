@@ -12,6 +12,12 @@ const panel = fs.readFileSync(path.join(root, 'src/mobile791/components/JobDetai
 const requirements = fs.readFileSync(path.join(root, 'src/mobile791/modules/nameplate-requirements.js'), 'utf8');
 
 assert(queue.includes("indexedDB.open(DB_NAME, DB_VERSION)"), 'Brak trwałej kolejki IndexedDB.');
+assert(queue.includes('releaseClaimedPhotoQueueItem'), 'Przerwany claim musi mieć bezpieczne zwolnienie blokady.');
+assert(queue.includes("String(current.lease_owner || '') !== leaseOwner"), 'Zwolnienie nie może naruszać claimu innego workera.');
+assert(photos.includes('await releaseClaimedPhotoQueueItem(record.id, record);'), 'Każdy claim musi być zwalniany w finally.');
+assert(photos.includes('upload_status: record.upload_status || photo.upload_status'), 'Legacy JZ/JW musi zachować oryginalny status przy uzgadnianiu.');
+assert(app.includes('const photoQueueResumeRef = useRef(null);'), 'Timer powinien wywoływać bieżący synchronizator, bez jego anulowania.');
+assert(app.includes('}, [offlineSyncUserId, hasPendingOfflineWork]);'), 'Licznik kolejki może sterować wyłącznie timerem, a nie głównym efektem synchronizacji.');
 assert(queue.includes("local_file: localFile"), 'Lokalny plik nie jest zapisywany w kolejce.');
 assert(photos.includes('persistenceResults = await Promise.all'), 'Zdjęcie nie jest zapisywane lokalnie przed wysyłką.');
 assert(photos.includes('failedPhotos.forEach'), 'Brak obsługi błędu zapisu zdjęcia w pamięci telefonu.');
