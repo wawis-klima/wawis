@@ -3,8 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { applyOfflineOperationsToJobs, createOfflineUuid } from '../src/mobile791/modules/job-offline-store.js';
-import { isDeviceOnlyOfflineEdit } from '../src/mobile791/modules/job-offline-device-edit.js';
-import { buildEditJobForm } from '../src/mobile791/modules/jobs-form.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
@@ -70,21 +68,6 @@ const legacyConflictRestored = applyOfflineOperationsToJobs([{
 
 assert.equal(legacyConflictRestored[0].status, 'W trakcie', 'Stary konflikt bez server_state nie może nadal pokazywać odrzuconego statusu.');
 assert.equal(legacyConflictRestored[0].offline_conflict, true);
-const deviceConflict = applyOfflineOperationsToJobs([{ id: 'job-device-conflict', device_model: 'Odrzucony', device_serial_number: 'DUP-1', offline_pending: true }], [{
-  id: 'device-conflict', user_id: 'worker-1', job_id: 'job-device-conflict', type: 'device', status: 'conflict',
-  base: { device_model: 'Potwierdzony', device_serial_number: 'SN-1' },
-  payload: { device_fields: { device_model: 'Odrzucony', device_serial_number: 'DUP-1' } },
-  error: 'Numer seryjny jest już przypisany.',
-  server_state: { device_model: 'Potwierdzony', device_serial_number: 'SN-1' },
-}], { id: 'worker-1' })[0];
-assert.equal(deviceConflict.device_model, 'Potwierdzony');
-assert.equal(deviceConflict.device_serial_number, 'SN-1');
-assert.equal(deviceConflict.offline_conflict, true);
-assert.equal(deviceConflict.offline_pending, false);
-const offlineJob = { id: 'job-offline-edit', client: 'Klient', status: 'W trakcie', device_model: 'Stary', device_serial_number: 'SN-1' };
-const offlineBaseForm = buildEditJobForm({ job: offlineJob, profiles: [], normalizeStatus: (value) => value });
-assert.equal(isDeviceOnlyOfflineEdit({ form: { ...offlineBaseForm, device_model: 'Nowy', device_serial_number: 'SN-2' }, baseJob: offlineJob, profiles: [], normalizeStatus: (value) => value }), true);
-assert.equal(isDeviceOnlyOfflineEdit({ form: { ...offlineBaseForm, client: 'Inny klient' }, baseJob: offlineJob, profiles: [], normalizeStatus: (value) => value }), false);
 assert.match(createOfflineUuid(), /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
 
 const store = read('src', 'mobile791', 'modules', 'job-offline-store.js');
@@ -106,12 +89,8 @@ assert.match(actions, /queueDeviceSaveOffline/);
 assert.match(actions, /queueCommentOffline/);
 assert.match(actions, /queueStatusOffline/);
 assert.match(actions, /Dodanie nowego klienta wymaga internetu/);
-assert.match(actions, /isDeviceOnlyOfflineEdit/);
-assert.match(actions, /required_nameplate_paths/);
-assert.match(sync, /required_nameplate_paths/);
-assert.match(sync, /allowedTypes/);
-assert.match(app, /allowedTypes: isAdmin \? \['device'\] : undefined/);
-assert.match(actions, /Zmiany danych klienta, przypisania, statusu i montażu wymagają internetu/);
+assert.match(actions, /Pełna edycja montażu wymaga połączenia z internetem/);
+assert.match(actions, /!isAdmin && serialOnlyMode && isTransientSupabaseError\(error\)/);
 assert.match(actions, /offline\.full-edit\.network-unconfirmed/);
 assert.match(sync, /OfflineConflictError/);
 assert.match(sync, /Dane urządzenia zostały w międzyczasie zmienione/);
@@ -130,6 +109,6 @@ assert.match(worker, /WAWIS_CACHE_LOADED_ASSETS/);
 assert.match(main, /navigator\.serviceWorker\.register\('\/push-sw\.js'\)/);
 assert.match(main, /registration\.update\(\)/);
 assert.match(main, /addEventListener\('controllerchange'/);
-assert.match(main, /requestUpdateReload\('service-worker-controllerchange'\)/);
+assert.match(main, /window\.location\.reload\(\)/);
 
 console.log(`OK: pełny mobilny tryb offline v${currentVersion}.`);

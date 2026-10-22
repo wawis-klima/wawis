@@ -7,7 +7,8 @@ export const SOURCE_JOB_ID_TEXT_HOTFIX_MESSAGE = [
 
 
 export const EMPTY_DEVICE_SERIAL_HOTFIX_MESSAGE = [
-  'Ten numer seryjny jest już przypisany do innego urządzenia. Każde urządzenie musi mieć własny, unikalny numer seryjny. Sprawdź tabliczkę i popraw numer przed ponownym zapisem.',
+  'Baza Supabase ma starą regułę unikalności numerów seryjnych i blokuje zapis kolejnego urządzenia bez numeru.',
+  'Uruchom w Supabase SQL Editor plik devices-empty-serial-hotfix-v8.60.sql, a następnie zapisz montaż ponownie.',
 ].join(' ');
 
 function collectErrorText(error) {

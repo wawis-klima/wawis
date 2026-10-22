@@ -7,9 +7,6 @@ const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const app = read('src', 'mobile791', 'App.jsx');
 const hook = read('src', 'mobile791', 'hooks', 'usePhotoSyncStatus.js');
 const component = read('src', 'mobile791', 'components', 'PhotoSyncStatus.jsx');
-const details = read('src', 'mobile791', 'components', 'JobDetailsPanel.jsx');
-const diagnostics = read('src', 'mobile791', 'components', 'diagnostics', 'MobileDiagnosticsPanel.jsx');
-const offlineStore = read('src', 'mobile791', 'modules', 'job-offline-store.js');
 const centerCss = read('src', 'mobile791', 'components', 'photo-sync-center.css.js');
 const layout = read('src', 'mobile791', 'components', 'jobs', 'MobileJobsLayout.jsx');
 const photos = read('src', 'mobile791', 'modules', 'photos.js');
@@ -18,7 +15,7 @@ const releaseRunner = read('scripts', 'run-release.cjs');
 const testGroups = read('scripts', 'test-groups.cjs');
 
 assert.match(component, /Synchronizacja zdjęć/);
-assert.match(component, /Synchronizuj teraz/);
+assert.match(component, /Wyślij wszystkie/);
 assert.match(component, /Ostatnia synchronizacja/);
 assert.match(component, /Nie usuwaj aplikacji ani danych Safari/);
 assert.match(component, /onRetryPhoto/);
@@ -46,13 +43,6 @@ assert.match(app, /retryAllPhotoUploads/);
 assert.match(app, /retryAllPhotoUploads=\{retryAllPhotoUploads\}/);
 assert.match(layout, /onRetryAll=\{retryAllPhotoUploads\}/);
 assert.match(layout, /onRetryPhoto=\{retryPhotoUpload\}/);
-assert.match(details, /synchronizePendingChanges\(selectedJobId\)/);
-assert.match(details, /Synchronizuj teraz/);
-assert.match(diagnostics, /await synchronizeNow\(\{ jobId: selectedJobId \}\)/);
-assert.match(diagnostics, /Synchronizuj teraz/);
-assert.match(offlineStore, /makeOfflineJobOperationsRetryableNow/);
-assert.match(offlineStore, /status === 'syncing' \|\| status === 'conflict'/);
-assert.match(app, /makeOfflineJobOperationsRetryableNow\(profile\.id/);
 
 assert.equal(packageJson.scripts['test:smoke:mobile-photo-sync-center'], 'node scripts/smoke-mobile-photo-sync-center.cjs');
 // Od 10.61 finalny release korzysta z centralnych grup regresji zamiast listy komend

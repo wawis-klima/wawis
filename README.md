@@ -1,17 +1,5 @@
 ## Aktualna wersja
-- 13.48
-
-WAWIS 13.48: bezpieczna diagnostyka etapów wysyłania zdjęć (kolejka, odczyt, przygotowanie, wysyłanie, zapis i weryfikacja) bez identyfikatorów, numerów i danych klienta. Nie usuwa lokalnych zdjęć i nie zmienia RLS. Awaria v13.47: 4 próby bez żądań POST Storage. Trzeba potwierdzić etap awarii na rzeczywistym iPhonie.
-
-WAWIS 13.47: synchronizacja tabliczek z wybranego montażu nie czeka na zaległe zdjęcia innych zleceń. Ręczna próba otrzymuje jobId i używa atomowych blokad IDB. Lokalne urządzenie pozostaje widoczne przy odświeżaniu serwera do czasu potwierdzenia synchronizacji, bez maskowania konfliktów. Komunikat o zapisie offline nie sugeruje gotowości protokołu. Nowe regresje smoke + iPhone E2E. Produkcyjna awaria 13.46 z 22.10.2026: 4 ponawiane zdjęcia z wielu montaży, model zlecenia na serwerze pusty.
-
-WAWIS 13.46: poprawka przesyłania zdjęć tabliczek na iPhonie — Storage zwracał HTTP 400 z Content-Length 0 podczas wysyłania multipart/form-data. Nowa ścieżka wysyła pełne i zweryfikowane bajty ArrayBuffer, zachowuje File w IndexedDB do potwierdzenia serwera. E2E i smoke do weryfikacji w CI; na razie tylko projekt wydania, bez ingerencji w produkcję.
-
-WAWIS 13.45: poprawka ciągłości synchronizacji zdjęć offline — awaria odtwarzania podglądu nie blokuje przesyłania plików, a pojedynczy błąd przygotowania tabliczki nie przerywa całej kolejki. Pliki i operacje urządzenia pozostają w pamięci iPhone'a do potwierdzenia serwera. Test regresji WebKit / IndexedDB, bez modyfikacji danych Supabase.
-
-WAWIS 13.44: oczekujący zapis tabliczek ma przycisk „Synchronizuj teraz” na karcie montażu, w Centrum synchronizacji i diagnostyce. Ręczna próba kończy lub wznawia kolejkę zdjęć, pomija odroczenie oczekującej operacji urządzenia i odświeża montaż po potwierdzeniu serwera. Konflikty i aktywne blokady pozostają chronione. Bez zmian schematu i danych w Supabase.
-
-WAWIS 13.43: urządzenia i tabliczki można zapisać do kolejki offline z konta administratora lub pracownika, o ile pozostałe dane montażu nie zostały zmienione. Zdjęcia są trwale przechowywane lokalnie i aktualizacja urządzenia czeka na ich dokładne potwierdzenie po synchronizacji. Numery seryjne pozostają unikalne; konflikt przywraca dane serwera i pokazuje właściwy komunikat. Bez zmian schematu i danych w Supabase.
+- 13.42
 
 WAWIS 13.42 (kandydat): usunięcie dwóch P0 z audytu 13.41 — świeży odczyt Storage z cacheNonce i cache:no-store przed SHA-256 oraz niedestrukcyjna migracja kolejki zdjęć IndexedDB v3 → v4 blokująca zapisy ze starej wersji. P1: niezależny claim dla ręcznego Ponów, przerwanie po błędzie CAS, backoff 429/503, uczciwe komunikaty po nieudanym zapisie IndexedDB. Nowe testy browser dla v3/v4, współbieżności i awarii. Bez zmian produkcyjnych w Supabase. Finalne potwierdzenie: dopiero po zielonym Closure Gate i testach aktualizacji PWA.
 
@@ -1061,9 +1049,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.48` — diagnostyka dokładnego etapu awarii lokalnej kolejki zdjęć z ochroną prywatności; ponowne wysłanie na iPhonie bez kasowania danych.
-- wersja `13.46` — binarny transfer zdjęć na iOS (obejście pustego multipart), kontrola bajtów i lokalnego File do ACK.
-- wersja `13.45` — odporne odtwarzanie i synchronizacja zdjęć offline; pliki IndexedDB pozostają do potwierdzenia Storage.
+- wersja `13.42` — świeża weryfikacja Storage i bariera IndexedDB v4; retry, CAS, zapis zdjęć.
 - wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
 - wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
 - wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.

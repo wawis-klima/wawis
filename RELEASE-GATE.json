@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.48",
+  "version": "13.42",
   "scope": "mobile",
-  "release_branch": "release/v13.48",
+  "release_branch": "release/v13.42",
   "baseline_diagnostics": {
-    "checked": true,
-    "last_24h": true,
-    "result": "FAIL",
-    "notes": "iPhone 13.47 2026-10-22 13:18 CEST: 4 local/4 retry, 0 prepared/0 Storage, 2 pending; Supabase logs brak Storage POST podczas próby."
+    "checked": false,
+    "last_24h": false,
+    "result": "NOT_RUN",
+    "notes": "Codex FAIL 13.41: P0 cached Storage SHA-256, mixed-version IDB v3 overwrite; P1 retry foreign claim, stale CAS, 429/503, false saved UI. Plan zabezpieczeń przed końcowym GO."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.48.zip"
+    "file_name": "klima-app-v13.42.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.48",
+    "source_branch": "release/v13.42",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "CI same SHA + Vercel production SHA + physical iPhone retry",
-    "notes": "Ustalić stage awarii na tym samym iPhonie; nie usuwać IndexedDB. 13.48 diagnozuje, nie gwarantuje naprawy."
+    "evidence_source": "PR checks SHA, Closure Gate, production Vercel READY SHA, app 13.42, kontrola iPhone/WebKit",
+    "notes": "Oryginalne reproduktory Codexa są w niedostępnym tu /tmp, nie traktować ich jako uruchomionych. Fizyczny Safari/PWA i realny CDN wymagają zewnętrznej kontroli."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Etapowe logowanie błędu zdjęć offline bez danych osobowych; bez modyfikacji Blob, IndexedDB, RLS i protokołów.",
-    "release_ci": "Targeted checks + Playwright + Closure Gate exact SHA",
-    "post_deploy": "Kolejna próba na fizycznym iPhonie, odczyt etapu i potwierdzenie zdjęć JW/JZ na serwerze przed uznaniem usterki za usuniętą."
+    "code": "P0: fresh Storage readback nocache+nonce; nondestructive IDB v4 migration. P1: claim, CAS, 429/503 retry, failed save UI.",
+    "release_ci": "New Playwright on actual browser IndexedDB/SDK, previous photo tests, PostgreSQL dual session, Closure Gate, build.",
+    "post_deploy": "Exact Vercel SHA READY plus iPhone 13.42; CDN cache and old PWA upgrade reproduction are separate checks."
   }
 }

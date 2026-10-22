@@ -1,13 +1,15 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.45 (kandydat — wymaga CI i weryfikacji iPhone)
+- 13.39 (kandydat — potwierdzić wynik PR CI, merge i Vercel)
 
 ## Zakres
-- Odporne odtwarzanie/wznawianie zdjęć i operacji urządzenia po błędzie jednej fazy; brak usuwania lokalnych zdjęć bez potwierdzenia z serwera.
-- Obsługa nieobsłużonych obietnic i wyjątków per pozycja kolejki; kody diagnostyczne faz.
-- Bez zmian Supabase, schematu, RLS, danych montażu, OCR i PDF.
+- Synchronizacja zdjęć mobilnych nie jest anulowana przez zmianę stanu licznika kolejki.
+- Przerwany proces oddaje wyłącznie własny lease z zachowaniem lokalnego zdjęcia i poprzedniego statusu.
+- Uzgadnianie serwerowych tabliczek JZ/JW ze starą kolejką używa niezmienionego statusu rekordu IndexedDB.
+- Bez zmian w tabelach danych, Supabase, rolach, OCR, protokołach i pozostałych modułach.
 
-## Weryfikacja
-- Przed merge: targeted smoke, Playwright mobile/desktop, Closure Gate, build.
-- Fizyczny iPhone z dwoma oczekującymi zdjęciami: konieczna końcowa walidacja po produkcyjnym wdrożeniu.
+## Kontrola
+- Test E2E: aktywny porzucony 3-minutowy lease, zdjęcie już na serwerze, dwukrotne odtworzenie; sprawdzenie własności lease i braku kasowania niewysłanego zdjęcia.
+- Smoke offline photo queue i idempotencja, wymagane testy powiązanych modułów, Closure Gate i build.
+- Merge i produkcyjny deploy tylko po zielonym CI; Vercel READY musi wskazywać nowe SHA i wersję 13.39.

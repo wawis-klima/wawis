@@ -293,7 +293,6 @@ export default function JobDetailsPanel({
   onReturnToCalendar,
   detailsLoading = false,
   onRetryDetails,
-  synchronizePendingChanges,
 }) {
   const [protocolTestOpen, setProtocolTestOpen] = React.useState(false);
   const [protocolRecord, setProtocolRecord] = React.useState(null);
@@ -305,8 +304,6 @@ export default function JobDetailsPanel({
   const [expandedDeviceIndexes, setExpandedDeviceIndexes] = React.useState([]);
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
-  const [pendingSyncBusy, setPendingSyncBusy] = React.useState(false);
-  const [pendingSyncMessage, setPendingSyncMessage] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
 
   function applyPaymentPatchToJobState(paymentPatch = {}) {
@@ -342,32 +339,7 @@ export default function JobDetailsPanel({
     setExpandedDeviceIndexes([]);
     setCommentSaving(false);
     setManualVerificationBusyKey('');
-    setPendingSyncBusy(false);
-    setPendingSyncMessage('');
   }, [selectedJobId]);
-
-  async function handlePendingSync() {
-    if (!selectedJobId || pendingSyncBusy || typeof synchronizePendingChanges !== 'function') return;
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      setPendingSyncMessage('Brak internetu. Włącz internet i spróbuj ponownie.');
-      return;
-    }
-    setPendingSyncBusy(true);
-    setPendingSyncMessage('');
-    try {
-      const result = await synchronizePendingChanges(selectedJobId);
-      const remaining = Number(result?.remainingPhotos || 0) + Number(result?.remainingOperations || 0);
-      if (result?.error) {
-        setPendingSyncMessage('Nie udało się zakończyć synchronizacji. Dane nadal są bezpiecznie zapisane na telefonie.');
-      } else if (remaining > 0) {
-        setPendingSyncMessage('Synchronizacja nadal trwa. Zdjęcia pozostają zapisane na telefonie — spróbuj ponownie za chwilę.');
-      } else {
-        setPendingSyncMessage('Synchronizacja zakończona. Tabliczki zapisano w systemie.');
-      }
-    } finally {
-      setPendingSyncBusy(false);
-    }
-  }
 
   React.useEffect(() => {
     setAdminNoteExpanded(!selectedJobIsCompleted);
@@ -593,18 +565,7 @@ export default function JobDetailsPanel({
           Konflikt synchronizacji · lokalna zmiana nie została zapisana na serwerze. Sprawdź Centrum synchronizacji.
         </div>
       ) : selectedJob.offline_pending ? (
-        <div className="workerReadOnlyNote offlinePendingNotice" role="status" aria-live="polite">
-          <span>Zmiany zapisane na telefonie · oczekują na synchronizację</span>
-          <button
-            type="button"
-            className="offlinePendingSyncButton"
-            onClick={handlePendingSync}
-            disabled={pendingSyncBusy}
-          >
-            {pendingSyncBusy ? 'Synchronizuję…' : 'Synchronizuj teraz'}
-          </button>
-          {pendingSyncMessage ? <small className="offlinePendingSyncMessage">{pendingSyncMessage}</small> : null}
-        </div>
+        <div className="workerReadOnlyNote" role="status">Zmiany zapisane na telefonie · oczekują na synchronizację</div>
       ) : null}
       <div className="jobHead detailHeader">
         <div className="detailIdentity">
@@ -927,12 +888,7 @@ export default function JobDetailsPanel({
           {canFinishJob && !showDetailsLoading && !hasConfiguredDevices ? (
             <div className="finishNameplateRequirement missing">Najpierw dodaj urządzenie (JW/JZ), aby zakończyć zlecenie.</div>
           ) : null}
-          {canFinishJob && !showDetailsLoading && selectedJob.offline_pending && hasConfiguredDevices ? (
-            <div className="finishNameplateRequirement checking">
-              Urządzenie zapisane na telefonie. Czeka na wysłanie tabliczek i potwierdzenie zapisu w systemie.
-            </div>
-          ) : null}
-          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete && !selectedJob.offline_pending ? (
+          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
             <div className="finishNameplateRequirement ready">
               {isAdmin
                 ? (protocolReadyForCompletion ? 'Urządzenia i protokół są gotowe. Możesz zakończyć zlecenie.' : 'Urządzenia są dodane. Uzupełnij protokół, aby zakończyć zlecenie.')
