@@ -822,7 +822,7 @@ export default function App() {
     }
   }, [captureCurrentSessionToken, isSessionTokenCurrent, supabase]);
 
-  const performOfflineJobSync = React.useCallback(async () => {
+  const performOfflineJobSync = React.useCallback(async (options = {}) => {
     const syncContext = offlineSyncContextRef.current;
     const currentProfile = syncContext.profile;
     if (!supabase || !currentProfile || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
@@ -834,6 +834,7 @@ export default function App() {
       const result = await syncOfflineJobOperations({
         supabase,
         profile: currentProfile,
+        jobId: String(options?.jobId || '').trim(),
         allowedTypes: isAdmin ? ['device'] : undefined,
         profiles: syncContext.profiles,
         jobs: syncContext.jobs,
@@ -1104,12 +1105,12 @@ export default function App() {
       // Najpierw kończymy każdą już rozpoczętą próbę. Potem ręczna akcja
       // usuwa wyłącznie backoff oczekujących/błędnych operacji i uruchamia je
       // natychmiast. Konflikty oraz aktywne lease pozostają nietknięte.
-      await performOfflineJobSync();
+      await performOfflineJobSync({ jobId: requestedJobId });
       await makeOfflineJobOperationsRetryableNow(profile.id, {
         jobId: requestedJobId,
         allowedTypes: isAdmin ? ['device'] : undefined,
       });
-      const offlineDataResult = await performOfflineJobSync();
+      const offlineDataResult = await performOfflineJobSync({ jobId: requestedJobId });
       if (requestedJobId) {
         await reloadJobSummary(requestedJobId);
         await reloadJobDetails(requestedJobId, { force: true, background: true });
