@@ -510,6 +510,10 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await page.locator('.mobileMultiOutdoorCard').click();
     await selectNameplateAndCrop(page, page.locator('.nameplateGalleryInput'));
     await page.getByRole('button', { name: 'Zapisz jednostkę' }).click();
+    // Po edycji JZ kreator wraca do ekranu Multi, a nie do podsumowania.
+    // Przechodzimy normalnym przyciskiem użytkownika przed próbą zapisu.
+    await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
+    await expect(page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' })).toBeVisible();
 
     // Real browser IndexedDB; reject the actual transactional add of a Blob
     // without removing any previously saved record.
@@ -524,6 +528,8 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     const alerts = [];
     page.on('dialog', async dialog => { alerts.push(dialog.message()); await dialog.accept(); });
     await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
+    const override = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia' });
+    if (await override.isVisible()) await override.click();
     await expect(page.locator('.mobileDeviceWizard')).toBeVisible({ timeout: 20_000 });
     await expect.poll(() => alerts.some(x => /nie udało się zapisać|nie zamykaj formularza/i.test(x)), {
       timeout: 15_000,
