@@ -70,6 +70,7 @@ const GROUPS = {
     'npm run test:smoke:new-job-author-comment',
   ],
   photos: [
+    'node scripts/smoke-photo-queue-stage-diagnostics-v1348.mjs',
     'node scripts/smoke-selected-job-sync-v1347.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-mobile-photo-zoom-v1180.mjs',
