@@ -58,6 +58,7 @@ test('@mobile v13.44 — ręczna synchronizacja pomija backoff tylko wybranego o
         const query = {
           select() { return this; },
           eq(key, value) { state.filters[key] = value; return this; },
+          order() { return this; },
           is(key) { state.filters[key] = null; return this; },
           update(values) { state.updateValues = values; return this; },
           insert(values) {
