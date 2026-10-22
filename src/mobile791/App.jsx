@@ -815,7 +815,7 @@ export default function App() {
   const performOfflineJobSync = React.useCallback(async () => {
     const syncContext = offlineSyncContextRef.current;
     const currentProfile = syncContext.profile;
-    if (!supabase || !currentProfile || isAdmin || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+    if (!supabase || !currentProfile || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
       await photoSyncStatus.refreshQueueSummary();
       return { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
     }
@@ -824,6 +824,7 @@ export default function App() {
       const result = await syncOfflineJobOperations({
         supabase,
         profile: currentProfile,
+        allowedTypes: isAdmin ? ['device'] : undefined,
         profiles: syncContext.profiles,
         jobs: syncContext.jobs,
         createNotification: createNotificationAction,

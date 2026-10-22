@@ -267,7 +267,19 @@ async function putOfflineJobOperationAtomically(record) {
               .filter((item) => String(item.user_id) === record.user_id)
               .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
               .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
-            if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
+            if (superseded[0]?.base) {
+              finalRecord = { ...record, base: superseded[0].base };
+              if (record.type === 'device') {
+                const requiredPaths = new Set([
+                  ...(superseded[0].payload?.required_nameplate_paths || []),
+                  ...(record.payload?.required_nameplate_paths || []),
+                ].map((value) => String(value || '').trim()).filter(Boolean));
+                finalRecord.payload = {
+                  ...record.payload,
+                  required_nameplate_paths: [...requiredPaths],
+                };
+              }
+            }
             for (const item of superseded) objectStore.delete(item.id);
             putFinalRecord();
           } catch (error) {
@@ -469,12 +481,22 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
     for (const operation of jobOperations) {
       const operationStatus = String(operation?.status || 'pending').toLowerCase();
-      const terminalStatusOperation = operation.type === 'status'
+      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'device')
         && (operationStatus === 'conflict' || operationStatus === 'error');
 
       if (terminalStatusOperation) {
-        const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
-        if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
+        if (operation.type === 'status') {
+          const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
+          if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
+        } else {
+          nextJob = {
+            ...nextJob,
+            ...(operation?.server_state || {
+              device_model: operation?.base?.device_model || '',
+              device_serial_number: operation?.base?.device_serial_number || '',
+            }),
+          };
+        }
         if (operationStatus === 'conflict') {
           nextJob = {
             ...nextJob,
