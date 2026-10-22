@@ -17,7 +17,7 @@ assert.match(layout, /aria-label=\{"Wersja aplikacji " \+ APP_VERSION \+ " — o
 assert.match(layout, /aria-expanded=\{diagnosticsOpen\}/);
 assert.match(layout, /setDiagnosticsOpen\(\(open\) => !open\)/, "Dotknięcie wersji musi przełączać diagnostykę");
 assert.match(layout, /onBack=\{\(\) => setDiagnosticsOpen\(false\)\}/, "Powrót musi zamykać diagnostykę");
-assert.match(layout, /<MobileDiagnosticsPanel[\s\S]*?sessionUser=\{sessionUser\}[\s\S]*?refreshAll=\{refreshAll\}/, "Akcje diagnostyczne muszą mieć prawidłowe zależności");
+assert.match(layout, /sessionUser=\{sessionUser\} refreshAll=\{refreshAll\}/, "Akcje diagnostyczne muszą mieć prawidłowe zależności");
 assert.match(diagnostics, /downloadDiagnosticReportImmediate\(/, "Raport mobilny musi działać");
 assert.match(diagnostics, /getPhotoQueueSummary\(/, "Diagnostyka musi odczytać kolejkę zdjęć");
 assert.match(diagnostics, /profile\?\.role === "Administrator" \? \(/, "Pracownik nie może widzieć testu PUSH administratora");

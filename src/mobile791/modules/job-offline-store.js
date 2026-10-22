@@ -267,19 +267,7 @@ async function putOfflineJobOperationAtomically(record) {
               .filter((item) => String(item.user_id) === record.user_id)
               .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
               .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
-            if (superseded[0]?.base) {
-              finalRecord = { ...record, base: superseded[0].base };
-              if (record.type === 'device') {
-                const requiredPaths = new Set([
-                  ...(superseded[0].payload?.required_nameplate_paths || []),
-                  ...(record.payload?.required_nameplate_paths || []),
-                ].map((value) => String(value || '').trim()).filter(Boolean));
-                finalRecord.payload = {
-                  ...record.payload,
-                  required_nameplate_paths: [...requiredPaths],
-                };
-              }
-            }
+            if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
             for (const item of superseded) objectStore.delete(item.id);
             putFinalRecord();
           } catch (error) {
@@ -405,58 +393,6 @@ export async function listOfflineJobOperations(userId = '') {
   }
 }
 
-export async function makeOfflineJobOperationsRetryableNow(userId = '', options = {}) {
-  const normalizedUserId = String(userId || '').trim();
-  const normalizedJobId = String(options.jobId || '').trim();
-  const allowedTypes = Array.isArray(options.allowedTypes)
-    ? new Set(options.allowedTypes.map((value) => String(value || '').trim()).filter(Boolean))
-    : null;
-  if (!normalizedUserId) return 0;
-
-  let db;
-  try {
-    db = await openOfflineDb();
-    if (!db) return 0;
-    return await new Promise((resolve, reject) => {
-      const transaction = db.transaction(OPERATION_STORE, 'readwrite');
-      const store = transaction.objectStore(OPERATION_STORE);
-      const request = store.getAll();
-      let changed = 0;
-      request.onsuccess = () => {
-        for (const operation of Array.isArray(request.result) ? request.result : []) {
-          if (String(operation?.user_id || '') !== normalizedUserId) continue;
-          if (normalizedJobId && String(operation?.job_id || '') !== normalizedJobId) continue;
-          if (allowedTypes && !allowedTypes.has(String(operation?.type || ''))) continue;
-          const status = String(operation?.status || 'pending').toLowerCase();
-          // Aktywnego workera oraz konfliktu nie przejmujemy. Ręczna akcja ma
-          // jedynie pominąć backoff operacji, która bezpiecznie czeka lub ma błąd.
-          if (status === 'syncing' || status === 'conflict') continue;
-          store.put({
-            ...operation,
-            status: 'pending',
-            error: '',
-            next_attempt_at: '',
-            lease_until: '',
-          });
-          changed += 1;
-        }
-      };
-      request.onerror = () => reject(request.error || new Error('Nie udało się przygotować zmian do ponownej synchronizacji.'));
-      transaction.oncomplete = () => {
-        if (changed) dispatchOfflineChanged();
-        resolve(changed);
-      };
-      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się przygotować zmian do ponownej synchronizacji.'));
-      transaction.onabort = transaction.onerror;
-    });
-  } catch (error) {
-    console.warn('Nie udało się wymusić ponowienia zmian offline.', error?.message || error);
-    return 0;
-  } finally {
-    db?.close();
-  }
-}
-
 export async function updateOfflineJobOperation(operationId, patch = {}) {
   if (!operationId) return false;
   let db;
@@ -533,22 +469,12 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
     for (const operation of jobOperations) {
       const operationStatus = String(operation?.status || 'pending').toLowerCase();
-      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'device')
+      const terminalStatusOperation = operation.type === 'status'
         && (operationStatus === 'conflict' || operationStatus === 'error');
 
       if (terminalStatusOperation) {
-        if (operation.type === 'status') {
-          const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
-          if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
-        } else {
-          nextJob = {
-            ...nextJob,
-            ...(operation?.server_state || {
-              device_model: operation?.base?.device_model || '',
-              device_serial_number: operation?.base?.device_serial_number || '',
-            }),
-          };
-        }
+        const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
+        if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
         if (operationStatus === 'conflict') {
           nextJob = {
             ...nextJob,

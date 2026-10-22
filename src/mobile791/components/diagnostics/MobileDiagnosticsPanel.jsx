@@ -10,13 +10,12 @@ import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosti
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
 
-export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null, synchronizeNow = null, onBack = () => {} }) {
+export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null, onBack = () => {} }) {
   const [queueSummary, setQueueSummary] = useState(EMPTY_QUEUE);
   const [offlineSummary, setOfflineSummary] = useState({ total: 0, pending: 0, syncing: 0, conflict: 0, error: 0 });
   const [pushBusy, setPushBusy] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [refreshBusy, setRefreshBusy] = useState(false);
-  const [syncBusy, setSyncBusy] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -97,30 +96,6 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
     }
   }
 
-  async function handleSynchronize() {
-    if (syncBusy || typeof synchronizeNow !== 'function') return;
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      setMessage('Brak internetu. Włącz internet i spróbuj ponownie.');
-      return;
-    }
-    setSyncBusy(true);
-    setMessage('');
-    try {
-      const result = await synchronizeNow({ jobId: selectedJobId });
-      const remaining = Number(result?.remainingPhotos || 0) + Number(result?.remainingOperations || 0);
-      setMessage(result?.error
-        ? 'Nie udało się zakończyć synchronizacji. Dane pozostają zapisane na telefonie.'
-        : remaining > 0
-          ? 'Synchronizacja nadal trwa. Spróbuj ponownie za chwilę.'
-          : 'Synchronizacja zakończona. Wszystkie oczekujące dane zostały wysłane.');
-    } catch (error) {
-      logDiagnostic('diagnostic.mobile.panel.sync.failed', { error });
-      setMessage(`Nie udało się uruchomić synchronizacji: ${error?.message || 'nieznany błąd'}`);
-    } finally {
-      setSyncBusy(false);
-    }
-  }
-
   return (
     <div className="mobileDiagnosticsPage">
       <button type="button" className="mobileDiagnosticsBack" onClick={onBack}>← Wróć do montaży</button>
@@ -165,9 +140,6 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
               {pushBusy ? 'Wysyłanie…' : 'Wyślij test push'}
             </button>
           ) : null}
-          <button type="button" className="btn primary" onClick={handleSynchronize} disabled={syncBusy || typeof synchronizeNow !== 'function'}>
-            {syncBusy ? 'Synchronizuję…' : 'Synchronizuj teraz'}
-          </button>
           <button type="button" className="btn" onClick={handleRefresh} disabled={refreshBusy}>
             {refreshBusy ? 'Odświeżanie…' : 'Odśwież dane'}
           </button>

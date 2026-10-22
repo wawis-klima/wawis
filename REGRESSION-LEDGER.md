@@ -1,43 +1,4 @@
-## WAWIS-1347 — iPhone v13.46: wybrany montaż ginie za kolejką (22.10.2026)
-
-| Id | Stan | Dowód / wymagany test |
-|---|---|---|
-| WAWIS-1347-READ | POTWIERDZONE | Montaż testowy e500dcdb-171b-4da8-bb05-e006fa192734: po ręcznej synchronizacji widok z lokalnym urządzeniem przechodzi na „Brak urządzeń”. Supabase: model null, 0 zdjęć, 0 Storage. |
-| WAWIS-1347-QUEUE | POTWIERDZONE W KODZIE | App.retryAllPhotoUploads uruchamiał globalne zdjęcia wszystkich montaży, a retryAllPersistedPhotoUploads czekało na już działający background worker. Przy 4 pozycjach starsze zdjęcia blokują wybrany montaż. |
-| WAWIS-1347-TRANSFER | POTWIERDZONE | Na iPhonie v13.46 w 12:42:12 CEST Supabase przyjął poprawny JPEG ~270 KB, ale dla INNEGO montażu c306426a…, nie dla zaznaczonego e500d… |
-| WAWIS-1347-VIEW | POTWIERDZONE W KODZIE | reloadJobSummary oraz mergeJobDetailsForMobile brały wartości serwera bez nałożenia oczekującego device_fields z IDB. |
-| WAWIS-1347-E2E | DO KONTROLI CI | tests/e2e/mobile-manual-photo-priority-v1347.spec.js: globalny worker celowo zawieszony na starym zadaniu, ręczny sync wybranego zlecenia musi ACK niezależnie, bez usunięcia starych danych. |
-| WAWIS-1347-SMOKE | DO KONTROLI CI | scripts/smoke-selected-job-sync-v1347.mjs: widok lokalny oczekujący na zdjęcia nie może zostać nadpisany, konflikt pozostaje chroniony. |
-| WAWIS-1347-PHYSICAL | ZEWNĘTRZNY | Po ewentualnym wdrożeniu sprawdzić na tym samym iPhonie upload 2 zdjęć e500d… oraz aktywację „Protokół”, bez ponownego tworzenia testowego montażu. |
-
-## WAWIS-1346 — iOS / zdjęcia wysyłane z Content-Length: 0 (22.10.2026)
-
-| ID | Stan | Reproduktor / warunek zamknięcia |
-|---|---|---|
-| WAWIS-1346-LIVE | CONFIRMED | iPhone v13.45, dwa nowe zdjęcia, Storage POST 11:53:09 i 11:53:11 CEST: HTTP 400 InvalidRequest \`No content provided\`, \`Content-Length: 0\`; brak rekordów photos i Storage; montaż traci widok urządzeń po odświeżeniu. |
-| WAWIS-1346-BINARY | FIXED-UNVERIFIED | iOS wysyła sprawdzony ArrayBuffer z pełnym \`byteLength\` zamiast multipart FormData. Plik IndexedDB nie jest usuwany bez serwerowego ACK bajtów. |
-| WAWIS-1346-TEST | REQUIRED | \`tests/e2e/mobile-ios-binary-upload-v1346.spec.js\` + \`scripts/smoke-mobile-photo-compression.cjs\`; CI/Playwright i reproduktor produkcyjnego 400. |
-| WAWIS-1346-IPHONELIVE | EXTERNAL | Na fizycznym iPhonie potwierdzić HTTP 2xx + niezerowy body uploadu, 2 zapisane photos, 1 operację device ACK, odblokowany Protokół i brak pozostałych elementów wybranego zlecenia. |
-
 # WAWIS — Regression Ledger
-
-## WAWIS-1344 — ręczna synchronizacja tabliczek po powrocie internetu
-
-| ID | Stan | Reproduktor / warunek zamknięcia |
-|---|---|---|
-| WAWIS-1344-BACKOFF | FIXED-UNVERIFIED | `tests/e2e/mobile-manual-sync-v1344.spec.js`: zwykła próba pomija operację z przyszłym `next_attempt_at`, a „Synchronizuj teraz” atomowo usuwa backoff wybranego montażu i zapisuje urządzenie po potwierdzeniu zdjęcia. |
-| WAWIS-1344-SCOPE | FIXED-UNVERIFIED | Ten sam test potwierdza, że operacja innego montażu zachowuje swój backoff; aktywne operacje i konflikty nie są przejmowane. |
-| WAWIS-1344-UI | FIXED-UNVERIFIED | Przycisk jest dostępny na karcie oczekującego montażu, w Centrum synchronizacji i diagnostyce; wymagane wykonanie mobilnego E2E w CI. |
-| WAWIS-1344-LIVE | EXTERNAL | Po wdrożeniu otworzyć zachowaną kolejkę z iPhone'a 13.43, użyć „Synchronizuj teraz” i potwierdzić zniknięcie komunikatu oraz aktywację protokołu. |
-
-## WAWIS-1343 — offline zapis urządzeń i tabliczek
-
-| ID | Stan | Reproduktor / warunek zamknięcia |
-|---|---|---|
-| WAWIS-1343-QUEUE | FIXED-UNVERIFIED | `tests/e2e/mobile-nameplate-offline-v1343.spec.js`: tylko edycja urządzeń i fotografie mogą trafić do lokalnej kolejki; zmiana klienta odrzuca zapis offline. |
-| WAWIS-1343-PHOTO-DEPENDENCY | FIXED-UNVERIFIED | Ten sam test sprawdza, że aktualizacja urządzenia czeka na dokładną ścieżkę zdjęcia w Supabase, po czym synchronizuje się; admin wysyła tylko operacje urządzeń. |
-| WAWIS-1343-DUPLICATE | FIXED-UNVERIFIED | `tests/e2e/mobile-nameplate-offline-v1343.spec.js`: odpowiedź 23505 z devices_serial_number_key pozostawia operację w konflikcie i przywraca urządzenie potwierdzone przez serwer. |
-| WAWIS-1343-LIVE | EXTERNAL | Po wydaniu sprawdzić na fizycznym iPhonie tryb samolotowy, ponowne połączenie, synchronizację zdjęć i urządzenia oraz duplikat SN. |
 
 ## WAWIS-1342 — odpowiedź na niezależny audyt FAIL 13.41 (21.10.2026)
 

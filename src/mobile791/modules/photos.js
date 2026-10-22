@@ -1,5 +1,4 @@
 import { claimPhotoQueueItem, deletePhotoQueueItem, hydratePhotoQueueItem, listPhotoQueueItems, recoverStalePhotoQueueItems, releaseClaimedPhotoQueueItem, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
-import { logDiagnostic } from './diagnostics.js';
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
@@ -15,43 +14,6 @@ const activePhotoUploadPromises = new Map();
 const persistedQueueResumePromises = new Map();
 const PHOTO_UPLOAD_LEASE_MS = 3 * 60 * 1000;
 const PHOTO_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
-// Closed-schema instrumentation; no customer data, filenames, paths, URLs or raw error messages.
-function traceQueueStageFailure(stage, error, retryCount = 0) {
-  const rawCode = String(error?.code || error?.name || '').toUpperCase();
-  const status = Number(error?.statusCode || error?.status || 0);
-  const code = rawCode === 'PHOTO_UPLOAD_BODY_INVALID' ? rawCode
-    : /QUOTAEXCEEDED|NOTREADABLE|INVALIDSTATE|DATAERROR/.test(rawCode) ? 'PHOTO_LOCAL_FILE_READ_FAILED'
-    : status === 401 || status === 403 ? 'PHOTO_UPLOAD_FORBIDDEN'
-    : status === 400 ? 'PHOTO_UPLOAD_BAD_REQUEST'
-    : status === 413 ? 'PHOTO_UPLOAD_TOO_LARGE'
-    : isRetryablePhotoUploadError(error) ? 'PHOTO_UPLOAD_TRANSIENT'
-    : 'PHOTO_QUEUE_STAGE_FAILED';
-  logDiagnostic(`photos.${stage}.failed`, {
-    code, retry_count: Math.min(1000000, Math.max(0, Number(retryCount) || 0)),
-  });
-}
-
-// iOS WebKit potrafi wysłać multipart/form-data z Content-Length: 0
-// mimo poprawnego lokalnego File. Storage-js obsługuje ArrayBuffer jako
-// surowe body (application/octet-stream z jawnym contentType obrazu),
-// dlatego na iPhonie/iPadzie omijamy kodowanie multipart.
-// File pozostaje w IndexedDB aż do potwierdzonego uploadu i ACK.
-export async function getMobileStorageUploadBody(file, {
-  userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '',
-  maxTouchPoints = typeof navigator !== 'undefined' ? navigator.maxTouchPoints : 0,
-} = {}) {
-  const agent = String(userAgent || '');
-  const isIOS = /iPhone|iPad|iPod/i.test(agent)
-    || (/Macintosh/i.test(agent) && Number(maxTouchPoints || 0) > 1);
-  if (!isIOS) return file;
-  const bytes = await file.arrayBuffer();
-  if (!(bytes instanceof ArrayBuffer) || !bytes.byteLength || bytes.byteLength !== Number(file.size || 0)) {
-    const error = new Error('Zdjęcie nie ma pełnej zawartości bajtowej. Zachowano plik na telefonie.');
-    error.code = 'PHOTO_UPLOAD_BODY_INVALID';
-    throw error;
-  }
-  return bytes;
-}
 
 function getPhotoRetryDelayMs(retryCount) {
   const exponent = Math.max(0, Math.min(Number(retryCount || 1) - 1, 8));
@@ -1099,12 +1061,11 @@ async function performQueuedPhotoUpload({
     setSelectedJob,
     updater: uploadingPatch,
   });
-  if (!(await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto)))) { traceQueueStageFailure('upload.claim-write', null, uploadingPatch.retry_count); return null; }
+  if (!(await updatePhotoQueueItem(localPhotoId, uploadingPatch, photoQueueWriteGuard(queuedPhoto)))) return null;
   if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
   let storagePath = queuedPhoto.planned_storage_path || buildPhotoStoragePath(jobId, queuedPhoto);
   let storageExists = String(queuedPhoto.upload_stage || '') === 'storage_uploaded';
-  let uploadStage = 'prepare';
   try {
     let preparedResult;
     let uploadFile = queuedPhoto.__preparedFile || null;
@@ -1156,17 +1117,12 @@ async function performQueuedPhotoUpload({
       }),
     });
 
-    uploadStage = 'prepared-write';
-    if (!(await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto)))) { traceQueueStageFailure('upload.prepared-write', null, uploadingPatch.retry_count); return null; }
+    if (!(await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto)))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
-    uploadStage = 'body';
-    const uploadBody = await getMobileStorageUploadBody(uploadFile);
-    if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-    uploadStage = 'storage';
     const { error: uploadError } = await supabase.storage
       .from(PHOTO_BUCKET)
-      .upload(storagePath, uploadBody, { cacheControl: '3600', upsert: false, contentType: uploadFile.type || 'image/jpeg' });
+      .upload(storagePath, uploadFile, { cacheControl: '3600', upsert: false, contentType: uploadFile.type || 'image/jpeg' });
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     if (uploadError && !isDuplicateStorageError(uploadError)) throw uploadError;
     storageExists = true;
@@ -1197,7 +1153,6 @@ async function performQueuedPhotoUpload({
     }
 
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-    uploadStage = 'database';
     const insertResult = await supabase
       .from('photos')
       .insert({
@@ -1254,7 +1209,6 @@ async function performQueuedPhotoUpload({
     const finalStoragePath = getPhotoStoragePath({ photo: insertedPhoto, supabaseUrl }) || storagePath;
     // Nawet udany INSERT po ACK uploadu nie jest dowodem integralności
     // ostatniej lokalnej kopii. Weryfikujemy też końcowy obiekt Storage.
-    uploadStage = 'verify';
     if (!(await verifyStorageObjectBytes({ supabase, storagePath: finalStoragePath, uploadFile, throwOnTransient: true }))) {
       throw new Error('Serwer nie potwierdził zawartości zdjęcia. Lokalny plik został zachowany do ponownej weryfikacji.');
     }
@@ -1300,7 +1254,6 @@ async function performQueuedPhotoUpload({
     return photoForUi;
   } catch (error) {
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-    traceQueueStageFailure('upload.' + uploadStage, error, uploadingPatch.retry_count);
     const waitingForInternet = isBrowserOffline() || isRetryablePhotoUploadError(error);
     const attemptCount = Number(uploadingPatch.retry_count || 1);
     const failurePatch = waitingForInternet
@@ -1737,7 +1690,6 @@ async function runPersistedPhotoUploads({
   onQueueStart,
   onQueueIdle,
   includeErrors = false,
-  jobId = '',
   isSessionCurrent = () => true,
 } = {}) {
   if (!supabase || !profile || isBrowserOffline() || !isSessionCurrent()) return { processed: 0, uploaded: 0 };
@@ -1748,13 +1700,8 @@ async function runPersistedPhotoUploads({
   const guardedSetSelectedJob = (updater) => { if (isSessionCurrent()) setSelectedJob?.(updater); };
   const guardedOnPhotoUploaded = (...args) => { if (isSessionCurrent()) onPhotoUploaded?.(...args); };
   const guardedOnPhotoUploadError = (...args) => { if (isSessionCurrent()) onPhotoUploadError?.(...args); };
-  const selectedJobId = String(jobId || '').trim();
-  // Ręczny przycisk na karcie montażu musi obsłużyć TEN montaż,
-  // niezależnie od wolnych/starych transferów z innych zleceń.
-  // Jednorazowy claim w IndexedDB nadal zabezpiecza przed dwoma workerami.
   const records = (await listPhotoQueueItems())
     .filter((record) => photoQueueRecordBelongsToProfile(record, profileId))
-    .filter((record) => !selectedJobId || String(record.job_id || '') === selectedJobId)
     .filter((record) => includeErrors || photoQueueItemIsDue(record));
   if (!records.length) {
     if (isSessionCurrent()) onQueueIdle?.();
@@ -1767,15 +1714,12 @@ async function runPersistedPhotoUploads({
   let failed = 0;
   for (const queuedRecord of records) {
     if (isBrowserOffline() || !photoSessionIsCurrent(isSessionCurrent)) break;
-    let record = null;
-    let queueStage = 'claim';
+    const record = await claimPhotoQueueItem(queuedRecord.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS, force: includeErrors });
+    if (!record) continue;
     try {
-      record = await claimPhotoQueueItem(queuedRecord.id, { leaseMs: PHOTO_UPLOAD_LEASE_MS, force: includeErrors });
-      if (!record) { if (includeErrors) traceQueueStageFailure('queue.claim', null, queuedRecord.retry_count); continue; }
       if (!photoSessionIsCurrent(isSessionCurrent)) break;
-      queueStage = 'hydrate';
       let queuedPhoto = hydratePhotoQueueItem(record, createLocalPreviewUrl);
-    if (!queuedPhoto) { traceQueueStageFailure('queue.hydrate', null, record.retry_count); continue; }
+    if (!queuedPhoto) continue;
     // hydratePhotoQueueItem zamienia status "uploading" na "local" dla zwykłego odtworzenia UI.
     // Tutaj rekord został właśnie atomowo przejęty przez worker kolejki; zachowujemy jego status,
     // aby stara tabliczka z błędem mogła zostać bezpiecznie uzgodniona z kopią już obecną na serwerze.
@@ -1783,12 +1727,10 @@ async function runPersistedPhotoUploads({
     queuedPhoto.lease_owner = record.lease_owner;
     queuedPhoto.attempt_generation = record.attempt_generation;
     const allowLegacyNameplate = Boolean(record.legacy_queue_item || !record.upload_key || !record.planned_storage_path);
-    queueStage = 'identity';
     queuedPhoto = await ensureQueuedPhotoIdentity(queuedPhoto);
-    if (!queuedPhoto) { traceQueueStageFailure('queue.identity', null, record.retry_count); continue; }
+    if (!queuedPhoto) continue;
     if (!photoSessionIsCurrent(isSessionCurrent)) break;
 
-    queueStage = 'server-lookup';
     const serverPhoto = await findExistingServerPhotoForQueuedPhoto({
       supabase,
       queuedPhoto,
@@ -1822,7 +1764,6 @@ async function runPersistedPhotoUploads({
     const compressImageFn = queuedPhoto.photo_kind === 'nameplate'
       ? prepareNameplatePhotoForUpload
       : preparePhotoForUpload;
-    queueStage = 'upload';
     const result = await uploadQueuedPhoto({
       supabase,
       profile,
@@ -1845,33 +1786,11 @@ async function runPersistedPhotoUploads({
       const latest = latestItems.find((item) => String(item.id) === String(record.id));
       if (String(latest?.upload_status || '').toLowerCase() === 'error') failed += 1;
     }
-    } catch (error) {
-      // Błąd odczytu tożsamości / weryfikacji zdjęcia nie może przerwać całej kolejki.
-      // Zachowujemy bajty IndexedDB, własny lease i czytelny status błędu.
-      failed += 1;
-      const retryable = isRetryablePhotoUploadError(error);
-      if (record) {
-        const failurePatch = {
-          upload_status: retryable ? 'local' : 'error',
-          upload_status_label: retryable ? 'Zapisano na telefonie' : 'Błąd wysyłania',
-          upload_error: retryable
-            ? 'Chwilowy problem z wysyłaniem. Zdjęcie jest bezpieczne na telefonie.'
-            : 'Nie udało się przygotować zdjęcia do synchronizacji. Lokalna kopia pozostaje na telefonie.',
-          next_attempt_at: retryable
-            ? new Date(Date.now() + getPhotoRetryDelayMs(Number(record.retry_count || 0) + 1)).toISOString()
-            : '',
-          lease_until: '',
-        };
-        await updatePhotoQueueItem(record.id, failurePatch, photoQueueWriteGuard(record));
-      }
-      traceQueueStageFailure('queue.' + queueStage, error, record?.retry_count || queuedRecord.retry_count);
-      console.warn('PHOTO_QUEUE_PREUPLOAD_FAILED', error?.code || error?.name || 'UNKNOWN');
-      guardedOnPhotoUploadError?.(new Error('PHOTO_QUEUE_PREUPLOAD_FAILED'));
     } finally {
       // Nawet gdy sesja zostanie anulowana między claim() a odpowiedzią serwera,
       // nie zostawiamy 3-minutowego lease na porzuconym rekordzie. Releasujemy
       // wyłącznie własny claim; udany upload lub cudzy nowy lease są nietykalne.
-      if (record) await releaseClaimedPhotoQueueItem(record.id, record);
+      await releaseClaimedPhotoQueueItem(record.id, record);
     }
   }
   if (failed > 0) guardedOnPhotoUploadError?.(new Error(`Nie udało się wysłać ${failed} zdjęć z kolejki.`));
@@ -1895,11 +1814,7 @@ export function resumePersistedPhotoUploads(options = {}) {
 export async function retryAllPersistedPhotoUploads(options = {}) {
   const profileId = String(options?.profile?.id || '').trim();
   const existing = profileId ? persistedQueueResumePromises.get(profileId) : null;
-  const requestedJobId = String(options?.jobId || '').trim();
-  // Synchronizacja jednego montażu NIE czeka na globalny background resume:
-  // kolejka może zawierać fotografie innych zleceń i blokować UX na minuty.
-  // Jeden konkretny rekord i tak ma atomowy claim + lease w IndexedDB.
-  if (existing && !requestedJobId) {
+  if (existing) {
     try {
       await existing;
     } catch {
@@ -1907,7 +1822,7 @@ export async function retryAllPersistedPhotoUploads(options = {}) {
     }
   }
   if (options?.isSessionCurrent?.() === false) return { processed: 0, uploaded: 0, ignoredStaleSession: true };
-  return runPersistedPhotoUploads({ ...options, includeErrors: true, jobId: requestedJobId });
+  return runPersistedPhotoUploads({ ...options, includeErrors: true });
 }
 
 export function retryQueuedJobPhoto({

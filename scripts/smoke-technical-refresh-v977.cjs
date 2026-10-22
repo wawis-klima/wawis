@@ -59,11 +59,7 @@ assert(mobileApp.includes('offlineSyncContextRef'), 'offline: callback nadal zal
 assert(mobileApp.includes('hasPendingOfflineWork'), 'offline: brak warunku uruchamiania okresowej kolejki');
 assert(mobileApp.includes('if (!offlineSyncUserId || !hasPendingOfflineWork) return undefined;'), 'offline: timer musi być wyłączony przy pustej kolejce');
 assert(mobileApp.includes('}, [offlineSyncUserId, hasPendingOfflineWork]);'), 'offline: timer kolejki musi mieć osobny efekt od synchronizacji');
-assert(mobileApp.includes('photoQueueResumeRef.current = launchQueueResume;'), 'offline: timer musi wywoływać bieżący synchronizator sesji z obsługą błędów');
-assert(mobileApp.includes("PHOTO_QUEUE_RESTORE_FAILED"), 'offline: awaria odtwarzania podglądu nie może blokować uploadu');
-assert(mobileApp.includes("PHOTO_QUEUE_STARTUP_FAILED"), 'offline: automatyczny start nie może pozostawiać unhandledrejection');
-assert(mobilePhotos.includes("PHOTO_QUEUE_PREUPLOAD_FAILED"), 'offline: błąd jednej tabliczki nie może zatrzymać kolejki');
-assert(mobilePhotos.includes('if (record) await releaseClaimedPhotoQueueItem(record.id, record);'), 'offline: zwolnienie blokady po błędzie pozostaje bezpieczne');
+assert(mobileApp.includes('photoQueueResumeRef.current = restoreAndResumeQueue;'), 'offline: timer musi wywoływać bieżący synchronizator sesji');
 assert(!mobileApp.includes('offlineSyncJobCount, hasPendingOfflineWork, supabase'), 'offline: zmiana licznika nie może anulować synchronizacji');
 
 assert(appVersion === packageVersion, 'numery wersji aplikacji i pakietu są różne');

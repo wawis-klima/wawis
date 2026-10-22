@@ -262,14 +262,7 @@ export default function MobileJobsLayout({
 
       {diagnosticsOpen ? (
         <React.Suspense fallback={<div className="muted" role="status">Ładowanie diagnostyki…</div>}>
-          <MobileDiagnosticsPanel
-            profile={profile}
-            sessionUser={sessionUser}
-            refreshAll={refreshAll}
-            synchronizeNow={retryAllPhotoUploads}
-            selectedJobId={selectedJob?.id || ""}
-            onBack={() => setDiagnosticsOpen(false)}
-          />
+          <MobileDiagnosticsPanel profile={profile} sessionUser={sessionUser} refreshAll={refreshAll} selectedJobId={selectedJob?.id || ""} onBack={() => setDiagnosticsOpen(false)} />
         </React.Suspense>
       ) : (
         <>
