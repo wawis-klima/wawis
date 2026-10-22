@@ -1,3 +1,8 @@
+## 13.46 (projekt poprawki — niewdrożone)
+- iOS / WebKit: obejście żądań multipart/form-data z pustym body (Storage HTTP 400 \`No content provided\`, \`Content-Length: 0\`) poprzez surowy ArrayBuffer odczytany i sprawdzony z pliku przed wysyłką.
+- Nie kasujemy lokalnych tabliczek przy pustym lub niekompletnym odczycie; pozostałe platformy korzystają z dotychczasowego transferu.
+- Browser E2E i smoke sprawdzają bajty, potwierdzenie serwera, zachowanie lokalnego zdjęcia przy niekompletnym odczycie; wymagana weryfikacja na fizycznym iPhonie przed wdrożeniem.
+
 ## 13.45
 - Mobile / zdjęcia: wyjątek przy odtwarzaniu lokalnych podglądów nie blokuje kolejnego etapu wysyłania zdjęć i operacji urządzeń.
 - Błąd przygotowania jednej tabliczki jest obsługiwany per rekord, z zachowaniem trwałego pliku w IndexedDB, blokady owner/generation i pozostałych pozycji kolejki.
