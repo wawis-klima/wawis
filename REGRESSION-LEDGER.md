@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## WAWIS-1344 — ręczna synchronizacja tabliczek po powrocie internetu
+
+| ID | Stan | Reproduktor / warunek zamknięcia |
+|---|---|---|
+| WAWIS-1344-BACKOFF | FIXED-UNVERIFIED | `tests/e2e/mobile-manual-sync-v1344.spec.js`: zwykła próba pomija operację z przyszłym `next_attempt_at`, a „Synchronizuj teraz” atomowo usuwa backoff wybranego montażu i zapisuje urządzenie po potwierdzeniu zdjęcia. |
+| WAWIS-1344-SCOPE | FIXED-UNVERIFIED | Ten sam test potwierdza, że operacja innego montażu zachowuje swój backoff; aktywne operacje i konflikty nie są przejmowane. |
+| WAWIS-1344-UI | FIXED-UNVERIFIED | Przycisk jest dostępny na karcie oczekującego montażu, w Centrum synchronizacji i diagnostyce; wymagane wykonanie mobilnego E2E w CI. |
+| WAWIS-1344-LIVE | EXTERNAL | Po wdrożeniu otworzyć zachowaną kolejkę z iPhone'a 13.43, użyć „Synchronizuj teraz” i potwierdzić zniknięcie komunikatu oraz aktywację protokołu. |
+
 ## WAWIS-1343 — offline zapis urządzeń i tabliczek
 
 | ID | Stan | Reproduktor / warunek zamknięcia |

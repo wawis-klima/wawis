@@ -31,7 +31,7 @@ import { useAppSession } from "./hooks/useAppSession.js";
 import { useSelectedJobActions } from "./hooks/useSelectedJobActions.js";
 import { usePhotoSyncStatus } from "./hooks/usePhotoSyncStatus.js";
 import { getRequestedJobIdFromLocation } from "./utils/jobSelectionState.js";
-import { deleteOfflineJobOperation, saveOfflineAppSnapshot, updateOfflineJobOperation } from "./modules/job-offline-store.js";
+import { deleteOfflineJobOperation, listOfflineJobOperations, makeOfflineJobOperationsRetryableNow, saveOfflineAppSnapshot, updateOfflineJobOperation } from "./modules/job-offline-store.js";
 import { deletePhotoQueueItem, getPhotoQueueSummary } from "./modules/photo-offline-queue.js";
 import { syncOfflineJobOperations } from "./modules/job-offline-sync.js";
 import { logDiagnostic, startSilentDiagnosticSync } from "./modules/diagnostics.js";
@@ -844,6 +844,24 @@ export default function App() {
           await reloadJobDetails(selectedJobIdRef.current, { force: true, background: true });
         }
 
+        const remainingOperations = await listOfflineJobOperations(currentProfile.id);
+        const unresolvedJobIds = new Set(remainingOperations
+          .filter((operation) => String(operation?.status || '') !== 'conflict')
+          .map((operation) => String(operation?.job_id || ''))
+          .filter(Boolean));
+        const resolvedJobIds = new Set((result.changedJobIds || [])
+          .map((jobId) => String(jobId || ''))
+          .filter((jobId) => jobId && !conflictJobIds.has(jobId) && !unresolvedJobIds.has(jobId)));
+        if (resolvedJobIds.size > 0) {
+          const clearPending = (job) => (
+            job && resolvedJobIds.has(String(job.id))
+              ? { ...job, offline_pending: false, offline_conflict: false, offline_conflict_message: '' }
+              : job
+          );
+          setJobs((prev) => prev.map(clearPending));
+          setSelectedJob((prev) => clearPending(prev));
+        }
+
         if (conflictJobIds.size > 0) {
           const markConflict = (job) => (
             job && conflictJobIds.has(String(job.id))
@@ -1023,10 +1041,11 @@ export default function App() {
     performOfflineJobSync,
   });
 
-  async function retryAllPhotoUploads() {
+  async function retryAllPhotoUploads(options = {}) {
+    const requestedJobId = String(options?.jobId || '').trim();
     if (!supabase || !profile || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
-      await photoSyncStatus.refreshQueueSummary();
-      return { processed: 0, uploaded: 0 };
+      const queueState = await photoSyncStatus.refreshQueueSummary();
+      return { processed: 0, uploaded: 0, offline: true, queueState };
     }
 
     photoSyncStatus.markPhotoSyncing();
@@ -1047,13 +1066,37 @@ export default function App() {
         },
         onPhotoUploadError: photoSyncStatus.markPhotoSyncError,
       });
+      // Najpierw kończymy każdą już rozpoczętą próbę. Potem ręczna akcja
+      // usuwa wyłącznie backoff oczekujących/błędnych operacji i uruchamia je
+      // natychmiast. Konflikty oraz aktywne lease pozostają nietknięte.
+      await performOfflineJobSync();
+      await makeOfflineJobOperationsRetryableNow(profile.id, {
+        jobId: requestedJobId,
+        allowedTypes: isAdmin ? ['device'] : undefined,
+      });
       const offlineDataResult = await performOfflineJobSync();
-      await photoSyncStatus.refreshQueueSummary();
-      return { ...result, offlineDataResult };
+      if (requestedJobId) {
+        await reloadJobSummary(requestedJobId);
+        await reloadJobDetails(requestedJobId, { force: true, background: true });
+      }
+      const queueState = await photoSyncStatus.refreshQueueSummary();
+      const remainingPhotos = (queueState?.photos || []).filter((item) => (
+        !requestedJobId || String(item?.job_id || '') === requestedJobId
+      ));
+      const remainingOperations = (queueState?.operations || []).filter((item) => (
+        !requestedJobId || String(item?.job_id || '') === requestedJobId
+      ));
+      return {
+        ...result,
+        offlineDataResult,
+        remainingPhotos: remainingPhotos.length,
+        remainingOperations: remainingOperations.length,
+        queueState,
+      };
     } catch (error) {
       photoSyncStatus.markPhotoSyncError();
-      await photoSyncStatus.refreshQueueSummary();
-      return { processed: 0, uploaded: 0, error };
+      const queueState = await photoSyncStatus.refreshQueueSummary();
+      return { processed: 0, uploaded: 0, error, queueState };
     }
   }
 
@@ -1578,6 +1621,7 @@ export default function App() {
               onReturnToCalendar={handleReturnToCalendarFromJobDetails}
               refreshAll={refreshAll}
               detailsLoading={detailsLoadingJobId === String(selectedJob?.id || '')}
+              synchronizePendingChanges={(jobId) => retryAllPhotoUploads({ jobId })}
               onRetryDetails={() => {
                 if (!selectedJob?.id) return;
                 const targetId = String(selectedJob.id);

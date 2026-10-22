@@ -405,6 +405,58 @@ export async function listOfflineJobOperations(userId = '') {
   }
 }
 
+export async function makeOfflineJobOperationsRetryableNow(userId = '', options = {}) {
+  const normalizedUserId = String(userId || '').trim();
+  const normalizedJobId = String(options.jobId || '').trim();
+  const allowedTypes = Array.isArray(options.allowedTypes)
+    ? new Set(options.allowedTypes.map((value) => String(value || '').trim()).filter(Boolean))
+    : null;
+  if (!normalizedUserId) return 0;
+
+  let db;
+  try {
+    db = await openOfflineDb();
+    if (!db) return 0;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(OPERATION_STORE, 'readwrite');
+      const store = transaction.objectStore(OPERATION_STORE);
+      const request = store.getAll();
+      let changed = 0;
+      request.onsuccess = () => {
+        for (const operation of Array.isArray(request.result) ? request.result : []) {
+          if (String(operation?.user_id || '') !== normalizedUserId) continue;
+          if (normalizedJobId && String(operation?.job_id || '') !== normalizedJobId) continue;
+          if (allowedTypes && !allowedTypes.has(String(operation?.type || ''))) continue;
+          const status = String(operation?.status || 'pending').toLowerCase();
+          // Aktywnego workera oraz konfliktu nie przejmujemy. Ręczna akcja ma
+          // jedynie pominąć backoff operacji, która bezpiecznie czeka lub ma błąd.
+          if (status === 'syncing' || status === 'conflict') continue;
+          store.put({
+            ...operation,
+            status: 'pending',
+            error: '',
+            next_attempt_at: '',
+            lease_until: '',
+          });
+          changed += 1;
+        }
+      };
+      request.onerror = () => reject(request.error || new Error('Nie udało się przygotować zmian do ponownej synchronizacji.'));
+      transaction.oncomplete = () => {
+        if (changed) dispatchOfflineChanged();
+        resolve(changed);
+      };
+      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się przygotować zmian do ponownej synchronizacji.'));
+      transaction.onabort = transaction.onerror;
+    });
+  } catch (error) {
+    console.warn('Nie udało się wymusić ponowienia zmian offline.', error?.message || error);
+    return 0;
+  } finally {
+    db?.close();
+  }
+}
+
 export async function updateOfflineJobOperation(operationId, patch = {}) {
   if (!operationId) return false;
   let db;

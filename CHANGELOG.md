@@ -1,3 +1,10 @@
+## 13.44
+- Mobile: komunikat „Zmiany zapisane na telefonie” zawiera przycisk „Synchronizuj teraz” i pokazuje wynik próby.
+- Ten sam przycisk jest dostępny w Centrum synchronizacji oraz diagnostyce; „Odśwież dane” nadal służy wyłącznie do ponownego pobrania danych.
+- Ręczna synchronizacja czeka na rozpoczętą wysyłkę zdjęć, ponawia błędne zdjęcia, usuwa backoff oczekującego zapisu urządzenia i odświeża wybrany montaż.
+- Aktywne operacje, konflikty i unikalność numerów seryjnych pozostają chronione. Bez zmian schematu, RLS i danych Supabase.
+- Dodano E2E odtwarzający oczekującą operację z przyszłym `next_attempt_at`; test przeglądarkowy wymaga CI z Chromium.
+
 ## 13.43
 - Offline zapis urządzeń i tabliczek znamionowych działa w edycji administratora i pracownika, jeśli formularz zmienia wyłącznie urządzenia/tabliczki.
 - Zdjęcia są najpierw trwale kolejkowane na telefonie; aktualizacja urządzenia synchronizuje się dopiero po potwierdzeniu na serwerze dokładnych ścieżek wymaganych zdjęć.
