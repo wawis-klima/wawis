@@ -170,8 +170,12 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
         res.writeHead(200,{'Content-Type':'text/javascript;charset=utf-8','Cache-Control':'no-store'});
         res.end(sdkBytes);return;
       }
-      if (req.method !== 'GET' || !url.pathname.startsWith('/storage/v1/object/authenticated/job-photos/')) {
-        res.writeHead(404);res.end();return;
+      // Supabase storage-js pobiera dziś przez /object/{bucket}/{path};
+      // /object/authenticated/{bucket}/{path} także jest legalnym endpointem.
+      const isStoragePhoto = url.pathname.startsWith('/storage/v1/object/')
+        && url.pathname.includes('/job-photos/');
+      if (req.method !== 'GET' || !isStoragePhoto) {
+        res.writeHead(404,{'Content-Type':'text/plain'});res.end('Unexpected path: '+url.pathname);return;
       }
       originGets++;
       requests.push(url.pathname + url.search);
@@ -203,9 +207,10 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
           .download('job1/nameplates/jz.jpg')
           .then(async({data,error})=>({bytes:data?await data.text():null,error:error?.message||null}));
       },{host});
-      expect(firstRead.error).toBeNull();
+      expect(firstRead.error, 'SDK request paths: '+JSON.stringify(requests)).toBeNull();
       expect(firstRead.bytes).toBe(original.toString());
       expect(originGets).toBe(1);
+      expect(requests[0]).toContain('/job-photos/job1/nameplates/jz.jpg');
 
       objectExists=false;
       // Powtórny stary URL może nadal zwrócić 200 z browser HTTP cache.
