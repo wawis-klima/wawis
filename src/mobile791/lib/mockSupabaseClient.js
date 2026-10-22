@@ -951,6 +951,12 @@ export function createMockSupabaseClient() {
           async download(path) {
             const stored = storageObjects.get(`${bucket}/${path}`);
             if (stored instanceof Blob) return { data: stored, error: null };
+            // Storage-js accepts ArrayBuffer on iOS (raw binary instead of FormData).
+            // The E2E mock must return those same bytes on readback/ACK, otherwise
+            // it invents a false 404 despite a successful upload.
+            if (stored instanceof ArrayBuffer || ArrayBuffer.isView(stored)) {
+              return { data: new Blob([stored]), error: null };
+            }
             if (bucket === 'job-photos') {
               // Mock nie może podawać sztucznego PDF zamiast brakującego zdjęcia:
               // to maskowałoby utratę pliku podczas reconciliation.

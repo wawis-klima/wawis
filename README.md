@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.45
+- 13.46
+
+WAWIS 13.46: poprawka przesyłania zdjęć tabliczek na iPhonie — Storage zwracał HTTP 400 z Content-Length 0 podczas wysyłania multipart/form-data. Nowa ścieżka wysyła pełne i zweryfikowane bajty ArrayBuffer, zachowuje File w IndexedDB do potwierdzenia serwera. E2E i smoke do weryfikacji w CI; na razie tylko projekt wydania, bez ingerencji w produkcję.
 
 WAWIS 13.45: poprawka ciągłości synchronizacji zdjęć offline — awaria odtwarzania podglądu nie blokuje przesyłania plików, a pojedynczy błąd przygotowania tabliczki nie przerywa całej kolejki. Pliki i operacje urządzenia pozostają w pamięci iPhone'a do potwierdzenia serwera. Test regresji WebKit / IndexedDB, bez modyfikacji danych Supabase.
 
@@ -1055,6 +1057,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.46` — binarny transfer zdjęć na iOS (obejście pustego multipart), kontrola bajtów i lokalnego File do ACK.
 - wersja `13.45` — odporne odtwarzanie i synchronizacja zdjęć offline; pliki IndexedDB pozostają do potwierdzenia Storage.
 - wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
 - wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
