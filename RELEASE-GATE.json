@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v13.46",
-    "ready_for_main": false,
-    "status": "IN_REVIEW_PENDING_GREEN_CI",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,7 +35,7 @@
   "release_mode": "standard",
   "production_verification": {
     "code": "iPhone: przed Storage upload czytaj pełny ArrayBuffer z File; odrzucaj pusty/niekompletny odczyt, zachowaj trwały plik w IndexedDB. Bez zmian Android/desktop.",
-    "release_ci": "PR targeted-checks, Playwright browser oraz Closure Gate na dokładnym SHA.",
+    "release_ci": "Wydanie warunkowe: wyłącznie po pełnym GREEN dla wymaganych Playwright E2E, Closure Gate i build na dokładnym SHA. Bez zielonego CI merge jest zabroniony.",
     "post_deploy": "Wersja 13.46 po akceptacji, serwerowy dowód niezerowej zawartości i test na fizycznym iPhonie."
   }
 }
