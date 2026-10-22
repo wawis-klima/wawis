@@ -16,7 +16,7 @@ for (const source of [mobileSession, desktopSession]) {
   assert.match(source, /isCurrentDataRequest/);
   assert.match(source, /lastAppliedServerRequestIdRef\.current = Math\.max/);
 }
-assert.match(mobileSession, /const operations = await listOfflineJobOperations\(userId\);\s*if \(!isCurrentRefreshRequest\(\)\) return \{ ok: true, ignoredOlderResponse: true \};/);
+assert.match(mobileSession, /const operations = await listOfflineJobOperations\(userId, \{ strict: true \}\);\s*if \(!isCurrentRefreshRequest\(\)\) return \{ ok: true, ignoredOlderResponse: true \};/);
 for (const source of [mobileApp, desktopApp]) {
   assert.match(source, /sessionToken\.generation.*sessionToken\.userId.*targetId/s);
   assert.match(source, /if \(!isSessionTokenCurrent\(sessionToken\)\) return null/);
