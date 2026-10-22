@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.44",
+  "version": "13.45",
   "scope": "mobile",
-  "release_branch": "release/v13.44",
+  "release_branch": "fix/v13.45-photo-queue-resilience",
   "baseline_diagnostics": {
-    "checked": false,
-    "last_24h": false,
-    "result": "NOT_RUN",
-    "notes": "Fizyczny iPhone 13.43: po powrocie internetu dwa zdjęcia pozostały jako Wysyłane, a jedna operacja urządzenia Oczekuje; odświeżenie diagnostyki nie uruchamia synchronizacji."
+    "checked": true,
+    "last_24h": true,
+    "result": "FAIL",
+    "notes": "iPhone v13.44, 2026-10-22 08:47 UTC: 2 photos local/retrying; device operation pending; window.unhandledrejection in photos. Zero Storage upload requests in checked edge logs."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.44.zip"
+    "file_name": "klima-app-v13.45.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.44",
+    "source_branch": "fix/v13.45-photo-queue-resilience",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "PR checks exact SHA and Closure GO, production Vercel READY SHA, app-version.json 13.44; physical iPhone/WebKit",
-    "notes": "Po zielonym CI użyć Synchronizuj teraz na zachowanej kolejce iPhone'a i potwierdzić aktywację protokołu; backend Supabase i dane niezmienione."
+    "evidence_source": "PR exact SHA, CI Closure GO, Vercel production SHA, physical iPhone queue",
+    "notes": "Sprawdzić na iPhone zachowane 2 tabliczki i 1 operację urządzenia. Nie usuwać danych Safari/PWA. Potwierdzić wysyłkę do Storage przed aktywacją Protokołu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Ręczna synchronizacja kolejki tabliczek pomija backoff tylko wybranego montażu, zachowuje lease i konflikty oraz odświeża kartę po sukcesie.",
-    "release_ci": "PR exact SHA: targeted regresje, Playwright mobile, test PostgreSQL, Closure Gate i build.",
-    "post_deploy": "Weryfikować dokładne SHA i wersję 13.44 na Vercel oraz zachowaną kolejkę PWA z wersji 13.43 na iPhonie."
+    "code": "Restore fail nie zatrzymuje upload; per-record catch zachowuje File w IndexedDB i zwalnia tylko własny lease.",
+    "release_ci": "Targeted PR checks, Playwright mobile/desktop i Closure Gate.",
+    "post_deploy": "Wersja 13.45 i dokładny SHA na Vercel; niezbędny test fizycznego iPhone z dawną kolejką."
   }
 }
