@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { build } from 'esbuild';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { runDeviceCasRace } from '../../scripts/offline-fixture/race.mjs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 const fixturePath='work/offline-analysis/provider-fixture.json';
 const sdk=(await build({stdin:{contents:"export { createClient } from '@supabase/supabase-js';",resolveDir:process.cwd()},bundle:true,format:'esm',write:false})).outputFiles[0].text;
 test('@mobile actual local Supabase Storage + PostgREST: JW/JZ binary readback, device CAS, RLS, idempotency',async({page})=>{
@@ -70,6 +71,13 @@ test('@mobile actual local Supabase Storage + PostgREST: JW/JZ binary readback, 
     `select coalesce(json_agg(json_build_object('source',source_job_id,'model',model,'serial',serial_number)),'[]') from public.devices where source_job_id='${result.jobId}'`],{encoding:'utf8',env:dockerEnv}).trim());
   expect(devices).toEqual([{source:result.jobId,model:'TEST-MODEL-IN / TEST-MODEL-OUT',serial:result.serial}]);
   expect(result.duplicateCode).toBe('23505');
+  const race=await runDeviceCasRace();
+  expect(new Set(race.sessions.map(s=>s.pid)).size).toBe(2);
+  expect(race.sessions.map(s=>s.winner).sort()).toEqual([0,1]);
+  expect(race.state).toEqual({model:'RACE-'+race.sessions.find(s=>s.winner===1).worker,devices:1});
+  await test.info().attach('postgres-cas-two-sessions.json',{body:JSON.stringify(race,null,2),contentType:'application/json'});
+  writeFileSync('work/offline-analysis/provider-results.json',JSON.stringify({source_sha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),result,devices,race},null,2));
+
   await test.info().attach('actual-device-row.json',{body:JSON.stringify(devices,null,2),contentType:'application/json'});
   expect(result.sync.synced).toBe(1);expect(result.again.synced).toBe(0);
   expect(result.rows).toBe(2);expect(result.pending).toBe(0);expect(result.denied).toBe(true);

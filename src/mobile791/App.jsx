@@ -676,7 +676,7 @@ export default function App() {
             const cleanDetails = { ...details, detailsLoadError: '' };
             // Odczyt serwerowy może jeszcze nie zawierać lokalnej zmiany z
             // IndexedDB. Nakładamy ją tylko dopóki trwa odpowiednia operacja.
-            const pendingOperations = await listOfflineJobOperations(sessionToken.userId);
+            const pendingOperations = await listOfflineJobOperations(sessionToken.userId, { strict: true });
             if (!isSessionTokenCurrent(sessionToken)) return null;
             const mergeWithPending = (job) => overlayPendingDeviceOperation(
               mergeJobDetailsForMobile(job, cleanDetails), pendingOperations,
@@ -787,7 +787,7 @@ export default function App() {
           return null;
         }
 
-        const pendingOperations = await listOfflineJobOperations(sessionToken.userId);
+        const pendingOperations = await listOfflineJobOperations(sessionToken.userId, { strict: true });
         if (!isSessionTokenCurrent(sessionToken)) return null;
         let mergedJob = null;
         setJobs((prev) => {
@@ -860,7 +860,7 @@ export default function App() {
           await reloadJobDetails(selectedJobIdRef.current, { force: true, background: true });
         }
 
-        const remainingOperations = await listOfflineJobOperations(currentProfile.id);
+        const remainingOperations = await listOfflineJobOperations(currentProfile.id, { strict: true });
         const unresolvedJobIds = new Set(remainingOperations
           .filter((operation) => String(operation?.status || '') !== 'conflict')
           .map((operation) => String(operation?.job_id || ''))
@@ -923,7 +923,7 @@ export default function App() {
         try {
           // Crash recovery is local work and must run BEFORE the online check.
           // An intent committed just before termination may have no photo projection yet.
-          const intents = await listOfflineJobOperations(userId);
+          const intents = await listOfflineJobOperations(userId, { strict: true });
           for (const operation of intents) {
             if (!isQueueSessionCurrent()) return;
             if (operation.type !== 'device' || !operation.payload?.documentation?.length) continue;

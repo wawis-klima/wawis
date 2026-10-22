@@ -218,7 +218,7 @@ export function useAppSession({
             changeCursorRef.current = Math.max(0, Number(cached.change_cursor) || 0);
           }
           const cachedProfiles = Array.isArray(cached.profiles) ? cached.profiles : [];
-          const operations = await listOfflineJobOperations(userId);
+          const operations = await listOfflineJobOperations(userId, { strict: true });
           if (!isCurrentRefreshRequest()) return { ok: true, ignoredOlderResponse: true };
           const restoredJobs = applyOfflineOperationsToJobs(cached.jobs, operations, cached.profile);
           profileRef.current = cached.profile;
@@ -256,7 +256,7 @@ export function useAppSession({
         // Starsza odpowiedź nie może nadpisać nowszej, już zastosowanej odpowiedzi.
         if (refreshRequestId < lastAppliedServerRequestIdRef.current) return;
 
-        const operations = await listOfflineJobOperations(String(activeUser?.id || userId));
+        const operations = await listOfflineJobOperations(String(activeUser?.id || userId), { strict: true });
         if (!isCurrentRefreshRequest()) return;
         const profileForOffline = getProfileFallback(activeUser);
         const freshJobsWithLatestQueue = preserveJobDetails
@@ -366,7 +366,7 @@ export function useAppSession({
       if (changeCursorAtRefreshStart !== null) {
         changeCursorRef.current = Math.max(Number(changeCursorRef.current) || 0, Number(changeCursorAtRefreshStart) || 0);
       }
-      const operations = await listOfflineJobOperations(String(payload.sessionUser?.id || activeUser?.id || userId));
+      const operations = await listOfflineJobOperations(String(payload.sessionUser?.id || activeUser?.id || userId), { strict: true });
       if (!isCurrentSession()) return { ok: false, ignoredStaleSession: true, coreJobsApplied };
       if (payloadRequestId < lastAppliedServerRequestIdRef.current) {
         return { ok: true, transient: false, ignoredOlderResponse: true, coreJobsApplied };
@@ -496,7 +496,7 @@ export function useAppSession({
         let processed = 0;
         const maxBatches = 5;
         const summaryCache = new Map();
-        const operations = await listOfflineJobOperations(userId);
+        const operations = await listOfflineJobOperations(userId, { strict: true });
         if (!isCurrentDataRequest()) return staleRefreshResult();
 
         for (let batchIndex = 0; batchIndex < maxBatches; batchIndex += 1) {

@@ -289,6 +289,7 @@ export async function deletePhotoQueueItem(photoId, guard = {}) {
 }
 
 export async function listPhotoQueueItems({ strict = false } = {}) {
+  if (strict && !hasIndexedDb()) throw new Error('Pamięć zdjęć na telefonie jest niedostępna.');
   try {
     const records = await withStore('readonly', (store) => store.getAll());
     return Array.isArray(records)

@@ -407,6 +407,7 @@ export async function claimOfflineJobOperation(operationId, leaseMs = 2 * 60 * 1
 }
 
 export async function listOfflineJobOperations(userId = '', { strict = false } = {}) {
+  if (strict && !hasIndexedDb()) throw new Error('Pamięć zmian na telefonie jest niedostępna.');
   try {
     const records = await withStore(OPERATION_STORE, 'readonly', (store) => store.getAll());
     const normalizedUserId = String(userId || '').trim();

@@ -382,3 +382,5 @@ Status całości: **NOT CLOSED — fizyczny iPhone Safari/PWA i odzyskanie produ
 | OFFLINE-20261022-UI | Refresh i nieudany odczyt IDB mogły fałszywie przedstawić brak/sukces | `mobile-queue-read-failure.spec.js`, overlay i protocol gate w `mobile-durable-outbox.spec.js` | Implemented, awaiting final gate / device |
 
 Poprzednie audyty i asercje pozostają. Fixture testów naprawiono dla ArrayBuffer, getUser, Storage readback i nowego magazynu trwałego intentu. Błąd locatora `.nameplateVerifyWarning.isVisible()` przy dwóch poprawnych ostrzeżeniach naprawiono przez `.first()`; zachowano asercje blokady potwierdzenia i ręcznego przeglądu SN.
+
+| OFFLINE-20261022-TOUCH | Przycisk ręcznej synchronizacji miał 24 px zamiast min. 44 px | `mobile-pending-sync-touch.spec.js`: rzeczywisty pomiar RED/GREEN, elementFromPoint, kliknięcie offline i zachowanie intentu przy błędzie odczytu podczas refreshu | Implemented, awaiting final gate / physical device |
