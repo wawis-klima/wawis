@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.44
+- 13.45
+
+WAWIS 13.45: poprawka ciągłości synchronizacji zdjęć offline — awaria odtwarzania podglądu nie blokuje przesyłania plików, a pojedynczy błąd przygotowania tabliczki nie przerywa całej kolejki. Pliki i operacje urządzenia pozostają w pamięci iPhone'a do potwierdzenia serwera. Test regresji WebKit / IndexedDB, bez modyfikacji danych Supabase.
 
 WAWIS 13.44: oczekujący zapis tabliczek ma przycisk „Synchronizuj teraz” na karcie montażu, w Centrum synchronizacji i diagnostyce. Ręczna próba kończy lub wznawia kolejkę zdjęć, pomija odroczenie oczekującej operacji urządzenia i odświeża montaż po potwierdzeniu serwera. Konflikty i aktywne blokady pozostają chronione. Bez zmian schematu i danych w Supabase.
 
