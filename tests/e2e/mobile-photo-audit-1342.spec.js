@@ -148,9 +148,13 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
     const requests = [];
     const original = Buffer.from('WAWIS-REAL-HTTP-CACHE-ORIGINAL-BYTES');
     const server = createServer((req,res) => {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Headers', 'authorization,apikey,x-client-info,content-type');
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Vary', 'Origin, Access-Control-Request-Headers');
+      // Realne storage-js wysyła dodatkowe nagłówki wersji SDK.
+      // Odzwierciedlamy nagłówki preflight zamiast odrzucać żądanie CORS.
+      res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] || 'authorization,apikey,x-client-info,content-type');
       res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+      res.setHeader('Access-Control-Allow-Private-Network', 'true');
       if (req.method === 'OPTIONS') { res.statusCode = 204;res.end();return; }
       if (req.method !== 'GET' || !req.url?.startsWith('/storage/v1/object/authenticated/job-photos/')) {
         res.statusCode=404;res.end();return;
@@ -208,6 +212,7 @@ test.describe('@mobile audit 13.42: nondestructive IDB upgrade & fresh Storage',
       expect(requests[requests.length-1]).toContain('cacheNonce=');
       expect(requests[requests.length-1]).toContain(encodeURIComponent(fresh.nonce));
     } finally {
+      server.closeAllConnections?.();
       await new Promise(resolve=>server.close(resolve));
     }
   });
