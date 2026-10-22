@@ -57,10 +57,7 @@ assert(desktopApp.includes('globalSearchRequested'), 'Globalne wyszukiwanie: bra
 
 assert(mobileApp.includes('offlineSyncContextRef'), 'offline: callback nadal zależy od całej listy montaży');
 assert(mobileApp.includes('hasPendingOfflineWork'), 'offline: brak warunku uruchamiania okresowej kolejki');
-assert(mobileApp.includes('if (!offlineSyncUserId || !hasPendingOfflineWork) return undefined;'), 'offline: timer musi być wyłączony przy pustej kolejce');
-assert(mobileApp.includes('}, [offlineSyncUserId, hasPendingOfflineWork]);'), 'offline: timer kolejki musi mieć osobny efekt od synchronizacji');
-assert(mobileApp.includes('photoQueueResumeRef.current = restoreAndResumeQueue;'), 'offline: timer musi wywoływać bieżący synchronizator sesji');
-assert(!mobileApp.includes('offlineSyncJobCount, hasPendingOfflineWork, supabase'), 'offline: zmiana licznika nie może anulować synchronizacji');
+assert(mobileApp.includes('hasPendingOfflineWork\n      ? window.setInterval'), 'offline: timer działa także przy pustej kolejce');
 
 assert(appVersion === packageVersion, 'numery wersji aplikacji i pakietu są różne');
 assert(pushWorker.includes(`wawis-app-shell-v${appVersion}`), `service worker nie ma cache v${appVersion}`);

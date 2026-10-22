@@ -1,13 +1,5 @@
 ## Aktualna wersja
-- 13.42
-
-WAWIS 13.42 (kandydat): usunięcie dwóch P0 z audytu 13.41 — świeży odczyt Storage z cacheNonce i cache:no-store przed SHA-256 oraz niedestrukcyjna migracja kolejki zdjęć IndexedDB v3 → v4 blokująca zapisy ze starej wersji. P1: niezależny claim dla ręcznego Ponów, przerwanie po błędzie CAS, backoff 429/503, uczciwe komunikaty po nieudanym zapisie IndexedDB. Nowe testy browser dla v3/v4, współbieżności i awarii. Bez zmian produkcyjnych w Supabase. Finalne potwierdzenie: dopiero po zielonym Closure Gate i testach aktualizacji PWA.
-
-WAWIS 13.41: weryfikacja integralności zdjęć przed usunięciem lokalnej kopii; przy nieudanym odczycie File żaden fingerprint oparty tylko na metadanych nie zastępuje identyfikatora zawartości. Oddzielne operacje właścicieli, atomowe zapisy kolejki bez nadpisywania Blob, zabezpieczenia owner/generation dla aktywnych workerów, kontrola trwałych 403 i ponowień błędów sieciowych. Testy IndexedDB, Storage 404/403/503/niewłaściwe bajty i dwóch kart. Bez migracji Supabase, zmian RLS ani ingerencji w dane klientów.
-
-WAWIS 13.40: poprawka P0 bezpieczeństwa mobilnej kolejki zdjęć. Historyczne tabliczki JZ/JW nie są już uznawane za wysłane tylko na podstawie zgodnego montażu, jednostki, użytkownika i czasu. Lokalny File pozostaje w IndexedDB, dopóki serwer nie potwierdzi dokładnej ścieżki operacji. Dodano Playwright: error/uploading, dwie karty, przeładowanie i poprawne uzgodnienie. Bez zmian w Supabase, rolach, OCR, PDF i desktopie.
-
-WAWIS 13.39: stabilne odtwarzanie i wznawianie mobilnej kolejki zdjęć. Główny synchronizator nie jest anulowany zmianą licznika oczekujących zdjęć, porzucony proces zwalnia tylko swój lease, a starsze wpisy JZ/JW są porównywane z serwerem według oryginalnego statusu. Regresje E2E dla 3-minutowego lease i własności blokady. Bez zmian w danych klientów, PDF, OCR, rolach i cenach.
+- 13.38
 
 WAWIS 13.38: w mobilnym Cenniku jeszcze niższe białe karty grup Rotenso — min. 44 px i padding pionowy 7 zamiast 9 px. Napisy 13 px, dwie skrócone etykiety Multi, liczniki, 36 cen i rozwijanie bez zmian.
 
@@ -1049,10 +1041,6 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.42` — świeża weryfikacja Storage i bariera IndexedDB v4; retry, CAS, zapis zdjęć.
-- wersja `13.41` — integralność Storage, zabezpieczenie zdjęć przed nadpisaniem i atomowa kontrola workerów.
-- wersja `13.40` — zabezpieczenie starej kolejki tabliczek przed utratą lokalnego File i regresje IndexedDB.
-- wersja `13.39` — zabezpieczenie mobilnej kolejki zdjęć przed przerwanymi synchronizacjami oraz testy osieroconych blokad i tabliczek.
 - wersja `13.38` — kompaktowe białe karty w Cenniku mobilnym (min. 44 px, padding 7 px); bez zmian funkcjonalnych.
 - wersja `13.37` — skrócenie dwóch nazw Hiro Multi w Cenniku mobilnym do Jedn. Zew. / Jedn. Wew., bez zmian pozostałych modeli.
 - wersja `13.36` — mniejsze przerwy i niższe karty modeli w Cenniku mobilnym; pełne nazwy i strefy dotyku co najmniej 44 px, bez zmian pozostałych modułów.

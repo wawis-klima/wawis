@@ -519,7 +519,7 @@ export function useSelectedJobActions({
       // na upload. Dzięki temu timeout może potwierdzić dokładnie nowy plik, a nie
       // starszą tabliczkę tej samej JW/JZ.
       const preparedPendingDocuments = pendingDocuments.length
-        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments, uploaderId: profile?.id })
+        ? await prepareJobDocumentationPhotoIdentities({ jobId: editingJobId, documents: pendingDocuments })
         : [];
 
       const uploadPromise = uploadJobDocumentationPhotos({
@@ -552,18 +552,6 @@ export function useSelectedJobActions({
       logDiagnostic('nameplate.save.upload.completed', {
         jobId: editingJobId, operationId, uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount, failedCount: documentationResult.failedCount,
       });
-
-      // Brak commitu IndexedDB oznacza, że File istnieje tylko w pamięci
-      // bieżącego formularza. Dotyczy także admin/full edit: zamknięcie
-      // okna zniszczyłoby ostatnią dostępną kopię pliku.
-      if (documentationResult.failedCount > 0) {
-        logDiagnostic('nameplate.save.modal.kept-open', {
-          jobId: editingJobId, operationId, reason: 'idb-commit-failed',
-          failedCount: documentationResult.failedCount,
-        });
-        alert(`Nie udało się zapisać ${documentationResult.failedCount} zdjęć w pamięci telefonu. Nie zamykaj formularza. Sprawdź pamięć urządzenia i spróbuj zapisać ponownie.`);
-        return;
-      }
 
       const pendingNameplateCount = getPendingNameplateKeys(preparedPendingDocuments).size;
       if (serialOnlyMode && pendingNameplateCount) {

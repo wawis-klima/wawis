@@ -1,15 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.39 (kandydat — potwierdzić wynik PR CI, merge i Vercel)
+- 13.38 (przygotowanie — do potwierdzenia po CI i Vercel)
 
 ## Zakres
-- Synchronizacja zdjęć mobilnych nie jest anulowana przez zmianę stanu licznika kolejki.
-- Przerwany proces oddaje wyłącznie własny lease z zachowaniem lokalnego zdjęcia i poprzedniego statusu.
-- Uzgadnianie serwerowych tabliczek JZ/JW ze starą kolejką używa niezmienionego statusu rekordu IndexedDB.
-- Bez zmian w tabelach danych, Supabase, rolach, OCR, protokołach i pozostałych modułach.
+- Mobile / Cennik: wysokość białych kart grup Rotenso min. 44 px zamiast 48 px; padding pionowy 7 px zamiast 9 px.
+- Wysokość długich dwuwierszowych nazw pozostaje elastyczna, bez obcinania.
+- Bez zmian rozmiaru czcionki, liczników, przerw między kartami, danych, 36 cen, VAT, ról, protokołów, PUSH i backendu.
 
 ## Kontrola
-- Test E2E: aktywny porzucony 3-minutowy lease, zdjęcie już na serwerze, dwukrotne odtworzenie; sprawdzenie własności lease i braku kasowania niewysłanego zdjęcia.
-- Smoke offline photo queue i idempotencja, wymagane testy powiązanych modułów, Closure Gate i build.
-- Merge i produkcyjny deploy tylko po zielonym CI; Vercel READY musi wskazywać nowe SHA i wersję 13.39.
+- Smoke CSS + ceny i role; Playwright iPhone 320–430px (min. 44 px, padding 7 px, brak overflow, rozwijanie).
+- Po zielonym CI: merge do main i Vercel READY z nowym SHA; potwierdzić aplikację 13.38.

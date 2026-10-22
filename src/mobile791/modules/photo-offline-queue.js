@@ -1,8 +1,6 @@
 import { summarizePhotoDiagnosticQueue } from '../../modules/diagnostics-package4.js';
 const DB_NAME = 'wawis-mobile-photo-queue';
-// v4: niedestrukcyjna bariera migracji. Klient 13.40 otwierający v3
-// otrzymuje VersionError zamiast możliwości usunięcia zdjęcia przejętego przez v4.
-const DB_VERSION = 4;
+const DB_VERSION = 3;
 const STORE_NAME = 'queued-photos';
 export const PHOTO_QUEUE_CHANGED_EVENT = 'wawis-photo-queue-changed';
 
@@ -29,28 +27,6 @@ function openQueueDb() {
   if (!hasIndexedDb()) return Promise.resolve(null);
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    // Jeśli stara karta trzyma połączenie v3, migracja nie może czekać
-    // bez końca i wyświetlać pracownikowi fałszywego "Zapisano".
-    let settled = false;
-    let blockedTimeout = null;
-    const finish = (error, db) => {
-      if (settled) {
-        db?.close();
-        return;
-      }
-      settled = true;
-      if (blockedTimeout !== null) clearTimeout(blockedTimeout);
-      if (error) reject(error);
-      else resolve(db);
-    };
-    request.onblocked = () => {
-      try {
-        window?.dispatchEvent?.(new CustomEvent('wawis-photo-queue-upgrade-blocked'));
-      } catch { /* również w Web Worker */ }
-      blockedTimeout = setTimeout(() => {
-        finish(new Error('Aktualizacja kolejki zdjęć jest blokowana przez starszą kartę WAWIS. Zamknij inne karty i uruchom aplikację ponownie. Zdjęcia nie zostały usunięte.'));
-      }, 5000);
-    };
     request.onupgradeneeded = () => {
       const db = request.result;
       const store = db.objectStoreNames.contains(STORE_NAME)
@@ -62,14 +38,9 @@ function openQueueDb() {
       ensureIndex(store, 'unit_key', 'unit_key');
       ensureIndex(store, 'file_fingerprint', 'file_fingerprint');
       ensureIndex(store, 'next_attempt_at', 'next_attempt_at');
-      // Celowo nie usuwamy ani nie nadpisujemy żadnego rekordu.
     };
-    request.onsuccess = () => {
-      const db = request.result;
-      db.onversionchange = () => db.close();
-      finish(null, db);
-    };
-    request.onerror = () => finish(request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.'));
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.'));
   });
 }
 
@@ -116,7 +87,6 @@ function toSerializableRecord(photo = {}) {
     upload_key: photo.upload_key || '',
     unit_key: photo.unit_key || '',
     file_fingerprint: photo.file_fingerprint || '',
-    fingerprint_status: photo.fingerprint_status || '',
     planned_storage_path: photo.planned_storage_path || photo.storage_path || '',
     legacy_queue_item: Boolean(photo.legacy_queue_item),
     local_file_name: photo.local_file_name || localFile?.name || 'zdjecie.jpg',
@@ -131,12 +101,10 @@ function toSerializableRecord(photo = {}) {
     documentation_label: photo.documentation_label || '',
     ocr_status: photo.ocr_status || '',
     ocr_checked_at: photo.ocr_checked_at || null,
-    attempt_generation: Number(photo.attempt_generation || 0),
     retry_count: Number(photo.retry_count || 0),
     last_attempt_at: photo.last_attempt_at || '',
     next_attempt_at: photo.next_attempt_at || '',
     lease_until: photo.lease_until || '',
-    lease_owner: photo.lease_owner || '',
     upload_stage: photo.upload_stage || 'queued',
     prepared_file: preparedFile,
     prepared_file_name: photo.prepared_file_name || preparedFile?.name || '',
@@ -151,49 +119,17 @@ function toSerializableRecord(photo = {}) {
 
 export async function savePhotoQueueItem(photo) {
   if (!photo?.id || !(photo.__localFile || photo.local_file)) return false;
-  let db;
   try {
-    db = await openQueueDb();
-    if (!db) return false;
-    const saved = await new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(String(photo.id));
-      let accepted = false;
-      request.onsuccess = () => {
-        const previous = request.result;
-        const next = toSerializableRecord(photo);
-        if (previous) {
-          // Nawet poprawny duplikat nie może nadpisać aktywnego lease,
-          // przygotowanego File ani informacji o nieudanej wysyłce.
-          const sameOwner = String(previous.user_id || previous.uploaded_by || '')
-            === String(next.user_id || next.uploaded_by || '');
-          const sameVerifiedBytes = Boolean(previous.file_fingerprint && next.file_fingerprint)
-            && previous.file_fingerprint === next.file_fingerprint
-            && previous.fingerprint_status !== 'read_error'
-            && next.fingerprint_status !== 'read_error';
-          accepted = sameOwner && sameVerifiedBytes;
-          return;
-        }
-        store.add(next);
-        accepted = true;
-      };
-      request.onerror = () => reject(request.error || new Error('Nie udało się sprawdzić istniejącego zdjęcia.'));
-      transaction.oncomplete = () => resolve(accepted);
-      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zapisać zdjęcia w pamięci telefonu.'));
-      transaction.onabort = transaction.onerror;
-    });
-    if (saved) dispatchQueueChanged();
-    return saved;
+    await withStore('readwrite', (store) => store.put(toSerializableRecord(photo)));
+    dispatchQueueChanged();
+    return true;
   } catch (error) {
     console.warn('Nie udało się zapisać zdjęcia w pamięci telefonu.', error?.message || error);
     return false;
-  } finally {
-    db?.close();
   }
 }
 
-export async function updatePhotoQueueItem(photoId, patch = {}, guard = {}) {
+export async function updatePhotoQueueItem(photoId, patch = {}) {
   if (!photoId) return false;
   const db = await openQueueDb();
   if (!db) return false;
@@ -206,16 +142,6 @@ export async function updatePhotoQueueItem(photoId, patch = {}, guard = {}) {
       request.onsuccess = () => {
         const current = request.result;
         if (!current) return;
-        if (Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
-          && String(current.lease_owner || '') !== String(guard.expectedLeaseOwner || '')) return;
-        if (Object.prototype.hasOwnProperty.call(guard, 'expectedGeneration')
-          && Number(current.attempt_generation || 0) !== Number(guard.expectedGeneration || 0)) return;
-        if (Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseUntil')
-          && String(current.lease_until || '') !== String(guard.expectedLeaseUntil || '')) return;
-        // Nie pozwalamy starszej sesji nadpisać postępu aktywnego workera.
-        if (!Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
-          && current.upload_status === 'uploading'
-          && Date.parse(current.lease_until || '') > Date.now()) return;
         store.put({ ...current, ...patch, id: String(photoId) });
         didUpdate = true;
       };
@@ -234,41 +160,15 @@ export async function updatePhotoQueueItem(photoId, patch = {}, guard = {}) {
   }
 }
 
-export async function deletePhotoQueueItem(photoId, guard = {}) {
+export async function deletePhotoQueueItem(photoId) {
   if (!photoId) return false;
-  const db = await openQueueDb();
-  if (!db) return false;
   try {
-    const deleted = await new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(String(photoId));
-      let didDelete = false;
-      request.onsuccess = () => {
-        const current = request.result;
-        if (!current) return;
-        if (Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
-          && String(current.lease_owner || '') !== String(guard.expectedLeaseOwner || '')) return;
-        if (Object.prototype.hasOwnProperty.call(guard, 'expectedGeneration')
-          && Number(current.attempt_generation || 0) !== Number(guard.expectedGeneration || 0)) return;
-        if (!Object.prototype.hasOwnProperty.call(guard, 'expectedLeaseOwner')
-          && current.upload_status === 'uploading'
-          && Date.parse(current.lease_until || '') > Date.now()) return;
-        store.delete(String(photoId));
-        didDelete = true;
-      };
-      request.onerror = () => reject(request.error || new Error('Nie udało się odczytać zdjęcia do usunięcia.'));
-      transaction.oncomplete = () => resolve(didDelete);
-      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się usunąć zdjęcia.'));
-      transaction.onabort = transaction.onerror;
-    });
-    if (deleted) dispatchQueueChanged();
-    return deleted;
+    await withStore('readwrite', (store) => store.delete(String(photoId)));
+    dispatchQueueChanged();
+    return true;
   } catch (error) {
     console.warn('Nie udało się usunąć zdjęcia z lokalnej kolejki.', error?.message || error);
     return false;
-  } finally {
-    db.close();
   }
 }
 
@@ -291,13 +191,11 @@ export async function recoverStalePhotoQueueItems(nowMs = Date.now()) {
     if (String(item.upload_status || '').toLowerCase() !== 'uploading') continue;
     const leaseUntil = Date.parse(item.lease_until || '');
     if (Number.isFinite(leaseUntil) && leaseUntil > nowMs) continue;
-    const restored = await updatePhotoQueueItem(item.id, {
+    await updatePhotoQueueItem(item.id, {
       upload_status: 'local',
       upload_status_label: 'Zapisano na telefonie',
       lease_until: '',
-      lease_owner: '',
-    }, { expectedLeaseOwner: item.lease_owner || '', expectedGeneration: Number(item.attempt_generation || 0), expectedLeaseUntil: item.lease_until || '' });
-    if (!restored) continue;
+    });
     recovered += 1;
   }
   return recovered;
@@ -322,20 +220,13 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
         if (String(current.upload_status || '').toLowerCase() === 'uploading'
           && Number.isFinite(leaseUntil) && leaseUntil > nowMs) return;
         if (!force && Number.isFinite(nextAttempt) && nextAttempt > nowMs) return;
-        const storedClaim = {
+        claimed = {
           ...current,
           upload_status: 'uploading',
           upload_status_label: 'Wysyłanie',
           lease_until: new Date(nowMs + Math.max(30000, Number(leaseMs) || 0)).toISOString(),
-          lease_owner: typeof crypto !== 'undefined' && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${nowMs}:${Math.random()}`,
-          attempt_generation: Number(current.attempt_generation || 0) + 1,
         };
-        store.put(storedClaim);
-        // Poprzedni status nie trafia do IndexedDB: jest potrzebny tylko temu workerowi
-        // do bezpiecznego wycofania porzuconego przejęcia.
-        claimed = { ...storedClaim, __previous_upload_status: current.upload_status || 'local' };
+        store.put(claimed);
       };
       request.onerror = () => reject(request.error || new Error('Nie udało się przejąć zdjęcia z kolejki.'));
       transaction.oncomplete = () => {
@@ -345,50 +236,6 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
       transaction.onerror = () => reject(transaction.error || new Error('Nie udało się przejąć zdjęcia z kolejki.'));
       transaction.onabort = transaction.onerror;
     });
-  } finally {
-    db.close();
-  }
-}
-
-// Zwolnienie tylko własnego lease. Nigdy nie kasujemy pliku ani rekordu kolejki,
-// jeśli odpowiedź serwera nie potwierdziła jeszcze zapisu.
-export async function releaseClaimedPhotoQueueItem(photoId, claimed = {}) {
-  const leaseOwner = String(claimed.lease_owner || '');
-  if (!photoId || !leaseOwner) return false;
-  const db = await openQueueDb();
-  if (!db) return false;
-  try {
-    const released = await new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(String(photoId));
-      let didRelease = false;
-      request.onsuccess = () => {
-        const current = request.result;
-        if (!current || current.upload_status !== 'uploading'
-          || String(current.lease_owner || '') !== leaseOwner
-          || Number(current.attempt_generation || 0) !== Number(claimed.attempt_generation || 0)) return;
-        const previousStatus = String(claimed.__previous_upload_status || 'local').toLowerCase();
-        const restoreError = previousStatus === 'error';
-        store.put({
-          ...current,
-          upload_status: restoreError ? 'error' : 'local',
-          upload_status_label: restoreError ? 'Błąd wysyłania' : 'Zapisano na telefonie',
-          lease_until: '',
-          lease_owner: '',
-        });
-        didRelease = true;
-      };
-      request.onerror = () => reject(request.error || new Error('Nie udało się odczytać blokady zdjęcia.'));
-      transaction.oncomplete = () => resolve(didRelease);
-      transaction.onerror = () => reject(transaction.error || new Error('Nie udało się zwolnić blokady zdjęcia.'));
-      transaction.onabort = transaction.onerror;
-    });
-    if (released) dispatchQueueChanged();
-    return released;
-  } catch (error) {
-    console.warn('Nie udało się zwolnić przerwanego przejęcia zdjęcia.', error?.message || error);
-    return false;
   } finally {
     db.close();
   }
@@ -429,7 +276,6 @@ export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {
     upload_key: record.upload_key || '',
     unit_key: record.unit_key || '',
     file_fingerprint: record.file_fingerprint || '',
-    fingerprint_status: record.fingerprint_status || '',
     legacy_queue_item: Boolean(record.legacy_queue_item),
     uploaded_by: record.uploaded_by || '',
     user_id: record.user_id || record.uploaded_by || '',
@@ -449,8 +295,6 @@ export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {
     documentation_label: record.documentation_label || '',
     ocr_status: record.ocr_status || '',
     ocr_checked_at: record.ocr_checked_at || null,
-    attempt_generation: Number(record.attempt_generation || 0),
-    lease_owner: record.lease_owner || '',
     retry_count: Number(record.retry_count || 0),
     last_attempt_at: record.last_attempt_at || '',
     next_attempt_at: record.next_attempt_at || '',
