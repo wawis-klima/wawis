@@ -904,7 +904,8 @@ export default function App() {
         // Kolejkę oznaczamy jako odtworzoną dopiero po zakończonym restore.
         // Jeśli efekt zostanie anulowany w trakcie startu (np. gdy właśnie dochodzi lista zleceń),
         // następna instancja efektu musi dostać pełną szansę na ponowne uzgodnienie IndexedDB z serwerem.
-        await restorePersistedJobPhotos({
+        try {
+          await restorePersistedJobPhotos({
           supabase,
           supabaseUrl,
           profile: currentProfile,
@@ -917,12 +918,18 @@ export default function App() {
               scheduleBackgroundJobDetailsReload(photo.job_id, 700);
             }
           },
-        });
-        if (!isQueueSessionCurrent()) return;
-        offlinePhotoQueueUserRef.current = userId;
+          });
+          if (!isQueueSessionCurrent()) return;
+          offlinePhotoQueueUserRef.current = userId;
+        } catch (error) {
+          // Odtwarzanie podglądu nie może zablokować wysłania trwałych plików z IndexedDB.
+          console.warn('PHOTO_QUEUE_RESTORE_FAILED', error?.code || error?.name || 'UNKNOWN');
+          photoSyncStatus.markPhotoSyncError(new Error('PHOTO_QUEUE_RESTORE_FAILED'));
+        }
       }
       if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
-      await resumePersistedPhotoUploads({
+      try {
+        await resumePersistedPhotoUploads({
         supabase,
         profile: currentProfile,
         isSessionCurrent: isQueueSessionCurrent,
@@ -938,18 +945,35 @@ export default function App() {
           }
         },
         onPhotoUploadError: photoSyncStatus.markPhotoSyncError,
-      });
-      if (isQueueSessionCurrent()) await performOfflineJobSync();
+        });
+      } catch (error) {
+        console.warn('PHOTO_QUEUE_RESUME_FAILED', error?.code || error?.name || 'UNKNOWN');
+        photoSyncStatus.markPhotoSyncError(new Error('PHOTO_QUEUE_RESUME_FAILED'));
+      }
+      if (isQueueSessionCurrent()) {
+        try {
+          await performOfflineJobSync();
+        } catch (error) {
+          console.warn('PHOTO_QUEUE_DEVICE_SYNC_FAILED', error?.code || error?.name || 'UNKNOWN');
+          photoSyncStatus.markPhotoSyncError(new Error('PHOTO_QUEUE_DEVICE_SYNC_FAILED'));
+        }
+      }
     }
 
     // Zmiana licznika kolejki nie może anulować trwającego uzgadniania zdjęcia.
-    photoQueueResumeRef.current = restoreAndResumeQueue;
-    void restoreAndResumeQueue();
-    const onlineHandler = () => void restoreAndResumeQueue();
+    const launchQueueResume = () => {
+      void restoreAndResumeQueue().catch((error) => {
+        console.warn('PHOTO_QUEUE_STARTUP_FAILED', error?.code || error?.name || 'UNKNOWN');
+        photoSyncStatus.markPhotoSyncError(new Error('PHOTO_QUEUE_STARTUP_FAILED'));
+      });
+    };
+    photoQueueResumeRef.current = launchQueueResume;
+    launchQueueResume();
+    const onlineHandler = launchQueueResume;
     window.addEventListener('online', onlineHandler);
     return () => {
       cancelled = true;
-      if (photoQueueResumeRef.current === restoreAndResumeQueue) photoQueueResumeRef.current = null;
+      if (photoQueueResumeRef.current === launchQueueResume) photoQueueResumeRef.current = null;
       window.removeEventListener('online', onlineHandler);
     };
   }, [offlineSyncUserId, offlineSyncProfileId, hasJobsReadyForQueue, supabase, setJobs, setSelectedJob, scheduleBackgroundJobDetailsReload, performOfflineJobSync, photoSyncStatus.markPhotoSyncError, photoSyncStatus.markPhotoSynced, photoSyncStatus.markPhotoSyncing, captureCurrentSessionToken, isSessionTokenCurrent]);
