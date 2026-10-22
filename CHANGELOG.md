@@ -1,3 +1,9 @@
+## 13.47
+- Ręczne „Synchronizuj teraz” otrzymuje identyfikator wybranego montażu, filtruje zdjęcia tej operacji i nie oczekuje na osobny, trwający transfer w tle dla innych montaży. Lease / atomowy claim w IndexedDB pozostają aktywne.
+- Odczyt szczegółów i podsumowania serwera nie nadpisuje oczekującego modelu urządzenia przechowywanego jako lokalna operacja offline; ochrona konfliktu serwera.
+- Informacja UI odróżnia urządzenie lokalne od faktycznie gotowego protokołu.
+- Nowe testy symulują stary worker zawieszony w wysyłaniu zdjęcia oraz nową ręczną synchronizację wybranego montażu, a także wyświetlanie niezakończonej zmiany. Nie usuwamy żadnych plików IndexedDB i nie zmieniamy SQL/RLS.
+
 ## 13.46
 - iOS / WebKit: obejście żądań multipart/form-data z pustym body (Storage HTTP 400 \`No content provided\`, \`Content-Length: 0\`) poprzez surowy ArrayBuffer odczytany i sprawdzony z pliku przed wysyłką.
 - Nie kasujemy lokalnych tabliczek przy pustym lub niekompletnym odczycie; pozostałe platformy korzystają z dotychczasowego transferu.

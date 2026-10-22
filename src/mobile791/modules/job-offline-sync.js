@@ -225,7 +225,9 @@ async function runSync(options = {}) {
   }
 
   await recoverStaleOfflineJobOperations(userId);
+  const requestedJobId = String(options.jobId || '').trim();
   const operations = (await listOfflineJobOperations(userId))
+    .filter((item) => !requestedJobId || String(item.job_id || '') === requestedJobId)
     .filter((item) => !Array.isArray(options.allowedTypes) || options.allowedTypes.includes(item.type))
     .filter((item) => item.status !== 'conflict')
     .filter((item) => operationIsDue(item))
@@ -282,6 +284,9 @@ async function runSync(options = {}) {
 }
 
 export function syncOfflineJobOperations(options = {}) {
+  // Ręczna synchronizacja konkretnego montażu nie może utknąć za długim
+  // odczytem innego zlecenia. Claim transakcyjny zapobiega podwójnemu ACK.
+  if (String(options.jobId || '').trim()) return runSync(options);
   if (activeSyncPromise) return activeSyncPromise;
   activeSyncPromise = runSync(options).finally(() => {
     activeSyncPromise = null;

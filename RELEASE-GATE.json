@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.46",
+  "version": "13.47",
   "scope": "mobile",
-  "release_branch": "release/v13.46",
+  "release_branch": "release/v13.47",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "FAIL",
-    "notes": "iPhone v13.45: Storage POST 2026-10-22 09:53 UTC (2 żądania) HTTP 400 No content provided, Content-Length 0, multipart/form-data; nowe zdjęcia i urządzenie niezsynchronizowane."
+    "notes": "iPhone v13.46 22.10.2026 12:42-12:43 CEST: wybrany montaż e500dcdb... nie ma zdjęć ani modelu w Supabase; kolejka 4 zdjęcia ponawiane. Storage potwierdził transfer JPEG ~270 KB dla innego montażu c306..."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.46.zip"
+    "file_name": "klima-app-v13.47.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.46",
+    "source_branch": "release/v13.47",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -25,7 +25,7 @@
     "checked": false,
     "result": "EXTERNAL",
     "evidence_source": "PR exact SHA, CI Closure GO, Vercel production SHA, physical iPhone queue",
-    "notes": "Po ewentualnym wdrożeniu v13.46 na rzeczywistym iPhonie potwierdzić >0 bajtów Storage JW/JZ, rekordy photos, zapis modelu device i odblokowanie Protokołu. Nie usuwać danych IndexedDB."
+    "notes": "Po pozytywnym CI i wdrożeniu sprawdzić wybrany montaż e500dcdb... na tej samej instalacji iPhone'a. Oczekiwane dwie tabliczki i model na serwerze, kolejka wybranego montażu 0, Protokół aktywny. Nie usuwać IndexedDB."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "iPhone: przed Storage upload czytaj pełny ArrayBuffer z File; odrzucaj pusty/niekompletny odczyt, zachowaj trwały plik w IndexedDB. Bez zmian Android/desktop.",
-    "release_ci": "Wydanie warunkowe: wyłącznie po pełnym GREEN dla wymaganych Playwright E2E, Closure Gate i build na dokładnym SHA. Bez zielonego CI merge jest zabroniony.",
-    "post_deploy": "Wersja 13.46 po akceptacji, serwerowy dowód niezerowej zawartości i test na fizycznym iPhonie."
+    "code": "Wybór montażu przy ręcznym retry, brak czekania na globalny worker, atomowy claim w IndexedDB; ochrona lokalnego device_model w reloadJobSummary / reloadJobDetails.",
+    "release_ci": "Mandatory targeted-checks, iPhone E2E, Closure Gate and build for exact SHA.",
+    "post_deploy": "Potwierdzić produkcyjny SHA/wersję Vercel i realny upload JW/JZ na iPhonie przed uznaniem awarii za zamkniętą."
   }
 }

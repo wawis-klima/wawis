@@ -1,3 +1,15 @@
+## WAWIS-1347 — iPhone v13.46: wybrany montaż ginie za kolejką (22.10.2026)
+
+| Id | Stan | Dowód / wymagany test |
+|---|---|---|
+| WAWIS-1347-READ | POTWIERDZONE | Montaż testowy e500dcdb-171b-4da8-bb05-e006fa192734: po ręcznej synchronizacji widok z lokalnym urządzeniem przechodzi na „Brak urządzeń”. Supabase: model null, 0 zdjęć, 0 Storage. |
+| WAWIS-1347-QUEUE | POTWIERDZONE W KODZIE | App.retryAllPhotoUploads uruchamiał globalne zdjęcia wszystkich montaży, a retryAllPersistedPhotoUploads czekało na już działający background worker. Przy 4 pozycjach starsze zdjęcia blokują wybrany montaż. |
+| WAWIS-1347-TRANSFER | POTWIERDZONE | Na iPhonie v13.46 w 12:42:12 CEST Supabase przyjął poprawny JPEG ~270 KB, ale dla INNEGO montażu c306426a…, nie dla zaznaczonego e500d… |
+| WAWIS-1347-VIEW | POTWIERDZONE W KODZIE | reloadJobSummary oraz mergeJobDetailsForMobile brały wartości serwera bez nałożenia oczekującego device_fields z IDB. |
+| WAWIS-1347-E2E | DO KONTROLI CI | tests/e2e/mobile-manual-photo-priority-v1347.spec.js: globalny worker celowo zawieszony na starym zadaniu, ręczny sync wybranego zlecenia musi ACK niezależnie, bez usunięcia starych danych. |
+| WAWIS-1347-SMOKE | DO KONTROLI CI | scripts/smoke-selected-job-sync-v1347.mjs: widok lokalny oczekujący na zdjęcia nie może zostać nadpisany, konflikt pozostaje chroniony. |
+| WAWIS-1347-PHYSICAL | ZEWNĘTRZNY | Po ewentualnym wdrożeniu sprawdzić na tym samym iPhonie upload 2 zdjęć e500d… oraz aktywację „Protokół”, bez ponownego tworzenia testowego montażu. |
+
 ## WAWIS-1346 — iOS / zdjęcia wysyłane z Content-Length: 0 (22.10.2026)
 
 | ID | Stan | Reproduktor / warunek zamknięcia |

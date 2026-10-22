@@ -1714,6 +1714,7 @@ async function runPersistedPhotoUploads({
   onQueueStart,
   onQueueIdle,
   includeErrors = false,
+  jobId = '',
   isSessionCurrent = () => true,
 } = {}) {
   if (!supabase || !profile || isBrowserOffline() || !isSessionCurrent()) return { processed: 0, uploaded: 0 };
@@ -1724,8 +1725,13 @@ async function runPersistedPhotoUploads({
   const guardedSetSelectedJob = (updater) => { if (isSessionCurrent()) setSelectedJob?.(updater); };
   const guardedOnPhotoUploaded = (...args) => { if (isSessionCurrent()) onPhotoUploaded?.(...args); };
   const guardedOnPhotoUploadError = (...args) => { if (isSessionCurrent()) onPhotoUploadError?.(...args); };
+  const selectedJobId = String(jobId || '').trim();
+  // Ręczny przycisk na karcie montażu musi obsłużyć TEN montaż,
+  // niezależnie od wolnych/starych transferów z innych zleceń.
+  // Jednorazowy claim w IndexedDB nadal zabezpiecza przed dwoma workerami.
   const records = (await listPhotoQueueItems())
     .filter((record) => photoQueueRecordBelongsToProfile(record, profileId))
+    .filter((record) => !selectedJobId || String(record.job_id || '') === selectedJobId)
     .filter((record) => includeErrors || photoQueueItemIsDue(record));
   if (!records.length) {
     if (isSessionCurrent()) onQueueIdle?.();
@@ -1860,7 +1866,11 @@ export function resumePersistedPhotoUploads(options = {}) {
 export async function retryAllPersistedPhotoUploads(options = {}) {
   const profileId = String(options?.profile?.id || '').trim();
   const existing = profileId ? persistedQueueResumePromises.get(profileId) : null;
-  if (existing) {
+  const requestedJobId = String(options?.jobId || '').trim();
+  // Synchronizacja jednego montażu NIE czeka na globalny background resume:
+  // kolejka może zawierać fotografie innych zleceń i blokować UX na minuty.
+  // Jeden konkretny rekord i tak ma atomowy claim + lease w IndexedDB.
+  if (existing && !requestedJobId) {
     try {
       await existing;
     } catch {
@@ -1868,7 +1878,7 @@ export async function retryAllPersistedPhotoUploads(options = {}) {
     }
   }
   if (options?.isSessionCurrent?.() === false) return { processed: 0, uploaded: 0, ignoredStaleSession: true };
-  return runPersistedPhotoUploads({ ...options, includeErrors: true });
+  return runPersistedPhotoUploads({ ...options, includeErrors: true, jobId: requestedJobId });
 }
 
 export function retryQueuedJobPhoto({
