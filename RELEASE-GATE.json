@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v13.47",
-    "ready_for_main": false,
-    "status": "IN_REVIEW_PENDING_GREEN_CI",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -34,7 +34,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Wybór montażu przy ręcznym retry, brak czekania na globalny worker, atomowy claim w IndexedDB; ochrona pending device_model w reloadJobSummary / reloadJobDetails.",
+    "code": "Wybór montażu przy ręcznym retry, brak czekania na globalny worker, atomowy claim w IndexedDB; ochrona lokalnego device_model w reloadJobSummary / reloadJobDetails.",
     "release_ci": "Mandatory targeted-checks, iPhone E2E, Closure Gate and build for exact SHA.",
     "post_deploy": "Potwierdzić produkcyjny SHA/wersję Vercel i realny upload JW/JZ na iPhonie przed uznaniem awarii za zamkniętą."
   }
