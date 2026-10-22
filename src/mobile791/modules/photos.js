@@ -15,6 +15,28 @@ const persistedQueueResumePromises = new Map();
 const PHOTO_UPLOAD_LEASE_MS = 3 * 60 * 1000;
 const PHOTO_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
 
+// iOS WebKit potrafi wysłać multipart/form-data z Content-Length: 0
+// mimo poprawnego lokalnego File. Storage-js obsługuje ArrayBuffer jako
+// surowe body (application/octet-stream z jawnym contentType obrazu),
+// dlatego na iPhonie/iPadzie omijamy kodowanie multipart.
+// File pozostaje w IndexedDB aż do potwierdzonego uploadu i ACK.
+export async function getMobileStorageUploadBody(file, {
+  userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '',
+  maxTouchPoints = typeof navigator !== 'undefined' ? navigator.maxTouchPoints : 0,
+} = {}) {
+  const agent = String(userAgent || '');
+  const isIOS = /iPhone|iPad|iPod/i.test(agent)
+    || (/Macintosh/i.test(agent) && Number(maxTouchPoints || 0) > 1);
+  if (!isIOS) return file;
+  const bytes = await file.arrayBuffer();
+  if (!(bytes instanceof ArrayBuffer) || !bytes.byteLength || bytes.byteLength !== Number(file.size || 0)) {
+    const error = new Error('Zdjęcie nie ma pełnej zawartości bajtowej. Zachowano plik na telefonie.');
+    error.code = 'PHOTO_UPLOAD_BODY_INVALID';
+    throw error;
+  }
+  return bytes;
+}
+
 function getPhotoRetryDelayMs(retryCount) {
   const exponent = Math.max(0, Math.min(Number(retryCount || 1) - 1, 8));
   const base = Math.min(PHOTO_RETRY_MAX_DELAY_MS, 4000 * (2 ** exponent));
@@ -1120,9 +1142,11 @@ async function performQueuedPhotoUpload({
     if (!(await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch }, photoQueueWriteGuard(queuedPhoto)))) return null;
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
+    const uploadBody = await getMobileStorageUploadBody(uploadFile);
+    if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     const { error: uploadError } = await supabase.storage
       .from(PHOTO_BUCKET)
-      .upload(storagePath, uploadFile, { cacheControl: '3600', upsert: false, contentType: uploadFile.type || 'image/jpeg' });
+      .upload(storagePath, uploadBody, { cacheControl: '3600', upsert: false, contentType: uploadFile.type || 'image/jpeg' });
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     if (uploadError && !isDuplicateStorageError(uploadError)) throw uploadError;
     storageExists = true;
