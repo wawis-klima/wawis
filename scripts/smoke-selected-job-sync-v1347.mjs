@@ -27,7 +27,7 @@ assert.match(app, /const nextJob = overlayPendingDeviceOperation\(/, 'summary re
 assert.match(photos, /const selectedJobId = String\(jobId \|\| ''\)\.trim\(\);/, 'photo queue must accept selected job ID');
 assert.match(photos, /!selectedJobId \|\| String\(record\.job_id \|\| ''\) === selectedJobId/, 'photo queue must restrict retry to selected job');
 assert.match(photos, /if \(existing && !requestedJobId\)/, 'manual retry must not await global worker belonging to unrelated jobs');
-assert.match(app, /performOfflineJobSync\\(\\{ jobId: requestedJobId \\}\\)/, 'manual device sync must also be scoped');
-assert.match(operations, /\\.filter\\(\\(item\\) => !requestedJobId \\|\\| String\\(item\\.job_id \\|\\| ''\\) === requestedJobId\\)/, 'device operation queue filters selected job');
-assert.match(operations, /if \\(String\\(options\\.jobId \\|\\| ''\\)\\.trim\\(\\)\\) return runSync\\(options\\)/, 'selected operation must bypass unrelated global promise');
+assert.ok(app.includes('performOfflineJobSync({ jobId: requestedJobId })'), 'manual device sync must also be scoped');
+assert.ok(operations.includes("!requestedJobId || String(item.job_id || '') === requestedJobId"), 'device operation queue filters selected job');
+assert.ok(operations.includes("if (String(options.jobId || '').trim()) return runSync(options)"), 'selected operation must bypass unrelated global promise');
 console.log('13.47 selected job priority and pending device overlay smoke PASS');
