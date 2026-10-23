@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## FAKTUROWNIA-1354 — samoczynne potwierdzanie wystawionej faktury (23 października 2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| FAK-1354-AUTO-RETRY | FIXED-UNVERIFIED | Po powrocie do WAWIS sprawdzenia ważnej próby co 12 s przez maks. 3 min, bez numeru, przy zamknięciu lub zmianie montażu czyszczony timer. |
+| FAK-1354-BASELINE | FIXED-UNVERIFIED | Drugie otwarcie formularza dla tego samego klienta zachowuje pierwotny stan faktur i pierwszy czas rozpoczęcia; regresja na wykonywanym handlerze Edge. |
+| FAK-1354-GUARDS | FIXED-UNVERIFIED | NIP, client_id, OID, VAT/status, zbieżne wystawienia i globalnie unikalne powiązanie pozostają wymagane. |
+| FAK-1354-LIVE | EXTERNAL | Bez wystawiania testowej faktury w produkcji potwierdzić na kolejnej prawdziwej fakturze: po zapisie i powrocie automatyczny status oraz numer. |
+
+
 ## FAKTUROWNIA-1353 — identyfikacja wystawionej faktury po ID (23 października 2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
