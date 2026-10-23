@@ -68,11 +68,11 @@ test.describe('@mobile przypomnienie zakończenia po protokole', () => {
     await startSignedProtocol(page, ADMIN);
     const dialog = page.locator('.wawisFinishPrompt1359');
     await expect(dialog).toBeVisible();
-    await expect(dialog).not.toHaveClass(/\\b(formModal|confirmDeleteModal|modal|card)\\b/);
+    await expect(dialog).not.toHaveClass(/formModal|confirmDeleteModal|modal|card/);
     const cancel = dialog.getByRole('button', { name: 'Jeszcze nie' });
     const confirm = dialog.getByRole('button', { name: 'Zakończ montaż' });
-    await expect(cancel).not.toHaveClass(/\\bbtn\\b/);
-    await expect(confirm).not.toHaveClass(/\\bbtn\\b/);
+    await expect(cancel).not.toHaveClass(/btn/);
+    await expect(confirm).not.toHaveClass(/btn/);
 
     // Hostile legacy selectors must have no influence on this isolated dialog.
     await page.addStyleTag({ content: `
