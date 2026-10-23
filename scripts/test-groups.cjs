@@ -107,6 +107,7 @@ const GROUPS = {
   roles: [
     'node scripts/codex-acceptance-note-sql-v1269.mjs',
     'node scripts/codex-acceptance-fakturownia-v1269.mjs',
+    'node scripts/smoke-fakturownia-direct-id-v1353.mjs',
     'npm run test:smoke:admin-worker',
     'npm run test:smoke:desktop-only',
     'npm run test:smoke:supabase-grants',
