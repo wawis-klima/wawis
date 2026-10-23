@@ -1,3 +1,9 @@
+## 13.58
+- Kompaktowe okno przypomnienia o zakończeniu montażu po zapisaniu podpisanego protokołu na iPhonie; tytuł i dwa przyciski w jednym estetycznym panelu.
+- „Jeszcze nie” i „Zakończ montaż” w jednym rzędzie, oba 44 px wysokości i na małych ekranach; skrócony tekst.
+- Zmiana wyłącznie stylu i etykiety mobilnego dialogu: bez ingerencji w reguły ukończenia, backend, OCR, pliki PDF i inne modale.
+- Playwright: geometria przycisków i zachowanie „Jeszcze nie” oraz istniejące przypadki kończenia dla Admin/Worker.
+
 ## 13.57
 - Poprawiono regresję przypomnienia po zapisaniu podpisanego protokołu w mobilnym WAWIS 13.56: okno „Czy chcesz teraz zakończyć montaż?” było błędnie ukryte przed kontem Administrator.
 - Okno działa teraz na iPhonie zarówno dla Administratora, jak i Pracownika przy montażu „W trakcie”, po potwierdzonym zapisie protokołu PDF i wyjściu z okna protokołu.

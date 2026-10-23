@@ -1061,6 +1061,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.58` — kompaktowe okno po podpisaniu protokołu na iPhonie, dwa przyciski obok siebie, bez zmian logiki.
 - wersja `13.57` — okno przypomnienia o zakończeniu po podpisanym protokole również dla mobilnego Administratora.
 - wersja `13.56` — jednorazowe przypomnienie o zakończeniu montażu po podpisanym i zapisanym protokole (bez automatycznej zmiany statusu).
 - wersja `13.55` — automatyczne ponowienie potwierdzania tabliczek po timeout LTE na iPhonie, z zachowaniem lokalnych zdjęć i ochroną przed duplikatami.
