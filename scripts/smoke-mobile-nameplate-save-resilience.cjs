@@ -10,16 +10,19 @@ const required = [
   "logDiagnostic('nameplate.save.modal.closed.after-timeout-confirmation'",
   "logDiagnostic('nameplate.save.refresh.timeout'",
   'verifyPendingNameplatesOnServer',
-  "verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-completed')",
+  'verifyNameplatesWithRecovery',
+  'retryQueuedJobPhoto({',
+  'nameplate.save.recovery.finished',
+  "verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'upload-completed'",
   "reason: 'server-verification-incomplete'",
-  'Nie wszystkie tabliczki zostały potwierdzone na serwerze.',
+  'Aplikacja ponowiła kontrolę i próbę wysyłki.',
   'resetJobModalState();',
   "refreshAfterNameplateSave(editingJobId, 'save-confirmed')",
 ];
 for (const marker of required) {
   if (!source.includes(marker)) throw new Error(`Brak zabezpieczenia zapisu tabliczek: ${marker}`);
 }
-const finalVerificationIndex = source.indexOf("verifyPendingNameplatesOnServer(editingJobId, pendingDocuments, 'upload-completed')");
+const finalVerificationIndex = source.indexOf("verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'upload-completed'");
 const closeIndex = source.indexOf("logDiagnostic('nameplate.save.modal.closed', { jobId: editingJobId");
 const refreshIndex = source.indexOf("refreshAfterNameplateSave(editingJobId, 'save-confirmed')", closeIndex);
 if (finalVerificationIndex < 0 || closeIndex < 0 || refreshIndex < 0 || finalVerificationIndex > closeIndex || closeIndex > refreshIndex) {
