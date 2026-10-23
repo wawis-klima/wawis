@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.58
+- 13.59
+
+WAWIS 13.59: prawdziwa poprawka kompaktowego okna „Protokół podpisany” na iPhonie. Usunięto zależność tego jednego okna od współdzielonych klas i zewnętrznego CSS; layout, odstępy i dwa przyciski w jednym rzędzie są teraz narzucone wprost w komponencie. Playwright sprawdza geometrię przy szerokości iPhone 14 i 320 px, także przy symulacji konfliktowych starych reguł. Bez zmian logiki i backendu.
+
 
 WAWIS 13.58: zmniejszono wyłącznie okno przypomnienia po podpisanym protokole na iPhonie (Administrator i Pracownik). Komunikat skrócono do „Wszystko gotowe. Zakończyć montaż?”, przyciski „Jeszcze nie” i „Zakończ montaż” są zawsze obok siebie, min. 44 px wysokości. Wspólne inne modale, walidacje i zapis niezmienione.
 
@@ -1061,6 +1064,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.59` — izolowany kompaktowy dialog po podpisanym protokole: dwie akcje obok siebie, bez zależności od ogólnych stylów.
 - wersja `13.58` — kompaktowe okno po podpisaniu protokołu na iPhonie, dwa przyciski obok siebie, bez zmian logiki.
 - wersja `13.57` — okno przypomnienia o zakończeniu po podpisanym protokole również dla mobilnego Administratora.
 - wersja `13.56` — jednorazowe przypomnienie o zakończeniu montażu po podpisanym i zapisanym protokole (bez automatycznej zmiany statusu).

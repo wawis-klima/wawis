@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.58",
+  "version": "13.59",
   "scope": "mobile",
-  "release_branch": "release/v13.58",
+  "release_branch": "release/v13.59",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "INFO",
-    "notes": "Użytkownik potwierdził działanie dialogu 13.57; problem dotyczy wyłącznie zbyt dużego odstępu i pionowego układu przycisków na mobilnym iPhonie."
+    "result": "ROOT_CAUSE_CONFIRMED",
+    "notes": "Użytkownik na produkcyjnym 13.58 potwierdził, że CSS dla compact modala nie zadziałał: krótki tekst był widoczny, ale przyciski nadal pionowe i okno zbyt duże. Usunięto zależność od współdzielonych klas."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.58.zip"
+    "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.58",
+    "source_branch": "release/v13.59",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Po zielonych testach i Vercel READY zweryfikować 13.58 na iPhonie: oba przyciski w jednym rzędzie, okno kompaktowe, oba wybory działają.",
-    "notes": "Wyłącznie wariant modalny na mobile i test Playwright; brak zmian Supabase, Fakturowni, protokołu, PDF, synchronizacji."
+    "evidence_source": "Po CI+Vercel READY nowo zapisać podpisany protokół na iPhonie w 13.59 i zweryfikować wizualnie szerokość/wysokość okna oraz układ 2 przycisków w jednym rzędzie.",
+    "notes": "Zmiana wyłącznie mobilnego ConfirmActionModal compact; walidacja, storage, PDF, Fakturownia, Supabase bez zmian."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Scoped CSS dla compact ConfirmActionModal wyłącznie w przypomnieniu po podpisaniu protokołu; skrócony tekst; bez zmian logiki.",
-    "release_ci": "Test Playwright geometrii iPhone oraz wszystkie istniejące testy zachowania Administrator/Pracownik, build i Closure Gate.",
-    "post_deploy": "Na 13.58 podpisać protokół testowy; sprawdzić dwie opcje w jednym rzędzie. Jeszcze nie utrzymuje W trakcie, Zakończ wywołuje existing updateStatus. Rollback do 13.57 w razie regresji."
+    "code": "Osobny modal kompaktowy bez współdzielonych klas: inline style dla panelu, tytułu, opisu, grid i przycisków; bez CSS import.",
+    "release_ci": "Targeted regression, Playwright mobile 320px i iPhone 14, testy akcji ADMIN+WORKER, Closure Gate, build.",
+    "post_deploy": "W wersji 13.59 zweryfikować na iPhonie przy nowym podpisie dwa przyciski obok siebie. Zakończ i Jeszcze nie mają niezmienione zachowanie. Jeśli problem powróci, wycofać do 13.58 i zebrać computedStyle z rzeczywistej sesji."
   }
 }

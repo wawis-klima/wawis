@@ -64,29 +64,45 @@ async function startSignedProtocol(page, credentials = WORKER) {
 }
 
 test.describe('@mobile przypomnienie zakończenia po protokole', () => {
-  test('13.58 — kompaktowe okno: dwa przyciski w jednym rzędzie na iPhonie', async ({ page }) => {
+  test('13.59 — izolowany kompaktowy dialog na iPhonie: inline grid, bez dziedziczonych klas i CSS', async ({ page }) => {
     await startSignedProtocol(page, ADMIN);
-    const modal = page.locator('.finishReminderModal');
-    await expect(modal).toBeVisible();
-    const cancel = modal.getByRole('button', { name: 'Jeszcze nie' });
-    const confirm = modal.getByRole('button', { name: 'Zakończ montaż' });
-    const [modalBox, cancelBox, confirmBox] = await Promise.all([
-      modal.boundingBox(), cancel.boundingBox(), confirm.boundingBox(),
-    ]);
-    expect(modalBox).not.toBeNull();
-    expect(cancelBox).not.toBeNull();
-    expect(confirmBox).not.toBeNull();
-    expect(modalBox.height).toBeLessThan(240);
-    expect(modalBox.width).toBeLessThanOrEqual(392);
-    expect(Math.abs(cancelBox.y - confirmBox.y)).toBeLessThan(2);
-    expect(confirmBox.x).toBeGreaterThan(cancelBox.x + cancelBox.width);
-    expect(cancelBox.height).toBeGreaterThanOrEqual(44);
-    expect(confirmBox.height).toBeGreaterThanOrEqual(44);
+    const dialog = page.locator('.wawisFinishPrompt1359');
+    await expect(dialog).toBeVisible();
+    await expect(dialog).not.toHaveClass(/formModal|confirmDeleteModal|modal|card/);
+    const cancel = dialog.getByRole('button', { name: 'Jeszcze nie' });
+    const confirm = dialog.getByRole('button', { name: 'Zakończ montaż' });
+    await expect(cancel).not.toHaveClass(/btn/);
+    await expect(confirm).not.toHaveClass(/btn/);
+
+    // Hostile legacy selectors must have no influence on this isolated dialog.
+    await page.addStyleTag({ content: `
+      .formModal, .modal, .confirmDeleteModal { padding: 90px !important; width: 100% !important; }
+      .row, .btn { display: flex !important; flex-direction: column !important; width: 100% !important; min-height: 110px !important; }
+    ` });
+    async function assertCompact() {
+      const action = dialog.getByTestId('finish-reminder-actions');
+      const [panelBox, cancelBox, confirmBox] = await Promise.all([
+        dialog.boundingBox(), cancel.boundingBox(), confirm.boundingBox(),
+      ]);
+      expect(panelBox).not.toBeNull();
+      expect(cancelBox).not.toBeNull();
+      expect(confirmBox).not.toBeNull();
+      expect(panelBox.height).toBeLessThan(190);
+      expect(panelBox.width).toBeLessThanOrEqual(360);
+      expect(Math.abs(cancelBox.y - confirmBox.y)).toBeLessThan(2);
+      expect(confirmBox.x).toBeGreaterThanOrEqual(cancelBox.x + cancelBox.width + 7);
+      expect(cancelBox.height).toBeGreaterThanOrEqual(44);
+      expect(confirmBox.height).toBeGreaterThanOrEqual(44);
+      const computed = await action.evaluate(el => getComputedStyle(el).display);
+      expect(computed).toBe('grid');
+    }
+    await assertCompact();
+    await page.setViewportSize({ width: 320, height: 680 });
+    await assertCompact();
     await cancel.click();
     const store = await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__?.getStore?.());
     expect(store.jobs.find((job) => job.id === 'mock-job-002')?.status).toBe('W trakcie');
   });
-
 
   test('administrator na iPhonie dostaje przypomnienie po zapisie PDF; Jeszcze nie nie kończy montażu', async ({ page }) => {
     await startSignedProtocol(page, ADMIN);
