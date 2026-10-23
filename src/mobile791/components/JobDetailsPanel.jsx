@@ -1272,9 +1272,10 @@ export default function JobDetailsPanel({
           }
         }}
         title="Protokół podpisany"
-        message="Wszystkie wymagane kroki zostały wykonane. Czy chcesz teraz zakończyć montaż?"
+        message="Wszystko gotowe. Zakończyć montaż?"
         confirmLabel="Zakończ montaż"
         cancelLabel="Jeszcze nie"
+        compact
         busy={busy}
       />
     </>
