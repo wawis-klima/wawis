@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.53",
-  "scope": "desktop",
-  "release_branch": "release/v13.53",
+  "version": "13.55",
+  "scope": "mobile",
+  "release_branch": "release/v13.55",
   "baseline_diagnostics": {
-    "checked": false,
-    "last_24h": false,
-    "result": "NOT_RUN",
-    "notes": "Bezpieczne wyszukiwanie faktury Fakturowni po rzeczywistym ID bez tworzenia faktur. Kod Supabase produkcyjnej Edge Function v21 zsynchronizowany do GitHub przed zmianą. Offline bez zmian."
+    "checked": true,
+    "last_24h": true,
+    "result": "KNOWN_ISSUE",
+    "notes": "Sprawdzono zdarzenie nameplate.save.verify.timeout Pawła Makieły 2026-10-23 13:32 Europe/Warsaw, wcześniej NETWORK_REQUEST_ABORTED. W bazie po zapisie z telefonu pracownika brak zdjęć, administrator zapisał poprawnie później. Bez innych modyfikacji danych."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.53.zip"
+    "file_name": "klima-app-v13.55.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.53",
+    "source_branch": "release/v13.55",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub CI success, Edge Fakturownia version 22 ACTIVE z poprawionym GET po ID, Vercel READY i 13.53, rzeczywista kontrola powiązania MADEX przez administratora",
-    "notes": "WAWIS MADEX: Opcje awaryjne > Powiąż po numerze/ID > ID:584755572. Żadna nowa faktura nie powstaje."
+    "evidence_source": "Po potwierdzonym GitHub CI+Closure Gate i Vercel READY sprawdzić WAWIS 13.55 na urządzeniu pracownika, zapis JW/JZ i serwerowe zdjęcia bez duplikatów.",
+    "notes": "Brak zmian bazy, Storage, RLS, Edge Functions i Fakturowni. Szczegóły dostępne w REGRESSION-LEDGER NP-1355."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Fakturownia Edge index z prod v21 + ID lookup, desktop etykieta, testy bezpieczeństwa. Supabase Storage/offline/podpisy niezmienione.",
-    "release_ci": "Test E2E/mock link po ID + przypadki odmowy i brak działań POST/PUT do provider API, komplet regresji, Closure Gate, build.",
-    "post_deploy": "Edge Supabase ACTIVE z identycznym kodem co PR; Vercel READY, wersja 13.53 i ręczne bezpieczne powiązanie istniejącego dokumentu MADEX."
+    "code": "Tylko mobilny useSelectedJobActions.js i nowy nameplate-save-recovery.js: retry odczytu po timeout + wznowienie dokładnych zdjęć przez istniejący upload_key bez duplikatów. Nie zmieniono Fakturowni ani protokołu.",
+    "release_ci": "Smoke nameplate-save-resilience, photo-idempotency, offline, timeout, AbortError, wszystkie odpowiednie grupy regresyjne, Playwright mobile, Closure Gate i build.",
+    "post_deploy": "Sprawdź 13.55 w aplikacji iPhone, ponowione żądania po słabym LTE, serwerowy zapis kompletnego JW/JZ i protokół. W razie regresji przywróć ostatnią produkcyjną 13.53."
   }
 }
