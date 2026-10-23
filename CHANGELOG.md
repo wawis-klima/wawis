@@ -1,3 +1,9 @@
+## 13.56
+- Po zapisaniu podpisanego protokołu PDF pracownik na iPhonie wraca do montażu i otrzymuje jednorazowe pytanie „Wszystkie wymagane kroki zostały wykonane. Czy chcesz teraz zakończyć montaż?”.
+- „Jeszcze nie” pozostawia status „W trakcie”; „Zakończ montaż” uruchamia ten sam istniejący mechanizm zakończenia, z weryfikacją tabliczek i protokołu. Podpisanie i zapis protokołu samo nie zmienia statusu.
+- Okno nie pojawia się przy samym otwarciu wcześniej zapisanego PDF, anulowanym zapisie, zakończonym montażu ani po zmianie wybranego montażu.
+- Nowe testy mobilne Playwright sprawdzają anulowanie i potwierdzenie, zachowanie statusu oraz brak powtarzania okna. Bez zmian backendu, SMS, powiadomień, Fakturowni i generowania PDF.
+
 ## 13.55
 - Mobilne tabliczki znamionowe: po 8-sekundowym timeout odczytu danych serwera WAWIS ponawia potwierdzenie dokładnie tych samych zdjęć i nie wyświetla natychmiast fałszywego błędu o brakujących tabliczkach.
 - Gdy upload zgłosił błędy lub lokalne zdjęcia oczekujące, system wznawia tylko pliki, które nie zostały potwierdzone bieżącą ścieżką uploadu. Zachowuje niezmienne upload_key i storage_path oraz deduplikację dla tego samego zdjęcia.
