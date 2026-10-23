@@ -1,3 +1,10 @@
+## 13.53
+- Fakturownia: oprócz numeru drukowanego można podać `ID:584755572` w dotychczasowym formularzu awaryjnego powiązania; wywoływany jest odczyt `GET /invoices/{id}.json`.
+- Po pobraniu dokumentu obowiązują dotychczasowe ścisłe kontrole: administrator, status montażu Zakończone, faktura VAT o statusie wystawionej, nabywca i NIP, kartoteka klienta z zapisanej próby wystawienia, OID niepowiązany z innym montażem, deduplikacja po ID w zabezpieczonym RPC.
+- Nie tworzy nowych faktur ani nie modyfikuje dokumentów w Fakturowni; domyślna ścieżka wyszukiwania po numerze pozostaje dostępna.
+- Zsynchronizowano kod Edge Function z działającą produkcyjną wersją 21 przed zmianą, by zachować wcześniejsze poprawki niewprowadzone do GitHuba.
+- Dodano testy pozytywne i negatywne: ID, odmowa dla innego NIP/client_id/OID, faktury w szkicu oraz brak pobrania po numerze. Offline 13.49 i podpisy bez zmian.
+
 ## 13.52
 - iPhone/Safari: pole podpisu od razu rysuje dokładnie w miejscu dotyku po obróceniu telefonu, bez konieczności „Wyczyść podpis”.
 - Bufor canvas jest dopasowywany do bieżącej szerokości/wysokości CSS oraz DPR; ResizeObserver, resize/orientationchange i preflight przy pierwszym dotyku eliminują nieaktualne współrzędne.

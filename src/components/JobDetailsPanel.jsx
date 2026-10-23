@@ -589,15 +589,15 @@ export default function JobDetailsPanel({
               </div>
               {manualInvoiceExpanded ? (
                 <form className="desktopInvoiceManualFormV1277" onSubmit={linkInvoiceByNumber}>
-                  <label htmlFor="desktopManualInvoiceNumberV1277">Numer wystawionej faktury VAT w Fakturowni</label>
+                  <label htmlFor="desktopManualInvoiceNumberV1277">Numer faktury lub ID dokumentu w Fakturowni</label>
                   <div className="desktopInvoiceManualInputRowV1277">
                     <input id="desktopManualInvoiceNumberV1277" type="text" value={manualInvoiceNumber} maxLength={100} autoComplete="off"
-                      onChange={(event) => setManualInvoiceNumber(event.target.value)} placeholder="Np. FV/2026/10/123" required />
+                      onChange={(event) => setManualInvoiceNumber(event.target.value)} placeholder="Np. 31/10/2026 lub ID:584755572" required />
                     <button type="submit" className="btn premiumActionBtn" disabled={manualInvoiceBusy || fakturowniaVerifying || !manualInvoiceNumber.trim()}>
                       {manualInvoiceBusy ? 'Weryfikuję…' : 'Sprawdź i powiąż'}
                     </button>
                   </div>
-                  <small>WAWIS sprawdzi numer, rodzaj dokumentu, klienta i powiązanie z montażem. Nie wystawia ponownie faktury.</small>
+                  <small>Jeżeli wyszukiwanie po numerze zawiodło, wklej ID z adresu faktury, poprzedzone „ID:”. WAWIS zweryfikuje dokument, NIP i klienta. Nie wystawia ponownie faktury.</small>
                 </form>
               ) : null}
             </div>

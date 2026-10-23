@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.52",
-  "scope": "mobile",
-  "release_branch": "release/v13.52",
+  "version": "13.53",
+  "scope": "desktop",
+  "release_branch": "release/v13.53",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Mobile podpis: synchronizacja bufora canvas z rozmiarem CSS po obrocie iPhone'a oraz pierwszym dotykiem; bez zmian PDF, Supabase, Storage, OCR, offline."
+    "notes": "Bezpieczne wyszukiwanie faktury Fakturowni po rzeczywistym ID bez tworzenia faktur. Kod Supabase produkcyjnej Edge Function v21 zsynchronizowany do GitHub przed zmianą. Offline bez zmian."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.52.zip"
+    "file_name": "klima-app-v13.53.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.52",
+    "source_branch": "release/v13.53",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY production SHA i publiczna wersja 13.52; realny test pierwszej kreski bez czyszczenia na iPhonie",
-    "notes": "Po obrocie iPhone'a rysować od lewej krawędzi, bez klikania Wyczyść podpis, następnie sprawdzić zapis w PDF."
+    "evidence_source": "GitHub CI success, Edge Fakturownia version 22 ACTIVE z poprawionym GET po ID, Vercel READY i 13.53, rzeczywista kontrola powiązania MADEX przez administratora",
+    "notes": "WAWIS MADEX: Opcje awaryjne > Powiąż po numerze/ID > ID:584755572. Żadna nowa faktura nie powstaje."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Tylko obsługa canvas podczas podpisywania: obsługa ResizeObserver, orientationchange, resize i pointerDown; zachowanie tuszu na zmianę rozmiaru.",
-    "release_ci": "Smoke inicjalizacji canvas, E2E pierwszej kreski i zachowania rysunku, targeted-checks, Closure Gate, build.",
-    "post_deploy": "Vercel READY zgodny z main SHA, WAWIS 13.52, rzeczywisty test dotykowy na iPhonie."
+    "code": "Fakturownia Edge index z prod v21 + ID lookup, desktop etykieta, testy bezpieczeństwa. Supabase Storage/offline/podpisy niezmienione.",
+    "release_ci": "Test E2E/mock link po ID + przypadki odmowy i brak działań POST/PUT do provider API, komplet regresji, Closure Gate, build.",
+    "post_deploy": "Edge Supabase ACTIVE z identycznym kodem co PR; Vercel READY, wersja 13.53 i ręczne bezpieczne powiązanie istniejącego dokumentu MADEX."
   }
 }

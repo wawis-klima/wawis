@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## FAKTUROWNIA-1353 — identyfikacja wystawionej faktury po ID (23 października 2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| FAK-1353-ID | FIXED-UNVERIFIED | Dokładny GET /invoices/:id.json z ID podanym przez administratora, a nie zawodny filtr numeru. |
+| FAK-1353-SECURITY | FIXED-UNVERIFIED | Serwerowa kontrola aktywnego administratora, NIP, client_id z prepare, OID, VAT/status, oraz chronione RPC przypisania i globalna unikatowość. |
+| FAK-1353-NOWRITES | FIXED-UNVERIFIED | Test funkcji: wyszukiwanie wyłącznie przez GET bez POST/PUT do Fakturowni. |
+| FAK-1353-LIVE | EXTERNAL | Na WAWIS 13.53 wpisz ID:584755572 w montażu MADEX i zweryfikuj status oraz numer. |
+
+
 ## PROTOCOL-1352 — przesunięta pierwsza kreska po obrocie iPhone'a (23 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |

@@ -19,6 +19,7 @@ type FakturowniaClient = {
   phone?: string;
   city?: string;
   street?: string;
+  post_code?: string;
   external_id?: string | number;
 };
 
@@ -191,6 +192,13 @@ Deno.serve(async (request: Request) => {
     if (action === "link_by_number") {
       const jobId = normalizeText(body.jobId);
       const invoiceNumber = normalizeText(body.invoiceNumber);
+      // Direct document ID from Fakturownia URL is a separate, read-only
+      // lookup path; never confuse the document ID with its printed number.
+      const byIdPrefix = /^ID\s*:/i.test(invoiceNumber);
+      const invoiceIdMatch = /^ID\s*:\s*([1-9][0-9]{0,17})$/i.exec(invoiceNumber);
+      if (byIdPrefix && !invoiceIdMatch) return json({
+        error: "Podaj identyfikator z adresu Fakturowni, np. ID:584755572.",
+      }, 400);
       if (!isUuid(jobId)) return json({ error: "Nieprawidłowy identyfikator montażu." }, 400);
       if (!invoiceNumber || invoiceNumber.length > 100) return json({ error: "Podaj prawidłowy numer faktury (maksymalnie 100 znaków)." }, 400);
 
@@ -205,18 +213,44 @@ Deno.serve(async (request: Request) => {
 
       const trusted = await getTrustedJobBuyer(adminClient, jobId);
       if (!trusted) return json({ error: "Nie znaleziono danych nabywcy montażu." }, 404);
-      const trustedClientId = await findOptionalTrustedClientId(apiToken, trusted.externalId);
-      const invoices = await fakturowniaGetInvoices(apiToken, {
-        number: invoiceNumber, page: "1", per_page: "100",
+      // On prepare we stored the exact Fakturownia client ID for this job.
+      // Prefer it to external_id lookup, which can be absent on old clients.
+      const { data: preparedAttempt, error: attemptError } = await adminClient
+        .from("fakturownia_invoice_attempts").select("client_id").eq("job_id", jobId).maybeSingle();
+      if (attemptError) throw new Error("Nie udało się sprawdzić zapisanej kartoteki nabywcy.");
+      const trustedClientId = normalizeText(preparedAttempt?.client_id)
+        || await findOptionalTrustedClientId(apiToken, trusted.externalId);
+      let invoice: FakturowniaInvoice | null = null;
+      if (invoiceIdMatch) {
+        // A precise, authenticated GET — never create/update an invoice here.
+        // Authorization and buyer/duplicate checks below are identical for both paths.
+        try {
+          invoice = await hydrateInvoice(apiToken, { id: invoiceIdMatch[1] });
+        } catch (error) {
+          if (/\(404\)/.test(String(error))) return json({
+            ok: true, found: false, reasonCode: "NOT_FOUND",
+            reason: "Fakturownia nie znalazła faktury o tym ID.",
+          });
+          throw error;
+        }
+      } else {
+        const invoices = await fakturowniaGetInvoices(apiToken, {
+          number: invoiceNumber, page: "1", per_page: "100",
+        });
+        // Fakturownia może ograniczyć wynik. Bez kompletności nie wolno stwierdzić unikatowości.
+        if (invoices.length >= 100) return json({ error: "Wyszukiwanie zwróciło zbyt wiele faktur. Zweryfikuj numer bezpośrednio w Fakturowni." }, 409);
+        const exactMatches = invoices.filter((row) => normalizeText(row?.number) === invoiceNumber);
+        if (exactMatches.length > 1) return json({ ok: true, found: false, reasonCode: "DUPLICATE_NUMBER",
+          reason: "Znaleziono więcej niż jedną fakturę o tym numerze. Powiązanie zostało zablokowane." });
+        invoice = exactMatches[0] ? await hydrateInvoice(apiToken, exactMatches[0]) : null;
+      }
+      const verifiedInvoiceNumber = invoiceIdMatch ? normalizeText(invoice?.number) : invoiceNumber;
+      if (invoiceIdMatch && !verifiedInvoiceNumber) return json({
+        ok: true, found: false, reasonCode: "NUMBER_MISSING",
+        reason: "Fakturownia nie zwróciła numeru wskazanej faktury. Powiązanie jest zablokowane.",
       });
-      // Fakturownia może ograniczyć wynik. Bez kompletności nie wolno stwierdzić unikatowości.
-      if (invoices.length >= 100) return json({ error: "Wyszukiwanie zwróciło zbyt wiele faktur. Zweryfikuj numer bezpośrednio w Fakturowni." }, 409);
-      const exactMatches = invoices.filter((invoice) => normalizeText(invoice?.number) === invoiceNumber);
-      if (exactMatches.length > 1) return json({ ok: true, found: false, reasonCode: "DUPLICATE_NUMBER",
-        reason: "Znaleziono więcej niż jedną fakturę o tym numerze. Powiązanie zostało zablokowane." });
-      const invoice = exactMatches[0] ? await hydrateInvoice(apiToken, exactMatches[0]) : null;
       const verdict = inspectManualInvoiceMatch(invoice, {
-        jobId, clientId: trustedClientId, invoiceNumber, buyer: trusted.buyer,
+        jobId, clientId: trustedClientId, invoiceNumber: verifiedInvoiceNumber, buyer: trusted.buyer,
       });
       if (!verdict.ok) return json({ ok: true, found: false, reasonCode: verdict.code, reason: verdict.reason });
 
@@ -275,7 +309,7 @@ Deno.serve(async (request: Request) => {
       last_name: isCompany ? "" : personName.lastName,
       company: isCompany,
       tax_no: taxNo,
-      email: normalizeEmail(contractor?.email || job.email),
+      // E-mail nie jest wymagany na fakturze ani do utworzenia kartoteki. Nie przekazujemy go do Fakturowni.
       phone: normalizeText(contractor?.phone || job.phone),
       post_code: cityParts.postalCode,
       city: cityParts.city,
@@ -317,19 +351,43 @@ Deno.serve(async (request: Request) => {
       }
     }
 
-    // E-mail może być wspólny dla kilku klientów; nigdy nie identyfikuje kartoteki do PUT.
-    const email = normalizeEmail(clientData.email);
-    if (!matchedClient && email) {
-      const candidates = await fakturowniaGetClients(apiToken, { email });
-      if (candidates.some((row) => normalizeEmail(row?.email) === email)) {
-        throw new Error("W Fakturowni istnieje kartoteka z tym adresem e-mail. Powiąż klienta ręcznie przez external_id lub zweryfikuj NIP.");
+    // Fakturownia udostępnia wyszukiwanie po nazwie. Nie wysyłamy e-maila
+    // ani nie identyfikujemy nim klienta. Przy istniejącej osobie prywatnej
+    // dopasowanie wymaga jednoznacznego pełnego nazwiska, adresu i miejscowości.
+    // Bez pewnego dopasowania nową kartotekę utworzymy bez e-maila.
+    if (!matchedClient && !taxNo) {
+      const candidates = await fakturowniaGetClients(apiToken, { name: clientName, per_page: "100" });
+      if (candidates.length >= 100) {
+        throw new Error("Zbyt wiele wyników wyszukiwania klienta po nazwie. Sprawdź kartotekę w Fakturowni.");
+      }
+      const named = candidates.filter((row) => /^[0-9]+$/.test(normalizeText(row.id))
+        && privateBuyerKey(row.name || [row.first_name, row.last_name].filter(Boolean).join(" ")) === privateBuyerKey(clientName));
+      if (named.length > 20) {
+        throw new Error("Zbyt wiele kartotek o tej samej nazwie. Wymagana ręczna weryfikacja.");
+      }
+      const verified: FakturowniaClient[] = [];
+      for (const row of named) {
+        const details = await fakturowniaRequest<FakturowniaClient>(
+          `/clients/${encodeURIComponent(String(row.id))}.json`, apiToken, { method: "GET" },
+        );
+        if (isSamePrivateFakturowniaBuyer(details, clientData, externalId)) verified.push(details);
+      }
+      if (verified.length > 1) {
+        throw new Error("Kilka kartotek ma identyczne dane nabywcy. Wymagana ręczna weryfikacja, aby uniknąć duplikatu.");
+      }
+      if (verified.length === 1) {
+        matchedClient = verified[0];
+        matchSource = "name_address_verified";
       }
     }
 
     let savedClient: FakturowniaClient;
     let created = false;
 
-    if (matchedClient?.id) {
+    if (matchedClient?.id && matchSource === "name_address_verified") {
+      // Nie nadpisujemy archiwalnej kartoteki ani jej external_id.
+      savedClient = matchedClient;
+    } else if (matchedClient?.id) {
       savedClient = await fakturowniaRequest<FakturowniaClient>(
         `/clients/${encodeURIComponent(String(matchedClient.id))}.json`,
         apiToken,
@@ -765,6 +823,44 @@ function splitPrivatePersonName(value: unknown): { firstName: string; lastName: 
   };
 }
 
+
+function privateBuyerKey(value: unknown): string {
+  return normalizeText(value).toLowerCase().replace(/ł/g, "l")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.,]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function privateBuyerStreet(value: unknown): string {
+  return privateBuyerKey(value).replace(/^(ulica|ul)\s+/, "").replace(/[^a-z0-9]/g, "");
+}
+
+function privateBuyerCity(value: unknown): string {
+  return privateBuyerKey(value).replace(/\b\d{2}[- ]?\d{3}\b/g, "").trim();
+}
+
+function isSamePrivateFakturowniaBuyer(
+  existing: FakturowniaClient, expected: Record<string, unknown>, externalId: string,
+): boolean {
+  if (!existing || !/^[0-9]+$/.test(normalizeText(existing.id))) return false;
+  if (digitsOnly(expected.tax_no) || digitsOnly(existing.tax_no)) return false;
+  const otherExternalId = normalizeText(existing.external_id);
+  if (otherExternalId && otherExternalId !== externalId) return false;
+  // Legacy Fakturownia records may flag private persons as company=true.
+  // Name + full address + no NIP on either side are authoritative here.
+  const clientName = normalizeText(existing.name)
+    || [existing.first_name, existing.last_name].map(normalizeText).filter(Boolean).join(" ");
+  const expectedName = privateBuyerKey(expected.name);
+  const expectedStreet = privateBuyerStreet(expected.street);
+  const expectedCity = privateBuyerCity(expected.city);
+  if (!expectedName || !expectedStreet || !expectedCity) return false;
+  if (privateBuyerKey(clientName) !== expectedName) return false;
+  if (!privateBuyerStreet(existing.street) || privateBuyerStreet(existing.street) !== expectedStreet) return false;
+  if (!privateBuyerCity(existing.city) || privateBuyerCity(existing.city) !== expectedCity) return false;
+  const expectedPostal = digitsOnly(expected.post_code);
+  const existingPostal = digitsOnly(existing.post_code);
+  if (expectedPostal && existingPostal && expectedPostal !== existingPostal) return false;
+  return true;
+}
 
 function normalizeEmail(value: unknown): string {
   return normalizeText(value).toLowerCase();
