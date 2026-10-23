@@ -96,6 +96,9 @@ assert.equal(calls[0].args.p_operation_id, op);
 const edge = fs.readFileSync(new URL('../supabase/functions/fakturownia-client/index.ts',import.meta.url),'utf8');
 assert.match(edge, /matchingExternal\.length > 1/);
 assert.match(edge, /Kartoteka o podanym NIP jest powiązana z innym kontrahentem/);
-assert.match(edge, /Kartoteka z tym adresem e-mail|kartoteka z tym adresem e-mail/i);
+assert.match(edge, /E-mail nie jest wymagany na fakturze ani do utworzenia kartoteki/,
+  'Po zmianie Fakturowni nie przekazujemy e-maila nabywcy.');
+assert.doesNotMatch(edge, /fakturowniaGetClients\(apiToken,\s*\{\s*email\s*\}\s*\)/,
+  'Nie wolno identyfikować klienta przez sam e-mail.');
 assert.match(edge, /Nieprawidłowa odpowiedź listy klientów/);
 console.log('PASS v12.66 package 1 notes / idempotent fuel SQL and client / Fakturownia safeguards');
