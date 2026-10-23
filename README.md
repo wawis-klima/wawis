@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.53
+- 13.54
+
+WAWIS 13.54: automatyczne potwierdzanie faktury VAT po powrocie z Fakturowni — WAWIS ponawia sprawdzenie przez trzy minuty bez wpisywania numeru, odświeża status po jednoznacznym dopasowaniu dokumentu. Ponowne otwarcie formularza w ważnej sesji tego samego klienta zachowuje pierwotny zapis faktur z początku wystawiania; nie gubimy faktury, która powstała przed drugim otwarciem. Istniejące kontrole NIP, kartoteki klienta, OID, rodzaju/statusu faktury i unikatowości powiązania pozostają aktywne. Brak tworzenia faktur przez API, brak zmian OCR, podpisu, offline i płatności.
 
 WAWIS 13.53: Fakturownia — bezpieczne ręczne powiązanie wystawionej faktury przez ID z jej adresu (`ID:584755572`), gdy zapytanie po wydrukowanym numerze nie zwraca dokumentu. Serwer pobiera fakturę po ID i weryfikuje numer, VAT/status, identyfikator klienta zapisany przy otwarciu wystawiania, NIP nabywcy, przypisanie OID do montażu oraz unikalność powiązania. Bez ponownego wystawienia faktury. Kod funkcji Supabase zsynchronizowany z aktywną wersją 21, tak by nie cofnąć poprawek istniejących wyłącznie w produkcji.
 
@@ -1050,7 +1052,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.53` — bezpieczne powiązanie faktury po ID dokumentu Fakturowni.
+- wersja `13.54` — automatyczne ponawianie potwierdzenia faktury po powrocie z Fakturowni i ochrona pierwszego snapshotu przed nadpisaniem.
 - wersja `13.52` — synchronizacja pola rysowania podpisu po obrocie iPhone'a, prawidłowy pierwszy dotyk.
 - wersja `13.51` — kompaktowe przyciski i większe pole podpisu wyłącznie w poziomej orientacji iPhone'a.
 - wersja `13.50` — automatyczna korekta pionowego podpisu na PDF z podglądem i kontrolą obrotu, bez zmiany zapisanego podpisu.
