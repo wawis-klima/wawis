@@ -26,6 +26,7 @@ import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
+import { verifyNameplatesWithRecovery } from "../modules/nameplate-save-recovery.js";
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
@@ -270,6 +271,55 @@ export function useSelectedJobActions({
       logDiagnostic('nameplate.save.verify.failed', { jobId, source, error });
       return false;
     }
+  }
+
+  async function verifyPendingNameplatesWithRecovery(jobId, documents, source, {
+    retryMissingUploads = false,
+    uploadedPhotos = [],
+  } = {}) {
+    const uploadedPaths = new Set((uploadedPhotos || []).map((photo) => String(photo?.storage_path || '')));
+    const result = await verifyNameplatesWithRecovery({
+      verify: (attempt) => verifyPendingNameplatesOnServer(jobId, documents, attempt === 1 ? source : `${source}-retry-${attempt}`),
+      online: () => !isBrowserOffline(),
+      retryUpload: !retryMissingUploads ? null : () => {
+        let retryCount = 0;
+        for (const document of documents || []) {
+          const identity = document?.uploadIdentity;
+          if (!document?.file || !identity?.localId || !identity?.plannedStoragePath) continue;
+          // Nie ponawiamy zdjęć, które na pewno zapisano w bieżącym uploadzie.
+          if (uploadedPaths.has(String(identity.plannedStoragePath))) continue;
+          const approved = Boolean(document.verified || String(document.ocrStatus || '').toLowerCase() === 'approved');
+          const started = retryQueuedJobPhoto({
+            supabase, profile, setJobs, setSelectedJob, supabaseUrl,
+            photo: {
+              id: identity.localId,
+              job_id: jobId,
+              upload_key: identity.uploadKey,
+              planned_storage_path: identity.plannedStoragePath,
+              file_fingerprint: identity.fileFingerprint,
+              unit_key: identity.unitKey,
+              uploaded_by: profile?.id,
+              photo_kind: 'nameplate',
+              device_index: Number(document.deviceIndex || 0) + 1,
+              unit_ref: String(document.unitRef || '').toLowerCase(),
+              ocr_status: approved ? 'approved' : null,
+              ocr_checked_at: document.ocrCheckedAt || (approved ? new Date().toISOString() : null),
+              __localFile: document.file,
+              upload_status: 'error',
+            },
+            onPhotoUploaded: (photo) => {
+              onPhotoSyncSuccess?.();
+              schedulePhotoDetailsSync(photo?.job_id || jobId);
+            },
+            onPhotoUploadError: onPhotoSyncError,
+          });
+          if (started) retryCount += 1;
+        }
+        logDiagnostic('nameplate.save.recovery.retry-upload', { jobId, source, retryCount });
+      },
+    });
+    logDiagnostic('nameplate.save.recovery.finished', { jobId, source, attempts: result.attempts, confirmed: result.confirmed, reason: result.reason });
+    return result.confirmed;
   }
 
   async function addJob(formOverride) {
@@ -535,16 +585,17 @@ export function useSelectedJobActions({
 
       if (uploadOutcome.timedOut) {
         logDiagnostic('nameplate.save.upload.timeout', { jobId: editingJobId, operationId, timeoutMs: NAMEPLATE_SAVE_TIMEOUT_MS });
-        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'upload-timeout');
+        // Oryginalny upload może nadal trwać. Nie uruchamiamy drugiego uploadu równolegle.
+        void uploadPromise.catch((error) => logDiagnostic('nameplate.save.late-upload.failed', { jobId: editingJobId, operationId, error }));
+        const confirmed = await verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'upload-timeout');
         if (confirmed) {
           resetJobModalState();
           logDiagnostic('nameplate.save.modal.closed.after-timeout-confirmation', { jobId: editingJobId, operationId });
           refreshAfterNameplateSave(editingJobId, 'upload-timeout-confirmed');
-          void uploadPromise.catch((error) => logDiagnostic('nameplate.save.late-upload.failed', { jobId: editingJobId, operationId, error }));
           return;
         }
         logDiagnostic('nameplate.save.modal.kept-open', { jobId: editingJobId, operationId, reason: 'upload-timeout-not-confirmed' });
-        alert('Wysyłanie trwa dłużej niż zwykle. Okno pozostaje otwarte, ponieważ nie udało się jeszcze potwierdzić zdjęć na serwerze.');
+        alert('Połączenie nie pozwoliło potwierdzić tabliczek na serwerze. Okno i lokalne zdjęcia pozostają bez zmian. Nie usuwaj aplikacji; po odzyskaniu stabilnego połączenia ponów zapis lub synchronizację.');
         return;
       }
 
@@ -554,9 +605,13 @@ export function useSelectedJobActions({
       });
 
       const pendingNameplateCount = getPendingNameplateKeys(preparedPendingDocuments).size;
+      let nameplateServerConfirmed = false;
       if (serialOnlyMode && pendingNameplateCount) {
-        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'upload-completed');
-        if (!confirmed) {
+        nameplateServerConfirmed = await verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'upload-completed', {
+          retryMissingUploads: Boolean(documentationResult.queuedCount || documentationResult.failedCount),
+          uploadedPhotos: documentationResult.photos || [],
+        });
+        if (!nameplateServerConfirmed) {
           logDiagnostic('nameplate.save.modal.kept-open', {
             jobId: editingJobId,
             operationId,
@@ -567,13 +622,13 @@ export function useSelectedJobActions({
             failedCount: documentationResult.failedCount,
           });
           refreshAfterNameplateSave(editingJobId, 'server-verification-incomplete');
-          alert('Nie wszystkie tabliczki zostały potwierdzone na serwerze. Okno pozostaje otwarte — sprawdź brakujące zdjęcia i zapisz ponownie.');
+          alert('Nie udało się jeszcze potwierdzić wszystkich tabliczek na serwerze. Aplikacja ponowiła kontrolę i próbę wysyłki. Okno zostaje otwarte — nie usuwaj aplikacji ani lokalnych zdjęć. Sprawdź status wysyłania i ponów synchronizację.');
           return;
         }
       }
 
       if (serialOnlyMode && documentationResult.failedCount) {
-        const confirmed = await verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'reported-failure');
+        const confirmed = nameplateServerConfirmed || await verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'reported-failure');
         if (!confirmed) {
           const uploadedKeys = new Set(documentationResult.photos.map((photo) => {
             const metadata = getNameplatePhotoMetadata(photo);
@@ -602,7 +657,9 @@ export function useSelectedJobActions({
       logDiagnostic('nameplate.save.modal.closed', { jobId: editingJobId, operationId, uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount });
       refreshAfterNameplateSave(editingJobId, 'save-confirmed');
 
-      if (documentationResult.failedCount) {
+      if (serialOnlyMode && nameplateServerConfirmed) {
+        alert('Urządzenia i tabliczki zostały zapisane.');
+      } else if (documentationResult.failedCount) {
         alert(`Zmiany zapisano, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.`);
       } else if (documentationResult.queuedCount) {
         alert(`${documentationResult.queuedCount} ${documentationResult.queuedCount === 1 ? 'zdjęcie zapisano' : 'zdjęcia zapisano'} na telefonie. Aplikacja wyśle je automatycznie.`);
