@@ -1,3 +1,9 @@
+## 13.55
+- Mobilne tabliczki znamionowe: po 8-sekundowym timeout odczytu danych serwera WAWIS ponawia potwierdzenie dokładnie tych samych zdjęć i nie wyświetla natychmiast fałszywego błędu o brakujących tabliczkach.
+- Gdy upload zgłosił błędy lub lokalne zdjęcia oczekujące, system wznawia tylko pliki, które nie zostały potwierdzone bieżącą ścieżką uploadu. Zachowuje niezmienne upload_key i storage_path oraz deduplikację dla tego samego zdjęcia.
+- W przypadku braku internetu lub długotrwałej awarii zachowuje lokalną kolejkę i otwarty formularz. Nie omija wymaganych JW/JZ, blokady protokołu ani zakończenia zlecenia. Dodano testy timeout, retry, offline, przerwanego żądania i dokładnego dopasowania zdjęcia.
+- Zmiana wyłącznie mobilnego zapisu zdjęć i wersji PWA, bez zmian backendu Supabase/Fakturowni, faktur VAT, podpisu i protokołu PDF. Poprawka fakturowania pozostaje w roboczym PR #401.
+
 ## 13.53
 - Fakturownia: oprócz numeru drukowanego można podać `ID:584755572` w dotychczasowym formularzu awaryjnego powiązania; wywoływany jest odczyt `GET /invoices/{id}.json`.
 - Po pobraniu dokumentu obowiązują dotychczasowe ścisłe kontrole: administrator, status montażu Zakończone, faktura VAT o statusie wystawionej, nabywca i NIP, kartoteka klienta z zapisanej próby wystawienia, OID niepowiązany z innym montażem, deduplikacja po ID w zabezpieczonym RPC.
