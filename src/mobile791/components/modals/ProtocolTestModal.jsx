@@ -74,19 +74,48 @@ function ProtocolBackIcon() {
   );
 }
 
-function setupSignatureCanvas(canvas) {
+// Rozmiar bufora pikseli musi zawsze odpowiadać rzeczywistej wielkości pola
+// po obrocie iPhone'a. Bez tego podpis jest przesunięty lub ucięty aż do
+// kliknięcia „Wyczyść podpis” (które wcześniej jako jedyne resetowało canvas).
+function setupSignatureCanvas(canvas, { preserveDrawing = false, forceClear = false } = {}) {
   if (!canvas) return null;
   const rect = canvas.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return null;
   const ratio = Math.min(4, Math.max(2, window.devicePixelRatio || 1));
-  const logicalHeight = Math.max(SIGNATURE_HEIGHT, Math.round(rect.height || SIGNATURE_HEIGHT));
-  canvas.width = Math.max(1, Math.round(rect.width * ratio));
-  canvas.height = Math.round(logicalHeight * ratio);
+  const width = Math.max(1, Math.round(rect.width * ratio));
+  const height = Math.max(1, Math.round(rect.height * ratio));
+
+  // Bez zmian rozmiaru NIE resetuj podpisu ani stanu ctx.
+  if (!forceClear && canvas.width === width && canvas.height === height) {
+    return canvas.getContext("2d");
+  }
+
+  // Obrót podczas już rozpoczętego podpisu nie może wymazać tuszu.
+  // Kopiujemy bitmapę i zachowujemy jej proporcje (bez rozciągania podpisu).
+  let previousBitmap = null;
+  if (!forceClear && preserveDrawing && canvas.width > 0 && canvas.height > 0) {
+    previousBitmap = document.createElement("canvas");
+    previousBitmap.width = canvas.width;
+    previousBitmap.height = canvas.height;
+    previousBitmap.getContext("2d")?.drawImage(canvas, 0, 0);
+  }
+
+  canvas.width = width;
+  canvas.height = height;
   const context = canvas.getContext("2d");
+  if (!context) return null;
   context.setTransform(ratio, 0, 0, ratio, 0, 0);
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
   context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, rect.width, logicalHeight);
+  context.fillRect(0, 0, rect.width, rect.height);
+  if (previousBitmap) {
+    const scale = Math.min(1, width / previousBitmap.width, height / previousBitmap.height);
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.drawImage(previousBitmap, 0, 0, previousBitmap.width * scale, previousBitmap.height * scale);
+    context.restore();
+  }
   context.strokeStyle = "#142a3a";
   context.lineWidth = SIGNATURE_BASE_WIDTH;
   context.lineCap = "round";
@@ -196,6 +225,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const outputActionsRef = useRef(null);
   const editScrollBaselineRef = useRef(null);
   const drawingRef = useRef(false);
+  const signatureCanvasInkRef = useRef(false);
   const lastPointRef = useRef(null);
   const previousSignatureRef = useRef("");
   const openedAtRef = useRef(new Date());
@@ -358,7 +388,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     if (!signatureOpen) return undefined;
     const frameId = window.requestAnimationFrame(() => {
       const canvas = canvasRef.current;
-      const context = setupSignatureCanvas(canvas);
+      const context = setupSignatureCanvas(canvas, { forceClear: true });
+      signatureCanvasInkRef.current = false;
       if (!canvas || !context) return;
       if (!signatureDataUrl) {
         setSignatureCanvasReady(true);
@@ -368,12 +399,41 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       image.onload = () => {
         const rect = canvas.getBoundingClientRect();
         drawSignaturePreview(context, image, rect.width, rect.height);
+        signatureCanvasInkRef.current = true;
         setSignatureCanvasReady(true);
       };
       image.src = signatureDataUrl;
     });
     return () => window.cancelAnimationFrame(frameId);
   }, [signatureOpen, signatureDataUrl]);
+
+  // ResizeObserver reaguje na zmianę samego pola, nie tylko na window.resize.
+  // W iOS PWA obrót i aktualizacja 100dvh mogą nastąpić w różnych klatkach.
+  useEffect(() => {
+    if (!signatureOpen) return undefined;
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+    let frameId = 0;
+    const syncSize = () => {
+      frameId = 0;
+      if (drawingRef.current) return;
+      setupSignatureCanvas(canvas, { preserveDrawing: signatureCanvasInkRef.current });
+    };
+    const scheduleSync = () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(syncSize);
+    };
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(scheduleSync) : null;
+    observer?.observe(canvas);
+    window.addEventListener("resize", scheduleSync);
+    window.addEventListener("orientationchange", scheduleSync);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", scheduleSync);
+      window.removeEventListener("orientationchange", scheduleSync);
+      if (frameId) window.cancelAnimationFrame(frameId);
+    };
+  }, [signatureOpen]);
 
   useEffect(() => {
     if (!actionMenuOpen || !savedRecord || editing) return undefined;
@@ -463,6 +523,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function openSignature() {
+    signatureCanvasInkRef.current = false;
     if (reusedSignature) {
       previousSignatureRef.current = signatureDataUrl;
       setSignatureDataUrl("");
@@ -491,7 +552,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function clearSignature() {
-    setupSignatureCanvas(canvasRef.current);
+    setupSignatureCanvas(canvasRef.current, { forceClear: true });
+    signatureCanvasInkRef.current = false;
     drawingRef.current = false;
     lastPointRef.current = null;
     setDraftHasSignature(false);
@@ -502,6 +564,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     const canvas = canvasRef.current;
     if (!canvas || !signatureCanvasReady || isGenerating) return;
     event.preventDefault();
+    // Przed PIERWSZYM dotykiem synchronizujemy bitmapę z bieżącym CSS,
+    // nawet jeśli powiadomienie ResizeObserver dopiero nadejdzie.
+    setupSignatureCanvas(canvas, { preserveDrawing: signatureCanvasInkRef.current });
     canvas.setPointerCapture?.(event.pointerId);
     const point = getCanvasPoint(canvas, event.nativeEvent || event);
     drawingRef.current = true;
@@ -531,6 +596,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       context.quadraticCurveTo(state.point.x, state.point.y, midpoint.x, midpoint.y);
       context.lineWidth = width;
       context.stroke();
+      signatureCanvasInkRef.current = true;
 
       lastPointRef.current = {
         point,
@@ -562,6 +628,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         context.arc(state.point.x, state.point.y, (state.width || SIGNATURE_BASE_WIDTH) / 2, 0, Math.PI * 2);
         context.fillStyle = "#142a3a";
         context.fill();
+        signatureCanvasInkRef.current = true;
         setDraftHasSignature(true);
       }
     }

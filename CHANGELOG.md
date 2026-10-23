@@ -1,3 +1,9 @@
+## 13.52
+- iPhone/Safari: pole podpisu od razu rysuje dokładnie w miejscu dotyku po obróceniu telefonu, bez konieczności „Wyczyść podpis”.
+- Bufor canvas jest dopasowywany do bieżącej szerokości/wysokości CSS oraz DPR; ResizeObserver, resize/orientationchange i preflight przy pierwszym dotyku eliminują nieaktualne współrzędne.
+- Już rozpoczęty podpis jest zachowywany bez zmiany proporcji przy resize; dopiero przycisk „Wyczyść podpis” świadomie resetuje bitmapę.
+- Regresja: smoke inicjalizacji/resize i Playwright realnego canvas: zmiana szerokości → pierwsza kreska przy lewej krawędzi bez czyszczenia → kolejny resize zachowuje kreskę. Bez zmian PDF, OCR, Supabase, offline.
+
 ## 13.51
 - iPhone, tryb poziomy: przyciski Wyczyść podpis i Zatwierdź podpis mają 44 px wysokości, mniejszą szerokość i są wyśrodkowane; nagłówek, opis oraz marginesy są kompaktowe.
 - Więcej użytecznej wysokości pola podpisu na urządzeniach z dotykowym ekranem w poziomie do 600 px wysokości. Widok pionowy i pozostałe ekrany nie ulegają zmianie.

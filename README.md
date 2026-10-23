@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.51
+- 13.52
+
+WAWIS 13.52: naprawa błędnego początku rysowania podpisu po obróceniu iPhone'a. Canvas automatycznie dopasowuje bitmapę do aktualnej szerokości i wysokości (ResizeObserver + orientationchange/resize), zabezpiecza pierwszy dotyk i zachowuje już narysowany tusz przy zmianie rozmiaru. „Wyczyść podpis” nadal świadomie usuwa kreski. Bez zmian w protokołach PDF, danych, offline ani OCR.
+
 
 WAWIS 13.51: tylko mobilny ekran podpisu w poziomie — mniejsze i węższe przyciski (44 px), ciaśniejszy nagłówek i odstępy, większa przestrzeń na podpis. Układ pionowy pozostaje bez zmian. Bez zmian generowania PDF, OCR/AI, offline, płatności, Supabase i zdjęć.
 
@@ -1045,6 +1048,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.52` — synchronizacja pola rysowania podpisu po obrocie iPhone'a, prawidłowy pierwszy dotyk.
 - wersja `13.51` — kompaktowe przyciski i większe pole podpisu wyłącznie w poziomej orientacji iPhone'a.
 - wersja `13.50` — automatyczna korekta pionowego podpisu na PDF z podglądem i kontrolą obrotu, bez zmiany zapisanego podpisu.
 - wersja `13.38` — kompaktowe białe karty w Cenniku mobilnym (min. 44 px, padding 7 px); bez zmian funkcjonalnych.

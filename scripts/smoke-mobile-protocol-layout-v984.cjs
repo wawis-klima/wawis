@@ -70,4 +70,21 @@ assert.match(landscapeSignatureCss, /\.protocolSignatureCanvas\s*\{[^}]*min-heig
 assert.match(wizardCss.slice(0, wizardCss.indexOf('/* v13.51')), /\.protocolSignatureActions \.btn\s*\{[^}]*min-height: 52px;/,
   'Bazowy pionowy ekran podpisu ma zachować dotychczasowy rozmiar przycisków.');
 
+assert.match(modal, /function setupSignatureCanvas\(canvas, \{ preserveDrawing = false, forceClear = false \} = \{\}\)/,
+  'Canvas musi rozróżniać resize z zachowaniem podpisu od czyszczenia.');
+assert.match(modal, /Math\.round\(rect\.width \* ratio\)/,
+  'Szerokość rastra podpisu musi odpowiadać aktualnemu prostokątowi canvas.');
+assert.match(modal, /Math\.round\(rect\.height \* ratio\)/,
+  'Wysokość rastra podpisu musi odpowiadać aktualnemu prostokątowi canvas, a nie stałemu 280.');
+assert.match(modal, /ResizeObserver\(scheduleSync\)/,
+  'iPhone musi synchronizować canvas po zmianie jego rozmiaru.');
+assert.match(modal, /window\.addEventListener\("orientationchange", scheduleSync\)/,
+  'iPhone musi obsługiwać zmianę orientacji.');
+assert.match(modal, /setupSignatureCanvas\(canvas, \{ preserveDrawing: signatureCanvasInkRef\.current \}\);[\s\S]*?canvas\.setPointerCapture/,
+  'Przed pierwszym dotykiem trzeba zsynchronizować rozmiar rastra.');
+assert.match(modal, /setupSignatureCanvas\(canvasRef\.current, \{ forceClear: true \}\)/,
+  'Wyczyść podpis musi pozostać świadomą operacją kasowania tuszu.');
+assert.match(modal, /context\.drawImage\(previousBitmap, 0, 0,/,
+  'Obrót przy istniejącym podpisie nie może go zgubić.');
+
 console.log('OK: protokół ma uporządkowane dane oraz osobny, nieruchomy ekran podpisu klienta.');
