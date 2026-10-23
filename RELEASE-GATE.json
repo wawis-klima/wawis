@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.55",
+  "version": "13.56",
   "scope": "mobile",
-  "release_branch": "release/v13.55",
+  "release_branch": "release/v13.56",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "KNOWN_ISSUE",
-    "notes": "Sprawdzono zdarzenie nameplate.save.verify.timeout Pawła Makieły 2026-10-23 13:32 Europe/Warsaw, wcześniej NETWORK_REQUEST_ABORTED. W bazie po zapisie z telefonu pracownika brak zdjęć, administrator zapisał poprawnie później. Bez innych modyfikacji danych."
+    "result": "INFO",
+    "notes": "WAWIS 13.55 produkcja potwierdzona Vercel READY. Zmiana tylko mobilnego UI, bez zapisu nowych danych poza normalnym updateStatus po zgodzie użytkownika."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.55.zip"
+    "file_name": "klima-app-v13.56.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.55",
+    "source_branch": "release/v13.56",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Po potwierdzonym GitHub CI+Closure Gate i Vercel READY sprawdzić WAWIS 13.55 na urządzeniu pracownika, zapis JW/JZ i serwerowe zdjęcia bez duplikatów.",
-    "notes": "Brak zmian bazy, Storage, RLS, Edge Functions i Fakturowni. Szczegóły dostępne w REGRESSION-LEDGER NP-1355."
+    "evidence_source": "Po GitHub CI sukces oraz Vercel READY sprawdź powrót po nowo podpisanym protokole na iPhonie pracownika i obie decyzje; test w środowisku produkcyjnym wymaga realnego podpisu.",
+    "notes": "Brak nowych wywołań Supabase; to samo updateStatus oraz istniejące walidacje tabliczek/protokołu. Brak modyfikacji Fakturowni, Edge, RLS."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Tylko mobilny useSelectedJobActions.js i nowy nameplate-save-recovery.js: retry odczytu po timeout + wznowienie dokładnych zdjęć przez istniejący upload_key bez duplikatów. Nie zmieniono Fakturowni ani protokołu.",
-    "release_ci": "Smoke nameplate-save-resilience, photo-idempotency, offline, timeout, AbortError, wszystkie odpowiednie grupy regresyjne, Playwright mobile, Closure Gate i build.",
-    "post_deploy": "Sprawdź 13.55 w aplikacji iPhone, ponowione żądania po słabym LTE, serwerowy zapis kompletnego JW/JZ i protokół. W razie regresji przywróć ostatnią produkcyjną 13.53."
+    "code": "W mobile JobDetailsPanel jednorazowe ConfirmActionModal po onSaved podpisanego PDF i zamknięciu protokołu. Przypomnienie wyłącznie dla pracownika przy statusie W trakcie. Jeszcze nie bez zmian statusu; Tak = istniejąca updateStatus.",
+    "release_ci": "Testy e2e mobile-protocol-finish-reminder-v1356 + pełne wymagane regresje Playwright, Closure Gate i build.",
+    "post_deploy": "Wawis-klima.vercel.app musi pokazać wersję 13.56, realny test iPhone podpisanego protokołu, przypomnienia oraz dwóch decyzji. Rollback 13.55 w razie regresji."
   }
 }
