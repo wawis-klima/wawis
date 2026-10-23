@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
   "version": "13.54",
-  "scope": "desktop",
+  "scope": "full",
   "release_branch": "release/v13.54",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Naprawa automatycznej kontroli faktury; ponawianie i zachowanie pierwszego snapshotu, bez zmian innych funkcji."
+    "notes": "13.54: faktura bez numeru i mobilne tabliczki po LTE timeout (Paweł, 23.10 13:32). Bez zmian RLS/bazy, danych klientów i protokołów. Produkcja niezmieniona do decyzji o wdrożeniu."
   },
   "drive_backup": {
     "required": false,
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Zielone CI SHA release/v13.54, Supabase Edge fakturownia-client identyczny z kodem wydania, Vercel READY z v13.54, realne wystawienie kolejnej faktury z samoczynnym potwierdzeniem.",
-    "notes": "Odbiór na kolejnej rzeczywistej fakturze, bez sztucznego tworzenia dokumentu i bez ręcznego numeru."
+    "evidence_source": "Zielone CI SHA release/v13.54, Supabase Edge fakturownia-client identyczny z kodem wydania, Vercel READY z v13.54, realne wystawienie kolejnej faktury z samoczynnym potwierdzeniem. Przegląd błędów iPhone/LTE i logów tabliczek po testach rzeczywistych.",
+    "notes": "Odbiór na kolejnej rzeczywistej fakturze, bez sztucznego tworzenia dokumentu i bez ręcznego numeru. Mobilny scenariusz odzyskania po timeout bez kasowania aplikacji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Ochrona pierwszego snapshotu przy ponownym otwarciu formularza i ograniczone czasowo automatyczne ponawianie weryfikacji WAWIS.",
-    "release_ci": "Mock testy Edge po utworzeniu nowej faktury i drugim prepare, regresje odmowy i niezmienionej faktury po ID, Playwright desktop/mobile, Closure Gate, build.",
-    "post_deploy": "Po zielonym CI wdrożyć Edge fakturownia-client, Vercel 13.54. Sprawdzić na kolejnej rzeczywistej fakturze bez ręcznego numeru."
+    "code": "Ochrona pierwszego snapshotu przy ponownym otwarciu formularza i ograniczone czasowo automatyczne ponawianie weryfikacji WAWIS. Mobilna weryfikacja tabliczek ponawia odczyt serwera, wznawia tylko niepotwierdzone tożsamości uploadu i chroni lokalną kolejkę.",
+    "release_ci": "Mock testy Edge po utworzeniu nowej faktury i drugim prepare, regresje odmowy i niezmienionej faktury po ID, Playwright desktop/mobile, Closure Gate, build. Smoke mobilnego odzyskania: chwilowy timeout, ponowienie dokładnie raz, brak fałszywego success, scenariusz offline, dotychczasowe regresje tabliczek.",
+    "post_deploy": "Po zielonym CI wdrożyć Edge fakturownia-client, Vercel 13.54. Sprawdzić na kolejnej rzeczywistej fakturze bez ręcznego numeru. Mobilny iPhone w słabym LTE: przerwany odczyt zdjęć, automatyczny retry, finalny komplet JW/JZ i brak duplikatów, PDF bez regresji."
   }
 }
