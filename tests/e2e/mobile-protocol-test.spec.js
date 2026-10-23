@@ -86,6 +86,8 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
       return {
         landscape: matchMedia('(orientation: landscape) and (max-height: 600px)').matches,
         viewport: `${innerWidth}x${innerHeight}`,
+        orientation: screen.orientation?.type || 'unknown',
+        computedButtonHeight: buttons.map((button) => getComputedStyle(button).height),
         buttonHeights: buttons.map((button) => button.getBoundingClientRect().height),
         buttonWidths: buttons.map((button) => button.getBoundingClientRect().width),
         canvasHeight: canvasRect?.height || 0,
@@ -101,18 +103,34 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     expect(portrait.landscape).toBe(false);
     expect(portrait.buttonHeights.every((h) => h >= 51)).toBe(true);
 
-    for (const [width, height] of [[844, 390], [667, 375]]) {
-      await page.setViewportSize({ width, height });
-      // Sprawdzamy realną wysokość kontrolek, a nie sam wynik symulacji orientacji.
-      await expect.poll(async () => (await measure()).buttonHeights.map((h) => Math.round(h)), {
-        message: `Poziom ${width}x${height}: oba przyciski muszą mieć 44 px`,
-      }).toEqual([44, 44]);
-      const horizontal = await measure();
-      expect(horizontal.buttonHeights.every((h) => h >= 43 && h <= 45)).toBe(true);
-      expect(horizontal.buttonWidths.every((w) => w <= 222)).toBe(true);
-      expect(horizontal.canvasHeight).toBeGreaterThanOrEqual(125);
-      expect(horizontal.canvasAboveButtons).toBe(true);
-      expect(horizontal.controlsInViewport).toBe(true);
+    // Sam setViewportSize w emulacji iPhone'a nie zawsze zmienia ScreenOrientation.
+    // Odwzoruj rzeczywisty obrót ekranu, łącznie z screenOrientation.
+    const cdp = await page.context().newCDPSession(page);
+    try {
+      for (const [width, height] of [[844, 390], [667, 375]]) {
+        await page.setViewportSize({ width, height });
+        await cdp.send('Emulation.setDeviceMetricsOverride', {
+          width, height, deviceScaleFactor: 3, mobile: true,
+          screenOrientation: { type: 'landscapePrimary', angle: 90 },
+        });
+        const metrics = await measure();
+        console.log('[PROTOCOL-1351 landscape]', JSON.stringify({ width, height, ...metrics }));
+        await expect.poll(async () => (await measure()).landscape, {
+          message: `Poziom ${width}x${height}: test musi rzeczywiście ustawić orientację urządzenia`,
+        }).toBe(true);
+        await expect.poll(async () => (await measure()).buttonHeights.map((h) => Math.round(h)), {
+          message: `Poziom ${width}x${height}: oba przyciski muszą mieć 44 px`,
+        }).toEqual([44, 44]);
+        const horizontal = await measure();
+        expect(horizontal.buttonHeights.every((h) => h >= 43 && h <= 45)).toBe(true);
+        expect(horizontal.buttonWidths.every((w) => w <= 222)).toBe(true);
+        expect(horizontal.canvasHeight).toBeGreaterThanOrEqual(125);
+        expect(horizontal.canvasAboveButtons).toBe(true);
+        expect(horizontal.controlsInViewport).toBe(true);
+      }
+    } finally {
+      await cdp.send('Emulation.clearDeviceMetricsOverride');
+      await cdp.detach();
     }
 
     await page.setViewportSize({ width: 390, height: 844 });
