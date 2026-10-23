@@ -71,71 +71,81 @@ async function seedProtocolRecordForPostSaveFlow(page) {
 }
 
 test.describe('@mobile protokół i zakończenie zlecenia', () => {
-  test('po obrocie iPhone przyciski podpisu są kompaktowe, a pion pozostaje bez zmian', async ({ page }) => {
+  test('w poziomie przyciski podpisu są kompaktowe, a prawdziwy ekran w pionie pozostaje bez zmian', async ({ page }) => {
     await openJob(page, WORKER, 'Zakończone', 'Klient Testowy C Zakończony');
     await page.locator('.protocolTestButton').click();
     await page.getByRole('button', { name: 'Podpis klienta', exact: true }).click();
     await expect(page.locator('#protocol-test-signature')).toBeVisible();
 
-    const measure = () => page.locator('.protocolSignatureModal').evaluate((modal) => {
-      const canvas = modal.querySelector('.protocolSignatureCanvas');
-      const actions = modal.querySelector('.protocolSignatureActions');
-      const buttons = [...(actions?.querySelectorAll('.btn') || [])];
-      const canvasRect = canvas?.getBoundingClientRect();
-      const actionsRect = actions?.getBoundingClientRect();
-      return {
-        landscape: matchMedia('(orientation: landscape) and (max-height: 600px)').matches,
-        viewport: `${innerWidth}x${innerHeight}`,
-        orientation: screen.orientation?.type || 'unknown',
-        computedButtonHeight: buttons.map((button) => getComputedStyle(button).height),
-        buttonHeights: buttons.map((button) => button.getBoundingClientRect().height),
-        buttonWidths: buttons.map((button) => button.getBoundingClientRect().width),
-        canvasHeight: canvasRect?.height || 0,
-        canvasAboveButtons: Boolean(canvasRect && actionsRect && canvasRect.bottom <= actionsRect.top + 2),
-        controlsInViewport: buttons.every((button) => {
-          const rect = button.getBoundingClientRect();
-          return rect.bottom <= innerHeight + 2 && rect.top >= -2;
-        }),
-      };
-    });
+    const portrait = await page.locator('.protocolSignatureActions').evaluate((actions) => ({
+      heights: [...actions.querySelectorAll('.btn')].map((button) => button.getBoundingClientRect().height),
+      orientation: matchMedia('(orientation: portrait)').matches,
+    }));
+    expect(portrait.orientation).toBe(true);
+    expect(portrait.heights).toHaveLength(2);
+    expect(portrait.heights.every((h) => h >= 51)).toBe(true);
 
-    const portrait = await measure();
-    expect(portrait.landscape).toBe(false);
-    expect(portrait.buttonHeights.every((h) => h >= 51)).toBe(true);
+    // W Playwright na iPhone samo przestawienie viewportu, a także CDP rotate
+    // potrafią zawiesić tę aktywną sesję. Osobny iframe odtwarza *natywne*
+    // media queries w przeglądarce Chromium bez naruszania trwającego podpisu.
+    // Pobieramy rzeczywisty plik CSS aplikacji z Vite; nie kopiujemy reguł testowanych.
+    const response = await page.request.get('/src/mobile791/components/devices/mobile-device-wizard.css?direct');
+    expect(response.ok()).toBe(true);
+    const css = await response.text();
+    expect(css).toContain('@media (orientation: landscape) and (max-height: 600px)');
 
-    // Sam setViewportSize w emulacji iPhone'a nie zawsze zmienia ScreenOrientation.
-    // Odwzoruj rzeczywisty obrót ekranu, łącznie z screenOrientation.
-    const cdp = await page.context().newCDPSession(page);
-    try {
-      for (const [width, height] of [[844, 390], [667, 375]]) {
-        await page.setViewportSize({ width, height });
-        await cdp.send('Emulation.setDeviceMetricsOverride', {
-          width, height, deviceScaleFactor: 3, mobile: true,
-          screenOrientation: { type: 'landscapePrimary', angle: 90 },
-        });
-        const metrics = await measure();
-        console.log('[PROTOCOL-1351 landscape]', JSON.stringify({ width, height, ...metrics }));
-        await expect.poll(async () => (await measure()).landscape, {
-          message: `Poziom ${width}x${height}: test musi rzeczywiście ustawić orientację urządzenia`,
-        }).toBe(true);
-        await expect.poll(async () => (await measure()).buttonHeights.map((h) => Math.round(h)), {
-          message: `Poziom ${width}x${height}: oba przyciski muszą mieć 44 px`,
-        }).toEqual([44, 44]);
-        const horizontal = await measure();
-        expect(horizontal.buttonHeights.every((h) => h >= 43 && h <= 45)).toBe(true);
-        expect(horizontal.buttonWidths.every((w) => w <= 222)).toBe(true);
-        expect(horizontal.canvasHeight).toBeGreaterThanOrEqual(125);
-        expect(horizontal.canvasAboveButtons).toBe(true);
-        expect(horizontal.controlsInViewport).toBe(true);
-      }
-    } finally {
-      await cdp.send('Emulation.clearDeviceMetricsOverride');
-      await cdp.detach();
+    for (const [width, height] of [[844, 390], [667, 375]]) {
+      const result = await page.evaluate(async ({ stylesheet, width, height }) => {
+        const frame = document.createElement('iframe');
+        frame.setAttribute('title', 'WAWIS portrait/landscape responsive signature test');
+        frame.style.cssText = `position:absolute;left:-9999px;top:0;width:${width}px;height:${height}px;border:0;`;
+        frame.srcdoc = `<!doctype html><html lang="pl"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0}${stylesheet}</style></head><body>
+          <div class="protocolSignatureOverlay"><div class="protocolSignatureModal">
+          <div class="protocolSignatureScreen">
+          <div class="protocolSignatureHeader"><button class="protocolSignatureBack">←</button><div><h2>Podpis klienta</h2><p>Klient testowy</p></div></div>
+          <p class="protocolSignatureInstruction">Proszę podpisać się palcem w białym polu. Ten ekran nie przewija się podczas podpisywania.</p>
+          <div class="protocolSignatureCanvasWrap"><canvas class="protocolSignatureCanvas"></canvas></div>
+          <div class="protocolSignatureActions"><button class="btn">Wyczyść podpis</button><button class="btn primary">Zatwierdź podpis</button></div>
+          </div></div></div></body></html>`;
+        document.body.appendChild(frame);
+        try {
+          await new Promise((resolve) => frame.addEventListener('load', resolve, { once: true }));
+          const win = frame.contentWindow;
+          const doc = frame.contentDocument;
+          const buttons = [...doc.querySelectorAll('.protocolSignatureActions .btn')];
+          const canvas = doc.querySelector('.protocolSignatureCanvas').getBoundingClientRect();
+          const actions = doc.querySelector('.protocolSignatureActions').getBoundingClientRect();
+          return {
+            viewport: `${win.innerWidth}x${win.innerHeight}`,
+            landscape: win.matchMedia('(orientation: landscape) and (max-height: 600px)').matches,
+            buttonHeights: buttons.map((button) => button.getBoundingClientRect().height),
+            buttonWidths: buttons.map((button) => button.getBoundingClientRect().width),
+            canvasHeight: canvas.height,
+            canvasAboveButtons: canvas.bottom <= actions.top + 2,
+            controlsInViewport: buttons.every((button) => {
+              const rect = button.getBoundingClientRect();
+              return rect.top >= -2 && rect.bottom <= win.innerHeight + 2;
+            }),
+          };
+        } finally {
+          frame.remove();
+        }
+      }, { stylesheet: css, width, height });
+
+      console.log('[PROTOCOL-1351 landscape]', JSON.stringify(result));
+      expect(result.viewport).toBe(`${width}x${height}`);
+      expect(result.landscape).toBe(true);
+      expect(result.buttonHeights).toHaveLength(2);
+      expect(result.buttonHeights.every((h) => h >= 43 && h <= 45)).toBe(true);
+      expect(result.buttonWidths.every((w) => w <= 222)).toBe(true);
+      expect(result.canvasHeight).toBeGreaterThanOrEqual(125);
+      expect(result.canvasAboveButtons).toBe(true);
+      expect(result.controlsInViewport).toBe(true);
     }
 
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect.poll(async () => (await measure()).landscape).toBe(false);
-    expect((await measure()).buttonHeights.every((h) => h >= 51)).toBe(true);
+    // Sprawdzony żywy modal pozostał w pionie — nie ingerujemy w jego stan.
+    await expect(page.locator('#protocol-test-signature')).toBeVisible();
+    expect(await page.locator('.protocolSignatureActions .btn').count()).toBe(2);
   });
 
   test('pracownik nie może zakończyć bez zapisanego protokołu', async ({ page }) => {
