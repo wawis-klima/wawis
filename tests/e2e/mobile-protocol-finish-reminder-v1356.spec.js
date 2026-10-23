@@ -1,10 +1,10 @@
 import { devices, expect, test } from '@playwright/test';
-import { WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
+import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 const { defaultBrowserType: _unused, ...iphone14 } = devices['iPhone 14'];
 test.use(iphone14);
 
-async function startSignedProtocol(page) {
+async function startSignedProtocol(page, credentials = WORKER) {
   await resetMockSupabase(page);
   await page.evaluate(() => {
     const key = 'klima-mock-supabase-store-v3';
@@ -21,7 +21,7 @@ async function startSignedProtocol(page) {
     }
     localStorage.setItem(key, JSON.stringify(store));
   });
-  await loginWithoutReset(page, WORKER);
+  await loginWithoutReset(page, credentials);
   await page.locator('.statusActionButton[title="W trakcie"]').click();
   await page.getByText('Klient Testowy B', { exact: true }).click();
   const protocolButton = page.locator('.mobileInlineJobDetails .workerActionProtocolV1295');
@@ -64,6 +64,28 @@ async function startSignedProtocol(page) {
 }
 
 test.describe('@mobile przypomnienie zakończenia po protokole', () => {
+
+  test('administrator na iPhonie dostaje przypomnienie po zapisie PDF; Jeszcze nie nie kończy montażu', async ({ page }) => {
+    await startSignedProtocol(page, ADMIN);
+    await expect(page.getByRole('button', { name: 'Zakończ montaż' })).toBeVisible();
+    await page.getByRole('button', { name: 'Jeszcze nie' }).click();
+    const store = await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__?.getStore?.());
+    expect(store.jobs.find((job) => job.id === 'mock-job-002')?.status).toBe('W trakcie');
+    await page.locator('.protocolTestButton').click();
+    await page.locator('.mobileDeviceWizardClose').click();
+    await expect(page.getByRole('heading', { name: 'Protokół podpisany' })).toHaveCount(0);
+  });
+
+  test('administrator na iPhonie może świadomie zakończyć po przypomnieniu', async ({ page }) => {
+    await startSignedProtocol(page, ADMIN);
+    const before = await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__?.getStore?.());
+    expect(before.jobs.find((job) => job.id === 'mock-job-002')?.status).toBe('W trakcie');
+    await page.getByRole('button', { name: 'Zakończ montaż' }).click();
+    await expect.poll(async () => {
+      const store = await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__?.getStore?.());
+      return store.jobs.find((job) => job.id === 'mock-job-002')?.status;
+    }).toBe('Zakończone');
+  });
   test('Jeszcze nie zostawia W trakcie; ponowne otwarcie protokołu nie ponawia przypomnienia', async ({ page }) => {
     await startSignedProtocol(page);
     await expect(page.getByRole('button', { name: 'Zakończ montaż' })).toBeVisible();
