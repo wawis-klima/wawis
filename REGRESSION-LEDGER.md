@@ -1,5 +1,17 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-FINISH-1357 — przypomnienie na mobilnym Administratorze (23.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PF-1357-ADMIN | FIXED-UNVERIFIED | W 13.56 warunek !isAdmin ukrywał okno. W 13.57 usunięto go z onSaved, onClose i widoczności ConfirmActionModal. |
+| PF-1357-SIGN | FIXED-UNVERIFIED | Po zapisaniu protokołu i zamknięciu okna status W trakcie oraz jednorazowe przypomnienie także na koncie Administrator. Test Playwright. |
+| PF-1357-NO | FIXED-UNVERIFIED | Administrator „Jeszcze nie”: montaż pozostaje W trakcie, poprzedni protokół otwarty ponownie nie pokazuje przypomnienia. Test Playwright. |
+| PF-1357-YES | FIXED-UNVERIFIED | Administrator „Zakończ montaż” korzysta z istniejącego updateStatus oraz walidacji urządzeń, protokołu i DB. Test Playwright. |
+| PF-1357-STAFF | REGRESSION | Istniejące scenariusze pracownika z 13.56 pozostają w pakiecie testów. |
+| PF-1357-LIVE | EXTERNAL | Na produkcji zweryfikować wersję 13.57, nowo zapisany PDF, oba przyciski i zachowanie statusu. |
+
+
 ## PROTOCOL-FINISH-1356 — przypomnienie po podpisaniu (23 października 2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
