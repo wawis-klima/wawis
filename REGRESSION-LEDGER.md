@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-FINISH-1356 — przypomnienie po podpisaniu (23 października 2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PF-1356-SAVE | FIXED-UNVERIFIED | Tylko udany zapis PDF z prawidłowym signed_at/storage_path/file_size_bytes uzbraja przypomnienie. |
+| PF-1356-NO | FIXED-UNVERIFIED | „Jeszcze nie” pozostawia status W trakcie, test Playwright worker. |
+| PF-1356-YES | FIXED-UNVERIFIED | „Zakończ montaż” uruchamia istniejącą updateStatus, bez pominięcia DB/RLS i sprawdzenia tabliczek, test Playwright worker. |
+| PF-1356-ONCE | FIXED-UNVERIFIED | Jednorazowo przy zamknięciu nowego protokołu; bez popupu po otwarciu starego PDF, anulowanym zapisie i przełączeniu montażu. |
+| PF-1356-REG | EXTERNAL | W produkcji sprawdzić podpis pracownika w trwającym montażu; „Jeszcze nie” i „Zakończ montaż”. |
+
+
 ## NAMEPLATES-1355 — opóźniona odpowiedź iPhone/LTE (23 października 2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
