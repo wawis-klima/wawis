@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-1350 — podpis w pionie po obrocie iPhone'a (23 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| PROTOCOL-1350-PORTRAIT | FIXED-UNVERIFIED | `scripts/smoke-protocol-signature-orientation-v1350.mjs`: obraz pionowy jest obracany tylko w PDF, prawidłowy poziomy bez zmian. |
+| PROTOCOL-1350-MANUAL | FIXED-UNVERIFIED | Test obrotu 0/90/180/270; podgląd i ręczny wybór. |
+| PROTOCOL-1350-ORIGINAL | FIXED-UNVERIFIED | Test zapisuje do Storage wyłącznie oryginalne `signatureDataUrl`, nie bitmapę po obrocie; historia i reuse pozostają. |
+| PROTOCOL-1350-LIVE | EXTERNAL | Fizyczny iPhone i podgląd PDF, w tym montaż pana Sokołowskiego po zatwierdzeniu poprawionego pliku przez administratora. |
+
 ## MOBILE-1328 — AI po rozbieżności SN (19 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |
