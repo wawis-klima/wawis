@@ -18,6 +18,12 @@ assert.match(ui,/invoiceVerificationCandidates\.map/);
 assert.match(ui,/invoiceVerificationMessage \? <p role="status"/);
 assert.match(ui,/!selectedJob\.vat_invoice_fakturownia_confirmed/);
 assert.match(ui,/hasPendingFakturowniaInvoice/);
+assert.match(ui,/window\.setInterval\(/,'Automatic checking must retry after return');
+assert.match(ui,/window\.clearInterval\(retryTimer\)/,'Automatic retry timer must be cleaned up');
+assert.match(ui,/retryWindowUntil = Date\.now\(\) \+ 3 \* 60 \* 1000/,
+  'Automatic checking must have a bounded retry window');
+assert.match(ui,/const confirmed = await verifyPendingFakturowniaInvoice\(true\)/,
+  'Auto retry must run the existing authenticated verified path');
 assert.match(css,/\.desktopInvoiceEmergencyToggleV1281/);
 
 const selectClient=edge.indexOf('const { data: preparedAttempt');
