@@ -1,3 +1,9 @@
+## 13.50
+- Mobile: podpis klienta obrócony wskutek położenia telefonu jest automatycznie ustawiany poziomo przy generowaniu PDF, gdy wysokość obrazu znacznie przekracza szerokość.
+- Przed zapisem PDF dostępne są podgląd orientacji, brak obrotu, obrót o 90° w prawo/w lewo i 180°. Oryginalny PNG w Supabase Storage pozostaje niezmieniony.
+- Istniejące protokoły mogą ponownie użyć zachowanego podpisu i zachować starszą wersję PDF w historii, pod warunkiem spełnienia istniejących kontroli zgodności podpisywanych danych.
+- Stała regresja `scripts/smoke-protocol-signature-orientation-v1350.mjs` oraz testy protokołów, Playwright i CI przed produkcją. Bez zmian offline 13.49, OCR, płatności, Supabase i struktury PDF.
+
 ## 13.38
 - Mobilny Cennik: niższe białe karty nazw modeli — minimalna wysokość 48 → 44 px, padding pionowy 9 → 7 px.
 - Tekst 13 px, liczniki, nazwy, rozwijanie, odstępy między kartami i tabele cen pozostają bez zmian. Dwuwierszowe nazwy nadal rozwijają się naturalnie, bez ucinania.

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppModal from "./AppModal.jsx";
 import { buildJobProtocolData, createJobProtocolPdfFile } from "../../modules/job-protocol-pdf.js";
+import { orientSignatureForPdf } from "../../modules/protocol-signature-orientation.js";
 import { getLegacyInstallerSuggestionIds } from "../../modules/jobs-assignment.js";
 import { canReuseProtocolSignature, createProtocolSigningSnapshot, hasProtocolAddressCorrection } from "../../modules/protocol-signature-reuse.js";
 import {
@@ -211,6 +212,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [hasSignature, setHasSignature] = useState(false);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [signatureDataUrl, setSignatureDataUrl] = useState("");
+  const [signatureRotation, setSignatureRotation] = useState("auto");
+  const [signaturePdfPreview, setSignaturePdfPreview] = useState("");
   const [reusedSignature, setReusedSignature] = useState(false);
   const [draftHasSignature, setDraftHasSignature] = useState(false);
   const [signatureCanvasReady, setSignatureCanvasReady] = useState(false);
@@ -250,6 +253,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setHasSignature(false);
     setSignatureOpen(false);
     setSignatureDataUrl("");
+    setSignatureRotation("auto");
+    setSignaturePdfPreview("");
     setReusedSignature(false);
     previousSignatureRef.current = "";
     setDraftHasSignature(false);
@@ -377,6 +382,20 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     });
     return () => window.cancelAnimationFrame(frameId);
   }, [actionMenuOpen, savedRecord?.id, editing]);
+
+  // Render a preview of the same bitmap that will be embedded in the PDF.
+  // Do not overwrite the original signed PNG in Storage.
+  useEffect(() => {
+    if (!editing || !hasSignature || !signatureDataUrl) {
+      setSignaturePdfPreview("");
+      return undefined;
+    }
+    let cancelled = false;
+    orientSignatureForPdf(signatureDataUrl, signatureRotation)
+      .then((url) => { if (!cancelled) setSignaturePdfPreview(url); })
+      .catch(() => { if (!cancelled) setSignaturePdfPreview(""); });
+    return () => { cancelled = true; };
+  }, [editing, hasSignature, signatureDataUrl, signatureRotation]);
 
   function invalidateSignature() {
     if (!hasSignature && !signatureDataUrl) return;
@@ -554,6 +573,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   function confirmSignature() {
     if (!draftHasSignature || !signatureCanvasReady || !canvasRef.current) return;
     setSignatureDataUrl(getTrimmedSignatureDataUrl(canvasRef.current));
+    setSignatureRotation("auto");
     setReusedSignature(false);
     previousSignatureRef.current = "";
     setHasSignature(true);
@@ -599,8 +619,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         progress.phase = "pdf";
         setSaveProgressLabel("Tworzę PDF…");
         await waitForProtocolUiPaint();
+        const orientedSignatureDataUrl = await orientSignatureForPdf(signatureDataUrl, signatureRotation);
         const result = await withProtocolSaveTimeout(
-          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl, signedAt, payment, note: protocolNoteValue, addressCorrection }),
+          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl: orientedSignatureDataUrl, signedAt, payment, note: protocolNoteValue, addressCorrection }),
           { phase: "pdf", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
         progress.phase = "storage";
@@ -834,6 +855,28 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                   <strong>{savedRecord && !editing ? "Protokół podpisany i zapisany" : "Podpis klienta zapisany"}</strong>
                   {savedRecord && !editing ? null : <span>{reusedSignature ? "Zachowano wcześniejszy podpis klienta. Możesz podpisać ponownie." : "Możesz zapisać protokół PDF albo zmienić podpis."}</span>}
                 </div> : null}
+                {editing && hasSignature && signatureDataUrl ? (
+                  <div className="protocolSignaturePdfOrientation" style={{ width: "100%", marginTop: 12 }}>
+                    <label htmlFor="protocolSignatureRotationMode" style={{ display: "block", marginBottom: 6, fontWeight: 750 }}>
+                      Ułożenie podpisu na protokole PDF
+                    </label>
+                    <select id="protocolSignatureRotationMode" className="input"
+                      value={signatureRotation} onChange={(event) => setSignatureRotation(event.target.value)}
+                      disabled={isGenerating}>
+                      <option value="auto">Automatycznie — pionowy podpis obróć o 90° w prawo</option>
+                      <option value="0">Bez obrotu</option>
+                      <option value="90">Obróć 90° w prawo</option>
+                      <option value="270">Obróć 90° w lewo</option>
+                      <option value="180">Obróć 180°</option>
+                    </select>
+                    <div style={{ width: "100%", minHeight: 84, marginTop: 8, padding: 8, background: "#fff", border: "1px solid #d6e0ec", borderRadius: 10, textAlign: "center" }}>
+                      {signaturePdfPreview ? (
+                        <img src={signaturePdfPreview} alt="Podgląd ułożenia podpisu na PDF" style={{ maxWidth: "100%", maxHeight: 72, objectFit: "contain" }} />
+                      ) : "Przygotowuję podgląd podpisu…"}
+                    </div>
+                    <small>Obracamy tylko podpis na nowym PDF. Oryginalny zapis klienta pozostaje niezmieniony.</small>
+                  </div>
+                ) : null}
                 {editing ? (
                   <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !paymentReady || Boolean(paymentLoadError)}>{reusedSignature ? "Podpisz ponownie" : hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
                 ) : (

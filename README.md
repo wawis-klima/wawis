@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.38
+- 13.50
+
+WAWIS 13.50: poprawa orientacji podpisu klienta na protokole PDF. Podpisy pionowe są obracane automatycznie, a przed zapisem można sprawdzić podgląd i ręcznie wybrać obrót w prawo/lewo lub bez obrotu. Oryginalny PNG podpisu w Supabase Storage pozostaje niezmieniony. Dla istniejących podpisanych protokołów działa ponowne wykorzystanie zapisanego podpisu zgodnie z dotychczasowymi zabezpieczeniami. Bez zmian w offline 13.49, OCR/AI, zdjęciach, płatnościach i backendzie.
 
 WAWIS 13.38: w mobilnym Cenniku jeszcze niższe białe karty grup Rotenso — min. 44 px i padding pionowy 7 zamiast 9 px. Napisy 13 px, dwie skrócone etykiety Multi, liczniki, 36 cen i rozwijanie bez zmian.
 
@@ -1041,6 +1043,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.50` — automatyczna korekta pionowego podpisu na PDF z podglądem i kontrolą obrotu, bez zmiany zapisanego podpisu.
 - wersja `13.38` — kompaktowe białe karty w Cenniku mobilnym (min. 44 px, padding 7 px); bez zmian funkcjonalnych.
 - wersja `13.37` — skrócenie dwóch nazw Hiro Multi w Cenniku mobilnym do Jedn. Zew. / Jedn. Wew., bez zmian pozostałych modeli.
 - wersja `13.36` — mniejsze przerwy i niższe karty modeli w Cenniku mobilnym; pełne nazwy i strefy dotyku co najmniej 44 px, bez zmian pozostałych modułów.
