@@ -148,6 +148,62 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     expect(await page.locator('.protocolSignatureActions .btn').count()).toBe(2);
   });
 
+  test('pierwsza kreska po resize canvas trafia w lewą krawędź bez Wyczyść podpis', async ({ page }) => {
+    await openJob(page, WORKER, 'Zakończone', 'Klient Testowy C Zakończony');
+    await page.locator('.protocolTestButton').click();
+    await page.getByRole('button', { name: 'Podpis klienta', exact: true }).click();
+    const canvas = page.locator('#protocol-test-signature');
+    await expect(canvas).toBeVisible();
+
+    const metrics = () => canvas.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      const ratio = Math.min(4, Math.max(2, devicePixelRatio || 1));
+      return { cssWidth: rect.width, pixelWidth: el.width, cssHeight: rect.height,
+        pixelHeight: el.height, expectedWidth: Math.round(rect.width * ratio),
+        expectedHeight: Math.round(rect.height * ratio) };
+    });
+    // Odtwórz zmianę wymiarów (jak przy obrocie telefonu) po inicjalizacji.
+    await canvas.evaluate((el) => { el.style.width = '210px'; });
+    await expect.poll(async () => {
+      const m = await metrics();
+      return m.pixelWidth === m.expectedWidth && m.pixelHeight === m.expectedHeight;
+    }).toBe(true);
+    await canvas.evaluate((el) => { el.style.width = ''; });
+    await expect.poll(async () => {
+      const m = await metrics();
+      return m.pixelWidth === m.expectedWidth && m.pixelHeight === m.expectedHeight;
+    }).toBe(true);
+
+    // Rysujemy bez użycia Wyczyść podpis i odczytujemy rzeczywiste piksele tuszu.
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box.x + 13, box.y + 45);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 48, box.y + 65, { steps: 9 });
+    await page.mouse.up();
+
+    const firstInk = () => canvas.evaluate((el) => {
+      const ctx = el.getContext('2d', { willReadFrequently: true });
+      const pixels = ctx.getImageData(0, 0, el.width, el.height).data;
+      let min = el.width;
+      for (let y = 0; y < el.height; y += 3) for (let x = 0; x < el.width; x += 3) {
+        const i = (y * el.width + x) * 4;
+        if (pixels[i] < 150 && pixels[i + 1] < 150 && pixels[i + 2] < 150) min = Math.min(min, x);
+      }
+      return min === el.width ? null : min / (el.width / el.getBoundingClientRect().width);
+    });
+    await expect.poll(firstInk).toBeLessThan(35);
+
+    // Zmiana rozmiaru po rozpoczęciu podpisu zachowuje narysowaną linię.
+    await canvas.evaluate((el) => { el.style.width = '230px'; });
+    await expect.poll(async () => {
+      const m = await metrics();
+      return m.pixelWidth === m.expectedWidth;
+    }).toBe(true);
+    await expect.poll(firstInk).toBeLessThan(35);
+    await expect(canvas).toBeVisible();
+  });
+
   test('pracownik nie może zakończyć bez zapisanego protokołu', async ({ page }) => {
     await openJob(page, WORKER, 'W trakcie', 'Klient Testowy B');
     await expect(page.locator('.protocolTestButton')).toBeVisible();
