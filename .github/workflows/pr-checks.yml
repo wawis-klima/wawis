@@ -62,7 +62,11 @@ jobs:
 
       - name: Install Playwright Chromium when required
         if: steps.impact.outputs.needs_playwright == 'true'
-        run: npx playwright install --with-deps chromium
+        timeout-minutes: 6
+        # Ubuntu hosted runners already contain headless Chromium system libraries.
+        # Avoid repeated apt-get --with-deps, which can hang on package mirrors.
+        # Browser installation is still required; Playwright E2E remains mandatory.
+        run: npx playwright install chromium --only-shell
 
       - name: Run required Playwright E2E
         if: steps.impact.outputs.needs_playwright == 'true'
