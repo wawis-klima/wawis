@@ -419,23 +419,41 @@ Deno.serve(async (request: Request) => {
       return json({ error: "Automatyczne wystawianie wymaga zakończonego montażu." }, 409);
     }
     if (!verifiedJob.job.vat_invoice_fakturownia_confirmed) {
-      const before = await getRecentIssuedInvoices(apiToken, clientId);
-      if (!before.complete) {
-        return json({ error: "Fakturownia zwróciła zbyt wiele dokumentów do bezpiecznego zapamiętania stanu. Spróbuj ponownie później." }, 409);
-      }
-      const started = new Date();
-      const { error: trackingError } = await adminClient
+      const { data: existingAttempt, error: existingAttemptError } = await adminClient
         .from("fakturownia_invoice_attempts")
-        .upsert({
-          job_id: jobId,
-          client_id: clientId,
-          prepared_by: authData.user.id,
-          buyer_snapshot: verifiedJob.buyer,
-          baseline_invoice_ids: before.invoices.map((row) => normalizeText(row.id)).filter(Boolean),
-          started_at: started.toISOString(),
-          expires_at: new Date(started.getTime() + 2 * 60 * 60 * 1000).toISOString(),
-        }, { onConflict: "job_id" });
-      if (trackingError) throw new Error("Nie udało się zapamiętać rozpoczętego wystawiania faktury. Formularz nie został otwarty.");
+        .select("client_id, buyer_snapshot, started_at, expires_at")
+        .eq("job_id", jobId).maybeSingle();
+      if (existingAttemptError) throw new Error("Nie udało się sprawdzić rozpoczętego wystawiania faktury.");
+      const buyerFields: Array<keyof TrustedBuyer> = ["name", "street", "city", "postCode", "taxNo"];
+      const unchangedBuyer = buyerFields.every((field) =>
+        normalizeText(existingAttempt?.buyer_snapshot?.[field]) === normalizeText(verifiedJob.buyer[field]));
+      const startedMs = Date.parse(normalizeText(existingAttempt?.started_at));
+      const expiresMs = Date.parse(normalizeText(existingAttempt?.expires_at));
+      const retainFirstAttempt = normalizeText(existingAttempt?.client_id) === clientId
+        && unchangedBuyer && Number.isFinite(startedMs) && Number.isFinite(expiresMs)
+        && startedMs <= Date.now() && expiresMs > Date.now();
+      // Re-opening the invoice form must not erase the original pre-invoice
+      // baseline: otherwise the invoice just issued becomes "old" and cannot
+      // be auto-confirmed. Expired or changed-buyer sessions still restart.
+      if (!retainFirstAttempt) {
+        const before = await getRecentIssuedInvoices(apiToken, clientId);
+        if (!before.complete) {
+          return json({ error: "Fakturownia zwróciła zbyt wiele dokumentów do bezpiecznego zapamiętania stanu. Spróbuj ponownie później." }, 409);
+        }
+        const started = new Date();
+        const { error: trackingError } = await adminClient
+          .from("fakturownia_invoice_attempts")
+          .upsert({
+            job_id: jobId,
+            client_id: clientId,
+            prepared_by: authData.user.id,
+            buyer_snapshot: verifiedJob.buyer,
+            baseline_invoice_ids: before.invoices.map((row) => normalizeText(row.id)).filter(Boolean),
+            started_at: started.toISOString(),
+            expires_at: new Date(started.getTime() + 2 * 60 * 60 * 1000).toISOString(),
+          }, { onConflict: "job_id" });
+        if (trackingError) throw new Error("Nie udało się zapamiętać rozpoczętego wystawiania faktury. Formularz nie został otwarty.");
+      }
     }
 
     // Formularz pozostaje po stronie Fakturowni. Każdy montaż dostaje własny OID,

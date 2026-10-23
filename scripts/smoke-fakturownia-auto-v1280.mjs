@@ -26,7 +26,8 @@ assert(!source.includes('import {'),'Execute exact current Edge source');
 const compiled=(await transform(source,{loader:'ts',target:'es2022',format:'iife'})).code;
 async function run(label,{after=[newInvoice],competing=false,otherJob=false,wrongBuyer=false,
   expired=false,changedBuyer=false,existingAlready=false,noSavedBaseline=false,withoutOid=true,
-  providerMutations=false,companyGus=false,companyWrongNip=false,companyMissingNip=false}={},expected) {
+  providerMutations=false,companyGus=false,companyWrongNip=false,companyMissingNip=false,
+  repeatPrepareAfterIssue=false}={},expected) {
   let handler;
   const recorded=[];
   let manualCandidateDbReads=0;
@@ -135,6 +136,16 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
     }
     return wrongBuyer?{...x,buyer_street:'Częstochowska 12/98'}:x;
   })];
+  if (repeatPrepareAfterIssue) {
+    const originalStart = tableAttempt.started_at;
+    const originalExpiry = tableAttempt.expires_at;
+    const repeated = await call('prepare');
+    assert.equal(repeated.status,200,label+': repeat prepare succeeds');
+    assert.equal(tableAttempt.started_at,originalStart,label+': first snapshot timestamp retained');
+    assert.equal(tableAttempt.expires_at,originalExpiry,label+': first expiry retained');
+    assert.deepEqual(Array.from(tableAttempt.baseline_invoice_ids),['900'],
+      label+': recently issued invoice not swallowed by new baseline');
+  }
   const apiCallsBeforeVerify=recorded.length;
   const result=await call('verify');
   assert.equal(result.status,200,label+': verify endpoint');
@@ -157,6 +168,7 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
   console.log('PASS V12.80 '+label);
 }
 await run('single newly issued VAT with no OID auto-confirmed',{}, {found:true,code:'VERIFIED',invoiceId:'991'});
+await run('retry opening Fakturownia retains original baseline',{repeatPrepareAfterIssue:true}, {found:true,code:'VERIFIED',invoiceId:'991'});
 await run('GUS company full legal name and postal change => auto-confirm by NIP',{companyGus:true},
   {found:true,code:'VERIFIED',invoiceId:'991',candidates:0});
 await run('GUS company changed NIP => fail closed',{companyGus:true,companyWrongNip:true},

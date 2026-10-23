@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.53",
-  "scope": "desktop",
-  "release_branch": "release/v13.53",
+  "version": "13.54",
+  "scope": "full",
+  "release_branch": "release/v13.54",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Bezpieczne wyszukiwanie faktury Fakturowni po rzeczywistym ID bez tworzenia faktur. Kod Supabase produkcyjnej Edge Function v21 zsynchronizowany do GitHub przed zmianą. Offline bez zmian."
+    "notes": "13.54: faktura bez numeru i mobilne tabliczki po LTE timeout (Paweł, 23.10 13:32). Bez zmian RLS/bazy, danych klientów i protokołów. Produkcja niezmieniona do decyzji o wdrożeniu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.53.zip"
+    "file_name": "klima-app-v13.54.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.53",
+    "source_branch": "release/v13.54",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "GitHub CI success, Edge Fakturownia version 22 ACTIVE z poprawionym GET po ID, Vercel READY i 13.53, rzeczywista kontrola powiązania MADEX przez administratora",
-    "notes": "WAWIS MADEX: Opcje awaryjne > Powiąż po numerze/ID > ID:584755572. Żadna nowa faktura nie powstaje."
+    "evidence_source": "Zielone CI SHA release/v13.54, Supabase Edge fakturownia-client identyczny z kodem wydania, Vercel READY z v13.54, realne wystawienie kolejnej faktury z samoczynnym potwierdzeniem. Przegląd błędów iPhone/LTE i logów tabliczek po testach rzeczywistych.",
+    "notes": "Odbiór na kolejnej rzeczywistej fakturze, bez sztucznego tworzenia dokumentu i bez ręcznego numeru. Mobilny scenariusz odzyskania po timeout bez kasowania aplikacji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Fakturownia Edge index z prod v21 + ID lookup, desktop etykieta, testy bezpieczeństwa. Supabase Storage/offline/podpisy niezmienione.",
-    "release_ci": "Test E2E/mock link po ID + przypadki odmowy i brak działań POST/PUT do provider API, komplet regresji, Closure Gate, build.",
-    "post_deploy": "Edge Supabase ACTIVE z identycznym kodem co PR; Vercel READY, wersja 13.53 i ręczne bezpieczne powiązanie istniejącego dokumentu MADEX."
+    "code": "Ochrona pierwszego snapshotu przy ponownym otwarciu formularza i ograniczone czasowo automatyczne ponawianie weryfikacji WAWIS. Mobilna weryfikacja tabliczek ponawia odczyt serwera, wznawia tylko niepotwierdzone tożsamości uploadu i chroni lokalną kolejkę.",
+    "release_ci": "Mock testy Edge po utworzeniu nowej faktury i drugim prepare, regresje odmowy i niezmienionej faktury po ID, Playwright desktop/mobile, Closure Gate, build. Smoke mobilnego odzyskania: chwilowy timeout, ponowienie dokładnie raz, brak fałszywego success, scenariusz offline, dotychczasowe regresje tabliczek.",
+    "post_deploy": "Po zielonym CI wdrożyć Edge fakturownia-client, Vercel 13.54. Sprawdzić na kolejnej rzeczywistej fakturze bez ręcznego numeru. Mobilny iPhone w słabym LTE: przerwany odczyt zdjęć, automatyczny retry, finalny komplet JW/JZ i brak duplikatów, PDF bez regresji."
   }
 }

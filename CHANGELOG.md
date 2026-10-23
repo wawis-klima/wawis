@@ -1,3 +1,12 @@
+## 13.54
+- iPhone WAWIS: po chwilowym błędzie LTE lub 8-sekundowym timeout weryfikacja tabliczek ponawia odczyt serwera; nie blokuje zapisu po pierwszej nieudanej odpowiedzi.
+- Przy niepotwierdzonych elementach kolejki WAWIS wznawia wyłącznie przesłanie tych samych plików po deterministycznych identyfikatorach i ścieżkach, bez mnożenia rekordów. Potwierdzenie musi dotyczyć dokładnego pliku, nie starszego zdjęcia tej samej JW/JZ.
+- Gdy serwer nadal jest niedostępny, okno zostaje otwarte i pokazuje prawidłowy status zamiast komunikatu sugerującego brak zdjęć. Dodano smoke scenariuszy: sukces po timeout, trwała awaria i offline; zachowano blokadę zakończenia bez tabliczek i protokołu.
+- Fakturownia: po powrocie do WAWIS administrator nie wpisuje numeru faktury; system automatycznie ponawia kontrolę ważnej próby co 12 sekund przez 3 minuty, sprawdza również po ponownym otwarciu widoku.
+- Ponowne otwarcie formularza Fakturowni dla tego samego klienta podczas aktywnej próby NIE nadpisuje snapshotu faktur istniejących przed rozpoczęciem ani czasu rozpoczęcia. Po wygaśnięciu lub zmianie nabywcy powstaje nowy bezpieczny snapshot.
+- Twarde kontrole: zakończony montaż, tylko administrator, zgodność kartoteki klienta/NIP/OID, wystawiony dokument VAT, unikatowy ID faktury i blokady innych równoczesnych montaży. Nie powstaje druga faktura ani nowy zapis faktury przez API.
+- Regresja: ponowne prepare po pojawieniu się faktury, istniejące pozytywne i negatywne scenariusze mock Fakturowni, ścieżka awaryjna ID pozostaje niezmieniona; próba produkcyjna wymaga rzeczywistego dokumentu.
+
 ## 13.53
 - Fakturownia: oprócz numeru drukowanego można podać `ID:584755572` w dotychczasowym formularzu awaryjnego powiązania; wywoływany jest odczyt `GET /invoices/{id}.json`.
 - Po pobraniu dokumentu obowiązują dotychczasowe ścisłe kontrole: administrator, status montażu Zakończone, faktura VAT o statusie wystawionej, nabywca i NIP, kartoteka klienta z zapisanej próby wystawienia, OID niepowiązany z innym montażem, deduplikacja po ID w zabezpieczonym RPC.
