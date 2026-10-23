@@ -838,6 +838,50 @@
   .protocolSignatureActions .btn { min-height: 46px; }
 }
 
+/* v13.51 — podpis: więcej miejsca na rysowanie w orientacji poziomej.
+   W pionie obowiązuje dotychczasowy układ; cele dotykowe pozostają >= 44 px. */
+@media (orientation: landscape) and (max-height: 600px) {
+  .protocolSignatureModal {
+    padding: max(6px, env(safe-area-inset-top)) 10px max(6px, env(safe-area-inset-bottom)) !important;
+  }
+  .protocolSignatureScreen {
+    width: min(780px, 100%);
+    gap: 6px;
+  }
+  .protocolSignatureHeader h2 {
+    font-size: 17px !important;
+  }
+  .protocolSignatureHeader p {
+    margin-top: 0;
+    font-size: 11px !important;
+  }
+  .protocolSignatureInstruction {
+    padding: 5px 10px;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+  .protocolSignatureCanvasWrap {
+    padding: 4px;
+    border-radius: 12px;
+  }
+  .protocolSignatureCanvas {
+    min-height: 0 !important;
+    border-radius: 10px;
+  }
+  .protocolSignatureActions {
+    grid-template-columns: repeat(2, minmax(0, 220px));
+    justify-content: center;
+    gap: 8px;
+  }
+  .protocolSignatureActions .btn {
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 5px 10px;
+    border-radius: 11px;
+    font-size: 13px !important;
+  }
+}
+
 /* v11.32 — bardziej kompaktowy kreator urządzeń na iPhonie. */
 @media (max-width: 700px) {
   .mobileDeviceWizardHeader {

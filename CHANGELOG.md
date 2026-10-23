@@ -1,3 +1,9 @@
+## 13.51
+- iPhone, tryb poziomy: przyciski Wyczyść podpis i Zatwierdź podpis mają 44 px wysokości, mniejszą szerokość i są wyśrodkowane; nagłówek, opis oraz marginesy są kompaktowe.
+- Więcej użytecznej wysokości pola podpisu na urządzeniach z dotykowym ekranem w poziomie do 600 px wysokości. Widok pionowy i pozostałe ekrany nie ulegają zmianie.
+- Trwałe zabezpieczenie regresji smoke i Playwright: portret, poziom 844×390 oraz 667×375 px, dostępność obu przycisków, minimum 44 px i brak ucięcia pola podpisu.
+- Bez zmian w podpisie, PDF, Supabase, Storage, offline 13.49, OCR, płatnościach i zdjęciach.
+
 ## 13.50
 - Mobile: podpis klienta obrócony wskutek położenia telefonu jest automatycznie ustawiany poziomo przy generowaniu PDF, gdy wysokość obrazu znacznie przekracza szerokość.
 - Przed zapisem PDF dostępne są podgląd orientacji, brak obrotu, obrót o 90° w prawo/w lewo i 180°. Oryginalny PNG w Supabase Storage pozostaje niezmieniony.

@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.50
+- 13.51
+
+WAWIS 13.51: tylko mobilny ekran podpisu w poziomie — mniejsze i węższe przyciski (44 px), ciaśniejszy nagłówek i odstępy, większa przestrzeń na podpis. Układ pionowy pozostaje bez zmian. Bez zmian generowania PDF, OCR/AI, offline, płatności, Supabase i zdjęć.
 
 WAWIS 13.50: poprawa orientacji podpisu klienta na protokole PDF. Podpisy pionowe są obracane automatycznie, a przed zapisem można sprawdzić podgląd i ręcznie wybrać obrót w prawo/lewo lub bez obrotu. Oryginalny PNG podpisu w Supabase Storage pozostaje niezmieniony. Dla istniejących podpisanych protokołów działa ponowne wykorzystanie zapisanego podpisu zgodnie z dotychczasowymi zabezpieczeniami. Bez zmian w offline 13.49, OCR/AI, zdjęciach, płatnościach i backendzie.
 
@@ -1043,6 +1045,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.51` — kompaktowe przyciski i większe pole podpisu wyłącznie w poziomej orientacji iPhone'a.
 - wersja `13.50` — automatyczna korekta pionowego podpisu na PDF z podglądem i kontrolą obrotu, bez zmiany zapisanego podpisu.
 - wersja `13.38` — kompaktowe białe karty w Cenniku mobilnym (min. 44 px, padding 7 px); bez zmian funkcjonalnych.
 - wersja `13.37` — skrócenie dwóch nazw Hiro Multi w Cenniku mobilnym do Jedn. Zew. / Jedn. Wew., bez zmian pozostałych modeli.
