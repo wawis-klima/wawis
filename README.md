@@ -1052,6 +1052,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.55` — automatyczne ponowienie potwierdzania tabliczek po timeout LTE na iPhonie, z zachowaniem lokalnych zdjęć i ochroną przed duplikatami.
 - wersja `13.53` — bezpieczne powiązanie faktury po ID dokumentu Fakturowni.
 - wersja `13.52` — synchronizacja pola rysowania podpisu po obrocie iPhone'a, prawidłowy pierwszy dotyk.
 - wersja `13.51` — kompaktowe przyciski i większe pole podpisu wyłącznie w poziomej orientacji iPhone'a.
