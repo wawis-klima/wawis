@@ -62,6 +62,14 @@ const sql = fs.readFileSync('supabase/migrations/20260916115000_push_lifecycle_h
 assert.match(sql, /private\.push_subscription_lifecycle_tombstones/);
 const workflow = fs.readFileSync('.github/workflows/pr-checks.yml', 'utf8');
 assert.match(workflow, /id: impact/);
-assert.match(workflow, /playwright install --with-deps chromium/);
+// Ubuntu CI installs the headless Chromium binary, and still runs every mandatory
+// Playwright E2E scenario. Do not treat faster installation as an E2E bypass.
+assert.match(workflow, /playwright install chromium --only-shell/,
+  'Chromium headless browser must still be installed for required E2E.');
+assert.match(workflow, /timeout-minutes: 6[\\s\\S]*?run: npx playwright install chromium --only-shell/,
+  'Browser install must be bounded instead of hanging indefinitely.');
+assert.match(workflow, /if: steps\\.impact\\.outputs\\.needs_playwright == 'true'[\\s\\S]*?run: node scripts\\/run-pr-playwright\\.cjs release-impact\\.json/,
+  'The conditional Playwright suite cannot be bypassed.');
+
 assert.match(workflow, /run-pr-playwright\.cjs release-impact\.json/);
 console.log('PASS v10.83 session/push/E2E gate regression.');
