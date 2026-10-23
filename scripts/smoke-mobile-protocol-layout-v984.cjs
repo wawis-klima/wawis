@@ -57,9 +57,9 @@ assert.match(protocolScrollFix, /\.mobileProtocolWizardBody\s*\{[^}]*min-height:
 assert.match(protocolScrollFix, /\.mobileProtocolWizard \.mobileDeviceWizardFooter\s*\{[^}]*position:\s*relative;[^}]*bottom:\s*auto;/, 'Dolne przyciski protokołu muszą pozostać poza przewijaną treścią.');
 
 
-const landscapeSignatureCss = wizardCss.split('/* v13.51 — podpis: więcej miejsca na rysowanie wyłącznie w poziomie na telefonie.')[1]
+const landscapeSignatureCss = wizardCss.split('/* v13.51 — podpis: więcej miejsca na rysowanie w orientacji poziomej.')[1]
   ?.split('/* v11.32')[0] || '';
-assert.match(landscapeSignatureCss, /@media \(orientation: landscape\) and \(max-height: 600px\) and \(pointer: coarse\)/,
+assert.match(landscapeSignatureCss, /@media \(orientation: landscape\) and \(max-height: 600px\)/,
   'Wersja kompaktowa musi być ograniczona do poziomego ekranu dotykowego.');
 assert.match(landscapeSignatureCss, /\.protocolSignatureActions \.btn\s*\{[^}]*min-height: 44px !important;[^}]*height: 44px !important;/,
   'Przyciski w poziomie muszą mieć co najmniej 44 px i nie zajmować nadmiernej wysokości.');

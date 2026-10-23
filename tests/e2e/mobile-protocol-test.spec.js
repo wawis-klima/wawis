@@ -84,7 +84,8 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
       const canvasRect = canvas?.getBoundingClientRect();
       const actionsRect = actions?.getBoundingClientRect();
       return {
-        landscape: matchMedia('(orientation: landscape) and (max-height: 600px) and (pointer: coarse)').matches,
+        landscape: matchMedia('(orientation: landscape) and (max-height: 600px)').matches,
+        viewport: `${innerWidth}x${innerHeight}`,
         buttonHeights: buttons.map((button) => button.getBoundingClientRect().height),
         buttonWidths: buttons.map((button) => button.getBoundingClientRect().width),
         canvasHeight: canvasRect?.height || 0,
@@ -102,7 +103,10 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
 
     for (const [width, height] of [[844, 390], [667, 375]]) {
       await page.setViewportSize({ width, height });
-      await expect.poll(async () => (await measure()).landscape).toBe(true);
+      // Sprawdzamy realną wysokość kontrolek, a nie sam wynik symulacji orientacji.
+      await expect.poll(async () => (await measure()).buttonHeights.map((h) => Math.round(h)), {
+        message: `Poziom ${width}x${height}: oba przyciski muszą mieć 44 px`,
+      }).toEqual([44, 44]);
       const horizontal = await measure();
       expect(horizontal.buttonHeights.every((h) => h >= 43 && h <= 45)).toBe(true);
       expect(horizontal.buttonWidths.every((w) => w <= 222)).toBe(true);

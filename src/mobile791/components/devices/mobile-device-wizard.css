@@ -838,9 +838,9 @@
   .protocolSignatureActions .btn { min-height: 46px; }
 }
 
-/* v13.51 — podpis: więcej miejsca na rysowanie wyłącznie w poziomie na telefonie.
+/* v13.51 — podpis: więcej miejsca na rysowanie w orientacji poziomej.
    W pionie obowiązuje dotychczasowy układ; cele dotykowe pozostają >= 44 px. */
-@media (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
+@media (orientation: landscape) and (max-height: 600px) {
   .protocolSignatureModal {
     padding: max(6px, env(safe-area-inset-top)) 10px max(6px, env(safe-area-inset-bottom)) !important;
   }
