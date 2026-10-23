@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-1352 — przesunięta pierwsza kreska po obrocie iPhone'a (23 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| PROTOCOL-1352-FIRST-INK | FIXED-UNVERIFIED | Playwright: otwarcie podpisu, zmiana szerokości canvas, powrót, pierwsza kreska 13px od lewej i odczyt minX bez użycia Wyczyść podpis. |
+| PROTOCOL-1352-RESIZE-KEEP | FIXED-UNVERIFIED | Playwright: kolejna zmiana wielkości canvas nie kasuje już narysowanej kreski. |
+| PROTOCOL-1352-SMOKE | FIXED-UNVERIFIED | Smoke CSS+JS sprawdza zgodność bitmapy z rect, ResizeObserver i obsługę pierwszego dotknięcia; zachowane czyszczenie i proporcje. |
+| PROTOCOL-1352-IPHONETOUCH | EXTERNAL | Test rzeczywistego iPhone Safari/PWA: po obrocie pierwsza kreska zaczyna się z lewej strony bez czyszczenia, podpis poprawny w PDF. |
+
+
 ## PROTOCOL-1351 — za duże przyciski w poziomym ekranie podpisu iPhone (23 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |

@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.51",
+  "version": "13.52",
   "scope": "mobile",
-  "release_branch": "release/v13.51",
+  "release_branch": "release/v13.52",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Tylko ekran składania podpisu klienta na iPhonie w poziomie: przyciski 44 px i więcej miejsca na podpis. Bez zmian pionu, PDF, Storage, offline i backendu."
+    "notes": "Mobile podpis: synchronizacja bufora canvas z rozmiarem CSS po obrocie iPhone'a oraz pierwszym dotykiem; bez zmian PDF, Supabase, Storage, OCR, offline."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.51.zip"
+    "file_name": "klima-app-v13.52.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.51",
+    "source_branch": "release/v13.52",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY produkcyjnego SHA i widoczna wersja 13.51; test orientacji podpisu w poziomie i pionie na iPhonie",
-    "notes": "W poziomie dwa przyciski 44 px i cały canvas widoczny; w pionie brak zmian. Bez ingerencji w stare podpisy."
+    "evidence_source": "Vercel READY production SHA i publiczna wersja 13.52; realny test pierwszej kreski bez czyszczenia na iPhonie",
+    "notes": "Po obrocie iPhone'a rysować od lewej krawędzi, bez klikania Wyczyść podpis, następnie sprawdzić zapis w PDF."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Wyłącznie CSS ekranu podpisu w poziomie na iPhonie; 44 px przyciski, kompaktowe odstępy, większy canvas.",
-    "release_ci": "Smoke CSS, Playwright orientacji 844×390 / 667×375 / portret, pełny targeted-checks, Closure Gate, build.",
-    "post_deploy": "Vercel READY matching main SHA, WAWIS 13.51 na iPhonie, wizualny test obróconego telefonu."
+    "code": "Tylko obsługa canvas podczas podpisywania: obsługa ResizeObserver, orientationchange, resize i pointerDown; zachowanie tuszu na zmianę rozmiaru.",
+    "release_ci": "Smoke inicjalizacji canvas, E2E pierwszej kreski i zachowania rysunku, targeted-checks, Closure Gate, build.",
+    "post_deploy": "Vercel READY zgodny z main SHA, WAWIS 13.52, rzeczywisty test dotykowy na iPhonie."
   }
 }
