@@ -1,3 +1,9 @@
+## 13.59
+- Naprawiono nieskuteczny wygląd przypomnienia w wersji 13.58 na rzeczywistym iPhonie: tekst zmieniał się, ale układ nadal był duży i pionowy.
+- Dialog korzysta z osobnego wariantu bez .formModal/.modal/.row/.btn; wysokość, szerokość, marginesy i układ przycisków określa bezpośrednio komponent, nie zewnętrzny CSS.
+- Dwa przyciski (44 px) pozostają obok siebie na iPhonie również na ekranie 320 px. Brak zmian w walidacji ukończenia i protokołu; pozostałe potwierdzenia bez zmian.
+- Test Playwright: pomiar geometrii i CSS display:grid w dwóch rozmiarach ekranu + celowo konfliktowe klasy CSS oraz zachowanie „Jeszcze nie”.
+
 ## 13.58
 - Kompaktowe okno przypomnienia o zakończeniu montażu po zapisaniu podpisanego protokołu na iPhonie; tytuł i dwa przyciski w jednym estetycznym panelu.
 - „Jeszcze nie” i „Zakończ montaż” w jednym rzędzie, oba 44 px wysokości i na małych ekranach; skrócony tekst.
