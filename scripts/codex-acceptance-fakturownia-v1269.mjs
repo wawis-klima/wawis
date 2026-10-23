@@ -58,14 +58,18 @@ async function scenario(label, resolver, expected) {
   const writes=calls.filter(x=>x.method==='PUT'||x.method==='POST');
   assert.equal(result.status,expected.status,label+': HTTP status');
   assert.equal(writes.length,expected.writes,label+': no unintended Fakturownia PUT/POST');
+  assert.equal(calls.some(x=>x.search.includes('email=')), false, label+': never query by e-mail');
+  for (const write of writes) assert.doesNotMatch(String(write.body || ''), /shared@example\\.test/i,
+    label+': do not send personal e-mail to Fakturownia');
   if(expected.error)assert.match(String(body.error||''),expected.error,label+': error explanation');
   if(expected.ok)assert.equal(body.ok,true,label+': positive path still works');
   console.log('PASS P0-01',label,'HTTP',result.status,'writes',writes.length);
 }
-await scenario('shared email belongs to other NIP', (url)=>{
- if(url.searchParams.has('email'))return [{id:17,email:'shared@example.test',tax_no:'9999999999',external_id:'other-client'}];
+await scenario('shared e-mail must NOT be sent or used to identify a client', (url,method)=>{
+ if (url.searchParams.has('email')) throw new Error('Client lookup by e-mail is prohibited');
+ if (method==='POST') return {id:17};
  return [];
-},{status:500,writes:0,error:/e-mail/i});
+},{status:200,writes:1,ok:true});
 await scenario('malformed client list',()=>({unexpected:true}),{status:500,writes:0,error:/Nieprawidłowa odpowiedź listy klientów/i});
 await scenario('exact external_id approved', (url,method)=>{
  if(method==='PUT')return {id:19};
