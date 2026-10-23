@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-1351 — za duże przyciski w poziomym ekranie podpisu iPhone (23 października 2026)
+
+| ID | Stan przed CI | Reproduktor / zabezpieczenia |
+|---|---|---|
+| PROTOCOL-1351-LANDSCAPE | FIXED-UNVERIFIED | Playwright w `tests/e2e/mobile-protocol-test.spec.js`: 844×390 i 667×375, zmniejszone przyciski 44 px, pełna widoczność i większa przestrzeń na podpis. |
+| PROTOCOL-1351-PORTRAIT | FIXED-UNVERIFIED | Playwright: w pionie 390×844 przyciski zachowują oryginalną wysokość minimum 52 px; CSS kompaktowy aktywuje się tylko w poziomie i na dotykowym ekranie. |
+| PROTOCOL-1351-SMOKE | FIXED-UNVERIFIED | `scripts/smoke-mobile-protocol-layout-v984.cjs`: stała ochrona selektorów CSS i minimalnej powierzchni przycisków. |
+| PROTOCOL-1351-IPHONE | EXTERNAL | Ostateczna kontrola dotykowa przez użytkownika w prawdziwym Safari na iPhonie, po wdrożeniu. |
+
+
 ## PROTOCOL-1350 — podpis w pionie po obrocie iPhone'a (23 października 2026)
 
 | ID | Stan przed CI | Reproduktor / zabezpieczenia |

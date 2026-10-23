@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.50",
+  "version": "13.51",
   "scope": "mobile",
-  "release_branch": "release/v13.50",
+  "release_branch": "release/v13.51",
   "baseline_diagnostics": {
     "checked": false,
     "last_24h": false,
     "result": "NOT_RUN",
-    "notes": "Protokół PDF: bezpieczny obrót podpisu podczas tworzenia nowego pliku; oryginalny podpis bez zmian. Przed wydaniem wymagana kontrola CI i regresji."
+    "notes": "Tylko ekran składania podpisu klienta na iPhonie w poziomie: przyciski 44 px i więcej miejsca na podpis. Bez zmian pionu, PDF, Storage, offline i backendu."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.50.zip"
+    "file_name": "klima-app-v13.51.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.50",
+    "source_branch": "release/v13.51",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Vercel READY SHA main i widoczna wersja 13.50, następnie test podpisu iPhone/Safari",
-    "notes": "Fizyczny iPhone: poziomy podpis w obu orientacjach telefonu, oryginalny PNG zachowany."
+    "evidence_source": "Vercel READY produkcyjnego SHA i widoczna wersja 13.51; test orientacji podpisu w poziomie i pionie na iPhonie",
+    "notes": "W poziomie dwa przyciski 44 px i cały canvas widoczny; w pionie brak zmian. Bez ingerencji w stare podpisy."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobile: generator PDF korzysta z kopii podpisu PNG obróconej automatycznie lub ręcznie; podpis w Storage bez zmian.",
-    "release_ci": "Node orientacji, wszystkie smoke protokołów, Playwright mobile i Closure Gate, build.",
-    "post_deploy": "Vercel READY SHA main, wersja 13.50 na iPhonie, realny test podpisu i podpisu zachowanego."
+    "code": "Wyłącznie CSS ekranu podpisu w poziomie na iPhonie; 44 px przyciski, kompaktowe odstępy, większy canvas.",
+    "release_ci": "Smoke CSS, Playwright orientacji 844×390 / 667×375 / portret, pełny targeted-checks, Closure Gate, build.",
+    "post_deploy": "Vercel READY matching main SHA, WAWIS 13.51 na iPhonie, wizualny test obróconego telefonu."
   }
 }

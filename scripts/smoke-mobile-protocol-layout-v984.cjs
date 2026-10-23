@@ -56,4 +56,18 @@ assert.match(protocolScrollFix, /\.protocolWizardModal\s*\{[^}]*height:\s*100dvh
 assert.match(protocolScrollFix, /\.mobileProtocolWizardBody\s*\{[^}]*min-height:\s*0\s*!important;[^}]*overflow-y:\s*auto\s*!important;[^}]*touch-action:\s*pan-y;/, 'Treść protokołu musi być właściwym pionowym kontenerem przewijania.');
 assert.match(protocolScrollFix, /\.mobileProtocolWizard \.mobileDeviceWizardFooter\s*\{[^}]*position:\s*relative;[^}]*bottom:\s*auto;/, 'Dolne przyciski protokołu muszą pozostać poza przewijaną treścią.');
 
+
+const landscapeSignatureCss = wizardCss.split('/* v13.51 — podpis: więcej miejsca na rysowanie wyłącznie w poziomie na telefonie.')[1]
+  ?.split('/* v11.32')[0] || '';
+assert.match(landscapeSignatureCss, /@media \(orientation: landscape\) and \(max-height: 600px\) and \(pointer: coarse\)/,
+  'Wersja kompaktowa musi być ograniczona do poziomego ekranu dotykowego.');
+assert.match(landscapeSignatureCss, /\.protocolSignatureActions \.btn\s*\{[^}]*min-height: 44px !important;[^}]*height: 44px !important;/,
+  'Przyciski w poziomie muszą mieć co najmniej 44 px i nie zajmować nadmiernej wysokości.');
+assert.match(landscapeSignatureCss, /\.protocolSignatureActions\s*\{[^}]*grid-template-columns: repeat\(2, minmax\(0, 220px\)\);/,
+  'Przyciski w poziomie muszą być węższe i wyśrodkowane.');
+assert.match(landscapeSignatureCss, /\.protocolSignatureCanvas\s*\{[^}]*min-height: 0 !important;/,
+  'Pole podpisu musi dopasowywać wysokość bez wymuszonego minimum 190 px.');
+assert.match(wizardCss.slice(0, wizardCss.indexOf('/* v13.51')), /\.protocolSignatureActions \.btn\s*\{[^}]*min-height: 52px;/,
+  'Bazowy pionowy ekran podpisu ma zachować dotychczasowy rozmiar przycisków.');
+
 console.log('OK: protokół ma uporządkowane dane oraz osobny, nieruchomy ekran podpisu klienta.');

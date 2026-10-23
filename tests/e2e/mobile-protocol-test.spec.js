@@ -71,6 +71,51 @@ async function seedProtocolRecordForPostSaveFlow(page) {
 }
 
 test.describe('@mobile protokół i zakończenie zlecenia', () => {
+  test('po obrocie iPhone przyciski podpisu są kompaktowe, a pion pozostaje bez zmian', async ({ page }) => {
+    await openJob(page, WORKER, 'Zakończone', 'Klient Testowy C Zakończony');
+    await page.locator('.protocolTestButton').click();
+    await page.getByRole('button', { name: 'Podpis klienta', exact: true }).click();
+    await expect(page.locator('#protocol-test-signature')).toBeVisible();
+
+    const measure = () => page.locator('.protocolSignatureModal').evaluate((modal) => {
+      const canvas = modal.querySelector('.protocolSignatureCanvas');
+      const actions = modal.querySelector('.protocolSignatureActions');
+      const buttons = [...(actions?.querySelectorAll('.btn') || [])];
+      const canvasRect = canvas?.getBoundingClientRect();
+      const actionsRect = actions?.getBoundingClientRect();
+      return {
+        landscape: matchMedia('(orientation: landscape) and (max-height: 600px) and (pointer: coarse)').matches,
+        buttonHeights: buttons.map((button) => button.getBoundingClientRect().height),
+        buttonWidths: buttons.map((button) => button.getBoundingClientRect().width),
+        canvasHeight: canvasRect?.height || 0,
+        canvasAboveButtons: Boolean(canvasRect && actionsRect && canvasRect.bottom <= actionsRect.top + 2),
+        controlsInViewport: buttons.every((button) => {
+          const rect = button.getBoundingClientRect();
+          return rect.bottom <= innerHeight + 2 && rect.top >= -2;
+        }),
+      };
+    });
+
+    const portrait = await measure();
+    expect(portrait.landscape).toBe(false);
+    expect(portrait.buttonHeights.every((h) => h >= 51)).toBe(true);
+
+    for (const [width, height] of [[844, 390], [667, 375]]) {
+      await page.setViewportSize({ width, height });
+      await expect.poll(async () => (await measure()).landscape).toBe(true);
+      const horizontal = await measure();
+      expect(horizontal.buttonHeights.every((h) => h >= 43 && h <= 45)).toBe(true);
+      expect(horizontal.buttonWidths.every((w) => w <= 222)).toBe(true);
+      expect(horizontal.canvasHeight).toBeGreaterThanOrEqual(125);
+      expect(horizontal.canvasAboveButtons).toBe(true);
+      expect(horizontal.controlsInViewport).toBe(true);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(async () => (await measure()).landscape).toBe(false);
+    expect((await measure()).buttonHeights.every((h) => h >= 51)).toBe(true);
+  });
+
   test('pracownik nie może zakończyć bez zapisanego protokołu', async ({ page }) => {
     await openJob(page, WORKER, 'W trakcie', 'Klient Testowy B');
     await expect(page.locator('.protocolTestButton')).toBeVisible();
