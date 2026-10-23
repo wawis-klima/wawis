@@ -12,6 +12,7 @@ import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { blockUnsavedWork } from "../../modules/update-reload-guard.js";
 import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
+import ConfirmActionModal from "./modals/ConfirmActionModal.jsx";
 import SmoothCollapse from "./jobs/SmoothCollapse.jsx";
 
 const PROTOCOL_READ_TIMEOUT_MS = 3200;
@@ -295,6 +296,8 @@ export default function JobDetailsPanel({
   onRetryDetails,
 }) {
   const [protocolTestOpen, setProtocolTestOpen] = React.useState(false);
+  const [finishReminderOpen, setFinishReminderOpen] = React.useState(false);
+  const pendingFinishReminderRef = React.useRef("");
   const [protocolRecord, setProtocolRecord] = React.useState(null);
   const [protocolLoading, setProtocolLoading] = React.useState(false);
   const [protocolMessage, setProtocolMessage] = React.useState("");
@@ -334,6 +337,13 @@ export default function JobDetailsPanel({
   const [viewersExpanded, setViewersExpanded] = React.useState(!selectedJobIsCompleted);
   const [commentsExpandedOverride, setCommentsExpandedOverride] = React.useState(null);
   const emailAutoFitRef = useAutoFitSingleLineText(String(selectedJob?.email || ''), { maxFontSize: 12.5 });
+
+  React.useEffect(() => {
+    // Przypomnienie jest jednorazowe dla zapisu protokołu na bieżącym montażu.
+    // Nie przenosimy go na następny montaż ani na ponowne otwarcie PDF.
+    pendingFinishReminderRef.current = "";
+    setFinishReminderOpen(false);
+  }, [selectedJobId]);
 
   React.useEffect(() => {
     setExpandedDeviceIndexes([]);
@@ -1226,7 +1236,18 @@ export default function JobDetailsPanel({
         profiles={profiles}
         supabase={supabase}
         protocolRecord={protocolRecord}
-        onClose={() => setProtocolTestOpen(false)}
+        onClose={() => {
+          setProtocolTestOpen(false);
+          const shouldRemind = pendingFinishReminderRef.current === selectedJobId
+            && !isAdmin
+            && canFinishJob
+            && protocolNameplatesReady
+            && String(protocolRecord?.job_id || "") === selectedJobId
+            && Boolean(protocolRecord?.signed_at && protocolRecord?.storage_path)
+            && Number(protocolRecord?.file_size_bytes || 0) > 0;
+          pendingFinishReminderRef.current = "";
+          if (shouldRemind) setFinishReminderOpen(true);
+        }}
         onPaymentLoaded={(paymentPatch = {}) => {
           applyPaymentPatchToJobState(paymentPatch);
         }}
@@ -1234,7 +1255,28 @@ export default function JobDetailsPanel({
           setProtocolRecord(record);
           applyPaymentPatchToJobState(paymentPatch);
           setProtocolMessage("");
+          if (!isAdmin && canFinishJob
+            && String(record?.job_id || "") === selectedJobId
+            && Boolean(record?.signed_at && record?.storage_path)
+            && Number(record?.file_size_bytes || 0) > 0) {
+            pendingFinishReminderRef.current = selectedJobId;
+          }
         }}
+      />
+      <ConfirmActionModal
+        open={finishReminderOpen && !protocolTestOpen && !isAdmin && canFinishJob}
+        onClose={() => setFinishReminderOpen(false)}
+        onConfirm={() => {
+          setFinishReminderOpen(false);
+          if (!busy && canFinishJob && selectedJobId) {
+            void updateStatus(selectedJobId, "Zakończone");
+          }
+        }}
+        title="Protokół podpisany"
+        message="Wszystkie wymagane kroki zostały wykonane. Czy chcesz teraz zakończyć montaż?"
+        confirmLabel="Zakończ montaż"
+        cancelLabel="Jeszcze nie"
+        busy={busy}
       />
     </>
   );
