@@ -170,23 +170,41 @@ export default function JobDetailsPanel({
 
     let timer = null;
     let disposed = false;
+    let pendingCheckInFlight = false;
+    let retryWindowUntil = 0;
+    // Fakturownia can expose a newly saved invoice to its API slightly after
+    // WAWIS regains focus. Check again for a bounded period without user input.
+    const checkAndVerifyInvoice = async () => {
+      if (disposed || document.visibilityState === 'hidden'
+          || activeInvoiceJobIdRef.current !== selectedJobId || pendingCheckInFlight) return;
+      pendingCheckInFlight = true;
+      try {
+        const pending = fakturowniaVerificationRef.current
+          || await hasPendingFakturowniaInvoice({ supabase, jobId: selectedJobId });
+        if (pending && !disposed && activeInvoiceJobIdRef.current === selectedJobId) {
+          if (!retryWindowUntil) retryWindowUntil = Date.now() + 3 * 60 * 1000;
+          const confirmed = await verifyPendingFakturowniaInvoice(true);
+          if (confirmed) retryWindowUntil = 0;
+        } else {
+          retryWindowUntil = 0;
+        }
+      } catch (error) {
+        console.warn('Nie udało się sprawdzić rozpoczętej faktury.', error);
+      } finally {
+        pendingCheckInFlight = false;
+      }
+    };
     const verifyAfterReturn = () => {
       if (document.visibilityState === 'hidden') return;
       if (timer) window.clearTimeout(timer);
-      timer = window.setTimeout(async () => {
-        // A prepared attempt remains available after a hard reload or tab close.
-        // Do not scan unrelated historical invoices on every desktop focus.
-        try {
-          const pending = fakturowniaVerificationRef.current
-            || await hasPendingFakturowniaInvoice({ supabase, jobId: selectedJobId });
-          if (pending && !disposed && activeInvoiceJobIdRef.current === selectedJobId) {
-            void verifyPendingFakturowniaInvoice(true);
-          }
-        } catch (error) {
-          console.warn('Nie udało się sprawdzić rozpoczętej faktury.', error);
-        }
-      }, 700);
+      retryWindowUntil = 0;
+      timer = window.setTimeout(() => { void checkAndVerifyInvoice(); }, 700);
     };
+    const retryTimer = window.setInterval(() => {
+      if (retryWindowUntil && Date.now() < retryWindowUntil) {
+        void checkAndVerifyInvoice();
+      }
+    }, 12_000);
 
     // Also recover the just-issued invoice when the WAWIS page was reloaded.
     verifyAfterReturn();
@@ -195,6 +213,7 @@ export default function JobDetailsPanel({
     return () => {
       disposed = true;
       if (timer) window.clearTimeout(timer);
+      window.clearInterval(retryTimer);
       window.removeEventListener('focus', verifyAfterReturn);
       document.removeEventListener('visibilitychange', verifyAfterReturn);
     };
@@ -423,6 +442,7 @@ export default function JobDetailsPanel({
         return;
       }
       await confirmAndPatchVerifiedInvoice(result);
+      return true;
     } catch (error) {
       console.warn('Nie udało się automatycznie sprawdzić faktury w Fakturowni.', error);
       if (activeInvoiceJobIdRef.current === selectedJobId) {
