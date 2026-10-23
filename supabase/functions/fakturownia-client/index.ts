@@ -227,7 +227,7 @@ Deno.serve(async (request: Request) => {
         try {
           invoice = await hydrateInvoice(apiToken, { id: invoiceIdMatch[1] });
         } catch (error) {
-          if (/\\(404\\)/.test(String(error))) return json({
+          if (/\(404\)/.test(String(error))) return json({
             ok: true, found: false, reasonCode: "NOT_FOUND",
             reason: "Fakturownia nie znalazła faktury o tym ID.",
           });
