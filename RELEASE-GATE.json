@@ -1,21 +1,21 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.56",
+  "version": "13.57",
   "scope": "mobile",
-  "release_branch": "release/v13.56",
+  "release_branch": "release/v13.57",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "INFO",
-    "notes": "WAWIS 13.55 produkcja potwierdzona Vercel READY. Zmiana tylko mobilnego UI, bez zapisu nowych danych poza normalnym updateStatus po zgodzie użytkownika."
+    "result": "ROOT_CAUSE_CONFIRMED",
+    "notes": "Na produkcyjnej 13.56 konto Administrator podpisało i zapisało PDF do testowego montażu, który pozostał W trakcie. Kod onSaved,onClose,ConfirmActionModal zawierał ograniczenie !isAdmin; to bezpośrednia przyczyna braku okna. Backend i PDF działają."
   },
   "drive_backup": {
     "required": false,
     "deferred": true,
-    "file_name": "klima-app-v13.56.zip"
+    "file_name": "klima-app-v13.57.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.56",
+    "source_branch": "release/v13.57",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL",
-    "evidence_source": "Po GitHub CI sukces oraz Vercel READY sprawdź powrót po nowo podpisanym protokole na iPhonie pracownika i obie decyzje; test w środowisku produkcyjnym wymaga realnego podpisu.",
-    "notes": "Brak nowych wywołań Supabase; to samo updateStatus oraz istniejące walidacje tabliczek/protokołu. Brak modyfikacji Fakturowni, Edge, RLS."
+    "evidence_source": "Po zielonym GitHub CI, Vercel READY i sprawdzeniu app-version.json 13.57 przetestować świeże podpisanie i zapis PDF na koncie Administrator oraz obie decyzje przypomnienia.",
+    "notes": "Zmiana wyłącznie mobile JobDetailsPanel i scenariusze Playwright ADMIN/WORKER. Bez Supabase, Fakturowni, podpisu/PDF."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "W mobile JobDetailsPanel jednorazowe ConfirmActionModal po onSaved podpisanego PDF i zamknięciu protokołu. Przypomnienie wyłącznie dla pracownika przy statusie W trakcie. Jeszcze nie bez zmian statusu; Tak = istniejąca updateStatus.",
-    "release_ci": "Testy e2e mobile-protocol-finish-reminder-v1356 + pełne wymagane regresje Playwright, Closure Gate i build.",
-    "post_deploy": "Wawis-klima.vercel.app musi pokazać wersję 13.56, realny test iPhone podpisanego protokołu, przypomnienia oraz dwóch decyzji. Rollback 13.55 w razie regresji."
+    "code": "Usunięcie błędnego warunku !isAdmin dla jednorazowego przypomnienia po podpisanym protokole w onSaved, onClose i renderowaniu ConfirmActionModal, z zachowaniem canFinishJob; bez zmian istniejącego updateStatus.",
+    "release_ci": "Pełne regresje grupowe, Playwright ADMIN i WORKER oba przyciski plus ponowne otwarcie starego protokołu, Closure Gate i build.",
+    "post_deploy": "Sprawdzenie 13.57 w produkcji; nowy protokół testowy Administrator, prompt przy zamknięciu; zachowanie W trakcie na Jeszcze nie. Dla pracownika bez regresji. W razie problemu rollback na 13.56."
   }
 }

@@ -1,3 +1,9 @@
+## 13.57
+- Poprawiono regresję przypomnienia po zapisaniu podpisanego protokołu w mobilnym WAWIS 13.56: okno „Czy chcesz teraz zakończyć montaż?” było błędnie ukryte przed kontem Administrator.
+- Okno działa teraz na iPhonie zarówno dla Administratora, jak i Pracownika przy montażu „W trakcie”, po potwierdzonym zapisie protokołu PDF i wyjściu z okna protokołu.
+- „Jeszcze nie” zachowuje status, „Zakończ montaż” uruchamia niezmienioną walidowaną ścieżkę updateStatus. Brak automatycznego zakończenia, bez ponownego przypomnienia po samym otwarciu poprzedniego protokołu.
+- Nowe testy Playwright: mobilny Administrator — oba przyciski oraz brak ponownego powiadomienia. Testy Pracownika z 13.56 pozostają.
+
 ## 13.56
 - Po zapisaniu podpisanego protokołu PDF pracownik na iPhonie wraca do montażu i otrzymuje jednorazowe pytanie „Wszystkie wymagane kroki zostały wykonane. Czy chcesz teraz zakończyć montaż?”.
 - „Jeszcze nie” pozostawia status „W trakcie”; „Zakończ montaż” uruchamia ten sam istniejący mechanizm zakończenia, z weryfikacją tabliczek i protokołu. Podpisanie i zapis protokołu samo nie zmienia statusu.

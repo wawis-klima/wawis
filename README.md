@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.56
+- 13.57
+
+WAWIS 13.57: poprawiono przypomnienie o zakończeniu montażu po podpisanym protokole na mobilnym koncie Administrator (w 13.56 było dostępne tylko dla Pracownika). Po zapisaniu i zamknięciu podpisanego PDF zarówno Administrator, jak i Pracownik zobaczą „Jeszcze nie” oraz „Zakończ montaż”. Nie następuje automatyczne zakończenie. Pozostałe walidacje niezmienione.
+
 
 WAWIS 13.56: po skutecznym zapisaniu podpisanego protokołu, przy powrocie do montażu pracownik dostaje opcjonalne pytanie „Czy chcesz teraz zakończyć montaż?” z przyciskami „Jeszcze nie” i „Zakończ montaż”. Nie ma automatycznego zakończenia; wybór zakończenia wykorzystuje dotychczasowe walidacje serwerowe. Przypomnienie jest jednorazowe i nie pokazuje się po ponownym otwarciu starego PDF.
 
@@ -1055,6 +1058,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.57` — okno przypomnienia o zakończeniu po podpisanym protokole również dla mobilnego Administratora.
 - wersja `13.56` — jednorazowe przypomnienie o zakończeniu montażu po podpisanym i zapisanym protokole (bez automatycznej zmiany statusu).
 - wersja `13.55` — automatyczne ponowienie potwierdzania tabliczek po timeout LTE na iPhonie, z zachowaniem lokalnych zdjęć i ochroną przed duplikatami.
 - wersja `13.53` — bezpieczne powiązanie faktury po ID dokumentu Fakturowni.

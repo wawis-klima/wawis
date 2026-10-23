@@ -1239,7 +1239,6 @@ export default function JobDetailsPanel({
         onClose={() => {
           setProtocolTestOpen(false);
           const shouldRemind = pendingFinishReminderRef.current === selectedJobId
-            && !isAdmin
             && canFinishJob
             && protocolNameplatesReady
             && String(protocolRecord?.job_id || "") === selectedJobId
@@ -1255,7 +1254,7 @@ export default function JobDetailsPanel({
           setProtocolRecord(record);
           applyPaymentPatchToJobState(paymentPatch);
           setProtocolMessage("");
-          if (!isAdmin && canFinishJob
+          if (canFinishJob
             && String(record?.job_id || "") === selectedJobId
             && Boolean(record?.signed_at && record?.storage_path)
             && Number(record?.file_size_bytes || 0) > 0) {
@@ -1264,7 +1263,7 @@ export default function JobDetailsPanel({
         }}
       />
       <ConfirmActionModal
-        open={finishReminderOpen && !protocolTestOpen && !isAdmin && canFinishJob}
+        open={finishReminderOpen && !protocolTestOpen && canFinishJob}
         onClose={() => setFinishReminderOpen(false)}
         onConfirm={() => {
           setFinishReminderOpen(false);
