@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## NAMEPLATES-1355 — opóźniona odpowiedź iPhone/LTE (23 października 2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| NP-1355-VERIFY | FIXED-UNVERIFIED | WAWIS ponawia odczyt tej samej tożsamości zdjęcia po 8s timeout; test symulujący opóźnienie pierwszej próby i sukces drugiej. |
+| NP-1355-QUEUE | FIXED-UNVERIFIED | Wznawianie używa pierwotnego upload_key i storage_path, bez reuploadu zdjęcia z obecnej listy sukcesów. Testy smoke-mobile-photo-idempotency oraz smoke-mobile-nameplate-save-resilience. |
+| NP-1355-OFFLINE | FIXED-UNVERIFIED | Brak serwera nie oznacza potwierdzenia i nie zamyka formularza; zdjęcia pozostają w IndexedDB. Test offline i AbortError. |
+| NP-1355-SAFETY | FIXED-UNVERIFIED | Protokół i Zakończ nadal wymagają potwierdzonych kompletnych JW/JZ. Bez zmian faktur i backendu. |
+| NP-1355-LIVE | EXTERNAL | Po wdrożeniu sprawdzić 13.55 na iPhonie z kontrolowanym przejściem online/offline, dodać komplet JW/JZ bez duplikatów, wykonać protokół. |
+
+
 ## FAKTUROWNIA-1353 — identyfikacja wystawionej faktury po ID (23 października 2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
