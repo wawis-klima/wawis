@@ -26,7 +26,9 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   assert(photosSource.includes('prepareJobDocumentationPhotoIdentities'), 'C8: brak przygotowania tożsamości tabliczki przed uploadem.');
   assert(photosSource.includes('serverPhotoMatchesDocumentationIdentity'), 'C8: brak dopasowania dokładnej ścieżki pliku.');
   assert(actionsSource.includes('documents: preparedPendingDocuments'), 'C8: upload musi używać przygotowanych tożsamości.');
-  assert(actionsSource.includes("verifyPendingNameplatesOnServer(editingJobId, preparedPendingDocuments, 'upload-timeout')"), 'C8: timeout musi sprawdzać przygotowane tożsamości.');
+  assert(actionsSource.includes('uploadedPaths.has(String(identity.plannedStoragePath))'), 'C8: ponowienie nie może wysyłać ponownie ścieżki potwierdzonej w bieżącym uploadzie.');
+  assert(actionsSource.includes('verifyNameplatesWithRecovery'), 'C8: weryfikacja musi ponowić odczyt po timeout zamiast uznać zdjęcie za brakujące.');
+  assert(actionsSource.includes("verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'upload-timeout')"), 'C8: timeout musi sprawdzać przygotowane tożsamości.');
   assert(
     photosSource.includes("queuedPhoto = { ...queuedPhoto, upload_status: record.upload_status || queuedPhoto.upload_status };"),
     'Worker kolejki musi zachować status przejętego rekordu do uzgodnienia starej tabliczki z serwerem.',
