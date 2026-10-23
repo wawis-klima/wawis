@@ -66,9 +66,9 @@ assert.match(workflow, /id: impact/);
 // Playwright E2E scenario. Do not treat faster installation as an E2E bypass.
 assert.match(workflow, /playwright install chromium --only-shell/,
   'Chromium headless browser must still be installed for required E2E.');
-assert.match(workflow, /timeout-minutes: 6[\\s\\S]*?run: npx playwright install chromium --only-shell/,
+assert.match(workflow, /timeout-minutes: 6[\s\S]*?run: npx playwright install chromium --only-shell/,
   'Browser install must be bounded instead of hanging indefinitely.');
-assert.match(workflow, /if: steps\\.impact\\.outputs\\.needs_playwright == 'true'[\\s\\S]*?run: node scripts\\/run-pr-playwright\\.cjs release-impact\\.json/,
+assert.match(workflow, /if: steps\.impact\.outputs\.needs_playwright == 'true'[\s\S]*?run: node scripts\/run-pr-playwright\.cjs release-impact\.json/,
   'The conditional Playwright suite cannot be bypassed.');
 
 assert.match(workflow, /run-pr-playwright\.cjs release-impact\.json/);
