@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.53
+- 13.55
+
+WAWIS 13.55: poprawka zapisywania tabliczek na iPhone po chwilowej przerwie LTE lub przekroczeniu czasu weryfikacji. Automatyczny powtórny odczyt stanu serwera, wznowienie tylko niepotwierdzonych plików po niezmiennej tożsamości uploadu, ochrona przed duplikatem; przy braku odpowiedzi zachowany formularz i zdjęcia w kolejce offline. Zabezpieczona kontrola wszystkich JW/JZ i podpisanego protokołu pozostaje. Bez zmian w Fakturowni, Supabase Edge, płatnościach i PDF.
 
 WAWIS 13.53: Fakturownia — bezpieczne ręczne powiązanie wystawionej faktury przez ID z jej adresu (`ID:584755572`), gdy zapytanie po wydrukowanym numerze nie zwraca dokumentu. Serwer pobiera fakturę po ID i weryfikuje numer, VAT/status, identyfikator klienta zapisany przy otwarciu wystawiania, NIP nabywcy, przypisanie OID do montażu oraz unikalność powiązania. Bez ponownego wystawienia faktury. Kod funkcji Supabase zsynchronizowany z aktywną wersją 21, tak by nie cofnąć poprawek istniejących wyłącznie w produkcji.
 
