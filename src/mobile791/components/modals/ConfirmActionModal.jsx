@@ -1,5 +1,6 @@
 import React from "react";
 import AppModal from "./AppModal.jsx";
+import "./finish-reminder-compact.css";
 
 const VARIANT_CONFIG = {
   delete: {
@@ -34,6 +35,7 @@ export default function ConfirmActionModal({
   cancelLabel,
   variant = "default",
   busy = false,
+  compact = false,
 }) {
   const variantConfig = VARIANT_CONFIG[variant] || VARIANT_CONFIG.default;
 
@@ -42,13 +44,13 @@ export default function ConfirmActionModal({
       open={open}
       onClose={busy ? undefined : onClose}
       overlayClassName="confirmDeleteOverlay"
-      contentClassName="card modal formModal confirmDeleteModal"
+      contentClassName={`card modal formModal confirmDeleteModal${compact ? " finishReminderModal" : ""}`}
       closeOnOverlay={!busy}
       closeOnEscape={!busy}
     >
       <h2>{title || "Czy na pewno?"}</h2>
       {message ? <p className="muted">{message}</p> : null}
-      <div className="row rightAlign">
+      <div className={`row rightAlign${compact ? " finishReminderActions" : ""}`}>
         <button className="btn" onClick={onClose} disabled={busy}>{cancelLabel || variantConfig.cancelLabel}</button>
         <button className={variantConfig.confirmClassName} onClick={onConfirm} disabled={busy}>{busy ? "Trwa..." : (confirmLabel || variantConfig.confirmLabel)}</button>
       </div>

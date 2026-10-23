@@ -64,6 +64,29 @@ async function startSignedProtocol(page, credentials = WORKER) {
 }
 
 test.describe('@mobile przypomnienie zakończenia po protokole', () => {
+  test('13.58 — kompaktowe okno: dwa przyciski w jednym rzędzie na iPhonie', async ({ page }) => {
+    await startSignedProtocol(page, ADMIN);
+    const modal = page.locator('.finishReminderModal');
+    await expect(modal).toBeVisible();
+    const cancel = modal.getByRole('button', { name: 'Jeszcze nie' });
+    const confirm = modal.getByRole('button', { name: 'Zakończ montaż' });
+    const [modalBox, cancelBox, confirmBox] = await Promise.all([
+      modal.boundingBox(), cancel.boundingBox(), confirm.boundingBox(),
+    ]);
+    expect(modalBox).not.toBeNull();
+    expect(cancelBox).not.toBeNull();
+    expect(confirmBox).not.toBeNull();
+    expect(modalBox.height).toBeLessThan(240);
+    expect(modalBox.width).toBeLessThanOrEqual(392);
+    expect(Math.abs(cancelBox.y - confirmBox.y)).toBeLessThan(2);
+    expect(confirmBox.x).toBeGreaterThan(cancelBox.x + cancelBox.width);
+    expect(cancelBox.height).toBeGreaterThanOrEqual(44);
+    expect(confirmBox.height).toBeGreaterThanOrEqual(44);
+    await cancel.click();
+    const store = await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__?.getStore?.());
+    expect(store.jobs.find((job) => job.id === 'mock-job-002')?.status).toBe('W trakcie');
+  });
+
 
   test('administrator na iPhonie dostaje przypomnienie po zapisie PDF; Jeszcze nie nie kończy montażu', async ({ page }) => {
     await startSignedProtocol(page, ADMIN);

@@ -1,5 +1,8 @@
 ## Aktualna wersja
-- 13.57
+- 13.58
+
+WAWIS 13.58: zmniejszono wyłącznie okno przypomnienia po podpisanym protokole na iPhonie (Administrator i Pracownik). Komunikat skrócono do „Wszystko gotowe. Zakończyć montaż?”, przyciski „Jeszcze nie” i „Zakończ montaż” są zawsze obok siebie, min. 44 px wysokości. Wspólne inne modale, walidacje i zapis niezmienione.
+
 
 WAWIS 13.57: poprawiono przypomnienie o zakończeniu montażu po podpisanym protokole na mobilnym koncie Administrator (w 13.56 było dostępne tylko dla Pracownika). Po zapisaniu i zamknięciu podpisanego PDF zarówno Administrator, jak i Pracownik zobaczą „Jeszcze nie” oraz „Zakończ montaż”. Nie następuje automatyczne zakończenie. Pozostałe walidacje niezmienione.
 
