@@ -1066,6 +1066,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.60` — automatyczne potwierdzenie wystawionej faktury po wiarygodnym OID lub nowym, jednoznacznym numerze w oknie przygotowania. Dane nabywcy mogą różnić się od danych montażu, bez ryzyka nadpisania karty kontrahenta.
 - wersja `13.59` — izolowany kompaktowy dialog po podpisanym protokole: dwie akcje obok siebie, bez zależności od ogólnych stylów.
 - wersja `13.58` — kompaktowe okno po podpisaniu protokołu na iPhonie, dwa przyciski obok siebie, bez zmian logiki.
 - wersja `13.57` — okno przypomnienia o zakończeniu po podpisanym protokole również dla mobilnego Administratora.
