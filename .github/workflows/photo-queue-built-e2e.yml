@@ -1,0 +1,58 @@
+name: WAWIS photo queue E2E (built app)
+
+# WAWIS 13.62 — weryfikacja kolejki zdjęć na ZBUDOWANEJ aplikacji (vite build + preview, mock Supabase).
+# Tylko odczyt repozytorium; brak sekretów, brak wdrożenia, brak połączenia z produkcyjnym Supabase.
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: wawis-photo-queue-built-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  built-photo-queue-e2e:
+    name: built-photo-queue-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Install Playwright Chromium
+        timeout-minutes: 6
+        run: npx playwright install chromium --only-shell
+
+      - name: Run photo queue E2E on production build (mock Supabase)
+        env:
+          VITE_SUPABASE_MODE: mock
+        run: npx playwright test --config playwright.built.config.js
+
+      - name: Verify built E2E evidence (fail-closed)
+        if: always()
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-built/results.json 4
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-photo-queue-built-e2e-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+          path: |
+            playwright-report-built/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 30

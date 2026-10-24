@@ -30,3 +30,7 @@ temp/
 
 # Supabase local state
 supabase/.temp/
+
+# WAWIS 13.62 E2E na zbudowanej aplikacji
+dist-e2e-built/
+playwright-report-built/

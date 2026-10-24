@@ -1,3 +1,16 @@
+## 13.62
+- P0 iPhone: kolejka zdjęć otwiera bazę IndexedDB w wersji 3, 4 i przyszłych (najpierw bez numeru wersji, potem niedestrukcyjne podniesienie v1–v3 do v4). Telefony, które 22.10 uruchomiły 13.42–13.48, nie dostają już VersionError i znów zapisują oraz wysyłają zdjęcia i tabliczki; wersja bazy nigdy nie jest obniżana.
+- Każde otwarcie kolejki ma limit czasu: zablokowana aktualizacja (inne okno WAWIS) zwraca czytelny błąd zamiast zawieszenia; błąd odczytu nie jest już pokazywany jako „Wszystko wysłane”.
+- „Zapisano na telefonie” wyłącznie po zakończonej transakcji IndexedDB. Przy braku zapisu i działającym internecie zdjęcie wysyła się od razu z pamięci formularza; offline okno zostaje otwarte z właściwą przyczyną (brak miejsca / kolejka niedostępna) zamiast domyślnego „zwolnij miejsce”.
+- Pełna edycja montażu nie zamyka już formularza, gdy zdjęcia tabliczek nie zostały ani zapisane w telefonie, ani potwierdzone na serwerze.
+- Stare zdjęcia pozostawione w kolejce przez 13.42–13.48 (baza v4) NIE wysyłają się automatycznie po aktualizacji: są oznaczone w samym rekordzie jako wstrzymane i czekają na decyzję użytkownika w Synchronizacji („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”, oba z potwierdzeniem). „Wyślij wszystkie” ich nie obejmuje. Nowe zdjęcia wysyłają się normalnie.
+- Bezpieczny powrót: 13.62 nie podnosi baz v3 do v4, a nowe instalacje zakłada w v3 — ewentualny powrót do 13.61 nie zepsuje kolejnych telefonów.
+- Nowa akcja „Napraw kolejkę zdjęć” (Synchronizacja pracownika i Diagnostyka): po dwóch wyraźnych potwierdzeniach usuwa wyłącznie lokalną bazę wawis-mobile-photo-queue i zakłada ją od nowa; sukces tylko po potwierdzonym usunięciu i ponownym odczycie pustej kolejki. Bez zmian montaży, urządzeń, protokołów, podpisów, sesji, innych kolejek i danych Supabase.
+- Diagnostyka: kody PHOTO_QUEUE_* (VersionError, blokada, brak miejsca, błąd odczytu/zapisu, wynik naprawy) zamiast DIAGNOSTIC_UNCLASSIFIED.
+- Dokumentacja: CLAUDE.md — stałe instrukcje właściciela (upoważnienie, ochrona produkcji, relacja do AGENTS.md); AGENTS.md, CLOSURE-GATE.md i WAWIS-RULES.md bez zmian.
+- Przebieg E2E na zbudowanej aplikacji ma fail-closed weryfikację raportu Playwright (scripts/verify-built-photo-queue-e2e.cjs: dokładnie 4 wykonane i zaliczone testy).
+- Testy: tests/e2e/mobile-photo-queue-compat-v1362.spec.js (19 scenariuszy na rzeczywistych modułach i IndexedDB, w tym przypadki Pawła i Kacpra), tests/e2e/mobile-photo-queue-repair-v1362.spec.js i tests/e2e/mobile-photo-queue-legacy-hold-v1362.spec.js (pełna aplikacja). Dodatkowy przebieg testowy CI na zbudowanej aplikacji (vite build + preview, mock Supabase): .github/workflows/photo-queue-built-e2e.yml. Bez zmian backendu, Supabase, transportu uploadu, OCR, PDF i protokołów.
+
 ## 13.61
 - Zaktualizowano ikonę PWA na ekranie początkowym iPhone'a na zaakceptowany wzór WAWIS z niebieskim pierścieniem. Oddzielono ikonę instalacyjną od loga firmowego.
 - Odświeżono manifest i odwołania do ikon w HTML bez zmian synchronizacji, protokołów, PDF i backendu.

@@ -30,6 +30,7 @@ import { verifyNameplatesWithRecovery } from "../modules/nameplate-save-recovery
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
+import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { deleteJobDeviceRecord, deleteJobIndoorUnitRecord } from "../modules/job-device-delete.js";
 
@@ -168,7 +169,9 @@ export function useSelectedJobActions({
       onPhotoUploadError: onPhotoSyncError,
     });
     if (documentationResult.failedCount) {
-      throw new Error('Nie udało się zapisać wszystkich tabliczek w pamięci telefonu. Zwolnij miejsce i spróbuj ponownie.');
+      // Przyczyna z kolejki (np. niedostępna baza po wycofaniu wersji), a nie domyślne „zwolnij miejsce”.
+      logDiagnostic('offline.device.persist.failed', { jobId: editingJobId, reason, code: documentationResult.persistErrorCode || 'PHOTO_QUEUE_WRITE_FAILED' });
+      throw new Error(`Nie udało się zapisać wszystkich tabliczek w pamięci telefonu. ${documentationResult.persistErrorMessage || describePhotoQueueFailure(documentationResult.persistErrorCode)} Formularz i zdjęcia pozostają otwarte.`);
     }
 
     await queueOfflineJobOperation({
@@ -427,9 +430,10 @@ export function useSelectedJobActions({
       refreshAfterNameplateSave(createdJob?.id, 'new-job');
       let outcomeMessage = '';
       if (documentationResult.failedCount) {
+        const persistHint = documentationResult.persistErrorMessage ? ` ${documentationResult.persistErrorMessage}` : '';
         outcomeMessage = workerWantsImmediateCompletion
-          ? `Montaż został zapisany jako W trakcie, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu, a potem zakończ zlecenie.`
-          : `Montaż został zapisany, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.`;
+          ? `Montaż został zapisany jako W trakcie, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu, a potem zakończ zlecenie.${persistHint}`
+          : `Montaż został zapisany, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.${persistHint}`;
       } else if (immediateCompletionQueued) {
         outcomeMessage = 'Montaż został zapisany. Zakończy się automatycznie po wysłaniu i potwierdzeniu wszystkich tabliczek znamionowych.';
       } else if (documentationResult.backgroundCount) {
@@ -627,7 +631,9 @@ export function useSelectedJobActions({
         }
       }
 
-      if (serialOnlyMode && documentationResult.failedCount) {
+      // 13.62: niepotwierdzone zdjęcia zatrzymują okno także w pełnej edycji (wcześniej formularz był zamykany,
+      // a pliki z formularza przepadały mimo braku kopii w telefonie i na serwerze).
+      if (documentationResult.failedCount) {
         const confirmed = nameplateServerConfirmed || await verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'reported-failure');
         if (!confirmed) {
           const uploadedKeys = new Set(documentationResult.photos.map((photo) => {
@@ -648,7 +654,7 @@ export function useSelectedJobActions({
           });
           logDiagnostic('nameplate.save.modal.kept-open', { jobId: editingJobId, operationId, reason: 'failed-photos-not-confirmed', failedCount: documentationResult.failedCount });
           refreshAfterNameplateSave(editingJobId, 'partial-failure');
-          alert(`Nie udało się potwierdzić ${documentationResult.failedCount} zdjęć tabliczek. Okno pozostaje otwarte.`);
+          alert(`Nie udało się potwierdzić ${documentationResult.failedCount} zdjęć tabliczek. Okno pozostaje otwarte.${documentationResult.persistErrorMessage ? ` ${documentationResult.persistErrorMessage}` : ''}`);
           return;
         }
       }
@@ -1177,7 +1183,7 @@ export function useSelectedJobActions({
           onPhotoUploadError: onPhotoSyncError,
         });
         if (result?.failedCount) {
-          alert(`${result.failedCount} ${result.failedCount === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać na telefonie. Zwolnij miejsce i dodaj je ponownie.`);
+          alert(`${result.failedCount} ${result.failedCount === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać na telefonie. ${result.persistErrorMessage || describePhotoQueueFailure(result.persistErrorCode)}`);
         }
       } catch (error) {
         alert(error?.message || 'Nie udało się dodać zdjęcia.');

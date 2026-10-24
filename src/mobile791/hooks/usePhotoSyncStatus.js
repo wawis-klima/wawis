@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { listPhotoQueueItems, PHOTO_QUEUE_CHANGED_EVENT } from "../modules/photo-offline-queue.js";
+import { isPhotoQueueItemHeld, PHOTO_QUEUE_CHANGED_EVENT, readPhotoQueueState } from "../modules/photo-offline-queue.js";
 import { JOB_OFFLINE_CHANGED_EVENT, listOfflineJobOperations } from "../modules/job-offline-store.js";
 
 const LAST_PHOTO_SYNC_STORAGE_KEY = "wawis-mobile-last-photo-sync-at";
@@ -54,11 +54,13 @@ function summarizeQueue(items = []) {
   return items.reduce((summary, item) => {
     summary.total += 1;
     const status = String(item.upload_status || "local").toLowerCase();
-    if (status === "uploading") summary.uploading += 1;
+    // 13.62: wstrzymane stare zdjęcia (baza v4) nie są „w kolejce do wysłania” — czekają na decyzję.
+    if (isPhotoQueueItemHeld(item)) summary.held += 1;
+    else if (status === "uploading") summary.uploading += 1;
     else if (status === "error") summary.error += 1;
     else summary.local += 1;
     return summary;
-  }, { total: 0, local: 0, uploading: 0, error: 0 });
+  }, { total: 0, local: 0, uploading: 0, error: 0, held: 0 });
 }
 
 function summarizeOperations(items = []) {
@@ -78,9 +80,11 @@ export function usePhotoSyncStatus(profileId = "") {
   const [syncState, setSyncState] = useState("synced");
   const [lastSyncedAt, setLastSyncedAt] = useState(() => readLastSyncedAt(profileId));
   const [queueItems, setQueueItems] = useState([]);
-  const [queueSummary, setQueueSummary] = useState({ total: 0, local: 0, uploading: 0, error: 0 });
+  const [queueSummary, setQueueSummary] = useState({ total: 0, local: 0, uploading: 0, error: 0, held: 0 });
   const [operationItems, setOperationItems] = useState([]);
   const [operationSummary, setOperationSummary] = useState({ total: 0, pending: 0, syncing: 0, conflict: 0, error: 0 });
+  // 13.62: błąd odczytu kolejki zdjęć NIE może wyglądać jak „Wszystko wysłane”.
+  const [queueReadError, setQueueReadError] = useState(null);
 
   useEffect(() => {
     setLastSyncedAt(readLastSyncedAt(profileId));
@@ -89,10 +93,12 @@ export function usePhotoSyncStatus(profileId = "") {
   const refreshQueueSummary = useCallback(async () => {
     try {
       const normalizedProfileId = String(profileId || '').trim();
-      const [allItems, allOperations] = await Promise.all([
-        listPhotoQueueItems(),
+      const [queueState, allOperations] = await Promise.all([
+        readPhotoQueueState(),
         listOfflineJobOperations(normalizedProfileId),
       ]);
+      setQueueReadError(queueState.ok ? null : { code: queueState.code, message: queueState.message });
+      const allItems = queueState.items;
       const items = allItems.filter((item) => (
         !normalizedProfileId || !item.uploaded_by || String(item.uploaded_by) === normalizedProfileId
       ));
@@ -147,6 +153,13 @@ export function usePhotoSyncStatus(profileId = "") {
     const localCount = queueSummary.local + queueSummary.uploading + operationSummary.pending + operationSummary.syncing;
     const totalErrors = queueSummary.error + operationSummary.error;
     const totalConflicts = operationSummary.conflict;
+    if (queueReadError) {
+      return { tone: "error", label: "Kolejka zdjęć niedostępna" };
+    }
+    if (queueSummary.held > 0) {
+      const held = queueSummary.held;
+      return { tone: "error", label: `${held} ${held === 1 ? "stare zdjęcie czeka" : "stare zdjęcia czekają"} na decyzję` };
+    }
     if (connection.tone === "offline") {
       return localCount > 0
         ? { tone: "waiting", label: `${localCount} ${localCount === 1 ? "zmiana zapisana" : "zmiany zapisane"} na telefonie` }
@@ -171,13 +184,14 @@ export function usePhotoSyncStatus(profileId = "") {
       return { tone: "error", label: "Błąd synchronizacji zdjęć" };
     }
     return { tone: "synced", label: "Wszystko wysłane" };
-  }, [connection.tone, operationSummary, queueSummary, syncState]);
+  }, [connection.tone, operationSummary, queueReadError, queueSummary, syncState]);
 
   return {
     connection,
     sync,
     queueItems,
     queueSummary,
+    queueReadError,
     operationItems,
     operationSummary,
     lastSyncedAt,
