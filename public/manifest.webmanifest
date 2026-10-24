@@ -16,9 +16,9 @@
       "purpose": "any"
     },
     {
-      "src": "/wawis-icon.svg?v=13.61",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/wawis-icon-512.png?v=13.61",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
