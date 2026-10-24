@@ -16,8 +16,8 @@
   },
   "main_protection": {
     "source_branch": "release/v13.60",
-    "ready_for_main": false,
-    "status": "AWAITING_GREEN_CI",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -35,7 +35,7 @@
   "release_mode": "standard",
   "production_verification": {
     "code": "Automatyczne przypisanie: OID albo jedyna nowa faktura ze zgodną przygotowaną pozycją",
-    "release_ci": "Smoke fakturownia auto/link oraz build",
+    "release_ci": "Full CI including invoice regression and Playwright required; publish only after all green",
     "post_deploy": "Sprawdzić w przeglądarce auto powiązanie faktury na inną osobę, bez wystawiania nowego testowego dokumentu"
   }
 }
