@@ -1,4 +1,4 @@
-import { claimPhotoQueueItem, deletePhotoQueueItem, hydratePhotoQueueItem, listPhotoQueueItems, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
+import { claimPhotoQueueItem, deletePhotoQueueItem, describePhotoQueueFailure, getLastPhotoQueueError, hydratePhotoQueueItem, listPhotoQueueItems, PHOTO_QUEUE_ERROR_CODES, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
@@ -734,6 +734,32 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
   return queuedPhoto;
 }
 
+// Zdjęcie bez rekordu w IndexedDB: nigdy nie pokazujemy „Zapisano na telefonie”.
+const NOT_PERSISTED_PATCH = Object.freeze({
+  upload_status: 'error',
+  upload_status_label: 'Nie zapisano w telefonie',
+  upload_error: 'Zdjęcie nie ma kopii w pamięci telefonu. Ponów wysyłanie, zanim zamkniesz aplikację, albo dodaj zdjęcie ponownie.',
+});
+
+// WAWIS 13.62: zapis do kolejki telefonu i status „Zapisano na telefonie” dopiero po commit IndexedDB.
+async function persistQueuedPhotos(queuedPhotos = []) {
+  const results = await Promise.all(queuedPhotos.map(async (photo) => ({ photo, saved: await savePhotoQueueItem(photo) })));
+  const persisted = results.filter((item) => item.saved).map((item) => item.photo);
+  const notPersisted = results.filter((item) => !item.saved).map((item) => item.photo);
+  const code = notPersisted.length ? (getLastPhotoQueueError()?.code || PHOTO_QUEUE_ERROR_CODES.WRITE) : '';
+  return { persisted, notPersisted, code, message: code ? describePhotoQueueFailure(code) : '' };
+}
+
+function markDirectUploadPhoto(photo) {
+  return {
+    ...photo,
+    upload_status: 'uploading',
+    upload_status_label: 'Wysyłanie (bez kopii w telefonie)',
+    upload_error: '',
+    __notPersisted: true,
+  };
+}
+
 async function ensureQueuedPhotoIdentity(queuedPhoto) {
   if (!queuedPhoto?.__localFile) return queuedPhoto;
   if (queuedPhoto.upload_key && queuedPhoto.file_fingerprint && queuedPhoto.planned_storage_path) return queuedPhoto;
@@ -914,8 +940,9 @@ async function performQueuedPhotoUpload({
       upload_status_label: 'Zapisano na telefonie',
       upload_error: '',
     };
-    applyPhotoUpdate({ jobId, photoId: localPhotoId, setJobs, setSelectedJob, updater: localPatch });
-    await updatePhotoQueueItem(localPhotoId, localPatch);
+    // „Zapisano na telefonie” tylko wtedy, gdy rekord rzeczywiście istnieje w IndexedDB.
+    const durable = await updatePhotoQueueItem(localPhotoId, localPatch);
+    applyPhotoUpdate({ jobId, photoId: localPhotoId, setJobs, setSelectedJob, updater: durable ? localPatch : NOT_PERSISTED_PATCH });
     return null;
   }
 
@@ -1181,14 +1208,15 @@ async function performQueuedPhotoUpload({
         lease_until: '',
         upload_stage: storageExists ? 'storage_uploaded' : (queuedPhoto.upload_stage || 'prepared'),
       };
+    const durable = await updatePhotoQueueItem(localPhotoId, failurePatch);
+    const uiFailurePatch = durable ? failurePatch : { ...failurePatch, ...NOT_PERSISTED_PATCH };
     applyPhotoUpdate({
       jobId,
       photoId: localPhotoId,
       setJobs,
       setSelectedJob,
-      updater: (photo) => ({ ...photo, ...failurePatch }),
+      updater: (photo) => ({ ...photo, ...uiFailurePatch }),
     });
-    await updatePhotoQueueItem(localPhotoId, failurePatch);
     console.warn('Mobilna kolejka zdjęć: upload zakończył się błędem.', error?.message || error);
     if (!waitingForInternet) onPhotoUploadError?.(error, queuedPhoto);
     return null;
@@ -1331,36 +1359,38 @@ export async function uploadJobPhotos({
   const queuedCandidates = await Promise.all(files.map((file) => createQueuedPhoto({ file, jobId, profile, uploaderId })));
   if (!photoSessionIsCurrent(isSessionCurrent)) return { queuedCount: 0, uploadedCount: 0, failedCount: 0, ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
-  queuedPhotos.forEach((photo) => {
+  const persistence = await persistQueuedPhotos(queuedPhotos);
+  if (!photoSessionIsCurrent(isSessionCurrent)) return { queuedCount: 0, uploadedCount: 0, failedCount: 0, ignoredStaleSession: true };
+  const offlineNow = isBrowserOffline();
+  // Internet działa: zdjęcie bez kopii w telefonie wysyłamy od razu z pamięci (status „Wysyłanie”).
+  const directUploadPhotos = offlineNow ? [] : persistence.notPersisted.map(markDirectUploadPhoto);
+  const failedPhotos = offlineNow ? persistence.notPersisted : [];
+  const persistedPhotos = persistence.persisted;
+  const persistInfo = { persistErrorCode: persistence.code, persistErrorMessage: persistence.message, directUploadCount: directUploadPhotos.length };
+
+  // Status „Zapisano na telefonie” pojawia się dopiero po commit transakcji IndexedDB.
+  [...persistedPhotos, ...directUploadPhotos].forEach((photo) => {
     setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
     setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
   });
-  const persistenceResults = await Promise.all(queuedPhotos.map(async (photo) => ({
-    photo,
-    saved: await savePhotoQueueItem(photo),
-  })));
-  const persistedPhotos = persistenceResults.filter((item) => item.saved).map((item) => item.photo);
-  const failedPhotos = persistenceResults.filter((item) => !item.saved).map((item) => item.photo);
-
-  failedPhotos.forEach((photo) => {
-    applyPhotoRemoval({ photo, setJobs, setSelectedJob });
-  });
 
   if (failedPhotos.length) {
-    const localSaveError = new Error(`${failedPhotos.length} ${failedPhotos.length === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać w pamięci telefonu.`);
+    const localSaveError = new Error(`${failedPhotos.length} ${failedPhotos.length === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać w pamięci telefonu. ${persistence.message}`.trim());
+    localSaveError.code = persistence.code;
     onPhotoUploadError?.(localSaveError);
   }
 
-  if (!persistedPhotos.length) {
-    return { queuedCount: 0, uploadedCount: 0, failedCount: failedPhotos.length };
+  const uploadNow = [...persistedPhotos, ...directUploadPhotos];
+  if (!uploadNow.length) {
+    return { queuedCount: 0, uploadedCount: 0, failedCount: failedPhotos.length, ...persistInfo };
   }
 
-  if (isBrowserOffline()) return { queuedCount: persistedPhotos.length, uploadedCount: 0, failedCount: failedPhotos.length };
+  if (offlineNow) return { queuedCount: persistedPhotos.length, uploadedCount: 0, failedCount: failedPhotos.length, ...persistInfo };
 
   // Kolejka działa w tle i nie blokuje karty montażu. Zdjęcia idą po kolei,
   // żeby na słabszym LTE telefon nie próbował wysłać kilku dużych plików naraz.
   void (async () => {
-    for (const queuedPhoto of persistedPhotos) {
+    for (const queuedPhoto of uploadNow) {
       await uploadQueuedPhoto({
         supabase,
         profile,
@@ -1375,7 +1405,7 @@ export async function uploadJobPhotos({
       });
     }
   })();
-  return { queuedCount: persistedPhotos.length, uploadedCount: 0, failedCount: failedPhotos.length };
+  return { queuedCount: persistedPhotos.length, uploadedCount: 0, failedCount: failedPhotos.length, ...persistInfo };
 }
 
 export async function uploadJobDocumentationPhotos({
@@ -1417,24 +1447,28 @@ export async function uploadJobDocumentationPhotos({
   if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
   const queuedPhotos = [...new Map(queuedCandidates.map((photo) => [String(photo.id), photo])).values()];
 
-  queuedPhotos.forEach((photo) => {
+  const persistence = await persistQueuedPhotos(queuedPhotos);
+  if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
+  const offlineNow = isBrowserOffline();
+  // Bez trwałej kopii w telefonie i z internetem: wysyłamy od razu z pamięci formularza
+  // (formularz zachowuje plik do czasu potwierdzenia serwera). Offline — zgłaszamy błąd zapisu.
+  const directUploadPhotos = (!offlineNow && !background) ? persistence.notPersisted.map(markDirectUploadPhoto) : [];
+  const persistFailedCount = persistence.notPersisted.length - directUploadPhotos.length;
+  const persistInfo = { persistErrorCode: persistence.code, persistErrorMessage: persistence.message, directUploadCount: directUploadPhotos.length };
+
+  [...persistence.persisted, ...directUploadPhotos].forEach((photo) => {
     setJobs?.((prev) => prev.map((job) => mergePhotoIntoJob(job, photo)));
     setSelectedJob?.((prev) => (prev && String(prev.id) === String(jobId) ? mergePhotoIntoJob(prev, photo) : prev));
   });
 
-  const persisted = await Promise.all(queuedPhotos.map((photo) => savePhotoQueueItem(photo)));
-  const failedToPersist = persisted.filter((saved) => !saved).length;
-  if (failedToPersist) {
-    return { uploadedCount: 0, queuedCount: queuedPhotos.length - failedToPersist, failedCount: failedToPersist, photos: [] };
-  }
-
-  if (isBrowserOffline()) {
-    return { uploadedCount: 0, queuedCount: queuedPhotos.length, failedCount: 0, photos: [] };
+  if (offlineNow) {
+    return { uploadedCount: 0, queuedCount: persistence.persisted.length, failedCount: persistFailedCount, photos: [], ...persistInfo };
   }
 
   if (background) {
+    const backgroundPhotos = persistence.persisted;
     void (async () => {
-      for (const queuedPhoto of queuedPhotos) {
+      for (const queuedPhoto of backgroundPhotos) {
         try {
           await uploadQueuedPhoto({
             supabase,
@@ -1453,13 +1487,13 @@ export async function uploadJobDocumentationPhotos({
         }
       }
     })();
-    return { uploadedCount: 0, queuedCount: queuedPhotos.length, backgroundCount: queuedPhotos.length, failedCount: 0, photos: [] };
+    return { uploadedCount: 0, queuedCount: backgroundPhotos.length, backgroundCount: backgroundPhotos.length, failedCount: persistFailedCount, photos: [], ...persistInfo };
   }
 
   const uploadedPhotos = [];
   let waitingCount = 0;
-  let failedCount = 0;
-  for (const queuedPhoto of queuedPhotos) {
+  let failedCount = persistFailedCount;
+  for (const queuedPhoto of [...persistence.persisted, ...directUploadPhotos]) {
     const uploadedPhoto = await uploadQueuedPhoto({
       supabase,
       profile,
@@ -1473,7 +1507,10 @@ export async function uploadJobDocumentationPhotos({
       isSessionCurrent,
     });
     if (uploadedPhoto) uploadedPhotos.push(uploadedPhoto);
-    else {
+    else if (queuedPhoto.__notPersisted) {
+      // Brak kopii w telefonie i brak potwierdzenia serwera: to NIE jest zapis.
+      failedCount += 1;
+    } else {
       const latestItems = await listPhotoQueueItems();
       const latest = latestItems.find((item) => String(item.id) === String(queuedPhoto.id));
       if (latest && String(latest.upload_status || '').toLowerCase() !== 'error') waitingCount += 1;
@@ -1486,6 +1523,7 @@ export async function uploadJobDocumentationPhotos({
     queuedCount: waitingCount,
     failedCount,
     photos: uploadedPhotos,
+    ...persistInfo,
   };
 
 }

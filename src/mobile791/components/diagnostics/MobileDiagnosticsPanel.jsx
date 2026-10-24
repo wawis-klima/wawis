@@ -5,6 +5,7 @@ import { downloadDiagnosticReportImmediate, logDiagnostic } from '../../modules/
 import { sendTestPush } from '../../modules/push-subscriptions.js';
 import { supabase } from '../../lib/supabase.js';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
+import { confirmAndRepairPhotoQueue } from '../../modules/photo-queue-repair.js';
 import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
 import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosticQueue } from '../../../modules/diagnostics-package4.js';
 
@@ -17,6 +18,7 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [refreshBusy, setRefreshBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [repairBusy, setRepairBusy] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -43,6 +45,21 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
       window.removeEventListener('offline', refreshQueue);
     };
   }, [sessionUser?.id]);
+
+  async function handleRepairQueue() {
+    if (repairBusy) return;
+    setRepairBusy(true);
+    setMessage('');
+    try {
+      const result = await confirmAndRepairPhotoQueue({
+        logFn: (event, payload) => logDiagnostic(event, payload),
+        onRepaired: () => window.location.reload(),
+      });
+      if (!result.cancelled) setMessage(result.ok ? result.message : `Naprawa kolejki NIE powiodła się. ${result.message}`);
+    } finally {
+      setRepairBusy(false);
+    }
+  }
 
   async function handleTestPush() {
     if (!sessionUser || profile?.role !== 'Administrator') return;
@@ -118,8 +135,17 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         </article>
         <article className="mobileDiagnosticsMetric">
           <span>Kolejka zdjęć</span>
-          <strong>{queueSummary.total}</strong>
-          <small>Lokalne {queueSummary.local} · Wysyłane {queueSummary.uploading} · Błędy {queueSummary.error} · Ponawiane {queueSummary.retrying || 0}</small>
+          {queueSummary.readError ? (
+            <>
+              <strong className="isWarn" data-testid="diagnostics-photo-queue-error">Niedostępna</strong>
+              <small>{queueSummary.readErrorMessage} (kod: {queueSummary.readError})</small>
+            </>
+          ) : (
+            <>
+              <strong>{queueSummary.total}</strong>
+              <small>Lokalne {queueSummary.local} · Wysyłane {queueSummary.uploading} · Błędy {queueSummary.error} · Ponawiane {queueSummary.retrying || 0}</small>
+            </>
+          )}
         </article>
       </section>
 
@@ -142,6 +168,9 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
           ) : null}
           <button type="button" className="btn" onClick={handleRefresh} disabled={refreshBusy}>
             {refreshBusy ? 'Odświeżanie…' : 'Odśwież dane'}
+          </button>
+          <button type="button" className="btn" onClick={handleRepairQueue} disabled={repairBusy} data-testid="diagnostics-photo-queue-repair">
+            {repairBusy ? 'Naprawianie…' : 'Napraw kolejkę zdjęć'}
           </button>
         </div>
         {message ? <div className="mobileDiagnosticsMessage" role="status">{message}</div> : null}

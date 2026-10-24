@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.61",
+  "version": "13.62",
   "scope": "mobile",
-  "release_branch": "release/v13.61",
+  "release_branch": "release/v13.62",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "UI_ONLY",
-    "notes": "Zmiana samej ikony PWA podczas dodawania na ekran początkowy; brak zmian modułów danych, autoryzacji, synchronizacji i PDF."
+    "result": "P0_PHOTO_QUEUE_VERSION_ERROR",
+    "notes": "Logi Supabase 22–23.10: telefony z bazą zdjęć v4 (13.42–13.48) po rollbacku do 13.61 zapisywały montaż bez żadnego POST do Storage; nameplate.save.verify.timeout i brak tabliczek (Paweł 23.10), zdjęcia Kacpra dodane ręcznie przez administratora. Osobno: sporadyczne HTTP 400 0 B z iOS (WAWIS-1346) — poza zakresem 13.62."
   },
   "drive_backup": {
     "required": false,
@@ -15,17 +15,17 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.61",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
+    "source_branch": "release/v13.62",
+    "ready_for_main": false,
+    "status": "BLOCKED_PENDING_CI_AND_IPHONE_TEST",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
-    "result": "PENDING_IOS_VISUAL",
-    "evidence_source": "Nowa instalacja PWA z Safari na iPhone: właściwa ikona w Home Screen.",
-    "notes": "Nie zmieniano zachowania aplikacji ani istniejących danych offline."
+    "result": "PENDING_IPHONE_V4_TEST",
+    "evidence_source": "docs/iphone-test-v1362.md: fizyczny iPhone z bazą v4 (Safari i PWA) — plik w Storage o rozmiarze > 0 i rekord photos potwierdzone zapytaniem SELECT.",
+    "notes": "Zielony komunikat interfejsu nie jest dowodem synchronizacji. Naprawa kolejki tylko na wyraźne polecenie użytkownika."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Osobny kwadratowy plik PNG ikony WAWIS i zmienione odwołania PWA (HTML/manifest); logo.png nietknięte.",
-    "release_ci": "Sprawdzić poprawność manifestu, status PR checks i dostępność plików ikon; nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY otworzyć Safari na iPhonie, dodać nowy skrót do ekranu i potwierdzić ikonę WAWIS. Nie usuwać starej instalacji przed sprawdzeniem synchronizacji."
+    "code": "photo-offline-queue.js: otwarcie bez wersji, upgrade v1–v3→v4, nigdy downgrade, limity czasu, readPhotoQueueState, resetPhotoQueueDatabase; photos.js: zapis przed statusem, wysyłka z pamięci online; UI: Napraw kolejkę zdjęć.",
+    "release_ci": "WAWIS PR checks / targeted-checks + Playwright @mobile: mobile-photo-queue-compat-v1362 (16) i mobile-photo-queue-repair-v1362 (2). Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: test na iPhonie Pawła lub Kacpra wg docs/iphone-test-v1362.md, weryfikacja SELECT w photos/storage.objects. Nie usuwać aplikacji z ekranu początkowego."
   }
 }

@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.61
+- 13.62
+
+WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
 WAWIS 13.60: Faktury weryfikowane po numerze i identyfikatorze, bez porównania nabywcy, z bezpiecznym kojarzeniem po OID lub unikalnej nowej fakturze w oknie wystawienia. Ręczne powiązanie po numerze dopuszcza inne dane nabywcy, lecz nie cudze OID i nie niewystawione dokumenty.
 
@@ -1066,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.61` — nowa ikona instalacyjna aplikacji na ekran iPhone: napis WAWIS i niebieski pierścień; `logo.png` niezmienione.
+- wersja `13.62` — P0 iPhone: kolejka zdjęć zgodna z lokalną bazą v3/v4 (VersionError po rollbacku 13.42–13.48 blokował zapis i wysyłkę tabliczek), „Zapisano na telefonie” tylko po commit IndexedDB, limit czasu przy zablokowanej bazie oraz potwierdzana akcja „Napraw kolejkę zdjęć” usuwająca wyłącznie wawis-mobile-photo-queue.
 - wersja `13.60` — automatyczne potwierdzenie wystawionej faktury po wiarygodnym OID lub nowym, jednoznacznym numerze w oknie przygotowania. Dane nabywcy mogą różnić się od danych montażu, bez ryzyka nadpisania karty kontrahenta.
 - wersja `13.59` — izolowany kompaktowy dialog po podpisanym protokole: dwie akcje obok siebie, bez zależności od ogólnych stylów.
 - wersja `13.58` — kompaktowe okno po podpisaniu protokołu na iPhonie, dwa przyciski obok siebie, bez zmian logiki.

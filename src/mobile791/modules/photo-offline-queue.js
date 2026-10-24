@@ -1,11 +1,78 @@
 import { summarizePhotoDiagnosticQueue } from '../../modules/diagnostics-package4.js';
 const DB_NAME = 'wawis-mobile-photo-queue';
-const DB_VERSION = 3;
+// WAWIS 13.62: minimalna wersja bazy. Schemat v3 i v4 jest identyczny (ten sam magazyn i indeksy).
+// Telefony, które 22.10 uruchomiły 13.42–13.48, mają już v4; kod nigdy nie żąda wersji niższej
+// niż istniejąca (VersionError) i otwiera także przyszłe wersje z tym samym magazynem.
+const DB_VERSION = 4;
 const STORE_NAME = 'queued-photos';
+const OPEN_TIMEOUT_MS = 6000;
+const RESET_TIMEOUT_MS = 8000;
 export const PHOTO_QUEUE_CHANGED_EVENT = 'wawis-photo-queue-changed';
+export const PHOTO_QUEUE_DB_NAME = DB_NAME;
+
+export const PHOTO_QUEUE_ERROR_CODES = Object.freeze({
+  UNAVAILABLE: 'PHOTO_QUEUE_UNAVAILABLE',
+  VERSION: 'PHOTO_QUEUE_VERSION_MISMATCH',
+  BLOCKED: 'PHOTO_QUEUE_BLOCKED',
+  TIMEOUT: 'PHOTO_QUEUE_TIMEOUT',
+  QUOTA: 'PHOTO_QUEUE_QUOTA',
+  OPEN: 'PHOTO_QUEUE_OPEN_FAILED',
+  READ: 'PHOTO_QUEUE_READ_FAILED',
+  WRITE: 'PHOTO_QUEUE_WRITE_FAILED',
+  RESET: 'PHOTO_QUEUE_RESET_FAILED',
+});
+
+let lastPhotoQueueError = null;
 
 function hasIndexedDb() {
   return typeof indexedDB !== 'undefined';
+}
+
+function classifyPhotoQueueError(error, fallbackCode = PHOTO_QUEUE_ERROR_CODES.OPEN) {
+  if (error?.photoQueueCode) return error.photoQueueCode;
+  const name = String(error?.name || '');
+  const text = `${name} ${String(error?.message || error || '')}`.toLowerCase();
+  if (name === 'VersionError' || /requested version|less than the existing version|versionerror/.test(text)) return PHOTO_QUEUE_ERROR_CODES.VERSION;
+  if (name === 'QuotaExceededError' || /quota|exceeded|no space|brak miejsca/.test(text)) return PHOTO_QUEUE_ERROR_CODES.QUOTA;
+  return fallbackCode;
+}
+
+function createPhotoQueueError(code, message, cause = null) {
+  const error = new Error(message);
+  error.code = code;
+  error.photoQueueCode = code;
+  if (cause) error.cause = cause;
+  return error;
+}
+
+function rememberPhotoQueueError(error, fallbackCode, context) {
+  const code = classifyPhotoQueueError(error, fallbackCode);
+  lastPhotoQueueError = { code, at: new Date().toISOString(), context };
+  // Kod w obiekcie trafia do diagnostyki jako bezpieczny, znany kod (bez treści danych).
+  console.warn(`[${code}] ${context}`, { code, name: String(error?.name || ''), message: String(error?.message || '').slice(0, 160) });
+  return code;
+}
+
+export function getLastPhotoQueueError() {
+  return lastPhotoQueueError ? { ...lastPhotoQueueError } : null;
+}
+
+export function describePhotoQueueFailure(code = '') {
+  switch (code) {
+    case PHOTO_QUEUE_ERROR_CODES.QUOTA:
+      return 'Brak miejsca w pamięci telefonu na zapis zdjęcia. Zwolnij miejsce i spróbuj ponownie.';
+    case PHOTO_QUEUE_ERROR_CODES.BLOCKED:
+    case PHOTO_QUEUE_ERROR_CODES.TIMEOUT:
+      return 'Lokalna kolejka zdjęć jest zajęta przez inne okno WAWIS. Zamknij pozostałe okna/karty WAWIS i spróbuj ponownie.';
+    case PHOTO_QUEUE_ERROR_CODES.VERSION:
+    case PHOTO_QUEUE_ERROR_CODES.OPEN:
+    case PHOTO_QUEUE_ERROR_CODES.READ:
+    case PHOTO_QUEUE_ERROR_CODES.WRITE:
+    case PHOTO_QUEUE_ERROR_CODES.UNAVAILABLE:
+      return 'Lokalna kolejka zdjęć na tym telefonie jest niedostępna. Otwórz Synchronizację i użyj „Napraw kolejkę zdjęć”.';
+    default:
+      return 'Nie udało się zapisać zdjęcia w pamięci telefonu.';
+  }
 }
 
 function dispatchQueueChanged() {
@@ -23,25 +90,82 @@ function ensureIndex(store, name, keyPath) {
   }
 }
 
-function openQueueDb() {
-  if (!hasIndexedDb()) return Promise.resolve(null);
+function ensureSchema(request) {
+  const db = request.result;
+  const store = db.objectStoreNames.contains(STORE_NAME)
+    ? request.transaction.objectStore(STORE_NAME)
+    : db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+  ensureIndex(store, 'created_at', 'created_at');
+  ensureIndex(store, 'job_id', 'job_id');
+  ensureIndex(store, 'upload_key', 'upload_key');
+  ensureIndex(store, 'unit_key', 'unit_key');
+  ensureIndex(store, 'file_fingerprint', 'file_fingerprint');
+  ensureIndex(store, 'next_attempt_at', 'next_attempt_at');
+  // Celowo nie usuwamy ani nie nadpisujemy żadnego rekordu podczas podnoszenia wersji.
+}
+
+function createOpenRequest(mode, repairVersion = 0) {
+  if (mode === 'existing') return indexedDB.open(DB_NAME);
+  if (mode === 'upgrade') return indexedDB.open(DB_NAME, DB_VERSION);
+  return indexedDB.open(DB_NAME, repairVersion);
+}
+
+// Każde otwarcie ma limit czasu: zablokowany upgrade (stara karta trzyma połączenie)
+// nie może zawiesić zapisu ani udawać pustej kolejki.
+function requestQueueDb(mode, repairVersion = 0) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      const store = db.objectStoreNames.contains(STORE_NAME)
-        ? request.transaction.objectStore(STORE_NAME)
-        : db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      ensureIndex(store, 'created_at', 'created_at');
-      ensureIndex(store, 'job_id', 'job_id');
-      ensureIndex(store, 'upload_key', 'upload_key');
-      ensureIndex(store, 'unit_key', 'unit_key');
-      ensureIndex(store, 'file_fingerprint', 'file_fingerprint');
-      ensureIndex(store, 'next_attempt_at', 'next_attempt_at');
+    let settled = false;
+    let blocked = false;
+    let timer = null;
+    const finish = (error, db = null) => {
+      if (settled) {
+        try { db?.close(); } catch { /* połączenie już zamknięte */ }
+        return;
+      }
+      settled = true;
+      if (timer !== null) clearTimeout(timer);
+      if (error) reject(error);
+      else resolve(db);
     };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.'));
+    let request;
+    try {
+      request = createOpenRequest(mode, repairVersion);
+    } catch (error) {
+      finish(createPhotoQueueError(classifyPhotoQueueError(error), 'Nie udało się otworzyć lokalnej kolejki zdjęć.', error));
+      return;
+    }
+    timer = setTimeout(() => finish(createPhotoQueueError(
+      blocked ? PHOTO_QUEUE_ERROR_CODES.BLOCKED : PHOTO_QUEUE_ERROR_CODES.TIMEOUT,
+      blocked
+        ? 'Aktualizacja lokalnej kolejki zdjęć czeka na zamknięcie innego okna WAWIS.'
+        : 'Otwarcie lokalnej kolejki zdjęć przekroczyło limit czasu.',
+    )), OPEN_TIMEOUT_MS);
+    request.onupgradeneeded = () => ensureSchema(request);
+    request.onblocked = () => { blocked = true; };
+    request.onsuccess = () => {
+      const db = request.result;
+      db.onversionchange = () => db.close();
+      finish(null, db);
+    };
+    request.onerror = () => {
+      const error = request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.');
+      finish(createPhotoQueueError(classifyPhotoQueueError(error), 'Nie udało się otworzyć lokalnej kolejki zdjęć.', error));
+    };
   });
+}
+
+async function openQueueDb() {
+  if (!hasIndexedDb()) return null;
+  // 1. Otwarcie bez numeru wersji nigdy nie kończy się VersionError (v3, v4 i przyszłe v5+).
+  const current = await requestQueueDb('existing');
+  if (current.version >= DB_VERSION && current.objectStoreNames.contains(STORE_NAME)) return current;
+  const currentVersion = Number(current.version || 0);
+  const hasStore = current.objectStoreNames.contains(STORE_NAME);
+  current.close();
+  // 2. v1–v3 (lub nowa instalacja): niedestrukcyjne podniesienie do v4.
+  if (currentVersion < DB_VERSION) return requestQueueDb('upgrade');
+  // 3. Wyższa wersja bez magazynu (nie powinno wystąpić): dodajemy magazyn, nie obniżamy wersji.
+  return requestQueueDb('repair', currentVersion + (hasStore ? 0 : 1));
 }
 
 async function withStore(mode, operation) {
@@ -117,23 +241,30 @@ function toSerializableRecord(photo = {}) {
   };
 }
 
+// Zwraca true WYŁĄCZNIE po zakończonej (commit) transakcji IndexedDB.
 export async function savePhotoQueueItem(photo) {
   if (!photo?.id || !(photo.__localFile || photo.local_file)) return false;
+  if (!hasIndexedDb()) {
+    rememberPhotoQueueError(null, PHOTO_QUEUE_ERROR_CODES.UNAVAILABLE, 'Przeglądarka nie udostępnia IndexedDB — zdjęcie nie zostało zapisane w pamięci telefonu.');
+    return false;
+  }
   try {
     await withStore('readwrite', (store) => store.put(toSerializableRecord(photo)));
+    lastPhotoQueueError = null;
     dispatchQueueChanged();
     return true;
   } catch (error) {
-    console.warn('Nie udało się zapisać zdjęcia w pamięci telefonu.', error?.message || error);
+    rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.WRITE, 'Nie udało się zapisać zdjęcia w pamięci telefonu.');
     return false;
   }
 }
 
 export async function updatePhotoQueueItem(photoId, patch = {}) {
   if (!photoId) return false;
-  const db = await openQueueDb();
-  if (!db) return false;
+  let db = null;
   try {
+    db = await openQueueDb();
+    if (!db) return false;
     const updated = await new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -153,10 +284,11 @@ export async function updatePhotoQueueItem(photoId, patch = {}) {
     if (updated) dispatchQueueChanged();
     return updated;
   } catch (error) {
-    console.warn('Nie udało się zaktualizować lokalnego statusu zdjęcia.', error?.message || error);
+    // Błąd otwarcia lub zapisu statusu nigdy nie może przerwać wysyłki wyjątkiem (np. VersionError).
+    rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.WRITE, 'Nie udało się zaktualizować lokalnego statusu zdjęcia.');
     return false;
   } finally {
-    db.close();
+    try { db?.close(); } catch { /* już zamknięte */ }
   }
 }
 
@@ -167,21 +299,33 @@ export async function deletePhotoQueueItem(photoId) {
     dispatchQueueChanged();
     return true;
   } catch (error) {
-    console.warn('Nie udało się usunąć zdjęcia z lokalnej kolejki.', error?.message || error);
+    rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.WRITE, 'Nie udało się usunąć zdjęcia z lokalnej kolejki.');
     return false;
   }
 }
 
-export async function listPhotoQueueItems() {
+// Stan kolejki dla interfejsu: błąd odczytu NIE jest pustą kolejką.
+export async function readPhotoQueueState() {
+  if (!hasIndexedDb()) {
+    return { ok: false, items: [], code: PHOTO_QUEUE_ERROR_CODES.UNAVAILABLE, message: describePhotoQueueFailure(PHOTO_QUEUE_ERROR_CODES.UNAVAILABLE) };
+  }
   try {
     const records = await withStore('readonly', (store) => store.getAll());
-    return Array.isArray(records)
+    const items = Array.isArray(records)
       ? records.sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')))
       : [];
+    return { ok: true, items, code: '', message: '' };
   } catch (error) {
-    console.warn('Nie udało się odczytać lokalnej kolejki zdjęć.', error?.message || error);
-    return [];
+    const code = rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.READ, 'Nie udało się odczytać lokalnej kolejki zdjęć.');
+    return { ok: false, items: [], code, message: describePhotoQueueFailure(code) };
   }
+}
+
+// Dla wewnętrznych pętli wysyłki: przy błędzie odczytu nic nie wysyłamy i niczego nie usuwamy.
+// Interfejs musi korzystać z readPhotoQueueState(), żeby nie pokazać „Wszystko wysłane”.
+export async function listPhotoQueueItems() {
+  const state = await readPhotoQueueState();
+  return state.items;
 }
 
 export async function recoverStalePhotoQueueItems(nowMs = Date.now()) {
@@ -203,7 +347,13 @@ export async function recoverStalePhotoQueueItems(nowMs = Date.now()) {
 
 export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, force = false } = {}) {
   if (!photoId) return null;
-  const db = await openQueueDb();
+  let db = null;
+  try {
+    db = await openQueueDb();
+  } catch (error) {
+    rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.OPEN, 'Nie udało się przejąć zdjęcia z lokalnej kolejki.');
+    return null;
+  }
   if (!db) return null;
   try {
     return await new Promise((resolve, reject) => {
@@ -236,14 +386,78 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
       transaction.onerror = () => reject(transaction.error || new Error('Nie udało się przejąć zdjęcia z kolejki.'));
       transaction.onabort = transaction.onerror;
     });
+  } catch (error) {
+    rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.WRITE, 'Nie udało się przejąć zdjęcia z lokalnej kolejki.');
+    return null;
   } finally {
     db.close();
   }
 }
 
 export async function getPhotoQueueSummary(userId = '') {
-  const items = await listPhotoQueueItems();
-  return summarizePhotoDiagnosticQueue(items, userId);
+  const state = await readPhotoQueueState();
+  const summary = summarizePhotoDiagnosticQueue(state.items, userId);
+  return state.ok ? summary : { ...summary, readError: state.code, readErrorMessage: state.message };
+}
+
+async function countPhotoQueueRecordsForReset() {
+  const state = await readPhotoQueueState();
+  return state.ok ? state.items.length : null;
+}
+
+// „Napraw kolejkę zdjęć”: usuwa WYŁĄCZNIE lokalną bazę wawis-mobile-photo-queue (niewysłane zdjęcia
+// z tego telefonu) i zakłada ją od nowa. Nie dotyka montaży, urządzeń, protokołów, podpisów, sesji,
+// innych kolejek offline ani danych na serwerze. Wywoływać tylko po wyraźnej zgodzie użytkownika.
+// Zwraca ok:true wyłącznie po potwierdzonym usunięciu i ponownym otwarciu pustej kolejki.
+export async function resetPhotoQueueDatabase({ timeoutMs = RESET_TIMEOUT_MS } = {}) {
+  if (!hasIndexedDb()) {
+    return { ok: false, code: PHOTO_QUEUE_ERROR_CODES.UNAVAILABLE, message: 'Ta przeglądarka nie udostępnia pamięci IndexedDB.' };
+  }
+  const deleted = await new Promise((resolve) => {
+    let settled = false;
+    let blocked = false;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => finish({
+      ok: false,
+      code: blocked ? PHOTO_QUEUE_ERROR_CODES.BLOCKED : PHOTO_QUEUE_ERROR_CODES.TIMEOUT,
+      message: blocked
+        ? 'Czyszczenie czeka na zamknięcie innego okna WAWIS. Zamknij pozostałe okna/karty WAWIS i spróbuj ponownie. Czyszczenie NIE zostało potwierdzone.'
+        : 'Czyszczenie kolejki przekroczyło limit czasu. Czyszczenie NIE zostało potwierdzone.',
+    }), Math.max(1000, Number(timeoutMs) || RESET_TIMEOUT_MS));
+    let request;
+    try {
+      request = indexedDB.deleteDatabase(DB_NAME);
+    } catch (error) {
+      finish({ ok: false, code: PHOTO_QUEUE_ERROR_CODES.RESET, message: 'Przeglądarka odrzuciła usunięcie lokalnej kolejki zdjęć.' });
+      return;
+    }
+    request.onblocked = () => { blocked = true; };
+    request.onsuccess = () => finish({ ok: true });
+    request.onerror = () => finish({ ok: false, code: PHOTO_QUEUE_ERROR_CODES.RESET, message: 'Nie udało się usunąć lokalnej kolejki zdjęć.' });
+  });
+  if (!deleted.ok) {
+    rememberPhotoQueueError(null, deleted.code, 'Czyszczenie lokalnej kolejki zdjęć nie zostało potwierdzone.');
+    return deleted;
+  }
+  // Weryfikacja: nowa, pusta kolejka musi dać się otworzyć i odczytać.
+  const remaining = await countPhotoQueueRecordsForReset();
+  if (remaining !== 0) {
+    const code = getLastPhotoQueueError()?.code || PHOTO_QUEUE_ERROR_CODES.RESET;
+    return { ok: false, code, message: 'Kolejka została usunięta, ale nie udało się potwierdzić nowej, pustej kolejki. Spróbuj ponownie.' };
+  }
+  lastPhotoQueueError = null;
+  dispatchQueueChanged();
+  return { ok: true, code: '', message: 'Lokalna kolejka zdjęć została wyczyszczona i założona od nowa.' };
+}
+
+// Liczba rekordów do komunikatu potwierdzenia (null = nie da się odczytać, np. VersionError).
+export async function countPhotoQueueRecords() {
+  return countPhotoQueueRecordsForReset();
 }
 
 export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {

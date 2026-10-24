@@ -1,3 +1,12 @@
+## 13.62
+- P0 iPhone: kolejka zdjęć otwiera bazę IndexedDB w wersji 3, 4 i przyszłych (najpierw bez numeru wersji, potem niedestrukcyjne podniesienie v1–v3 do v4). Telefony, które 22.10 uruchomiły 13.42–13.48, nie dostają już VersionError i znów zapisują oraz wysyłają zdjęcia i tabliczki; wersja bazy nigdy nie jest obniżana.
+- Każde otwarcie kolejki ma limit czasu: zablokowana aktualizacja (inne okno WAWIS) zwraca czytelny błąd zamiast zawieszenia; błąd odczytu nie jest już pokazywany jako „Wszystko wysłane”.
+- „Zapisano na telefonie” wyłącznie po zakończonej transakcji IndexedDB. Przy braku zapisu i działającym internecie zdjęcie wysyła się od razu z pamięci formularza; offline okno zostaje otwarte z właściwą przyczyną (brak miejsca / kolejka niedostępna) zamiast domyślnego „zwolnij miejsce”.
+- Pełna edycja montażu nie zamyka już formularza, gdy zdjęcia tabliczek nie zostały ani zapisane w telefonie, ani potwierdzone na serwerze.
+- Nowa akcja „Napraw kolejkę zdjęć” (Synchronizacja pracownika i Diagnostyka): po dwóch wyraźnych potwierdzeniach usuwa wyłącznie lokalną bazę wawis-mobile-photo-queue i zakłada ją od nowa; sukces tylko po potwierdzonym usunięciu i ponownym odczycie pustej kolejki. Bez zmian montaży, urządzeń, protokołów, podpisów, sesji, innych kolejek i danych Supabase.
+- Diagnostyka: kody PHOTO_QUEUE_* (VersionError, blokada, brak miejsca, błąd odczytu/zapisu, wynik naprawy) zamiast DIAGNOSTIC_UNCLASSIFIED.
+- Testy: tests/e2e/mobile-photo-queue-compat-v1362.spec.js (16 scenariuszy na rzeczywistych modułach i IndexedDB, w tym przypadki Pawła i Kacpra) oraz tests/e2e/mobile-photo-queue-repair-v1362.spec.js. Bez zmian backendu, Supabase, transportu uploadu, OCR, PDF i protokołów.
+
 ## 13.61
 - Zaktualizowano ikonę PWA na ekranie początkowym iPhone'a na zaakceptowany wzór WAWIS z niebieskim pierścieniem. Oddzielono ikonę instalacyjną od loga firmowego.
 - Odświeżono manifest i odwołania do ikon w HTML bez zmian synchronizacji, protokołów, PDF i backendu.

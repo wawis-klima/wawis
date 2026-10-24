@@ -28,7 +28,9 @@ assert.match(centerCss, /\.photoSyncCenterModal/);
 assert.match(centerCss, /max-height:min\(88vh,760px\)/);
 assert.match(centerCss, /\.mobileConnectionSyncButton/);
 
-assert.match(hook, /listPhotoQueueItems/);
+// 13.62: Centrum czyta stan kolejki z rozróżnieniem błędu odczytu (nie pokazuje pustej listy jako „Wszystko wysłane”).
+assert.match(hook, /readPhotoQueueState/);
+assert.match(hook, /queueReadError/);
 assert.match(hook, /queueItems/);
 assert.match(hook, /LAST_PHOTO_SYNC_STORAGE_KEY/);
 assert.match(hook, /localStorage\.setItem/);

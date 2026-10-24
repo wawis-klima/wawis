@@ -1,5 +1,18 @@
 # WAWIS — Regression Ledger
 
+## PHOTOS-1362 — kolejka zdjęć IndexedDB v4 po rollbacku (24.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PH-1362-V4 | FIXED-UNVERIFIED | 13.61 otwierało wawis-mobile-photo-queue w v3; telefony po 13.42–13.48 mają v4 → VersionError: brak zapisu, brak POST do Storage, nameplate.save.verify.timeout (Paweł 23.10), zdjęcia Kacpra nie wysłane. 13.62 otwiera bez wersji, nigdy nie obniża. Test S03/S15/S16. |
+| PH-1362-FUTURE | FIXED-UNVERIFIED | Baza w wersji wyższej niż 4 działa bez obniżania. Test S04/S12. |
+| PH-1362-FALSE-SAVED | FIXED-UNVERIFIED | „Zapisano na telefonie” tylko po commit transakcji; brak miejsca offline → okno otwarte z przyczyną, online → wysyłka z pamięci. Test S05/S06/S10. |
+| PH-1362-BLOCKED | FIXED-UNVERIFIED | Zablokowana baza: limit czasu, kod PHOTO_QUEUE_BLOCKED, brak fałszywej pustej kolejki. Test S07. |
+| PH-1362-REPAIR | FIXED-UNVERIFIED | „Napraw kolejkę zdjęć”: dwa potwierdzenia, usuwa wyłącznie wawis-mobile-photo-queue, sukces tylko po ponownym odczycie pustej kolejki; blokada → brak deklaracji sukcesu. Test S11–S13 + mobile-photo-queue-repair-v1362. |
+| PH-1362-RETRY | REGRESSION | Utrata internetu, 400/503, awaryjna wysyłka 13.55. Test S08/S09/S14. |
+| PH-1362-IOS0B | OPEN | HTTP 400 „No content provided” (multipart 0 B) z iOS także w 13.61; ponowienia kończą się 200. Diagnoza: docs/iphone-test-v1362.md, poza zakresem 13.62. |
+| PH-1362-LIVE | EXTERNAL | Fizyczny iPhone z bazą v4 (Safari i PWA): plik w Storage > 0 B i rekord photos potwierdzone SELECT. |
+
 ## PROTOCOL-FINISH-1357 — przypomnienie na mobilnym Administratorze (23.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

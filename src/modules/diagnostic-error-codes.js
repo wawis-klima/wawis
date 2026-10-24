@@ -15,6 +15,16 @@ const DESCRIPTIONS = Object.freeze({
   PHOTO_THUMBNAIL_RETRY: 'Ponowiono pobieranie miniatury zdjęcia.',
   PHOTO_THUMBNAIL_FAILED: 'Nie udało się pobrać miniatury zdjęcia.',
   PUSH_SUBSCRIPTION_SYNC_FAILED: 'Nie udało się zsynchronizować subskrypcji PUSH.',
+  PHOTO_QUEUE_UNAVAILABLE: 'Lokalna kolejka zdjęć (IndexedDB) jest niedostępna na urządzeniu.',
+  PHOTO_QUEUE_VERSION_MISMATCH: 'Lokalna kolejka zdjęć ma wyższą wersję niż obsługiwana przez aplikację (VersionError).',
+  PHOTO_QUEUE_BLOCKED: 'Aktualizacja lub czyszczenie lokalnej kolejki zdjęć czeka na zamknięcie innego okna aplikacji.',
+  PHOTO_QUEUE_TIMEOUT: 'Otwarcie lokalnej kolejki zdjęć przekroczyło limit czasu.',
+  PHOTO_QUEUE_QUOTA: 'Brak miejsca w pamięci urządzenia na zapis zdjęcia.',
+  PHOTO_QUEUE_OPEN_FAILED: 'Nie udało się otworzyć lokalnej kolejki zdjęć.',
+  PHOTO_QUEUE_READ_FAILED: 'Nie udało się odczytać lokalnej kolejki zdjęć.',
+  PHOTO_QUEUE_WRITE_FAILED: 'Nie udało się zapisać w lokalnej kolejce zdjęć.',
+  PHOTO_QUEUE_RESET_FAILED: 'Czyszczenie lokalnej kolejki zdjęć nie zostało potwierdzone.',
+  PHOTO_QUEUE_RESET_DONE: 'Użytkownik wyczyścił lokalną kolejkę niewysłanych zdjęć (Napraw kolejkę zdjęć).',
   DIAGNOSTIC_UNCLASSIFIED: 'Niesklasyfikowane zdarzenie techniczne; sprawdź kontekst zdarzenia.',
 });
 
@@ -62,6 +72,8 @@ export function getSafeDiagnosticDetails(entry = {}) {
     code = safeExistingCode;
   } else if (/failed to fetch dynamically imported module|importing a module script failed/.test(text)) {
     code = 'NETWORK_MODULE_FETCH_FAILED';
+  } else if (/requested version \(\d+\) is less than the existing version|versionerror/.test(text)) {
+    code = 'PHOTO_QUEUE_VERSION_MISMATCH';
   } else if (/canceling statement due to statement timeout|statement timeout|57014/.test(text) || hasCode('57014')) {
     code = 'DB_STATEMENT_TIMEOUT';
   } else if (hasCode('APP_REFRESH_TIMEOUT')) {

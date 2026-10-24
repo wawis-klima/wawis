@@ -13,8 +13,13 @@ const requirements = fs.readFileSync(path.join(root, 'src/mobile791/modules/name
 
 assert(queue.includes("indexedDB.open(DB_NAME, DB_VERSION)"), 'Brak trwałej kolejki IndexedDB.');
 assert(queue.includes("local_file: localFile"), 'Lokalny plik nie jest zapisywany w kolejce.');
-assert(photos.includes('persistenceResults = await Promise.all'), 'Zdjęcie nie jest zapisywane lokalnie przed wysyłką.');
-assert(photos.includes('failedPhotos.forEach'), 'Brak obsługi błędu zapisu zdjęcia w pamięci telefonu.');
+// 13.62: zapis do IndexedDB (commit) przed pokazaniem statusu i przed wysyłką; dowód wykonawczy:
+// tests/e2e/mobile-photo-queue-compat-v1362.spec.js (S05, S06, S10, S15, S16).
+assert(photos.includes('const persistence = await persistQueuedPhotos(queuedPhotos);'), 'Zdjęcie nie jest zapisywane lokalnie przed wysyłką.');
+const regularUpload = photos.slice(photos.indexOf('export async function uploadJobPhotos'), photos.indexOf('export async function uploadJobDocumentationPhotos'));
+assert(regularUpload.indexOf('persistQueuedPhotos(queuedPhotos)') > -1
+  && regularUpload.indexOf('persistQueuedPhotos(queuedPhotos)') < regularUpload.indexOf('mergePhotoIntoJob'), 'Status zdjęcia nie może pojawić się przed zapisem w pamięci telefonu.');
+assert(photos.includes('localSaveError'), 'Brak obsługi błędu zapisu zdjęcia w pamięci telefonu.');
 assert(photos.includes("upload_status: 'local'"), 'Brak stanu lokalnego zdjęcia.');
 assert(photos.includes("upload_status_label: 'Zapisano na telefonie'"), 'Brak etykiety zapisu na telefonie.');
 assert(photos.includes("upload_status_label: 'Wysyłanie'"), 'Brak etykiety wysyłania.');

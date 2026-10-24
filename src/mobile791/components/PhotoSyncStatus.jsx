@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppModal from "./modals/AppModal.jsx";
 import { PHOTO_SYNC_CENTER_CSS } from "./photo-sync-center.css.js";
+import { confirmAndRepairPhotoQueue } from "../modules/photo-queue-repair.js";
+import { logDiagnostic } from "../modules/diagnostics.js";
 
 function formatDateTime(value) {
   if (!value) return "Jeszcze nie wykonano";
@@ -66,6 +68,7 @@ export default function PhotoSyncStatus({
 }) {
   const [open, setOpen] = useState(false);
   const [retryingAll, setRetryingAll] = useState(false);
+  const [repairing, setRepairing] = useState(false);
   const queueItems = Array.isArray(status?.queueItems) ? status.queueItems : [];
   const operationItems = Array.isArray(status?.operationItems) ? status.operationItems : [];
   const online = status?.connection?.tone !== "offline";
@@ -85,6 +88,24 @@ export default function PhotoSyncStatus({
   }, [open, status?.refreshQueueSummary]);
 
   if (!status) return null;
+
+  const queueReadError = status?.queueReadError || null;
+
+  async function handleRepairQueue() {
+    if (repairing) return;
+    setRepairing(true);
+    try {
+      await confirmAndRepairPhotoQueue({
+        logFn: (event, payload) => logDiagnostic(event, payload),
+        onRepaired: () => {
+          if (typeof window !== "undefined") window.location.reload();
+        },
+      });
+      await status.refreshQueueSummary?.();
+    } finally {
+      setRepairing(false);
+    }
+  }
 
   async function handleRetryAll() {
     if (!online || retryingAll || !retryableCount) return;
@@ -169,8 +190,15 @@ export default function PhotoSyncStatus({
           </button>
         </div>
 
+        {queueReadError ? (
+          <div className="photoSyncItemError" role="alert" data-testid="photo-queue-read-error">
+            <strong>Kolejka zdjęć na tym telefonie jest niedostępna.</strong>{" "}
+            {queueReadError.message} (kod: {queueReadError.code})
+          </div>
+        ) : null}
+
         <div className="photoSyncCenterList">
-          {queueItems.length === 0 && operationItems.length === 0 ? (
+          {queueItems.length === 0 && operationItems.length === 0 && !queueReadError ? (
             <div className="photoSyncEmpty">
               <strong>Wszystko wysłane</strong>
               <span>Na telefonie nie ma oczekujących zdjęć ani zmian montażu.</span>
@@ -274,8 +302,20 @@ export default function PhotoSyncStatus({
           })}
         </div>
 
+        <div className="photoSyncCenterActions">
+          <button
+            type="button"
+            className="photoSyncCenterSecondary"
+            onClick={handleRepairQueue}
+            disabled={repairing}
+            data-testid="photo-queue-repair"
+          >
+            {repairing ? "Naprawianie…" : "Napraw kolejkę zdjęć"}
+          </button>
+        </div>
+
         <div className="photoSyncCenterFootnote">
-          Nie usuwaj aplikacji ani danych Safari, gdy na liście znajdują się niewysłane elementy.
+          Nie usuwaj aplikacji ani danych Safari, gdy na liście znajdują się niewysłane elementy. „Napraw kolejkę zdjęć” usuwa wyłącznie niewysłane zdjęcia z tego telefonu — po wyraźnym potwierdzeniu.
         </div>
       </AppModal>
     </>
