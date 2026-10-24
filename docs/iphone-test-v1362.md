@@ -1,35 +1,49 @@
 # WAWIS 13.62 — test na fizycznym iPhonie (Safari / WebKit)
 
-Testy automatyczne 13.62 działają w Chromium. Nie dowodzą zachowania Safari. Ten test wykonuje się
-osobno na prawdziwym iPhonie, po zielonym CI i po wdrożeniu zatwierdzonym przez właściciela.
+Testy automatyczne 13.62 działają w Chromium. Nie dowodzą zachowania Safari. Etap 1 wykonuje się przed
+wdrożeniem na stronie testowej, etap 2 dopiero po zielonym CI i wdrożeniu zatwierdzonym przez właściciela.
 
 **Zasada:** zielony komunikat w aplikacji nie jest dowodem. Dowodem jest plik w Storage o rozmiarze
 większym niż 0 B oraz rekord w tabeli `photos`, potwierdzone zapytaniem SELECT.
 
-## Przygotowanie
+## Etap 1 — przed wdrożeniem: test na stronie testowej (bez produkcji)
 
-- Telefon testowy: najlepiej iPhone Pawła albo Kacpra (lokalna baza zdjęć v4). Jeśli niedostępny —
-  dowolny iPhone, który 22.10 uruchomił WAWIS w wersji 13.42–13.48.
-- Montaż testowy (nie klienta), np. „TEST 13.62 iPhone”.
-- **Nie usuwać aplikacji z ekranu początkowego** i nie czyścić danych Safari przed testem —
-  właśnie stara baza v4 jest przedmiotem testu.
-- Zanotować godzinę rozpoczęcia (czas lokalny i UTC).
+Strona „WAWIS 13.62 iPhone Lab” (prywatny artefakt Claude) uruchamia prawdziwe moduły kolejki zdjęć z wersji
+13.48, 13.61 i 13.62 pod jednym adresem, czyli we wspólnym magazynie IndexedDB Safari. Baza v4 jest tworzona
+przez kod 13.48, a potem otwierana przez 13.61 i 13.62. Zamiast Supabase działa serwer testowy w pamięci
+strony, który mierzy rozmiar każdego odebranego pliku. Aplikacja WAWIS na telefonie nie jest zmieniana.
 
-## A. Aktualizacja i odczyt kolejki (PWA z ekranu początkowego)
+Kroki na stronie: 0 czysty start → 1 zdjęcie aparatem jako 13.48 (baza v4) → 2 uruchomienie 13.61 (błąd
+odtworzony) → 3 uruchomienie 13.62 (zdjęcie widoczne i wstrzymane, 0 wysłanych automatycznie) → 4 nowe
+zdjęcie online (rozmiar > 0 B) → 5 zdjęcie offline, odświeżenie strony, wznowienie → 6 decyzja: wyślij /
+usuń / napraw (z potwierdzeniem). Na koniec „Kopiuj protokół” i wklejenie wyniku do rozmowy.
 
-1. Otworzyć WAWIS z ekranu początkowego, zalogować się, sprawdzić stopkę/diagnostykę: **13.62**.
-2. Otworzyć Synchronizację pracownika.
-   - Oczekiwane: brak banera „Kolejka zdjęć niedostępna”; liczba oczekujących zdjęć zgodna z
-     rzeczywistością (może być > 0 — stare zdjęcia z 22.10 zaczną się wysyłać).
-   - Jeśli baner jest widoczny: zrobić zrzut ekranu z kodem (PHOTO_QUEUE_…), przejść do sekcji D.
+Ograniczenia: strona działa w Safari / widoku Claude, nie jako PWA z ekranu początkowego, i nie testuje
+interfejsu WAWIS (testują go E2E w CI na dev i na zbudowanej aplikacji).
 
-## B. Tabliczki online (scenariusz Pawła)
+## Etap 2 — po wdrożeniu (wyłącznie po zgodzie właściciela): telefon z bazą v4
 
-1. Online (Wi‑Fi lub LTE). Montaż testowy → Edytuj → dodać urządzenie → 2 zdjęcia tabliczek
-   (jednostka wewnętrzna i zewnętrzna) aparatem → Zapisz.
-2. Oczekiwane: brak komunikatu „Nie wszystkie tabliczki zostały potwierdzone na serwerze…”,
-   okno zamyka się po potwierdzeniu.
-3. Weryfikacja na serwerze (SELECT, tylko odczyt):
+- Telefon: Pawła albo Kacpra (baza v4). **Nie usuwać aplikacji z ekranu początkowego** i nie czyścić danych
+  Safari — właśnie stara baza jest przedmiotem testu.
+- Montaż testowy (nie klienta), np. „TEST 13.62 iPhone”. Zanotować godzinę startu (UTC).
+
+### A. Aktualizacja i stare zdjęcia
+
+1. Zamknąć WAWIS całkowicie, otworzyć z ekranu początkowego, sprawdzić wersję **13.62**.
+2. Jeśli na telefonie są stare zdjęcia z 22.10: wskaźnik pokazuje „N stare zdjęcia czekają na decyzję”.
+   Nic nie wysyła się samo.
+3. Synchronizacja → baner „Na telefonie są stare, niewysłane zdjęcia z 22.10”.
+   - Kacper: zdjęcia dodał już administrator → **„Usuń stare zdjęcia”** (potwierdzić).
+   - Paweł: najpierw sprawdzić zapytaniem z punktu B, czy zdjęcia tych montaży są na serwerze;
+     jeśli brakuje — „Wyślij stare zdjęcia”, jeśli są — „Usuń stare zdjęcia”.
+4. Jeśli zamiast tego widać „Kolejka zdjęć niedostępna”: zamknąć inne okna WAWIS (także Safari) i użyć
+   „Napraw kolejkę zdjęć”.
+
+### B. Tabliczki online (scenariusz Pawła)
+
+1. Online. Montaż testowy → Edytuj → urządzenie → 2 zdjęcia tabliczek aparatem → Zapisz.
+2. Brak komunikatu „Nie wszystkie tabliczki zostały potwierdzone…”, okno zamyka się po potwierdzeniu.
+3. Weryfikacja (SELECT, tylko odczyt):
 
 ```sql
 select p.id, p.job_id, p.unit_ref, p.storage_path, p.created_at,
@@ -42,41 +56,27 @@ where p.job_id = '<ID montażu testowego>'
 order by p.created_at;
 ```
 
-   - Oczekiwane: 2 wiersze, `bytes > 0` w obu.
+   Oczekiwane: 2 wiersze, `bytes > 0`.
 
-## C. Zwykłe zdjęcie offline → online (scenariusz Kacpra)
+### C. Zwykłe zdjęcie offline → online (scenariusz Kacpra)
 
-1. Włączyć tryb samolotowy. Dodać 1 zdjęcie dokumentacji do montażu testowego.
-   - Oczekiwane: „Zapisano na telefonie” (tylko po zapisie w IndexedDB).
-2. Zamknąć aplikację całkowicie (przesunięcie w górę), otworzyć ponownie — zdjęcie nadal w
-   Synchronizacji jako oczekujące.
-3. Wyłączyć tryb samolotowy. Odczekać do zniknięcia z kolejki.
-4. Powtórzyć SELECT z punktu B — 1 nowy wiersz, `bytes > 0`.
+1. Tryb samolotowy → 1 zdjęcie → „Zapisano na telefonie”.
+2. Zamknąć aplikację całkowicie, otworzyć — zdjęcie nadal w Synchronizacji.
+3. Wyłączyć tryb samolotowy, poczekać → SELECT z punktu B: 1 nowy wiersz, `bytes > 0`.
 
-## D. „Napraw kolejkę zdjęć” (tylko gdy A pokazało błąd lub na telefonie testowym)
+### D. Safari (bez PWA)
 
-1. Synchronizacja → „Napraw kolejkę zdjęć”. Pierwsze okno podaje liczbę niewysłanych zdjęć.
-   Najpierw **Anuluj** — kolejka bez zmian.
-2. Ponownie → potwierdzić oba okna. Oczekiwane: „Lokalna kolejka zdjęć została wyczyszczona i
-   założona od nowa”, odświeżenie, **nadal zalogowany**, montaże i protokoły widoczne.
-3. Jeśli pojawi się „Naprawa kolejki NIE powiodła się” — zamknąć wszystkie inne karty/okna WAWIS
-   (także Safari) i powtórzyć. Zrobić zrzut ekranu.
-4. Po naprawie powtórzyć B.
-
-## E. Safari (bez PWA)
-
-Powtórzyć A i B w Safari (nie z ekranu początkowego). Safari i PWA mają osobne magazyny danych,
-więc wynik może się różnić.
+Powtórzyć B w Safari. Safari i PWA mają osobne magazyny danych.
 
 ## Kryteria zaliczenia
 
 | Punkt | Wynik | Dowód |
 |---|---|---|
-| A wersja 13.62, brak banera błędu | | zrzut |
+| Etap 1 strona testowa: kroki 1–6 ZALICZONE | | protokół ze strony |
+| A wersja 13.62, stare zdjęcia nie wysłały się same, decyzja wykonana | | zrzuty |
 | B 2 tabliczki, bytes > 0 | | wynik SELECT |
 | C offline → online, bytes > 0 | | wynik SELECT |
-| D anulowanie nic nie usuwa, naprawa zachowuje sesję | | zrzuty |
-| E Safari | | zrzut + SELECT |
+| D Safari | | zrzut + SELECT |
 
 ---
 
