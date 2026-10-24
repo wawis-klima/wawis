@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.59",
-  "scope": "mobile",
-  "release_branch": "release/v13.59",
+  "version": "13.60",
+  "scope": "desktop",
+  "release_branch": "fix/fakturownia-auto-number-v1360",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
@@ -15,9 +15,9 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.59",
-    "ready_for_main": true,
-    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
+    "source_branch": "fix/fakturownia-auto-number-v1360",
+    "ready_for_main": false,
+    "status": "AWAITING_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Osobny modal kompaktowy bez współdzielonych klas: inline style dla panelu, tytułu, opisu, grid i przycisków; bez CSS import.",
-    "release_ci": "Targeted regression, Playwright mobile 320px i iPhone 14, testy akcji ADMIN+WORKER, Closure Gate, build.",
-    "post_deploy": "W wersji 13.59 zweryfikować na iPhonie przy nowym podpisie dwa przyciski obok siebie. Zakończ i Jeszcze nie mają niezmienione zachowanie. Jeśli problem powróci, wycofać do 13.58 i zebrać computedStyle z rzeczywistej sesji."
+    "code": "Automatyczne przypisanie: OID albo jedyna nowa faktura ze zgodną przygotowaną pozycją",
+    "release_ci": "Smoke fakturownia auto/link oraz build",
+    "post_deploy": "Sprawdzić w przeglądarce auto powiązanie faktury na inną osobę, bez wystawiania nowego testowego dokumentu"
   }
 }
