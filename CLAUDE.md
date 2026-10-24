@@ -66,6 +66,12 @@ Przed wypchnięciem gałęzi sprawdź, czy operacja nie uruchomi automatycznego 
 (`vercel.json` → `git.deploymentEnabled`, `scripts/vercel-deploy-guard.cjs`, workflowy w `.github/workflows`).
 Jeśli nie możesz potwierdzić bezpieczeństwa operacji, zatrzymaj ją i poproś o decyzję.
 
+Uwaga (24.10.2026): repozytorium jest też podłączone do **Cloudflare Pages**, które po każdym pushu
+dowolnej gałęzi buduje publiczny podgląd (`<gałąź>.wawis.pages.dev`, check „Cloudflare Pages”).
+To nie jest produkcja Vercel, ale konfiguracja zmiennych środowiskowych podglądu nie jest znana — podgląd może
+łączyć się z produkcyjnym Supabase. Nie udostępniaj adresów podglądu i nie używaj ich do testów zapisu.
+W raporcie przed GO podawaj, że podgląd powstał. Zmiana tej integracji wymaga zgody właściciela.
+
 ## 4. Szczególna ochrona aplikacji mobilnej
 
 WAWIS jest używany codziennie przez pracowników na iPhone'ach, również przy słabym internecie. Zmiany muszą

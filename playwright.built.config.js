@@ -14,7 +14,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: false,
   workers: 1,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report-built' }]],
+  reporter: [['list'], ['json', { outputFile: 'playwright-report-built/results.json' }], ['html', { open: 'never', outputFolder: 'playwright-report-built/html' }]],
   use: {
     baseURL,
     screenshot: 'only-on-failure',

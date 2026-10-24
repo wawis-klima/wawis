@@ -40,7 +40,11 @@ jobs:
       - name: Run photo queue E2E on production build (mock Supabase)
         env:
           VITE_SUPABASE_MODE: mock
-        run: npx playwright test --config playwright.built.config.js --reporter=line
+        run: npx playwright test --config playwright.built.config.js
+
+      - name: Verify built E2E evidence (fail-closed)
+        if: always()
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-built/results.json 4
 
       - name: Upload report
         if: always()
