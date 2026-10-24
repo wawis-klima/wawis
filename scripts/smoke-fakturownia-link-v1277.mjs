@@ -88,7 +88,8 @@ async function run(label, opts={}, expected={}) {
 await run('linked by number',{}, {found:true});
 await run('correct OID',{invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}]}, {found:true});
 await run('other job blocked',{invoices:[{...sample,oid:buildJobInvoiceOid(otherJobId)}]}, {found:false,code:'OTHER_JOB'});
-await run('different client blocked',{invoices:[{...sample,client_id:89}]}, {found:false,code:'WRONG_CLIENT'});
+await run('different Fakturownia client allowed by explicit number',{invoices:[{...sample,client_id:89}]}, {found:true});
+await run('private buyer changed by explicit number',{invoices:[{...sample,client_id:89,buyer_name:'Anna Ryńska',buyer_street:'Nowa 7',buyer_city:'Sosnowiec'}]}, {found:true});
 await run('draft blocked',{invoices:[{...sample,status:'draft'}]}, {found:false,code:'NOT_ISSUED_VAT'});
 await run('proforma blocked',{invoices:[{...sample,kind:'proforma'}]}, {found:false,code:'NOT_ISSUED_VAT'});
 await run('no invoice',{invoices:[]}, {found:false,code:'NOT_FOUND'});
@@ -111,7 +112,7 @@ await run('ambiguous external id still shows buyer-verified candidates',{action:
 await run('no external id and real invoice buyer matches',{action:'verify',invoices:[sample],clients:[]}, {found:false,code:'OID_MISSING_CANDIDATES',candidates:1});
 await run('no external id and wrong buyer address refused',{action:'verify',invoices:[{...sample,buyer_street:'Częstochowska 12/98'}],clients:[]}, {found:false,code:'NO_MATCHING_BUYER',candidates:0});
 await run('no external id and exact OID accepted',{action:'verify',invoices:[{...sample,oid:buildJobInvoiceOid(jobId)}],clients:[]}, {found:true,code:'VERIFIED',candidates:0});
-await run('manual linking without external id rejects changed buyer address',{invoices:[{...sample,buyer_street:'Inna 10'}],clients:[]}, {found:false,code:'BUYER_ADDRESS_MISMATCH'});
+await run('manual linking without external id accepts changed buyer address',{invoices:[{...sample,buyer_street:'Inna 10'}],clients:[]}, {found:true});
 const ui=fs.readFileSync(new URL('../src/components/JobDetailsPanel.jsx',import.meta.url),'utf8');
 assert.match(ui,/setInvoiceVerificationMessage\(result\?\.reason/);
 assert.match(ui,/onSubmit=\{linkInvoiceByNumber\}/);
@@ -120,4 +121,4 @@ assert.match(ui,/invoiceVerificationCandidates\.map/);
 assert.match(ui,/verifyPendingFakturowniaInvoice\(true\)/,'Existing job can be checked without creating new invoice');
 assert.match(ui,/onClick=\{\(\) => void confirmInvoiceNumber\(candidate\.invoiceNumber\)\}/);
 assert.match(ui,/setInvoiceVerificationCandidates\(Array\.isArray\(result\?\.candidates\)/);
-console.log('PASS V12.79 strict buyer identity and old private client without external_id (no real invoices created)');
+console.log('PASS V13.60 explicit number permits changed private/company buyers while blocking other-job OID and duplicate numbers');
