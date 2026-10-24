@@ -33,14 +33,14 @@ export function findIssuedVatInvoiceForJob(invoices, { jobId, clientId }) {
  * Returns a refusal reason instead of guessing that an invoice belongs to a job.
  * An empty OID is allowed ONLY in the explicit administrator number-link flow.
  */
-export function inspectManualInvoiceMatch(invoice, { jobId, clientId, invoiceNumber, buyer }) {
+export function inspectManualInvoiceMatch(invoice, { jobId, clientId, invoiceNumber, buyer, allowDifferentBuyer = false }) {
   if (!invoice || !normalizeInvoiceText(invoice.id)) {
     return { ok: false, code: "NOT_FOUND", reason: "Nie znaleziono faktury o podanym numerze." };
   }
-  if (normalizeInvoiceText(invoice.number) !== normalizeInvoiceText(invoiceNumber)) {
+  if (!normalizeInvoiceText(invoice.number) || normalizeInvoiceText(invoice.number) !== normalizeInvoiceText(invoiceNumber)) {
     return { ok: false, code: "NUMBER_MISMATCH", reason: "Numer zwróconej faktury nie zgadza się z wpisanym numerem." };
   }
-  if (normalizeInvoiceText(clientId) && normalizeInvoiceText(invoice.client_id) !== normalizeInvoiceText(clientId)) {
+  if (!allowDifferentBuyer && normalizeInvoiceText(clientId) && normalizeInvoiceText(invoice.client_id) !== normalizeInvoiceText(clientId)) {
     return { ok: false, code: "WRONG_CLIENT", reason: "Faktura należy do innego klienta Fakturowni. Nie można jej przypisać do tego montażu." };
   }
   if (!isIssuedVatInvoiceRecord(invoice)) {
@@ -50,10 +50,10 @@ export function inspectManualInvoiceMatch(invoice, { jobId, clientId, invoiceNum
   if (oid && oid !== buildJobInvoiceOid(jobId)) {
     return { ok: false, code: "OTHER_JOB", reason: "Faktura jest przypisana identyfikatorem OID do innego montażu." };
   }
-  if (buyer) {
+  if (buyer && !allowDifferentBuyer) {
     const identity = inspectInvoiceBuyer(invoice, buyer);
     if (!identity.ok) return identity;
-  } else if (!normalizeInvoiceText(clientId)) {
+  } else if (!allowDifferentBuyer && !normalizeInvoiceText(clientId)) {
     return { ok: false, code: "BUYER_DETAILS_MISSING", reason: "Brak danych nabywcy i powiazanej kartoteki w Fakturowni." };
   }
   return { ok: true, code: "VERIFIED", reason: "" };

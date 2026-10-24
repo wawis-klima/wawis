@@ -58,14 +58,14 @@ async function scenario(label, body, overrides, expected) {
 }
 const positive=await scenario('Exact ID succeeds',{invoiceNumber:'ID:584755572'},{},true);
 assert.deepEqual(positive.calls.map(x=>x.path),['/invoices/584755572.json']);
-const wrongNip=await scenario('Wrong NIP rejected',{invoiceNumber:'ID:584755572'},{buyer_tax_no:'1234567890'},false);
-assert.equal(wrongNip.data.reasonCode,'BUYER_TAX_MISMATCH');
-const wrongClient=await scenario('Wrong client rejected',{invoiceNumber:'ID:584755572'},{client_id:'888'},false);
-assert.equal(wrongClient.data.reasonCode,'WRONG_CLIENT');
+const changedBuyerNip=await scenario('Changed buyer NIP allowed by exact invoice ID',{invoiceNumber:'ID:584755572'},{buyer_tax_no:'1234567890'},true);
+assert.equal(changedBuyerNip.data.reasonCode,'VERIFIED');
+const changedClient=await scenario('Changed client allowed by exact invoice ID',{invoiceNumber:'ID:584755572'},{client_id:'888'},true);
+assert.equal(changedClient.data.reasonCode,'VERIFIED');
 const foreignOid=await scenario('Other job OID rejected',{invoiceNumber:'ID:584755572'},{oid:'WAWIS-JOB-ffffffff-ffff-4fff-8fff-ffffffffffff'},false);
 assert.equal(foreignOid.data.reasonCode,'OTHER_JOB');
 const wrongStatus=await scenario('Draft rejected',{invoiceNumber:'ID:584755572'},{status:'draft'},false);
 assert.equal(wrongStatus.data.reasonCode,'NOT_ISSUED_VAT');
 const byNumber=await scenario('Unrelated printed invoice number not accepted',{invoiceNumber:'31/10/2026'},{},false);
 assert.equal(byNumber.data.reasonCode,'NOT_FOUND');
-console.log('OK: v13.53 direct Fakturownia ID GET, strict NIP/client/OID/status and unchanged existing number search.');
+console.log('OK: v13.60 direct Fakturownia ID GET; buyer changes permitted, foreign OID, draft and wrong number rejected.');

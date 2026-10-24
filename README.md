@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.59
+- 13.60
+
+WAWIS 13.60: Faktury weryfikowane po numerze i identyfikatorze, bez porównania nabywcy, z bezpiecznym kojarzeniem po OID lub unikalnej nowej fakturze w oknie wystawienia. Ręczne powiązanie po numerze dopuszcza inne dane nabywcy, lecz nie cudze OID i nie niewystawione dokumenty.
 
 WAWIS 13.59: prawdziwa poprawka kompaktowego okna „Protokół podpisany” na iPhonie. Usunięto zależność tego jednego okna od współdzielonych klas i zewnętrznego CSS; layout, odstępy i dwa przyciski w jednym rzędzie są teraz narzucone wprost w komponencie. Playwright sprawdza geometrię przy szerokości iPhone 14 i 320 px, także przy symulacji konfliktowych starych reguł. Bez zmian logiki i backendu.
 
@@ -1064,6 +1066,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `13.60` — automatyczne potwierdzenie wystawionej faktury po wiarygodnym OID lub nowym, jednoznacznym numerze w oknie przygotowania. Dane nabywcy mogą różnić się od danych montażu, bez ryzyka nadpisania karty kontrahenta.
 - wersja `13.59` — izolowany kompaktowy dialog po podpisanym protokole: dwie akcje obok siebie, bez zależności od ogólnych stylów.
 - wersja `13.58` — kompaktowe okno po podpisaniu protokołu na iPhonie, dwa przyciski obok siebie, bez zmian logiki.
 - wersja `13.57` — okno przypomnienia o zakończeniu po podpisanym protokole również dla mobilnego Administratora.

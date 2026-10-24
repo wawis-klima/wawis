@@ -15,7 +15,8 @@ const invoice=(id,delta=5000,extra={})=>({
   id,number:id+'/10/2026',client_id:55,oid:'',kind:'vat',status:'issued',
   created_at:new Date(now+delta).toISOString(),issue_date:new Date(now).toISOString().slice(0,10),
   buyer_name:'Tadeusz Rudy',buyer_street:'Częstochowska 12/99',buyer_city:'Łazy',
-  buyer_post_code:'42-450',buyer_tax_no:'', ...extra,
+  buyer_post_code:'42-450',buyer_tax_no:'',
+  positions:[{name:'Dostawa i montaż klimatyzatora marki Rotenso',quantity:1}], ...extra,
 });
 const baseline=invoice(900,-86400000);
 const newInvoice=invoice(991,5000);
@@ -123,6 +124,8 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
 
     assert.equal(tableAttempt.client_id,clientId,label+': baseline client');
     assert.deepEqual(Array.from(tableAttempt.baseline_invoice_ids),['900'],label+': persisted pre-invoice snapshot');
+    assert.equal(tableAttempt.buyer_snapshot._baselineScope,'account_v1360',label+': global new-issue baseline');
+    assert.equal(tableAttempt.buyer_snapshot._positionName,'Dostawa i montaż klimatyzatora marki Rotenso');
     assert.equal((await call('pending')).pending,true,label+': can recover attempt after reload');
     if(expired)tableAttempt.expires_at=new Date(now-1000).toISOString();
   }
@@ -154,21 +157,24 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
   if(expected.invoiceId)assert.equal(result.invoiceId,expected.invoiceId,label+': invoice id');
   if(expected.candidates!==undefined)assert.equal(result.candidates?.length,expected.candidates,label+': candidates');
   assert.equal(recorded.filter(r=>r.path.startsWith('/invoices')&&r.method!=='GET').length,0,label+': no invoice creation');
-  console.log('PASS V12.80 '+label);
+  console.log('PASS V13.60 '+label);
 }
 await run('single newly issued VAT with no OID auto-confirmed',{}, {found:true,code:'VERIFIED',invoiceId:'991'});
 await run('GUS company full legal name and postal change => auto-confirm by NIP',{companyGus:true},
   {found:true,code:'VERIFIED',invoiceId:'991',candidates:0});
-await run('GUS company changed NIP => fail closed',{companyGus:true,companyWrongNip:true},
-  {found:false,code:'NO_MATCHING_BUYER',candidates:0});
-await run('GUS company missing invoice NIP => fail closed',{companyGus:true,companyMissingNip:true},
-  {found:false,code:'NO_MATCHING_BUYER',candidates:0});
+await run('GUS company changed NIP => same prepared invoice auto-links',{companyGus:true,companyWrongNip:true},
+  {found:true,code:'VERIFIED',invoiceId:'991'});
+await run('GUS company missing invoice NIP => same prepared invoice auto-links',{companyGus:true,companyMissingNip:true},
+  {found:true,code:'VERIFIED',invoiceId:'991'});
 await run('new OID also automatically verified',{after:[invoice(991,5000,{oid:buildJobInvoiceOid(jobId)})]}, {found:true,code:'VERIFIED',invoiceId:'991'});
 await run('two new issued invoices => no auto',{after:[newInvoice,invoice(992,6000)]},{found:false,code:'OID_MISSING_CANDIDATES',candidates:3});
 await run('other job same client prepared => no auto',{competing:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('other incomplete invoice job => no auto',{otherJob:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('changed buyer address => no auto',{changedBuyer:true},{found:false,code:'NO_MATCHING_BUYER'});
-await run('wrong invoice address => no auto',{wrongBuyer:true},{found:false,code:'OID_MISSING_CANDIDATES'});
+await run('wrong invoice address => prepared invoice auto-links',{wrongBuyer:true},{found:true,code:'VERIFIED',invoiceId:'991'});
+await run('different Fakturownia customer => prepared invoice auto-links',{after:[invoice(991,5000,{client_id:888,buyer_name:'Anna Ryńska',buyer_street:'Nowa 7',buyer_city:'Sosnowiec'})]}, {found:true,code:'VERIFIED',invoiceId:'991'});
+await run('changed buyer with exact OID => automatic confirmation',{after:[invoice(991,5000,{client_id:888,buyer_name:'Anna Ryńska',buyer_street:'Nowa 7',buyer_city:'Sosnowiec',oid:buildJobInvoiceOid(jobId)})]}, {found:true,code:'VERIFIED',invoiceId:'991'});
+await run('other position => do not guess',{after:[invoice(991,5000,{positions:[{name:'Serwis i inne towary'}]})]}, {found:false,code:'OID_MISSING_CANDIDATES'});
 await run('expired server attempt => no auto',{expired:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('no persisted baseline => no auto',{noSavedBaseline:true},{found:false,code:'OID_MISSING_CANDIDATES'});
 await run('invoice existed BEFORE prepare => no auto',{after:[]},{found:false,code:'OID_MISSING_CANDIDATES'});
@@ -179,4 +185,4 @@ await run('missing provider creation timestamp => no auto',{after:[invoice(991,5
 const ui=fs.readFileSync(new URL('../src/components/JobDetailsPanel.jsx',import.meta.url),'utf8');
 assert.match(ui,/hasPendingFakturowniaInvoice/,'Auto-check persists across reload');
 assert.match(ui,/void verifyPendingFakturowniaInvoice\(true\)/,'Focus automatically verifies');
-console.log('PASS V12.81: 12.80 safety preserved, zero redundant customer lookup, manual candidate scan skipped on auto success');
+console.log('PASS V13.60: changed buyers supported, unique new-invoice + line item + time guarded, OID protected');
