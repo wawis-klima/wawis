@@ -1,5 +1,7 @@
 ## Aktualna wersja
-- 13.59
+- 13.60
+
+WAWIS 13.60: Faktury weryfikowane po numerze i identyfikatorze, bez porównania nabywcy, z bezpiecznym kojarzeniem po OID lub unikalnej nowej fakturze w oknie wystawienia. Ręczne powiązanie po numerze dopuszcza inne dane nabywcy, lecz nie cudze OID i nie niewystawione dokumenty.
 
 WAWIS 13.59: prawdziwa poprawka kompaktowego okna „Protokół podpisany” na iPhonie. Usunięto zależność tego jednego okna od współdzielonych klas i zewnętrznego CSS; layout, odstępy i dwa przyciski w jednym rzędzie są teraz narzucone wprost w komponencie. Playwright sprawdza geometrię przy szerokości iPhone 14 i 320 px, także przy symulacji konfliktowych starych reguł. Bez zmian logiki i backendu.
 
