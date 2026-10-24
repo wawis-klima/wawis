@@ -1,3 +1,9 @@
+## 13.60
+- Faktura VAT może zostać automatycznie powiązana z montażem po jego OID niezależnie od zmian danych nabywcy.
+- Jeżeli Fakturownia pominie OID formularza, przygotowanie zapamiętuje wcześniejsze faktury z konta; na powrocie WAWIS wymaga jedynej nowej wystawionej faktury z tym samym opisem pozycji, wiarygodnym czasem i brakiem równoległej sesji wystawiania. Nie zgaduje w sytuacjach niejednoznacznych.
+- Ręczne powiązanie po pełnym numerze faktury działa z innym nazwiskiem, adresem lub klientem Fakturowni, ale dokument musi istnieć, być wystawioną fakturą VAT i nie posiadać OID innego montażu. Zachowana blokada duplikatów i brak tworzenia nowych faktur podczas weryfikacji.
+- Testy regresyjne mockują rzeczywistą funkcję Edge oraz oba scenariusze, z i bez zapisanego OID, w tym zmianę nabywcy.
+
 ## 13.59
 - Naprawiono nieskuteczny wygląd przypomnienia w wersji 13.58 na rzeczywistym iPhonie: tekst zmieniał się, ale układ nadal był duży i pionowy.
 - Dialog korzysta z osobnego wariantu bez .formModal/.modal/.row/.btn; wysokość, szerokość, marginesy i układ przycisków określa bezpośrednio komponent, nie zewnętrzny CSS.
