@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppModal from "./modals/AppModal.jsx";
 import { PHOTO_SYNC_CENTER_CSS } from "./photo-sync-center.css.js";
-import { confirmAndRepairPhotoQueue } from "../modules/photo-queue-repair.js";
+import { confirmAndDeleteHeldPhotos, confirmAndRepairPhotoQueue, confirmAndSendHeldPhotos } from "../modules/photo-queue-repair.js";
+import { isPhotoQueueItemHeld } from "../modules/photo-offline-queue.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
 
 function formatDateTime(value) {
@@ -17,6 +18,7 @@ function formatDateTime(value) {
 }
 
 function getQueueItemStatus(item = {}) {
+  if (isPhotoQueueItemHeld(item)) return { key: "error", label: "Wstrzymane" };
   const status = String(item.upload_status || "local").toLowerCase();
   if (status === "error") return { key: "error", label: "Błąd wysyłania" };
   if (status === "uploading") return { key: "uploading", label: "Wysyłanie" };
@@ -69,12 +71,13 @@ export default function PhotoSyncStatus({
   const [open, setOpen] = useState(false);
   const [retryingAll, setRetryingAll] = useState(false);
   const [repairing, setRepairing] = useState(false);
+  const [legacyBusy, setLegacyBusy] = useState(false);
   const queueItems = Array.isArray(status?.queueItems) ? status.queueItems : [];
   const operationItems = Array.isArray(status?.operationItems) ? status.operationItems : [];
   const online = status?.connection?.tone !== "offline";
 
   const retryableItems = useMemo(
-    () => queueItems.filter((item) => String(item.upload_status || "local").toLowerCase() !== "uploading"),
+    () => queueItems.filter((item) => !isPhotoQueueItemHeld(item) && String(item.upload_status || "local").toLowerCase() !== "uploading"),
     [queueItems],
   );
   const retryableOperations = useMemo(
@@ -90,6 +93,36 @@ export default function PhotoSyncStatus({
   if (!status) return null;
 
   const queueReadError = status?.queueReadError || null;
+  const heldCount = queueItems.filter(isPhotoQueueItemHeld).length;
+
+  async function handleSendHeld() {
+    if (legacyBusy || !online) return;
+    setLegacyBusy(true);
+    try {
+      await confirmAndSendHeldPhotos({
+        count: heldCount,
+        logFn: (event, payload) => logDiagnostic(event, payload),
+        onReleased: async () => { await onRetryAll?.(); },
+      });
+      await status.refreshQueueSummary?.();
+    } finally {
+      setLegacyBusy(false);
+    }
+  }
+
+  async function handleDeleteHeld() {
+    if (legacyBusy) return;
+    setLegacyBusy(true);
+    try {
+      await confirmAndDeleteHeldPhotos({
+        count: heldCount,
+        logFn: (event, payload) => logDiagnostic(event, payload),
+      });
+      await status.refreshQueueSummary?.();
+    } finally {
+      setLegacyBusy(false);
+    }
+  }
 
   async function handleRepairQueue() {
     if (repairing) return;
@@ -194,6 +227,33 @@ export default function PhotoSyncStatus({
           <div className="photoSyncItemError" role="alert" data-testid="photo-queue-read-error">
             <strong>Kolejka zdjęć na tym telefonie jest niedostępna.</strong>{" "}
             {queueReadError.message} (kod: {queueReadError.code})
+          </div>
+        ) : null}
+
+        {heldCount > 0 ? (
+          <div className="photoSyncItemError" role="alert" data-testid="photo-queue-legacy-hold">
+            <strong>Na telefonie są stare, niewysłane zdjęcia z 22.10 ({heldCount}).</strong>{" "}
+            Nie wysyłają się automatycznie. Wybierz, co z nimi zrobić. Mogły zostać już dodane do montażu w inny sposób.
+            <div className="photoSyncItemButtons" style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                className="photoSyncItemAction retry"
+                disabled={!online || legacyBusy}
+                onClick={handleSendHeld}
+                data-testid="photo-queue-legacy-send"
+              >
+                Wyślij stare zdjęcia
+              </button>
+              <button
+                type="button"
+                className="photoSyncItemAction remove"
+                disabled={legacyBusy}
+                onClick={handleDeleteHeld}
+                data-testid="photo-queue-legacy-delete"
+              >
+                Usuń stare zdjęcia
+              </button>
+            </div>
           </div>
         ) : null}
 

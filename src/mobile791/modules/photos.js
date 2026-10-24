@@ -1,4 +1,4 @@
-import { claimPhotoQueueItem, deletePhotoQueueItem, describePhotoQueueFailure, getLastPhotoQueueError, hydratePhotoQueueItem, listPhotoQueueItems, PHOTO_QUEUE_ERROR_CODES, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
+import { claimPhotoQueueItem, deletePhotoQueueItem, describePhotoQueueFailure, getLastPhotoQueueError, hydratePhotoQueueItem, isPhotoQueueItemHeld, listPhotoQueueItems, PHOTO_QUEUE_ERROR_CODES, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
@@ -1606,6 +1606,8 @@ async function runPersistedPhotoUploads({
   const guardedOnPhotoUploadError = (...args) => { if (isSessionCurrent()) onPhotoUploadError?.(...args); };
   const records = (await listPhotoQueueItems())
     .filter((record) => photoQueueRecordBelongsToProfile(record, profileId))
+    // 13.62: stare zdjęcia z bazy v4 (13.42–13.48) czekają na decyzję użytkownika — także przy „Wyślij wszystkie”.
+    .filter((record) => !isPhotoQueueItemHeld(record))
     .filter((record) => includeErrors || photoQueueItemIsDue(record));
   if (!records.length) {
     if (isSessionCurrent()) onQueueIdle?.();

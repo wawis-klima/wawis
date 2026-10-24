@@ -1,9 +1,17 @@
 import { summarizePhotoDiagnosticQueue } from '../../modules/diagnostics-package4.js';
 const DB_NAME = 'wawis-mobile-photo-queue';
-// WAWIS 13.62: minimalna wersja bazy. Schemat v3 i v4 jest identyczny (ten sam magazyn i indeksy).
-// Telefony, które 22.10 uruchomiły 13.42–13.48, mają już v4; kod nigdy nie żąda wersji niższej
-// niż istniejąca (VersionError) i otwiera także przyszłe wersje z tym samym magazynem.
-const DB_VERSION = 4;
+// WAWIS 13.62: schemat v3 i v4 jest identyczny (ten sam magazyn i indeksy).
+// Telefony, które 22.10 uruchomiły 13.42–13.48, mają v4. Kod otwiera bazę bez numeru wersji
+// (nigdy VersionError), używa jej w istniejącej wersji (v3, v4, przyszłe) i niczego nie obniża.
+// Nowe instalacje i bazy v1–v2 dostają v3 — 13.62 nie podnosi v3 do v4, więc ewentualny powrót
+// do 13.61 nie zepsuje kolejnych telefonów.
+const DB_VERSION = 3;
+// Wersja założona wyłącznie przez wycofane 13.42–13.48. Rekordy pozostawione wtedy w kolejce
+// są wstrzymywane do decyzji użytkownika (wyślij / usuń) zamiast wysyłać się automatycznie.
+const LEGACY_V4_DB_VERSION = 4;
+const QUEUE_WRITER = '13.62';
+export const LEGACY_REVIEW_PENDING = 'pending';
+export const LEGACY_REVIEW_RELEASED = 'released';
 const STORE_NAME = 'queued-photos';
 const OPEN_TIMEOUT_MS = 6000;
 const RESET_TIMEOUT_MS = 8000;
@@ -23,6 +31,12 @@ export const PHOTO_QUEUE_ERROR_CODES = Object.freeze({
 });
 
 let lastPhotoQueueError = null;
+let lastOpenedQueueVersion = 0;
+
+// Zdjęcie z bazy v4 (13.42–13.48) czekające na decyzję użytkownika: nie wysyła się automatycznie.
+export function isPhotoQueueItemHeld(item) {
+  return String(item?.legacy_v4_review || '') === LEGACY_REVIEW_PENDING;
+}
 
 function hasIndexedDb() {
   return typeof indexedDB !== 'undefined';
@@ -104,6 +118,8 @@ function ensureSchema(request) {
   // Celowo nie usuwamy ani nie nadpisujemy żadnego rekordu podczas podnoszenia wersji.
 }
 
+const FRESH_DATABASE = Symbol('fresh-photo-queue-database');
+
 function createOpenRequest(mode, repairVersion = 0) {
   if (mode === 'existing') return indexedDB.open(DB_NAME);
   if (mode === 'upgrade') return indexedDB.open(DB_NAME, DB_VERSION);
@@ -140,14 +156,28 @@ function requestQueueDb(mode, repairVersion = 0) {
         ? 'Aktualizacja lokalnej kolejki zdjęć czeka na zamknięcie innego okna WAWIS.'
         : 'Otwarcie lokalnej kolejki zdjęć przekroczyło limit czasu.',
     )), OPEN_TIMEOUT_MS);
-    request.onupgradeneeded = () => ensureSchema(request);
+    let fresh = false;
+    request.onupgradeneeded = (event) => {
+      // Otwarcie bez wersji na telefonie bez bazy utworzyłoby v1; przerywamy i zakładamy v3.
+      if (mode === 'existing' && Number(event?.oldVersion || 0) === 0) {
+        fresh = true;
+        try { request.transaction.abort(); } catch { /* transakcja już zakończona */ }
+        return;
+      }
+      ensureSchema(request);
+    };
     request.onblocked = () => { blocked = true; };
     request.onsuccess = () => {
       const db = request.result;
       db.onversionchange = () => db.close();
       finish(null, db);
     };
-    request.onerror = () => {
+    request.onerror = (event) => {
+      if (fresh) {
+        event?.preventDefault?.();
+        finish(null, FRESH_DATABASE);
+        return;
+      }
       const error = request.error || new Error('Nie udało się otworzyć lokalnej kolejki zdjęć.');
       finish(createPhotoQueueError(classifyPhotoQueueError(error), 'Nie udało się otworzyć lokalnej kolejki zdjęć.', error));
     };
@@ -158,14 +188,20 @@ async function openQueueDb() {
   if (!hasIndexedDb()) return null;
   // 1. Otwarcie bez numeru wersji nigdy nie kończy się VersionError (v3, v4 i przyszłe v5+).
   const current = await requestQueueDb('existing');
-  if (current.version >= DB_VERSION && current.objectStoreNames.contains(STORE_NAME)) return current;
-  const currentVersion = Number(current.version || 0);
-  const hasStore = current.objectStoreNames.contains(STORE_NAME);
-  current.close();
-  // 2. v1–v3 (lub nowa instalacja): niedestrukcyjne podniesienie do v4.
-  if (currentVersion < DB_VERSION) return requestQueueDb('upgrade');
-  // 3. Wyższa wersja bez magazynu (nie powinno wystąpić): dodajemy magazyn, nie obniżamy wersji.
-  return requestQueueDb('repair', currentVersion + (hasStore ? 0 : 1));
+  const opened = await (async () => {
+    // 2. Nowa instalacja: zakładamy v3.
+    if (current === FRESH_DATABASE) return requestQueueDb('upgrade');
+    // 3. Istniejąca baza z magazynem w wersji >= 3 (v3, v4 z 13.42–13.48, przyszłe): używamy jej bez zmiany wersji.
+    if (current.version >= DB_VERSION && current.objectStoreNames.contains(STORE_NAME)) return current;
+    const currentVersion = Number(current.version || 0);
+    current.close();
+    // 4. v1–v2: niedestrukcyjne podniesienie do v3.
+    if (currentVersion < DB_VERSION) return requestQueueDb('upgrade');
+    // 5. Wersja >= 3 bez magazynu (nie powinno wystąpić): dodajemy magazyn, nie obniżamy wersji.
+    return requestQueueDb('repair', currentVersion + 1);
+  })();
+  lastOpenedQueueVersion = Number(opened?.version || 0);
+  return opened;
 }
 
 async function withStore(mode, operation) {
@@ -201,6 +237,8 @@ function toSerializableRecord(photo = {}) {
   return {
     id: String(photo.id || ''),
     job_id: photo.job_id,
+    queue_writer: QUEUE_WRITER,
+    legacy_v4_review: photo.legacy_v4_review || '',
     created_at: photo.created_at || new Date().toISOString(),
     uploaded_by: photo.uploaded_by || '',
     user_id: photo.user_id || photo.uploaded_by || '',
@@ -311,14 +349,70 @@ export async function readPhotoQueueState() {
   }
   try {
     const records = await withStore('readonly', (store) => store.getAll());
-    const items = Array.isArray(records)
+    let items = Array.isArray(records)
       ? records.sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')))
       : [];
+    if (lastOpenedQueueVersion === LEGACY_V4_DB_VERSION) items = await markLegacyV4Records(items);
     return { ok: true, items, code: '', message: '' };
   } catch (error) {
     const code = rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.READ, 'Nie udało się odczytać lokalnej kolejki zdjęć.');
     return { ok: false, items: [], code, message: describePhotoQueueFailure(code) };
   }
+}
+
+// Jednorazowo oznacza rekordy pozostawione przez 13.42–13.48 (baza v4, brak znacznika 13.62).
+// Znacznik jest zapisany w samym rekordzie, więc przetrwa odświeżenie i zamknięcie aplikacji.
+async function markLegacyV4Records(items) {
+  const candidates = items.filter((item) => !item.queue_writer && !item.legacy_v4_review);
+  if (!candidates.length) return items;
+  const markedAt = new Date().toISOString();
+  const marked = new Map(candidates.map((item) => [String(item.id), {
+    ...item,
+    legacy_v4_review: LEGACY_REVIEW_PENDING,
+    legacy_v4_marked_at: markedAt,
+  }]));
+  try {
+    await withStore('readwrite', (store) => {
+      let last = null;
+      for (const record of marked.values()) last = store.put(record);
+      return last;
+    });
+  } catch (error) {
+    // Nawet gdy zapis znacznika się nie uda, w tej sesji rekordy pozostają wstrzymane (bezpieczny kierunek).
+    rememberPhotoQueueError(error, PHOTO_QUEUE_ERROR_CODES.WRITE, 'Nie udało się zapisać wstrzymania starych zdjęć.');
+  }
+  console.warn('[PHOTO_QUEUE_LEGACY_HOLD] Wstrzymano zdjęcia z kolejki v4 (13.42–13.48) do decyzji użytkownika.', { code: 'PHOTO_QUEUE_LEGACY_HOLD', count: marked.size });
+  return items.map((item) => marked.get(String(item.id)) || item);
+}
+
+// Decyzja użytkownika: wyślij wstrzymane zdjęcia (zwykła kolejka wysyłki przejmuje je od razu).
+export async function releaseHeldPhotoQueueItems() {
+  const state = await readPhotoQueueState();
+  if (!state.ok) return { ok: false, count: 0, code: state.code, message: state.message };
+  const held = state.items.filter(isPhotoQueueItemHeld);
+  let released = 0;
+  for (const item of held) {
+    if (await updatePhotoQueueItem(item.id, { legacy_v4_review: LEGACY_REVIEW_RELEASED, next_attempt_at: '' })) released += 1;
+  }
+  dispatchQueueChanged();
+  return released === held.length
+    ? { ok: true, count: released, code: '', message: '' }
+    : { ok: false, count: released, code: PHOTO_QUEUE_ERROR_CODES.WRITE, message: `Zwolniono ${released} z ${held.length} zdjęć. Spróbuj ponownie.` };
+}
+
+// Decyzja użytkownika: usuń WYŁĄCZNIE wstrzymane stare zdjęcia z tego telefonu (nowe zdjęcia zostają).
+export async function deleteHeldPhotoQueueItems() {
+  const state = await readPhotoQueueState();
+  if (!state.ok) return { ok: false, count: 0, code: state.code, message: state.message };
+  const held = state.items.filter(isPhotoQueueItemHeld);
+  let deleted = 0;
+  for (const item of held) {
+    if (await deletePhotoQueueItem(item.id)) deleted += 1;
+  }
+  const after = await readPhotoQueueState();
+  const remaining = after.ok ? after.items.filter(isPhotoQueueItemHeld).length : null;
+  if (remaining === 0) return { ok: true, count: deleted, code: '', message: '' };
+  return { ok: false, count: deleted, code: after.ok ? PHOTO_QUEUE_ERROR_CODES.WRITE : after.code, message: 'Nie udało się potwierdzić usunięcia wszystkich starych zdjęć. Spróbuj ponownie.' };
 }
 
 // Dla wewnętrznych pętli wysyłki: przy błędzie odczytu nic nie wysyłamy i niczego nie usuwamy.
@@ -345,7 +439,7 @@ export async function recoverStalePhotoQueueItems(nowMs = Date.now()) {
   return recovered;
 }
 
-export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, force = false } = {}) {
+export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, force = false, allowHeld = false } = {}) {
   if (!photoId) return null;
   let db = null;
   try {
@@ -364,6 +458,7 @@ export async function claimPhotoQueueItem(photoId, { leaseMs = 3 * 60 * 1000, fo
       request.onsuccess = () => {
         const current = request.result;
         if (!current) return;
+        if (!allowHeld && isPhotoQueueItemHeld(current)) return;
         const nowMs = Date.now();
         const leaseUntil = Date.parse(current.lease_until || '');
         const nextAttempt = Date.parse(current.next_attempt_at || '');
@@ -491,12 +586,15 @@ export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {
     unit_key: record.unit_key || '',
     file_fingerprint: record.file_fingerprint || '',
     legacy_queue_item: Boolean(record.legacy_queue_item),
+    legacy_v4_review: record.legacy_v4_review || '',
     uploaded_by: record.uploaded_by || '',
     user_id: record.user_id || record.uploaded_by || '',
     created_at: record.created_at || new Date().toISOString(),
     uploader_name: record.uploader_name || 'Pracownik',
     upload_status: record.upload_status === 'uploading' ? 'local' : (record.upload_status || 'local'),
-    upload_status_label: record.upload_status === 'error' ? 'Błąd wysyłania' : 'Zapisano na telefonie',
+    upload_status_label: isPhotoQueueItemHeld(record)
+      ? 'Wstrzymane — zdecyduj w Synchronizacji'
+      : (record.upload_status === 'error' ? 'Błąd wysyłania' : 'Zapisano na telefonie'),
     upload_error: record.upload_error || '',
     local_preview_url: previewUrl,
     local_file_name: record.local_file_name || file.name || 'zdjecie.jpg',

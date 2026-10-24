@@ -112,6 +112,13 @@
     db.close();
     return { version, count: rows.length, shas: await Promise.all(rows.map((r) => sha(r.local_file))) };
   }
+  async function rawRows() {
+    const db = await rawOpen(0);
+    if (!db.objectStoreNames.contains(STORE)) { db.close(); return []; }
+    const rows = await new Promise((resolve) => { const q = db.transaction(STORE, 'readonly').objectStore(STORE).getAll(); q.onsuccess = () => resolve(q.result); });
+    db.close();
+    return rows;
+  }
   // Rekord w formacie wersji 13.38/13.61 (v3) lub 13.42–13.48 (v4: dodatkowe pola lease/generation).
   async function legacyRecord({ format, id, owner, jobId, unitRef, f, status = 'local', leaseUntil = '' }) {
     const rec = {
@@ -160,7 +167,7 @@
       setOnline(true);
       const res = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
       const shas = await serverShas(); const raw = await rawState();
-      return { pass: saved.queuedCount === 1 && saved.failedCount === 0 && listed === 1 && srv.rows.length === 1 && shas.includes(await sha(f)) && raw.count === 0,
+      return { pass: saved.queuedCount === 1 && saved.failedCount === 0 && listed === 1 && srv.rows.length === 1 && shas.includes(await sha(f)) && raw.count === 0 && raw.version === 3,
         saved, listed, res, rows: srv.rows.length, raw };
     },
     async S02_istniejaca_v3_z_niewyslanym_zdjeciem() {
@@ -171,9 +178,11 @@
       const visible = (await q.listPhotoQueueItems()).length;
       const res = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
       const shas = await serverShas(); const raw = await rawState();
-      return { pass: visible === 1 && shas.includes(await sha(f)) && srv.rows.length === 1 && raw.count === 0,
+      return { pass: visible === 1 && shas.includes(await sha(f)) && srv.rows.length === 1 && raw.count === 0 && raw.version === 3,
         visible, res, raw };
     },
+    // Telefon v4 z 13.42–13.48: stare zdjęcia są widoczne, NIE wysyłają się same (także „Wyślij wszystkie”),
+    // znacznik wstrzymania jest zapisany w rekordzie, a po świadomym „Wyślij” trafiają na serwer bez duplikatów.
     async S03_istniejaca_v4_z_13_48() {
       await cleanStart();
       const files = [await file('navy', 'a.png'), await file('teal', 'b.png'), await file('olive', 'c.png')];
@@ -184,12 +193,20 @@
       ];
       await rawCreate(4, recs);
       const p = await loadPhotos(); const q = await loadQueue();
-      const visible = (await q.listPhotoQueueItems()).length;
+      const items = await q.listPhotoQueueItems();
+      const visible = items.length;
+      const heldVisible = items.filter((i) => q.isPhotoQueueItemHeld?.(i)).length;
+      const auto = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const manualAll = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const uploadsBeforeDecision = srv.uploads;
+      const persistedMarks = (await rawRows()).filter((r) => r.legacy_v4_review === 'pending').length;
+      const release = q.releaseHeldPhotoQueueItems ? await q.releaseHeldPhotoQueueItems() : { ok: false };
       const res = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
       const shas = await serverShas(); const raw = await rawState();
       const expected = await Promise.all(files.map(sha));
-      return { pass: visible === 3 && expected.every((h) => shas.includes(h)) && shas.length === 3 && new Set(shas).size === 3 && raw.count === 0 && raw.version === 4,
-        visible, res, serverObjects: shas.length, raw };
+      return { pass: visible === 3 && heldVisible === 3 && uploadsBeforeDecision === 0 && persistedMarks === 3 && release.ok === true
+          && expected.every((h) => shas.includes(h)) && shas.length === 3 && new Set(shas).size === 3 && raw.count === 0 && raw.version === 4,
+        visible, heldVisible, auto, manualAll, uploadsBeforeDecision, persistedMarks, release, res, serverObjects: shas.length, raw };
     },
     async S04_przyszla_wersja_bazy_nie_jest_obnizana() {
       await cleanStart();
@@ -221,8 +238,9 @@
     },
     async S07_zablokowana_baza_bez_zawieszenia_i_bez_pustej_listy() {
       await cleanStart();
-      await rawCreate(3, [await legacyRecord({ format: 'v3', id: 'local-photo-upload-held', owner: 'A', jobId: 'J8', unitRef: 'jw', f: await file('silver', 'h.png') })]);
-      const holder = await rawOpen(3); // „stara karta” trzyma połączenie i nie reaguje na versionchange
+      // Baza v2 wymaga podniesienia do v3; „stara karta” trzyma połączenie i nie reaguje na versionchange.
+      await rawCreate(2, [await legacyRecord({ format: 'v3', id: 'local-photo-upload-held', owner: 'A', jobId: 'J8', unitRef: 'jw', f: await file('silver', 'h.png') })]);
+      const holder = await rawOpen(2);
       holder.onversionchange = null;
       const q = await loadQueue();
       const t0 = performance.now();
@@ -357,6 +375,59 @@
       await new Promise((res) => setTimeout(res, 800));
       return { pass: r.failedCount === 0 && srv.rows.length === 1 && (await serverShas()).includes(await sha(f)) && errors.length === 0,
         result: { queuedCount: r.queuedCount, failedCount: r.failedCount }, storagePosts: srv.uploads, rows: srv.rows.length, errors };
+    },
+    // Decyzja „Usuń stare zdjęcia”: usuwa wyłącznie wstrzymane rekordy v4; nowe zdjęcie z 13.62 zostaje i wysyła się.
+    async S17_usuniecie_starych_zachowuje_nowe() {
+      await cleanStart();
+      const old = await file('black', 'old.png');
+      await rawCreate(4, [await legacyRecord({ format: 'v4', id: 'local-photo-upload-old', owner: 'A', jobId: 'J18', unitRef: 'jw', f: old })]);
+      const p = await loadPhotos(); const q = await loadQueue();
+      setOnline(false);
+      const fresh = await file('white', 'new.png');
+      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J18', documents: [{ file: fresh, deviceIndex: 0, unitRef: 'jz' }], setJobs: () => {} });
+      const before = await q.listPhotoQueueItems();
+      const del = q.deleteHeldPhotoQueueItems ? await q.deleteHeldPhotoQueueItems() : { ok: false };
+      const after = await q.listPhotoQueueItems();
+      setOnline(true);
+      const res = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const shas = await serverShas(); const raw = await rawState();
+      return { pass: saved.queuedCount === 1 && before.length === 2 && del.ok === true && del.count === 1 && after.length === 1
+          && !q.isPhotoQueueItemHeld(after[0]) && shas.length === 1 && shas.includes(await sha(fresh)) && !shas.includes(await sha(old)) && raw.count === 0,
+        saved: saved.queuedCount, before: before.length, del, after: after.length, res, serverObjects: shas.length, raw };
+    },
+    // Bezpieczny powrót: 13.62 nie podnosi v3 i zakłada nowe bazy w v3, więc 13.61 (open v3) nadal działa.
+    async S18_powrot_do_13_61_nie_psuje_bazy_v3() {
+      await cleanStart();
+      const p = await loadPhotos();
+      setOnline(false);
+      const f = await file('cyan', 'rb.png');
+      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J19', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
+      let reopenedBy1361 = null;
+      try { const db = await rawOpen(3); reopenedBy1361 = db.version; db.close(); } catch (error) { reopenedBy1361 = String(error?.name || error); }
+      const raw = await rawState();
+      setOnline(true);
+      return { pass: saved.queuedCount === 1 && reopenedBy1361 === 3 && raw.version === 3 && raw.count === 1, saved: saved.queuedCount, reopenedBy1361, raw };
+    },
+    // Kacper/Paweł po aktualizacji: start aplikacji online (restore + automatyczna wysyłka) NIE wysyła starych zdjęć,
+    // a nowe zdjęcie zrobione w tej samej sesji wysyła się normalnie.
+    async S19_start_online_nie_wysyla_starych_przed_decyzja() {
+      await cleanStart();
+      const old = await file('brown', 'stare.png');
+      await rawCreate(4, [await legacyRecord({ format: 'v4', id: 'local-photo-upload-stare', owner: 'K', jobId: 'J20', unitRef: 'jw', f: old })]);
+      const p = await loadPhotos(); const q = await loadQueue();
+      const ui = trackUi('J20');
+      await p.restorePersistedJobPhotos({ supabase: supabaseFor('K'), profile: { id: 'K' }, setJobs: ui.setJobs });
+      await p.resumePersistedPhotoUploads({ supabase: supabaseFor('K'), profile: { id: 'K' }, setJobs: ui.setJobs });
+      const uploadsAfterStart = srv.uploads;
+      const fresh = await file('pink', 'nowe.png');
+      const r = await p.uploadJobPhotos({ supabase: supabaseFor('K'), profile: { id: 'K' }, jobId: 'J20', event: { target: { files: [fresh], value: 'x' } }, setJobs: ui.setJobs });
+      await new Promise((res) => setTimeout(res, 800));
+      await p.resumePersistedPhotoUploads({ supabase: supabaseFor('K'), profile: { id: 'K' }, setJobs: ui.setJobs });
+      const shas = await serverShas();
+      const remaining = await q.listPhotoQueueItems();
+      return { pass: uploadsAfterStart === 0 && r.failedCount === 0 && shas.length === 1 && shas.includes(await sha(fresh)) && !shas.includes(await sha(old))
+          && remaining.length === 1 && q.isPhotoQueueItemHeld(remaining[0]) && ui.seen.includes('Wstrzymane — zdecyduj w Synchronizacji'),
+        uploadsAfterStart, failed: r.failedCount, serverObjects: shas.length, remaining: remaining.length, uiSeen: [...new Set(ui.seen)] };
     },
   };
 

@@ -25,6 +25,9 @@ const SCENARIOS = [
   'S14_awaryjna_wysylka_z_pamieci_13_55',
   'S15_przypadek_pawla_v4_dwie_tabliczki_online',
   'S16_przypadek_kacpra_v4_zwykle_zdjecie_online',
+  'S17_usuniecie_starych_zachowuje_nowe',
+  'S18_powrot_do_13_61_nie_psuje_bazy_v3',
+  'S19_start_online_nie_wysyla_starych_przed_decyzja',
 ];
 
 test.describe('@mobile kolejka zdjęć 13.62 — IndexedDB v3/v4', () => {

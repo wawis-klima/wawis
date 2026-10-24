@@ -25,6 +25,9 @@ const DESCRIPTIONS = Object.freeze({
   PHOTO_QUEUE_WRITE_FAILED: 'Nie udało się zapisać w lokalnej kolejce zdjęć.',
   PHOTO_QUEUE_RESET_FAILED: 'Czyszczenie lokalnej kolejki zdjęć nie zostało potwierdzone.',
   PHOTO_QUEUE_RESET_DONE: 'Użytkownik wyczyścił lokalną kolejkę niewysłanych zdjęć (Napraw kolejkę zdjęć).',
+  PHOTO_QUEUE_LEGACY_HOLD: 'Stare zdjęcia z kolejki v4 (13.42–13.48) wstrzymane do decyzji użytkownika — nie wysyłają się automatycznie.',
+  PHOTO_QUEUE_LEGACY_RELEASED: 'Użytkownik zdecydował o wysłaniu starych zdjęć z kolejki v4.',
+  PHOTO_QUEUE_LEGACY_DELETED: 'Użytkownik usunął stare, niewysłane zdjęcia z kolejki v4.',
   DIAGNOSTIC_UNCLASSIFIED: 'Niesklasyfikowane zdarzenie techniczne; sprawdź kontekst zdarzenia.',
 });
 
