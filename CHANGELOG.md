@@ -1,3 +1,7 @@
+## 13.61
+- Zaktualizowano ikonę PWA na ekranie początkowym iPhone'a na zaakceptowany wzór WAWIS z niebieskim pierścieniem. Oddzielono ikonę instalacyjną od loga firmowego.
+- Odświeżono manifest i odwołania do ikon w HTML bez zmian synchronizacji, protokołów, PDF i backendu.
+
 ## 13.60
 - Faktura VAT może zostać automatycznie powiązana z montażem po jego OID niezależnie od zmian danych nabywcy.
 - Jeżeli Fakturownia pominie OID formularza, przygotowanie zapamiętuje wcześniejsze faktury z konta; na powrocie WAWIS wymaga jedynej nowej wystawionej faktury z tym samym opisem pozycji, wiarygodnym czasem i brakiem równoległej sesji wystawiania. Nie zgaduje w sytuacjach niejednoznacznych.
