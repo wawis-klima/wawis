@@ -2,7 +2,7 @@
   "policy_enforced_from": "10.60",
   "version": "13.60",
   "scope": "desktop",
-  "release_branch": "fix/fakturownia-auto-number-v1360",
+  "release_branch": "release/v13.60",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "fix/fakturownia-auto-number-v1360",
+    "source_branch": "release/v13.60",
     "ready_for_main": false,
     "status": "AWAITING_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
