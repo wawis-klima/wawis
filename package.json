@@ -1,11 +1,11 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "13.59",
+  "version": "13.60",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",
-    "build": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js build",
+    "build": "npm run prepare:deps && node scripts/smoke-fakturownia-link-v1277.mjs && node scripts/smoke-fakturownia-auto-v1280.mjs && npm run prepare:bins && node node_modules/vite/bin/vite.js build",
     "preview": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js preview",
     "version:bump": "node version-bump.cjs",
     "zip:release": "node scripts/release-zip.cjs",
