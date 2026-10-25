@@ -57,7 +57,11 @@ function loadOcrLibrary() {
   return libraryPromise;
 }
 
-async function getWorker(onProgress, task = 'model') {
+let warmupOnlyWorker = false;
+
+async function getWorker(onProgress, task = 'model', { warmup = false } = {}) {
+  // Prawdziwy odczyt przejmuje workera przygotowanego w tle — wtedy przygotowanie go nie zamyka.
+  if (!warmup) warmupOnlyWorker = false;
   progressListener = onProgress;
   progressTask = task;
   if (!workerPromise) {
@@ -67,6 +71,9 @@ async function getWorker(onProgress, task = 'model') {
         workerPath: OCR_WORKER_PATH,
         corePath: OCR_CORE_PATH,
         langPath: OCR_LANGUAGE_PATH,
+        // 13.70: worker ładowany bezpośrednio z /ocr/ (nie z adresu blob:), żeby jego pobrania
+        // obsługiwał service worker i trwały cache czytników — odczyt SN bez internetu.
+        workerBlobURL: false,
         logger: (message) => progressListener?.(mapProgress(message)),
       });
       await worker.setParameters({
@@ -82,6 +89,16 @@ async function getWorker(onProgress, task = 'model') {
     });
   }
   return workerPromise;
+}
+
+// 13.70: jednorazowe przygotowanie OCR z internetem (pobranie i zapis plików w cache), potem zamknięcie.
+export async function warmDesktopNameplateOcr() {
+  if (workerPromise) return false; // trwa prawdziwy odczyt — nie przerywamy go
+  warmupOnlyWorker = true;
+  await getWorker(null, 'model', { warmup: true });
+  if (warmupOnlyWorker) await cancelDesktopNameplateModelOcr();
+  warmupOnlyWorker = false;
+  return true;
 }
 
 export async function cancelDesktopNameplateModelOcr() {

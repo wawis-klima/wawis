@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## OFFLINE-READERS-1370 — czytniki tabliczek zapisane w telefonie (25.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OR-1370-CACHE | FIXED-UNVERIFIED | iPhone 13.69 offline: SN pusty, bo Code 128 (jsDelivr) i OCR (/ocr/*) ładowane z sieci. Trwały cache service workera + pobranie w tle. E2E mobile-nameplate-offline-readers-v1370 (context.setOffline: pliki z cache, SN wpisany). |
+| OR-1370-WORKER | FIXED-UNVERIFIED | Worker OCR z /ocr/worker.min.js (workerBlobURL=false), żeby jego pobrania obsługiwał service worker. Przygotowanie w tle nie zamyka workera używanego przez prawdziwy odczyt. |
+| OR-1370-SHELL | REGRESSION | Cache aplikacji wawis-app-shell-v* czyszczony jak dotąd; nowy cache czytników nie jest usuwany przy aktualizacji. E2E photo-queue-built, robustness. |
+| OR-1370-LIVE | EXTERNAL | iPhone: Diagnostyka pokazuje oba czytniki „zapisany w telefonie”; tryb samolotowy → SN wpisany. Chromium nie dowodzi obsługi workerów przez SW w Safari. |
+
 ## OFFLINE-NAMEPLATE-READ-1369 — odczyt tabliczki bez internetu (25.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -1,3 +1,9 @@
+## 13.70
+- Odczyt numeru SN tabliczki działa bez internetu. W 13.69 w trybie samolotowym odczytywał się tylko model (z EAN), a pole SN zostawało puste, bo czytnik kodu Code 128 i czytnik tekstu (OCR) pobierały swoje pliki z internetu w chwili odczytu.
+- Po zalogowaniu z internetem aplikacja raz, w tle, zapisuje oba czytniki w telefonie (osobny, trwały cache — nie znika przy aktualizacji wersji). Później działają także w trybie samolotowym.
+- Diagnostyka: nowa sekcja „Odczyt tabliczek bez internetu” — stan obu czytników i przycisk „Pobierz czytniki teraz”.
+- Gdy czytniki nie są jeszcze zapisane, okno tabliczki bez internetu mówi, że trzeba raz otworzyć aplikację z internetem.
+
 ## 13.69
 - Odczyt tabliczki bez internetu: zamiast pustych pól aplikacja wpisuje to, co odczytał czytnik telefonu (model ze słownika i numer SN), z ostrzeżeniem „Brak internetu — AI nie sprawdziła tabliczki. Porównaj z tabliczką znak po znaku”. Zaznaczenie „Sprawdziłem numer SN znak po znaku” pozostaje obowiązkowe.
 - Gdy kod kreskowy i nadruk SN się różnią, w polu jest numer z kodu kreskowego, a oba odczyty są pokazane do porównania. Numer EAN nigdy nie trafia do pola SN.
