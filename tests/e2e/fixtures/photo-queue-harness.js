@@ -111,7 +111,7 @@
     if (!db.objectStoreNames.contains(STORE)) { db.close(); return { version, count: 0, shas: [] }; }
     const rows = await new Promise((resolve) => { const q = db.transaction(STORE, 'readonly').objectStore(STORE).getAll(); q.onsuccess = () => resolve(q.result); });
     db.close();
-    return { version, count: rows.length, shas: await Promise.all(rows.map((r) => sha(r.local_file))) };
+    return { version, count: rows.length, shas: await Promise.all(rows.map((r) => sha(r.local_file || (r.local_file_bytes ? new Blob([r.local_file_bytes]) : null)))) };
   }
   async function rawRows() {
     const db = await rawOpen(0);
@@ -479,6 +479,42 @@
       const shas = await serverShas();
       return { pass: uploadsBefore === 0 && released === 1 && shas.length === 1 && shas.includes(await sha(f)) && (await rawState()).count === 0,
         before, uploadsBefore, released, after, serverObjects: shas.length };
+    },
+    // 13.65: zdjęcie zapisuje się w telefonie jako bajty (ArrayBuffer), nie Blob/File — Safari nie zgubi zawartości.
+    async S23_zdjecie_zapisane_jako_bajty() {
+      await cleanStart();
+      const p = await loadPhotos();
+      const f = await file('maroon', 'bajty.png');
+      setOnline(false);
+      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J24', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
+      const rows = await rawRows();
+      const row = rows[0] || {};
+      const storedAsBytes = row.local_file_bytes instanceof ArrayBuffer && row.local_file_bytes.byteLength === f.size && !(row.local_file instanceof Blob);
+      setOnline(true);
+      await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const shas = await serverShas();
+      return { pass: saved.queuedCount === 1 && storedAsBytes && shas.length === 1 && shas.includes(await sha(f)) && (await rawState()).count === 0,
+        storedAsBytes, byteLength: row.local_file_bytes?.byteLength, size: f.size, serverObjects: shas.length };
+    },
+    // 13.65: nieczytelny plik (odczyt nigdy się nie kończy) nie zawiesza kolejki — po limicie czasu jasny błąd,
+    // bez żądania do serwera; kolejne zdjęcie nadal się wysyła.
+    async S24_zawieszony_odczyt_nie_blokuje_kolejki() {
+      await cleanStart();
+      const f = await file('silver', 'zawieszony.png');
+      const rec = await legacyRecord({ format: 'v3', id: 'local-photo-upload-hang', owner: 'A', jobId: 'J25', unitRef: 'jw', f });
+      rec.queue_writer = '13.62';
+      await rawCreate(3, [rec]);
+      const p = await loadPhotos(); const q = await loadQueue();
+      const original = Blob.prototype.arrayBuffer;
+      Blob.prototype.arrayBuffer = function neverResolves() { return new Promise(() => {}); };
+      const t0 = performance.now();
+      let res;
+      try { res = await withTimeout(p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } }), 45000, 'resume'); }
+      finally { Blob.prototype.arrayBuffer = original; }
+      const ms = Math.round(performance.now() - t0);
+      const item = (await q.listPhotoQueueItems())[0] || {};
+      return { pass: !res?.__timeout && srv.uploads === 0 && item.upload_status === 'error' && /ponownie/.test(item.upload_error || '') && ms < 45000,
+        ms, res, uploads: srv.uploads, status: item.upload_status, error: item.upload_error };
     },
   };
 
