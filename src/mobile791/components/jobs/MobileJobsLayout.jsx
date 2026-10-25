@@ -243,8 +243,10 @@ export default function MobileJobsLayout({
           </div>
         ) : null}
 
-        {/* 13.65: Centrum synchronizacji („Synchronizuj teraz”) także dla administratora. */}
+        {/* 13.65: Centrum synchronizacji („Synchronizuj teraz”) także dla administratora.
+            13.67: na liście montaży tylko przy problemie; w Diagnostyce zawsze. */}
         <PhotoSyncStatus
+          hideWhenHealthy={!diagnosticsOpen}
           status={photoSyncStatus}
           jobs={jobs}
           onRetryPhoto={retryPhotoUpload}

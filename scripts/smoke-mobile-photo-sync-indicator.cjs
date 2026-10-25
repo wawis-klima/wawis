@@ -22,6 +22,9 @@ assert.match(component, /Połączenie:/);
 // 13.65: wskaźnik i Centrum synchronizacji widzi każda rola (także administrator).
 assert.match(layout, /<PhotoSyncStatus/);
 assert.doesNotMatch(layout, /!isAdmin \? \(\s*<PhotoSyncStatus/, 'Centrum synchronizacji nie może być ukryte przed administratorem.');
+// 13.67: na liście montaży pasek tylko przy problemie, w Diagnostyce zawsze.
+assert.match(layout, /hideWhenHealthy=\{!diagnosticsOpen\}/);
+assert.match(component, /const healthy = status\.sync\?\.tone === "synced" && !offline;/);
 assert.match(app, /photoSyncStatus=\{photoSyncStatus\}/);
 assert.match(actions, /onPhotoSyncStart/);
 assert.match(actions, /onPhotoSyncSuccess/);

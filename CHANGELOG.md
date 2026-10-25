@@ -1,3 +1,7 @@
+## 13.67
+- Pierwsza strona (lista montaży): paski „Połączenie” i „Synchronizacja” znikają, gdy wszystko jest wysłane i jest internet. Pojawia się jeden krótki pasek tylko przy problemie (brak internetu, niewysłane zdjęcia lub zmiany, błędy, wysyłanie) — stuknięcie otwiera Centrum synchronizacji.
+- Diagnostyka (stuknięcie numeru wersji): pełny stan połączenia i synchronizacji zawsze widoczny, wraz z Centrum synchronizacji i „Synchronizuj teraz”.
+
 ## 13.66
 - Decyzja właściciela (25.10.2026): zdjęcia i tabliczki znamionowe tylko z internetem — u wszystkich (pracownik i administrator). Bez internetu aplikacja niczego nie zapisuje w pamięci telefonu i pokazuje komunikat: zrób zdjęcia aparatem telefonu i dodaj je z galerii, gdy będziesz mieć internet. Formularz urządzeń z wpisanymi danymi pozostaje otwarty.
 - Z internetem zdjęcia wysyłają się od razu z pamięci formularza (bez lokalnej kolejki Safari, która gubiła pliki). Przy chwilowym zaniku zasięgu do 3 prób w ciągu kilku sekund; nieudane zdjęcie ma status „Nie wysłano” z przyciskiem „Wyślij”.

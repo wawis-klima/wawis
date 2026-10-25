@@ -67,6 +67,9 @@ export default function PhotoSyncStatus({
   onDiscardOperation,
   onDiscardPhoto,
   onOpenJob,
+  // 13.67: na pierwszej stronie pasek tylko przy problemie (brak internetu, niewysłane, błędy, wysyłanie).
+  // Pełny stan połączenia i synchronizacji pokazuje Diagnostyka (stuknięcie numeru wersji).
+  hideWhenHealthy = false,
 }) {
   const [open, setOpen] = useState(false);
   const [retryingAll, setRetryingAll] = useState(false);
@@ -155,9 +158,15 @@ export default function PhotoSyncStatus({
     }
   }
 
+  const offline = status.connection?.tone === "offline";
+  const healthy = status.sync?.tone === "synced" && !offline;
+  const showRow = !hideWhenHealthy || !healthy;
+  const showConnectionChip = !hideWhenHealthy || offline;
+
   return (
     <>
       <style>{PHOTO_SYNC_CENTER_CSS}</style>
+      {showRow ? (
       <div
         className="mobileConnectionSyncRow"
         role="status"
@@ -171,10 +180,12 @@ export default function PhotoSyncStatus({
           aria-haspopup="dialog"
           aria-label="Otwórz Centrum synchronizacji"
         >
-          <span className={`connectionSyncChip connection-${status.connection.tone}`}>
-            <span className="connectionSyncDot" aria-hidden="true" />
-            Połączenie: {status.connection.label}
-          </span>
+          {showConnectionChip ? (
+            <span className={`connectionSyncChip connection-${status.connection.tone}`}>
+              <span className="connectionSyncDot" aria-hidden="true" />
+              Połączenie: {status.connection.label}
+            </span>
+          ) : null}
           <span className={`connectionSyncChip sync-${status.sync.tone}`}>
             <span className="connectionSyncDot" aria-hidden="true" />
             {status.sync.label}
@@ -182,6 +193,7 @@ export default function PhotoSyncStatus({
           </span>
         </button>
       </div>
+      ) : null}
 
       <AppModal
         open={open}
