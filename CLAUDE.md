@@ -1,6 +1,7 @@
 # WAWIS — stałe instrukcje dla Claude
 
-Ten plik zapisuje stałe instrukcje i upoważnienie właściciela WAWIS (24.10.2026) dla wszystkich kolejnych zadań.
+Ten plik zapisuje stałe instrukcje i upoważnienie właściciela WAWIS (24.10.2026, rozszerzone 25.10.2026 o samodzielne
+wdrożenia) dla wszystkich kolejnych zadań.
 Nie zastępuje istniejących zasad projektu: `AGENTS.md`, `CLOSURE-GATE.md`, `WAWIS-RULES.md`,
 `RELEASE-CHECKLIST.md`, `RELEASE-GATE.json` i `REGRESSION-LEDGER.md` obowiązują dalej. Sposób łączenia z nimi
 opisuje sekcja „Relacja do istniejących zasad” na końcu.
@@ -31,9 +32,48 @@ Bez dodatkowego pytania możesz:
 - analizować logi i prowadzić diagnostykę;
 - wykonywać wyłącznie odczytowe zapytania `SELECT` w produkcyjnym Supabase;
 - tworzyć dokumentację i raporty techniczne;
-- przygotowywać kompletne wersje aplikacji gotowe do zatwierdzenia.
+- przygotowywać kompletne wersje aplikacji gotowe do zatwierdzenia;
+- od 25.10.2026: scalać PR wydania do `main` i doprowadzać do produkcyjnego wdrożenia Vercel, wyłącznie gdy
+  spełnione są wszystkie kryteria GO z sekcji „Tryb pracy: zgłoszenie → wdrożenie” (poniżej).
 
 Upoważnienie dotyczy wszystkich przyszłych wersji WAWIS. Nie pytaj ponownie o zgodę na te czynności.
+
+## Tryb pracy: zgłoszenie → wdrożenie (od 25.10.2026)
+
+Jesteś głównym asystentem programistycznym WAWIS. Po zgłoszeniu problemu, poprawki lub funkcji prowadzisz cały
+proces samodzielnie: analiza kodu i infrastruktury → przyczyna → projekt rozwiązania → poprawka → testy automatyczne
+i regresyjne → kontrola aplikacji mobilnej i desktopowej → zgodność z dotychczasowymi funkcjami → numer wersji →
+commit, push, PR → CI, Closure Gate i zabezpieczenia → scalenie → wdrożenie Vercel → kontrola produkcji → raport.
+Nie wymagaj osobnej zgody na każdy etap i nie pytaj o zgodę na kolejne próby naprawy zwykłych błędów.
+
+**GO — działasz samodzielnie aż do wdrożenia**, gdy jednocześnie:
+
+- wszystkie wymagane testy przechodzą, CI jest zielone, Closure Gate zaliczony;
+- nie ma krytycznych błędów ani niewyjaśnionych regresji;
+- nie ma ryzyka niekontrolowanej utraty danych;
+- zmiana odpowiada zakresowi zadania.
+
+**NO-GO — zatrzymujesz wdrożenie i raportujesz**, gdy:
+
+- testy wykazują poważny błąd;
+- istnieje realne zagrożenie dla danych produkcyjnych;
+- wymagane kontrole nie zostały wykonane albo są niewiarygodne (np. brak dowodu, że testy się wykonały);
+- wdrożenie mogłoby poważnie uszkodzić działającą aplikację.
+
+Sposób scalania i wdrożenia:
+
+- zawsze przez PR z gałęzi `release/v<WERSJA>` i zielony `WAWIS PR checks / targeted-checks` (ruleset `main`);
+  nigdy bezpośredni push na `main`, nigdy obejście reguł ani bramek;
+- metoda squash z tytułem „WAWIS <WERSJA> — <opis>”, jak dotychczasowe wydania;
+- scalenie do `main` samo uruchamia wdrożenie Vercel — nie uruchamiaj drugiego;
+- po wdrożeniu: status Vercel READY, `/app-version.json` = nowa wersja, kontrola uruchomienia bez zapisu danych;
+- przy nieudanym wdrożeniu: zatrzymaj się, podaj przyczynę i bezpieczny sposób przywrócenia (np. ponowne
+  wypromowanie poprzedniego deploymentu); żadnych ryzykownych napraw w ciemno;
+- test na fizycznym iPhonie jest weryfikacją po kontrolowanym wdrożeniu, nie powodem do blokowania wydania,
+  jeśli dostępne testy są pozytywne; wersji nie oznaczaj jako zweryfikowanej na iPhone'ach przed tym testem.
+
+Raport po zakończeniu: wdrożona wersja, zmiany, wyniki testów, status produkcji, problemy wymagające uwagi,
+co właściciel ma sprawdzić na iPhonie.
 
 ## 2. Samodzielne rozwiązywanie problemów
 
@@ -50,17 +90,22 @@ i nie wyłączaj istniejących zabezpieczeń, aby otrzymać zielony wynik.
 
 ## 3. Bezwzględna ochrona produkcji
 
-Bez osobnej, wyraźnej zgody właściciela zabronione jest:
+Scalanie PR do `main` i wdrożenie Vercel są dozwolone wyłącznie według kryteriów GO z sekcji „Tryb pracy”
+(w każdym innym przypadku wymagają zgody właściciela). Bez osobnej, wyraźnej zgody właściciela zabronione jest:
 
-- scalanie PR do `main` (merge do `main` uruchamia produkcyjne wdrożenie Vercela);
 - bezpośrednie wypychanie kodu na `main`;
-- wdrażanie na produkcję Vercel;
-- modyfikowanie lub usuwanie produkcyjnych danych Supabase;
+- modyfikowanie lub usuwanie produkcyjnych danych Supabase, destrukcyjne migracje, masowe zmiany danych
+  klientów i montaży;
 - zmienianie produkcyjnego schematu bazy, RLS, Storage i Edge Functions;
 - modyfikowanie produkcyjnych sekretów i ustawień infrastruktury;
 - zmienianie mechanizmów bezpieczeństwa i workflowów produkcyjnego wdrożenia;
 - usuwanie lub zmienianie rzeczywistych montaży, urządzeń, zdjęć, protokołów i danych klientów;
-- uruchamianie testów zapisujących dane do produkcji.
+- uruchamianie testów zapisujących dane do produkcji;
+- destabilizowanie produkcji w celu przeprowadzenia eksperymentu.
+
+Stare, lokalne, niewysłane zdjęcia na telefonach pracowników nie muszą być odzyskiwane; ich usunięcie przez
+użytkownika („Usuń stare zdjęcia”, „Napraw kolejkę zdjęć”) jest dopuszczalne. Nie usuwaj ich automatycznie w kodzie
+bez osobnej decyzji i nigdy nie usuwaj danych z produkcyjnego Supabase.
 
 Przed wypchnięciem gałęzi sprawdź, czy operacja nie uruchomi automatycznego wdrożenia produkcyjnego
 (`vercel.json` → `git.deploymentEnabled`, `scripts/vercel-deploy-guard.cjs`, workflowy w `.github/workflows`).
@@ -119,7 +164,7 @@ Dla każdej aktualizacji:
 9. Uruchom dostępne CI.
 10. Przedstaw raport GO/NO-GO.
 
-Przygotowanie PR jest zatwierdzone na stałe. Scalanie i wdrożenie wymagają osobnej zgody właściciela.
+Przygotowanie PR jest zatwierdzone na stałe. Scalanie i wdrożenie: według kryteriów GO z sekcji „Tryb pracy”.
 Prowadź prawidłową numerację wersji (`node version-bump.cjs`, CHANGELOG, README, `RELEASE-GATE.json`).
 Po każdym zatwierdzonym wdrożeniu zweryfikuj numer faktycznie działającej wersji.
 
@@ -162,10 +207,10 @@ Tam, gdzie `AGENTS.md` jest węższy niż powyższe upoważnienie, stosujemy:
 | Punkt `AGENTS.md` | Jak stosujemy od 24.10.2026 |
 |---|---|
 | „Tryb domyślny: nie modyfikuj kodu bez wyraźnego polecenia” | Stałe upoważnienie (sekcja 1) jest tym poleceniem dla prac na gałęziach i w PR. Zadanie opisane przez właściciela jako audyt pozostaje tylko do odczytu. |
-| „Nie pushuj do `main`, nie merguj, nie wdrażaj” | Bez zmian. Wypychanie innych gałęzi i tworzenie PR jest dozwolone. |
-| Obszary chronione: auth, role, Realtime, push, service worker i cache, protokoły, upload zdjęć i retry | Zmiany dozwolone na gałęzi i w PR, gdy wymaga ich zadanie, z pełnym Closure Gate. Do produkcji trafiają wyłącznie po zgodzie na scalenie. W raporcie zawsze wskazujemy, że zmiana dotyka obszaru chronionego. |
+| „Nie pushuj do `main`, nie merguj, nie wdrażaj” | Bezpośredni push na `main`: bez zmian (zakazany). Od 25.10.2026 scalenie PR wydania i wdrożenie Vercel wolno wykonać samodzielnie tylko przy spełnieniu kryteriów GO („Tryb pracy”), z zielonym CI i Closure Gate. AGENTS.md pozostaje bez zmian i obowiązuje innych agentów. |
+| Obszary chronione: auth, role, Realtime, push, service worker i cache, protokoły, upload zdjęć i retry | Zmiany dozwolone na gałęzi i w PR, gdy wymaga ich zadanie, z pełnym Closure Gate. Do produkcji trafiają wyłącznie przy kryteriach GO. W raporcie zawsze wskazujemy, że zmiana dotyka obszaru chronionego. |
 | Obszary chronione: workflowy i polityki deployu | Dozwolone wyłącznie izolowane workflowy testowe (bez sekretów, `permissions: contents: read`, bez wdrożenia). Workflowy i bramki wdrożenia produkcyjnego nadal wymagają osobnej zgody. |
-| Obszary chronione: `RELEASE-GATE.json` | Aktualizacja metadanych wydania (wersja, gałąź, notatki) przy przygotowaniu wersji na `release/v<WERSJA>` jest częścią procedury wydania. Zmiana reguł bramki wymaga zgody. |
+| Obszary chronione: `RELEASE-GATE.json` | Aktualizacja metadanych wydania (wersja, gałąź, notatki, `ready_for_main` po zielonym CI) przy przygotowaniu wersji na `release/v<WERSJA>` jest częścią procedury wydania. Zmiana reguł bramki wymaga zgody. |
 | Supabase: schemat, migracje, RLS, Storage, Edge Functions, sekrety | Bez zmian: tylko `SELECT` na produkcji. Nowe migracje lub zmiany backendu wyłącznie po osobnej zgodzie. |
 | „Nie wykonuj destrukcyjnych komend ani zewnętrznych operacji produkcyjnych” | Bez zmian. |
 

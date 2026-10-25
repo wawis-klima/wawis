@@ -16,16 +16,16 @@
   },
   "main_protection": {
     "source_branch": "release/v13.62",
-    "ready_for_main": false,
-    "status": "BLOCKED_PENDING_CI_AND_IPHONE_TEST",
+    "ready_for_main": true,
+    "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
-    "result": "PENDING_IPHONE_V4_TEST",
-    "evidence_source": "docs/iphone-test-v1362.md: fizyczny iPhone z bazą v4 (Safari i PWA) — plik w Storage o rozmiarze > 0 i rekord photos potwierdzone zapytaniem SELECT.",
-    "notes": "Zielony komunikat interfejsu nie jest dowodem synchronizacji. Naprawa kolejki tylko na wyraźne polecenie użytkownika."
+    "result": "EXTERNAL_IPHONE_TEST",
+    "evidence_source": "docs/iphone-test-v1362.md etap 2 (A–E): iPhone Pawła i Kacpra po wdrożeniu; zapytanie SELECT w photos/storage.objects (rozmiar > 0 B).",
+    "notes": "Właściciel 25.10.2026: zgoda na kontrolowane wdrożenie; stare lokalne zdjęcia nie są odzyskiwane. Zielony komunikat interfejsu nie jest dowodem synchronizacji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "photo-offline-queue.js: otwarcie bez wersji, upgrade v1–v3→v4, nigdy downgrade, limity czasu, readPhotoQueueState, resetPhotoQueueDatabase; photos.js: zapis przed statusem, wysyłka z pamięci online; UI: Napraw kolejkę zdjęć.",
-    "release_ci": "WAWIS PR checks / targeted-checks + Playwright @mobile: mobile-photo-queue-compat-v1362 (16) i mobile-photo-queue-repair-v1362 (2). Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: test na iPhonie Pawła lub Kacpra wg docs/iphone-test-v1362.md, weryfikacja SELECT w photos/storage.objects. Nie usuwać aplikacji z ekranu początkowego."
+    "code": "photo-offline-queue.js: otwarcie bez numeru wersji, v3 bez podnoszenia, nowe instalacje v3, nigdy downgrade; stare rekordy z bazy v4 wstrzymane do decyzji użytkownika; limity czasu; readPhotoQueueState; resetPhotoQueueDatabase. photos.js: zapis przed statusem, wysyłka z pamięci online. UI: Usuń/Wyślij stare zdjęcia, Napraw kolejkę zdjęć.",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (4/4, fail-closed). Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.62; test na iPhone'ach wg docs/iphone-test-v1362.md etap 2; weryfikacja SELECT. Nie usuwać aplikacji z ekranu początkowego."
   }
 }
