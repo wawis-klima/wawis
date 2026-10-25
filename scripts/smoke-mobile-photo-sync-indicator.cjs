@@ -19,7 +19,9 @@ assert.match(hook, /markPhotoSynced/);
 assert.match(hook, /markPhotoSyncError/);
 assert.match(component, /role="status"/);
 assert.match(component, /Połączenie:/);
-assert.match(layout, /!isAdmin \? \(\s*<PhotoSyncStatus/);
+// 13.65: wskaźnik i Centrum synchronizacji widzi każda rola (także administrator).
+assert.match(layout, /<PhotoSyncStatus/);
+assert.doesNotMatch(layout, /!isAdmin \? \(\s*<PhotoSyncStatus/, 'Centrum synchronizacji nie może być ukryte przed administratorem.');
 assert.match(app, /photoSyncStatus=\{photoSyncStatus\}/);
 assert.match(actions, /onPhotoSyncStart/);
 assert.match(actions, /onPhotoSyncSuccess/);
