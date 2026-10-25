@@ -14,6 +14,8 @@ export const LEGACY_REVIEW_PENDING = 'pending';
 export const LEGACY_REVIEW_RELEASED = 'released';
 const STORE_NAME = 'queued-photos';
 const OPEN_TIMEOUT_MS = 6000;
+// 13.65: odczyt pliku zdjęcia ma limit czasu — nieczytelny plik w Safari nie może zawiesić kolejki.
+export const PHOTO_BLOB_READ_TIMEOUT_MS = 15000;
 const RESET_TIMEOUT_MS = 8000;
 export const PHOTO_QUEUE_CHANGED_EVENT = 'wawis-photo-queue-changed';
 export const PHOTO_QUEUE_DB_NAME = DB_NAME;
@@ -231,6 +233,34 @@ async function withStore(mode, operation) {
   });
 }
 
+// 13.65: Safari potrafi zgubić zawartość pliku (Blob/File) zapisanego w IndexedDB — później wysyła go jako 0 B
+// albo odczyt nigdy się nie kończy. Zdjęcia zapisujemy więc jako surowe bajty (ArrayBuffer), które IndexedDB
+// przechowuje w całości. Odczyt pliku ma limit czasu i nigdy nie zwraca pustej zawartości jako sukcesu.
+export async function readBlobBytes(blob, timeoutMs = PHOTO_BLOB_READ_TIMEOUT_MS) {
+  if (!blob) throw createPhotoQueueError(PHOTO_QUEUE_ERROR_CODES.READ, 'Brak pliku zdjęcia.');
+  let timer = null;
+  try {
+    const read = typeof blob.arrayBuffer === 'function' ? blob.arrayBuffer() : new Response(blob).arrayBuffer();
+    const buffer = await Promise.race([
+      read,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(createPhotoQueueError(PHOTO_QUEUE_ERROR_CODES.READ, 'Odczyt zdjęcia z pamięci telefonu trwa zbyt długo.')), Math.max(1000, Number(timeoutMs) || PHOTO_BLOB_READ_TIMEOUT_MS));
+      }),
+    ]);
+    if (!buffer || !buffer.byteLength) throw createPhotoQueueError(PHOTO_QUEUE_ERROR_CODES.READ, 'Plik zdjęcia jest pusty (0 B).');
+    return buffer;
+  } catch (error) {
+    if (error?.photoQueueCode) throw error;
+    throw createPhotoQueueError(PHOTO_QUEUE_ERROR_CODES.READ, 'Nie można odczytać zdjęcia z pamięci telefonu.', error);
+  } finally {
+    if (timer !== null) clearTimeout(timer);
+  }
+}
+
+function bytesToFile(bytes, name, type, lastModified) {
+  return new File([bytes], name || 'zdjecie.jpg', { type: type || 'image/jpeg', lastModified: Number(lastModified || Date.now()) });
+}
+
 function toSerializableRecord(photo = {}) {
   const localFile = photo.__localFile || photo.local_file || null;
   const preparedFile = photo.__preparedFile || photo.prepared_file || null;
@@ -287,7 +317,20 @@ export async function savePhotoQueueItem(photo) {
     return false;
   }
   try {
-    await withStore('readwrite', (store) => store.put(toSerializableRecord(photo)));
+    const record = toSerializableRecord(photo);
+    // Bajty zamiast Blob/File (patrz readBlobBytes). Nieczytelny plik = brak zapisu (nie fałszywe „Zapisano”).
+    record.local_file_bytes = await readBlobBytes(record.local_file);
+    record.local_file = null;
+    if (record.prepared_file) {
+      try {
+        record.prepared_file_bytes = await readBlobBytes(record.prepared_file);
+      } catch {
+        record.prepared_file_bytes = null; // przygotowany plik zostanie utworzony ponownie przy wysyłce
+        record.upload_stage = record.upload_stage === 'prepared' ? 'queued' : record.upload_stage;
+      }
+      record.prepared_file = null;
+    }
+    await withStore('readwrite', (store) => store.put(record));
     lastPhotoQueueError = null;
     dispatchQueueChanged();
     return true;
@@ -300,6 +343,13 @@ export async function savePhotoQueueItem(photo) {
 export async function updatePhotoQueueItem(photoId, patch = {}) {
   if (!photoId) return false;
   let db = null;
+  if (patch && typeof Blob !== 'undefined' && patch.prepared_file instanceof Blob) {
+    let preparedBytes = null;
+    try { preparedBytes = await readBlobBytes(patch.prepared_file); } catch { preparedBytes = null; }
+    patch = preparedBytes
+      ? { ...patch, prepared_file: null, prepared_file_bytes: preparedBytes }
+      : { ...patch, prepared_file: null, prepared_file_bytes: null, upload_stage: patch.upload_stage === 'prepared' ? 'queued' : patch.upload_stage };
+  }
   try {
     db = await openQueueDb();
     if (!db) return false;
@@ -557,16 +607,22 @@ export async function countPhotoQueueRecords() {
 
 export function hydratePhotoQueueItem(record = {}, createPreviewUrl) {
   const blob = record.local_file || null;
-  if (!blob) return null;
-  const file = blob instanceof File
-    ? blob
-    : new File([blob], record.local_file_name || 'zdjecie.jpg', {
-      type: record.local_file_type || blob.type || 'image/jpeg',
-      lastModified: Number(record.local_file_last_modified || Date.now()),
-    });
+  const storedBytes = record.local_file_bytes || null;
+  if (!blob && !storedBytes) return null;
+  // 13.65: rekordy z bajtami odtwarzamy jako plik w pamięci; starsze rekordy (Blob/File) bez zmian.
+  const file = storedBytes
+    ? bytesToFile(storedBytes, record.local_file_name, record.local_file_type, record.local_file_last_modified)
+    : (blob instanceof File
+      ? blob
+      : new File([blob], record.local_file_name || 'zdjecie.jpg', {
+        type: record.local_file_type || blob.type || 'image/jpeg',
+        lastModified: Number(record.local_file_last_modified || Date.now()),
+      }));
   const previewUrl = typeof createPreviewUrl === 'function' ? createPreviewUrl(file) : '';
   const preparedBlob = record.prepared_file || null;
-  const preparedFile = preparedBlob
+  const preparedFile = record.prepared_file_bytes
+    ? bytesToFile(record.prepared_file_bytes, record.prepared_file_name || 'zdjecie-wysylka.jpg', record.prepared_file_type, record.prepared_file_last_modified)
+    : preparedBlob
     ? (preparedBlob instanceof File
       ? preparedBlob
       : new File([preparedBlob], record.prepared_file_name || 'zdjecie-wysylka.jpg', {

@@ -11,7 +11,7 @@ import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosti
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
 
-export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null, onBack = () => {} }) {
+export default function MobileDiagnosticsPanel({ profile = null, sessionUser = null, selectedJobId = '', refreshAll = null, onSyncNow = null, onBack = () => {} }) {
   const [queueSummary, setQueueSummary] = useState(EMPTY_QUEUE);
   const [offlineSummary, setOfflineSummary] = useState({ total: 0, pending: 0, syncing: 0, conflict: 0, error: 0 });
   const [pushBusy, setPushBusy] = useState(false);
@@ -19,6 +19,7 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
   const [refreshBusy, setRefreshBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [repairBusy, setRepairBusy] = useState(false);
+  const [syncBusy, setSyncBusy] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -113,6 +114,33 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
     }
   }
 
+  // 13.65: ręczna synchronizacja zdjęć i zmian offline (także zdjęć zawieszonych jako „Wysyłane”).
+  async function handleSyncNow() {
+    if (syncBusy || !onSyncNow) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setMessage('Brak internetu — synchronizacja ruszy automatycznie po połączeniu.');
+      return;
+    }
+    setSyncBusy(true);
+    setMessage('');
+    try {
+      const result = await onSyncNow();
+      const owner = String(sessionUser?.id || '').trim();
+      const summary = owner ? await getPhotoQueueSummary(owner) : null;
+      if (summary) setQueueSummary(summary);
+      const left = Number(summary?.total || 0);
+      setMessage(result?.error
+        ? `Synchronizacja nie powiodła się: ${result.error?.message || result.error}`
+        : left
+          ? `Wysłano: ${Number(result?.uploaded || 0)}. W kolejce pozostało: ${left} — sprawdź szczegóły w Centrum synchronizacji.`
+          : 'Wszystko wysłane.');
+    } catch (error) {
+      setMessage(`Synchronizacja nie powiodła się: ${error?.message || error}`);
+    } finally {
+      setSyncBusy(false);
+    }
+  }
+
   return (
     <div className="mobileDiagnosticsPage">
       <button type="button" className="mobileDiagnosticsBack" onClick={onBack}>← Wróć do montaży</button>
@@ -158,6 +186,11 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
       <section className="mobileDiagnosticsCard">
         <h2>Akcje</h2>
         <div className="mobileDiagnosticsActions">
+          {onSyncNow ? (
+            <button type="button" className="btn primary" onClick={handleSyncNow} disabled={syncBusy} data-testid="diagnostics-sync-now">
+              {syncBusy ? 'Synchronizowanie…' : 'Synchronizuj teraz'}
+            </button>
+          ) : null}
           <button type="button" className="btn primary" onClick={handleDownload} disabled={downloadBusy}>
             {downloadBusy ? 'Przygotowywanie…' : 'Pobierz raport diagnostyczny'}
           </button>

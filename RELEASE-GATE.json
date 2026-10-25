@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.64",
+  "version": "13.65",
   "scope": "mobile",
-  "release_branch": "release/v13.64",
+  "release_branch": "release/v13.65",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "IOS_ZERO_BYTE_UPLOAD",
-    "notes": "25.10.2026 06:57–06:58 UTC: iPhone administratora, montaż 9819c70f — POST do Storage z Content-Length 0 → HTTP 400 dla tabliczek JW i JZ zapisanych offline; brak rekordów photos. Wcześniej WAWIS-1346."
+    "result": "IOS_BLOB_READ_HANG",
+    "notes": "25.10.2026 13.64: iPhone administratora — 2 zdjęcia „Wysyłane”, zero żądań do Storage od wdrożenia; odczyt pliku z IndexedDB nie kończy się (odtworzone S24). Centrum synchronizacji ukryte dla administratora."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.64",
+    "source_branch": "release/v13.65",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_TEST",
-    "evidence_source": "Logi edge Supabase: POST /storage/v1/object/job-photos z niezerowym Content-Length i statusem 200; SELECT photos/storage.objects (bytes > 0) dla montażu 9819c70f.",
+    "evidence_source": "iPhone administratora: Synchronizuj teraz; logi Storage (POST z niezerowym rozmiarem, 200) albo komunikat „Zrób zdjęcie ponownie” dla nieczytelnych plików; SELECT photos/storage.objects.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "photos.js: readPhotoBytesForUpload przed storage.upload (ArrayBuffer zamiast File/Blob z IndexedDB); pusty/nieczytelny plik → PHOTO_ZERO_BYTES, status błędu, bez ponawiania.",
+    "code": "photo-offline-queue.js: local_file_bytes/prepared_file_bytes (ArrayBuffer), readBlobBytes z limitem 15 s; photos.js: kompresja z limitem 20 s; MobileJobsLayout: PhotoSyncStatus dla wszystkich ról; Diagnostyka: Synchronizuj teraz.",
     "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.64; iPhone administratora — Synchronizacja → Wyślij; logi Supabase bez 400 0 B."
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.65; iPhone administratora — Synchronizuj teraz."
   }
 }

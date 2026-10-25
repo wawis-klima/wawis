@@ -31,6 +31,8 @@ const SCENARIOS = [
   'S20_wysylka_bajtow_z_pamieci_po_offline',
   'S21_pusty_plik_w_telefonie_jasny_blad',
   'S22_synchronizuj_teraz_zawieszone_wysylane',
+  'S23_zdjecie_zapisane_jako_bajty',
+  'S24_zawieszony_odczyt_nie_blokuje_kolejki',
 ];
 
 test.describe('@mobile kolejka zdjęć 13.62 — IndexedDB v3/v4', () => {

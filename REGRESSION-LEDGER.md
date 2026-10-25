@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## IOS-BLOB-1365 — zawieszony odczyt zdjęcia z kolejki na iPhonie (25.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| IB-1365-BYTES | FIXED-UNVERIFIED | Zdjęcia w kolejce zapisywane jako ArrayBuffer zamiast Blob/File (Safari gubi zawartość). Test S23 (RED 13.64 → GREEN 13.65). |
+| IB-1365-HANG | FIXED-UNVERIFIED | 13.64: odczyt nieczytelnego pliku nie kończył się → „Wysyłane” bez żadnej próby wysyłki. Limit czasu odczytu 15 s i kompresji 20 s → jasny błąd. Test S24 (RED 13.64: zawieszenie >45 s → GREEN 13.65). |
+| IB-1365-ADMIN | FIXED-UNVERIFIED | Centrum synchronizacji było ukryte dla administratora (`!isAdmin`). Teraz widoczne + „Synchronizuj teraz” w Diagnostyce. CI E2E mobile. |
+| IB-1365-LIVE | EXTERNAL | iPhone administratora po wdrożeniu. Chromium nie odtwarza utraty Blob w WebKit. |
+
 ## IOS-ZERO-BYTE-1364 — puste uploady zdjęć z kolejki na iPhonie (25.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

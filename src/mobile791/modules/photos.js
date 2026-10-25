@@ -1,4 +1,4 @@
-import { claimPhotoQueueItem, deletePhotoQueueItem, describePhotoQueueFailure, getLastPhotoQueueError, hydratePhotoQueueItem, isPhotoQueueItemHeld, listPhotoQueueItems, PHOTO_QUEUE_ERROR_CODES, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
+import { claimPhotoQueueItem, deletePhotoQueueItem, describePhotoQueueFailure, readBlobBytes, getLastPhotoQueueError, hydratePhotoQueueItem, isPhotoQueueItemHeld, listPhotoQueueItems, PHOTO_QUEUE_ERROR_CODES, recoverStalePhotoQueueItems, savePhotoQueueItem, updatePhotoQueueItem } from './photo-offline-queue.js';
 export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
@@ -13,6 +13,19 @@ const LOCAL_UPLOAD_PREFIX = 'local-photo-upload-';
 const activePhotoUploadPromises = new Map();
 const persistedQueueResumePromises = new Map();
 const PHOTO_UPLOAD_LEASE_MS = 3 * 60 * 1000;
+const PHOTO_COMPRESS_TIMEOUT_MS = 20000;
+
+async function settlePhotoStep(promise, timeoutMs) {
+  let timer = null;
+  try {
+    return await Promise.race([
+      Promise.resolve(promise).then((value) => ({ timedOut: false, value })),
+      new Promise((resolve) => { timer = setTimeout(() => resolve({ timedOut: true }), timeoutMs); }),
+    ]);
+  } finally {
+    if (timer !== null) clearTimeout(timer);
+  }
+}
 const PHOTO_RETRY_MAX_DELAY_MS = 30 * 60 * 1000;
 
 function getPhotoRetryDelayMs(retryCount) {
@@ -332,23 +345,18 @@ export function assertNonEmptyPhotoFile(file) {
 // i wysyłamy je bezpośrednio. Pusty lub nieczytelny plik nie jest ponawiany w nieskończoność.
 export async function readPhotoBytesForUpload(file) {
   assertNonEmptyPhotoFile(file);
-  let buffer;
   try {
-    buffer = typeof file.arrayBuffer === 'function'
-      ? await file.arrayBuffer()
-      : await new Response(file).arrayBuffer();
+    // 13.65: z limitem czasu — nieczytelny plik nie zawiesza kolejki („Wysyłane” bez końca).
+    return await readBlobBytes(file);
   } catch (readError) {
-    const error = new Error('Nie można odczytać zdjęcia z pamięci telefonu. Zrób zdjęcie ponownie.');
+    const empty = /0 B/.test(String(readError?.message || ''));
+    const error = new Error(empty
+      ? 'Zdjęcie zapisane w telefonie jest puste (0 B). Zrób zdjęcie ponownie.'
+      : 'Nie można odczytać zdjęcia z pamięci telefonu. Zrób zdjęcie ponownie.');
     error.code = PHOTO_ZERO_BYTES_ERROR_CODE;
     error.cause = readError;
     throw error;
   }
-  if (!buffer || !buffer.byteLength) {
-    const error = new Error('Zdjęcie zapisane w telefonie jest puste (0 B). Zrób zdjęcie ponownie.');
-    error.code = PHOTO_ZERO_BYTES_ERROR_CODE;
-    throw error;
-  }
-  return buffer;
 }
 
 export async function preparePhotoForUpload(file) {
@@ -1043,8 +1051,15 @@ async function performQueuedPhotoUpload({
         compressed: Boolean(queuedPhoto.upload_compressed),
       };
     } else {
-      preparedResult = await compressImageFn(queuedPhoto.__localFile);
+      // 13.65: kompresja z limitem czasu; po przekroczeniu wysyłamy oryginał (jego odczyt też ma limit).
+      const compression = await settlePhotoStep(compressImageFn(queuedPhoto.__localFile), PHOTO_COMPRESS_TIMEOUT_MS);
       if (!photoSessionIsCurrent(isSessionCurrent)) return null;
+      if (compression.timedOut) {
+        console.warn('[PHOTO_COMPRESS_TIMEOUT] Kompresja zdjęcia trwała zbyt długo — wysyłka oryginału.');
+        preparedResult = { file: queuedPhoto.__localFile, originalSize: queuedPhoto.__localFile?.size || 0, uploadSize: queuedPhoto.__localFile?.size || 0, savedPercent: 0, compressed: false };
+      } else {
+        preparedResult = compression.value;
+      }
       uploadFile = preparedResult?.file || preparedResult;
     }
 

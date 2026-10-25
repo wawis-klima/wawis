@@ -243,26 +243,25 @@ export default function MobileJobsLayout({
           </div>
         ) : null}
 
-        {!isAdmin ? (
-          <PhotoSyncStatus
-            status={photoSyncStatus}
-            jobs={jobs}
-            onRetryPhoto={retryPhotoUpload}
-            onRetryAll={retryAllPhotoUploads}
-            onRetryOperation={retryOfflineOperation}
-            onDiscardOperation={discardOfflineOperation}
-            onDiscardPhoto={discardQueuedPhoto}
-            onOpenJob={(jobId) => {
-              const targetJob = jobs.find((job) => String(job?.id || "") === String(jobId || ""));
-              if (targetJob) setSelectedJob(targetJob);
-            }}
-          />
-        ) : null}
+        {/* 13.65: Centrum synchronizacji („Synchronizuj teraz”) także dla administratora. */}
+        <PhotoSyncStatus
+          status={photoSyncStatus}
+          jobs={jobs}
+          onRetryPhoto={retryPhotoUpload}
+          onRetryAll={retryAllPhotoUploads}
+          onRetryOperation={retryOfflineOperation}
+          onDiscardOperation={discardOfflineOperation}
+          onDiscardPhoto={discardQueuedPhoto}
+          onOpenJob={(jobId) => {
+            const targetJob = jobs.find((job) => String(job?.id || "") === String(jobId || ""));
+            if (targetJob) setSelectedJob(targetJob);
+          }}
+        />
       </div>
 
       {diagnosticsOpen ? (
         <React.Suspense fallback={<div className="muted" role="status">Ładowanie diagnostyki…</div>}>
-          <MobileDiagnosticsPanel profile={profile} sessionUser={sessionUser} refreshAll={refreshAll} selectedJobId={selectedJob?.id || ""} onBack={() => setDiagnosticsOpen(false)} />
+          <MobileDiagnosticsPanel profile={profile} sessionUser={sessionUser} refreshAll={refreshAll} onSyncNow={retryAllPhotoUploads} selectedJobId={selectedJob?.id || ""} onBack={() => setDiagnosticsOpen(false)} />
         </React.Suspense>
       ) : (
         <>

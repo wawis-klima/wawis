@@ -1,3 +1,9 @@
+## 13.65
+- iPhone: zdjęcia zapisywane w telefonie jako surowe bajty zamiast pliku Safari (Blob/File w IndexedDB). Safari potrafił zgubić zawartość takiego pliku — wysyłał 0 B albo odczyt nigdy się nie kończył i kolejka stała jako „Wysyłane” bez żadnej próby wysyłki (przypadek administratora 25.10, 13.64). Starsze zdjęcia w kolejce są obsługiwane jak dotąd.
+- Odczyt i kompresja zdjęcia mają limit czasu: nieczytelny plik dostaje „Zrób zdjęcie ponownie” po kilkunastu sekundach zamiast blokować kolejkę; kolejne zdjęcia wysyłają się normalnie.
+- Centrum synchronizacji z przyciskiem „Synchronizuj teraz” widoczne także dla administratora; „Synchronizuj teraz” również w Diagnostyce.
+- Testy: S23 (zapis bajtów) i S24 (zawieszony odczyt) — RED na 13.64, GREEN na 13.65 (24/24).
+
 ## 13.64
 - iPhone: zdjęcia zapisane w telefonie (np. zrobione bez internetu) nie są już wysyłane jako puste pliki. Safari wysyłał plik odczytany z lokalnej bazy jako żądanie 0 B (HTTP 400 „No content provided”) — każde ponowienie kończyło się tak samo, a tabliczki i protokół pozostawały zablokowane. Przed wysyłką aplikacja odczytuje bajty zdjęcia do pamięci i wysyła je bezpośrednio.
 - Pusty lub nieczytelny plik w telefonie dostaje jasny błąd „Zrób zdjęcie ponownie” zamiast nieskończonego ponawiania; do serwera nie trafia puste żądanie.
