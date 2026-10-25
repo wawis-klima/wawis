@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## ONLINE-ONLY-PHOTOS-1366 — zdjęcia tylko z internetem (decyzja właściciela 25.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OP-1366-OFFLINE | FIXED-UNVERIFIED | Bez internetu zdjęcia i tabliczki nie są zapisywane w aplikacji; komunikat zamiast lokalnej kolejki. Harness S01, S05, S25 (RED na 13.65); E2E mobile-resilience, mobile-offline-nameplates-all-roles (admin i pracownik). |
+| OP-1366-RETRY | FIXED-UNVERIFIED | Wysyłka z pamięci z 3 próbami przy chwilowym zaniku zasięgu / 400 / 503. Harness S08, S09 (RED na 13.65). |
+| OP-1366-LEGACY | REGRESSION | Stare zdjęcia z kolejki telefonu: wysyłka, wstrzymanie v4, usuwanie, naprawa — S02–S04, S11–S13, S17, S19, S21–S24, mobile-photo-queue-repair, legacy-hold. |
+| OP-1366-LIVE | EXTERNAL | iPhone: tryb samolotowy → komunikat; online → zdjęcie na serwerze. |
+
 ## IOS-BLOB-1365 — zawieszony odczyt zdjęcia z kolejki na iPhonie (25.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

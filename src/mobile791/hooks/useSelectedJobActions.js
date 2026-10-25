@@ -21,13 +21,13 @@ import {
 } from "../modules/jobs.js";
 import { addJobComment, deleteJobComment, withTimeout } from "../modules/jobs-comments.js";
 import { getLegacyInstallerSuggestionIds, normalizeInstallerIds, toggleJobViewer } from "../modules/jobs-assignment.js";
-import { deleteJobPhoto, getNameplatePhotoMetadata, getSignedPhotoUrl, isLocalQueuedPhoto, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
+import { deleteJobPhoto, getNameplatePhotoMetadata, getSignedPhotoUrl, isLocalQueuedPhoto, PHOTO_OFFLINE_BLOCKED_MESSAGE, PHOTO_OFFLINE_DISABLED_CODE, prepareJobDocumentationPhotoIdentities, retryQueuedJobPhoto, serverPhotoMatchesDocumentationIdentity, uploadJobDocumentationPhotos, uploadJobPhotos } from "../modules/photos.js";
 import { normalizeDatabaseErrorMessage } from "../modules/database-errors.js";
 import { loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
 import { verifyNameplatesWithRecovery } from "../modules/nameplate-save-recovery.js";
-import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
+import { getJobDeviceRows } from "../modules/job-devices.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
@@ -153,52 +153,7 @@ export function useSelectedJobActions({
     setSelectedJob((prev) => (prev && String(prev.id) === String(jobId) ? applyPatch(prev) : prev));
   }
 
-  async function queueDeviceSaveOffline(form, pendingDocuments, reason = 'offline') {
-    const currentJob = getResolvedJob(editingJobId) || {};
-    const deviceFields = serializeJobDevicesToFields(form);
-    const documentationResult = await uploadJobDocumentationPhotos({
-      supabase,
-      profile,
-      isSessionCurrent: capturePhotoSessionGuard(),
-      jobId: editingJobId,
-      documents: pendingDocuments,
-      setJobs,
-      setSelectedJob,
-      supabaseUrl,
-      onPhotoUploaded: onPhotoSyncSuccess,
-      onPhotoUploadError: onPhotoSyncError,
-    });
-    if (documentationResult.failedCount) {
-      // Przyczyna z kolejki (np. niedostępna baza po wycofaniu wersji), a nie domyślne „zwolnij miejsce”.
-      logDiagnostic('offline.device.persist.failed', { jobId: editingJobId, reason, code: documentationResult.persistErrorCode || 'PHOTO_QUEUE_WRITE_FAILED' });
-      throw new Error(`Nie udało się zapisać wszystkich tabliczek w pamięci telefonu. ${documentationResult.persistErrorMessage || describePhotoQueueFailure(documentationResult.persistErrorCode)} Formularz i zdjęcia pozostają otwarte.`);
-    }
-
-    await queueOfflineJobOperation({
-      user_id: profile.id,
-      job_id: editingJobId,
-      type: 'device',
-      base: {
-        device_model: currentJob.device_model || '',
-        device_serial_number: currentJob.device_serial_number || '',
-      },
-      payload: {
-        device_fields: {
-          device_model: deviceFields.device_model || '',
-          device_serial_number: deviceFields.device_serial_number || '',
-        },
-      },
-    });
-    applyOptimisticJobPatch(editingJobId, {
-      device_model: deviceFields.device_model || '',
-      device_serial_number: deviceFields.device_serial_number || '',
-      offline_pending: true,
-    });
-    resetJobModalState();
-    logDiagnostic('offline.device.queued', { jobId: editingJobId, reason, queuedPhotos: documentationResult.queuedCount });
-    alert('Dane urządzenia zapisano na telefonie. Aplikacja wyśle je automatycznie po odzyskaniu internetu.');
-    return true;
-  }
+  // 13.66: zapis urządzeń i tabliczek bez internetu został wyłączony (decyzja właściciela 25.10.2026).
 
   async function queueCommentOffline({ jobId, type, text, commentId, reason = 'offline' }) {
     await queueOfflineJobOperation({
@@ -327,7 +282,7 @@ export function useSelectedJobActions({
 
   async function addJob(formOverride) {
     if (!supabase || !profile) return;
-    if (!isAdmin && isBrowserOffline()) {
+    if (isBrowserOffline()) {
       alert('Dodanie nowego klienta wymaga internetu. Wróć do formularza po odzyskaniu połączenia.');
       return;
     }
@@ -432,8 +387,8 @@ export function useSelectedJobActions({
       if (documentationResult.failedCount) {
         const persistHint = documentationResult.persistErrorMessage ? ` ${documentationResult.persistErrorMessage}` : '';
         outcomeMessage = workerWantsImmediateCompletion
-          ? `Montaż został zapisany jako W trakcie, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu, a potem zakończ zlecenie.${persistHint}`
-          : `Montaż został zapisany, ale ${documentationResult.failedCount} zdjęć nie udało się zachować w kolejce. Dodaj je ponownie z karty montażu.${persistHint}`;
+          ? `Montaż został zapisany jako W trakcie, ale ${documentationResult.failedCount} zdjęć nie udało się wysłać. Dodaj je ponownie z karty montażu, a potem zakończ zlecenie.${persistHint}`
+          : `Montaż został zapisany, ale ${documentationResult.failedCount} zdjęć nie udało się wysłać. Dodaj je ponownie z karty montażu.${persistHint}`;
       } else if (immediateCompletionQueued) {
         outcomeMessage = 'Montaż został zapisany. Zakończy się automatycznie po wysłaniu i potwierdzeniu wszystkich tabliczek znamionowych.';
       } else if (documentationResult.backgroundCount) {
@@ -549,14 +504,11 @@ export function useSelectedJobActions({
 
     try {
       if (isBrowserOffline()) {
-        // 13.63: urządzenia i tabliczki zapisuje bez internetu każdy (także administrator).
-        // Pełna edycja danych montażu nadal wymaga internetu.
-        if (serialOnlyMode) {
-          await queueDeviceSaveOffline(form, pendingDocuments);
-          return;
-        }
+        // 13.66 (decyzja właściciela): urządzenia, tabliczki i pełna edycja wymagają internetu — u każdego.
         logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
-        alert('Pełna edycja montażu wymaga połączenia z internetem. Wprowadzone dane pozostają w formularzu — połącz się z internetem i zapisz ponownie.');
+        alert(serialOnlyMode
+          ? 'Brak internetu. Urządzeń i tabliczek nie można teraz zapisać w aplikacji. Zrób zdjęcia tabliczek aparatem telefonu i dodaj je z galerii, gdy będziesz mieć internet. Wprowadzone dane pozostają w formularzu.'
+          : 'Pełna edycja montażu wymaga połączenia z internetem. Wprowadzone dane pozostają w formularzu — połącz się z internetem i zapisz ponownie.');
         return;
       }
       const recordSave = serialOnlyMode
@@ -676,16 +628,7 @@ export function useSelectedJobActions({
       }
     } catch (error) {
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
-      if (serialOnlyMode && isTransientSupabaseError(error)) {
-        try {
-          await queueDeviceSaveOffline(form, pendingDocuments, 'transient-error');
-          return;
-        } catch (queueError) {
-          alert(queueError?.message || 'Nie udało się zapisać zmiany w pamięci telefonu.');
-          return;
-        }
-      }
-      if (!serialOnlyMode && isTransientSupabaseError(error)) {
+      if (isTransientSupabaseError(error)) {
         logDiagnostic('offline.full-edit.network-unconfirmed', { jobId: editingJobId, operationId, isAdmin });
         alert('Nie udało się potwierdzić pełnego zapisu z powodu problemu z połączeniem. Formularz pozostaje otwarty — po odzyskaniu internetu sprawdź dane i zapisz ponownie.');
         return;
@@ -1166,6 +1109,12 @@ export function useSelectedJobActions({
       return;
     }
 
+    if (event?.target?.files?.length && isBrowserOffline()) {
+      // 13.66: zdjęcia tylko z internetem — nic nie trafia do pamięci aplikacji.
+      if (event?.target) event.target.value = "";
+      alert(PHOTO_OFFLINE_BLOCKED_MESSAGE);
+      return;
+    }
     if (event?.target?.files?.length) onPhotoSyncStart?.();
     void (async () => {
       try {
@@ -1185,7 +1134,9 @@ export function useSelectedJobActions({
           onPhotoUploadError: onPhotoSyncError,
         });
         if (result?.failedCount) {
-          alert(`${result.failedCount} ${result.failedCount === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać na telefonie. ${result.persistErrorMessage || describePhotoQueueFailure(result.persistErrorCode)}`);
+          alert(result.persistErrorCode === PHOTO_OFFLINE_DISABLED_CODE
+            ? PHOTO_OFFLINE_BLOCKED_MESSAGE
+            : `${result.failedCount} ${result.failedCount === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać na telefonie. ${result.persistErrorMessage || describePhotoQueueFailure(result.persistErrorCode)}`);
         }
       } catch (error) {
         alert(error?.message || 'Nie udało się dodać zdjęcia.');

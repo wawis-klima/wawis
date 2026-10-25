@@ -3,6 +3,14 @@ export const PHOTO_BUCKET = 'job-photos';
 export const SIGNED_PHOTO_URL_TTL_SECONDS = 60 * 60;
 export const NAMEPLATE_PHOTO_FOLDER = 'nameplates';
 export const PHOTO_ZERO_BYTES_ERROR_CODE = 'PHOTO_ZERO_BYTES';
+// WAWIS 13.66 (decyzja właściciela 25.10.2026): nowe zdjęcia NIE są zapisywane w pamięci aplikacji (IndexedDB).
+// Wymagają internetu i są wysyłane od razu z pamięci formularza. Bez internetu — jasny komunikat.
+// Stare zdjęcia, które już są w kolejce telefonu, nadal można wysłać lub usunąć w Centrum synchronizacji.
+export const PHOTO_OFFLINE_DISABLED_CODE = 'PHOTO_OFFLINE_DISABLED';
+export const PHOTO_OFFLINE_BLOCKED_MESSAGE = 'Brak internetu. Zdjęć nie można teraz dodać w aplikacji — zrób je aparatem telefonu i dodaj z galerii, gdy będziesz mieć internet.';
+const PHOTO_OFFLINE_STORAGE_ENABLED = false;
+const DIRECT_UPLOAD_ATTEMPTS = 3;
+const DIRECT_UPLOAD_RETRY_DELAYS_MS = [1500, 3000];
 
 const signedPhotoUrlCache = new Map();
 const signedPhotoUrlInFlight = new Map();
@@ -769,12 +777,16 @@ async function createQueuedPhoto({ file, jobId, profile, uploaderId, metadata = 
 // Zdjęcie bez rekordu w IndexedDB: nigdy nie pokazujemy „Zapisano na telefonie”.
 const NOT_PERSISTED_PATCH = Object.freeze({
   upload_status: 'error',
-  upload_status_label: 'Nie zapisano w telefonie',
-  upload_error: 'Zdjęcie nie ma kopii w pamięci telefonu. Ponów wysyłanie, zanim zamkniesz aplikację, albo dodaj zdjęcie ponownie.',
+  upload_status_label: 'Nie wysłano',
+  upload_error: 'Zdjęcie nie zostało wysłane. Sprawdź internet i naciśnij „Wyślij” albo dodaj zdjęcie ponownie.',
 });
 
 // WAWIS 13.62: zapis do kolejki telefonu i status „Zapisano na telefonie” dopiero po commit IndexedDB.
 async function persistQueuedPhotos(queuedPhotos = []) {
+  if (!PHOTO_OFFLINE_STORAGE_ENABLED) {
+    // 13.66: bez zapisu w telefonie — zdjęcia idą od razu na serwer (albo komunikat „Brak internetu”).
+    return { persisted: [], notPersisted: queuedPhotos, code: PHOTO_OFFLINE_DISABLED_CODE, message: PHOTO_OFFLINE_BLOCKED_MESSAGE };
+  }
   const results = await Promise.all(queuedPhotos.map(async (photo) => ({ photo, saved: await savePhotoQueueItem(photo) })));
   const persisted = results.filter((item) => item.saved).map((item) => item.photo);
   const notPersisted = results.filter((item) => !item.saved).map((item) => item.photo);
@@ -786,7 +798,7 @@ function markDirectUploadPhoto(photo) {
   return {
     ...photo,
     upload_status: 'uploading',
-    upload_status_label: 'Wysyłanie (bez kopii w telefonie)',
+    upload_status_label: 'Wysyłanie',
     upload_error: '',
     __notPersisted: true,
   };
@@ -1373,6 +1385,19 @@ export async function deleteJobPhoto({
   }
 }
 
+// 13.66: zdjęcie bez kopii w telefonie — kilka szybkich prób, żeby chwilowy zanik zasięgu nie gubił zdjęcia.
+async function uploadDirectPhotoWithRetry(options = {}) {
+  for (let attempt = 1; attempt <= DIRECT_UPLOAD_ATTEMPTS; attempt += 1) {
+    const result = await uploadQueuedPhoto(options);
+    if (result) return result;
+    if (!options.queuedPhoto?.__notPersisted || attempt === DIRECT_UPLOAD_ATTEMPTS) return result;
+    if (isBrowserOffline() || !photoSessionIsCurrent(options.isSessionCurrent)) return result;
+    await new Promise((resolve) => setTimeout(resolve, DIRECT_UPLOAD_RETRY_DELAYS_MS[attempt - 1] || 3000));
+    if (isBrowserOffline() || !photoSessionIsCurrent(options.isSessionCurrent)) return result;
+  }
+  return null;
+}
+
 export async function uploadJobPhotos({
   supabase,
   profile,
@@ -1390,6 +1415,10 @@ export async function uploadJobPhotos({
   const files = Array.from(event?.target?.files || []);
   if (event?.target) event.target.value = '';
   if (!files.length) return;
+  if (!PHOTO_OFFLINE_STORAGE_ENABLED && isBrowserOffline()) {
+    // 13.66: bez internetu zdjęcie nie trafia do aplikacji (ani do kolejki telefonu).
+    return { queuedCount: 0, uploadedCount: 0, failedCount: files.length, offlineBlocked: true, persistErrorCode: PHOTO_OFFLINE_DISABLED_CODE, persistErrorMessage: PHOTO_OFFLINE_BLOCKED_MESSAGE, directUploadCount: 0 };
+  }
 
   const uploaderId = await getAuthenticatedUploaderId({ supabase, profile });
   if (!photoSessionIsCurrent(isSessionCurrent)) return { queuedCount: 0, uploadedCount: 0, failedCount: 0, ignoredStaleSession: true };
@@ -1417,7 +1446,9 @@ export async function uploadJobPhotos({
   });
 
   if (failedPhotos.length) {
-    const localSaveError = new Error(`${failedPhotos.length} ${failedPhotos.length === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać w pamięci telefonu. ${persistence.message}`.trim());
+    const localSaveError = new Error(persistence.code === PHOTO_OFFLINE_DISABLED_CODE
+      ? PHOTO_OFFLINE_BLOCKED_MESSAGE
+      : `${failedPhotos.length} ${failedPhotos.length === 1 ? 'zdjęcia nie udało się' : 'zdjęć nie udało się'} zapisać w pamięci telefonu. ${persistence.message}`.trim());
     localSaveError.code = persistence.code;
     onPhotoUploadError?.(localSaveError);
   }
@@ -1433,7 +1464,7 @@ export async function uploadJobPhotos({
   // żeby na słabszym LTE telefon nie próbował wysłać kilku dużych plików naraz.
   void (async () => {
     for (const queuedPhoto of uploadNow) {
-      await uploadQueuedPhoto({
+      await uploadDirectPhotoWithRetry({
         supabase,
         profile,
         queuedPhoto,
@@ -1467,6 +1498,10 @@ export async function uploadJobDocumentationPhotos({
   if (!supabase || !profile || !jobId || !photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
   const validDocuments = documents.filter((document) => document?.file);
   if (!validDocuments.length) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [] };
+  if (!PHOTO_OFFLINE_STORAGE_ENABLED && isBrowserOffline()) {
+    // 13.66: tabliczki i zdjęcia dokumentacji tylko z internetem.
+    return { uploadedCount: 0, queuedCount: 0, failedCount: validDocuments.length, photos: [], offlineBlocked: true, persistErrorCode: PHOTO_OFFLINE_DISABLED_CODE, persistErrorMessage: PHOTO_OFFLINE_BLOCKED_MESSAGE, directUploadCount: 0 };
+  }
 
   const uploaderId = await getAuthenticatedUploaderId({ supabase, profile });
   if (!photoSessionIsCurrent(isSessionCurrent)) return { uploadedCount: 0, queuedCount: 0, failedCount: 0, photos: [], ignoredStaleSession: true };
@@ -1494,7 +1529,8 @@ export async function uploadJobDocumentationPhotos({
   const offlineNow = isBrowserOffline();
   // Bez trwałej kopii w telefonie i z internetem: wysyłamy od razu z pamięci formularza
   // (formularz zachowuje plik do czasu potwierdzenia serwera). Offline — zgłaszamy błąd zapisu.
-  const directUploadPhotos = (!offlineNow && !background) ? persistence.notPersisted.map(markDirectUploadPhoto) : [];
+  // 13.66: także w tle (nowy montaż) — zdjęcia bez kopii w telefonie wysyłamy od razu z pamięci formularza.
+  const directUploadPhotos = !offlineNow ? persistence.notPersisted.map(markDirectUploadPhoto) : [];
   const persistFailedCount = persistence.notPersisted.length - directUploadPhotos.length;
   const persistInfo = { persistErrorCode: persistence.code, persistErrorMessage: persistence.message, directUploadCount: directUploadPhotos.length };
 
@@ -1508,11 +1544,11 @@ export async function uploadJobDocumentationPhotos({
   }
 
   if (background) {
-    const backgroundPhotos = persistence.persisted;
+    const backgroundPhotos = [...persistence.persisted, ...directUploadPhotos];
     void (async () => {
       for (const queuedPhoto of backgroundPhotos) {
         try {
-          await uploadQueuedPhoto({
+          await uploadDirectPhotoWithRetry({
             supabase,
             profile,
             queuedPhoto,
@@ -1536,7 +1572,7 @@ export async function uploadJobDocumentationPhotos({
   let waitingCount = 0;
   let failedCount = persistFailedCount;
   for (const queuedPhoto of [...persistence.persisted, ...directUploadPhotos]) {
-    const uploadedPhoto = await uploadQueuedPhoto({
+    const uploadedPhoto = await uploadDirectPhotoWithRetry({
       supabase,
       profile,
       queuedPhoto,

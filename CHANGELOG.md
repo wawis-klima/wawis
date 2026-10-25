@@ -1,3 +1,10 @@
+## 13.66
+- Decyzja właściciela (25.10.2026): zdjęcia i tabliczki znamionowe tylko z internetem — u wszystkich (pracownik i administrator). Bez internetu aplikacja niczego nie zapisuje w pamięci telefonu i pokazuje komunikat: zrób zdjęcia aparatem telefonu i dodaj je z galerii, gdy będziesz mieć internet. Formularz urządzeń z wpisanymi danymi pozostaje otwarty.
+- Z internetem zdjęcia wysyłają się od razu z pamięci formularza (bez lokalnej kolejki Safari, która gubiła pliki). Przy chwilowym zaniku zasięgu do 3 prób w ciągu kilku sekund; nieudane zdjęcie ma status „Nie wysłano” z przyciskiem „Wyślij”.
+- Wycofany zapis urządzeń i tabliczek offline (13.63). Nowy montaż także wymaga internetu dla każdej roli.
+- Bez zmian: status i komentarze zapisane bez internetu nadal wysyłają się same; stare zdjęcia z kolejki telefonu można wysłać lub usunąć w Centrum synchronizacji („Synchronizuj teraz”, „Usuń”, „Napraw kolejkę zdjęć”).
+- Testy: harness 25/25 (S01, S05, S08, S09, S25 — RED na 13.65), E2E: mobile-resilience, mobile-offline-nameplates-all-roles, mobile-photo-queue-repair przepisane na nowe zachowanie.
+
 ## 13.65
 - iPhone: zdjęcia zapisywane w telefonie jako surowe bajty zamiast pliku Safari (Blob/File w IndexedDB). Safari potrafił zgubić zawartość takiego pliku — wysyłał 0 B albo odczyt nigdy się nie kończył i kolejka stała jako „Wysyłane” bez żadnej próby wysyłki (przypadek administratora 25.10, 13.64). Starsze zdjęcia w kolejce są obsługiwane jak dotąd.
 - Odczyt i kompresja zdjęcia mają limit czasu: nieczytelny plik dostaje „Zrób zdjęcie ponownie” po kilkunastu sekundach zamiast blokować kolejkę; kolejne zdjęcia wysyłają się normalnie.

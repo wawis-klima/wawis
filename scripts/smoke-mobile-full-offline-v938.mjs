@@ -85,13 +85,14 @@ assert.match(store, /app-snapshots/);
 assert.match(store, /job-operations/);
 assert.match(session, /loadOfflineAppSnapshot/);
 assert.match(session, /applyOfflineOperationsToJobs/);
-assert.match(actions, /queueDeviceSaveOffline/);
+// 13.66: zapis urządzeń i tabliczek offline wyłączony (decyzja właściciela) — tylko komunikat.
+assert.doesNotMatch(actions, /queueDeviceSaveOffline\(/);
+assert.match(actions, /Urządzeń i tabliczek nie można teraz zapisać w aplikacji/);
 assert.match(actions, /queueCommentOffline/);
 assert.match(actions, /queueStatusOffline/);
 assert.match(actions, /Dodanie nowego klienta wymaga internetu/);
 assert.match(actions, /Pełna edycja montażu wymaga połączenia z internetem/);
-assert.match(actions, /if \(serialOnlyMode && isTransientSupabaseError\(error\)\)/);
-assert.doesNotMatch(actions, /!isAdmin && serialOnlyMode/, '13.63: tabliczki offline zapisuje także administrator.');
+assert.match(actions, /PHOTO_OFFLINE_BLOCKED_MESSAGE/);
 assert.match(actions, /offline\.full-edit\.network-unconfirmed/);
 assert.match(sync, /OfflineConflictError/);
 assert.match(sync, /Dane urządzenia zostały w międzyczasie zmienione/);

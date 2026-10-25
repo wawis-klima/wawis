@@ -45,15 +45,44 @@ async function countQueuedPhotos(page) {
   }));
 }
 
+// 13.66: nowe zdjęcia nie trafiają już do kolejki telefonu — test umieszcza w niej stare, niewysłane zdjęcie
+// (format 13.62–13.65, baza v3), a aplikacja działa bez internetu, żeby kolejka nie wysłała go sama.
 async function addOfflinePhoto(page) {
   await installControllableNetworkState(page);
   await resetMockSupabase(page);
+  await page.evaluate(async ({ png }) => {
+    const bytes = Uint8Array.from(atob(png), (c) => c.charCodeAt(0));
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('wawis-mobile-photo-queue', 3);
+      request.onupgradeneeded = () => {
+        const store = request.result.objectStoreNames.contains('queued-photos')
+          ? request.transaction.objectStore('queued-photos')
+          : request.result.createObjectStore('queued-photos', { keyPath: 'id' });
+        for (const name of ['created_at', 'job_id', 'upload_key', 'unit_key', 'file_fingerprint', 'next_attempt_at']) {
+          if (!store.indexNames.contains(name)) store.createIndex(name, name, { unique: false });
+        }
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('queued-photos', 'readwrite');
+      tx.objectStore('queued-photos').put({
+        id: 'local-photo-upload-repair-e2e', job_id: 'mock-job-002', created_at: new Date().toISOString(),
+        uploaded_by: 'mock-worker-1', user_id: 'mock-worker-1', uploader_name: 'Pracownik Testowy', queue_writer: '13.62',
+        upload_status: 'local', upload_status_label: 'Zapisano na telefonie', upload_error: '',
+        upload_key: 'key-repair-e2e', unit_key: '', file_fingerprint: 'fp-repair-e2e', planned_storage_path: 'mock-job-002/repair-e2e.png',
+        local_file_name: 'naprawa-kolejki-e2e.png', local_file_type: 'image/png', local_file_last_modified: 1,
+        local_file: null, local_file_bytes: bytes.buffer, photo_kind: '', device_index: 0, unit_ref: '',
+        retry_count: 0, next_attempt_at: '', lease_until: '', upload_stage: 'queued',
+      });
+      tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }, { png: tinyPng.buffer.toString('base64') });
   await setLogicalOnlineState(page, false);
   await loginWithoutReset(page, WORKER);
-  await page.locator('.statusActionButton[title="W trakcie"]').click();
-  await page.getByText('Klient Testowy B', { exact: true }).click();
-  await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
-  await expect(page.getByText('Zapisano na telefonie', { exact: true })).toBeVisible();
+  await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible({ timeout: 20_000 });
   await expect.poll(() => countQueuedPhotos(page)).toBe(1);
 }
 
