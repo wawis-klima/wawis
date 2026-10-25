@@ -107,6 +107,13 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
   expect(readerUrls.some((url) => /\/npm\/zxing-wasm@.*\.wasm/.test(url))).toBe(true);
   expect(readerUrls.some((url) => url.includes('/ocr/core/tesseract-core'))).toBe(true);
 
+  // Formularz otwieramy z internetem (ekrany aplikacji są już w telefonie), odczyt robimy bez sieci.
+  await page.locator('.statusActionButton[title="W trakcie"]').click();
+  await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+  await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
+  await page.locator('.mobileDeviceOverviewOpen').first().click();
+  await page.locator('.mobileMultiIndoorCard').first().click();
+
   await context.setOffline(true);
   expect(await page.evaluate(() => navigator.onLine)).toBe(false);
 
@@ -125,12 +132,6 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
   }, readerUrls);
   expect(offlineFetch.length).toBeGreaterThan(0);
   expect(offlineFetch.every(Boolean)).toBe(true);
-
-  await page.locator('.statusActionButton[title="W trakcie"]').click();
-  await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
-  await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
-  await page.locator('.mobileDeviceOverviewOpen').first().click();
-  await page.locator('.mobileMultiIndoorCard').first().click();
 
   await page.locator('.nameplateGalleryInput').setInputFiles({
     name: 'rotenso-offline.svg',
