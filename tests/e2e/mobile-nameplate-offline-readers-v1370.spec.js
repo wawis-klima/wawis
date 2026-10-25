@@ -114,6 +114,11 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
   await page.locator('.mobileDeviceOverviewOpen').first().click();
   await page.locator('.mobileMultiIndoorCard').first().click();
 
+  const failedRequests = [];
+  const consoleErrors = [];
+  page.on('requestfailed', (request) => failedRequests.push(`${request.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 90)} ${request.failure()?.errorText || ''}`));
+  page.on('console', (message) => { if (message.type() === 'error' || message.type() === 'warning') consoleErrors.push(message.text().slice(0, 140)); });
+  page.on('worker', (worker) => worker.on('console', (message) => consoleErrors.push(`[worker] ${message.text().slice(0, 140)}`)));
   await context.setOffline(true);
   expect(await page.evaluate(() => navigator.onLine)).toBe(false);
 
@@ -142,7 +147,12 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
   await page.getByRole('button', { name: 'Zapisz kadr' }).click();
   const saveAnyway = page.getByRole('button', { name: 'Zapisz mimo to', exact: true });
   if (await saveAnyway.isVisible({ timeout: 5_000 }).catch(() => false)) await saveAnyway.click();
-  await expect(page.locator('.nameplateVerifyMethod')).toBeVisible({ timeout: 150_000 });
+  try {
+    await expect(page.locator('.nameplateVerifyMethod')).toBeVisible({ timeout: 150_000 });
+  } catch (error) {
+    const progress = await page.locator('.nameplateVerifyProgress').innerText().catch(() => '(brak paska)');
+    throw new Error(`Odczyt offline nie zakończył się. Pasek: ${progress.replace(/\s+/g, ' ')} | nieudane żądania: ${failedRequests.slice(-8).join(' ; ')} | konsola: ${consoleErrors.slice(-5).join(' ; ')}`);
+  }
 
   await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Odczyt lokalny — bez internetu');
   await expect(page.getByPlaceholder('Przepisz model z tabliczki')).toHaveValue(/I35Xi R14/i);
