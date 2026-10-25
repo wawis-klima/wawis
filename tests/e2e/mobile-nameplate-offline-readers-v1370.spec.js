@@ -145,8 +145,15 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
   });
   await expect(page.locator('.nameplateCropModal')).toBeVisible();
   await page.getByRole('button', { name: 'Zapisz kadr' }).click();
+  const cropModal = page.locator('.nameplateCropModal');
   const saveAnyway = page.getByRole('button', { name: 'Zapisz mimo to', exact: true });
-  if (await saveAnyway.isVisible({ timeout: 5_000 }).catch(() => false)) await saveAnyway.click();
+  const cropOutcome = await Promise.race([
+    cropModal.waitFor({ state: 'hidden', timeout: 30_000 }).then(() => 'hidden'),
+    saveAnyway.waitFor({ state: 'visible', timeout: 30_000 }).then(() => 'warning'),
+  ]);
+  if (cropOutcome === 'warning') await saveAnyway.click();
+  await expect(cropModal).toBeHidden();
+  await expect(page.locator('.nameplateVerifyModal')).toBeVisible();
   try {
     await expect(page.locator('.nameplateVerifyMethod')).toBeVisible({ timeout: 150_000 });
   } catch (error) {
