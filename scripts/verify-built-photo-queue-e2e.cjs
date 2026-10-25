@@ -11,7 +11,10 @@ function collect(suite, out = []) {
     for (const test of spec.tests || []) {
       const results = test.results || [];
       const last = results[results.length - 1] || {};
-      out.push({ title: spec.title, file: spec.file || suite.file || '', status: last.status || 'missing', retries: Math.max(0, results.length - 1) });
+      const errorText = [last.error?.message, ...(last.errors || []).map((e) => e?.message)]
+        .filter(Boolean).filter((m, i, all) => all.indexOf(m) === i).join(' || ')
+        .replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim().slice(0, 600);
+      out.push({ title: spec.title, file: spec.file || suite.file || '', status: last.status || 'missing', retries: Math.max(0, results.length - 1), errorText });
     }
   }
   for (const child of suite.suites || []) collect(child, out);
@@ -29,6 +32,8 @@ const failed = tests.filter((t) => t.status !== 'passed');
 const summary = `wykonane=${tests.length} zaliczone=${passed.length} niezaliczone=${failed.length} oczekiwane=${expected}`;
 console.log(`::notice title=Built E2E wynik::${summary}`);
 for (const t of tests) console.log(`::notice title=Built E2E ${t.status}::${t.file} › ${t.title}${t.retries ? ` (ponowienia: ${t.retries})` : ''}`);
+// Treść błędu w adnotacji: logi i artefakty bywają niedostępne poza GitHubem.
+for (const t of failed) if (t.errorText) console.log(`::error title=Built E2E błąd::${t.title} — ${t.errorText.replace(/%/g, '%25').replace(/\r?\n/g, ' ')}`);
 if (tests.length !== expected || failed.length) {
   console.log(`::error title=Built E2E::NO-GO — ${summary}`);
   process.exit(1);
