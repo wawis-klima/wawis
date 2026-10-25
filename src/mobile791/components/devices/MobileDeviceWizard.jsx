@@ -349,6 +349,7 @@ export default function MobileDeviceWizard({
   existingPhotos = [],
   busy = false,
   submitLabel = 'Zapisz montaż',
+  restoredNotice = '',
   onClose,
   onSubmit,
   onAddDevice,
@@ -658,6 +659,7 @@ export default function MobileDeviceWizard({
     <div className="mobileDeviceWizard">
       <WizardHeader title="Urządzenia" step={4} onClose={onClose} />
       <div className="mobileDeviceWizardBody">
+        {restoredNotice ? <div className="mobileDeviceWizardHint" role="status" data-testid="device-draft-restored">{restoredNotice}</div> : null}
         <h3>Dodane urządzenia</h3>
         <div className="mobileDeviceOverviewList">
           {safeDevices.map((device, index) => {

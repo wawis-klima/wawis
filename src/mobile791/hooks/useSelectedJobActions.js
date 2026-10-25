@@ -31,6 +31,7 @@ import { getJobDeviceRows } from "../modules/job-devices.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
+import { clearDeviceFormDraft, saveDeviceFormDraft, takeDeviceFormDraft } from "../modules/device-form-drafts.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { deleteJobDeviceRecord, deleteJobIndoorUnitRecord } from "../modules/job-device-delete.js";
 
@@ -424,6 +425,17 @@ export function useSelectedJobActions({
     openEditJobForm({ jobId: job.id, form: nextForm, baseJob: job, serialOnly: false });
   }
 
+  // 13.68: przywrócony szkic (urządzenia i zdjęcia wpisane bez internetu) + aktualne tabliczki z serwera.
+  function withRestoredDraft(draft, freshForm) {
+    const savedAt = new Date(draft.savedAt);
+    const time = Number.isNaN(savedAt.getTime()) ? '' : savedAt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    return {
+      ...draft.form,
+      existing_nameplate_photos: freshForm?.existing_nameplate_photos || draft.form?.existing_nameplate_photos || [],
+      restored_draft_notice: `Przywrócono niezapisane dane urządzeń${time ? ` z ${time}` : ''}. Sprawdź je i naciśnij „Zapisz urządzenia i tabliczki”.`,
+    };
+  }
+
   async function openSerialNumbersJob(job) {
     if (!job) return;
     if (!canEditResolvedJob(job)) {
@@ -433,10 +445,12 @@ export function useSelectedJobActions({
     const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(job.contractor_id || '')) || null;
 
     if (isBrowserOffline()) {
-      // Dotychczasowa kolejka offline pozostaje dostępna. Nie udajemy jednak,
-      // że brak zdjęć w cache oznacza brak tabliczek na serwerze.
+      // Nie udajemy, że brak zdjęć w cache oznacza brak tabliczek na serwerze.
       const offlineForm = { ...buildEditJobForm({ job, profiles, normalizeStatus }), nip: linkedContractor?.nip || '' };
-      openEditJobForm({ jobId: job.id, form: offlineForm, baseJob: job, serialOnly: true });
+      const offlineDraft = takeDeviceFormDraft(job.id);
+      openEditJobForm(offlineDraft
+        ? { jobId: job.id, form: withRestoredDraft(offlineDraft, offlineForm), initialForm: offlineForm, baseJob: job, serialOnly: true }
+        : { jobId: job.id, form: offlineForm, baseJob: job, serialOnly: true });
       return;
     }
 
@@ -481,7 +495,11 @@ export function useSelectedJobActions({
         ...buildEditJobForm({ job: readyJob, profiles, normalizeStatus }),
         nip: linkedContractor?.nip || '',
       };
-      openEditJobForm({ jobId: job.id, form: nextForm, baseJob: currentJob, serialOnly: true });
+      const draft = takeDeviceFormDraft(job.id);
+      openEditJobForm(draft
+        ? { jobId: job.id, form: withRestoredDraft(draft, nextForm), initialForm: nextForm, baseJob: currentJob, serialOnly: true }
+        : { jobId: job.id, form: nextForm, baseJob: currentJob, serialOnly: true });
+      if (draft) logDiagnostic('device.draft.restored', { jobId: job.id, pendingCount: (draft.form?.pending_nameplate_photos || []).length });
     } catch (error) {
       logDiagnostic('nameplate.open.refresh.failed', { jobId: job.id, error });
       alert('Nie udało się potwierdzić aktualnych urządzeń i tabliczek na serwerze. Nie zapisuj ich ponownie na ślepo. ' + String(error?.message || 'Spróbuj ponownie za chwilę.'));
@@ -511,12 +529,14 @@ export function useSelectedJobActions({
           variant: 'warning',
           title: 'Brak internetu',
           message: serialOnlyMode
-            ? 'Urządzeń i tabliczek nie można teraz zapisać w aplikacji. Zrób zdjęcia tabliczek aparatem telefonu i dodaj je z galerii, gdy będziesz mieć internet.'
+            ? 'Urządzeń i tabliczek nie można teraz zapisać. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
             : 'Pełna edycja montażu wymaga połączenia z internetem. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
           confirmLabel: 'Zamknij okno',
           cancelLabel: 'Zostań w formularzu',
           onConfirm: async () => runConfirmAction(async () => {
-            logDiagnostic('offline.full-edit.closed', { jobId: editingJobId, serialOnlyMode, isAdmin });
+            const draftJobId = editingJobId;
+            if (serialOnlyMode) saveDeviceFormDraft(draftJobId, { ...(jobFormRef.current || form), restored_draft_notice: '' });
+            logDiagnostic('offline.full-edit.closed', { jobId: draftJobId, serialOnlyMode, isAdmin, draftKept: Boolean(serialOnlyMode) });
             resetJobModalState();
             return true;
           }),
@@ -559,6 +579,7 @@ export function useSelectedJobActions({
         void uploadPromise.catch((error) => logDiagnostic('nameplate.save.late-upload.failed', { jobId: editingJobId, operationId, error }));
         const confirmed = await verifyPendingNameplatesWithRecovery(editingJobId, preparedPendingDocuments, 'upload-timeout');
         if (confirmed) {
+          clearDeviceFormDraft(editingJobId);
           resetJobModalState();
           logDiagnostic('nameplate.save.modal.closed.after-timeout-confirmation', { jobId: editingJobId, operationId });
           refreshAfterNameplateSave(editingJobId, 'upload-timeout-confirmed');
@@ -625,6 +646,7 @@ export function useSelectedJobActions({
         }
       }
 
+      clearDeviceFormDraft(editingJobId);
       resetJobModalState();
       logDiagnostic('nameplate.save.modal.closed', { jobId: editingJobId, operationId, uploadedCount: documentationResult.uploadedCount, queuedCount: documentationResult.queuedCount });
       refreshAfterNameplateSave(editingJobId, 'save-confirmed');

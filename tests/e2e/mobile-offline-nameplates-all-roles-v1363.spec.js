@@ -42,7 +42,7 @@ async function countOfflineDeviceOperations(page) {
 
 // 13.68: bez internetu okno „Brak internetu” z wyborem „Zamknij okno” / „Zostań w formularzu” (nie blokuje aplikacji).
 for (const [roleName, credentials, buttonName, choice] of [['administrator', ADMIN, 'Urządzenia', 'stay'], ['pracownik', WORKER, 'Tabliczki', 'close']]) {
-  test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (okno z wyborem), ${choice === 'stay' ? 'po powrocie internetu zapis działa' : '„Zamknij okno” wraca do aplikacji'}`, async ({ page }) => {
+  test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (okno z wyborem), ${choice === 'stay' ? 'po powrocie internetu zapis działa' : '„Zamknij okno” zachowuje dane do ponownego otwarcia'}`, async ({ page }) => {
     test.setTimeout(90_000);
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
@@ -72,8 +72,21 @@ for (const [roleName, credentials, buttonName, choice] of [['administrator', ADM
       await offlinePrompt.getByRole('button', { name: 'Zamknij okno', exact: true }).click();
       await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0);
       await expect(offlinePrompt).toHaveCount(0);
-      await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible();
       expect(await countOfflineDeviceOperations(page)).toBe(0);
+
+      // 13.68: dane wpisane bez internetu wracają po ponownym otwarciu (z internetem) i zapisują się normalnie.
+      await setLogicalOnlineState(page, true);
+      await page.getByRole('button', { name: buttonName, exact: true }).click();
+      await expect(page.getByTestId('device-draft-restored')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('device-draft-restored')).toContainText('Przywrócono niezapisane dane urządzeń');
+      await saveButton.click();
+      await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+      if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
+      await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0, { timeout: 30_000 });
+      // Po udanym zapisie szkic znika.
+      await page.getByRole('button', { name: buttonName, exact: true }).click();
+      await expect(page.locator('.mobileDeviceWizardFooter .btn.primary')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('device-draft-restored')).toHaveCount(0);
       return;
     }
 
