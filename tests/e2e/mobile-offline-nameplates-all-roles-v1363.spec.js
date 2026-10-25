@@ -64,7 +64,7 @@ for (const [roleName, credentials, buttonName, choice] of [['administrator', ADM
     await expect.poll(async () => await offlinePrompt.isVisible().catch(() => false) || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
     if (!(await offlinePrompt.isVisible().catch(() => false))) await confirmWarning.click();
     await expect(offlinePrompt).toBeVisible();
-    await expect(offlinePrompt).toContainText('Zrób zdjęcia tabliczek aparatem telefonu');
+    await expect(offlinePrompt).toContainText('„Zamknij okno” zachowa wpisane dane i zdjęcia');
     expect(dialogs).toEqual([]);
     expect(await countOfflineDeviceOperations(page)).toBe(0);
 
