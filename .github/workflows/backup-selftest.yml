@@ -1,7 +1,7 @@
 name: WAWIS backup self-test
 
 # Test skryptów kopii zapasowych na fikcyjnych danych — bez sekretów i bez połączenia z produkcją.
-# Źródło i cel kopii to lokalne kontenery (PostgreSQL + MinIO jako S3) na maszynie CI.
+# Źródło i cel kopii są lokalne na maszynie CI (PostgreSQL w kontenerze, serwer S3 z rclone).
 on:
   pull_request:
     paths:
@@ -45,18 +45,17 @@ jobs:
       - name: Install tools
         run: bash scripts/backup/install-tools.sh
 
-      - name: Start MinIO (S3 source and destination)
+      - name: Start local S3 server (rclone serve s3 — source and destination)
         run: |
-          docker run -d --name minio -p 127.0.0.1:9000:9000 \
-            -e MINIO_ROOT_USER=selftest -e MINIO_ROOT_PASSWORD=selftest-secret \
-            minio/minio:RELEASE.2024-10-13T13-34-11Z server /data
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:9000/minio/health/ready && break; sleep 2; done
+          mkdir -p "$RUNNER_TEMP/s3data"
+          nohup rclone serve s3 --auth-key selftest,selftest-secret --addr 127.0.0.1:9000 "$RUNNER_TEMP/s3data" > "$RUNNER_TEMP/s3.log" 2>&1 &
+          for i in $(seq 1 30); do curl -sS -o /dev/null http://127.0.0.1:9000/ && break; sleep 1; done
 
       - name: Configure rclone remotes (fixture only)
         run: |
           {
             echo "RCLONE_CONFIG_MINIO_TYPE=s3"
-            echo "RCLONE_CONFIG_MINIO_PROVIDER=Minio"
+            echo "RCLONE_CONFIG_MINIO_PROVIDER=Rclone"
             echo "RCLONE_CONFIG_MINIO_ENDPOINT=http://127.0.0.1:9000"
             echo "RCLONE_CONFIG_MINIO_ACCESS_KEY_ID=selftest"
             echo "RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY=selftest-secret"
