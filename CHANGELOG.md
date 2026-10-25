@@ -1,3 +1,8 @@
+## 13.69
+- Odczyt tabliczki bez internetu: zamiast pustych pól aplikacja wpisuje to, co odczytał czytnik telefonu (model ze słownika i numer SN), z ostrzeżeniem „Brak internetu — AI nie sprawdziła tabliczki. Porównaj z tabliczką znak po znaku”. Zaznaczenie „Sprawdziłem numer SN znak po znaku” pozostaje obowiązkowe.
+- Gdy kod kreskowy i nadruk SN się różnią, w polu jest numer z kodu kreskowego, a oba odczyty są pokazane do porównania. Numer EAN nigdy nie trafia do pola SN.
+- Bez internetu odczyt nie czeka już 60 s na AI — kończy się od razu po lokalnym czytniku. Gdy AI zwróci błąd przy włączonym internecie, rozbieżny numer też jest wpisywany z kodu kreskowego do sprawdzenia.
+
 ## 13.68
 - Bez internetu przy zapisie urządzeń i tabliczek (oraz pełnej edycji montażu) zamiast samego komunikatu pojawia się okno „Brak internetu” z wyborem: „Zamknij okno” (powrót do aplikacji) albo „Zostań w formularzu”. Wcześniej po komunikacie trzeba było szukać zamykania formularza i potwierdzać „Zamknąć bez zapisu?”.
 - „Zamknij okno” zachowuje wpisane urządzenia i zdjęcia tabliczek w pamięci otwartej aplikacji: po ponownym otwarciu „Urządzenia”/„Tabliczki” w tym montażu (z internetem) dane wracają z informacją „Przywrócono niezapisane dane” — wystarczy „Zapisz”. Nic nie trafia do pamięci telefonu; po całkowitym zamknięciu aplikacji szkic przepada. Udany zapis usuwa szkic.

@@ -197,6 +197,90 @@ function resultFromExactModel(exactModel = null) {
   };
 }
 
+function isBrowserOffline() {
+  return typeof navigator !== 'undefined' && navigator && navigator.onLine === false;
+}
+
+const EAN_LIKE_RE = /^\d{8}$|^\d{12,14}$/;
+
+function pickSerialLikeToken(text = '', usable = (value) => value) {
+  const tokens = String(text || '').toUpperCase().match(/[A-Z0-9][A-Z0-9-]{9,29}/g) || [];
+  const candidates = tokens
+    .map((token) => token.replace(/-/g, ''))
+    .filter((token) => token.length >= 10 && token.length <= 30)
+    .filter((token) => /[A-Z]/.test(token) && (token.match(/\d/g) || []).length >= 6)
+    .filter((token) => !/(?:EAN|KW|BTU|HZ|REFRIGERANT|MODEL)/.test(token))
+    .map((token) => usable(token))
+    .filter(Boolean);
+  return candidates.sort((left, right) => right.length - left.length)[0] || '';
+}
+
+// WAWIS 13.69: gdy AI jest niedostępne (brak internetu albo błąd AI), pole nie zostaje
+// całkiem puste — podajemy kandydata z lokalnego czytnika. To NIE jest potwierdzenie:
+// formularz wymaga sprawdzenia SN znak po znaku. Nigdy nie podstawiamy EAN.
+export function getNameplateLocalFallbackCandidates({
+  serialCheck = {},
+  serialTextResult = null,
+  modelTextResult = null,
+  barcodeInfo = {},
+  modelValue = '',
+  allowUnsupportedOcr = false,
+} = {}) {
+  const ean = normalizeSerial(barcodeInfo?.ean).replace(/\s+/g, '');
+  const usable = (value) => {
+    const candidate = normalizeSerial(value).replace(/\s+/g, '');
+    if (!candidate || candidate.length < 6) return '';
+    if (ean && candidate === ean) return '';
+    if (EAN_LIKE_RE.test(candidate)) return '';
+    return candidate;
+  };
+
+  let serialNumber = '';
+  let serialSource = '';
+  const status = serialCheck?.status;
+  if (status === 'conflict') {
+    serialNumber = usable(serialCheck.barcodeSerial);
+    serialSource = serialNumber ? 'barcode' : '';
+    if (!serialNumber) {
+      serialNumber = usable(serialCheck.ocrSerial);
+      serialSource = serialNumber ? 'ocr' : '';
+    }
+  } else if (status === 'missing' && allowUnsupportedOcr) {
+    // Pojedynczy przebieg OCR — tylko gdy na zdjęciu był napis S/N / SERIAL.
+    const rawText = String(serialTextResult?.rawText || '');
+    if (NAMEPLATE_SERIAL_LABEL_RE.test(rawText)) {
+      serialNumber = usable(serialTextResult?.serialNumber);
+      serialSource = serialNumber ? 'ocr_single' : '';
+    }
+    if (!serialNumber) {
+      // Napis S/N bywa nieczytelny dla OCR, choć sam numer jest odczytany. Bez internetu
+      // podajemy najdłuższy ciąg wyglądający jak numer seryjny (litery + ≥6 cyfr, 10–30 znaków),
+      // z pominięciem EAN, kodów modelu i wartości technicznych — wyłącznie do sprawdzenia.
+      serialNumber = pickSerialLikeToken([rawText, modelTextResult?.rawText].filter(Boolean).join('\n'), usable);
+      serialSource = serialNumber ? 'ocr_token' : '';
+    }
+  }
+
+  let fallbackModelValue = '';
+  if (!normalizeText(modelValue) && modelTextResult?.exactModel && !modelTextResult?.reliable) {
+    fallbackModelValue = resultFromExactModel(modelTextResult.exactModel).modelValue;
+  }
+
+  return { serialNumber, serialSource, modelValue: fallbackModelValue };
+}
+
+function withLocalFallback(reading, { offline = false } = {}) {
+  const candidates = getNameplateLocalFallbackCandidates({
+    serialCheck: reading.serialCheck,
+    serialTextResult: reading.serialTextResult,
+    modelTextResult: reading.modelTextResult,
+    barcodeInfo: reading.barcodeInfo,
+    modelValue: reading.modelValue,
+    allowUnsupportedOcr: offline,
+  });
+  return { ...reading, aiUnavailable: true, offline, localCandidates: candidates };
+}
+
 export function isMobileNameplateReadingComplete(reading = {}) {
   return Boolean(
     normalizeText(reading.modelValue)
@@ -347,6 +431,22 @@ export async function readMobileNameplate({
   }
 
   const needsSerialAi = serialCheck.status !== 'confirmed';
+
+  // WAWIS 13.69: bez internetu nie czekamy 60 s na AI — od razu zwracamy odczyt czytnika
+  // z kandydatami do sprawdzenia. Zapis i tak wymaga internetu (13.66), a „Zamknij okno”
+  // zachowuje wpisane dane (13.68).
+  if (isBrowserOffline()) {
+    onProgress?.({ progress: 100, label: 'Brak internetu — wpisano odczyt czytnika, sprawdź z tabliczką', method: 'local' });
+    return withLocalFallback({
+      ...localReading,
+      aiAttempted: false,
+      aiSkipped: true,
+      aiSkipReason: 'offline',
+      aiError: '',
+      weakNameplateEvidence: weakEvidenceFallback,
+    }, { offline: true });
+  }
+
   onProgress?.({
     progress: 8,
     label: needsSerialAi
@@ -430,10 +530,10 @@ export async function readMobileNameplate({
         aiSkipReason: 'ai_failed_low_evidence',
       };
     }
-    return {
+    return withLocalFallback({
       ...localReading,
       aiAttempted: true,
       aiError: error?.message || 'Nie udało się odczytać tabliczki przez AI.',
-    };
+    }, { offline: isBrowserOffline() });
   }
 }

@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.68",
+  "version": "13.69",
   "scope": "mobile",
-  "release_branch": "release/v13.68",
+  "release_branch": "release/v13.69",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "25.10.2026 10:21: komunikat bez internetu w oknie urządzeń nie pozwalał wygodnie wrócić do aplikacji."
+    "notes": "25.10.2026 10:56: bez internetu odczyt tabliczki zostawiał puste pola zamiast tego, co odczytał czytnik telefonu."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.68",
+    "source_branch": "release/v13.69",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "iPhone: tryb samolotowy → Urządzenia → Zapisz → okno z „Zamknij okno” / „Zostań w formularzu”.",
+    "evidence_source": "iPhone: tryb samolotowy → Tabliczki → zdjęcie tabliczki → pola wypełnione odczytem czytnika z ostrzeżeniem „Brak internetu”.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "useSelectedJobActions.saveEditedJob: openConfirmDialog zamiast alert przy braku internetu.",
+    "code": "nameplate-reader.readMobileNameplate: bez internetu pomija AI i zwraca kandydatów lokalnego czytnika (localCandidates); NameplatePhotoCapture wpisuje ich do sprawdzenia.",
     "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.68; kontrola na iPhonie."
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.69; kontrola na iPhonie."
   }
 }
