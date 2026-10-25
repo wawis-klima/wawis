@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.63",
+  "version": "13.64",
   "scope": "mobile",
-  "release_branch": "release/v13.63",
+  "release_branch": "release/v13.64",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "OWNER_REPORT",
-    "notes": "25.10.2026: administrator na iPhonie offline nie mógł zapisać tabliczek (blokada !isAdmin w zapisie offline i w synchronizacji). 13.62 działa produkcyjnie."
+    "result": "IOS_ZERO_BYTE_UPLOAD",
+    "notes": "25.10.2026 06:57–06:58 UTC: iPhone administratora, montaż 9819c70f — POST do Storage z Content-Length 0 → HTTP 400 dla tabliczek JW i JZ zapisanych offline; brak rekordów photos. Wcześniej WAWIS-1346."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.63",
+    "source_branch": "release/v13.64",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,8 +24,8 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_TEST",
-    "evidence_source": "iPhone administratora: Urządzenia → zapis w trybie samolotowym → powrót internetu bez wylogowania; SELECT w photos/storage.objects.",
-    "notes": "Zgoda właściciela 25.10.2026 na samodzielne wdrożenie przy kryteriach GO (CLAUDE.md)."
+    "evidence_source": "Logi edge Supabase: POST /storage/v1/object/job-photos z niezerowym Content-Length i statusem 200; SELECT photos/storage.objects (bytes > 0) dla montażu 9819c70f.",
+    "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "useSelectedJobActions.js: zapis offline i ponowienie po błędzie sieci dla serialOnlyMode bez warunku roli; App.jsx: performOfflineJobSync także dla administratora.",
+    "code": "photos.js: readPhotoBytesForUpload przed storage.upload (ArrayBuffer zamiast File/Blob z IndexedDB); pusty/nieczytelny plik → PHOTO_ZERO_BYTES, status błędu, bez ponawiania.",
     "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.63; test administratora na iPhonie offline → online."
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.64; iPhone administratora — Synchronizacja → Wyślij; logi Supabase bez 400 0 B."
   }
 }

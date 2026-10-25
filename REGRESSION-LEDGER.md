@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## IOS-ZERO-BYTE-1364 — puste uploady zdjęć z kolejki na iPhonie (25.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| ZB-1364-BYTES | FIXED-UNVERIFIED | Safari wysyłał File/Blob z IndexedDB jako żądanie 0 B (logi 25.10 06:57–06:58 UTC, HTTP 400). Teraz storage.upload dostaje ArrayBuffer odczytany przed wysyłką. Test S20 (RED 13.63 → GREEN 13.64). |
+| ZB-1364-EMPTY | FIXED-UNVERIFIED | Pusty/nieczytelny plik w telefonie → status błędu „Zrób zdjęcie ponownie”, bez żądania do serwera i bez nieskończonych ponowień. Test S21 (RED 13.63 → GREEN 13.64). |
+| ZB-1364-LIVE | EXTERNAL | iPhone administratora: logi Storage 200 z niezerowym rozmiarem, SELECT bytes > 0. Chromium nie odtwarza błędu WebKit. |
+
 ## OFFLINE-ADMIN-1363 — tabliczki offline na koncie administratora (25.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
