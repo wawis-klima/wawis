@@ -45,13 +45,30 @@ const missingOnline = getNameplateLocalFallbackCandidates({
 });
 assert.equal(missingOnline.serialNumber, '');
 
-// 5. Bez napisu S/N (np. zasłonięty numer) pole zostaje puste.
+// 5. Napis S/N nieczytelny, ale numer odczytany: offline podajemy ciąg wyglądający jak SN.
 const noLabel = getNameplateLocalFallbackCandidates({
   serialCheck: { status: 'missing' },
-  serialTextResult: { serialNumber: 'XYZ9876543210', rawText: 'MODEL I35XI\nXYZ9876543210' },
+  serialTextResult: { serialNumber: '', rawText: 'ROTENSO\nMODEL: I35XI R14\n230V 50HZ 3.5 KW R32\nIMOTO35XI2400012345\nPC/EAN: 5905567600791' },
+  barcodeInfo: { ean: EAN },
   allowUnsupportedOcr: true,
 });
-assert.equal(noLabel.serialNumber, '');
+assert.equal(noLabel.serialNumber, 'IMOTO35XI2400012345');
+assert.equal(noLabel.serialSource, 'ocr_token');
+
+// 5b. Zasłonięty SN: tylko EAN, model i wartości techniczne → pole puste.
+const hidden = getNameplateLocalFallbackCandidates({
+  serialCheck: { status: 'missing' },
+  serialTextResult: { serialNumber: '', rawText: 'ROTENSO\nMODEL: I35XI R14\nINDOOR UNIT 230V ~ 50HZ\nCOOLING CAPACITY: 3.5 KW REFRIGERANT: R32\n5905567600791\nPC/EAN: 5905567600791\nMADE IN P.R.C.' },
+  barcodeInfo: { ean: EAN },
+  allowUnsupportedOcr: true,
+});
+assert.equal(hidden.serialNumber, '');
+// Online (błąd AI) ciąg bez potwierdzenia nie jest wpisywany.
+assert.equal(getNameplateLocalFallbackCandidates({
+  serialCheck: { status: 'missing' },
+  serialTextResult: { serialNumber: '', rawText: 'IMOTO35XI2400012345' },
+  allowUnsupportedOcr: false,
+}).serialNumber, '');
 
 // 6. EAN / ciąg wyglądający jak EAN nigdy nie trafia do SN.
 for (const value of [EAN, '590556760079', '12345678']) {

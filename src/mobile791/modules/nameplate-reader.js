@@ -203,6 +203,18 @@ function isBrowserOffline() {
 
 const EAN_LIKE_RE = /^\d{8}$|^\d{12,14}$/;
 
+function pickSerialLikeToken(text = '', usable = (value) => value) {
+  const tokens = String(text || '').toUpperCase().match(/[A-Z0-9][A-Z0-9-]{9,29}/g) || [];
+  const candidates = tokens
+    .map((token) => token.replace(/-/g, ''))
+    .filter((token) => token.length >= 10 && token.length <= 30)
+    .filter((token) => /[A-Z]/.test(token) && (token.match(/\d/g) || []).length >= 6)
+    .filter((token) => !/(?:EAN|KW|BTU|HZ|REFRIGERANT|MODEL)/.test(token))
+    .map((token) => usable(token))
+    .filter(Boolean);
+  return candidates.sort((left, right) => right.length - left.length)[0] || '';
+}
+
 // WAWIS 13.69: gdy AI jest niedostępne (brak internetu albo błąd AI), pole nie zostaje
 // całkiem puste — podajemy kandydata z lokalnego czytnika. To NIE jest potwierdzenie:
 // formularz wymaga sprawdzenia SN znak po znaku. Nigdy nie podstawiamy EAN.
@@ -239,6 +251,13 @@ export function getNameplateLocalFallbackCandidates({
     if (NAMEPLATE_SERIAL_LABEL_RE.test(rawText)) {
       serialNumber = usable(serialTextResult?.serialNumber);
       serialSource = serialNumber ? 'ocr_single' : '';
+    }
+    if (!serialNumber) {
+      // Napis S/N bywa nieczytelny dla OCR, choć sam numer jest odczytany. Bez internetu
+      // podajemy najdłuższy ciąg wyglądający jak numer seryjny (litery + ≥6 cyfr, 10–30 znaków),
+      // z pominięciem EAN, kodów modelu i wartości technicznych — wyłącznie do sprawdzenia.
+      serialNumber = pickSerialLikeToken([rawText, modelTextResult?.rawText].filter(Boolean).join('\n'), usable);
+      serialSource = serialNumber ? 'ocr_token' : '';
     }
   }
 
