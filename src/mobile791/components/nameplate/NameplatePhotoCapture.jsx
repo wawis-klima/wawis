@@ -373,9 +373,12 @@ function NameplateVerificationReview({
   const needsSerialReview = requiresNameplateSerialReview(verification);
   const canConfirm = !verification.busy && !readingMismatch && !noNameplateEvidence
     && modelReady && serialReady && (!needsSerialReview || verification.serialReviewed);
+  const offlineReading = Boolean(verification.reading?.aiUnavailable && verification.reading?.offline);
   const methodLabel = noNameplateEvidence
     ? (verification.reading?.aiAttempted ? "AI nie potwierdziła tabliczki" : "Nie wykryto tabliczki")
-    : verification.reading?.method === "ai"
+    : offlineReading && verification.reading?.method !== "manual"
+      ? "Odczyt lokalny — bez internetu"
+      : verification.reading?.method === "ai"
       ? "Odczyt lokalny + AI"
       : verification.reading?.method === "manual"
         ? "Weryfikacja ręczna"
@@ -426,6 +429,19 @@ function NameplateVerificationReview({
             {verification.reading?.aiAttempted && verification.reading?.aiError ? (
               <div className="nameplateVerifyWarning">AI nie uzupełniła wyniku: {verification.reading.aiError}. Sprawdź dane ręcznie.</div>
             ) : null}
+            {offlineReading && verification.reading?.method !== "manual" ? (
+              <div className="nameplateVerifyWarning" role="status" data-testid="nameplate-offline-reader">
+                <strong>Brak internetu — AI nie sprawdziła tabliczki.</strong>{" "}
+                {verification.prefilledFromReader || verification.serialNumber || verification.modelValue
+                  ? "Wpisano to, co odczytał czytnik telefonu. Porównaj z tabliczką znak po znaku i popraw, jeśli trzeba."
+                  : "Czytnik telefonu nie odczytał danych — przepisz model i numer seryjny z tabliczki."}
+                {verification.reading?.weakNameplateEvidence ? " Czytnik nie jest pewny, że to tabliczka znamionowa — sprawdź zdjęcie." : ""}
+              </div>
+            ) : verification.prefilledFromReader && verification.reading?.method !== "manual" ? (
+              <div className="nameplateVerifyWarning" role="status" data-testid="nameplate-offline-reader">
+                AI niedostępna — wpisano odczyt czytnika telefonu. Porównaj z tabliczką znak po znaku.
+              </div>
+            ) : null}
             {readingMismatch ? <div className="nameplateVerifyMismatch" role="alert">{readingMismatch}</div> : null}
             {serialCheck?.status === "ai_resolved" ? (
               <div className="nameplateVerifyReady" role="status">
@@ -437,16 +453,24 @@ function NameplateVerificationReview({
               </div>
             ) : serialCheck?.status === "conflict" ? (
               <div className="nameplateVerifyMismatch" role="alert">
-                <strong>Niezgodny numer seryjny — AI nie rozstrzygnęła odczytu</strong>
+                <strong>{verification.reading?.aiUnavailable && !verification.reading?.aiResult
+                  ? "Niezgodny numer seryjny — bez AI nie da się rozstrzygnąć"
+                  : "Niezgodny numer seryjny — AI nie rozstrzygnęła odczytu"}</strong>
                 {serialCheck.barcodeSerial ? <div>Kod kreskowy: <code>{serialCheck.barcodeSerial}</code></div> : null}
                 {serialCheck.ocrSerial ? <div>OCR nadruku SN: <code>{serialCheck.ocrSerial}</code></div> : null}
                 {serialCheck.aiSerial ? <div>Odczyt AI: <code>{serialCheck.aiSerial}</code></div> : null}
-                Sprawdź nadruk SN na zdjęciu, wpisz właściwy numer i potwierdź ręcznie.
+                {verification.prefilledSerialSource === "barcode"
+                  ? "W polu wpisano numer z kodu kreskowego. Porównaj go z nadrukiem SN na zdjęciu i popraw, jeśli trzeba."
+                  : verification.prefilledSerialSource === "ocr"
+                    ? "W polu wpisano numer z nadruku SN. Porównaj go z tabliczką i popraw, jeśli trzeba."
+                    : "Sprawdź nadruk SN na zdjęciu, wpisz właściwy numer i potwierdź ręcznie."}
               </div>
             ) : needsSerialReview ? (
               <div className="nameplateVerifyWarning" role="status">
-                AI nie potwierdziła numeru z wystarczającą pewnością.
-                Sprawdź go znak po znaku z nadrukiem SN na zdjęciu.
+                {verification.reading?.aiUnavailable && !verification.reading?.aiResult
+                  ? "Numer nie został potwierdzony dwoma czytnikami."
+                  : "AI nie potwierdziła numeru z wystarczającą pewnością."}
+                {" "}Sprawdź go znak po znaku z nadrukiem SN na zdjęciu.
               </div>
             ) : (
               <div className="nameplateVerifyReady" role="status">
@@ -624,18 +648,29 @@ export default function NameplatePhotoCapture({
           setVerification((current) => current?.file === croppedFile && !current.manualOverride ? { ...current, progress } : current);
         },
       });
-      setVerification((current) => current?.file === croppedFile && !current.manualOverride ? {
-        ...current,
-        busy: false,
-        progress: { progress: 100, label: "Odczyt zakończony", method: reading.method || "local" },
-        reading,
-        modelValue: String(reading.modelValue || current.modelValue || "").trim(),
-        // Do not prefill either competing serial as if it were correct.
-        serialNumber: reading.serialCheck?.status === 'conflict'
-          ? '' : String(reading.serialNumber || current.serialNumber || "").trim().toUpperCase(),
-        serialReviewed: false,
-        serialManuallyChanged: false,
-      } : current);
+      setVerification((current) => {
+        if (current?.file !== croppedFile || current.manualOverride) return current;
+        // Do not prefill either competing serial as if it were correct — unless AI is
+        // unavailable (13.69): then the local reader's candidate is shown for mandatory review.
+        const baseSerial = reading.serialCheck?.status === 'conflict'
+          ? '' : String(reading.serialNumber || current.serialNumber || "").trim().toUpperCase();
+        const baseModel = String(reading.modelValue || current.modelValue || "").trim();
+        const candidates = reading.aiUnavailable ? (reading.localCandidates || {}) : {};
+        const serialFromCandidate = !baseSerial && candidates.serialNumber ? String(candidates.serialNumber).toUpperCase() : "";
+        const modelFromCandidate = !baseModel && candidates.modelValue ? String(candidates.modelValue).trim() : "";
+        return {
+          ...current,
+          busy: false,
+          progress: { progress: 100, label: "Odczyt zakończony", method: reading.method || "local" },
+          reading,
+          modelValue: baseModel || modelFromCandidate,
+          serialNumber: baseSerial || serialFromCandidate,
+          prefilledFromReader: Boolean(serialFromCandidate || modelFromCandidate),
+          prefilledSerialSource: serialFromCandidate ? (candidates.serialSource || "") : "",
+          serialReviewed: false,
+          serialManuallyChanged: false,
+        };
+      });
     } catch (readError) {
       setVerification((current) => current?.file === croppedFile && !current.manualOverride ? {
         ...current,

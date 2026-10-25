@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## OFFLINE-NAMEPLATE-READ-1369 — odczyt tabliczki bez internetu (25.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| ONR-1369-PREFILL | FIXED-UNVERIFIED | Bez internetu (AI niedostępne) pola modelu i SN dostają odczyt czytnika telefonu zamiast zostawać puste; obowiązkowe „Sprawdziłem numer SN znak po znaku”. smoke-nameplate-offline-reader-v1369, E2E mobile-nameplate-robustness (test offline). |
+| ONR-1369-EAN | REGRESSION | EAN ani stary numer urządzenia nigdy nie trafiają do SN; zasłonięty SN online zostaje pusty. smoke v1369 (przypadki 5–6), E2E „nieczytelny SN…”. |
+| ONR-1369-NOAI | FIXED-UNVERIFIED | Bez internetu brak wywołania AI i brak 60 s oczekiwania. E2E: aiRequests = 0. |
+| ONR-1369-LIVE | EXTERNAL | iPhone: tryb samolotowy → Tabliczki → zdjęcie → pola wypełnione z ostrzeżeniem. |
+
 ## ONLINE-ONLY-PHOTOS-1366 — zdjęcia tylko z internetem (decyzja właściciela 25.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

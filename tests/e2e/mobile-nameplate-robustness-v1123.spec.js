@@ -254,4 +254,45 @@ test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach teren
     await expect(page.locator('.nameplateVerifyMismatch')).toContainText('tabliczka jednostki wewnętrznej JW');
     await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
   });
+
+  // WAWIS 13.69: bez internetu pola nie zostają puste — trafia do nich odczyt czytnika telefonu
+  // (do sprawdzenia znak po znaku), AI nie jest wywoływane, EAN nigdy nie jest numerem SN.
+  test('bez internetu pola tabliczki dostają odczyt czytnika, a potwierdzenie wymaga sprawdzenia SN', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.addInitScript(() => {
+      Object.defineProperty(Navigator.prototype, 'onLine', {
+        configurable: true,
+        get() { return window.localStorage.getItem('klima-e2e-network-state') !== 'offline'; },
+      });
+    });
+    let aiRequests = 0;
+    page.on('request', (request) => {
+      if (request.url().includes('/api/read-nameplate-ai')) aiRequests += 1;
+    });
+    await openFirstIndoorNameplate(page);
+    await page.evaluate(() => {
+      window.localStorage.setItem('klima-e2e-network-state', 'offline');
+      window.dispatchEvent(new Event('offline'));
+    });
+    await cropAndContinue(page, svgFile('rotenso-i35xi-offline.svg'));
+    await waitForVerificationDone(page);
+
+    await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Odczyt lokalny — bez internetu');
+    await expect(page.getByTestId('nameplate-offline-reader')).toContainText('Brak internetu — AI nie sprawdziła tabliczki');
+    const modelInput = page.getByPlaceholder('Przepisz model z tabliczki');
+    const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
+    await expect(modelInput).toHaveValue(/I35Xi R14/i);
+    await expect(modelInput).toBeEnabled();
+    await expect(serialInput).toBeEnabled();
+    const serial = await serialInput.inputValue();
+    expect(serial, 'pole SN nie może zostać puste, gdy czytnik odczytał nadruk S/N').not.toBe('');
+    expect(serial).not.toBe(INDOOR_EAN);
+    expect(serial).not.toBe('TEST-MULTI-JW-1');
+
+    const confirm = page.getByRole('button', { name: 'Potwierdź', exact: true });
+    await expect(confirm).toBeDisabled();
+    await page.locator('.nameplateSerialReviewCheck input').check();
+    await expect(confirm).toBeEnabled();
+    expect(aiRequests).toBe(0);
+  });
 });
