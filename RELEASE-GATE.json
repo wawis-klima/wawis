@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.66",
+  "version": "13.67",
   "scope": "mobile",
-  "release_branch": "release/v13.66",
+  "release_branch": "release/v13.67",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "OWNER_DECISION_ONLINE_ONLY_PHOTOS",
-    "notes": "25.10.2026: właściciel rezygnuje z zapisu zdjęć offline. Diagnostyka 13.64 iPhone administratora: wielokrotne PHOTO_QUEUE_WRITE_FAILED (07:25–07:44 UTC) — lokalna kolejka Safari zawodna."
+    "result": "UI_ONLY",
+    "notes": "25.10.2026: prośba właściciela — stan połączenia i synchronizacji w Diagnostyce, nie na pierwszej stronie (pasek tylko przy problemie)."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.66",
+    "source_branch": "release/v13.67",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -23,8 +23,8 @@
   "postdeploy_diagnostics": {
     "evidence_required": true,
     "checked": false,
-    "result": "EXTERNAL_IPHONE_TEST",
-    "evidence_source": "iPhone administratora i pracownika: tryb samolotowy → komunikat; online → zdjęcie w Storage (rozmiar > 0) i rekord photos (SELECT).",
+    "result": "EXTERNAL_IPHONE_VISUAL",
+    "evidence_source": "iPhone: lista montaży bez pasków przy „Wszystko wysłane”; tryb samolotowy → pasek; Diagnostyka → pełny stan.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "photos.js: PHOTO_OFFLINE_STORAGE_ENABLED=false, wczesny powrót offline, uploadDirectPhotoWithRetry (3 próby); useSelectedJobActions: blokada offline zdjęć, urządzeń, tabliczek i nowego montażu dla każdej roli.",
-    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (6). Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.66; test trybu samolotowego i wysyłki online na iPhonie."
+    "code": "PhotoSyncStatus: hideWhenHealthy; MobileJobsLayout: hideWhenHealthy={!diagnosticsOpen}.",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e. Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.67; kontrola wyglądu na iPhonie."
   }
 }

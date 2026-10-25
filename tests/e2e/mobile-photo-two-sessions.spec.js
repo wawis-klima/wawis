@@ -26,7 +26,8 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
       await expect(page.getByText('Galeria', { exact: true })).toBeVisible();
     }
 
-    await expect(workerPage.getByRole('status', { name: /Połączenie:/ })).toContainText('Wszystko wysłane');
+    // 13.67: gdy wszystko wysłane, pierwsza strona nie pokazuje paska synchronizacji.
+    await expect(workerPage.locator('.mobileConnectionSyncRow')).toHaveCount(0, { timeout: 15_000 });
     await workerPage.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles({
       name: 'montaz-e2e.png',
       mimeType: 'image/png',
@@ -34,7 +35,8 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
     });
 
     await expect(workerPage.locator('.thumbCard')).toHaveCount(1);
-    await expect(workerPage.getByRole('status', { name: /Połączenie:/ })).toContainText('Wszystko wysłane');
+    // 13.67: gdy wszystko wysłane, pierwsza strona nie pokazuje paska synchronizacji.
+    await expect(workerPage.locator('.mobileConnectionSyncRow')).toHaveCount(0, { timeout: 15_000 });
     await expect(adminPage.locator('.thumbCard')).toHaveCount(1, { timeout: 15_000 });
 
     await adminPage.locator('.thumbCard .thumbBtn').click();
@@ -132,7 +134,7 @@ test.describe('@mobile iPhone — zdjęcia na dwóch sesjach', () => {
 
     await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
     await expect(page.locator('.thumbCard')).toHaveCount(1);
-    await expect(page.getByRole('status', { name: /Połączenie:/ })).toContainText('Wszystko wysłane');
+    await expect(page.locator('.mobileConnectionSyncRow')).toHaveCount(0, { timeout: 15_000 });
 
     const storedPhoto = await page.evaluate(() => (
       window.__KLIMA_MOCK_SUPABASE__?.getStore()?.photos?.find((photo) => photo.job_id === 'mock-job-005')
