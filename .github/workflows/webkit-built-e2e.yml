@@ -1,0 +1,60 @@
+name: WAWIS WebKit E2E (built app)
+
+# Te same E2E co dla Chromium, ale w silniku WebKit (Safari) z profilem iPhone'a.
+# Na razie check informacyjny (nie blokuje scalenia); po tygodniu stabilnych wyników — wymagany.
+# Tylko odczyt repozytorium, bez sekretów, mock Supabase, bez wdrożenia.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: wawis-webkit-built-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  webkit-built-e2e:
+    name: webkit-built-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Install Playwright WebKit
+        timeout-minutes: 10
+        run: npx playwright install webkit --with-deps
+
+      - name: Run E2E in WebKit (iPhone profile, mock Supabase)
+        env:
+          VITE_SUPABASE_MODE: mock
+        run: npx playwright test --config playwright.webkit-built.config.js
+
+      - name: Verify WebKit E2E evidence (fail-closed)
+        if: always()
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 13
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-webkit-built-e2e-${{ github.event.pull_request.number || github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report-webkit/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 30
