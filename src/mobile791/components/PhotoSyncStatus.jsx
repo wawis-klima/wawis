@@ -77,7 +77,8 @@ export default function PhotoSyncStatus({
   const online = status?.connection?.tone !== "offline";
 
   const retryableItems = useMemo(
-    () => queueItems.filter((item) => !isPhotoQueueItemHeld(item) && String(item.upload_status || "local").toLowerCase() !== "uploading"),
+    // 13.64: „Synchronizuj teraz” obejmuje także zdjęcia zawieszone jako „Wysyłane”; wstrzymanych starych nie rusza.
+    () => queueItems.filter((item) => !isPhotoQueueItemHeld(item)),
     [queueItems],
   );
   const retryableOperations = useMemo(
@@ -219,7 +220,7 @@ export default function PhotoSyncStatus({
             disabled={!online || !retryableCount || retryingAll}
             onClick={handleRetryAll}
           >
-            {retryingAll ? "Uruchamianie…" : `Wyślij wszystkie${retryableCount ? ` (${retryableCount})` : ""}`}
+            {retryingAll ? "Synchronizowanie…" : `Synchronizuj teraz${retryableCount ? ` (${retryableCount})` : ""}`}
           </button>
           <button type="button" className="photoSyncCenterSecondary" onClick={() => status.refreshQueueSummary?.()}>
             Odśwież

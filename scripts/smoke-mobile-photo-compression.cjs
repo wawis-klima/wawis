@@ -18,7 +18,9 @@ assert.match(mobilePhotosSource, /URL\.createObjectURL\(file\)/, 'Compression sh
 assert.match(mobilePhotosSource, /canvas\.toBlob\([\s\S]*'image\/jpeg',[\s\S]*MOBILE_PHOTO_JPEG_QUALITY/s, 'Compression should export JPEG using configured quality');
 assert.match(mobilePhotosSource, /blob\.size >= file\.size && scale >= 1/, 'Compression should avoid uploading a bigger recompressed file');
 assert.match(mobilePhotosSource, /compressImageFn = preparePhotoForUpload/, 'Upload queue should default to compressed mobile photo preparation');
-assert.match(mobilePhotosSource, /\.upload\(storagePath, uploadFile, \{ cacheControl: '3600', upsert: false, contentType: uploadFile\.type \|\| 'image\/jpeg' \}\)/, 'Supabase upload should send the prepared upload file with content type');
+// 13.64: wysyłane są bajty przygotowanego pliku odczytane do pamięci (Safari wysyłał File/Blob z IndexedDB jako 0 B).
+assert.match(mobilePhotosSource, /const uploadBytes = await readPhotoBytesForUpload\(uploadFile\);/, 'Supabase upload should read the prepared upload file into memory before sending');
+assert.match(mobilePhotosSource, /\.upload\(storagePath, uploadBytes, \{ cacheControl: '3600', upsert: false, contentType: uploadFile\.type \|\| 'image\/jpeg' \}\)/, 'Supabase upload should send the prepared upload file bytes with content type');
 assert.match(mobilePhotosSource, /upload_saved_percent/, 'UI metadata should include compression savings');
 assert.doesNotMatch(mobilePhotosSource, /getPhotoCompressionSummary|upload_note|zmniejszone o/, 'Mobile compression must stay hidden from the photo card UI');
 

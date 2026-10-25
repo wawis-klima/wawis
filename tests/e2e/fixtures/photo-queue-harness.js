@@ -462,6 +462,24 @@
       return { pass: srv.uploads === 0 && items.length === 1 && item.upload_status === 'error' && /0 B|ponownie/.test(item.upload_error || ''),
         uploads: srv.uploads, status: item.upload_status, error: item.upload_error };
     },
+    // 13.64: zdjęcie zawieszone jako „Wysyłane” z ważną blokadą (przypadek administratora 25.10) —
+    // „Synchronizuj teraz” zwalnia blokadę, której nic nie wysyła, i wysyła zdjęcie od razu.
+    async S22_synchronizuj_teraz_zawieszone_wysylane() {
+      await cleanStart();
+      const f = await file('olive', 'zawieszone.png');
+      const rec = await legacyRecord({ format: 'v3', id: 'local-photo-upload-stuck', owner: 'A', jobId: 'J23', unitRef: 'jz', f, status: 'uploading', leaseUntil: new Date(Date.now() + 120_000).toISOString() });
+      rec.queue_writer = '13.62';
+      await rawCreate(3, [rec]);
+      const p = await loadPhotos();
+      const before = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const uploadsBefore = srv.uploads;
+      if (!p.releaseIdlePhotoUploadLeases) return { pass: false, reason: 'brak releaseIdlePhotoUploadLeases', uploadsBefore };
+      const released = await p.releaseIdlePhotoUploadLeases();
+      const after = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const shas = await serverShas();
+      return { pass: uploadsBefore === 0 && released === 1 && shas.length === 1 && shas.includes(await sha(f)) && (await rawState()).count === 0,
+        before, uploadsBefore, released, after, serverObjects: shas.length };
+    },
   };
 
   window.__wawisQueueHarness = {

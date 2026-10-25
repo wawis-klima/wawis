@@ -1732,6 +1732,28 @@ export function resumePersistedPhotoUploads(options = {}) {
   return request;
 }
 
+// 13.64: „Synchronizuj teraz” — zdjęcie zawieszone jako „Wysyłane”, którego ta karta w tej chwili nie wysyła,
+// wraca do kolejki od razu (bez czekania na wygaśnięcie blokady). Trwająca wysyłka nie jest przerywana,
+// a podwójnemu wysłaniu zapobiega blokada uploadu w aplikacji i unikalna ścieżka na serwerze.
+export async function releaseIdlePhotoUploadLeases() {
+  const items = await listPhotoQueueItems();
+  let released = 0;
+  for (const item of items) {
+    if (String(item.upload_status || '').toLowerCase() !== 'uploading') continue;
+    if (isPhotoQueueItemHeld(item)) continue;
+    const lockKey = String(item.upload_key || item.id || '').trim();
+    if (lockKey && activePhotoUploadPromises.has(lockKey)) continue;
+    const updated = await updatePhotoQueueItem(item.id, {
+      upload_status: 'local',
+      upload_status_label: 'Zapisano na telefonie',
+      lease_until: '',
+      next_attempt_at: '',
+    });
+    if (updated) released += 1;
+  }
+  return released;
+}
+
 export async function retryAllPersistedPhotoUploads(options = {}) {
   const profileId = String(options?.profile?.id || '').trim();
   const existing = profileId ? persistedQueueResumePromises.get(profileId) : null;
