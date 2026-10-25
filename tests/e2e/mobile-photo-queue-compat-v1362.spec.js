@@ -9,14 +9,14 @@ import { expect, test } from '@playwright/test';
 const harnessPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures', 'photo-queue-harness.js');
 
 const SCENARIOS = [
-  'S01_nowa_instalacja_offline_restart_online',
+  'S01_offline_zdjecie_nie_jest_zapisywane_online_wysylka',
   'S02_istniejaca_v3_z_niewyslanym_zdjeciem',
   'S03_istniejaca_v4_z_13_48',
   'S04_przyszla_wersja_bazy_nie_jest_obnizana',
-  'S05_brak_miejsca_offline_bez_falszywego_zapisano',
+  'S05_offline_komunikat_bez_falszywego_zapisano',
   'S06_brak_miejsca_online_wysylka_z_pamieci',
   'S07_zablokowana_baza_bez_zawieszenia_i_bez_pustej_listy',
-  'S08_utrata_internetu_i_ponowienie',
+  'S08_chwilowa_utrata_polaczenia_ponowienie_od_razu',
   'S09_ponowienie_po_400_i_503',
   'S10_status_tylko_po_commit_transakcji',
   'S11_naprawa_kolejki_usuwa_tylko_kolejke_zdjec',
@@ -26,13 +26,14 @@ const SCENARIOS = [
   'S15_przypadek_pawla_v4_dwie_tabliczki_online',
   'S16_przypadek_kacpra_v4_zwykle_zdjecie_online',
   'S17_usuniecie_starych_zachowuje_nowe',
-  'S18_powrot_do_13_61_nie_psuje_bazy_v3',
+  'S18_nowa_instalacja_v3_powrot_do_13_61',
   'S19_start_online_nie_wysyla_starych_przed_decyzja',
-  'S20_wysylka_bajtow_z_pamieci_po_offline',
+  'S20_wysylka_bajtow_z_pamieci',
   'S21_pusty_plik_w_telefonie_jasny_blad',
   'S22_synchronizuj_teraz_zawieszone_wysylane',
-  'S23_zdjecie_zapisane_jako_bajty',
+  'S23_kolejka_zapisuje_bajty',
   'S24_zawieszony_odczyt_nie_blokuje_kolejki',
+  'S25_tabliczki_bez_internetu_komunikat',
 ];
 
 test.describe('@mobile kolejka zdjęć 13.62 — IndexedDB v3/v4', () => {

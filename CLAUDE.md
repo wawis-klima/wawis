@@ -135,6 +135,11 @@ uwzględniać:
 Nie usuwaj lokalnych zdjęć pracowników i nie uruchamiaj automatycznej wysyłki wstrzymanych zdjęć bez
 odpowiedniej decyzji użytkownika.
 
+Decyzja właściciela (25.10.2026, WAWIS 13.66): **zdjęcia i tabliczki znamionowe tylko z internetem**, dla każdej roli.
+Bez internetu aplikacja nie zapisuje nowych zdjęć w pamięci telefonu (IndexedDB) — pokazuje komunikat, żeby zrobić
+zdjęcia aparatem i dodać je z galerii później. Zapis offline statusu i komentarzy pozostaje. Nie przywracaj zapisu
+zdjęć offline bez nowej, wyraźnej decyzji właściciela.
+
 Zasady techniczne wynikające z incydentu kolejki zdjęć (22–24.10.2026, wersje 13.42–13.62):
 
 - Lokalnych baz IndexedDB nie otwieramy z numerem wersji niższym niż istniejąca (VersionError). Otwieramy

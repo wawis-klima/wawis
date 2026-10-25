@@ -95,7 +95,8 @@ async function putLegacyQueuedNameplateError(page) {
 }
 
 test.describe('@mobile iPhone — odporność danych', () => {
-  test('lokalne zdjęcie przetrwa ponowne uruchomienie i wyśle się po odzyskaniu internetu', async ({ page }) => {
+  // 13.66 (decyzja właściciela 25.10.2026): zdjęcia tylko z internetem — bez zapisu w pamięci aplikacji.
+  test('bez internetu zdjęcie nie jest dodawane (komunikat), z internetem wysyła się od razu', async ({ page }) => {
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
     await setLogicalOnlineState(page, false);
@@ -103,38 +104,23 @@ test.describe('@mobile iPhone — odporność danych', () => {
 
     await page.locator('.statusActionButton[title="W trakcie"]').click();
     await page.getByText('Klient Testowy B', { exact: true }).click();
+    const dialogs = [];
+    page.on('dialog', async (dialog) => { dialogs.push(dialog.message()); await dialog.accept(); });
+
     await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
-
-    await expect(page.locator('.thumbCard')).toHaveCount(1);
-    await expect(page.getByText('Zapisano na telefonie', { exact: true })).toBeVisible();
-    await expect.poll(() => countQueuedPhotos(page)).toBe(1);
-
-    await page.getByRole('button', { name: 'Otwórz Centrum synchronizacji' }).click();
-    await expect(page.getByRole('heading', { name: 'Synchronizacja', exact: true })).toBeVisible();
-    await expect(page.getByText('Zdjęcie montażu', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Synchronizuj teraz (1)' })).toBeDisabled();
-    await page.locator('.photoSyncCenterClose').click();
-
-    // Ponowne wskazanie dokładnie tego samego pliku nie może utworzyć drugiego
-    // wpisu w UI ani drugiego rekordu w kolejce telefonu.
-    await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
-    await expect(page.locator('.thumbCard')).toHaveCount(1);
-    await expect.poll(() => countQueuedPhotos(page)).toBe(1);
-
-    await page.reload();
-    await page.locator('.statusActionButton[title="W trakcie"]').click();
-    await page.getByText('Klient Testowy B', { exact: true }).click();
-
-    await expect(page.locator('.thumbCard')).toHaveCount(1, { timeout: 15_000 });
-    await expect(page.getByText('Zapisano na telefonie', { exact: true })).toBeVisible();
-    await expect.poll(() => countQueuedPhotos(page)).toBe(1);
+    await expect.poll(() => dialogs.length).toBe(1);
+    expect(dialogs[0]).toContain('Brak internetu');
+    await expect(page.locator('.thumbCard')).toHaveCount(0);
+    await expect(page.getByText('Zapisano na telefonie', { exact: true })).toHaveCount(0);
+    expect(await countQueuedPhotos(page)).toBe(0);
 
     await setLogicalOnlineState(page, true);
-    await expect(page.getByRole('status', { name: /Połączenie:/ })).toContainText('Wszystko wysłane', { timeout: 15_000 });
-    await expect.poll(() => countQueuedPhotos(page), { timeout: 15_000 }).toBe(0);
+    await page.locator('.photoUploadBtnGallery input[type="file"]').setInputFiles(tinyPng);
     await expect.poll(async () => page.evaluate(() => (
       window.__KLIMA_MOCK_SUPABASE__?.getStore()?.photos?.filter((photo) => photo.job_id === 'mock-job-002').length || 0
     )), { timeout: 15_000 }).toBe(1);
+    await expect(page.locator('.thumbCard')).toHaveCount(1);
+    expect(await countQueuedPhotos(page)).toBe(0);
   });
 
   test('serwerowa tabliczka usuwa stary lokalny błąd i nie jest oznaczana jako brakująca', async ({ page }) => {

@@ -158,18 +158,20 @@
   }
 
   const scenarios = {
-    async S01_nowa_instalacja_offline_restart_online() {
+    // 13.66: bez internetu zdjęcie NIE trafia do aplikacji (ani do kolejki telefonu); z internetem wysyła się od razu.
+    async S01_offline_zdjecie_nie_jest_zapisywane_online_wysylka() {
       await cleanStart();
-      const p = await loadPhotos(); const q = await loadQueue();
+      const p = await loadPhotos();
       const f = await file('blue', 'jw.png'); setOnline(false);
       const ui = trackUi('J1');
-      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J1', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: ui.setJobs });
-      const listed = (await q.listPhotoQueueItems()).length;
+      const offline = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J1', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: ui.setJobs });
+      const rawOffline = await rawState();
       setOnline(true);
-      const res = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const online = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J1', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: ui.setJobs });
       const shas = await serverShas(); const raw = await rawState();
-      return { pass: saved.queuedCount === 1 && saved.failedCount === 0 && listed === 1 && srv.rows.length === 1 && shas.includes(await sha(f)) && raw.count === 0 && raw.version === 3,
-        saved, listed, res, rows: srv.rows.length, raw };
+      return { pass: offline.failedCount === 1 && offline.queuedCount === 0 && offline.offlineBlocked === true && offline.persistErrorCode === 'PHOTO_OFFLINE_DISABLED'
+          && rawOffline.count === 0 && !ui.seen.includes('Zapisano na telefonie') && online.uploadedCount === 1 && shas.includes(await sha(f)) && raw.count === 0 && srv.rows.length === 1,
+        offline: { failed: offline.failedCount, queued: offline.queuedCount, code: offline.persistErrorCode }, rawOffline, online: { uploaded: online.uploadedCount, failed: online.failedCount }, raw };
     },
     async S02_istniejaca_v3_z_niewyslanym_zdjeciem() {
       await cleanStart();
@@ -218,14 +220,14 @@
       const raw = await rawState();
       return { pass: r.failedCount === 0 && r.uploadedCount === 1 && raw.version === 7 && (await serverShas()).includes(await sha(f)), result: r, raw };
     },
-    async S05_brak_miejsca_offline_bez_falszywego_zapisano() {
+    async S05_offline_komunikat_bez_falszywego_zapisano() {
       await cleanStart();
       const p = await loadPhotos(); setOnline(false);
       const ui = trackUi('J6');
       const f = await file('gold', 'q.png');
-      const r = await quotaPut(() => p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J6', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: ui.setJobs }));
+      const r = await p.uploadJobPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J6', event: { target: { files: [f], value: 'x' } }, setJobs: ui.setJobs });
       const raw = await rawState();
-      return { pass: r.failedCount === 1 && raw.count === 0 && !ui.seen.includes('Zapisano na telefonie') && r.persistErrorCode === 'PHOTO_QUEUE_QUOTA',
+      return { pass: r.failedCount === 1 && r.offlineBlocked === true && /Brak internetu/.test(r.persistErrorMessage || '') && raw.count === 0 && !ui.seen.includes('Zapisano na telefonie') && srv.uploads === 0,
         result: r, raw, uiSeen: [...new Set(ui.seen)] };
     },
     async S06_brak_miejsca_online_wysylka_z_pamieci() {
@@ -254,31 +256,26 @@
           && Array.isArray(afterRelease) && afterRelease.length === 1,
         state: state.__timeout ? state : { ok: state.ok, code: state.code, items: state.items?.length }, saved, ms, afterRelease: Array.isArray(afterRelease) ? afterRelease.length : afterRelease };
     },
-    async S08_utrata_internetu_i_ponowienie() {
+    // 13.66: chwilowy zanik połączenia przy wysyłce — kolejna próba od razu (bez kopii w telefonie).
+    async S08_chwilowa_utrata_polaczenia_ponowienie_od_razu() {
       await cleanStart();
       const p = await loadPhotos();
       srv.faults.uploadSequence = ['network'];
       const f = await file('coral', 'n.png');
-      const first = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J9', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
-      const mid = await rawState();
-      const now = Date.now; Date.now = () => now() + 15 * 60_000;
-      let later;
-      try { later = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } }); } finally { Date.now = now; }
+      const r = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J9', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
       const raw = await rawState();
-      return { pass: first.queuedCount === 1 && mid.count === 1 && srv.rows.length === 1 && srv.objects.size === 1 && raw.count === 0 && (await serverShas()).includes(await sha(f)),
-        first, mid: mid.count, later, uploads: srv.uploads, raw };
+      return { pass: r.uploadedCount === 1 && r.failedCount === 0 && srv.rows.length === 1 && srv.objects.size === 1 && raw.count === 0 && (await serverShas()).includes(await sha(f)),
+        result: { uploaded: r.uploadedCount, failed: r.failedCount }, uploads: srv.uploads, raw };
     },
     async S09_ponowienie_po_400_i_503() {
       await cleanStart();
       const p = await loadPhotos();
       srv.faults.uploadSequence = ['http400', 'http503'];
       const f = await file('indigo', 'r.png');
-      const first = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J10', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
-      const second = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
-      const third = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const r = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J10', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
       const raw = await rawState();
-      return { pass: srv.rows.length === 1 && srv.objects.size === 1 && raw.count === 0 && (await serverShas()).includes(await sha(f)),
-        first, second, third, uploads: srv.uploads, raw };
+      return { pass: r.uploadedCount === 1 && srv.rows.length === 1 && srv.objects.size === 1 && raw.count === 0 && (await serverShas()).includes(await sha(f)),
+        result: { uploaded: r.uploadedCount, failed: r.failedCount }, uploads: srv.uploads, raw };
     },
     async S10_status_tylko_po_commit_transakcji() {
       await cleanStart();
@@ -378,36 +375,30 @@
         result: { queuedCount: r.queuedCount, failedCount: r.failedCount }, storagePosts: srv.uploads, rows: srv.rows.length, errors };
     },
     // Decyzja „Usuń stare zdjęcia”: usuwa wyłącznie wstrzymane rekordy v4; nowe zdjęcie z 13.62 zostaje i wysyła się.
+    // Decyzja „Usuń stare zdjęcia”: usuwa wyłącznie wstrzymane rekordy v4; nowe zdjęcie (z internetem) wysyła się normalnie.
     async S17_usuniecie_starych_zachowuje_nowe() {
       await cleanStart();
       const old = await file('black', 'old.png');
       await rawCreate(4, [await legacyRecord({ format: 'v4', id: 'local-photo-upload-old', owner: 'A', jobId: 'J18', unitRef: 'jw', f: old })]);
       const p = await loadPhotos(); const q = await loadQueue();
-      setOnline(false);
-      const fresh = await file('white', 'new.png');
-      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J18', documents: [{ file: fresh, deviceIndex: 0, unitRef: 'jz' }], setJobs: () => {} });
       const before = await q.listPhotoQueueItems();
       const del = q.deleteHeldPhotoQueueItems ? await q.deleteHeldPhotoQueueItems() : { ok: false };
-      const after = await q.listPhotoQueueItems();
-      setOnline(true);
-      const res = await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const fresh = await file('white', 'new.png');
+      const r = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J18', documents: [{ file: fresh, deviceIndex: 0, unitRef: 'jz' }], setJobs: () => {} });
       const shas = await serverShas(); const raw = await rawState();
-      return { pass: saved.queuedCount === 1 && before.length === 2 && del.ok === true && del.count === 1 && after.length === 1
-          && !q.isPhotoQueueItemHeld(after[0]) && shas.length === 1 && shas.includes(await sha(fresh)) && !shas.includes(await sha(old)) && raw.count === 0,
-        saved: saved.queuedCount, before: before.length, del, after: after.length, res, serverObjects: shas.length, raw };
+      return { pass: before.length === 1 && del.ok === true && del.count === 1 && r.uploadedCount === 1 && shas.length === 1 && shas.includes(await sha(fresh)) && !shas.includes(await sha(old)) && raw.count === 0,
+        before: before.length, del, uploaded: r.uploadedCount, serverObjects: shas.length, raw };
     },
     // Bezpieczny powrót: 13.62 nie podnosi v3 i zakłada nowe bazy w v3, więc 13.61 (open v3) nadal działa.
-    async S18_powrot_do_13_61_nie_psuje_bazy_v3() {
+    // Bezpieczny powrót: nowa instalacja zakłada kolejkę w v3, więc 13.61 (open v3) nadal działa.
+    async S18_nowa_instalacja_v3_powrot_do_13_61() {
       await cleanStart();
-      const p = await loadPhotos();
-      setOnline(false);
-      const f = await file('cyan', 'rb.png');
-      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J19', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
+      const q = await loadQueue();
+      const state = await q.readPhotoQueueState();
       let reopenedBy1361 = null;
       try { const db = await rawOpen(3); reopenedBy1361 = db.version; db.close(); } catch (error) { reopenedBy1361 = String(error?.name || error); }
       const raw = await rawState();
-      setOnline(true);
-      return { pass: saved.queuedCount === 1 && reopenedBy1361 === 3 && raw.version === 3 && raw.count === 1, saved: saved.queuedCount, reopenedBy1361, raw };
+      return { pass: state.ok === true && reopenedBy1361 === 3 && raw.version === 3, state: { ok: state.ok }, reopenedBy1361, raw };
     },
     // Kacper/Paweł po aktualizacji: start aplikacji online (restore + automatyczna wysyłka) NIE wysyła starych zdjęć,
     // a nowe zdjęcie zrobione w tej samej sesji wysyła się normalnie.
@@ -432,27 +423,26 @@
     },
     // 13.64: do Storage trafiają bajty z pamięci (nie obiekt File/Blob z IndexedDB, który Safari potrafi
     // wysłać jako puste żądanie 0 B). Zdjęcie zapisane offline wysyła się po powrocie internetu.
-    async S20_wysylka_bajtow_z_pamieci_po_offline() {
+    // 13.64: do Storage trafiają bajty z pamięci (nie obiekt File/Blob, który Safari potrafi wysłać jako 0 B).
+    async S20_wysylka_bajtow_z_pamieci() {
       await cleanStart();
       const p = await loadPhotos();
-      const f = await file('teal', 'offline-tabliczka.png');
-      setOnline(false);
-      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J21', documents: [{ file: f, deviceIndex: 0, unitRef: 'jz' }], setJobs: () => {} });
-      setOnline(true);
-      await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const f = await file('teal', 'tabliczka.png');
+      const r = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J21', documents: [{ file: f, deviceIndex: 0, unitRef: 'jz' }], setJobs: () => {} });
       const sizes = [...srv.objects.values()].map((b) => b.byteLength);
-      return { pass: saved.queuedCount === 1 && srv.bodyKinds.length > 0 && srv.bodyKinds.every((k) => k === 'bytes') && sizes.length === 1 && sizes[0] === f.size && (await rawState()).count === 0,
-        bodyKinds: srv.bodyKinds, sizes, expected: f.size };
+      return { pass: r.uploadedCount === 1 && srv.bodyKinds.length > 0 && srv.bodyKinds.every((k) => k === 'bytes') && sizes.length === 1 && sizes[0] > 0,
+        bodyKinds: srv.bodyKinds, sizes };
     },
     // 13.64: nieczytelny / pusty plik w telefonie → jasny błąd „Zrób zdjęcie ponownie”, bez pustego żądania do serwera
     // i bez nieskończonego „czeka na internet”.
+    // Stare zdjęcie w kolejce telefonu, którego nie da się odczytać (0 B) → jasny błąd, bez pustego żądania do serwera.
     async S21_pusty_plik_w_telefonie_jasny_blad() {
       await cleanStart();
-      const p = await loadPhotos(); const q = await loadQueue();
       const f = await file('navy', 'pusta.png');
-      setOnline(false);
-      await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J22', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
-      setOnline(true);
+      const rec = await legacyRecord({ format: 'v3', id: 'local-photo-upload-empty', owner: 'A', jobId: 'J22', unitRef: 'jw', f });
+      rec.queue_writer = '13.62';
+      await rawCreate(3, [rec]);
+      const p = await loadPhotos(); const q = await loadQueue();
       const original = Blob.prototype.arrayBuffer;
       Blob.prototype.arrayBuffer = async function emptyRead() { return new ArrayBuffer(0); };
       try { await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } }); }
@@ -481,20 +471,18 @@
         before, uploadsBefore, released, after, serverObjects: shas.length };
     },
     // 13.65: zdjęcie zapisuje się w telefonie jako bajty (ArrayBuffer), nie Blob/File — Safari nie zgubi zawartości.
-    async S23_zdjecie_zapisane_jako_bajty() {
+    // 13.65: kolejka telefonu (stare zdjęcia, naprawa) przechowuje bajty (ArrayBuffer), nie Blob/File.
+    async S23_kolejka_zapisuje_bajty() {
       await cleanStart();
-      const p = await loadPhotos();
+      const q = await loadQueue(); const p = await loadPhotos();
       const f = await file('maroon', 'bajty.png');
-      setOnline(false);
-      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J24', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
-      const rows = await rawRows();
-      const row = rows[0] || {};
+      const saved = await q.savePhotoQueueItem({ id: 'local-photo-upload-bytes', job_id: 'J24', uploaded_by: 'A', user_id: 'A', __localFile: f, photo_kind: 'nameplate', device_index: 1, unit_ref: 'jw' });
+      const row = (await rawRows())[0] || {};
       const storedAsBytes = row.local_file_bytes instanceof ArrayBuffer && row.local_file_bytes.byteLength === f.size && !(row.local_file instanceof Blob);
-      setOnline(true);
       await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
       const shas = await serverShas();
-      return { pass: saved.queuedCount === 1 && storedAsBytes && shas.length === 1 && shas.includes(await sha(f)) && (await rawState()).count === 0,
-        storedAsBytes, byteLength: row.local_file_bytes?.byteLength, size: f.size, serverObjects: shas.length };
+      return { pass: saved === true && storedAsBytes && shas.length === 1 && shas.includes(await sha(f)) && (await rawState()).count === 0,
+        saved, storedAsBytes, serverObjects: shas.length };
     },
     // 13.65: nieczytelny plik (odczyt nigdy się nie kończy) nie zawiesza kolejki — po limicie czasu jasny błąd,
     // bez żądania do serwera; kolejne zdjęcie nadal się wysyła.
@@ -515,6 +503,19 @@
       const item = (await q.listPhotoQueueItems())[0] || {};
       return { pass: !res?.__timeout && srv.uploads === 0 && item.upload_status === 'error' && /ponownie/.test(item.upload_error || '') && ms < 45000,
         ms, res, uploads: srv.uploads, status: item.upload_status, error: item.upload_error };
+    },
+    // 13.66: tabliczki bez internetu — brak zapisu w telefonie, brak żądań do serwera, jasny komunikat.
+    async S25_tabliczki_bez_internetu_komunikat() {
+      await cleanStart();
+      const p = await loadPhotos();
+      setOnline(false);
+      const ui = trackUi('J26');
+      const files = [await file('blue', 'jw.png'), await file('green', 'jz.png')];
+      const r = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J26', documents: [{ file: files[0], deviceIndex: 0, unitRef: 'jw' }, { file: files[1], deviceIndex: 0, unitRef: 'jz' }], setJobs: ui.setJobs });
+      const raw = await rawState();
+      setOnline(true);
+      return { pass: r.failedCount === 2 && r.offlineBlocked === true && /Brak internetu/.test(r.persistErrorMessage || '') && raw.count === 0 && srv.uploads === 0 && ui.seen.length === 0,
+        result: { failed: r.failedCount, code: r.persistErrorCode }, raw, uploads: srv.uploads, uiSeen: ui.seen };
     },
   };
 

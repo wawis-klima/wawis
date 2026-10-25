@@ -1,9 +1,9 @@
 import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
-// WAWIS 13.63 — urządzenia i tabliczki zapisuje bez internetu każdy, także administrator.
-// 13.62 dla administratora pokazywało „Pełna edycja montażu wymaga połączenia z internetem”,
-// a zmiany offline administratora nie były nigdy synchronizowane (performOfflineJobSync pomijał admina).
+// WAWIS 13.66 (decyzja właściciela 25.10.2026): urządzeń i tabliczek nie zapisuje się bez internetu — u nikogo.
+// Bez internetu: komunikat „zrób zdjęcia aparatem i dodaj później”, formularz zostaje otwarty, nic nie trafia
+// do pamięci aplikacji. Po powrocie internetu ten sam formularz zapisuje się normalnie.
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
 const ONLINE_FLAG = 'klima-e2e-network-state';
 
@@ -41,7 +41,7 @@ async function countOfflineDeviceOperations(page) {
 }
 
 for (const [roleName, credentials, buttonName] of [['administrator', ADMIN, 'Urządzenia'], ['pracownik', WORKER, 'Tabliczki']]) {
-  test(`@mobile ${roleName} zapisuje urządzenia i tabliczki bez internetu, a po powrocie internetu zmiana wysyła się sama`, async ({ page }) => {
+  test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (komunikat), z internetem zapis działa`, async ({ page }) => {
     test.setTimeout(90_000);
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
@@ -52,26 +52,29 @@ for (const [roleName, credentials, buttonName] of [['administrator', ADMIN, 'Urz
     const dialogs = [];
     page.on('dialog', async (dialog) => { dialogs.push(dialog.message()); await dialog.accept(); });
 
-    await setLogicalOnlineState(page, false);
     await page.getByRole('button', { name: buttonName, exact: true }).click();
     const saveButton = page.locator('.mobileDeviceWizardFooter .btn.primary');
     await expect(saveButton).toBeVisible();
+
+    await setLogicalOnlineState(page, false);
     await saveButton.click();
-    // Po kliknięciu okno albo się zamyka (komunikat zapisu), albo pokazuje ostrzeżenie o różnych seriach jednostek.
-    // Nie odczytujemy tekstu przycisku, który właśnie znika — czekamy na jeden z dwóch stanów.
     const confirmWarning = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia', exact: true });
     await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
     if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
-
     await expect.poll(() => dialogs.length, { timeout: 20_000 }).toBeGreaterThan(0);
-    expect(dialogs.join(' | ')).not.toContain('Pełna edycja montażu wymaga połączenia z internetem');
-    expect(dialogs.join(' | ')).toContain('Dane urządzenia zapisano na telefonie');
-    await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0);
-    await expect.poll(() => countOfflineDeviceOperations(page)).toBe(1);
+    expect(dialogs[0]).toContain('Brak internetu');
+    expect(dialogs.join(' | ')).not.toContain('zapisano na telefonie');
+    await expect(page.locator('.mobileDeviceWizardModal')).toBeVisible();
+    expect(await countOfflineDeviceOperations(page)).toBe(0);
 
-    // Powrót internetu bez wylogowania: zmiana zapisana offline jest wysyłana automatycznie.
+    // Internet wrócił: ten sam formularz zapisuje się normalnie.
     await setLogicalOnlineState(page, true);
-    await expect.poll(() => countOfflineDeviceOperations(page), { timeout: 30_000 }).toBe(0);
-    await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible();
+    const dialogsBefore = dialogs.length;
+    await saveButton.click();
+    await expect.poll(async () => dialogs.length > dialogsBefore || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+    if (dialogs.length === dialogsBefore && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
+    await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0, { timeout: 30_000 });
+    expect(dialogs.slice(dialogsBefore).join(' | ')).not.toContain('Brak internetu');
+    expect(await countOfflineDeviceOperations(page)).toBe(0);
   });
 }
