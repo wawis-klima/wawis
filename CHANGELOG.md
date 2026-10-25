@@ -1,3 +1,9 @@
+## 13.64
+- iPhone: zdjęcia zapisane w telefonie (np. zrobione bez internetu) nie są już wysyłane jako puste pliki. Safari wysyłał plik odczytany z lokalnej bazy jako żądanie 0 B (HTTP 400 „No content provided”) — każde ponowienie kończyło się tak samo, a tabliczki i protokół pozostawały zablokowane. Przed wysyłką aplikacja odczytuje bajty zdjęcia do pamięci i wysyła je bezpośrednio.
+- Pusty lub nieczytelny plik w telefonie dostaje jasny błąd „Zrób zdjęcie ponownie” zamiast nieskończonego ponawiania; do serwera nie trafia puste żądanie.
+- Centrum synchronizacji: przycisk „Synchronizuj teraz” (zamiast „Wyślij wszystkie”) obejmuje także zdjęcia zawieszone jako „Wysyłane” — jeśli nic ich w tej chwili nie wysyła, wracają do kolejki od razu; wysyła też zmiany zapisane offline. Wstrzymanych starych zdjęć nie rusza.
+- Testy: S20 (wysyłka bajtów po zapisie offline), S21 (pusty plik), S22 (Synchronizuj teraz przy zawieszonym „Wysyłane”) w mobile-photo-queue-compat-v1362 — RED na 13.63, GREEN na 13.64.
+
 ## 13.63
 - Urządzenia i tabliczki znamionowe zapisuje bez internetu każdy, także administrator (przycisk „Urządzenia” / „Tabliczki”). Wcześniej konto administratora offline dostawało „Pełna edycja montażu wymaga połączenia z internetem”.
 - Zmiany zapisane offline na koncie administratora wysyłają się automatycznie po powrocie internetu, bez wylogowania (synchronizacja zmian offline pomijała dotąd administratora). Ta sama kontrola konfliktów co u pracownika — niczego nie nadpisuje.

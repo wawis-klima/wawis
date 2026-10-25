@@ -15,7 +15,8 @@ const releaseRunner = read('scripts', 'run-release.cjs');
 const testGroups = read('scripts', 'test-groups.cjs');
 
 assert.match(component, /Synchronizacja zdjęć/);
-assert.match(component, /Wyślij wszystkie/);
+assert.match(component, /Synchronizuj teraz/);
+assert.match(app, /releaseIdlePhotoUploadLeases\(\)/);
 assert.match(component, /Ostatnia synchronizacja/);
 assert.match(component, /Nie usuwaj aplikacji ani danych Safari/);
 assert.match(component, /onRetryPhoto/);

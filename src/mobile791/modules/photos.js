@@ -327,6 +327,30 @@ export function assertNonEmptyPhotoFile(file) {
   return file;
 }
 
+// 13.64: Safari/WebKit potrafi wysłać plik odczytany z IndexedDB jako puste żądanie (Content-Length: 0 →
+// HTTP 400 „No content provided”), mimo że file.size jest poprawne. Przed wysyłką odczytujemy bajty do pamięci
+// i wysyłamy je bezpośrednio. Pusty lub nieczytelny plik nie jest ponawiany w nieskończoność.
+export async function readPhotoBytesForUpload(file) {
+  assertNonEmptyPhotoFile(file);
+  let buffer;
+  try {
+    buffer = typeof file.arrayBuffer === 'function'
+      ? await file.arrayBuffer()
+      : await new Response(file).arrayBuffer();
+  } catch (readError) {
+    const error = new Error('Nie można odczytać zdjęcia z pamięci telefonu. Zrób zdjęcie ponownie.');
+    error.code = PHOTO_ZERO_BYTES_ERROR_CODE;
+    error.cause = readError;
+    throw error;
+  }
+  if (!buffer || !buffer.byteLength) {
+    const error = new Error('Zdjęcie zapisane w telefonie jest puste (0 B). Zrób zdjęcie ponownie.');
+    error.code = PHOTO_ZERO_BYTES_ERROR_CODE;
+    throw error;
+  }
+  return buffer;
+}
+
 export async function preparePhotoForUpload(file) {
   assertNonEmptyPhotoFile(file);
 
@@ -1061,9 +1085,12 @@ async function performQueuedPhotoUpload({
     await updatePhotoQueueItem(localPhotoId, { planned_storage_path: storagePath, ...preparedPatch });
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
 
+    // Bajty w pamięci zamiast obiektu File/Blob z IndexedDB (patrz readPhotoBytesForUpload).
+    const uploadBytes = await readPhotoBytesForUpload(uploadFile);
+    if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     const { error: uploadError } = await supabase.storage
       .from(PHOTO_BUCKET)
-      .upload(storagePath, uploadFile, { cacheControl: '3600', upsert: false, contentType: uploadFile.type || 'image/jpeg' });
+      .upload(storagePath, uploadBytes, { cacheControl: '3600', upsert: false, contentType: uploadFile.type || 'image/jpeg' });
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
     if (uploadError && !isDuplicateStorageError(uploadError)) throw uploadError;
     storageExists = true;
@@ -1189,7 +1216,7 @@ async function performQueuedPhotoUpload({
     return photoForUi;
   } catch (error) {
     if (!photoSessionIsCurrent(isSessionCurrent)) return null;
-    const waitingForInternet = isBrowserOffline() || isNetworkUploadError(error);
+    const waitingForInternet = !isZeroBytePhotoError(error) && (isBrowserOffline() || isNetworkUploadError(error));
     const attemptCount = Number(uploadingPatch.retry_count || 1);
     const failurePatch = waitingForInternet
       ? {
@@ -1703,6 +1730,28 @@ export function resumePersistedPhotoUploads(options = {}) {
     });
   persistedQueueResumePromises.set(profileId, request);
   return request;
+}
+
+// 13.64: „Synchronizuj teraz” — zdjęcie zawieszone jako „Wysyłane”, którego ta karta w tej chwili nie wysyła,
+// wraca do kolejki od razu (bez czekania na wygaśnięcie blokady). Trwająca wysyłka nie jest przerywana,
+// a podwójnemu wysłaniu zapobiega blokada uploadu w aplikacji i unikalna ścieżka na serwerze.
+export async function releaseIdlePhotoUploadLeases() {
+  const items = await listPhotoQueueItems();
+  let released = 0;
+  for (const item of items) {
+    if (String(item.upload_status || '').toLowerCase() !== 'uploading') continue;
+    if (isPhotoQueueItemHeld(item)) continue;
+    const lockKey = String(item.upload_key || item.id || '').trim();
+    if (lockKey && activePhotoUploadPromises.has(lockKey)) continue;
+    const updated = await updatePhotoQueueItem(item.id, {
+      upload_status: 'local',
+      upload_status_label: 'Zapisano na telefonie',
+      lease_until: '',
+      next_attempt_at: '',
+    });
+    if (updated) released += 1;
+  }
+  return released;
 }
 
 export async function retryAllPersistedPhotoUploads(options = {}) {

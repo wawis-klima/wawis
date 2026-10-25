@@ -10,9 +10,9 @@
   const loadQueue = () => import(`${base()}/src/mobile791/modules/photo-offline-queue.js`);
   const loadPhotos = () => import(`${base()}/src/mobile791/modules/photos.js`);
 
-  const srv = { objects: new Map(), rows: [], uploads: 0, inserts: 0, faults: {} };
+  const srv = { objects: new Map(), rows: [], uploads: 0, inserts: 0, faults: {}, bodyKinds: [] };
   function resetServer() {
-    srv.objects = new Map(); srv.rows = []; srv.uploads = 0; srv.inserts = 0; srv.faults = {};
+    srv.objects = new Map(); srv.rows = []; srv.uploads = 0; srv.inserts = 0; srv.faults = {}; srv.bodyKinds = [];
   }
   function setOnline(online) {
     Object.defineProperty(Navigator.prototype, 'onLine', { configurable: true, get: () => online });
@@ -37,6 +37,7 @@
       storage: { from() { return {
         async upload(path, body) {
           srv.uploads += 1;
+          srv.bodyKinds.push(body instanceof Blob ? 'blob' : (body instanceof ArrayBuffer || ArrayBuffer.isView(body)) ? 'bytes' : typeof body);
           const fault = srv.faults.uploadSequence?.shift();
           if (fault === 'network') throw new TypeError('Failed to fetch');
           if (fault === 'http400') return { data: null, error: { statusCode: '400', message: 'No content provided' } };
@@ -428,6 +429,56 @@
       return { pass: uploadsAfterStart === 0 && r.failedCount === 0 && shas.length === 1 && shas.includes(await sha(fresh)) && !shas.includes(await sha(old))
           && remaining.length === 1 && q.isPhotoQueueItemHeld(remaining[0]) && ui.seen.includes('Wstrzymane — zdecyduj w Synchronizacji'),
         uploadsAfterStart, failed: r.failedCount, serverObjects: shas.length, remaining: remaining.length, uiSeen: [...new Set(ui.seen)] };
+    },
+    // 13.64: do Storage trafiają bajty z pamięci (nie obiekt File/Blob z IndexedDB, który Safari potrafi
+    // wysłać jako puste żądanie 0 B). Zdjęcie zapisane offline wysyła się po powrocie internetu.
+    async S20_wysylka_bajtow_z_pamieci_po_offline() {
+      await cleanStart();
+      const p = await loadPhotos();
+      const f = await file('teal', 'offline-tabliczka.png');
+      setOnline(false);
+      const saved = await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J21', documents: [{ file: f, deviceIndex: 0, unitRef: 'jz' }], setJobs: () => {} });
+      setOnline(true);
+      await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const sizes = [...srv.objects.values()].map((b) => b.byteLength);
+      return { pass: saved.queuedCount === 1 && srv.bodyKinds.length > 0 && srv.bodyKinds.every((k) => k === 'bytes') && sizes.length === 1 && sizes[0] === f.size && (await rawState()).count === 0,
+        bodyKinds: srv.bodyKinds, sizes, expected: f.size };
+    },
+    // 13.64: nieczytelny / pusty plik w telefonie → jasny błąd „Zrób zdjęcie ponownie”, bez pustego żądania do serwera
+    // i bez nieskończonego „czeka na internet”.
+    async S21_pusty_plik_w_telefonie_jasny_blad() {
+      await cleanStart();
+      const p = await loadPhotos(); const q = await loadQueue();
+      const f = await file('navy', 'pusta.png');
+      setOnline(false);
+      await p.uploadJobDocumentationPhotos({ supabase: supabaseFor('A'), profile: { id: 'A' }, jobId: 'J22', documents: [{ file: f, deviceIndex: 0, unitRef: 'jw' }], setJobs: () => {} });
+      setOnline(true);
+      const original = Blob.prototype.arrayBuffer;
+      Blob.prototype.arrayBuffer = async function emptyRead() { return new ArrayBuffer(0); };
+      try { await p.resumePersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } }); }
+      finally { Blob.prototype.arrayBuffer = original; }
+      const items = await q.listPhotoQueueItems();
+      const item = items[0] || {};
+      return { pass: srv.uploads === 0 && items.length === 1 && item.upload_status === 'error' && /0 B|ponownie/.test(item.upload_error || ''),
+        uploads: srv.uploads, status: item.upload_status, error: item.upload_error };
+    },
+    // 13.64: zdjęcie zawieszone jako „Wysyłane” z ważną blokadą (przypadek administratora 25.10) —
+    // „Synchronizuj teraz” zwalnia blokadę, której nic nie wysyła, i wysyła zdjęcie od razu.
+    async S22_synchronizuj_teraz_zawieszone_wysylane() {
+      await cleanStart();
+      const f = await file('olive', 'zawieszone.png');
+      const rec = await legacyRecord({ format: 'v3', id: 'local-photo-upload-stuck', owner: 'A', jobId: 'J23', unitRef: 'jz', f, status: 'uploading', leaseUntil: new Date(Date.now() + 120_000).toISOString() });
+      rec.queue_writer = '13.62';
+      await rawCreate(3, [rec]);
+      const p = await loadPhotos();
+      const before = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const uploadsBefore = srv.uploads;
+      if (!p.releaseIdlePhotoUploadLeases) return { pass: false, reason: 'brak releaseIdlePhotoUploadLeases', uploadsBefore };
+      const released = await p.releaseIdlePhotoUploadLeases();
+      const after = await p.retryAllPersistedPhotoUploads({ supabase: supabaseFor('A'), profile: { id: 'A' } });
+      const shas = await serverShas();
+      return { pass: uploadsBefore === 0 && released === 1 && shas.length === 1 && shas.includes(await sha(f)) && (await rawState()).count === 0,
+        before, uploadsBefore, released, after, serverObjects: shas.length };
     },
   };
 

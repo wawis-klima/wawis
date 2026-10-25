@@ -19,7 +19,7 @@ import {
   getVisibleJobs,
 } from "./modules/jobs-selectors.js";
 import { createNotification } from "./modules/notifications.js";
-import { getPhotoStoragePath, getSignedPhotoUrl, hasDisplayablePhotoUrl, hasRemotePhotoUrl, isLocalQueuedPhoto, restorePersistedJobPhotos, resumePersistedPhotoUploads, retryAllPersistedPhotoUploads } from "./modules/photos.js";
+import { getPhotoStoragePath, getSignedPhotoUrl, hasDisplayablePhotoUrl, hasRemotePhotoUrl, isLocalQueuedPhoto, releaseIdlePhotoUploadLeases, restorePersistedJobPhotos, resumePersistedPhotoUploads, retryAllPersistedPhotoUploads } from "./modules/photos.js";
 import { sendAssignmentPush, sendJobCompletionPush } from "./modules/jobs-assignment.js";
 import PushNotificationsControl from "./components/PushNotificationsControl.jsx";
 import { usePhotoPreview } from "./hooks/usePhotoPreview.js";
@@ -1022,6 +1022,8 @@ export default function App() {
 
     photoSyncStatus.markPhotoSyncing();
     try {
+      const releasedLeases = await releaseIdlePhotoUploadLeases();
+      if (releasedLeases) logDiagnostic('photos.sync.manual.released', { count: releasedLeases });
       const result = await retryAllPersistedPhotoUploads({
         supabase,
         profile,
