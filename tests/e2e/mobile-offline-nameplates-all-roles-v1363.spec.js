@@ -57,7 +57,11 @@ for (const [roleName, credentials, buttonName] of [['administrator', ADMIN, 'Urz
     const saveButton = page.locator('.mobileDeviceWizardFooter .btn.primary');
     await expect(saveButton).toBeVisible();
     await saveButton.click();
-    if (await saveButton.isVisible() && /mimo ostrzeżenia/.test(await saveButton.innerText())) await saveButton.click();
+    // Po kliknięciu okno albo się zamyka (komunikat zapisu), albo pokazuje ostrzeżenie o różnych seriach jednostek.
+    // Nie odczytujemy tekstu przycisku, który właśnie znika — czekamy na jeden z dwóch stanów.
+    const confirmWarning = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia', exact: true });
+    await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+    if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
 
     await expect.poll(() => dialogs.length, { timeout: 20_000 }).toBeGreaterThan(0);
     expect(dialogs.join(' | ')).not.toContain('Pełna edycja montażu wymaga połączenia z internetem');
