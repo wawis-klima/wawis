@@ -117,6 +117,9 @@ export default function PhotoSyncStatus({
       await confirmAndDeleteHeldPhotos({
         count: heldCount,
         logFn: (event, payload) => logDiagnostic(event, payload),
+        onDeleted: () => {
+          if (typeof window !== "undefined") window.location.reload();
+        },
       });
       await status.refreshQueueSummary?.();
     } finally {

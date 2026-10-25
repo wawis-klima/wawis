@@ -73,6 +73,7 @@ export async function confirmAndDeleteHeldPhotos({
   count = 0,
   confirmFn = (message) => window.confirm(message),
   alertFn = (message) => window.alert(message),
+  onDeleted = null,
   logFn = null,
 } = {}) {
   if (!confirmFn(`Usunąć ${photoCountLabel(count)} z 22.10 z tego telefonu?\n\nTe zdjęcia NIE zostały wysłane na serwer. Tej operacji nie można cofnąć. Nowe zdjęcia, montaże, urządzenia, protokoły i podpisy pozostają bez zmian.`)) {
@@ -82,7 +83,9 @@ export async function confirmAndDeleteHeldPhotos({
   const result = await deleteHeldPhotoQueueItems();
   logFn?.(result.ok ? 'photos.queue.legacy.warning' : 'photos.queue.legacy.failed', { count: result.count, code: result.ok ? 'PHOTO_QUEUE_LEGACY_DELETED' : (result.code || 'PHOTO_QUEUE_WRITE_FAILED') });
   alertFn(result.ok
-    ? `Usunięto ${photoCountLabel(result.count)} z tego telefonu.`
+    ? `Usunięto ${photoCountLabel(result.count)} z tego telefonu. Aplikacja zostanie odświeżona.`
     : `Usuwanie NIE zostało potwierdzone. ${result.message || ''}`.trim());
+  // Odświeżenie usuwa z widoku montażu kopie usuniętych zdjęć, które zostały jeszcze w pamięci aplikacji.
+  if (result.ok) onDeleted?.();
   return result;
 }

@@ -98,8 +98,12 @@ test.describe('@mobile stare zdjęcia z bazy v4 czekają na decyzję 13.62', () 
     await expect.poll(() => dialogs.filter((d) => d.type === 'alert').length).toBe(1);
     expect(dialogs[0].message).toContain('1 stare zdjęcie');
     expect(dialogs.find((d) => d.type === 'alert').message).toContain('Usunięto');
+    // Po potwierdzonym usunięciu aplikacja się odświeża; sesja i montaże zostają, stare zdjęcie znika także z widoku montażu.
+    await page.waitForLoadState('load');
+    await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible({ timeout: 20_000 });
     await expect.poll(async () => (await queueState(page)).ids.length).toBe(0);
-    await expect(page.getByTestId('photo-queue-legacy-hold')).toHaveCount(0);
+    await expect(page.getByText('Wstrzymane — zdecyduj w Synchronizacji')).toHaveCount(0);
+    await expect(page.getByText('1 stare zdjęcie czeka na decyzję')).toHaveCount(0);
     expect(await serverLegacyRows(page)).toBe(0);
     expect(await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__.getStore().jobs.length)).toBe(jobsBefore);
   });

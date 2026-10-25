@@ -6,7 +6,7 @@ wdrożeniem na stronie testowej, etap 2 dopiero po zielonym CI i wdrożeniu zatw
 **Zasada:** zielony komunikat w aplikacji nie jest dowodem. Dowodem jest plik w Storage o rozmiarze
 większym niż 0 B oraz rekord w tabeli `photos`, potwierdzone zapytaniem SELECT.
 
-## Etap 1 — przed wdrożeniem: test na stronie testowej (bez produkcji)
+## Etap 1 — przed wdrożeniem (opcjonalny): test na stronie testowej (bez produkcji)
 
 Strona „WAWIS 13.62 iPhone Lab” (prywatny artefakt Claude) uruchamia prawdziwe moduły kolejki zdjęć z wersji
 13.48, 13.61 i 13.62 pod jednym adresem, czyli we wspólnym magazynie IndexedDB Safari. Baza v4 jest tworzona
@@ -21,29 +21,38 @@ usuń / napraw (z potwierdzeniem). Na koniec „Kopiuj protokół” i wklejenie
 Ograniczenia: strona działa w Safari / widoku Claude, nie jako PWA z ekranu początkowego, i nie testuje
 interfejsu WAWIS (testują go E2E w CI na dev i na zbudowanej aplikacji).
 
-## Etap 2 — po wdrożeniu (wyłącznie po zgodzie właściciela): telefon z bazą v4
+## Etap 2 — po kontrolowanym wdrożeniu (wyłącznie po zgodzie właściciela)
 
-- Telefon: Pawła albo Kacpra (baza v4). **Nie usuwać aplikacji z ekranu początkowego** i nie czyścić danych
-  Safari — właśnie stara baza jest przedmiotem testu.
-- Montaż testowy (nie klienta), np. „TEST 13.62 iPhone”. Zanotować godzinę startu (UTC).
+Decyzja właściciela (25.10.2026): starych, niewysłanych zdjęć z telefonów Pawła i Kacpra **nie odzyskujemy**.
+Testujemy wyłącznie działanie nowych zdjęć. Dane w produkcyjnym Supabase pozostają nietknięte.
 
-### A. Aktualizacja i stare zdjęcia
+Przygotowanie: montaż testowy (nie klienta) z urządzeniem JW + JZ, np. „TEST 13.62 iPhone”, status „W trakcie”.
+Zanotować godzinę startu (UTC). Nie usuwać aplikacji z ekranu początkowego.
+
+### A. Start 13.62 i czysta kolejka (Paweł, Kacper)
 
 1. Zamknąć WAWIS całkowicie, otworzyć z ekranu początkowego, sprawdzić wersję **13.62**.
-2. Jeśli na telefonie są stare zdjęcia z 22.10: wskaźnik pokazuje „N stare zdjęcia czekają na decyzję”.
-   Nic nie wysyła się samo.
-3. Synchronizacja → baner „Na telefonie są stare, niewysłane zdjęcia z 22.10”.
-   - Kacper: zdjęcia dodał już administrator → **„Usuń stare zdjęcia”** (potwierdzić).
-   - Paweł: najpierw sprawdzić zapytaniem z punktu B, czy zdjęcia tych montaży są na serwerze;
-     jeśli brakuje — „Wyślij stare zdjęcia”, jeśli są — „Usuń stare zdjęcia”.
-4. Jeśli zamiast tego widać „Kolejka zdjęć niedostępna”: zamknąć inne okna WAWIS (także Safari) i użyć
-   „Napraw kolejkę zdjęć”.
+2. Jeśli wskaźnik pokazuje „N stare zdjęcia czekają na decyzję”: Synchronizacja → **„Usuń stare zdjęcia”** →
+   potwierdzić. Aplikacja odświeża się, użytkownik pozostaje zalogowany, montaże są widoczne.
+3. Jeśli zamiast tego widać „Kolejka zdjęć niedostępna”: zamknąć inne okna WAWIS (także Safari) →
+   Synchronizacja → **„Napraw kolejkę zdjęć”** → potwierdzić.
+4. Synchronizacja pokazuje „Wszystko wysłane”.
 
-### B. Tabliczki online (scenariusz Pawła)
+### B. Tabliczki online (przypadek Pawła)
 
-1. Online. Montaż testowy → Edytuj → urządzenie → 2 zdjęcia tabliczek aparatem → Zapisz.
-2. Brak komunikatu „Nie wszystkie tabliczki zostały potwierdzone…”, okno zamyka się po potwierdzeniu.
-3. Weryfikacja (SELECT, tylko odczyt):
+1. Online. Montaż testowy → Edytuj → urządzenie → zdjęcia tabliczek JW i JZ aparatem → Zapisz.
+2. Brak komunikatu „Nie wszystkie tabliczki zostały potwierdzone…”, okno zamyka się po zapisie.
+3. Przycisk protokołu jest aktywny (komplet tabliczek na serwerze).
+
+### C. Zdjęcia offline, zamknięcie aplikacji, powrót internetu (bez wylogowania)
+
+1. Tryb samolotowy → zwykłe zdjęcie montażu + tabliczka nowego urządzenia → status „Zapisano na telefonie”.
+   Protokół jest nieaktywny (tabliczka jeszcze nie na serwerze).
+2. Zamknąć aplikację całkowicie i otworzyć ponownie (nadal tryb samolotowy) — zdjęcia nadal w Synchronizacji.
+3. Wyłączyć tryb samolotowy i **nie wylogowywać się**. W ciągu ok. 1 minuty zdjęcia znikają z Synchronizacji,
+   a przycisk protokołu staje się aktywny.
+
+### D. Weryfikacja na serwerze (SELECT, tylko odczyt — wykonuje Claude)
 
 ```sql
 select p.id, p.job_id, p.unit_ref, p.storage_path, p.created_at,
@@ -56,27 +65,21 @@ where p.job_id = '<ID montażu testowego>'
 order by p.created_at;
 ```
 
-   Oczekiwane: 2 wiersze, `bytes > 0`.
+Oczekiwane: każde zdjęcie z punktów B i C dokładnie raz, `bytes > 0`, brak zdjęć z 22.10.
 
-### C. Zwykłe zdjęcie offline → online (scenariusz Kacpra)
+### E. Pozostali pracownicy
 
-1. Tryb samolotowy → 1 zdjęcie → „Zapisano na telefonie”.
-2. Zamknąć aplikację całkowicie, otworzyć — zdjęcie nadal w Synchronizacji.
-3. Wyłączyć tryb samolotowy, poczekać → SELECT z punktu B: 1 nowy wiersz, `bytes > 0`.
-
-### D. Safari (bez PWA)
-
-Powtórzyć B w Safari. Safari i PWA mają osobne magazyny danych.
+Michał i Krystian (baza v3): po aktualizacji jedno zdjęcie online — bez żadnych komunikatów o kolejce.
 
 ## Kryteria zaliczenia
 
 | Punkt | Wynik | Dowód |
 |---|---|---|
-| Etap 1 strona testowa: kroki 1–6 ZALICZONE | | protokół ze strony |
-| A wersja 13.62, stare zdjęcia nie wysłały się same, decyzja wykonana | | zrzuty |
-| B 2 tabliczki, bytes > 0 | | wynik SELECT |
-| C offline → online, bytes > 0 | | wynik SELECT |
-| D Safari | | zrzut + SELECT |
+| Etap 1 (opcjonalny przed wdrożeniem) strona testowa: kroki 1–6 ZALICZONE | | protokół ze strony |
+| A 13.62, czysta kolejka, sesja zachowana | | zrzut |
+| B 2 tabliczki online, protokół aktywny | | zrzut + SELECT |
+| C offline → zamknięcie → online bez wylogowania, protokół aktywny | | zrzut + SELECT |
+| E Michał / Krystian: zdjęcie online | | SELECT |
 
 ---
 
