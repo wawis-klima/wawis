@@ -1,3 +1,10 @@
+## 13.63
+- Urządzenia i tabliczki znamionowe zapisuje bez internetu każdy, także administrator (przycisk „Urządzenia” / „Tabliczki”). Wcześniej konto administratora offline dostawało „Pełna edycja montażu wymaga połączenia z internetem”.
+- Zmiany zapisane offline na koncie administratora wysyłają się automatycznie po powrocie internetu, bez wylogowania (synchronizacja zmian offline pomijała dotąd administratora). Ta sama kontrola konfliktów co u pracownika — niczego nie nadpisuje.
+- Przy chwilowym błędzie sieci podczas zapisu tabliczek także administrator dostaje zapis w telefonie zamiast błędu.
+- Pełna edycja danych montażu (klient, adres, termin) nadal wymaga internetu.
+- Test: tests/e2e/mobile-offline-nameplates-all-roles-v1363.spec.js (administrator i pracownik).
+
 ## 13.62
 - P0 iPhone: kolejka zdjęć otwiera bazę IndexedDB w wersji 3, 4 i przyszłych (najpierw bez numeru wersji, potem niedestrukcyjne podniesienie v1–v3 do v4). Telefony, które 22.10 uruchomiły 13.42–13.48, nie dostają już VersionError i znów zapisują oraz wysyłają zdjęcia i tabliczki; wersja bazy nigdy nie jest obniżana.
 - Każde otwarcie kolejki ma limit czasu: zablokowana aktualizacja (inne okno WAWIS) zwraca czytelny błąd zamiast zawieszenia; błąd odczytu nie jest już pokazywany jako „Wszystko wysłane”.

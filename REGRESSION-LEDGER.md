@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## OFFLINE-ADMIN-1363 — tabliczki offline na koncie administratora (25.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OA-1363-SAVE | FIXED-UNVERIFIED | Administrator offline w „Urządzenia” dostawał „Pełna edycja montażu wymaga połączenia z internetem” (warunek `!isAdmin && serialOnlyMode`). Teraz zapis w telefonie dla każdej roli. Test mobile-offline-nameplates-all-roles-v1363. |
+| OA-1363-SYNC | FIXED-UNVERIFIED | performOfflineJobSync pomijał administratora — zmiany offline admina nigdy by się nie wysłały. Teraz synchronizacja po powrocie internetu. Ten sam test (operacja znika z kolejki). |
+| OA-1363-WORKER | REGRESSION | Pracownik: bez zmian, ten sam test. |
+| OA-1363-LIVE | EXTERNAL | iPhone administratora po wdrożeniu. |
+
 ## PHOTOS-1362 — kolejka zdjęć IndexedDB v4 po rollbacku (24.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

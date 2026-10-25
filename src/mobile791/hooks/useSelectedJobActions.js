@@ -549,7 +549,9 @@ export function useSelectedJobActions({
 
     try {
       if (isBrowserOffline()) {
-        if (!isAdmin && serialOnlyMode) {
+        // 13.63: urządzenia i tabliczki zapisuje bez internetu każdy (także administrator).
+        // Pełna edycja danych montażu nadal wymaga internetu.
+        if (serialOnlyMode) {
           await queueDeviceSaveOffline(form, pendingDocuments);
           return;
         }
@@ -674,7 +676,7 @@ export function useSelectedJobActions({
       }
     } catch (error) {
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
-      if (!isAdmin && serialOnlyMode && isTransientSupabaseError(error)) {
+      if (serialOnlyMode && isTransientSupabaseError(error)) {
         try {
           await queueDeviceSaveOffline(form, pendingDocuments, 'transient-error');
           return;

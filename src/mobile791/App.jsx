@@ -813,7 +813,8 @@ export default function App() {
   const performOfflineJobSync = React.useCallback(async () => {
     const syncContext = offlineSyncContextRef.current;
     const currentProfile = syncContext.profile;
-    if (!supabase || !currentProfile || isAdmin || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+    // 13.63: zmiany zapisane offline wysyła także konto administratora (urządzenia i tabliczki).
+    if (!supabase || !currentProfile || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
       await photoSyncStatus.refreshQueueSummary();
       return { processed: 0, synced: 0, conflicts: 0, errors: 0, changedJobIds: [], conflictJobIds: [] };
     }
