@@ -690,6 +690,7 @@ export default function JobFormModal({
           onClose={handleClose}
           onSubmit={() => handleSubmit()}
           submitLabel="Zapisz urządzenia i tabliczki"
+          restoredNotice={jobForm.restored_draft_notice || ''}
           onAddDevice={addDeviceRow}
           onRemoveDevice={removeDeviceRow}
           onChangeDeviceType={updateDeviceType}

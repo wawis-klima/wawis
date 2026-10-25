@@ -40,8 +40,9 @@ async function countOfflineDeviceOperations(page) {
   }));
 }
 
-for (const [roleName, credentials, buttonName] of [['administrator', ADMIN, 'Urządzenia'], ['pracownik', WORKER, 'Tabliczki']]) {
-  test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (komunikat), z internetem zapis działa`, async ({ page }) => {
+// 13.68: bez internetu okno „Brak internetu” z wyborem „Zamknij okno” / „Zostań w formularzu” (nie blokuje aplikacji).
+for (const [roleName, credentials, buttonName, choice] of [['administrator', ADMIN, 'Urządzenia', 'stay'], ['pracownik', WORKER, 'Tabliczki', 'close']]) {
+  test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (okno z wyborem), ${choice === 'stay' ? 'po powrocie internetu zapis działa' : '„Zamknij okno” zachowuje dane do ponownego otwarcia'}`, async ({ page }) => {
     test.setTimeout(90_000);
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
@@ -59,22 +60,47 @@ for (const [roleName, credentials, buttonName] of [['administrator', ADMIN, 'Urz
     await setLogicalOnlineState(page, false);
     await saveButton.click();
     const confirmWarning = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia', exact: true });
-    await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
-    if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
-    await expect.poll(() => dialogs.length, { timeout: 20_000 }).toBeGreaterThan(0);
-    expect(dialogs[0]).toContain('Brak internetu');
-    expect(dialogs.join(' | ')).not.toContain('zapisano na telefonie');
-    await expect(page.locator('.mobileDeviceWizardModal')).toBeVisible();
+    const offlinePrompt = page.locator('.confirmDeleteModal', { hasText: 'Brak internetu' });
+    await expect.poll(async () => await offlinePrompt.isVisible().catch(() => false) || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+    if (!(await offlinePrompt.isVisible().catch(() => false))) await confirmWarning.click();
+    await expect(offlinePrompt).toBeVisible();
+    await expect(offlinePrompt).toContainText('„Zamknij okno” zachowa wpisane dane i zdjęcia');
+    expect(dialogs).toEqual([]);
     expect(await countOfflineDeviceOperations(page)).toBe(0);
+
+    if (choice === 'close') {
+      await offlinePrompt.getByRole('button', { name: 'Zamknij okno', exact: true }).click();
+      await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0);
+      await expect(offlinePrompt).toHaveCount(0);
+      expect(await countOfflineDeviceOperations(page)).toBe(0);
+
+      // 13.68: dane wpisane bez internetu wracają po ponownym otwarciu (z internetem) i zapisują się normalnie.
+      await setLogicalOnlineState(page, true);
+      await page.getByRole('button', { name: buttonName, exact: true }).click();
+      await expect(page.getByTestId('device-draft-restored')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('device-draft-restored')).toContainText('Przywrócono niezapisane dane urządzeń');
+      await saveButton.click();
+      await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+      if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
+      await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0, { timeout: 30_000 });
+      // Po udanym zapisie szkic znika.
+      await page.getByRole('button', { name: buttonName, exact: true }).click();
+      await expect(page.locator('.mobileDeviceWizardFooter .btn.primary')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('device-draft-restored')).toHaveCount(0);
+      return;
+    }
+
+    await offlinePrompt.getByRole('button', { name: 'Zostań w formularzu', exact: true }).click();
+    await expect(offlinePrompt).toHaveCount(0);
+    await expect(page.locator('.mobileDeviceWizardModal')).toBeVisible();
 
     // Internet wrócił: ten sam formularz zapisuje się normalnie.
     await setLogicalOnlineState(page, true);
-    const dialogsBefore = dialogs.length;
     await saveButton.click();
-    await expect.poll(async () => dialogs.length > dialogsBefore || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
-    if (dialogs.length === dialogsBefore && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
+    await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+    if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
     await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0, { timeout: 30_000 });
-    expect(dialogs.slice(dialogsBefore).join(' | ')).not.toContain('Brak internetu');
+    expect(dialogs.join(' | ')).not.toContain('Brak internetu');
     expect(await countOfflineDeviceOperations(page)).toBe(0);
   });
 }

@@ -74,10 +74,12 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     setShowModal(true);
   }
 
-  function openEditJobForm({ jobId, form, baseJob = null, serialOnly = false }) {
+  // 13.68: initialForm — stan z serwera, gdy formularz otwiera się z przywróconym szkicem
+  // (wtedy zamknięcie pyta „Zamknąć bez zapisu?” zamiast po cichu gubić dane).
+  function openEditJobForm({ jobId, form, baseJob = null, serialOnly = false, initialForm = null }) {
     setEditingJobId(jobId);
     setSerialOnlyMode(Boolean(serialOnly));
-    jobFormInitialRef.current = form;
+    jobFormInitialRef.current = initialForm || form;
     jobFormBaseJobRef.current = baseJob;
     setJobForm(form);
     setShowModal(true);
