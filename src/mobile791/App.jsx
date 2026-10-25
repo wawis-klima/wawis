@@ -37,6 +37,7 @@ import { syncOfflineJobOperations } from "./modules/job-offline-sync.js";
 import { logDiagnostic, startSilentDiagnosticSync } from "./modules/diagnostics.js";
 import { isTransientSupabaseError } from "./modules/supabase-errors.js";
 import { APP_VERSION } from "./version.js";
+import { scheduleNameplateReaderWarmup } from "./modules/nameplate-reader-warmup.js";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -327,6 +328,14 @@ export default function App() {
     platform: 'mobile',
     getQueueSummary: () => getPhotoQueueSummary(sessionUser?.id || ''),
   }), [sessionUser?.id]);
+  // 13.70: czytniki tabliczek zapisane w telefonie, żeby numer SN odczytywał się bez internetu.
+  useEffect(() => {
+    if (!sessionUser?.id || typeof window === 'undefined') return undefined;
+    let cancelPending = scheduleNameplateReaderWarmup();
+    const handleOnline = () => { cancelPending(); cancelPending = scheduleNameplateReaderWarmup({ delayMs: 3000 }); };
+    window.addEventListener('online', handleOnline);
+    return () => { cancelPending(); window.removeEventListener('online', handleOnline); };
+  }, [sessionUser?.id]);
   const photoSyncStatus = usePhotoSyncStatus(profile?.id || sessionUser?.id || "");
   offlineSyncContextRef.current = { profile, profiles, jobs, sessionUser };
   const offlineSyncUserId = String(profile?.id || sessionUser?.id || '').trim();

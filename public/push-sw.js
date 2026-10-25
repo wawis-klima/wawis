@@ -3,7 +3,7 @@ importScripts("/push-context-guard.js");
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v13.69");
+    const cache = await caches.open("wawis-app-shell-v13.70");
     await Promise.allSettled([
       cache.add("/"),
       cache.add("/manifest.webmanifest"),
@@ -19,16 +19,43 @@ self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v13.69")
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v13.70")
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
 });
 
+// WAWIS 13.70: czytniki tabliczek (OCR /ocr/* i czytnik kodów Code 128 z jsDelivr) zapisywane
+// w osobnym, trwałym cache — nie jest czyszczony przy aktualizacji wersji aplikacji, dzięki czemu
+// odczyt numeru SN działa także bez internetu (po pierwszym uruchomieniu z internetem).
+const NAMEPLATE_READER_CACHE = "wawis-nameplate-readers-v1";
+const NAMEPLATE_READER_CDN_HOSTS = ["fastly.jsdelivr.net", "cdn.jsdelivr.net"];
+
+function isNameplateReaderAsset(url) {
+  if (url.origin === self.location.origin) return url.pathname.startsWith("/ocr/");
+  return NAMEPLATE_READER_CDN_HOSTS.includes(url.hostname)
+    && (url.pathname.startsWith("/npm/barcode-detector@") || url.pathname.startsWith("/npm/zxing-wasm@"));
+}
+
+async function respondWithNameplateReaderAsset(request) {
+  const cache = await caches.open(NAMEPLATE_READER_CACHE);
+  const cached = await cache.match(request, { ignoreVary: true });
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok && (response.type === "basic" || response.type === "cors")) {
+    await cache.put(request, response.clone()).catch(() => {});
+  }
+  return response;
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
+  if (!request.headers.has("range") && isNameplateReaderAsset(url)) {
+    event.respondWith(respondWithNameplateReaderAsset(request));
+    return;
+  }
   if (url.origin !== self.location.origin || request.headers.has("range")) return;
 
   if (request.mode === "navigate") {
@@ -36,7 +63,7 @@ self.addEventListener("fetch", (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open("wawis-app-shell-v13.69");
+          const cache = await caches.open("wawis-app-shell-v13.70");
           await cache.put("/", response.clone());
         }
         return response;
@@ -52,7 +79,7 @@ self.addEventListener("fetch", (event) => {
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {
-      const cache = await caches.open("wawis-app-shell-v13.69");
+      const cache = await caches.open("wawis-app-shell-v13.70");
       await cache.put(request, response.clone());
     }
     return response;
@@ -172,7 +199,7 @@ self.addEventListener("message", (event) => {
   if (event.data?.type !== "WAWIS_CACHE_LOADED_ASSETS") return;
   const urls = Array.isArray(event.data.urls) ? event.data.urls : [];
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v13.69");
+    const cache = await caches.open("wawis-app-shell-v13.70");
     const safeUrls = urls.filter((value) => {
       try {
         return new URL(value, self.location.origin).origin === self.location.origin;

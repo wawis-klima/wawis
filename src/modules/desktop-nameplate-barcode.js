@@ -720,4 +720,23 @@ export async function scanDesktopNameplateBarcodes(file, { onProgress, maxDimens
   };
 }
 
+// 13.70: jednorazowe przygotowanie czytnika Code 128 z internetem — ładuje skrypt i moduł WASM,
+// które service worker zapisuje w trwałym cache, żeby numer SN dało się odczytać bez internetu.
+export async function warmUniversalBarcodeReader() {
+  const Detector = await withTimeout(
+    loadUniversalBarcodeDetector(),
+    UNIVERSAL_BARCODE_LOAD_TIMEOUT_MS,
+    'Uniwersalny czytnik kodów nie załadował się w ciągu 12 sekund.',
+  );
+  if (!Detector || typeof document === 'undefined') return false;
+  const canvas = document.createElement('canvas');
+  canvas.width = 32;
+  canvas.height = 32;
+  const context = canvas.getContext('2d');
+  if (context) { context.fillStyle = '#fff'; context.fillRect(0, 0, 32, 32); }
+  const detector = new Detector({ formats: ['code_128'] });
+  await detector.detect(canvas).catch(() => []);
+  return true;
+}
+
 export { ean13IsValid, plausibleSerial };

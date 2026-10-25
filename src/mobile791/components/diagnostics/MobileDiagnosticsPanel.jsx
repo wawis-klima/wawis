@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase.js';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
 import { confirmAndRepairPhotoQueue } from '../../modules/photo-queue-repair.js';
 import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
+import { inspectNameplateReaderCache, prepareNameplateReadersNow } from '../../modules/nameplate-reader-warmup.js';
 import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosticQueue } from '../../../modules/diagnostics-package4.js';
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
@@ -20,6 +21,27 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
   const [message, setMessage] = useState('');
   const [repairBusy, setRepairBusy] = useState(false);
   const [syncBusy, setSyncBusy] = useState(false);
+  const [readerStatus, setReaderStatus] = useState(null);
+  const [readerBusy, setReaderBusy] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    inspectNameplateReaderCache().then((status) => { if (mounted) setReaderStatus(status); }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
+
+  async function handlePrepareReaders() {
+    setReaderBusy(true);
+    try {
+      const result = await prepareNameplateReadersNow();
+      setReaderStatus(await inspectNameplateReaderCache());
+      setMessage(result?.ready
+        ? 'Czytniki tabliczek są zapisane w telefonie — numer SN odczyta się także bez internetu.'
+        : (result?.error || 'Nie udało się zapisać wszystkich czytników. Spróbuj ponownie z lepszym internetem.'));
+    } finally {
+      setReaderBusy(false);
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -181,6 +203,19 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         <h2>Zmiany offline — to konto</h2>
         <p>Oczekuje: {offlineSummary.pending} · Wysyłane: {offlineSummary.syncing} · Konflikty: {offlineSummary.conflict} · Błędy: {offlineSummary.error}</p>
         <p>Etapy zdjęć: przygotowane {queueSummary.prepared || 0} · wysłane do Storage {queueSummary.storageUploaded || 0}. Szczegóły pozostają w Centrum synchronizacji.</p>
+      </section>
+
+      <section className="mobileDiagnosticsCard" data-testid="diagnostics-nameplate-readers">
+        <h2>Odczyt tabliczek bez internetu</h2>
+        <p>
+          Czytnik kodu SN: <strong>{readerStatus?.barcode ? 'zapisany w telefonie' : 'nie pobrany'}</strong>
+          {' · '}Czytnik tekstu: <strong>{readerStatus?.ocr ? 'zapisany w telefonie' : 'nie pobrany'}</strong>
+        </p>
+        {!(readerStatus?.barcode && readerStatus?.ocr) ? (
+          <button type="button" className="btn" onClick={handlePrepareReaders} disabled={readerBusy} data-testid="diagnostics-prepare-readers">
+            {readerBusy ? 'Pobieranie czytników…' : 'Pobierz czytniki teraz'}
+          </button>
+        ) : null}
       </section>
 
       <section className="mobileDiagnosticsCard">

@@ -436,6 +436,9 @@ function NameplateVerificationReview({
                   ? "Wpisano to, co odczytał czytnik telefonu. Porównaj z tabliczką znak po znaku i popraw, jeśli trzeba."
                   : "Czytnik telefonu nie odczytał danych — przepisz model i numer seryjny z tabliczki."}
                 {verification.reading?.weakNameplateEvidence ? " Czytnik nie jest pewny, że to tabliczka znamionowa — sprawdź zdjęcie." : ""}
+                {!verification.serialNumber && (verification.reading?.serialTextResult?.error || /czytnik|załadował/i.test(String(verification.reading?.barcodeError || "")) || !verification.reading?.barcodeInfo?.detections?.some?.((item) => item?.source === "universal_barcode"))
+                  ? " Czytnik numeru SN może nie być jeszcze zapisany w telefonie — otwórz aplikację raz z internetem (albo Diagnostyka → „Pobierz czytniki teraz”)."
+                  : ""}
               </div>
             ) : verification.prefilledFromReader && verification.reading?.method !== "manual" ? (
               <div className="nameplateVerifyWarning" role="status" data-testid="nameplate-offline-reader">
