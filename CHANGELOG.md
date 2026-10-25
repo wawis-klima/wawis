@@ -1,3 +1,7 @@
+## 13.68
+- Bez internetu przy zapisie urządzeń i tabliczek (oraz pełnej edycji montażu) zamiast samego komunikatu pojawia się okno „Brak internetu” z wyborem: „Zamknij okno” (powrót do aplikacji) albo „Zostań w formularzu”. Wcześniej po komunikacie trzeba było szukać zamykania formularza i potwierdzać „Zamknąć bez zapisu?”.
+- Test: mobile-offline-nameplates-all-roles — administrator „Zostań w formularzu” i zapis po powrocie internetu, pracownik „Zamknij okno”.
+
 ## 13.67
 - Pierwsza strona (lista montaży): paski „Połączenie” i „Synchronizacja” znikają, gdy wszystko jest wysłane i jest internet. Pojawia się jeden krótki pasek tylko przy problemie (brak internetu, niewysłane zdjęcia lub zmiany, błędy, wysyłanie) — stuknięcie otwiera Centrum synchronizacji.
 - Diagnostyka (stuknięcie numeru wersji): pełny stan połączenia i synchronizacji zawsze widoczny, wraz z Centrum synchronizacji i „Synchronizuj teraz”.

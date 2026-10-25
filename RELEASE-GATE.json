@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.67",
+  "version": "13.68",
   "scope": "mobile",
-  "release_branch": "release/v13.67",
+  "release_branch": "release/v13.68",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
-    "result": "UI_ONLY",
-    "notes": "25.10.2026: prośba właściciela — stan połączenia i synchronizacji w Diagnostyce, nie na pierwszej stronie (pasek tylko przy problemie)."
+    "result": "OWNER_REPORT",
+    "notes": "25.10.2026 10:21: komunikat bez internetu w oknie urządzeń nie pozwalał wygodnie wrócić do aplikacji."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.67",
+    "source_branch": "release/v13.68",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "iPhone: lista montaży bez pasków przy „Wszystko wysłane”; tryb samolotowy → pasek; Diagnostyka → pełny stan.",
+    "evidence_source": "iPhone: tryb samolotowy → Urządzenia → Zapisz → okno z „Zamknij okno” / „Zostań w formularzu”.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "PhotoSyncStatus: hideWhenHealthy; MobileJobsLayout: hideWhenHealthy={!diagnosticsOpen}.",
+    "code": "useSelectedJobActions.saveEditedJob: openConfirmDialog zamiast alert przy braku internetu.",
     "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.67; kontrola wyglądu na iPhonie."
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.68; kontrola na iPhonie."
   }
 }

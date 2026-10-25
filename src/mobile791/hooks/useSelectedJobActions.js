@@ -506,9 +506,21 @@ export function useSelectedJobActions({
       if (isBrowserOffline()) {
         // 13.66 (decyzja właściciela): urządzenia, tabliczki i pełna edycja wymagają internetu — u każdego.
         logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
-        alert(serialOnlyMode
-          ? 'Brak internetu. Urządzeń i tabliczek nie można teraz zapisać w aplikacji. Zrób zdjęcia tabliczek aparatem telefonu i dodaj je z galerii, gdy będziesz mieć internet. Wprowadzone dane pozostają w formularzu.'
-          : 'Pełna edycja montażu wymaga połączenia z internetem. Wprowadzone dane pozostają w formularzu — połącz się z internetem i zapisz ponownie.');
+        // 13.68: zamiast samego komunikatu — wybór „Zamknij okno” (powrót do aplikacji) albo „Zostań w formularzu”.
+        openConfirmDialog({
+          variant: 'warning',
+          title: 'Brak internetu',
+          message: serialOnlyMode
+            ? 'Urządzeń i tabliczek nie można teraz zapisać w aplikacji. Zrób zdjęcia tabliczek aparatem telefonu i dodaj je z galerii, gdy będziesz mieć internet.'
+            : 'Pełna edycja montażu wymaga połączenia z internetem. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
+          confirmLabel: 'Zamknij okno',
+          cancelLabel: 'Zostań w formularzu',
+          onConfirm: async () => runConfirmAction(async () => {
+            logDiagnostic('offline.full-edit.closed', { jobId: editingJobId, serialOnlyMode, isAdmin });
+            resetJobModalState();
+            return true;
+          }),
+        });
         return;
       }
       const recordSave = serialOnlyMode
