@@ -83,6 +83,54 @@ function svgFile(name, options) {
   };
 }
 
+async function rasterBlurredFile(page, svg, name) {
+  const base64 = await page.evaluate(async (markup) => {
+    const image = new Image();
+    image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth || 1800;
+    canvas.height = image.naturalHeight || 1000;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const { width, height } = canvas;
+    const frame = ctx.getImageData(0, 0, width, height);
+    const radius = 5;
+    const pass = (src, dst, horizontal) => {
+      const lineLength = horizontal ? width : height;
+      const lines = horizontal ? height : width;
+      for (let line = 0; line < lines; line += 1) {
+        for (let channel = 0; channel < 3; channel += 1) {
+          let sum = 0;
+          const at = (i) => {
+            const clamped = Math.max(0, Math.min(lineLength - 1, i));
+            const x = horizontal ? clamped : line;
+            const y = horizontal ? line : clamped;
+            return ((y * width) + x) * 4 + channel;
+          };
+          for (let i = -radius; i <= radius; i += 1) sum += src[at(i)];
+          for (let i = 0; i < lineLength; i += 1) {
+            dst[at(i)] = sum / ((radius * 2) + 1);
+            sum += src[at(i + radius + 1)] - src[at(i - radius)];
+          }
+        }
+      }
+    };
+    let a = new Float32Array(frame.data);
+    let b = new Float32Array(frame.data);
+    for (let round = 0; round < 3; round += 1) {
+      pass(a, b, true);
+      pass(b, a, false);
+    }
+    for (let i = 0; i < frame.data.length; i += 4) {
+      frame.data[i] = a[i]; frame.data[i + 1] = a[i + 1]; frame.data[i + 2] = a[i + 2];
+    }
+    ctx.putImageData(frame, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+  }, svg);
+  return { name, mimeType: 'image/jpeg', buffer: Buffer.from(base64, 'base64') };
+}
+
 function buildNonNameplateSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1000" viewBox="0 0 1800 1000">
     <rect width="1800" height="1000" fill="#dfe7ee"/>
@@ -209,12 +257,17 @@ test.describe('@mobile 11.23 — odporność odczytu tabliczek w warunkach teren
     else await expect(page.getByRole('button', { name: 'Potwierdź', exact: true })).toBeDisabled();
   });
 
-  test('lekko nieostra tabliczka daje ostrzeżenie jakości przed odczytem', async ({ page }) => {
+  test('lekko nieostra tabliczka daje ostrzeżenie jakości przed odczytem', async ({ page, browserName }) => {
     test.setTimeout(120_000);
     await openFirstIndoorNameplate(page);
+    // WebKit nie stosuje filtrów SVG (feGaussianBlur) w obrazie <img>/canvas — tam zdjęcie rozmywamy
+    // w przeglądarce na pikselach (rozmycie pudełkowe ×3 ≈ Gauss σ 4.5) i podajemy jako JPEG.
+    const blurredFile = browserName === 'webkit'
+      ? await rasterBlurredFile(page, buildNameplateSvg({ lowContrast: true }), 'rotenso-i35xi-nieostra.jpg')
+      : svgFile('rotenso-i35xi-nieostra.svg', { blur: 4.5, lowContrast: true });
     await cropAndContinue(
       page,
-      svgFile('rotenso-i35xi-nieostra.svg', { blur: 4.5, lowContrast: true }),
+      blurredFile,
       { expectWarning: 'Zdjęcie może być poruszone lub nieostre.' },
     );
 
