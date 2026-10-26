@@ -39,6 +39,20 @@ test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start
   await loginWithoutReset(page, WORKER);
   await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible({ timeout: 30_000 });
 
+  // Dane montaży muszą być już w telefonie (kopia listy zapisuje się w tle po pierwszym pobraniu z internetem) —
+  // inaczej start bez sieci pokazałby pustą listę niezależnie od plików aplikacji.
+  await expect.poll(async () => page.evaluate(() => new Promise((resolve) => {
+    const request = indexedDB.open('wawis-mobile-offline-data');
+    request.onsuccess = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('app-snapshots')) { db.close(); resolve(0); return; }
+      const count = db.transaction('app-snapshots', 'readonly').objectStore('app-snapshots').count();
+      count.onsuccess = () => { db.close(); resolve(count.result); };
+      count.onerror = () => { db.close(); resolve(0); };
+    };
+    request.onerror = () => resolve(0);
+  })), { timeout: 30_000, intervals: [500] }).toBeGreaterThan(0);
+
   // Bez sieci: ponowne uruchomienie aplikacji i pierwszy raz otwierany ekran „Tabliczki”.
   const failedRequests = [];
   page.on('requestfailed', (request) => {
@@ -47,7 +61,12 @@ test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start
   });
   await context.setOffline(true);
   await page.reload();
-  await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible({ timeout: 30_000 });
+  try {
+    await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible({ timeout: 30_000 });
+  } catch (error) {
+    const screen = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 400);
+    throw new Error(`${error.message}\nEkran bez sieci: ${screen}\nNieudane pliki: ${failedRequests.join('; ')}`);
+  }
   await page.locator('.statusActionButton[title="W trakcie"]').click();
   await page.getByText('Klient Testowy B', { exact: true }).first().click();
   await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();

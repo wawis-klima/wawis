@@ -30,6 +30,9 @@ export default defineConfig({
   ],
   timeout: 240_000,
   expect: { timeout: 15_000 },
+  // Decyzja właściciela 26.10.2026: w CI jedno ponowienie testu, który nie przeszedł (niestabilność serwera testowego).
+  // Test zaliczony dopiero za drugim razem jest oznaczany w adnotacjach jako niestabilny; dwa niepowodzenia = NO-GO.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: 1,
   reporter: [['list'], ['json', { outputFile: 'playwright-report-webkit/results.json' }], ['html', { open: 'never', outputFolder: 'playwright-report-webkit/html' }]],

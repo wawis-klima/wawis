@@ -8,6 +8,9 @@ export default defineConfig({
   testDir: './tests/e2e',
   timeout: 60_000,
   expect: { timeout: 10_000 },
+  // Decyzja właściciela 26.10.2026: w CI jedno ponowienie testu, który nie przeszedł (niestabilność serwera testowego).
+  // Test zaliczony dopiero za drugim razem jest oznaczany w adnotacjach jako niestabilny; dwa niepowodzenia = NO-GO.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {

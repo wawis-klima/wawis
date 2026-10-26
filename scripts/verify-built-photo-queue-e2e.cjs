@@ -32,6 +32,8 @@ const failed = tests.filter((t) => t.status !== 'passed');
 const summary = `wykonane=${tests.length} zaliczone=${passed.length} niezaliczone=${failed.length} oczekiwane=${expected}`;
 console.log(`::notice title=Built E2E wynik::${summary}`);
 for (const t of tests) console.log(`::notice title=Built E2E ${t.status}::${t.file} › ${t.title}${t.retries ? ` (ponowienia: ${t.retries})` : ''}`);
+// Test zaliczony dopiero po ponowieniu: widoczne ostrzeżenie (niestabilny test do naprawy), ale nie blokada.
+for (const t of passed.filter((item) => item.retries)) console.log(`::warning title=Built E2E niestabilny::${t.file} › ${t.title} — zaliczony po ${t.retries} ponowieniu`);
 // Treść błędu w adnotacji: logi i artefakty bywają niedostępne poza GitHubem.
 for (const t of failed) if (t.errorText) console.log(`::error title=Built E2E błąd::${t.title} — ${t.errorText.replace(/%/g, '%25').replace(/\r?\n/g, ' ')}`);
 if (tests.length !== expected || failed.length) {

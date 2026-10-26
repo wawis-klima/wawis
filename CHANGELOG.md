@@ -3,6 +3,7 @@
 - Bezpieczna podmiana: nowa wersja przejmuje telefon dopiero, gdy pobierze się w całości. Przy przerwanym pobieraniu (słaby zasięg) zostaje poprzednia, kompletna wersja — aktualizacja ponowi się później. Telefon trzyma też jedną poprzednią wersję, zamiast kasować ją od razu.
 - Lokalne bazy telefonu (zmiany zapisane bez internetu, kopia listy montaży) otwierane bez numeru wersji — jak kolejka zdjęć od 13.62. Powrót do starszej wersji aplikacji nie zablokuje pracy offline.
 - Bez zmian w bazie na serwerze, zdjęciach i działaniu przycisków. Obszar chroniony (service worker) — wymagany test na iPhonie.
+- Testy w CI (decyzja właściciela 26.10.2026): jedno automatyczne ponowienie testu, który nie przeszedł — pojedyncza wpadka serwera testowego nie wymaga powtarzania całego zestawu; test zaliczony dopiero za drugim razem jest oznaczany jako niestabilny, dwa niepowodzenia nadal blokują wdrożenie.
 - Testy: E2E mobile-precache-offline-v1376 (prawdziwy brak sieci: start aplikacji i pierwsze otwarcie „Tabliczek”), mobile-indexeddb-newer-version-v1376 (baza z nowszej wersji → komentarz offline działa, wersja nieobniżona; także WebKit), smoke-sw-precache-v1376 (pobranie całości, przerwane pobranie, brak obrazka, sprzątanie cache).
 
 ## 13.75
