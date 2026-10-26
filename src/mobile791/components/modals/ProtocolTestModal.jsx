@@ -270,6 +270,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const autoSaveWhenOnlineRef = useRef(false);
   const createPdfRef = useRef(null);
   const pendingSignatureDraftRef = useRef(null);
+  // Przywrócenie podpisu dopiero PO wczytaniu płatności dla tego otwarcia — inaczej dane płatności z serwera
+  // (ładowane asynchronicznie) nadpisałyby płatność z podpisanego szkicu.
+  const paymentInitializedForOpenRef = useRef(false);
+  const [paymentInitVersion, setPaymentInitVersion] = useState(0);
   const protocolJob = resolvedJob || job;
   const protocolIsCompleted = String(protocolJob?.status || "").trim() === "Zakończone";
   const installersConfirmed = Array.isArray(protocolJob?.installer_ids);
@@ -316,6 +320,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     autoSaveWhenOnlineRef.current = false;
     // 13.77: niezapisany podpis z wcześniejszego otwarcia (np. bez zasięgu) — przywracany po pobraniu danych płatności.
     pendingSignatureDraftRef.current = getProtocolSignatureDraft(job?.id);
+    paymentInitializedForOpenRef.current = false;
     const initialProtocolNote = String(protocolRecord?.note || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH);
     noteBaselineRef.current = initialProtocolNote;
     setProtocolNote(initialProtocolNote);
@@ -325,6 +330,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       const nextPaymentDraft = getProtocolPaymentDraft(sourceJob);
       paymentDraftBaselineRef.current = JSON.stringify(nextPaymentDraft);
       setPaymentDraft(nextPaymentDraft);
+      paymentInitializedForOpenRef.current = true;
+      setPaymentInitVersion((value) => value + 1);
     };
 
     if (hasJobPaymentSnapshot(job)) {
@@ -839,7 +846,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   // 13.77: przywrócenie podpisu po ponownym otwarciu — tylko do identycznych podpisanych danych.
   useEffect(() => {
     const draft = pendingSignatureDraftRef.current;
-    if (!open || !draft || !paymentReady || paymentLoadError) return;
+    if (!open || !draft || !paymentReady || paymentLoadError || !paymentInitializedForOpenRef.current) return;
     pendingSignatureDraftRef.current = null;
     const draftPayment = draft.paymentDraft || paymentDraft;
     let snapshotKey = "";
@@ -870,7 +877,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setDraftHasSignature(true);
     setMessage(`Przywrócono niezapisany podpis klienta${time ? ` z ${time}` : ""}. Sprawdź dane i naciśnij „Zapisz protokół”.`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, paymentReady, paymentLoadError, protocolJobForDocument, profiles]);
+  }, [open, paymentReady, paymentLoadError, paymentInitVersion, protocolJobForDocument, profiles]);
 
   // 13.77: zamknięcie z nowym, niezapisanym podpisem wymaga potwierdzenia (podpis zostaje w pamięci aplikacji).
   function handleClose() {
