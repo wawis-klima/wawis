@@ -1,4 +1,5 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense } from "react";
+import { lazy } from "../../modules/lazy-safe.jsx";
 
 const MobileJobsLayout = lazy(() => import("./jobs/MobileJobsLayout.jsx"));
 const DesktopJobsLayout = lazy(() => import("./jobs/DesktopJobsLayout.jsx"));

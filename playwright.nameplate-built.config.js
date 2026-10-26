@@ -9,6 +9,9 @@ export default defineConfig({
   testMatch: ['mobile-nameplate-robustness-v1123.spec.js', 'mobile-nameplate-offline-readers-v1370.spec.js', 'mobile-nameplate-ai-saving-v1373.spec.js'],
   timeout: 200_000,
   expect: { timeout: 10_000 },
+  // Decyzja właściciela 26.10.2026: w CI jedno ponowienie testu, który nie przeszedł (niestabilność serwera testowego).
+  // Test zaliczony dopiero za drugim razem jest oznaczany w adnotacjach jako niestabilny; dwa niepowodzenia = NO-GO.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: 1,
   reporter: [['list'], ['json', { outputFile: 'playwright-report-nameplate/results.json' }], ['html', { open: 'never', outputFolder: 'playwright-report-nameplate/html' }]],

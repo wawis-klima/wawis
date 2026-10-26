@@ -1,13 +1,10 @@
+import { openIndexedDbWithoutDowngrade } from '../../modules/indexeddb-safe-open.js';
 const DB_NAME = 'wawis-mobile-offline-data';
 const DB_VERSION = 2;
 const SNAPSHOT_STORE = 'app-snapshots';
 const OPERATION_STORE = 'job-operations';
 
 export const JOB_OFFLINE_CHANGED_EVENT = 'wawis-job-offline-changed';
-
-function hasIndexedDb() {
-  return typeof indexedDB !== 'undefined';
-}
 
 function dispatchOfflineChanged() {
   if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
@@ -22,26 +19,37 @@ function ensureIndex(store, name, keyPath) {
   if (!store.indexNames.contains(name)) store.createIndex(name, keyPath, { unique: false });
 }
 
+const OPERATION_INDEXES = ['user_id', 'job_id', 'created_at', 'status', 'next_attempt_at'];
+
+function upgradeOfflineDb(db, transaction) {
+  if (!db.objectStoreNames.contains(SNAPSHOT_STORE)) {
+    db.createObjectStore(SNAPSHOT_STORE, { keyPath: 'user_id' });
+  }
+  const operationStore = db.objectStoreNames.contains(OPERATION_STORE)
+    ? transaction.objectStore(OPERATION_STORE)
+    : db.createObjectStore(OPERATION_STORE, { keyPath: 'id' });
+  for (const name of OPERATION_INDEXES) ensureIndex(operationStore, name, name);
+}
+
+function isOfflineDbReady(db) {
+  if (!db.objectStoreNames.contains(SNAPSHOT_STORE) || !db.objectStoreNames.contains(OPERATION_STORE)) return false;
+  try {
+    const indexNames = db.transaction(OPERATION_STORE, 'readonly').objectStore(OPERATION_STORE).indexNames;
+    return OPERATION_INDEXES.every((name) => indexNames.contains(name));
+  } catch {
+    return false;
+  }
+}
+
+// WAWIS 13.76: bez numeru wersji (jak kolejka zdjęć od 13.62) — powrót do starszej wersji aplikacji
+// nie może zablokować komentarzy i statusów zapisanych bez internetu (VersionError).
 function openOfflineDb() {
-  if (!hasIndexedDb()) return Promise.resolve(null);
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(SNAPSHOT_STORE)) {
-        db.createObjectStore(SNAPSHOT_STORE, { keyPath: 'user_id' });
-      }
-      const operationStore = db.objectStoreNames.contains(OPERATION_STORE)
-        ? request.transaction.objectStore(OPERATION_STORE)
-        : db.createObjectStore(OPERATION_STORE, { keyPath: 'id' });
-      ensureIndex(operationStore, 'user_id', 'user_id');
-      ensureIndex(operationStore, 'job_id', 'job_id');
-      ensureIndex(operationStore, 'created_at', 'created_at');
-      ensureIndex(operationStore, 'status', 'status');
-      ensureIndex(operationStore, 'next_attempt_at', 'next_attempt_at');
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error('Nie udało się otworzyć pamięci offline.'));
+  return openIndexedDbWithoutDowngrade({
+    name: DB_NAME,
+    version: DB_VERSION,
+    isReady: isOfflineDbReady,
+    upgrade: upgradeOfflineDb,
+    errorMessage: 'Nie udało się otworzyć pamięci offline.',
   });
 }
 

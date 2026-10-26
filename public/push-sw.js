@@ -1,25 +1,100 @@
 importScripts("/push-safety.js");
 importScripts("/push-context-guard.js");
 
+// WAWIS 13.76: pełne pobranie wersji przed aktywacją.
+// Dotąd telefon zapisywał ekrany (osobne pliki JS) dopiero przy pierwszym otwarciu z internetem, a stary cache
+// był kasowany od razu po aktualizacji — bez zasięgu nowy ekran (np. „Tabliczki”) mógł się nie otworzyć.
+// Teraz instalacja pobiera wszystkie pliki z /precache-manifest.json; gdy brakuje któregoś pliku krytycznego,
+// instalacja się nie udaje i telefon zostaje przy poprzedniej, kompletnej wersji (spróbuje ponownie później).
+const APP_SHELL_CACHE = "wawis-app-shell-v13.76";
+const APP_SHELL_PREFIX = "wawis-app-shell-";
+const PRECACHE_MANIFEST_URL = "/precache-manifest.json";
+const PRECACHE_CONCURRENCY = 4;
+const PRECACHE_ATTEMPTS = 3;
+const BASE_SHELL_FILES = ["/", "/manifest.webmanifest", "/logo.png", "/push-safety.js", "/push-context-guard.js"];
+
+async function fetchForPrecache(url) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= PRECACHE_ATTEMPTS; attempt += 1) {
+    try {
+      // cache: "reload" — z serwera, nie z pamięci przeglądarki (inaczej mógłby trafić plik poprzedniej wersji).
+      const response = await fetch(new Request(url, { cache: "reload", credentials: "same-origin" }));
+      if (response.ok && response.type === "basic" && !response.redirected) return response;
+      lastError = new Error(`HTTP ${response.status} ${url}`);
+    } catch (error) {
+      lastError = error;
+    }
+    if (attempt < PRECACHE_ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, 600 * attempt));
+  }
+  throw lastError || new Error(`Nie pobrano ${url}`);
+}
+
+async function precacheUrls(cache, urls, { critical }) {
+  const queue = [...new Set(urls)];
+  const failed = [];
+  async function worker() {
+    while (queue.length) {
+      const url = queue.shift();
+      try {
+        const response = await fetchForPrecache(url);
+        await cache.put(url, response);
+      } catch (error) {
+        failed.push(url);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: PRECACHE_CONCURRENCY }, worker));
+  if (critical && failed.length) {
+    throw new Error(`Nie pobrano ${failed.length} plików aplikacji: ${failed.slice(0, 3).join(", ")}`);
+  }
+  return failed;
+}
+
+async function readPrecacheManifest() {
+  try {
+    const response = await fetch(new Request(PRECACHE_MANIFEST_URL, { cache: "no-store", credentials: "same-origin" }));
+    if (!response.ok) return null;
+    const manifest = await response.json();
+    if (!Array.isArray(manifest?.critical) || !manifest.critical.includes("/")) return null;
+    return manifest;
+  } catch {
+    return null;
+  }
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v13.75");
-    await Promise.allSettled([
-      cache.add("/"),
-      cache.add("/manifest.webmanifest"),
-      cache.add("/logo.png"),
-      cache.add("/push-safety.js"),
-      cache.add("/push-context-guard.js"),
-    ]);
+    const cache = await caches.open(APP_SHELL_CACHE);
+    const manifest = await readPrecacheManifest();
+    if (manifest) {
+      // Pliki krytyczne (strona startowa, skrypty, style): wszystkie albo instalacja się nie udaje.
+      await precacheUrls(cache, [...BASE_SHELL_FILES.slice(0, 1), ...manifest.critical], { critical: true });
+      // Obrazy i ikony: najlepsza próba — brak ikony nie blokuje aktualizacji.
+      await precacheUrls(cache, [...BASE_SHELL_FILES.slice(1), ...(manifest.optional || [])], { critical: false });
+    } else {
+      // Brak listy (np. tryb deweloperski): jak przed 13.76 — podstawowe pliki, reszta przy pierwszym użyciu.
+      await precacheUrls(cache, BASE_SHELL_FILES, { critical: false });
+    }
     await self.skipWaiting();
   })());
 });
 
+function shellVersion(key) {
+  const match = /^wawis-app-shell-v(\d+)\.(\d+)$/.exec(key);
+  return match ? (Number(match[1]) * 1000) + Number(match[2]) : -1;
+}
+
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
+    // Zostawiamy bieżącą i JEDNĄ poprzednią wersję: otwarta jeszcze karta starej wersji (albo powrót do niej)
+    // nadal znajdzie swoje pliki bez internetu. Starsze wersje usuwamy. Cache czytników tabliczek bez zmian.
+    const previous = keys
+      .filter((key) => key.startsWith("wawis-app-shell-") && key !== APP_SHELL_CACHE)
+      .sort((left, right) => shellVersion(right) - shellVersion(left));
+    const keep = new Set([APP_SHELL_CACHE, ...previous.slice(0, 1)]);
     await Promise.all(keys
-      .filter((key) => key.startsWith("wawis-app-shell-") && key !== "wawis-app-shell-v13.75")
+      .filter((key) => key.startsWith(APP_SHELL_PREFIX) && !keep.has(key))
       .map((key) => caches.delete(key)));
     await self.clients.claim();
   })());
@@ -63,23 +138,27 @@ self.addEventListener("fetch", (event) => {
       try {
         const response = await fetch(request);
         if (response.ok) {
-          const cache = await caches.open("wawis-app-shell-v13.75");
+          const cache = await caches.open(APP_SHELL_CACHE);
           await cache.put("/", response.clone());
         }
         return response;
       } catch {
-        return (await caches.match("/")) || Response.error();
+        // Najpierw strona startowa bieżącej wersji, potem poprzedniej (gdy bieżąca nie zdążyła jej zapisać).
+        return (await caches.match("/", { cacheName: APP_SHELL_CACHE, ignoreVary: true })) || (await caches.match("/", { ignoreVary: true })) || Response.error();
       }
     })());
     return;
   }
 
   event.respondWith((async () => {
-    const cached = await caches.match(request);
+    // ignoreVary: plik zapisany przy instalacji (zapytanie bez nagłówka Origin) musi pasować także do zapytania
+    // skryptu modułu (z nagłówkiem Origin), gdy serwer odpowiada „Vary: Origin” — inaczej bez sieci start
+    // aplikacji kończył się „Nie udało się pobrać modułu aplikacji” (E2E 13.76: 2 na 6 prób).
+    const cached = await caches.match(request, { ignoreVary: true });
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {
-      const cache = await caches.open("wawis-app-shell-v13.75");
+      const cache = await caches.open(APP_SHELL_CACHE);
       await cache.put(request, response.clone());
     }
     return response;
@@ -199,7 +278,7 @@ self.addEventListener("message", (event) => {
   if (event.data?.type !== "WAWIS_CACHE_LOADED_ASSETS") return;
   const urls = Array.isArray(event.data.urls) ? event.data.urls : [];
   event.waitUntil((async () => {
-    const cache = await caches.open("wawis-app-shell-v13.75");
+    const cache = await caches.open(APP_SHELL_CACHE);
     const safeUrls = urls.filter((value) => {
       try {
         return new URL(value, self.location.origin).origin === self.location.origin;

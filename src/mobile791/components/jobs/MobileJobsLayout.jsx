@@ -1,4 +1,5 @@
 import { getCustomerCardDisplayName } from "../../../utils/customerCardDisplayName.js";
+import { lazy } from "../../../modules/lazy-safe.jsx";
 import "../../styles/mobile-job-card-name-v1292.css";
 import React, { useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "../../version";
@@ -12,7 +13,7 @@ import InlineJobDetailsMotion from "./InlineJobDetailsMotion.jsx";
 import PendingDeviceDraftsBar from "../devices/PendingDeviceDraftsBar.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
-const MobileDiagnosticsPanel = React.lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
+const MobileDiagnosticsPanel = lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
 
 function getProfileInitials(profile) {
   const fullName = String(profile?.full_name || "").trim();

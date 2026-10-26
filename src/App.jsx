@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy } from "./modules/lazy-safe.jsx";
 import AuthScreen from "./components/AuthScreen";
 import AppAuthenticatedLayout from "./components/layout/AppAuthenticatedLayout.jsx";
 import JobsPanel from "./components/JobsPanel";

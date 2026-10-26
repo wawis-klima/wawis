@@ -12,9 +12,15 @@ export default defineConfig({
     'mobile-offline-nameplates-all-roles-v1363.spec.js',
     'mobile-device-draft-persistence-v1371.spec.js',
     'mobile-device-draft-save-now-v1372.spec.js',
+    'mobile-precache-offline-v1376.spec.js',
+    'mobile-indexeddb-newer-version-v1376.spec.js',
+    'mobile-lazy-screen-fallback-v1376.spec.js',
   ],
   timeout: 90_000,
   expect: { timeout: 10_000 },
+  // Decyzja właściciela 26.10.2026: w CI jedno ponowienie testu, który nie przeszedł (niestabilność serwera testowego).
+  // Test zaliczony dopiero za drugim razem jest oznaczany w adnotacjach jako niestabilny; dwa niepowodzenia = NO-GO.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: 1,
   reporter: [['list'], ['json', { outputFile: 'playwright-report-built/results.json' }], ['html', { open: 'never', outputFolder: 'playwright-report-built/html' }]],

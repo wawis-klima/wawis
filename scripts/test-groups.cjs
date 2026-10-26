@@ -126,6 +126,7 @@ const GROUPS = {
     'npm run test:smoke:push-job-deeplink',
     'npm run test:smoke:assignment-push',
     'node scripts/smoke-notifications-rls-v1374.mjs',
+    'node scripts/smoke-sw-precache-v1376.cjs',
     'npm run test:smoke:push-reliability',
     'npm run test:smoke:push-mobile-reassignment',
     'npm run test:smoke:push-logout-handoff',

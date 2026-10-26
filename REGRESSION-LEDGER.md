@@ -1,5 +1,19 @@
 # WAWIS — Regression Ledger
 
+## PRECACHE-1376 — pełne pobranie wersji i bazy bez numeru (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PC-1376-FULL | FIXED-UNVERIFIED | Instalacja SW pobiera wszystkie pliki krytyczne z precache-manifest.json. E2E mobile-precache-offline-v1376 (context.setOffline: reload + pierwsze otwarcie Tabliczek), smoke-sw-precache-v1376 pkt 1. |
+| PC-1376-ATOMIC | FIXED-UNVERIFIED | Brak pliku krytycznego → instalacja odrzucona, bez skipWaiting; stara wersja aktywna. smoke pkt 2; obrazek opcjonalny nie blokuje (pkt 3); brak listy → zachowanie sprzed 13.76 (pkt 4). |
+| PC-1376-PREVIOUS | FIXED-UNVERIFIED | activate: bieżący + 1 poprzedni wawis-app-shell; cache czytników tabliczek nietknięty. smoke pkt 5, smoke-nameplate-offline-readers-v1370. |
+| PC-1376-IDB | FIXED-UNVERIFIED | wawis-mobile-offline-data / wawis-app-read-cache otwierane bez numeru; baza v7/v5 → komentarz offline OK, wersja nieobniżona. E2E mobile-indexeddb-newer-version-v1376 (Chromium + WebKit). LOCAL-DATA-COMPAT: minimalna wersja powrotu nadal 13.62. |
+| PC-1376-REGRESSION | REGRESSION | Komentarze/statusy offline, kolejka zdjęć, czytniki offline, szkice urządzeń — built E2E (Chromium, WebKit). |
+| PC-1376-VARY | FIXED-UNVERIFIED | Start bez sieci 2/6: /assets/index-*.js ERR_FAILED mimo pliku w cache — caches.match respektował Vary (plik z instalacji bez Origin vs zapytanie modułu z Origin). caches.match(..., { ignoreVary: true }). Diag ×10 bez ponowień: 10/10. smoke-sw-precache-v1376. |
+| PC-1376-WHITESCREEN | FIXED-UNVERIFIED | iPhone 26.10 (13.75, samolot): Diagnostyka → biały ekran (nieudany import leniwego ekranu bez obsługi). lazySafe dla wszystkich leniwych ekranów (mobile i desktop): komunikat zamiast białego ekranu. E2E mobile-lazy-screen-fallback-v1376 (Chromium + WebKit), mobile-precache-offline-v1376 (Diagnostyka offline). |
+| PC-1376-RETRIES | FIXED-UNVERIFIED | Decyzja właściciela: retries: CI ? 1 : 0 we wszystkich konfiguracjach Playwright; weryfikator built E2E pokazuje ostrzeżenie „niestabilny” dla testów zaliczonych po ponowieniu. Dwa niepowodzenia = NO-GO. |
+| PC-1376-LIVE | EXTERNAL | iPhone na dwóch kolejnych wersjach: aktualizacja z internetem → tryb samolotowy → wszystkie ekrany. Chromium nie dowodzi zachowania SW w Safari. |
+
 ## OPS-1375 — kopia zapasowa, testy WebKit, procedura wycofania (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
