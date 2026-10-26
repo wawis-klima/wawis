@@ -32,6 +32,7 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
   test.setTimeout(120_000);
   const dialogs = [];
   page.on('dialog', async (dialog) => { dialogs.push(dialog.message()); await dialog.accept(); });
+  page.on('pageerror', (error) => dialogs.push(`BŁĄD STRONY: ${String(error?.message || error).slice(0, 300)}`));
   await page.addInitScript(({ flag }) => {
     Object.defineProperty(Navigator.prototype, 'onLine', {
       configurable: true,

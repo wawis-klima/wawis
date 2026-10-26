@@ -818,12 +818,20 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   // 13.77: nowy, niezapisany podpis jest trzymany w pamięci aplikacji (z kluczem podpisanych danych).
   useEffect(() => {
     if (!open || !editing || !hasSignature || reusedSignature || !signatureDataUrl) return;
+    let snapshotKey = "";
+    try {
+      // Płatność w trakcie wpisywania może być jeszcze niepełna (normalizePaymentConfirmation rzuca błąd) —
+      // wtedy nie aktualizujemy szkicu; błąd nie może przerwać działania okna.
+      snapshotKey = JSON.stringify(getCurrentSigningSnapshot());
+    } catch {
+      return;
+    }
     saveProtocolSignatureDraft(job?.id, {
       signatureDataUrl,
       signatureRotation,
       paymentDraft,
       protocolNote,
-      snapshotKey: JSON.stringify(getCurrentSigningSnapshot()),
+      snapshotKey,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editing, hasSignature, reusedSignature, signatureDataUrl, signatureRotation, paymentDraft, protocolNote, protocolJobForDocument, profiles]);
@@ -834,10 +842,15 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     if (!open || !draft || !paymentReady || paymentLoadError) return;
     pendingSignatureDraftRef.current = null;
     const draftPayment = draft.paymentDraft || paymentDraft;
-    const snapshotKey = JSON.stringify(createProtocolSigningSnapshot(buildJobProtocolData({
-      job: protocolJobForDocument, profiles, signedAt: openedAtRef.current,
-      payment: normalizePaymentConfirmation(draftPayment), note: draft.protocolNote,
-    })));
+    let snapshotKey = "";
+    try {
+      snapshotKey = JSON.stringify(createProtocolSigningSnapshot(buildJobProtocolData({
+        job: protocolJobForDocument, profiles, signedAt: openedAtRef.current,
+        payment: normalizePaymentConfirmation(draftPayment), note: draft.protocolNote,
+      })));
+    } catch {
+      snapshotKey = "";
+    }
     if (!canRestoreProtocolSignatureDraft(draft, snapshotKey)) {
       clearProtocolSignatureDraft(job?.id);
       setMessage("Dane montażu zmieniły się od podpisu klienta — poproś klienta o nowy podpis.");
