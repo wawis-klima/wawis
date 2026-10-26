@@ -70,6 +70,7 @@ function createEnvironment({ files, manifest, failing = new Set(), existingCache
 }
 
 (async () => {
+  assert.match(source, /const cached = await caches\.match\(request, \{ ignoreVary: true \}\);/, 'bez sieci plik z instalacji musi pasować mimo nagłówka Vary');
   assert.match(source, new RegExp(`const APP_SHELL_CACHE = "${CURRENT.replace(/\./g, '\\.')}";`), 'nazwa cache = wersja aplikacji');
   const manifest = {
     version,

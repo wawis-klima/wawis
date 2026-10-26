@@ -144,14 +144,17 @@ self.addEventListener("fetch", (event) => {
         return response;
       } catch {
         // Najpierw strona startowa bieżącej wersji, potem poprzedniej (gdy bieżąca nie zdążyła jej zapisać).
-        return (await caches.match("/", { cacheName: APP_SHELL_CACHE })) || (await caches.match("/")) || Response.error();
+        return (await caches.match("/", { cacheName: APP_SHELL_CACHE, ignoreVary: true })) || (await caches.match("/", { ignoreVary: true })) || Response.error();
       }
     })());
     return;
   }
 
   event.respondWith((async () => {
-    const cached = await caches.match(request);
+    // ignoreVary: plik zapisany przy instalacji (zapytanie bez nagłówka Origin) musi pasować także do zapytania
+    // skryptu modułu (z nagłówkiem Origin), gdy serwer odpowiada „Vary: Origin” — inaczej bez sieci start
+    // aplikacji kończył się „Nie udało się pobrać modułu aplikacji” (E2E 13.76: 2 na 6 prób).
+    const cached = await caches.match(request, { ignoreVary: true });
     if (cached) return cached;
     const response = await fetch(request);
     if (response.ok && ["script", "style", "image", "font", "worker"].includes(request.destination)) {

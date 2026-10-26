@@ -1,4 +1,4 @@
-name: WAWIS diag — precache offline ×6
+name: WAWIS diag — precache offline ×10
 
 # TYMCZASOWY (13.76): powtarzalność testu pełnego pobrania wersji i treść błędów. Bez sekretów, bez wdrożenia. Usunąć przed scaleniem.
 on:
@@ -24,10 +24,10 @@ jobs:
       - run: npm ci --include=optional --registry=https://registry.npmjs.org/
       - timeout-minutes: 6
         run: npx playwright install chromium --only-shell
-      - name: Precache ×6 (bez ponowień)
+      - name: Precache ×10 (bez ponowień)
         env:
           VITE_SUPABASE_MODE: mock
-        run: npx playwright test --config playwright.built.config.js tests/e2e/mobile-precache-offline-v1376.spec.js --repeat-each=6 --retries=0 || true
+        run: npx playwright test --config playwright.built.config.js tests/e2e/mobile-precache-offline-v1376.spec.js --repeat-each=10 --retries=0 || true
       - name: Adnotacje
         if: always()
         run: |
