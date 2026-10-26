@@ -1,3 +1,11 @@
+## 13.77
+- Ochrona podpisu klienta (plan po audycie, poziom 1 — bez zmiany zasady „protokół zapisuje się z internetem”):
+  - Bez internetu okno protokołu od razu informuje: „Brak internetu — protokół zapisze się dopiero po powrocie zasięgu. Podpis klienta zostanie zachowany w aplikacji. Nie zamykaj aplikacji.”
+  - „Zapisz protokół” bez internetu nie czeka minuty na błąd — podpis zostaje, a protokół zapisuje się sam, gdy wróci zasięg (okno protokołu otwarte). Gdy zasięg zniknie w trakcie zapisu — to samo.
+  - Zamknięcie okna z niezapisanym podpisem pyta o potwierdzenie. Podpis zostaje w pamięci aplikacji i wraca po ponownym otwarciu protokołu w tym montażu („Przywrócono niezapisany podpis klienta z …”) — tylko jeśli dane montażu, płatność i uwagi się nie zmieniły; inaczej potrzebny nowy podpis.
+  - Podpis nie jest zapisywany w pamięci telefonu (dane osobowe) — po całkowitym zamknięciu aplikacji przepada. Zapis protokołu bez internetu (poziom 2) wymaga osobnej decyzji.
+- Testy: E2E mobile-protocol-signature-offline-v1377 (Chromium + WebKit), smoke-protocol-signature-v1377.
+
 ## 13.76
 - Pewne aktualizacje i praca bez internetu (plan po audycie). Po aktualizacji telefon od razu, jeszcze z internetem, pobiera całą nową wersję — wszystkie ekrany (Tabliczki, protokół, Diagnostyka…), a nie dopiero przy pierwszym otwarciu. Dzięki temu bez zasięgu otwiera się także ekran, którego pracownik po aktualizacji jeszcze nie otwierał.
 - Bez internetu pliki aplikacji są odnajdywane w telefonie niezależnie od technicznego nagłówka odpowiedzi serwera (Vary). Wcześniej start bez sieci czasem kończył się „Nie udało się pobrać modułu aplikacji”, mimo że pliki były zapisane (test ×6: 2 niepowodzenia → po poprawce ×10: 0).

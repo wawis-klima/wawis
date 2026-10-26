@@ -28,6 +28,7 @@ export default defineConfig({
     'mobile-device-draft-save-now-v1372.spec.js',
     'mobile-indexeddb-newer-version-v1376.spec.js',
     'mobile-lazy-screen-fallback-v1376.spec.js',
+    'mobile-protocol-signature-offline-v1377.spec.js',
   ],
   timeout: 240_000,
   expect: { timeout: 15_000 },

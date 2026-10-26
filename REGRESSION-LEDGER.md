@@ -1,5 +1,17 @@
 # WAWIS — Regression Ledger
 
+## SIGNATURE-1377 — ochrona podpisu klienta, poziom 1 (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SG-1377-NOTICE | FIXED-UNVERIFIED | Komunikat bez internetu w trybie edycji protokołu. E2E mobile-protocol-signature-offline-v1377. |
+| SG-1377-WAIT | FIXED-UNVERIFIED | Zapis bez internetu nie startuje (bez minuty oczekiwania), ponowienie po zdarzeniu online przy otwartym oknie; zanik zasięgu w trakcie → to samo. E2E v1377. |
+| SG-1377-DRAFT | FIXED-UNVERIFIED | Niezapisany podpis w pamięci aplikacji (per konto); przywracany tylko dla identycznej migawki podpisanych danych; czyszczony po zapisie i przy zmianie danych. smoke-protocol-signature-v1377, E2E v1377. |
+| SG-1377-NOSTORAGE | REGRESSION | Podpis nie trafia do IndexedDB/localStorage (poziom 2 = decyzja właściciela). smoke v1377. |
+| SG-1377-PROTOCOL | REGRESSION | Zapis protokołu online, korekta adresu z zachowanym podpisem, przypomnienie zakończenia — mobile-protocol-test, mobile-protocol-finish-reminder, smoke-protocol-signature-reuse. |
+| PC-1376-LIVE | PASS (właściciel, iPhone, 26.10 13:54) | Tryb samolotowy: Diagnostyka i montaże otwierają się (13.76). |
+| SG-1377-LIVE | EXTERNAL | iPhone: scenariusz z RELEASE-GATE postdeploy (także test aktualizacji 13.76 → 13.77). |
+
 ## PRECACHE-1376 — pełne pobranie wersji i bazy bez numeru (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -40,6 +40,7 @@ import { isTransientSupabaseError } from "./modules/supabase-errors.js";
 import { APP_VERSION } from "./version.js";
 import { scheduleNameplateReaderWarmup } from "./modules/nameplate-reader-warmup.js";
 import { setDeviceDraftOwner } from "./modules/device-form-drafts.js";
+import { setProtocolSignatureDraftOwner } from "./modules/protocol-signature-drafts.js";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -307,6 +308,7 @@ export default function App() {
   const isAdmin = profile?.role === "Administrator";
   // 13.71: szkice urządzeń (także zapisane w telefonie) należą do zalogowanego konta.
   setDeviceDraftOwner(sessionUser?.id || "");
+  setProtocolSignatureDraftOwner(sessionUser?.id || "");
 
   const applyContractorsCatalogSnapshot = React.useCallback((rows) => {
     const safeRows = Array.isArray(rows) ? rows : [];

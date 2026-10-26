@@ -29,6 +29,12 @@ import {
 } from "../../modules/job-payment-confirmation.js";
 import { logDiagnostic } from "../../modules/diagnostics.js";
 import {
+  canRestoreProtocolSignatureDraft,
+  clearProtocolSignatureDraft,
+  getProtocolSignatureDraft,
+  saveProtocolSignatureDraft,
+} from "../../modules/protocol-signature-drafts.js";
+import {
   isProtocolSaveTimeoutError,
   PROTOCOL_SAVE_STEP_TIMEOUT_MS,
   PROTOCOL_SAVE_TIMEOUT_MESSAGE,
@@ -43,6 +49,14 @@ const SIGNATURE_MAX_WIDTH = 3.25;
 const SIGNATURE_BASE_WIDTH = 2.45;
 const SIGNATURE_WIDTH_SMOOTHING = 0.72;
 const PROTOCOL_NOTE_MAX_LENGTH = 300;
+// WAWIS 13.77 — ochrona podpisu klienta, poziom 1.
+const PROTOCOL_OFFLINE_NOTICE = "Brak internetu — protokół zapisze się dopiero po powrocie zasięgu. Podpis klienta zostanie zachowany w aplikacji. Nie zamykaj aplikacji.";
+const PROTOCOL_OFFLINE_WAITING_MESSAGE = "Brak internetu. Podpis jest zachowany — protokół zapisze się automatycznie, gdy wróci zasięg (okno protokołu musi być otwarte). Możesz też zamknąć okno i zapisać później z internetem.";
+const PROTOCOL_CLOSE_UNSAVED_CONFIRM = "Protokół nie jest zapisany. Podpis klienta zostanie zachowany w aplikacji do ponownego otwarcia protokołu w tym montażu (do zamknięcia aplikacji). Zamknąć okno?";
+
+function isProtocolOffline() {
+  return typeof navigator !== "undefined" && navigator.onLine === false;
+}
 
 function formatProtocolDevicePreviewModel(model) {
   return String(model || "")
@@ -252,6 +266,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
   const [actionBusy, setActionBusy] = useState("");
   const [message, setMessage] = useState("");
+  const [online, setOnline] = useState(() => !isProtocolOffline());
+  const autoSaveWhenOnlineRef = useRef(false);
+  const createPdfRef = useRef(null);
+  const pendingSignatureDraftRef = useRef(null);
   const protocolJob = resolvedJob || job;
   const protocolIsCompleted = String(protocolJob?.status || "").trim() === "Zakończone";
   const installersConfirmed = Array.isArray(protocolJob?.installer_ids);
@@ -295,6 +313,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setActionMenuOpen(false);
     setActionBusy("");
     setMessage("");
+    autoSaveWhenOnlineRef.current = false;
+    // 13.77: niezapisany podpis z wcześniejszego otwarcia (np. bez zasięgu) — przywracany po pobraniu danych płatności.
+    pendingSignatureDraftRef.current = getProtocolSignatureDraft(job?.id);
     const initialProtocolNote = String(protocolRecord?.note || "").slice(0, PROTOCOL_NOTE_MAX_LENGTH);
     noteBaselineRef.current = initialProtocolNote;
     setProtocolNote(initialProtocolNote);
@@ -459,6 +480,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
 
   function invalidateSignature() {
     if (!hasSignature && !signatureDataUrl) return;
+    clearProtocolSignatureDraft(job?.id);
     setHasSignature(false);
     setSignatureDataUrl("");
     setReusedSignature(false);
@@ -660,6 +682,14 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       return;
     }
     if (!hasSignature || !signatureDataUrl || isGenerating) return;
+    if (isProtocolOffline()) {
+      // 13.77: bez internetu nie zaczynamy zapisu, który i tak skończyłby się limitem czasu — czekamy na zasięg.
+      autoSaveWhenOnlineRef.current = true;
+      logDiagnostic("protocol.save.offline-waiting", { jobId: String(job?.id || "") });
+      setMessage(PROTOCOL_OFFLINE_WAITING_MESSAGE);
+      return;
+    }
+    autoSaveWhenOnlineRef.current = false;
     setIsGenerating(true);
     setSaveProgressLabel("Rozpoczynam zapis…");
     setMessage("");
@@ -714,6 +744,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         timeoutMs: PROTOCOL_SAVE_TOTAL_TIMEOUT_MS,
       });
       const wasReplacement = Boolean(savedRecord);
+      clearProtocolSignatureDraft(job?.id);
       setSavedRecord(record);
       setEditing(false);
       setResolvedJob((current) => ({ ...(current || job), ...paymentPatch }));
@@ -739,7 +770,11 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       const rawErrorText = String(error?.message || error || "");
       const isSupabaseRequestTimeout = error?.code === "SUPABASE_REQUEST_TIMEOUT"
         || /supabase request timeout|aborterror/i.test(rawErrorText);
-      if (isProtocolSaveTimeoutError(error) || isSupabaseRequestTimeout) {
+      if (isProtocolOffline() && error?.code !== "PROTOCOL_WRITE_CONFLICT") {
+        // 13.77: zasięg zniknął w trakcie zapisu — podpis zostaje, ponowimy po powrocie internetu.
+        autoSaveWhenOnlineRef.current = true;
+        setMessage(PROTOCOL_OFFLINE_WAITING_MESSAGE);
+      } else if (isProtocolSaveTimeoutError(error) || isSupabaseRequestTimeout) {
         logDiagnostic("protocol.save.timeout", {
           jobId: String(job?.id || ""),
           phase: String(error?.phase || (isSupabaseRequestTimeout ? "supabase" : "save")),
@@ -756,6 +791,79 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       setIsGenerating(false);
       setSaveProgressLabel("");
     }
+  }
+
+  createPdfRef.current = createPdf;
+
+  // 13.77: stan połączenia + automatyczny zapis po powrocie internetu (gdy zapis czekał na zasięg).
+  useEffect(() => {
+    if (!open || typeof window === "undefined") return undefined;
+    const update = () => {
+      const nowOnline = !isProtocolOffline();
+      setOnline(nowOnline);
+      if (nowOnline && autoSaveWhenOnlineRef.current) {
+        autoSaveWhenOnlineRef.current = false;
+        void createPdfRef.current?.();
+      }
+    };
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, [open]);
+
+  // 13.77: nowy, niezapisany podpis jest trzymany w pamięci aplikacji (z kluczem podpisanych danych).
+  useEffect(() => {
+    if (!open || !editing || !hasSignature || reusedSignature || !signatureDataUrl) return;
+    saveProtocolSignatureDraft(job?.id, {
+      signatureDataUrl,
+      signatureRotation,
+      paymentDraft,
+      protocolNote,
+      snapshotKey: JSON.stringify(getCurrentSigningSnapshot()),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editing, hasSignature, reusedSignature, signatureDataUrl, signatureRotation, paymentDraft, protocolNote, protocolJobForDocument, profiles]);
+
+  // 13.77: przywrócenie podpisu po ponownym otwarciu — tylko do identycznych podpisanych danych.
+  useEffect(() => {
+    const draft = pendingSignatureDraftRef.current;
+    if (!open || !draft || !paymentReady || paymentLoadError) return;
+    pendingSignatureDraftRef.current = null;
+    const draftPayment = draft.paymentDraft || paymentDraft;
+    const snapshotKey = JSON.stringify(createProtocolSigningSnapshot(buildJobProtocolData({
+      job: protocolJobForDocument, profiles, signedAt: openedAtRef.current,
+      payment: normalizePaymentConfirmation(draftPayment), note: draft.protocolNote,
+    })));
+    if (!canRestoreProtocolSignatureDraft(draft, snapshotKey)) {
+      clearProtocolSignatureDraft(job?.id);
+      setMessage("Dane montażu zmieniły się od podpisu klienta — poproś klienta o nowy podpis.");
+      return;
+    }
+    const savedAt = new Date(draft.savedAt);
+    const time = Number.isNaN(savedAt.getTime()) ? "" : savedAt.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    setEditing(true);
+    setPaymentDraft(draftPayment);
+    setProtocolNote(draft.protocolNote);
+    setNoteOpen(Boolean(draft.protocolNote.trim()));
+    setSignatureDataUrl(draft.signatureDataUrl);
+    setSignatureRotation(draft.signatureRotation || "auto");
+    setReusedSignature(false);
+    previousSignatureRef.current = "";
+    setHasSignature(true);
+    setDraftHasSignature(true);
+    setMessage(`Przywrócono niezapisany podpis klienta${time ? ` z ${time}` : ""}. Sprawdź dane i naciśnij „Zapisz protokół”.`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, paymentReady, paymentLoadError, protocolJobForDocument, profiles]);
+
+  // 13.77: zamknięcie z nowym, niezapisanym podpisem wymaga potwierdzenia (podpis zostaje w pamięci aplikacji).
+  function handleClose() {
+    if (editing && hasSignature && !reusedSignature && signatureDataUrl && typeof window !== "undefined"
+      && !window.confirm(PROTOCOL_CLOSE_UNSAVED_CONFIRM)) return;
+    onClose?.();
   }
 
   async function runSavedAction(action, targetRecord = savedRecord) {
@@ -794,7 +902,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       <AppModal
         open={open}
         warnBeforeUnload={protocolHasUnsavedWork}
-        onClose={isGenerating || signatureOpen ? undefined : onClose}
+        onClose={isGenerating || signatureOpen ? undefined : handleClose}
         overlayClassName="formOverlay mobileDeviceWizardOverlay"
         contentClassName="card modal mobileDeviceWizardModal protocolWizardModal"
         contentRef={protocolModalRef}
@@ -804,12 +912,15 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       >
         <div className="mobileDeviceWizard mobileProtocolWizard">
           <div className="mobileDeviceWizardHeader">
-            <button type="button" className="mobileDeviceWizardBack" onClick={onClose} disabled={isGenerating} aria-label="Wróć"><ProtocolBackIcon /></button>
+            <button type="button" className="mobileDeviceWizardBack" onClick={handleClose} disabled={isGenerating} aria-label="Wróć"><ProtocolBackIcon /></button>
             <h2>Protokół klienta</h2>
-            <button type="button" className="mobileDeviceWizardClose" onClick={onClose} disabled={isGenerating}>Zamknij</button>
+            <button type="button" className="mobileDeviceWizardClose" onClick={handleClose} disabled={isGenerating}>Zamknij</button>
           </div>
           <div className="mobileDeviceWizardBody mobileProtocolWizardBody">
             <p className="protocolTestClientName">{protocolData.client}</p>
+            {!online && editing ? (
+              <div className="protocolTestMessage" role="status" data-testid="protocol-offline-notice">{PROTOCOL_OFFLINE_NOTICE}</div>
+            ) : null}
             <div className={`protocolTestNotice${savedRecord && !editing ? " saved" : ""}`} role="note">
               {savedRecord && !editing
                 ? `Protokół podpisany i zapisany${formatStoredProtocolDate(savedRecord.signed_at || savedRecord.created_at) ? ` · ${formatStoredProtocolDate(savedRecord.signed_at || savedRecord.created_at)}` : ""}.`
@@ -979,7 +1090,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
 
           <div ref={protocolFooterRef} className="mobileDeviceWizardFooter">
             <div className="protocolTestFooterActions">
-              <button type="button" className="btn" onClick={onClose} disabled={isGenerating || Boolean(actionBusy)}>Zamknij</button>
+              <button type="button" className="btn" onClick={handleClose} disabled={isGenerating || Boolean(actionBusy)}>Zamknij</button>
               {savedRecord && !editing ? (
                 <button type="button" className="btn primary protocolTestGenerate" onClick={() => setActionMenuOpen((value) => !value)} disabled={Boolean(actionBusy)}>Drukuj lub wyślij</button>
               ) : (
