@@ -15,8 +15,14 @@ test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start
   await resetMockSupabase(page);
   await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller), null, { timeout: 60_000 });
 
-  // Lista plików wersji i cache bieżącej wersji: wszystkie pliki krytyczne zapisane PRZED pracą bez sieci.
-  const manifest = await page.evaluate(async () => (await fetch('/precache-manifest.json', { cache: 'no-store' })).json());
+  // Lista plików wersji istnieje tylko w budowie produkcyjnej. Serwer deweloperski (zestawy @mobile/desktop
+  // w targeted-checks) zwraca w tym miejscu stronę HTML — wtedy test jest pomijany (uruchamia go built-photo-queue-e2e).
+  const manifest = await page.evaluate(async () => {
+    try { return await (await fetch('/precache-manifest.json', { cache: 'no-store' })).json(); } catch { return null; }
+  });
+  test.skip(!manifest, 'Lista plików wersji (precache-manifest.json) jest tylko w budowie produkcyjnej.');
+
+  // Cache bieżącej wersji: wszystkie pliki krytyczne zapisane PRZED pracą bez sieci.
   const version = await page.evaluate(async () => (await (await fetch('/app-version.json', { cache: 'no-store' })).json()).version);
   expect(manifest.version).toBe(version);
   expect(manifest.critical).toContain('/');
