@@ -103,9 +103,16 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
       storage_path: 'mock-job-002/protocol-1377.pdf', file_name: 'protocol-1377.pdf', file_size_bytes: 65578,
       signed_at: '2026-10-26T13:10:00.000Z', created_at: '2026-10-26T13:10:00.000Z', created_by: 'mock-worker-1', note: '',
     }];
-    localStorage.setItem(key, JSON.stringify(store));
+    const serialized = JSON.stringify(store);
+    localStorage.setItem(key, serialized);
+    window.dispatchEvent(new StorageEvent('storage', { key, newValue: serialized }));
   }, STORE_KEY);
   expect(protocolsBefore).toBe(0);
   await setOnline(page, true);
-  await expect(page.getByText(/Protokół podpisany i zapisany|Protokół został zapisany/).first()).toBeVisible({ timeout: 30_000 });
+  try {
+    await expect(page.getByText(/Protokół podpisany i zapisany|Protokół został zapisany/).first()).toBeVisible({ timeout: 30_000 });
+  } catch (error) {
+    const messages = await page.locator('.protocolTestMessage').allInnerTexts().catch(() => []);
+    throw new Error(`${error.message}\nKomunikaty protokołu: ${messages.join(' | ')}\nZdarzenia: ${dialogs.join(' | ')}`);
+  }
 });
