@@ -1,0 +1,173 @@
+name: WAWIS backup self-test
+
+# Test skryptów kopii zapasowych na fikcyjnych danych — bez sekretów i bez połączenia z produkcją.
+# Źródło i cel kopii są lokalne na maszynie CI (PostgreSQL w kontenerze, serwer S3 z rclone).
+on:
+  pull_request:
+    paths:
+      - 'scripts/backup/**'
+      - '.github/workflows/backup-*.yml'
+  push:
+    branches: ['ops/backup-r2']
+    paths:
+      - 'scripts/backup/**'
+      - '.github/workflows/backup-*.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wawis-backup-selftest-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backup-selftest:
+    name: backup-selftest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      source-db:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: fixture-only
+        ports: ['55432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      FIXTURE_ADMIN_URL: postgresql://postgres:fixture-only@127.0.0.1:55432/postgres
+      BACKUP_DB_URL: postgresql://wawis_backup:fixture-reader@127.0.0.1:55432/postgres
+      BACKUP_ENCRYPTION_PASSPHRASE: selftest-passphrase-not-a-secret
+      WORK_DIR: ${{ github.workspace }}/backup-work
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: bash scripts/backup/install-tools.sh
+
+      - name: Start local S3 server (rclone serve s3 — source and destination)
+        run: |
+          mkdir -p "$RUNNER_TEMP/s3data"
+          nohup rclone serve s3 --auth-key selftest,selftest-secret --addr 127.0.0.1:9000 "$RUNNER_TEMP/s3data" > "$RUNNER_TEMP/s3.log" 2>&1 &
+          for i in $(seq 1 30); do curl -sS -o /dev/null http://127.0.0.1:9000/ && break; sleep 1; done
+
+      - name: Configure rclone remotes (fixture only)
+        run: |
+          {
+            echo "RCLONE_CONFIG_MINIO_TYPE=s3"
+            echo "RCLONE_CONFIG_MINIO_PROVIDER=Rclone"
+            echo "RCLONE_CONFIG_MINIO_ENDPOINT=http://127.0.0.1:9000"
+            echo "RCLONE_CONFIG_MINIO_ACCESS_KEY_ID=selftest"
+            echo "RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY=selftest-secret"
+            echo "RCLONE_CONFIG_DESTCRYPT_TYPE=crypt"
+            echo "RCLONE_CONFIG_DESTCRYPT_REMOTE=minio:backup/files"
+            echo "RCLONE_CONFIG_DESTCRYPT_PASSWORD=$(rclone obscure "$BACKUP_ENCRYPTION_PASSPHRASE")"
+            echo "RCLONE_CONFIG_DESTCRYPT_PASSWORD2=$(rclone obscure "$(printf 'wawis-salt:%s' "$BACKUP_ENCRYPTION_PASSPHRASE" | sha256sum | cut -c1-64)")"
+            echo "RCLONE_CONFIG_DESTCRYPT_FILENAME_ENCRYPTION=off"
+            echo "RCLONE_CONFIG_DESTCRYPT_DIRECTORY_NAME_ENCRYPTION=false"
+          } >> "$GITHUB_ENV"
+
+      - name: Create fixture data (fictional)
+        run: |
+          psql "$FIXTURE_ADMIN_URL" -v ON_ERROR_STOP=1 -q <<'SQL'
+          create schema auth; create schema storage; create schema private; create schema supabase_migrations;
+          create table auth.users(id uuid primary key, email text);
+          create table public.profiles(id uuid primary key references auth.users(id), role text);
+          create table public.jobs(id serial primary key, title text, created_by uuid references auth.users(id));
+          alter table public.jobs enable row level security;
+          create policy jobs_none on public.jobs for select using (false);
+          create table private.job_recycle_bin(id serial primary key, snapshot jsonb);
+          create table storage.buckets(id text primary key);
+          create table storage.objects(id serial primary key, bucket_id text references storage.buckets(id), name text);
+          create table supabase_migrations.schema_migrations(version text primary key);
+          insert into auth.users select gen_random_uuid(), 'fikcyjny'||g||'@example.test' from generate_series(1,5) g;
+          insert into public.profiles select id, 'Pracownik' from auth.users;
+          insert into public.jobs(title, created_by) select 'Montaż testowy '||g, (select id from auth.users limit 1) from generate_series(1,163) g;
+          insert into private.job_recycle_bin(snapshot) values ('{"fixture":true}');
+          insert into storage.buckets values ('job-photos'), ('job-protocols');
+          insert into storage.objects(bucket_id, name) select 'job-photos', 'job/'||g||'.jpg' from generate_series(1,20) g;
+          insert into supabase_migrations.schema_migrations values ('20261020130503');
+          -- Konto kopii tylko do odczytu (ten sam model co na produkcji).
+          create role wawis_backup login bypassrls password 'fixture-reader';
+          grant pg_read_all_data to wawis_backup;
+          SQL
+          mkdir -p fixture/job-photos/job fixture/job-protocols/job
+          for i in $(seq 1 20); do head -c $((1000 + i * 37)) /dev/urandom > "fixture/job-photos/job/$i.jpg"; done
+          : > fixture/job-photos/job/empty-0b.jpg
+          head -c 5000 /dev/urandom > fixture/job-protocols/job/protokol.pdf
+          rclone mkdir minio:job-photos && rclone mkdir minio:job-protocols && rclone mkdir minio:backup
+          rclone copy fixture/job-photos minio:job-photos
+          rclone copy fixture/job-protocols minio:job-protocols
+
+      - name: Database backup (fixture → encrypted → S3)
+        env:
+          BACKUP_DEST: minio:backup
+        run: bash scripts/backup/backup-db.sh
+
+      - name: Files backup — first run
+        env:
+          BACKUP_SOURCE: 'minio:'
+          BACKUP_FILES_DEST: 'destcrypt:'
+          BACKUP_BUCKETS: job-photos job-protocols
+        run: bash scripts/backup/backup-storage.sh
+
+      - name: Files backup — incremental run copies only the new file
+        env:
+          BACKUP_SOURCE: 'minio:'
+          BACKUP_FILES_DEST: 'destcrypt:'
+          BACKUP_BUCKETS: job-photos job-protocols
+        run: |
+          head -c 777 /dev/urandom > new.jpg && rclone copyto new.jpg minio:job-photos/job/new.jpg
+          bash scripts/backup/backup-storage.sh 2>&1 | tee incremental.log
+          grep -q '"source_files":22' "$WORK_DIR/storage-report.jsonl"
+          grep -q '"backup_files":22' "$WORK_DIR/storage-report.jsonl"
+
+      - name: History — a file deleted in the source stays in the backup
+        env:
+          BACKUP_SOURCE: 'minio:'
+          BACKUP_FILES_DEST: 'destcrypt:'
+          BACKUP_BUCKETS: job-photos
+        run: |
+          rclone deletefile minio:job-photos/job/1.jpg
+          bash scripts/backup/backup-storage.sh
+          rclone lsf destcrypt:job-photos/job | grep -qx '1.jpg'
+          grep -q '"source_files":21' "$WORK_DIR/storage-report.jsonl"
+          grep -q '"backup_files":22' "$WORK_DIR/storage-report.jsonl"
+
+      - name: Integrity — an overwritten source file must fail the backup (immutable copy)
+        env:
+          BACKUP_SOURCE: 'minio:'
+          BACKUP_FILES_DEST: 'destcrypt:'
+          BACKUP_BUCKETS: job-photos
+        run: |
+          head -c 4321 /dev/urandom > changed.jpg && rclone copyto changed.jpg minio:job-photos/job/2.jpg
+          if bash scripts/backup/backup-storage.sh; then echo "::error::Nadpisany plik nie został wykryty"; exit 1; fi
+          echo "Nadpisanie wykryte zgodnie z oczekiwaniem"
+
+      - name: Files in the backup are encrypted (not readable without the key)
+        run: |
+          rclone copyto minio:backup/files/job-protocols/job/protokol.pdf.bin enc.bin
+          rclone copyto minio:job-protocols/job/protokol.pdf plain.pdf
+          if cmp -s enc.bin plain.pdf; then echo "::error::Plik w kopii nie jest zaszyfrowany"; exit 1; fi
+          rclone copyto destcrypt:job-protocols/job/protokol.pdf decrypted.pdf
+          cmp plain.pdf decrypted.pdf
+
+      - name: Restore test in an isolated container
+        env:
+          BACKUP_DEST: minio:backup
+          RESTORE_MODE: plain
+          RESTORE_IMAGE: postgres:17
+        run: bash scripts/backup/restore-verify.sh
+
+      - name: Restore test detects a tampered backup
+        env:
+          BACKUP_DEST: minio:backup
+          RESTORE_MODE: plain
+          RESTORE_IMAGE: postgres:17
+        run: |
+          prefix="$(rclone cat minio:backup/db/LATEST)"
+          rclone copyto "minio:backup/$prefix/wawis-db.dump.gpg" good.gpg
+          printf 'x' >> good-tampered.gpg; cat good.gpg >> good-tampered.gpg
+          rclone copyto good-tampered.gpg "minio:backup/$prefix/wawis-db.dump.gpg"
+          if bash scripts/backup/restore-verify.sh; then echo "::error::Uszkodzona kopia nie została wykryta"; exit 1; fi
+          echo "Uszkodzenie wykryte zgodnie z oczekiwaniem"
