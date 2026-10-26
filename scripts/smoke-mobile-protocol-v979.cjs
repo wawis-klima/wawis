@@ -34,7 +34,9 @@ assert.equal(packageJson.scripts['test:smoke:mobile-protocol-print'], 'node scri
 assert.match(jobDetails, /const selectedJobStatus = String\(selectedJob\?\.status \|\| ""\);/);
 assert.match(jobDetails, /const selectedJobIsCompleted = selectedJobStatus === "Zakończone";/);
 assert.match(jobDetails, /const selectedJobSupportsProtocol = selectedJobIsCompleted \|\| selectedJobStatus === "W trakcie";/);
-assert.match(jobDetails, /\{selectedJobSupportsProtocol && !protocolLoading && protocolBackendAvailable \? \(/);
+// 13.78: bez internetu protokół dostępny bez sprawdzenia rekordu (protocolCheckOffline); kontrola przed zapisem w oknie.
+assert.match(jobDetails, /\{selectedJobSupportsProtocol && !protocolLoading && \(protocolBackendAvailable \|\| protocolCheckOffline\) \? \(/);
+assert.match(jobDetails, /protocolRecordUnknown=\{protocolCheckOffline\}/);
 assert.match(jobDetails, /completionProtocolRequired/);
 assert.match(jobDetails, /protocolReadyForCompletion/);
 assert.match(jobDetails, /Wypełnij i zapisz protokół przed zakończeniem/);
