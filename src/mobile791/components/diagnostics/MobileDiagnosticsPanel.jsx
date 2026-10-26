@@ -8,6 +8,7 @@ import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/p
 import { confirmAndRepairPhotoQueue } from '../../modules/photo-queue-repair.js';
 import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
 import { inspectNameplateReaderCache, prepareNameplateReadersNow } from '../../modules/nameplate-reader-warmup.js';
+import { getNameplateAiUsageSummary } from '../../modules/nameplate-ai-usage.js';
 import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosticQueue } from '../../../modules/diagnostics-package4.js';
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
@@ -218,6 +219,8 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         ) : null}
       </section>
 
+      <NameplateAiUsageCard />
+
       <section className="mobileDiagnosticsCard">
         <h2>Akcje</h2>
         <div className="mobileDiagnosticsActions">
@@ -249,5 +252,30 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         <p>Plik diagnostyczny nie zawiera zdjęć, komentarzy, nazw klientów, adresów, telefonów ani e-maili.</p>
       </section>
     </div>
+  );
+}
+
+// WAWIS 13.73: ile razy na tym telefonie użyto płatnego AI tabliczek, a ile razy czytnik wystarczył.
+function NameplateAiUsageCard() {
+  let usage = null;
+  try {
+    usage = getNameplateAiUsageSummary();
+  } catch {
+    usage = null;
+  }
+  if (!usage) return null;
+  const row = (label, value) => (
+    <p>
+      {label}: AI użyte <strong>{value.ai}</strong>
+      {' · '}AI niepotrzebne (czytnik) <strong>{value.skipped}</strong>
+      {' · '}ponowny odczyt bez opłaty <strong>{value.cached}</strong>
+    </p>
+  );
+  return (
+    <section className="mobileDiagnosticsCard" data-testid="diagnostics-nameplate-ai-usage">
+      <h2>AI tabliczek — ten telefon</h2>
+      {row('Dziś', usage.today)}
+      {row('Ostatnie 7 dni', usage.week)}
+    </section>
   );
 }

@@ -105,7 +105,7 @@ const offlineIdx = reader.indexOf('if (isBrowserOffline()) {');
 const aiIdx = reader.indexOf('readDesktopNameplateWithAi({');
 assert.ok(offlineIdx > 0 && aiIdx > offlineIdx, 'Offline short-circuit must come before the AI call');
 const capture = read('src/mobile791/components/nameplate/NameplatePhotoCapture.jsx');
-assert.match(capture, /reading\.aiUnavailable \? \(reading\.localCandidates/);
+assert.match(capture, /reading\.aiUnavailable \|\| reading\.aiOptional \? \(reading\.localCandidates/);
 assert.match(capture, /data-testid="nameplate-offline-reader"/);
 assert.match(capture, /Brak internetu — AI nie sprawdziła tabliczki/);
 

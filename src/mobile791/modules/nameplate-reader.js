@@ -5,6 +5,12 @@ import {
 } from '../../modules/desktop-nameplate-barcode.js';
 import { readDesktopNameplateWithAi } from '../../modules/desktop-nameplate-ai.js';
 import {
+  getCachedNameplateAiResult,
+  getNameplateImageKey,
+  recordNameplateAiUsage,
+  rememberNameplateAiResult,
+} from './nameplate-ai-usage.js';
+import {
   scanDesktopNameplateModelCode,
   scanDesktopNameplateSerialText,
 } from '../../modules/desktop-nameplate-model-ocr.js';
@@ -269,6 +275,22 @@ export function getNameplateLocalFallbackCandidates({
   return { serialNumber, serialSource, modelValue: fallbackModelValue };
 }
 
+// WAWIS 13.73: numer seryjny z kodu kreskowego (Code 128) uznajemy za wystarczający odczyt czytnika —
+// bez płatnego AI. Warunki: numer pochodzi z kodu, nie jest EAN ani ciągiem wyglądającym jak EAN,
+// a nadruk SN mu nie przeczy (konflikt nadal idzie do AI). Pracownik i tak potwierdza „znak po znaku”,
+// gdy nadruk nie dał tego samego wyniku.
+export function hasTrustedBarcodeSerial(serialCheck = {}, barcodeInfo = {}) {
+  const status = serialCheck?.status;
+  if (status !== 'confirmed' && status !== 'single_source') return false;
+  const barcode = normalizeSerial(serialCheck?.barcodeSerial).replace(/\s+/g, '');
+  const serial = normalizeSerial(serialCheck?.serialNumber).replace(/\s+/g, '');
+  const ean = normalizeSerial(barcodeInfo?.ean).replace(/\s+/g, '');
+  if (!barcode || barcode.length < 6 || barcode !== serial) return false;
+  if (ean && barcode === ean) return false;
+  if (EAN_LIKE_RE.test(barcode)) return false;
+  return true;
+}
+
 function withLocalFallback(reading, { offline = false } = {}) {
   const candidates = getNameplateLocalFallbackCandidates({
     serialCheck: reading.serialCheck,
@@ -295,6 +317,7 @@ export async function readMobileNameplate({
   jobId = '',
   targetUnit = '',
   onProgress,
+  forceAi = false,
 } = {}) {
   if (!file || !String(file.type || '').startsWith('image/')) {
     throw new Error('Brak prawidłowego zdjęcia tabliczki.');
@@ -400,7 +423,8 @@ export async function readMobileNameplate({
   });
   localReading.evidence = evidence;
 
-  if (serialCheck.status === 'confirmed' && (isMobileNameplateReadingComplete(localReading) || localMismatch)) {
+  if (!forceAi && serialCheck.status === 'confirmed' && (isMobileNameplateReadingComplete(localReading) || localMismatch)) {
+    recordNameplateAiUsage('skipped', 'confirmed');
     onProgress?.({
       progress: 100,
       label: localMismatch ? 'Odczyt zakończony — sprawdź zgodność jednostki' : 'Tabliczka odczytana lokalnie',
@@ -416,7 +440,7 @@ export async function readMobileNameplate({
     || (evidence.hasSerialLabel && evidence.digitCount >= 6)
   );
 
-  if (!evidence.hasEvidence && !weakEvidenceFallback) {
+  if (!forceAi && !evidence.hasEvidence && !weakEvidenceFallback) {
     onProgress?.({
       progress: 100,
       label: 'Nie wykryto tabliczki znamionowej — zrób zdjęcie ponownie',
@@ -431,6 +455,27 @@ export async function readMobileNameplate({
   }
 
   const needsSerialAi = serialCheck.status !== 'confirmed';
+
+  // WAWIS 13.73: numer z kodu kreskowego wystarcza — AI tylko na żądanie („Sprawdź przez AI”).
+  if (!forceAi && !isBrowserOffline() && hasTrustedBarcodeSerial(serialCheck, barcodeInfo)) {
+    recordNameplateAiUsage('skipped', 'barcode_serial');
+    onProgress?.({ progress: 100, label: 'Numer odczytany z kodu kreskowego — AI niepotrzebne', method: 'local' });
+    const modelCandidates = getNameplateLocalFallbackCandidates({
+      serialCheck: {},
+      modelTextResult,
+      barcodeInfo,
+      modelValue: localReading.modelValue,
+    });
+    return {
+      ...localReading,
+      aiAttempted: false,
+      aiSkipped: true,
+      aiSkipReason: 'barcode_serial',
+      aiOptional: true,
+      localCandidates: { serialNumber: '', serialSource: '', modelValue: modelCandidates.modelValue },
+      weakNameplateEvidence: weakEvidenceFallback,
+    };
+  }
 
   // WAWIS 13.69: bez internetu nie czekamy 60 s na AI — od razu zwracamy odczyt czytnika
   // z kandydatami do sprawdzenia. Zapis i tak wymaga internetu (13.66), a „Zamknij okno”
@@ -457,7 +502,12 @@ export async function readMobileNameplate({
     method: 'ai',
   });
   try {
-    const aiResult = await withTimeout(
+    // WAWIS 13.73: to samo zdjęcie nie płaci za AI drugi raz.
+    const imageKey = await getNameplateImageKey(file, getTargetLabel(targetUnit)).catch(() => '');
+    const cachedAiResult = getCachedNameplateAiResult(imageKey);
+    if (cachedAiResult) recordNameplateAiUsage('cached', forceAi ? 'manual' : 'auto');
+    else recordNameplateAiUsage('ai', forceAi ? 'manual' : (serialCheck.status || 'model'));
+    const aiResult = cachedAiResult || await withTimeout(
       readDesktopNameplateWithAi({
         file,
         supabase,
@@ -470,6 +520,7 @@ export async function readMobileNameplate({
       AI_READ_TIMEOUT_MS,
       'Analiza AI nie odpowiedziała w ciągu 60 sekund.',
     );
+    if (!cachedAiResult) rememberNameplateAiResult(imageKey, aiResult);
 
     // A blind AI serial read must not overwrite a locally confirmed model.
     const finalExactModel = exactModel || aiResult.exactModel || null;

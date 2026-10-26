@@ -1,3 +1,12 @@
+## 13.73
+- Decyzja właściciela (26.10.2026): płatne AI odczytu tabliczek tylko wtedy, gdy czytnik telefonu sobie nie poradził.
+- Gdy numer seryjny jest odczytany z kodu kreskowego (Code 128, nie EAN) i nadruk mu nie przeczy — AI nie jest wołane. Pole jest wypełnione, a gdy nadruk nie dał tego samego wyniku, nadal obowiązuje „Sprawdziłem numer SN znak po znaku”.
+- AI jak dotąd, gdy czytnik nie odczytał numeru albo kod i nadruk się różnią.
+- Nowy przycisk „Sprawdź przez AI” w oknie tabliczki — AI na wyraźne żądanie, gdy są wątpliwości.
+- Ponowny odczyt tego samego zdjęcia nie płaci za AI drugi raz (wynik pamiętany do zamknięcia aplikacji).
+- Diagnostyka: „AI tabliczek — ten telefon” — ile razy dziś i w ostatnich 7 dniach AI użyto, ile razy czytnik wystarczył.
+- Testy: E2E mobile-nameplate-ai-saving-v1373 (kod kreskowy → 0 wywołań AI; „Sprawdź przez AI” → 1 wywołanie), smoke-nameplate-ai-saving-v1373.
+
 ## 13.72
 - Decyzja właściciela (26.10.2026): po powrocie internetu na liście montaży pojawia się pasek „Niezapisane tabliczki: <klient> — Zapisz teraz”. Jedno dotknięcie zapisuje urządzenia i tabliczki wpisane bez internetu — bez szukania montażu i wchodzenia w „Tabliczki”.
 - „Zapisz teraz” uruchamia dokładnie ten sam zapis co przycisk „Zapisz urządzenia i tabliczki”: gdy coś wymaga uwagi (potwierdzenie numeru SN, nietypowa para modeli, zmiana w montażu przez kogoś innego), formularz zostaje otwarty z informacją, co poprawić. Bez dotknięcia nic nie zapisuje się samo.

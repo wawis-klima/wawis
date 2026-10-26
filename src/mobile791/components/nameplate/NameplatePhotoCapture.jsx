@@ -345,6 +345,7 @@ function NameplateVerificationReview({
   onRetake,
   onManual,
   onCancel,
+  onRequestAi = null,
   compatibilityError = "",
 }) {
   const [previewUrl, setPreviewUrl] = useState("");
@@ -374,6 +375,11 @@ function NameplateVerificationReview({
   const canConfirm = !verification.busy && !readingMismatch && !noNameplateEvidence
     && modelReady && serialReady && (!needsSerialReview || verification.serialReviewed);
   const offlineReading = Boolean(verification.reading?.aiUnavailable && verification.reading?.offline);
+  // 13.73: AI tylko na żądanie, gdy czytnik telefonu wystarczył (numer z kodu kreskowego) albo po ręcznej edycji.
+  const aiSkippedByReader = Boolean(verification.reading?.aiOptional && verification.reading?.method !== "manual");
+  const browserOnline = typeof navigator === "undefined" || navigator.onLine !== false;
+  const canRequestAi = Boolean(onRequestAi && !verification.busy && verification.reading
+    && !verification.reading.aiAttempted && verification.reading.method !== "ai" && browserOnline);
   const methodLabel = noNameplateEvidence
     ? (verification.reading?.aiAttempted ? "AI nie potwierdziła tabliczki" : "Nie wykryto tabliczki")
     : offlineReading && verification.reading?.method !== "manual"
@@ -440,6 +446,11 @@ function NameplateVerificationReview({
                   ? " Czytnik numeru SN może nie być jeszcze zapisany w telefonie — otwórz aplikację raz z internetem (albo Diagnostyka → „Pobierz czytniki teraz”)."
                   : ""}
               </div>
+            ) : aiSkippedByReader ? (
+              <div className="nameplateVerifyWarning" role="status" data-testid="nameplate-ai-skipped">
+                <strong>Numer odczytany z kodu kreskowego — AI nie było potrzebne.</strong>{" "}
+                Porównaj z tabliczką. Jeśli masz wątpliwości, naciśnij „Sprawdź przez AI”.
+              </div>
             ) : verification.prefilledFromReader && verification.reading?.method !== "manual" ? (
               <div className="nameplateVerifyWarning" role="status" data-testid="nameplate-offline-reader">
                 AI niedostępna — wpisano odczyt czytnika telefonu. Porównaj z tabliczką znak po znaku.
@@ -470,7 +481,9 @@ function NameplateVerificationReview({
               </div>
             ) : needsSerialReview ? (
               <div className="nameplateVerifyWarning" role="status">
-                {verification.reading?.aiUnavailable && !verification.reading?.aiResult
+                {verification.reading?.aiOptional
+                  ? "Numer odczytany tylko z kodu kreskowego (nadruk SN nie dał tego samego wyniku)."
+                  : verification.reading?.aiUnavailable && !verification.reading?.aiResult
                   ? "Numer nie został potwierdzony dwoma czytnikami."
                   : "AI nie potwierdziła numeru z wystarczającą pewnością."}
                 {" "}Sprawdź go znak po znaku z nadrukiem SN na zdjęciu.
@@ -511,6 +524,11 @@ function NameplateVerificationReview({
             disabled={noNameplateEvidence}
           />
         </label>
+        {canRequestAi ? (
+          <button type="button" className="btn secondary" data-testid="nameplate-ai-check" onClick={onRequestAi}>
+            Sprawdź przez AI
+          </button>
+        ) : null}
         {!verification.busy && !noNameplateEvidence && needsSerialReview ? (
           <label className="nameplateSerialReviewCheck">
             <input
@@ -629,10 +647,20 @@ export default function NameplatePhotoCapture({
 
   async function handleCropConfirm(croppedFile) {
     clearCropSource();
+    await runNameplateReading(croppedFile);
+  }
+
+  // 13.73: „Sprawdź przez AI” — ten sam odczyt, ale z płatnym AI na wyraźne żądanie.
+  function requestAiCheck() {
+    if (!verification?.file || verification.busy) return;
+    void runNameplateReading(verification.file, { forceAi: true });
+  }
+
+  async function runNameplateReading(croppedFile, { forceAi = false } = {}) {
     const initialVerification = {
       file: croppedFile,
       busy: true,
-      progress: { progress: 2, label: "Przygotowuję odczyt…", method: "local" },
+      progress: { progress: 2, label: forceAi ? "Sprawdzam tabliczkę przez AI…" : "Przygotowuję odczyt…", method: forceAi ? "ai" : "local" },
       reading: null,
       modelValue: "",
       serialNumber: "",
@@ -647,6 +675,7 @@ export default function NameplatePhotoCapture({
         supabase,
         jobId,
         targetUnit: unitRef,
+        forceAi,
         onProgress: (progress) => {
           setVerification((current) => current?.file === croppedFile && !current.manualOverride ? { ...current, progress } : current);
         },
@@ -658,7 +687,7 @@ export default function NameplatePhotoCapture({
         const baseSerial = reading.serialCheck?.status === 'conflict'
           ? '' : String(reading.serialNumber || current.serialNumber || "").trim().toUpperCase();
         const baseModel = String(reading.modelValue || current.modelValue || "").trim();
-        const candidates = reading.aiUnavailable ? (reading.localCandidates || {}) : {};
+        const candidates = reading.aiUnavailable || reading.aiOptional ? (reading.localCandidates || {}) : {};
         const serialFromCandidate = !baseSerial && candidates.serialNumber ? String(candidates.serialNumber).toUpperCase() : "";
         const modelFromCandidate = !baseModel && candidates.modelValue ? String(candidates.modelValue).trim() : "";
         return {
@@ -839,6 +868,7 @@ export default function NameplatePhotoCapture({
             progress: { progress: 0, label: "Weryfikacja ręczna", method: "manual" },
             reading: { ...current.reading, method: "manual", aiAttempted: false, aiError: "", mismatch: null },
           } : current)}
+          onRequestAi={requestAiCheck}
           onSerialReviewedChange={(serialReviewed) => setVerification((current) => current ? {
             ...current,
             serialReviewed: Boolean(serialReviewed),
