@@ -7,6 +7,7 @@ import { canReuseProtocolSignature, createProtocolSigningSnapshot, hasProtocolAd
 import {
   downloadStoredJobProtocol,
   formatStoredProtocolDate,
+  loadJobProtocolRecord,
   loadStoredProtocolSignature,
   openStoredJobProtocolPdfPreview,
   storeJobProtocol,
@@ -230,7 +231,7 @@ function getTrimmedSignatureDataUrl(canvas) {
   return trimmed.toDataURL("image/png");
 }
 
-export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, canWriteProtocol = true, onClose, onSaved, onPaymentLoaded }) {
+export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, protocolRecordUnknown = false, canWriteProtocol = true, onClose, onSaved, onPaymentLoaded }) {
   const canvasRef = useRef(null);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
@@ -704,6 +705,21 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     try {
       const progress = { phase: "payment" };
       const saveOperation = (async () => {
+        if (protocolRecordUnknown && !savedRecord) {
+          // 13.78: protokół otwarty bez internetu — nie wiedzieliśmy, czy montaż ma już protokół.
+          // Zapis nowego protokołu przy istniejącym zwróciłby stary (nowy podpis by przepadł po cichu).
+          setSaveProgressLabel("Sprawdzam, czy montaż ma już protokół…");
+          await waitForProtocolUiPaint();
+          const latest = await withProtocolSaveTimeout(
+            loadJobProtocolRecord({ supabase, jobId: job?.id }),
+            { phase: "load-record", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
+          );
+          if (latest?.record) {
+            const existingError = new Error(`Ten montaż ma już zapisany protokół${formatStoredProtocolDate(latest.record.signed_at || latest.record.created_at) ? ` (${formatStoredProtocolDate(latest.record.signed_at || latest.record.created_at)})` : ""}. Nowy podpis nie został zapisany — zamknij okno, otwórz protokół ponownie i użyj „Uzupełnij protokół”.`);
+            existingError.code = "PROTOCOL_ALREADY_EXISTS";
+            throw existingError;
+          }
+        }
         setSaveProgressLabel("Zapisuję płatność…");
         await waitForProtocolUiPaint();
         const payment = normalizePaymentConfirmation(paymentDraft);
@@ -938,6 +954,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           </div>
           <div className="mobileDeviceWizardBody mobileProtocolWizardBody">
             <p className="protocolTestClientName">{protocolData.client}</p>
+            {protocolRecordUnknown && !savedRecord ? (
+              <div className="protocolTestMessage" role="status" data-testid="protocol-record-unknown">Nie udało się sprawdzić, czy montaż ma już protokół (brak internetu). Przed zapisem aplikacja to sprawdzi.</div>
+            ) : null}
             {!online && editing ? (
               <div className="protocolTestMessage" role="status" data-testid="protocol-offline-notice">{PROTOCOL_OFFLINE_NOTICE}</div>
             ) : null}

@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.77",
+  "version": "13.78",
   "scope": "mobile",
-  "release_branch": "release/v13.77",
+  "release_branch": "release/v13.78",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "26.10.2026 13:54 (właściciel, iPhone, 13.76): tryb samolotowy — Diagnostyka i montaże otwierają się, zdjęcia nie (oczekiwane). Właściciel: „działamy z tymi podpisami” (E5 poziom 1)."
+    "notes": "26.10.2026 16:46 (właściciel, iPhone, 13.77, tryb samolotowy): tabliczki dodane, ale zamiast „Protokół” przycisk „Sprawdź” (sprawdzenie protokołu wymaga internetu) — ochrona podpisu niedostępna offline."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.77",
+    "source_branch": "release/v13.78",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "iPhone: aktualizacja 13.76 → 13.77 z internetem → tryb samolotowy → wszystkie ekrany; protokół w trybie samolotowym: komunikat, podpis, Zapisz → zachowany, zamknij → otwórz → podpis wraca; wyłączenie trybu samolotowego przy otwartym oknie → zapis.",
+    "evidence_source": "iPhone: tryb samolotowy → otwarcie montażu → „Protokół” (nie „Sprawdź”) → komunikaty → podpis → Zapisz (zachowany) → zamknij → otwórz (podpis wraca).",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "protocol-signature-drafts.js (pamięć aplikacji, per konto, klucz podpisanych danych); ProtocolTestModal: komunikat offline, zapis czeka na zasięg i ponawia po online, potwierdzenie zamknięcia, przywrócenie podpisu tylko dla identycznej migawki.",
-    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (12) + built-nameplate-e2e (8) + webkit-built-e2e (17). Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.77; test aktualizacji 13.76 → 13.77 i protokołu offline na iPhonie."
+    "code": "JobDetailsPanel: protocolCheckOffline (bez internetu protokół bez sprawdzenia, ponowne sprawdzenie po online przy zamkniętym oknie); ProtocolTestModal: protocolRecordUnknown → przed zapisem loadJobProtocolRecord, przy istniejącym protokole błąd PROTOCOL_ALREADY_EXISTS (podpis zostaje).",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18). Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.78; test na iPhonie."
   }
 }
