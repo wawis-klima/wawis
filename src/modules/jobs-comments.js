@@ -103,13 +103,19 @@ export async function addJobComment({
     if (person.role === 'Administrator' && person.id !== profile.id) targets.add(person.id);
   });
 
+  // WAWIS 13.74: komentarz jest już zapisany — błąd powiadomienia nie może wyglądać jak błąd komentarza
+  // (pracownik dodawał wtedy ten sam komentarz drugi raz).
   for (const userId of targets) {
-    await createNotification({
-      userId,
-      title: 'Nowy komentarz',
-      body: `${profile.full_name} dodał komentarz do zlecenia: ${relatedJob?.title || 'Montaż'}`,
-      linkJobId: jobId,
-    });
+    try {
+      await createNotification({
+        userId,
+        title: 'Nowy komentarz',
+        body: `${profile.full_name} dodał komentarz do zlecenia: ${relatedJob?.title || 'Montaż'}`,
+        linkJobId: jobId,
+      });
+    } catch (notificationError) {
+      console.warn('Komentarz zapisano, ale nie udało się utworzyć powiadomienia w aplikacji:', notificationError?.message || notificationError);
+    }
   }
 
   return insertedComment;

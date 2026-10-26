@@ -1,24 +1,27 @@
 export async function createNotification({ supabase, userId, title, body, linkJobId = null }) {
   if (!supabase) return null;
 
-  const { data, error } = await supabase
+  // WAWIS 13.74: bez .select() — powiadomienie jest dla innej osoby, a polityka odczytu
+  // (notifications_read_own) pozwala czytać tylko własne. INSERT … RETURNING musi spełnić także
+  // politykę SELECT, więc kończył się błędem „new row violates row-level security policy”
+  // (od 03.09.2026 żadne powiadomienie w aplikacji nie zostało zapisane).
+  const record = {
+    user_id: userId,
+    title,
+    body,
+    link_job_id: linkJobId,
+    is_read: false,
+  };
+  const { error } = await supabase
     .from('notifications')
-    .insert({
-      user_id: userId,
-      title,
-      body,
-      link_job_id: linkJobId,
-      is_read: false,
-    })
-    .select('id, user_id, title, body, is_read, created_at, link_job_id')
-    .single();
+    .insert(record);
 
   if (error) {
     console.error('createNotification failed', error);
     throw error;
   }
 
-  return data;
+  return record;
 }
 
 export async function markNotificationAsRead({ supabase, notificationId, refreshAll, sessionUser }) {

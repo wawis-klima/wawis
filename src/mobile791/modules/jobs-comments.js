@@ -128,7 +128,9 @@ export async function addJobComment({
         linkJobId: jobId,
       });
     } catch (notificationError) {
-      if (!sideEffectsBestEffort) throw notificationError;
+      // WAWIS 13.74: komentarz jest już zapisany — błąd powiadomienia nie może wyglądać jak błąd komentarza
+      // (pracownik dodawał wtedy ten sam komentarz drugi raz). Dawniej rzucany, gdy sideEffectsBestEffort=false.
+      void sideEffectsBestEffort;
       console.warn('Komentarz zapisano, ale nie udało się utworzyć powiadomienia w aplikacji:', notificationError?.message || notificationError);
     }
   }

@@ -1,3 +1,9 @@
+## 13.74
+- Błąd zgłoszony 26.10.2026 (Kacper): po dodaniu komentarza pojawiał się komunikat „new row violates row-level security policy for table "notifications"”. Komentarz był zapisany, ale komunikat sugerował błąd — pracownik dodawał ten sam komentarz drugi raz.
+- Przyczyna: zapis powiadomienia w aplikacji dla administratora prosił bazę o zwrot zapisanego wiersza, a pracownik może czytać tylko własne powiadomienia. Baza odrzucała cały zapis. Od 03.09.2026 nie zapisało się żadne powiadomienie „Nowy komentarz” ani „Nowe” (powiadomienia push działały osobno).
+- Poprawka: powiadomienie zapisywane bez odczytu zwrotnego (bez zmian w bazie i jej zabezpieczeniach). Błąd powiadomienia po zapisanym komentarzu nie jest już pokazywany jako błąd komentarza (telefon i komputer).
+- Testy: smoke-notifications-rls-v1374; przyczyna odtworzona na lokalnym PostgreSQL z tą samą regułą.
+
 ## 13.73
 - Decyzja właściciela (26.10.2026): płatne AI odczytu tabliczek tylko wtedy, gdy czytnik telefonu sobie nie poradził.
 - Gdy numer seryjny jest odczytany z kodu kreskowego (Code 128, nie EAN) i nadruk mu nie przeczy — AI nie jest wołane. Pole jest wypełnione, a gdy nadruk nie dał tego samego wyniku, nadal obowiązuje „Sprawdziłem numer SN znak po znaku”.
