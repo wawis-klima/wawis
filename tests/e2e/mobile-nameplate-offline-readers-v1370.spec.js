@@ -128,15 +128,17 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
     for (const url of urls) {
       try {
         const response = await fetch(url, { mode: url.startsWith(location.origin) ? 'same-origin' : 'cors' });
-        results.push(response.ok);
-      } catch {
-        results.push(false);
+        results.push({ url, ok: response.ok, status: response.status, type: response.type });
+      } catch (error) {
+        results.push({ url, ok: false, error: String(error?.message || error).slice(0, 120) });
       }
     }
-    return results;
+    return { results, controlled: Boolean(navigator.serviceWorker?.controller) };
   }, readerUrls);
-  expect(offlineFetch.length).toBeGreaterThan(0);
-  expect(offlineFetch.every(Boolean)).toBe(true);
+  expect(offlineFetch.results.length).toBeGreaterThan(0);
+  const offlineFailures = offlineFetch.results.filter((item) => !item.ok)
+    .map((item) => `${item.url.replace(/^https?:\/\/[^/]+/, '')} ${item.status || ''} ${item.type || ''} ${item.error || ''}`);
+  expect(offlineFailures, `Pliki czytników niedostępne bez sieci (SW kontroluje stronę: ${offlineFetch.controlled})`).toEqual([]);
 
   await page.locator('.nameplateGalleryInput').setInputFiles({
     name: 'rotenso-offline.svg',
