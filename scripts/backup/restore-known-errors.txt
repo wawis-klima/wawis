@@ -1,0 +1,3 @@
+# Znane, nieszkodliwe komunikaty pg_restore przy odtwarzaniu w izolowanym kontenerze (wyrażenia regularne).
+# Każdy wpis musi mieć uzasadnienie. Pusty plik = każdy błąd odtwarzania zatrzymuje kopię (fail-closed).
+# Wpisy dodajemy wyłącznie po analizie pierwszych rzeczywistych przebiegów i opisujemy w docs/BACKUP-R2.md.

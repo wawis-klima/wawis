@@ -31,21 +31,30 @@ async function seedLegacyV4Queue(page) {
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
-    await new Promise((resolve, reject) => {
+    const bytes = await blob.arrayBuffer();
+    const putRecord = (fileFields) => new Promise((resolve, reject) => {
       const tx = db.transaction('queued-photos', 'readwrite');
       // Format rekordu z 13.42–13.48: brak znacznika queue_writer 13.62.
       tx.objectStore('queued-photos').put({
         id, job_id: jobId, created_at: '2026-10-22T09:16:00.000Z', uploaded_by: 'mock-worker-1', user_id: 'mock-worker-1',
         uploader_name: 'Pracownik Testowy', upload_status: 'local', upload_status_label: 'Zapisano na telefonie', upload_error: '',
         upload_key: `key-${id}`, unit_key: '', file_fingerprint: `fp-${id}`, planned_storage_path: path, legacy_queue_item: false,
-        local_file_name: file.name, local_file_type: file.type, local_file_last_modified: 1, local_file: file,
+        local_file_name: file.name, local_file_type: file.type, local_file_last_modified: 1, ...fileFields,
         photo_kind: '', device_index: 0, unit_ref: '', device_ref: '', serial_number: '', documentation_label: '',
         retry_count: 0, last_attempt_at: '', next_attempt_at: '', lease_until: '', upload_stage: 'queued',
         lease_owner: '', attempt_generation: 2, fingerprint_status: '',
       });
       tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
+      tx.onerror = () => reject(tx.error || new Error('IndexedDB: zapis rekordu nie powiódł się'));
+      tx.onabort = () => reject(tx.error || new Error('IndexedDB: transakcja przerwana'));
     });
+    try {
+      await putRecord({ local_file: file });
+    } catch {
+      // WebKit w kontekście Playwright (efemeryczny, jak prywatna karta Safari) nie zapisuje File/Blob
+      // w IndexedDB. Ten sam rekord z bajtami (format od 13.65) — aplikacja czyta oba warianty.
+      await putRecord({ local_file: null, local_file_bytes: bytes });
+    }
     db.close();
   }, { jobId: JOB_ID, id: LEGACY_ID, path: LEGACY_PATH });
 }

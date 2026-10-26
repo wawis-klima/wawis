@@ -1,0 +1,167 @@
+name: WAWIS backup to R2
+
+# Codzienna, niezależna kopia zapasowa WAWIS w Cloudflare R2:
+#   1) baza danych (pg_dump, szyfrowanie AES-256, kontrola sumy po wysyłce),
+#   2) pliki: zdjęcia, protokoły, podpisy (przyrostowo, zaszyfrowane, bez usuwania w kopii),
+#   3) rzeczywista próba odtworzenia bazy w izolowanym kontenerze na maszynie CI.
+# Produkcja jest wyłącznie odczytywana. Nic nie jest odtwarzane na produkcji.
+# Nieudana kopia otwiera zgłoszenie (Issue) z etykietą backup-failure — GitHub wysyła powiadomienie właścicielowi.
+on:
+  schedule:
+    - cron: '20 0 * * *'   # codziennie ok. 01:20 czasu zimowego / 02:20 letniego w Polsce
+  workflow_dispatch:   # ręczne uruchomienie: Actions → „WAWIS backup to R2” → Run workflow
+  # Próbna kopia z produkcji 26.10.2026 (z gałęzi ops/backup-r2): baza, pliki i próba odtworzenia — OK.
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: wawis-backup-r2
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: backup-r2
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    # Sekrety kopii są w środowisku „wawis-backup”, dostępnym tylko z gałęzi main (i gałęzi próbnej).
+    environment: wawis-backup
+    env:
+      WORK_DIR: ${{ github.workspace }}/backup-work
+      BACKUP_DB_URL: ${{ secrets.BACKUP_DB_URL }}
+      BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      SUPABASE_REGION: ${{ vars.SUPABASE_REGION }}
+      R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
+      R2_BUCKET: ${{ vars.R2_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check configuration
+        env:
+          S3_KEY: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+          S3_SECRET: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
+          R2_KEY: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          missing=()
+          for name in BACKUP_DB_URL BACKUP_ENCRYPTION_PASSPHRASE S3_KEY S3_SECRET R2_KEY R2_SECRET SUPABASE_PROJECT_REF SUPABASE_REGION R2_ENDPOINT R2_BUCKET; do
+            [ -n "${!name:-}" ] || missing+=("$name")
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Brak konfiguracji kopii: ${missing[*]} (instrukcja: docs/BACKUP-R2.md)"
+            exit 1
+          fi
+          if [ "${#BACKUP_ENCRYPTION_PASSPHRASE}" -lt 24 ]; then
+            echo "::error::Hasło szyfrowania kopii musi mieć co najmniej 24 znaki"
+            exit 1
+          fi
+          case "$R2_ENDPOINT" in https://*.r2.cloudflarestorage.com) ;; *) echo "::error::R2_ENDPOINT musi mieć postać https://<konto>[.eu].r2.cloudflarestorage.com (bez nazwy bucketu)"; exit 1;; esac
+          case "$BACKUP_DB_URL" in *postgres.*:*|*postgres:*@*) echo "::warning::Kopia łączy się kontem postgres — zalecane konto tylko do odczytu wawis_backup (docs/BACKUP-R2.md)";; esac
+
+      - name: Install tools
+        run: bash scripts/backup/install-tools.sh
+
+      - name: Configure rclone remotes
+        env:
+          S3_KEY: ${{ secrets.SUPABASE_S3_ACCESS_KEY_ID }}
+          S3_SECRET: ${{ secrets.SUPABASE_S3_SECRET_ACCESS_KEY }}
+          R2_KEY: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          crypt_password="$(rclone obscure "$BACKUP_ENCRYPTION_PASSPHRASE")"
+          crypt_salt="$(rclone obscure "$(printf 'wawis-salt:%s' "$BACKUP_ENCRYPTION_PASSPHRASE" | sha256sum | cut -c1-64)")"
+          echo "::add-mask::$crypt_password"
+          echo "::add-mask::$crypt_salt"
+          {
+            # Źródło: Supabase Storage przez protokół S3 (tylko pobieranie).
+            echo "RCLONE_CONFIG_SB_TYPE=s3"
+            echo "RCLONE_CONFIG_SB_PROVIDER=Other"
+            echo "RCLONE_CONFIG_SB_ENDPOINT=https://${SUPABASE_PROJECT_REF}.storage.supabase.co/storage/v1/s3"
+            echo "RCLONE_CONFIG_SB_REGION=${SUPABASE_REGION}"
+            echo "RCLONE_CONFIG_SB_FORCE_PATH_STYLE=true"
+            echo "RCLONE_CONFIG_SB_ACCESS_KEY_ID=${S3_KEY}"
+            echo "RCLONE_CONFIG_SB_SECRET_ACCESS_KEY=${S3_SECRET}"
+            # Cel: Cloudflare R2.
+            echo "RCLONE_CONFIG_R2_TYPE=s3"
+            echo "RCLONE_CONFIG_R2_PROVIDER=Cloudflare"
+            echo "RCLONE_CONFIG_R2_ENDPOINT=${R2_ENDPOINT}"
+            echo "RCLONE_CONFIG_R2_ACCESS_KEY_ID=${R2_KEY}"
+            echo "RCLONE_CONFIG_R2_SECRET_ACCESS_KEY=${R2_SECRET}"
+            echo "RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true"
+            # Pliki szyfrowane po stronie WAWIS przed wysyłką (nazwy plików czytelne: identyfikatory montaży).
+            echo "RCLONE_CONFIG_R2CRYPT_TYPE=crypt"
+            echo "RCLONE_CONFIG_R2CRYPT_REMOTE=r2:${R2_BUCKET}/files"
+            echo "RCLONE_CONFIG_R2CRYPT_PASSWORD=${crypt_password}"
+            echo "RCLONE_CONFIG_R2CRYPT_PASSWORD2=${crypt_salt}"
+            echo "RCLONE_CONFIG_R2CRYPT_FILENAME_ENCRYPTION=off"
+            echo "RCLONE_CONFIG_R2CRYPT_DIRECTORY_NAME_ENCRYPTION=false"
+          } >> "$GITHUB_ENV"
+
+      - name: Database backup
+        env:
+          BACKUP_DEST: r2:${{ vars.R2_BUCKET }}
+        run: bash scripts/backup/backup-db.sh
+
+      - name: Files backup (photos, protocols, signatures)
+        env:
+          BACKUP_SOURCE: 'sb:'
+          BACKUP_FILES_DEST: 'r2crypt:'
+        run: bash scripts/backup/backup-storage.sh
+
+      - name: Restore test in an isolated container (never production)
+        env:
+          BACKUP_DEST: r2:${{ vars.R2_BUCKET }}
+          RESTORE_MODE: supabase
+        run: bash scripts/backup/restore-verify.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Kopia WAWIS — $(date -u +%Y-%m-%d)"
+            if [ -f "$WORK_DIR/db-manifest.json" ]; then
+              echo "**Baza:** $(node -p 'const m=require(process.argv[1]); m.prefix+" — "+Object.keys(m.counts_after).length+" tabel, "+m.files.dump.plaintext_bytes+" B"' "$WORK_DIR/db-manifest.json")"
+            fi
+            if [ -f "$WORK_DIR/storage-report.jsonl" ]; then
+              echo '**Pliki:**'; echo '```'; cat "$WORK_DIR/storage-report.jsonl"; echo '```'
+            fi
+            if [ -f "$WORK_DIR/restore/restore-report.json" ]; then
+              echo "**Próba odtworzenia:** $(node -p 'const r=require(process.argv[1]); r.status+" — "+r.tables_checked+" tabel, "+r.rows_restored+" wierszy"' "$WORK_DIR/restore/restore-report.json")"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload reports (no customer data)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wawis-backup-report-${{ github.run_id }}
+          path: |
+            backup-work/db-manifest.json
+            backup-work/storage-report.jsonl
+            backup-work/restore/restore-report.json
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Alert owner on failure
+        if: failure() && github.event_name != 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create backup-failure --color B60205 --description "Nieudana kopia zapasowa" 2>/dev/null || true
+          title="Kopia zapasowa WAWIS nieudana — $(date -u +%Y-%m-%d)"
+          body="Codzienna kopia zapasowa nie powiodła się. Szczegóły: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          Dane produkcyjne nie zostały zmienione (kopia tylko odczytuje produkcję). Claude przeanalizuje błąd przy najbliższej pracy nad WAWIS."
+          existing="$(gh issue list --label backup-failure --state open --json number --jq '.[0].number' || true)"
+          if [ -n "$existing" ]; then gh issue comment "$existing" --body "$body"; else gh issue create --title "$title" --label backup-failure --body "$body"; fi
+
+      - name: Close failure alerts after a successful backup
+        if: success() && github.event_name != 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list --label backup-failure --state open --json number --jq '.[].number' 2>/dev/null); do
+            gh issue close "$n" --comment "Kopia z $(date -u +%Y-%m-%d) zakończona poprawnie: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          done

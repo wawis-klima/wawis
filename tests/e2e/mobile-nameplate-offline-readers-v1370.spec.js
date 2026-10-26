@@ -128,15 +128,22 @@ test('@mobile bez internetu (prawdziwy offline) czytniki są w telefonie i numer
     for (const url of urls) {
       try {
         const response = await fetch(url, { mode: url.startsWith(location.origin) ? 'same-origin' : 'cors' });
-        results.push(response.ok);
-      } catch {
-        results.push(false);
+        results.push({ url, ok: response.ok, status: response.status, type: response.type });
+      } catch (error) {
+        results.push({ url, ok: false, error: String(error?.message || error).slice(0, 120) });
       }
     }
-    return results;
+    // Kontrola emulacji: czy bez sieci działa cokolwiek z cache service workera (ekran aplikacji).
+    let shell = 'n/a';
+    try { shell = String((await fetch('/', { cache: 'no-store' })).status); } catch (error) { shell = `błąd: ${String(error?.message || error).slice(0, 60)}`; }
+    let cached = 0;
+    for (const url of urls) { if (await caches.match(url)) cached += 1; }
+    return { results, controlled: Boolean(navigator.serviceWorker?.controller), shell, cached };
   }, readerUrls);
-  expect(offlineFetch.length).toBeGreaterThan(0);
-  expect(offlineFetch.every(Boolean)).toBe(true);
+  expect(offlineFetch.results.length).toBeGreaterThan(0);
+  const offlineFailures = offlineFetch.results.filter((item) => !item.ok)
+    .map((item) => `${item.url.replace(/^https?:\/\/[^/]+/, '')} ${item.status || ''} ${item.type || ''} ${item.error || ''}`);
+  expect(offlineFailures, `Pliki czytników niedostępne bez sieci (SW kontroluje stronę: ${offlineFetch.controlled}; ekran aplikacji offline: ${offlineFetch.shell}; w cache: ${offlineFetch.cached}/${readerUrls.length})`).toEqual([]);
 
   await page.locator('.nameplateGalleryInput').setInputFiles({
     name: 'rotenso-offline.svg',

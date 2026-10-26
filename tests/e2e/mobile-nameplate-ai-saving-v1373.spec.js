@@ -123,7 +123,12 @@ test('@mobile 13.73: numer z kodu kreskowego bez AI, „Sprawdź przez AI” tyl
   await waitForVerificationDone(page);
 
   const serialInput = page.getByPlaceholder('Przepisz numer seryjny');
-  await expect(serialInput).toHaveValue(SYNTHETIC_ROTENSO_SERIAL, { timeout: 30_000 });
+  try {
+    await expect(serialInput).toHaveValue(SYNTHETIC_ROTENSO_SERIAL, { timeout: 30_000 });
+  } catch (error) {
+    const modalText = await page.locator('.nameplateVerifyModal').innerText().catch(() => '');
+    throw new Error(`${error.message}\nOkno tabliczki: ${modalText.replace(/\s+/g, ' ').slice(0, 600)}\nAI: ${aiRequests}`);
+  }
   await expect(page.locator('.nameplateVerifyMethod')).toHaveText('Odczyt lokalny');
   expect(aiRequests, 'czytnik odczytał SN z kodu — AI nie może być wołane').toBe(0);
   const aiButton = page.getByTestId('nameplate-ai-check');
