@@ -1,0 +1,35 @@
+name: WAWIS diag — mobile E2E (dev server) z adnotacjami
+
+# TYMCZASOWY (13.76): zestaw @mobile jak w targeted-checks, ale z raportem JSON i adnotacjami błędów
+# (logi CI są niedostępne poza GitHubem). Tylko odczyt repozytorium, bez sekretów, bez wdrożenia. Usunąć przed scaleniem.
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/diag-mobile-e2e.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  diag-mobile-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - timeout-minutes: 6
+        run: npx playwright install chromium --only-shell
+      - name: Mobile E2E (jak targeted-checks)
+        env:
+          VITE_SUPABASE_MODE: mock
+          PLAYWRIGHT_JSON_OUTPUT_NAME: diag-mobile.json
+        run: node scripts/run-playwright-mobile.cjs --reporter=json || true
+      - name: Adnotacje
+        if: always()
+        run: node scripts/verify-built-photo-queue-e2e.cjs diag-mobile.json 0 || true
