@@ -20,8 +20,11 @@ test('@mobile 13.76: niedostępny plik ekranu Diagnostyki → komunikat zamiast 
   await page.locator('.wawisVersionDiagnosticsButton').click();
   await expect(page.getByTestId('lazy-screen-unavailable')).toBeVisible({ timeout: 20_000 });
   expect(blocked).toBeGreaterThan(0);
+  // Nagłówek nadal działa: ponowne stuknięcie numeru wersji zamyka Diagnostykę (jak zwykle).
+  await page.locator('.wawisVersionDiagnosticsButton').click();
+  await expect(page.getByTestId('lazy-screen-unavailable')).toHaveCount(0);
   // Reszta aplikacji nadal działa: lista montaży i przejście do montażu.
-  await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible();
+  await expect(page.locator('.statusActionButton[title="W trakcie"]')).toBeVisible({ timeout: 15_000 });
   await page.locator('.statusActionButton[title="W trakcie"]').click();
   await page.getByText('Klient Testowy B', { exact: true }).first().click();
   await expect(page.getByRole('button', { name: 'Tabliczki', exact: true })).toBeVisible({ timeout: 20_000 });
