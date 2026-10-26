@@ -25,11 +25,11 @@ jobs:
       - run: npm ci --include=optional --registry=https://registry.npmjs.org/
       - timeout-minutes: 6
         run: npx playwright install chromium --only-shell
-      - name: Mobile E2E (jak targeted-checks)
+      - name: Desktop E2E (jak targeted-checks)
         env:
           VITE_SUPABASE_MODE: mock
           PLAYWRIGHT_JSON_OUTPUT_NAME: diag-mobile.json
-        run: node scripts/run-playwright-mobile.cjs --reporter=json --retries=0 || true
+        run: node scripts/run-playwright-desktop.cjs --reporter=json --retries=0 || true
       - name: Adnotacje
         if: always()
         run: |
