@@ -40,6 +40,21 @@ async function countOfflineDeviceOperations(page) {
   }));
 }
 
+// Dodaje urządzenie z wybraną marką (rzeczywista, niezapisana zmiana) i wraca do listy urządzeń.
+async function addUnsavedDevice(page) {
+  const wizard = page.locator('.mobileDeviceWizardOverlay .mobileDeviceWizard');
+  await wizard.getByRole('button', { name: 'Dodaj kolejne urządzenie' }).click();
+  await wizard.getByRole('button', { name: 'Dalej', exact: true }).click();
+  await expect(wizard.getByText('Tryb: Single', { exact: true })).toBeVisible();
+  await wizard.locator('.mobileDeviceWizardSelection').first().click();
+  await wizard.locator('.mobileDevicePickerOverlay').getByRole('button', { name: 'LG', exact: true }).click();
+  await expect(wizard.locator('.mobileDeviceWizardSelectionText').first()).toContainText('LG');
+  await wizard.locator('.mobileDeviceWizardBack').click();
+  await expect(wizard.getByText('Krok 1 z 4')).toBeVisible();
+  await wizard.locator('.mobileDeviceWizardBack').click();
+  await expect(wizard.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible();
+}
+
 // 13.68: bez internetu okno „Brak internetu” z wyborem „Zamknij okno” / „Zostań w formularzu” (nie blokuje aplikacji).
 for (const [roleName, credentials, buttonName, choice] of [['administrator', ADMIN, 'Urządzenia', 'stay'], ['pracownik', WORKER, 'Tabliczki', 'close']]) {
   test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (okno z wyborem), ${choice === 'stay' ? 'po powrocie internetu zapis działa' : '„Zamknij okno” zachowuje dane do ponownego otwarcia'}`, async ({ page }) => {
@@ -56,6 +71,8 @@ for (const [roleName, credentials, buttonName, choice] of [['administrator', ADM
     await page.getByRole('button', { name: buttonName, exact: true }).click();
     const saveButton = page.locator('.mobileDeviceWizardFooter .btn.primary');
     await expect(saveButton).toBeVisible();
+    // 13.71: szkic jest przywracany tylko wtedy, gdy różni się od stanu z serwera — robimy rzeczywistą zmianę.
+    if (choice === 'close') await addUnsavedDevice(page);
 
     await setLogicalOnlineState(page, false);
     await saveButton.click();

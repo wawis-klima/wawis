@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## DEVICE-DRAFT-1371 — niezapisane urządzenia po teście iPhone (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DD-1371-REOPEN | FIXED-UNVERIFIED | Administrator: wejście → wyjście bez zapisu → wejście kasowało szkic (takeDeviceFormDraft usuwał przy odczycie). Odczyt bez usuwania; E2E mobile-device-draft-persistence-v1371 krok 2. |
+| DD-1371-APPCLOSE | FIXED-UNVERIFIED | Pracownik: zamknięcie aplikacji kasowało szkic z pamięci. Tekst urządzeń w localStorage (bez zdjęć i danych klienta, per konto, 14 dni). E2E krok 3 (reload), smoke-device-drafts-v1371. |
+| DD-1371-DISCARD | FIXED-UNVERIFIED | „Odrzuć niezapisane dane” i udany zapis usuwają szkic z pamięci i z telefonu. E2E krok 4, mobile-offline-nameplates-all-roles. |
+| DD-1371-DUPSN | FIXED-UNVERIFIED | Błąd 23505 devices_serial_number_key: ten sam wiersz numerów dwa razy w jednym montażu (logi Postgres 26.10). Kontrola przed zapisem + nowy komunikat. smoke-device-drafts-v1371, smoke-empty-device-serial-hotfix. |
+| DD-1371-1370 | EXTERNAL | Test 26.10 (13.70): komunikat offline dla zdjęć OK, komentarz offline zsynchronizowany OK, przywrócenie szkicu bez zamykania aplikacji OK. |
+| DD-1371-LIVE | EXTERNAL | iPhone po wdrożeniu: scenariusz z RELEASE-GATE postdeploy. |
+
 ## OFFLINE-READERS-1370 — czytniki tabliczek zapisane w telefonie (25.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

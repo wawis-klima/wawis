@@ -44,7 +44,7 @@ jobs:
 
       - name: Verify built E2E evidence (fail-closed)
         if: always()
-        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-built/results.json 6
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-built/results.json 7
 
       - name: Upload report
         if: always()

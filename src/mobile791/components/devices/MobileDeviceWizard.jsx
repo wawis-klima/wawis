@@ -350,6 +350,7 @@ export default function MobileDeviceWizard({
   busy = false,
   submitLabel = 'Zapisz montaż',
   restoredNotice = '',
+  onDiscardRestoredDraft = null,
   onClose,
   onSubmit,
   onAddDevice,
@@ -659,7 +660,25 @@ export default function MobileDeviceWizard({
     <div className="mobileDeviceWizard">
       <WizardHeader title="Urządzenia" step={4} onClose={onClose} />
       <div className="mobileDeviceWizardBody">
-        {restoredNotice ? <div className="mobileDeviceWizardHint" role="status" data-testid="device-draft-restored">{restoredNotice}</div> : null}
+        {restoredNotice ? (
+          <div className="mobileDeviceWizardHint" role="status" data-testid="device-draft-restored">
+            {restoredNotice}
+            {onDiscardRestoredDraft ? (
+              <div>
+                <button
+                  type="button"
+                  className="btn secondary"
+                  data-testid="device-draft-discard"
+                  onClick={() => {
+                    if (window.confirm('Odrzucić niezapisane dane urządzeń? Formularz wróci do stanu zapisanego w systemie.')) onDiscardRestoredDraft();
+                  }}
+                >
+                  Odrzuć niezapisane dane
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         <h3>Dodane urządzenia</h3>
         <div className="mobileDeviceOverviewList">
           {safeDevices.map((device, index) => {

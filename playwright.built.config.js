@@ -10,6 +10,7 @@ export default defineConfig({
     'mobile-photo-queue-repair-v1362.spec.js',
     'mobile-photo-queue-legacy-hold-v1362.spec.js',
     'mobile-offline-nameplates-all-roles-v1363.spec.js',
+    'mobile-device-draft-persistence-v1371.spec.js',
   ],
   timeout: 90_000,
   expect: { timeout: 10_000 },
