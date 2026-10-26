@@ -8,7 +8,9 @@ import { WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js'
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
 test.use({ ...iphone14, serviceWorkers: 'allow' });
 
-test('@mobile 13.76: po instalacji cała wersja jest w telefonie — bez internetu start aplikacji i nieotwierany wcześniej ekran „Tabliczki”', async ({ page, context }) => {
+// Bez tagu @mobile: lista plików wersji istnieje tylko w BUDOWIE produkcyjnej (vite build) — ten test uruchamia
+// built-photo-queue-e2e (playwright.built.config.js), nie zestaw @mobile na serwerze deweloperskim.
+test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start aplikacji i nieotwierany wcześniej ekran „Tabliczki”', async ({ page, context }) => {
   test.setTimeout(180_000);
   await resetMockSupabase(page);
   await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller), null, { timeout: 60_000 });
