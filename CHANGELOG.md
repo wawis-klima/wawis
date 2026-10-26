@@ -1,3 +1,10 @@
+## 13.71
+- Test iPhone 26.10.2026: numery urządzeń wpisane bez internetu znikały po wejściu w „Tabliczki” i wyjściu bez zapisu. Teraz otwarcie formularza nie kasuje niezapisanych danych — znikają dopiero po udanym zapisie albo po świadomym „Odrzuć niezapisane dane”.
+- Wyjście z formularza urządzeń z niezapisanymi zmianami pyta „Zamknąć bez zapisu?” z przyciskiem „Zamknij — zachowaj dane”; dane wracają przy następnym otwarciu urządzeń w tym montażu.
+- Zgoda właściciela („Ok, działamy”, 26.10.2026): sam tekst urządzeń (modele i numery seryjne) jest zapisywany w pamięci telefonu, więc przetrwa zamknięcie aplikacji. Bez danych klienta i bez zdjęć — zdjęcia tabliczek po zamknięciu aplikacji trzeba dodać ponownie (decyzja z 13.66 bez zmian). Szkic jest przypisany do konta i wygasa po 14 dniach.
+- Komunikat przy powtórzonym numerze seryjnym nie każe już uruchamiać SQL — mówi, że ten numer jest już zapisany (np. to samo urządzenie dodane dwa razy) i co zrobić. Przed zapisem aplikacja sama wykrywa dwa urządzenia z identycznymi numerami w jednym montażu.
+- Testy: E2E mobile-device-draft-persistence-v1371 (dokładny scenariusz z testu: bez internetu → zamknij → internet → wejdź → wyjdź bez zapisu → wejdź → dane są; przeładowanie aplikacji; „Odrzuć”), smoke-device-drafts-v1371.
+
 ## 13.70
 - Odczyt numeru SN tabliczki działa bez internetu. W 13.69 w trybie samolotowym odczytywał się tylko model (z EAN), a pole SN zostawało puste, bo czytnik kodu Code 128 i czytnik tekstu (OCR) pobierały swoje pliki z internetu w chwili odczytu.
 - Po zalogowaniu z internetem aplikacja raz, w tle, zapisuje oba czytniki w telefonie (osobny, trwały cache — nie znika przy aktualizacji wersji). Później działają także w trybie samolotowym.

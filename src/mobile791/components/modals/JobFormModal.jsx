@@ -47,6 +47,7 @@ export default function JobFormModal({
   isAdmin = false,
   addJob,
   saveEditedJob,
+  onDiscardRestoredDraft = null,
   busy,
 }) {
   const newJobCommentConfig = getNewJobCommentConfig(isAdmin);
@@ -691,6 +692,7 @@ export default function JobFormModal({
           onSubmit={() => handleSubmit()}
           submitLabel="Zapisz urządzenia i tabliczki"
           restoredNotice={jobForm.restored_draft_notice || ''}
+          onDiscardRestoredDraft={onDiscardRestoredDraft}
           onAddDevice={addDeviceRow}
           onRemoveDevice={removeDeviceRow}
           onChangeDeviceType={updateDeviceType}

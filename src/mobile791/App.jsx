@@ -38,6 +38,7 @@ import { logDiagnostic, startSilentDiagnosticSync } from "./modules/diagnostics.
 import { isTransientSupabaseError } from "./modules/supabase-errors.js";
 import { APP_VERSION } from "./version.js";
 import { scheduleNameplateReaderWarmup } from "./modules/nameplate-reader-warmup.js";
+import { setDeviceDraftOwner } from "./modules/device-form-drafts.js";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -303,6 +304,8 @@ export default function App() {
   });
 
   const isAdmin = profile?.role === "Administrator";
+  // 13.71: szkice urządzeń (także zapisane w telefonie) należą do zalogowanego konta.
+  setDeviceDraftOwner(sessionUser?.id || "");
 
   const applyContractorsCatalogSnapshot = React.useCallback((rows) => {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -394,6 +397,7 @@ export default function App() {
     openAddJob,
     openEditJobForm,
     closeJobModal,
+    discardRestoredDeviceDraft,
   } = useJobFormModal({
     emptyJobForm: EMPTY_JOB_FORM,
     normalizeStatus,
@@ -1610,6 +1614,7 @@ export default function App() {
           isAdmin={isAdmin}
           addJob={addJob}
           saveEditedJob={saveEditedJob}
+          onDiscardRestoredDraft={discardRestoredDeviceDraft}
           busy={busy}
         />
       </Suspense>

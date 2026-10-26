@@ -27,7 +27,8 @@ import { loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { formatMissingNameplateMessage, getJobNameplateCompletion } from "../modules/nameplate-requirements.js";
 import { logDiagnostic } from "../modules/diagnostics.js";
 import { verifyNameplatesWithRecovery } from "../modules/nameplate-save-recovery.js";
-import { getJobDeviceRows } from "../modules/job-devices.js";
+import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
+import { describeDuplicateDeviceSerials, findDuplicateDeviceSerials } from "../modules/device-serial-duplicates.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
@@ -426,14 +427,28 @@ export function useSelectedJobActions({
   }
 
   // 13.68: przywrócony szkic (urządzenia i zdjęcia wpisane bez internetu) + aktualne tabliczki z serwera.
+  // 13.71: szkic z pamięci telefonu (aplikacja była zamknięta) zawiera tylko tekst urządzeń — reszta formularza
+  // pochodzi z serwera, a zdjęcia tabliczek trzeba dodać ponownie.
   function withRestoredDraft(draft, freshForm) {
     const savedAt = new Date(draft.savedAt);
     const time = Number.isNaN(savedAt.getTime()) ? '' : savedAt.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    const base = draft.fromStorage
+      ? { ...freshForm, ...draft.form, pending_nameplate_photos: [] }
+      : { ...draft.form };
     return {
-      ...draft.form,
+      ...base,
       existing_nameplate_photos: freshForm?.existing_nameplate_photos || draft.form?.existing_nameplate_photos || [],
-      restored_draft_notice: `Przywrócono niezapisane dane urządzeń${time ? ` z ${time}` : ''}. Sprawdź je i naciśnij „Zapisz urządzenia i tabliczki”.`,
+      restored_draft_notice: draft.fromStorage
+        ? `Przywrócono niezapisane numery urządzeń${time ? ` z ${time}` : ''}. Aplikacja była zamknięta, więc zdjęcia tabliczek trzeba dodać ponownie. Sprawdź dane i naciśnij „Zapisz urządzenia i tabliczki”.`
+        : `Przywrócono niezapisane dane urządzeń${time ? ` z ${time}` : ''}. Sprawdź je i naciśnij „Zapisz urządzenia i tabliczki”.`,
     };
+  }
+
+  function isDraftSameAsServer(draft, freshForm) {
+    if ((draft?.form?.pending_nameplate_photos || []).length) return false;
+    const a = serializeJobDevicesToFields(draft?.form || {});
+    const b = serializeJobDevicesToFields(freshForm || {});
+    return a.device_model === b.device_model && a.device_serial_number === b.device_serial_number;
   }
 
   async function openSerialNumbersJob(job) {
@@ -495,7 +510,11 @@ export function useSelectedJobActions({
         ...buildEditJobForm({ job: readyJob, profiles, normalizeStatus }),
         nip: linkedContractor?.nip || '',
       };
-      const draft = takeDeviceFormDraft(job.id);
+      let draft = takeDeviceFormDraft(job.id);
+      if (draft && isDraftSameAsServer(draft, nextForm)) {
+        clearDeviceFormDraft(job.id); // szkic nie wnosi zmian (np. zapisany już z innego miejsca)
+        draft = null;
+      }
       openEditJobForm(draft
         ? { jobId: job.id, form: withRestoredDraft(draft, nextForm), initialForm: nextForm, baseJob: currentJob, serialOnly: true }
         : { jobId: job.id, form: nextForm, baseJob: currentJob, serialOnly: true });
@@ -541,6 +560,13 @@ export function useSelectedJobActions({
             return true;
           }),
         });
+        return;
+      }
+      // 13.71: powtórzone numery seryjne — jasny komunikat przed zapisem zamiast błędu bazy.
+      const duplicateSerials = findDuplicateDeviceSerials(form);
+      if (duplicateSerials.length) {
+        logDiagnostic('nameplate.save.duplicate-serial', { jobId: editingJobId, operationId, count: duplicateSerials.length });
+        alert(describeDuplicateDeviceSerials(duplicateSerials));
         return;
       }
       const recordSave = serialOnlyMode

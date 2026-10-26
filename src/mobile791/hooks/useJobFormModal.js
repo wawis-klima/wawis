@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { buildNewJobFormDefaults } from "../modules/job-date.js";
 import { createJobOperationId } from "../../modules/job-create-idempotency.js";
+import { clearDeviceFormDraft, saveDeviceFormDraft } from "../modules/device-form-drafts.js";
 
 function getComparableJobForm(form, normalizeStatus) {
   return JSON.stringify({
@@ -85,8 +86,35 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     setShowModal(true);
   }
 
+  // 13.71: „Odrzuć niezapisane dane” w kreatorze urządzeń — świadome usunięcie szkicu i powrót do stanu z serwera.
+  function discardRestoredDeviceDraft() {
+    if (!editingJobId) return;
+    clearDeviceFormDraft(editingJobId);
+    setJobForm({ ...jobFormInitialRef.current, restored_draft_notice: '' });
+  }
+
   function closeJobModal({ busy } = {}) {
     if (!showModal || busy) return;
+
+    // 13.71 (test iPhone 26.10.2026): wyjście z kreatora urządzeń bez zapisu nie kasuje wpisanych numerów —
+    // zostają jako szkic do następnego otwarcia (także po zamknięciu aplikacji: sam tekst, bez zdjęć).
+    if (serialOnlyMode && editingJobId && isJobFormDirty()) {
+      const draftJobId = editingJobId;
+      openConfirmDialog({
+        variant: "discard",
+        title: "Zamknąć bez zapisu?",
+        message: "Urządzenia nie zostały zapisane w systemie. Wpisane modele i numery seryjne zostaną zachowane na tym telefonie i wrócą przy następnym otwarciu urządzeń w tym montażu. Zdjęcia tabliczek — do zamknięcia aplikacji.",
+        confirmLabel: "Zamknij — zachowaj dane",
+        onConfirm: async () => {
+          saveDeviceFormDraft(draftJobId, { ...jobFormRef.current, restored_draft_notice: '' });
+          resetJobModalState();
+        },
+      });
+      return;
+    }
+
+    // Formularz urządzeń bez zmian względem serwera — ewentualny szkic jest już nieaktualny.
+    if (serialOnlyMode && editingJobId) clearDeviceFormDraft(editingJobId);
 
     if (isJobFormDirty()) {
       openConfirmDialog({
@@ -116,5 +144,6 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
     openAddJob,
     openEditJobForm,
     closeJobModal,
+    discardRestoredDeviceDraft,
   };
 }

@@ -81,7 +81,7 @@ test.describe('@mobile WAWIS 13.06 zamykanie kreatora tabliczek', () => {
 
     await wizard.locator('.mobileDeviceWizardClose').click();
     confirm = await assertConfirmAboveWizard(page);
-    await confirm.getByRole('button', { name: 'Zamknij bez zapisu' }).click();
+    await confirm.getByRole('button', { name: 'Zamknij — zachowaj dane' }).click();
     await expect(wizard).toHaveCount(0);
     await expect(confirm).toHaveCount(0);
   });
@@ -99,7 +99,7 @@ test.describe('@mobile WAWIS 13.06 zamykanie kreatora tabliczek', () => {
 
     await wizard.locator('.mobileDeviceWizardClose').click();
     const confirm = await assertConfirmAboveWizard(page);
-    await confirm.getByRole('button', { name: 'Zamknij bez zapisu' }).click();
+    await confirm.getByRole('button', { name: 'Zamknij — zachowaj dane' }).click();
     await expect(wizard).toHaveCount(0);
   });
 });

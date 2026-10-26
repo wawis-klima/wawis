@@ -6,10 +6,7 @@ export const SOURCE_JOB_ID_TEXT_HOTFIX_MESSAGE = [
 ].join(' ');
 
 
-export const EMPTY_DEVICE_SERIAL_HOTFIX_MESSAGE = [
-  'Baza Supabase ma starą regułę unikalności numerów seryjnych i blokuje zapis kolejnego urządzenia bez numeru.',
-  'Uruchom w Supabase SQL Editor plik devices-empty-serial-hotfix-v8.60.sql, a następnie zapisz montaż ponownie.',
-].join(' ');
+
 
 function collectErrorText(error) {
   if (!error) return '';
@@ -24,6 +21,25 @@ function collectErrorText(error) {
   return String(error);
 }
 
+
+// WAWIS 13.71: indeks devices_serial_number_key na produkcji pomija puste numery (hotfix v8.60 wdrożony),
+// więc ten błąd oznacza RZECZYWISTY powtórzony numer seryjny — nie „starą regułę w bazie”.
+// Dawny komunikat kazał uruchamiać plik SQL i wprowadzał pracowników w błąd (test iPhone 26.10.2026).
+export const DUPLICATE_DEVICE_SERIAL_MESSAGE = [
+  'Ten numer seryjny jest już zapisany — w tym montażu (urządzenie dodane dwa razy) albo w innym montażu.',
+  'Sprawdź listę urządzeń, usuń powtórzone urządzenie lub popraw numer i zapisz ponownie.',
+].join(' ');
+
+export function getDuplicateDeviceSerialValue(error) {
+  const details = collectErrorText(error);
+  const match = details.match(/\(lower\(btrim\(serial_number\)\)\)=\((.+?)\) already exists/i);
+  return match ? match[1].toUpperCase() : '';
+}
+
+export function getDuplicateDeviceSerialMessage(error) {
+  const value = getDuplicateDeviceSerialValue(error);
+  return value ? `${DUPLICATE_DEVICE_SERIAL_MESSAGE} Numer: ${value}.` : DUPLICATE_DEVICE_SERIAL_MESSAGE;
+}
 
 export function isEmptyDeviceSerialUniqueError(error) {
   const message = collectErrorText(error).toLowerCase();
@@ -80,7 +96,7 @@ export function normalizeDatabaseErrorMessage(error, fallbackMessage = 'Wystąpi
   }
 
   if (isEmptyDeviceSerialUniqueError(error)) {
-    return EMPTY_DEVICE_SERIAL_HOTFIX_MESSAGE;
+    return getDuplicateDeviceSerialMessage(error);
   }
 
   if (isSourceJobIdTypeMismatchError(error)) {

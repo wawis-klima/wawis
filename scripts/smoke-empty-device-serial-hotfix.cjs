@@ -25,10 +25,12 @@ assert.match(sql, /create unique index devices_serial_number_key/i);
 assert.match(sql, /where nullif\(btrim\(serial_number\), ''\) is not null/i);
 assert.doesNotMatch(sql, /update public\.devices\s+set serial_number/i, 'Hotfix nie może nadpisywać istniejących numerów');
 
-assert.match(mobileErrors, /EMPTY_DEVICE_SERIAL_HOTFIX_MESSAGE/);
 assert.match(mobileErrors, /isEmptyDeviceSerialUniqueError/);
 assert.match(mobileErrors, /devices_serial_number_key/);
-assert.match(mobileErrors, /devices-empty-serial-hotfix-v8\.60\.sql/);
+// 13.71: hotfix v8.60 jest na produkcji — błąd unikalności oznacza rzeczywisty duplikat numeru,
+// komunikat nie może już kazać uruchamiać pliku SQL (mylił pracowników).
+assert.doesNotMatch(mobileErrors, /Uruchom w Supabase SQL Editor plik devices-empty-serial-hotfix/);
+assert.match(mobileErrors, /DUPLICATE_DEVICE_SERIAL_MESSAGE/);
 
 assert.equal(
   packageJson.scripts['test:smoke:empty-device-serial'],

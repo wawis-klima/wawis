@@ -164,6 +164,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-nameplate-ai-barcode',
     'npm run test:smoke:desktop-nameplate-layout-profiles',
     'npm run test:smoke:mobile-nameplate-verification',
+    'node scripts/smoke-device-drafts-v1371.mjs',
     'npm run test:smoke:desktop-nameplate-read-resilience',
     'npm run test:smoke:desktop-nameplate-automatic-fallback',
     'npm run test:smoke:desktop-nameplate-ean-separation',
