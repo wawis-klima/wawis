@@ -9,6 +9,7 @@
 | PC-1376-PREVIOUS | FIXED-UNVERIFIED | activate: bieżący + 1 poprzedni wawis-app-shell; cache czytników tabliczek nietknięty. smoke pkt 5, smoke-nameplate-offline-readers-v1370. |
 | PC-1376-IDB | FIXED-UNVERIFIED | wawis-mobile-offline-data / wawis-app-read-cache otwierane bez numeru; baza v7/v5 → komentarz offline OK, wersja nieobniżona. E2E mobile-indexeddb-newer-version-v1376 (Chromium + WebKit). LOCAL-DATA-COMPAT: minimalna wersja powrotu nadal 13.62. |
 | PC-1376-REGRESSION | REGRESSION | Komentarze/statusy offline, kolejka zdjęć, czytniki offline, szkice urządzeń — built E2E (Chromium, WebKit). |
+| PC-1376-WHITESCREEN | FIXED-UNVERIFIED | iPhone 26.10 (13.75, samolot): Diagnostyka → biały ekran (nieudany import leniwego ekranu bez obsługi). lazySafe dla wszystkich leniwych ekranów (mobile i desktop): komunikat zamiast białego ekranu. E2E mobile-lazy-screen-fallback-v1376 (Chromium + WebKit), mobile-precache-offline-v1376 (Diagnostyka offline). |
 | PC-1376-RETRIES | FIXED-UNVERIFIED | Decyzja właściciela: retries: CI ? 1 : 0 we wszystkich konfiguracjach Playwright; weryfikator built E2E pokazuje ostrzeżenie „niestabilny” dla testów zaliczonych po ponowieniu. Dwa niepowodzenia = NO-GO. |
 | PC-1376-LIVE | EXTERNAL | iPhone na dwóch kolejnych wersjach: aktualizacja z internetem → tryb samolotowy → wszystkie ekrany. Chromium nie dowodzi zachowania SW w Safari. |
 

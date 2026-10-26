@@ -50,7 +50,7 @@ jobs:
 
       - name: Verify WebKit E2E evidence (fail-closed)
         if: always()
-        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 15
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 16
 
       - name: Upload report
         if: always()

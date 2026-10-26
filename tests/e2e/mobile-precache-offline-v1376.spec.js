@@ -10,7 +10,7 @@ test.use({ ...iphone14, serviceWorkers: 'allow' });
 
 // Bez tagu @mobile: lista plików wersji istnieje tylko w BUDOWIE produkcyjnej (vite build) — ten test uruchamia
 // built-photo-queue-e2e (playwright.built.config.js), nie zestaw @mobile na serwerze deweloperskim.
-test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start aplikacji i nieotwierany wcześniej ekran „Tabliczki”', async ({ page, context }) => {
+test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start aplikacji, Diagnostyka i nieotwierany wcześniej ekran „Tabliczki”', async ({ page, context }) => {
   test.setTimeout(180_000);
   await resetMockSupabase(page);
   await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller), null, { timeout: 60_000 });
@@ -67,6 +67,12 @@ test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start
     const screen = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 400);
     throw new Error(`${error.message}\nEkran bez sieci: ${screen}\nNieudane pliki: ${failedRequests.join('; ')}`);
   }
+  // Diagnostyka (test iPhone 26.10, 13.75: bez internetu biały ekran — ekran nie był zapisany w telefonie).
+  await page.locator('.wawisVersionDiagnosticsButton').click();
+  await expect(page.getByTestId('diagnostics-nameplate-readers'), `Diagnostyka bez sieci: ${failedRequests.join('; ')}`).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('lazy-screen-unavailable')).toHaveCount(0);
+  await page.locator('.wawisVersionDiagnosticsButton').click();
+
   await page.locator('.statusActionButton[title="W trakcie"]').click();
   await page.getByText('Klient Testowy B', { exact: true }).first().click();
   await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();

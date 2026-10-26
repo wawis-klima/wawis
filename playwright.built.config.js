@@ -14,6 +14,7 @@ export default defineConfig({
     'mobile-device-draft-save-now-v1372.spec.js',
     'mobile-precache-offline-v1376.spec.js',
     'mobile-indexeddb-newer-version-v1376.spec.js',
+    'mobile-lazy-screen-fallback-v1376.spec.js',
   ],
   timeout: 90_000,
   expect: { timeout: 10_000 },
