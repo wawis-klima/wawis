@@ -351,6 +351,7 @@ export default function MobileDeviceWizard({
   submitLabel = 'Zapisz montaż',
   restoredNotice = '',
   onDiscardRestoredDraft = null,
+  autoSubmit = false,
   onClose,
   onSubmit,
   onAddDevice,
@@ -511,6 +512,15 @@ export default function MobileDeviceWizard({
     setPendingMismatchConfirmation('');
     onSubmit?.();
   }
+
+  // 13.72: „Zapisz teraz” z paska na liście montaży — jeden raz uruchamiamy ten sam zapis co przycisk w stopce.
+  // Ostrzeżenia (para modeli, potwierdzenie SN, konflikt) zatrzymują zapis i zostawiają formularz otwarty.
+  const autoSubmitDoneRef = useRef(false);
+  useEffect(() => {
+    if (!autoSubmit || autoSubmitDoneRef.current || busy || !safeDevices.length) return;
+    autoSubmitDoneRef.current = true;
+    handleSubmit();
+  });
 
   function renderPhotoCapture(unitRef, label) {
     const photoState = getPhotoState({ pendingPhotos, existingPhotos, deviceIndex: activeDeviceIndex, unitRef });

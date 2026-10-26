@@ -90,7 +90,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
   function discardRestoredDeviceDraft() {
     if (!editingJobId) return;
     clearDeviceFormDraft(editingJobId);
-    setJobForm({ ...jobFormInitialRef.current, restored_draft_notice: '' });
+    setJobForm({ ...jobFormInitialRef.current, restored_draft_notice: '', auto_save_draft: false });
   }
 
   function closeJobModal({ busy } = {}) {
@@ -106,7 +106,7 @@ export function useJobFormModal({ emptyJobForm, normalizeStatus, openConfirmDial
         message: "Urządzenia nie zostały zapisane w systemie. Wpisane modele i numery seryjne zostaną zachowane na tym telefonie i wrócą przy następnym otwarciu urządzeń w tym montażu. Zdjęcia tabliczek — do zamknięcia aplikacji.",
         confirmLabel: "Zamknij — zachowaj dane",
         onConfirm: async () => {
-          saveDeviceFormDraft(draftJobId, { ...jobFormRef.current, restored_draft_notice: '' });
+          saveDeviceFormDraft(draftJobId, { ...jobFormRef.current, restored_draft_notice: '', auto_save_draft: false });
           resetJobModalState();
         },
       });

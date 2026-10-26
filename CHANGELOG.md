@@ -1,3 +1,9 @@
+## 13.72
+- Decyzja właściciela (26.10.2026): po powrocie internetu na liście montaży pojawia się pasek „Niezapisane tabliczki: <klient> — Zapisz teraz”. Jedno dotknięcie zapisuje urządzenia i tabliczki wpisane bez internetu — bez szukania montażu i wchodzenia w „Tabliczki”.
+- „Zapisz teraz” uruchamia dokładnie ten sam zapis co przycisk „Zapisz urządzenia i tabliczki”: gdy coś wymaga uwagi (potwierdzenie numeru SN, nietypowa para modeli, zmiana w montażu przez kogoś innego), formularz zostaje otwarty z informacją, co poprawić. Bez dotknięcia nic nie zapisuje się samo.
+- Bez internetu pasek się nie pokazuje. Znika po udanym zapisie albo po „Odrzuć niezapisane dane”.
+- Testy: E2E mobile-device-draft-save-now-v1372 (bez internetu → Zamknij okno → internet → „Zapisz teraz” → dane w systemie), smoke-device-drafts-v1371 rozszerzony.
+
 ## 13.71
 - Test iPhone 26.10.2026: numery urządzeń wpisane bez internetu znikały po wejściu w „Tabliczki” i wyjściu bez zapisu. Teraz otwarcie formularza nie kasuje niezapisanych danych — znikają dopiero po udanym zapisie albo po świadomym „Odrzuć niezapisane dane”.
 - Wyjście z formularza urządzeń z niezapisanymi zmianami pyta „Zamknąć bez zapisu?” z przyciskiem „Zamknij — zachowaj dane”; dane wracają przy następnym otwarciu urządzeń w tym montażu.

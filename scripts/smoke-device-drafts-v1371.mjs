@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import {
-  clearDeviceFormDraft, getDeviceFormDraft, saveDeviceFormDraft, setDeviceDraftOwner, takeDeviceFormDraft, toStorableDeviceDraftForm,
+  clearDeviceFormDraft, getDeviceFormDraft, listDeviceFormDrafts, DEVICE_DRAFTS_CHANGED_EVENT, saveDeviceFormDraft, setDeviceDraftOwner, takeDeviceFormDraft, toStorableDeviceDraftForm,
 } from '../src/mobile791/modules/device-form-drafts.js';
 import { findDuplicateDeviceSerials, describeDuplicateDeviceSerials } from '../src/mobile791/modules/device-serial-duplicates.js';
 import { getDuplicateDeviceSerialMessage, DUPLICATE_DEVICE_SERIAL_MESSAGE } from '../src/mobile791/modules/database-errors.js';
 
 // WAWIS 13.71 — test iPhone 26.10.2026.
 const store = new Map();
-globalThis.window = { localStorage: {
+const events = [];
+globalThis.window = { dispatchEvent: (event) => events.push(event.type), localStorage: {
   getItem: (k) => (store.has(k) ? store.get(k) : null),
   setItem: (k, v) => store.set(k, String(v)),
   removeItem: (k) => store.delete(k),
@@ -50,6 +51,17 @@ clearDeviceFormDraft('job-2');
 assert.equal(getDeviceFormDraft('job-2'), null);
 assert.equal(store.has('wawis-device-drafts-v1:user-a'), false);
 
+// 4b. 13.72: lista szkiców dla paska „Zapisz teraz” + zdarzenie zmiany.
+events.length = 0;
+saveDeviceFormDraft('job-a', form);
+saveDeviceFormDraft('job-b', form);
+assert.deepEqual(listDeviceFormDrafts().map((d) => d.jobId).sort(), ['job-a', 'job-b']);
+clearDeviceFormDraft('job-a');
+assert.deepEqual(listDeviceFormDrafts().map((d) => d.jobId), ['job-b']);
+assert.ok(events.filter((type) => type === DEVICE_DRAFTS_CHANGED_EVENT).length >= 3);
+clearDeviceFormDraft('job-b');
+assert.equal(listDeviceFormDrafts().length, 0);
+
 // 5. Brak localStorage (tryb prywatny / pełna pamięć) nie psuje aplikacji — zostaje szkic w pamięci.
 globalThis.window.localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
 assert.equal(saveDeviceFormDraft('job-3', form), true);
@@ -68,4 +80,11 @@ assert.match(msg, /jw: x1234 \| jz: y5678/i);
 assert.match(DUPLICATE_DEVICE_SERIAL_MESSAGE, /urządzenie dodane dwa razy/);
 assert.doesNotMatch(msg, /SQL|hotfix/i);
 
-console.log('smoke-device-drafts-v1371: OK');
+// 8. 13.72: „Zapisz teraz” używa zwykłego zapisu (ten sam handleSubmit), nie osobnej ścieżki.
+import('node:fs').then(({ readFileSync }) => {
+  const wizard = readFileSync(new URL('../src/mobile791/components/devices/MobileDeviceWizard.jsx', import.meta.url), 'utf8');
+  assert.match(wizard, /autoSubmitDoneRef\.current = true;\s*handleSubmit\(\);/);
+  const bar = readFileSync(new URL('../src/mobile791/components/devices/PendingDeviceDraftsBar.jsx', import.meta.url), 'utf8');
+  assert.match(bar, /if \(!online \|\| !drafts\.length\) return null;/);
+  console.log('smoke-device-drafts-v1371: OK');
+});

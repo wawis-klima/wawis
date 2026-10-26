@@ -692,6 +692,7 @@ export default function JobFormModal({
           onSubmit={() => handleSubmit()}
           submitLabel="Zapisz urządzenia i tabliczki"
           restoredNotice={jobForm.restored_draft_notice || ''}
+          autoSubmit={Boolean(jobForm.auto_save_draft && jobForm.restored_draft_notice)}
           onDiscardRestoredDraft={onDiscardRestoredDraft}
           onAddDevice={addDeviceRow}
           onRemoveDevice={removeDeviceRow}

@@ -451,7 +451,8 @@ export function useSelectedJobActions({
     return a.device_model === b.device_model && a.device_serial_number === b.device_serial_number;
   }
 
-  async function openSerialNumbersJob(job) {
+  // 13.72: autoSave=true (pasek „Zapisz teraz”) — po otwarciu przywróconego szkicu od razu uruchamiamy zwykły zapis.
+  async function openSerialNumbersJob(job, { autoSave = false } = {}) {
     if (!job) return;
     if (!canEditResolvedJob(job)) {
       alert(WORKER_COMPLETED_JOB_LOCK_MESSAGE);
@@ -516,7 +517,7 @@ export function useSelectedJobActions({
         draft = null;
       }
       openEditJobForm(draft
-        ? { jobId: job.id, form: withRestoredDraft(draft, nextForm), initialForm: nextForm, baseJob: currentJob, serialOnly: true }
+        ? { jobId: job.id, form: { ...withRestoredDraft(draft, nextForm), auto_save_draft: Boolean(autoSave) }, initialForm: nextForm, baseJob: currentJob, serialOnly: true }
         : { jobId: job.id, form: nextForm, baseJob: currentJob, serialOnly: true });
       if (draft) logDiagnostic('device.draft.restored', { jobId: job.id, pendingCount: (draft.form?.pending_nameplate_photos || []).length });
     } catch (error) {
@@ -554,7 +555,7 @@ export function useSelectedJobActions({
           cancelLabel: 'Zostań w formularzu',
           onConfirm: async () => runConfirmAction(async () => {
             const draftJobId = editingJobId;
-            if (serialOnlyMode) saveDeviceFormDraft(draftJobId, { ...(jobFormRef.current || form), restored_draft_notice: '' });
+            if (serialOnlyMode) saveDeviceFormDraft(draftJobId, { ...(jobFormRef.current || form), restored_draft_notice: '', auto_save_draft: false });
             logDiagnostic('offline.full-edit.closed', { jobId: draftJobId, serialOnlyMode, isAdmin, draftKept: Boolean(serialOnlyMode) });
             resetJobModalState();
             return true;
