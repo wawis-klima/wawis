@@ -9,12 +9,8 @@ name: WAWIS backup to R2
 on:
   schedule:
     - cron: '20 0 * * *'   # codziennie ok. 01:20 czasu zimowego / 02:20 letniego w Polsce
-  workflow_dispatch:
-  # TYMCZASOWO (26.10.2026): próbna kopia z gałęzi ops/backup-r2 po konfiguracji sekretów przez właściciela.
-  # Workflow nie istnieje jeszcze na main, więc workflow_dispatch jest niedostępny. Usunąć przed scaleniem.
-  push:
-    branches: [ops/backup-r2]
-    paths: ['.github/workflows/backup-r2.yml']
+  workflow_dispatch:   # ręczne uruchomienie: Actions → „WAWIS backup to R2” → Run workflow
+  # Próbna kopia z produkcji 26.10.2026 (z gałęzi ops/backup-r2): baza, pliki i próba odtworzenia — OK.
 
 permissions:
   contents: read

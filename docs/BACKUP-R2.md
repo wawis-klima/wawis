@@ -108,7 +108,7 @@ Test działania skryptów na fikcyjnych danych, bez sekretów, robi workflow **�
    postgresql://postgres.uohziyaudbpwmupvljyd:[YOUR-PASSWORD]@aws-…-eu-central-1.pooler.supabase.com:5432/postgres
    ```
 
-   Zamień `postgres.` na `wawis_backup.` oraz `[YOUR-PASSWORD]` na hasło z punktu 2. Wynik:
+   Zamień `postgres.` na `wawis_backup.` oraz `[YOUR-PASSWORD]` (razem z nawiasami) na hasło konta `wawis_backup`, wpisane w poleceniu SQL powyżej — **nie** hasło szyfrowania z kroku 1 ani klucze Cloudflare. Okno „Connect” niczego nie zapisuje: gotowy adres przygotuj w notatniku/menedżerze haseł. Wynik:
 
    ```
    postgresql://wawis_backup.uohziyaudbpwmupvljyd:TWOJE_HASLO@aws-…-eu-central-1.pooler.supabase.com:5432/postgres
@@ -130,7 +130,7 @@ Test działania skryptów na fikcyjnych danych, bez sekretów, robi workflow **�
 1. [github.com/wawis-klima/wawis](https://github.com/wawis-klima/wawis) → **Settings** → **Environments** → **New environment** → nazwa: `wawis-backup` → **Configure environment**.
 2. **Deployment branches and tags** → **Selected branches and tags** → **Add deployment branch or tag rule**:
    - `main`
-   - `ops/backup-r2` (tymczasowo, do próbnych kopii; Claude poprosi o usunięcie po scaleniu)
+   - `ops/backup-r2` (tymczasowo, do próbnej kopii; po scaleniu do `main` usuń tę regułę)
 3. **Environment secrets** → **Add environment secret** (nazwa → wartość):
 
    | Nazwa | Wartość |
@@ -200,8 +200,8 @@ rclone copy r2crypt:job-photos/<id_montażu>/ ./odtworzone/
 
 ## Kryteria gotowości systemu kopii
 
-- [ ] Workflow „backup self-test” zielony.
-- [ ] Pierwsza kopia z produkcji: baza, pliki i próba odtworzenia — OK.
+- [x] Workflow „backup self-test” zielony.
+- [x] Pierwsza kopia z produkcji: baza, pliki i próba odtworzenia — OK (26.10.2026, ok. 10 min; ostrzeżenie: 13 historycznych plików 0 B w job-photos — raport z 26.10).
 - [ ] Ręczny test odtworzenia 3 losowych zdjęć i 1 protokołu: pliki otwierają się poprawnie.
 - [ ] 7 kolejnych udanych kopii dziennych (etap potwierdzenia niezawodności, nie blokuje innych prac).
 - [ ] Test powiadomienia: ręczne uruchomienie (workflow_dispatch) z celowo błędną zmienną w kontrolowanych warunkach tworzy zgłoszenie `backup-failure`, a następna udana kopia je zamyka.
