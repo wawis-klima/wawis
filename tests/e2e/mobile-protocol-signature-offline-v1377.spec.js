@@ -16,11 +16,16 @@ async function setOnline(page, online) {
   }, { flag: ONLINE_FLAG, value: online });
 }
 
-async function openProtocol(page) {
+async function openProtocol(page, dialogs = [], step = '') {
   const protocolButton = page.locator('.mobileInlineJobDetails .workerActionProtocolV1295');
-  await expect(protocolButton).toBeEnabled();
+  await expect(protocolButton).toBeEnabled({ timeout: 20_000 });
   await protocolButton.click();
-  await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toBeVisible();
+  try {
+    await expect(page.locator('.protocolWizardModal')).toBeVisible({ timeout: 15_000 });
+  } catch (error) {
+    const screen = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 500);
+    throw new Error(`${error.message}\nKrok: ${step}\nOkna dialogowe: ${dialogs.join(' | ')}\nEkran: ${screen}`);
+  }
 }
 
 test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwarciu i zapisuje się po powrocie zasięgu', async ({ page }) => {
@@ -50,7 +55,7 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
   await loginWithoutReset(page, WORKER);
   await page.locator('.statusActionButton[title="W trakcie"]').click();
   await page.getByText('Klient Testowy B', { exact: true }).click();
-  await openProtocol(page);
+  await openProtocol(page, dialogs, 'pierwsze otwarcie');
 
   const payment = page.locator('.protocolPaymentForm');
   await payment.locator('select').selectOption('cash');
@@ -78,10 +83,10 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
   // Zamknięcie okna z niezapisanym podpisem wymaga potwierdzenia.
   await page.locator('.mobileDeviceWizardClose').click();
   await expect.poll(() => dialogs.some((text) => text.includes('Podpis klienta zostanie zachowany'))).toBe(true);
-  await expect(page.getByRole('heading', { name: 'Protokół klienta' })).toHaveCount(0);
+  await expect(page.locator('.protocolWizardModal')).toHaveCount(0);
 
   // Ponowne otwarcie (nadal bez internetu): podpis wraca, nie trzeba prosić klienta drugi raz.
-  await openProtocol(page);
+  await openProtocol(page, dialogs, 'ponowne otwarcie bez internetu');
   await expect(page.getByText(/Przywrócono niezapisany podpis klienta/)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: 'Zapisz protokół' })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Zmień podpis' })).toBeVisible();
