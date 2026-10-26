@@ -15,6 +15,7 @@ export default defineConfig({
     'mobile-precache-offline-v1376.spec.js',
     'mobile-indexeddb-newer-version-v1376.spec.js',
     'mobile-lazy-screen-fallback-v1376.spec.js',
+    'mobile-protocol-signature-offline-v1377.spec.js',
   ],
   timeout: 90_000,
   expect: { timeout: 10_000 },
