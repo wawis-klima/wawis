@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## NOTIF-RLS-1374 — fałszywy błąd przy komentarzu (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| NR-1374-RETURNING | FIXED-UNVERIFIED | INSERT … RETURNING do notifications dla innego użytkownika łamał politykę SELECT notifications_read_own (odtworzone na lokalnym PostgreSQL 16). Insert bez odczytu zwrotnego. smoke-notifications-rls-v1374. |
+| NR-1374-DUPLICATE | FIXED-UNVERIFIED | Błąd powiadomienia po zapisanym komentarzu nie jest rzucany (mobile i desktop) — koniec ponownego dodawania tego samego komentarza. smoke v1374. |
+| NR-1374-POLICY | REGRESSION | Bez zmian w RLS, schemacie i funkcjach bazy. |
+| NR-1374-LIVE | EXTERNAL | Komentarz pracownika na iPhonie bez alertu; SELECT: nowy wiersz notifications. |
+
 ## AI-SAVING-1373 — AI tabliczek tylko gdy czytnik nie wystarczył (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
