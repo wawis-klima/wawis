@@ -48,7 +48,8 @@ test('@mobile 13.72: „Zapisz teraz” po powrocie internetu zapisuje urządzen
 
   const statusFilter = page.locator('.statusActionButton[title="W trakcie"]');
   if (await statusFilter.isVisible().catch(() => false)) await statusFilter.click();
-  await page.getByText('Klient Testowy B', { exact: true }).first().click();
+  // Karta montażu na liście (nie pasek „Niezapisane tabliczki” z tą samą nazwą klienta — 13.72).
+  await page.locator('.mobileJobClient[title="Klient Testowy B"]').first().click();
   await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
   const saveButton = page.locator('.mobileDeviceWizardFooter .btn.primary');
   await expect(saveButton).toBeVisible({ timeout: 20_000 });
