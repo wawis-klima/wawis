@@ -14,7 +14,13 @@ function collect(suite, out = []) {
       const errorText = [last.error?.message, ...(last.errors || []).map((e) => e?.message)]
         .filter(Boolean).filter((m, i, all) => all.indexOf(m) === i).join(' || ')
         .replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim().slice(0, 600);
-      out.push({ title: spec.title, file: spec.file || suite.file || '', status: last.status || 'missing', retries: Math.max(0, results.length - 1), errorText });
+      const first = results[0] || {};
+      const firstErrorText = results.length > 1
+        ? [first.error?.message, ...(first.errors || []).map((e) => e?.message)].filter(Boolean)
+          .filter((m, i, all) => all.indexOf(m) === i).join(' || ')
+          .replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim().slice(0, 600)
+        : '';
+      out.push({ title: spec.title, file: spec.file || suite.file || '', status: last.status || 'missing', retries: Math.max(0, results.length - 1), errorText, firstErrorText });
     }
   }
   for (const child of suite.suites || []) collect(child, out);
@@ -33,7 +39,7 @@ const summary = `wykonane=${tests.length} zaliczone=${passed.length} niezaliczon
 console.log(`::notice title=Built E2E wynik::${summary}`);
 for (const t of tests) console.log(`::notice title=Built E2E ${t.status}::${t.file} › ${t.title}${t.retries ? ` (ponowienia: ${t.retries})` : ''}`);
 // Test zaliczony dopiero po ponowieniu: widoczne ostrzeżenie (niestabilny test do naprawy), ale nie blokada.
-for (const t of passed.filter((item) => item.retries)) console.log(`::warning title=Built E2E niestabilny::${t.file} › ${t.title} — zaliczony po ${t.retries} ponowieniu`);
+for (const t of passed.filter((item) => item.retries)) console.log(`::warning title=Built E2E niestabilny::${t.file} › ${t.title} — zaliczony po ${t.retries} ponowieniu. Pierwsza próba: ${(t.firstErrorText || '(brak treści błędu)').replace(/%/g, '%25').replace(/\r?\n/g, ' ')}`);
 // Treść błędu w adnotacji: logi i artefakty bywają niedostępne poza GitHubem.
 for (const t of failed) if (t.errorText) console.log(`::error title=Built E2E błąd::${t.title} — ${t.errorText.replace(/%/g, '%25').replace(/\r?\n/g, ' ')}`);
 if (tests.length !== expected || failed.length) {
