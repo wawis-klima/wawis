@@ -28,7 +28,8 @@ const wizard = (page) => page.locator('.mobileDeviceWizardOverlay .mobileDeviceW
 async function openJobNameplates(page) {
   const statusFilter = page.locator('.statusActionButton[title="W trakcie"]');
   if (await statusFilter.isVisible().catch(() => false)) await statusFilter.click();
-  await page.getByText('Klient Testowy B', { exact: true }).first().click();
+  // Karta montażu na liście (nie pasek „Niezapisane tabliczki” z tą samą nazwą klienta — 13.72).
+  await page.locator('.mobileJobClient[title="Klient Testowy B"]').first().click();
   await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
   await expect(page.locator('.mobileDeviceWizardFooter .btn.primary')).toBeVisible({ timeout: 20_000 });
 }

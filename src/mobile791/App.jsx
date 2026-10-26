@@ -1379,7 +1379,7 @@ export default function App() {
     }} />;
   }
 
-  async function handleQuickNameplates(job) {
+  async function handleQuickNameplates(job, options = {}) {
     if (!job || !canEditResolvedJob(job)) return;
     // A summary card does not necessarily carry the devices/photos required by
     // the existing serial-only editor. Load details before opening that editor.
@@ -1393,7 +1393,7 @@ export default function App() {
         window.alert("Nie udało się pobrać szczegółów montażu. Otwórz kartę i spróbuj ponownie.");
         return;
       }
-      openSerialNumbersJob(resolved);
+      openSerialNumbersJob(resolved, options);
     } catch {
       window.alert("Nie udało się pobrać urządzeń i tabliczek. Spróbuj ponownie z karty montażu.");
     }
@@ -1475,6 +1475,7 @@ export default function App() {
             selectedJob={selectedJob}
             setSelectedJob={setSelectedJob}
             onQuickNameplates={handleQuickNameplates}
+            onSaveDeviceDraft={(job) => handleQuickNameplates(job, { autoSave: true })}
             onQuickProtocol={handleQuickProtocol}
             formatDate={formatDate}
             toggleSort={toggleSort}

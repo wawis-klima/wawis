@@ -9,6 +9,7 @@ import SwipeableJobCard from "./SwipeableJobCard.jsx";
 import "./swipeable-job-card.css";
 import "./mobile-interactions-v1307.css";
 import InlineJobDetailsMotion from "./InlineJobDetailsMotion.jsx";
+import PendingDeviceDraftsBar from "../devices/PendingDeviceDraftsBar.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
 
 const MobileDiagnosticsPanel = React.lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
@@ -67,6 +68,7 @@ export default function MobileJobsLayout({
   profiles,
   onQuickNameplates = () => {},
   onQuickProtocol = () => {},
+  onSaveDeviceDraft = null,
 }) {
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
   const [filterOpen, setFilterOpen] = useState(Boolean(query));
@@ -242,6 +244,9 @@ export default function MobileJobsLayout({
             </button>
           </div>
         ) : null}
+
+        {/* 13.72: po powrocie internetu — „Zapisz teraz” dla urządzeń wpisanych bez internetu. */}
+        {onSaveDeviceDraft ? <PendingDeviceDraftsBar jobs={jobs} onSaveNow={onSaveDeviceDraft} /> : null}
 
         {/* 13.65: Centrum synchronizacji („Synchronizuj teraz”) także dla administratora.
             13.67: na liście montaży tylko przy problemie; w Diagnostyce zawsze. */}

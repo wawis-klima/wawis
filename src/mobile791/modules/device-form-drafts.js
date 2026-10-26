@@ -9,6 +9,8 @@
 // Pełna wersja (ze zdjęciami) żyje w pamięci otwartej aplikacji.
 
 const STORAGE_PREFIX = 'wawis-device-drafts-v1';
+// 13.72: pasek „Zapisz teraz” na liście montaży słucha tego zdarzenia.
+export const DEVICE_DRAFTS_CHANGED_EVENT = 'wawis-device-drafts-changed';
 const MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 const memoryDrafts = new Map();
 let owner = '';
@@ -36,6 +38,16 @@ function writeStored(map) {
     return true;
   } catch {
     return false; // Brak miejsca / tryb prywatny: zostaje szkic w pamięci.
+  }
+}
+
+function notifyChanged() {
+  try {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof Event === 'function') {
+      window.dispatchEvent(new Event(DEVICE_DRAFTS_CHANGED_EVENT));
+    }
+  } catch {
+    // Brak zdarzeń nie może blokować zapisu szkicu.
   }
 }
 
@@ -67,6 +79,7 @@ export function setDeviceDraftOwner(userId) {
   if (next === owner) return;
   owner = next;
   memoryDrafts.clear(); // szkice innego konta nie mogą trafić do formularza kolejnej osoby
+  notifyChanged();
 }
 
 export function saveDeviceFormDraft(jobId, form) {
@@ -77,6 +90,7 @@ export function saveDeviceFormDraft(jobId, form) {
   const stored = readStored();
   stored[key] = { form: toStorableDeviceDraftForm(form), savedAt };
   writeStored(stored);
+  notifyChanged();
   return true;
 }
 
@@ -109,6 +123,18 @@ export function clearDeviceFormDraft(jobId) {
     delete stored[key];
     writeStored(stored);
   }
+  notifyChanged();
+}
+
+// 13.72: lista montaży z niezapisanymi urządzeniami (pamięć aplikacji + pamięć telefonu), najnowsze pierwsze.
+export function listDeviceFormDrafts() {
+  const ids = new Set([...memoryDrafts.keys(), ...Object.keys(readStored())]);
+  const result = [];
+  for (const jobId of ids) {
+    const draft = getDeviceFormDraft(jobId);
+    if (draft) result.push({ jobId, savedAt: draft.savedAt || '', fromStorage: draft.fromStorage });
+  }
+  return result.sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
 }
 
 export function hasDeviceFormDraft(jobId) {

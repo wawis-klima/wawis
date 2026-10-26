@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## SAVE-NOW-1372 — „Zapisz teraz” po powrocie internetu (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SN-1372-BAR | FIXED-UNVERIFIED | Pasek na liście montaży tylko online i tylko dla montaży ze szkicem; jedno dotknięcie zapisuje. E2E mobile-device-draft-save-now-v1372. |
+| SN-1372-SAMEPATH | REGRESSION | Ten sam handleSubmit/saveEditedJob co ręczny zapis — potwierdzenie SN, ostrzeżenia par modeli i konflikty bez zmian. smoke-device-drafts-v1371 (pkt 8), E2E v1363, v1371. |
+| SN-1372-NOAUTO | REGRESSION | Bez dotknięcia nic nie zapisuje się samo (decyzja właściciela: pasek, nie pełna automatyka). |
+| DD-1371-LIVE | PASS (właściciel, iPhone, 26.10 08:26) | Bez internetu → Zamknij okno → internet → Tabliczki → przywrócone → zapis OK. |
+| SN-1372-LIVE | EXTERNAL | iPhone po wdrożeniu: scenariusz z RELEASE-GATE postdeploy. |
+
 ## DEVICE-DRAFT-1371 — niezapisane urządzenia po teście iPhone (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
