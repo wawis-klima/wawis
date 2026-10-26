@@ -1,3 +1,9 @@
+## 13.75
+- Kopia zapasowa w Cloudflare R2 włączona na stałe: codziennie ok. 01:20 baza danych (zaszyfrowana, z kontrolą sumy), zdjęcia, protokoły i podpisy (przyrostowo, bez usuwania i nadpisywania w kopii) oraz próba odtworzenia w izolowanym kontenerze — nigdy na produkcji. Nieudana kopia otwiera zgłoszenie w GitHubie z powiadomieniem dla właściciela. Próbna kopia z produkcji 26.10.2026: wszystkie etapy OK.
+- Testy na silniku Safari (WebKit, profil iPhone'a) przy każdej zmianie: 14 scenariuszy (kolejka zdjęć, tabliczki bez internetu, szkice urządzeń, „Zapisz teraz”). Dwa scenariusze świadomie tylko w Chromium — ograniczenia środowiska testowego opisane w konfiguracji.
+- Procedura bezpiecznego powrotu do starszej wersji (docs/PROCEDURA-WYCOFANIA.md, skrypt przygotowania wydania przywracającego) i mapa zgodności danych w telefonie.
+- Bez zmian w działaniu aplikacji.
+
 ## 13.74
 - Błąd zgłoszony 26.10.2026 (Kacper): po dodaniu komentarza pojawiał się komunikat „new row violates row-level security policy for table "notifications"”. Komentarz był zapisany, ale komunikat sugerował błąd — pracownik dodawał ten sam komentarz drugi raz.
 - Przyczyna: zapis powiadomienia w aplikacji dla administratora prosił bazę o zwrot zapisanego wiersza, a pracownik może czytać tylko własne powiadomienia. Baza odrzucała cały zapis. Od 03.09.2026 nie zapisało się żadne powiadomienie „Nowy komentarz” ani „Nowe” (powiadomienia push działały osobno).

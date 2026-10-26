@@ -1,5 +1,5 @@
 {
-  "description": "Zgodność lokalnych danych PWA (IndexedDB, Cache Storage) między wersjami WAWIS. Używane przez scripts/rollback/prepare-restore-release.cjs. Aktualizować przy każdej zmianie nazwy lub wersji lokalnej bazy.",
+  "description": "Zgodność lokalnych danych PWA (IndexedDB, Cache Storage, localStorage) między wersjami WAWIS. Używane przez scripts/rollback/prepare-restore-release.cjs. Aktualizować przy każdej zmianie nazwy lub wersji lokalnej bazy.",
   "minimum_restore_version": "13.62",
   "minimum_restore_reason": "Wersje < 13.62 otwierają wawis-mobile-photo-queue z numerem 3 i dostają VersionError na telefonach z bazą v4 (pozostałość 13.42–13.48). 13.62+ otwiera bazę bez numeru.",
   "indexeddb": [
@@ -26,7 +26,25 @@
     }
   ],
   "caches": [
-    { "name": "wawis-app-shell-v<WERSJA>", "rule": "Każda wersja ma własny cache; activate usuwa pozostałe wawis-app-shell-*. Przy przywróceniu kodu numer wersji ZAWSZE rośnie." },
-    { "name": "wawis-nameplate-readers-v1", "rule": "Od 13.70. Starsze wersje go nie używają i nie usuwają (usuwają tylko wawis-app-shell-*). Nieszkodliwy." }
+    {
+      "name": "wawis-app-shell-v<WERSJA>",
+      "rule": "Każda wersja ma własny cache; activate usuwa pozostałe wawis-app-shell-*. Przy przywróceniu kodu numer wersji ZAWSZE rośnie."
+    },
+    {
+      "name": "wawis-nameplate-readers-v1",
+      "rule": "Od 13.70. Starsze wersje go nie używają i nie usuwają (usuwają tylko wawis-app-shell-*). Nieszkodliwy."
+    }
+  ],
+  "local_storage": [
+    {
+      "name": "wawis-device-drafts-v1:<konto>",
+      "since": "13.71",
+      "rule": "Tekst niezapisanych urządzeń (bez zdjęć). Starsze wersje go nie czytają i nie usuwają — po powrocie do < 13.71 szkic jest niewidoczny, ale nie psuje aplikacji; wraca po ponownej aktualizacji (wygasa po 14 dniach)."
+    },
+    {
+      "name": "wawis-nameplate-ai-usage-v1",
+      "since": "13.73",
+      "rule": "Licznik użycia AI tabliczek (Diagnostyka). Nieszkodliwy dla starszych wersji."
+    }
   ]
 }

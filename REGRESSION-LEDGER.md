@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## OPS-1375 — kopia zapasowa, testy WebKit, procedura wycofania (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OPS-1375-BACKUP | FIXED-UNVERIFIED | Próbna kopia z produkcji 26.10 (run 40296863931): baza + pliki + odtworzenie OK. backup-selftest (przyrost, usunięcie, nadpisanie, szyfrowanie, uszkodzona kopia). Codzienny przebieg z main — do potwierdzenia jutro. |
+| OPS-1375-WEBKIT | FIXED-UNVERIFIED | webkit-built-e2e 14/14 (PR #420). Poza WebKit: offline-readers (emulacja offline omija SW), ai-saving (Code 128 z SVG) — Chromium i iPhone. |
+| OPS-1375-ROLLBACK | FIXED-UNVERIFIED | prepare-restore-release.cjs: próby na sucho 13.67 = GO, 13.61 = NO-GO. LOCAL-DATA-COMPAT uzupełnione o localStorage 13.71/13.73. |
+| OPS-1375-APP | REGRESSION | Kod aplikacji bez zmian — built E2E Chromium i targeted-checks. |
+| NR-1374-LIVE | EXTERNAL | Komentarz pracownika bez alertu po 13.74. |
+
 ## NOTIF-RLS-1374 — fałszywy błąd przy komentarzu (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
