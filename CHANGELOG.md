@@ -1,3 +1,10 @@
+## 13.76
+- Pewne aktualizacje i praca bez internetu (plan po audycie). Po aktualizacji telefon od razu, jeszcze z internetem, pobiera całą nową wersję — wszystkie ekrany (Tabliczki, protokół, Diagnostyka…), a nie dopiero przy pierwszym otwarciu. Dzięki temu bez zasięgu otwiera się także ekran, którego pracownik po aktualizacji jeszcze nie otwierał.
+- Bezpieczna podmiana: nowa wersja przejmuje telefon dopiero, gdy pobierze się w całości. Przy przerwanym pobieraniu (słaby zasięg) zostaje poprzednia, kompletna wersja — aktualizacja ponowi się później. Telefon trzyma też jedną poprzednią wersję, zamiast kasować ją od razu.
+- Lokalne bazy telefonu (zmiany zapisane bez internetu, kopia listy montaży) otwierane bez numeru wersji — jak kolejka zdjęć od 13.62. Powrót do starszej wersji aplikacji nie zablokuje pracy offline.
+- Bez zmian w bazie na serwerze, zdjęciach i działaniu przycisków. Obszar chroniony (service worker) — wymagany test na iPhonie.
+- Testy: E2E mobile-precache-offline-v1376 (prawdziwy brak sieci: start aplikacji i pierwsze otwarcie „Tabliczek”), mobile-indexeddb-newer-version-v1376 (baza z nowszej wersji → komentarz offline działa, wersja nieobniżona; także WebKit), smoke-sw-precache-v1376 (pobranie całości, przerwane pobranie, brak obrazka, sprzątanie cache).
+
 ## 13.75
 - Kopia zapasowa w Cloudflare R2 włączona na stałe: codziennie ok. 01:20 baza danych (zaszyfrowana, z kontrolą sumy), zdjęcia, protokoły i podpisy (przyrostowo, bez usuwania i nadpisywania w kopii) oraz próba odtworzenia w izolowanym kontenerze — nigdy na produkcji. Nieudana kopia otwiera zgłoszenie w GitHubie z powiadomieniem dla właściciela. Próbna kopia z produkcji 26.10.2026: wszystkie etapy OK.
 - Testy na silniku Safari (WebKit, profil iPhone'a) przy każdej zmianie: 14 scenariuszy (kolejka zdjęć, tabliczki bez internetu, szkice urządzeń, „Zapisz teraz”). Dwa scenariusze świadomie tylko w Chromium — ograniczenia środowiska testowego opisane w konfiguracji.

@@ -1,23 +1,20 @@
+import { openIndexedDbWithoutDowngrade } from './indexeddb-safe-open.js';
 const DB_NAME = 'wawis-app-read-cache';
 const DB_VERSION = 1;
 const SNAPSHOT_STORE = 'session-snapshots';
 
-function hasIndexedDb() {
-  return typeof indexedDB !== 'undefined';
-}
-
+// WAWIS 13.76: bez numeru wersji — powrót do starszej wersji aplikacji nie może zablokować odczytu (VersionError).
 function openSnapshotDb() {
-  if (!hasIndexedDb()) return Promise.resolve(null);
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
+  return openIndexedDbWithoutDowngrade({
+    name: DB_NAME,
+    version: DB_VERSION,
+    isReady: (db) => db.objectStoreNames.contains(SNAPSHOT_STORE),
+    upgrade: (db) => {
       if (!db.objectStoreNames.contains(SNAPSHOT_STORE)) {
         db.createObjectStore(SNAPSHOT_STORE, { keyPath: 'user_id' });
       }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error('Nie udało się otworzyć lokalnej kopii danych.'));
+    },
+    errorMessage: 'Nie udało się otworzyć lokalnej kopii danych.',
   });
 }
 

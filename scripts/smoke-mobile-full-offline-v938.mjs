@@ -80,7 +80,8 @@ const details = read('src', 'mobile791', 'components', 'JobDetailsPanel.jsx');
 const worker = read('public', 'push-sw.js');
 const main = read('src', 'main.jsx');
 
-assert.match(store, /indexedDB\.open\(DB_NAME, DB_VERSION\)/);
+// 13.76: otwarcie bez numeru wersji (bez VersionError po powrocie do starszej wersji aplikacji).
+assert.match(store, /openIndexedDbWithoutDowngrade\(\{\s*name: DB_NAME,\s*version: DB_VERSION,/);
 assert.match(store, /app-snapshots/);
 assert.match(store, /job-operations/);
 assert.match(session, /loadOfflineAppSnapshot/);

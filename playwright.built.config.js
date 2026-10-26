@@ -12,6 +12,8 @@ export default defineConfig({
     'mobile-offline-nameplates-all-roles-v1363.spec.js',
     'mobile-device-draft-persistence-v1371.spec.js',
     'mobile-device-draft-save-now-v1372.spec.js',
+    'mobile-precache-offline-v1376.spec.js',
+    'mobile-indexeddb-newer-version-v1376.spec.js',
   ],
   timeout: 90_000,
   expect: { timeout: 10_000 },

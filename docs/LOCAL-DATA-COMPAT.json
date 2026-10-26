@@ -13,22 +13,22 @@
     {
       "name": "wawis-mobile-offline-data",
       "file": "src/mobile791/modules/job-offline-store.js",
-      "opened_without_version_since": null,
+      "opened_without_version_since": "13.76",
       "highest_version_on_devices": 2,
-      "rule": "Otwierana z numerem DB_VERSION. Wersja docelowa musi mieć DB_VERSION >= highest_version_on_devices."
+      "rule": "Od 13.76 otwierana bez numeru (indexeddb-safe-open.js). Wersje 13.62–13.75 otwierają ją z numerem DB_VERSION — powrót do nich wymaga, by żadna nowsza wersja nie podniosła numeru ponad highest_version_on_devices."
     },
     {
       "name": "wawis-app-read-cache",
       "file": "src/modules/app-data-snapshot.js",
-      "opened_without_version_since": null,
+      "opened_without_version_since": "13.76",
       "highest_version_on_devices": 1,
-      "rule": "Otwierana z numerem DB_VERSION. Wersja docelowa musi mieć DB_VERSION >= highest_version_on_devices."
+      "rule": "Od 13.76 otwierana bez numeru (indexeddb-safe-open.js). Wersje 13.62–13.75 otwierają ją z numerem DB_VERSION — powrót do nich wymaga, by żadna nowsza wersja nie podniosła numeru ponad highest_version_on_devices."
     }
   ],
   "caches": [
     {
       "name": "wawis-app-shell-v<WERSJA>",
-      "rule": "Każda wersja ma własny cache; activate usuwa pozostałe wawis-app-shell-*. Przy przywróceniu kodu numer wersji ZAWSZE rośnie."
+      "rule": "Każda wersja ma własny cache. Od 13.76 instalacja pobiera całą wersję (precache-manifest.json), a activate zostawia bieżący i jeden poprzedni wawis-app-shell-*. Przy przywróceniu kodu numer wersji ZAWSZE rośnie."
     },
     {
       "name": "wawis-nameplate-readers-v1",

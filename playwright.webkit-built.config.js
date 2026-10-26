@@ -12,6 +12,8 @@ import { defineConfig } from '@playwright/test';
 // - mobile-nameplate-ai-saving-v1373: WebKit na Linuksie nie dekoduje syntetycznego kodu Code 128 z SVG
 //   (EAN dekoduje), więc scenariusz „numer z kodu → bez AI” nie ma tu danych wejściowych.
 //   Logikę sprawdza Chromium (built-nameplate-e2e) i smoke-nameplate-ai-saving-v1373; na iPhonie — test właściciela.
+// - mobile-precache-offline-v1376: prawdziwy offline (context.setOffline) — jak wyżej, emulacja WebKit omija SW.
+//   Pełne pobranie wersji sprawdza Chromium (built-photo-queue-e2e), smoke-sw-precache-v1376 i iPhone.
 const PORT = Number(process.env.PLAYWRIGHT_BUILT_PORT || 4176);
 const baseURL = `http://127.0.0.1:${PORT}`;
 
@@ -24,6 +26,7 @@ export default defineConfig({
     'mobile-nameplate-robustness-v1123.spec.js',
     'mobile-device-draft-persistence-v1371.spec.js',
     'mobile-device-draft-save-now-v1372.spec.js',
+    'mobile-indexeddb-newer-version-v1376.spec.js',
   ],
   timeout: 240_000,
   expect: { timeout: 15_000 },
