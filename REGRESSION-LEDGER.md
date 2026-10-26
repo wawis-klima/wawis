@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-SAVE-NOW-1379 — zamknięcie po zapisie offline i „Zapisz teraz” dla protokołu (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PS-1379-CLOSE | FIXED-UNVERIFIED | Prośba właściciela: „Zapisz” offline zamyka okno z ostrzeżeniem, podpis zostaje. E2E v1377, v1378. |
+| PS-1379-BAR | FIXED-UNVERIFIED | Pasek „Niezapisany protokół — Zapisz teraz” po powrocie internetu; otwarcie, przywrócenie i zapis jednym dotknięciem. E2E v1377. |
+| PS-1379-BASE | FIXED-UNVERIFIED | Szkic pamięta protokół, na którym podpisano; inny protokół na serwerze → bez przywrócenia i bez zapisu (zapobiega nadpisaniu nowszego protokołu). E2E v1378. |
+| PS-1379-PREVIEW | FIXED-UNVERIFIED | iPhone: podgląd utknął na „Przygotowuję…” po przywróceniu. Podgląd = podpis do czasu obrotu; odczyt obrazu z limitem 8 s i decode(). |
+| PO-1378-LIVE | PASS (właściciel, iPhone, 26.10 17:16) | Protokół offline w montażu otwartym bez internetu; zapis z właściwym podpisem po powrocie internetu. |
+| PS-1379-LIVE | EXTERNAL | iPhone: scenariusz z RELEASE-GATE postdeploy. |
+
 ## PROTOCOL-OFFLINE-OPEN-1378 — protokół w montażu otwartym bez internetu (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

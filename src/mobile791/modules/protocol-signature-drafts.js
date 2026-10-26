@@ -6,7 +6,20 @@
 // Podpisu nie zapisujemy w pamięci telefonu (IndexedDB/localStorage) — to dane osobowe, a zapis protokołu
 // bez internetu (poziom 2) wymaga osobnej decyzji właściciela. Zamknięcie aplikacji = podpis przepada.
 
+// 13.79: pasek „Zapisz teraz” na liście montaży słucha tego zdarzenia.
+export const PROTOCOL_DRAFTS_CHANGED_EVENT = 'wawis-protocol-drafts-changed';
+
 const drafts = new Map();
+
+function notifyChanged() {
+  try {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof Event === 'function') {
+      window.dispatchEvent(new Event(PROTOCOL_DRAFTS_CHANGED_EVENT));
+    }
+  } catch {
+    // Brak zdarzeń nie może blokować zachowania podpisu.
+  }
+}
 let owner = '';
 
 export function setProtocolSignatureDraftOwner(userId) {
@@ -14,6 +27,7 @@ export function setProtocolSignatureDraftOwner(userId) {
   if (next === owner) return;
   owner = next;
   drafts.clear(); // podpis klienta nie może trafić do protokołu innej osoby zalogowanej na tym telefonie
+  notifyChanged();
 }
 
 export function saveProtocolSignatureDraft(jobId, draft) {
@@ -25,8 +39,11 @@ export function saveProtocolSignatureDraft(jobId, draft) {
     paymentDraft: draft.paymentDraft ? { ...draft.paymentDraft } : null,
     protocolNote: String(draft.protocolNote || ''),
     snapshotKey: String(draft.snapshotKey),
+    // 13.79: protokół, na którym podpisano (pusty = nowy protokół). Inny protokół na serwerze → bez przywracania.
+    baseStoragePath: String(draft.baseStoragePath || ''),
     savedAt: draft.savedAt || new Date().toISOString(),
   });
+  notifyChanged();
   return true;
 }
 
@@ -36,10 +53,19 @@ export function getProtocolSignatureDraft(jobId) {
 }
 
 export function clearProtocolSignatureDraft(jobId) {
-  drafts.delete(String(jobId || '').trim());
+  if (drafts.delete(String(jobId || '').trim())) notifyChanged();
+}
+
+// 13.79: montaże z niezapisanym podpisem (do paska „Zapisz teraz”), najnowsze pierwsze.
+export function listProtocolSignatureDrafts() {
+  return [...drafts.entries()]
+    .map(([jobId, draft]) => ({ jobId, savedAt: draft.savedAt || '' }))
+    .sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
 }
 
 // Podpis wolno przywrócić wyłącznie do tych samych podpisanych danych.
-export function canRestoreProtocolSignatureDraft(draft, currentSnapshotKey) {
-  return Boolean(draft?.signatureDataUrl && draft?.snapshotKey && draft.snapshotKey === String(currentSnapshotKey || ''));
+export function canRestoreProtocolSignatureDraft(draft, currentSnapshotKey, currentBaseStoragePath = '') {
+  return Boolean(draft?.signatureDataUrl && draft?.snapshotKey
+    && draft.snapshotKey === String(currentSnapshotKey || '')
+    && String(draft.baseStoragePath || '') === String(currentBaseStoragePath || ''));
 }

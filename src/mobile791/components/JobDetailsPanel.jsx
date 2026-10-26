@@ -307,6 +307,8 @@ export default function JobDetailsPanel({
   // przycisk „Sprawdź” blokował otwarcie protokołu i ochronę podpisu z 13.77. Teraz protokół można wypełnić
   // i podpisać; przed zapisem (z internetem) okno protokołu samo sprawdza, czy protokół już nie istnieje.
   const [protocolCheckOffline, setProtocolCheckOffline] = React.useState(false);
+  // 13.79: „Zapisz teraz” z paska — protokół otwierany z prośbą o zapis przywróconego podpisu.
+  const [protocolAutoSaveRequested, setProtocolAutoSaveRequested] = React.useState(false);
   const [protocolCheckedJobId, setProtocolCheckedJobId] = React.useState("");
   const [expandedDeviceIndexes, setExpandedDeviceIndexes] = React.useState([]);
   const [commentSaving, setCommentSaving] = React.useState(false);
@@ -486,7 +488,10 @@ export default function JobDetailsPanel({
       onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
       return;
     }
-    if (protocolBackendAvailable || protocolCheckOffline) setProtocolTestOpen(true);
+    if (protocolBackendAvailable || protocolCheckOffline) {
+      setProtocolAutoSaveRequested(Boolean(quickProtocolRequest.autoSave));
+      setProtocolTestOpen(true);
+    }
     onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
   }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolCheckOffline, protocolNameplatesReady, onQuickProtocolRequestHandled]);
 
@@ -1268,8 +1273,10 @@ export default function JobDetailsPanel({
         supabase={supabase}
         protocolRecord={protocolRecord}
         protocolRecordUnknown={protocolCheckOffline}
+        autoSaveRestoredDraft={protocolAutoSaveRequested}
         onClose={() => {
           setProtocolTestOpen(false);
+          setProtocolAutoSaveRequested(false);
           const shouldRemind = pendingFinishReminderRef.current === selectedJobId
             && canFinishJob
             && protocolNameplatesReady

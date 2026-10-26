@@ -70,6 +70,7 @@ export default function MobileJobsLayout({
   onQuickNameplates = () => {},
   onQuickProtocol = () => {},
   onSaveDeviceDraft = null,
+  onSaveProtocolDraft = null,
 }) {
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
   const [filterOpen, setFilterOpen] = useState(Boolean(query));
@@ -247,7 +248,7 @@ export default function MobileJobsLayout({
         ) : null}
 
         {/* 13.72: po powrocie internetu — „Zapisz teraz” dla urządzeń wpisanych bez internetu. */}
-        {onSaveDeviceDraft ? <PendingDeviceDraftsBar jobs={jobs} onSaveNow={onSaveDeviceDraft} /> : null}
+        {onSaveDeviceDraft ? <PendingDeviceDraftsBar jobs={jobs} onSaveNow={onSaveDeviceDraft} onSaveProtocolNow={onSaveProtocolDraft} /> : null}
 
         {/* 13.65: Centrum synchronizacji („Synchronizuj teraz”) także dla administratora.
             13.67: na liście montaży tylko przy problemie; w Diagnostyce zawsze. */}

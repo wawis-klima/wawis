@@ -77,10 +77,12 @@ test('@mobile 13.78: montaż otwarty bez internetu — protokół i podpis dost�
   await page.mouse.move(rect.x + 150, rect.y + 45, { steps: 5 });
   await page.mouse.up();
   await page.getByRole('button', { name: 'Zatwierdź podpis', exact: true }).click();
+  // 13.79: „Zapisz” bez internetu zamyka okno z ostrzeżeniem; podpis zostaje w aplikacji.
   await page.getByRole('button', { name: 'Zapisz protokół' }).click();
-  await expect(page.locator('.protocolTestMessage[role="status"]').last()).toContainText('Podpis jest zachowany');
+  await expect.poll(() => dialogs.some((text) => text.includes('Zapisz teraz'))).toBe(true);
+  await expect(page.locator('.protocolWizardModal')).toHaveCount(0);
 
-  // W międzyczasie ktoś inny zapisał protokół tego montażu → po powrocie internetu NIE udajemy zapisu.
+  // W międzyczasie ktoś inny zapisał protokół tego montażu.
   await page.evaluate((key) => {
     const store = JSON.parse(localStorage.getItem(key) || '{}');
     store.job_protocols = [{
@@ -92,14 +94,19 @@ test('@mobile 13.78: montaż otwarty bez internetu — protokół i podpis dost�
     localStorage.setItem(key, serialized);
     window.dispatchEvent(new StorageEvent('storage', { key, newValue: serialized }));
   }, STORE_KEY);
+
+  // Internet wrócił → „Zapisz teraz” → okno widzi istniejący protokół: podpisu z innego stanu NIE przywraca i nie zapisuje.
   await setOnline(page, true);
+  const saveNow = page.getByTestId('pending-protocol-drafts-save');
+  await expect(saveNow).toBeVisible({ timeout: 20_000 });
+  await saveNow.click();
   try {
-    await expect(page.getByText(/ma już zapisany protokół/)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/protokół na serwerze zmieniły się od podpisu klienta|ma już zapisany protokół/)).toBeVisible({ timeout: 30_000 });
   } catch (error) {
     const messages = await page.locator('.protocolTestMessage').allInnerTexts().catch(() => []);
     throw new Error(`${error.message}\nKomunikaty protokołu: ${messages.join(' | ')}\nZdarzenia: ${dialogs.join(' | ')}`);
   }
   await expect(page.getByText(/Protokół został zapisany/)).toHaveCount(0);
-  // Okno nadal otwarte z podpisem (nic nie przepadło po cichu).
-  await expect(page.getByRole('button', { name: 'Zmień podpis' })).toBeVisible();
+  const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) || '{}').job_protocols || [], STORE_KEY);
+  expect(stored.map((record) => record.id)).toEqual(['mock-1378-existing']);
 });

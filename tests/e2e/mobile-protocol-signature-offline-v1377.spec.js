@@ -76,9 +76,6 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
   await page.mouse.up();
   await page.getByRole('button', { name: 'Zatwierdź podpis', exact: true }).click();
 
-  // „Zapisz” bez internetu: nie próbuje zapisu, mówi że podpis jest zachowany.
-  await page.getByRole('button', { name: 'Zapisz protokół' }).click();
-  await expect(page.locator('.protocolTestMessage[role="status"]').last()).toContainText('Podpis jest zachowany');
   const protocolsBefore = await page.evaluate((key) => (JSON.parse(localStorage.getItem(key) || '{}').job_protocols || []).length, STORE_KEY);
 
   // Zamknięcie okna z niezapisanym podpisem wymaga potwierdzenia.
@@ -92,9 +89,13 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
   await expect(page.getByRole('button', { name: 'Zapisz protokół' })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Zmień podpis' })).toBeVisible();
 
-  // Zapis czeka na zasięg; po powrocie internetu zapisuje się sam.
+  // 13.79 (prośba właściciela): „Zapisz” bez internetu zamyka okno z ostrzeżeniem — podpis zostaje w aplikacji.
   await page.getByRole('button', { name: 'Zapisz protokół' }).click();
-  await expect(page.locator('.protocolTestMessage[role="status"]').last()).toContainText('zapisze się automatycznie');
+  await expect.poll(() => dialogs.some((text) => text.includes('na liście montaży pojawi się „Zapisz teraz”'))).toBe(true);
+  await expect(page.locator('.protocolWizardModal')).toHaveCount(0);
+  // Bez internetu paska nie ma (nie da się zapisać).
+  await expect(page.getByTestId('pending-protocol-drafts-save')).toHaveCount(0);
+
   // Atrapa Supabase nie obsługuje pełnego zapisu PDF (jak w mobile-protocol-test) — rekord serwera jak po zapisie.
   await page.evaluate((key) => {
     const store = JSON.parse(localStorage.getItem(key) || '{}');
@@ -108,11 +109,20 @@ test('@mobile 13.77: podpis bez internetu jest zachowany, wraca po ponownym otwa
     window.dispatchEvent(new StorageEvent('storage', { key, newValue: serialized }));
   }, STORE_KEY);
   expect(protocolsBefore).toBe(0);
+
+  // Internet wrócił: pasek „Niezapisany protokół — Zapisz teraz”; jedno dotknięcie otwiera protokół i zapisuje.
   await setOnline(page, true);
+  const saveNow = page.getByTestId('pending-protocol-drafts-save');
+  await expect(saveNow).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('pending-device-drafts')).toContainText('Niezapisany protokół');
+  await saveNow.click();
   try {
     await expect(page.getByText(/Protokół podpisany i zapisany|Protokół został zapisany/).first()).toBeVisible({ timeout: 30_000 });
   } catch (error) {
     const messages = await page.locator('.protocolTestMessage').allInnerTexts().catch(() => []);
     throw new Error(`${error.message}\nKomunikaty protokołu: ${messages.join(' | ')}\nZdarzenia: ${dialogs.join(' | ')}`);
   }
+  // Po zapisie szkic znika, a z nim pasek.
+  await page.locator('.mobileDeviceWizardClose').click();
+  await expect(page.getByTestId('pending-protocol-drafts-save')).toHaveCount(0);
 });

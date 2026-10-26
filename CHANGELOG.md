@@ -1,3 +1,11 @@
+## 13.79
+- Po teście właściciela na iPhonie (26.10.2026, 13.78):
+  - „Zapisz protokół” bez internetu zamyka okno — z ostrzeżeniem, że protokół nie jest jeszcze zapisany, a podpis klienta jest zachowany w aplikacji. Nie trzeba już osobno naciskać „Zamknij”.
+  - Po powrocie zasięgu na liście montaży pojawia się „Niezapisany protokół (podpis klienta): <klient> — Zapisz teraz” (jak dla tabliczek w 13.72). Jedno dotknięcie otwiera protokół, przywraca podpis i od razu zapisuje.
+  - Podpis jest przywracany tylko do tego samego protokołu — jeśli w międzyczasie ktoś zapisał protokół tego montażu, aplikacja nie zapisze podpisu złożonego przy innym stanie i poprosi o nowy podpis.
+  - Podgląd „Ułożenie podpisu na protokole PDF” po przywróceniu podpisu potrafił zostać na „Przygotowuję podgląd podpisu…”. Teraz od razu widać podpis, a odczyt obrazu podpisu ma limit czasu.
+- Testy: E2E mobile-protocol-signature-offline-v1377 (zamknięcie po zapisie offline, pasek „Zapisz teraz”, zapis), mobile-protocol-record-unknown-v1378 (istniejący protokół → bez zapisu podpisu).
+
 ## 13.78
 - Test iPhone 26.10.2026 (13.77, tryb samolotowy): w montażu otwartym bez internetu zamiast „Protokół” był przycisk „Sprawdź”, który nic nie robił — nie dało się wypełnić protokołu ani złożyć podpisu, więc ochrona podpisu z 13.77 była niedostępna dokładnie tam, gdzie jest potrzebna.
 - Teraz bez internetu przycisk „Protokół” działa: okno informuje, że nie udało się sprawdzić, czy montaż ma już protokół, i że aplikacja sprawdzi to przed zapisem. Podpis, zachowanie podpisu i zapis po powrocie zasięgu działają jak w 13.77.

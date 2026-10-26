@@ -22,9 +22,14 @@ export async function orientSignatureForPdf(dataUrl, mode = "auto") {
   }
   const image = await new Promise((resolve, reject) => {
     const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error("Nie udało się odczytać podpisu klienta."));
+    // 13.79: Safari potrafi nie wywołać onload — podgląd utknął na „Przygotowuję…”. Limit czasu + decode().
+    const timer = setTimeout(() => reject(new Error("Odczyt podpisu trwał zbyt długo.")), 8000);
+    img.onload = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error("Nie udało się odczytać podpisu klienta.")); };
     img.src = dataUrl;
+    if (typeof img.decode === "function") {
+      img.decode().then(() => { clearTimeout(timer); resolve(img); }).catch(() => {});
+    }
   });
   const w = image.naturalWidth || image.width, h = image.naturalHeight || image.height;
   const angle = selectSignatureRotation(w, h, mode);
