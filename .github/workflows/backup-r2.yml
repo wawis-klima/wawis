@@ -10,7 +10,11 @@ on:
   schedule:
     - cron: '20 0 * * *'   # codziennie ok. 01:20 czasu zimowego / 02:20 letniego w Polsce
   workflow_dispatch:
-  # Próbne uruchomienie z gałęzi ops/backup-r2 (przed scaleniem) włączamy jednorazowo po konfiguracji sekretów.
+  # TYMCZASOWO (26.10.2026): próbna kopia z gałęzi ops/backup-r2 po konfiguracji sekretów przez właściciela.
+  # Workflow nie istnieje jeszcze na main, więc workflow_dispatch jest niedostępny. Usunąć przed scaleniem.
+  push:
+    branches: [ops/backup-r2]
+    paths: ['.github/workflows/backup-r2.yml']
 
 permissions:
   contents: read
