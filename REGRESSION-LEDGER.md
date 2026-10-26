@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-OFFLINE-OPEN-1378 — protokół w montażu otwartym bez internetu (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PO-1378-OPEN | FIXED-UNVERIFIED | iPhone 26.10 (13.77, samolot): „Sprawdź” zamiast „Protokół”. Bez internetu protokół bez sprawdzenia rekordu. E2E mobile-protocol-record-unknown-v1378 (Chromium + WebKit). |
+| PO-1378-EXISTING | FIXED-UNVERIFIED | Przed zapisem przy nieznanym rekordzie: loadJobProtocolRecord; istniejący protokół → komunikat, podpis zostaje, brak „zapisano” (storeJobProtocol zwróciłby stary rekord). E2E v1378. |
+| PO-1378-RECHECK | FIXED-UNVERIFIED | Po online ponowne sprawdzenie protokołu tylko przy zamkniętym oknie (sprawdzenie zamyka okno). |
+| PO-1378-REGRESSION | REGRESSION | Online: zapis, korekta, przypomnienie zakończenia, „Sprawdź” przy błędzie serwera — mobile-protocol-test, finish-reminder, v1377. |
+| SG-1377-LIVE | FAIL→FIXED (właściciel, iPhone, 26.10 16:46) | Ochrona podpisu niedostępna w montażu otwartym offline — PO-1378-OPEN. |
+| PO-1378-LIVE | EXTERNAL | iPhone: scenariusz z RELEASE-GATE postdeploy. |
+
 ## SIGNATURE-1377 — ochrona podpisu klienta, poziom 1 (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -1,3 +1,10 @@
+## 13.78
+- Test iPhone 26.10.2026 (13.77, tryb samolotowy): w montażu otwartym bez internetu zamiast „Protokół” był przycisk „Sprawdź”, który nic nie robił — nie dało się wypełnić protokołu ani złożyć podpisu, więc ochrona podpisu z 13.77 była niedostępna dokładnie tam, gdzie jest potrzebna.
+- Teraz bez internetu przycisk „Protokół” działa: okno informuje, że nie udało się sprawdzić, czy montaż ma już protokół, i że aplikacja sprawdzi to przed zapisem. Podpis, zachowanie podpisu i zapis po powrocie zasięgu działają jak w 13.77.
+- Przed zapisem (z internetem) okno sprawdza, czy montaż nie ma już protokołu. Jeśli ma — nie udaje zapisu: pokazuje komunikat, a podpis zostaje w oknie (wcześniej przy istniejącym protokole nowy podpis przepadłby po cichu).
+- Po powrocie internetu stan protokołu w karcie montażu sprawdza się sam (gdy okno protokołu jest zamknięte).
+- Testy: E2E mobile-protocol-record-unknown-v1378 (Chromium + WebKit).
+
 ## 13.77
 - Ochrona podpisu klienta (plan po audycie, poziom 1 — bez zmiany zasady „protokół zapisuje się z internetem”):
   - Bez internetu okno protokołu od razu informuje: „Brak internetu — protokół zapisze się dopiero po powrocie zasięgu. Podpis klienta zostanie zachowany w aplikacji. Nie zamykaj aplikacji.”

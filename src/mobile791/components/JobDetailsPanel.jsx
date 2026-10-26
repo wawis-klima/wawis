@@ -303,6 +303,10 @@ export default function JobDetailsPanel({
   const [protocolMessage, setProtocolMessage] = React.useState("");
   const [protocolBackendAvailable, setProtocolBackendAvailable] = React.useState(true);
   const [protocolReloadKey, setProtocolReloadKey] = React.useState(0);
+  // WAWIS 13.78 (test iPhone 26.10.2026, 13.77): bez internetu nie da się sprawdzić, czy montaż ma już protokół —
+  // przycisk „Sprawdź” blokował otwarcie protokołu i ochronę podpisu z 13.77. Teraz protokół można wypełnić
+  // i podpisać; przed zapisem (z internetem) okno protokołu samo sprawdza, czy protokół już nie istnieje.
+  const [protocolCheckOffline, setProtocolCheckOffline] = React.useState(false);
   const [protocolCheckedJobId, setProtocolCheckedJobId] = React.useState("");
   const [expandedDeviceIndexes, setExpandedDeviceIndexes] = React.useState([]);
   const [commentSaving, setCommentSaving] = React.useState(false);
@@ -379,6 +383,7 @@ export default function JobDetailsPanel({
     setProtocolRecord(null);
     setProtocolMessage("");
     setProtocolBackendAvailable(true);
+    setProtocolCheckOffline(false);
 
     if (!supabase || !selectedJobId || !selectedJobSupportsProtocol) {
       setProtocolLoading(false);
@@ -388,6 +393,16 @@ export default function JobDetailsPanel({
     // Protokół jest poboczny wobec zdjęć i komentarzy. Nie dokładamy kolejnego
     // requestu do Supabase, dopóki podstawowe szczegóły montażu nie są gotowe.
     if (!selectedJob?.detailsLoaded) {
+      setProtocolLoading(false);
+      return () => { cancelled = true; };
+    }
+
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      // Bez internetu nie czekamy na nieudane zapytania — od razu tryb „bez sprawdzenia”.
+      setProtocolBackendAvailable(false);
+      setProtocolCheckOffline(true);
+      setProtocolMessage("Brak internetu — nie można sprawdzić, czy montaż ma już protokół. Możesz wypełnić i podpisać protokół; przed zapisem aplikacja to sprawdzi.");
+      setProtocolCheckedJobId(selectedJobId);
       setProtocolLoading(false);
       return () => { cancelled = true; };
     }
@@ -426,7 +441,10 @@ export default function JobDetailsPanel({
 
       if (cancelled) return;
       setProtocolBackendAvailable(false);
-      if (isTransientSupabaseError(lastError)) {
+      if (isTransientSupabaseError(lastError) && typeof navigator !== "undefined" && navigator.onLine === false) {
+        setProtocolCheckOffline(true);
+        setProtocolMessage("Brak internetu — nie można sprawdzić, czy montaż ma już protokół. Możesz wypełnić i podpisać protokół; przed zapisem aplikacja to sprawdzi.");
+      } else if (isTransientSupabaseError(lastError)) {
         // Nie pokazujemy użytkownikowi AbortError/timeoutu. Protokół jest funkcją
         // dodatkową, więc po chwilowej awarii zostawiamy bezpieczny przycisk retry.
         setProtocolBackendAvailable(false);
@@ -444,6 +462,19 @@ export default function JobDetailsPanel({
     return () => { cancelled = true; };
   }, [protocolReloadKey, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, supabase]);
 
+  // 13.78: po powrocie internetu sprawdzamy protokół ponownie — ale nie przy otwartym oknie protokołu
+  // (ponowne sprawdzenie zamyka okno; samo okno sprawdza protokół przed zapisem).
+  React.useEffect(() => {
+    if (!protocolCheckOffline || protocolTestOpen || typeof window === "undefined") return undefined;
+    const recheck = () => setProtocolReloadKey((value) => value + 1);
+    if (navigator.onLine !== false) {
+      recheck();
+      return undefined;
+    }
+    window.addEventListener("online", recheck);
+    return () => window.removeEventListener("online", recheck);
+  }, [protocolCheckOffline, protocolTestOpen]);
+
   React.useEffect(() => {
     if (!quickProtocolRequest || String(quickProtocolRequest.jobId) !== selectedJobId) return;
     if (!selectedJobSupportsProtocol || !selectedJob?.detailsLoaded) return;
@@ -455,9 +486,9 @@ export default function JobDetailsPanel({
       onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
       return;
     }
-    if (protocolBackendAvailable) setProtocolTestOpen(true);
+    if (protocolBackendAvailable || protocolCheckOffline) setProtocolTestOpen(true);
     onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
-  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolNameplatesReady, onQuickProtocolRequestHandled]);
+  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolCheckOffline, protocolNameplatesReady, onQuickProtocolRequestHandled]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
@@ -857,7 +888,7 @@ export default function JobDetailsPanel({
                 <span className="mobileLabel">Sprawdzam...</span>
               </button>
             ) : null}
-            {selectedJobSupportsProtocol && !protocolLoading && protocolBackendAvailable ? (
+            {selectedJobSupportsProtocol && !protocolLoading && (protocolBackendAvailable || protocolCheckOffline) ? (
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
@@ -875,7 +906,7 @@ export default function JobDetailsPanel({
                 <span className="mobileLabel">Protokół</span>
               </button>
             ) : null}
-            {selectedJobSupportsProtocol && !protocolLoading && !protocolRecord && !protocolBackendAvailable ? (
+            {selectedJobSupportsProtocol && !protocolLoading && !protocolRecord && !protocolBackendAvailable && !protocolCheckOffline ? (
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
@@ -1236,6 +1267,7 @@ export default function JobDetailsPanel({
         profiles={profiles}
         supabase={supabase}
         protocolRecord={protocolRecord}
+        protocolRecordUnknown={protocolCheckOffline}
         onClose={() => {
           setProtocolTestOpen(false);
           const shouldRemind = pendingFinishReminderRef.current === selectedJobId
