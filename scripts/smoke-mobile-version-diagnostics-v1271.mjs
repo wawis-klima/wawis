@@ -11,7 +11,9 @@ const css = read("src/mobile791/components/diagnostics/MobileDiagnosticsPanel.cs
 assert.match(jobsPanel, /useState\(false\)/, "Stan diagnostyki musi startować jako zamknięty");
 assert.match(jobsPanel, /diagnosticsOpen=\{diagnosticsOpen\} setDiagnosticsOpen=\{setDiagnosticsOpen\}/);
 assert.match(jobsPanel, /!diagnosticsOpen && visibleJobs\.length === 0/, "Pusty widok montaży nie może zasłaniać diagnostyki");
-assert.match(layout, /React\.lazy\(\(\) => import\("\.\.\/diagnostics\/MobileDiagnosticsPanel\.jsx"\)\)/, "Panel musi być ładowany na żądanie");
+// 13.76: lazy z lazy-safe.jsx (nieudane wczytanie ekranu → komunikat zamiast białego ekranu).
+assert.match(layout, /const MobileDiagnosticsPanel = lazy\(\(\) => import\("\.\.\/diagnostics\/MobileDiagnosticsPanel\.jsx"\)\)/, "Panel musi być ładowany na żądanie");
+assert.match(layout, /import \{ lazy \} from "\.\.\/\.\.\/\.\.\/modules\/lazy-safe\.jsx";/, "Diagnostyka musi mieć ekran zastępczy zamiast białego ekranu");
 assert.match(layout, /<button[\s\S]*?className="mobileVersionTag wawisOneLineVersion wawisVersionDiagnosticsButton"/, "Wersja musi być przyciskiem");
 assert.match(layout, /aria-label=\{"Wersja aplikacji " \+ APP_VERSION \+ " — otwórz diagnostykę"\}/);
 assert.match(layout, /aria-expanded=\{diagnosticsOpen\}/);
