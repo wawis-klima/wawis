@@ -6,7 +6,7 @@ const baseURL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
-  testMatch: ['mobile-nameplate-robustness-v1123.spec.js', 'mobile-nameplate-offline-readers-v1370.spec.js'],
+  testMatch: ['mobile-nameplate-robustness-v1123.spec.js', 'mobile-nameplate-offline-readers-v1370.spec.js', 'mobile-nameplate-ai-saving-v1373.spec.js'],
   timeout: 200_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,

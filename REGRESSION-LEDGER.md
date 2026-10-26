@@ -1,5 +1,17 @@
 # WAWIS — Regression Ledger
 
+## AI-SAVING-1373 — AI tabliczek tylko gdy czytnik nie wystarczył (26.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| AS-1373-BARCODE | FIXED-UNVERIFIED | SN z Code 128 (nie EAN, bez konfliktu z nadrukiem) → bez AI. E2E mobile-nameplate-ai-saving-v1373 (0 wywołań), smoke v1373 pkt 1–2. |
+| AS-1373-REVIEW | REGRESSION | Potwierdzenie „znak po znaku” nadal wymagane dla single_source; konflikt i brak SN nadal idą do AI; EAN nigdy jako SN. smoke v1369, v1373, E2E robustness. |
+| AS-1373-MANUAL | FIXED-UNVERIFIED | „Sprawdź przez AI” → dokładnie 1 wywołanie; ukryty bez internetu i po próbie AI. E2E v1373. |
+| AS-1373-CACHE | FIXED-UNVERIFIED | Ten sam kadr (SHA-256) nie płaci drugi raz; pamięć 30 zdjęć do zamknięcia aplikacji. smoke v1373 pkt 4. |
+| AS-1373-COUNTER | FIXED-UNVERIFIED | Diagnostyka: licznik AI / pominięć / pamięci (ten telefon, 31 dni). smoke v1373 pkt 3. |
+| SN-1372-LIVE | PASS (właściciel, iPhone, 26.10 08:58) | „Zapisz teraz” działa. |
+| AS-1373-LIVE | EXTERNAL | iPhone po wdrożeniu: scenariusz z RELEASE-GATE postdeploy. |
+
 ## SAVE-NOW-1372 — „Zapisz teraz” po powrocie internetu (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
