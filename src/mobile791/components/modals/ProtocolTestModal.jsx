@@ -53,6 +53,7 @@ const PROTOCOL_NOTE_MAX_LENGTH = 300;
 // WAWIS 13.77 — ochrona podpisu klienta, poziom 1.
 const PROTOCOL_OFFLINE_NOTICE = "Brak internetu — protokół zapisze się dopiero po powrocie zasięgu. Podpis klienta zostanie zachowany w aplikacji. Nie zamykaj aplikacji.";
 const PROTOCOL_OFFLINE_WAITING_MESSAGE = "Brak internetu. Podpis jest zachowany — protokół zapisze się automatycznie, gdy wróci zasięg (okno protokołu musi być otwarte). Możesz też zamknąć okno i zapisać później z internetem.";
+const PROTOCOL_OFFLINE_CLOSED_MESSAGE = "Brak internetu — protokół nie został jeszcze zapisany. Podpis klienta jest zachowany w aplikacji (nie zamykaj aplikacji). Gdy wróci zasięg, na liście montaży pojawi się „Zapisz teraz”.";
 const PROTOCOL_CLOSE_UNSAVED_CONFIRM = "Protokół nie jest zapisany. Podpis klienta zostanie zachowany w aplikacji do ponownego otwarcia protokołu w tym montażu (do zamknięcia aplikacji). Zamknąć okno?";
 
 function isProtocolOffline() {
@@ -231,7 +232,7 @@ function getTrimmedSignatureDataUrl(canvas) {
   return trimmed.toDataURL("image/png");
 }
 
-export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, protocolRecordUnknown = false, canWriteProtocol = true, onClose, onSaved, onPaymentLoaded }) {
+export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, protocolRecordUnknown = false, autoSaveRestoredDraft = false, canWriteProtocol = true, onClose, onSaved, onPaymentLoaded }) {
   const canvasRef = useRef(null);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
@@ -275,6 +276,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   // (ładowane asynchronicznie) nadpisałyby płatność z podpisanego szkicu.
   const paymentInitializedForOpenRef = useRef(false);
   const [paymentInitVersion, setPaymentInitVersion] = useState(0);
+  // 13.79: „Zapisz teraz” z paska na liście montaży — zapis zaraz po przywróceniu podpisu.
+  const [autoSaveAfterRestore, setAutoSaveAfterRestore] = useState(false);
   const protocolJob = resolvedJob || job;
   const protocolIsCompleted = String(protocolJob?.status || "").trim() === "Zakończone";
   const installersConfirmed = Array.isArray(protocolJob?.installer_ids);
@@ -319,6 +322,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setActionBusy("");
     setMessage("");
     autoSaveWhenOnlineRef.current = false;
+    setAutoSaveAfterRestore(false);
     // 13.77: niezapisany podpis z wcześniejszego otwarcia (np. bez zasięgu) — przywracany po pobraniu danych płatności.
     pendingSignatureDraftRef.current = getProtocolSignatureDraft(job?.id);
     paymentInitializedForOpenRef.current = false;
@@ -691,9 +695,24 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     }
     if (!hasSignature || !signatureDataUrl || isGenerating) return;
     if (isProtocolOffline()) {
-      // 13.77: bez internetu nie zaczynamy zapisu, który i tak skończyłby się limitem czasu — czekamy na zasięg.
-      autoSaveWhenOnlineRef.current = true;
+      // 13.77: bez internetu nie zaczynamy zapisu, który i tak skończyłby się limitem czasu.
+      // 13.79 (prośba właściciela po teście iPhone): okno zamyka się od razu — podpis zostaje w aplikacji,
+      // a po powrocie zasięgu na liście montaży pojawia się „Zapisz teraz”.
       logDiagnostic("protocol.save.offline-waiting", { jobId: String(job?.id || "") });
+      saveProtocolSignatureDraft(job?.id, {
+        signatureDataUrl,
+        signatureRotation,
+        paymentDraft,
+        protocolNote,
+        baseStoragePath: savedRecord?.storage_path || "",
+        snapshotKey: (() => { try { return JSON.stringify(getCurrentSigningSnapshot()); } catch { return ""; } })(),
+      });
+      if (getProtocolSignatureDraft(job?.id)) {
+        if (typeof window !== "undefined") window.alert(PROTOCOL_OFFLINE_CLOSED_MESSAGE);
+        onClose?.();
+        return;
+      }
+      autoSaveWhenOnlineRef.current = true;
       setMessage(PROTOCOL_OFFLINE_WAITING_MESSAGE);
       return;
     }
@@ -854,6 +873,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       signatureRotation,
       paymentDraft,
       protocolNote,
+      baseStoragePath: savedRecord?.storage_path || "",
       snapshotKey,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -874,9 +894,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     } catch {
       snapshotKey = "";
     }
-    if (!canRestoreProtocolSignatureDraft(draft, snapshotKey)) {
+    if (!canRestoreProtocolSignatureDraft(draft, snapshotKey, savedRecord?.storage_path || protocolRecord?.storage_path || "")) {
       clearProtocolSignatureDraft(job?.id);
-      setMessage("Dane montażu zmieniły się od podpisu klienta — poproś klienta o nowy podpis.");
+      setMessage("Dane montażu albo protokół na serwerze zmieniły się od podpisu klienta — poproś klienta o nowy podpis.");
       return;
     }
     const savedAt = new Date(draft.savedAt);
@@ -892,8 +912,16 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setHasSignature(true);
     setDraftHasSignature(true);
     setMessage(`Przywrócono niezapisany podpis klienta${time ? ` z ${time}` : ""}. Sprawdź dane i naciśnij „Zapisz protokół”.`);
+    if (autoSaveRestoredDraft) setAutoSaveAfterRestore(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, paymentReady, paymentLoadError, paymentInitVersion, protocolJobForDocument, profiles]);
+
+  // 13.79: „Zapisz teraz” z paska — zapis zaraz po przywróceniu podpisu (z aktualnym stanem okna).
+  useEffect(() => {
+    if (!open || !autoSaveAfterRestore || !hasSignature || !signatureDataUrl || !paymentReady || isGenerating) return;
+    setAutoSaveAfterRestore(false);
+    void createPdfRef.current?.();
+  }, [open, autoSaveAfterRestore, hasSignature, signatureDataUrl, paymentReady, isGenerating]);
 
   // 13.77: zamknięcie z nowym, niezapisanym podpisem wymaga potwierdzenia (podpis zostaje w pamięci aplikacji).
   function handleClose() {
@@ -1087,8 +1115,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                       <option value="180">Obróć 180°</option>
                     </select>
                     <div style={{ width: "100%", minHeight: 84, marginTop: 8, padding: 8, background: "#fff", border: "1px solid #d6e0ec", borderRadius: 10, textAlign: "center" }}>
-                      {signaturePdfPreview ? (
-                        <img src={signaturePdfPreview} alt="Podgląd ułożenia podpisu na PDF" style={{ maxWidth: "100%", maxHeight: 72, objectFit: "contain" }} />
+                      {signaturePdfPreview || signatureDataUrl ? (
+                        // 13.79 (test iPhone): podgląd potrafił utknąć na „Przygotowuję…” po przywróceniu podpisu —
+                        // do czasu przygotowania obrotu pokazujemy sam podpis.
+                        <img src={signaturePdfPreview || signatureDataUrl} alt="Podgląd ułożenia podpisu na PDF" style={{ maxWidth: "100%", maxHeight: 72, objectFit: "contain" }} />
                       ) : "Przygotowuję podgląd podpisu…"}
                     </div>
                     <small>Obracamy tylko podpis na nowym PDF. Oryginalny zapis klienta pozostaje niezmieniony.</small>

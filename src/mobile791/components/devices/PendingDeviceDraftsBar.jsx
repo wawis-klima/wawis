@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { DEVICE_DRAFTS_CHANGED_EVENT, listDeviceFormDrafts } from "../../modules/device-form-drafts.js";
+import { PROTOCOL_DRAFTS_CHANGED_EVENT, listProtocolSignatureDrafts } from "../../modules/protocol-signature-drafts.js";
 
 // WAWIS 13.72 (decyzja właściciela 26.10.2026): po powrocie internetu przypomnienie o urządzeniach i tabliczkach
 // wpisanych bez internetu. „Zapisz teraz” otwiera ten montaż i od razu uruchamia zwykły zapis — z tymi samymi
@@ -26,22 +27,32 @@ function jobLabel(job) {
   return String(job?.client || job?.title || "").trim() || "montaż";
 }
 
-export default function PendingDeviceDraftsBar({ jobs = [], onSaveNow }) {
-  const [drafts, setDrafts] = useState(() => listDeviceFormDrafts());
+// 13.79: także niezapisane protokoły z podpisem klienta (podpis złożony bez internetu).
+function listAllDrafts() {
+  return [
+    ...listDeviceFormDrafts().map((draft) => ({ ...draft, kind: "devices" })),
+    ...listProtocolSignatureDrafts().map((draft) => ({ ...draft, kind: "protocol" })),
+  ];
+}
+
+export default function PendingDeviceDraftsBar({ jobs = [], onSaveNow, onSaveProtocolNow = null }) {
+  const [drafts, setDrafts] = useState(() => listAllDrafts());
   const [online, setOnline] = useState(isOnline);
   const [busyJobId, setBusyJobId] = useState("");
 
   useEffect(() => {
     const refresh = () => {
-      setDrafts(listDeviceFormDrafts());
+      setDrafts(listAllDrafts());
       setOnline(isOnline());
     };
     window.addEventListener(DEVICE_DRAFTS_CHANGED_EVENT, refresh);
+    window.addEventListener(PROTOCOL_DRAFTS_CHANGED_EVENT, refresh);
     window.addEventListener("online", refresh);
     window.addEventListener("offline", refresh);
     refresh();
     return () => {
       window.removeEventListener(DEVICE_DRAFTS_CHANGED_EVENT, refresh);
+      window.removeEventListener(PROTOCOL_DRAFTS_CHANGED_EVENT, refresh);
       window.removeEventListener("online", refresh);
       window.removeEventListener("offline", refresh);
     };
@@ -50,14 +61,15 @@ export default function PendingDeviceDraftsBar({ jobs = [], onSaveNow }) {
   if (!online || !drafts.length) return null;
   const rows = drafts
     .map((draft) => ({ ...draft, job: jobs.find((job) => String(job?.id || "") === String(draft.jobId)) }))
-    .filter((row) => row.job);
+    .filter((row) => row.job && (row.kind !== "protocol" || onSaveProtocolNow));
   if (!rows.length) return null;
 
   async function handleSave(row) {
     if (busyJobId) return;
-    setBusyJobId(row.jobId);
+    setBusyJobId(`${row.kind}:${row.jobId}`);
     try {
-      await onSaveNow?.(row.job);
+      if (row.kind === "protocol") await onSaveProtocolNow?.(row.job);
+      else await onSaveNow?.(row.job);
     } finally {
       setBusyJobId("");
     }
@@ -66,19 +78,19 @@ export default function PendingDeviceDraftsBar({ jobs = [], onSaveNow }) {
   return (
     <div role="status" data-testid="pending-device-drafts" style={BAR_STYLE}>
       {rows.slice(0, 3).map((row) => (
-        <div key={row.jobId} style={ROW_STYLE}>
+        <div key={`${row.kind}:${row.jobId}`} style={ROW_STYLE}>
           <span style={TEXT_STYLE}>
-            Niezapisane tabliczki: <strong>{jobLabel(row.job)}</strong>
+            {row.kind === "protocol" ? "Niezapisany protokół (podpis klienta)" : "Niezapisane tabliczki"}: <strong>{jobLabel(row.job)}</strong>
           </span>
           <button
             type="button"
             className="btn primary"
-            data-testid="pending-device-drafts-save"
+            data-testid={row.kind === "protocol" ? "pending-protocol-drafts-save" : "pending-device-drafts-save"}
             disabled={Boolean(busyJobId)}
             onClick={() => handleSave(row)}
             style={{ flex: "0 0 auto", padding: "8px 12px" }}
           >
-            {busyJobId === row.jobId ? "Otwieram…" : "Zapisz teraz"}
+            {busyJobId === `${row.kind}:${row.jobId}` ? "Otwieram…" : "Zapisz teraz"}
           </button>
         </div>
       ))}

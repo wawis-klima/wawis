@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.78",
+  "version": "13.79",
   "scope": "mobile",
-  "release_branch": "release/v13.78",
+  "release_branch": "release/v13.79",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "26.10.2026 16:46 (właściciel, iPhone, 13.77, tryb samolotowy): tabliczki dodane, ale zamiast „Protokół” przycisk „Sprawdź” (sprawdzenie protokołu wymaga internetu) — ochrona podpisu niedostępna offline."
+    "notes": "26.10.2026 17:16 (właściciel, iPhone, 13.78): protokół offline działa (podpis zachowany i przywrócony, zapis z właściwym podpisem). Prośby: „Zapisz” offline ma zamykać okno; podgląd podpisu po przywróceniu został na „Przygotowuję…”."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.78",
+    "source_branch": "release/v13.79",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "iPhone: tryb samolotowy → otwarcie montażu → „Protokół” (nie „Sprawdź”) → komunikaty → podpis → Zapisz (zachowany) → zamknij → otwórz (podpis wraca).",
+    "evidence_source": "iPhone: tryb samolotowy → protokół → podpis → Zapisz (ostrzeżenie, okno zamknięte) → internet → pasek „Niezapisany protokół — Zapisz teraz” → zapis; podgląd podpisu po przywróceniu.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "JobDetailsPanel: protocolCheckOffline (bez internetu protokół bez sprawdzenia, ponowne sprawdzenie po online przy zamkniętym oknie); ProtocolTestModal: protocolRecordUnknown → przed zapisem loadJobProtocolRecord, przy istniejącym protokole błąd PROTOCOL_ALREADY_EXISTS (podpis zostaje).",
+    "code": "ProtocolTestModal: zapis offline zamyka okno (alert), szkic z baseStoragePath, autoSaveRestoredDraft; protocol-signature-drafts: lista + zdarzenie; PendingDeviceDraftsBar: wiersz protokołu; JobDetailsPanel/App: quick protocol z autoSave; protocol-signature-orientation: limit czasu i decode(); podgląd pokazuje podpis do czasu obrotu.",
     "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18). Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.78; test na iPhonie."
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.79; test na iPhonie."
   }
 }

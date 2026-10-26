@@ -1402,7 +1402,7 @@ export default function App() {
     }
   }
 
-  async function handleQuickProtocol(job) {
+  async function handleQuickProtocol(job, options = {}) {
     if (!job) return;
     const supportsProtocol = job.status === "Zakończone" || job.status === "W trakcie";
     if (!supportsProtocol) return;
@@ -1415,7 +1415,7 @@ export default function App() {
         return;
       }
       setSelectedJob((current) => String(current?.id || "") === String(job.id) ? current : resolved);
-      setQuickProtocolRequest({ jobId: String(job.id), nonce: Date.now() });
+      setQuickProtocolRequest({ jobId: String(job.id), nonce: Date.now(), autoSave: Boolean(options.autoSave) });
     } catch {
       window.alert("Nie udało się sprawdzić tabliczek. Odśwież montaż i spróbuj ponownie.");
     }
@@ -1479,6 +1479,7 @@ export default function App() {
             setSelectedJob={setSelectedJob}
             onQuickNameplates={handleQuickNameplates}
             onSaveDeviceDraft={(job) => handleQuickNameplates(job, { autoSave: true })}
+            onSaveProtocolDraft={(job) => handleQuickProtocol(job, { autoSave: true })}
             onQuickProtocol={handleQuickProtocol}
             formatDate={formatDate}
             toggleSort={toggleSort}
