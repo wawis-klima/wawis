@@ -1,3 +1,8 @@
+## 13.86
+- Po teście właściciela na iPhonie (27.10.2026, 13.85): przy niepełnych danych klienta przyciski „Podpis klienta” i „Zapisz protokół” są wyraźnie szare (nieaktywne), żeby było jasne, że nie da się ich użyć.
+- E-mail z jednoliterową częścią przed „@” (np. „w@qw.pl” z testu) jest traktowany jako niepełny — trzeba wpisać prawdziwy adres albo zaznaczyć „Klient nie podał e-maila”.
+- Bez zmian w bazie.
+
 ## 13.85
 - Protokół na telefonie: nowy krok „Dane klienta” przed podpisem (prośba właściciela 27.10.2026). W 129 montażach z 4 miesięcy: 16 bez e-maila, ok. 10 z nazwą klienta wyglądającą jak adres, z cyframi albo z jednego słowa.
   - Imię i nazwisko (albo nazwa firmy po zaznaczeniu „Firma”) są obowiązkowe — bez poprawnych danych nie da się złożyć podpisu ani zapisać protokołu (także bez internetu).

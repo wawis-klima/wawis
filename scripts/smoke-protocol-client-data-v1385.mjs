@@ -24,6 +24,7 @@ bad(email(''));
 bad(email('jan@onet'));
 bad(email('brak@wp.pl'));
 bad(email('test@test.pl'));
+bad(email('w@qw.pl')); // 13.86: test właściciela na iPhonie
 for (const [typo, fixed] of [['jan@gmial.com', 'jan@gmail.com'], ['jan@wp.pl.pl', 'jan@wp.pl'], ['jan@firma.con', 'jan@firma.com'], ['jan@gmail.pl', 'jan@gmail.com']]) {
   const r = email(typo); bad(r); assert.equal(r.suggestion, fixed);
 }
@@ -37,6 +38,8 @@ assert.equal(checkProtocolClientData({ client: 'ul. Lipowa 5', email: '' }).ok, 
 // Kreator protokołu: blokada podpisu i zapisu, zapis danych przed płatnością, dane w szkicu podpisu.
 const modal = fs.readFileSync(new URL('../src/mobile791/components/modals/ProtocolTestModal.jsx', import.meta.url), 'utf8');
 assert.match(modal, /function openSignature\(\) \{\s*if \(clientGateBlocked\)/);
+assert.match(modal, /disabled=\{!canWriteProtocol \|\| !hasSignature \|\| clientGateBlocked/, '13.86: Zapisz protokół wyszarzony przy niepełnych danych');
+assert.match(modal, /data-testid="protocol-signature-open" onClick=\{openSignature\} disabled=\{isGenerating \|\| clientGateBlocked/, '13.86: Podpis klienta wyszarzony');
 assert.match(modal, /if \(clientGateBlocked\) \{\s*showClientDataProblem\(\);\s*return;\s*\}\s*if \(isProtocolOffline\(\)\)/);
 assert(modal.indexOf('saveJobClientContact({') < modal.indexOf('saveJobPaymentConfirmation({ supabase, job: protocolJob'), 'dane klienta zapisywane przed płatnością i PDF');
 assert.match(modal, /clientDraft: clientDataEditable \? clientDraft : null/);

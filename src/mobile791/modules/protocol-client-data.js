@@ -119,6 +119,10 @@ export function validateClientEmail(value, { declined = false } = {}) {
     return { ok: false, error: 'Nieprawidłowy adres e-mail — sprawdź z klientem.', suggestion: '' };
   }
   const [local, domain] = email.split('@');
+  // 13.86: jednoliterowa część przed „@” (np. „w@qw.pl” z testu na iPhonie) to prawie zawsze adres wpisany na szybko.
+  if (local.length < 2) {
+    return { ok: false, error: 'Adres e-mail wygląda na niepełny — sprawdź z klientem albo zaznacz „Klient nie podał e-maila”.', suggestion: '' };
+  }
   if (PLACEHOLDER_LOCAL.test(local)) {
     return { ok: false, error: 'To nie jest prawdziwy adres klienta. Wpisz jego e-mail albo zaznacz „Klient nie podał e-maila”.', suggestion: '' };
   }
