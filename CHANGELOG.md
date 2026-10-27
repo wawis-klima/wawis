@@ -1,3 +1,6 @@
+## 13.88
+- Zgłoszenie właściciela (27.10.2026, Biała 4a): u administratora przy brakującej tabliczce znamionowej pokazywał się zielony komunikat „Urządzenia są dodane. Uzupełnij protokół…” obok czerwonego „Krok 1/3”. Zielony komunikat pojawia się teraz dopiero przy komplecie zdjęć tabliczek, a „Krok 1/3” podaje, której tabliczki brakuje (np. „Brakuje: JZ urządzenia 1.”). Zasady blokady Protokołu i Zakończenia bez zmian.
+
 ## 13.87
 - Zgłoszenie właściciela (27.10.2026, montaż Biała 4a): miniatury zdjęć pokazywały się na chwilę i znikały. Przyczyna: odświeżanie w tle (zmiana zgłoszona przez serwer, np. nowa tabliczka od pracownika) kończyło się zapisem listy montaży z chwili rozpoczęcia odświeżania i cofało otwarty w międzyczasie montaż do kopii bez pobranych zdjęć i miniatur. Teraz zmiany z serwera są nakładane na najnowszy stan — zdjęcia, miniatury i komentarze zostają. Telefon i komputer. Dane w bazie nie były zagrożone.
 

@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## NAMEPLATE-MSG-1388 — komunikaty tabliczek u administratora (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| NM-1388-CAUSE | FIXED-UNVERIFIED | Zrzut właściciela 14:01 (Biała 4a, 2 urządzenia, brak JZ urządzenia 1 — potwierdzone SELECT): zielony „Urządzenia są dodane…” mimo braku tabliczki. Przyczyna: dla admina `isComplete` = są urządzenia (ścieżka ręcznych potwierdzeń 10.90). |
+| NM-1388-FIX | FIXED-UNVERIFIED | Zielony komunikat u admina tylko przy `photosComplete`; „Krok 1/3” z listą brakujących tabliczek (serwer, po załadowaniu szczegółów). E2E mobile-admin-nameplate-messages-v1388 (brak JZ / komplet). |
+| NM-1388-REGRESSION | REGRESSION | Blokady Protokołu/Zakończenia bez zmian: E2E v1323 admin, v1356, nameplate built E2E. |
+| NM-1388-LIVE | EXTERNAL | iPhone (admin): montaż z brakującą tabliczką — tylko czerwony komunikat z nazwą brakującej tabliczki. |
+
 ## THUMBS-REBASE-1387 — miniatury znikały po odświeżeniu w tle (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

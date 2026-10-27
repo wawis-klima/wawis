@@ -6,7 +6,7 @@ import JobAddressLink from "./JobAddressLink.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, canWorkerRestartJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from "../modules/job-devices.js";
 import { getNameplatePhotoMetadata } from "../modules/photos.js";
-import { areJobNameplatesReadyForProtocol, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
+import { areJobNameplatesReadyForProtocol, formatMissingNameplateMessage, getJobNameplateCompletion, getLatestNameplatePhotoForUnit, isNameplatePhotoReady } from "../modules/nameplate-requirements.js";
 import { getManualNameplateVerification, setManualNameplateVerification } from "../../modules/nameplate-verification.js";
 import { formatStoredProtocolDate, loadJobProtocolRecord } from "../modules/job-protocol-storage.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -547,6 +547,10 @@ export default function JobDetailsPanel({
   const nameplateCompletion = getJobNameplateCompletion(selectedJob, { allowLocal: !isAdmin });
   const effectiveNameplateComplete = nameplateCompletion.isComplete;
   const hasConfiguredDevices = nameplateCompletion.hasConfiguredDevices;
+  // 13.88: brakujące tabliczki na serwerze (bez zdjęć tylko z telefonu) — nazwane w komunikacie „Krok 1/3”.
+  const missingServerNameplatesLabel = selectedJob?.detailsLoaded
+    ? formatMissingNameplateMessage(getJobNameplateCompletion(selectedJob))
+    : '';
   const hasLocallySavedNameplates = nameplateCompletion.units.some((unit) => {
     const status = String(unit.photo?.upload_status || '').toLowerCase();
     return status === 'local' || status === 'uploading';
@@ -934,7 +938,9 @@ export default function JobDetailsPanel({
           {canFinishJob && !showDetailsLoading && !hasConfiguredDevices ? (
             <div className="finishNameplateRequirement missing">Najpierw dodaj urządzenie (JW/JZ), aby zakończyć zlecenie.</div>
           ) : null}
-          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete ? (
+          {/* 13.88: u administratora zielony komunikat tylko przy komplecie zdjęć tabliczek — wcześniej
+              pokazywał „Urządzenia są dodane” mimo brakującej tabliczki (obok czerwonego „Krok 1/3”). */}
+          {canFinishJob && !showDetailsLoading && effectiveNameplateComplete && (!isAdmin || nameplateCompletion.photosComplete) ? (
             <div className="finishNameplateRequirement ready">
               {isAdmin
                 ? (protocolReadyForCompletion ? 'Urządzenia i protokół są gotowe. Możesz zakończyć zlecenie.' : 'Urządzenia są dodane. Uzupełnij protokół, aby zakończyć zlecenie.')
@@ -944,7 +950,10 @@ export default function JobDetailsPanel({
             </div>
           ) : null}
           {completionProtocolRequired && !protocolNameplatesReady ? (
-            <div className="finishNameplateRequirement missing">Krok 1/3: uzupełnij i zsynchronizuj tabliczki. Dopiero potem aktywuje się „Protokół”.</div>
+            <div className="finishNameplateRequirement missing" data-testid="finish-nameplate-step-missing">
+              Krok 1/3: uzupełnij i zsynchronizuj tabliczki. Dopiero potem aktywuje się „Protokół”.
+              {missingServerNameplatesLabel ? <> Brakuje: {missingServerNameplatesLabel}.</> : null}
+            </div>
           ) : null}
           {completionProtocolRequired && protocolLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam zapisany protokół klienta…</div>
