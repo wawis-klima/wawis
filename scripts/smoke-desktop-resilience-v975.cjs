@@ -75,7 +75,7 @@ assert.match(mobileFetch, /deferThumbnailSigning = false/, 'mobile: details load
 assert.match(mobileFetch, /signal = null/, 'mobile: details loader must support cancellation');
 assert.match(mobileFetch, /detailsLoadError/, 'mobile: details load error must survive list refreshes');
 
-assert.match(mobileApp, /JOB_DETAILS_TIMEOUT_MS = 3200/, 'mobile: details request must have a bounded wait');
+assert.match(mobileApp, /JOB_DETAILS_ATTEMPT_TIMEOUTS_MS = Object\.freeze\(\[4500, 9000\]\)/, 'mobile: details request must have a bounded wait (13.83: rosnący limit)');
 assert.match(mobileApp, /deferThumbnailSigning: true/, 'mobile: details must render before thumbnail signing');
 assert.match(mobileApp, /void hydrateJobThumbnails\(/, 'mobile: thumbnail signing should happen in background');
 assert.match(mobileApp, /jobsRef\.current\.find/, 'mobile: detail callback must use stable jobs ref');

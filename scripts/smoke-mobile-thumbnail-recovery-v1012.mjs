@@ -21,7 +21,7 @@ assert.match(appSource, /transform:\s*useOriginal \? null : MOBILE_THUMBNAIL_TRA
 assert.match(detailsSource, /onError=\{\(\) => \{ void onThumbnailLoadError\?\.\(photo\); \}\}/);
 assert.match(detailsSource, /thumbnail_load_failed/);
 assert.match(detailsSource, /Otwórz zdjęcie/);
-assert.match(appSource, /const JOB_DETAILS_TIMEOUT_MS = 3200;/);
+assert.match(appSource, /const JOB_DETAILS_ATTEMPT_TIMEOUTS_MS = Object\.freeze\(\[4500, 9000\]\);/); // 13.83: limit rośnie z próbą
 assert.match(appSource, /JOB_DETAILS_RETRY_DELAYS_MS = Object\.freeze\(\[0, 500\]\)/);
 assert.match(appSource, /for \(let attemptIndex = 0; attemptIndex < JOB_DETAILS_RETRY_DELAYS_MS\.length; attemptIndex \+= 1\)/);
 assert.match(appSource, /job\.details\.retry/);

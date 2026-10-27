@@ -1,3 +1,10 @@
+## 13.83
+- Analiza błędów z produkcji (27.10.2026, diagnostyka 14 dni, logi Supabase — tylko odczyt):
+  - Telefon: szczegóły montażu (zdjęcia, komentarze) mają rosnący limit czasu — 4,5 s, potem 9 s — zamiast stałych 3,2 s. Przy stałym limicie było 362 przerwanych pobrań i 212 ponowień w 14 dni (baza odpowiada zwykle w 0,3–0,5 s, ale ze skokami 3–8 s; do tego LTE). Pierwsza próba nadal krótka (wiszące połączenia iOS), druga z zapasem.
+  - Odświeżanie danych: gdy lista montaży już się zaktualizowała, chwilowy błąd pobocznych danych zapisuje się jako ostrzeżenie (`refreshAll partial`), nie jako błąd. Zachowanie dla użytkownika bez zmian (bez komunikatu, automatyczne ponowienie) — 39 z 51 przekroczeń limitu zbiegło się z utratą zasięgu.
+  - Diagnostyka: 25 stałych kodów etapów (zdjęcia, szczegóły montażu, tabliczki, powiadomienia, logowanie, odświeżanie) zamiast „niesklasyfikowane” (~650 zdarzeń w 14 dni). Kody tylko ze stałych tekstów kodu WAWIS i rodzaju zdarzenia; przyczyna sieciowa/serwerowa ma pierwszeństwo; bez danych osobowych. Test `smoke-diagnostics-stage-codes-v1383` w grupie diagnostyki.
+- Bez zmian w bazie, RLS, Storage i zapisie danych.
+
 ## 13.82
 - Kontrola produkcji po każdym wdrożeniu (nowy workflow `postdeploy-check`, uruchamiany przez wdrożenie Vercel, tylko odczyt — bez logowania i zapisu danych): wersja `/app-version.json`, dostępność KAŻDEGO pliku z `precache-manifest.json` (brak pliku krytycznego = biały ekran offline), service worker tej wersji, strona startowa w Chromium i WebKit (iPhone) bez błędów i pustego ekranu, pliki krytyczne zapisane przez service worker. Problem → zgłoszenie `postdeploy-failure`; poprawna kontrola zamyka zgłoszenie. Nie wydłuża wydania (działa po wdrożeniu). Self-test w PR: zdrowa budowa = OK, usunięty plik krytyczny = BŁĄD.
 - Test WebKit na gotowym obrazie Playwright (`mcr.microsoft.com/playwright:v1.60.0-noble`) zamiast instalacji bibliotek systemowych — znika zawieszanie `install-deps` (do 25 min). Krok kontrolny: wersja obrazu = playwright-core z package-lock.json.

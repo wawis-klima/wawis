@@ -31,6 +31,7 @@ const GROUPS = {
     'npm run test:smoke:diagnostic-report',
     'npm run test:smoke:diagnostics-clarity',
     'node scripts/smoke-diagnostic-error-codes-v1272.mjs',
+    'node scripts/smoke-diagnostics-stage-codes-v1383.mjs',
     'node scripts/smoke-diagnostics-p0-privacy-v1273.mjs',
     'node scripts/smoke-diagnostics-ingest-queue-v1274.mjs',
     'node scripts/smoke-diagnostic-worker-rls-v1274.mjs',
