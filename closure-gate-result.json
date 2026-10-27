@@ -1,0 +1,7 @@
+{
+  "schema_version": 2,
+  "status": "NO-GO",
+  "git_sha": null,
+  "git_run_id": null,
+  "error": "Brak wymaganego dowodu: release-impact.json"
+}

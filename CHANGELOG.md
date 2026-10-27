@@ -1,3 +1,6 @@
+## 13.87
+- Zgłoszenie właściciela (27.10.2026, montaż Biała 4a): miniatury zdjęć pokazywały się na chwilę i znikały. Przyczyna: odświeżanie w tle (zmiana zgłoszona przez serwer, np. nowa tabliczka od pracownika) kończyło się zapisem listy montaży z chwili rozpoczęcia odświeżania i cofało otwarty w międzyczasie montaż do kopii bez pobranych zdjęć i miniatur. Teraz zmiany z serwera są nakładane na najnowszy stan — zdjęcia, miniatury i komentarze zostają. Telefon i komputer. Dane w bazie nie były zagrożone.
+
 ## 13.86
 - Po teście właściciela na iPhonie (27.10.2026, 13.85): przy niepełnych danych klienta przyciski „Podpis klienta” i „Zapisz protokół” są wyraźnie szare (nieaktywne), żeby było jasne, że nie da się ich użyć.
 - E-mail z jednoliterową częścią przed „@” (np. „w@qw.pl” z testu) jest traktowany jako niepełny — trzeba wpisać prawdziwy adres albo zaznaczyć „Klient nie podał e-maila”.
