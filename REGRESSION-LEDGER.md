@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## CLIENT-DATA-1385 — dane klienta w protokole (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CD-1385-GATE | FIXED-UNVERIFIED | Prośba właściciela: wymusić imię i nazwisko (e-mail opcjonalny, ale zalecany). Produkcja: 16/129 bez e-maila, ~10 nazw jak adres/cyfry/jedno słowo. Blokada podpisu i zapisu (online i offline). E2E mobile-protocol-client-data-v1385 (2 scenariusze), smoke-protocol-client-data-v1385. |
+| CD-1385-RULES | FIXED-UNVERIFIED | Reguły bez AI: adres/cyfry/jedno słowo/„Pan” → błąd; firma; słownik imion → tylko podpowiedź; e-mail: format, literówki z poprawką, adresy zastępcze, „Klient nie podał e-maila”. |
+| CD-1385-SIGN | FIXED-UNVERIFIED | Dane klienta w migawce podpisu (jak dotąd); zmiana po podpisie → nowy podpis. Szkic podpisu offline zawiera clientDraft (tylko pamięć aplikacji). |
+| CD-1385-SAVE | FIXED-UNVERIFIED | saveJobClientContact → save_job_concurrent_v1168 (client, title, email z expected) przed płatnością i PDF; trigger v1089 aktualizuje kartę kontrahenta. Bez zmian w bazie. |
+| CD-1385-REGRESSION | REGRESSION | Dotychczasowe E2E protokołu (testowi klienci mają poprawne e-maile): mobile-protocol-test, finish-reminder, v1377, v1378, v1295 visual, v1323 admin. |
+| CD-1385-LIVE | EXTERNAL | iPhone: protokół w montażu z ulicą zamiast klienta → blokada, uzupełnienie, podpis, zapis; dane widoczne w montażu i u kontrahenta. |
+
 ## PUSH-STALE-1384 — wyłączanie martwych subskrypcji PUSH (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

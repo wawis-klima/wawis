@@ -38,6 +38,15 @@ export function saveProtocolSignatureDraft(jobId, draft) {
     signatureRotation: String(draft.signatureRotation || 'auto'),
     paymentDraft: draft.paymentDraft ? { ...draft.paymentDraft } : null,
     protocolNote: String(draft.protocolNote || ''),
+    // 13.85: dane klienta z kroku „Dane klienta” — są częścią podpisanych danych.
+    clientDraft: draft.clientDraft && typeof draft.clientDraft === 'object'
+      ? {
+          client: String(draft.clientDraft.client || ''),
+          email: String(draft.clientDraft.email || ''),
+          emailDeclined: Boolean(draft.clientDraft.emailDeclined),
+          isCompany: Boolean(draft.clientDraft.isCompany),
+        }
+      : null,
     snapshotKey: String(draft.snapshotKey),
     // 13.79: protokół, na którym podpisano (pusty = nowy protokół). Inny protokół na serwerze → bez przywracania.
     baseStoragePath: String(draft.baseStoragePath || ''),

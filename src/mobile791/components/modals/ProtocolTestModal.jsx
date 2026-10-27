@@ -29,6 +29,8 @@ import {
   saveJobPaymentConfirmation,
 } from "../../modules/job-payment-confirmation.js";
 import { logDiagnostic } from "../../modules/diagnostics.js";
+import { checkProtocolClientData, createProtocolClientDraft, normalizeClientEmail, normalizeClientName } from "../../modules/protocol-client-data.js";
+import { saveJobClientContact } from "../../modules/jobs-form.js";
 import {
   canRestoreProtocolSignatureDraft,
   clearProtocolSignatureDraft,
@@ -278,10 +280,14 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   const [paymentInitVersion, setPaymentInitVersion] = useState(0);
   // 13.79: „Zapisz teraz” z paska na liście montaży — zapis zaraz po przywróceniu podpisu.
   const [autoSaveAfterRestore, setAutoSaveAfterRestore] = useState(false);
+  // 13.85: dane klienta (imię i nazwisko obowiązkowe, e-mail zalecany) — sprawdzane przed podpisem.
+  const [clientDraft, setClientDraft] = useState(() => createProtocolClientDraft(job));
+  const clientDraftTouchedRef = useRef(false);
   const protocolJob = resolvedJob || job;
   const protocolIsCompleted = String(protocolJob?.status || "").trim() === "Zakończone";
   const installersConfirmed = Array.isArray(protocolJob?.installer_ids);
-  const protocolJobForDocument = useMemo(() => {
+  const clientDataEditable = editing && !protocolIsCompleted;
+  const protocolJobBaseForDocument = useMemo(() => {
     if (installersConfirmed) return protocolJob;
     // Historyczne montaże sprzed 11.68 nie mają jawnego installer_ids.
     // Zarówno dla pierwszego protokołu, jak i ponownego podpisu odtwarzamy
@@ -292,6 +298,22 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       installer_ids: getLegacyInstallerSuggestionIds(protocolJob),
     };
   }, [protocolJob, installersConfirmed]);
+  const applyClientDraftToJob = (baseJob, draft) => (clientDataEditable && draft ? {
+    ...(baseJob || {}),
+    client: normalizeClientName(draft.client),
+    title: normalizeClientName(draft.client) || baseJob?.title,
+    email: draft.emailDeclined && !normalizeClientEmail(draft.email) ? "" : normalizeClientEmail(draft.email),
+  } : baseJob);
+  const protocolJobForDocument = useMemo(
+    () => applyClientDraftToJob(protocolJobBaseForDocument, clientDraft),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [protocolJobBaseForDocument, clientDraft, clientDataEditable],
+  );
+  const clientCheck = useMemo(
+    () => checkProtocolClientData(clientDraft, { street: protocolJob?.street, city: protocolJob?.city }),
+    [clientDraft, protocolJob?.street, protocolJob?.city],
+  );
+  const clientGateBlocked = clientDataEditable && !clientCheck.ok;
   const protocolData = useMemo(
     () => buildJobProtocolData({ job: protocolJobForDocument, profiles, signedAt: openedAtRef.current, payment: { enabled: false } }),
     [protocolJobForDocument, profiles],
@@ -323,6 +345,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setMessage("");
     autoSaveWhenOnlineRef.current = false;
     setAutoSaveAfterRestore(false);
+    setClientDraft(createProtocolClientDraft(job));
+    clientDraftTouchedRef.current = false;
     // 13.77: niezapisany podpis z wcześniejszego otwarcia (np. bez zasięgu) — przywracany po pobraniu danych płatności.
     pendingSignatureDraftRef.current = getProtocolSignatureDraft(job?.id);
     paymentInitializedForOpenRef.current = false;
@@ -369,6 +393,13 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
 
     return () => { cancelled = true; };
   }, [open, job?.id, protocolRecord?.id]);
+
+  // 13.85: świeże dane montażu z serwera (np. po pobraniu płatności) — jeśli pracownik nic jeszcze nie zmienił.
+  useEffect(() => {
+    if (!open || clientDraftTouchedRef.current) return;
+    setClientDraft(createProtocolClientDraft(resolvedJob || job));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, resolvedJob]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -501,6 +532,24 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setMessage("");
   }
 
+  // 13.85: zmiana danych klienta po podpisie = klient podpisał inne dane → potrzebny nowy podpis.
+  function updateClientDraft(patch) {
+    if (hasSignature || signatureDataUrl) {
+      invalidateSignature();
+      setMessage("Zmieniono dane klienta — poproś klienta o ponowny podpis.");
+    }
+    clientDraftTouchedRef.current = true;
+    setClientDraft((current) => ({ ...current, ...patch }));
+  }
+
+  function showClientDataProblem() {
+    const problem = clientCheck.name.error || clientCheck.email.error;
+    setMessage(problem ? `Uzupełnij dane klienta: ${problem}` : "Uzupełnij dane klienta.");
+    if (typeof document !== "undefined") {
+      document.querySelector('[data-testid="protocol-client-section"]')?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    }
+  }
+
   function updatePaymentDraft(patch) {
     invalidateSignature();
     setPaymentDraft((current) => ({ ...current, ...patch }));
@@ -557,6 +606,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   }
 
   function openSignature() {
+    if (clientGateBlocked) {
+      showClientDataProblem();
+      return;
+    }
     signatureCanvasInkRef.current = false;
     if (reusedSignature) {
       previousSignatureRef.current = signatureDataUrl;
@@ -694,6 +747,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       return;
     }
     if (!hasSignature || !signatureDataUrl || isGenerating) return;
+    if (clientGateBlocked) {
+      showClientDataProblem();
+      return;
+    }
     if (isProtocolOffline()) {
       // 13.77: bez internetu nie zaczynamy zapisu, który i tak skończyłby się limitem czasu.
       // 13.79 (prośba właściciela po teście iPhone): okno zamyka się od razu — podpis zostaje w aplikacji,
@@ -704,6 +761,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         signatureRotation,
         paymentDraft,
         protocolNote,
+        clientDraft: clientDataEditable ? clientDraft : null,
         baseStoragePath: savedRecord?.storage_path || "",
         snapshotKey: (() => { try { return JSON.stringify(getCurrentSigningSnapshot()); } catch { return ""; } })(),
       });
@@ -738,6 +796,16 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             existingError.code = "PROTOCOL_ALREADY_EXISTS";
             throw existingError;
           }
+        }
+        let clientPatch = {};
+        if (clientDataEditable) {
+          setSaveProgressLabel("Zapisuję dane klienta…");
+          await waitForProtocolUiPaint();
+          const clientSave = await withProtocolSaveTimeout(
+            saveJobClientContact({ supabase, job: protocolJob, client: clientDraft.client, email: clientDraft.emailDeclined && !normalizeClientEmail(clientDraft.email) ? "" : clientDraft.email }),
+            { phase: "client", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
+          );
+          clientPatch = clientSave?.patch || {};
         }
         setSaveProgressLabel("Zapisuję płatność…");
         await waitForProtocolUiPaint();
@@ -779,9 +847,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
           reuseStoredSignature,
           signedSnapshot,
         });
-        return { paymentPatch, record, protocolNoteValue, reused: reuseStoredSignature };
+        return { paymentPatch, clientPatch, record, protocolNoteValue, reused: reuseStoredSignature };
       })();
-      const { paymentPatch, record, protocolNoteValue, reused } = await withProtocolSaveTimeout(saveOperation, {
+      const { paymentPatch, clientPatch, record, protocolNoteValue, reused } = await withProtocolSaveTimeout(saveOperation, {
         phase: () => progress.phase,
         timeoutMs: PROTOCOL_SAVE_TOTAL_TIMEOUT_MS,
       });
@@ -789,7 +857,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       clearProtocolSignatureDraft(job?.id);
       setSavedRecord(record);
       setEditing(false);
-      setResolvedJob((current) => ({ ...(current || job), ...paymentPatch }));
+      setResolvedJob((current) => ({ ...(current || job), ...(clientPatch || {}), ...paymentPatch }));
       paymentDraftBaselineRef.current = JSON.stringify(paymentDraft);
       noteBaselineRef.current = String(record?.note ?? protocolNoteValue ?? "").slice(0, PROTOCOL_NOTE_MAX_LENGTH);
       setProtocolNote(noteBaselineRef.current);
@@ -807,7 +875,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
             ? "Protokół został zapisany przy zakończonym zleceniu."
             : "Protokół został zapisany. Możesz teraz zakończyć zlecenie po spełnieniu pozostałych warunków."
       );
-      onSaved?.(record, paymentPatch);
+      onSaved?.(record, { ...(clientPatch || {}), ...paymentPatch });
     } catch (error) {
       const rawErrorText = String(error?.message || error || "");
       const isSupabaseRequestTimeout = error?.code === "SUPABASE_REQUEST_TIMEOUT"
@@ -873,11 +941,12 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       signatureRotation,
       paymentDraft,
       protocolNote,
+      clientDraft: clientDataEditable ? clientDraft : null,
       baseStoragePath: savedRecord?.storage_path || "",
       snapshotKey,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editing, hasSignature, reusedSignature, signatureDataUrl, signatureRotation, paymentDraft, protocolNote, protocolJobForDocument, profiles]);
+  }, [open, editing, hasSignature, reusedSignature, signatureDataUrl, signatureRotation, paymentDraft, protocolNote, protocolJobForDocument, profiles, clientDraft]);
 
   // 13.77: przywrócenie podpisu po ponownym otwarciu — tylko do identycznych podpisanych danych.
   useEffect(() => {
@@ -888,7 +957,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     let snapshotKey = "";
     try {
       snapshotKey = JSON.stringify(createProtocolSigningSnapshot(buildJobProtocolData({
-        job: protocolJobForDocument, profiles, signedAt: openedAtRef.current,
+        job: draft.clientDraft ? applyClientDraftToJob(protocolJobBaseForDocument, draft.clientDraft) : protocolJobForDocument,
+        profiles, signedAt: openedAtRef.current,
         payment: normalizePaymentConfirmation(draftPayment), note: draft.protocolNote,
       })));
     } catch {
@@ -902,6 +972,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     const savedAt = new Date(draft.savedAt);
     const time = Number.isNaN(savedAt.getTime()) ? "" : savedAt.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
     setEditing(true);
+    if (draft.clientDraft) {
+      clientDraftTouchedRef.current = true;
+      setClientDraft(draft.clientDraft);
+    }
     setPaymentDraft(draftPayment);
     setProtocolNote(draft.protocolNote);
     setNoteOpen(Boolean(draft.protocolNote.trim()));
@@ -1090,6 +1164,58 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                 ) : (
                   <div className="protocolNoteReadOnly">{protocolNote}</div>
                 )}
+              </section>
+            ) : null}
+
+            {clientDataEditable ? (
+              <section className={`protocolTestSection protocolClientSection${clientGateBlocked ? " needsAttention" : ""}`} data-testid="protocol-client-section">
+                <h3>Dane klienta <small>(sprawdź z klientem przed podpisem)</small></h3>
+                <label className="protocolClientField">
+                  <span>{clientDraft.isCompany ? "Nazwa firmy" : "Imię i nazwisko"}</span>
+                  <input
+                    className="input"
+                    data-testid="protocol-client-name"
+                    value={clientDraft.client}
+                    autoComplete="off"
+                    autoCapitalize="words"
+                    placeholder={clientDraft.isCompany ? "np. Firma Instal sp. z o.o." : "np. Jan Kowalski"}
+                    onChange={(event) => updateClientDraft({ client: event.target.value })}
+                    disabled={isGenerating}
+                  />
+                </label>
+                <label className="protocolClientCheck">
+                  <input type="checkbox" data-testid="protocol-client-company" checked={clientDraft.isCompany} onChange={(event) => updateClientDraft({ isCompany: event.target.checked })} disabled={isGenerating} />
+                  <span>Firma (nazwa firmy zamiast imienia i nazwiska)</span>
+                </label>
+                {clientCheck.name.error ? <div className="protocolClientError" role="alert" data-testid="protocol-client-name-error">{clientCheck.name.error}</div> : null}
+                {!clientCheck.name.error && clientCheck.name.hint ? <div className="protocolClientHint" data-testid="protocol-client-name-hint">{clientCheck.name.hint}</div> : null}
+                <label className="protocolClientField">
+                  <span>E-mail <small>(protokół i faktura)</small></span>
+                  <input
+                    className="input"
+                    data-testid="protocol-client-email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    value={clientDraft.email}
+                    placeholder={clientDraft.emailDeclined ? "Klient nie podał e-maila" : "np. jan.kowalski@gmail.com"}
+                    onChange={(event) => updateClientDraft({ email: event.target.value, emailDeclined: event.target.value.trim() ? false : clientDraft.emailDeclined })}
+                    disabled={isGenerating}
+                  />
+                </label>
+                <label className="protocolClientCheck">
+                  <input type="checkbox" data-testid="protocol-client-no-email" checked={clientDraft.emailDeclined && !normalizeClientEmail(clientDraft.email)} onChange={(event) => updateClientDraft({ emailDeclined: event.target.checked, email: event.target.checked ? "" : clientDraft.email })} disabled={isGenerating} />
+                  <span>Klient nie podał e-maila</span>
+                </label>
+                {clientCheck.email.error ? (
+                  <div className="protocolClientError" role="alert" data-testid="protocol-client-email-error">
+                    {clientCheck.email.error}
+                    {clientCheck.email.suggestion ? (
+                      <button type="button" className="btn protocolClientFix" data-testid="protocol-client-email-fix" onClick={() => updateClientDraft({ email: clientCheck.email.suggestion })} disabled={isGenerating}>Popraw na {clientCheck.email.suggestion}</button>
+                    ) : null}
+                  </div>
+                ) : null}
               </section>
             ) : null}
 

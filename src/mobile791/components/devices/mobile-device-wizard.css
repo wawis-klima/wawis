@@ -1257,3 +1257,17 @@
   }
 }
 
+
+/* 13.85: dane klienta w protokole (imię i nazwisko obowiązkowe, e-mail zalecany). */
+.protocolClientSection { display: grid; gap: 8px; }
+.protocolClientSection.needsAttention { border: 1px solid #f2c94c !important; background: #fffaf0 !important; }
+.mobileProtocolWizard .protocolClientSection h3 small { font-weight: 650; color: #5b6b78; font-size: 12px; }
+.protocolClientField { display: grid; gap: 4px; }
+.protocolClientField > span { font-size: 13px; font-weight: 800; color: #31475a; }
+.protocolClientField > span small { font-weight: 600; color: #5b6b78; }
+.protocolClientField .input { width: 100%; box-sizing: border-box; font-size: 16px !important; padding: 10px 11px !important; border-radius: 10px !important; }
+.protocolClientCheck { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #31475a; min-height: 32px; }
+.protocolClientCheck input { width: 20px; height: 20px; flex: 0 0 auto; }
+.protocolClientError { font-size: 13px; line-height: 1.35; color: #8a1c1c; background: #fdecec; border-radius: 10px; padding: 8px 10px; display: grid; gap: 6px; }
+.protocolClientHint { font-size: 13px; line-height: 1.35; color: #6b4e00; background: #fff6d8; border-radius: 10px; padding: 8px 10px; }
+.protocolClientFix { justify-self: start; padding: 6px 10px !important; font-size: 13px !important; }

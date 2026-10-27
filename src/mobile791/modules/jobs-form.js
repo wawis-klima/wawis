@@ -474,6 +474,30 @@ async function saveJobConcurrentPatch({
   return data || { id: editingJobId, installer_ids: installerIds };
 }
 
+// WAWIS 13.85: dane klienta uzupełnione w protokole (imię i nazwisko, e-mail). Ten sam zapis z kontrolą
+// równoległej edycji co formularz montażu; trigger bazy (v1089) przenosi zmianę do karty kontrahenta.
+export async function saveJobClientContact({ supabase, job, client, email }) {
+  const jobId = normalizeJobText(job?.id);
+  if (!supabase || !jobId) return null;
+  const fields = {};
+  const expected = {};
+  const nextClient = normalizeEditText(client);
+  const nextEmail = normalizeEditText(email);
+  if (nextClient && nextClient !== normalizeEditText(job?.client || job?.title)) {
+    fields.client = nextClient;
+    expected.client = job?.client ?? null;
+    fields.title = nextClient;
+    expected.title = job?.title ?? null;
+  }
+  if (nextEmail !== normalizeEditText(job?.email)) {
+    fields.email = nextEmail;
+    expected.email = job?.email ?? null;
+  }
+  if (!Object.keys(fields).length) return { changed: false, patch: {} };
+  await saveJobConcurrentPatch({ supabase, editingJobId: jobId, fields, expected });
+  return { changed: true, patch: fields };
+}
+
 export async function saveEditedJobRecord({
   supabase,
   editingJobId,

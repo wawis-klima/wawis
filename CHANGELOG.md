@@ -1,3 +1,12 @@
+## 13.85
+- Protokół na telefonie: nowy krok „Dane klienta” przed podpisem (prośba właściciela 27.10.2026). W 129 montażach z 4 miesięcy: 16 bez e-maila, ok. 10 z nazwą klienta wyglądającą jak adres, z cyframi albo z jednego słowa.
+  - Imię i nazwisko (albo nazwa firmy po zaznaczeniu „Firma”) są obowiązkowe — bez poprawnych danych nie da się złożyć podpisu ani zapisać protokołu (także bez internetu).
+  - Reguły w telefonie, bez AI i bez kosztów: co najmniej imię i nazwisko (bez „Pan/Pani/Klient”), bez cyfr, nie adres („ul.”, nazwa ulicy lub miasta z montażu); słownik popularnych imion — nierozpoznane imię daje tylko podpowiedź „sprawdź z klientem” (bez blokady).
+  - E-mail zalecany: poprawny format, wykrywanie literówek z przyciskiem poprawki (gmial.com, wp.pl.pl, .con…) i adresów zastępczych (brak@, test@); można zaznaczyć „Klient nie podał e-maila”.
+  - Klient widzi i podpisuje swoje dane; zmiana danych po podpisie wymaga nowego podpisu. Dane zapisują się w montażu przed płatnością i PDF (ta sama kontrola równoległej edycji co formularz), a trigger bazy z 10.89 przenosi je do karty kontrahenta. Niezapisany podpis bez internetu zachowuje też dane klienta (nadal tylko w pamięci aplikacji).
+  - Zakończone montaże (ponowny podpis/korekta) bez zmian i bez blokady.
+- Bez zmian w bazie, RLS i Storage.
+
 ## 13.84
 - Powiadomienia PUSH: martwe subskrypcje wyłączane automatycznie (zgoda właściciela 27.10.2026). Telefon, który dostał nową subskrypcję, zostawiał starą aktywną — Apple przyjmował na nią powiadomienia (201), ale ich nie doręczał; u właściciela każde powiadomienie szło na 3 adresy, odbierał 1.
   - Funkcja bazy `private.deactivate_stale_push_subscriptions(7)` i zadanie dzienne `wawis-push-stale-cleanup-v1384` (02:41 UTC): wyłącza (`is_active = false`, nic nie usuwa) subskrypcję nieużywaną od 7 dni tylko wtedy, gdy ta sama osoba ma nowsze aktywne urządzenie używane w ostatnich 7 dniach. Osoba z jednym urządzeniem nigdy nie traci powiadomień.
