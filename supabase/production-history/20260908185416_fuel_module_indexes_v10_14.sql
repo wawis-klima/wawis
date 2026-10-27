@@ -1,0 +1,1 @@
+create index if not exists fuel_entries_created_by_idx on public.fuel_entries (created_by); create index if not exists fuel_vehicles_created_by_idx on public.fuel_vehicles (created_by);

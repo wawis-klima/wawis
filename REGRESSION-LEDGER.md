@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## CLEANUP-1381 — porządki po audycie (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CL-1381-MIGRATIONS | FIXED-UNVERIFIED | Wykaz 117 migracji produkcji (SELECT, MD5): 52 identyczne, 51 różne, 14 brakujących wyeksportowanych z kontrolą MD5 do supabase/production-history (poza supabase/migrations — CLI ich nie wykona). Skan sekretów: brak. smoke-supabase-grants PASS z nowymi plikami. |
+| CL-1381-NODE24 | FIXED-UNVERIFIED | checkout@v5, setup-node@v5, upload-artifact@v6 (node24; parametry bez zmian — porównane action.yml). Wszystkie workflowy PR w tym wydaniu; backup-r2 — ręczny przebieg po scaleniu. |
+| CL-1381-DOCS | FIXED-UNVERIFIED | CLAUDE.md: hosting tylko Vercel; Cloudflare Pages odłączone; R2 = kopie. |
+| CL-1381-APP | REGRESSION | Kod aplikacji bez zmian poza numerem wersji. |
+| PH-0B-CLEANUP | OPEN (decyzja) | 6 pustych zdjęć tabliczek w zakończonych montażach: usunięcie blokuje strażnik bazy (zakończony montaż musi mieć zdjęcia tabliczek). 7 pustych plików bez rekordu: usuwanie tylko przez Storage API/panel Supabase. Nic nie usunięto. |
+
 ## OPS-1380 — kopia plików po dacie Supabase; testy przypięte do Ubuntu 24.04 (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

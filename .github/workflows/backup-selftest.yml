@@ -40,7 +40,7 @@ jobs:
       BACKUP_ENCRYPTION_PASSPHRASE: selftest-passphrase-not-a-secret
       WORK_DIR: ${{ github.workspace }}/backup-work
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install tools
         run: bash scripts/backup/install-tools.sh

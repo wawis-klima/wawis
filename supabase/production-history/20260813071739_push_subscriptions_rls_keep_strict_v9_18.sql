@@ -1,0 +1,1 @@
+alter table public.push_subscriptions enable row level security;
