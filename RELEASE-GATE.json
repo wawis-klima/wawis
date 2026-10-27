@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.87",
-  "scope": "full",
-  "release_branch": "release/v13.87",
+  "version": "13.88",
+  "scope": "mobile",
+  "release_branch": "release/v13.88",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "27.10.2026 13:09 (właściciel, iPhone, 13.86): miniatury w montażu Biała 4a pokazały się i zniknęły. Zdjęcia w bazie i Storage kompletne."
+    "notes": "27.10.2026 14:01 (właściciel, iPhone, admin): zielony „Urządzenia są dodane” mimo brakującej tabliczki JZ (Biała 4a)."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.87",
+    "source_branch": "release/v13.88",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Po Vercel READY: kontrola po wdrożeniu OK; iPhone: miniatury zostają po otwarciu montażu z nowym zdjęciem.",
+    "evidence_source": "Po Vercel READY: kontrola po wdrożeniu OK; iPhone (admin): przy brakującej tabliczce tylko „Krok 1/3 … Brakuje: …”.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
