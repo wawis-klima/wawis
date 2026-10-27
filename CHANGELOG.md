@@ -1,3 +1,7 @@
+## 13.80
+- Testy CI przypięte do Ubuntu 24.04 (pr-checks, release-policy-gate, built-photo-queue-e2e, built-nameplate-e2e, webkit-built-e2e). GitHub przenosi `ubuntu-latest` na Ubuntu 26 (ostrzeżenie od 19.10.2026) — nowy system mógłby bez zmian w aplikacji zepsuć instalację przeglądarek Playwright (szczególnie WebKit) i zablokować wydania. Kopie zapasowe już działały na ubuntu-24.04.
+- Kod aplikacji bez zmian poza numerem wersji.
+
 ## 13.79
 - Po teście właściciela na iPhonie (26.10.2026, 13.78):
   - „Zapisz protokół” bez internetu zamyka okno — z ostrzeżeniem, że protokół nie jest jeszcze zapisany, a podpis klienta jest zachowany w aplikacji. Nie trzeba już osobno naciskać „Zamknij”.

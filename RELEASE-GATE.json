@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.79",
+  "version": "13.80",
   "scope": "mobile",
-  "release_branch": "release/v13.79",
+  "release_branch": "release/v13.80",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "26.10.2026 17:16 (właściciel, iPhone, 13.78): protokół offline działa (podpis zachowany i przywrócony, zapis z właściwym podpisem). Prośby: „Zapisz” offline ma zamykać okno; podgląd podpisu po przywróceniu został na „Przygotowuję…”."
+    "notes": "27.10.2026 06:03: zgoda właściciela na przypięcie testów do Ubuntu 24.04 (ostrzeżenie GitHub o przejściu ubuntu-latest na Ubuntu 26). Nocna kopia nie wystartowała z harmonogramu — uruchomiona ręcznie."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.79",
+    "source_branch": "release/v13.80",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "iPhone: tryb samolotowy → protokół → podpis → Zapisz (ostrzeżenie, okno zamknięte) → internet → pasek „Niezapisany protokół — Zapisz teraz” → zapis; podgląd podpisu po przywróceniu.",
+    "evidence_source": "Po Vercel READY: /app-version.json = 13.80; aplikacja bez zmian. Kolejne PR-y: testy na ubuntu-24.04 zielone.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "ProtocolTestModal: zapis offline zamyka okno (alert), szkic z baseStoragePath, autoSaveRestoredDraft; protocol-signature-drafts: lista + zdarzenie; PendingDeviceDraftsBar: wiersz protokołu; JobDetailsPanel/App: quick protocol z autoSave; protocol-signature-orientation: limit czasu i decode(); podgląd pokazuje podpis do czasu obrotu.",
-    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18). Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.79; test na iPhonie."
+    "code": "Tylko .github/workflows (runs-on: ubuntu-24.04 w pr-checks, release-policy-gate, photo-queue-built-e2e, nameplate-built-e2e, webkit-built-e2e) i dokumentacja. Kod aplikacji bez zmian poza numerem wersji.",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18) — wszystkie już na ubuntu-24.04. Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.80."
   }
 }

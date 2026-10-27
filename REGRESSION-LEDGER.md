@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## CI-RUNNER-1380 — testy przypięte do Ubuntu 24.04 (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CI-1380-PIN | FIXED-UNVERIFIED | Ostrzeżenie GitHub: `ubuntu-latest` → Ubuntu 26 od 19.10.2026. Pięć workflowów testowych przypiętych do ubuntu-24.04 (jak backup-r2/backup-selftest). Zgoda właściciela 27.10 06:03. |
+| CI-1380-SAME | REGRESSION | Te same zestawy co 13.79: targeted-checks, built-photo-queue-e2e (13), built-nameplate-e2e (8), webkit-built-e2e (18), backup-selftest. |
+| CI-1380-APP | REGRESSION | Kod aplikacji bez zmian poza numerem wersji. |
+| OPS-1375-BACKUP | EXTERNAL | Zaplanowany przebieg 27.10 00:20 UTC nie wystartował (brak przebiegu „schedule”). Ręczne uruchomienie z main 27.10 05:03 UTC (run 40453176042). Harmonogram do potwierdzenia następnej nocy. |
+
 ## PROTOCOL-SAVE-NOW-1379 — zamknięcie po zapisie offline i „Zapisz teraz” dla protokołu (26.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

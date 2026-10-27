@@ -14,7 +14,7 @@ permissions:
 jobs:
   targeted-checks:
     name: targeted-checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # 13.80: przypięte — GitHub przenosi ubuntu-latest na Ubuntu 26 (od 19.10.2026)
     timeout-minutes: 45
     env:
       WAWIS_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}

@@ -6,7 +6,7 @@ importScripts("/push-context-guard.js");
 // był kasowany od razu po aktualizacji — bez zasięgu nowy ekran (np. „Tabliczki”) mógł się nie otworzyć.
 // Teraz instalacja pobiera wszystkie pliki z /precache-manifest.json; gdy brakuje któregoś pliku krytycznego,
 // instalacja się nie udaje i telefon zostaje przy poprzedniej, kompletnej wersji (spróbuje ponownie później).
-const APP_SHELL_CACHE = "wawis-app-shell-v13.79";
+const APP_SHELL_CACHE = "wawis-app-shell-v13.80";
 const APP_SHELL_PREFIX = "wawis-app-shell-";
 const PRECACHE_MANIFEST_URL = "/precache-manifest.json";
 const PRECACHE_CONCURRENCY = 4;
