@@ -1,3 +1,9 @@
+## 13.81
+- Porządki po audycie (zgoda właściciela 27.10.2026), aplikacja bez zmian poza numerem wersji:
+  - Historia migracji produkcji: wykaz 117 migracji z `supabase_migrations.schema_migrations` z sumami MD5 (`supabase/PRODUCTION-MIGRATIONS.json`): 52 identyczne z plikami w repozytorium, 51 o innej treści, 14 brakujących — wyeksportowane dokładnie z produkcji (tylko odczyt, MD5 zgodne) do `supabase/production-history/` (nie do uruchamiania). README: dlaczego nie `supabase db push` i jak odbudować bazę z nocnej kopii.
+  - GitHub Actions na Node 24: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/upload-artifact@v6` (GitHub wycofuje Node 20). Zmiana wyłącznie środowiska uruchomieniowego akcji, bez zmian parametrów.
+  - CLAUDE.md: aplikacja działa wyłącznie na Vercel; Cloudflare Pages odłączone, R2 = kopie zapasowe.
+
 ## 13.80
 - Testy CI przypięte do Ubuntu 24.04 (pr-checks, release-policy-gate, built-photo-queue-e2e, built-nameplate-e2e, webkit-built-e2e). GitHub przenosi `ubuntu-latest` na Ubuntu 26 (ostrzeżenie od 19.10.2026) — nowy system mógłby bez zmian w aplikacji zepsuć instalację przeglądarek Playwright (szczególnie WebKit) i zablokować wydania. Kopie zapasowe już działały na ubuntu-24.04.
 - Kopia zapasowa plików: naprawa błędu z 27.10.2026. Ręcznie uruchomiona kopia z main: baza OK, ale kopia zdjęć, protokołów i podpisów przerwana po 33 s („immutable file modified”). Supabase Storage podaje dla niezmienionych plików inną datę przy kolejnym przebiegu, a kopia porównywała pliki po dacie. Teraz porównanie po rozmiarze (`--size-only`); zmianę treści nadal wykrywa `--immutable` (inny rozmiar) i `cryptcheck` (suma kontrolna). Odtworzone lokalnie (rclone 1.68.2): sama zmiana daty → błąd przed poprawką, OK po poprawce; nadpisanie pliku → nadal błąd.

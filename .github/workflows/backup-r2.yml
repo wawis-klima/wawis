@@ -36,7 +36,7 @@ jobs:
       R2_ENDPOINT: ${{ vars.R2_ENDPOINT }}
       R2_BUCKET: ${{ vars.R2_BUCKET }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check configuration
         env:
@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload reports (no customer data)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: wawis-backup-report-${{ github.run_id }}
           path: |

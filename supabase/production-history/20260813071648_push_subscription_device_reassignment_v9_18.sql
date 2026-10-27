@@ -1,0 +1,1 @@
+-- No schema change is required for v9.18. Existing RLS stays strict; subscription ownership reassignment is handled by the authenticated Edge Function.

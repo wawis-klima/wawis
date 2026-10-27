@@ -111,11 +111,15 @@ Przed wypchnięciem gałęzi sprawdź, czy operacja nie uruchomi automatycznego 
 (`vercel.json` → `git.deploymentEnabled`, `scripts/vercel-deploy-guard.cjs`, workflowy w `.github/workflows`).
 Jeśli nie możesz potwierdzić bezpieczeństwa operacji, zatrzymaj ją i poproś o decyzję.
 
-Uwaga (24.10.2026): repozytorium jest też podłączone do **Cloudflare Pages**, które po każdym pushu
-dowolnej gałęzi buduje publiczny podgląd (`<gałąź>.wawis.pages.dev`, check „Cloudflare Pages”).
-To nie jest produkcja Vercel, ale konfiguracja zmiennych środowiskowych podglądu nie jest znana — podgląd może
-łączyć się z produkcyjnym Supabase. Nie udostępniaj adresów podglądu i nie używaj ich do testów zapisu.
-W raporcie przed GO podawaj, że podgląd powstał. Zmiana tej integracji wymaga zgody właściciela.
+Hosting (stan 27.10.2026): aplikacja działa **wyłącznie na Vercel** (`wawis-klima.vercel.app`). Cloudflare Pages
+nie jest hostingiem WAWIS — analiza 25.10.2026 (logi Supabase): 0 żądań z `*.pages.dev`, wszyscy użytkownicy
+pracują na Vercel. Właściciel odłączył Cloudflare Pages od repozytorium (od 13.79 brak checku „Cloudflare Pages”);
+projekt Pages zostanie usunięty po tygodniu bez zgłoszeń. Cloudflare **R2** to osobna usługa — tam są codzienne
+kopie zapasowe (`docs/BACKUP-R2.md`); nie mylić z Pages i nie zmieniać bez zgody właściciela.
+
+Historycznie (24.10.2026) Cloudflare Pages budował publiczny podgląd każdej gałęzi (`<gałąź>.wawis.pages.dev`),
+być może połączony z produkcyjnym Supabase. Jeśli taki podgląd lub check „Cloudflare Pages” pojawi się ponownie:
+nie udostępniaj adresów, nie używaj ich do testów zapisu i zgłoś to właścicielowi.
 
 ## 4. Szczególna ochrona aplikacji mobilnej
 

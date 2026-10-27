@@ -1,0 +1,1 @@
+comment on table public.push_subscriptions is 'Web Push subscriptions; ownership changes between app accounts on the same device are handled by authenticated Edge Function, while RLS remains strict for direct client writes.';
