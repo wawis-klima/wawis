@@ -106,19 +106,20 @@ jobs:
         timeout-minutes: 10
         run: npm ci --include=optional --registry=https://registry.npmjs.org/
 
-      - name: Build and serve the app locally (mock Supabase)
+      - name: Build the app (mock Supabase, like the built E2E)
+        env:
+          VITE_SUPABASE_MODE: mock
+        run: node node_modules/vite/bin/vite.js build --outDir dist-e2e-built --emptyOutDir
+
+      - name: Serve the build locally
+        env:
+          VITE_SUPABASE_MODE: mock
         run: |
-          nohup node scripts/playwright-vite-built-server.cjs 4190 > server.log 2>&1 &
-          node -e "
-            const until = Date.now() + 240000;
-            (async () => {
-              while (Date.now() < until) {
-                try { const r = await fetch('http://127.0.0.1:4190/app-version.json'); if (r.ok) { console.log(await r.text()); return; } } catch {}
-                await new Promise((resolve) => setTimeout(resolve, 2000));
-              }
-              console.error('Serwer nie wystartował'); process.exit(1);
-            })();
-          " || (cat server.log; exit 1)
+          nohup node node_modules/vite/bin/vite.js preview --outDir dist-e2e-built --host 127.0.0.1 --port 4190 --strictPort > server.log 2>&1 &
+          node scripts/postdeploy-wait-local.mjs http://127.0.0.1:4190/app-version.json 90000 || {
+            tail -n 20 server.log | sed 's/^/::error::serwer: /'
+            exit 1
+          }
 
       - name: Healthy build must pass
         run: node scripts/postdeploy-check.mjs --url http://127.0.0.1:4190 --wait-ms 60000
