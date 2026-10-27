@@ -13,6 +13,7 @@ import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } f
 import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
 import { applyOfflineOperationsToJobs, clearOfflineAppSnapshot, listOfflineJobOperations, loadOfflineAppSnapshot, saveOfflineAppSnapshot } from "../modules/job-offline-store.js";
 import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";
+import { applyIncrementalJobChange, rebaseIncrementalJobChanges } from "../../modules/incremental-job-changes.js";
 import { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";
 import { transitionPushSessionContext } from "../modules/push-lifecycle-v1078.js";
 import { getOrCreateRefreshPayloadRequest, persistedSnapshotCoversCursor } from "../modules/sync-contract-v1086.js";
@@ -499,6 +500,7 @@ export function useAppSession({
         let processed = 0;
         const maxBatches = 5;
         const summaryCache = new Map();
+        const appliedChanges = [];
         const operations = await listOfflineJobOperations(userId);
         if (!isCurrentDataRequest()) return staleRefreshResult();
 
@@ -517,19 +519,8 @@ export function useAppSession({
               if (!isCurrentDataRequest()) return staleRefreshResult();
               summaryCache.set(change.jobId, summary);
             }
-            const existing = workingJobs.find((job) => String(job.id) === change.jobId);
-            if (summary?.missing || !summary?.job) {
-              workingJobs = workingJobs.filter((job) => String(job.id) !== change.jobId);
-            } else {
-              const nextJob = {
-                ...(existing || {}),
-                ...summary.job,
-                viewers: summary.viewers || [],
-              };
-              workingJobs = existing
-                ? workingJobs.map((job) => (String(job.id) === change.jobId ? nextJob : job))
-                : [nextJob, ...workingJobs];
-            }
+            workingJobs = applyIncrementalJobChange(workingJobs, change.jobId, summary);
+            appliedChanges.push({ jobId: change.jobId, summary });
 
             // Najpierw utrwalamy zmieniona liste, dopiero potem przesuwamy punkt
             // wznowienia. Zamkniecie aplikacji pomiedzy tymi krokami co najwyzej
@@ -565,7 +556,10 @@ export function useAppSession({
         if (processed > 0) {
           if (!isCurrentDataRequest()) return staleRefreshResult();
           lastAppliedServerRequestIdRef.current = Math.max(lastAppliedServerRequestIdRef.current, refreshRequestId);
-          const finalJobs = applyOfflineOperationsToJobs(workingJobs, operations, profileRef.current || {});
+          // 13.87: zmiany nakładamy na NAJNOWSZĄ listę — otwarty w międzyczasie montaż zachowuje
+          // pobrane zdjęcia i miniatury (wcześniej wracała kopia z początku odświeżania).
+          const latestJobs = rebaseIncrementalJobChanges(Array.isArray(jobsRef.current) ? jobsRef.current : workingJobs, appliedChanges);
+          const finalJobs = applyOfflineOperationsToJobs(latestJobs, operations, profileRef.current || {});
           jobsRef.current = finalJobs;
           setJobs(finalJobs);
           const selectedId = String(selectedJobIdRef?.current || '');

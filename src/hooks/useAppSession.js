@@ -14,6 +14,7 @@ import { loadAppDataSnapshot, saveAppDataSnapshot } from "../modules/app-data-sn
 import { getSupabaseUserMessage, isJwtExpiredError, isTransientSupabaseError } from "../modules/supabase-errors.js";
 import { isOlderThan30Days } from "../utils/jobHelpers.jsx";
 import { loadMobileChangeBatch, loadMobileChangeHead } from "../modules/incremental-sync.js";
+import { applyIncrementalJobChange, rebaseIncrementalJobChanges } from "../modules/incremental-job-changes.js";
 import { captureSessionGeneration, createSessionGenerationState, isSessionGenerationCurrent, transitionSessionGeneration } from "../modules/session-generation.js";
 
 const APP_REFRESH_TIMEOUT_MS = 20000;
@@ -387,6 +388,7 @@ export function useAppSession({
         let cursor = changeCursorRef.current;
         let processed = 0;
         const summaryCache = new Map();
+        const appliedChanges = [];
 
         for (let batchIndex = 0; batchIndex < 5; batchIndex += 1) {
           const batch = await loadMobileChangeBatch({ supabase, afterCursor: cursor, limit: 100 });
@@ -401,15 +403,8 @@ export function useAppSession({
               if (!isCurrentDataRequest()) return staleRefreshResult();
               summaryCache.set(change.jobId, summary);
             }
-            const existing = workingJobs.find((job) => String(job.id) === change.jobId);
-            if (summary?.missing || !summary?.job) {
-              workingJobs = workingJobs.filter((job) => String(job.id) !== change.jobId);
-            } else {
-              const nextJob = { ...(existing || {}), ...summary.job, viewers: summary.viewers || [] };
-              workingJobs = existing
-                ? workingJobs.map((job) => (String(job.id) === change.jobId ? nextJob : job))
-                : [nextJob, ...workingJobs];
-            }
+            workingJobs = applyIncrementalJobChange(workingJobs, change.jobId, summary);
+            appliedChanges.push({ jobId: change.jobId, summary });
 
             const nextCursor = change.changeSeq;
             await saveAppDataSnapshot({
@@ -433,10 +428,13 @@ export function useAppSession({
         if (processed > 0) {
           if (!isCurrentDataRequest()) return staleRefreshResult();
           lastAppliedServerRequestIdRef.current = Math.max(lastAppliedServerRequestIdRef.current, refreshRequestId);
-          jobsRef.current = workingJobs;
-          setJobs(workingJobs);
+          // 13.87: zmiany nakładamy na NAJNOWSZĄ listę — otwarty w międzyczasie montaż zachowuje
+          // pobrane zdjęcia i miniatury (wcześniej wracała kopia z początku odświeżania).
+          const finalJobs = rebaseIncrementalJobChanges(Array.isArray(jobsRef.current) ? jobsRef.current : workingJobs, appliedChanges);
+          jobsRef.current = finalJobs;
+          setJobs(finalJobs);
           const selectedId = String(selectedJobIdRef?.current || '');
-          if (selectedId) setSelectedJob(workingJobs.find((job) => String(job.id) === selectedId) || null);
+          if (selectedId) setSelectedJob(finalJobs.find((job) => String(job.id) === selectedId) || null);
         }
         return { ok: true, incremental: true, processed, changeCursor: cursor };
       } catch (error) {

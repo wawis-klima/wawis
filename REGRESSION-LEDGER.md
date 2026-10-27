@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## THUMBS-REBASE-1387 — miniatury znikały po odświeżeniu w tle (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| TR-1387-CAUSE | FIXED-UNVERIFIED | Zgłoszenie właściciela 13:09 (iPhone, Biała 4a): miniatury pokazały się i zniknęły. Baza: 10 zdjęć, wszystkie pliki w Storage > 0 B (SELECT). Przyczyna: refreshIncremental (telefon i komputer) zapisywał listę `workingJobs` z początku odświeżania → otwarty w międzyczasie montaż tracił zdjęcia/miniatury załadowane przez reloadJobDetails/hydrateJobThumbnails. |
+| TR-1387-FIX | FIXED-UNVERIFIED | `src/modules/incremental-job-changes.js`: zmiany z serwera nakładane na `jobsRef.current` w chwili zapisu. smoke-incremental-rebase-v1387 (odtworzenie wyścigu + kontrola obu useAppSession). |
+| TR-1387-REGRESSION | REGRESSION | smoke-audit-races-v1084 (kolejność żądań, kursor), E2E mobile/desktop. |
+| TR-1387-LIVE | EXTERNAL | iPhone: otwarcie montażu, w którym pracownik właśnie dodał zdjęcie — miniatury zostają. |
+
 ## CLIENT-DATA-1386 — szare przyciski przy niepełnych danych klienta (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
