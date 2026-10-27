@@ -1251,7 +1251,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                   </div>
                 ) : null}
                 {editing ? (
-                  <button type="button" className="btn protocolTestSignatureOpen" onClick={openSignature} disabled={isGenerating || !paymentReady || Boolean(paymentLoadError)}>{reusedSignature ? "Podpisz ponownie" : hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
+                  <button type="button" className="btn protocolTestSignatureOpen" data-testid="protocol-signature-open" onClick={openSignature} disabled={isGenerating || clientGateBlocked || !paymentReady || Boolean(paymentLoadError)}>{reusedSignature ? "Podpisz ponownie" : hasSignature ? "Zmień podpis" : "Podpis klienta"}</button>
                 ) : (
                   <button type="button" className="btn protocolTestSignatureOpen" onClick={beginEditingStoredProtocol} disabled={!paymentReady || Boolean(paymentLoadError)}>Uzupełnij protokół</button>
                 )}
@@ -1289,7 +1289,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
               {savedRecord && !editing ? (
                 <button type="button" className="btn primary protocolTestGenerate" onClick={() => setActionMenuOpen((value) => !value)} disabled={Boolean(actionBusy)}>Drukuj lub wyślij</button>
               ) : (
-                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!canWriteProtocol || !hasSignature || isGenerating || !paymentReady || Boolean(paymentLoadError)} aria-busy={isGenerating}>{isGenerating ? (saveProgressLabel || "Zapisuję protokół…") : "Zapisz protokół"}</button>
+                <button type="button" className="btn primary protocolTestGenerate" onClick={createPdf} disabled={!canWriteProtocol || !hasSignature || clientGateBlocked || isGenerating || !paymentReady || Boolean(paymentLoadError)} aria-busy={isGenerating}>{isGenerating ? (saveProgressLabel || "Zapisuję protokół…") : "Zapisz protokół"}</button>
               )}
             </div>
           </div>

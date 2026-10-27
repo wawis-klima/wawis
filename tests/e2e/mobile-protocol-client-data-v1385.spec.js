@@ -66,10 +66,15 @@ test('@mobile 13.85: bez imienia i nazwiska klienta nie da się podpisać; dane 
   await expect(page.getByTestId('protocol-client-name-error')).toContainText('wygląda na adres');
   await expect(page.getByTestId('protocol-client-email-error')).toBeVisible();
 
-  // Blokada podpisu: zamiast pola podpisu — komunikat.
-  await page.getByRole('button', { name: 'Podpis klienta', exact: true }).click();
+  // Blokada: „Podpis klienta” i „Zapisz protokół” wyszarzone (13.86), pole podpisu się nie otwiera.
+  await expect(page.getByTestId('protocol-signature-open')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Zapisz protokół' })).toBeDisabled();
+  await expect(page.getByTestId('protocol-signature-open')).toHaveCSS('background-color', 'rgb(229, 231, 235)');
   await expect(page.locator('#protocol-test-signature')).toHaveCount(0);
-  await expect(page.locator('.protocolTestMessage').filter({ hasText: 'Uzupełnij dane klienta' }).first()).toBeVisible();
+
+  // E-mail wpisany na szybko (iPhone 27.10: „w@qw.pl”) też blokuje.
+  await page.getByTestId('protocol-client-email').fill('w@qw.pl');
+  await expect(page.getByTestId('protocol-client-email-error')).toContainText('niepełny');
 
   // Samo nazwisko i „Pan” nie wystarczą.
   await name.fill('Pan Kowalski');
@@ -77,6 +82,8 @@ test('@mobile 13.85: bez imienia i nazwiska klienta nie da się podpisać; dane 
   await name.fill('Jan Kowalski');
   await expect(page.getByTestId('protocol-client-name-error')).toHaveCount(0);
   await expect(page.getByTestId('protocol-client-name-hint')).toHaveCount(0);
+  // Imię i nazwisko poprawne, ale e-mail nadal nie — przyciski dalej szare.
+  await expect(page.getByTestId('protocol-signature-open')).toBeDisabled();
 
   // Literówka w e-mailu z podpowiedzią poprawki.
   await email.fill('jan.kowalski@gmial.com');

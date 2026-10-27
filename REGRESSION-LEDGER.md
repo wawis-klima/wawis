@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## CLIENT-DATA-1386 — szare przyciski przy niepełnych danych klienta (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CD-1385-LIVE | PASS (właściciel, iPhone, 27.10 11:49) | Blokada działa („Borowa 14” → komunikat „wygląda na adres”). |
+| CD-1386-GREY | FIXED-UNVERIFIED | Prośba właściciela: „Zapisz protokół” był jasnoniebieski mimo blokady. Teraz disabled przy clientGateBlocked + wyraźnie szary styl (także „Podpis klienta”). E2E v1385: toBeDisabled + kolor tła. |
+| CD-1386-EMAIL | FIXED-UNVERIFIED | „w@qw.pl” przechodziło — część lokalna < 2 znaki = niepełny adres. smoke v1385 + E2E. |
+| CD-1386-LIVE | EXTERNAL | iPhone: szare przyciski przy niepełnych danych, aktywne po uzupełnieniu. |
+
 ## CLIENT-DATA-1385 — dane klienta w protokole (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
