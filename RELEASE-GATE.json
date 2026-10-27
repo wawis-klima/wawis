@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.81",
+  "version": "13.82",
   "scope": "mobile",
-  "release_branch": "release/v13.81",
+  "release_branch": "release/v13.82",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "27.10.2026 07:17: zgoda właściciela na porządki po audycie (migracje, Node 24 w akcjach GitHub, notatka o hostingu). Kopia 13.80 po poprawce — sukces (run 40456628375)."
+    "notes": "27.10.2026 08:04: zgoda właściciela na punkty 1 i 3 przeglądu bramki (kontrola po wdrożeniu, stabilny WebKit). 13.81 na produkcji, kopia OK."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.81",
+    "source_branch": "release/v13.82",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Po Vercel READY: /app-version.json = 13.81; ręczny przebieg „WAWIS backup to R2” z main (akcje na Node 24) — sukces.",
+    "evidence_source": "Po Vercel READY: /app-version.json = 13.82; pierwszy automatyczny przebieg „WAWIS post-deploy check” na produkcji — OK.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Tylko .github/workflows (wersje akcji na Node 24), supabase/PRODUCTION-MIGRATIONS.json, supabase/production-history (SQL tylko do wglądu), CLAUDE.md i dokumentacja. Kod aplikacji bez zmian poza numerem wersji.",
-    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18) + backup-selftest. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.81; ręczna kopia z main — sukces."
+    "code": "Tylko .github/workflows (postdeploy-check.yml nowy, webkit-built-e2e.yml w kontenerze Playwright), scripts/postdeploy-check.mjs (tylko odczyt produkcji) i dokumentacja. Kod aplikacji bez zmian poza numerem wersji.",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18, kontener) + postdeploy-selftest. Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.82; automatyczna kontrola po wdrożeniu — OK."
   }
 }

@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## GATE-1382 — kontrola po wdrożeniu, stabilny WebKit (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| GT-1382-POSTDEPLOY | FIXED-UNVERIFIED | postdeploy-check.yml (deployment_status Production / ręcznie): tylko odczyt; wersja, wszystkie pliki precache, SW, Chromium + WebKit. Zgłoszenie postdeploy-failure przy błędzie. Self-test PR: zdrowa budowa OK, brak pliku krytycznego → BŁĄD. Pierwszy przebieg produkcyjny: po wdrożeniu 13.82. |
+| GT-1382-WEBKIT-IMAGE | FIXED-UNVERIFIED | webkit-built-e2e w kontenerze mcr.microsoft.com/playwright:v1.60.0-noble (bez apt install-deps, wcześniej do 25 min / przekroczenie limitu). Kontrola zgodności wersji obrazu i package-lock. 18/18 w tym PR. |
+| GT-1382-APP | REGRESSION | Kod aplikacji bez zmian poza numerem wersji. |
+| GT-1382-REQUIRED | EXTERNAL | Wymagane kontrole w regule main (Settings → Rules): decyzja i zmiana właściciela — instrukcja w raporcie. |
+
 ## CLEANUP-1381 — porządki po audycie (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

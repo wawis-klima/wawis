@@ -1,0 +1,135 @@
+name: WAWIS post-deploy check
+
+# Kontrola produkcji po każdym wdrożeniu Vercel (13.82). Tylko odczyt: bez logowania, bez zapisu danych,
+# bez sekretów. Nie blokuje wydania — działa po wdrożeniu i przy problemie zakłada zgłoszenie
+# z etykietą postdeploy-failure (GitHub powiadamia właściciela).
+#
+# pull_request (zmiana skryptu/workflow): self-test na lokalnie zbudowanej aplikacji (mock Supabase),
+# w tym przypadek negatywny — brakujący plik krytyczny musi dać BŁĄD.
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      expect:
+        description: 'Oczekiwana wersja (puste = z app-version.json na main)'
+        required: false
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/postdeploy-check.mjs'
+      - '.github/workflows/postdeploy-check.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wawis-postdeploy-${{ github.event.deployment.sha || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  production:
+    name: production-check
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --user 1001
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.deployment.sha || github.sha }}
+
+      - name: Install dependencies
+        timeout-minutes: 10
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Check production (read-only)
+        run: node scripts/postdeploy-check.mjs --url https://wawis-klima.vercel.app ${{ inputs.expect && format('--expect {0}', inputs.expect) || '' }}
+
+      - name: Keep report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: wawis-postdeploy-${{ github.run_id }}
+          path: postdeploy-report.md
+          if-no-files-found: ignore
+          retention-days: 30
+
+  alert:
+    name: postdeploy-alert
+    needs: production
+    if: always() && needs.production.result != 'skipped'
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+    steps:
+      - name: Open or close the post-deploy alert
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RESULT: ${{ needs.production.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SHA: ${{ github.event.deployment.sha || github.sha }}
+        run: |
+          if [ "$RESULT" = "success" ]; then
+            for n in $(gh issue list --label postdeploy-failure --state open --json number --jq '.[].number' 2>/dev/null); do
+              gh issue close "$n" --comment "Kontrola po wdrożeniu ${SHA:0:7} zakończona poprawnie: $RUN_URL"
+            done
+            exit 0
+          fi
+          gh label create postdeploy-failure --color B60205 --description "Problem wykryty po wdrożeniu produkcji" 2>/dev/null || true
+          body="Kontrola produkcji po wdrożeniu (commit ${SHA:0:7}) wykryła problem: $RUN_URL
+
+          Kontrola tylko odczytuje stronę — dane nie zostały zmienione. Claude przeanalizuje wynik przy najbliższej pracy nad WAWIS; w razie potrzeby wycofanie wg docs/PROCEDURA-WYCOFANIA.md."
+          existing="$(gh issue list --label postdeploy-failure --state open --json number --jq '.[0].number' || true)"
+          if [ -n "$existing" ]; then gh issue comment "$existing" --body "$body"; else gh issue create --title "Problem po wdrożeniu WAWIS — $(date -u +%Y-%m-%d) (${SHA:0:7})" --label postdeploy-failure --body "$body"; fi
+
+  selftest:
+    name: postdeploy-selftest
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --user 1001
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install dependencies
+        timeout-minutes: 10
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
+
+      - name: Build and serve the app locally (mock Supabase)
+        run: |
+          nohup node scripts/playwright-vite-built-server.cjs 4190 > server.log 2>&1 &
+          node -e "
+            const until = Date.now() + 240000;
+            (async () => {
+              while (Date.now() < until) {
+                try { const r = await fetch('http://127.0.0.1:4190/app-version.json'); if (r.ok) { console.log(await r.text()); return; } } catch {}
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+              }
+              console.error('Serwer nie wystartował'); process.exit(1);
+            })();
+          " || (cat server.log; exit 1)
+
+      - name: Healthy build must pass
+        run: node scripts/postdeploy-check.mjs --url http://127.0.0.1:4190 --wait-ms 60000
+
+      - name: Missing critical file must fail
+        run: |
+          victim="$(node -p "require('./dist-e2e-built/precache-manifest.json').critical.find((u) => u.endsWith('.js'))")"
+          echo "Usuwam lokalnie: $victim"
+          rm "dist-e2e-built${victim}"
+          if node scripts/postdeploy-check.mjs --url http://127.0.0.1:4190 --wait-ms 30000 --skip-browsers --report negative.md; then
+            echo "::error::Brak pliku krytycznego nie został wykryty"; exit 1
+          fi
+          grep -q "Plik krytyczny" negative.md
+          echo "Brakujący plik wykryty zgodnie z oczekiwaniem"

@@ -1,3 +1,8 @@
+## 13.82
+- Kontrola produkcji po każdym wdrożeniu (nowy workflow `postdeploy-check`, uruchamiany przez wdrożenie Vercel, tylko odczyt — bez logowania i zapisu danych): wersja `/app-version.json`, dostępność KAŻDEGO pliku z `precache-manifest.json` (brak pliku krytycznego = biały ekran offline), service worker tej wersji, strona startowa w Chromium i WebKit (iPhone) bez błędów i pustego ekranu, pliki krytyczne zapisane przez service worker. Problem → zgłoszenie `postdeploy-failure`; poprawna kontrola zamyka zgłoszenie. Nie wydłuża wydania (działa po wdrożeniu). Self-test w PR: zdrowa budowa = OK, usunięty plik krytyczny = BŁĄD.
+- Test WebKit na gotowym obrazie Playwright (`mcr.microsoft.com/playwright:v1.60.0-noble`) zamiast instalacji bibliotek systemowych — znika zawieszanie `install-deps` (do 25 min). Krok kontrolny: wersja obrazu = playwright-core z package-lock.json.
+- Kod aplikacji bez zmian poza numerem wersji.
+
 ## 13.81
 - Porządki po audycie (zgoda właściciela 27.10.2026), aplikacja bez zmian poza numerem wersji:
   - Historia migracji produkcji: wykaz 117 migracji z `supabase_migrations.schema_migrations` z sumami MD5 (`supabase/PRODUCTION-MIGRATIONS.json`): 52 identyczne z plikami w repozytorium, 51 o innej treści, 14 brakujących — wyeksportowane dokładnie z produkcji (tylko odczyt, MD5 zgodne) do `supabase/production-history/` (nie do uruchamiania). README: dlaczego nie `supabase db push` i jak odbudować bazę z nocnej kopii.

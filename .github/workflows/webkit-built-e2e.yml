@@ -19,29 +19,32 @@ jobs:
   webkit-built-e2e:
     name: webkit-built-e2e
     runs-on: ubuntu-24.04  # 13.80: przypięte — GitHub przenosi ubuntu-latest na Ubuntu 26 (od 19.10.2026)
-    timeout-minutes: 75
+    timeout-minutes: 45
+    # 13.82: gotowy obraz Playwright z WebKit i bibliotekami systemowymi — bez apt-get (install-deps
+    # potrafił wisieć do 25 min). Wersja obrazu = wersja playwright-core z package-lock.json (krok kontrolny).
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --user 1001
+    env:
+      PLAYWRIGHT_IMAGE_VERSION: '1.60.0'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-          cache: npm
+      - name: Playwright version must match the container image
+        run: |
+          node --version
+          locked="$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")"
+          if [ "$locked" != "$PLAYWRIGHT_IMAGE_VERSION" ]; then
+            echo "::error::playwright-core $locked w package-lock.json, obraz $PLAYWRIGHT_IMAGE_VERSION — zaktualizuj image i PLAYWRIGHT_IMAGE_VERSION w webkit-built-e2e.yml"
+            exit 1
+          fi
 
       - name: Install dependencies
-        run: npm ci --include=optional --registry=https://registry.npmjs.org/
-
-      - name: Install WebKit system libraries
-        timeout-minutes: 25
-        run: npx playwright install-deps webkit
-
-      - name: Install Playwright WebKit
         timeout-minutes: 10
-        run: npx playwright install webkit
+        run: npm ci --include=optional --registry=https://registry.npmjs.org/
 
       - name: Run E2E in WebKit (iPhone profile, mock Supabase)
         env:
