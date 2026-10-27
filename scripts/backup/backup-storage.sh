@@ -3,6 +3,10 @@
 #
 #   rclone copy  — wysyła tylko nowe pliki; NIGDY nie usuwa w kopii (usunięte w Supabase zostają w kopii).
 #   --immutable  — istniejący w kopii plik nie może zostać nadpisany innym; zmiana = błąd (alarm integralności).
+#   --size-only  — (13.80) porównanie po rozmiarze, nie po dacie. Supabase Storage zwraca dla tych samych,
+#                  niezmienionych plików inną datę przy kolejnym przebiegu → --immutable zgłaszał „immutable file
+#                  modified” dla każdego pliku (nocna kopia 27.10.2026). Zmianę treści nadal wykrywa: inny rozmiar
+#                  (--immutable) i cryptcheck po sumie kontrolnej.
 #   cryptcheck   — każdy plik źródłowy porównany z kopią po sumie kontrolnej (w razie braku sumy po stronie
 #                  źródła: kontrola rozmiaru, oznaczona w raporcie).
 #
@@ -25,14 +29,29 @@ REPORT="$WORK_DIR/storage-report.jsonl"
 log() { printf '[backup-storage] %s\n' "$*"; }
 failures=0
 
+# Podsumowanie błędów w adnotacji (artefaktów nie zawsze da się pobrać). Bez ścieżek plików — tylko rodzaj błędu.
+summarize_copy_errors() {
+  local bucket="$1" file="$2"
+  [ -f "$file" ] || return 0
+  local immutable denied timeout other first
+  immutable="$(grep -c 'immutable file modified' "$file" || true)"
+  denied="$(grep -ciE 'AccessDenied|InvalidAccessKeyId|SignatureDoesNotMatch|StatusCode: 40[13]' "$file" || true)"
+  timeout="$(grep -ciE 'timeout|deadline exceeded|connection reset' "$file" || true)"
+  other="$(grep -c 'ERROR' "$file" || true)"
+  first="$(grep -m1 'ERROR' "$file" | sed -E 's/^.*ERROR : //; s/^[^:]*\.[A-Za-z0-9]{2,5}: //' | cut -c1-200 || true)"
+  echo "::error::Bucket $bucket — rodzaje błędów: zmieniony plik (immutable)=$immutable, odmowa dostępu=$denied, przekroczenie czasu=$timeout, linii ERROR=$other. Pierwszy: ${first:-brak}"
+}
+
 for bucket in $BUCKETS; do
   src="${BACKUP_SOURCE}${bucket}"
   dst="${BACKUP_FILES_DEST}${bucket}"
   log "Bucket $bucket: kopia przyrostowa"
   copy_log="$WORK_DIR/copy-$bucket.log"
-  if ! rclone copy "$src" "$dst" --immutable --transfers 8 --checkers 16 --retries 5 \
+  : > "$copy_log"   # rclone dopisuje do pliku logu — każdy przebieg liczy własne błędy
+  if ! rclone copy "$src" "$dst" --immutable --size-only --transfers 8 --checkers 16 --retries 5 \
       --low-level-retries 10 --stats-one-line --stats 30s --log-file "$copy_log" --log-level NOTICE; then
     echo "::error::Kopia bucketu $bucket nieudana (szczegóły w artefakcie copy-$bucket.log)"
+    summarize_copy_errors "$bucket" "$copy_log"
     failures=$((failures + 1))
     continue
   fi

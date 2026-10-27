@@ -1068,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.80` — testy CI przypięte do Ubuntu 24.04 (przed przejściem `ubuntu-latest` na Ubuntu 26); aplikacja bez zmian.
+- wersja `13.80` — naprawa kopii zapasowej plików (porównanie po rozmiarze zamiast daty) i testy CI przypięte do Ubuntu 24.04; aplikacja bez zmian.
 - wersja `13.69` — odczyt tabliczki bez internetu wpisuje wynik czytnika telefonu (do sprawdzenia znak po znaku) zamiast zostawiać puste pola; EAN nigdy jako SN.
 - wersja `13.68` — bez internetu okno „Brak internetu” z wyborem „Zamknij okno” / „Zostań w formularzu” zamiast blokującego komunikatu; „Zamknij okno” zachowuje wpisane dane do ponownego otwarcia (do zamknięcia aplikacji).
 - wersja `13.60` — automatyczne potwierdzenie wystawionej faktury po wiarygodnym OID lub nowym, jednoznacznym numerze w oknie przygotowania. Dane nabywcy mogą różnić się od danych montażu, bez ryzyka nadpisania karty kontrahenta.

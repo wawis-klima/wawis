@@ -7,7 +7,7 @@
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "27.10.2026 06:03: zgoda właściciela na przypięcie testów do Ubuntu 24.04 (ostrzeżenie GitHub o przejściu ubuntu-latest na Ubuntu 26). Nocna kopia nie wystartowała z harmonogramu — uruchomiona ręcznie."
+    "notes": "27.10.2026 06:03: zgoda właściciela na przypięcie testów do Ubuntu 24.04 (ostrzeżenie GitHub o przejściu ubuntu-latest na Ubuntu 26). Nocna kopia nie wystartowała z harmonogramu — uruchomiona ręcznie. Ręczna kopia z main (run 40453176042): baza OK, pliki — błąd „immutable file modified” (data plików z Supabase); naprawa w tym wydaniu."
   },
   "drive_backup": {
     "required": false,
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Po Vercel READY: /app-version.json = 13.80; aplikacja bez zmian. Kolejne PR-y: testy na ubuntu-24.04 zielone.",
+    "evidence_source": "Po scaleniu: ręczna kopia „WAWIS backup to R2” z main — sukces (baza, pliki, odtworzenie); /app-version.json = 13.80; następnej nocy przebieg z harmonogramu.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Tylko .github/workflows (runs-on: ubuntu-24.04 w pr-checks, release-policy-gate, photo-queue-built-e2e, nameplate-built-e2e, webkit-built-e2e) i dokumentacja. Kod aplikacji bez zmian poza numerem wersji.",
-    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18) — wszystkie już na ubuntu-24.04. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.80."
+    "code": "scripts/backup/backup-storage.sh (rclone copy --size-only, adnotacja z rodzajem błędu), backup-selftest (krok „tylko data”), .github/workflows runs-on: ubuntu-24.04 i dokumentacja. Kod aplikacji bez zmian poza numerem wersji.",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18) — wszystkie już na ubuntu-24.04. Nie publikować przed zielonym CI. + backup-selftest.",
+    "post_deploy": "Po Vercel READY: /app-version.json = 13.80; ręczna kopia z main — sukces."
   }
 }

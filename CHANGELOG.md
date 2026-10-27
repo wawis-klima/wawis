@@ -1,5 +1,8 @@
 ## 13.80
 - Testy CI przypięte do Ubuntu 24.04 (pr-checks, release-policy-gate, built-photo-queue-e2e, built-nameplate-e2e, webkit-built-e2e). GitHub przenosi `ubuntu-latest` na Ubuntu 26 (ostrzeżenie od 19.10.2026) — nowy system mógłby bez zmian w aplikacji zepsuć instalację przeglądarek Playwright (szczególnie WebKit) i zablokować wydania. Kopie zapasowe już działały na ubuntu-24.04.
+- Kopia zapasowa plików: naprawa błędu z 27.10.2026. Ręcznie uruchomiona kopia z main: baza OK, ale kopia zdjęć, protokołów i podpisów przerwana po 33 s („immutable file modified”). Supabase Storage podaje dla niezmienionych plików inną datę przy kolejnym przebiegu, a kopia porównywała pliki po dacie. Teraz porównanie po rozmiarze (`--size-only`); zmianę treści nadal wykrywa `--immutable` (inny rozmiar) i `cryptcheck` (suma kontrolna). Odtworzone lokalnie (rclone 1.68.2): sama zmiana daty → błąd przed poprawką, OK po poprawce; nadpisanie pliku → nadal błąd.
+- Nieudana kopia pokazuje w adnotacji rodzaj błędu (bez ścieżek plików), bo artefaktów z logami nie zawsze da się pobrać.
+- backup-selftest: nowy krok — ten sam plik z inną datą nie jest błędem.
 - Kod aplikacji bez zmian poza numerem wersji.
 
 ## 13.79
