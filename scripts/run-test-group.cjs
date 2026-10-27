@@ -27,6 +27,8 @@ function run(command) {
     entry.status = 'failed';
     entry.exit_code = Number.isInteger(error?.status) ? error.status : 1;
     writeEvidence();
+    // 13.84: nazwa nieudanego testu w adnotacji GitHub (logów CI nie zawsze da się pobrać).
+    if (process.env.GITHUB_ACTIONS) console.log(`::error::Test nie przeszedł: ${command} (kod ${entry.exit_code})`);
     throw error;
   }
 }

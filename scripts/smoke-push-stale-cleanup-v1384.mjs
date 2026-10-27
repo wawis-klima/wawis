@@ -5,6 +5,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 
+// Treść błędu jako adnotacja GitHub — przyczyna widoczna bez pobierania logów CI.
+const report = (error) => {
+  console.log(`::error::smoke-push-stale-cleanup-v1384: ${String(error?.message || error).replace(/\s+/g, ' ').slice(0, 400)}`);
+  process.exit(1);
+};
+process.on('uncaughtException', report);
+process.on('unhandledRejection', report);
+
 const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const file = 'supabase/migrations/20261027091451_push_stale_subscription_cleanup_v1384.sql';
 const migration = read(file);
