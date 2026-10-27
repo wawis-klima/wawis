@@ -115,21 +115,21 @@ jobs:
         env:
           VITE_SUPABASE_MODE: mock
         run: |
-          nohup node node_modules/vite/bin/vite.js preview --outDir dist-e2e-built --host 127.0.0.1 --port 4190 --strictPort > server.log 2>&1 &
-          node scripts/postdeploy-wait-local.mjs http://127.0.0.1:4190/app-version.json 90000 || {
+          nohup node node_modules/vite/bin/vite.js preview --outDir dist-e2e-built --host 127.0.0.1 --port 4178 --strictPort > server.log 2>&1 &
+          node scripts/postdeploy-wait-local.mjs http://127.0.0.1:4178/app-version.json 90000 || {
             tail -n 20 server.log | sed 's/^/::error::serwer: /'
             exit 1
           }
 
       - name: Healthy build must pass
-        run: node scripts/postdeploy-check.mjs --url http://127.0.0.1:4190 --wait-ms 60000
+        run: node scripts/postdeploy-check.mjs --url http://127.0.0.1:4178 --wait-ms 60000
 
       - name: Missing critical file must fail
         run: |
           victim="$(node -p "require('./dist-e2e-built/precache-manifest.json').critical.find((u) => u.endsWith('.js'))")"
           echo "Usuwam lokalnie: $victim"
           rm "dist-e2e-built${victim}"
-          if node scripts/postdeploy-check.mjs --url http://127.0.0.1:4190 --wait-ms 30000 --skip-browsers --report negative.md; then
+          if node scripts/postdeploy-check.mjs --url http://127.0.0.1:4178 --wait-ms 30000 --skip-browsers --report negative.md; then
             echo "::error::Brak pliku krytycznego nie został wykryty"; exit 1
           fi
           grep -q "Plik krytyczny" negative.md
