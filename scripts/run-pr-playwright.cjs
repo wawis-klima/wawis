@@ -57,7 +57,9 @@ try {
     evidence.runs.push(entry);
     writeEvidence(evidence);
     try {
-      execFileSync(process.execPath, [script, '--reporter=line'], { stdio: 'inherit', env: process.env });
+      // 13.84: w GitHub Actions także reporter „github” — nieudany test widoczny w adnotacjach bez pobierania logów.
+      const reporter = process.env.GITHUB_ACTIONS ? '--reporter=line,github' : '--reporter=line';
+      execFileSync(process.execPath, [script, reporter], { stdio: 'inherit', env: process.env });
       entry.status = 'passed';
       writeEvidence(evidence);
     } catch (error) {
