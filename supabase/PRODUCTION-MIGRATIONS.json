@@ -3,7 +3,7 @@
  "md5_of": "array_to_string(statements, E'\\n')",
  "counts": {
   "exported": 14,
-  "identical": 52,
+  "identical": 53,
   "similar": 51
  },
  "migrations": [
@@ -942,6 +942,14 @@
    "bytes": 6384,
    "status": "similar",
    "repo_file": "supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql"
+  },
+  {
+   "version": "20261027091451",
+   "name": "push_stale_subscription_cleanup_v1384",
+   "md5": "25997c3e28b2f998f0d36e4d47357bbf",
+   "bytes": 3010,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261027091451_push_stale_subscription_cleanup_v1384.sql"
   }
  ],
  "statuses": {

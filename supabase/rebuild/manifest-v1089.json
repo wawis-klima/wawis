@@ -122,7 +122,8 @@
     "supabase/migrations/current/20261009095500_fakturownia_invoice_attempt_v1280.sql",
     "supabase/migrations/current/20261009135500_admin_delete_multi_indoor_unit_v1284.sql",
     "supabase/migrations/20261012141000_protocol_signature_address_correction_v1322.sql",
-    "supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql"
+    "supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql",
+    "supabase/migrations/20261027091451_push_stale_subscription_cleanup_v1384.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
