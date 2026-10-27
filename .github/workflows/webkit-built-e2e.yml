@@ -18,7 +18,7 @@ permissions:
 jobs:
   webkit-built-e2e:
     name: webkit-built-e2e
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # 13.80: przypięte — GitHub przenosi ubuntu-latest na Ubuntu 26 (od 19.10.2026)
     timeout-minutes: 75
     steps:
       - name: Checkout
