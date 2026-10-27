@@ -1,3 +1,10 @@
+## 13.84
+- Powiadomienia PUSH: martwe subskrypcje wyłączane automatycznie (zgoda właściciela 27.10.2026). Telefon, który dostał nową subskrypcję, zostawiał starą aktywną — Apple przyjmował na nią powiadomienia (201), ale ich nie doręczał; u właściciela każde powiadomienie szło na 3 adresy, odbierał 1.
+  - Funkcja bazy `private.deactivate_stale_push_subscriptions(7)` i zadanie dzienne `wawis-push-stale-cleanup-v1384` (02:41 UTC): wyłącza (`is_active = false`, nic nie usuwa) subskrypcję nieużywaną od 7 dni tylko wtedy, gdy ta sama osoba ma nowsze aktywne urządzenie używane w ostatnich 7 dniach. Osoba z jednym urządzeniem nigdy nie traci powiadomień.
+  - Samonaprawa: gdy wyłączone urządzenie otworzy aplikację, klient tworzy nową subskrypcję (ta sama ścieżka co po 404/410).
+  - Migracja wdrożona na produkcji 27.10.2026 (wersja 20261027091451, MD5 zgodne z plikiem w repozytorium); test PGlite `smoke-push-stale-cleanup-v1384` w grupie PUSH. Pierwsze wyłączenia: noc 29/30.10 (2 stare subskrypcje właściciela) i 30/31.10 (1 stara K.W.).
+- Kod aplikacji bez zmian poza numerem wersji.
+
 ## 13.83
 - Analiza błędów z produkcji (27.10.2026, diagnostyka 14 dni, logi Supabase — tylko odczyt):
   - Telefon: szczegóły montażu (zdjęcia, komentarze) mają rosnący limit czasu — 4,5 s, potem 9 s — zamiast stałych 3,2 s. Przy stałym limicie było 362 przerwanych pobrań i 212 ponowień w 14 dni (baza odpowiada zwykle w 0,3–0,5 s, ale ze skokami 3–8 s; do tego LTE). Pierwsza próba nadal krótka (wiszące połączenia iOS), druga z zapasem.

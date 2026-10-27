@@ -124,6 +124,7 @@ const GROUPS = {
   push: [
     'node scripts/codex-acceptance-push-v1269.mjs',
     'node scripts/smoke-push-recipient-dedupe-v1268.mjs',
+    'node scripts/smoke-push-stale-cleanup-v1384.mjs',
     'node scripts/smoke-push-delivery-receipts-v1265.mjs',
     'npm run test:smoke:push-job-deeplink',
     'npm run test:smoke:assignment-push',

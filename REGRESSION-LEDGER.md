@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## PUSH-STALE-1384 — wyłączanie martwych subskrypcji PUSH (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PS-1384-RULE | FIXED-UNVERIFIED | Produkcja 27.10: 8 aktywnych subskrypcji, w tym 3 martwe (właściciel 2, K.W. 1); push_delivery_log: 3 wysyłki/zdarzenie u właściciela, 1 odebrana. Reguła 7 dni + nowsze aktywne urządzenie tej samej osoby. Lokalnie PostgreSQL 16 (12 przypadków) i PGlite w CI (smoke-push-stale-cleanup-v1384). |
+| PS-1384-SAFE | FIXED-UNVERIFIED | Tylko is_active=false (bez DELETE), minimum 3 dni, jedno urządzenie = zawsze aktywne, „oba stare” = bez zmian; tylko service_role. Klient odtwarza subskrypcję przy is_active=false (replaceExpiredPushSubscription). |
+| PS-1384-PROD | FIXED-UNVERIFIED | apply_migration 20261027091451 (MD5 25997c3e… = plik w repo); cron wawis-push-stale-cleanup-v1384 41 2 * * *; podgląd odczytem: dziś 0 do wyłączenia; 8 aktywnych bez zmian. |
+| PS-1384-LIVE | EXTERNAL | 30.10 i 31.10: wyłączone dokładnie 3 subskrypcje; właściciel i K.W. nadal dostają powiadomienia. |
+
 ## PROD-ERRORS-1383 — poprawki z analizy błędów produkcji (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
