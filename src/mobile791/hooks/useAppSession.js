@@ -409,8 +409,11 @@ export function useAppSession({
       if (refreshRequestId < lastAppliedServerRequestIdRef.current) {
         return { ok: true, transient: false, ignoredOlderResponse: true, coreJobsApplied };
       }
-      console.error('refreshAll failed', error);
       const transient = isTransientSupabaseError(error);
+      // 13.83: gdy lista montaży już się zaktualizowała, chwilowy błąd pobocznych danych to ostrzeżenie
+      // (użytkownik nie widzi błędu, a odświeżenie ponowi się samo) — nie zawyża błędów w diagnostyce.
+      if (transient && coreJobsApplied) console.warn('refreshAll partial', error);
+      else console.error('refreshAll failed', error);
       const sessionExpired = isJwtExpiredError(error) || error?.code === 'SESSION_REFRESH_FAILED';
 
       // Najważniejsze: jeżeli lista montaży zdążyła się pobrać, traktujemy timeout

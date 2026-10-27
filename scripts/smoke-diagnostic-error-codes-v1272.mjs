@@ -23,7 +23,14 @@ for (const [entry, expected] of cases) {
   assert.match(code, /^[A-Z][A-Z0-9_]{3,63}$/);
   assert(message && !/Kowalski|606553984|client@|https?:|token=|example\.test/i.test(message), 'Brak danych osobowych w opisie zdarzenia');
 }
-assert.equal(getSafeDiagnosticDetails({ type: 'console.error', payload: { args: ['refreshAll failed', { code: 'CLIENT_ID_ABC', message: 'Jan Kowalski' }] } }).code, 'DIAGNOSTIC_UNCLASSIFIED');
+// Nieznany kod z klienta nigdy nie przechodzi dalej. Od 13.83 stały tekst „refreshAll failed” daje kod etapu
+// APP_REFRESH_FAILED (z listy znanych kodów) — nadal bez CLIENT_ID_ABC i bez danych osobowych.
+{
+  const unknown = getSafeDiagnosticDetails({ type: 'console.error', payload: { args: ['refreshAll failed', { code: 'CLIENT_ID_ABC', message: 'Jan Kowalski' }] } });
+  assert.equal(unknown.code, 'APP_REFRESH_FAILED');
+  assert.doesNotMatch(`${unknown.code} ${unknown.message}`, /CLIENT_ID_ABC|Kowalski/);
+  assert.equal(getSafeDiagnosticDetails({ type: 'console.error', payload: { args: [{ code: 'CLIENT_ID_ABC', message: 'Jan Kowalski' }] } }).code, 'DIAGNOSTIC_UNCLASSIFIED');
+}
 
 for (const file of ['src/modules/diagnostics.js', 'src/mobile791/modules/diagnostics.js']) {
   const src = fs.readFileSync(new URL('../' + file, import.meta.url), 'utf8');

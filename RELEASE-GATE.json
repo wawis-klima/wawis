@@ -1,13 +1,13 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.82",
+  "version": "13.83",
   "scope": "mobile",
-  "release_branch": "release/v13.82",
+  "release_branch": "release/v13.83",
   "baseline_diagnostics": {
     "checked": true,
     "last_24h": true,
     "result": "OWNER_REPORT",
-    "notes": "27.10.2026 08:04: zgoda właściciela na punkty 1 i 3 przeglądu bramki (kontrola po wdrożeniu, stabilny WebKit). 13.81 na produkcji, kopia OK."
+    "notes": "27.10.2026: analiza błędów produkcji (app_diagnostic_events 14 dni, logi Supabase, pg_stat_statements — tylko odczyt). Zgoda właściciela 09:40 na punkty 1–3."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.82",
+    "source_branch": "release/v13.83",
     "ready_for_main": true,
     "status": "READY_FOR_MAIN_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -24,7 +24,7 @@
     "evidence_required": true,
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Po Vercel READY: /app-version.json = 13.82; pierwszy automatyczny przebieg „WAWIS post-deploy check” na produkcji — OK.",
+    "evidence_source": "Po Vercel READY: automatyczna kontrola po wdrożeniu OK; /app-version.json = 13.83; za kilka dni porównanie NETWORK_REQUEST_ABORTED/job.details.retry i udziału DIAGNOSTIC_UNCLASSIFIED.",
     "notes": "Kryteria GO wg CLAUDE.md."
   },
   "archive": {
@@ -34,8 +34,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Tylko .github/workflows (postdeploy-check.yml nowy, webkit-built-e2e.yml w kontenerze Playwright), scripts/postdeploy-check.mjs (tylko odczyt produkcji) i dokumentacja. Kod aplikacji bez zmian poza numerem wersji.",
-    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18, kontener) + postdeploy-selftest. Nie publikować przed zielonym CI.",
-    "post_deploy": "Po Vercel READY: /app-version.json = 13.82; automatyczna kontrola po wdrożeniu — OK."
+    "code": "src/mobile791/App.jsx (JOB_DETAILS_ATTEMPT_TIMEOUTS_MS 4500/9000), src/mobile791/hooks/useAppSession.js i src/hooks/useAppSession.js (refreshAll partial = warn), src/modules/diagnostic-error-codes.js (kody etapów), testy.",
+    "release_ci": "WAWIS PR checks / targeted-checks (Closure Gate, w tym grupa diagnostyki) + built-photo-queue-e2e (13) + built-nameplate-e2e (8) + webkit-built-e2e (18). Nie publikować przed zielonym CI.",
+    "post_deploy": "Po Vercel READY: kontrola po wdrożeniu OK; /app-version.json = 13.83."
   }
 }

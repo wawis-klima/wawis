@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## PROD-ERRORS-1383 — poprawki z analizy błędów produkcji (27.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PE-1383-DETAILS | FIXED-UNVERIFIED | Diagnostyka 13–27.10: NETWORK_REQUEST_ABORTED 362, job.details.retry 212, job.details.failed 1; pg_stat_statements: SELECT photos śr. 0,35–0,39 s, maks. 3,7–3,9 s. Mobile: limity 4500/9000 ms zamiast 3200/3200. E2E mobile (szczegóły, zdjęcia, offline) + smoke 11.12. |
+| PE-1383-REFRESH | FIXED-UNVERIFIED | APP_REFRESH_TIMEOUT 51/14 dni (39 z błędem sieci w ±40 s); obsługa już poprawna (partial, bez komunikatu, auto-retry). Teraz console.warn('refreshAll partial') zamiast console.error przy transient+coreJobsApplied (mobile i desktop). |
+| PE-1383-DIAG | FIXED-UNVERIFIED | 25 kodów etapów (STAGE_PATTERNS) tylko jako ostatnia reguła; smoke-diagnostics-stage-codes-v1383 (25 przypadków, pierwszeństwo przyczyny, brak PII, istnienie tekstów w kodzie). smoke 12.72: nieznany kod klienta nadal odrzucany (asercja dostosowana: „refreshAll failed” → APP_REFRESH_FAILED). |
+| PE-1383-PRIVACY | REGRESSION | smoke-diagnostics-p0-privacy-v1273, ingest-queue-v1274, package4-v1276 — PASS. |
+| PE-1383-LIVE | EXTERNAL | Po wdrożeniu: spadek przerwanych pobrań i udział „niesklasyfikowanych” w app_diagnostic_events (kontrola za kilka dni). |
+
 ## GATE-1382 — kontrola po wdrożeniu, stabilny WebKit (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

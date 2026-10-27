@@ -92,7 +92,10 @@ function StartupLoadingScreen({ errorMsg, onRetry }) {
 }
 
 const JOBS_PAGE_SIZE = 10;
-const JOB_DETAILS_TIMEOUT_MS = 3200;
+// 13.83: limit rośnie z każdą próbą. Diagnostyka 13–27.10: 362 przerwane pobrania i 212 ponowień przy
+// stałym limicie 3,2 s (baza odpowiada zwykle w 0,3–0,5 s, ale ze skokami 3–8 s; do tego LTE).
+// Pierwsza próba nadal krótka (wiszące połączenie iOS „Load failed” — 11.12), druga z zapasem.
+const JOB_DETAILS_ATTEMPT_TIMEOUTS_MS = Object.freeze([4500, 9000]);
 const JOB_DETAILS_RETRY_DELAYS_MS = Object.freeze([0, 500]);
 const MOBILE_THUMBNAIL_TRANSFORM = Object.freeze({ width: 400, quality: 72, resize: 'contain' });
 const MOBILE_THUMBNAIL_RECOVERY_LIMIT = 2;
@@ -670,7 +673,7 @@ export default function App() {
 
           const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
           const timeoutId = typeof window !== 'undefined'
-            ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_TIMEOUT_MS)
+            ? window.setTimeout(() => controller?.abort(), JOB_DETAILS_ATTEMPT_TIMEOUTS_MS[attemptIndex] || JOB_DETAILS_ATTEMPT_TIMEOUTS_MS[JOB_DETAILS_ATTEMPT_TIMEOUTS_MS.length - 1])
             : null;
 
           try {
