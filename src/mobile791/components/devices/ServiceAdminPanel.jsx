@@ -34,7 +34,7 @@ function DeviceItem({ device, children }) {
   </div>;
 }
 
-export default function ServiceAdminPanel({ supabase, isAdmin, userId, serviceRequest = null }) {
+export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const [screen,setScreen] = useState('search');
   const [search,setSearch] = useState('');
   const [groups,setGroups] = useState([]);
@@ -80,34 +80,6 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, serviceRe
     },300);
     return () => { active=false;window.clearTimeout(timer); };
   },[isAdmin,supabase,screen,search,refreshKey]);
-
-  useEffect(() => {
-    const contractorId=String(serviceRequest?.contractorId || '').trim();
-    if(!isAdmin||!supabase||!contractorId)return;
-    let active=true;
-    (async()=>{
-      try {
-        const [{data:client,error:clientError},devices,history] = await Promise.all([
-          supabase.from('contractors')
-            .select('id,company_name,contact_person,city,street,phone,email')
-            .eq('id',contractorId).single(),
-          loadServiceCustomerDevices({supabase,contractorId}),
-          loadAdminServiceVisits({supabase,contractorId}),
-        ]);
-        if(clientError||!client)throw clientError||new Error('Nie znaleziono klienta.');
-        if(!active)return;
-        setCustomer({id:client.id,name:client.company_name||client.contact_person||'Klient',
-          contact:client.contact_person||'',phone:client.phone||'',email:client.email||'',
-          city:client.city||'',street:client.street||''});
-        setCustomerDevices(devices);setVisits(history);
-        const deviceId=String(serviceRequest?.deviceId || '').trim();
-        setSelectedIds(devices.some(device=>device.id===deviceId)?[deviceId]:[]);
-        setDate(TODAY());setTime('');setNotes('');setPrimary('');setAdditional([]);
-        setScreen('plan');setError('');setMessage('');
-      }catch(error){if(active){setError(friendlyError(error));setScreen('search');}}
-    })();
-    return ()=>{active=false;};
-  },[supabase,isAdmin,serviceRequest?.contractorId,serviceRequest?.deviceId,serviceRequest?.requestKey]);
 
   const loadVisits = useCallback(async contractorId => {
     const rows=await loadAdminServiceVisits({supabase,contractorId});
