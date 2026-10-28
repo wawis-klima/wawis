@@ -119,6 +119,17 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    }catch(e){setError(e.message||'Nie udało się wysłać zdjęcia.');}
    finally{setBusy('');}
  }
+ async function waitForSignature() {
+   if(!visit||!doneCount||unsaved)return;
+   setBusy('waiting');setError('');setMessage('');
+   try {
+     const {data,error}=await supabase.rpc('service_visit_admin_wait_for_signature',{p_visit_id:visitId});
+     if(error||data!==true)throw error||new Error('Nie potwierdzono zapisu wizyty.');
+     await refresh();
+     setMessage('Czynności zapisane. Wizyta oczekuje na podpis klienta, bez oznaczania jako wykonana.');
+   }catch(e){setError(e.message||'Nie udało się zapisać statusu oczekiwania na podpis.');}
+   finally{setBusy('');}
+ }
  async function complete() {
    if(!signed || !canvasRef.current){setError('Klient musi podpisać protokół.');return;}
    setBusy('complete');setError('');setMessage('');
@@ -216,6 +227,9 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
          onPointerMove={moveStroke} onPointerUp={endStroke} onPointerCancel={endStroke}/>
      </div>
      <button type="button" className="btn" disabled={Boolean(busy)} onClick={clearSignature}>Wyczyść podpis</button>
+     {visit.status!=='oczekuje_na_podpis' ? <button type="button" className="btn serviceAdminWide"
+       disabled={Boolean(busy)||doneCount===0||unsaved}
+       onClick={waitForSignature}>{busy==='waiting'?'Zapisuję…':'Zapisz — oczekuje na podpis klienta'}</button> : null}
      <button type="button" className="btn primary serviceAdminWide"
        disabled={Boolean(busy)||!signed||doneCount===0||unsaved}
        onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
