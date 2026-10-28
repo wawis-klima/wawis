@@ -1,0 +1,214 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { SERVICE_VISIT_CHECKS, normalizeServiceChecklist } from '../../modules/service-visit-checklist.js';
+import {
+  loadServiceVisitExecution,loadServiceVisitPhotos,saveServiceDeviceResult,
+  uploadServiceVisitPhoto,loadStoredServiceProtocol,finalizeSignedServiceVisit,
+  openServiceProtocolPdf,printServiceProtocol
+} from '../../modules/service-visit-execution.js';
+import './ServiceAdminPanel.css';
+
+function newDraft(item) {
+ return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
+}
+export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBack,onFinalized}) {
+ const [visit,setVisit]=useState(null);
+ const [photos,setPhotos]=useState([]);
+ const [drafts,setDrafts]=useState({});
+ const [protocol,setProtocol]=useState(null);
+ const [busy,setBusy]=useState('');
+ const [error,setError]=useState('');
+ const [message,setMessage]=useState('');
+ const [signed,setSigned]=useState(false);
+ const canvasRef=useRef(null);
+ const drawingRef=useRef(false);
+ const lastPointRef=useRef(null);
+
+ async function refresh() {
+   const info=await loadServiceVisitExecution({supabase,visitId});
+   const [photoRecords,record]=await Promise.all([
+      loadServiceVisitPhotos({supabase,items:info.items||[]}),
+      loadStoredServiceProtocol({supabase,visitId})
+   ]);
+   setVisit(info);setPhotos(photoRecords);setProtocol(record);
+   setDrafts(Object.fromEntries((info.items||[]).map(item=>[item.id,newDraft(item)])));
+   return info;
+ }
+ useEffect(()=>{
+   let active=true;
+   Promise.all([
+     loadServiceVisitExecution({supabase,visitId}),
+     loadStoredServiceProtocol({supabase,visitId}),
+   ]).then(async ([info,record])=>{
+     const p=await loadServiceVisitPhotos({supabase,items:info.items||[]});
+     if(!active)return;
+     setVisit(info);setProtocol(record);setPhotos(p);
+     setDrafts(Object.fromEntries((info.items||[]).map(item=>[item.id,newDraft(item)])));
+   }).catch(e=>{if(active)setError(e.message||'Nie udało się pobrać przeglądu.');});
+   return ()=>{active=false;};
+ },[supabase,visitId]);
+
+ useEffect(()=>{
+   const canvas=canvasRef.current;
+   if(!canvas || protocol)return;
+   const bounds=canvas.getBoundingClientRect();
+   const scale=Math.min(3,Math.max(1,window.devicePixelRatio||1));
+   canvas.width=Math.round(Math.max(240,bounds.width)*scale);
+   canvas.height=Math.round(164*scale);
+   const ctx=canvas.getContext('2d');
+   ctx.scale(scale,scale);
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width/scale,164);
+   ctx.strokeStyle='#142a3a';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+   setSigned(false);
+ },[visitId,protocol]);
+
+ function canvasPoint(e) {
+   const rect=canvasRef.current.getBoundingClientRect();
+   return {x:e.clientX-rect.left,y:e.clientY-rect.top};
+ }
+ function beginStroke(e) {
+   if(busy||protocol)return;
+   const canvas=canvasRef.current;if(!canvas)return;
+   e.preventDefault();canvas.setPointerCapture?.(e.pointerId);
+   drawingRef.current=true;lastPointRef.current=canvasPoint(e);
+   setSigned(true);
+ }
+ function moveStroke(e) {
+   if(!drawingRef.current || !canvasRef.current)return;
+   e.preventDefault();const p=canvasPoint(e);
+   const ctx=canvasRef.current.getContext('2d');
+   ctx.beginPath();ctx.moveTo(lastPointRef.current.x,lastPointRef.current.y);
+   ctx.lineTo(p.x,p.y);ctx.stroke();lastPointRef.current=p;
+ }
+ function endStroke(e) {
+   if(!drawingRef.current)return;
+   e.preventDefault();
+   const ctx=canvasRef.current?.getContext('2d');
+   if(ctx && lastPointRef.current){
+     ctx.beginPath();ctx.arc(lastPointRef.current.x,lastPointRef.current.y,1.25,0,2*Math.PI);
+     ctx.fillStyle='#142a3a';ctx.fill();
+   }
+   drawingRef.current=false;lastPointRef.current=null;
+ }
+ function clearSignature(){
+   const canvas=canvasRef.current;if(!canvas)return;
+   const ctx=canvas.getContext('2d');const scale=canvas.width/canvas.getBoundingClientRect().width;
+   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+   ctx.setTransform(scale,0,0,scale,0,0);ctx.strokeStyle='#142a3a';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+   setSigned(false);
+ }
+ function patchDraft(id,change) { setDrafts(old=>({...old,[id]:{...old[id],...change}})); }
+ async function saveItem(item) {
+   const draft=drafts[item.id];
+   if(!draft)return;
+   setBusy(item.id);setError('');setMessage('');
+   try {
+     await saveServiceDeviceResult({supabase,visitId,itemId:item.id,checklist:draft.checklist,result:draft.result,notes:draft.notes});
+     await refresh();
+     setMessage('Wynik urządzenia zapisany w systemie.');
+   }catch(e){setError(e.message||'Nie udało się zapisać wyniku.');}
+   finally{setBusy('');}
+ }
+ async function attachPhoto(item,file) {
+   if(!file)return;
+   setBusy('photo:'+item.id);setError('');setMessage('');
+   try {
+     await uploadServiceVisitPhoto({supabase,visitId,itemId:item.id,file});
+     const records=await loadServiceVisitPhotos({supabase,items:visit.items});
+     setPhotos(records);setMessage('Zdjęcie przesłane i potwierdzone w systemie.');
+   }catch(e){setError(e.message||'Nie udało się wysłać zdjęcia.');}
+   finally{setBusy('');}
+ }
+ async function complete() {
+   if(!signed || !canvasRef.current){setError('Klient musi podpisać protokół.');return;}
+   setBusy('complete');setError('');setMessage('');
+   try {
+     const record=await finalizeSignedServiceVisit({
+       supabase,visitId,signatureDataUrl:canvasRef.current.toDataURL('image/png'),technicianNames:staffNames
+     });
+     setProtocol(record);const info=await loadServiceVisitExecution({supabase,visitId});setVisit(info);
+     setMessage('Podpisany protokół zapisany na serwerze. Przegląd zakończony.');
+     onFinalized?.(info);
+   }catch(e){setError(e.message||'Nie udało się zakończyć przeglądu. Dane nie zostały oznaczone jako wykonane.');}
+   finally{setBusy('');}
+ }
+ async function protocolAction(action) {
+   if(!protocol)return;
+   setBusy(action);setError('');
+   try {
+     if(action==='open') await openServiceProtocolPdf({supabase,record:protocol});
+     if(action==='print') await printServiceProtocol({supabase,record:protocol});
+   }catch(e){setError(e.message||'Operacja na protokole nie powiodła się.');}
+   finally{setBusy('');}
+ }
+ if(!visit)return <section className="serviceAdminPage"><button className="btn" onClick={onBack}>← Wróć</button>
+   <div className="card serviceAdminCard">{error||'Wczytuję przegląd…'}</div></section>;
+ const readonly=Boolean(protocol)||visit.status==='wykonany'||visit.status==='odwolany';
+ const doneCount=(visit.items||[]).filter(i=>i.result).length;
+ return <section className="serviceAdminPage" aria-label="Wykonanie przeglądu">
+   <button className="btn" type="button" onClick={onBack} disabled={Boolean(busy)}>← Wróć do wizyty</button>
+   <header className="serviceAdminHeader"><h2>Przegląd klimatyzacji</h2>
+     <p>{visit.client?.company_name||'Klient'} · {visit.client?.city||''}</p>
+     <p>Zapisano wyniki: {doneCount} z {visit.items?.length||0} urządzeń</p>
+   </header>
+   {error?<div className="errorBox" role="alert">{error}</div>:null}
+   {message?<div className="serviceAdminNotice" role="status">{message}</div>:null}
+   {(visit.items||[]).map((item,index)=>{
+     const draft=drafts[item.id]||newDraft(item);
+     const itemPhotos=photos.filter(p=>p.service_visit_device_id===item.id);
+     const needPhoto=draft.result==='usterka' && !itemPhotos.length;
+     const changed=JSON.stringify(draft)!==JSON.stringify(newDraft(item));
+     return <div className="card serviceAdminCard" key={item.id}>
+       <h3>Urządzenie {index+1} — {item.model_snapshot||'Klimatyzator'}</h3>
+       <p className="serviceAdminMuted">S/N: {item.serial_snapshot||'Brak'} · {item.result?'Zapisany wynik: '+(item.result==='sprawne'?'Sprawne':'Usterka'):'Jeszcze bez wyniku'}</p>
+       <div className="serviceAdminSectionTitle">Wykonane czynności</div>
+       {SERVICE_VISIT_CHECKS.map(({key,label})=><label key={key} className="serviceAdminCheck">
+         <input type="checkbox" disabled={readonly||Boolean(busy)}
+           checked={draft.checklist[key]===true}
+           onChange={e=>patchDraft(item.id,{checklist:{...draft.checklist,[key]:e.target.checked}})}/>
+         <span>{label}</span>
+       </label>)}
+       <div className="serviceAdminSectionTitle">Wynik</div>
+       <label className="serviceAdminCheck"><input type="radio" name={'result-'+item.id} checked={draft.result==='sprawne'} disabled={readonly||Boolean(busy)}
+          onChange={()=>patchDraft(item.id,{result:'sprawne'})}/> Sprawne, bez zastrzeżeń</label>
+       <label className="serviceAdminCheck"><input type="radio" name={'result-'+item.id} checked={draft.result==='usterka'} disabled={readonly||Boolean(busy)}
+          onChange={()=>patchDraft(item.id,{result:'usterka'})}/> Usterka lub nieprawidłowość</label>
+       <label>Uwagi i zalecenia <textarea className="input" rows={2} disabled={readonly||Boolean(busy)}
+         value={draft.notes} maxLength={4000} onChange={e=>patchDraft(item.id,{notes:e.target.value})}/></label>
+       <div className="serviceAdminSectionTitle">Zdjęcia ({itemPhotos.length})</div>
+       <p className="serviceAdminMuted">{needPhoto?'Do wykrytej usterki dodaj co najmniej jedno zdjęcie.':'Zdjęcia opcjonalne przy sprawnym urządzeniu.'}</p>
+       {!readonly?<label>Dodaj zdjęcie
+         <input type="file" className="input" accept="image/jpeg,image/png,image/webp,image/*"
+           disabled={Boolean(busy)} onChange={e=>{const f=e.target.files?.[0];e.target.value='';attachPhoto(item,f);}}/>
+       </label>:null}
+       {itemPhotos.map((p,i)=><p className="serviceAdminMuted" key={p.id}>✓ Zdjęcie {i+1} zapisane w systemie ({Math.round(p.file_size_bytes/1024)} KB)</p>)}
+       {!readonly?<button type="button" className="btn primary serviceAdminWide"
+         disabled={Boolean(busy)||!draft.result||needPhoto}
+         onClick={()=>saveItem(item)}>
+         {busy===item.id?'Zapisuję…':changed?'Zapisz wynik urządzenia':'Zapisz wynik ponownie'}
+       </button>:null}
+     </div>;
+   })}
+   {protocol ? <div className="card serviceAdminCard">
+     <h3>Podpisany protokół PDF</h3>
+     <p className="serviceAdminMuted">Zakończono i zapisano w archiwum WAWIS. Jeden dokument na całą wizytę.</p>
+     <div className="serviceAdminTwoFields">
+       <button type="button" className="btn primary" disabled={Boolean(busy)} onClick={()=>protocolAction('open')}>Otwórz PDF</button>
+       <button type="button" className="btn" disabled={Boolean(busy)} onClick={()=>protocolAction('print')}>Drukuj</button>
+     </div>
+     <p className="serviceAdminMuted">Wysyłkę e-mail podłączymy do osobnej zabezpieczonej funkcji serwisowej.</p>
+   </div> : visit.status==='odwolany'?<div className="card serviceAdminCard">Wizyta odwołana.</div>:<div className="card serviceAdminCard">
+     <h3>Potwierdzenie klienta</h3>
+     <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>
+     <div className="serviceAdminSignatureWrap">
+       <canvas ref={canvasRef} className="serviceAdminSignature"
+         aria-label="Pole podpisu klienta" onPointerDown={beginStroke}
+         onPointerMove={moveStroke} onPointerUp={endStroke} onPointerCancel={endStroke}/>
+     </div>
+     <button type="button" className="btn" disabled={Boolean(busy)} onClick={clearSignature}>Wyczyść podpis</button>
+     <button type="button" className="btn primary serviceAdminWide"
+       disabled={Boolean(busy)||!signed||doneCount===0}
+       onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
+     <p className="serviceAdminMuted">Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
+   </div>}
+ </section>;
+}
