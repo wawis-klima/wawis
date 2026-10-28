@@ -30,17 +30,56 @@ export async function saveServiceDeviceResult({supabase,visitId,itemId,checklist
 function extensionForMime(type) {
   return type==='image/jpeg'?'jpg':type==='image/png'?'png':type==='image/webp'?'webp':null;
 }
+async function prepareServicePhoto(file) {
+  if(!file?.size)throw new Error('Nie wybrano prawidłowego zdjęcia.');
+  if(typeof navigator!=='undefined' && navigator.onLine===false)
+    throw new Error('Brak internetu. Zrób zdjęcie aparatem i dodaj je z galerii po odzyskaniu połączenia.');
+  if(extensionForMime(file.type) && file.size<=10485760)return file;
+  const {preparePhotoForUpload}=await import('./photos.js');
+  const prepared=await preparePhotoForUpload(file);
+  if(extensionForMime(prepared.file?.type) && prepared.file.size<=10485760)return prepared.file;
+  if(!String(file.type||'').startsWith('image/'))
+    throw new Error('Wybierz plik zdjęcia JPEG, PNG, WEBP lub HEIC.');
+  // HEIC z iPhone'a: Safari potrafi wyświetlić obraz i przekonwertować go do JPEG.
+  // Nie zmieniamy produkcyjnej kolejki zdjęć montażowych ani jej IndexedDB.
+  if(typeof Image!=='function'||typeof document==='undefined')
+    throw new Error('Nie udało się odczytać zdjęcia HEIC. Zapisz je jako JPEG w Zdjęciach.');
+  const url=URL.createObjectURL(file);
+  try {
+    const image=await new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=()=>resolve(img);
+      img.onerror=()=>reject(new Error('Nie można otworzyć zdjęcia HEIC. Wyeksportuj je jako JPEG.'));
+      img.src=url;
+    });
+    const width=image.naturalWidth||image.width, height=image.naturalHeight||image.height;
+    const maxSide=Math.max(width,height),scale=Math.min(1,1800/maxSide);
+    if(!maxSide)throw new Error('Nie udało się odczytać wymiarów zdjęcia.');
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(width*scale));canvas.height=Math.max(1,Math.round(height*scale));
+    const ctx=canvas.getContext('2d',{alpha:false});
+    if(!ctx)throw new Error('Telefon nie obsługuje konwersji HEIC.');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(image,0,0,canvas.width,canvas.height);
+    const jpeg=await new Promise((resolve,reject)=>canvas.toBlob(
+      blob=>blob?resolve(blob):reject(new Error('Nie udało się przekonwertować zdjęcia na JPEG.')),
+      'image/jpeg',.78
+    ));
+    if(!jpeg.size||jpeg.size>10485760)throw new Error('Zdjęcie po konwersji jest zbyt duże.');
+    return new File([jpeg],'wawis-serwis.jpg',{type:'image/jpeg'});
+  }finally{URL.revokeObjectURL(url);}
+}
 export async function uploadServiceVisitPhoto({supabase,visitId,itemId,file}) {
-  const extension=extensionForMime(file?.type);
-  if(!extension) throw new Error('Wybierz zdjęcie JPEG, PNG lub WEBP. Pliki HEIC należy najpierw zapisać jako JPEG.');
-  if(!file.size || file.size>10485760) throw new Error('Zdjęcie musi mieć od 1 B do 10 MB.');
-  if(typeof navigator!=='undefined' && navigator.onLine===false) throw new Error('Do przesłania zdjęcia potrzebny jest internet.');
+  const preparedFile=await prepareServicePhoto(file);
+  const extension=extensionForMime(preparedFile.type);
+  if(!extension || !preparedFile.size || preparedFile.size>10485760)
+    throw new Error('Zdjęcie musi mieć od 1 B do 10 MB.');
   const storage_path=`${visitId}/photos/${itemId}/${crypto.randomUUID()}.${extension}`;
   const {error:uploadError}=await supabase.storage.from(SERVICE_FILES_BUCKET)
-    .upload(storage_path,file,{contentType:file.type,upsert:false});
+    .upload(storage_path,preparedFile,{contentType:preparedFile.type,upsert:false});
   if(uploadError) throw uploadError;
   const {data,error}=await supabase.from('service_visit_photos')
-    .insert({service_visit_device_id:itemId,storage_path,file_size_bytes:file.size,mime_type:file.type})
+    .insert({service_visit_device_id:itemId,storage_path,file_size_bytes:preparedFile.size,mime_type:preparedFile.type})
     .select('id,service_visit_device_id,storage_path,file_size_bytes,created_at').single();
   if(error) throw new Error('Zdjęcie przesłano, ale nie potwierdzono wpisu w historii. Nie próbuj go usuwać: '+error.message);
   return data;
