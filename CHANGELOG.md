@@ -1,4 +1,4 @@
-## 13.90
+## 13.89
 - Etap 1 modułu przeglądów: admin na iPhonie wyszukuje klienta i urządzenia, umawia wizytę oraz przydziela serwisantów. Zmiana terminu i przydziału nie zmienia dat przypomnień SMS od daty montażu.
 - Odrębne tabele i RLS tylko dla administratora. Bez zmian starych services, protokołów montażowych, zdjęć i SMS.
 - NO-GO: wykonanie checklisty, zdjęcia usterek, podpisany PDF, wysyłka i druk serwisowy wymagają kolejnego etapu i testów.
