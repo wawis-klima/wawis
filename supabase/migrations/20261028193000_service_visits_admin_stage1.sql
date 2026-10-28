@@ -177,7 +177,7 @@ revoke all on function public.service_visit_admin_create(uuid,uuid[],date,time w
 grant execute on function public.service_visit_admin_create(uuid,uuid[],date,time without time zone,text,uuid) to authenticated;
 
 create or replace function public.service_visit_assignment_audit()
-returns trigger language plpgsql security definer set search_path = '' as $
+returns trigger language plpgsql security definer set search_path = '' as $$
 begin
   if not public.current_user_is_admin() then raise exception 'Brak uprawnień do przydziału'; end if;
   new.updated_at := now();
@@ -197,7 +197,7 @@ create trigger service_visit_assignment_audit_trigger
   before update on public.service_visits for each row execute function public.service_visit_assignment_audit();
 
 create or replace function public.service_visit_initial_assignment_audit()
-returns trigger language plpgsql security definer set search_path = '' as $
+returns trigger language plpgsql security definer set search_path = '' as $$
 begin
   if new.primary_technician_id is not null or cardinality(new.additional_technician_ids) > 0 then
     insert into public.service_visit_assignment_events(
