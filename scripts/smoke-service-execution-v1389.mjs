@@ -48,6 +48,8 @@ assert.match(migration,/revoke update, delete on public\.service_visits/);
 assert.match(ui,/canvas[\\s\\S]*?onPointerDown/);
 assert.match(ui,/Zakończ przegląd i zapisz PDF/);
 assert.match(ui,/service_visit_admin_wait_for_signature/);
+assert.match(ui,/if\(signed\) clearSignature\(\)/, 'Changing checks must invalidate existing client signature.');
+assert.match(ui,/if\(signed\)clearSignature\(\)/, 'Adding issue evidence must invalidate existing client signature.');
 assert.match(ui,/oczekuje na podpis klienta/);
 assert.match(migration,/service_visit_admin_wait_for_signature/);
 assert.match(ui,/!signed\|\|doneCount===0\|\|unsaved/);
