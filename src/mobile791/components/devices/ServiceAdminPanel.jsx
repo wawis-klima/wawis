@@ -44,6 +44,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const [staff,setStaff] = useState([]);
   const [currentVisit,setCurrentVisit] = useState(null);
   const [selectedIds,setSelectedIds] = useState([]);
+  const [createOperationId,setCreateOperationId] = useState(()=>crypto.randomUUID());
   const [date,setDate] = useState(TODAY);
   const [time,setTime] = useState('');
   const [notes,setNotes] = useState('');
@@ -105,7 +106,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     finally {setBusy(false);}
   }
   function startPlan() {
-    setSelectedIds([]);setDate(TODAY());setTime('');setNotes('');
+    setSelectedIds([]);setCreateOperationId(crypto.randomUUID());setDate(TODAY());setTime('');setNotes('');
     setPrimary('');setAdditional([]);setError('');setMessage('');setScreen('plan');
   }
   function toggleId(id) {
@@ -118,7 +119,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if (typeof navigator !== 'undefined' && navigator.onLine===false) {setError('Brak internetu. Zaplanuj przegląd po przywróceniu połączenia.');return;}
     setBusy(true);setError('');
     try {
-      const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:primary});
+      const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:primary,operationId:createOperationId});
       // Osoby dodatkowe mogą być dodane po zapisie. Nie ukrywamy częściowego błędu.
       if (additional.length) {
         try { await updateAdminServiceAssignment({supabase,visitId,technicianId:primary,additionalTechnicianIds:additional}); }
