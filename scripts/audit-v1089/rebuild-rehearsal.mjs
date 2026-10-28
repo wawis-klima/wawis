@@ -225,6 +225,60 @@ values('90000000-0000-4000-8000-000000000001','Clock Fixture','500111222','2021-
     current = 'scripts/audit-v1089/fixtures/backend-restore.sql';
     await db.exec(fs.readFileSync(new URL(current, root), 'utf8'));
 
+    current = 'WAWIS 13.89: idempotent visit creation and admin guard in isolated database';
+    await db.exec(
+      "create or replace function public.current_user_is_admin() returns boolean " +
+      "language sql stable security definer set search_path = '' as $fn$ select true $fn$;" +
+      "insert into public.contractors(id,company_name) values(" +
+      "'a3890000-0000-4000-8000-000000000001','Klient testowy serwis');" +
+      "insert into public.devices(id,contractor_id,model,serial_number,installation_date) values(" +
+      "'a3890000-0000-4000-8000-000000000002'," +
+      "'a3890000-0000-4000-8000-000000000001','Rotenso Ukura','SER-1389','2025-10-28');"
+    );
+    const serviceCall = (note) => db.query(
+      "select public.service_visit_admin_create(" +
+      "'a3890000-0000-4000-8000-000000000001'::uuid," +
+      "array['a3890000-0000-4000-8000-000000000002'::uuid]," +
+      "'2026-11-15'::date,'10:30'::time,$1::text,null," +
+      "'a3890000-0000-4000-8000-000000000003'::uuid) as id",
+      [note]
+    );
+    const firstVisit = await serviceCall('Umówiono telefonicznie');
+    const retriedVisit = await serviceCall('Umówiono telefonicznie');
+    if (!firstVisit.rows[0]?.id || firstVisit.rows[0].id !== retriedVisit.rows[0]?.id) {
+      throw new Error('Powtórna próba utworzyła inny przegląd');
+    }
+    const visitCount = await db.query(
+      "select count(*)::int as n from public.service_visits " +
+      "where create_operation_id='a3890000-0000-4000-8000-000000000003'"
+    );
+    const deviceCount = await db.query(
+      "select count(*)::int as n from public.service_visit_devices where service_visit_id=$1::uuid",
+      [firstVisit.rows[0].id]
+    );
+    if (visitCount.rows[0]?.n !== 1 || deviceCount.rows[0]?.n !== 1) {
+      throw new Error('Powtórna próba utworzyła zduplikowaną wizytę lub urządzenie');
+    }
+    let mismatchRejected = false;
+    try { await serviceCall('Zmienione dane po utracie odpowiedzi'); }
+    catch (error) {
+      mismatchRejected = /Identyfikator zapisu jest już wykorzystany/.test(String(error.message));
+      if (!mismatchRejected) throw error;
+    }
+    if (!mismatchRejected) throw new Error('Ponowne użycie tokenu z innymi danymi nie zostało odrzucone');
+    await db.exec(
+      "create or replace function public.current_user_is_admin() returns boolean " +
+      "language sql stable security definer set search_path = '' as $fn$ select false $fn$;"
+    );
+    let workerDenied = false;
+    try { await serviceCall('Umówiono telefonicznie'); }
+    catch (error) {
+      workerDenied = /Tylko administrator może umawiać przeglądy/.test(String(error.message));
+      if (!workerDenied) throw error;
+    }
+    if (!workerDenied) throw new Error('Nie-administrator może utworzyć serwis');
+    console.log('WAWIS 13.89 real SQL: idempotency, mismatch and admin guard PASS');
+
     console.log(`Local dependency rehearsal pass ${pass} + current SMS schema + fixed-clock window + delete/restore history PASS; this local run alone does not verify staging`);
   } catch (error) {
     console.error('FAIL', current, error.message);
