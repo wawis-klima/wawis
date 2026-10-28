@@ -1,7 +1,9 @@
-## 13.89
-- Etap 1 modułu przeglądów: admin na iPhonie wyszukuje klienta i urządzenia, umawia wizytę oraz przydziela serwisantów. Zmiana terminu i przydziału nie zmienia dat przypomnień SMS od daty montażu.
-- Odrębne tabele i RLS tylko dla administratora. Bez zmian starych services, protokołów montażowych, zdjęć i SMS.
-- NO-GO: wykonanie checklisty, zdjęcia usterek, podpisany PDF, wysyłka i druk serwisowy wymagają kolejnego etapu i testów.
+## 13.89 — PR #442 (robocza, NO-GO)
+- Wyszukiwarka urządzeń/klientów admina, ręczne planowanie uzgodnionego przeglądu, przydział głównego i dodatkowych pracowników, termin i historia zmian.
+- Per-urządzenie sześć czynności i status sprawne/usterka, obowiązkowe zdjęcia przy usterce, rzeczywisty wykonawca, jeden wspólny PDF z podpisem, archiwum, druk i e-mail ręczny.
+- Admin desktop: katalog bez ingerencji oraz nowa sekcja serwisów; przejście z modułu SMS do planowania, bez automatycznego zakładania zleceń.
+- Oddzielne tabele, prywatny Storage, RLS admin-only, transakcyjna finalizacja, odrębny push do administratora po zapisie.
+- Nie rusza istniejących montażowych protokołów, zdjęć, faktur ani cyklu przypomnień SMS. Wydanie nadal NO-GO do testów i akceptacji.
 
 ## 13.88
 - Zgłoszenie właściciela (27.10.2026, Biała 4a): u administratora przy brakującej tabliczce znamionowej pokazywał się zielony komunikat „Urządzenia są dodane. Uzupełnij protokół…” obok czerwonego „Krok 1/3”. Zielony komunikat pojawia się teraz dopiero przy komplecie zdjęć tabliczek, a „Krok 1/3” podaje, której tabliczki brakuje (np. „Brakuje: JZ urządzenia 1.”). Zasady blokady Protokołu i Zakończenia bez zmian.
