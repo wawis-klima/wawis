@@ -124,7 +124,8 @@
     "supabase/migrations/20261012141000_protocol_signature_address_correction_v1322.sql",
     "supabase/migrations/20261020130503_protocol_signed_admin_push_v1330.sql",
     "supabase/migrations/20261027091451_push_stale_subscription_cleanup_v1384.sql",
-    "supabase/migrations/20261028193000_service_visits_admin_stage1.sql"
+    "supabase/migrations/20261028193000_service_visits_admin_stage1.sql",
+    "supabase/migrations/20261028220000_service_visit_execution_v1389.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
