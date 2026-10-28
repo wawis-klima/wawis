@@ -143,7 +143,8 @@ begin
    and (snap.x is null
      or (snap.x->>'result') is distinct from d.result
      or snap.x->'checklist' is distinct from d.checklist
-     or (snap.x->>'notes') is distinct from d.notes);
+     or (snap.x->>'notes') is distinct from d.notes
+     or (snap.x->>'performed_by') is distinct from d.performed_by::text);
  if v_mismatch>0 then raise exception 'PDF nie jest zgodny z zapisanymi wynikami. Odśwież i wygeneruj ponownie.'; end if;
  -- Usterka wymaga zdjęcia w tabeli I rzeczywiście istniejącego pliku o rozmiarze >0 B.
  select count(*) into v_errors from public.service_visit_devices d
