@@ -1,14 +1,22 @@
-# RELEASE RESULT
+# RELEASE RESULT — WAWIS 13.89 (wersja robocza)
 
-## Wersja
-- 13.89 — w przygotowaniu, NO-GO do zakończenia pełnego modułu serwisowego.
+## Status: NO-GO
+Wszystkie zmiany wyłącznie w PR #442; nie scalono i nie wykonano migracji produkcyjnych. Produkcja: 13.88.
 
-## Zakres
-- Administrator mobilny: wyszukiwarka urządzeń, grupa klienta, planowanie wizyty i zmienny przydział serwisantów.
-- Izolowane nowe tabele SQL i RLS; brak migracji na produkcji.
-- Dostęp pracowników do serwisów nie jest uruchomiony.
+## Kod przygotowany
+- Mobilny administrator: wyszukiwarka grupująca klienta/urządzenia, umówienie, lista wizyt, przydział oraz jego historia.
+- Wykonanie: sześć czynności i osobny wynik każdego urządzenia, rzeczywisty wykonawca, zdjęcia usterki (HEIC/JPEG), podpis i wspólny PDF.
+- Prywatny Storage i serwerowa kontrola plików przed zamknięciem; historia klienta i urządzenia.
+- Otwórz/drukuj protokół (istniejące mechanizmy Phomemo), ręczny e-mail z historią wysyłki.
+- Desktop administrator: istniejący katalog urządzeń zachowany i osobna zakładka przeglądów.
+- Z modułu SMS: ręczne otwarcie formularza umówienia klienta/urządzenia; sam SMS nie tworzy przeglądu.
+- W bazie: historia zmian terminu/statusu i przydziału; PUSH do admina dopiero po realnym zakończeniu.
+- Pracownicy bez dostępu do serwisów (UI i RLS). Dotychczasowy harmonogram SMS bez zmian.
 
-## Kontrola
-- Testy wymagają potwierdzenia rzeczywistym CI i izolowanym PostgreSQL.
-- Podpis PDF, zdjęcia usterek, zakończenie serwisu oraz e-mail/druk są w dalszym etapie.
-- Produkcja pozostaje na 13.88 do pełnego GO.
+## Weryfikacja do dokończenia
+- CI łączone + Closure Gate, wszystkie E2E WebKit/zdjęcia/tabliczki i regresja desktop.
+- Testy funkcjonalne nowej ścieżki end-to-end w izolowanym Supabase: PDF, podpis, zdjęcia HEIC/JPEG, offline, timeouty, RLS admin/pracownik.
+- Test prawdziwego iPhone'a i drukarki Phomemo, bez zmiany aktywnej produkcji przed GO.
+- Weryfikacja wdrożenia funkcji Edge Function oraz logów i PUSH na środowisku testowym.
+
+NIE wolno scalić PR ani publikować 13.89 przed potwierdzeniem wymaganych bramek.
