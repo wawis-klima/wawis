@@ -59,7 +59,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width/scale,164);
    ctx.strokeStyle='#142a3a';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
    setSigned(false);
- },[visitId,protocol]);
+ },[visitId,visit?.id,protocol]);
 
  function canvasPoint(e) {
    const rect=canvasRef.current.getBoundingClientRect();
@@ -144,6 +144,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    <div className="card serviceAdminCard">{error||'Wczytuję przegląd…'}</div></section>;
  const readonly=Boolean(protocol)||visit.status==='wykonany'||visit.status==='odwolany';
  const doneCount=(visit.items||[]).filter(i=>i.result).length;
+ const unsaved=(visit.items||[]).some(i=>JSON.stringify(drafts[i.id]||newDraft(i))!==JSON.stringify(newDraft(i)));
  return <section className="serviceAdminPage" aria-label="Wykonanie przeglądu">
    <button className="btn" type="button" onClick={onBack} disabled={Boolean(busy)}>← Wróć do wizyty</button>
    <header className="serviceAdminHeader"><h2>Przegląd klimatyzacji</h2>
@@ -206,9 +207,9 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
      </div>
      <button type="button" className="btn" disabled={Boolean(busy)} onClick={clearSignature}>Wyczyść podpis</button>
      <button type="button" className="btn primary serviceAdminWide"
-       disabled={Boolean(busy)||!signed||doneCount===0}
+       disabled={Boolean(busy)||!signed||doneCount===0||unsaved}
        onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
-     <p className="serviceAdminMuted">Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
+     <p className="serviceAdminMuted">Jeśli zmienisz wynik urządzenia, najpierw zapisz go osobno. Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
    </div>}
  </section>;
 }
