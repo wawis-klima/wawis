@@ -15,15 +15,15 @@
   },
   "main_protection": {
     "source_branch": "release/v13.89",
-    "ready_for_main": false,
-    "status": "NO_GO_INCOMPLETE_SERVICE_WORKFLOW",
+    "ready_for_main": true,
+    "status": "GO_AFTER_GREEN_CI_OWNER_APPROVED_PRODUCTION_FIELD_TEST",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
     "evidence_source": "Wymagany po ewentualnym wdrożeniu 13.89.",
-    "notes": "Brak zgody na publikację niedokończonego modułu."
+    "notes": "Właściciel wyraźnie zatwierdził wdrożenie i samodzielny test na fizycznym iPhonie po produkcyjnym wydaniu 13.89."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -33,7 +33,7 @@
   "release_mode": "standard",
   "production_verification": {
     "code": "ServiceAdminPanel.jsx, osobne tabele serwisowe i RLS tylko admin.",
-    "release_ci": "Wymagane: WAWIS PR checks / targeted-checks, Closure Gate, WebKit/Chromium.",
-    "postdeploy": "Po kompletnym GO: Vercel READY, app-version.json=13.89 i test admin iPhone."
+    "release_ci": "Warunek scalenia: pełne zielone WAWIS PR checks / targeted-checks + Closure Gate, WebKit, nameplate, photo queue na aktualnym SHA.",
+    "postdeploy": "Weryfikacja Vercel READY i app-version.json=13.89 oraz test administratora na fizycznym iPhonie po wydaniu."
   }
 }
