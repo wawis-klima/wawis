@@ -139,7 +139,6 @@ export default function App() {
   const [globalSearchRequested, setGlobalSearchRequested] = useState(false);
   const [requestedContractorId, setRequestedContractorId] = useState(null);
   const [requestedDeviceId, setRequestedDeviceId] = useState(null);
-  const [requestedServiceSelection, setRequestedServiceSelection] = useState(null);
   const [desktopNavKey, setDesktopNavKey] = useState("center360");
   const [jobsPage, setJobsPage] = useState(1);
   const [pendingOpenJobId, setPendingOpenJobId] = useState(null);
@@ -774,18 +773,6 @@ export default function App() {
     handleDesktopNavigation('contractors', 'contractors');
   }
 
-  function handlePlanServiceFromSms(item) {
-    if(!isAdmin)return;
-    const contractorId=String(item?.contractor_id || '').trim();
-    if(!contractorId)return;
-    setRequestedServiceSelection({
-      contractorId,
-      deviceId:item?.target_type==='device'?String(item?.id||''):String(item?.device_id||''),
-      requestKey:Date.now()+'-'+Math.random().toString(36).slice(2),
-    });
-    handleDesktopNavigation('devices','devices');
-  }
-
   function handleGlobalSearchResult(result) {
     if (!result?.type || !result?.source) return;
 
@@ -1097,7 +1084,6 @@ export default function App() {
               />
             ) : activeModule === "devices" ? (
               <DevicesAndServicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
-                serviceRequest={requestedServiceSelection}
                 supabase={supabase}
                 jobs={jobs}
                 contractors={contractorsCatalog}
@@ -1132,7 +1118,6 @@ export default function App() {
                 refreshAll={refreshAll}
                 onOpenJob={handleOpenJobFromSms}
                 onOpenContractor={handleOpenContractorFromSms}
-                onPlanService={handlePlanServiceFromSms}
                 requestedSection={desktopNavKey}
               />
             )}
