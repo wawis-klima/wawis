@@ -8,7 +8,7 @@ const jobsPanelSource = fs.readFileSync(path.join(root, 'src', 'components', 'Jo
 
 assert.match(appSource, /const SmsPanel = lazy\(\(\) => import\("\.\/components\/sms\/SmsPanel\.jsx"\)\);/);
 assert.match(appSource, /const ContractorsPanel = lazy\(\(\) => import\("\.\/components\/contractors\/ContractorsPanel\.jsx"\)\);/);
-assert.match(appSource, /const DevicesPanel = lazy\(\(\) => import\("\.\/components\/devices\/DevicesPanel\.jsx"\)\);/);
+assert.match(appSource, /const DevicesAndServicesPanel = lazy\(\(\) => import\("\.\/components\/devices\/DevicesAndServicesPanel\.jsx"\)\);/);
 assert.match(appSource, /const CalendarPanel = lazy\(\(\) => import\("\.\/components\/calendar\/CalendarPanel\.jsx"\)\);/);
 assert.match(appSource, /const JobDetailsPanel = lazy\(\(\) => import\("\.\/components\/JobDetailsPanel\.jsx"\)\);/);
 assert.match(appSource, /const JobFormModal = lazy\(\(\) => import\("\.\/components\/modals\/JobFormModal\.jsx"\)\);/);
