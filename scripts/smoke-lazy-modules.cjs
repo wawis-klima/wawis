@@ -14,7 +14,8 @@ const adminDesktopShellSource = fs.readFileSync(path.join(root, 'src', 'componen
 
 assert.match(appSource, /const SmsPanel = lazy\(\(\) => import\("\.\/components\/sms\/SmsPanel\.jsx"\)\);/);
 assert.match(appSource, /const ContractorsPanel = lazy\(\(\) => import\("\.\/components\/contractors\/ContractorsPanel\.jsx"\)\);/);
-assert.match(appSource, /const DevicesPanel = lazy\(\(\) => import\("\.\/components\/devices\/DevicesPanel\.jsx"\)\);/);
+assert.match(appSource, /const DevicesAndServicesPanel = lazy\(\(\) => import\("\.\/components\/devices\/DevicesAndServicesPanel\.jsx"\)\);/);
+assert.match(fs.readFileSync(path.join(root, "src/components/devices/DevicesAndServicesPanel.jsx"), "utf8"), /const DevicesPanel=lazy\(/);
 assert.match(appSource, /const CalendarPanel = lazy\(\(\) => import\("\.\/components\/calendar\/CalendarPanel\.jsx"\)\);/);
 assert.match(appSource, /const Centrum360Panel = lazy\(\(\) => import\("\.\/components\/dashboard\/Centrum360Panel\.jsx"\)\);/);
 assert.match(appSource, /const DiagnosticsPanel = lazy\(\(\) => import\("\.\/components\/diagnostics\/DiagnosticsPanel\.jsx"\)\);/);

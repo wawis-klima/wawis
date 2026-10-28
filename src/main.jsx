@@ -126,6 +126,8 @@ async function boot() {
     await import('./mobile791/v1323-mobile-protocol-actions.css')
     // WAWIS 13.33: styl menu po wszystkich legacy mobile CSS, PRZED pierwszym renderem.
     await import('./mobile791/components/pricelist/pricelist-mobile.css')
+    // 5 zakładek wyłącznie administratora; CSS ładowany przed pierwszym renderem.
+    await import('./mobile791/components/devices/ServiceAdminPanel.css')
   }
 
   window.__wawisBootTrace?.mark?.('styles-ready')

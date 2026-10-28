@@ -34,7 +34,7 @@ export default function AppAuthenticatedLayout({
         </div>
       ) : null}
 
-      {isMobile ? (
+      {isMobile && activeModule !== "devices" ? (
         <div className="summary premiumSummary">
           <div>
             <div className="summaryHeader">

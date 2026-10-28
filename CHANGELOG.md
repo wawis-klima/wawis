@@ -1,3 +1,11 @@
+## 13.89
+- PR #442 — status roboczy, NO-GO. Wszystkie funkcje wymagają zamknięcia testów przed wdrożeniem.
+- Wyszukiwarka urządzeń/klientów admina, ręczne planowanie uzgodnionego przeglądu, przydział głównego i dodatkowych pracowników, termin i historia zmian.
+- Per-urządzenie sześć czynności i status sprawne/usterka, obowiązkowe zdjęcia przy usterce, rzeczywisty wykonawca, jeden wspólny PDF z podpisem, archiwum, druk i e-mail ręczny.
+- Admin desktop: katalog bez ingerencji oraz nowa sekcja przeglądów w module Urządzenia. W module SMS nie ma przycisku planowania serwisu ani przekierowania do takiego formularza.
+- Oddzielne tabele, prywatny Storage, RLS admin-only, transakcyjna finalizacja, odrębny push do administratora po zapisie.
+- Nie rusza istniejących montażowych protokołów, zdjęć, faktur ani cyklu przypomnień SMS. Wydanie nadal NO-GO do testów i akceptacji.
+
 ## 13.88
 - Zgłoszenie właściciela (27.10.2026, Biała 4a): u administratora przy brakującej tabliczce znamionowej pokazywał się zielony komunikat „Urządzenia są dodane. Uzupełnij protokół…” obok czerwonego „Krok 1/3”. Zielony komunikat pojawia się teraz dopiero przy komplecie zdjęć tabliczek, a „Krok 1/3” podaje, której tabliczki brakuje (np. „Brakuje: JZ urządzenia 1.”). Zasady blokady Protokołu i Zakończenia bez zmian.
 

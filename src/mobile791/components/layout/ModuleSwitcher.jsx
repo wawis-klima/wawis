@@ -4,6 +4,7 @@ const MODULES = [
   { id: "jobs", label: "Montaże" },
   { id: "contractors", label: "Kontrahenci" },
   { id: "fuel", label: "Paliwo" },
+  { id: "devices", label: "Urządzenia" },
   { id: "pricelist", label: "Cennik" },
 ];
 
@@ -23,6 +24,7 @@ export default function ModuleSwitcher({ activeModule, setActiveModule, isAdmin 
           key={module.id}
           type="button"
           data-module={module.id}
+          aria-label={module.id === "devices" ? "Katalog urządzeń" : undefined}
           className={`moduleSwitcherBtn ${activeModule === module.id ? "active" : ""}`}
           onClick={() => setActiveModule(module.id)}
         >

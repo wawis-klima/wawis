@@ -41,7 +41,7 @@ const statusGreenImg = "/status-buttons/status-green.png";
 
 const SmsPanel = lazy(() => import("./components/sms/SmsPanel.jsx"));
 const ContractorsPanel = lazy(() => import("./components/contractors/ContractorsPanel.jsx"));
-const DevicesPanel = lazy(() => import("./components/devices/DevicesPanel.jsx"));
+const DevicesAndServicesPanel = lazy(() => import("./components/devices/DevicesAndServicesPanel.jsx"));
 const CalendarPanel = lazy(() => import("./components/calendar/CalendarPanel.jsx"));
 const Centrum360Panel = lazy(() => import("./components/dashboard/Centrum360Panel.jsx"));
 const JobDetailsPanel = lazy(() => import("./components/JobDetailsPanel.jsx"));
@@ -1083,7 +1083,7 @@ export default function App() {
                 onContractorsLoaded={applyContractorsCatalogSnapshot}
               />
             ) : activeModule === "devices" ? (
-              <DevicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
+              <DevicesAndServicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}
                 jobs={jobs}
                 contractors={contractorsCatalog}

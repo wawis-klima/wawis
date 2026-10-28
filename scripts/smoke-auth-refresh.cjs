@@ -156,7 +156,8 @@ function runDevicesModuleSmoke() {
   assert.match(adminDesktopShellSource, /key:\s*['"]devices['"]/);
   assert.match(adminDesktopShellSource, /label:\s*['"]Urządzenia['"]/);
   assert.match(appSource, /activeModule === "devices"/);
-  assert.match(appSource, /DevicesPanel/);
+  assert.match(appSource, /DevicesAndServicesPanel/, 'Desktop zachowuje katalog urządzeń i dodaje serwisy.');
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'src/components/devices/DevicesAndServicesPanel.jsx'),'utf8'), /DevicesPanel/, 'Istniejący katalog jest nadal używany w widoku desktop.');
   assert.match(devicesPanelSource, /<h1>Urządzenia<\/h1>|Przegląd urządzeń na desktopie/);
   assert.match(devicesPanelSource, /admin_update_device_status|Status urządzenia/);
   assert.match(devicesPanelSource, /Źródło: tabela devices|Źródło awaryjne: montaże/);

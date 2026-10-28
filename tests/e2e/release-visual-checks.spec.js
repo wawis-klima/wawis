@@ -213,13 +213,17 @@ test.describe('@mobile release visual iPhone', () => {
     return info;
   }
 
-  test('administrator ma cztery pełne nazwy przycisków w jednym rzędzie na wąskim iPhonie', async ({ page }) => {
+  test('administrator ma pięć pełnych nazw przycisków w jednym rzędzie na wąskim iPhonie', async ({ page }) => {
     await login(page, ADMIN);
-    const names = ['Montaże','Kontrahenci','Paliwo','Cennik'];
+    const names = ['Montaże','Kontrahenci','Paliwo','Urządzenia','Cennik'];
     for (const width of [320, 360, 375, 390, 430]) {
       await page.setViewportSize({ width, height: 780 });
       await inspectMenuRow(page, names);
     }
+    await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
+    await expect(page.locator('.serviceAdminPage')).toBeVisible();
+    await expect(page.locator('#service-device-search')).toBeVisible();
+    await expect(page.locator('.serviceAdminClientRow')).toHaveCount(0);
     await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
     await expect(page.locator('.wawisPricelist')).toBeVisible();
     await expect(page.locator('.wawisPricelistIntro')).toHaveCount(0);

@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const desktop=read('src/App.jsx');
+const tab=read('src/components/devices/DevicesAndServicesPanel.jsx');
+const mobile=read('src/mobile791/components/devices/ServiceAdminPanel.jsx');
+const sms=read('src/components/sms/SmsPanel.jsx');
+const client=read('src/components/sms/SmsClientDetailsCard.jsx');
+const device=read('src/components/sms/SmsDeviceDetailsCard.jsx');
+const push=read('supabase/functions/send-service-visit-completed-push/index.ts');
+const sql=read('supabase/migrations/20261028233000_service_visit_completed_push_v1389.sql');
+const config=read('supabase/config.toml');
+const audit=read('supabase/migrations/20261028234500_service_visit_schedule_audit_v1389.sql');
+assert.match(desktop,/DevicesAndServicesPanel/);
+assert.doesNotMatch(desktop,/handlePlanServiceFromSms|onPlanService|requestedServiceSelection/,
+  'WAWIS: moduł SMS nie może przekierowywać do planowania serwisu.');
+assert.match(tab,/Katalog urządzeń/);
+assert.match(tab,/Przeglądy serwisowe/);
+assert.match(tab,/DevicesPanel/);
+assert.match(tab,/ServiceAdminPanel/);
+assert.match(tab,/if\(!isAdmin\)return null/);
+assert.match(mobile,/setScreen\('plan'\)/, 'Planowanie pozostaje w module Urządzenia.');
+assert.match(mobile,/Zaplanuj przegląd/);
+for(const [name,src] of [['SmsPanel',sms],['SmsClientDetailsCard',client],['SmsDeviceDetailsCard',device]]){
+  assert.doesNotMatch(src,/Zaplanuj przegląd|Zaplanuj serwis|onPlanService|handlePlanServiceFromSms/,
+    name+': zakaz tworzenia i planowania serwisów z modułu SMS.');
+}
+assert.doesNotMatch(tab,/serviceRequest|onPlanService/);
+assert.doesNotMatch(mobile,/serviceRequest|onPlanService/);
+assert.match(sql,/private\.service_visit_completed_push_events_v1389/);
+assert.match(sql,/new\.status<>'wykonany'/);
+assert.match(sql,/service_visit_completed_webhook/);
+assert.match(sql,/cron\.schedule/);
+assert.match(sql,/processed_at is null/);
+assert.match(push,/get_service_visit_completed_push_event_v1389/);
+assert.match(push,/mark_service_visit_completed_push_event_v1389/);
+assert.match(push,/service_visit_completed:/);
+assert.match(push,/push_claim_delivery_v1268/);
+assert.match(push,/profiles"\)\.select\("id"\)\.eq\("role","Administrator"\)/);
+assert.match(audit,/service_visit_change_events/);
+assert.match(audit,/old.scheduled_date is distinct from new.scheduled_date/);
+assert.match(audit,/public.current_user_is_admin\(\)/);
+assert.match(config,/\[functions\.send-service-visit-completed-push\]/);
+assert.match(config,/verify_jwt = false # publiczny endpoint przyjmuje wyłącznie jednorazowy/);
+console.log('WAWIS 13.89 desktop/SMS/push smoke PASS');
