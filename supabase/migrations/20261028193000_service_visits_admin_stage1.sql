@@ -207,7 +207,7 @@ begin
   end if;
   return new;
 end
-$;
+$$;
 revoke all on function public.service_visit_initial_assignment_audit() from public, anon, authenticated;
 create trigger service_visit_initial_assignment_audit_trigger
   after insert on public.service_visits for each row execute function public.service_visit_initial_assignment_audit();
