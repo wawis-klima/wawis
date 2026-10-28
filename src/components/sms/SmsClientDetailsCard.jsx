@@ -19,7 +19,7 @@ const DETAIL_ROWS = [
   ['Źródło', (client) => (client.target_type === 'device' ? 'Urządzenie' : 'Montaż')],
 ];
 
-export default function SmsClientDetailsCard({ client, onClose, onOpenJob, onOpenContractor, onPlanService }) {
+export default function SmsClientDetailsCard({ client, onClose, onOpenJob, onOpenContractor }) {
   if (!client) return null;
 
   const clientName = client.client || client.contractor_name || client.title || 'Klient';
@@ -40,9 +40,6 @@ export default function SmsClientDetailsCard({ client, onClose, onOpenJob, onOpe
           <button type="button" className="btn secondary" onClick={() => onOpenContractor?.(client)} disabled={!hasContractorLink}>
             Przejdź do kontrahenta
           </button>
-          {onPlanService && hasContractorLink ? <button type="button" className="btn primary" onClick={() => onPlanService(client)}>
-            Zaplanuj przegląd
-          </button> : null}
           <button type="button" className="btn secondary smsClientDetailsCloseBtn" onClick={onClose}>
             Zamknij podgląd
           </button>
