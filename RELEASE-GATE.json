@@ -1,8 +1,8 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.90",
+  "version": "13.89",
   "scope": "full",
-  "release_branch": "release/v13.90",
+  "release_branch": "release/v13.89",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.90",
+    "source_branch": "release/v13.89",
     "ready_for_main": false,
     "status": "NO_GO_INCOMPLETE_SERVICE_WORKFLOW",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Wymagany po ewentualnym wdrożeniu 13.90.",
+    "evidence_source": "Wymagany po ewentualnym wdrożeniu 13.89.",
     "notes": "Brak zgody na publikację niedokończonego modułu."
   },
   "archive": {
@@ -34,6 +34,6 @@
   "production_verification": {
     "code": "ServiceAdminPanel.jsx, osobne tabele serwisowe i RLS tylko admin.",
     "release_ci": "Wymagane: WAWIS PR checks / targeted-checks, Closure Gate, WebKit/Chromium.",
-    "postdeploy": "Po kompletnym GO: Vercel READY, app-version.json=13.90 i test admin iPhone."
+    "postdeploy": "Po kompletnym GO: Vercel READY, app-version.json=13.89 i test admin iPhone."
   }
 }
