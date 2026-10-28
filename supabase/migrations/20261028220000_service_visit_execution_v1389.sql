@@ -97,6 +97,27 @@ $$;
 revoke all on function public.service_visit_admin_cancel(uuid) from public,anon;
 grant execute on function public.service_visit_admin_cancel(uuid) to authenticated;
 
+-- Czynności wykonane, ale brak podpisu klienta: zachowujemy prawdziwe wyniki i daty.
+create or replace function public.service_visit_admin_wait_for_signature(p_visit_id uuid)
+returns boolean language plpgsql security definer set search_path = ''
+as $
+declare v_status text; v_done integer;
+begin
+ if not public.current_user_is_admin() then raise exception 'Brak uprawnień'; end if;
+ select status into v_status from public.service_visits where id=p_visit_id for update;
+ if v_status is null then raise exception 'Nie znaleziono wizyty'; end if;
+ if v_status not in ('zaplanowany','w_trakcie','oczekuje_na_podpis') then
+   raise exception 'Wizyta już zakończona lub odwołana'; end if;
+ select count(*) into v_done from public.service_visit_devices
+   where service_visit_id=p_visit_id and result is not null;
+ if v_done=0 then raise exception 'Najpierw zapisz wyniki wykonanych urządzeń'; end if;
+ update public.service_visits set status='oczekuje_na_podpis',updated_at=now() where id=p_visit_id;
+ return true;
+end
+$;
+revoke all on function public.service_visit_admin_wait_for_signature(uuid) from public,anon;
+grant execute on function public.service_visit_admin_wait_for_signature(uuid) to authenticated;
+
 -- Finalizacja pod blokadą FOR UPDATE, po potwierdzeniu plików w prywatnym Storage.
 -- Powtórne wywołanie z tym samym plikiem po utracie odpowiedzi jest idempotentne.
 create or replace function public.service_visit_admin_complete(
