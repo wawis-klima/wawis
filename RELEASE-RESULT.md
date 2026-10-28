@@ -1,13 +1,14 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.61 — ikona ekranu początkowego WAWIS (PWA), oczekuje na zielony CI oraz potwierdzenie po deployu na iPhonie.
+- 13.90 — w przygotowaniu, NO-GO do zakończenia pełnego modułu serwisowego.
 
 ## Zakres
-- Dodano oddzielną kwadratową ikonę z zaakceptowanym napisem WAWIS i niebieskim pierścieniem.
-- Manifest PWA oraz apple-touch-icon, favicon i shortcut icon wskazują nową ikonę.
-- Dotychczasowe firmowe `public/logo.png` pozostaje nienaruszone. Bez zmian w protokołach, zdjęciach, RLS, auth, PUSH, synchronizacji i backendzie.
+- Administrator mobilny: wyszukiwarka urządzeń, grupa klienta, planowanie wizyty i zmienny przydział serwisantów.
+- Izolowane nowe tabele SQL i RLS; brak migracji na produkcji.
+- Dostęp pracowników do serwisów nie jest uruchomiony.
 
 ## Kontrola
-- Wymagane zielone WAWIS PR checks przed merge, następnie Vercel READY i kontrola prawdziwego dodania na ekran iPhone.
-- Instalacji działającej offline nie usuwać przed upewnieniem się, że ma zsynchronizowane dane.
+- Testy wymagają potwierdzenia rzeczywistym CI i izolowanym PostgreSQL.
+- Podpis PDF, zdjęcia usterek, zakończenie serwisu oraz e-mail/druk są w dalszym etapie.
+- Produkcja pozostaje na 13.88 do pełnego GO.
