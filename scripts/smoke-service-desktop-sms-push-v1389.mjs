@@ -12,20 +12,21 @@ const sql=read('supabase/migrations/20261028233000_service_visit_completed_push_
 const config=read('supabase/config.toml');
 const audit=read('supabase/migrations/20261028234500_service_visit_schedule_audit_v1389.sql');
 assert.match(desktop,/DevicesAndServicesPanel/);
-assert.match(desktop,/serviceRequest=\{requestedServiceSelection\}/);
-assert.match(desktop,/onPlanService=\{handlePlanServiceFromSms\}/);
+assert.doesNotMatch(desktop,/handlePlanServiceFromSms|onPlanService|requestedServiceSelection/,
+  'WAWIS: moduł SMS nie może przekierowywać do planowania serwisu.');
 assert.match(tab,/Katalog urządzeń/);
 assert.match(tab,/Przeglądy serwisowe/);
 assert.match(tab,/DevicesPanel/);
 assert.match(tab,/ServiceAdminPanel/);
 assert.match(tab,/if\(!isAdmin\)return null/);
-assert.match(mobile,/serviceRequest\?\.contractorId/);
-assert.match(mobile,/setSelectedIds\(devices\.some/);
-assert.match(mobile,/setScreen\('plan'\)/);
-assert.match(sms,/onPlanService/);
-assert.match(client,/Zaplanuj przegląd/);
-assert.match(device,/Zaplanuj przegląd/);
-assert.match(device,/device\.contractor_id/);
+assert.match(mobile,/setScreen\('plan'\)/, 'Planowanie pozostaje w module Urządzenia.');
+assert.match(mobile,/Zaplanuj przegląd/);
+for(const [name,src] of [['SmsPanel',sms],['SmsClientDetailsCard',client],['SmsDeviceDetailsCard',device]]){
+  assert.doesNotMatch(src,/Zaplanuj przegląd|Zaplanuj serwis|onPlanService|handlePlanServiceFromSms/,
+    name+': zakaz tworzenia i planowania serwisów z modułu SMS.');
+}
+assert.doesNotMatch(tab,/serviceRequest|onPlanService/);
+assert.doesNotMatch(mobile,/serviceRequest|onPlanService/);
 assert.match(sql,/private\.service_visit_completed_push_events_v1389/);
 assert.match(sql,/new\.status<>'wykonany'/);
 assert.match(sql,/service_visit_completed_webhook/);
