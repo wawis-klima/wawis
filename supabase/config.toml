@@ -22,3 +22,6 @@ verify_jwt = false
 
 [functions.send-protocol-signed-push]
 verify_jwt = false
+
+[functions.send-service-visit-protocol-email]
+verify_jwt = true
