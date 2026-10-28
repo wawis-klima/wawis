@@ -2,7 +2,7 @@
 - PR #442 — status roboczy, NO-GO. Wszystkie funkcje wymagają zamknięcia testów przed wdrożeniem.
 - Wyszukiwarka urządzeń/klientów admina, ręczne planowanie uzgodnionego przeglądu, przydział głównego i dodatkowych pracowników, termin i historia zmian.
 - Per-urządzenie sześć czynności i status sprawne/usterka, obowiązkowe zdjęcia przy usterce, rzeczywisty wykonawca, jeden wspólny PDF z podpisem, archiwum, druk i e-mail ręczny.
-- Admin desktop: katalog bez ingerencji oraz nowa sekcja serwisów; przejście z modułu SMS do planowania, bez automatycznego zakładania zleceń.
+- Admin desktop: katalog bez ingerencji oraz nowa sekcja przeglądów w module Urządzenia. W module SMS nie ma przycisku planowania serwisu ani przekierowania do takiego formularza.
 - Oddzielne tabele, prywatny Storage, RLS admin-only, transakcyjna finalizacja, odrębny push do administratora po zapisie.
 - Nie rusza istniejących montażowych protokołów, zdjęć, faktur ani cyklu przypomnień SMS. Wydanie nadal NO-GO do testów i akceptacji.
 
