@@ -5,6 +5,7 @@ import {
   uploadServiceVisitPhoto,loadStoredServiceProtocol,finalizeSignedServiceVisit,
   openServiceProtocolPdf,printServiceProtocol
 } from '../../modules/service-visit-execution.js';
+import { sendServiceProtocolEmail } from '../../modules/service-visit-email.js';
 import './ServiceAdminPanel.css';
 
 function newDraft(item) {
@@ -137,6 +138,12 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    try {
      if(action==='open') await openServiceProtocolPdf({supabase,record:protocol});
      if(action==='print') await printServiceProtocol({supabase,record:protocol});
+     if(action==='email') {
+       const recipient=visit.client?.email||'';
+       if(!window.confirm('Wyślij podpisany protokół e-mailem do '+recipient+'?'))return;
+       const result=await sendServiceProtocolEmail({supabase,visit,protocol});
+       setMessage(result.alreadySent?'Ta wiadomość była już wcześniej potwierdzona.':'Wysłano protokół na '+result.recipient+'.');
+     }
    }catch(e){setError(e.message||'Operacja na protokole nie powiodła się.');}
    finally{setBusy('');}
  }
@@ -196,7 +203,10 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
        <button type="button" className="btn primary" disabled={Boolean(busy)} onClick={()=>protocolAction('open')}>Otwórz PDF</button>
        <button type="button" className="btn" disabled={Boolean(busy)} onClick={()=>protocolAction('print')}>Drukuj</button>
      </div>
-     <p className="serviceAdminMuted">Wysyłkę e-mail podłączymy do osobnej zabezpieczonej funkcji serwisowej.</p>
+     <button type="button" className="btn serviceAdminWide" disabled={Boolean(busy)} onClick={()=>protocolAction('email')}>
+       Wyślij e-mail klientowi {visit.client?.email?'('+visit.client.email+')':''}
+     </button>
+     <p className="serviceAdminMuted">Wysyłka wyłącznie ręczna. Wysłane dokumenty są zapisywane w historii wysyłek.</p>
    </div> : visit.status==='odwolany'?<div className="card serviceAdminCard">Wizyta odwołana.</div>:<div className="card serviceAdminCard">
      <h3>Potwierdzenie klienta</h3>
      <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>
