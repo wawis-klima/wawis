@@ -1,7 +1,7 @@
 # RELEASE RESULT
 
 ## Wersja
-- 13.90 — w przygotowaniu, NO-GO do zakończenia pełnego modułu serwisowego.
+- 13.89 — w przygotowaniu, NO-GO do zakończenia pełnego modułu serwisowego.
 
 ## Zakres
 - Administrator mobilny: wyszukiwarka urządzeń, grupa klienta, planowanie wizyty i zmienny przydział serwisantów.
