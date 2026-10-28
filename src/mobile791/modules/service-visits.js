@@ -59,12 +59,13 @@ export async function loadAdminServiceVisits({ supabase, contractorId = null }) 
   return data || [];
 }
 
-export async function createAdminServiceVisit({ supabase, contractorId, deviceIds, date, time, notes, technicianId }) {
+export async function createAdminServiceVisit({ supabase, contractorId, deviceIds, date, time, notes, technicianId, operationId }) {
   if (!contractorId || !(Array.isArray(deviceIds) && deviceIds.length) || !date) {
     throw new Error('Wybierz klienta, urządzenie i termin przeglądu.');
   }
   const { data, error } = await supabase.rpc('service_visit_admin_create', {
     p_contractor_id: contractorId,
+    p_operation_id: operationId || crypto.randomUUID(),
     p_device_ids: [...new Set(deviceIds)],
     p_scheduled_date: date,
     p_scheduled_time: time || null,
