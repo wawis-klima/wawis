@@ -9,7 +9,7 @@ Wszystkie zmiany wyłącznie w PR #442; nie scalono i nie wykonano migracji prod
 - Prywatny Storage i serwerowa kontrola plików przed zamknięciem; historia klienta i urządzenia.
 - Otwórz/drukuj protokół (istniejące mechanizmy Phomemo), ręczny e-mail z historią wysyłki.
 - Desktop administrator: istniejący katalog urządzeń zachowany i osobna zakładka przeglądów.
-- Z modułu SMS: ręczne otwarcie formularza umówienia klienta/urządzenia; sam SMS nie tworzy przeglądu.
+- Moduł SMS jest wyłącznie do powiadomień i historii SMS: bez przycisku „Zaplanuj przegląd”, bez przekierowania i bez zakładania zlecenia. Planowanie tylko w „Urządzeniach”.
 - W bazie: historia zmian terminu/statusu i przydziału; PUSH do admina dopiero po realnym zakończeniu.
 - Pracownicy bez dostępu do serwisów (UI i RLS). Dotychczasowy harmonogram SMS bez zmian.
 
