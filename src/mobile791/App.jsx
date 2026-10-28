@@ -50,6 +50,7 @@ const statusGreenImg = "/status-buttons/status-green.png";
 const SmsPanel = lazy(() => import("../components/sms/SmsPanel.jsx"));
 const ContractorsPanel = lazy(() => import("./components/contractors/ContractorsPanel.jsx"));
 const DevicesPanel = lazy(() => import("./components/devices/DevicesPanel.jsx"));
+const ServiceAdminPanel = lazy(() => import("./components/devices/ServiceAdminPanel.jsx"));
 const CalendarPanel = lazy(() => import("./components/calendar/CalendarPanel.jsx"));
 const JobDetailsPanel = lazy(() => import("./components/JobDetailsPanel.jsx"));
 const JobFormModal = lazy(() => import("./components/modals/JobFormModal.jsx"));
@@ -1233,7 +1234,7 @@ export default function App() {
   }, [activeModule, isAdmin]);
 
   useEffect(() => {
-    if ((isAdmin && isMobile && activeModule === "devices") || (!isMobile && activeModule === "pricelist")) {
+    if (!isMobile && activeModule === "pricelist") {
       handleDesktopNavigation("jobs", "orders");
     }
   }, [activeModule, isAdmin, isMobile]);
@@ -1515,6 +1516,8 @@ export default function App() {
                 initialContractors={contractorsCatalogAll}
                 onContractorsLoaded={applyContractorsCatalogSnapshot}
               />
+            ) : activeModule === "devices" && isMobile && isAdmin ? (
+              <ServiceAdminPanel supabase={supabase} isAdmin={isAdmin} userId={sessionUser?.id || ""} />
             ) : activeModule === "devices" ? (
               <DevicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}
