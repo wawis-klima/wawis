@@ -180,6 +180,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
      const draft=drafts[item.id]||newDraft(item);
      const itemPhotos=photos.filter(p=>p.service_visit_device_id===item.id);
      const needPhoto=draft.result==='usterka' && !itemPhotos.length;
+     const mandatoryChecksDone=SERVICE_VISIT_CHECKS.every(({key})=>draft.checklist[key]===true);
      const changed=JSON.stringify(draft)!==JSON.stringify(newDraft(item));
      return <div className="card serviceAdminCard" key={item.id}>
        <h3>Urządzenie {index+1} — {item.model_snapshot||'Klimatyzator'}</h3>
@@ -191,6 +192,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
            onChange={e=>patchDraft(item.id,{checklist:{...draft.checklist,[key]:e.target.checked}})}/>
          <span>{label}</span>
        </label>)}
+       <p className="serviceAdminMuted">Przed zapisaniem wyniku potwierdź wykonanie wszystkich sześciu czynności.</p>
        <div className="serviceAdminSectionTitle">Wynik</div>
        <label className="serviceAdminCheck"><input type="radio" name={'result-'+item.id} checked={draft.result==='sprawne'} disabled={readonly||Boolean(busy)}
           onChange={()=>patchDraft(item.id,{result:'sprawne'})}/> Sprawne, bez zastrzeżeń</label>
@@ -206,7 +208,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
        </label>:null}
        {itemPhotos.map((p,i)=><p className="serviceAdminMuted" key={p.id}>✓ Zdjęcie {i+1} zapisane w systemie ({Math.round(p.file_size_bytes/1024)} KB)</p>)}
        {!readonly?<button type="button" className="btn primary serviceAdminWide"
-         disabled={Boolean(busy)||!draft.result||needPhoto}
+         disabled={Boolean(busy)||!draft.result||needPhoto||!mandatoryChecksDone}
          onClick={()=>saveItem(item)}>
          {busy===item.id?'Zapisuję…':changed?'Zapisz wynik urządzenia':'Zapisz wynik ponownie'}
        </button>:null}
