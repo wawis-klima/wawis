@@ -2,6 +2,8 @@
 -- Nie modyfikuje istniejących services, jobs, devices, SMS ani protokołów montażowych.
 create table if not exists public.service_visits (
   id uuid primary key default gen_random_uuid(),
+  create_operation_id uuid not null unique,
+  create_payload_fingerprint text not null,
   contractor_id uuid not null references public.contractors(id),
   scheduled_date date not null,
   scheduled_time time without time zone,
@@ -139,16 +141,19 @@ create or replace function public.service_visit_admin_create(
   p_scheduled_date date,
   p_scheduled_time time without time zone default null,
   p_notes text default '',
-  p_primary_technician_id uuid default null
+  p_primary_technician_id uuid default null,
+  p_operation_id uuid default null
 ) returns uuid
 language plpgsql security invoker set search_path = ''
 as $$
 declare v_id uuid;
 declare v_selected integer;
+declare v_fingerprint text;
 begin
   if not public.current_user_is_admin() then
     raise exception 'Tylko administrator może umawiać przeglądy';
   end if;
+  if p_operation_id is null then raise exception 'Brak identyfikatora bezpiecznego zapisu'; end if;
   if p_contractor_id is null or not exists(select 1 from public.contractors c where c.id=p_contractor_id) then
     raise exception 'Nie znaleziono klienta';
   end if;
@@ -164,17 +169,29 @@ begin
   if p_primary_technician_id is not null and not exists(
     select 1 from public.profiles p where p.id=p_primary_technician_id and p.role='Pracownik'
   ) then raise exception 'Nieprawidłowy pracownik'; end if;
-  insert into public.service_visits(contractor_id,scheduled_date,scheduled_time,notes,primary_technician_id,created_by)
-  values(p_contractor_id,p_scheduled_date,p_scheduled_time,left(coalesce(p_notes,''),4000),p_primary_technician_id,auth.uid())
+  v_fingerprint:=md5(jsonb_build_object(
+    'contractor',p_contractor_id,'devices',(select array_agg(x order by x) from unnest(p_device_ids) x),
+    'date',p_scheduled_date,'time',p_scheduled_time,
+    'notes',left(coalesce(p_notes,''),4000),'technician',p_primary_technician_id
+  )::text);
+  insert into public.service_visits(create_operation_id,create_payload_fingerprint,contractor_id,scheduled_date,scheduled_time,notes,primary_technician_id,created_by)
+  values(p_operation_id,v_fingerprint,p_contractor_id,p_scheduled_date,p_scheduled_time,left(coalesce(p_notes,''),4000),p_primary_technician_id,auth.uid())
+  on conflict(create_operation_id) do nothing
   returning id into v_id;
+  if v_id is null then
+    select v.id into v_id from public.service_visits v
+      where v.create_operation_id=p_operation_id and v.create_payload_fingerprint=v_fingerprint;
+    if v_id is null then raise exception 'Identyfikator zapisu jest już wykorzystany dla innych danych. Odśwież formularz.'; end if;
+    return v_id;
+  end if;
   insert into public.service_visit_devices(service_visit_id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot)
   select v_id,d.id,d.id,d.model,d.serial_number,d.installation_date
     from public.devices d where d.id=any(p_device_ids) and d.contractor_id=p_contractor_id;
   return v_id;
 end
 $$;
-revoke all on function public.service_visit_admin_create(uuid,uuid[],date,time without time zone,text,uuid) from public, anon;
-grant execute on function public.service_visit_admin_create(uuid,uuid[],date,time without time zone,text,uuid) to authenticated;
+revoke all on function public.service_visit_admin_create(uuid,uuid[],date,time without time zone,text,uuid,uuid) from public, anon;
+grant execute on function public.service_visit_admin_create(uuid,uuid[],date,time without time zone,text,uuid,uuid) to authenticated;
 
 create or replace function public.service_visit_assignment_audit()
 returns trigger language plpgsql security definer set search_path = '' as $$
