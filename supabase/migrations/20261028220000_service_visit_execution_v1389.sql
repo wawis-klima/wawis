@@ -39,6 +39,9 @@ create policy service_visit_photos_admin_insert on public.service_visit_photos
 revoke all on public.service_visit_photos from anon;
 grant select, insert on public.service_visit_photos to authenticated;
 
+-- Rzeczywisty wykonawca czynności, niezależny od planowanego przydziału.
+alter table public.service_visit_devices add column performed_by uuid references public.profiles(id) on delete set null;
+
 -- Wszelkie zmiany wyników i finalizacji przez walidowane funkcje serwera.
 revoke update, delete on public.service_visit_devices from authenticated;
 revoke insert, update, delete on public.service_visit_protocols from authenticated;
@@ -68,7 +71,8 @@ begin
  if length(coalesce(p_notes,''))>4000 then raise exception 'Uwagi są zbyt długie'; end if;
  update public.service_visit_devices
  set checklist=p_checklist,result=p_result,notes=coalesce(p_notes,''),
-     performed_at=case when p_result is not null then coalesce(performed_at,now()) else null end
+     performed_at=case when p_result is not null then coalesce(performed_at,now()) else null end,
+     performed_by=case when p_result is not null then auth.uid() else null end
  where id=p_item_id and service_visit_id=p_visit_id;
  if not found then raise exception 'Urządzenie nie należy do tej wizyty'; end if;
  if p_result is not null then
