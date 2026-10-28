@@ -44,7 +44,7 @@ assert.match(migration,/p\.file_size_bytes>0/);
 assert.match(migration,/p_snapshot->'items'/);
 assert.match(migration,/status='wykonany'/);
 assert.match(migration,/revoke update, delete on public\.service_visits/);
-assert.match(ui,/canvas.*onPointerDown/);
+assert.match(ui,/canvas[\\s\\S]*?onPointerDown/);
 assert.match(ui,/Zakończ przegląd i zapisz PDF/);
 assert.match(ui,/!signed\|\|doneCount===0\|\|unsaved/);
 assert.match(panel,/ServiceExecutionPanel/);
