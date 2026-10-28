@@ -4,6 +4,7 @@ const MODULES = [
   { id: "jobs", label: "Montaże" },
   { id: "contractors", label: "Kontrahenci" },
   { id: "fuel", label: "Paliwo" },
+  { id: "devices", label: "Urządzenia" },
   { id: "pricelist", label: "Cennik" },
 ];
 
