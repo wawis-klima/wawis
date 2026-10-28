@@ -1,0 +1,45 @@
+/* WAWIS SERWIS: te same kolory, ramki i typografia co w istniejącym mobile. */
+.serviceAdminPage{display:grid;gap:10px;min-width:0;padding-bottom:18px;color:#172b45}
+.serviceAdminHeader{padding:4px 1px}
+.serviceAdminHeader h2{margin:0 0 4px;font-size:21px;line-height:1.25;color:#172b45}
+.serviceAdminHeader p{font-size:12px;line-height:1.45;color:#51647c;margin:0}
+.serviceAdminNav{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.serviceAdminNav .btn{min-height:44px;white-space:normal;padding:8px 7px}
+.serviceAdminCard{display:grid;gap:12px;padding:13px!important;min-width:0}
+.serviceAdminCard h3{font-size:17px;line-height:1.3;margin:0;color:#172b45}
+.serviceAdminCard label{display:grid;gap:5px;font-size:13px;font-weight:750;color:#34465f;min-width:0}
+.serviceAdminCard .input{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;font-size:16px}
+.serviceAdminCard textarea.input{min-height:75px}
+.serviceAdminMuted{display:block;font-size:12px!important;line-height:1.45;color:#61738a;font-weight:400;margin:0}
+.serviceAdminStack{display:grid;gap:7px}
+.serviceAdminClientRow,.serviceAdminVisitRow{display:grid;gap:4px;text-align:left;min-height:52px;padding:12px 11px;width:100%;border:1px solid #dce5ef;border-radius:13px;background:#fff;color:#172b45;cursor:pointer;box-sizing:border-box;font:inherit}
+.serviceAdminClientRow strong,.serviceAdminVisitRow strong{font-size:14px;font-weight:800}
+.serviceAdminClientRow span,.serviceAdminVisitRow span{font-size:12px;color:#51647c;line-height:1.35}
+.serviceAdminClientRow small,.serviceAdminVisitRow small{font-size:11px;color:#61738a;line-height:1.35}
+.serviceAdminSectionTitle{font-size:13px;font-weight:850;color:#34465f;border-top:1px solid #e0e8f1;padding-top:11px}
+.serviceAdminDevice{display:flex;gap:7px;align-items:center;border:1px solid #dce5ef;border-radius:12px;padding:10px;background:#fff;min-width:0;box-sizing:border-box;width:100%}
+.serviceAdminDeviceInfo{display:grid;gap:3px;min-width:0;flex:1}
+.serviceAdminDeviceInfo strong{font-size:13px;overflow-wrap:anywhere}
+.serviceAdminDeviceInfo small{font-size:11px;color:#61738a;overflow-wrap:anywhere}
+.serviceAdminCheck{display:flex!important;align-items:center;gap:9px!important;min-height:44px;min-width:0;font-size:12px;font-weight:650}
+.serviceAdminCheck input[type=checkbox]{width:19px;height:19px;flex:0 0 19px;accent-color:#147c87}
+.serviceAdminCheck .serviceAdminDevice{flex:1}
+.serviceAdminTwoFields{display:grid;grid-template-columns:1fr 1fr;gap:9px;min-width:0}
+.serviceAdminTwoFields>*{min-width:0}
+.serviceAdminExtras{border:1px solid #dce5ef;border-radius:12px;padding:7px 10px;display:grid;gap:2px;min-width:0}
+.serviceAdminExtras legend{font-size:12px;font-weight:750;color:#34465f;padding:0 4px}
+.serviceAdminExtras .serviceAdminCheck{font-size:12px;font-weight:500}
+.serviceAdminWide{width:100%;min-height:44px;justify-content:center}
+.serviceAdminNotice{border:1px solid #c4e5d6;border-radius:11px;background:#f0fbf5;color:#126b4f;padding:10px 12px;font-size:12px;line-height:1.45}
+.serviceAdminPage a{color:#176b85;word-break:break-word}
+@media(max-width:700px){
+  /* 5 zakładek tylko admin. Pracownik zachowuje dawny rząd 3 zakładek. */
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin {
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  }
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherBtn {
+    font-size:clamp(9px,2.5vw,11px) !important;
+    letter-spacing:-.4px !important;
+    min-height:44px !important;
+  }
+}
