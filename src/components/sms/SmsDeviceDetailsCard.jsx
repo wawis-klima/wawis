@@ -18,7 +18,7 @@ const DEVICE_ROWS = [
   ['Źródło', (device) => (device.target_type === 'device' ? 'Katalog urządzeń' : 'Montaż')],
 ];
 
-export default function SmsDeviceDetailsCard({ device, onClose }) {
+export default function SmsDeviceDetailsCard({ device, onClose, onPlanService }) {
   if (!device) return null;
 
   return (
@@ -29,6 +29,9 @@ export default function SmsDeviceDetailsCard({ device, onClose }) {
           <div className="muted smsClientDetailsSubtitle">{renderValue(device.serial_number)} · {renderValue(device.model)}</div>
         </div>
         <div className="smsClientDetailsActions">
+          {onPlanService && device.contractor_id ? <button type="button" className="btn primary" onClick={() => onPlanService(device)}>
+            Zaplanuj przegląd
+          </button> : null}
           <button type="button" className="btn secondary smsClientDetailsCloseBtn" onClick={onClose}>
             Zamknij podgląd
           </button>
