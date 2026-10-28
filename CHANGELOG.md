@@ -1,4 +1,5 @@
-## 13.89 — PR #442 (robocza, NO-GO)
+## 13.89
+- PR #442 — status roboczy, NO-GO. Wszystkie funkcje wymagają zamknięcia testów przed wdrożeniem.
 - Wyszukiwarka urządzeń/klientów admina, ręczne planowanie uzgodnionego przeglądu, przydział głównego i dodatkowych pracowników, termin i historia zmian.
 - Per-urządzenie sześć czynności i status sprawne/usterka, obowiązkowe zdjęcia przy usterce, rzeczywisty wykonawca, jeden wspólny PDF z podpisem, archiwum, druk i e-mail ręczny.
 - Admin desktop: katalog bez ingerencji oraz nowa sekcja serwisów; przejście z modułu SMS do planowania, bez automatycznego zakładania zleceń.
