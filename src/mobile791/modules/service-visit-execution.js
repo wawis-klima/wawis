@@ -4,7 +4,7 @@ export const SERVICE_FILES_BUCKET = 'service-visit-files';
 
 export async function loadServiceVisitExecution({ supabase, visitId }) {
   const {data,error}=await supabase.from('service_visits')
-    .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,primary_technician_id,additional_technician_ids,performed_at,completed_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at)')
+    .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,primary_technician_id,additional_technician_ids,performed_at,completed_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at,performed_by)')
     .eq('id',visitId).single();
   if(error) throw error;
   return data;
@@ -71,10 +71,17 @@ export async function finalizeSignedServiceVisit({supabase,visitId,signatureData
     if(item.result)validateServiceResult(item,photos.filter(p=>p.service_visit_device_id===item.id).length);
   });
   const snapshot=makeServiceProtocolSnapshot(visit);
+  const realActorIds=[...new Set((visit.items||[]).filter(item=>item.result).map(item=>item.performed_by).filter(Boolean))];
+  if(!realActorIds.length)throw new Error('Nie udało się ustalić rzeczywistego wykonawcy przeglądu.');
+  const {data:realProfiles,error:profilesError}=await supabase.from('profiles')
+    .select('id,full_name').in('id',realActorIds);
+  if(profilesError)throw profilesError;
+  const names=realActorIds.map(id=>realProfiles?.find(profile=>profile.id===id)?.full_name||'Nieznany wykonawca');
+  if(names.includes('Nieznany wykonawca'))throw new Error('Nie udało się zweryfikować nazwisk wykonawców.');
   const {createServiceVisitPdf}=await import('./service-visit-pdf.js');
   const {orientSignatureForPdf}=await import('./protocol-signature-orientation.js');
   const oriented=await orientSignatureForPdf(signatureDataUrl,'auto');
-  const {pdfBlob,fileName}=await createServiceVisitPdf({snapshot,signatureDataUrl:oriented,technicianNames});
+  const {pdfBlob,fileName}=await createServiceVisitPdf({snapshot,signatureDataUrl:oriented,technicianNames:names});
   if(!(pdfBlob instanceof Blob)||pdfBlob.size===0)throw new Error('Nie udało się utworzyć pliku PDF.');
   if(pdfBlob.size>10485760)throw new Error('Protokół PDF przekracza limit 10 MB.');
   const token=crypto.randomUUID();
