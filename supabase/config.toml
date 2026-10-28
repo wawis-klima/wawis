@@ -25,3 +25,6 @@ verify_jwt = false
 
 [functions.send-service-visit-protocol-email]
 verify_jwt = true
+
+[functions.send-service-visit-completed-push]
+verify_jwt = false # publiczny endpoint przyjmuje wyłącznie jednorazowy, losowy token zdarzenia z DB
