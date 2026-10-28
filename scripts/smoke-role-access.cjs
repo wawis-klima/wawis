@@ -100,7 +100,11 @@ function assertSourceGuards() {
   assert.match(appSource, /isAdmin && isMobile && activeModule === "devices"/);
   assert.ok(/const SmsPanel = lazy\(/.test(appSource) || /import SmsPanel from ".*SmsPanel\.jsx";/.test(appSource));
   assert.ok(/const ContractorsPanel = lazy\(/.test(appSource) || /import ContractorsPanel from ".*ContractorsPanel\.jsx";/.test(appSource));
-  assert.ok(/const DevicesPanel = lazy\(/.test(appSource) || /import DevicesPanel from ".*DevicesPanel\.jsx";/.test(appSource));
+  const combinedDevicesSource = fs.readFileSync(path.join(root, 'src', 'components', 'devices', 'DevicesAndServicesPanel.jsx'), 'utf8');
+  assert.match(appSource, /const DevicesAndServicesPanel = lazy\(/, 'Administrator ma osobny lazy panel katalogu i serwisów.');
+  assert.match(combinedDevicesSource, /const DevicesPanel=lazy\(/, 'Poprzedni katalog urządzeń jest nadal ładowany leniwie.');
+  assert.match(combinedDevicesSource, /if\(!isAdmin\)return null/, 'Pracownicy nie otrzymują widoku urządzeń i serwisów.');
+  assert.match(combinedDevicesSource, /<DevicesPanel/, 'Poprzedni katalog musi pozostać dostępny adminowi.');
   assert.ok(/<Suspense fallback=\{adminModuleFallback\}>/.test(appSource) || /activeModule === "devices"/.test(appSource));
   assert.match(moduleSwitcherSource, /\{ id: "jobs", label: "Montaże" \}/);
   assert.match(moduleSwitcherSource, /\{ id: "contractors", label: "Kontrahenci" \}/);
