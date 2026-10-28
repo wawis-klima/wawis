@@ -227,6 +227,8 @@ values('90000000-0000-4000-8000-000000000001','Clock Fixture','500111222','2021-
 
     current = 'WAWIS 13.89: idempotent visit creation and admin guard in isolated database';
     await db.exec(
+      "create or replace function auth.uid() returns uuid language sql as $fn$ " +
+      "select 'a3890000-0000-4000-8000-000000000004'::uuid $fn$;" +
       "create or replace function public.current_user_is_admin() returns boolean " +
       "language sql stable security definer set search_path = '' as $fn$ select true $fn$;" +
       "insert into public.contractors(id,company_name) values(" +
