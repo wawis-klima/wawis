@@ -8,6 +8,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-admin-header',
     'node scripts/smoke-service-admin-stage1.mjs',
     'node scripts/smoke-service-execution-v1389.mjs',
+    'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',
   ],
