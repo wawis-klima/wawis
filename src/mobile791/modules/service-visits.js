@@ -51,7 +51,7 @@ export async function loadServiceStaff({ supabase }) {
 
 export async function loadAdminServiceVisits({ supabase, contractorId = null }) {
   let request = supabase.from('service_visits')
-    .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,primary_technician_id,additional_technician_ids,performed_at,completed_at,created_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at)')
+    .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,primary_technician_id,additional_technician_ids,performed_at,completed_at,created_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at,performed_by)')
     .order('scheduled_date',{ascending:false}).limit(150);
   if (contractorId) request = request.eq('contractor_id', contractorId);
   const { data,error } = await request;
