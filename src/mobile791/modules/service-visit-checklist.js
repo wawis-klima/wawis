@@ -24,6 +24,7 @@ export function makeServiceProtocolSnapshot(visit) {
     checklist:item.checklist || {},
     notes:item.notes || '',
     performed_at:item.performed_at || null,
+    performed_by:item.performed_by || null,
   }));
   if (!items.some(item=>item.result)) throw new Error('Zapisz wynik przynajmniej jednego urządzenia.');
   if (items.some(item=>item.result && !['sprawne','usterka'].includes(item.result))) {
