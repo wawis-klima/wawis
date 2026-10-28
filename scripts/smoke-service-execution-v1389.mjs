@@ -42,6 +42,7 @@ assert.match(migration,/p_pdf_path/);
 assert.match(migration,/storage\.objects/);
 assert.match(migration,/p\.file_size_bytes>0/);
 assert.match(migration,/p_snapshot->'items'/);
+assert.match(migration,/performed_by=case when p_result is not null then auth.uid\(\)/);
 assert.match(migration,/status='wykonany'/);
 assert.match(migration,/revoke update, delete on public\.service_visits/);
 assert.match(ui,/canvas[\\s\\S]*?onPointerDown/);
