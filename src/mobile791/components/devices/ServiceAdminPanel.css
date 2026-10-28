@@ -38,8 +38,13 @@
     grid-template-columns:repeat(5,minmax(0,1fr)) !important;
   }
   .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherBtn {
-    font-size:clamp(9px,2.5vw,11px) !important;
+    font-size:clamp(10px,2.5vw,11px) !important;
     letter-spacing:-.4px !important;
     min-height:44px !important;
+  }
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherLabel {
+    display:inline-block;
+    transform:scaleX(.82);
+    transform-origin:center;
   }
 }
