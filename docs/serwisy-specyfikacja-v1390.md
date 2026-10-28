@@ -19,7 +19,7 @@
 10. Bez nowego kalendarza. Lista zaplanowanych wizyt w module Urządzenia, uporządkowana wg daty.
 
 ## Status etapu 1 — PR #441
-W gałęzi release/v13.90 przygotowano wyszukiwarkę admina, planowanie i zmiany przydziałów oraz odrębny model SQL. Nie scalono i nie uruchomiono migracji live. Etap NIE MA jeszcze finalizacji, zdjęć, podpisu serwisowego, PDF, ręcznego e-maila, wydruku, push, integracji SMS przyciskiem ani widoku pracownika. Nie przyjmować żadnego domyślnego „wykonania” zlecenia bez faktycznie zapisanych danych. RELEASE-GATE.ready_for_main = false.
+W gałęzi release/v13.89 przygotowano wyszukiwarkę admina, planowanie i zmiany przydziałów oraz odrębny model SQL. Nie scalono i nie uruchomiono migracji live. Etap NIE MA jeszcze finalizacji, zdjęć, podpisu serwisowego, PDF, ręcznego e-maila, wydruku, push, integracji SMS przyciskiem ani widoku pracownika. Nie przyjmować żadnego domyślnego „wykonania” zlecenia bez faktycznie zapisanych danych. RELEASE-GATE.ready_for_main = false.
 
 ## Warunki GO przed produkcją
 - Migrację odtwarza czysta, izolowana baza PostgreSQL testowa; testy RLS z rolą admin/pracownik/anon, żaden pracownik nie odczytuje danych etapu 1.
@@ -29,4 +29,4 @@ W gałęzi release/v13.90 przygotowano wyszukiwarkę admina, planowanie i zmiany
 - Testy finalizacji: dokument 1 PDF dla 1/2/5 urządzeń, wykonanie częściowe, 6 czynności, usterka bez zdjęcia blokuje, usterka ze zdjęciem dopiero po Storage upload >0 B, podpis wymagany, utrata sieci w każdej fazie, brak fałszywego sukcesu, ponowienie bez duplikatu, PDF można pobrać/wydrukować/wysłać ręcznie.
 - Historia: przegląd późny nie przesuwa dat kolejnego SMS, wynik 1 wizyty powiązany z każdym urządzeniem, identyfikator i snapshot przetrwają odświeżenie i ewentualny reimport.
 - Istniejące E2E: montaże, zdjęcia/offline, protokoły, faktury, SMS, WebKit, wersja/cache/Closure Gate. Na realnym iPhonie administratora test 15–20 min.
-- Produkcja Vercel tylko poprzez squash PR release/v13.90 → main po zielonych bramkach. Weryfikacja READY i public/app-version.json == numer wydania. Nie kasować lokalnej PWA ani zdjęć pracowników.
+- Produkcja Vercel tylko poprzez squash PR release/v13.89 → main po zielonych bramkach. Weryfikacja READY i public/app-version.json == numer wydania. Nie kasować lokalnej PWA ani zdjęć pracowników.
