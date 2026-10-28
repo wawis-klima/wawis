@@ -68,6 +68,9 @@ begin
    exists(select 1 from jsonb_object_keys(p_checklist) k
       where k not in ('filtry','jednostka_wewnetrzna','skropliny','jednostka_zewnetrzna','dzialanie','instalacja'))
  then raise exception 'Nieprawidłowa lista czynności'; end if;
+ if p_result is not null and ((select count(*) from jsonb_each(p_checklist))<>6
+  or exists(select 1 from jsonb_each(p_checklist) k where k.value <> 'true'::jsonb))
+ then raise exception 'Przed zapisaniem wyniku potwierdź wszystkie sześć czynności kontrolnych'; end if;
  if length(coalesce(p_notes,''))>4000 then raise exception 'Uwagi są zbyt długie'; end if;
  update public.service_visit_devices
  set checklist=p_checklist,result=p_result,notes=coalesce(p_notes,''),
@@ -151,6 +154,11 @@ begin
  into v_devices,v_done,v_tstamp
  from public.service_visit_devices where service_visit_id=p_visit_id;
  if v_devices=0 or v_done=0 then raise exception 'Nie wykonano żadnego przeglądu urządzenia'; end if;
+ if exists(select 1 from public.service_visit_devices d
+   where d.service_visit_id=p_visit_id and d.result is not null
+     and ((select count(*) from jsonb_each(d.checklist))<>6
+       or exists(select 1 from jsonb_each(d.checklist) k where k.value <> 'true'::jsonb)))
+ then raise exception 'Nie wszystkie obowiązkowe kontrole urządzeń zostały potwierdzone'; end if;
  if jsonb_array_length(p_snapshot->'items')<>v_devices then
    raise exception 'PDF nie obejmuje wszystkich urządzeń z wizyty';
  end if;
