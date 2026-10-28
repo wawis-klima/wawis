@@ -220,6 +220,10 @@ test.describe('@mobile release visual iPhone', () => {
       await page.setViewportSize({ width, height: 780 });
       await inspectMenuRow(page, names);
     }
+    await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
+    await expect(page.locator('.serviceAdminPage')).toBeVisible();
+    await expect(page.locator('#service-device-search')).toBeVisible();
+    await expect(page.locator('.serviceAdminClientRow')).toHaveCount(0);
     await page.locator('.moduleSwitcherMobile button[data-module="pricelist"]').click();
     await expect(page.locator('.wawisPricelist')).toBeVisible();
     await expect(page.locator('.wawisPricelistIntro')).toHaveCount(0);
