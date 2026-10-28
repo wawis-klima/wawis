@@ -18,8 +18,11 @@
 9. Podpisany PDF zawsze archiwizować; e-mail wysyła się ręcznie z istniejącego mechanizmu po potwierdzeniu poprawnego adresu. Można otworzyć i wydrukować dokument tak jak protokół montażowy, w tym z iPhone/Phomemo. Powiadomienie push do administratora po potwierdzeniu finalizacji.
 10. Bez nowego kalendarza. Lista zaplanowanych wizyt w module Urządzenia, uporządkowana wg daty.
 
-## Status etapu 1 — PR #441
-W gałęzi release/v13.89 przygotowano wyszukiwarkę admina, planowanie i zmiany przydziałów oraz odrębny model SQL. Nie scalono i nie uruchomiono migracji live. Etap NIE MA jeszcze finalizacji, zdjęć, podpisu serwisowego, PDF, ręcznego e-maila, wydruku, push, integracji SMS przyciskiem ani widoku pracownika. Nie przyjmować żadnego domyślnego „wykonania” zlecenia bez faktycznie zapisanych danych. RELEASE-GATE.ready_for_main = false.
+## Status wydania 13.89 — PR #442 (NO-GO)
+W gałęzi release/v13.89 przygotowano kod realizacji wizyt, zdjęć, podpisanego PDF, drukowania, ręcznej wysyłki e-mail, admin PUSH, historii zmian terminu, wyszukiwarki, przejścia z SMS i desktopowej zakładki przeglądów.
+Pracownicy celowo nadal nie mają dostępu, a wspólna lista podejmowania serwisów zostanie dopiero w późniejszym wydaniu po zgodzie właściciela.
+Nie uruchomiono nowych funkcji ani migracji na produkcji. Nie zakończono pełnego testu E2E całej ścieżki ani testu iPhone/Phomemo. RELEASE-GATE.ready_for_main pozostaje false. Nie traktować samego przygotowania kodu jako zakończenia wdrożenia.
+
 
 ## Warunki GO przed produkcją
 - Migrację odtwarza czysta, izolowana baza PostgreSQL testowa; testy RLS z rolą admin/pracownik/anon, żaden pracownik nie odczytuje danych etapu 1.
