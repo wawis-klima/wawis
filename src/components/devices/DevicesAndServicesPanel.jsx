@@ -1,14 +1,11 @@
-import React,{lazy,Suspense,useEffect,useState} from 'react';
+import React,{lazy,Suspense,useState} from 'react';
 const DevicesPanel=lazy(()=>import('./DevicesPanel.jsx'));
 const ServiceAdminPanel=lazy(()=>import('../../mobile791/components/devices/ServiceAdminPanel.jsx'));
 
 export default function DevicesAndServicesPanel({
- supabase,isAdmin,userId,serviceRequest=null,...deviceProps
+ supabase,isAdmin,userId,...deviceProps
 }) {
  const [tab,setTab]=useState('catalog');
- useEffect(()=>{
-   if(serviceRequest?.contractorId) setTab('services');
- },[serviceRequest?.requestKey,serviceRequest?.contractorId]);
  if(!isAdmin)return null;
  return <div className="desktopModuleShell">
    <div className="card premiumCard" style={{display:'flex',flexWrap:'wrap',gap:8,padding:12,marginBottom:10}}>
@@ -19,7 +16,7 @@ export default function DevicesAndServicesPanel({
      {tab==='catalog' ?
        <DevicesPanel {...deviceProps} supabase={supabase} isAdmin={isAdmin} userId={userId}/>
        : <ServiceAdminPanel key={userId||'admin'} supabase={supabase} isAdmin={isAdmin}
-          userId={userId} serviceRequest={serviceRequest}/>}
+          userId={userId}/>}
    </Suspense>
  </div>;
 }
