@@ -6,6 +6,7 @@ const GROUPS = {
   'ui-fast-mobile': [
     'npm run test:smoke:mobile-style-bootstrap',
     'npm run test:smoke:mobile-admin-header',
+    'node scripts/smoke-service-admin-stage1.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',
   ],
@@ -113,6 +114,7 @@ const GROUPS = {
     'node scripts/codex-acceptance-fakturownia-v1269.mjs',
     'node scripts/smoke-fakturownia-direct-id-v1353.mjs',
     'npm run test:smoke:admin-worker',
+    'node scripts/smoke-service-admin-stage1.mjs',
     'npm run test:smoke:desktop-only',
     'npm run test:smoke:supabase-grants',
     'npm run test:smoke:destructive-rls',
