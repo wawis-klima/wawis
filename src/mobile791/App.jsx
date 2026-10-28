@@ -1249,7 +1249,7 @@ export default function App() {
         return;
       }
 
-      const contractorsNeeded = showModal || activeModule === 'contractors' || activeModule === 'devices';
+      const contractorsNeeded = showModal || activeModule === 'contractors' || (activeModule === 'devices' && !isMobile);
       if (!contractorsNeeded) return;
 
       try {
@@ -1264,7 +1264,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin, showModal, activeModule]);
+  }, [isAdmin, showModal, activeModule, isMobile]);
 
   const visibleJobs = useMemo(() => getVisibleJobs({
     jobs,
