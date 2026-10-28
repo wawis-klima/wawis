@@ -5,6 +5,7 @@ import {
   updateAdminServiceAssignment, formatServiceDate,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
+import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
 
 const TODAY = () => {
   const now = new Date();
@@ -158,9 +159,8 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if (!currentVisit || !window.confirm('Odwołać tę umówioną wizytę? Historia zlecenia pozostanie zapisana.')) return;
     setBusy(true);setError('');
     try {
-      const {error:writeError}=await supabase.from('service_visits')
-        .update({status:'odwolany'}).eq('id',currentVisit.id);
-      if(writeError) throw writeError;
+      const {data,error:writeError}=await supabase.rpc('service_visit_admin_cancel',{p_visit_id:currentVisit.id});
+      if(writeError || data!==true) throw writeError || new Error('Nie potwierdzono odwołania.');
       const rows=await loadVisits(currentVisit.contractor_id);
       setCurrentVisit(rows.find(v=>v.id===currentVisit.id) || {...currentVisit,status:'odwolany'});
       setMessage('Wizyta została odwołana.');
@@ -172,6 +172,15 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const completed=useMemo(()=>visits.filter(v=>v.status==='wykonany'),[visits]);
 
   if (!isAdmin) return null;
+  if (screen==='execution' && currentVisit) return <ServiceExecutionPanel
+    supabase={supabase} visitId={currentVisit.id}
+    staffNames={[staffName(currentVisit.primary_technician_id),...(currentVisit.additional_technician_ids||[]).map(staffName)].filter(s=>s && s!=='Bez przydziału')}
+    onBack={()=>{setScreen('detail');setMessage('');}}
+    onFinalized={async (finished)=>{
+      const rows=await loadVisits(currentVisit.contractor_id);
+      setCurrentVisit(rows.find(v=>v.id===finished.id)||currentVisit);
+    }}/>
+  ;
   return <section className="serviceAdminPage" aria-label="Urządzenia i przeglądy — administrator">
     <header className="serviceAdminHeader">
       <h2>Urządzenia</h2>
@@ -264,6 +273,9 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         <span className="serviceAdminMuted">Status: {currentVisit.status==='odwolany'?'Odwołany':currentVisit.status==='wykonany'?'Wykonany':currentVisit.primary_technician_id?'Przydzielony':'Zaplanowany, bez przydziału'}</span>
         <div className="serviceAdminSectionTitle">Urządzenia ({currentVisit.items?.length||0})</div>
         {currentVisit.items?.map(d=><DeviceItem device={d} key={d.id}/>)}
+        {currentVisit.status!=='odwolany'?<button className="btn primary serviceAdminWide" type="button" onClick={()=>{setScreen('execution');setError('');setMessage('');}}>
+          {currentVisit.status==='wykonany'?'Zobacz podpisany protokół':'Wykonaj przegląd'}
+        </button>:null}
         <div className="serviceAdminSectionTitle">Termin i przydział</div>
         <div className="serviceAdminTwoFields">
           <label>Data <input type="date" className="input" value={date} required onChange={e=>setDate(e.target.value)} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
@@ -286,7 +298,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           <button className="btn primary serviceAdminWide" type="submit" disabled={busy}>{busy?'Zapisuję…':'Zapisz zmiany'}</button>
           <button className="btn serviceAdminWide" type="button" onClick={cancelVisit} disabled={busy}>Odwołaj wizytę</button>
         </> : null}
-        <p className="serviceAdminMuted">Podpis i zakończenie przeglądu dodamy w kolejnym, osobno testowanym etapie. Do tego czasu żadnego zlecenia nie da się błędnie oznaczyć jako wykonanego.</p>
+        <p className="serviceAdminMuted">Podpisany protokół jest wymagany do zakończenia. Montaże i terminarz SMS pozostają bez zmian.</p>
       </form>
     </> : null}
   </section>;
