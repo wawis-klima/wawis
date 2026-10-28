@@ -97,7 +97,11 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    ctx.setTransform(scale,0,0,scale,0,0);ctx.strokeStyle='#142a3a';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
    setSigned(false);
  }
- function patchDraft(id,change) { setDrafts(old=>({...old,[id]:{...old[id],...change}})); }
+ function patchDraft(id,change) {
+   // Zmiana zakresu po podpisie unieważnia złożony podpis; klient musi podpisać nowe dane.
+   if(signed) clearSignature();
+   setDrafts(old=>({...old,[id]:{...old[id],...change}}));
+ }
  async function saveItem(item) {
    const draft=drafts[item.id];
    if(!draft)return;
@@ -111,6 +115,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
  }
  async function attachPhoto(item,file) {
    if(!file)return;
+   if(signed)clearSignature();
    setBusy('photo:'+item.id);setError('');setMessage('');
    try {
      await uploadServiceVisitPhoto({supabase,visitId,itemId:item.id,file});
