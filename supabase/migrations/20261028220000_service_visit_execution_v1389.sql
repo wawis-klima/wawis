@@ -100,7 +100,7 @@ grant execute on function public.service_visit_admin_cancel(uuid) to authenticat
 -- Czynności wykonane, ale brak podpisu klienta: zachowujemy prawdziwe wyniki i daty.
 create or replace function public.service_visit_admin_wait_for_signature(p_visit_id uuid)
 returns boolean language plpgsql security definer set search_path = ''
-as $
+as $$
 declare v_status text; v_done integer;
 begin
  if not public.current_user_is_admin() then raise exception 'Brak uprawnień'; end if;
@@ -114,7 +114,7 @@ begin
  update public.service_visits set status='oczekuje_na_podpis',updated_at=now() where id=p_visit_id;
  return true;
 end
-$;
+$$;
 revoke all on function public.service_visit_admin_wait_for_signature(uuid) from public,anon;
 grant execute on function public.service_visit_admin_wait_for_signature(uuid) to authenticated;
 
