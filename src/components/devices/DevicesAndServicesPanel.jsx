@@ -1,4 +1,5 @@
-import React,{lazy,Suspense,useState} from 'react';
+import React,{Suspense,useState} from 'react';
+import {lazy} from '../../modules/lazy-safe.jsx';
 const DevicesPanel=lazy(()=>import('./DevicesPanel.jsx'));
 const ServiceAdminPanel=lazy(()=>import('../../mobile791/components/devices/ServiceAdminPanel.jsx'));
 
