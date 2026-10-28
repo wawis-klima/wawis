@@ -7,7 +7,7 @@
 - Zachować identyczne kolory, typografię, interakcje, logo, druk Phomemo, wysyłkę i podpis jak WAWIS. Wersja mobilna kompaktowa, bez drugiej linii menu.
 
 ## Proces biznesowy
-1. SMS jest wyłącznie powiadomieniem. Nie tworzy automatycznie serwisu.
+1. SMS jest wyłącznie powiadomieniem i historią wysyłek. Nie tworzy ani nie planuje serwisu, nie zawiera przycisku planowania ani przekierowania do formularza. Przeglądy tworzy się wyłącznie w module „Urządzenia”, po telefonicznym ustaleniu terminu.
 2. Klient oddzwania; administrator wyszukuje go (początkowo pusta lista, wynik dopiero po wpisaniu fragmentu nazwiska, firmy, telefonu, adresu, modelu, numeru seryjnego). Jedna karta klienta, wiele urządzeń.
 3. Administrator wybiera urządzenia, umówioną datę, ewentualną godzinę i uwagi; opcjonalnie przydziela jednego głównego i dodatkowych pracowników. Zlecenie może być całkowicie nieprzydzielone.
 4. Termin oraz pracowników można zmieniać bez tworzenia kolejnego zlecenia. Zapisywać kto, kiedy i co zmienił, w tym pierwotny i rzeczywisty skład. Przełożenie terminu nie zmienia harmonogramu przypomnień.
@@ -19,7 +19,7 @@
 10. Bez nowego kalendarza. Lista zaplanowanych wizyt w module Urządzenia, uporządkowana wg daty.
 
 ## Status wydania 13.89 — PR #442 (NO-GO)
-W gałęzi release/v13.89 przygotowano kod realizacji wizyt, zdjęć, podpisanego PDF, drukowania, ręcznej wysyłki e-mail, admin PUSH, historii zmian terminu, wyszukiwarki, przejścia z SMS i desktopowej zakładki przeglądów.
+W gałęzi release/v13.89 przygotowano kod realizacji wizyt, zdjęć, podpisanego PDF, drukowania, ręcznej wysyłki e-mail, admin PUSH, historii zmian terminu, wyszukiwarki i desktopowej zakładki przeglądów. Planowanie jest wyłącznie w „Urządzeniach”. W module SMS NIE wolno umieszczać przycisku „Zaplanuj przegląd”, „Zaplanuj serwis” ani nawigacji prowadzącej do utworzenia wizyty.
 Pracownicy celowo nadal nie mają dostępu, a wspólna lista podejmowania serwisów zostanie dopiero w późniejszym wydaniu po zgodzie właściciela.
 Nie uruchomiono nowych funkcji ani migracji na produkcji. Nie zakończono pełnego testu E2E całej ścieżki ani testu iPhone/Phomemo. RELEASE-GATE.ready_for_main pozostaje false. Nie traktować samego przygotowania kodu jako zakończenia wdrożenia.
 
