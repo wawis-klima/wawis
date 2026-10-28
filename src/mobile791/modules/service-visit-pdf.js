@@ -76,7 +76,8 @@ export async function createServiceVisitPdf({snapshot,signatureDataUrl,technicia
   textLines(doc,[snapshot.phone,snapshot.email].filter(Boolean).join(' | ')||'-',M+75,y+66,455,9);
   y+=113;
   y=page(doc,y,65);section(doc,'Wykonanie usługi',y);y+=14;card(doc,y,48);
-  textLines(doc,`Data zaplanowana: ${formatDate(snapshot.scheduled_date)}`,M+6,y+18,500);
+  const performedDates=snapshot.items.filter(item=>item.result&&item.performed_at).map(item=>item.performed_at).sort();
+  textLines(doc,`Data wykonania: ${formatDate(performedDates[0])}  |  Termin umówiony: ${formatDate(snapshot.scheduled_date)}`,M+6,y+18,500);
   textLines(doc,`Serwisanci: ${technicianNames.filter(Boolean).join(', ')||'Administrator'}`,M+6,y+35,500);
   y+=67;
   for(let i=0;i<snapshot.items.length;i++){
