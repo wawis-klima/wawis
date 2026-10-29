@@ -30,3 +30,16 @@ END;
 $fn$;
 REVOKE ALL ON FUNCTION public.service_visit_admin_trash_v1394(uuid) FROM public,anon;
 GRANT EXECUTE ON FUNCTION public.service_visit_admin_trash_v1394(uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.service_visit_admin_restore_v1394(p_visit_id uuid)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $fn$
+BEGIN
+  IF NOT public.current_user_is_admin() THEN RAISE EXCEPTION 'Tylko administrator może przywracać serwisy'; END IF;
+  UPDATE public.service_visits SET deleted_at=NULL,deleted_by=NULL,updated_at=now()
+  WHERE id=p_visit_id AND deleted_at IS NOT NULL;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Serwis nie znajduje się w koszu'; END IF;
+  RETURN true;
+END;
+$fn$;
+REVOKE ALL ON FUNCTION public.service_visit_admin_restore_v1394(uuid) FROM public,anon;
+GRANT EXECUTE ON FUNCTION public.service_visit_admin_restore_v1394(uuid) TO authenticated;
