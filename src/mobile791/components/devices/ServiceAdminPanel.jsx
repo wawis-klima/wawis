@@ -6,6 +6,7 @@ import {
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
+import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
 const TODAY = () => {
   const now = new Date();
@@ -139,6 +140,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if (typeof navigator !== 'undefined' && navigator.onLine===false) {setError('Brak internetu. Zaplanuj przegląd po przywróceniu połączenia.');return;}
     setBusy(true);setError('');
     try {
+      if (selectedTechnicians.includes(userId)) await refreshServicePushContext({supabase,userId});
       const assignment=resolveServiceAssignment({staff,selectedIds:selectedTechnicians});
       const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:assignment.createTechnicianId,operationId:createOperationId});
       // RPC przy tworzeniu przyjmuje tylko Pracowników. Administrator (Piotr Wasik) jest
@@ -171,6 +173,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         .update({scheduled_date:date,scheduled_time:time || null,notes:notes.trim().slice(0,4000)})
         .eq('id',currentVisit.id).select('id').single();
       if(writeError || !data) throw writeError || new Error('Brak potwierdzenia zmiany terminu.');
+      if (selectedTechnicians.includes(userId)) await refreshServicePushContext({supabase,userId});
       await updateAdminServiceAssignment({supabase,visitId:currentVisit.id,technicianId:selectedTechnicians[0] || null,additionalTechnicianIds:selectedTechnicians.slice(1)});
       const rows=await loadVisits(currentVisit.contractor_id);
       setCurrentVisit(rows.find(v=>v.id===currentVisit.id) || currentVisit);
@@ -196,7 +199,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
 
   if (!isAdmin) return null;
   if (screen==='execution' && currentVisit) return <ServiceExecutionPanel
-    supabase={supabase} visitId={currentVisit.id}
+    supabase={supabase} userId={userId} visitId={currentVisit.id}
     staffNames={[staffName(currentVisit.primary_technician_id),...(currentVisit.additional_technician_ids||[]).map(staffName)].filter(s=>s && s!=='Bez przydziału')}
     onBack={()=>{setScreen('detail');setMessage('');}}
     onFinalized={async (finished)=>{
