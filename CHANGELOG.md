@@ -1,3 +1,7 @@
+## 13.96
+- Serwis / Kosz: jeden standardowy komunikat „Czy na pewno chcesz trwale usunąć ten serwis?”, bez wpisywania USUN i bez drugiego potwierdzenia.
+- Zachowana autoryzacja administratora, sprawdzenie stanu Kosza, bezpieczny zakres usunięcia wizyty, zdjęć, podpisu i PDF. Dodatkowy test anulowania i potwierdzenia, błędu backendu oraz odmowy usunięcia aktywnej wizyty.
+
 ## 13.95
 - Serwis / Kosz: administrator może nieodwracalnie usunąć wskazany serwis z plikami PDF, podpisem, zdjęciami i historią, po wpisaniu USUN i ponownym potwierdzeniu.
 - Usuwanie tylko przez Edge Function z autoryzacją i dwuetapową weryfikacją zakresu Storage; oryginalne urządzenia, inne serwisy, montaże i SMS bez zmian.

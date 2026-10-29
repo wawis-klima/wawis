@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import vm from 'node:vm';
 import fs from 'node:fs';
 import {SERVICE_VISIT_CHECKS,normalizeServiceChecklist,makeServiceProtocolSnapshot,validateServiceResult} from '../src/mobile791/modules/service-visit-checklist.js';
 import {saveServiceDeviceResult,uploadServiceVisitPhoto} from '../src/mobile791/modules/service-visit-execution.js';
@@ -129,8 +130,49 @@ assert.match(permanentEdge,/admin\.storage\.from\("service-visit-files"\)\.remov
 assert.match(permanentEdge,/remaining\.length!==0/,'Storage empty verification before database delete');
 assert.match(permanentEdge,/service_visit_purge_finalize_v1395/);
 assert.match(permanentConfig,/\[functions\.purge-service-visit\]\s+verify_jwt = true/);
-assert.match(adminService,/word!=='USUN'/);
-assert.match(adminService,/window\.confirm\('OSTATECZNE POTWIERDZENIE/);
+const purgeSource=adminService.match(/  async function purgeVisit\(\) \{[\s\S]*?\n  \}\n  function startPlan\(\)/)?.[0].replace(/\n  function startPlan\(\)$/, '');
+assert.ok(purgeSource,'Real purge handler is present');
+assert.doesNotMatch(purgeSource,/window\.prompt|USUN/,'Never require typed confirmation');
+assert.equal((purgeSource.match(/window\.confirm\(/g)||[]).length,1,'Exactly one confirmation');
+async function exercisePurge({confirmAnswer,deletedAt='2026-10-29T13:00:00Z',fail=false}) {
+  const confirmations=[],calls=[],state=[];
+  const scope={
+    busy:false,
+    currentVisit:{id:'visit-fixture',deleted_at:deletedAt,client:{company_name:'Klient testowy'},scheduled_date:'2026-10-29'},
+    window:{confirm(message){confirmations.push(message);return confirmAnswer;},prompt(){throw Error('Typed confirmation forbidden');}},
+    formatServiceDate: value=>value,
+    supabase:{},
+    purgeAdminServiceVisit:async({visitId})=>{calls.push(visitId);if(fail)throw Error('Backend niedostępny');},
+    loadAdminServiceVisits:async({trashed})=>{assert.equal(trashed,true);return [];},
+    setBusy:value=>state.push(['busy',value]),
+    setError:value=>state.push(['error',value]),
+    setMessage:value=>state.push(['message',value]),
+    setCurrentVisit:value=>state.push(['visit',value]),
+    setVisits:value=>state.push(['visits',value]),
+    setScreen:value=>state.push(['screen',value]),
+    friendlyError:err=>err.message,
+  };
+  await vm.runInNewContext(purgeSource+'; purgeVisit()',scope);
+  return {confirmations,calls,state};
+}
+const refused=await exercisePurge({confirmAnswer:false});
+assert.equal(refused.confirmations.length,1,'Cancel still shows just one question');
+assert.deepEqual(refused.calls,[],'Cancel must never invoke destructive backend');
+assert.deepEqual(refused.state,[],'Cancel must leave UI state untouched');
+const accepted=await exercisePurge({confirmAnswer:true});
+assert.equal(accepted.confirmations.length,1,'Confirm must not show second question');
+assert.match(accepted.confirmations[0],/Czy na pewno chcesz trwale usunąć ten serwis\?/);
+assert.match(accepted.confirmations[0],/Klient testowy/);
+assert.deepEqual(accepted.calls,['visit-fixture'],'Confirmed action invokes backend exactly once');
+assert.equal(accepted.state.find(([key])=>key==='screen')?.[1],'trash','Returns to trash after deletion');
+assert.equal(accepted.state.at(-1)?.[1],false,'Busy cleared after successful deletion');
+const active=await exercisePurge({confirmAnswer:true,deletedAt:null});
+assert.deepEqual(active.confirmations,[],'Not-trashed service is not eligible');
+assert.deepEqual(active.calls,[],'Not-trashed service cannot be purged');
+const failed=await exercisePurge({confirmAnswer:true,fail:true});
+assert.equal(failed.calls.length,1,'Failed backend is not retried without user action');
+assert.ok(failed.state.some(([key,value])=>key==='error'&&value==='Backend niedostępny'));
+assert.equal(failed.state.at(-1)?.[1],false,'Busy cleared on failure');
 assert.match(adminService,/onClick=\{purgeVisit\}/);
 assert.match(adminServiceApi,/supabase\.functions\.invoke\('purge-service-visit'/);
-console.log('WAWIS 13.95 permanent trash purge security regression: PASS');
+console.log('WAWIS 13.96 single-confirm trash purge regression: PASS');
