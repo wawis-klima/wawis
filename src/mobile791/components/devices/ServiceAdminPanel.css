@@ -33,19 +33,49 @@
 .serviceAdminNotice{border:1px solid #c4e5d6;border-radius:11px;background:#f0fbf5;color:#126b4f;padding:10px 12px;font-size:12px;line-height:1.45}
 .serviceAdminPage a{color:#176b85;word-break:break-word}
 @media(max-width:700px){
-  /* 5 zakładek tylko admin. Pracownik zachowuje dawny rząd 3 zakładek. */
+  /* 13.90: czytelne, niesciskane zakładki. Pięć nazw admina w jednym rzędzie. */
   .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin {
-    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    display:flex !important;
+    grid-template-columns:none !important;
+    justify-content:space-between !important;
+    align-items:stretch !important;
+    gap:clamp(1px,.4vw,3px) !important;
+    padding:5px !important;
+    min-height:55px !important;
+    border-radius:20px !important;
   }
   .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherBtn {
-    font-size:clamp(10px,2.5vw,11px) !important;
-    letter-spacing:-.4px !important;
+    flex:0 1 auto !important;
+    width:auto !important;
+    min-width:0 !important;
     min-height:44px !important;
+    padding:7px clamp(1px,.6vw,3px) !important;
+    font-size:clamp(11px,3.55vw,15px) !important;
+    font-weight:700 !important;
+    line-height:1.1 !important;
+    letter-spacing:-.02em !important;
+    border-radius:15px !important;
+    overflow:visible !important;
+    white-space:nowrap !important;
+    text-overflow:clip !important;
   }
   .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherLabel {
-    display:inline-block;
-    transform:scaleX(.82);
-    transform-origin:center;
+    display:block !important;
+    width:auto !important;
+    max-width:none !important;
+    font-size:inherit !important;
+    transform:none !important;
+    letter-spacing:inherit !important;
+    overflow:visible !important;
+    white-space:nowrap !important;
+  }
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherBtn.active {
+    box-shadow:0 3px 9px rgba(16,35,72,.14) !important;
+  }
+  /* Pracownik ma tylko trzy zakładki, więc nie potrzebuje zmniejszania czcionki. */
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isWorker .moduleSwitcherBtn {
+    font-size:clamp(14px,3.85vw,16px) !important;
+    font-weight:700 !important;
   }
 }
 

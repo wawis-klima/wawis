@@ -1,3 +1,8 @@
+## 13.90
+- Górne menu mobilne: administrator ma pięć pełnych nazw zakładek w jednym rzędzie, bez poziomego ściskania tekstu; wielkość czcionki skaluje się zależnie od szerokości iPhone'a. Kafelek aktywny pozostaje czytelny, ale nie dominuje nad resztą menu.
+- Pracownik: trzy zakładki, większy tekst. Strefy dotykowe mają nadal minimum 44 px.
+- Test regresyjny E2E dla szerokości 320, 360, 375, 390 i 430 px. Wyłącznie CSS/menu, bez zmian logiki aplikacji, danych, serwisu, SMS i backendu.
+
 ## 13.89
 - PR #442 — status roboczy, NO-GO. Wszystkie funkcje wymagają zamknięcia testów przed wdrożeniem.
 - Wyszukiwarka urządzeń/klientów admina, ręczne planowanie uzgodnionego przeglądu, przydział głównego i dodatkowych pracowników, termin i historia zmian.

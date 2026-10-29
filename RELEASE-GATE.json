@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.89",
-  "scope": "full",
-  "release_branch": "release/v13.89",
+  "version": "13.90",
+  "scope": "mobile",
+  "release_branch": "release/v13.90",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Odczyt produkcji Vercel 13.88 i schema Supabase; bez modyfikacji live."
+    "notes": "Weryfikacja kodu main 13.89; zmiana tylko mobilnego menu."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.89",
+    "source_branch": "release/v13.90",
     "ready_for_main": true,
-    "status": "GO_AFTER_GREEN_CI_OWNER_APPROVED_PRODUCTION_FIELD_TEST",
+    "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Wymagany po ewentualnym wdrożeniu 13.89.",
-    "notes": "Właściciel wyraźnie zatwierdził wdrożenie i samodzielny test na fizycznym iPhonie po produkcyjnym wydaniu 13.89."
+    "evidence_source": "Kontrola po wdrożeniu Vercel.",
+    "notes": "Sprawdź pięć pełnych nazw zakładek na fizycznym iPhonie."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "ServiceAdminPanel.jsx, osobne tabele serwisowe i RLS tylko admin.",
-    "release_ci": "Warunek scalenia: pełne zielone WAWIS PR checks / targeted-checks + Closure Gate, WebKit, nameplate, photo queue na aktualnym SHA.",
-    "postdeploy": "Weryfikacja Vercel READY i app-version.json=13.89 oraz test administratora na fizycznym iPhonie po wydaniu."
+    "code": "Mobilne menu; wyłącznie style i E2E, bez zmian logiki.",
+    "release_ci": "WAWIS PR checks / targeted-checks i Closure Gate, testy E2E szerokości 320–430 px.",
+    "postdeploy": "Vercel READY, app-version.json=13.90, pięć nazw bez zwijania na iPhonie."
   }
 }
