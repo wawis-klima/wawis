@@ -3,6 +3,7 @@ import {
   searchServiceDevices, groupServiceSearchResults, loadServiceCustomerDevices,
   loadServiceStaff, loadAdminServiceVisits, createAdminServiceVisit,
   updateAdminServiceAssignment, resolveServiceAssignment, formatServiceDate,
+  trashAdminServiceVisit, restoreAdminServiceVisit,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
@@ -126,6 +127,41 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     catch(err) {setError(friendlyError(err));}
     finally {setBusy(false);}
   }
+  async function showTrash() {
+    setBusy(true);setError('');setMessage('');
+    try {
+      const rows=await loadAdminServiceVisits({supabase,trashed:true});
+      setVisits(rows);
+      setScreen('trash');
+    }catch(err){setError(friendlyError(err));}
+    finally{setBusy(false);}
+  }
+  async function trashVisit() {
+    if(!currentVisit || busy || currentVisit.deleted_at)return;
+    const label=currentVisit.client?.company_name||customer?.name||'klienta';
+    if(!window.confirm('Przenieść przegląd klienta '+label+' do kosza?\n\nWizyta zniknie z list. Podpisany PDF i zdjęcia zostaną zachowane i można będzie przywrócić wizytę.'))return;
+    setBusy(true);setError('');setMessage('');
+    try {
+      await trashAdminServiceVisit({supabase,visitId:currentVisit.id});
+      setCurrentVisit(null);
+      await loadVisits(null);
+      setScreen('visits');
+      setMessage('Przegląd przeniesiony do kosza. Możesz go przywrócić.');
+    }catch(err){setError(friendlyError(err));}
+    finally{setBusy(false);}
+  }
+  async function restoreVisit() {
+    if(!currentVisit?.deleted_at || busy)return;
+    setBusy(true);setError('');setMessage('');
+    try {
+      await restoreAdminServiceVisit({supabase,visitId:currentVisit.id});
+      setCurrentVisit(null);
+      await loadVisits(null);
+      setScreen('visits');
+      setMessage('Przegląd przywrócony z kosza.');
+    }catch(err){setError(friendlyError(err));}
+    finally{setBusy(false);}
+  }
   function startPlan() {
     setSelectedIds([]);setCreateOperationId(crypto.randomUUID());setDate(TODAY());setTime('');setNotes('');
     setSelectedTechnicians([]);setError('');setMessage('');setScreen('plan');
@@ -165,7 +201,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   }
   async function saveAssignment(event) {
     event.preventDefault();
-    if(!currentVisit) return;
+    if(!currentVisit || currentVisit.deleted_at)return;
     setBusy(true);setError('');setMessage('');
     try {
       // Przydział, nowy termin i notatki są niezależne od harmonogramu SMS.
@@ -182,7 +218,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     finally{setBusy(false);}
   }
   async function cancelVisit() {
-    if (!currentVisit || !window.confirm('Odwołać tę umówioną wizytę? Historia zlecenia pozostanie zapisana.')) return;
+    if (!currentVisit || currentVisit.deleted_at || !window.confirm('Odwołać tę umówioną wizytę? Historia zlecenia pozostanie zapisana.')) return;
     setBusy(true);setError('');
     try {
       const {data,error:writeError}=await supabase.rpc('service_visit_admin_cancel',{p_visit_id:currentVisit.id});
@@ -215,6 +251,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     <nav className="serviceAdminNav" aria-label="Widoki serwisu">
       <button type="button" className={screen==='search'?'btn primary':'btn'} onClick={()=>{setScreen('search');setError('');setMessage('');}}>Szukaj</button>
       <button type="button" className={screen==='visits'?'btn primary':'btn'} disabled={busy} onClick={showVisits}>Zaplanowane</button>
+      <button type="button" className={screen==='trash'?'btn primary':'btn'} disabled={busy} onClick={showTrash}>Kosz</button>
     </nav>
     {error ? <div className="errorBox" role="alert">{error}</div> : null}
     {message ? <div className="serviceAdminNotice" role="status">{message}</div> : null}
@@ -282,8 +319,16 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           {formatServiceDate(v.scheduled_date)} · {v.client?.company_name||'Klient'}
         </button>)}</> : null}
     </div> : null}
+    {screen==='trash' ? <div className="card serviceAdminCard">
+      <h3>Kosz przeglądów ({visits.length})</h3>
+      <p className="serviceAdminMuted">Tylko administrator może przywrócić serwis. Podpisane dokumenty pozostają bez zmian.</p>
+      {visits.length ? visits.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
+        <strong>{formatServiceDate(v.scheduled_date)} · {v.client?.company_name||'Klient'}</strong>
+        <span>Status sprzed usunięcia: {v.status} · Przywróć w szczegółach</span>
+      </button>) : <p className="serviceAdminMuted">Kosz jest pusty.</p>}
+    </div> : null}
     {screen==='detail' && currentVisit ? <>
-      <button className="btn" type="button" onClick={()=>customer?.id===currentVisit.contractor_id?setScreen('customer'):showVisits()}>← Wróć</button>
+      <button className="btn" type="button" onClick={()=>currentVisit.deleted_at?showTrash():customer?.id===currentVisit.contractor_id?setScreen('customer'):showVisits()}>← Wróć</button>
       <form className="card serviceAdminCard" onSubmit={saveAssignment}>
         <h3>Przegląd — {formatServiceDate(currentVisit.scheduled_date)}</h3>
         <strong>{currentVisit.client?.company_name||customer?.name||'Klient'}</strong>
@@ -291,13 +336,13 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         <span className="serviceAdminMuted">Status: {currentVisit.status==='odwolany'?'Odwołany':currentVisit.status==='wykonany'?'Wykonany':currentVisit.primary_technician_id?'Przydzielony':'Zaplanowany, bez przydziału'}</span>
         <div className="serviceAdminSectionTitle">Urządzenia ({currentVisit.items?.length||0})</div>
         {currentVisit.items?.map(d=><DeviceItem device={d} key={d.id}/>)}
-        {currentVisit.status!=='odwolany'?<button className="btn primary serviceAdminWide" type="button" onClick={()=>{setScreen('execution');setError('');setMessage('');}}>
+        {!currentVisit.deleted_at&&currentVisit.status!=='odwolany'?<button className="btn primary serviceAdminWide" type="button" onClick={()=>{setScreen('execution');setError('');setMessage('');}}>
           {currentVisit.status==='wykonany'?'Zobacz podpisany protokół':'Wykonaj przegląd'}
         </button>:null}
         <div className="serviceAdminSectionTitle">Termin i przydział</div>
         <ServiceDateTimeFields date={date} time={time} onDateChange={setDate} onTimeChange={setTime}
-          disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/>
-        <fieldset className="serviceAdminExtras" disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}>
+          disabled={Boolean(currentVisit.deleted_at)||currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/>
+        <fieldset className="serviceAdminExtras" disabled={Boolean(currentVisit.deleted_at)||currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}>
           <legend>Pracownicy</legend>
           {staff.map(p=><label key={p.id} className="serviceAdminCheck">
             <input type="checkbox" checked={selectedTechnicians.includes(p.id)}
@@ -305,12 +350,14 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
             <span>{p.full_name||'Pracownik'}</span>
           </label>)}
         </fieldset>
-        <label>Uwagi <textarea className="input" value={notes} rows={3} onChange={e=>setNotes(e.target.value)} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
-        {currentVisit.status!=='odwolany'&&currentVisit.status!=='wykonany' ? <>
+        <label>Uwagi <textarea className="input" value={notes} rows={3} onChange={e=>setNotes(e.target.value)} disabled={Boolean(currentVisit.deleted_at)||currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
+        {!currentVisit.deleted_at&&currentVisit.status!=='odwolany'&&currentVisit.status!=='wykonany' ? <>
           <button className="btn primary serviceAdminWide" type="submit" disabled={busy}>{busy?'Zapisuję…':'Zapisz zmiany'}</button>
           <button className="btn serviceAdminWide" type="button" onClick={cancelVisit} disabled={busy}>Odwołaj wizytę</button>
         </> : null}
-        <p className="serviceAdminMuted">Podpisany protokół jest wymagany do zakończenia. Montaże i terminarz SMS pozostają bez zmian.</p>
+        {currentVisit.deleted_at ? <button type="button" className="btn primary serviceAdminWide" onClick={restoreVisit} disabled={busy}>Przywróć serwis z kosza</button> :
+          <button type="button" className="btn serviceAdminWide serviceAdminDanger" onClick={trashVisit} disabled={busy}>Usuń serwis</button>}
+        <p className="serviceAdminMuted">Usunięcie przenosi serwis do kosza; podpisane PDF i zdjęcia pozostają bezpieczne. Montaże i SMS bez zmian.</p>
       </form>
     </> : null}
   </section>;
