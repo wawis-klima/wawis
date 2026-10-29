@@ -69,10 +69,11 @@ export function resolveServiceAssignment({ staff = [], selectedIds = [] }) {
   };
 }
 
-export async function loadAdminServiceVisits({ supabase, contractorId = null }) {
+export async function loadAdminServiceVisits({ supabase, contractorId = null, trashed = false }) {
   let request = supabase.from('service_visits')
-    .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,primary_technician_id,additional_technician_ids,performed_at,completed_at,created_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at,performed_by)')
+    .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,deleted_at,deleted_by,primary_technician_id,additional_technician_ids,performed_at,completed_at,created_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at,performed_by)')
     .order('scheduled_date',{ascending:false}).limit(150);
+  request = trashed ? request.not('deleted_at','is',null) : request.is('deleted_at',null);
   if (contractorId) request = request.eq('contractor_id', contractorId);
   const { data,error } = await request;
   if (error) throw error;
@@ -112,4 +113,16 @@ export function formatServiceDate(date) {
   if (!date) return 'Brak daty';
   const parts = String(date).slice(0,10).split('-');
   return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : String(date);
+}
+
+/** Only the server-side administrator RPC can archive or restore visits. */
+export async function trashAdminServiceVisit({supabase,visitId}) {
+  const {data,error}=await supabase.rpc('service_visit_admin_trash',{p_visit_id:visitId});
+  if(error || data!==true)throw error || new Error('Nie potwierdzono przeniesienia do kosza.');
+  return true;
+}
+export async function restoreAdminServiceVisit({supabase,visitId}) {
+  const {data,error}=await supabase.rpc('service_visit_admin_restore',{p_visit_id:visitId});
+  if(error || data!==true)throw error || new Error('Nie potwierdzono przywrócenia serwisu.');
+  return true;
 }

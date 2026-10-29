@@ -9,6 +9,7 @@ import { sendServiceProtocolEmail } from '../../modules/service-visit-email.js';
 import './ServiceAdminPanel.css';
 import './mobile-device-wizard.css';
 import AppModal from '../modals/AppModal.jsx';
+import { captureServiceSignature } from '../../modules/service-visit-signature.js';
 import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
 function newDraft(item) {
@@ -145,20 +146,25 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  }
  function confirmSignature() {
    if(!signed || !canvasRef.current)return;
-   setSignatureDataUrl(canvasRef.current.toDataURL('image/png'));
-   setSignatureOpen(false);
-   setMessage('Podpis zatwierdzony. Aby zakończyć, zapisz podpisany protokół.');
+   try {
+     setSignatureDataUrl(captureServiceSignature(canvasRef.current));
+     setSignatureOpen(false);
+     setMessage('Podpis zatwierdzony. Aby zakończyć, zapisz podpisany protokół.');
+   }catch(error){
+     setError(error.message || 'Nie udało się odczytać podpisu.');
+   }
  }
  async function complete() {
    if(!signatureDataUrl){setError('Klient musi podpisać protokół.');return;}
    setBusy('complete');setError('');setMessage('');
    try {
-     await refreshServicePushContext({supabase,userId});
+     const pushReady=await refreshServicePushContext({supabase,userId});
      const record=await finalizeSignedServiceVisit({
        supabase,visitId,signatureDataUrl,technicianNames:staffNames
      });
      setProtocol(record);const info=await loadServiceVisitExecution({supabase,visitId});setVisit(info);
-     setMessage('Podpisany protokół zapisany na serwerze. Przegląd zakończony.');
+     setMessage(pushReady ? 'Podpisany protokół zapisany na serwerze. Przegląd zakończony.' :
+       'Przegląd zakończony i PDF zapisany. Uwaga: ten iPhone nie potwierdził gotowości PUSH. Sprawdź powiadomienia aplikacji i diagnostykę PUSH.');
      onFinalized?.(info);
    }catch(e){setError(e.message||'Nie udało się zakończyć przeglądu. Dane nie zostały oznaczone jako wykonane.');}
    finally{setBusy('');}

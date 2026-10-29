@@ -1,3 +1,9 @@
+## 13.94
+- Serwis: administrator może przenieść dowolny przegląd do kosza i przywrócić go bez utraty podpisu, zdjęć i PDF. Użytkownik Pracownik nie ma tego uprawnienia.
+- Podpis w serwisie: kadrowanie do rzeczywistych linii jak we wcześniej sprawdzonym protokole montażowym i blokowanie zatwierdzania pustej bitmapy.
+- PUSH: ponowna bezpieczna synchronizacja subskrypcji i kontekstu iPhone'a z wykorzystaniem istniejących funkcji WAWIS. Ostrzeżenie, gdy telefon nie potwierdzi gotowości; wysłanie 201 nie oznacza wyświetlenia.
+- Testy regresyjne kosza, podpisu i izolacji PUSH; nie zmienia istniejących protokołów ani SMS.
+
 ## 13.93
 - Serwis: przycisk „Zrób podpis” otwiera osobny ekran podpisu taki jak w montażach, z „Wyczyść podpis” i „Zatwierdź podpis”.
 - Nowe serwisowe PDF: wyłącznie inicjały rzeczywistych serwisantów (np. PW); zapisanych protokołów nie zmieniamy.

@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.93",
+  "version": "13.94",
   "scope": "full",
-  "release_branch": "release/v13.93",
+  "release_branch": "release/v13.94",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zbadano istniejący PUSH: HTTP 201 / received, brak displayed; Guard SW pozostaje bez osłabiania. Protokół z montażu porównany."
+    "notes": "Porównano podpis/PUSH serwisu ze sprawdzonymi mechanizmami montaży. PUSH 201+received bez displayed, PNG obecny, PDF z niewidocznym podpisem."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.93",
+    "source_branch": "release/v13.94",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_PUSH_AND_SIGNATURE",
-    "evidence_source": "Test produkcyjny po wdrożeniu Edge Function + migracji",
-    "notes": "Push assigned i completed wymaga potwierdzenia wyświetlenia (displayed_at) na rzeczywistym iPhonie; nie wolno uznać HTTP 201 za pokazany PUSH."
+    "result": "EXTERNAL_IPHONE_SIGNATURE_AND_PUSH",
+    "evidence_source": "Fizyczny iPhone po wersji 13.94",
+    "notes": "Czytelny podpis na PDF; displayed_at dla push; kosz i przywracanie tylko admin."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "13.93: osobny ekran podpisu serwisu, inicjały wykonawców na nowych PDF, durable assignment push outbox z tokenami.",
-    "release_ci": "WAWIS PR checks / Closure Gate + testy WebKit E2E; test smoke SQL, push i podpisów.",
-    "postdeploy": "Vercel READY, app-version.json 13.93; Supabase deployed Edge Function + schema migration; test dostarczenia i wyświetlenia PUSH."
+    "code": "13.94: kadrowanie podpisu, push lifecycle resync, kosz/restore",
+    "release_ci": "PR checks, Closure Gate, WebKit i smoke",
+    "postdeploy": "Vercel READY, app-version.json=13.94, migracja kosza i test iPhone"
   }
 }

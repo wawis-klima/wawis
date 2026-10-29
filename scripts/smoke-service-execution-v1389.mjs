@@ -80,3 +80,26 @@ assert.match(assignmentEdge,/get_service_visit_assignment_push_event_v1393/);
 assert.match(assignmentEdge,/service_visit_assignment_webhook/);
 assert.match(assignmentEdge,/sendPushToUsers/);
 assert.match(assignmentEdge,/stillAssigned/);
+
+const trashSql=read('supabase/migrations/20261029112500_service_visit_admin_trash_v1394.sql');
+const serviceModule=read('src/mobile791/modules/service-visits.js');
+const signatureModule=await import('../src/mobile791/modules/service-visit-signature.js');
+assert.match(trashSql,/public.current_user_is_admin\(\)/,'Only administrator can archive/restore');
+assert.match(trashSql,/revoke all on function public.service_visit_admin_trash/,'Trash RPC is deny-by-default');
+assert.match(trashSql,/deleted_at=now\(\)/);
+assert.match(trashSql,/deleted_at=null/,'Restore is non-destructive');
+assert.doesNotMatch(trashSql,/delete from public\.service_visits|delete from storage\.objects/i);
+assert.match(serviceModule,/request = trashed \? request\.not\('deleted_at','is',null\)/);
+assert.match(panel,/onClick=\{trashVisit\}/);
+assert.match(panel,/onClick=\{restoreVisit\}/);
+assert.match(ui,/captureServiceSignature\(canvasRef.current\)/);
+const img=new Uint8ClampedArray(80*40*4).fill(255);
+for(let y=8;y<=23;y++)for(let x=12;x<=60;x++){
+ const off=(y*80+x)*4;img[off]=25;img[off+1]=35;img[off+2]=55;
+}
+assert.deepEqual(signatureModule.getSignatureInkBounds(img,80,40),{left:12,top:8,right:60,bottom:23});
+assert.equal(signatureModule.getSignatureInkBounds(new Uint8ClampedArray(80*40*4).fill(255),80,40),null);
+const pushHealth=read('src/mobile791/modules/service-visit-push-health.js');
+assert.match(pushHealth,/getPushStatus/,'Push context uses existing WAWIS lifecycle API');
+assert.match(pushHealth,/readPushServiceWorkerContext/);
+console.log('WAWIS 13.94 trash, signature, push health regression: PASS');
