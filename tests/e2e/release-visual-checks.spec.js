@@ -215,6 +215,39 @@ test.describe('@mobile release visual iPhone', () => {
     return info;
   }
 
+  test('13.91: data i godzina przeglądu mieszczą się w dwóch kolumnach na iPhonie', async ({ page }) => {
+    await login(page, ADMIN);
+    await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
+    await expect(page.locator('.serviceAdminPage')).toBeVisible();
+    await page.locator('.serviceAdminPage').evaluate(el => {
+      const card=document.createElement('div');
+      card.id='service-fields-geometry';
+      card.className='card serviceAdminCard';
+      card.innerHTML='<div class="serviceAdminTwoFields serviceAdminDateTimeFields"><label>Data<input class="input" type="date" value="2026-10-29"></label><label>Godzina<input class="input" type="time" value="07:02"></label></div>';
+      el.appendChild(card);
+    });
+    for(const width of [320,360,375,390,430]){
+      await page.setViewportSize({width,height:780});
+      const result=await page.locator('#service-fields-geometry').evaluate(card=>{
+        const row=card.querySelector('.serviceAdminDateTimeFields');
+        const bounds=row.getBoundingClientRect();
+        const cells=[...row.querySelectorAll('label')].map(label=>{
+          const b=label.getBoundingClientRect(),i=label.querySelector('input').getBoundingClientRect();
+          return {left:b.left,right:b.right,inputLeft:i.left,inputRight:i.right,font:parseFloat(getComputedStyle(label.querySelector('input')).fontSize)};
+        });
+        return {left:bounds.left,right:bounds.right,viewport:document.documentElement.clientWidth,cells};
+      });
+      expect(result.left).toBeGreaterThanOrEqual(0);
+      expect(result.right).toBeLessThanOrEqual(result.viewport+1);
+      expect(result.cells).toHaveLength(2);
+      for(const cell of result.cells){
+        expect(cell.inputLeft).toBeGreaterThanOrEqual(cell.left-1);
+        expect(cell.inputRight).toBeLessThanOrEqual(cell.right+1);
+        expect(cell.font).toBeLessThanOrEqual(14.1);
+      }
+    }
+  });
+
   test('administrator ma pięć pełnych nazw przycisków w jednym rzędzie na wąskim iPhonie', async ({ page }) => {
     await login(page, ADMIN);
     const names = ['Montaże','Kontrahenci','Paliwo','Urządzenia','Cennik'];
