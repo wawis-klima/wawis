@@ -15,3 +15,18 @@ $fn$;
 DROP TRIGGER IF EXISTS trg_guard_trashed_service_visit_v1394 ON public.service_visits;
 CREATE TRIGGER trg_guard_trashed_service_visit_v1394 BEFORE UPDATE ON public.service_visits
 FOR EACH ROW EXECUTE FUNCTION private.guard_trashed_service_visit_v1394();
+
+CREATE OR REPLACE FUNCTION public.service_visit_admin_trash_v1394(p_visit_id uuid)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $fn$
+BEGIN
+  IF NOT public.current_user_is_admin() THEN RAISE EXCEPTION 'Tylko administrator może usuwać serwisy'; END IF;
+  UPDATE public.service_visits SET deleted_at=now(),deleted_by=auth.uid(),updated_at=now()
+  WHERE id=p_visit_id AND deleted_at IS NULL;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Serwis nie istnieje lub znajduje się w koszu'; END IF;
+  UPDATE private.service_visit_assignment_push_events_v1393
+  SET processed_at=coalesce(processed_at,now()) WHERE visit_id=p_visit_id AND processed_at IS NULL;
+  RETURN true;
+END;
+$fn$;
+REVOKE ALL ON FUNCTION public.service_visit_admin_trash_v1394(uuid) FROM public,anon;
+GRANT EXECUTE ON FUNCTION public.service_visit_admin_trash_v1394(uuid) TO authenticated;
