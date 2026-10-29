@@ -145,7 +145,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       // przypisywany po utworzeniu przez dozwolony zapis administratora (RLS), bez migracji.
       if (assignment.needsAssignmentUpdate) {
         try { await updateAdminServiceAssignment({supabase,visitId,technicianId:assignment.primaryId,additionalTechnicianIds:assignment.additionalIds}); }
-        catch(err) { setMessage('Zlecenie zapisane, ale nie udało się przypisać dodatkowych osób: '+friendlyError(err)); }
+        catch(err) { setMessage('Zlecenie zapisane, ale nie udało się zapisać przydziału pracowników: '+friendlyError(err)); }
       }
       const rows=await loadVisits(customer.id);
       const newVisit=rows.find(v=>v.id===visitId);
