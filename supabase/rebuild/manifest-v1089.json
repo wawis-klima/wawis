@@ -128,7 +128,8 @@
     "supabase/migrations/20261028220000_service_visit_execution_v1389.sql",
     "supabase/migrations/20261028223000_service_visit_protocol_email_v1389.sql",
     "supabase/migrations/20261028233000_service_visit_completed_push_v1389.sql",
-    "supabase/migrations/20261028234500_service_visit_schedule_audit_v1389.sql"
+    "supabase/migrations/20261028234500_service_visit_schedule_audit_v1389.sql",
+    "supabase/migrations/20261029103000_service_visit_assignment_push_v1393.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
