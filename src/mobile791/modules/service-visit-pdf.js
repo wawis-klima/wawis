@@ -2,6 +2,7 @@ import regularFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans.ttf?url';
 import boldFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url';
 import { PROTOCOL_COMPANY, getContainedSignatureSize } from './job-protocol-pdf.js';
 import { SERVICE_VISIT_CHECKS } from './service-visit-checklist.js';
+import { serviceTechnicianInitials } from './service-visit-initials.js';
 
 const FONT = 'DejaVuSans';
 const M = 20, W = 595.28, H = 841.89, RIGHT = W-M, CONTENT = W-2*M;
@@ -78,7 +79,7 @@ export async function createServiceVisitPdf({snapshot,signatureDataUrl,technicia
   y=page(doc,y,65);section(doc,'Wykonanie usługi',y);y+=14;card(doc,y,48);
   const performedDates=snapshot.items.filter(item=>item.result&&item.performed_at).map(item=>item.performed_at).sort();
   textLines(doc,`Data wykonania: ${formatDate(performedDates[0])}  |  Termin umówiony: ${formatDate(snapshot.scheduled_date)}`,M+6,y+18,500);
-  textLines(doc,`Serwisanci: ${technicianNames.filter(Boolean).join(', ')||'Administrator'}`,M+6,y+35,500);
+  textLines(doc,`Serwisanci: ${serviceTechnicianInitials(technicianNames)}`,M+6,y+35,500);
   y+=67;
   for(let i=0;i<snapshot.items.length;i++){
     const item=snapshot.items[i];

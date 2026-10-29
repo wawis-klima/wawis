@@ -109,3 +109,6 @@
 .serviceAdminCard input[type=file]{font-size:13px;min-width:0}
 .serviceAdminCard input[type=radio]{width:19px;height:19px;accent-color:#147c87;flex:0 0 19px}
 .serviceAdminPage button:disabled,.serviceAdminPage input:disabled{opacity:.55;cursor:not-allowed}
+
+/* WAWIS 13.93: podpis serwisu korzysta z pełnoekranowego modalu montażowego. */
+.serviceAdminPage .serviceAdminSignatureWrap{display:none}

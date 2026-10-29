@@ -7,11 +7,14 @@ import {
 } from '../../modules/service-visit-execution.js';
 import { sendServiceProtocolEmail } from '../../modules/service-visit-email.js';
 import './ServiceAdminPanel.css';
+import './mobile-device-wizard.css';
+import AppModal from '../modals/AppModal.jsx';
+import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
 }
-export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBack,onFinalized}) {
+export default function ServiceExecutionPanel({supabase,userId,visitId,staffNames,onBack,onFinalized}) {
  const [visit,setVisit]=useState(null);
  const [photos,setPhotos]=useState([]);
  const [drafts,setDrafts]=useState({});
@@ -20,6 +23,8 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
  const [error,setError]=useState('');
  const [message,setMessage]=useState('');
  const [signed,setSigned]=useState(false);
+ const [signatureOpen,setSignatureOpen]=useState(false);
+ const [signatureDataUrl,setSignatureDataUrl]=useState('');
  const canvasRef=useRef(null);
  const drawingRef=useRef(false);
  const lastPointRef=useRef(null);
@@ -50,17 +55,18 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
 
  useEffect(()=>{
    const canvas=canvasRef.current;
-   if(!canvas || protocol)return;
+   if(!canvas || protocol || !signatureOpen)return;
    const bounds=canvas.getBoundingClientRect();
    const scale=Math.min(3,Math.max(1,window.devicePixelRatio||1));
    canvas.width=Math.round(Math.max(240,bounds.width)*scale);
-   canvas.height=Math.round(164*scale);
+   const canvasHeight=Math.max(164,Math.round(bounds.height || 164));
+   canvas.height=Math.round(canvasHeight*scale);
    const ctx=canvas.getContext('2d');
    ctx.scale(scale,scale);
-   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width/scale,164);
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width/scale,canvasHeight);
    ctx.strokeStyle='#142a3a';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
    setSigned(false);
- },[visitId,visit?.id,protocol]);
+ },[visitId,visit?.id,protocol,signatureOpen]);
 
  function canvasPoint(e) {
    const rect=canvasRef.current.getBoundingClientRect();
@@ -98,8 +104,9 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    setSigned(false);
  }
  function patchDraft(id,change) {
-   // Zmiana zakresu po podpisie unieważnia złożony podpis; klient musi podpisać nowe dane.
-   if(signed) clearSignature();
+   // Każda zmiana wyniku/zakresu unieważnia wcześniej zatwierdzony podpis.
+   if(signatureDataUrl)setSignatureDataUrl('');
+   if(signed && signatureOpen) clearSignature();
    setDrafts(old=>({...old,[id]:{...old[id],...change}}));
  }
  async function saveItem(item) {
@@ -115,7 +122,8 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
  }
  async function attachPhoto(item,file) {
    if(!file)return;
-   if(signed)clearSignature();
+   if(signatureDataUrl)setSignatureDataUrl('');
+   if(signed && signatureOpen)clearSignature();
    setBusy('photo:'+item.id);setError('');setMessage('');
    try {
      await uploadServiceVisitPhoto({supabase,visitId,itemId:item.id,file});
@@ -135,12 +143,19 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    }catch(e){setError(e.message||'Nie udało się zapisać statusu oczekiwania na podpis.');}
    finally{setBusy('');}
  }
+ function confirmSignature() {
+   if(!signed || !canvasRef.current)return;
+   setSignatureDataUrl(canvasRef.current.toDataURL('image/png'));
+   setSignatureOpen(false);
+   setMessage('Podpis zatwierdzony. Aby zakończyć, zapisz podpisany protokół.');
+ }
  async function complete() {
-   if(!signed || !canvasRef.current){setError('Klient musi podpisać protokół.');return;}
+   if(!signatureDataUrl){setError('Klient musi podpisać protokół.');return;}
    setBusy('complete');setError('');setMessage('');
    try {
+     await refreshServicePushContext({supabase,userId});
      const record=await finalizeSignedServiceVisit({
-       supabase,visitId,signatureDataUrl:canvasRef.current.toDataURL('image/png'),technicianNames:staffNames
+       supabase,visitId,signatureDataUrl,technicianNames:staffNames
      });
      setProtocol(record);const info=await loadServiceVisitExecution({supabase,visitId});setVisit(info);
      setMessage('Podpisany protokół zapisany na serwerze. Przegląd zakończony.');
@@ -228,19 +243,38 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    </div> : visit.status==='odwolany'?<div className="card serviceAdminCard">Wizyta odwołana.</div>:<div className="card serviceAdminCard">
      <h3>Potwierdzenie klienta</h3>
      <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>
-     <div className="serviceAdminSignatureWrap">
-       <canvas ref={canvasRef} className="serviceAdminSignature"
-         aria-label="Pole podpisu klienta" onPointerDown={beginStroke}
-         onPointerMove={moveStroke} onPointerUp={endStroke} onPointerCancel={endStroke}/>
-     </div>
-     <button type="button" className="btn" disabled={Boolean(busy)} onClick={clearSignature}>Wyczyść podpis</button>
+     <button type="button" className="btn primary serviceAdminWide" disabled={Boolean(busy)||doneCount===0||unsaved}
+       onClick={()=>{setError('');setMessage('');setSigned(false);setSignatureOpen(true);}}>
+       {signatureDataUrl?'✍ Podpisz ponownie':'✍ Zrób podpis'}
+     </button>
+     {signatureDataUrl?<p className="serviceAdminMuted">✓ Podpis klienta został zatwierdzony.</p>:null}
      {visit.status!=='oczekuje_na_podpis' ? <button type="button" className="btn serviceAdminWide"
        disabled={Boolean(busy)||doneCount===0||unsaved}
        onClick={waitForSignature}>{busy==='waiting'?'Zapisuję…':'Zapisz — oczekuje na podpis klienta'}</button> : null}
      <button type="button" className="btn primary serviceAdminWide"
-       disabled={Boolean(busy)||!signed||doneCount===0||unsaved}
+       disabled={Boolean(busy)||!signatureDataUrl||doneCount===0||unsaved}
        onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
      <p className="serviceAdminMuted">Jeśli zmienisz wynik urządzenia, najpierw zapisz go osobno. Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
    </div>}
+   <AppModal open={signatureOpen} onClose={()=>setSignatureOpen(false)}
+     overlayClassName="protocolSignatureOverlay" contentClassName="protocolSignatureModal"
+     closeOnOverlay={false} closeOnEscape lockPagePosition>
+     <div className="protocolSignatureScreen">
+       <div className="protocolSignatureHeader">
+         <button type="button" className="protocolSignatureBack" aria-label="Wróć" onClick={()=>setSignatureOpen(false)}>←</button>
+         <div><h2>Podpis klienta</h2><p>{visit.client?.company_name||'Klient'}</p></div>
+       </div>
+       <p className="protocolSignatureInstruction">Proszę podpisać się palcem w białym polu. Ten ekran nie przewija się podczas podpisywania.</p>
+       <div className="protocolSignatureCanvasWrap">
+         <canvas ref={canvasRef} className="protocolSignatureCanvas" aria-label="Pole podpisu klienta"
+           onPointerDown={beginStroke} onPointerMove={moveStroke} onPointerUp={endStroke}
+           onPointerCancel={endStroke} onPointerLeave={endStroke}/>
+       </div>
+       <div className="protocolSignatureActions">
+         <button type="button" className="btn" disabled={!signed} onClick={clearSignature}>Wyczyść podpis</button>
+         <button type="button" className="btn primary" disabled={!signed} onClick={confirmSignature}>Zatwierdź podpis</button>
+       </div>
+     </div>
+   </AppModal>
  </section>;
 }

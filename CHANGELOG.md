@@ -1,3 +1,9 @@
+## 13.93
+- Serwis: przycisk „Zrób podpis” otwiera osobny ekran podpisu taki jak w montażach, z „Wyczyść podpis” i „Zatwierdź podpis”.
+- Nowe serwisowe PDF: wyłącznie inicjały rzeczywistych serwisantów (np. PW); zapisanych protokołów nie zmieniamy.
+- Przydzielenie przeglądu nowej osobie uruchamia bezpieczne PUSH z kolejką retry; obsługuje też Administratora Piotra Wasika, bez ponawiania wysyłki po zwykłym zapisie zmian.
+- Diagnostyka braku PUSH po zakończeniu: backend wysłał, lecz iPhone nie potwierdził wyświetlenia; mechanizmy izolacji użytkowników w SW pozostają nienaruszone.
+
 ## 13.92
 - Mobile Urządzenia: data i godzina mają zwarte, równe i wyśrodkowane kontrolki (46 px); data wyświetlana w formacie 29.10.2026, godzina w formacie HH:MM. Tekst nie jest renderowany przez ucinany na iPhonie natywny widget, ale po dotknięciu nadal działa systemowy wybór iOS.
 - Lista serwisantów: dopisany Piotr Wasik (Administrator) obok pracowników, bez zmiany roli, z obsługą zapisu przydziału jako głównego i dodatkowego.
