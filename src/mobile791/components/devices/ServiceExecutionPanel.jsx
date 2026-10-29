@@ -9,11 +9,12 @@ import { sendServiceProtocolEmail } from '../../modules/service-visit-email.js';
 import './ServiceAdminPanel.css';
 import './mobile-device-wizard.css';
 import AppModal from '../modals/AppModal.jsx';
+import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
 }
-export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBack,onFinalized}) {
+export default function ServiceExecutionPanel({supabase,userId,visitId,staffNames,onBack,onFinalized}) {
  const [visit,setVisit]=useState(null);
  const [photos,setPhotos]=useState([]);
  const [drafts,setDrafts]=useState({});
@@ -152,6 +153,7 @@ export default function ServiceExecutionPanel({supabase,visitId,staffNames,onBac
    if(!signatureDataUrl){setError('Klient musi podpisać protokół.');return;}
    setBusy('complete');setError('');setMessage('');
    try {
+     await refreshServicePushContext({supabase,userId});
      const record=await finalizeSignedServiceVisit({
        supabase,visitId,signatureDataUrl,technicianNames:staffNames
      });
