@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.92",
-  "scope": "mobile",
-  "release_branch": "release/v13.92",
+  "version": "13.93",
+  "scope": "full",
+  "release_branch": "release/v13.93",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zweryfikowano przyczynę ucięcia kontrolek natywnych iOS oraz role profili. Brak zmian danych produkcyjnych."
+    "notes": "Zbadano istniejący PUSH: HTTP 201 / received, brak displayed; Guard SW pozostaje bez osłabiania. Protokół z montażu porównany."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.92",
+    "source_branch": "release/v13.93",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Test na fizycznym iPhonie po READY",
-    "notes": "Zweryfikować środkowanie, godzina widoczna, brak ucięcia; lista zawiera Piotr Wasik, zapis admina."
+    "result": "EXTERNAL_IPHONE_PUSH_AND_SIGNATURE",
+    "evidence_source": "Test produkcyjny po wdrożeniu Edge Function + migracji",
+    "notes": "Push assigned i completed wymaga potwierdzenia wyświetlenia (displayed_at) na rzeczywistym iPhonie; nie wolno uznać HTTP 201 za pokazany PUSH."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobilny serwis: wyśrodkowane i skrócone pola daty/godziny z zachowaniem natywnego pickera; Piotr Wasik na liście, zapis przez istniejące RLS admina.",
-    "release_ci": "Targeted checks, Closure Gate, WebKit, Playwright i smoke; brak migracji SQL.",
-    "postdeploy": "Vercel READY, app-version=13.92, kontrola rzeczywistego Safari."
+    "code": "13.93: osobny ekran podpisu serwisu, inicjały wykonawców na nowych PDF, durable assignment push outbox z tokenami.",
+    "release_ci": "WAWIS PR checks / Closure Gate + testy WebKit E2E; test smoke SQL, push i podpisów.",
+    "postdeploy": "Vercel READY, app-version.json 13.93; Supabase deployed Edge Function + schema migration; test dostarczenia i wyświetlenia PUSH."
   }
 }
