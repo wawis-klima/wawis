@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.90",
+  "version": "13.91",
   "scope": "mobile",
-  "release_branch": "release/v13.90",
+  "release_branch": "release/v13.91",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Weryfikacja kodu main 13.89; zmiana tylko mobilnego menu."
+    "notes": "Przegląd wersji 13.90; korekta mobilnego formularza serwisu bez migracji i zmian w bazie."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.90",
+    "source_branch": "release/v13.91",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,8 +22,8 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Kontrola po wdrożeniu Vercel.",
-    "notes": "Sprawdź pięć pełnych nazw zakładek na fizycznym iPhonie."
+    "evidence_source": "Sprawdzenie wizualne po wdrożeniu",
+    "notes": "Data i godzina wewnątrz formularza, tylko checkboxy pracowników."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobilne menu; wyłącznie style i E2E, bez zmian logiki.",
-    "release_ci": "WAWIS PR checks / targeted-checks i Closure Gate, testy E2E szerokości 320–430 px.",
-    "postdeploy": "Vercel READY, app-version.json=13.90, pięć nazw bez zwijania na iPhonie."
+    "code": "Mobilny moduł Urządzenia: formularze nowego i edytowanego przeglądu, checkboxy pracowników, data/godzina.",
+    "release_ci": "WAWIS PR checks, Closure Gate, testy WebKit i Playwright, smoke admin stage1.",
+    "postdeploy": "Vercel READY, app-version.json 13.91, wizualny test iPhone."
   }
 }
