@@ -1,3 +1,8 @@
+## 13.92
+- Mobile Urządzenia: data i godzina mają zwarte, równe i wyśrodkowane kontrolki (46 px); data wyświetlana w formacie 29.10.2026, godzina w formacie HH:MM. Tekst nie jest renderowany przez ucinany na iPhonie natywny widget, ale po dotknięciu nadal działa systemowy wybór iOS.
+- Lista serwisantów: dopisany Piotr Wasik (Administrator) obok pracowników, bez zmiany roli, z obsługą zapisu przydziału jako głównego i dodatkowego.
+- Testy kontrolują widoczną treść i wyrównanie pól, nie tylko obrys. Bez zmian SQL, SMS i montażów.
+
 ## 13.91
 - iPhone / Urządzenia: data i godzina w formularzu planowania oraz edycji przeglądu mają kompaktowy rozmiar i nie wychodzą poza obrys karty.
 - Wybór serwisantów tylko przez zaznaczanie pracowników; usunięta rozwijana lista głównego serwisanta i opcja „Bez przydziału — do podjęcia”.

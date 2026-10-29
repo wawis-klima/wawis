@@ -43,10 +43,30 @@ export async function loadServiceCustomerDevices({ supabase, contractorId }) {
 }
 
 export async function loadServiceStaff({ supabase }) {
-  const { data, error } = await supabase.from('profiles')
-    .select('id,full_name,role').eq('role','Pracownik').order('full_name');
-  if (error) throw error;
-  return data || [];
+  const [workers,piotr] = await Promise.all([
+    supabase.from('profiles').select('id,full_name,role').eq('role','Pracownik').order('full_name'),
+    supabase.from('profiles').select('id,full_name,role').eq('role','Administrator').eq('full_name','Piotr Wasik').limit(1),
+  ]);
+  if (workers.error) throw workers.error;
+  if (piotr.error) throw piotr.error;
+  const byId=new Map([...(workers.data||[]),...(piotr.data||[])].map(p=>[p.id,p]));
+  return [...byId.values()].sort((a,b)=>String(a.full_name||'').localeCompare(String(b.full_name||''),'pl'));
+}
+
+// Główny Administrator nie przechodzi walidacji istniejącego create RPC
+// (akceptuje ono wyłącznie rolę Pracownik). Przypisanie admina następuje
+// bezpiecznie po utworzeniu przez aktualną politykę RLS administratora.
+export function resolveServiceAssignment({ staff = [], selectedIds = [] }) {
+  const ids=[...new Set(selectedIds.filter(Boolean))];
+  const primaryId=ids[0] || null;
+  const primary=staff.find(p=>p.id===primaryId);
+  const createTechnicianId=primary?.role==='Pracownik' ? primaryId : null;
+  return {
+    primaryId,
+    createTechnicianId,
+    additionalIds:ids.slice(1),
+    needsAssignmentUpdate:ids.length>1 || (primaryId!==null && createTechnicianId===null),
+  };
 }
 
 export async function loadAdminServiceVisits({ supabase, contractorId = null }) {

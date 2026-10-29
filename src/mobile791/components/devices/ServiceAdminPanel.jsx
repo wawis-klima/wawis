@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   searchServiceDevices, groupServiceSearchResults, loadServiceCustomerDevices,
   loadServiceStaff, loadAdminServiceVisits, createAdminServiceVisit,
-  updateAdminServiceAssignment, formatServiceDate,
+  updateAdminServiceAssignment, resolveServiceAssignment, formatServiceDate,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
@@ -31,6 +31,27 @@ function DeviceItem({ device, children }) {
         ? <small>Montaż: {formatServiceDate(device.installation_date || device.installation_date_snapshot)}</small>
         : null}
     </div>{children}
+  </div>;
+}
+
+function ServiceDateTimeFields({ date, time, onDateChange, onTimeChange, disabled = false }) {
+  // Native Safari controls stay tappable; only their clipped internal rendering is invisible.
+  // The visible text is sized and centered independently from iOS system date/time widgets.
+  return <div className="serviceAdminTwoFields serviceAdminDateTimeFields">
+    <label>Data
+      <span className="serviceAdminPickerSurface">
+        <span className="serviceAdminPickerValue" aria-hidden="true">{formatServiceDate(date)}</span>
+        <input type="date" className="serviceAdminNativePicker" aria-label="Data"
+          value={date} required disabled={disabled} onChange={e=>onDateChange(e.target.value)}/>
+      </span>
+    </label>
+    <label>Godzina
+      <span className="serviceAdminPickerSurface">
+        <span className="serviceAdminPickerValue" aria-hidden="true">{time || '—:—'}</span>
+        <input type="time" className="serviceAdminNativePicker" aria-label="Godzina"
+          value={time} disabled={disabled} onChange={e=>onTimeChange(e.target.value)}/>
+      </span>
+    </label>
   </div>;
 }
 
@@ -118,11 +139,13 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if (typeof navigator !== 'undefined' && navigator.onLine===false) {setError('Brak internetu. Zaplanuj przegląd po przywróceniu połączenia.');return;}
     setBusy(true);setError('');
     try {
-      const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:selectedTechnicians[0] || null,operationId:createOperationId});
-      // Osoby dodatkowe mogą być dodane po zapisie. Nie ukrywamy częściowego błędu.
-      if (selectedTechnicians.length > 1) {
-        try { await updateAdminServiceAssignment({supabase,visitId,technicianId:selectedTechnicians[0],additionalTechnicianIds:selectedTechnicians.slice(1)}); }
-        catch(err) { setMessage('Zlecenie zapisane, ale nie udało się przypisać dodatkowych osób: '+friendlyError(err)); }
+      const assignment=resolveServiceAssignment({staff,selectedIds:selectedTechnicians});
+      const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:assignment.createTechnicianId,operationId:createOperationId});
+      // RPC przy tworzeniu przyjmuje tylko Pracowników. Administrator (Piotr Wasik) jest
+      // przypisywany po utworzeniu przez dozwolony zapis administratora (RLS), bez migracji.
+      if (assignment.needsAssignmentUpdate) {
+        try { await updateAdminServiceAssignment({supabase,visitId,technicianId:assignment.primaryId,additionalTechnicianIds:assignment.additionalIds}); }
+        catch(err) { setMessage('Zlecenie zapisane, ale nie udało się zapisać przydziału pracowników: '+friendlyError(err)); }
       }
       const rows=await loadVisits(customer.id);
       const newVisit=rows.find(v=>v.id===visitId);
@@ -231,10 +254,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           <input type="checkbox" checked={selectedIds.includes(d.id)} onChange={()=>toggleId(d.id)}/>
           <DeviceItem device={d}/>
         </label>)}</div><small className="serviceAdminMuted">Wybrano: {countSelected}</small>
-        <div className="serviceAdminTwoFields serviceAdminDateTimeFields">
-          <label>Data <input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></label>
-          <label>Godzina <input className="input" type="time" value={time} onChange={e=>setTime(e.target.value)}/></label>
-        </div>
+        <ServiceDateTimeFields date={date} time={time} onDateChange={setDate} onTimeChange={setTime}/>
         <fieldset className="serviceAdminExtras"><legend>Pracownicy (opcjonalnie)</legend>
           {staff.map(p=><label key={p.id} className="serviceAdminCheck">
             <input type="checkbox" checked={selectedTechnicians.includes(p.id)}
@@ -272,10 +292,8 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           {currentVisit.status==='wykonany'?'Zobacz podpisany protokół':'Wykonaj przegląd'}
         </button>:null}
         <div className="serviceAdminSectionTitle">Termin i przydział</div>
-        <div className="serviceAdminTwoFields serviceAdminDateTimeFields">
-          <label>Data <input type="date" className="input" value={date} required onChange={e=>setDate(e.target.value)} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
-          <label>Godzina <input type="time" className="input" value={time} onChange={e=>setTime(e.target.value)} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
-        </div>
+        <ServiceDateTimeFields date={date} time={time} onDateChange={setDate} onTimeChange={setTime}
+          disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/>
         <fieldset className="serviceAdminExtras" disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}>
           <legend>Pracownicy</legend>
           {staff.map(p=><label key={p.id} className="serviceAdminCheck">
