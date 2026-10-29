@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-PURGE-CONFIRM-1396 — pojedyncze potwierdzenie usunięcia serwisu (29.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SP-1396-REQUEST | FIXED-UNVERIFIED | Właściciel wymaga tylko jednego potwierdzenia, bez wpisywania `USUN` i drugiego pytania; poprzedni handler `ServiceAdminPanel.purgeVisit` wywoływał prompt + confirm. |
+| SP-1396-TEST | REGRESSION | `scripts/smoke-service-execution-v1389.mjs`: wykonanie rzeczywistego handlera w VM — cancel bez wywołania backendu, OK jedno wywołanie, brak działania poza Koszem, obsługa błędu; zachowane asercje izolacji SQL/Edge. |
+| SP-1396-LIVE | EXTERNAL | Po wdrożeniu administrator potwierdzi dialog na fizycznym iPhonie, bez kasowania prawdziwych danych na potrzeby testu. |
+
+
 ## NAMEPLATE-MSG-1388 — komunikaty tabliczek u administratora (27.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
