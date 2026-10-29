@@ -146,9 +146,13 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  }
  function confirmSignature() {
    if(!signed || !canvasRef.current)return;
-   setSignatureDataUrl(canvasRef.current.toDataURL('image/png'));
-   setSignatureOpen(false);
-   setMessage('Podpis zatwierdzony. Aby zakończyć, zapisz podpisany protokół.');
+   try {
+     setSignatureDataUrl(captureServiceSignature(canvasRef.current));
+     setSignatureOpen(false);
+     setMessage('Podpis zatwierdzony. Aby zakończyć, zapisz podpisany protokół.');
+   }catch(error){
+     setError(error.message || 'Nie udało się odczytać podpisu.');
+   }
  }
  async function complete() {
    if(!signatureDataUrl){setError('Klient musi podpisać protokół.');return;}
