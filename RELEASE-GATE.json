@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.91",
+  "version": "13.92",
   "scope": "mobile",
-  "release_branch": "release/v13.91",
+  "release_branch": "release/v13.92",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Przegląd wersji 13.90; korekta mobilnego formularza serwisu bez migracji i zmian w bazie."
+    "notes": "Zweryfikowano przyczynę ucięcia kontrolek natywnych iOS oraz role profili. Brak zmian danych produkcyjnych."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.91",
+    "source_branch": "release/v13.92",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,8 +22,8 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "EXTERNAL_IPHONE_VISUAL",
-    "evidence_source": "Sprawdzenie wizualne po wdrożeniu",
-    "notes": "Data i godzina wewnątrz formularza, tylko checkboxy pracowników."
+    "evidence_source": "Test na fizycznym iPhonie po READY",
+    "notes": "Zweryfikować środkowanie, godzina widoczna, brak ucięcia; lista zawiera Piotr Wasik, zapis admina."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "Mobilny moduł Urządzenia: formularze nowego i edytowanego przeglądu, checkboxy pracowników, data/godzina.",
-    "release_ci": "WAWIS PR checks, Closure Gate, testy WebKit i Playwright, smoke admin stage1.",
-    "postdeploy": "Vercel READY, app-version.json 13.91, wizualny test iPhone."
+    "code": "Mobilny serwis: wyśrodkowane i skrócone pola daty/godziny z zachowaniem natywnego pickera; Piotr Wasik na liście, zapis przez istniejące RLS admina.",
+    "release_ci": "Targeted checks, Closure Gate, WebKit, Playwright i smoke; brak migracji SQL.",
+    "postdeploy": "Vercel READY, app-version=13.92, kontrola rzeczywistego Safari."
   }
 }
