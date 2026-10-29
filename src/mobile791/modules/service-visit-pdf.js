@@ -56,6 +56,13 @@ function card(doc,y,height){
   doc.setDrawColor(212,224,230);doc.setFillColor(255,255,255);
   doc.roundedRect(12,y, W-24,height,7,7,'FD');
 }
+export function serviceTechnicianInitials(names = []) {
+  return [...new Set((names || []).map(name =>
+    String(name || '').trim().split(/\s+/u).filter(Boolean)
+      .map(part => part.codePointAt(0) ? String.fromCodePoint(part.codePointAt(0)).toLocaleUpperCase('pl-PL') : '')
+      .join('')
+  ).filter(Boolean))].join(', ') || '—';
+}
 function textLines(doc,text,x,y,width,fontSize=8.7,lineHeight=12){
   doc.setFont(FONT,'normal');doc.setFontSize(fontSize);doc.setTextColor(0,0,0);
   const lines=doc.splitTextToSize(String(text||'-'),width);
@@ -78,7 +85,7 @@ export async function createServiceVisitPdf({snapshot,signatureDataUrl,technicia
   y=page(doc,y,65);section(doc,'Wykonanie usługi',y);y+=14;card(doc,y,48);
   const performedDates=snapshot.items.filter(item=>item.result&&item.performed_at).map(item=>item.performed_at).sort();
   textLines(doc,`Data wykonania: ${formatDate(performedDates[0])}  |  Termin umówiony: ${formatDate(snapshot.scheduled_date)}`,M+6,y+18,500);
-  textLines(doc,`Serwisanci: ${technicianNames.filter(Boolean).join(', ')||'Administrator'}`,M+6,y+35,500);
+  textLines(doc,`Serwisanci: ${serviceTechnicianInitials(technicianNames)}`,M+6,y+35,500);
   y+=67;
   for(let i=0;i<snapshot.items.length;i++){
     const item=snapshot.items[i];
