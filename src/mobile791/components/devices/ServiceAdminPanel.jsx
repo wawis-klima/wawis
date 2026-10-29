@@ -48,8 +48,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const [date,setDate] = useState(TODAY);
   const [time,setTime] = useState('');
   const [notes,setNotes] = useState('');
-  const [primary,setPrimary] = useState('');
-  const [additional,setAdditional] = useState([]);
+  const [selectedTechnicians,setSelectedTechnicians] = useState([]);
   const [busy,setBusy] = useState(false);
   const [loading,setLoading] = useState(false);
   const [message,setMessage] = useState('');
@@ -107,7 +106,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   }
   function startPlan() {
     setSelectedIds([]);setCreateOperationId(crypto.randomUUID());setDate(TODAY());setTime('');setNotes('');
-    setPrimary('');setAdditional([]);setError('');setMessage('');setScreen('plan');
+    setSelectedTechnicians([]);setError('');setMessage('');setScreen('plan');
   }
   function toggleId(id) {
     setSelectedIds(current => current.includes(id)?current.filter(x=>x!==id):[...current,id]);
@@ -119,10 +118,10 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if (typeof navigator !== 'undefined' && navigator.onLine===false) {setError('Brak internetu. Zaplanuj przegląd po przywróceniu połączenia.');return;}
     setBusy(true);setError('');
     try {
-      const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:primary,operationId:createOperationId});
+      const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:selectedTechnicians[0] || null,operationId:createOperationId});
       // Osoby dodatkowe mogą być dodane po zapisie. Nie ukrywamy częściowego błędu.
-      if (additional.length) {
-        try { await updateAdminServiceAssignment({supabase,visitId,technicianId:primary,additionalTechnicianIds:additional}); }
+      if (selectedTechnicians.length > 1) {
+        try { await updateAdminServiceAssignment({supabase,visitId,technicianId:selectedTechnicians[0],additionalTechnicianIds:selectedTechnicians.slice(1)}); }
         catch(err) { setMessage('Zlecenie zapisane, ale nie udało się przypisać dodatkowych osób: '+friendlyError(err)); }
       }
       const rows=await loadVisits(customer.id);
@@ -134,8 +133,8 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     finally {setBusy(false);}
   }
   function openVisit(visit) {
-    setCurrentVisit(visit);setPrimary(visit.primary_technician_id || '');
-    setAdditional(visit.additional_technician_ids || []);
+    setCurrentVisit(visit);
+    setSelectedTechnicians([...new Set([visit.primary_technician_id,...(visit.additional_technician_ids || [])].filter(Boolean))]);
     setDate(visit.scheduled_date || TODAY());setTime(visit.scheduled_time?.slice(0,5) || '');
     setNotes(visit.notes || '');setError('');setMessage('');setScreen('detail');
   }
@@ -149,7 +148,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         .update({scheduled_date:date,scheduled_time:time || null,notes:notes.trim().slice(0,4000)})
         .eq('id',currentVisit.id).select('id').single();
       if(writeError || !data) throw writeError || new Error('Brak potwierdzenia zmiany terminu.');
-      await updateAdminServiceAssignment({supabase,visitId:currentVisit.id,technicianId:primary,additionalTechnicianIds:additional});
+      await updateAdminServiceAssignment({supabase,visitId:currentVisit.id,technicianId:selectedTechnicians[0] || null,additionalTechnicianIds:selectedTechnicians.slice(1)});
       const rows=await loadVisits(currentVisit.contractor_id);
       setCurrentVisit(rows.find(v=>v.id===currentVisit.id) || currentVisit);
       setMessage('Zmiany terminu i przydziału zapisano.');
@@ -232,19 +231,14 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           <input type="checkbox" checked={selectedIds.includes(d.id)} onChange={()=>toggleId(d.id)}/>
           <DeviceItem device={d}/>
         </label>)}</div><small className="serviceAdminMuted">Wybrano: {countSelected}</small>
-        <div className="serviceAdminTwoFields">
+        <div className="serviceAdminTwoFields serviceAdminDateTimeFields">
           <label>Data <input className="input" type="date" required value={date} onChange={e=>setDate(e.target.value)}/></label>
           <label>Godzina <input className="input" type="time" value={time} onChange={e=>setTime(e.target.value)}/></label>
         </div>
-        <label>Główny serwisant (opcjonalny)
-          <select className="input" value={primary} onChange={e=>{setPrimary(e.target.value);setAdditional(x=>x.filter(id=>id!==e.target.value));}}>
-            <option value="">Bez przydziału — do podjęcia w przyszłości</option>
-            {staff.map(p=><option value={p.id} key={p.id}>{p.full_name||'Pracownik'}</option>)}
-          </select>
-        </label>
-        <fieldset className="serviceAdminExtras"><legend>Dodatkowi pracownicy (opcjonalnie)</legend>
-          {staff.filter(p=>p.id!==primary).map(p=><label key={p.id} className="serviceAdminCheck">
-            <input type="checkbox" checked={additional.includes(p.id)} onChange={e=>setAdditional(x=>e.target.checked?[...x,p.id]:x.filter(y=>y!==p.id))}/>
+        <fieldset className="serviceAdminExtras"><legend>Pracownicy (opcjonalnie)</legend>
+          {staff.map(p=><label key={p.id} className="serviceAdminCheck">
+            <input type="checkbox" checked={selectedTechnicians.includes(p.id)}
+              onChange={e=>setSelectedTechnicians(ids=>e.target.checked?[...ids,p.id]:ids.filter(id=>id!==p.id))}/>
             <span>{p.full_name||'Pracownik'}</span>
           </label>)}
         </fieldset>
@@ -278,19 +272,15 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           {currentVisit.status==='wykonany'?'Zobacz podpisany protokół':'Wykonaj przegląd'}
         </button>:null}
         <div className="serviceAdminSectionTitle">Termin i przydział</div>
-        <div className="serviceAdminTwoFields">
+        <div className="serviceAdminTwoFields serviceAdminDateTimeFields">
           <label>Data <input type="date" className="input" value={date} required onChange={e=>setDate(e.target.value)} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
           <label>Godzina <input type="time" className="input" value={time} onChange={e=>setTime(e.target.value)} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}/></label>
         </div>
-        <label>Główny serwisant
-          <select className="input" value={primary} onChange={e=>{setPrimary(e.target.value);setAdditional(x=>x.filter(id=>id!==e.target.value));}} disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}>
-            <option value="">Nieprzydzielony</option>
-            {staff.map(p=><option value={p.id} key={p.id}>{p.full_name||'Pracownik'}</option>)}
-          </select>
-        </label>
-        <fieldset className="serviceAdminExtras" disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}><legend>Dodatkowi pracownicy</legend>
-          {staff.filter(p=>p.id!==primary).map(p=><label key={p.id} className="serviceAdminCheck">
-            <input type="checkbox" checked={additional.includes(p.id)} onChange={e=>setAdditional(x=>e.target.checked?[...x,p.id]:x.filter(y=>y!==p.id))}/>
+        <fieldset className="serviceAdminExtras" disabled={currentVisit.status==='odwolany'||currentVisit.status==='wykonany'}>
+          <legend>Pracownicy</legend>
+          {staff.map(p=><label key={p.id} className="serviceAdminCheck">
+            <input type="checkbox" checked={selectedTechnicians.includes(p.id)}
+              onChange={e=>setSelectedTechnicians(ids=>e.target.checked?[...ids,p.id]:ids.filter(id=>id!==p.id))}/>
             <span>{p.full_name||'Pracownik'}</span>
           </label>)}
         </fieldset>
