@@ -1,14 +1,11 @@
-# RELEASE RESULT — WAWIS 13.93
-
+# RELEASE RESULT — WAWIS 13.94
 ## Zakres
-- Moduł serwisu: osobne pełnoekranowe okno podpisu klienta wzorowane na podpisie montażu. Zatwierdź / Wyczyść, podpis musi być potwierdzony przed utworzeniem PDF.
-- Nowo generowane serwisowe PDF wyświetlają tylko inicjały rzeczywistych wykonawców (np. PW), bez zmiany starych, już podpisanych dokumentów.
-- PUSH po nowym przydziale serwisu: osobny bezpieczny Edge Function, token weryfikowany przez service_role RPC, prywatna kolejka zdarzeń i retry co 3 minuty, bez powiadamiania wielokrotnie o niezmienionym przydziale.
-- Powiadomienie o zakończeniu serwisu: produkcyjny push został zaakceptowany przez endpoint (201), jedno urządzenie potwierdziło odbiór, ale żadne nie potwierdziło wyświetlenia. Nie osłabiamy bezpiecznej weryfikacji odbiorcy przez SW.
-
-## Bramka wdrożeniowa
-Wymagane zielone GitHub PR checks, WebKit E2E i Closure Gate, Supabase migration i Edge deployment, Vercel READY.
-Monitorować `push_delivery_log` osobno: status=sent, received_at, displayed_at. HTTP 201 nie oznacza dostarczenia na ekran.
-
-## Status
-Kod przygotowany. Wdrożenie dopiero po bramce i weryfikacji backendu.
+- Podpis serwisu kadrowany do śladu analogicznie jak podpis montażowy; pusty podpis blokuje akceptację.
+- PUSH: weryfikacja kontekstu użytkownika i generacji SW oraz ponowna synchronizacja aktywnej subskrypcji istniejącym API WAWIS; ostrzeżenie jeśli lokalny telefon nie potwierdza gotowości.
+- Administrator: kosz i przywracanie serwisu wszystkich statusów, również wykonanego; podpisane PDF i zdjęcia pozostają zapisane.
+## Odbiór
+- GitHub PR checks, Playwright/WebKit, Closure Gate i smoke.
+- Migracja RPC admin + audyt kosza, Vercel READY i app-version=13.94.
+- Test fizycznego iPhone: podpis musi być widoczny; PUSH wymaga potwierdzenia displayed_at.
+## Historia
+Nie modyfikujemy historycznych podpisanych PDF-ów ani ponownie nie wysyłamy starych zdarzeń PUSH.
