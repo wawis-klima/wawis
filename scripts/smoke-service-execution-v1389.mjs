@@ -49,7 +49,7 @@ assert.match(ui,/mandatoryChecksDone/);
 assert.match(migration,/performed_by=case when p_result is not null then auth.uid\(\)/);
 assert.match(migration,/status='wykonany'/);
 assert.match(migration,/revoke update, delete on public\.service_visits/);
-assert.match(ui,/canvas[\\s\\S]*?onPointerDown/);
+assert.match(ui,/canvas[\s\S]*?onPointerDown/);
 assert.match(ui,/Zakończ przegląd i zapisz PDF/);
 assert.match(ui,/service_visit_admin_wait_for_signature/);
 assert.match(ui,/if\(signatureDataUrl\)setSignatureDataUrl\(''\)/, 'Editing results and photos invalidates accepted signature.');
