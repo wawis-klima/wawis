@@ -179,6 +179,7 @@ test.describe('@mobile release visual iPhone', () => {
           labelLeft: t?.left,
           labelRight: t?.right,
           fontSize,
+          transform: label ? getComputedStyle(label).transform : null,
           overflow: getComputedStyle(button).overflowX,
           textOverflow: getComputedStyle(button).textOverflow,
           whiteSpace: getComputedStyle(button).whiteSpace,
@@ -202,6 +203,7 @@ test.describe('@mobile release visual iPhone', () => {
       expect(item.buttonTop).toBeCloseTo(info.data[0].buttonTop, 0);
       expect(item.buttonHeight).toBeGreaterThanOrEqual(43);
       expect(item.fontSize).toBeGreaterThanOrEqual(10);
+      expect(item.transform).toBe('none');
       expect(item.buttonLeft).toBeGreaterThanOrEqual(info.menuLeft - 1);
       expect(item.buttonRight).toBeLessThanOrEqual(info.menuRight + 1);
       expect(item.labelLeft).toBeGreaterThanOrEqual(item.buttonLeft - .5);
@@ -218,7 +220,8 @@ test.describe('@mobile release visual iPhone', () => {
     const names = ['Montaże','Kontrahenci','Paliwo','Urządzenia','Cennik'];
     for (const width of [320, 360, 375, 390, 430]) {
       await page.setViewportSize({ width, height: 780 });
-      await inspectMenuRow(page, names);
+      const menu = await inspectMenuRow(page, names);
+      expect(menu.data[0].fontSize).toBeGreaterThanOrEqual(width >= 390 ? 13 : 11);
     }
     await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
     await expect(page.locator('.serviceAdminPage')).toBeVisible();
