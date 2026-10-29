@@ -176,7 +176,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if (typeof navigator !== 'undefined' && navigator.onLine===false) {setError('Brak internetu. Zaplanuj przegląd po przywróceniu połączenia.');return;}
     setBusy(true);setError('');
     try {
-      if (selectedTechnicians.includes(userId)) await refreshServicePushContext({supabase,userId});
+      const localPushReady=!selectedTechnicians.includes(userId) || await refreshServicePushContext({supabase,userId});
       const assignment=resolveServiceAssignment({staff,selectedIds:selectedTechnicians});
       const visitId=await createAdminServiceVisit({supabase,contractorId:customer.id,deviceIds:selectedIds,date,time,notes,technicianId:assignment.createTechnicianId,operationId:createOperationId});
       // RPC przy tworzeniu przyjmuje tylko Pracowników. Administrator (Piotr Wasik) jest
@@ -189,7 +189,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       const newVisit=rows.find(v=>v.id===visitId);
       if(newVisit) {setCurrentVisit(newVisit);setScreen('detail');}
       else setScreen('customer');
-      setMessage(current => current || 'Przegląd został umówiony i zapisany w systemie.');
+      setMessage(current => current || (localPushReady ? 'Przegląd został umówiony i zapisany w systemie.' : 'Przegląd zapisany. Uwaga: ten iPhone nie potwierdził gotowości PUSH — sprawdź powiadomienia.'));
     } catch(err) {setError(friendlyError(err));}
     finally {setBusy(false);}
   }
