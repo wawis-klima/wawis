@@ -100,6 +100,6 @@ for(let y=8;y<=23;y++)for(let x=12;x<=60;x++){
 assert.deepEqual(signatureModule.getSignatureInkBounds(img,80,40),{left:12,top:8,right:60,bottom:23});
 assert.equal(signatureModule.getSignatureInkBounds(new Uint8ClampedArray(80*40*4).fill(255),80,40),null);
 const pushHealth=read('src/mobile791/modules/service-visit-push-health.js');
-assert.match(pushHealth,/savePushSubscription/,'Push context uses existing WAWIS lifecycle API');
+assert.match(pushHealth,/getPushStatus/,'Push context uses existing WAWIS lifecycle API');
 assert.match(pushHealth,/readPushServiceWorkerContext/);
 console.log('WAWIS 13.94 trash, signature, push health regression: PASS');
