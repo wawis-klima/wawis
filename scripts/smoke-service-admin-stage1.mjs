@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { groupServiceSearchResults, createAdminServiceVisit } from '../src/mobile791/modules/service-visits.js';
+import { groupServiceSearchResults, createAdminServiceVisit, resolveServiceAssignment, loadServiceStaff } from '../src/mobile791/modules/service-visits.js';
 
 const read = path => fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const admin=read('src/mobile791/components/devices/ServiceAdminPanel.jsx');
@@ -40,12 +40,40 @@ assert.match(api,/if \(text\.length < 2\) return \[\]/);
 assert.match(admin,/search\.trim\(\)\.length<2/,'Brak listy bez zapytania.');
 assert.match(admin,/createAdminServiceVisit/);
 assert.match(admin,/updateAdminServiceAssignment/);
-assert.match(admin,/selectedTechnicians\[0\]/,'Pierwszy zaznaczony pracownik jest głównym.');
-assert.match(admin,/selectedTechnicians\.slice\(1\)/,'Pozostali pracownicy są dodatkowymi.');
-assert.match(admin,/serviceAdminTwoFields serviceAdminDateTimeFields/);
+const people=[{id:'piotr',full_name:'Piotr Wasik',role:'Administrator'},{id:'pawel',role:'Pracownik'}];
+const adminOnly=resolveServiceAssignment({staff:people,selectedIds:['piotr']});
+assert.equal(adminOnly.createTechnicianId,null,'RPC create nie może odrzucić administratora.');
+assert.equal(adminOnly.primaryId,'piotr');
+assert.equal(adminOnly.needsAssignmentUpdate,true,'Piotr zostaje przypisany po utworzeniu.');
+const workerAndPiotr=resolveServiceAssignment({staff:people,selectedIds:['pawel','piotr']});
+assert.equal(workerAndPiotr.createTechnicianId,'pawel');
+assert.deepEqual(workerAndPiotr.additionalIds,['piotr']);
+assert.equal(resolveServiceAssignment({staff:people,selectedIds:[]}).needsAssignmentUpdate,false);
+const queries=[];
+const fakeProfiles={from:table=>{
+  assert.equal(table,'profiles');
+  const filters=[];
+  return {
+    select(){return this;},
+    eq(field,value){filters.push([field,value]);return this;},
+    order:async()=>{queries.push(filters);return {data:[people[1]],error:null};},
+    limit:async()=>{queries.push(filters);return {data:[people[0]],error:null};},
+  };
+}};
+const staffList=await loadServiceStaff({supabase:fakeProfiles});
+assert.equal(staffList.length,2);
+assert(staffList.some(x=>x.full_name==='Piotr Wasik'&&x.role==='Administrator'));
+assert.equal(queries.length,2);
+assert.match(admin,/resolveServiceAssignment/);
+assert.equal((admin.match(/<ServiceDateTimeFields /g)||[]).length,2,'Tylko jeden współdzielony widok daty/godziny w obu formularzach.');
+assert.match(admin,/serviceAdminPickerValue/);
+assert.match(admin,/type="date"/);
+assert.match(admin,/type="time"/);
 assert.doesNotMatch(admin,/Główny serwisant|Bez przydziału — do podjęcia|Dodatkowi pracownicy \(opcjonalnie\)/);
-assert.match(css,/\.serviceAdminDateTimeFields input\.input\[type=date\]/);
-assert.match(css,/min-width:0!important/);
+assert.match(css,/\.serviceAdminPickerSurface\{/);
+assert.match(css,/align-items:center;justify-content:center/);
+assert.match(css,/\.serviceAdminNativePicker\{/);
+assert.match(css,/opacity:0/);
 assert.match(menu,/id: "devices", label: "Urządzenia"/);
 assert.match(menu,/isAdmin \? true : \["jobs", "fuel", "pricelist"\]/,'Pracownik nie widzi Urządzeń.');
 assert.match(app,/activeModule === "devices" && isMobile && isAdmin/);
