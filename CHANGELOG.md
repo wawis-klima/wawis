@@ -1,3 +1,7 @@
+## 13.95
+- Serwis / Kosz: administrator może nieodwracalnie usunąć wskazany serwis z plikami PDF, podpisem, zdjęciami i historią, po wpisaniu USUN i ponownym potwierdzeniu.
+- Usuwanie tylko przez Edge Function z autoryzacją i dwuetapową weryfikacją zakresu Storage; oryginalne urządzenia, inne serwisy, montaże i SMS bez zmian.
+
 ## 13.94
 - Serwis: administrator może przenieść dowolny przegląd do kosza i przywrócić go bez utraty podpisu, zdjęć i PDF. Użytkownik Pracownik nie ma tego uprawnienia.
 - Podpis w serwisie: kadrowanie do rzeczywistych linii jak we wcześniej sprawdzonym protokole montażowym i blokowanie zatwierdzania pustej bitmapy.
