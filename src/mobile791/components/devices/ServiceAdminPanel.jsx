@@ -166,9 +166,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     if(!currentVisit?.deleted_at || busy)return;
     const client=currentVisit.client?.company_name||currentVisit.client?.contact_person||'Klient';
     const dateLabel=formatServiceDate(currentVisit.scheduled_date);
-    const word=window.prompt('TRWAŁE USUNIĘCIE — '+client+' ('+dateLabel+')\\n\\nZostaną bezpowrotnie skasowane: serwis, wyniki, zdjęcia, podpis i PDF. Nie będzie możliwości przywrócenia.\\n\\nWpisz USUN, aby kontynuować.');
-    if(word!=='USUN')return;
-    if(!window.confirm('OSTATECZNE POTWIERDZENIE: nieodwracalnie usunąć WSZYSTKIE dane tego serwisu?\\n\\n'+client+' — '+dateLabel+'\\n\\nDane klienta i inne jego montaże/przeglądy pozostaną bez zmian.'))return;
+    if(!window.confirm('Czy na pewno chcesz trwale usunąć ten serwis?\n\n'+client+' — '+dateLabel+'\n\nZostaną usunięte dane wizyty, zdjęcia, podpis i PDF. Tej operacji nie można cofnąć.'))return;
     setBusy(true);setError('');setMessage('');
     try{
       await purgeAdminServiceVisit({supabase,visitId:currentVisit.id});
