@@ -28,3 +28,6 @@ verify_jwt = true
 
 [functions.send-service-visit-completed-push]
 verify_jwt = false # publiczny endpoint przyjmuje wyłącznie jednorazowy, losowy token zdarzenia z DB
+
+[functions.send-service-visit-assignment-push]
+verify_jwt = false # endpoint verifies one-time token against service-role-only RPC
