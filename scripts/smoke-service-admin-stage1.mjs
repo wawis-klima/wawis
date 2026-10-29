@@ -51,7 +51,7 @@ assert.match(menu,/isAdmin \? true : \["jobs", "fuel", "pricelist"\]/,'Pracownik
 assert.match(app,/activeModule === "devices" && isMobile && isAdmin/);
 assert.match(app,/if \(!isAdmin && !\["jobs", "fuel", "pricelist"\]\.includes\(activeModule\)\)/);
 assert.match(css,/\.moduleSwitcherMobile\.isAdmin/);
-assert.match(css,/repeat\(5,minmax\(0,1fr\)\)/);
+assert.match(css,/\.moduleSwitcherMobile\.isAdmin\s*\{\s*display:flex !important;/,'13.90: mobilne menu to flex, nie stare pięć kolumn grid.');
 assert.match(css,/min-height:44px/);
 assert.match(sql,/create table if not exists public\.service_visits/);
 assert.match(sql,/on delete set null/,'Kasowanie rekordów devices nie usuwa historii wizyt.');
