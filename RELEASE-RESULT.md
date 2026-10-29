@@ -1,14 +1,16 @@
-# RELEASE RESULT — WAWIS 13.90
+# RELEASE RESULT — WAWIS 13.91
 
 ## Zakres
-- Czytelniejszy wygląd mobilnego górnego menu (administrator: pięć zakładek, pracownik: trzy).
-- Rozmiary fontu zależne od szerokości ekranu, bez transform:scaleX i bez wielokropków.
-- Tylko CSS i test geometrii, bez zmian backendu, uprawnień, urządzeń, montażów i SMS.
+- W mobilnym serwisie data i godzina mieszczą się w dwóch polach także na wąskich ekranach iPhone.
+- Usunięty dropdown „Główny serwisant” wraz z „Bez przydziału — do podjęcia w przyszłości”.
+- Jeden zestaw checkboxów pracowników w planowaniu i edycji; pierwszy zaznaczony jest głównym, kolejne osoby dodatkowymi, pusty wybór oznacza brak przydziału.
+- Bez zmian uprawnień, modułu SMS, montażów, backendu i danych produkcyjnych.
 
 ## Kontrole
-- Testy E2E menu dla 320/360/375/390/430 px oraz weryfikacja 44 px stref dotyku.
-- Wymagane zielone WAWIS PR checks / targeted-checks i Closure Gate przed scaleniem.
-- Po wdrożeniu: potwierdzenie Vercel READY, wersji 13.90 i wyglądu menu na iPhonie.
+- Test wizualny układu daty i godziny na szerokościach 320, 360, 375, 390 i 430 px.
+- Smoke test wyboru serwisantów i usunięcia dropdownu.
+- Wymagane zielone WAWIS PR checks / targeted-checks oraz Closure Gate przed scaleniem.
+- Po wdrożeniu kontrola Vercel READY i wersji 13.91.
 
 ## Status
-Wersja przygotowana do weryfikacji automatycznej w PR. Publikacja tylko po przejściu bramek.
+Dopuszczenie do publikacji wyłącznie po zielonym CI.
