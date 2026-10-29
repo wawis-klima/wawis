@@ -73,6 +73,7 @@ export async function loadAdminServiceVisits({ supabase, contractorId = null }) 
   let request = supabase.from('service_visits')
     .select('id,contractor_id,scheduled_date,scheduled_time,status,notes,primary_technician_id,additional_technician_ids,performed_at,completed_at,created_at,client:contractors(id,company_name,contact_person,city,street,phone,email),items:service_visit_devices(id,device_id,device_ref_id,model_snapshot,serial_snapshot,installation_date_snapshot,result,checklist,notes,performed_at,performed_by)')
     .order('scheduled_date',{ascending:false}).limit(150);
+  request = request.is('deleted_at', null);
   if (contractorId) request = request.eq('contractor_id', contractorId);
   const { data,error } = await request;
   if (error) throw error;
@@ -112,4 +113,22 @@ export function formatServiceDate(date) {
   if (!date) return 'Brak daty';
   const parts = String(date).slice(0,10).split('-');
   return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : String(date);
+}
+
+export async function loadTrashedServiceVisits({supabase}) {
+  const {data,error}=await supabase.from('service_visits')
+    .select('id,contractor_id,scheduled_date,scheduled_time,status,deleted_at,client:contractors(company_name,city)')
+    .not('deleted_at','is',null).order('deleted_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  return data || [];
+}
+export async function trashAdminServiceVisit({supabase,visitId}){
+  const {data,error}=await supabase.rpc('service_visit_admin_trash_v1394',{p_visit_id:visitId});
+  if(error || data!==true)throw error||new Error('Nie potwierdzono przeniesienia serwisu do kosza.');
+  return true;
+}
+export async function restoreAdminServiceVisit({supabase,visitId}){
+  const {data,error}=await supabase.rpc('service_visit_admin_restore_v1394',{p_visit_id:visitId});
+  if(error || data!==true)throw error||new Error('Nie potwierdzono przywrócenia serwisu.');
+  return true;
 }
