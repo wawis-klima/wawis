@@ -9,6 +9,7 @@ import { sendServiceProtocolEmail } from '../../modules/service-visit-email.js';
 import './ServiceAdminPanel.css';
 import './mobile-device-wizard.css';
 import AppModal from '../modals/AppModal.jsx';
+import { captureServiceSignature } from '../../modules/service-visit-signature.js';
 import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
 function newDraft(item) {
