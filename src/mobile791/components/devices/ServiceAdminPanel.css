@@ -26,6 +26,17 @@
 .serviceAdminCheck .serviceAdminDevice{flex:1}
 .serviceAdminTwoFields{display:grid;grid-template-columns:1fr 1fr;gap:9px;min-width:0}
 .serviceAdminTwoFields>*{min-width:0}
+/* 13.91: iOS date/time nie może narzucać szerokości większej niż kolumna. */
+.serviceAdminDateTimeFields{grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:100%;max-width:100%;min-width:0}
+.serviceAdminDateTimeFields>label{min-width:0;max-width:100%;overflow:hidden}
+.serviceAdminDateTimeFields input.input[type=date],
+.serviceAdminDateTimeFields input.input[type=time]{
+  display:block;min-width:0!important;width:100%!important;max-width:100%!important;
+  box-sizing:border-box!important;padding:7px 3px!important;
+  font-size:clamp(12px,3.15vw,14px)!important;line-height:1.25;text-align:center;
+}
+.serviceAdminDateTimeFields input::-webkit-date-and-time-value{min-width:0;text-align:center}
+.serviceAdminDateTimeFields input::-webkit-datetime-edit{min-width:0;padding:0;white-space:nowrap}
 .serviceAdminExtras{border:1px solid #dce5ef;border-radius:12px;padding:7px 10px;display:grid;gap:2px;min-width:0}
 .serviceAdminExtras legend{font-size:12px;font-weight:750;color:#34465f;padding:0 4px}
 .serviceAdminExtras .serviceAdminCheck{font-size:12px;font-weight:500}
