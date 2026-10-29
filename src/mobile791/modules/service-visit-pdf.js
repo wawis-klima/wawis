@@ -2,6 +2,7 @@ import regularFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans.ttf?url';
 import boldFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url';
 import { PROTOCOL_COMPANY, getContainedSignatureSize } from './job-protocol-pdf.js';
 import { SERVICE_VISIT_CHECKS } from './service-visit-checklist.js';
+import { serviceTechnicianInitials } from './service-visit-initials.js';
 
 const FONT = 'DejaVuSans';
 const M = 20, W = 595.28, H = 841.89, RIGHT = W-M, CONTENT = W-2*M;
@@ -55,13 +56,6 @@ function page(doc,y,required=40){
 function card(doc,y,height){
   doc.setDrawColor(212,224,230);doc.setFillColor(255,255,255);
   doc.roundedRect(12,y, W-24,height,7,7,'FD');
-}
-export function serviceTechnicianInitials(names = []) {
-  return [...new Set((names || []).map(name =>
-    String(name || '').trim().split(/\s+/u).filter(Boolean)
-      .map(part => part.codePointAt(0) ? String.fromCodePoint(part.codePointAt(0)).toLocaleUpperCase('pl-PL') : '')
-      .join('')
-  ).filter(Boolean))].join(', ') || '—';
 }
 function textLines(doc,text,x,y,width,fontSize=8.7,lineHeight=12){
   doc.setFont(FONT,'normal');doc.setFontSize(fontSize);doc.setTextColor(0,0,0);
