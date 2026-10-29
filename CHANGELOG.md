@@ -1,3 +1,9 @@
+## 13.91
+- iPhone / Urządzenia: data i godzina w formularzu planowania oraz edycji przeglądu mają kompaktowy rozmiar i nie wychodzą poza obrys karty.
+- Wybór serwisantów tylko przez zaznaczanie pracowników; usunięta rozwijana lista głównego serwisanta i opcja „Bez przydziału — do podjęcia”.
+- Pierwszy zaznaczony pracownik zapisywany jako główny, pozostali jako dodatkowi; brak zaznaczenia oznacza bez przydziału. Zachowane zapisy i uprawnienia.
+- Testy regresyjne iPhone 320–430 px oraz smoke; bez zmian SMS, bazowych tabel i montaży.
+
 ## 13.90
 - Górne menu mobilne: administrator ma pięć pełnych nazw zakładek w jednym rzędzie, bez poziomego ściskania tekstu; wielkość czcionki skaluje się zależnie od szerokości iPhone'a. Kafelek aktywny pozostaje czytelny, ale nie dominuje nad resztą menu.
 - Pracownik: trzy zakładki, większy tekst. Strefy dotykowe mają nadal minimum 44 px.
