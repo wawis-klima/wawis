@@ -7,7 +7,7 @@ export async function refreshServicePushContext({ supabase, userId }) {
     if (setting==='0' || setting==='false') return false;
     const { getPushStatus }=await import('./push-subscriptions.js');
     const status=await getPushStatus({supabase,sessionUser:{id:userId},allowAutoRepair:true});
-    return status?.ready===true;
+    return status?.ready===true && status?.pushContextReady!==false;
   } catch (_error) {
     // Awaria PUSH nie może uniemożliwiać umówienia lub zakończenia serwisu.
     return false;
