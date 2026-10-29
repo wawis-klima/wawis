@@ -31,3 +31,6 @@ verify_jwt = false # publiczny endpoint przyjmuje wyłącznie jednorazowy, losow
 
 [functions.send-service-visit-assignment-push]
 verify_jwt = false # endpoint verifies one-time token against service-role-only RPC
+
+[functions.purge-service-visit]
+verify_jwt = true # administrator session required; service role only inside Edge Function

@@ -126,3 +126,21 @@ export async function restoreAdminServiceVisit({supabase,visitId}) {
   if(error || data!==true)throw error || new Error('Nie potwierdzono przywrócenia serwisu.');
   return true;
 }
+
+/** Hard delete is never performed directly by the browser. Edge validates JWT,
+ * administrator role, trash state and the exact Storage file prefix. */
+export async function purgeAdminServiceVisit({supabase,visitId}) {
+  if(!visitId)throw new Error('Brak przeglądu do usunięcia.');
+  const {data:session,error:authError}=await supabase.auth.getSession();
+  if(authError||!session?.session?.access_token)throw new Error('Zaloguj się ponownie przed trwałym usunięciem.');
+  const {data,error}=await supabase.functions.invoke('purge-service-visit',{
+    body:{visitId,confirmation:'PERMANENT_DELETE'}
+  });
+  if(error){
+    let message=error.message||'Nie udało się usunąć serwisu.';
+    try {const result=await error.context?.json();if(result?.error)message=result.error;}catch(_){}
+    throw new Error(message);
+  }
+  if(data?.ok!==true||data?.deleted!==true)throw new Error(data?.error||'Serwer nie potwierdził trwałego usunięcia.');
+  return true;
+}

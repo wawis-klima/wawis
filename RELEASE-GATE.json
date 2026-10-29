@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.94",
+  "version": "13.95",
   "scope": "full",
-  "release_branch": "release/v13.94",
+  "release_branch": "release/v13.95",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Porównano podpis/PUSH serwisu ze sprawdzonymi mechanizmami montaży. PUSH 201+received bez displayed, PNG obecny, PDF z niewidocznym podpisem."
+    "notes": "Zweryfikowano tabele/FK, zdjęcia i podpis w prywatnym Storage; trwałe usuwanie tylko z kosza i przez service_role + auth admin."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.94",
+    "source_branch": "release/v13.95",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_SIGNATURE_AND_PUSH",
-    "evidence_source": "Fizyczny iPhone po wersji 13.94",
-    "notes": "Czytelny podpis na PDF; displayed_at dla push; kosz i przywracanie tylko admin."
+    "result": "EXTERNAL_IPHONE_DELETE_FLOW",
+    "evidence_source": "Weryfikacja bez usuwania danych klientów: widoczność przycisku, dwuetapowe potwierdzenie; testy kontrolne RLS.",
+    "notes": "Nie wykonywać rzeczywistego permanent delete na istniejących serwisach klientów bez ich wskazania przez admina."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "13.94: kadrowanie podpisu, push lifecycle resync, kosz/restore",
-    "release_ci": "PR checks, Closure Gate, WebKit i smoke",
-    "postdeploy": "Vercel READY, app-version.json=13.94, migracja kosza i test iPhone"
+    "code": "13.95: purge-service-visit Edge JWT+admin, bezpieczne storage.remove prefix i atomowy finalize; UI USUN+confirm",
+    "release_ci": "WAWIS PR checks, Closure Gate, WebKit i smoke purge v1395",
+    "postdeploy": "Vercel READY/13.95, Edge ACTIVE verify_jwt, SQL RPC grant service_role only i no data changes."
   }
 }

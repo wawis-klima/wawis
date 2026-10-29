@@ -1,11 +1,13 @@
-# RELEASE RESULT — WAWIS 13.94
+# RELEASE RESULT — WAWIS 13.95
+
 ## Zakres
-- Podpis serwisu kadrowany do śladu analogicznie jak podpis montażowy; pusty podpis blokuje akceptację.
-- PUSH: weryfikacja kontekstu użytkownika i generacji SW oraz ponowna synchronizacja aktywnej subskrypcji istniejącym API WAWIS; ostrzeżenie jeśli lokalny telefon nie potwierdza gotowości.
-- Administrator: kosz i przywracanie serwisu wszystkich statusów, również wykonanego; podpisane PDF i zdjęcia pozostają zapisane.
-## Odbiór
-- GitHub PR checks, Playwright/WebKit, Closure Gate i smoke.
-- Migracja RPC admin + audyt kosza, Vercel READY i app-version=13.94.
-- Test fizycznego iPhone: podpis musi być widoczny; PUSH wymaga potwierdzenia displayed_at.
-## Historia
-Nie modyfikujemy historycznych podpisanych PDF-ów ani ponownie nie wysyłamy starych zdarzeń PUSH.
+- Admin w Koszu może wybrać „Usuń na stałe”. Wymagane dokładne wpisanie USUN i drugie potwierdzenie.
+- Operacja usuwa tylko tę wizytę i jej zawartość: zdjęcia, podpis, PDF ze Storage, wyniki urządzeń, logi wysyłki, przypisania i kolejki PUSH.
+- Backend: autentykacja sesji, kontrola roli Administrator, stan kosza, klucz service_role tylko po stronie Edge; usuwanie przez Supabase Storage API, potem SQL finalize w jednej transakcji.
+- Jeśli Storage nie potwierdzi pustego folderu wizyty, wpisy w bazie nie są usuwane. Możliwa ponowna próba, bez przywrócenia rozpoczętego purge.
+- Dane klienta, oryginalne urządzenia, montaże i inne przeglądy bez zmian.
+
+## Kontrola wydania
+- Regressions: RPC deny-by-default, scope prefiksu UUID, Storage API, kolejność usunięcia, dwustopniowe potwierdzenie.
+- GitHub PR checks, Playwright/WebKit, Closure Gate, Vercel READY, wdrożone RPC i Edge Function.
+- Żadnego testowego kasowania istniejących serwisów produkcyjnych.

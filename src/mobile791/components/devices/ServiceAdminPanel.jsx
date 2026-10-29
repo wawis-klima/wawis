@@ -3,7 +3,7 @@ import {
   searchServiceDevices, groupServiceSearchResults, loadServiceCustomerDevices,
   loadServiceStaff, loadAdminServiceVisits, createAdminServiceVisit,
   updateAdminServiceAssignment, resolveServiceAssignment, formatServiceDate,
-  trashAdminServiceVisit, restoreAdminServiceVisit,
+  trashAdminServiceVisit, restoreAdminServiceVisit, purgeAdminServiceVisit,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
@@ -159,6 +159,23 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       await loadVisits(null);
       setScreen('visits');
       setMessage('Przegląd przywrócony z kosza.');
+    }catch(err){setError(friendlyError(err));}
+    finally{setBusy(false);}
+  }
+  async function purgeVisit() {
+    if(!currentVisit?.deleted_at || busy)return;
+    const client=currentVisit.client?.company_name||currentVisit.client?.contact_person||'Klient';
+    const dateLabel=formatServiceDate(currentVisit.scheduled_date);
+    const word=window.prompt('TRWAŁE USUNIĘCIE — '+client+' ('+dateLabel+')\\n\\nZostaną bezpowrotnie skasowane: serwis, wyniki, zdjęcia, podpis i PDF. Nie będzie możliwości przywrócenia.\\n\\nWpisz USUN, aby kontynuować.');
+    if(word!=='USUN')return;
+    if(!window.confirm('OSTATECZNE POTWIERDZENIE: nieodwracalnie usunąć WSZYSTKIE dane tego serwisu?\\n\\n'+client+' — '+dateLabel+'\\n\\nDane klienta i inne jego montaże/przeglądy pozostaną bez zmian.'))return;
+    setBusy(true);setError('');setMessage('');
+    try{
+      await purgeAdminServiceVisit({supabase,visitId:currentVisit.id});
+      setCurrentVisit(null);
+      const rows=await loadAdminServiceVisits({supabase,trashed:true});
+      setVisits(rows);setScreen('trash');
+      setMessage('Serwis wraz ze zdjęciami, podpisem i PDF został trwale usunięty.');
     }catch(err){setError(friendlyError(err));}
     finally{setBusy(false);}
   }
@@ -321,10 +338,10 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     </div> : null}
     {screen==='trash' ? <div className="card serviceAdminCard">
       <h3>Kosz przeglądów ({visits.length})</h3>
-      <p className="serviceAdminMuted">Tylko administrator może przywrócić serwis. Podpisane dokumenty pozostają bez zmian.</p>
+      <p className="serviceAdminMuted">Tylko administrator może przywrócić serwis lub usunąć go na stałe. Trwałe usunięcie obejmuje podpisany PDF i zdjęcia.</p>
       {visits.length ? visits.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
         <strong>{formatServiceDate(v.scheduled_date)} · {v.client?.company_name||'Klient'}</strong>
-        <span>Status sprzed usunięcia: {v.status} · Przywróć w szczegółach</span>
+        <span>Status sprzed usunięcia: {v.status} · Przywróć lub usuń na stałe w szczegółach</span>
       </button>) : <p className="serviceAdminMuted">Kosz jest pusty.</p>}
     </div> : null}
     {screen==='detail' && currentVisit ? <>
@@ -355,7 +372,11 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
           <button className="btn primary serviceAdminWide" type="submit" disabled={busy}>{busy?'Zapisuję…':'Zapisz zmiany'}</button>
           <button className="btn serviceAdminWide" type="button" onClick={cancelVisit} disabled={busy}>Odwołaj wizytę</button>
         </> : null}
-        {currentVisit.deleted_at ? <button type="button" className="btn primary serviceAdminWide" onClick={restoreVisit} disabled={busy}>Przywróć serwis z kosza</button> :
+        {currentVisit.deleted_at ? <div className="serviceAdminStack">
+          <button type="button" className="btn primary serviceAdminWide" onClick={restoreVisit} disabled={busy}>Przywróć serwis z kosza</button>
+          <button type="button" className="btn serviceAdminWide serviceAdminDanger" onClick={purgeVisit} disabled={busy}>Usuń na stałe</button>
+          <p className="serviceAdminMuted">Trwałe usunięcie wymaga wpisania USUN i dodatkowego potwierdzenia. Usuwa również zdjęcia, podpis i PDF. Nie można go cofnąć.</p>
+        </div> :
           <button type="button" className="btn serviceAdminWide serviceAdminDanger" onClick={trashVisit} disabled={busy}>Usuń serwis</button>}
         <p className="serviceAdminMuted">Usunięcie przenosi serwis do kosza; podpisane PDF i zdjęcia pozostają bezpieczne. Montaże i SMS bez zmian.</p>
       </form>
