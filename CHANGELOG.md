@@ -1,3 +1,11 @@
+## 13.98
+- Serwis / Kosz: usunięty nieaktualny tekst „Trwałe usunięcie wymaga wpisania USUN i dodatkowego potwierdzenia”; nowy opis zgodny z jednym potwierdzeniem. W Koszu nie jest już pokazywany sprzeczny tekst „PDF i zdjęcia pozostają bezpieczne”.
+- Serwis / historia: przy każdym urządzeniu klienta lista przeglądów (data wykonania w strefie Europe/Warsaw, wynik, rzeczywisty wykonawca), także gdy rekord urządzenia został przebudowany (device_ref_id). Szczegóły wizyty pokazują historię zmian terminu, statusu, przydziału i wysyłek e-mail.
+- Serwis / statusy: „W trakcie” i „Oczekuje na podpis klienta” nie są już mylnie pokazywane jako „Przydzielony” / „bez przydziału”; Kosz nie pokazuje surowych kodów statusu.
+- Serwis / e-mail: widoczna historia wysyłek protokołu. Po jednoznacznej odmowie serwera pokazujemy rzeczywistą przyczynę i kolejna próba używa nowego klucza; po niepewnym wyniku ponowienie wymaga wyraźnego potwierdzenia (wcześniej ten sam klucz dostawał 409 bez końca).
+- Test: `scripts/smoke-service-admin-audit-v1398.mjs` (wykonanie rzeczywistego kodu modułów; RED na module e-mail z 13.96). Naprawiona asercja `assert.rejects` w `smoke-service-execution-v1389.mjs` dla błędu Supabase niebędącego `Error` (Node 22.x).
+- Bez zmian SQL, RLS, Storage, Edge Functions, PUSH, SMS i montaży.
+
 ## 13.97
 - Prośba właściciela (28.10.2026): zakładka „Oszczędności na własnym zbiorniku” w module Paliwo — tylko administrator, tylko wersja na komputer. Dla każdego tankowania ze zbiornika: litry × (urzędowa maksymalna cena oleju napędowego netto w dniu tankowania − cena ze zbiornika netto). Ceny maksymalne pobierane automatycznie z obwieszczeń Ministra Energii (Monitor Polski, API Sejmu). Kafelki: łącznie, w tym miesiącu, średnio na litrze, potencjał w zbiorniku; „Z czego to wynika”, wykres różnicy cen, tabela tankowań z linkiem do obwieszczenia. Liczenie od dostawy 5000 l z 7.10.2026 (7,25 zł brutto, VAT 8%). W okienku dostawy (komputer) pole ceny za litr; dostawę bez ceny można uzupełnić w zakładce. Pracownicy nie widzą cen (zabezpieczenie w bazie).
 

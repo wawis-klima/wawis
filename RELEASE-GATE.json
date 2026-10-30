@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.97",
+  "version": "13.98",
   "scope": "full",
-  "release_branch": "release/v13.97",
+  "release_branch": "release/v13.98",
   "baseline_diagnostics": {
     "checked": true,
-    "result": "OWNER_REQUEST",
-    "notes": "Prośba właściciela 28.10.2026: oszczędności na zbiorniku paliwa. Migracja v1389 zastosowana za zgodą (11:29), funkcja Edge fuel-reference-prices wdrożona; zapis do produkcji tylko ceny zakupu dostawy 7.10 (podana przez właściciela)."
+    "result": "READ_ONLY",
+    "notes": "30.10.2026: wyłącznie SELECT na produkcji — 3 wizyty (wszystkie wykonane, 1 w Koszu), komplet PDF/podpisów/zdjęć w Storage, 0 osieroconych plików, 0 zaległych zdarzeń PUSH, 0 wysyłek e-mail. Bez zmian bazy i Storage."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.97",
+    "source_branch": "release/v13.98",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_DESKTOP_ADMIN",
-    "evidence_source": "Po wdrożeniu: administrator na komputerze otwiera Paliwo → Oszczędności; sprawdzam w bazie fuel_reference_prices i logi funkcji.",
-    "notes": "Zakładka niewidoczna dla pracowników i na telefonie."
+    "result": "EXTERNAL_IPHONE_ADMIN_SERVICE_VIEWS",
+    "evidence_source": "iPhone administratora: tekst w Koszu (jedno potwierdzenie), historia urządzenia u klienta, historia wizyty, statusy, historia wysyłek e-mail.",
+    "notes": "Nie usuwać na stałe prawdziwych serwisów ani nie wysyłać e-maili do klientów wyłącznie w celu testu."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "13.96: jedno natywne potwierdzenie usunięcia z Kosza; bez zmian Edge i SQL z 13.95",
-    "release_ci": "WAWIS PR checks, Closure Gate, smoke purge (wykonanie handlera: cancel/confirm/error/not-trashed)",
-    "postdeploy": "Oczekuje: Vercel READY/13.96 i potwierdzenie wersji. iPhone poza CI."
+    "code": "13.98: poprawki frontendu modułu serwisowego administratora (tekst Kosza, statusy, historia urządzenia i wizyty, e-mail retry); bez zmian SQL/RLS/Storage/Edge",
+    "release_ci": "WAWIS PR checks, Closure Gate, smoke-service-admin-audit-v1398 (wykonanie modułów, RED na 13.96), smoke-service-execution-v1389",
+    "postdeploy": "Oczekuje: Vercel READY/13.98 i /app-version.json. iPhone poza CI."
   }
 }

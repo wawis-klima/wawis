@@ -5,7 +5,8 @@ import {
   uploadServiceVisitPhoto,loadStoredServiceProtocol,finalizeSignedServiceVisit,
   openServiceProtocolPdf,printServiceProtocol
 } from '../../modules/service-visit-execution.js';
-import { sendServiceProtocolEmail } from '../../modules/service-visit-email.js';
+import { sendServiceProtocolEmail, hasUncertainServiceEmailAttempt } from '../../modules/service-visit-email.js';
+import { loadServiceVisitHistory } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import './mobile-device-wizard.css';
 import AppModal from '../modals/AppModal.jsx';
@@ -26,6 +27,7 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  const [signed,setSigned]=useState(false);
  const [signatureOpen,setSignatureOpen]=useState(false);
  const [signatureDataUrl,setSignatureDataUrl]=useState('');
+ const [emailHistory,setEmailHistory]=useState(null);
  const canvasRef=useRef(null);
  const drawingRef=useRef(false);
  const lastPointRef=useRef(null);
@@ -54,6 +56,16 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
    return ()=>{active=false;};
  },[supabase,visitId]);
 
+ async function refreshEmailHistory() {
+   try {
+     const {entries,failed}=await loadServiceVisitHistory({supabase,visitId});
+     setEmailHistory({entries:entries.filter(e=>e.kind==='email'),failed:failed.includes('wysyłki e-mail')});
+   }catch(_e){setEmailHistory({entries:[],failed:true});}
+ }
+ useEffect(()=>{
+   if(!protocol?.id)return;
+   refreshEmailHistory();
+ },[protocol?.id,visitId]);
  useEffect(()=>{
    const canvas=canvasRef.current;
    if(!canvas || protocol || !signatureOpen)return;
@@ -177,9 +189,18 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
      if(action==='print') await printServiceProtocol({supabase,record:protocol});
      if(action==='email') {
        const recipient=visit.client?.email||'';
-       if(!window.confirm('Wyślij podpisany protokół e-mailem do '+recipient+'?'))return;
-       const result=await sendServiceProtocolEmail({supabase,visit,protocol});
-       setMessage(result.alreadySent?'Ta wiadomość była już wcześniej potwierdzona.':'Wysłano protokół na '+result.recipient+'.');
+       const uncertain=hasUncertainServiceEmailAttempt({visitId:visit.id,protocolId:protocol.id});
+       // Po niepewnym wyniku: jedno wyraźne pytanie i dopiero wtedy nowa, kontrolowana próba.
+       const question=uncertain
+         ?'Poprzednia wysyłka do '+recipient+' ma nieustalony wynik — klient mógł już otrzymać e-mail. Sprawdź historię wysyłek poniżej.\n\nWysłać protokół ponownie?'
+         :'Wyślij podpisany protokół e-mailem do '+recipient+'?';
+       if(!window.confirm(question))return;
+       try {
+         const result=await sendServiceProtocolEmail({supabase,visit,protocol,forceNewAttempt:uncertain});
+         setMessage(result.alreadySent?'Ta wiadomość była już wcześniej potwierdzona.':'Wysłano protokół na '+result.recipient+'.');
+       } finally {
+         await refreshEmailHistory();
+       }
      }
    }catch(e){setError(e.message||'Operacja na protokole nie powiodła się.');}
    finally{setBusy('');}
@@ -246,6 +267,11 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        Wyślij e-mail klientowi {visit.client?.email?'('+visit.client.email+')':''}
      </button>
      <p className="serviceAdminMuted">Wysyłka wyłącznie ręczna. Wysłane dokumenty są zapisywane w historii wysyłek.</p>
+     <div className="serviceAdminSectionTitle">Historia wysyłek e-mail</div>
+     {emailHistory===null ? <p className="serviceAdminMuted">Wczytuję historię wysyłek…</p>
+       : emailHistory.failed ? <p className="serviceAdminMuted">Nie udało się pobrać historii wysyłek. Nie ponawiaj wysyłki bez jej sprawdzenia.</p>
+       : emailHistory.entries.length ? emailHistory.entries.map(e=><p className="serviceAdminMuted" key={e.id}>{e.emailStatus==='sent'?'✓':e.emailStatus==='error'?'✕':'?'} {e.atLabel} — {e.text}</p>)
+       : <p className="serviceAdminMuted">Protokół nie był jeszcze wysyłany e-mailem.</p>}
    </div> : visit.status==='odwolany'?<div className="card serviceAdminCard">Wizyta odwołana.</div>:<div className="card serviceAdminCard">
      <h3>Potwierdzenie klienta</h3>
      <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>

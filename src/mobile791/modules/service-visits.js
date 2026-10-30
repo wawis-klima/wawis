@@ -115,6 +115,107 @@ export function formatServiceDate(date) {
   return parts.length === 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : String(date);
 }
 
+/** 13.97: jedna, pełna mapa statusów — wcześniej „w_trakcie” i „oczekuje_na_podpis”
+ * były błędnie pokazywane jako „Przydzielony” / „bez przydziału”. */
+export function serviceVisitStatusLabel(visit) {
+  switch (visit?.status) {
+    case 'wykonany': return 'Wykonany';
+    case 'odwolany': return 'Odwołany';
+    case 'w_trakcie': return 'W trakcie';
+    case 'oczekuje_na_podpis': return 'Oczekuje na podpis klienta';
+    case 'zaplanowany': return visit?.primary_technician_id ? 'Przydzielony' : 'Zaplanowany, bez przydziału';
+    default: return visit?.status ? String(visit.status) : 'Nieznany status';
+  }
+}
+
+/** Data dzienna znacznika czasu (timestamptz) w strefie Europe/Warsaw, DD.MM.RRRR. */
+export function formatServiceTimestampDate(value) {
+  if (!value) return 'Brak daty';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return formatServiceDate(value);
+  return new Intl.DateTimeFormat('pl-PL',{timeZone:'Europe/Warsaw',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
+}
+
+function warsawDateTime(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return new Intl.DateTimeFormat('pl-PL',{timeZone:'Europe/Warsaw',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);
+}
+
+/** Historia pojedynczego urządzenia z już pobranych wizyt klienta (bez dodatkowego zapytania).
+ * Klucz: device_ref_id — przetrwa przebudowę rekordu devices przez synchronizator montaży. */
+export function buildServiceDeviceHistory({ visits = [], deviceId, nameOf = () => '' }) {
+  if (!deviceId) return [];
+  const rows = [];
+  for (const visit of visits || []) {
+    for (const item of visit?.items || []) {
+      if (item?.device_ref_id !== deviceId && item?.device_id !== deviceId) continue;
+      rows.push({
+        visitId: visit.id,
+        scheduledDate: visit.scheduled_date || null,
+        performedAt: item.performed_at || null,
+        dateLabel: item.performed_at ? 'Wykonano '+formatServiceTimestampDate(item.performed_at) : 'Termin '+formatServiceDate(visit.scheduled_date),
+        status: visit.status,
+        statusLabel: serviceVisitStatusLabel(visit),
+        result: item.result || null,
+        resultLabel: item.result === 'sprawne' ? 'Sprawne' : item.result === 'usterka' ? 'Usterka' : null,
+        performedBy: item.result && item.performed_by ? (nameOf(item.performed_by) || 'Inny użytkownik') : null,
+        notes: item.notes || '',
+      });
+    }
+  }
+  const key = row => String(row.performedAt || row.scheduledDate || '');
+  return rows.sort((a,b) => key(b).localeCompare(key(a)));
+}
+
+/** Zbiorcza, tylko do odczytu historia jednej wizyty: termin/status, przydział, wysyłki e-mail.
+ * Każde źródło jest niezależne — błąd jednego nie ukrywa pozostałych i jest raportowany. */
+export async function loadServiceVisitHistory({ supabase, visitId, nameOf = () => '' }) {
+  if (!visitId) return { entries: [], failed: [] };
+  const name = id => (id ? (nameOf(id) || 'Inny użytkownik') : 'Bez przydziału');
+  const [changes, assignments, emails] = await Promise.all([
+    supabase.from('service_visit_change_events')
+      .select('id,changed_at,changed_by,old_scheduled_date,new_scheduled_date,old_scheduled_time,new_scheduled_time,old_status,new_status,old_notes,new_notes')
+      .eq('service_visit_id', visitId).order('changed_at', { ascending: false }).limit(100),
+    supabase.from('service_visit_assignment_events')
+      .select('id,changed_at,changed_by,old_primary_technician_id,new_primary_technician_id,old_additional_technician_ids,new_additional_technician_ids')
+      .eq('service_visit_id', visitId).order('changed_at', { ascending: false }).limit(100),
+    supabase.from('service_visit_protocol_email_log')
+      .select('id,created_at,sent_at,recipient_email,status,error_message,sent_by')
+      .eq('service_visit_id', visitId).order('created_at', { ascending: false }).limit(50),
+  ]);
+  const failed = [];
+  const entries = [];
+  if (changes.error) failed.push('terminy i statusy');
+  for (const e of changes.data || []) {
+    const parts = [];
+    if (e.old_scheduled_date !== e.new_scheduled_date || (e.old_scheduled_time || '') !== (e.new_scheduled_time || '')) {
+      parts.push(`Termin: ${formatServiceDate(e.old_scheduled_date)} ${String(e.old_scheduled_time || '').slice(0,5)} → ${formatServiceDate(e.new_scheduled_date)} ${String(e.new_scheduled_time || '').slice(0,5)}`.replace(/\s+/g,' ').trim());
+    }
+    if (e.old_status !== e.new_status) {
+      parts.push(`Status: ${serviceVisitStatusLabel({status:e.old_status})} → ${serviceVisitStatusLabel({status:e.new_status})}`);
+    }
+    if ((e.old_notes || '') !== (e.new_notes || '')) parts.push('Zmieniono uwagi');
+    if (parts.length) entries.push({ id: 'c'+e.id, at: e.changed_at, kind: 'change', text: parts.join(' · '), by: e.changed_by ? name(e.changed_by) : '' });
+  }
+  if (assignments.error) failed.push('przydziały');
+  for (const e of assignments.data || []) {
+    const team = (primary, extra) => [primary, ...(extra || [])].filter(Boolean).map(name).join(', ') || 'Bez przydziału';
+    entries.push({ id: 'a'+e.id, at: e.changed_at, kind: 'assignment',
+      text: `Przydział: ${team(e.old_primary_technician_id, e.old_additional_technician_ids)} → ${team(e.new_primary_technician_id, e.new_additional_technician_ids)}`,
+      by: e.changed_by ? name(e.changed_by) : '' });
+  }
+  if (emails.error) failed.push('wysyłki e-mail');
+  for (const e of emails.data || []) {
+    const state = e.status === 'sent' ? 'wysłano' : e.status === 'error' ? 'odrzucono' : 'wynik nieustalony';
+    entries.push({ id: 'e'+e.id, at: e.sent_at || e.created_at, kind: 'email', emailStatus: e.status,
+      text: `E-mail z protokołem do ${e.recipient_email}: ${state}`, by: e.sent_by ? name(e.sent_by) : '' });
+  }
+  entries.sort((a,b) => String(b.at || '').localeCompare(String(a.at || '')));
+  return { entries: entries.map(e => ({ ...e, atLabel: warsawDateTime(e.at) })), failed };
+}
+
 /** Only the server-side administrator RPC can archive or restore visits. */
 export async function trashAdminServiceVisit({supabase,visitId}) {
   const {data,error}=await supabase.rpc('service_visit_admin_trash',{p_visit_id:visitId});

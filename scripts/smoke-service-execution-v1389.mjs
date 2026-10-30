@@ -24,7 +24,7 @@ const supabase={rpc(name,args){calls.push({name,args});return Promise.resolve({d
 await saveServiceDeviceResult({supabase,visitId:'v',itemId:'d1',checklist:{filtry:true},result:'sprawne',notes:'OK'});
 assert.equal(calls[0].name,'service_visit_admin_save_item');
 assert.equal(calls[0].args.p_item_id,'d1');
-await assert.rejects(()=>saveServiceDeviceResult({supabase:{rpc:async()=>({data:null,error:{message:'Brak sieci'}})},visitId:'v',itemId:'d',checklist:{},result:'sprawne'}),/Brak sieci/);
+await assert.rejects(()=>saveServiceDeviceResult({supabase:{rpc:async()=>({data:null,error:{message:'Brak sieci'}})},visitId:'v',itemId:'d',checklist:{},result:'sprawne'}),{message:/Brak sieci/});
 let uploaded=false,inserted=false;
 const mockPhoto={
  storage:{from:()=>({upload:async (name,file)=>{assert.match(name,/\/photos\/item\//);assert.equal(file.size,4);uploaded=true;return {error:null};}})},
