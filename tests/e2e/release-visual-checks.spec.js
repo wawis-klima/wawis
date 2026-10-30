@@ -281,7 +281,9 @@ test.describe('@mobile release visual iPhone', () => {
     for (const width of [320, 360, 375, 390, 430]) {
       await page.setViewportSize({ width, height: 780 });
       const menu = await inspectMenuRow(page, names);
-      expect(menu.data[0].fontSize).toBeGreaterThanOrEqual(width >= 390 ? 13 : 11);
+      // 30.10.2026: właściciel zatwierdził obecny rozmiar czcionki menu (ok. 12,7–12,9 px przy 390–430 px szerokości) —
+      // próg 12,5 px chroni przed dalszym zmniejszeniem; pełne nazwy w jednym rzędzie sprawdza inspectMenuRow.
+      expect(menu.data[0].fontSize).toBeGreaterThanOrEqual(width >= 390 ? 12.5 : 11);
     }
     await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
     await expect(page.locator('.serviceAdminPage')).toBeVisible();
