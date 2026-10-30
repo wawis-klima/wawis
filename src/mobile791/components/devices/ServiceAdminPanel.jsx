@@ -4,6 +4,7 @@ import {
   loadServiceStaff, loadAdminServiceVisits, createAdminServiceVisit,
   updateAdminServiceAssignment, resolveServiceAssignment, formatServiceDate,
   trashAdminServiceVisit, restoreAdminServiceVisit, purgeAdminServiceVisit,
+  serviceVisitStatusLabel, buildServiceDeviceHistory, loadServiceVisitHistory,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
@@ -25,15 +26,26 @@ function CustomerAddress({ client }) {
   const address = [client?.street, client?.city].filter(Boolean).join(', ');
   return <span className="serviceAdminMuted">{address || 'Brak adresu'}</span>;
 }
-function DeviceItem({ device, children }) {
+function DeviceItem({ device, history = null, children }) {
   return <div className="serviceAdminDevice">
     <div className="serviceAdminDeviceInfo"><strong>{device.model || device.model_snapshot || 'Klimatyzator'}</strong>
       <small>Nr seryjny: {device.serial_number || device.serial_snapshot || 'Brak numeru'}</small>
       {device.installation_date || device.installation_date_snapshot
         ? <small>Montaż: {formatServiceDate(device.installation_date || device.installation_date_snapshot)}</small>
         : null}
+      {history}
     </div>{children}
   </div>;
+}
+
+function DeviceHistory({ entries }) {
+  if (!entries.length) return <small className="serviceAdminMuted">Historia przeglądów: brak wizyt dla tego urządzenia.</small>;
+  return <>
+    <small className="serviceAdminMuted" aria-label="Historia przeglądów urządzenia"><strong>Historia przeglądów ({entries.length})</strong></small>
+    {entries.map(e => <small className="serviceAdminMuted" key={e.visitId}>
+      {e.dateLabel}{' · '}{e.resultLabel || e.statusLabel}{e.performedBy ? ' · '+e.performedBy : ''}
+    </small>)}
+  </>;
 }
 
 function ServiceDateTimeFields({ date, time, onDateChange, onTimeChange, disabled = false }) {
@@ -77,6 +89,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const [message,setMessage] = useState('');
   const [error,setError] = useState('');
   const [refreshKey,setRefreshKey] = useState(0);
+  const [visitHistory,setVisitHistory] = useState(null);
 
   const staffName = useCallback(id => staff.find(p => p.id === id)?.full_name || (id ? 'Pracownik' : 'Bez przydziału'),[staff]);
   useEffect(() => {
@@ -213,6 +226,12 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     setSelectedTechnicians([...new Set([visit.primary_technician_id,...(visit.additional_technician_ids || [])].filter(Boolean))]);
     setDate(visit.scheduled_date || TODAY());setTime(visit.scheduled_time?.slice(0,5) || '');
     setNotes(visit.notes || '');setError('');setMessage('');setScreen('detail');
+    refreshVisitHistory(visit.id);
+  }
+  async function refreshVisitHistory(visitId) {
+    setVisitHistory(null);
+    try { setVisitHistory({ visitId, ...(await loadServiceVisitHistory({ supabase, visitId, nameOf: id => staff.find(p => p.id === id)?.full_name })) }); }
+    catch (_err) { setVisitHistory({ visitId, entries: [], failed: ['historia'] }); }
   }
   async function saveAssignment(event) {
     event.preventDefault();
@@ -229,6 +248,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       const rows=await loadVisits(currentVisit.contractor_id);
       setCurrentVisit(rows.find(v=>v.id===currentVisit.id) || currentVisit);
       setMessage('Zmiany terminu i przydziału zapisano.');
+      refreshVisitHistory(currentVisit.id);
     } catch(err){setError(friendlyError(err));}
     finally{setBusy(false);}
   }
@@ -241,6 +261,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       const rows=await loadVisits(currentVisit.contractor_id);
       setCurrentVisit(rows.find(v=>v.id===currentVisit.id) || {...currentVisit,status:'odwolany'});
       setMessage('Wizyta została odwołana.');
+      refreshVisitHistory(currentVisit.id);
     } catch(err){setError(friendlyError(err));}
     finally {setBusy(false);}
   }
@@ -291,12 +312,13 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         <h3>{customer.name}</h3><CustomerAddress client={customer}/>
         {customer.phone ? <a href={`tel:${customer.phone.replace(/[^\d+]/g,'')}`}>{customer.phone}</a> : null}
         <div className="serviceAdminSectionTitle">Urządzenia klienta ({customerDevices.length})</div>
-        <div className="serviceAdminStack">{customerDevices.map(d=><DeviceItem key={d.id} device={d}/>)}</div>
+        <div className="serviceAdminStack">{customerDevices.map(d=><DeviceItem key={d.id} device={d}
+          history={<DeviceHistory entries={buildServiceDeviceHistory({visits,deviceId:d.id,nameOf:id=>staff.find(p=>p.id===id)?.full_name})}/>}/>)}</div>
         <button className="btn primary serviceAdminWide" type="button" onClick={startPlan} disabled={busy||customerDevices.length===0}>Zaplanuj przegląd</button>
         <div className="serviceAdminSectionTitle">Historia i umówione wizyty</div>
         {visits.length ? visits.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
           <strong>{formatServiceDate(v.scheduled_date)} {v.scheduled_time?.slice(0,5)||''}</strong>
-          <span>{v.items?.length||0} urządzeń · {v.status==='wykonany'?'Wykonany':v.status==='odwolany'?'Odwołany':v.primary_technician_id?'Przydzielony':'Bez przydziału'}</span>
+          <span>{v.items?.length||0} urządzeń · {serviceVisitStatusLabel(v)}</span>
         </button>) : <p className="serviceAdminMuted">Nie ma jeszcze umówionych ani wykonanych przeglądów.</p>}
       </div>
     </> : null}
@@ -327,7 +349,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       {planned.length ? planned.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
         <strong>{formatServiceDate(v.scheduled_date)} · {v.scheduled_time?.slice(0,5)||'Godzina nieustalona'}</strong>
         <span>{v.client?.company_name||'Klient'} · {v.client?.city||''}</span>
-        <small>{(v.items||[]).length} urządzeń · {staffName(v.primary_technician_id)}</small>
+        <small>{(v.items||[]).length} urządzeń · {staffName(v.primary_technician_id)} · {serviceVisitStatusLabel(v)}</small>
       </button>) : <p className="serviceAdminMuted">Brak umówionych przeglądów.</p>}
       {completed.length ? <><div className="serviceAdminSectionTitle">Ostatnio wykonane</div>
         {completed.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
@@ -339,7 +361,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       <p className="serviceAdminMuted">Tylko administrator może przywrócić serwis lub usunąć go na stałe. Trwałe usunięcie obejmuje podpisany PDF i zdjęcia.</p>
       {visits.length ? visits.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
         <strong>{formatServiceDate(v.scheduled_date)} · {v.client?.company_name||'Klient'}</strong>
-        <span>Status sprzed usunięcia: {v.status} · Przywróć lub usuń na stałe w szczegółach</span>
+        <span>Status sprzed usunięcia: {serviceVisitStatusLabel(v)} · Przywróć lub usuń na stałe w szczegółach</span>
       </button>) : <p className="serviceAdminMuted">Kosz jest pusty.</p>}
     </div> : null}
     {screen==='detail' && currentVisit ? <>
@@ -348,7 +370,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         <h3>Przegląd — {formatServiceDate(currentVisit.scheduled_date)}</h3>
         <strong>{currentVisit.client?.company_name||customer?.name||'Klient'}</strong>
         <CustomerAddress client={currentVisit.client||customer}/>
-        <span className="serviceAdminMuted">Status: {currentVisit.status==='odwolany'?'Odwołany':currentVisit.status==='wykonany'?'Wykonany':currentVisit.primary_technician_id?'Przydzielony':'Zaplanowany, bez przydziału'}</span>
+        <span className="serviceAdminMuted">Status: {serviceVisitStatusLabel(currentVisit)}{currentVisit.deleted_at?' · w koszu':''}</span>
         <div className="serviceAdminSectionTitle">Urządzenia ({currentVisit.items?.length||0})</div>
         {currentVisit.items?.map(d=><DeviceItem device={d} key={d.id}/>)}
         {!currentVisit.deleted_at&&currentVisit.status!=='odwolany'?<button className="btn primary serviceAdminWide" type="button" onClick={()=>{setScreen('execution');setError('');setMessage('');}}>
@@ -373,10 +395,17 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         {currentVisit.deleted_at ? <div className="serviceAdminStack">
           <button type="button" className="btn primary serviceAdminWide" onClick={restoreVisit} disabled={busy}>Przywróć serwis z kosza</button>
           <button type="button" className="btn serviceAdminWide serviceAdminDanger" onClick={purgeVisit} disabled={busy}>Usuń na stałe</button>
-          <p className="serviceAdminMuted">Trwałe usunięcie wymaga wpisania USUN i dodatkowego potwierdzenia. Usuwa również zdjęcia, podpis i PDF. Nie można go cofnąć.</p>
-        </div> :
-          <button type="button" className="btn serviceAdminWide serviceAdminDanger" onClick={trashVisit} disabled={busy}>Usuń serwis</button>}
-        <p className="serviceAdminMuted">Usunięcie przenosi serwis do kosza; podpisane PDF i zdjęcia pozostają bezpieczne. Montaże i SMS bez zmian.</p>
+          <p className="serviceAdminMuted" data-testid="service-purge-hint">Usunięcie na stałe wymaga jednego potwierdzenia. Usuwa dane tej wizyty, zdjęcia, podpis i PDF — nie można tego cofnąć. Klient, urządzenia, montaże i SMS pozostają bez zmian.</p>
+        </div> : <>
+          <button type="button" className="btn serviceAdminWide serviceAdminDanger" onClick={trashVisit} disabled={busy}>Usuń serwis</button>
+          <p className="serviceAdminMuted">Usunięcie przenosi serwis do kosza; podpisane PDF i zdjęcia pozostają bezpieczne. Montaże i SMS bez zmian.</p>
+        </>}
+        <div className="serviceAdminSectionTitle">Historia wizyty</div>
+        {!visitHistory || visitHistory.visitId!==currentVisit.id ? <p className="serviceAdminMuted">Wczytuję historię…</p> : <>
+          {visitHistory.failed.length ? <p className="serviceAdminMuted">Nie udało się pobrać części historii: {visitHistory.failed.join(', ')}.</p> : null}
+          {visitHistory.entries.length ? visitHistory.entries.map(e=><p className="serviceAdminMuted" key={e.id}>{e.atLabel} — {e.text}{e.by?' ('+e.by+')':''}</p>)
+            : <p className="serviceAdminMuted">Brak zmian terminu, przydziału ani wysyłek.</p>}
+        </>}
       </form>
     </> : null}
   </section>;

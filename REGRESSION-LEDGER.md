@@ -1,5 +1,19 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-ADMIN-AUDIT-1398 — audyt modułu serwisowego administratora (30.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SA-1398-PURGE-TEXT | FIXED-UNVERIFIED | `ServiceAdminPanel.jsx` (13.96) pokazywał pod „Usuń na stałe” tekst o wpisywaniu USUN i drugim potwierdzeniu, sprzeczny z decyzją właściciela; w Koszu widniał też tekst „PDF i zdjęcia pozostają bezpieczne”. Test 13.96 sprawdzał tylko handler, nie tekst. |
+| SA-1398-STATUS | FIXED-UNVERIFIED | Statusy `w_trakcie`/`oczekuje_na_podpis` pokazywane jako „Przydzielony”/„bez przydziału”; Kosz pokazywał surowy kod. Jedna funkcja `serviceVisitStatusLabel`. |
+| SA-1398-DEVICE-HISTORY | FIXED-UNVERIFIED | Brak historii pojedynczego urządzenia w UI (tylko lista wizyt klienta). `buildServiceDeviceHistory` po `device_ref_id`, data w Europe/Warsaw. |
+| SA-1398-VISIT-HISTORY | FIXED-UNVERIFIED | Audyt terminu/statusu/przydziału i log e-mail istniały w bazie, ale nie były widoczne. `loadServiceVisitHistory` (tylko SELECT, błąd źródła raportowany). |
+| SA-1398-EMAIL-RETRY | FIXED-UNVERIFIED | Po odmowie dostawcy (422) lub niepewnym wyniku klient ponawiał ten sam `requestKey`, a Edge odpowiadał 409 bez końca; komunikat odsyłał do niewidocznej historii. RED: moduł e-mail z 13.96. |
+| SA-1398-TEST | REGRESSION | `scripts/smoke-service-admin-audit-v1398.mjs` — wykonanie modułów: statusy, historia urządzenia (rebuild, strefa czasu, izolacja), historia wizyty (scalenie, częściowy błąd), sekwencje e-mail 422→nowy klucz, 503→ten sam klucz→świadome ponowienie, błąd sieci, 409 bez pending. |
+| SA-1398-LIVE | EXTERNAL | Po wdrożeniu administrator sprawdza widoki na fizycznym iPhonie bez kasowania prawdziwych serwisów i bez testowych e-maili do klientów. |
+| SA-1398-BACKEND-OPEN | OPEN | Serwer nie blokuje edycji/zakończenia wizyty w Koszu (RPC `save_item`/`complete`/`cancel`/`wait_for_signature`, kolumnowy UPDATE terminu i przydziału, upload Storage) — tylko UI. Wymaga migracji i zgody właściciela. |
+
+
 ## FUEL-SAVINGS-1397 — oszczędności na własnym zbiorniku (28–30.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

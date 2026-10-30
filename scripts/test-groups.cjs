@@ -8,6 +8,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-admin-header',
     'node scripts/smoke-service-admin-stage1.mjs',
     'node scripts/smoke-service-execution-v1389.mjs',
+    'node scripts/smoke-service-admin-audit-v1398.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',
@@ -260,6 +261,12 @@ const GROUPS = {
     'npm run test:smoke:calendar-width',
   ],
   mobile: [
+    // 13.98: testy modułu serwisowego wykonywane także w profilu TARGETED/CRITICAL,
+    // nie tylko w FAST UI (wcześniej regresje Kosza/wykonania nie trafiały do pełnego CI).
+    'node scripts/smoke-service-admin-stage1.mjs',
+    'node scripts/smoke-service-execution-v1389.mjs',
+    'node scripts/smoke-service-admin-audit-v1398.mjs',
+    'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
     'node scripts/smoke-contractors-stage5-v1178.mjs',
