@@ -1,10 +1,13 @@
-// WAWIS 13.97 — oszczędności na paliwie ze zbiornika (tylko administrator, tylko wersja na komputer).
+// WAWIS — oszczędności na paliwie ze zbiornika (tylko administrator, tylko wersja na komputer).
 //
 // Dla każdego tankowania ze zbiornika: koszt litrów z dostaw (kolejka FIFO — najpierw najstarsza dostawa)
-// porównany z ceną, jaką firma zapłaciłaby na stacji tego dnia. Cena na stacji = urzędowa maksymalna cena
-// oleju napędowego (obwieszczenie Ministra Energii, Monitor Polski) obowiązująca w dniu tankowania.
-// Wszystko liczone NETTO (firma odlicza VAT). Stacje mogą sprzedawać taniej niż cena maksymalna,
-// więc wynik to górne oszacowanie oszczędności — interfejs mówi to wprost.
+// porównany z ceną, jaką firma zapłaciłaby na stacji tego dnia. Wszystko NETTO (firma odlicza VAT).
+// Cena na stacji (decyzja właściciela 30.10.2026) — pierwsze dostępne źródło dla dnia tankowania:
+//   1) AutoCentrum — średnia tygodniowa ON dla województwa śląskiego,
+//   2) zapaliwo.pl — średnia dzienna ON dla śląskiego (ten sam dzień albo do 3 dni wcześniej),
+//   3) urzędowa cena maksymalna (obwieszczenie Ministra Energii, Monitor Polski) — ostatnie zabezpieczenie.
+// Średnie rynkowe są brutto; netto = brutto / (1 + VAT). VAT z obwieszczenia na ten dzień (program
+// „Ceny Paliwa Niżej”: 8%), a gdy go brak — znane okresy programu, poza nimi 23%.
 
 const DAY_MS = 86400000;
 export const FUEL_REFERENCE_MAX_AGE_DAYS = 7;
@@ -53,10 +56,78 @@ export function findReferencePrice(referencePrices = [], dateKey = '') {
   return ageDays > FUEL_REFERENCE_MAX_AGE_DAYS ? null : best;
 }
 
+// Okresy obniżonego VAT na paliwa (program „Ceny Paliwa Niżej”) — gdy brak obwieszczenia na dany dzień.
+const REDUCED_FUEL_VAT_PERIODS = Object.freeze([
+  ['2026-08-17', '2026-08-31'],
+  ['2026-10-03', '2026-12-31'],
+]);
+
+export function fuelVatRateForDate(dateKey = '', referencePrices = []) {
+  const official = findReferencePrice(referencePrices, dateKey);
+  if (official && Number.isFinite(Number(official.vat_rate))) return Number(official.vat_rate);
+  return REDUCED_FUEL_VAT_PERIODS.some(([from, to]) => dateKey >= from && dateKey <= to) ? 8 : 23;
+}
+
+export const STATION_PRICE_SOURCES = Object.freeze({
+  autocentrum: { label: 'Śląsk — średnia tygodniowa (AutoCentrum)', short: 'AutoCentrum' },
+  zapaliwo: { label: 'Śląsk — średnia dzienna (zapaliwo.pl)', short: 'zapaliwo.pl' },
+  urzedowa: { label: 'Cena maksymalna (Monitor Polski)', short: 'cena urzędowa' },
+});
+
+const ZAPALIWO_MAX_AGE_DAYS = 3;
+
 /**
- * @param {{ movements: Array, referencePrices: Array, entries?: Array, vehicles?: Array, now?: Date }} input
+ * Cena na stacji dla dnia tankowania: AutoCentrum (tydzień) → zapaliwo.pl (dzień, do 3 dni wstecz) → urzędowa.
+ * @returns {{ source, label, gross, net, vatRate, url, periodLabel, eli? } | null}
  */
-export function calculateFuelSavings({ movements = [], referencePrices = [], entries = [], vehicles = [], now = new Date() } = {}) {
+export function findStationPrice({ marketPrices = [], referencePrices = [], dateKey = '' } = {}) {
+  if (!dateKey) return null;
+  const market = Array.isArray(marketPrices) ? marketPrices : [];
+  const vatRate = fuelVatRateForDate(dateKey, referencePrices);
+  const toResult = (source, row, periodLabel) => {
+    const gross = Number(row.diesel_gross);
+    return {
+      source,
+      label: STATION_PRICE_SOURCES[source].label,
+      gross,
+      net: gross / (1 + vatRate / 100), // bez zaokrąglania — zaokrąglamy dopiero kwoty
+      vatRate,
+      url: row.source_url || '',
+      periodLabel,
+    };
+  };
+
+  const week = market
+    .filter((row) => row?.source === 'autocentrum' && String(row.period_start) <= dateKey && String(row.period_end) >= dateKey)
+    .sort((a, b) => String(b.fetched_at || '').localeCompare(String(a.fetched_at || '')))[0];
+  if (week && Number(week.diesel_gross) > 0) return toResult('autocentrum', week, `tydzień ${week.label || `${week.period_start} – ${week.period_end}`}`);
+
+  const day = market
+    .filter((row) => row?.source === 'zapaliwo' && String(row.period_start) <= dateKey)
+    .sort((a, b) => String(b.period_start).localeCompare(String(a.period_start)))[0];
+  if (day && Number(day.diesel_gross) > 0) {
+    const ageDays = (Date.parse(`${dateKey}T12:00:00Z`) - Date.parse(`${day.period_start}T12:00:00Z`)) / DAY_MS;
+    if (ageDays <= ZAPALIWO_MAX_AGE_DAYS) return toResult('zapaliwo', day, `dzień ${day.period_start}`);
+  }
+
+  const official = findReferencePrice(referencePrices, dateKey);
+  if (!official) return null;
+  return {
+    source: 'urzedowa',
+    label: STATION_PRICE_SOURCES.urzedowa.label,
+    gross: Number(official.diesel_gross),
+    net: Number(official.diesel_net),
+    vatRate: Number(official.vat_rate) || vatRate,
+    url: official.source_url || '',
+    periodLabel: `obwieszczenie ${official.eli}, od ${official.valid_from}`,
+    eli: official.eli,
+  };
+}
+
+/**
+ * @param {{ movements: Array, referencePrices: Array, marketPrices?: Array, entries?: Array, vehicles?: Array, now?: Date }} input
+ */
+export function calculateFuelSavings({ movements = [], referencePrices = [], marketPrices = [], entries = [], vehicles = [], now = new Date() } = {}) {
   const ordered = (Array.isArray(movements) ? movements : [])
     .filter((movement) => movement && Number.isFinite(Number(movement.delta_liters)))
     .slice()
@@ -103,10 +174,10 @@ export function calculateFuelSavings({ movements = [], referencePrices = [], ent
     if (type !== 'refuel') continue;
 
     const dateKey = warsawDateKey(movement.happened_at);
-    const reference = findReferencePrice(referencePrices, dateKey);
+    const reference = findStationPrice({ marketPrices, referencePrices, dateKey });
     const pricedLiters = Math.abs(liters) - unpriced - toTake;
     const tankNetPerLiter = pricedLiters > 0.0001 ? cost / pricedLiters : null;
-    const stationNetPerLiter = reference ? Number(reference.diesel_net) : null;
+    const stationNetPerLiter = reference ? Number(reference.net) : null;
     const complete = reference != null && unpriced <= 0.0001 && toTake <= 0.0001 && tankNetPerLiter != null;
     const entry = entriesById.get(String(movement.fuel_entry_id || '')) || null;
     const vehicle = entry ? vehiclesById.get(String(entry.vehicle_id || '')) || null : null;
@@ -121,11 +192,11 @@ export function calculateFuelSavings({ movements = [], referencePrices = [], ent
       tankNetPerLiter: tankNetPerLiter == null ? null : round4(tankNetPerLiter),
       tankCostNet: round2(cost),
       stationNetPerLiter,
-      stationGrossPerLiter: reference ? Number(reference.diesel_gross) : null,
+      stationGrossPerLiter: reference ? Number(reference.gross) : null,
       stationCostNet: reference ? round2(Math.abs(liters) * stationNetPerLiter) : null,
       savingsNet: complete ? round2(Math.abs(liters) * stationNetPerLiter - cost) : null,
-      reference: reference ? { eli: reference.eli, validFrom: reference.valid_from, sourceUrl: reference.source_url } : null,
-      missingReason: complete ? '' : (!reference ? 'Brak ceny urzędowej z tego dnia' : 'Brak ceny zakupu dostawy'),
+      reference: reference ? { source: reference.source, label: reference.label, periodLabel: reference.periodLabel, sourceUrl: reference.url, vatRate: reference.vatRate } : null,
+      missingReason: complete ? '' : (!reference ? 'Brak ceny ze stacji z tego dnia' : 'Brak ceny zakupu dostawy'),
       parts,
     });
   }
@@ -146,13 +217,13 @@ export function calculateFuelSavings({ movements = [], referencePrices = [], ent
   }
 
   // Co zostało w zbiorniku i ile jest warte w porównaniu z dzisiejszą ceną na stacji.
-  const todayReference = findReferencePrice(referencePrices, warsawDateKey(now));
+  const todayReference = findStationPrice({ marketPrices, referencePrices, dateKey: warsawDateKey(now) });
   const remainingLiters = round2(batches.reduce((sum, batch) => sum + Math.max(0, batch.remaining), 0));
   const remainingPriced = batches.filter((batch) => batch.remaining > 0.0001 && batch.netPrice != null);
   const remainingCost = remainingPriced.reduce((sum, batch) => sum + batch.remaining * batch.netPrice, 0);
   const remainingPricedLiters = remainingPriced.reduce((sum, batch) => sum + batch.remaining, 0);
   const potentialSavings = todayReference && remainingPricedLiters > 0
-    ? round2(remainingPricedLiters * Number(todayReference.diesel_net) - remainingCost)
+    ? round2(remainingPricedLiters * Number(todayReference.net) - remainingCost)
     : null;
 
   return {
@@ -191,7 +262,7 @@ export async function syncFuelReferencePrices({ supabase, isAdmin }) {
 
 export async function loadFuelSavingsData({ supabase, isAdmin }) {
   assertAdmin({ supabase, isAdmin });
-  const [movementsResult, pricesResult] = await Promise.all([
+  const [movementsResult, pricesResult, marketResult] = await Promise.all([
     supabase
       .from('fuel_tank_movements')
       .select('id, movement_type, delta_liters, fuel_entry_id, note, happened_at, purchase_gross_per_liter, purchase_vat_rate, purchase_net_per_liter')
@@ -202,12 +273,21 @@ export async function loadFuelSavingsData({ supabase, isAdmin }) {
       .select('eli, act_pos, promulgated_on, valid_from, diesel_net, diesel_gross, vat_rate, source_url')
       .order('valid_from', { ascending: true })
       .limit(5000),
+    supabase
+      .from('fuel_market_prices')
+      .select('source, region, period_start, period_end, diesel_gross, label, source_url, fetched_at')
+      .eq('region', 'slaskie')
+      .order('period_start', { ascending: true })
+      .limit(5000),
   ]);
   if (movementsResult.error) throw movementsResult.error;
   if (pricesResult.error) throw pricesResult.error;
+  // Brak tabeli średnich (przed migracją) albo chwilowy błąd — liczymy dalej na cenach urzędowych.
+  if (marketResult.error) console.warn('Średnie ceny paliwa dla Śląska niedostępne:', marketResult.error.message || marketResult.error);
   return {
     movements: Array.isArray(movementsResult.data) ? movementsResult.data : [],
     referencePrices: Array.isArray(pricesResult.data) ? pricesResult.data : [],
+    marketPrices: !marketResult.error && Array.isArray(marketResult.data) ? marketResult.data : [],
   };
 }
 

@@ -1,3 +1,7 @@
+## 13.99
+- Moduł Tankowania na komputerze (decyzja właściciela 30.10.2026): bez formularza „Nowe tankowanie” (tankowania wpisują pracownicy w telefonie); kolejność: 1 Tankowania według samochodu (rozwinięte), 2 Oszczędności na własnym zbiorniku, 3 Raport miesięczny floty, 4 Wszystkie tankowania (zwinięte, z możliwością rozwinięcia). Kliknięcie samochodu rozwija jego historię.
+- Oszczędności: cena „na stacji” = średnia dla Śląska — 1) AutoCentrum (średnia tygodniowa ON, z archiwum), 2) zapaliwo.pl (średnia dzienna, zapisywana codziennie), 3) urzędowa cena maksymalna jako zabezpieczenie. Źródło widoczne przy każdym tankowaniu. Dla tankowań od 7.10: ok. 93,21 zł netto (wcześniej 107,49 zł wg ceny maksymalnej).
+
 ## 13.98
 - Serwis / Kosz: usunięty nieaktualny tekst „Trwałe usunięcie wymaga wpisania USUN i dodatkowego potwierdzenia”; nowy opis zgodny z jednym potwierdzeniem. W Koszu nie jest już pokazywany sprzeczny tekst „PDF i zdjęcia pozostają bezpieczne”.
 - Serwis / historia: przy każdym urządzeniu klienta lista przeglądów (data wykonania w strefie Europe/Warsaw, wynik, rzeczywisty wykonawca), także gdy rekord urządzenia został przebudowany (device_ref_id). Szczegóły wizyty pokazują historię zmian terminu, statusu, przydziału i wysyłek e-mail.

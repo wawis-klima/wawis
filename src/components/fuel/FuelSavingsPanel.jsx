@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  STATION_PRICE_SOURCES,
   calculateFuelSavings,
+  fuelVatRateForDate,
   loadFuelSavingsData,
   setFuelDeliveryPrice,
   syncFuelReferencePrices,
@@ -44,11 +46,15 @@ function monthLabel(monthKey) {
 }
 
 /** Wykres: cena netto na stacji (linia) i cena ze zbiornika (pozioma) — szary pas między nimi to oszczędność na litrze. */
-function PriceGapChart({ referencePrices, tankPrice, sinceKey }) {
-  const points = (referencePrices || [])
+function PriceGapChart({ marketPrices, referencePrices, tankPrice, sinceKey }) {
+  // Linia: średnia tygodniowa dla Śląska (AutoCentrum, netto); gdy jej brak — ceny urzędowe.
+  const weekly = (marketPrices || [])
+    .filter((row) => row.source === 'autocentrum' && String(row.period_end) >= String(sinceKey || ''))
+    .map((row) => ({ key: String(row.period_start), value: Number(row.diesel_gross) / (1 + fuelVatRateForDate(String(row.period_start), referencePrices) / 100) }));
+  const official = (referencePrices || [])
     .filter((price) => String(price.valid_from) >= String(sinceKey || ''))
-    .map((price) => ({ key: String(price.valid_from), value: Number(price.diesel_net) }))
-    .filter((point) => Number.isFinite(point.value));
+    .map((price) => ({ key: String(price.valid_from), value: Number(price.diesel_net) }));
+  const points = (weekly.length >= 2 ? weekly : official).filter((point) => Number.isFinite(point.value));
   if (points.length < 2 || !Number.isFinite(Number(tankPrice))) return null;
   const width = 640;
   const height = 150;
@@ -79,7 +85,7 @@ function PriceGapChart({ referencePrices, tankPrice, sinceKey }) {
         ) : null))}
       </svg>
       <figcaption>
-        <span><i className="isStation" />Cena maksymalna na stacji (netto)</span>
+        <span><i className="isStation" />{weekly.length >= 2 ? 'Średnia na stacjach — Śląsk (netto)' : 'Cena maksymalna na stacji (netto)'}</span>
         <span><i className="isTank" />Twoja cena ze zbiornika (netto)</span>
         <span><i className="isGap" />Oszczędność na każdym litrze</span>
       </figcaption>
@@ -88,7 +94,7 @@ function PriceGapChart({ referencePrices, tankPrice, sinceKey }) {
 }
 
 export default function FuelSavingsPanel({ supabase, isAdmin, entries = [], vehicles = [], refreshToken = 0 }) {
-  const [data, setData] = useState({ movements: [], referencePrices: [] });
+  const [data, setData] = useState({ movements: [], referencePrices: [], marketPrices: [] });
   const [loading, setLoading] = useState(true);
   const [syncInfo, setSyncInfo] = useState(null);
   const [error, setError] = useState('');
@@ -142,9 +148,9 @@ export default function FuelSavingsPanel({ supabase, isAdmin, entries = [], vehi
   if (!isAdmin) return null;
 
   return (
-    <section className="fuelCard fuelSavings" aria-labelledby="fuel-savings-title" data-testid="fuel-savings-panel">
-      <div className="fuelCardHeading">
-        <div><span className="fuelStep fuelSavingsStep">zł</span><h3 id="fuel-savings-title">Oszczędności na własnym zbiorniku</h3></div>
+    // Karta i nagłówek („2 Oszczędności na własnym zbiorniku”, zwijanie) są w FuelPanelBase — tu tylko treść.
+    <div className="fuelSavingsBody" data-testid="fuel-savings-panel">
+      <div className="fuelSavingsToolbar">
         <button type="button" className="fuelEditButton" onClick={() => void reload({ sync: true })} disabled={loading}>{loading ? 'Liczę…' : 'Odśwież ceny'}</button>
       </div>
 
@@ -188,15 +194,15 @@ export default function FuelSavingsPanel({ supabase, isAdmin, entries = [], vehi
           <li>
             <b>Paliwo na stacji:</b>{' '}
             {savings.todayReference
-              ? <>dziś maks. {perLiter(savings.todayReference.diesel_net)} netto ({perLiter(savings.todayReference.diesel_gross)} brutto) — urzędowa cena maksymalna oleju napędowego z obwieszczenia Ministra Energii (<a href={savings.todayReference.source_url} target="_blank" rel="noreferrer">Monitor Polski</a>), zmienia się prawie codziennie.</>
-              : 'brak aktualnej ceny urzędowej.'}
+              ? <>dziś {perLiter(savings.todayReference.net)} netto ({perLiter(savings.todayReference.gross)} brutto) — {savings.todayReference.label} (<a href={savings.todayReference.url} target="_blank" rel="noreferrer">źródło</a>).</>
+              : 'brak aktualnej ceny ze stacji.'}
           </li>
           <li><b>Oszczędność tankowania</b> = litry × (cena na stacji w dniu tankowania − cena ze zbiornika). Liczymy netto, bo firma odlicza VAT. Litry są brane z dostaw po kolei (najpierw najstarsza).</li>
-          <li className="isNote">Stacje mogą sprzedawać taniej niż cena maksymalna, więc wynik to górne oszacowanie. Ceny maksymalne obowiązują w programie „Ceny Paliwa Niżej” do 31.12.2026.</li>
+          <li className="isNote">Cena na stacji w dniu tankowania: 1) średnia tygodniowa dla Śląska z AutoCentrum, 2) gdy jej brak — średnia dzienna dla Śląska z zapaliwo.pl, 3) na końcu urzędowa cena maksymalna (Monitor Polski). Źródło jest podane przy każdym tankowaniu.</li>
         </ul>
       </div>
 
-      <PriceGapChart referencePrices={data.referencePrices} tankPrice={currentBatch?.netPrice} sinceKey={sinceKey} />
+      <PriceGapChart marketPrices={data.marketPrices} referencePrices={data.referencePrices} tankPrice={currentBatch?.netPrice} sinceKey={sinceKey} />
 
       {savings.deliveriesWithoutPrice.length ? (
         <div className="fuelSavingsMissing" data-testid="fuel-savings-missing-price">
@@ -234,13 +240,18 @@ export default function FuelSavingsPanel({ supabase, isAdmin, entries = [], vehi
             <span><strong>{row.vehicleLabel}</strong></span>
             <span>{liters(row.liters)}</span>
             <span>{perLiter(row.tankNetPerLiter)}</span>
-            <span>{row.reference ? <a href={row.reference.sourceUrl} target="_blank" rel="noreferrer" title={`Obwieszczenie ${row.reference.eli}, obowiązuje od ${row.reference.validFrom}`}>{perLiter(row.stationNetPerLiter)}</a> : '—'}</span>
+            <span>{row.reference ? (
+              <span className="fuelSavingsStation">
+                <a href={row.reference.sourceUrl} target="_blank" rel="noreferrer" title={`${row.reference.label} · ${row.reference.periodLabel}`}>{perLiter(row.stationNetPerLiter)}</a>
+                <small data-testid="fuel-savings-source">{STATION_PRICE_SOURCES[row.reference.source]?.short || ''}</small>
+              </span>
+            ) : '—'}</span>
             <span className={row.savingsNet == null ? 'isMissing' : row.savingsNet >= 0 ? 'isPositive' : 'isNegative'}>
               {row.savingsNet == null ? row.missingReason : money(row.savingsNet)}
             </span>
           </div>
         )) : <div className="fuelSavingsEmpty">{loading ? 'Liczę oszczędności…' : 'Brak tankowań ze zbiornika.'}</div>}
       </div>
-    </section>
+    </div>
   );
 }

@@ -87,7 +87,7 @@ assert.throws(() => normalizeFuelPricePerLiter('0'));
 // 4. Tylko administrator i tylko komputer; dane cen w bazie tylko dla administratora.
 const base = fs.readFileSync('src/components/fuel/FuelPanelBase.jsx', 'utf8');
 assert.match(base, /const displayVehicleOverview = Boolean\(showVehicleOverview && isAdmin\);/);
-assert.match(base, /\{displayVehicleOverview \? \(\s*<Suspense[^]*?<FuelSavingsPanel/, 'zakładka tylko w widoku administratora na komputerze');
+assert.match(base, /\{displayVehicleOverview \? \(\s*<section className="fuelCard fuelSavings"[^]*?<FuelSavingsPanel/, 'zakładka tylko w widoku administratora na komputerze');
 assert.match(base, /displayVehicleOverview && String\(tankDeliveryPrice \|\| ''\)\.trim\(\)/, 'cena dostawy tylko na komputerze');
 const panel = fs.readFileSync('src/components/fuel/FuelSavingsPanel.jsx', 'utf8');
 assert.match(panel, /if \(!isAdmin\) return null;/);

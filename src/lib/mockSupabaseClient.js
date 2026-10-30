@@ -224,6 +224,12 @@ function createSeedData() {
       { eli: 'MP/2026/985', act_year: 2026, act_pos: 985, promulgated_on: '2026-10-09', valid_from: '2026-10-10', diesel_net: 7.46, diesel_gross: 8.06, vat_rate: 8, source_url: 'https://api.sejm.gov.pl/eli/acts/MP/2026/985/text/O/M20260985.pdf' },
       { eli: 'MP/2026/1022', act_year: 2026, act_pos: 1022, promulgated_on: '2026-10-20', valid_from: '2026-10-21', diesel_net: 7.39, diesel_gross: 7.98, vat_rate: 8, source_url: 'https://api.sejm.gov.pl/eli/acts/MP/2026/1022/text/O/M20261022.pdf' },
     ],
+    // Średnie ceny ON dla Śląska (AutoCentrum, tygodniowe — wartości ze strony z 30.10.2026).
+    fuel_market_prices: [
+      { source: 'autocentrum', region: 'slaskie', period_start: '2026-10-05', period_end: '2026-10-11', diesel_gross: 7.86, label: '5.10 - 11.10', source_url: 'https://www.autocentrum.pl/paliwa/ceny-paliw/slaskie/on/', fetched_at: '2026-10-30T06:00:00.000Z' },
+      { source: 'autocentrum', region: 'slaskie', period_start: '2026-10-12', period_end: '2026-10-18', diesel_gross: 7.8, label: '12.10 - 18.10', source_url: 'https://www.autocentrum.pl/paliwa/ceny-paliw/slaskie/on/', fetched_at: '2026-10-30T06:00:00.000Z' },
+      { source: 'autocentrum', region: 'slaskie', period_start: '2026-10-19', period_end: '2026-10-25', diesel_gross: 7.92, label: '19.10 - 25.10', source_url: 'https://www.autocentrum.pl/paliwa/ceny-paliw/slaskie/on/', fetched_at: '2026-10-30T06:00:00.000Z' },
+    ],
   };
 }
 

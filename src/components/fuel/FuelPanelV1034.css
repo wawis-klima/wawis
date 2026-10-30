@@ -453,3 +453,7 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Zwijane sekcje modułu Tankowania na komputerze (30.10.2026). */
+.fuelMonthlyReportBody { display: grid; gap: 14px; }
+.fuelHistory .fuelCollapseButton, .fuelVehicleOverviewActions .fuelCollapseButton { margin-left: 8px; }

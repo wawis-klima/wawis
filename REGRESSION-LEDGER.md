@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## FUEL-LAYOUT-SOURCES-1399 — Tankowania na komputerze i średnie ceny dla Śląska (30.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| FLS-1399-LAYOUT | FIXED-UNVERIFIED | Decyzja właściciela: na komputerze bez „Nowe tankowanie”; 1 Tankowania według samochodu (rozwinięte), 2 Oszczędności, 3 Raport, 4 Wszystkie tankowania (zwinięte). Formularz zostaje w telefonie. E2E desktop-fuel-savings-v1397 (kolejność, zwijanie, klik samochodu rozwija historię); fuel-module-v1014 i update-reload-guard-v1082 — sprawdzenia formularza przeniesione na iPhone (@mobile), bez osłabienia asercji. |
+| FLS-1399-SOURCES | FIXED-UNVERIFIED | Cena na stacji: AutoCentrum (tydzień, Śląsk) → zapaliwo.pl (dzień, Śląsk, do 3 dni) → urzędowa. Netto = brutto / (1 + VAT z obwieszczenia / okresu CPN / 23%). smoke-fuel-price-sources na fragmentach prawdziwych stron z 30.10 (AutoCentrum 14 tygodni, zapaliwo 7,98 zł) → 93,21 zł netto. Biuletyn UE odrzucony przez właściciela (tylko co tydzień, kraj). |
+| FLS-1399-DB | PREPARED | `supabase/pending/fuel_market_prices_slaskie.sql` — NIE wykonane (polecenie właściciela: bez wdrażania). Test lokalny PG16: zapis, aktualizacja tygodnia, odrzucenie złych danych, RLS tylko administrator, zadanie pg_cron. Zakładka działa też bez tej tabeli (ceny urzędowe). |
+| FLS-1399-EDGE | PREPARED | Funkcja fuel-reference-prices: tryb x-wawis-snapshot (tylko publiczne średnie ceny, limit 1×/dobę zapaliwo, 6 h AutoCentrum), podgląd {"action":"market"}; usunięty próbny odczyt biuletynu UE. Na produkcji nadal wersja 3 — wdrożenie razem z migracją na polecenie właściciela. |
+| FLS-1399-LIVE | EXTERNAL | Po poleceniu wdrożenia: administrator na komputerze — układ 1–4, rozwinięcie oszczędności, źródło „AutoCentrum” przy tankowaniach. |
+
 ## SERVICE-ADMIN-AUDIT-1398 — audyt modułu serwisowego administratora (30.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
