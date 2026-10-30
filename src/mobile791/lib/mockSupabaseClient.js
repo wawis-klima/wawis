@@ -347,7 +347,13 @@ class MockQueryBuilder {
   insert(payload) {
     const rows = Array.isArray(payload) ? payload : [payload];
     const table = this.getTable();
-    const inserted = rows.map((row) => ({ id: row.id || `mock-${this.tableName}-${Date.now()}-${Math.random().toString(36).slice(2)}`, created_at: row.created_at || nowIso(), ...row }));
+    const inserted = rows.map((row) => ({
+      id: row.id || `mock-${this.tableName}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      created_at: row.created_at || nowIso(),
+      // Jak w desktopowej bazie testowej: czas tankowania nadaje serwer.
+      ...(this.tableName === 'fuel_entries' ? { fueled_at: row.fueled_at || nowIso() } : {}),
+      ...row,
+    }));
     table.push(...inserted);
     this.pendingMutation = inserted;
     return this;

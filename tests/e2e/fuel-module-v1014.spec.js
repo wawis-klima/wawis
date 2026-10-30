@@ -1,5 +1,5 @@
 import { devices, expect, test } from '@playwright/test';
-import { ADMIN, WORKER, login } from './mock-helpers.js';
+import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 // 30.10.2026: na komputerze nie ma formularza „Nowe tankowanie” (tankowania wpisują pracownicy w telefonie) —
 // zestawienie i filtr historii sprawdzamy na tankowaniu dopisanym do testowej bazy; formularz — na iPhonie (niżej).
@@ -48,7 +48,16 @@ test.describe('@mobile Tankowania — formularz na iPhonie', () => {
   test.use(iphone14);
 
   test('@mobile administrator zapisuje tankowanie; formularz ostrzega o dużym skoku i blokuje ponad 5000 km bez zdjęcia', async ({ page }) => {
-    await login(page, ADMIN);
+    // Telefonowa baza testowa nie ma floty — dopisujemy samochód jak w bazie desktopowej.
+    await resetMockSupabase(page);
+    await page.evaluate(() => {
+      const key = 'klima-mock-supabase-store-v3';
+      const store = JSON.parse(localStorage.getItem(key) || '{}');
+      store.fuel_vehicles = [{ id: 'mock-fuel-vehicle-001', vehicle_name: 'Doblo', registration_number: 'SZA 6149G', is_active: true, tank_capacity_liters: null, last_odometer_km: null, last_fueled_at: null, created_at: '2026-09-08T10:00:00.000Z', updated_at: '2026-09-08T10:00:00.000Z' }];
+      store.fuel_entries = [];
+      localStorage.setItem(key, JSON.stringify(store));
+    });
+    await loginWithoutReset(page, ADMIN);
     await page.getByRole('button', { name: 'Paliwo' }).click();
     await page.getByLabel('Numer rejestracyjny').selectOption({ label: 'Doblo — SZA 6149G' });
     await page.getByPlaceholder('np. 48,5').fill('20');
