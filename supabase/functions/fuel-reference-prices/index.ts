@@ -3,7 +3,13 @@
 //
 // POST (administrator, JWT) — dociąga brakujące obwieszczenia od początku liczenia zbiornika.
 // POST z nagłówkiem x-wawis-dry: 1 — bez logowania i bez zapisu: odczyt i analiza ostatnich obwieszczeń
-// (domyślnie 3, body {"limit": n} do 40; diagnostyka parsera; wyłącznie dane publiczne).
+// (domyślnie 3, body {"limit": n} do 40; diagnostyka parsera; wyłącznie dane publiczne);
+// body {"action":"market"} — podgląd średnich dla Śląska (AutoCentrum, zapaliwo.pl), też bez zapisu.
+// POST z nagłówkiem x-wawis-snapshot: 1 (codzienne zadanie pg_cron) — zapis WYŁĄCZNIE publicznych średnich cen
+// rynkowych do public.fuel_market_prices (zapaliwo najwyżej raz na dobę, AutoCentrum raz na 6 h).
+//
+// Źródła ceny „na stacji” (decyzja właściciela 30.10.2026): 1) AutoCentrum — średnia tygodniowa dla
+// śląskiego, 2) zapaliwo.pl — średnia dzienna dla śląskiego, 3) urzędowa cena maksymalna (Monitor Polski).
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { extractText, getDocumentProxy } from "npm:unpdf@0.12.1";
 import {
@@ -14,6 +20,10 @@ import {
   parseValidFromInText,
   parsePublishedOnFromText,
   normalizePdfText,
+  AUTOCENTRUM_SLASKIE_ON_URL,
+  ZAPALIWO_URL,
+  parseAutocentrumWeekly,
+  parseZapaliwoSlaskieDiesel,
 } from "./parse.js";
 
 const corsHeaders = {
@@ -77,6 +87,61 @@ async function analyseAct(item: EliItem) {
   };
 }
 
+function warsawDate(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+}
+
+async function readMarketPrices() {
+  const today = warsawDate();
+  const result: { autocentrum: unknown[]; zapaliwo: number | null; errors: string[] } = { autocentrum: [], zapaliwo: null, errors: [] };
+  try {
+    const response = await fetchWithTimeout(AUTOCENTRUM_SLASKIE_ON_URL, 20000);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    result.autocentrum = parseAutocentrumWeekly(await response.text(), today);
+    if (!result.autocentrum.length) result.errors.push("AutoCentrum: nie znaleziono wykresu średnich dla śląskiego");
+  } catch (error) {
+    result.errors.push(`AutoCentrum: ${String((error as Error)?.message || error).slice(0, 120)}`);
+  }
+  try {
+    const response = await fetchWithTimeout(ZAPALIWO_URL, 20000);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    result.zapaliwo = parseZapaliwoSlaskieDiesel(await response.text());
+    if (result.zapaliwo == null) result.errors.push("zapaliwo.pl: nie znaleziono ceny ON dla śląskiego");
+  } catch (error) {
+    result.errors.push(`zapaliwo.pl: ${String((error as Error)?.message || error).slice(0, 120)}`);
+  }
+  return { today, ...result };
+}
+
+// deno-lint-ignore no-explicit-any
+async function syncMarketPrices(admin: any, { respectRateLimit = false } = {}) {
+  const today = warsawDate();
+  if (respectRateLimit) {
+    const { data: recent } = await admin.from("fuel_market_prices").select("source, period_start, fetched_at")
+      .gte("fetched_at", new Date(Date.now() - 6 * 3600000).toISOString());
+    const hasZapaliwoToday = (recent || []).some((row: { source: string; period_start: string }) => row.source === "zapaliwo" && row.period_start === today);
+    const hasAutocentrumRecent = (recent || []).some((row: { source: string }) => row.source === "autocentrum");
+    if (hasZapaliwoToday && hasAutocentrumRecent) return { added: 0, skipped: "rate-limit", errors: [] as string[] };
+  }
+  const market = await readMarketPrices();
+  const rows = [
+    ...(market.autocentrum as Array<{ periodStart: string; periodEnd: string; label: string; gross: number }>).map((row) => ({
+      source: "autocentrum", region: "slaskie", period_start: row.periodStart, period_end: row.periodEnd,
+      diesel_gross: row.gross, label: row.label, source_url: AUTOCENTRUM_SLASKIE_ON_URL, fetched_at: new Date().toISOString(),
+    })),
+    ...(market.zapaliwo == null ? [] : [{
+      source: "zapaliwo", region: "slaskie", period_start: market.today, period_end: market.today,
+      diesel_gross: market.zapaliwo, label: `śląskie ${market.today}`, source_url: ZAPALIWO_URL, fetched_at: new Date().toISOString(),
+    }]),
+  ];
+  if (rows.length) {
+    const { error } = await admin.from("fuel_market_prices").upsert(rows, { onConflict: "source,region,period_start" });
+    if (error) throw error;
+  }
+  if (market.errors.length) console.warn("fuel market prices", market.errors);
+  return { added: rows.length, errors: market.errors };
+}
+
 function warsawYear(date = new Date()) {
   return Number(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw", year: "numeric" }).format(date));
 }
@@ -88,6 +153,7 @@ Deno.serve(async (request) => {
   try {
     if (request.headers.get("x-wawis-dry") === "1") {
       const body = await request.json().catch(() => ({}));
+      if (body?.action === "market") return json({ ok: true, dry: true, market: await readMarketPrices() });
       const limit = Math.min(Math.max(Number(body?.limit) || 3, 1), MAX_PDFS_PER_RUN);
       const acts = (await listActs(warsawYear()))
         .filter((item) => item.textPDF)
@@ -98,6 +164,14 @@ Deno.serve(async (request) => {
         try { analysed.push(await analyseAct(act)); } catch (error) { analysed.push({ eli: act.ELI, error: String((error as Error)?.message || error) }); }
       }
       return json({ ok: true, dry: true, analysed });
+    }
+
+    if (request.headers.get("x-wawis-snapshot") === "1") {
+      const url = Deno.env.get("SUPABASE_URL") || "";
+      const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      if (!url || !key) return json({ error: "Brakuje konfiguracji Supabase." }, 500);
+      const result = await syncMarketPrices(createClient(url, key), { respectRateLimit: true });
+      return json({ ok: true, snapshot: true, ...result });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -165,11 +239,20 @@ Deno.serve(async (request) => {
     }
     if (failures.length) console.warn("fuel-reference-prices failures", failures);
 
+    // Średnie dla Śląska — błąd nie przerywa (zostają ceny urzędowe jako zabezpieczenie).
+    let market: { added: number; errors: string[] } = { added: 0, errors: [] };
+    try {
+      market = await syncMarketPrices(admin);
+    } catch (error) {
+      market = { added: 0, errors: [String((error as Error)?.message || error).slice(0, 160)] };
+    }
+
     return json({
       ok: true,
       added: rows.length,
       pending: Math.max(0, candidates.length - MAX_PDFS_PER_RUN),
       failures,
+      market,
     });
   } catch (error) {
     console.error("fuel-reference-prices error", error);

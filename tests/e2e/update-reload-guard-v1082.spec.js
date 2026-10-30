@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
 import { ADMIN, login, resetMockSupabase } from './mock-helpers.js';
 
 async function guardState(page) {
@@ -62,8 +62,37 @@ test.describe('v10.82 update reload guard — real React integration', () => {
 
   test('paliwo i komentarz inline rejestrują ochronę dopiero po wpisaniu niezapisanych danych', async ({ page }) => {
     await login(page, ADMIN);
+    // 30.10.2026: na komputerze moduł Tankowania nie ma formularza — otwarcie nie może rejestrować blokady.
+    // Ochronę formularza paliwa sprawdza test @mobile niżej (formularz jest tylko w telefonie).
     await page.getByRole('button', { name: /Tankowania|Paliwo/ }).click();
-    await page.getByRole('button', { name: /Rozwiń/ }).click();
+    await expect(page.getByRole('heading', { name: 'Tankowania według samochodu' })).toBeVisible();
+
+    let state = await guardState(page);
+    expect(state.blockers).toBe(0);
+    expect(state.beforeUnloadWarnings).toBe(0);
+
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /W trakcie:/ }).click();
+    await page.getByRole('table').getByText('Klient Testowy B', { exact: true }).click();
+    const comment = page.getByPlaceholder('Napisz komentarz...');
+    await expect(comment).toBeVisible();
+    await comment.fill('Niezapisany komentarz 10.82');
+    await page.waitForTimeout(25);
+    state = await guardState(page);
+    expect(state.blockers).toBeGreaterThanOrEqual(1);
+    expect(state.beforeUnloadWarnings).toBeGreaterThanOrEqual(1);
+  });
+});
+
+test.describe('@mobile v10.82 ochrona formularza paliwa w telefonie', () => {
+  const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
+  test.use(iphone14);
+
+  test('@mobile paliwo rejestruje ochronę dopiero po wpisaniu niezapisanych danych', async ({ page }) => {
+    await resetMockSupabase(page);
+    await login(page, ADMIN);
+    await page.getByRole('button', { name: 'Paliwo' }).click();
+    await expect(page.getByPlaceholder('np. 48,5')).toBeVisible();
 
     let state = await guardState(page);
     expect(state.blockers).toBe(0);
@@ -80,16 +109,5 @@ test.describe('v10.82 update reload guard — real React integration', () => {
     state = await guardState(page);
     expect(state.blockers).toBe(0);
     expect(state.beforeUnloadWarnings).toBe(0);
-
-    await page.getByRole('button', { name: /^Montaże$/ }).click();
-    await page.getByRole('button', { name: /W trakcie:/ }).click();
-    await page.getByRole('table').getByText('Klient Testowy B', { exact: true }).click();
-    const comment = page.getByPlaceholder('Napisz komentarz...');
-    await expect(comment).toBeVisible();
-    await comment.fill('Niezapisany komentarz 10.82');
-    await page.waitForTimeout(25);
-    state = await guardState(page);
-    expect(state.blockers).toBeGreaterThanOrEqual(1);
-    expect(state.beforeUnloadWarnings).toBeGreaterThanOrEqual(1);
   });
 });

@@ -24,6 +24,15 @@ import { blockUnsavedWork } from '../../modules/update-reload-guard.js';
 // WAWIS 13.97: oszczędności na zbiorniku — ładowane tylko na komputerze u administratora.
 const FuelSavingsPanel = lazy(() => import('./FuelSavingsPanel.jsx'));
 
+function FuelSectionToggle({ open, onToggle, controls, label }) {
+  return (
+    <button type="button" className="fuelCollapseButton" aria-expanded={open} aria-controls={controls} aria-label={`${open ? 'Zwiń' : 'Rozwiń'} ${label}`} onClick={onToggle}>
+      <span aria-hidden="true">{open ? 'Zwiń' : 'Rozwiń'}</span>
+      <b aria-hidden="true">{open ? '▲' : '▼'}</b>
+    </button>
+  );
+}
+
 const WARSAW_DATE_TIME = new Intl.DateTimeFormat('pl-PL', {
   timeZone: 'Europe/Warsaw',
   dateStyle: 'medium',
@@ -226,6 +235,11 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
   const [editLiters, setEditLiters] = useState('');
   const [editOdometerKm, setEditOdometerKm] = useState('');
   const [entryFormExpanded, setEntryFormExpanded] = useState(() => !showVehicleOverview);
+  // Komputer (administrator): 1 Tankowania według samochodu (rozwinięte), 2 Oszczędności, 3 Raport miesięczny,
+  // 4 Wszystkie tankowania (zwinięte). Formularza „Nowe tankowanie” na komputerze nie ma — tankowania wpisują
+  // pracownicy w telefonie (decyzja właściciela 30.10.2026).
+  const [desktopSectionsOpen, setDesktopSectionsOpen] = useState({ vehicles: true, savings: false, monthly: false, history: false });
+  const toggleDesktopSection = (key) => setDesktopSectionsOpen((current) => ({ ...current, [key]: !current[key] }));
   const [now, setNow] = useState(() => new Date());
   const [busy, setBusy] = useState(false);
   const [entrySaveInProgress, setEntrySaveInProgress] = useState(false);
@@ -756,7 +770,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
           <span className="fuelEyebrow">{isAdmin ? 'Flota firmowa · widok administratora' : 'Flota firmowa · Twoje tankowania'}</span>
           <h2 id="fuel-module-title">Tankowania</h2>
           {displayVehicleOverview ? (
-            <p>Wybierz pojazd, wpisz litry i podaj przebieg ręcznie albo odczytaj go ze zdjęcia. Czas nada serwer.</p>
+            <p>Tankowania floty, oszczędności na własnym zbiorniku i raport miesięczny. Nowe tankowania wpisują pracownicy w telefonie.</p>
           ) : null}
         </div>
         <button type="button" className="fuelRefreshButton" onClick={() => void refresh()} disabled={busy || loading}>Odśwież</button>
@@ -852,6 +866,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       </section>
       ) : null}
 
+      {!displayVehicleOverview ? (
       <div className="fuelGrid fuelGridSingle">
         <form className={`fuelCard fuelEntryForm ${entryFormCollapsible && !isEntryFormExpanded ? 'isCollapsed' : ''}`} onSubmit={handleSubmit}>
           <div className="fuelCardHeading fuelEntryCardHeading">
@@ -945,16 +960,20 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
           ) : null}
         </form>
       </div>
+      ) : null}
 
       {displayVehicleOverview ? (
         <section className="fuelCard fuelVehicleOverview" aria-labelledby="fuel-vehicle-overview-title">
           <div className="fuelCardHeading">
-            <div><span className="fuelStep">2</span><h3 id="fuel-vehicle-overview-title">Tankowania według samochodu</h3></div>
+            <div><span className="fuelStep">1</span><h3 id="fuel-vehicle-overview-title">Tankowania według samochodu</h3></div>
             <div className="fuelVehicleOverviewActions">
-              <span>Kliknij samochód, aby pokazać jego historię</span>
-              <button type="button" className="fuelCapacityToggle" onClick={handleToggleCapacityEditor} disabled={busy}>{capacityEditorOpen ? 'Zamknij baki' : 'Ustaw baki'}</button>
+              {desktopSectionsOpen.vehicles ? <span>Kliknij samochód, aby pokazać jego historię</span> : null}
+              {desktopSectionsOpen.vehicles ? <button type="button" className="fuelCapacityToggle" onClick={handleToggleCapacityEditor} disabled={busy}>{capacityEditorOpen ? 'Zamknij baki' : 'Ustaw baki'}</button> : null}
+              <FuelSectionToggle open={desktopSectionsOpen.vehicles} onToggle={() => toggleDesktopSection('vehicles')} controls="fuel-vehicle-overview-body" label="tankowania według samochodu" />
             </div>
           </div>
+          {desktopSectionsOpen.vehicles ? (
+          <div id="fuel-vehicle-overview-body">
           {capacityEditorOpen ? (
             <div className="fuelCapacityEditor">
               <div className="fuelCapacityEditorHeading"><strong>Pojemność baków</strong><span>Ustaw raz dla każdego samochodu. Puste pole wyłącza kontrolę pojemności.</span></div>
@@ -973,7 +992,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
             <div className="fuelVehicleSummaryHeader" aria-hidden="true">
               <span>Samochód</span><span>Liczba tankowań</span><span>Łącznie paliwa</span><span>Śr. spalanie</span><span>Ostatnie tankowanie</span>
             </div>
-            <button type="button" className={`fuelVehicleSummaryRow ${historyVehicleId ? '' : 'isActive'}`} aria-pressed={!historyVehicleId} onClick={() => setHistoryVehicleId('')}>
+            <button type="button" className={`fuelVehicleSummaryRow ${historyVehicleId ? '' : 'isActive'}`} aria-pressed={!historyVehicleId} onClick={() => { setHistoryVehicleId(''); setDesktopSectionsOpen((current) => ({ ...current, history: true })); }}>
               <span><strong>Wszystkie samochody</strong><small>Pełna historia floty</small></span>
               <b>{formatEntryCount(entries.length)}</b>
               <span>{formatLitersTotal(allLiters)}</span>
@@ -981,7 +1000,7 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
               <span>{entries[0] ? formatFuelDate(entries[0].fueled_at) : '—'}</span>
             </button>
             {vehicleStats.map(({ vehicle, count, liters: vehicleLiters, lastEntry, consumption }) => (
-              <button key={vehicle.id} type="button" className={`fuelVehicleSummaryRow ${historyVehicleId === vehicle.id ? 'isActive' : ''}`} aria-pressed={historyVehicleId === vehicle.id} onClick={() => setHistoryVehicleId(vehicle.id)}>
+              <button key={vehicle.id} type="button" className={`fuelVehicleSummaryRow ${historyVehicleId === vehicle.id ? 'isActive' : ''}`} aria-pressed={historyVehicleId === vehicle.id} onClick={() => { setHistoryVehicleId(vehicle.id); setDesktopSectionsOpen((current) => ({ ...current, history: true })); }}>
                 <span><strong>{getVehicleLabel(vehicle)}</strong><small>{formatTankCapacity(vehicle.tank_capacity_liters)} · {vehicle.is_active ? 'Aktywny' : 'Ukryty'}</small></span>
                 <b>{formatEntryCount(count)}</b>
                 <span>{formatLitersTotal(vehicleLiters)}</span>
@@ -991,27 +1010,44 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
             ))}
           </div>
           <p className="fuelConsumptionNote">Średnie spalanie jest liczone od drugiego tankowania: litry zatankowane do pełna ÷ przejechane kilometry × 100. Nietypowo wysokie spalanie jest oznaczane po zebraniu co najmniej dwóch wcześniejszych wyników.</p>
+          </div>
+          ) : null}
         </section>
       ) : null}
 
       {displayVehicleOverview ? (
-        <Suspense fallback={<section className="fuelCard"><p className="fuelConsumptionNote">Wczytuję oszczędności…</p></section>}>
-          <FuelSavingsPanel
-            supabase={supabase}
-            isAdmin={isAdmin}
-            entries={entries}
-            vehicles={vehicles}
-            refreshToken={`${tankStatus.last_movement_at || ''}|${tankStatus.balance_liters || 0}`}
-          />
-        </Suspense>
+        <section className="fuelCard fuelSavings" aria-labelledby="fuel-savings-title" data-testid="fuel-savings-section">
+          <div className="fuelCardHeading">
+            <div><span className="fuelStep">2</span><h3 id="fuel-savings-title">Oszczędności na własnym zbiorniku</h3></div>
+            <FuelSectionToggle open={desktopSectionsOpen.savings} onToggle={() => toggleDesktopSection('savings')} controls="fuel-savings-body" label="oszczędności na własnym zbiorniku" />
+          </div>
+          {desktopSectionsOpen.savings ? (
+            <div id="fuel-savings-body">
+              <Suspense fallback={<p className="fuelConsumptionNote">Wczytuję oszczędności…</p>}>
+                <FuelSavingsPanel
+                  supabase={supabase}
+                  isAdmin={isAdmin}
+                  entries={entries}
+                  vehicles={vehicles}
+                  refreshToken={`${tankStatus.last_movement_at || ''}|${tankStatus.balance_liters || 0}`}
+                />
+              </Suspense>
+            </div>
+          ) : null}
+        </section>
       ) : null}
 
       {displayVehicleOverview ? (
         <section className="fuelCard fuelMonthlyReport" aria-labelledby="fuel-monthly-report-title">
           <div className="fuelCardHeading fuelMonthlyReportHeading">
             <div><span className="fuelStep">3</span><h3 id="fuel-monthly-report-title">Raport miesięczny floty</h3></div>
-            <label className="fuelMonthPicker"><span>Miesiąc</span><input type="month" value={reportMonth} onChange={(event) => setReportMonth(event.target.value)} /></label>
+            <div className="fuelVehicleOverviewActions">
+              {desktopSectionsOpen.monthly ? <label className="fuelMonthPicker"><span>Miesiąc</span><input type="month" value={reportMonth} onChange={(event) => setReportMonth(event.target.value)} /></label> : null}
+              <FuelSectionToggle open={desktopSectionsOpen.monthly} onToggle={() => toggleDesktopSection('monthly')} controls="fuel-monthly-report-body" label="raport miesięczny floty" />
+            </div>
           </div>
+          {desktopSectionsOpen.monthly ? (
+          <div id="fuel-monthly-report-body" className="fuelMonthlyReportBody">
           <div className="fuelMonthlySummary">
             <div><span>{formatMonthLabel(reportMonth)}</span><strong>{monthlyReport.totals.distanceKm.toLocaleString('pl-PL')} km</strong><small>przejechane</small></div>
             <div><span>Tankowania</span><strong>{monthlyReport.totals.tankings}</strong><small>{formatLitersTotal(monthlyReport.totals.fueledLiters)}</small></div>
@@ -1030,6 +1066,8 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
             ))}
           </div>
           <p className="fuelConsumptionNote">Kilometry i spalanie są przypisane do miesiąca, w którym kończy się odcinek między kolejnymi tankowaniami do pełna.</p>
+          </div>
+          ) : null}
         </section>
       ) : null}
 
@@ -1037,11 +1075,14 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
         <div className={`fuelCardHeading ${compactMobileAdmin ? 'fuelHistoryHeading' : ''}`}>
           <div><span className="fuelStep">{displayVehicleOverview ? '4' : '2'}</span><h3>{selectedHistoryVehicle ? `Historia: ${getVehicleLabel(selectedHistoryVehicle)}` : isAdmin ? 'Wszystkie tankowania' : 'Moje tankowania'}</h3></div>
           <span>{visibleEntries.length} wpisów</span>
+          {displayVehicleOverview ? (
+            <FuelSectionToggle open={desktopSectionsOpen.history} onToggle={() => toggleDesktopSection('history')} controls="fuel-history-body" label="wszystkie tankowania" />
+          ) : null}
           {compactMobileAdmin ? (
             <button type="button" className="fuelHistoryRefreshIcon" onClick={() => void refresh()} disabled={busy || loading} aria-label="Odśwież tankowania" title="Odśwież">↻</button>
           ) : null}
         </div>
-        {loading ? <p className="fuelEmpty">Ładowanie historii…</p> : visibleEntries.length ? (
+        {displayVehicleOverview && !desktopSectionsOpen.history ? null : loading ? <p className="fuelEmpty">Ładowanie historii…</p> : visibleEntries.length ? (
           <div className="fuelHistoryList">
             {pagedVisibleEntries.map((entry) => {
               const interval = displayVehicleOverview ? consumptionByEntryId.get(entry.id) : null;

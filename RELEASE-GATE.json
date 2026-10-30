@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.98",
+  "version": "13.99",
   "scope": "full",
-  "release_branch": "release/v13.98",
+  "release_branch": "release/v13.99",
   "baseline_diagnostics": {
     "checked": true,
-    "result": "READ_ONLY",
-    "notes": "30.10.2026: wyłącznie SELECT na produkcji — 3 wizyty (wszystkie wykonane, 1 w Koszu), komplet PDF/podpisów/zdjęć w Storage, 0 osieroconych plików, 0 zaległych zdarzeń PUSH, 0 wysyłek e-mail. Bez zmian bazy i Storage."
+    "result": "OWNER_REQUEST",
+    "notes": "Polecenie właściciela 30.10.2026 07:00: przygotować nowy układ Tankowania na komputerze i średnie ceny dla Śląska; 11:23 polecenie wdrożenia („Wdrażaj 1399”)."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.98",
+    "source_branch": "release/v13.99",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_ADMIN_SERVICE_VIEWS",
-    "evidence_source": "iPhone administratora: tekst w Koszu (jedno potwierdzenie), historia urządzenia u klienta, historia wizyty, statusy, historia wysyłek e-mail.",
-    "notes": "Nie usuwać na stałe prawdziwych serwisów ani nie wysyłać e-maili do klientów wyłącznie w celu testu."
+    "result": "EXTERNAL_DESKTOP_ADMIN",
+    "evidence_source": "Po wdrożeniu: układ 1–4 na komputerze, oszczędności ze źródłem AutoCentrum. Migracja 20261030102441 (MD5 zgodne) i funkcja Edge fuel-reference-prices v4 wdrożone 30.10.2026 przed scaleniem.",
+    "notes": "Polecenie wdrożenia właściciela 30.10.2026 11:23."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "13.98: poprawki frontendu modułu serwisowego administratora (tekst Kosza, statusy, historia urządzenia i wizyty, e-mail retry); bez zmian SQL/RLS/Storage/Edge",
-    "release_ci": "WAWIS PR checks, Closure Gate, smoke-service-admin-audit-v1398 (wykonanie modułów, RED na 13.96), smoke-service-execution-v1389",
-    "postdeploy": "Oczekuje: Vercel READY/13.98 i /app-version.json. iPhone poza CI."
+    "code": "13.99: Tankowania na komputerze (układ 1–4, bez formularza), oszczędności według średnich cen ON dla Śląska; nowa tabela fuel_market_prices + pg_cron, funkcja Edge fuel-reference-prices v4",
+    "release_ci": "WAWIS PR checks, Closure Gate, smoke-fuel-price-sources, smoke-fuel-savings-v1397, E2E desktop-fuel-savings-v1397",
+    "postdeploy": "Oczekuje: Vercel READY/13.99 i /app-version.json. iPhone poza CI (zmiana tylko na komputerze)."
   }
 }

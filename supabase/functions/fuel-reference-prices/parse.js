@@ -106,3 +106,88 @@ export function pdfUrlForAct(item = {}) {
   if (!year || !pos) return '';
   return `https://api.sejm.gov.pl/eli/acts/MP/${year}/${pos}/text/O/M${year}${String(pos).padStart(4, '0')}.pdf`;
 }
+
+// ── Średnie ceny rynkowe dla Śląska (decyzja właściciela 30.10.2026) ──────────────────────────────────────
+// Kolejność źródeł ceny „na stacji”: 1) AutoCentrum — średnia tygodniowa dla województwa śląskiego (archiwum
+// 3 miesięcy na stronie), 2) zapaliwo.pl — średnia dzienna dla śląskiego (bez archiwum, zapisywana codziennie),
+// 3) urzędowa cena maksymalna (Monitor Polski). Obie strony pozwalają robotom czytać te adresy (robots.txt).
+
+export const AUTOCENTRUM_SLASKIE_ON_URL = 'https://www.autocentrum.pl/paliwa/ceny-paliw/slaskie/on/';
+export const ZAPALIWO_URL = 'https://zapaliwo.pl/';
+
+function decodeHtmlAttribute(value) {
+  return String(value || '')
+    .replace(/&quot;/g, '"').replace(/&#039;|&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+}
+
+function dayMonth(text) {
+  const match = String(text || '').trim().match(/^(\d{1,2})\.(\d{1,2})$/);
+  return match ? { day: Number(match[1]), month: Number(match[2]) } : null;
+}
+
+/**
+ * Etykieta tygodnia z wykresu AutoCentrum („5.10 - 11.10”, „29.12 - 4.01”) → daty ISO.
+ * Rok: koniec okresu nie może być późniejszy niż dzień pobrania (+1 dzień zapasu).
+ */
+export function resolveWeekLabel(label, fetchedOnIso) {
+  const parts = String(label || '').split(/\s*[-–]\s*/);
+  if (parts.length !== 2) return null;
+  const start = dayMonth(parts[0]);
+  const end = dayMonth(parts[1]);
+  if (!start || !end || !/^\d{4}-\d{2}-\d{2}$/.test(String(fetchedOnIso))) return null;
+  let endYear = Number(fetchedOnIso.slice(0, 4));
+  let endIso = isoDate(endYear, end.month, end.day);
+  if (endIso && endIso > addDays(fetchedOnIso, 1)) {
+    endYear -= 1;
+    endIso = isoDate(endYear, end.month, end.day);
+  }
+  const startYear = start.month > end.month ? endYear - 1 : endYear;
+  const startIso = isoDate(startYear, start.month, start.day);
+  if (!startIso || !endIso || startIso > endIso) return null;
+  return { periodStart: startIso, periodEnd: endIso };
+}
+
+/**
+ * Wykres „Średnie ceny” na stronie AutoCentrum (atrybut data-chart): tygodniowe średnie ON dla śląskiego.
+ * @returns {Array<{ periodStart: string, periodEnd: string, label: string, gross: number }>}
+ */
+export function parseAutocentrumWeekly(html, fetchedOnIso) {
+  const rows = [];
+  const pattern = /data-chart='([^']*)'/g;
+  let match;
+  while ((match = pattern.exec(String(html || '')))) {
+    let chart;
+    try { chart = JSON.parse(decodeHtmlAttribute(match[1])); } catch { continue; }
+    const labels = Array.isArray(chart?.labels) ? chart.labels : [];
+    const dataset = (Array.isArray(chart?.datasets) ? chart.datasets : [])
+      .find((item) => /śląskie/i.test(String(item?.label || '')) && /\bON\b/.test(String(item?.label || '')) && !/dolno/i.test(String(item?.label || '')));
+    if (!dataset || !Array.isArray(dataset.data)) continue;
+    labels.forEach((label, index) => {
+      const gross = Number(dataset.data[index]);
+      const period = resolveWeekLabel(label, fetchedOnIso);
+      if (!period || !Number.isFinite(gross) || gross < 2 || gross > 20) return;
+      rows.push({ ...period, label: String(label), gross: Math.round(gross * 100) / 100 });
+    });
+    if (rows.length) break;
+  }
+  return rows;
+}
+
+/**
+ * Tabela województw na zapaliwo.pl: „Śląskie 6,44 zł 6,91 zł 7,98 zł …” przy kolumnach Pb95, Pb98, Diesel (ON).
+ * Zwraca cenę ON dla śląskiego albo null, gdy układ tabeli jest inny niż oczekiwany (wtedy nie zgadujemy).
+ */
+export function parseZapaliwoSlaskieDiesel(html) {
+  const text = String(html || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;| /g, ' ')
+    .replace(/\s+/g, ' ');
+  const header = text.match(/Województwo\s*\S*\s*Pb\s?95\s*\S*\s*Pb\s?98\s*\S*\s*Diesel\s*\(ON\)/i);
+  if (!header) return null;
+  const row = text.match(/(?:^|[^A-Za-ząćęłńóśźżĄĆĘŁŃÓŚŹŻ])Śląskie\s+(\d{1,2},\d{2})\s*zł\D{0,6}?(\d{1,2},\d{2})\s*zł\D{0,6}?(\d{1,2},\d{2})\s*zł/);
+  if (!row) return null;
+  const gross = toNumber(row[3]);
+  return gross && gross > 2 && gross < 20 ? gross : null;
+}

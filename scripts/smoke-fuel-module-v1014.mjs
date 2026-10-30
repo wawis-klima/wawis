@@ -256,7 +256,10 @@ assert.doesNotMatch(panel, /handleAddVehicle|handleToggleVehicle/, 'Ukryty panel
 assert.match(panel, /Tankowania według samochodu/);
 assert.match(panel, /useState\(\(\) => !showVehicleOverview\)/, 'Desktopowy formularz tankowania ma startować zwinięty, a mobile rozwinięty.');
 assert.match(panel, /const entryFormCollapsible = displayVehicleOverview/);
-assert.match(panel, /displayVehicleOverview \? \([\s\S]*Wybierz pojazd, wpisz litry i podaj przebieg/, 'Instrukcja nagłówka paliwa ma być widoczna tylko w desktopowym zestawieniu.');
+assert.match(panel, /displayVehicleOverview \? \([\s\S]*Nowe tankowania wpisują pracownicy w telefonie/, 'Instrukcja nagłówka paliwa ma być widoczna tylko w desktopowym zestawieniu.');
+// 30.10.2026 (decyzja właściciela): na komputerze bez formularza „Nowe tankowanie”; sekcje 1–4 zwijane.
+assert.match(panel, /\{!displayVehicleOverview \? \(\s*<div className="fuelGrid fuelGridSingle">/, 'Formularz tankowania tylko poza widokiem komputerowym.');
+assert.match(panel, /useState\(\{ vehicles: true, savings: false, monthly: false, history: false \}\)/, 'Na komputerze rozwinięte tylko „Tankowania według samochodu”.');
 
 assert.match(panel, /aria-expanded=\{isEntryFormExpanded\}/);
 assert.match(panel, /Rozwiń/);

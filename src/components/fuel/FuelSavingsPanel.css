@@ -1,5 +1,7 @@
 /* WAWIS 13.97 — zakładka „Oszczędności na własnym zbiorniku” (komputer, administrator). */
 .fuelSavings { display: grid; gap: 14px; }
+.fuelSavingsBody { display: grid; gap: 14px; }
+.fuelSavingsToolbar { display: flex; justify-content: flex-end; }
 .fuelSavingsStep { background: #17614b; color: #fff; font-size: 11px; }
 .fuelSavingsWarning { background: #fff7e6; border: 1px solid #f3d38a; color: #7a5300; }
 
@@ -55,3 +57,6 @@
   .fuelSavingsTableHeader, .fuelSavingsTableRow { min-width: 720px; }
   .fuelSavingsMissingRow { grid-template-columns: 1fr 1fr; }
 }
+
+.fuelSavingsStation { display: grid; gap: 1px; }
+.fuelSavingsStation small { color: #8a99ad; font-size: 11px; }
