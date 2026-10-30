@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## FUEL-SAVINGS-1397 — oszczędności na własnym zbiorniku (28–30.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| FS-1397-DB | APPLIED | Zgoda właściciela 28.10 11:29. Migracja `20261028103628_fuel_savings_v1389` na produkcji (MD5 bc34520089452a3c4e8742206195cf75 = plik): cena zakupu przy dostawie (brutto + VAT, netto wyliczane), `fuel_reference_prices` (RLS: odczyt tylko administrator, zapis service_role), RPC `admin_add_fuel_tank_movement_v1389`, `admin_set_fuel_purchase_price_v1389`. Nic nie usunięte. Test lokalny PG16: idempotencja, cena tylko przy dostawie, odmowa dla nie-administratora. |
+| FS-1397-EDGE | APPLIED | Funkcja `fuel-reference-prices` (verify_jwt=false, zapis po `current_user_is_admin`): obwieszczenia Ministra Energii z API Sejmu (MP), PDF → cena ON netto/brutto. Próba (x-wawis-dry, bez zapisu) na 20 obwieszczeniach: ceny zgodne z gov.pl (7.10 7,80; 10–12.10 8,06; 13.10 8,02; 20.10 7,97). Data z treści dokumentu (API dla poz. 1036 podaje błędnie 23.10 zamiast 26.10). |
+| FS-1397-CALC | FIXED-UNVERIFIED | `src/modules/fuel-savings.js`: FIFO po dostawach, cena z dnia tankowania (czas PL), luka > 7 dni = brak, dostawa bez ceny = brak wyniku. smoke-fuel-savings-v1397: dane z produkcji → 107,49 zł netto (29,99 + 42,38 + 35,12). |
+| FS-1397-UI | FIXED-UNVERIFIED | Zakładka tylko `displayVehicleOverview` (komputer + administrator), pole ceny dostawy tylko na komputerze. E2E desktop-fuel-savings-v1397 (administrator: 107,49 zł, źródło, tabela; dostawa bez ceny; pracownik iPhone: brak zakładki). codex-acceptance-fuel-ui-v1269 (idempotencja dostawy) — środowisko uzupełnione o pola ceny, asercje bez zmian; odcisk dostawy bez ceny identyczny jak przed 13.97. |
+| FS-1397-LIVE | EXTERNAL | Administrator na komputerze: Paliwo → „Oszczędności na własnym zbiorniku” → pierwsze otwarcie pobiera ceny z Monitora Polskiego; kwota ok. 107 zł netto. |
+
 ## SERVICE-PURGE-CONFIRM-1396 — pojedyncze potwierdzenie usunięcia serwisu (29.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

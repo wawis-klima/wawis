@@ -3,7 +3,7 @@
  "md5_of": "array_to_string(statements, E'\\n')",
  "counts": {
   "exported": 14,
-  "identical": 53,
+  "identical": 54,
   "similar": 51
  },
  "migrations": [
@@ -950,6 +950,14 @@
    "bytes": 3010,
    "status": "identical",
    "repo_file": "supabase/migrations/20261027091451_push_stale_subscription_cleanup_v1384.sql"
+  },
+  {
+   "version": "20261028103628",
+   "name": "fuel_savings_v1389",
+   "md5": "bc34520089452a3c4e8742206195cf75",
+   "bytes": 8277,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261028103628_fuel_savings_v1389.sql"
   }
  ],
  "statuses": {

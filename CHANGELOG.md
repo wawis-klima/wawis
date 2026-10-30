@@ -1,3 +1,6 @@
+## 13.97
+- Prośba właściciela (28.10.2026): zakładka „Oszczędności na własnym zbiorniku” w module Paliwo — tylko administrator, tylko wersja na komputer. Dla każdego tankowania ze zbiornika: litry × (urzędowa maksymalna cena oleju napędowego netto w dniu tankowania − cena ze zbiornika netto). Ceny maksymalne pobierane automatycznie z obwieszczeń Ministra Energii (Monitor Polski, API Sejmu). Kafelki: łącznie, w tym miesiącu, średnio na litrze, potencjał w zbiorniku; „Z czego to wynika”, wykres różnicy cen, tabela tankowań z linkiem do obwieszczenia. Liczenie od dostawy 5000 l z 7.10.2026 (7,25 zł brutto, VAT 8%). W okienku dostawy (komputer) pole ceny za litr; dostawę bez ceny można uzupełnić w zakładce. Pracownicy nie widzą cen (zabezpieczenie w bazie).
+
 ## 13.96
 - Serwis / Kosz: jeden standardowy komunikat „Czy na pewno chcesz trwale usunąć ten serwis?”, bez wpisywania USUN i bez drugiego potwierdzenia.
 - Zachowana autoryzacja administratora, sprawdzenie stanu Kosza, bezpieczny zakres usunięcia wizyty, zdjęć, podpisu i PDF. Dodatkowy test anulowania i potwierdzenia, błędu backendu oraz odmowy usunięcia aktywnej wizyty.

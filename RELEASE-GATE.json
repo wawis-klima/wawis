@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.96",
+  "version": "13.97",
   "scope": "full",
-  "release_branch": "release/v13.96",
+  "release_branch": "release/v13.97",
   "baseline_diagnostics": {
     "checked": true,
-    "result": "READ_ONLY",
-    "notes": "Bez zmian w produkcyjnej bazie i Storage; modyfikacja wyłącznie potwierdzenia UI trwałego usuwania wizyty z Kosza."
+    "result": "OWNER_REQUEST",
+    "notes": "Prośba właściciela 28.10.2026: oszczędności na zbiorniku paliwa. Migracja v1389 zastosowana za zgodą (11:29), funkcja Edge fuel-reference-prices wdrożona; zapis do produkcji tylko ceny zakupu dostawy 7.10 (podana przez właściciela)."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.96",
+    "source_branch": "release/v13.97",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_SINGLE_CONFIRM",
-    "evidence_source": "Weryfikacja w iPhone: jedno potwierdzenie Anuluj/OK, bez wpisywania tekstu, bez kasowania danych klientów do testów.",
-    "notes": "Nie wykonywać rzeczywistego permanent delete na istniejących serwisach klientów bez ich wskazania przez admina."
+    "result": "EXTERNAL_DESKTOP_ADMIN",
+    "evidence_source": "Po wdrożeniu: administrator na komputerze otwiera Paliwo → Oszczędności; sprawdzam w bazie fuel_reference_prices i logi funkcji.",
+    "notes": "Zakładka niewidoczna dla pracowników i na telefonie."
   },
   "archive": {
     "source_of_truth": "github-main",

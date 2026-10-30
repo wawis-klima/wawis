@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 13.96
+- 13.97
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `13.96` — Kosz serwisowy: administrator usuwa serwis po jednym pytaniu „Czy na pewno chcesz trwale usunąć ten serwis?” (Anuluj/OK), bez wpisywania USUN i bez drugiego potwierdzenia. Zakres bezpiecznego kasowania bez zmian.
+- wersja `13.97` — oszczędności na własnym zbiorniku paliwa (administrator, komputer) wg urzędowych cen maksymalnych.
 - wersja `13.95` — Kosz serwisów: administrator może nieodwracalnie usunąć wskazany serwis ze zdjęciami, podpisem i PDF po dwuetapowym potwierdzeniu; pozostali klienci, montaże i serwisy bez zmian.
 - wersja `13.94` — serwisy: kosz tylko dla administratora (przywracanie bez utraty PDF i zdjęć), kadrowanie i walidacja podpisu jak w montażach, ponowne powiązanie PUSH sprawdzonym mechanizmem subskrypcji.
 - wersja `13.93` — PUSH nowego przydziału serwisu, podpis w osobnym oknie jak przy montażu, inicjały wykonawców na nowych PDF; diagnostyka dostarczenia PUSH.

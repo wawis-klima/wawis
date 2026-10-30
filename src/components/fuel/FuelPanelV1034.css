@@ -312,6 +312,28 @@
   font-weight: 700;
 }
 
+/* 13.97: cena za litr przy dostawie (tylko komputer, administrator). */
+.fuelTankDeliveryForm:has(.fuelTankDeliveryPrice) {
+  grid-template-columns: minmax(140px, .6fr) minmax(200px, 1.1fr) minmax(250px, 1fr) auto;
+}
+
+.fuelTankDeliveryPrice {
+  grid-template-columns: 1fr auto;
+}
+
+.fuelTankDeliveryPrice > span {
+  grid-column: 1 / -1;
+}
+
+.fuelTankDeliveryPrice > select {
+  min-height: 38px;
+  padding: 0 8px;
+  border: 1px solid #cbd9e7;
+  border-radius: 9px;
+  background: #fff;
+  font: inherit;
+}
+
 .fuelTankDeliveryNote > input {
   min-height: 38px;
   padding: 0 11px;
