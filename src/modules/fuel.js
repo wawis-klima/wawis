@@ -69,18 +69,27 @@ async function loadFuelTankData({ supabase, isAdmin }) {
   };
 }
 
-export async function addFuelTankDelivery({ supabase, isAdmin, liters, note = '', operationId }) {
+export async function addFuelTankDelivery({ supabase, isAdmin, liters, note = '', operationId, price = null }) {
   assertAdminAccess({ supabase, isAdmin });
   const normalizedLiters = normalizeFuelTankDeliveryLiters(liters);
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(operationId || ''))) {
     throw new Error('Brakuje poprawnego identyfikatora dostawy. Spróbuj odświeżyć formularz.');
   }
-  const { data, error } = await supabase.rpc('admin_add_fuel_tank_movement_v1266', {
+  const baseArgs = {
     p_movement_type: 'delivery',
     p_liters: normalizedLiters,
     p_note: String(note || '').trim() || null,
     p_operation_id: operationId,
-  });
+  };
+  // 13.97: z ceną za litr (komputer, administrator) — RPC v1389; bez ceny — dotychczasowe v1266.
+  const hasPrice = price && Number(price.grossPerLiter) > 0;
+  const { data, error } = hasPrice
+    ? await supabase.rpc('admin_add_fuel_tank_movement_v1389', {
+      ...baseArgs,
+      p_gross_per_liter: Number(price.grossPerLiter),
+      p_vat_rate: Number(price.vatRate) || 8,
+    })
+    : await supabase.rpc('admin_add_fuel_tank_movement_v1266', baseArgs);
   if (error) throw error;
   return Array.isArray(data) ? data[0] || null : data || null;
 }

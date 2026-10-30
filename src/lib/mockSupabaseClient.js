@@ -217,6 +217,29 @@ function createSeedData() {
       { id: 'mock-fuel-vehicle-005', vehicle_name: 'Master', registration_number: 'KR 9UH22', is_active: true, tank_capacity_liters: null, last_odometer_km: null, last_fueled_at: null, created_by: admin.id, created_at: '2026-09-08T10:00:00.000Z', updated_at: '2026-09-08T10:00:00.000Z' },
     ],
     fuel_entries: [],
+    // 13.97: maksymalne ceny oleju napędowego z obwieszczeń (wartości z MP 2026, poz. 974–1036).
+    fuel_reference_prices: [
+      { eli: 'MP/2026/974', act_year: 2026, act_pos: 974, promulgated_on: '2026-10-06', valid_from: '2026-10-07', diesel_net: 7.22, diesel_gross: 7.8, vat_rate: 8, source_url: 'https://api.sejm.gov.pl/eli/acts/MP/2026/974/text/O/M20260974.pdf' },
+      { eli: 'MP/2026/983', act_year: 2026, act_pos: 983, promulgated_on: '2026-10-08', valid_from: '2026-10-09', diesel_net: 7.24, diesel_gross: 7.82, vat_rate: 8, source_url: 'https://api.sejm.gov.pl/eli/acts/MP/2026/983/text/O/M20260983.pdf' },
+      { eli: 'MP/2026/985', act_year: 2026, act_pos: 985, promulgated_on: '2026-10-09', valid_from: '2026-10-10', diesel_net: 7.46, diesel_gross: 8.06, vat_rate: 8, source_url: 'https://api.sejm.gov.pl/eli/acts/MP/2026/985/text/O/M20260985.pdf' },
+      { eli: 'MP/2026/1022', act_year: 2026, act_pos: 1022, promulgated_on: '2026-10-20', valid_from: '2026-10-21', diesel_net: 7.39, diesel_gross: 7.98, vat_rate: 8, source_url: 'https://api.sejm.gov.pl/eli/acts/MP/2026/1022/text/O/M20261022.pdf' },
+    ],
+  };
+}
+
+function createMockFuelTankOpening() {
+  return {
+    id: 'mock-fuel-tank-opening',
+    movement_type: 'opening',
+    delta_liters: 5000,
+    fuel_entry_id: null,
+    note: 'Stan początkowy zbiornika — dostawa 5000 l',
+    happened_at: '2026-10-07T07:57:00.000Z',
+    created_by: null,
+    created_at: '2026-10-07T07:57:00.000Z',
+    purchase_gross_per_liter: 7.25,
+    purchase_vat_rate: 8,
+    purchase_net_per_liter: 6.713,
   };
 }
 
@@ -436,6 +459,8 @@ export function createMockSupabaseClient() {
     window.__KLIMA_MOCK_SUPABASE__ = {
       reset: resetMockData,
       getStore: () => clone(store),
+      // 13.97: testy E2E mogą dopisać dane do bieżącej (nieutrwalanej) bazy bez przeładowania strony.
+      mutate: (updater) => { if (typeof updater === 'function') updater(store); return clone(store); },
       credentials: MOCK_SUPABASE_CREDENTIALS,
     };
   }
@@ -539,16 +564,7 @@ export function createMockSupabaseClient() {
       }
       if (name === 'get_fuel_tank_status') {
         if (!Array.isArray(store.fuel_tank_movements) || !store.fuel_tank_movements.length) {
-          store.fuel_tank_movements = [{
-            id: 'mock-fuel-tank-opening',
-            movement_type: 'opening',
-            delta_liters: 5000,
-            fuel_entry_id: null,
-            note: 'Stan początkowy zbiornika — dostawa 5000 l',
-            happened_at: '2026-10-07T07:57:00.000Z',
-            created_by: null,
-            created_at: '2026-10-07T07:57:00.000Z',
-          }];
+          store.fuel_tank_movements = [createMockFuelTankOpening()];
         }
         const balance = store.fuel_tank_movements.reduce((sum, movement) => sum + (Number(movement.delta_liters) || 0), 0);
         const supplied = store.fuel_tank_movements.reduce((sum, movement) => Number(movement.delta_liters) > 0 ? sum + Number(movement.delta_liters) : sum, 0);
@@ -566,18 +582,46 @@ export function createMockSupabaseClient() {
           error: null,
         };
       }
+      if (name === 'admin_add_fuel_tank_movement_v1266' || name === 'admin_add_fuel_tank_movement_v1389') {
+        if (!Array.isArray(store.fuel_tank_movements) || !store.fuel_tank_movements.length) {
+          store.fuel_tank_movements = [createMockFuelTankOpening()];
+        }
+        const existing = store.fuel_tank_movements.find((movement) => movement.operation_id && movement.operation_id === payload.p_operation_id);
+        if (existing) return { data: clone(existing), error: null };
+        const gross = payload.p_gross_per_liter == null ? null : Number(payload.p_gross_per_liter);
+        const vat = gross == null ? null : Number(payload.p_vat_rate ?? 8);
+        const movement = {
+          id: `mock-fuel-tank-${Date.now()}`,
+          movement_type: payload.p_movement_type || 'delivery',
+          delta_liters: Number(payload.p_liters) || 0,
+          fuel_entry_id: null,
+          note: payload.p_note || null,
+          happened_at: nowIso(),
+          created_by: restoreSession(store.users)?.user?.id || null,
+          created_at: nowIso(),
+          operation_id: payload.p_operation_id || null,
+          purchase_gross_per_liter: gross,
+          purchase_vat_rate: vat,
+          purchase_net_per_liter: gross == null ? null : Math.round((gross / (1 + vat / 100)) * 10000) / 10000,
+        };
+        store.fuel_tank_movements.push(movement);
+        return { data: clone(movement), error: null };
+      }
+      if (name === 'admin_set_fuel_purchase_price_v1389') {
+        const movement = (store.fuel_tank_movements || []).find((item) => item.id === payload.p_movement_id && ['opening', 'delivery'].includes(item.movement_type));
+        if (!movement) return { data: null, error: { message: 'Nie znaleziono dostawy paliwa.' } };
+        const gross = Number(payload.p_gross_per_liter);
+        const vat = Number(payload.p_vat_rate ?? 8);
+        Object.assign(movement, {
+          purchase_gross_per_liter: gross,
+          purchase_vat_rate: vat,
+          purchase_net_per_liter: Math.round((gross / (1 + vat / 100)) * 10000) / 10000,
+        });
+        return { data: clone(movement), error: null };
+      }
       if (name === 'admin_add_fuel_tank_movement') {
         if (!Array.isArray(store.fuel_tank_movements) || !store.fuel_tank_movements.length) {
-          store.fuel_tank_movements = [{
-            id: 'mock-fuel-tank-opening',
-            movement_type: 'opening',
-            delta_liters: 5000,
-            fuel_entry_id: null,
-            note: 'Stan początkowy zbiornika — dostawa 5000 l',
-            happened_at: '2026-10-07T07:57:00.000Z',
-            created_by: null,
-            created_at: '2026-10-07T07:57:00.000Z',
-          }];
+          store.fuel_tank_movements = [createMockFuelTankOpening()];
         }
         const movement = {
           id: `mock-fuel-tank-${Date.now()}`,
@@ -754,6 +798,8 @@ export function createMockSupabaseClient() {
     },
     functions: {
       async invoke(name, { body = {} } = {}) {
+        // 13.97: ceny urzędowe są już w danych testowych (fuel_reference_prices) — nic nie dociągamy.
+        if (name === 'fuel-reference-prices') return { data: { ok: true, added: 0, pending: 0, failures: [] }, error: null };
         if (name !== 'send-job-protocol-email') return { data: null, error: { message: `Mock Functions nie obsługuje funkcji: ${name}` } };
         const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
         const protocol = store.job_protocols.find((item) => String(item.id) === String(body.protocolId) && String(item.job_id) === String(body.jobId));

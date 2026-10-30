@@ -1,0 +1,57 @@
+/* WAWIS 13.97 — zakładka „Oszczędności na własnym zbiorniku” (komputer, administrator). */
+.fuelSavings { display: grid; gap: 14px; }
+.fuelSavingsStep { background: #17614b; color: #fff; font-size: 11px; }
+.fuelSavingsWarning { background: #fff7e6; border: 1px solid #f3d38a; color: #7a5300; }
+
+.fuelSavingsTiles { display: grid; grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); gap: 10px; }
+.fuelSavingsTiles > div { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid #dbe5f1; border-radius: 13px; background: #f8fbff; }
+.fuelSavingsTiles span, .fuelSavingsTiles small { color: #718096; font-size: 12px; }
+.fuelSavingsTiles strong { color: #173d6c; font-size: 20px; }
+.fuelSavingsTiles > div.isMain { border-color: #a9d8c4; background: #eefaf4; }
+.fuelSavingsTiles > div.isMain strong { color: #17614b; font-size: 26px; }
+
+.fuelSavingsExplain { padding: 12px 14px; border: 1px solid #dbe5f1; border-radius: 13px; background: #fff; }
+.fuelSavingsExplain h4, .fuelSavingsMissing h4 { margin: 0 0 8px; color: #143761; font-size: 14px; }
+.fuelSavingsExplain ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: #324a65; font-size: 13px; line-height: 1.45; }
+.fuelSavingsExplain b { color: #143761; }
+.fuelSavingsExplain a { color: #245d9f; }
+.fuelSavingsExplain li.isNote { color: #718096; font-size: 12px; }
+
+.fuelSavingsChart { margin: 0; padding: 10px 12px 8px; border: 1px solid #dbe5f1; border-radius: 13px; background: #fbfdff; }
+.fuelSavingsChart svg { display: block; width: 100%; height: auto; }
+.fuelSavingsChartGrid { stroke: #e4ebf4; stroke-width: 1; }
+.fuelSavingsChartAxis { fill: #8a99ad; font-size: 10px; }
+.fuelSavingsChartGap { fill: rgba(23, 97, 75, 0.13); }
+.fuelSavingsChartTank { stroke: #17614b; stroke-width: 2; stroke-dasharray: 6 4; }
+.fuelSavingsChartStation { fill: none; stroke: #2f75cf; stroke-width: 2.2; stroke-linejoin: round; }
+.fuelSavingsChart figcaption { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; color: #607086; font-size: 12px; }
+.fuelSavingsChart figcaption i { display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+.fuelSavingsChart figcaption i.isStation { background: #2f75cf; }
+.fuelSavingsChart figcaption i.isTank { background: #17614b; }
+.fuelSavingsChart figcaption i.isGap { height: 10px; background: rgba(23, 97, 75, 0.2); }
+
+.fuelSavingsMissing { padding: 12px 14px; border: 1px solid #f3d38a; border-radius: 13px; background: #fffaf0; }
+.fuelSavingsMissingRow { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(140px, 0.6fr) auto auto; gap: 10px; align-items: center; }
+.fuelSavingsMissingRow select { min-height: 38px; border: 1px solid #cbd9ea; border-radius: 10px; background: #fff; font: inherit; padding: 6px 8px; }
+
+.fuelSavingsMonths { display: flex; flex-wrap: wrap; gap: 8px; }
+.fuelSavingsMonths span { padding: 6px 10px; border: 1px solid #dbe5f1; border-radius: 999px; background: #f8fbff; color: #324a65; font-size: 12px; }
+.fuelSavingsMonths b { margin-right: 6px; color: #143761; }
+
+.fuelSavingsTable { display: grid; border: 1px solid #dbe5f1; border-radius: 14px; overflow: hidden; }
+.fuelSavingsTableHeader, .fuelSavingsTableRow { display: grid; grid-template-columns: minmax(100px, 0.6fr) minmax(150px, 1fr) minmax(80px, 0.5fr) minmax(100px, 0.6fr) minmax(100px, 0.6fr) minmax(130px, 0.8fr); align-items: center; gap: 12px; padding: 10px 14px; }
+.fuelSavingsTableHeader { background: #edf4fc; color: #607086; font-size: 12px; font-weight: 850; text-transform: uppercase; }
+.fuelSavingsTableRow { border-top: 1px solid #e5edf6; color: #324a65; font-size: 14px; }
+.fuelSavingsTableRow strong { color: #143761; }
+.fuelSavingsTableRow a { color: #245d9f; }
+.fuelSavingsTableRow .isPositive { color: #17614b; font-weight: 850; }
+.fuelSavingsTableRow .isNegative { color: #b42318; font-weight: 850; }
+.fuelSavingsTableRow .isMissing { color: #8a6a1f; font-size: 12px; }
+.fuelSavingsEmpty { padding: 14px; color: #718096; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .fuelSavingsTiles { grid-template-columns: 1fr 1fr; }
+  .fuelSavingsTable { overflow-x: auto; }
+  .fuelSavingsTableHeader, .fuelSavingsTableRow { min-width: 720px; }
+  .fuelSavingsMissingRow { grid-template-columns: 1fr 1fr; }
+}

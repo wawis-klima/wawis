@@ -26,6 +26,10 @@ function makeHarness(){
  const state={errors:[],messages:[]};
  const sandbox={
    isAdmin:true,busy:false,userId,supabase:{},tankDeliveryLiters:'100',tankDeliveryNote:'test',supabase:{},
+   // 13.97: pola ceny dostawy (tu dostawa bez ceny, jak na telefonie) — scenariusz idempotencji bez zmian.
+   displayVehicleOverview:false,tankDeliveryPrice:'',tankDeliveryVat:'8',
+   setTankDeliveryPrice:v=>{sandbox.tankDeliveryPrice=v;},setTankDeliveryVat:v=>{sandbox.tankDeliveryVat=v;},
+   normalizeFuelPricePerLiter:value=>Number(String(value).replace(',','.')),
    sessionStorage:storage,
    useEffect:(callback)=>callback(),
    createFuelEntryAttemptId:()=>{idCount++;return '22222222-2222-4222-8222-'+String(idCount).padStart(12,'0');},

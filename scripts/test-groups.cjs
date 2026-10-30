@@ -154,6 +154,7 @@ const GROUPS = {
     'node scripts/smoke-package1-integrity-v1266.mjs',
     'node scripts/smoke-fuel-tank-mobile-collapse-v1264.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
+    'node scripts/smoke-fuel-savings-v1397.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'npm run test:smoke:fuel-module',
     'node scripts/smoke-storage-write-reconciliation-v1074.mjs',
@@ -281,6 +282,7 @@ const GROUPS = {
   infra: [
     'node scripts/smoke-postgres-readiness-v1276.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
+    'node scripts/smoke-fuel-savings-v1397.mjs',
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-release-automation-v1061.cjs',

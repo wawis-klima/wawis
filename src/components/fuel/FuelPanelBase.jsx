@@ -1,5 +1,5 @@
 import { usePanelLoadGuard } from '../../hooks/usePanelLoadGuard.js';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   addFuelEntry,
   addFuelTankDelivery,
@@ -17,8 +17,12 @@ import {
   updateFuelVehicleTankCapacity,
 } from '../../modules/fuel.js';
 import { sendFuelEntryPush } from '../../modules/fuel-push.js';
+import { normalizeFuelPricePerLiter } from '../../modules/fuel-savings.js';
 import { readOdometerPhoto } from '../../modules/fuel-odometer-reader.js';
 import { blockUnsavedWork } from '../../modules/update-reload-guard.js';
+
+// WAWIS 13.97: oszczędności na zbiorniku — ładowane tylko na komputerze u administratora.
+const FuelSavingsPanel = lazy(() => import('./FuelSavingsPanel.jsx'));
 
 const WARSAW_DATE_TIME = new Intl.DateTimeFormat('pl-PL', {
   timeZone: 'Europe/Warsaw',
@@ -199,6 +203,8 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
   const [tankDeliveryOpen, setTankDeliveryOpen] = useState(false);
   const [tankDeliveryLiters, setTankDeliveryLiters] = useState('');
   const [tankDeliveryNote, setTankDeliveryNote] = useState('');
+  const [tankDeliveryPrice, setTankDeliveryPrice] = useState('');
+  const [tankDeliveryVat, setTankDeliveryVat] = useState('8');
   const [vehicleId, setVehicleId] = useState('');
   const [liters, setLiters] = useState('');
   const [odometerMode, setOdometerMode] = useState('manual');
@@ -375,6 +381,10 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       if (!attempt?.operationId || !values?.liters) return;
       setTankDeliveryLiters(String(values.liters));
       setTankDeliveryNote(String(values.note || ''));
+      if (values.price && Number(values.price.grossPerLiter) > 0) {
+        setTankDeliveryPrice(String(values.price.grossPerLiter).replace('.', ','));
+        setTankDeliveryVat(String(values.price.vatRate || 8));
+      }
       setTankDeliveryOpen(true);
       setMessage('Poprzednia dostawa ma niepotwierdzony wynik. Ponów z przywróconymi danymi — aplikacja sprawdzi ten sam zapis bez dodawania paliwa drugi raz.');
     } catch (error) {
@@ -468,7 +478,14 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
       }
       const normalizedLiters = normalizeFuelTankDeliveryLiters(tankDeliveryLiters).toFixed(2);
       const normalizedNote = String(tankDeliveryNote || '').trim();
-      const fingerprint = JSON.stringify({ liters: normalizedLiters, note: normalizedNote });
+      // 13.97: cena za litr tylko w wersji na komputer (administrator); na telefonie dostawa bez ceny.
+      const deliveryPrice = displayVehicleOverview && String(tankDeliveryPrice || '').trim()
+        ? { grossPerLiter: normalizeFuelPricePerLiter(tankDeliveryPrice), vatRate: Number(tankDeliveryVat) || 8 }
+        : null;
+      // Bez ceny odcisk jest taki sam jak przed 13.97 — niepotwierdzona dostawa sprzed aktualizacji da się ponowić.
+      const fingerprint = JSON.stringify(deliveryPrice
+        ? { liters: normalizedLiters, note: normalizedNote, price: deliveryPrice }
+        : { liters: normalizedLiters, note: normalizedNote });
       const previous = sessionStorage.getItem(storageKey);
       if (previous) {
         attempted = JSON.parse(previous);
@@ -486,10 +503,12 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
         liters: tankDeliveryLiters,
         note: tankDeliveryNote,
         operationId: attempted.operationId,
+        price: deliveryPrice,
       });
       sessionStorage.removeItem(storageKey);
       setTankDeliveryLiters('');
       setTankDeliveryNote('');
+      setTankDeliveryPrice('');
       setTankDeliveryOpen(false);
       setMessage(`Dodano dostawę ${Number(saved?.delta_liters || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} l do zbiornika.`);
       try { await refresh(); }
@@ -803,6 +822,16 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
               <span>Notatka</span>
               <input value={tankDeliveryNote} onChange={(event) => setTankDeliveryNote(event.target.value)} placeholder="np. Dostawa Orlen" maxLength={160} />
             </label>
+            {displayVehicleOverview ? (
+              <label className="fuelTankDeliveryPrice">
+                <span>Cena za litr (brutto, z faktury)</span>
+                <div className="fuelInputWithUnit"><input value={tankDeliveryPrice} onChange={(event) => setTankDeliveryPrice(event.target.value.replace(/[^0-9,.]/g, ''))} inputMode="decimal" placeholder="np. 7,25" data-testid="fuel-delivery-price" /><b>zł/l</b></div>
+                <select value={tankDeliveryVat} onChange={(event) => setTankDeliveryVat(event.target.value)} aria-label="Stawka VAT dostawy">
+                  <option value="8">VAT 8%</option>
+                  <option value="23">VAT 23%</option>
+                </select>
+              </label>
+            ) : null}
             <button type="submit" className="fuelPrimaryButton" disabled={busy || !tankDeliveryLiters}>{busy ? 'Zapisywanie…' : 'Dodaj do stanu'}</button>
           </form>
         ) : null}
@@ -963,6 +992,18 @@ export default function FuelPanel({ supabase, userId, isAdmin, showVehicleOvervi
           </div>
           <p className="fuelConsumptionNote">Średnie spalanie jest liczone od drugiego tankowania: litry zatankowane do pełna ÷ przejechane kilometry × 100. Nietypowo wysokie spalanie jest oznaczane po zebraniu co najmniej dwóch wcześniejszych wyników.</p>
         </section>
+      ) : null}
+
+      {displayVehicleOverview ? (
+        <Suspense fallback={<section className="fuelCard"><p className="fuelConsumptionNote">Wczytuję oszczędności…</p></section>}>
+          <FuelSavingsPanel
+            supabase={supabase}
+            isAdmin={isAdmin}
+            entries={entries}
+            vehicles={vehicles}
+            refreshToken={`${tankStatus.last_movement_at || ''}|${tankStatus.balance_liters || 0}`}
+          />
+        </Suspense>
       ) : null}
 
       {displayVehicleOverview ? (

@@ -34,3 +34,6 @@ verify_jwt = false # endpoint verifies one-time token against service-role-only 
 
 [functions.purge-service-visit]
 verify_jwt = true # administrator session required; service role only inside Edge Function
+
+[functions.fuel-reference-prices]
+verify_jwt = false # zapis tylko po sprawdzeniu current_user_is_admin w funkcji; tryb x-wawis-dry tylko czyta publiczne obwieszczenia
