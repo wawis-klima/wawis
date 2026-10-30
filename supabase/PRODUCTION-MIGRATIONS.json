@@ -3,7 +3,7 @@
  "md5_of": "array_to_string(statements, E'\\n')",
  "counts": {
   "exported": 14,
-  "identical": 55,
+  "identical": 64,
   "similar": 51
  },
  "migrations": [
@@ -960,6 +960,78 @@
    "repo_file": "supabase/migrations/20261028103628_fuel_savings_v1389.sql"
   },
   {
+   "version": "20261028211652",
+   "name": "service_visits_admin_stage1_v1389",
+   "md5": "7eb7574b0eeb74d4f7a680782c6a0c90",
+   "bytes": 12532,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261028193000_service_visits_admin_stage1.sql"
+  },
+  {
+   "version": "20261028211656",
+   "name": "service_visit_execution_v1389",
+   "md5": "95c4a5e788fcfe5356c4297cf423c45d",
+   "bytes": 12395,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261028220000_service_visit_execution_v1389.sql"
+  },
+  {
+   "version": "20261028211701",
+   "name": "service_visit_protocol_email_v1389",
+   "md5": "27a8c6d6d48c02f69e99a20cf5c581c8",
+   "bytes": 1422,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261028223000_service_visit_protocol_email_v1389.sql"
+  },
+  {
+   "version": "20261028211704",
+   "name": "service_visit_completed_push_v1389",
+   "md5": "f572958da95bae92b0349b3c1e24196d",
+   "bytes": 6142,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261028233000_service_visit_completed_push_v1389.sql"
+  },
+  {
+   "version": "20261028211709",
+   "name": "service_visit_schedule_audit_v1389",
+   "md5": "dd557e0dca5e04952c91e0318a24da36",
+   "bytes": 2082,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261028234500_service_visit_schedule_audit_v1389.sql"
+  },
+  {
+   "version": "20261029072929",
+   "name": "service_visit_assignment_push_v1393",
+   "md5": "cd66e088999c3d0b41ca71067b298c9e",
+   "bytes": 6710,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261029103000_service_visit_assignment_push_v1393.sql"
+  },
+  {
+   "version": "20261029075917",
+   "name": "service_visit_admin_trash_v1394",
+   "md5": "3754da9912aff43b1c17e0f3e72813b2",
+   "bytes": 4233,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261029112500_service_visit_admin_trash_v1394.sql"
+  },
+  {
+   "version": "20261029075959",
+   "name": "service_visit_admin_trash_v1394",
+   "md5": "3754da9912aff43b1c17e0f3e72813b2",
+   "bytes": 4233,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261029112500_service_visit_admin_trash_v1394.sql"
+  },
+  {
+   "version": "20261029110819",
+   "name": "service_visit_permanent_purge_v1395",
+   "md5": "1300776e4f3719c602f160bc202665d6",
+   "bytes": 5124,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261029132500_service_visit_permanent_purge_v1395.sql"
+  },
+  {
    "version": "20261030102441",
    "name": "fuel_market_prices_slaskie",
    "md5": "c038d9c5a5a80c2e2bef7112e717d4f4",
@@ -972,5 +1044,6 @@
   "identical": "plik w repozytorium ma identyczną treść jak SQL wykonany na produkcji (MD5)",
   "similar": "plik o tej samej nazwie istnieje, ale treść różni się od wykonanej na produkcji (np. później poprawiona lub inaczej sformatowana) — dokładny SQL produkcji: tabela supabase_migrations.schema_migrations w nocnej kopii",
   "exported": "brakowało w repozytorium — dokładny SQL wyeksportowany z produkcji 27.10.2026 (zgodność MD5 sprawdzona)"
- }
+ },
+ "service_visit_note_v1399": "30.10.2026 (SELECT): migracje serwisu 13.89–13.95 mają na produkcji inne numery wersji niż nazwy plików w repozytorium; treść identyczna (MD5). service_visit_admin_trash_v1394 wykonana dwukrotnie (idempotentna). Migracja 13.99 nie jest jeszcze wykonana na produkcji."
 }

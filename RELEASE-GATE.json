@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "13.99",
+  "version": "14.00",
   "scope": "full",
-  "release_branch": "release/v13.99",
+  "release_branch": "release/v14.00",
   "baseline_diagnostics": {
     "checked": true,
-    "result": "OWNER_REQUEST",
-    "notes": "Polecenie właściciela 30.10.2026 07:00: przygotować nowy układ Tankowania na komputerze i średnie ceny dla Śląska; 11:23 polecenie wdrożenia („Wdrażaj 1399”)."
+    "result": "READ_ONLY",
+    "notes": "30.10.2026: tylko SELECT (MD5 migracji serwisu, polityki RLS). Migracja 13.99 przetestowana wyłącznie na jednorazowym PostgreSQL 16; nie wykonana na produkcji."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v13.99",
-    "ready_for_main": true,
-    "status": "GO_AFTER_GREEN_CI",
+    "source_branch": "release/v14.00",
+    "ready_for_main": false,
+    "status": "HOLD_OWNER_DECISION",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_DESKTOP_ADMIN",
-    "evidence_source": "Po wdrożeniu: układ 1–4 na komputerze, oszczędności ze źródłem AutoCentrum. Migracja 20261030102441 (MD5 zgodne) i funkcja Edge fuel-reference-prices v4 wdrożone 30.10.2026 przed scaleniem.",
-    "notes": "Polecenie wdrożenia właściciela 30.10.2026 11:23."
+    "result": "PENDING_OWNER_DECISION",
+    "evidence_source": "Po decyzji właściciela: migracja na produkcji (MD5 = plik), potem merge; iPhone: Kosz, usunięcie zdjęcia, zapis szczegółów.",
+    "notes": "Właściciel 30.10.2026 07:16: testujemy na gałęzi, wdrożenie dopiero po jego decyzji."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "13.99: Tankowania na komputerze (układ 1–4, bez formularza), oszczędności według średnich cen ON dla Śląska; nowa tabela fuel_market_prices + pg_cron, funkcja Edge fuel-reference-prices v4",
-    "release_ci": "WAWIS PR checks, Closure Gate, smoke-fuel-price-sources, smoke-fuel-savings-v1397, E2E desktop-fuel-savings-v1397",
-    "postdeploy": "Oczekuje: Vercel READY/13.99 i /app-version.json. iPhone poza CI (zmiana tylko na komputerze)."
+    "code": "14.00: blokady Kosza w bazie, usuwanie zdjęcia przed podpisem, atomowy zapis szczegółów wizyty, poprawka version-bump",
+    "release_ci": "WAWIS PR checks + service-visit-sql-v1399 (PostgreSQL 16), smoke-service-admin-v1399, smoke-version-bump-readme-v1399",
+    "postdeploy": "Wymaga decyzji właściciela i wykonania migracji przed scaleniem frontendu."
   }
 }

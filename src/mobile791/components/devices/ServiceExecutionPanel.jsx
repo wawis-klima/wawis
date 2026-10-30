@@ -3,7 +3,7 @@ import { SERVICE_VISIT_CHECKS, normalizeServiceChecklist } from '../../modules/s
 import {
   loadServiceVisitExecution,loadServiceVisitPhotos,saveServiceDeviceResult,
   uploadServiceVisitPhoto,loadStoredServiceProtocol,finalizeSignedServiceVisit,
-  openServiceProtocolPdf,printServiceProtocol
+  openServiceProtocolPdf,printServiceProtocol,deleteServiceVisitPhoto
 } from '../../modules/service-visit-execution.js';
 import { sendServiceProtocolEmail, hasUncertainServiceEmailAttempt } from '../../modules/service-visit-email.js';
 import { loadServiceVisitHistory } from '../../modules/service-visits.js';
@@ -145,6 +145,22 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
    }catch(e){setError(e.message||'Nie udało się wysłać zdjęcia.');}
    finally{setBusy('');}
  }
+ async function removePhoto(item,photo,index) {
+   if(busy||readonlyNow())return;
+   if(!window.confirm('Usunąć zdjęcie '+(index+1)+' z urządzenia '+(item.model_snapshot||'')+'?\n\nUżyj tego tylko dla pomyłkowego zdjęcia.'))return;
+   // Zmiana dokumentacji unieważnia wcześniej zatwierdzony podpis.
+   if(signatureDataUrl)setSignatureDataUrl('');
+   if(signed && signatureOpen)clearSignature();
+   setBusy('photo:'+item.id);setError('');setMessage('');
+   try {
+     const result=await deleteServiceVisitPhoto({supabase,photoId:photo.id});
+     const records=await loadServiceVisitPhotos({supabase,items:visit.items});
+     setPhotos(records);
+     setMessage(result.fileRemoved?'Zdjęcie usunięte.':'Zdjęcie usunięte z wizyty. Plik zostanie sprzątnięty później.');
+   }catch(e){setError(e.message||'Nie udało się usunąć zdjęcia.');}
+   finally{setBusy('');}
+ }
+ function readonlyNow(){return Boolean(protocol)||visit?.status==='wykonany'||visit?.status==='odwolany';}
  async function waitForSignature() {
    if(!visit||!doneCount||unsaved)return;
    setBusy('waiting');setError('');setMessage('');
@@ -248,7 +264,11 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
          <input type="file" className="input" accept="image/jpeg,image/png,image/webp,image/*"
            disabled={Boolean(busy)} onChange={e=>{const f=e.target.files?.[0];e.target.value='';attachPhoto(item,f);}}/>
        </label>:null}
-       {itemPhotos.map((p,i)=><p className="serviceAdminMuted" key={p.id}>✓ Zdjęcie {i+1} zapisane w systemie ({Math.round(p.file_size_bytes/1024)} KB)</p>)}
+       {itemPhotos.map((p,i)=><div className="serviceAdminPhotoRow" key={p.id}>
+         <p className="serviceAdminMuted">✓ Zdjęcie {i+1} zapisane w systemie ({Math.round(p.file_size_bytes/1024)} KB)</p>
+         {!readonly?<button type="button" className="btn serviceAdminDanger" disabled={Boolean(busy)}
+           aria-label={'Usuń zdjęcie '+(i+1)} onClick={()=>removePhoto(item,p,i)}>Usuń</button>:null}
+       </div>)}
        {!readonly?<button type="button" className="btn primary serviceAdminWide"
          disabled={Boolean(busy)||!draft.result||needPhoto||!mandatoryChecksDone}
          onClick={()=>saveItem(item)}>

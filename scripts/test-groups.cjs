@@ -9,6 +9,7 @@ const GROUPS = {
     'node scripts/smoke-service-admin-stage1.mjs',
     'node scripts/smoke-service-execution-v1389.mjs',
     'node scripts/smoke-service-admin-audit-v1398.mjs',
+    'node scripts/smoke-service-admin-v1399.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',
@@ -267,6 +268,7 @@ const GROUPS = {
     'node scripts/smoke-service-admin-stage1.mjs',
     'node scripts/smoke-service-execution-v1389.mjs',
     'node scripts/smoke-service-admin-audit-v1398.mjs',
+    'node scripts/smoke-service-admin-v1399.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-contractors-k12-v1179.mjs',
@@ -288,6 +290,7 @@ const GROUPS = {
     'npm run test:smoke:sms-shared-source',
   ],
   infra: [
+    'node scripts/smoke-version-bump-readme-v1399.cjs',
     'node scripts/smoke-postgres-readiness-v1276.mjs',
     'node scripts/smoke-fuel-tank-stock-v1263.mjs',
     'node scripts/smoke-fuel-savings-v1397.mjs',
