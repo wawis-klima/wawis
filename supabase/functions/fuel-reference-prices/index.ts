@@ -88,6 +88,22 @@ Deno.serve(async (request) => {
   try {
     if (request.headers.get("x-wawis-dry") === "1") {
       const body = await request.json().catch(() => ({}));
+      if (body?.action === "probe-wob") {
+        // Diagnostyka: odczyt pliku „Weekly Oil Bulletin — prices with taxes” (dane publiczne KE), bez zapisu.
+        const page = await (await fetchWithTimeout("https://energy.ec.europa.eu/data-and-analysis/weekly-oil-bulletin_en")).text();
+        const link = (page.match(/href="([^"]*prices%20with%20[Tt]axes[^"]*\.xlsx[^"]*)"/) || [])[1] || "";
+        const url = link.startsWith("http") ? link : `https://energy.ec.europa.eu${link}`;
+        const XLSX = await import("npm:xlsx@0.18.5");
+        const buffer = new Uint8Array(await (await fetchWithTimeout(url, 30000)).arrayBuffer());
+        const workbook = XLSX.read(buffer, { type: "array" });
+        const sheets = workbook.SheetNames.map((name: string) => {
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[name], { header: 1, raw: false, blankrows: false }) as unknown[][];
+          const head = rows.slice(0, 8);
+          const poland = rows.filter((row) => row.some((cell) => /pol(and|ogne)|^PL$/i.test(String(cell ?? "").trim())));
+          return { name, head, poland };
+        });
+        return json({ ok: true, url, sheets });
+      }
       const limit = Math.min(Math.max(Number(body?.limit) || 3, 1), MAX_PDFS_PER_RUN);
       const acts = (await listActs(warsawYear()))
         .filter((item) => item.textPDF)
