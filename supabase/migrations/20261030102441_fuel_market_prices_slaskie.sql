@@ -1,8 +1,7 @@
 -- WAWIS — średnie ceny oleju napędowego dla Śląska do zakładki „Oszczędności na własnym zbiorniku”
 -- (decyzja właściciela 30.10.2026: cena „na stacji” = średnia dla Śląska, nie cena maksymalna).
 --
--- PRZYGOTOWANE, NIE WDROŻONE. Wykonać dopiero na polecenie właściciela („jak ci powiem, to wdrożysz”),
--- wtedy przenieść do supabase/migrations/<wersja>_fuel_market_prices_slaskie.sql (+ manifesty).
+-- WAWIS 13.99 — wdrożone 30.10.2026 na polecenie właściciela („Wdrażaj 1399”, 11:23).
 --
 -- 1) public.fuel_market_prices — średnie rynkowe (brutto za litr) z AutoCentrum (tygodniowe, śląskie)
 --    i zapaliwo.pl (dzienne, śląskie). Odczyt: tylko administrator (RLS). Zapis: wyłącznie funkcja Edge

@@ -79,14 +79,18 @@ assert.match(snapshot, /syncMarketPrices\(createClient\(url, key\), \{ respectRa
 assert.doesNotMatch(snapshot, /fuel_reference_prices|fuel_tank_movements|purchase_/, 'tryb codzienny zapisuje tylko publiczne średnie ceny');
 assert.match(fn, /from\("fuel_market_prices"\)\.upsert\(rows, \{ onConflict: "source,region,period_start" \}\)/);
 assert.match(fn, /rpc\("current_user_is_admin"\)[^]*isAdmin !== true\) return json/);
-const pending = fs.readFileSync('supabase/pending/fuel_market_prices_slaskie.sql', 'utf8');
-assert.match(pending, /PRZYGOTOWANE, NIE WDROŻONE/);
+const migrationFile = 'supabase/migrations/20261030102441_fuel_market_prices_slaskie.sql';
+const pending = fs.readFileSync(migrationFile, 'utf8');
+assert.match(pending, /wdrożone 30\.10\.2026 na polecenie właściciela/);
 assert.match(pending, /create policy fuel_market_prices_admin_select[^;]*current_user_is_admin/);
 assert.match(pending, /revoke all on table public\.fuel_market_prices from public, anon, authenticated;/);
 assert.doesNotMatch(pending, /\b(drop table|delete from|truncate)\b/i, 'nic nie jest usuwane');
-for (const dir of ['supabase/migrations', 'supabase/migrations/current']) {
-  assert.ok(!fs.readdirSync(dir).some((name) => name.includes('fuel_market_prices')), 'migracja jeszcze nie jest w aktywnych migracjach');
-}
+assert.ok(!fs.existsSync('supabase/pending/fuel_market_prices_slaskie.sql'), 'plik przeniesiony z pending do migracji');
+const registry = JSON.parse(fs.readFileSync('supabase/PRODUCTION-MIGRATIONS.json', 'utf8'));
+const applied = registry.migrations.find((row) => row.version === '20261030102441');
+assert.equal(applied?.md5, 'c038d9c5a5a80c2e2bef7112e717d4f4', 'treść identyczna z SQL wykonanym na produkcji');
+const rebuild = JSON.parse(fs.readFileSync('supabase/rebuild/manifest-v1089.json', 'utf8'));
+assert.ok(JSON.stringify(rebuild).includes(migrationFile), 'migracja w manifeście odtworzenia bazy');
 const loader = fs.readFileSync('src/modules/fuel-savings.js', 'utf8');
 assert.match(loader, /if \(marketResult\.error\) console\.warn/, 'brak tabeli średnich nie psuje zakładki (zostają ceny urzędowe)');
 

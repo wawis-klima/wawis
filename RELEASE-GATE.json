@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "OWNER_REQUEST",
-    "notes": "Polecenie właściciela 30.10.2026 07:00: przygotować (bez wdrażania) nowy układ Tankowania na komputerze i średnie ceny dla Śląska; wdrożenie dopiero na jego polecenie."
+    "notes": "Polecenie właściciela 30.10.2026 07:00: przygotować nowy układ Tankowania na komputerze i średnie ceny dla Śląska; 11:23 polecenie wdrożenia („Wdrażaj 1399”)."
   },
   "drive_backup": {
     "required": false,
@@ -15,15 +15,15 @@
   },
   "main_protection": {
     "source_branch": "release/v13.99",
-    "ready_for_main": false,
-    "status": "HOLD_OWNER_DEPLOY_DECISION",
+    "ready_for_main": true,
+    "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "EXTERNAL_DESKTOP_ADMIN",
-    "evidence_source": "Po wdrożeniu: układ 1–4 na komputerze, oszczędności ze źródłem AutoCentrum; migracja fuel_market_prices i funkcja Edge razem z wydaniem.",
-    "notes": "NIE SCALAĆ bez polecenia właściciela."
+    "evidence_source": "Po wdrożeniu: układ 1–4 na komputerze, oszczędności ze źródłem AutoCentrum. Migracja 20261030102441 (MD5 zgodne) i funkcja Edge fuel-reference-prices v4 wdrożone 30.10.2026 przed scaleniem.",
+    "notes": "Polecenie wdrożenia właściciela 30.10.2026 11:23."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "13.98: poprawki frontendu modułu serwisowego administratora (tekst Kosza, statusy, historia urządzenia i wizyty, e-mail retry); bez zmian SQL/RLS/Storage/Edge",
-    "release_ci": "WAWIS PR checks, Closure Gate, smoke-service-admin-audit-v1398 (wykonanie modułów, RED na 13.96), smoke-service-execution-v1389",
-    "postdeploy": "Oczekuje: Vercel READY/13.98 i /app-version.json. iPhone poza CI."
+    "code": "13.99: Tankowania na komputerze (układ 1–4, bez formularza), oszczędności według średnich cen ON dla Śląska; nowa tabela fuel_market_prices + pg_cron, funkcja Edge fuel-reference-prices v4",
+    "release_ci": "WAWIS PR checks, Closure Gate, smoke-fuel-price-sources, smoke-fuel-savings-v1397, E2E desktop-fuel-savings-v1397",
+    "postdeploy": "Oczekuje: Vercel READY/13.99 i /app-version.json. iPhone poza CI (zmiana tylko na komputerze)."
   }
 }

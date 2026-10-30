@@ -3,7 +3,7 @@
  "md5_of": "array_to_string(statements, E'\\n')",
  "counts": {
   "exported": 14,
-  "identical": 54,
+  "identical": 55,
   "similar": 51
  },
  "migrations": [
@@ -958,6 +958,14 @@
    "bytes": 8277,
    "status": "identical",
    "repo_file": "supabase/migrations/20261028103628_fuel_savings_v1389.sql"
+  },
+  {
+   "version": "20261030102441",
+   "name": "fuel_market_prices_slaskie",
+   "md5": "c038d9c5a5a80c2e2bef7112e717d4f4",
+   "bytes": 2804,
+   "status": "identical",
+   "repo_file": "supabase/migrations/20261030102441_fuel_market_prices_slaskie.sql"
   }
  ],
  "statuses": {

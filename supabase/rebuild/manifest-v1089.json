@@ -132,7 +132,8 @@
     "supabase/migrations/20261028234500_service_visit_schedule_audit_v1389.sql",
     "supabase/migrations/20261029103000_service_visit_assignment_push_v1393.sql",
     "supabase/migrations/20261029112500_service_visit_admin_trash_v1394.sql",
-    "supabase/migrations/20261029132500_service_visit_permanent_purge_v1395.sql"
+    "supabase/migrations/20261029132500_service_visit_permanent_purge_v1395.sql",
+    "supabase/migrations/20261030102441_fuel_market_prices_slaskie.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
