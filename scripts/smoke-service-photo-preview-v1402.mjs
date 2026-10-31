@@ -2,7 +2,7 @@
 // Zgłoszenie właściciela 31.10.2026: „jest tylko napisane, że jest, ale nie widzę zdjęcia”.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { loadServicePhotoUrls, servicePhotoUrlIsFresh, SERVICE_FILES_BUCKET } from '../src/mobile791/modules/service-visit-execution.js';
+import { loadServicePhotoUrls, servicePhotoUrlIsFresh, SERVICE_FILES_BUCKET, loadServicePhotoUploaders } from '../src/mobile791/modules/service-visit-execution.js';
 
 const read = path => fs.readFileSync(new URL('../' + path, import.meta.url), 'utf8');
 
@@ -42,11 +42,27 @@ await assert.rejects(loadServicePhotoUrls({ supabase: db, photos }), { message: 
 db = fakeStorage(() => { throw new Error('nie powinno być wywołane'); });
 assert.deepEqual(await loadServicePhotoUrls({ supabase: db, photos: [] }), {}, 'Bez zdjęć — bez zapytania.');
 
+// ---------- 1b. 14.03: autorzy zdjęć (inicjały jak w montażach) ----------
+const profileCalls = [];
+const profilesDb = { from(table) { assert.equal(table, 'profiles'); return {
+  select() { return this; },
+  in: async (field, ids) => { profileCalls.push([field, ids]); return { data: [{ id: 'u1', full_name: 'Piotr Wasik' }], error: null }; },
+}; } };
+const names = await loadServicePhotoUploaders({ supabase: profilesDb, photos: [{ created_by: 'u1' }, { created_by: 'u1' }, { created_by: null }] });
+assert.deepEqual(names, { u1: 'Piotr Wasik' });
+assert.deepEqual(profileCalls, [['id', ['u1']]], 'Jedno zapytanie, bez duplikatów i pustych.');
+assert.deepEqual(await loadServicePhotoUploaders({ supabase: { from() { throw new Error('nie'); } }, photos: [] }), {});
+
 // ---------- 2. Ekran: karty i podgląd z montaży ----------
 const exec = read('src/mobile791/components/devices/ServiceExecutionPanel.jsx');
 assert.match(exec, /import PreviewModal from '\.\.\/modals\/PreviewModal\.jsx';/, 'Ten sam podgląd pełnoekranowy co w montażach.');
 assert.match(exec, /<PreviewModal previewImage=\{preview\?\.url\|\|null\}/);
-assert.match(exec, /className="thumbGrid serviceAdminThumbGrid"/, 'Siatka miniatur z montaży.');
+assert.match(exec, /className="mobileInlineJobDetails serviceAdminPhotosV1403">\s*<div className="thumbGrid">/, '14.03: te same reguły mobile co montaże (wrapper + siatka).');
+assert.match(exec, /className="photoUploaderBadge"[^>]*>\{getInitials\(author\)\}/, '14.03: inicjały autora na miniaturze jak w montażach.');
+assert.match(exec, /className="photoMetaText photoDateMeta">\{formatDate\(p\.created_at\)\}/, '14.03: krótka data z montaży (DD.MM.RR).');
+assert.match(exec, /import \{ formatDate, getInitials \} from '\.\.\/\.\.\/utils\/jobHelpers\.jsx';/);
+assert.doesNotMatch(exec, /KB<\/span>/, '14.03: bez rozmiaru pliku obok daty (ucinał datę).');
+assert.match(exec, /<div className="photoQueueActions">/, '14.03: „Usuń” w tym samym miejscu co w montażach.');
 assert.match(exec, /className="thumbCard"/);
 assert.match(exec, /className="thumbBtn desktopThumbBtn"[\s\S]{0,160}onClick=\{\(\)=>openPhoto\(item\.id,i\)\}/, 'Dotknięcie miniatury otwiera zdjęcie.');
 assert.match(exec, /className="thumb desktopThumb"/);
@@ -56,4 +72,4 @@ assert.doesNotMatch(exec, /serviceAdminPhotoRow/, 'Lista tekstowa zastąpiona ka
 const css = read('src/mobile791/styles.css');
 assert.match(css, /\.thumbGrid\{/, 'Style kart ładowane przy starcie (styles.css).');
 
-console.log('WAWIS 14.02 service photo preview: PASS');
+console.log('WAWIS 14.02/14.03 service photo preview (montage cards): PASS');

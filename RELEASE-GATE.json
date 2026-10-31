@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.02",
+  "version": "14.03",
   "scope": "full",
-  "release_branch": "release/v14.02",
+  "release_branch": "release/v14.03",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie frontendu; odczyt zdjęć istniejącą polityką service_visit_files_admin_read."
+    "notes": "Frontend wymaga migracji 20261031160000 (usuwanie po podpisie); bez niej przycisk w podpisanej wizycie zwróci błąd serwera."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.02",
-    "ready_for_main": true,
-    "status": "GO_AFTER_GREEN_CI",
+    "source_branch": "release/v14.03",
+    "ready_for_main": false,
+    "status": "HOLD_MIGRATION_OWNER",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_PHOTO_PREVIEW",
-    "evidence_source": "iPhone administratora: miniatury zdjęć wizyty, pełny ekran, przewijanie, „Usuń” przed podpisem.",
+    "result": "EXTERNAL_IPHONE_PHOTOS_LIKE_JOBS",
+    "evidence_source": "iPhone: inicjały, pełna data, Usuń przed i po podpisie, ochrona jedynego zdjęcia usterki.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.02: podgląd zdjęć serwisu jak w montażach; bez zmian backendu",
-    "release_ci": "WAWIS PR checks, smoke-service-photo-preview-v1402, WebKit service photo cards",
-    "postdeploy": "Oczekuje: Vercel READY/14.02."
+    "code": "14.03: karty zdjęć 1:1 z montaży + usuwanie po podpisie",
+    "release_ci": "WAWIS PR checks + SQL v1403 + WebKit karty",
+    "postdeploy": "Kolejność: migracja (właściciel, SQL Editor) → SELECT → ready_for_main → merge → Vercel 14.03."
   }
 }

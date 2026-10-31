@@ -4,7 +4,7 @@ import {
   loadServiceVisitExecution,loadServiceVisitPhotos,saveServiceDeviceResult,
   uploadServiceVisitPhoto,loadStoredServiceProtocol,finalizeSignedServiceVisit,
   openServiceProtocolPdf,printServiceProtocol,deleteServiceVisitPhoto,
-  loadServicePhotoUrls,servicePhotoUrlIsFresh
+  loadServicePhotoUrls,servicePhotoUrlIsFresh,loadServicePhotoUploaders
 } from '../../modules/service-visit-execution.js';
 import { sendServiceProtocolEmail, hasUncertainServiceEmailAttempt } from '../../modules/service-visit-email.js';
 import { loadServiceVisitHistory } from '../../modules/service-visits.js';
@@ -12,13 +12,10 @@ import './ServiceAdminPanel.css';
 import './mobile-device-wizard.css';
 import AppModal from '../modals/AppModal.jsx';
 import PreviewModal from '../modals/PreviewModal.jsx';
+import { formatDate, getInitials } from '../../utils/jobHelpers.jsx';
 import { captureServiceSignature } from '../../modules/service-visit-signature.js';
 import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
-function formatPhotoDate(value) {
- const d=new Date(value);
- return Number.isNaN(d.getTime())?'':new Intl.DateTimeFormat('pl-PL',{timeZone:'Europe/Warsaw',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
-}
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
 }
@@ -37,6 +34,8 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  const [photoUrls,setPhotoUrls]=useState({});
  const [photoUrlError,setPhotoUrlError]=useState(false);
  const [preview,setPreview]=useState(null);
+ const [uploaders,setUploaders]=useState({});
+ const [deletingPhotoId,setDeletingPhotoId]=useState('');
  const canvasRef=useRef(null);
  const drawingRef=useRef(false);
  const lastPointRef=useRef(null);
@@ -76,6 +75,16 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
      .catch(()=>{if(active)setPhotoUrlError(true);});
    return ()=>{active=false;};
    // photoUrls celowo poza zależnościami — tylko nowe zdjęcia wyzwalają pobranie.
+ },[photos,supabase]);
+ // 14.03: inicjały autora zdjęcia jak w montażach; brak nazwy nie blokuje podglądu.
+ useEffect(()=>{
+   let active=true;
+   const missing=photos.filter(p=>p.created_by&&!(p.created_by in uploaders));
+   if(!missing.length)return ()=>{active=false;};
+   loadServicePhotoUploaders({supabase,photos:missing})
+     .then(names=>{if(active)setUploaders(old=>({...old,...names}));})
+     .catch(()=>{});
+   return ()=>{active=false;};
  },[photos,supabase]);
  async function openPhoto(itemId,index) {
    const list=photos.filter(p=>p.service_visit_device_id===itemId);
@@ -188,21 +197,24 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
    finally{setBusy('');}
  }
  async function removePhoto(item,photo,index) {
-   if(busy||readonlyNow())return;
-   if(!window.confirm('Usunąć zdjęcie '+(index+1)+' z urządzenia '+(item.model_snapshot||'')+'?\n\nUżyj tego tylko dla pomyłkowego zdjęcia.'))return;
-   // Zmiana dokumentacji unieważnia wcześniej zatwierdzony podpis.
-   if(signatureDataUrl)setSignatureDataUrl('');
-   if(signed && signatureOpen)clearSignature();
-   setBusy('photo:'+item.id);setError('');setMessage('');
+   if(busy)return;
+   // 14.03: jak w montażach — administrator może usunąć zdjęcie także po podpisaniu.
+   const signedNote=protocol?'\n\nProtokół jest już podpisany — zdjęcie zniknie z dokumentacji tej wizyty (PDF się nie zmienia).':'';
+   if(!window.confirm('Usunąć zdjęcie '+(index+1)+' z urządzenia '+(item.model_snapshot||'')+'?'+signedNote))return;
+   // Przed podpisem: zmiana dokumentacji unieważnia wcześniej zatwierdzony podpis.
+   if(!protocol){
+     if(signatureDataUrl)setSignatureDataUrl('');
+     if(signed && signatureOpen)clearSignature();
+   }
+   setBusy('photo:'+item.id);setDeletingPhotoId(photo.id);setError('');setMessage('');
    try {
      const result=await deleteServiceVisitPhoto({supabase,photoId:photo.id});
      const records=await loadServiceVisitPhotos({supabase,items:visit.items});
      setPhotos(records);
      setMessage(result.fileRemoved?'Zdjęcie usunięte.':'Zdjęcie usunięte z wizyty. Plik zostanie sprzątnięty później.');
    }catch(e){setError(e.message||'Nie udało się usunąć zdjęcia.');}
-   finally{setBusy('');}
+   finally{setBusy('');setDeletingPhotoId('');}
  }
- function readonlyNow(){return Boolean(protocol)||visit?.status==='wykonany'||visit?.status==='odwolany';}
  async function waitForSignature() {
    if(!visit||!doneCount||unsaved)return;
    setBusy('waiting');setError('');setMessage('');
@@ -304,27 +316,33 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        <p className="serviceAdminMuted">{needPhoto?'Do wykrytej usterki dodaj co najmniej jedno zdjęcie.'
          :draft.result==='usterka'?'Zdjęcia usterki zapisane w systemie. Dotknij miniatury, aby powiększyć.'
          :itemPhotos.length?'Dotknij miniatury, aby powiększyć zdjęcie.':'Zdjęcia opcjonalne przy sprawnym urządzeniu.'}</p>
-       {itemPhotos.length?<div className="thumbGrid serviceAdminThumbGrid">
+       {itemPhotos.length?<div className="mobileInlineJobDetails serviceAdminPhotosV1403">
+         <div className="thumbGrid">
          {itemPhotos.map((p,i)=>{
            const thumb=photoUrls[p.id]?.url||'';
+           const author=uploaders[p.created_by]||'Pracownik';
            return <div key={p.id} className="thumbCard">
              <button type="button" className="thumbBtn desktopThumbBtn" aria-label={'Powiększ zdjęcie '+(i+1)}
                disabled={!thumb} onClick={()=>openPhoto(item.id,i)}>
                {thumb
                  ?<img src={thumb} className="thumb desktopThumb" alt={'Zdjęcie '+(i+1)} loading="lazy" decoding="async"/>
-                 :<span className="photoThumbPlaceholder">{photoUrlError?'Brak podglądu':'Wczytuję…'}</span>}
+                 :<span className="photoThumbPlaceholder">{photoUrlError?'Zdjęcie':'Otwórz zdjęcie'}</span>}
+               <span className="photoUploaderBadge" title={author} aria-label={'Autor zdjęcia: '+author}>{getInitials(author)}</span>
              </button>
              <div className="photoMeta">
-               <span className="photoMetaText photoDateMeta">{formatPhotoDate(p.created_at)}</span>
-               <span className="photoMetaText">✓ {Math.round(p.file_size_bytes/1024)} KB</span>
+               <span className="photoMetaText photoDateMeta">{formatDate(p.created_at)}</span>
+               <span className="photoMetaText photoInstallerMeta" title={author}>{getInitials(author)}</span>
              </div>
-             {!readonly?<button type="button" className="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn"
-               disabled={Boolean(busy)} aria-label={'Usuń zdjęcie '+(i+1)}
-               onClick={e=>{e.stopPropagation();removePhoto(item,p,i);}}>
-               {busy==='photo:'+item.id?'Usuwanie...':'Usuń'}
-             </button>:null}
+             <div className="photoQueueActions">
+               <button type="button" className="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn"
+                 disabled={deletingPhotoId===p.id||Boolean(busy)}
+                 onClick={e=>{e.stopPropagation();removePhoto(item,p,i);}}>
+                 {deletingPhotoId===p.id?'Usuwanie...':'Usuń'}
+               </button>
+             </div>
            </div>;
          })}
+         </div>
        </div>:null}
        {photoUrlError?<p className="serviceAdminMuted">Nie udało się wczytać podglądu zdjęć. Zdjęcia są zapisane — spróbuj ponownie przy lepszym zasięgu.</p>:null}
        {!readonly?<label>Dodaj zdjęcie

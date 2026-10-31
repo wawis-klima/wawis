@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-PHOTOS-1403 — zdjęcia serwisu niezgodne z montażami (31.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SPH-1403-PARITY | FIXED-UNVERIFIED | Właściciel (zrzut 15:51): brak inicjałów autora, ucięta data, brak „Usuń”. Struktura 1:1 z `JobDetailsPanel` (wrapper `.mobileInlineJobDetails`). Testy: smoke v1402, WebKit (pełna data, inicjały, hit-test). |
+| SPH-1403-DELETE | FIXED-UNVERIFIED | Usuwanie jak w montażach także po podpisie; RED bez migracji („tylko przed podpisaniem”). Ochrona jedynego zdjęcia usterki w podpisanym protokole (test SQL). |
+| SPH-1403-LIVE | EXTERNAL | iPhone po migracji i wdrożeniu. |
+
 ## SERVICE-PHOTO-PREVIEW-1402 — brak podglądu zdjęć serwisu (31.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

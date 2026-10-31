@@ -65,7 +65,7 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
     await expect(time).toHaveValue('13:45');
   });
 
-  test('14.02: miniatury zdjęć serwisu w kartach z montaży mieszczą się i są klikalne', async ({ page }) => {
+  test('14.03: karty zdjęć serwisu jak w montażach — pełna data, inicjały, klikalne Usuń', async ({ page }) => {
     await login(page, ADMIN);
     await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
     await expect(page.locator('.serviceAdminPage')).toBeVisible();
@@ -74,11 +74,13 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
       const card = document.createElement('div');
       card.className = 'card serviceAdminCard';
       card.id = 'service-photo-visual-check';
+      // 14.03: dokładnie struktura kart z montaży (JobDetailsPanel): wrapper, inicjały, data, „Usuń”.
       const one = i => '<div class="thumbCard"><button type="button" class="thumbBtn desktopThumbBtn" aria-label="Powiększ zdjęcie ' + i + '">'
-        + '<img src="' + src + '" class="thumb desktopThumb" alt="Zdjęcie ' + i + '"></button>'
-        + '<div class="photoMeta"><span class="photoMetaText photoDateMeta">31.10.2026</span><span class="photoMetaText">✓ 4328 KB</span></div>'
-        + '<button type="button" class="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn">Usuń</button></div>';
-      card.innerHTML = '<div class="thumbGrid serviceAdminThumbGrid">' + one(1) + one(2) + one(3) + '</div>';
+        + '<img src="' + src + '" class="thumb desktopThumb" alt="Zdjęcie ' + i + '">'
+        + '<span class="photoUploaderBadge">PW</span></button>'
+        + '<div class="photoMeta"><span class="photoMetaText photoDateMeta">31.10.26</span><span class="photoMetaText photoInstallerMeta">PW</span></div>'
+        + '<div class="photoQueueActions"><button type="button" class="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn">Usuń</button></div></div>';
+      card.innerHTML = '<div class="mobileInlineJobDetails serviceAdminPhotosV1403"><div class="thumbGrid">' + one(1) + one(2) + one(3) + '</div></div>';
       element.appendChild(card);
     }, pixel);
     for (const width of [320, 375, 390, 430]) {
@@ -94,8 +96,14 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
             const del = c.querySelector('.photoDeleteBtn').getBoundingClientRect();
             const img = c.querySelector('img').getBoundingClientRect();
             const hit = (b, el) => { const t = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return t === el || el.contains(t); };
+            const date = c.querySelector('.photoDateMeta');
+            const badge = c.querySelector('.photoUploaderBadge');
+            const badgeBox = badge.getBoundingClientRect();
             return { right: c.getBoundingClientRect().right, btnH: btn.height, imgW: img.width, imgH: img.height,
-              delH: del.height, thumbHit: hit(btn, c.querySelector('.thumbBtn')), delHit: hit(del, c.querySelector('.photoDeleteBtn')) };
+              delH: del.height, thumbHit: hit(btn, c.querySelector('.thumbBtn')), delHit: hit(del, c.querySelector('.photoDeleteBtn')),
+              dateFull: date.scrollWidth <= date.clientWidth + 1 && date.getBoundingClientRect().right <= c.getBoundingClientRect().right + 1,
+              badgeVisible: getComputedStyle(badge).display !== 'none' && badgeBox.width > 0
+                && badgeBox.right <= btn.right + 1 && badgeBox.bottom <= btn.bottom + 1 };
           }),
         };
       });
@@ -108,6 +116,8 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
         expect(item.delH).toBeGreaterThanOrEqual(30);
         expect(item.thumbHit).toBe(true);
         expect(item.delHit).toBe(true);
+        expect(item.dateFull).toBe(true);
+        expect(item.badgeVisible).toBe(true);
       }
     }
   });

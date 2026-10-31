@@ -116,5 +116,5 @@
 
 .serviceAdminPage .serviceAdminDanger{background:#fff3f2;border:1px solid #c64848;color:#9a2929;font-weight:800}
 .serviceAdminPage .serviceAdminDanger:disabled{opacity:.55}
-/* 14.02: zdjęcia serwisu w kartach z montaży (thumbGrid/thumbCard ze styles.css). */
-.serviceAdminPage .serviceAdminThumbGrid{margin:4px 0 2px}
+/* 14.03: zdjęcia serwisu w wrapperze .mobileInlineJobDetails — te same reguły mobile co montaże. */
+.serviceAdminPage .serviceAdminPhotosV1403{margin:4px 0 2px}

@@ -30,6 +30,11 @@ set search_path = '' as $$ select d.id from public.service_visit_devices d
 create function wawis_test.completed_event(p_visit uuid) returns table(id uuid, event_token text)
 language sql stable security definer set search_path = '' as $$
   select e.id, e.event_token from private.service_visit_completed_push_events_v1389 e where e.visit_id = p_visit $$;
+-- Wpis zdjęcia z pominięciem RLS — symuluje zdjęcie dodane, zanim wizyta została zakończona.
+create function wawis_test.add_photo_unchecked(p_item uuid, p_path text, p_size bigint) returns void
+language sql security definer set search_path = '' as $$
+  insert into public.service_visit_photos(service_visit_device_id,storage_path,file_size_bytes,mime_type,created_by)
+  values (p_item, p_path, p_size, 'image/jpeg', auth.uid()) $$;
 grant execute on all functions in schema wawis_test to authenticated, service_role;
 
 -- ---------- dane fikcyjne ----------
@@ -188,7 +193,7 @@ declare v2 uuid := wawis_test.visit('e0000000-0000-4000-8000-000000000002');
 declare a uuid := wawis_test.item('e0000000-0000-4000-8000-000000000002','d0000000-0000-4000-8000-000000000001');
 declare b uuid := wawis_test.item('e0000000-0000-4000-8000-000000000002','d0000000-0000-4000-8000-000000000002');
 declare ok jsonb := '{"filtry":true,"jednostka_wewnetrzna":true,"skropliny":true,"jednostka_zewnetrzna":true,"dzialanie":true,"instalacja":true}';
-declare snap jsonb; ph uuid;
+declare snap jsonb; ph uuid; n int;
 begin
   perform wawis_test.expect_error(format('select public.service_visit_admin_save_item(%L,%L,%L::jsonb,%L,%L)',v2,a,
     '{"filtry":true}','sprawne',''), null, 'wynik bez sześciu czynności odrzucony');
@@ -206,8 +211,20 @@ begin
   perform public.service_visit_admin_complete(v2, v2||'/pdf/p.pdf', v2||'/signatures/s.png', 'p.pdf', 800, snap);
   perform wawis_test.expect((select status from public.service_visits where id=v2)='wykonany', 'regresja: zakończenie wizyty');
   perform wawis_test.expect(exists(select 1 from public.service_visit_protocols where service_visit_id=v2), 'regresja: protokół zapisany');
-  perform wawis_test.expect_error(format('select public.service_visit_admin_delete_photo(%L)',ph), null, 'zakończona: usunięcie zdjęcia odrzucone');
-  perform wawis_test.expect(exists(select 1 from public.service_visit_photos where id=ph), 'zakończona: zdjęcie zostaje');
+  -- 14.03: jak w montażach — admin usuwa zdjęcie także po zakończeniu, ale nie OSTATNIE zdjęcie usterki.
+  perform wawis_test.expect_error(format('select public.service_visit_admin_delete_photo(%L)',ph), null, 'zakończona: ostatnie zdjęcie usterki chronione');
+  perform wawis_test.expect(exists(select 1 from public.service_visit_photos where id=ph), 'zakończona: jedyne zdjęcie usterki zostaje');
+  insert into storage.objects(bucket_id,name,metadata) values ('service-visit-files', v2||'/photos/'||b||'/u2.jpg', '{"size":700}');
+  -- drugie zdjęcie usterki dodane przed zakończeniem (po zakończeniu RLS nie pozwala dodawać zdjęć)
+  perform wawis_test.add_photo_unchecked(b, v2||'/photos/'||b||'/u2.jpg', 700);
+  perform wawis_test.expect(public.service_visit_admin_delete_photo(ph) = v2||'/photos/'||b||'/u.jpg', 'zakończona: drugie zdjęcie pozwala usunąć pierwsze');
+  perform wawis_test.expect((select count(*) from public.service_visit_photos where service_visit_device_id=b)=1, 'zakończona: zostaje jedno zdjęcie usterki');
+  delete from storage.objects where name = v2||'/photos/'||b||'/u.jpg';
+  get diagnostics n = row_count;
+  perform wawis_test.expect(n = 1, 'zakończona: nieużywany plik zdjęcia do usunięcia (polityka)');
+  delete from storage.objects where name = v2||'/pdf/p.pdf';
+  get diagnostics n = row_count;
+  perform wawis_test.expect(n = 0, 'zakończona: PDF nadal nie do usunięcia');
 end $$;
 
 -- ---------- PUSH „zakończono”: wizyta w Koszu nie jest powiadamiana ----------

@@ -12,7 +12,7 @@ export async function loadServiceVisitExecution({ supabase, visitId }) {
 export async function loadServiceVisitPhotos({supabase,items}) {
   if(!items?.length) return [];
   const {data,error}=await supabase.from('service_visit_photos')
-    .select('id,service_visit_device_id,storage_path,file_size_bytes,created_at')
+    .select('id,service_visit_device_id,storage_path,file_size_bytes,created_at,created_by')
     .in('service_visit_device_id',items.map(i=>i.id)).order('created_at',{ascending:true});
   if(error) throw error;
   return data || [];
@@ -98,6 +98,14 @@ export async function loadServicePhotoUrls({supabase,photos,expiresIn=SERVICE_PH
   const validUntil=now+Math.max(0,expiresIn-120)*1000;
   return Object.fromEntries(list.filter(p=>byPath.has(p.storage_path))
     .map(p=>[p.id,{url:byPath.get(p.storage_path),validUntil}]));
+}
+/** 14.03: autor zdjęcia (jak „uploader_name” w montażach). Brak nazwy nie blokuje podglądu. */
+export async function loadServicePhotoUploaders({supabase,photos}) {
+  const ids=[...new Set((photos||[]).map(p=>p?.created_by).filter(Boolean))];
+  if(!ids.length)return {};
+  const {data,error}=await supabase.from('profiles').select('id,full_name').in('id',ids);
+  if(error)throw error;
+  return Object.fromEntries((data||[]).filter(r=>r?.id).map(r=>[r.id,r.full_name||'']));
 }
 export function servicePhotoUrlIsFresh(entry,now=Date.now()) {
   return Boolean(entry?.url)&&Number(entry?.validUntil)>now;

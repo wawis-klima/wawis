@@ -1,9 +1,9 @@
-# RELEASE RESULT — WAWIS 14.02
+# RELEASE RESULT — WAWIS 14.03
 
 ## Zakres
-- Podgląd zdjęć serwisu jak w montażach: miniatury w kartach, pełny ekran z powiększaniem, „Usuń” przed podpisem.
-- Poprawiony tekst przy usterce ze zdjęciem.
+- Zdjęcia serwisu 1:1 jak w montażach: inicjały autora, krótka data, „Usuń” także po podpisaniu.
+- Serwer chroni jedyne zdjęcie usterki w podpisanym protokole; Kosz, audyt i ochrona PDF/podpisu bez zmian.
 
-## Kontrola
-- `smoke-service-photo-preview-v1402.mjs` (wykonanie modułu podpisanych adresów), WebKit: geometria i klikalność kart 320–430 px.
-- Bez zmian bazy, RLS, Storage i Edge Functions.
+## Kolejność
+1. Migracja `20261031160000_service_visit_photo_delete_like_jobs_v1403.sql` (właściciel, SQL Editor) i kontrola SELECT.
+2. `ready_for_main=true`, CI, scalenie, Vercel 14.03.
