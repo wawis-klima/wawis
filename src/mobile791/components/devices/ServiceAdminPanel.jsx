@@ -5,7 +5,7 @@ import {
   updateAdminServiceAssignment, resolveServiceAssignment, formatServiceDate,
   trashAdminServiceVisit, restoreAdminServiceVisit, purgeAdminServiceVisit,
   serviceVisitStatusLabel, buildServiceDeviceHistory, loadServiceVisitHistory,
-  updateAdminServiceVisitDetails,
+  updateAdminServiceVisitDetails, completedServiceVisits, completedServiceVisitSummary,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
@@ -91,6 +91,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const [error,setError] = useState('');
   const [refreshKey,setRefreshKey] = useState(0);
   const [visitHistory,setVisitHistory] = useState(null);
+  const [returnScreen,setReturnScreen] = useState('visits');
 
   const staffName = useCallback(id => staff.find(p => p.id === id)?.full_name || (id ? 'Pracownik' : 'Bez przydziału'),[staff]);
   useEffect(() => {
@@ -138,6 +139,12 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   async function showVisits() {
     setBusy(true);setError('');setMessage('');
     try { await loadVisits(null);setScreen('visits'); }
+    catch(err) {setError(friendlyError(err));}
+    finally {setBusy(false);}
+  }
+  async function showDone() {
+    setBusy(true);setError('');setMessage('');
+    try { await loadVisits(null);setScreen('done'); }
     catch(err) {setError(friendlyError(err));}
     finally {setBusy(false);}
   }
@@ -223,6 +230,8 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     finally {setBusy(false);}
   }
   function openVisit(visit) {
+    // 14.04: „Wróć” prowadzi do listy, z której otwarto wizytę.
+    if (['visits','done','customer','trash'].includes(screen)) setReturnScreen(screen);
     setCurrentVisit(visit);
     setSelectedTechnicians([...new Set([visit.primary_technician_id,...(visit.additional_technician_ids || [])].filter(Boolean))]);
     setDate(visit.scheduled_date || TODAY());setTime(visit.scheduled_time?.slice(0,5) || '');
@@ -265,7 +274,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   }
   const countSelected=selectedIds.length;
   const planned=useMemo(()=>visits.filter(v=>v.status!=='wykonany'&&v.status!=='odwolany').sort((a,b)=>String(a.scheduled_date).localeCompare(String(b.scheduled_date))),[visits]);
-  const completed=useMemo(()=>visits.filter(v=>v.status==='wykonany'),[visits]);
+  const completed=useMemo(()=>completedServiceVisits(visits),[visits]);
 
   if (!isAdmin) return null;
   if (screen==='execution' && currentVisit) return <ServiceExecutionPanel
@@ -285,6 +294,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     <nav className="serviceAdminNav" aria-label="Widoki serwisu">
       <button type="button" className={screen==='search'?'btn primary':'btn'} onClick={()=>{setScreen('search');setError('');setMessage('');}}>Szukaj</button>
       <button type="button" className={screen==='visits'?'btn primary':'btn'} disabled={busy} onClick={showVisits}>Zaplanowane</button>
+      <button type="button" className={screen==='done'?'btn primary':'btn'} disabled={busy} onClick={showDone}>Wykonane</button>
       <button type="button" className={screen==='trash'?'btn primary':'btn'} disabled={busy} onClick={showTrash}>Kosz</button>
     </nav>
     {error ? <div className="errorBox" role="alert">{error}</div> : null}
@@ -349,10 +359,17 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         <span>{v.client?.company_name||'Klient'} · {v.client?.city||''}</span>
         <small>{(v.items||[]).length} urządzeń · {staffName(v.primary_technician_id)} · {serviceVisitStatusLabel(v)}</small>
       </button>) : <p className="serviceAdminMuted">Brak umówionych przeglądów.</p>}
-      {completed.length ? <><div className="serviceAdminSectionTitle">Ostatnio wykonane</div>
-        {completed.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
-          {formatServiceDate(v.scheduled_date)} · {v.client?.company_name||'Klient'}
-        </button>)}</> : null}
+    </div> : null}
+    {screen==='done' ? <div className="card serviceAdminCard">
+      <h3>Wykonane przeglądy ({completed.length})</h3>
+      {completed.length ? completed.map(v=>{
+        const summary=completedServiceVisitSummary(v);
+        return <button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
+          <strong>{summary.dateLabel}</strong>
+          <span>{v.client?.company_name||v.client?.contact_person||'Klient'} · {v.client?.city||''}</span>
+          <small className={summary.hasDefects?'serviceAdminDefectText':undefined}>{summary.detailLabel} · Podpisany protokół</small>
+        </button>;
+      }) : <p className="serviceAdminMuted">Nie ma jeszcze wykonanych przeglądów.</p>}
     </div> : null}
     {screen==='trash' ? <div className="card serviceAdminCard">
       <h3>Kosz przeglądów ({visits.length})</h3>
@@ -363,7 +380,9 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
       </button>) : <p className="serviceAdminMuted">Kosz jest pusty.</p>}
     </div> : null}
     {screen==='detail' && currentVisit ? <>
-      <button className="btn" type="button" onClick={()=>currentVisit.deleted_at?showTrash():customer?.id===currentVisit.contractor_id?setScreen('customer'):showVisits()}>← Wróć</button>
+      <button className="btn" type="button" onClick={()=>currentVisit.deleted_at?showTrash()
+          :returnScreen==='done'?showDone()
+          :returnScreen==='customer'&&customer?.id===currentVisit.contractor_id?setScreen('customer'):showVisits()}>← Wróć</button>
       <form className="card serviceAdminCard" onSubmit={saveAssignment}>
         <h3>Przegląd — {formatServiceDate(currentVisit.scheduled_date)}</h3>
         <strong>{currentVisit.client?.company_name||customer?.name||'Klient'}</strong>

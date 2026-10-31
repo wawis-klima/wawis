@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.03",
+  "version": "14.04",
   "scope": "full",
-  "release_branch": "release/v14.03",
+  "release_branch": "release/v14.04",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "31.10.2026 15:59: migracja 20261031160000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT; dane bez zmian (2 wizyty, 1 zdjęcie)."
+    "notes": "31.10.2026 20:05: migracja 20261031200000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.03",
+    "source_branch": "release/v14.04",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_PHOTOS_LIKE_JOBS",
-    "evidence_source": "iPhone: inicjały, pełna data, Usuń przed i po podpisie, ochrona jedynego zdjęcia usterki.",
+    "result": "EXTERNAL_IPHONE_PARTIAL_CHECKLIST",
+    "evidence_source": "iPhone: zapis 2 z 6 + usterka, podpis, PDF z „nie wykonano”.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.03: karty zdjęć 1:1 z montaży + usuwanie po podpisie",
-    "release_ci": "WAWIS PR checks + SQL v1403 + WebKit karty",
-    "postdeploy": "Kolejność: migracja (właściciel, SQL Editor) → SELECT → ready_for_main → merge → Vercel 14.03."
+    "code": "14.04: częściowa lista czynności + podpowiedzi blokad",
+    "release_ci": "WAWIS PR checks + SQL v1404 (RED/GREEN) + smoke v1404",
+    "postdeploy": "Kolejność: migracja (właściciel) → SELECT → ready_for_main → merge → Vercel 14.04."
   }
 }

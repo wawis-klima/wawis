@@ -1073,6 +1073,18 @@
    "verified": "SELECT 31.10.2026: RPC z ochroną jedynego zdjęcia usterki, stary warunek usunięty; polityka Storage bez statusu, z deleted_at is null; authenticated=tak, anon=nie",
    "repo_file": "supabase/migrations/20261031160000_service_visit_photo_delete_like_jobs_v1403.sql",
    "note": "Wklejona treść bez komentarzy nagłówka; obiekty identyczne z plikiem."
+  },
+  {
+   "version": "20261031200000",
+   "name": "service_visit_partial_checklist_v1404",
+   "md5": "fd3e892ba40b09e269d330f8d08cda87",
+   "md5_of_file": true,
+   "bytes": 7724,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-10-31T20:05+01:00",
+   "verified": "SELECT 31.10.2026: save_item i complete z regułą „co najmniej jedna czynność”, stara reguła usunięta, zasada zdjęcia usterki zachowana; authenticated=tak, anon=nie",
+   "repo_file": "supabase/migrations/20261031200000_service_visit_partial_checklist_v1404.sql",
+   "note": "Wklejona treść bez komentarzy; obiekty identyczne z plikiem."
   }
  ],
  "statuses": {

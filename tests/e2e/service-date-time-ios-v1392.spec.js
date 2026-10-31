@@ -122,4 +122,30 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
       }
     }
   });
+  test('14.04: cztery zakładki serwisu (Szukaj, Zaplanowane, Wykonane, Kosz) w jednym rzędzie i klikalne', async ({ page }) => {
+    await login(page, ADMIN);
+    await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
+    await expect(page.locator('.serviceAdminNav')).toBeVisible();
+    for (const width of [320, 360, 375, 390, 430]) {
+      await page.setViewportSize({ width, height: 780 });
+      await page.waitForFunction(w => window.innerWidth === w, width, { timeout: 5000 });
+      const r = await page.locator('.serviceAdminNav').evaluate(nav => {
+        const vw = document.documentElement.clientWidth;
+        const buttons = [...nav.querySelectorAll('button')];
+        return { vw, pageOverflow: document.documentElement.scrollWidth - vw, navRight: nav.getBoundingClientRect().right,
+          items: buttons.map(b => { const box = b.getBoundingClientRect(); const t = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+            return { text: b.textContent.trim(), top: Math.round(box.top), h: box.height, right: box.right,
+              clipped: b.scrollWidth > b.clientWidth + 1, hit: t === b || b.contains(t) }; }) };
+      });
+      expect(r.items.map(i => i.text)).toEqual(['Szukaj', 'Zaplanowane', 'Wykonane', 'Kosz']);
+      expect(r.pageOverflow).toBeLessThanOrEqual(2);
+      expect(new Set(r.items.map(i => i.top)).size).toBe(1);
+      for (const item of r.items) {
+        expect(item.h).toBeGreaterThanOrEqual(44);
+        expect(item.right).toBeLessThanOrEqual(r.navRight + 1);
+        expect(item.clipped).toBe(false);
+        expect(item.hit).toBe(true);
+      }
+    }
+  });
 });

@@ -53,7 +53,7 @@ jobs:
 
       - name: Verify WebKit E2E evidence (fail-closed)
         if: always()
-        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 20  # 14.02: +1 test kart zdjęć serwisu
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 21  # 14.02: +1 karty zdjęć serwisu; 14.04: +1 zakładki serwisu
 
       - name: Upload report
         if: always()

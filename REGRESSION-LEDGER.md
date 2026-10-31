@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-CHECKLIST-1404 — blokada zapisu przy niepełnej liście czynności (31.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SC-1404-RULE | FIXED-UNVERIFIED | Decyzja właściciela: nie wszystkie czynności muszą być wykonane. RED (SQL bez migracji): „potwierdź wszystkie sześć czynności”. GREEN: 2 z 6 + usterka, 0 z 6 odrzucone, zakończenie z częściową listą. |
+| SC-1404-UX | FIXED-UNVERIFIED | Właściciel nie widział przyczyny blokady. Podpowiedzi `serviceAdminHint` — logika wykonana w `smoke-service-partial-checklist-v1404.mjs` na przypadku ze zrzutu. |
+| SC-1404-LIVE | EXTERNAL | iPhone po migracji i wdrożeniu. |
+
 ## SERVICE-PHOTOS-1403 — zdjęcia serwisu niezgodne z montażami (31.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -1,9 +1,12 @@
-# RELEASE RESULT — WAWIS 14.03
+# RELEASE RESULT — WAWIS 14.04
 
 ## Zakres
-- Zdjęcia serwisu 1:1 jak w montażach: inicjały autora, krótka data, „Usuń” także po podpisaniu.
-- Serwer chroni jedyne zdjęcie usterki w podpisanym protokole; Kosz, audyt i ochrona PDF/podpisu bez zmian.
+- Wynik przeglądu bez kompletu sześciu czynności (min. jedna), niewykonane oznaczone w PDF.
+- Wyraźne podpowiedzi blokad zapisu i podpisu.
+- Zakładka „Wykonane” (zakończone przeglądy, najnowsze najpierw).
 
 ## Kolejność
-1. Migracja `20261031160000_service_visit_photo_delete_like_jobs_v1403.sql` (właściciel, SQL Editor) i kontrola SELECT.
-2. `ready_for_main=true`, CI, scalenie, Vercel 14.03.
+1. Migracja `20261031200000_service_visit_partial_checklist_v1404.sql` (właściciel, SQL Editor) i kontrola SELECT.
+2. `ready_for_main=true`, CI, scalenie, Vercel 14.04.
+
+Uwaga: nowa aplikacja przed migracją pozwoliłaby kliknąć zapis 2 z 6, a serwer odrzuciłby go starym komunikatem — dlatego migracja najpierw.
