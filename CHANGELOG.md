@@ -1,3 +1,9 @@
+## 14.01
+- Serwis / Kosz: „Usuń na stałe” kończyło się błędem „Brak uprawnień do przydziału” (od 13.95; zgłoszenie właściciela 31.10.2026, logi: `purge-service-visit` → 409, `service_visit_purge_prepare_v1395` → 400). Przyczyna: trigger `service_visit_assignment_audit` (13.89) wymagał zalogowanego administratora przy każdej zmianie wiersza, a Edge Function działa kluczem `service_role` bez `auth.uid()`. Dane nie zostały naruszone (operacja przerwana w pierwszym kroku).
+- Migracja `20261031150000_service_visit_purge_service_role_v1401.sql`: trigger przepuszcza `service_role`; pracownik i anon nadal odrzuceni; audyt przydziału bez zmian.
+- Test `scripts/sql/service-visit-test-v1399.sql`: rola serwerowa bez identyfikatora użytkownika (jak na produkcji) — poprzednio test podawał identyfikator administratora i maskował błąd. RED odtworzony lokalnie z identycznym komunikatem; dodane kontrprzykłady pracownik/anon.
+- Bez zmian frontendu.
+
 ## 14.00
 - Serwis / Kosz (serwer): nowa migracja `20261030120000_service_visit_trash_guard_photo_delete_v1399.sql` — triggery blokują każdą zmianę wizyty w Koszu (termin, uwagi, obsada, wyniki, oczekiwanie na podpis, odwołanie, zakończenie, zdjęcia), polityka Storage odrzuca upload, PUSH „zakończono” pomija wizyty w Koszu. Przywrócenie i trwałe usuwanie działają bez zmian. Dotąd chronił wyłącznie interfejs (RED odtworzony na schemacie produkcji 13.98).
 - Serwis / zdjęcia: administrator może usunąć pomyłkowe zdjęcie przed podpisem i zakończeniem — RPC `service_visit_admin_delete_photo` (blokada wizyty, audyt w `private.service_visit_photo_delete_audit_v1399`), potem plik przez Storage API; polityka pozwala skasować wyłącznie nieużywany plik zdjęcia aktywnej wizyty (nigdy PDF ani podpisu). Usunięcie zdjęcia unieważnia zatwierdzony podpis.

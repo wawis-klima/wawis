@@ -152,8 +152,10 @@ begin
 end $$;
 
 -- ---------- trwałe usuwanie (13.95) nadal działa przy blokadach Kosza ----------
+-- 14.01: Edge Function używa klucza service_role BEZ identyfikatora użytkownika (auth.uid() = null).
+-- Wcześniej test podawał sub administratora i maskował błąd „Brak uprawnień do przydziału” (produkcja 31.10.2026).
 reset role;
-select wawis_test.as_user('a0000000-0000-4000-8000-000000000001', 'service_role');
+select wawis_test.as_user(null, 'service_role');
 set role service_role;
 do $$
 declare v1 uuid := wawis_test.visit('e0000000-0000-4000-8000-000000000001');
@@ -232,6 +234,30 @@ declare e record;
 begin
   select * into e from wawis_test.completed_event(wawis_test.visit('e0000000-0000-4000-8000-000000000002'));
   perform wawis_test.expect((select count(*) from public.get_service_visit_completed_push_event_v1389(e.id, e.event_token)) = 0, 'push: brak dla wizyty w koszu');
+end $$;
+reset role;
+-- ---------- 14.01: zmiana przydziału nadal tylko dla administratora (trigger) ----------
+-- Pracownik z ominiętym RLS (symulacja przez funkcję definer bez roli admina) nadal odrzucony.
+create function wawis_test.raw_assign(p_visit uuid, p_tech uuid) returns void
+language sql security definer set search_path = '' as $$
+  update public.service_visits set primary_technician_id = p_tech where id = p_visit $$;
+grant execute on function wawis_test.raw_assign(uuid, uuid) to authenticated, service_role;
+reset role;
+select public.service_visit_admin_restore(wawis_test.visit('e0000000-0000-4000-8000-000000000002'))
+  from (select wawis_test.as_user('a0000000-0000-4000-8000-000000000001')) x;
+select wawis_test.as_user('a0000000-0000-4000-8000-000000000002');
+set role authenticated;
+do $$ begin
+  perform wawis_test.expect_error(format('select wawis_test.raw_assign(%L,%L)',
+    wawis_test.visit('e0000000-0000-4000-8000-000000000002'), 'a0000000-0000-4000-8000-000000000002'),
+    null, 'pracownik: przydział odrzucony przez trigger');
+end $$;
+reset role;
+select wawis_test.as_user(null, 'anon');
+do $$ begin
+  perform wawis_test.expect_error(format('select wawis_test.raw_assign(%L,%L)',
+    wawis_test.visit('e0000000-0000-4000-8000-000000000002'), 'a0000000-0000-4000-8000-000000000002'),
+    null, 'anon: przydział odrzucony przez trigger');
 end $$;
 reset role;
 select 'SERVICE_SQL_V1399_OK';
