@@ -43,4 +43,21 @@ const sql = read('supabase/migrations/20261031200000_service_visit_partial_check
 assert.match(sql, /not exists\(select 1 from jsonb_each\(p_checklist\) k where k\.value = 'true'::jsonb\)/, 'Serwer: co najmniej jedna czynność.');
 assert.doesNotMatch(sql, /k\.value <> 'true'::jsonb/, 'Serwer: bez wymogu wszystkich sześciu.');
 assert.match(sql, /Do każdej wykrytej usterki wymagane jest zapisane zdjęcie/, 'Zasada zdjęcia usterki zachowana.');
-console.log('WAWIS 14.04 partial checklist + hints: PASS');
+// ---------- 14.04: zakładka „Wykonane” (prośba właściciela 31.10.2026 19:53) ----------
+const { completedServiceVisits, completedServiceVisitSummary } = await import('../src/mobile791/modules/service-visits.js');
+const list = completedServiceVisits([
+  { id: 'a', status: 'wykonany', completed_at: '2026-10-30T10:00:00Z', items: [{ result: 'sprawne' }] },
+  { id: 'b', status: 'zaplanowany', scheduled_date: '2026-11-05', items: [] },
+  { id: 'c', status: 'wykonany', completed_at: '2026-10-31T18:30:00Z', items: [{ result: 'usterka' }, { result: 'sprawne' }] },
+  { id: 'd', status: 'wykonany', completed_at: '2026-10-31T19:00:00Z', deleted_at: '2026-10-31T19:10:00Z', items: [] },
+  { id: 'e', status: 'odwolany', items: [] },
+]);
+assert.deepEqual(list.map(v => v.id), ['c', 'a'], 'Tylko wykonane spoza Kosza, najnowsze najpierw.');
+assert.deepEqual(completedServiceVisitSummary(list[0]), { dateLabel: 'Wykonano 31.10.2026', detailLabel: '2 urządzeń · 1 usterka', hasDefects: true });
+assert.deepEqual(completedServiceVisitSummary(list[1]), { dateLabel: 'Wykonano 30.10.2026', detailLabel: '1 urządzenie · wszystko sprawne', hasDefects: false });
+const admin = read('src/mobile791/components/devices/ServiceAdminPanel.jsx');
+assert.match(admin, /onClick=\{showDone\}>Wykonane<\/button>/, 'Zakładka „Wykonane” w pasku.');
+assert.match(admin, />Szukaj<\/button>[\s\S]*>Zaplanowane<\/button>[\s\S]*>Wykonane<\/button>[\s\S]*>Kosz<\/button>/, 'Kolejność zakładek.');
+assert.doesNotMatch(admin, /Ostatnio wykonane/, 'Wykonane nie dublują się na liście zaplanowanych.');
+assert.match(admin, /returnScreen==='done'\?showDone\(\)/, '„Wróć” z wizyty wraca do listy „Wykonane”.');
+console.log('WAWIS 14.04 partial checklist + hints + completed tab: PASS');

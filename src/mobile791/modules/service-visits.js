@@ -167,6 +167,26 @@ function warsawDateTime(value) {
   return new Intl.DateTimeFormat('pl-PL',{timeZone:'Europe/Warsaw',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);
 }
 
+/** 14.04: lista „Wykonane” — zakończone przeglądy spoza Kosza, najnowsze najpierw (data zakończenia). */
+export function completedServiceVisits(visits = []) {
+  const key = v => String(v?.completed_at || v?.performed_at || v?.scheduled_date || '');
+  return (visits || []).filter(v => v?.status === 'wykonany' && !v?.deleted_at)
+    .sort((a, b) => key(b).localeCompare(key(a)));
+}
+export function completedServiceVisitSummary(visit) {
+  const items = visit?.items || [];
+  const defects = items.filter(i => i?.result === 'usterka').length;
+  const checked = items.filter(i => i?.result).length;
+  const devices = items.length === 1 ? '1 urządzenie' : items.length + ' urządzeń';
+  const outcome = defects ? (defects === 1 ? '1 usterka' : defects + ' usterek')
+    : checked ? 'wszystko sprawne' : 'bez wyników';
+  return {
+    dateLabel: visit?.completed_at ? 'Wykonano ' + formatServiceTimestampDate(visit.completed_at) : 'Termin ' + formatServiceDate(visit?.scheduled_date),
+    detailLabel: devices + ' · ' + outcome,
+    hasDefects: defects > 0,
+  };
+}
+
 /** Historia pojedynczego urządzenia z już pobranych wizyt klienta (bez dodatkowego zapytania).
  * Klucz: device_ref_id — przetrwa przebudowę rekordu devices przez synchronizator montaży. */
 export function buildServiceDeviceHistory({ visits = [], deviceId, nameOf = () => '' }) {

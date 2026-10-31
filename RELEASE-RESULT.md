@@ -3,6 +3,7 @@
 ## Zakres
 - Wynik przeglądu bez kompletu sześciu czynności (min. jedna), niewykonane oznaczone w PDF.
 - Wyraźne podpowiedzi blokad zapisu i podpisu.
+- Zakładka „Wykonane” (zakończone przeglądy, najnowsze najpierw).
 
 ## Kolejność
 1. Migracja `20261031200000_service_visit_partial_checklist_v1404.sql` (właściciel, SQL Editor) i kontrola SELECT.

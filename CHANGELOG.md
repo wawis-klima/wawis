@@ -3,6 +3,7 @@
 - Decyzja właściciela: wynik można zapisać bez kompletu sześciu czynności. Wymagana co najmniej jedna wykonana; wszystkie sześć pozycji zapisywane jako tak/nie. Migracja `20261031200000_service_visit_partial_checklist_v1404.sql` (`service_visit_admin_save_item`, `service_visit_admin_complete`); pozostałe zasady bez zmian (usterka wymaga zdjęcia, zgodność PDF, Kosz).
 - PDF: niewykonane czynności jako „✗ … — nie wykonano”.
 - Wyraźne podpowiedzi (żółta ramka) pod nieaktywnym „Zapisz wynik urządzenia” (brak czynności / brak wyniku / brak zdjęcia usterki / wynik niezapisany) i przy podpisie („Najpierw zapisz wynik…”).
+- Serwis / listy (prośba właściciela 31.10.2026 19:53): zakładka „Wykonane” obok Szukaj, Zaplanowane, Kosz — zakończone przeglądy spoza Kosza, najnowsze najpierw (data wykonania, klient, liczba urządzeń, usterki wyróżnione). Sekcja „Ostatnio wykonane” usunięta z „Zaplanowane”; „Wróć” z wizyty prowadzi do listy, z której ją otwarto. Cztery zakładki w jednym rzędzie (WebKit 320–430 px, oczekiwane testy WebKit: 21).
 - Testy: SQL (RED bez migracji — dokładnie stary komunikat „wszystkie sześć”; GREEN: 2 z 6 + usterka, odrzucenie 0 z 6, zakończenie z częściową listą), `smoke-service-partial-checklist-v1404.mjs` (wykonanie logiki blokady ze zrzutu właściciela).
 
 ## 14.03

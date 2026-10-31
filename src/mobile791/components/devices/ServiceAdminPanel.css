@@ -3,9 +3,10 @@
 .serviceAdminHeader{padding:4px 1px}
 .serviceAdminHeader h2{margin:0 0 4px;font-size:21px;line-height:1.25;color:#172b45}
 .serviceAdminHeader p{font-size:12px;line-height:1.45;color:#51647c;margin:0}
-.serviceAdminNav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+/* 14.04: cztery zakładki (Szukaj, Zaplanowane, Wykonane, Kosz); dłuższe nazwy dostają więcej miejsca. */
+.serviceAdminNav{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.3fr) minmax(0,1.15fr) minmax(0,.8fr);gap:5px}
 .serviceAdminNav .btn{min-width:0;font-size:clamp(11px,3vw,14px)!important}
-.serviceAdminNav .btn{min-height:44px;white-space:normal;padding:8px 7px}
+.serviceAdminNav .btn{min-height:44px;white-space:nowrap;padding:8px 3px;letter-spacing:-.01em}
 .serviceAdminCard{display:grid;gap:12px;padding:13px!important;min-width:0}
 .serviceAdminCard h3{font-size:17px;line-height:1.3;margin:0;color:#172b45}
 .serviceAdminCard label{display:grid;gap:5px;font-size:13px;font-weight:750;color:#34465f;min-width:0}
@@ -120,3 +121,4 @@
 .serviceAdminPage .serviceAdminPhotosV1403{margin:4px 0 2px}
 /* 14.04: wyraźna podpowiedź, dlaczego przycisk jest nieaktywny (zamiast drobnego szarego tekstu). */
 .serviceAdminPage .serviceAdminHint{margin:2px 0 0;padding:9px 11px;border:1px solid #f0c36d;border-radius:12px;background:#fff8e6;color:#7a4b00;font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.serviceAdminPage .serviceAdminDefectText{color:#9a2929;font-weight:700}
