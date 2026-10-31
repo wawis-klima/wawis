@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.00",
+  "version": "14.01",
   "scope": "full",
-  "release_branch": "release/v14.00",
+  "release_branch": "release/v14.01",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "31.10.2026: migracja 20261030120000 wykonana na produkcji przez właściciela (SQL Editor); obiekty i uprawnienia potwierdzone SELECT; dane bez zmian (3 wizyty, 3 protokoły)."
+    "notes": "31.10.2026 15:08: logi — purge-service-visit 409, purge_prepare 400 „Brak uprawnień do przydziału”; 3 wizyty w koszu nienaruszone (purge_started_at null)."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.00",
+    "source_branch": "release/v14.01",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_ADMIN",
-    "evidence_source": "iPhone administratora: Kosz zablokowany do edycji, usuwanie zdjęcia przed podpisem, zapis szczegółów wizyty.",
-    "notes": "Decyzja właściciela 30.10.2026 11:53 („jak coś to wdrażaj”); migracja 31.10.2026 13:46."
+    "result": "EXTERNAL_IPHONE_PURGE",
+    "evidence_source": "iPhone administratora: „Usuń na stałe” wizyty testowej z Kosza.",
+    "notes": "Migracja wykonywana przez właściciela w SQL Editor (okno potwierdzenia narzędzia na telefonie jest anulowane automatycznie)."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.00: blokady Kosza w bazie, usuwanie zdjęcia przed podpisem, atomowy zapis szczegółów wizyty, poprawka version-bump",
-    "release_ci": "WAWIS PR checks + service-visit-sql-v1399 (PostgreSQL 16), smoke-service-admin-v1399, smoke-version-bump-readme-v1399",
-    "postdeploy": "Oczekuje: Vercel READY/14.00 i /app-version.json. iPhone poza CI."
+    "code": "14.01: trigger przydziału przepuszcza service_role (naprawa purge z Kosza); bez zmian frontendu",
+    "release_ci": "WAWIS PR checks + service-visit-sql-v1399 (rola serwerowa bez auth.uid(), RED odtworzony)",
+    "postdeploy": "Oczekuje: migracja na produkcji (SELECT), Vercel READY/14.01, test usuwania na iPhonie."
   }
 }

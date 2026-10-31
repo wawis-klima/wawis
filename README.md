@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.00
+- 14.01
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.01` — naprawa trwałego usuwania serwisu z Kosza (od 13.95 kończyło się komunikatem „Brak uprawnień do przydziału”, bez usunięcia danych): trigger przydziału przepuszcza zaufaną rolę serwerową; użytkownicy nadal muszą być administratorem. Test PostgreSQL używa realistycznej roli serwerowej bez identyfikatora użytkownika.
 - wersja `14.00` — moduł serwisowy (administrator): serwer blokuje każdą zmianę wizyty w Koszu (dotąd tylko ekran); administrator może usunąć pomyłkowe zdjęcie przed podpisem; termin, uwagi i obsada zapisują się razem albo wcale. Naprawiony `version-bump.cjs` (nie kasuje poprzedniego wpisu README). Migracja wymaga osobnej decyzji właściciela przed wdrożeniem.
 - wersja `13.99` — Tankowania na komputerze: zwijane sekcje bez formularza; oszczędności wg średniej ceny dla Śląska.
 - wersja `13.98` — moduł serwisowy (administrator): usunięta nieaktualna instrukcja „wpisz USUN” w Koszu (jedno potwierdzenie bez zmian), historia przeglądów przy każdym urządzeniu klienta, historia wizyty (termin, status, przydział, e-maile), poprawne statusy „W trakcie” i „Oczekuje na podpis klienta”, widoczna historia wysyłek protokołu i świadome ponowienie e-maila po niepewnym wyniku zamiast trwałej blokady. Bez zmian bazy, RLS, Storage i Edge Functions.

@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-PURGE-1401 — trwałe usuwanie z Kosza blokowane przez trigger przydziału (31.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SP-1401-PROD | FIXED-UNVERIFIED | Produkcja 31.10.2026 15:08: `purge-service-visit` 409 ← `service_visit_purge_prepare_v1395` 400 „Brak uprawnień do przydziału”. Trigger `service_visit_assignment_audit` wymagał `current_user_is_admin()` przy każdym UPDATE; klucz `service_role` nie ma `auth.uid()`. Dane nienaruszone. |
+| SP-1401-TEST-GAP | FIXED-UNVERIFIED | Test 14.00 wywoływał purge jako `service_role` Z identyfikatorem administratora — maskował błąd. Teraz `as_user(null,'service_role')`; RED na schemacie 14.00 z identycznym komunikatem. |
+| SP-1401-COUNTER | REGRESSION | `scripts/sql/service-visit-test-v1399.sql`: pracownik i anon nadal nie zmienią przydziału (trigger). |
+| SP-1401-LIVE | EXTERNAL | Po migracji: „Usuń na stałe” wizyty testowej na iPhonie. |
+
 ## SERVICE-ADMIN-1399 — Kosz po stronie serwera, usuwanie zdjęcia, zapis szczegółów (30.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
