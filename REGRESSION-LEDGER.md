@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-PHOTO-PREVIEW-1402 — brak podglądu zdjęć serwisu (31.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SPP-1402-PREVIEW | FIXED-UNVERIFIED | Właściciel (iPhone): przy zdjęciu tylko napis „zapisane w systemie”, brak miejsca do obejrzenia. Teraz karty i `PreviewModal` z montaży. Test `smoke-service-photo-preview-v1402.mjs` + WebKit geometria/hit-test. |
+| SPP-1402-TEXT | FIXED-UNVERIFIED | Przy usterce ze zdjęciem wyświetlało się „Zdjęcia opcjonalne przy sprawnym urządzeniu”. |
+| SPP-1402-LIVE | EXTERNAL | Po wdrożeniu: podgląd na iPhonie. |
+
 ## SERVICE-PURGE-1401 — trwałe usuwanie z Kosza blokowane przez trigger przydziału (31.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

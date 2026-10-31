@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.01",
+  "version": "14.02",
   "scope": "full",
-  "release_branch": "release/v14.01",
+  "release_branch": "release/v14.02",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "31.10.2026 15:08: logi — purge-service-visit 409, purge_prepare 400 „Brak uprawnień do przydziału”; 3 wizyty w koszu nienaruszone (purge_started_at null)."
+    "notes": "Zmiana wyłącznie frontendu; odczyt zdjęć istniejącą polityką service_visit_files_admin_read."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.01",
+    "source_branch": "release/v14.02",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "checked": true,
-    "result": "OWNER_IPHONE_PURGE_OK",
-    "evidence_source": "iPhone administratora: „Usuń na stałe” wizyty testowej z Kosza.",
-    "notes": "31.10.2026 15:15: właściciel usunął na stałe 2 wizyty z Kosza; SELECT: 1 wizyta pozostała z PDF, 0 osieroconych plików i rekordów, purge_started_at bez zawieszeń, 752 urządzenia nietknięte."
+    "checked": false,
+    "result": "EXTERNAL_IPHONE_PHOTO_PREVIEW",
+    "evidence_source": "iPhone administratora: miniatury zdjęć wizyty, pełny ekran, przewijanie, „Usuń” przed podpisem.",
+    "notes": ""
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.01: trigger przydziału przepuszcza service_role (naprawa purge z Kosza); bez zmian frontendu",
-    "release_ci": "WAWIS PR checks + service-visit-sql-v1399 (rola serwerowa bez auth.uid(), RED odtworzony)",
-    "postdeploy": "Oczekuje: migracja na produkcji (SELECT), Vercel READY/14.01, test usuwania na iPhonie."
+    "code": "14.02: podgląd zdjęć serwisu jak w montażach; bez zmian backendu",
+    "release_ci": "WAWIS PR checks, smoke-service-photo-preview-v1402, WebKit service photo cards",
+    "postdeploy": "Oczekuje: Vercel READY/14.02."
   }
 }

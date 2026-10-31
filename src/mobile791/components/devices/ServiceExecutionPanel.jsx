@@ -3,16 +3,22 @@ import { SERVICE_VISIT_CHECKS, normalizeServiceChecklist } from '../../modules/s
 import {
   loadServiceVisitExecution,loadServiceVisitPhotos,saveServiceDeviceResult,
   uploadServiceVisitPhoto,loadStoredServiceProtocol,finalizeSignedServiceVisit,
-  openServiceProtocolPdf,printServiceProtocol,deleteServiceVisitPhoto
+  openServiceProtocolPdf,printServiceProtocol,deleteServiceVisitPhoto,
+  loadServicePhotoUrls,servicePhotoUrlIsFresh
 } from '../../modules/service-visit-execution.js';
 import { sendServiceProtocolEmail, hasUncertainServiceEmailAttempt } from '../../modules/service-visit-email.js';
 import { loadServiceVisitHistory } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import './mobile-device-wizard.css';
 import AppModal from '../modals/AppModal.jsx';
+import PreviewModal from '../modals/PreviewModal.jsx';
 import { captureServiceSignature } from '../../modules/service-visit-signature.js';
 import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
 
+function formatPhotoDate(value) {
+ const d=new Date(value);
+ return Number.isNaN(d.getTime())?'':new Intl.DateTimeFormat('pl-PL',{timeZone:'Europe/Warsaw',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
+}
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
 }
@@ -28,6 +34,9 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  const [signatureOpen,setSignatureOpen]=useState(false);
  const [signatureDataUrl,setSignatureDataUrl]=useState('');
  const [emailHistory,setEmailHistory]=useState(null);
+ const [photoUrls,setPhotoUrls]=useState({});
+ const [photoUrlError,setPhotoUrlError]=useState(false);
+ const [preview,setPreview]=useState(null);
  const canvasRef=useRef(null);
  const drawingRef=useRef(false);
  const lastPointRef=useRef(null);
@@ -56,6 +65,39 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
    return ()=>{active=false;};
  },[supabase,visitId]);
 
+ // 14.02: podgląd zapisanych zdjęć (miniatury + pełny ekran). Brakujące lub wygasłe adresy
+ // pobieramy jednym zapytaniem; błąd pokazujemy uczciwie, bez ukrywania informacji o zapisie.
+ useEffect(()=>{
+   let active=true;
+   const missing=photos.filter(p=>!servicePhotoUrlIsFresh(photoUrls[p.id]));
+   if(!missing.length)return ()=>{active=false;};
+   loadServicePhotoUrls({supabase,photos:missing})
+     .then(urls=>{if(active){setPhotoUrls(old=>({...old,...urls}));setPhotoUrlError(false);}})
+     .catch(()=>{if(active)setPhotoUrlError(true);});
+   return ()=>{active=false;};
+   // photoUrls celowo poza zależnościami — tylko nowe zdjęcia wyzwalają pobranie.
+ },[photos,supabase]);
+ async function openPhoto(itemId,index) {
+   const list=photos.filter(p=>p.service_visit_device_id===itemId);
+   const photo=list[index];
+   if(!photo)return;
+   let entry=photoUrls[photo.id];
+   if(!servicePhotoUrlIsFresh(entry)){
+     try{
+       const urls=await loadServicePhotoUrls({supabase,photos:list});
+       setPhotoUrls(old=>({...old,...urls}));entry=urls[photo.id];
+     }catch(_e){entry=null;}
+   }
+   if(!entry?.url){setError('Nie udało się otworzyć zdjęcia. Sprawdź internet i spróbuj ponownie.');return;}
+   setPreview({itemId,index,url:entry.url});
+ }
+ function stepPreview(delta) {
+   if(!preview)return;
+   const list=photos.filter(p=>p.service_visit_device_id===preview.itemId);
+   if(list.length<2)return;
+   const next=(preview.index+delta+list.length)%list.length;
+   openPhoto(preview.itemId,next);
+ }
  async function refreshEmailHistory() {
    try {
      const {entries,failed}=await loadServiceVisitHistory({supabase,visitId});
@@ -259,16 +301,37 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        <label>Uwagi i zalecenia <textarea className="input" rows={2} disabled={readonly||Boolean(busy)}
          value={draft.notes} maxLength={4000} onChange={e=>patchDraft(item.id,{notes:e.target.value})}/></label>
        <div className="serviceAdminSectionTitle">Zdjęcia ({itemPhotos.length})</div>
-       <p className="serviceAdminMuted">{needPhoto?'Do wykrytej usterki dodaj co najmniej jedno zdjęcie.':'Zdjęcia opcjonalne przy sprawnym urządzeniu.'}</p>
+       <p className="serviceAdminMuted">{needPhoto?'Do wykrytej usterki dodaj co najmniej jedno zdjęcie.'
+         :draft.result==='usterka'?'Zdjęcia usterki zapisane w systemie. Dotknij miniatury, aby powiększyć.'
+         :itemPhotos.length?'Dotknij miniatury, aby powiększyć zdjęcie.':'Zdjęcia opcjonalne przy sprawnym urządzeniu.'}</p>
+       {itemPhotos.length?<div className="thumbGrid serviceAdminThumbGrid">
+         {itemPhotos.map((p,i)=>{
+           const thumb=photoUrls[p.id]?.url||'';
+           return <div key={p.id} className="thumbCard">
+             <button type="button" className="thumbBtn desktopThumbBtn" aria-label={'Powiększ zdjęcie '+(i+1)}
+               disabled={!thumb} onClick={()=>openPhoto(item.id,i)}>
+               {thumb
+                 ?<img src={thumb} className="thumb desktopThumb" alt={'Zdjęcie '+(i+1)} loading="lazy" decoding="async"/>
+                 :<span className="photoThumbPlaceholder">{photoUrlError?'Brak podglądu':'Wczytuję…'}</span>}
+             </button>
+             <div className="photoMeta">
+               <span className="photoMetaText photoDateMeta">{formatPhotoDate(p.created_at)}</span>
+               <span className="photoMetaText">✓ {Math.round(p.file_size_bytes/1024)} KB</span>
+             </div>
+             {!readonly?<button type="button" className="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn"
+               disabled={Boolean(busy)} aria-label={'Usuń zdjęcie '+(i+1)}
+               onClick={e=>{e.stopPropagation();removePhoto(item,p,i);}}>
+               {busy==='photo:'+item.id?'Usuwanie...':'Usuń'}
+             </button>:null}
+           </div>;
+         })}
+       </div>:null}
+       {photoUrlError?<p className="serviceAdminMuted">Nie udało się wczytać podglądu zdjęć. Zdjęcia są zapisane — spróbuj ponownie przy lepszym zasięgu.</p>:null}
        {!readonly?<label>Dodaj zdjęcie
          <input type="file" className="input" accept="image/jpeg,image/png,image/webp,image/*"
            disabled={Boolean(busy)} onChange={e=>{const f=e.target.files?.[0];e.target.value='';attachPhoto(item,f);}}/>
        </label>:null}
-       {itemPhotos.map((p,i)=><div className="serviceAdminPhotoRow" key={p.id}>
-         <p className="serviceAdminMuted">✓ Zdjęcie {i+1} zapisane w systemie ({Math.round(p.file_size_bytes/1024)} KB)</p>
-         {!readonly?<button type="button" className="btn serviceAdminDanger" disabled={Boolean(busy)}
-           aria-label={'Usuń zdjęcie '+(i+1)} onClick={()=>removePhoto(item,p,i)}>Usuń</button>:null}
-       </div>)}
+
        {!readonly?<button type="button" className="btn primary serviceAdminWide"
          disabled={Boolean(busy)||!draft.result||needPhoto||!mandatoryChecksDone}
          onClick={()=>saveItem(item)}>
@@ -308,6 +371,9 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
      <p className="serviceAdminMuted">Jeśli zmienisz wynik urządzenia, najpierw zapisz go osobno. Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
    </div>}
+   <PreviewModal previewImage={preview?.url||null}
+   setPreviewImage={value=>{if(!value)setPreview(null);}}
+   previewNext={()=>stepPreview(1)} previewPrev={()=>stepPreview(-1)}/>
    <AppModal open={signatureOpen} onClose={()=>setSignatureOpen(false)}
      overlayClassName="protocolSignatureOverlay" contentClassName="protocolSignatureModal"
      closeOnOverlay={false} closeOnEscape lockPagePosition>
