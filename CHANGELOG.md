@@ -1,3 +1,8 @@
+## 14.03
+- Serwis / zdjęcia (uwagi właściciela do 14.02): karty były tylko podobne do montaży — brak inicjałów autora, data ucięta przez dodany rozmiar pliku, brak „Usuń” w podpisanej wizycie. Teraz struktura 1:1 z `JobDetailsPanel`: wrapper `.mobileInlineJobDetails` (te same reguły mobile 11.14/11.15), `photoUploaderBadge` z inicjałami autora (`created_by` → `profiles.full_name`), `photoDateMeta` z `formatDate` (DD.MM.RR), `photoQueueActions` z „Usuń”.
+- Usuwanie jak w montażach: administrator może usunąć zdjęcie także po podpisaniu i zakończeniu. Serwer (migracja `20261031160000_service_visit_photo_delete_like_jobs_v1403.sql`) zachowuje: tylko administrator, nie w Koszu, audyt, oraz zasadę przeglądu — w podpisanym protokole nie da się usunąć JEDYNEGO zdjęcia usterki. Polityka Storage: nieużywany plik zdjęcia wizyty spoza Kosza; PDF i podpis nadal nie do usunięcia.
+- Testy: SQL (RED bez migracji: „tylko przed podpisaniem”), smoke inicjałów i struktury kart, WebKit: pełna data, widoczne inicjały, klikalne „Usuń” 320–430 px.
+
 ## 14.02
 - Serwis / zdjęcia (zgłoszenie właściciela 31.10.2026): dotąd widoczny był tylko napis „Zdjęcie 1 zapisane w systemie”, bez podglądu. Teraz miniatury w kartach z montaży (`thumbGrid`/`thumbCard`: zdjęcie, data, rozmiar, „Usuń” przed podpisem); dotknięcie otwiera ten sam podgląd pełnoekranowy co w montażach (`PreviewModal`, powiększanie, przewijanie między zdjęciami urządzenia).
 - Adresy podglądu: jedno zbiorcze `createSignedUrls` z prywatnego bucketu (15 min), odświeżane przed otwarciem wygasłego linku; błąd wczytania podglądu pokazany uczciwie, bez ukrywania informacji o zapisie.
