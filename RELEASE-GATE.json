@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Definicje save_item/complete pobrane z produkcji (SELECT pg_get_functiondef) i zmienione wyłącznie w regule czynności."
+    "notes": "31.10.2026 20:05: migracja 20261031200000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT."
   },
   "drive_backup": {
     "required": false,
@@ -15,8 +15,8 @@
   },
   "main_protection": {
     "source_branch": "release/v14.04",
-    "ready_for_main": false,
-    "status": "HOLD_MIGRATION_OWNER",
+    "ready_for_main": true,
+    "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
