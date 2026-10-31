@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Frontend wymaga migracji 20261031160000 (usuwanie po podpisie); bez niej przycisk w podpisanej wizycie zwróci błąd serwera."
+    "notes": "31.10.2026 15:59: migracja 20261031160000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT; dane bez zmian (2 wizyty, 1 zdjęcie)."
   },
   "drive_backup": {
     "required": false,
@@ -15,8 +15,8 @@
   },
   "main_protection": {
     "source_branch": "release/v14.03",
-    "ready_for_main": false,
-    "status": "HOLD_MIGRATION_OWNER",
+    "ready_for_main": true,
+    "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {

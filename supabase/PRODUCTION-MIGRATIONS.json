@@ -1061,6 +1061,18 @@
    "verified": "SELECT 31.10.2026: trigger przepuszcza service_role, nadal sprawdza administratora, audyt zachowany; purge 2 wizyt na iPhonie OK, 0 osieroconych plików/rekordów",
    "repo_file": "supabase/migrations/20261031150000_service_visit_purge_service_role_v1401.sql",
    "note": "Wklejona tylko treść funkcji (bez komentarzy nagłówka); obiekt identyczny z plikiem."
+  },
+  {
+   "version": "20261031160000",
+   "name": "service_visit_photo_delete_like_jobs_v1403",
+   "md5": "a77ee21c1ff731c0951f1fea1d0c7e7f",
+   "md5_of_file": true,
+   "bytes": 3239,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-10-31T15:59+01:00",
+   "verified": "SELECT 31.10.2026: RPC z ochroną jedynego zdjęcia usterki, stary warunek usunięty; polityka Storage bez statusu, z deleted_at is null; authenticated=tak, anon=nie",
+   "repo_file": "supabase/migrations/20261031160000_service_visit_photo_delete_like_jobs_v1403.sql",
+   "note": "Wklejona treść bez komentarzy nagłówka; obiekty identyczne z plikiem."
   }
  ],
  "statuses": {
