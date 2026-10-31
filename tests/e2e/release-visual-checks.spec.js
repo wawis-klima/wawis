@@ -157,6 +157,13 @@ test.describe('@mobile release visual iPhone', () => {
   test.use(iphone14);
 
   async function inspectMenuRow(page, expectedLabels) {
+    // 14.00: pomiar dopiero po faktycznym przyjęciu nowej szerokości i przeliczeniu układu.
+    // Czcionka menu zależy od vw; pomiar w trakcie zmiany rozmiaru dawał losowo 12,90 px (CI #453).
+    const expectedWidth = page.viewportSize()?.width;
+    if (expectedWidth) {
+      await page.waitForFunction(w => window.innerWidth === w, expectedWidth, { timeout: 5000 });
+      await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    }
     const menu = page.locator('.moduleSwitcherMobile');
     await expect(menu).toBeVisible();
     const info = await menu.evaluate((element) => {

@@ -1,6 +1,10 @@
 # WAWIS — Serwisy, etap 2: udostępnienie pracownikom (plan, 30.10.2026)
 
 **Status: PLANOWANE — WYMAGA AKCEPTACJI WŁAŚCICIELA.** Ten dokument nie włącza żadnego dostępu.
+
+**Decyzja właściciela (30.10.2026, 07:15):** pracownik ma mieć w serwisach **takie same uprawnienia jak przy montażach** — wykonanie, zdjęcia, podpis, PDF, druk **oraz wysyłka protokołu e-mailem**. Do czasu osobnej decyzji o uruchomieniu pracownik nie widzi zakładki „Urządzenia” ani danych serwisowych (stan sprawdzony w kodzie i RLS).
+
+**Etap 2.0 (blokady Kosza na serwerze)** — przygotowany i przetestowany na gałęzi `release/v14.00` (migracja `20261030120000_service_visit_trash_guard_photo_delete_v1399.sql`, test PostgreSQL `scripts/service-visit-sql-v1399.sh`); wdrożenie po decyzji właściciela.
 Do czasu decyzji moduł serwisowy pozostaje wyłącznie dla Administratora (stan 13.98).
 
 Podstawa: audyt kodu 13.96/13.98, migracje `supabase/migrations/*service_visit*`, odczytowe `SELECT` na produkcji
@@ -44,7 +48,7 @@ To zmiana schematu produkcyjnego → wymaga zgody właściciela.
 | Zapis czynności i wyniku, zdjęcia usterek | tak | tak | nie (najpierw podjęcie) | nie |
 | Oczekiwanie na podpis, podpis, PDF, zakończenie | tak | tak | nie | nie |
 | Otwarcie / druk PDF swojej wizyty | tak | tak | nie | nie |
-| E-mail z protokołem | tak | **WYMAGA DECYZJI** (proponuję: nie) | nie | nie |
+| E-mail z protokołem | tak | **tak** (decyzja 30.10.2026 — jak przy montażach) | nie | nie |
 | Termin, obsada, odwołanie, Kosz, trwałe usunięcie | tak | nie | nie | nie |
 | Wizyty w Koszu | tak | nie | nie | nie |
 
@@ -59,7 +63,8 @@ To zmiana schematu produkcyjnego → wymaga zgody właściciela.
 3. **Nowe polityki SELECT** (tylko `to authenticated`, warunek: `current_user_is_staff()` i przełącznik):
    `service_visits` (uczestnik lub pula, `deleted_at is null`), `service_visit_devices`, `service_visit_photos`,
    `service_visit_protocols` (tylko uczestnik), `service_visit_assignment_events` (tylko uczestnik).
-   Brak polityk dla `service_visit_protocol_email_log`, `service_visit_change_events` i tabel `private.*`.
+   `service_visit_protocol_email_log` — SELECT tylko dla uczestnika (historia wysyłek). Brak polityk dla `service_visit_change_events` i tabel `private.*`.
+   Edge `send-service-visit-protocol-email`: zamiast „tylko Administrator” — Administrator **lub** uczestnik wizyty (wzór: `send-job-protocol-email`, który dopuszcza pracownika z dostępem do zlecenia); adres nadal wyłącznie klienta z WAWIS.
 4. **Bez bezpośrednich zapisów pracownika.** Granty kolumnowe UPDATE pozostają chronione triggerem
    `service_visit_assignment_audit` (wymaga admina). Wszystkie zapisy przez RPC.
 5. **Podjęcie zlecenia — `public.service_visit_worker_claim(p_visit_id uuid) returns boolean`**:
@@ -101,7 +106,7 @@ To zmiana schematu produkcyjnego → wymaga zgody właściciela.
 - `WorkerServicePanel`: „Moje” (przydzielone, najbliższe najpierw) i „Do podjęcia”; karta: termin, klient, adres,
   telefon, liczba urządzeń, status (`serviceVisitStatusLabel`).
 - „Podejmij zlecenie” → wynik wyłącznie z serwera; przy konflikcie lista odświeża się i pokazuje komunikat.
-- Wykonanie: ten sam `ServiceExecutionPanel` z parametrem roli — bez e-maila (do decyzji), bez akcji administracyjnych;
+- Wykonanie: ten sam `ServiceExecutionPanel` z parametrem roli — z wysyłką e-mail i historią wysyłek (jak montaże), bez akcji administracyjnych;
   wywołania RPC przez wspólną warstwę wybierającą `admin`/`worker`.
 - Brak wyszukiwarki klientów, Kosza, planowania i zmiany obsady.
 
@@ -129,8 +134,8 @@ To zmiana schematu produkcyjnego → wymaga zgody właściciela.
 
 ## 10. Decyzje właściciela
 
-1. Zgoda na etap 2.0 (zmiana RPC/polityk Storage — domknięcie Kosza po stronie serwera).
-2. Czy pracownik może wysyłać e-mail z protokołem (propozycja: nie, tylko administrator).
+1. ~~Zgoda na etap 2.0~~ — **zgoda 30.10.2026; przygotowane na gałęzi 14.00, wdrożenie po decyzji właściciela.**
+2. ~~Czy pracownik może wysyłać e-mail z protokołem~~ — **ROZSTRZYGNIĘTE 30.10.2026: tak, jak przy montażach.**
 3. PUSH do administratora po podjęciu zlecenia z puli (tak/nie).
 4. PUSH do wszystkich pracowników o nowym zleceniu w puli (propozycja: nie na start).
 5. Czy podjęcie z puli może zrobić tylko jedna osoba (główny), a dodatkowych dopisuje wyłącznie administrator (propozycja: tak).

@@ -1,5 +1,17 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-ADMIN-1399 — Kosz po stronie serwera, usuwanie zdjęcia, zapis szczegółów (30.10.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SV-1399-TRASH-SERVER | FIXED-UNVERIFIED | RED: na schemacie 13.98 (8 migracji, PostgreSQL 16) administrator zmienił termin i uwagi wizyty w Koszu. Naprawa: triggery `private.service_visit_trash_guard_v1399` / `service_visit_child_trash_guard_v1399`, polityka uploadu, PUSH. Test: `scripts/service-visit-sql-v1399.sh`. |
+| SV-1399-PHOTO-DELETE | FIXED-UNVERIFIED | Brak możliwości usunięcia pomyłkowego zdjęcia. RPC + polityka Storage tylko dla nieużywanego pliku aktywnej wizyty; PDF/podpis nie do usunięcia; pracownik odrzucony (42501). Testy SQL i `smoke-service-admin-v1399.mjs`. |
+| SV-1399-ATOMIC | FIXED-UNVERIFIED | RED: `saveAssignment` w 13.98 robił dwa osobne UPDATE (termin, potem przydział). Teraz jeden zapis `updateAdminServiceVisitDetails`. |
+| SV-1399-BUMP | FIXED-UNVERIFIED | RED: `version-bump.cjs` nadpisywał pierwszy wpis „Ostatnia poprawka” (zniknęły 13.96 i 13.97). Test `smoke-version-bump-readme-v1399.cjs` (RED na starej wersji). |
+| SV-1399-LIVE | EXTERNAL | Po decyzji właściciela: migracja na produkcji, iPhone administratora. |
+| SV-1400-MENU-FLAKE | FIXED-UNVERIFIED | `release-visual-checks` „pięć pełnych nazw” losowo 12,90 px < 13 px (CI #453 próba 1; próba 2 i PR #452 zielone). Przyczyna: pomiar zaraz po `setViewportSize`. Test czeka na `innerWidth` i dwie klatki; asercje bez zmian. |
+
+
 ## FUEL-LAYOUT-SOURCES-1399 — Tankowania na komputerze i średnie ceny dla Śląska (30.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
@@ -22,7 +34,7 @@
 | SA-1398-EMAIL-RETRY | FIXED-UNVERIFIED | Po odmowie dostawcy (422) lub niepewnym wyniku klient ponawiał ten sam `requestKey`, a Edge odpowiadał 409 bez końca; komunikat odsyłał do niewidocznej historii. RED: moduł e-mail z 13.96. |
 | SA-1398-TEST | REGRESSION | `scripts/smoke-service-admin-audit-v1398.mjs` — wykonanie modułów: statusy, historia urządzenia (rebuild, strefa czasu, izolacja), historia wizyty (scalenie, częściowy błąd), sekwencje e-mail 422→nowy klucz, 503→ten sam klucz→świadome ponowienie, błąd sieci, 409 bez pending. |
 | SA-1398-LIVE | EXTERNAL | Po wdrożeniu administrator sprawdza widoki na fizycznym iPhonie bez kasowania prawdziwych serwisów i bez testowych e-maili do klientów. |
-| SA-1398-BACKEND-OPEN | OPEN | Serwer nie blokuje edycji/zakończenia wizyty w Koszu (RPC `save_item`/`complete`/`cancel`/`wait_for_signature`, kolumnowy UPDATE terminu i przydziału, upload Storage) — tylko UI. Wymaga migracji i zgody właściciela. |
+| SA-1398-BACKEND-OPEN | FIXED-UNVERIFIED (14.00, gałąź) | Serwer nie blokuje edycji/zakończenia wizyty w Koszu (RPC `save_item`/`complete`/`cancel`/`wait_for_signature`, kolumnowy UPDATE terminu i przydziału, upload Storage) — tylko UI. Wymaga migracji i zgody właściciela. |
 
 
 ## FUEL-SAVINGS-1397 — oszczędności na własnym zbiorniku (28–30.10.2026)

@@ -84,6 +84,18 @@ export async function uploadServiceVisitPhoto({supabase,visitId,itemId,file}) {
   if(error) throw new Error('Zdjęcie przesłano, ale nie potwierdzono wpisu w historii. Nie próbuj go usuwać: '+error.message);
   return data;
 }
+/** 13.99: usunięcie pomyłkowego zdjęcia przed podpisem (tylko administrator).
+ * Najpierw serwer usuwa wpis (pod blokadą wizyty, z audytem), potem plik przez Storage API.
+ * Nieudane usunięcie pliku zostawia tylko nieużywany plik — nigdy wpis bez pliku. */
+export async function deleteServiceVisitPhoto({supabase,photoId}) {
+  if(!photoId)throw new Error('Nie wskazano zdjęcia.');
+  if(typeof navigator!=='undefined' && navigator.onLine===false)throw new Error('Brak internetu. Zdjęcie nie zostało usunięte.');
+  const {data:path,error}=await supabase.rpc('service_visit_admin_delete_photo',{p_photo_id:photoId});
+  if(error)throw error;
+  if(typeof path!=='string'||!path)throw new Error('Serwer nie potwierdził usunięcia zdjęcia.');
+  const {error:storageError}=await supabase.storage.from(SERVICE_FILES_BUCKET).remove([path]);
+  return {deleted:true,fileRemoved:!storageError};
+}
 export async function loadStoredServiceProtocol({supabase,visitId}) {
   const {data,error}=await supabase.from('service_visit_protocols')
     .select('id,service_visit_id,storage_path,signature_path,file_name,file_size_bytes,signed_at,created_at,signed_snapshot')

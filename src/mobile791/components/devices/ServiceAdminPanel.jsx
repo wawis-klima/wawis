@@ -5,6 +5,7 @@ import {
   updateAdminServiceAssignment, resolveServiceAssignment, formatServiceDate,
   trashAdminServiceVisit, restoreAdminServiceVisit, purgeAdminServiceVisit,
   serviceVisitStatusLabel, buildServiceDeviceHistory, loadServiceVisitHistory,
+  updateAdminServiceVisitDetails,
 } from '../../modules/service-visits.js';
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
@@ -239,12 +240,9 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     setBusy(true);setError('');setMessage('');
     try {
       // Przydział, nowy termin i notatki są niezależne od harmonogramu SMS.
-      const {data,error:writeError}=await supabase.from('service_visits')
-        .update({scheduled_date:date,scheduled_time:time || null,notes:notes.trim().slice(0,4000)})
-        .eq('id',currentVisit.id).select('id').single();
-      if(writeError || !data) throw writeError || new Error('Brak potwierdzenia zmiany terminu.');
+      // 13.99: jeden zapis — termin i obsada zmieniają się razem albo wcale.
       if (selectedTechnicians.includes(userId)) await refreshServicePushContext({supabase,userId});
-      await updateAdminServiceAssignment({supabase,visitId:currentVisit.id,technicianId:selectedTechnicians[0] || null,additionalTechnicianIds:selectedTechnicians.slice(1)});
+      await updateAdminServiceVisitDetails({supabase,visitId:currentVisit.id,date,time,notes,technicianIds:selectedTechnicians});
       const rows=await loadVisits(currentVisit.contractor_id);
       setCurrentVisit(rows.find(v=>v.id===currentVisit.id) || currentVisit);
       setMessage('Zmiany terminu i przydziału zapisano.');

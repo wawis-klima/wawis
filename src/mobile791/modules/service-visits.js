@@ -109,6 +109,30 @@ export async function updateAdminServiceAssignment({ supabase, visitId, technici
   return data;
 }
 
+/** 13.99: termin, uwagi i obsada w JEDNYM zapisie (wszystko albo nic).
+ * Wcześniej dwa osobne UPDATE — przy błędzie drugiego zostawał nowy termin ze starą obsadą. */
+export async function updateAdminServiceVisitDetails({ supabase, visitId, date, time, notes, technicianIds = [] }) {
+  if (!visitId) throw new Error('Brak przeglądu do zapisania.');
+  if (!date) throw new Error('Podaj termin przeglądu.');
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new Error('Brak internetu. Zmiany nie zostały zapisane.');
+  }
+  const ids = [...new Set((technicianIds || []).filter(Boolean))];
+  const { data, error } = await supabase.from('service_visits')
+    .update({
+      scheduled_date: date,
+      scheduled_time: time || null,
+      notes: String(notes || '').trim().slice(0, 4000),
+      primary_technician_id: ids[0] || null,
+      additional_technician_ids: ids.slice(1),
+    })
+    .eq('id', visitId)
+    .select('id,scheduled_date,scheduled_time,notes,primary_technician_id,additional_technician_ids').single();
+  if (error) throw error;
+  if (!data) throw new Error('Brak potwierdzenia zapisu zmian z serwera.');
+  return data;
+}
+
 export function formatServiceDate(date) {
   if (!date) return 'Brak daty';
   const parts = String(date).slice(0,10).split('-');

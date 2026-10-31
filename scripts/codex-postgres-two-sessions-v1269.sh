@@ -298,3 +298,6 @@ second="$(grep -E 'pid=[0-9]+' "$WORK/jw-b.out" | head -1)"
 echo "PASS JW 12.84: two independent sessions prevent duplicate deletion; JZ and JW1–JW3 remain, nameplates reindex safely"
 
 echo "PASS all Codex dual-session races — disposable real PostgreSQL"
+
+# WAWIS 13.99: prawdziwe migracje modułu serwisowego i blokady Kosza na osobnym, jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/service-visit-sql-v1399.sh"

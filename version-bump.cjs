@@ -42,9 +42,11 @@ function getNextVersion(currentVersion) {
 
 function updateReadmeVersionMetadata(readme, nextVersion) {
   let updated = readme;
+  // 13.99: nowy wpis DOPISUJEMY nad poprzednimi. Wcześniej wyrażenie zastępowało pierwszy wpis,
+  // przez co opis poprzedniej wersji (np. 13.96) znikał z README przy każdym podbiciu.
   updated = updated.replace(
-    /## Ostatnia poprawka\s*- wersja\s*`?[0-9]+\.[0-9]{2}`?.*/m,
-    `## Ostatnia poprawka\n- wersja \`${nextVersion}\` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.`
+    /## Ostatnia poprawka[ \t]*\n/m,
+    `## Ostatnia poprawka\n- wersja \`${nextVersion}\` — uzupełnij opis ostatniej poprawki po zakończeniu zmian.\n`
   );
   updated = updated.replace(
     /## Aktualna wersja\s*-\s*[0-9]+\.[0-9]{2}/m,
