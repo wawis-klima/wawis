@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.03
+- 14.04
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.04` — serwis: wynik urządzenia można zapisać bez kompletu sześciu czynności (co najmniej jedna; niewykonane oznaczone w PDF „✗ … — nie wykonano”); wyraźne podpowiedzi, dlaczego „Zapisz wynik” lub podpis są nieaktywne. Migracja `20261031200000` wykonywana przez właściciela.
 - wersja `14.03` — serwis: zdjęcia 1:1 jak w montażach — inicjały autora na miniaturze, krótka data bez ucinania, „Usuń” przy każdym zdjęciu także po podpisaniu (serwer chroni jedyne zdjęcie usterki w podpisanym protokole). Migracja `20261031160000` wykonywana przez właściciela.
 - wersja `14.02` — serwis: podgląd zdjęć jak w montażach — miniatury w kartach (data, rozmiar, „Usuń” przed podpisem), dotknięcie otwiera zdjęcie na pełny ekran z powiększaniem i przewijaniem; usunięty mylący tekst „Zdjęcia opcjonalne…” przy usterce ze zdjęciem. Bez zmian bazy.
 - wersja `14.01` — naprawa trwałego usuwania serwisu z Kosza (od 13.95 kończyło się komunikatem „Brak uprawnień do przydziału”, bez usunięcia danych): trigger przydziału przepuszcza zaufaną rolę serwerową; użytkownicy nadal muszą być administratorem. Test PostgreSQL używa realistycznej roli serwerowej bez identyfikatora użytkownika.

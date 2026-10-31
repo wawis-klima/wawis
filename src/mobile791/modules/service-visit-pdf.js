@@ -83,7 +83,8 @@ export async function createServiceVisitPdf({snapshot,signatureDataUrl,technicia
   y+=67;
   for(let i=0;i<snapshot.items.length;i++){
     const item=snapshot.items[i];
-    const checks=SERVICE_VISIT_CHECKS.map(({key,label})=>`${item.checklist?.[key]===true?'✓':'—'}  ${label}`);
+    // 14.04: czynności niewykonane wyraźnie oznaczone (wynik można zapisać bez kompletu sześciu).
+    const checks=SERVICE_VISIT_CHECKS.map(({key,label})=>item.checklist?.[key]===true?`✓  ${label}`:`✗  ${label} — nie wykonano`);
     const noteLines=doc.splitTextToSize(item.notes||'Brak uwag',CONTENT-24);
     const height=48+(item.result?checks.length*12+16:16)+Math.max(1,noteLines.length)*11+15;
     y=page(doc,y,height+28);

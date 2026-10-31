@@ -196,9 +196,16 @@ declare ok jsonb := '{"filtry":true,"jednostka_wewnetrzna":true,"skropliny":true
 declare snap jsonb; ph uuid; n int;
 begin
   perform wawis_test.expect_error(format('select public.service_visit_admin_save_item(%L,%L,%L::jsonb,%L,%L)',v2,a,
-    '{"filtry":true}','sprawne',''), null, 'wynik bez sześciu czynności odrzucony');
+    '{"filtry":true}','sprawne',''), null, 'wynik z niekompletną listą pozycji odrzucony');
+  -- 14.04: komplet sześciu pozycji, ale żadna niewykonana → odrzucone; część wykonana → dozwolone.
+  perform wawis_test.expect_error(format('select public.service_visit_admin_save_item(%L,%L,%L::jsonb,%L,%L)',v2,a,
+    '{"filtry":false,"jednostka_wewnetrzna":false,"skropliny":false,"jednostka_zewnetrzna":false,"dzialanie":false,"instalacja":false}','sprawne',''),
+    null, 'wynik bez żadnej wykonanej czynności odrzucony');
   perform public.service_visit_admin_save_item(v2, a, ok, 'sprawne', '');
-  perform public.service_visit_admin_save_item(v2, b, ok, 'usterka', 'Do wymiany');
+  perform public.service_visit_admin_save_item(v2, b,
+    '{"filtry":true,"jednostka_wewnetrzna":true,"skropliny":false,"jednostka_zewnetrzna":false,"dzialanie":false,"instalacja":false}'::jsonb,
+    'usterka', 'Do wymiany');
+  perform wawis_test.expect((select result from public.service_visit_devices where id=b)='usterka', '14.04: usterka zapisana przy 2 z 6 czynności');
   insert into storage.objects(bucket_id,name,metadata) values ('service-visit-files', v2||'/photos/'||b||'/u.jpg', '{"size":900}');
   insert into public.service_visit_photos(service_visit_device_id,storage_path,file_size_bytes,mime_type)
     values (b, v2||'/photos/'||b||'/u.jpg', 900, 'image/jpeg') returning id into ph;

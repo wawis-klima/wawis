@@ -118,3 +118,5 @@
 .serviceAdminPage .serviceAdminDanger:disabled{opacity:.55}
 /* 14.03: zdjęcia serwisu w wrapperze .mobileInlineJobDetails — te same reguły mobile co montaże. */
 .serviceAdminPage .serviceAdminPhotosV1403{margin:4px 0 2px}
+/* 14.04: wyraźna podpowiedź, dlaczego przycisk jest nieaktywny (zamiast drobnego szarego tekstu). */
+.serviceAdminPage .serviceAdminHint{margin:2px 0 0;padding:9px 11px;border:1px solid #f0c36d;border-radius:12px;background:#fff8e6;color:#7a4b00;font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}

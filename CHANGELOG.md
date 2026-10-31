@@ -1,3 +1,10 @@
+## 14.04
+- Serwis / wykonanie (zgłoszenie właściciela 31.10.2026 19:48 — „nic nie jest podświetlone, coś się zablokowało”): przy 2 z 6 zaznaczonych czynności „Zapisz wynik” był nieaktywny, a podpis zablokowany, z jedynym wyjaśnieniem w drobnym szarym tekście.
+- Decyzja właściciela: wynik można zapisać bez kompletu sześciu czynności. Wymagana co najmniej jedna wykonana; wszystkie sześć pozycji zapisywane jako tak/nie. Migracja `20261031200000_service_visit_partial_checklist_v1404.sql` (`service_visit_admin_save_item`, `service_visit_admin_complete`); pozostałe zasady bez zmian (usterka wymaga zdjęcia, zgodność PDF, Kosz).
+- PDF: niewykonane czynności jako „✗ … — nie wykonano”.
+- Wyraźne podpowiedzi (żółta ramka) pod nieaktywnym „Zapisz wynik urządzenia” (brak czynności / brak wyniku / brak zdjęcia usterki / wynik niezapisany) i przy podpisie („Najpierw zapisz wynik…”).
+- Testy: SQL (RED bez migracji — dokładnie stary komunikat „wszystkie sześć”; GREEN: 2 z 6 + usterka, odrzucenie 0 z 6, zakończenie z częściową listą), `smoke-service-partial-checklist-v1404.mjs` (wykonanie logiki blokady ze zrzutu właściciela).
+
 ## 14.03
 - Serwis / zdjęcia (uwagi właściciela do 14.02): karty były tylko podobne do montaży — brak inicjałów autora, data ucięta przez dodany rozmiar pliku, brak „Usuń” w podpisanej wizycie. Teraz struktura 1:1 z `JobDetailsPanel`: wrapper `.mobileInlineJobDetails` (te same reguły mobile 11.14/11.15), `photoUploaderBadge` z inicjałami autora (`created_by` → `profiles.full_name`), `photoDateMeta` z `formatDate` (DD.MM.RR), `photoQueueActions` z „Usuń”.
 - Usuwanie jak w montażach: administrator może usunąć zdjęcie także po podpisaniu i zakończeniu. Serwer (migracja `20261031160000_service_visit_photo_delete_like_jobs_v1403.sql`) zachowuje: tylko administrator, nie w Koszu, audyt, oraz zasadę przeglądu — w podpisanym protokole nie da się usunąć JEDYNEGO zdjęcia usterki. Polityka Storage: nieużywany plik zdjęcia wizyty spoza Kosza; PDF i podpis nadal nie do usunięcia.

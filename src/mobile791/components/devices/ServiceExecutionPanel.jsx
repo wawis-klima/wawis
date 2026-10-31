@@ -292,7 +292,13 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
      const draft=drafts[item.id]||newDraft(item);
      const itemPhotos=photos.filter(p=>p.service_visit_device_id===item.id);
      const needPhoto=draft.result==='usterka' && !itemPhotos.length;
-     const mandatoryChecksDone=SERVICE_VISIT_CHECKS.every(({key})=>draft.checklist[key]===true);
+     // 14.04 (decyzja właściciela): wynik wymaga co najmniej jednej wykonanej czynności, nie wszystkich sześciu.
+     const doneChecks=SERVICE_VISIT_CHECKS.filter(({key})=>draft.checklist[key]===true).length;
+     const anyCheckDone=doneChecks>0;
+     const skippedChecks=SERVICE_VISIT_CHECKS.length-doneChecks;
+     const saveBlockReason=!anyCheckDone?'Zaznacz co najmniej jedną wykonaną czynność.'
+       :!draft.result?'Wybierz wynik: „Sprawne” albo „Usterka”.'
+       :needPhoto?'Dodaj zdjęcie usterki, aby zapisać wynik.':'';
      const changed=JSON.stringify(draft)!==JSON.stringify(newDraft(item));
      return <div className="card serviceAdminCard" key={item.id}>
        <h3>Urządzenie {index+1} — {item.model_snapshot||'Klimatyzator'}</h3>
@@ -304,7 +310,7 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
            onChange={e=>patchDraft(item.id,{checklist:{...draft.checklist,[key]:e.target.checked}})}/>
          <span>{label}</span>
        </label>)}
-       <p className="serviceAdminMuted">Przed zapisaniem wyniku potwierdź wykonanie wszystkich sześciu czynności.</p>
+       <p className="serviceAdminMuted">Zaznacz czynności wykonane podczas przeglądu. Niezaznaczone trafią do protokołu jako niewykonane.</p>
        <div className="serviceAdminSectionTitle">Wynik</div>
        <label className="serviceAdminCheck"><input type="radio" name={'result-'+item.id} checked={draft.result==='sprawne'} disabled={readonly||Boolean(busy)}
           onChange={()=>patchDraft(item.id,{result:'sprawne'})}/> Sprawne, bez zastrzeżeń</label>
@@ -351,10 +357,13 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        </label>:null}
 
        {!readonly?<button type="button" className="btn primary serviceAdminWide"
-         disabled={Boolean(busy)||!draft.result||needPhoto||!mandatoryChecksDone}
+         disabled={Boolean(busy)||Boolean(saveBlockReason)}
          onClick={()=>saveItem(item)}>
          {busy===item.id?'Zapisuję…':changed?'Zapisz wynik urządzenia':'Zapisz wynik ponownie'}
        </button>:null}
+       {!readonly&&saveBlockReason?<p className="serviceAdminHint" role="note">{saveBlockReason}</p>:null}
+       {!readonly&&!saveBlockReason&&skippedChecks>0?<p className="serviceAdminMuted">Niewykonane czynności: {skippedChecks} z 6 — zostaną oznaczone w protokole.</p>:null}
+       {!readonly&&!saveBlockReason&&changed?<p className="serviceAdminHint" role="note">Wynik nie jest jeszcze zapisany — naciśnij „Zapisz wynik urządzenia”.</p>:null}
      </div>;
    })}
    {protocol ? <div className="card serviceAdminCard">
@@ -376,6 +385,8 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
    </div> : visit.status==='odwolany'?<div className="card serviceAdminCard">Wizyta odwołana.</div>:<div className="card serviceAdminCard">
      <h3>Potwierdzenie klienta</h3>
      <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>
+     {doneCount===0?<p className="serviceAdminHint" role="note">Najpierw zapisz wynik co najmniej jednego urządzenia — wtedy odblokuje się podpis.</p>
+       :unsaved?<p className="serviceAdminHint" role="note">Masz niezapisane zmiany w wyniku urządzenia — zapisz je przed podpisem.</p>:null}
      <button type="button" className="btn primary serviceAdminWide" disabled={Boolean(busy)||doneCount===0||unsaved}
        onClick={()=>{setError('');setMessage('');setSigned(false);setSignatureOpen(true);}}>
        {signatureDataUrl?'✍ Podpisz ponownie':'✍ Zrób podpis'}
