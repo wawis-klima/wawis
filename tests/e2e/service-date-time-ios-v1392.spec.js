@@ -113,7 +113,8 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
         expect(item.btnH).toBeGreaterThanOrEqual(44);
         expect(item.imgW).toBeGreaterThan(40);
         expect(item.imgH).toBeGreaterThan(40);
-        expect(item.delH).toBeGreaterThanOrEqual(30);
+        // Montaże na telefonie: .photoQueueActions .photoDeleteBtn{min-height:26px} (styles.css). Ten sam rozmiar.
+        expect(item.delH).toBeGreaterThanOrEqual(26);
         expect(item.thumbHit).toBe(true);
         expect(item.delHit).toBe(true);
         expect(item.dateFull).toBe(true);

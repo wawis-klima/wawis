@@ -71,5 +71,6 @@ assert.match(exec, /draft\.result==='usterka'\?'Zdjęcia usterki zapisane w syst
 assert.doesNotMatch(exec, /serviceAdminPhotoRow/, 'Lista tekstowa zastąpiona kartami.');
 const css = read('src/mobile791/styles.css');
 assert.match(css, /\.thumbGrid\{/, 'Style kart ładowane przy starcie (styles.css).');
+assert.match(css, /\.photoQueueActions \.photoDeleteBtn\{\s*min-height:26px;/, 'Rozmiar „Usuń” jak w montażach (26 px na telefonie).');
 
 console.log('WAWIS 14.02/14.03 service photo preview (montage cards): PASS');
