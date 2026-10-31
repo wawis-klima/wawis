@@ -87,7 +87,8 @@ const removeSrc = exec.match(/async function removePhoto\(item,photo,index\) \{[
 assert.ok(removeSrc, 'removePhoto istnieje');
 assert.equal((removeSrc.match(/window\.confirm\(/g) || []).length, 1, 'Jedno potwierdzenie usunięcia zdjęcia.');
 assert.match(removeSrc, /setSignatureDataUrl\(''\)/, 'Usunięcie zdjęcia unieważnia zatwierdzony podpis.');
-assert.match(exec, /\{!readonly\?<button type="button" className="btn serviceAdminDanger"[^>]*\n?[^>]*onClick=\{\(\)=>removePhoto\(item,p,i\)\}/,
+// 14.02: przycisk „Usuń” w karcie zdjęcia (jak w montażach), tylko przed zakończeniem wizyty.
+assert.match(exec, /\{!readonly\?<button type="button" className="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn"[\s\S]{0,200}?onClick=\{e=>\{e\.stopPropagation\(\);removePhoto\(item,p,i\);\}\}/,
   'Przycisk „Usuń” tylko przed zakończeniem wizyty.');
 
 // ---------- 3. Migracja (pomocniczo; zachowanie sprawdza test PostgreSQL) ----------

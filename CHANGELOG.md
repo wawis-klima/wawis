@@ -1,3 +1,9 @@
+## 14.02
+- Serwis / zdjęcia (zgłoszenie właściciela 31.10.2026): dotąd widoczny był tylko napis „Zdjęcie 1 zapisane w systemie”, bez podglądu. Teraz miniatury w kartach z montaży (`thumbGrid`/`thumbCard`: zdjęcie, data, rozmiar, „Usuń” przed podpisem); dotknięcie otwiera ten sam podgląd pełnoekranowy co w montażach (`PreviewModal`, powiększanie, przewijanie między zdjęciami urządzenia).
+- Adresy podglądu: jedno zbiorcze `createSignedUrls` z prywatnego bucketu (15 min), odświeżane przed otwarciem wygasłego linku; błąd wczytania podglądu pokazany uczciwie, bez ukrywania informacji o zapisie.
+- Przy usterce ze zdjęciem zamiast „Zdjęcia opcjonalne przy sprawnym urządzeniu” — „Zdjęcia usterki zapisane w systemie”.
+- Testy: `smoke-service-photo-preview-v1402.mjs`; WebKit: karty mieszczą się na 320–430 px, miniatura i „Usuń” klikalne (`service-date-time-ios-v1392.spec.js`). Bez zmian bazy, RLS i Storage.
+
 ## 14.01
 - Serwis / Kosz: „Usuń na stałe” kończyło się błędem „Brak uprawnień do przydziału” (od 13.95; zgłoszenie właściciela 31.10.2026, logi: `purge-service-visit` → 409, `service_visit_purge_prepare_v1395` → 400). Przyczyna: trigger `service_visit_assignment_audit` (13.89) wymagał zalogowanego administratora przy każdej zmianie wiersza, a Edge Function działa kluczem `service_role` bez `auth.uid()`. Dane nie zostały naruszone (operacja przerwana w pierwszym kroku).
 - Migracja `20261031150000_service_visit_purge_service_role_v1401.sql`: trigger przepuszcza `service_role`; pracownik i anon nadal odrzuceni; audyt przydziału bez zmian.

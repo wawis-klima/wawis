@@ -1,9 +1,9 @@
-# RELEASE RESULT — WAWIS 14.01
+# RELEASE RESULT — WAWIS 14.02
 
 ## Zakres
-- Naprawa trwałego usuwania serwisu z Kosza: trigger przydziału przepuszcza zaufaną rolę serwerową (`service_role`), której używa `purge-service-visit`. Pracownik i anon nadal odrzuceni.
-- Test PostgreSQL z realistyczną rolą serwerową (bez `auth.uid()`); RED odtworzony z komunikatem z produkcji.
+- Podgląd zdjęć serwisu jak w montażach: miniatury w kartach, pełny ekran z powiększaniem, „Usuń” przed podpisem.
+- Poprawiony tekst przy usterce ze zdjęciem.
 
-## Kolejność
-1. Migracja `20261031150000_service_visit_purge_service_role_v1401.sql` na produkcji (niezależna od frontendu, można przed scaleniem).
-2. Scalenie, Vercel 14.01, test usuwania wizyty testowej na iPhonie.
+## Kontrola
+- `smoke-service-photo-preview-v1402.mjs` (wykonanie modułu podpisanych adresów), WebKit: geometria i klikalność kart 320–430 px.
+- Bez zmian bazy, RLS, Storage i Edge Functions.

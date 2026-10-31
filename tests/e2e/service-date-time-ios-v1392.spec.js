@@ -65,4 +65,50 @@ test.describe('@mobile WebKit Safari — serwis data i godzina', () => {
     await expect(time).toHaveValue('13:45');
   });
 
+  test('14.02: miniatury zdjęć serwisu w kartach z montaży mieszczą się i są klikalne', async ({ page }) => {
+    await login(page, ADMIN);
+    await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
+    await expect(page.locator('.serviceAdminPage')).toBeVisible();
+    const pixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    await page.locator('.serviceAdminPage').evaluate((element, src) => {
+      const card = document.createElement('div');
+      card.className = 'card serviceAdminCard';
+      card.id = 'service-photo-visual-check';
+      const one = i => '<div class="thumbCard"><button type="button" class="thumbBtn desktopThumbBtn" aria-label="Powiększ zdjęcie ' + i + '">'
+        + '<img src="' + src + '" class="thumb desktopThumb" alt="Zdjęcie ' + i + '"></button>'
+        + '<div class="photoMeta"><span class="photoMetaText photoDateMeta">31.10.2026</span><span class="photoMetaText">✓ 4328 KB</span></div>'
+        + '<button type="button" class="btn premiumActionBtn premiumDangerBtn photoDeleteBtn compactDangerBtn">Usuń</button></div>';
+      card.innerHTML = '<div class="thumbGrid serviceAdminThumbGrid">' + one(1) + one(2) + one(3) + '</div>';
+      element.appendChild(card);
+    }, pixel);
+    for (const width of [320, 375, 390, 430]) {
+      await page.setViewportSize({ width, height: 780 });
+      await page.waitForFunction(w => window.innerWidth === w, width, { timeout: 5000 });
+      const r = await page.locator('#service-photo-visual-check').evaluate(card => {
+        const vw = document.documentElement.clientWidth;
+        const cardBox = card.getBoundingClientRect();
+        return {
+          vw, pageOverflow: document.documentElement.scrollWidth - vw, cardRight: cardBox.right,
+          items: [...card.querySelectorAll('.thumbCard')].map(c => {
+            const btn = c.querySelector('.thumbBtn').getBoundingClientRect();
+            const del = c.querySelector('.photoDeleteBtn').getBoundingClientRect();
+            const img = c.querySelector('img').getBoundingClientRect();
+            const hit = (b, el) => { const t = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return t === el || el.contains(t); };
+            return { right: c.getBoundingClientRect().right, btnH: btn.height, imgW: img.width, imgH: img.height,
+              delH: del.height, thumbHit: hit(btn, c.querySelector('.thumbBtn')), delHit: hit(del, c.querySelector('.photoDeleteBtn')) };
+          }),
+        };
+      });
+      expect(r.pageOverflow).toBeLessThanOrEqual(2);
+      for (const item of r.items) {
+        expect(item.right).toBeLessThanOrEqual(r.cardRight + 1);
+        expect(item.btnH).toBeGreaterThanOrEqual(44);
+        expect(item.imgW).toBeGreaterThan(40);
+        expect(item.imgH).toBeGreaterThan(40);
+        expect(item.delH).toBeGreaterThanOrEqual(30);
+        expect(item.thumbHit).toBe(true);
+        expect(item.delHit).toBe(true);
+      }
+    }
+  });
 });

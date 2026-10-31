@@ -84,6 +84,24 @@ export async function uploadServiceVisitPhoto({supabase,visitId,itemId,file}) {
   if(error) throw new Error('Zdjęcie przesłano, ale nie potwierdzono wpisu w historii. Nie próbuj go usuwać: '+error.message);
   return data;
 }
+/** 14.02: podgląd zapisanych zdjęć serwisu — krótkotrwałe, podpisane adresy z prywatnego bucketu.
+ * Jedno zbiorcze zapytanie; brak adresu dla pojedynczego zdjęcia nie ukrywa pozostałych. */
+export const SERVICE_PHOTO_URL_TTL_SECONDS = 900;
+export async function loadServicePhotoUrls({supabase,photos,expiresIn=SERVICE_PHOTO_URL_TTL_SECONDS,now=Date.now()}) {
+  const list=(photos||[]).filter(p=>p?.id&&p?.storage_path);
+  if(!list.length)return {};
+  const {data,error}=await supabase.storage.from(SERVICE_FILES_BUCKET)
+    .createSignedUrls(list.map(p=>p.storage_path),expiresIn);
+  if(error)throw error;
+  const byPath=new Map((data||[]).filter(r=>r?.signedUrl&&!r.error).map(r=>[r.path,r.signedUrl]));
+  // Adres ważny krócej niż TTL o margines, żeby nie otworzyć zdjęcia z wygasłym linkiem.
+  const validUntil=now+Math.max(0,expiresIn-120)*1000;
+  return Object.fromEntries(list.filter(p=>byPath.has(p.storage_path))
+    .map(p=>[p.id,{url:byPath.get(p.storage_path),validUntil}]));
+}
+export function servicePhotoUrlIsFresh(entry,now=Date.now()) {
+  return Boolean(entry?.url)&&Number(entry?.validUntil)>now;
+}
 /** 13.99: usunięcie pomyłkowego zdjęcia przed podpisem (tylko administrator).
  * Najpierw serwer usuwa wpis (pod blokadą wizyty, z audytem), potem plik przez Storage API.
  * Nieudane usunięcie pliku zostawia tylko nieużywany plik — nigdy wpis bez pliku. */
