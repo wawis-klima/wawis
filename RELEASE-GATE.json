@@ -20,10 +20,10 @@
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
-    "checked": false,
-    "result": "EXTERNAL_IPHONE_PURGE",
+    "checked": true,
+    "result": "OWNER_IPHONE_PURGE_OK",
     "evidence_source": "iPhone administratora: „Usuń na stałe” wizyty testowej z Kosza.",
-    "notes": "Migracja wykonywana przez właściciela w SQL Editor (okno potwierdzenia narzędzia na telefonie jest anulowane automatycznie)."
+    "notes": "31.10.2026 15:15: właściciel usunął na stałe 2 wizyty z Kosza; SELECT: 1 wizyta pozostała z PDF, 0 osieroconych plików i rekordów, purge_started_at bez zawieszeń, 752 urządzenia nietknięte."
   },
   "archive": {
     "source_of_truth": "github-main",
