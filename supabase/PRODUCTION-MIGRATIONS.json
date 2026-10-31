@@ -1038,12 +1038,24 @@
    "bytes": 2804,
    "status": "identical",
    "repo_file": "supabase/migrations/20261030102441_fuel_market_prices_slaskie.sql"
+  },
+  {
+   "version": "20261030120000",
+   "name": "service_visit_trash_guard_photo_delete_v1399",
+   "md5": "66acd8e195f1a943f2488d56b8f74078",
+   "md5_of_file": true,
+   "bytes": 8911,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-10-31T13:46+01:00",
+   "verified": "SELECT 31.10.2026: 3 funkcje, 4 triggery, 2 polityki Storage, tabela audytu, PUSH pomija Kosz; uprawnienia authenticated=tak, anon=nie",
+   "repo_file": "supabase/migrations/20261030120000_service_visit_trash_guard_photo_delete_v1399.sql"
   }
  ],
  "statuses": {
   "identical": "plik w repozytorium ma identyczną treść jak SQL wykonany na produkcji (MD5)",
   "similar": "plik o tej samej nazwie istnieje, ale treść różni się od wykonanej na produkcji (np. później poprawiona lub inaczej sformatowana) — dokładny SQL produkcji: tabela supabase_migrations.schema_migrations w nocnej kopii",
-  "exported": "brakowało w repozytorium — dokładny SQL wyeksportowany z produkcji 27.10.2026 (zgodność MD5 sprawdzona)"
+  "exported": "brakowało w repozytorium — dokładny SQL wyeksportowany z produkcji 27.10.2026 (zgodność MD5 sprawdzona)",
+  "applied_sql_editor": "wykonane ręcznie przez właściciela w Supabase SQL Editor (bez wpisu w supabase_migrations.schema_migrations); obecność obiektów sprawdzona zapytaniem SELECT"
  },
- "service_visit_note_v1399": "30.10.2026 (SELECT): migracje serwisu 13.89–13.95 mają na produkcji inne numery wersji niż nazwy plików w repozytorium; treść identyczna (MD5). service_visit_admin_trash_v1394 wykonana dwukrotnie (idempotentna). Migracja 13.99 nie jest jeszcze wykonana na produkcji."
+ "service_visit_note_v1399": "30.10.2026 (SELECT): migracje serwisu 13.89–13.95 mają na produkcji inne numery wersji niż nazwy plików w repozytorium; treść identyczna (MD5). service_visit_admin_trash_v1394 wykonana dwukrotnie (idempotentna). Migracja 14.00 (plik v1399) wykonana 31.10.2026 przez właściciela w SQL Editor — okno potwierdzenia narzędzia migracji było automatycznie anulowane przez aplikację mobilną."
 }

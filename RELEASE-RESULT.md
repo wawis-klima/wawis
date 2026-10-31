@@ -1,4 +1,4 @@
-# RELEASE RESULT — WAWIS 14.00 (gałąź, czeka na decyzję właściciela)
+# RELEASE RESULT — WAWIS 14.00 
 
 ## Zakres
 - Serwer blokuje zmiany wizyty w Koszu (triggery + polityka Storage + PUSH); przywracanie i trwałe usuwanie bez zmian.
@@ -17,3 +17,7 @@
 ## Kontrola
 - `scripts/service-visit-sql-v1399.sh`: 9 prawdziwych migracji + test zachowania na jednorazowym PostgreSQL 16; RED na schemacie 13.98.
 - Do czasu decyzji: `main_protection.ready_for_main=false`.
+
+## Wykonanie
+- 31.10.2026 13:46: migracja wykonana przez właściciela w Supabase SQL Editor (narzędzie migracji anulowało okno potwierdzenia na telefonie). Obiekty potwierdzone SELECT.
+- `ready_for_main=true` po potwierdzeniu migracji.

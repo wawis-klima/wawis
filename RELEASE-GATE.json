@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "30.10.2026: tylko SELECT (MD5 migracji serwisu, polityki RLS). Migracja 13.99 przetestowana wyłącznie na jednorazowym PostgreSQL 16; nie wykonana na produkcji."
+    "notes": "31.10.2026: migracja 20261030120000 wykonana na produkcji przez właściciela (SQL Editor); obiekty i uprawnienia potwierdzone SELECT; dane bez zmian (3 wizyty, 3 protokoły)."
   },
   "drive_backup": {
     "required": false,
@@ -15,15 +15,15 @@
   },
   "main_protection": {
     "source_branch": "release/v14.00",
-    "ready_for_main": false,
-    "status": "HOLD_OWNER_DECISION",
+    "ready_for_main": true,
+    "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "PENDING_OWNER_DECISION",
-    "evidence_source": "Po decyzji właściciela: migracja na produkcji (MD5 = plik), potem merge; iPhone: Kosz, usunięcie zdjęcia, zapis szczegółów.",
-    "notes": "Właściciel 30.10.2026 07:16: testujemy na gałęzi, wdrożenie dopiero po jego decyzji."
+    "result": "EXTERNAL_IPHONE_ADMIN",
+    "evidence_source": "iPhone administratora: Kosz zablokowany do edycji, usuwanie zdjęcia przed podpisem, zapis szczegółów wizyty.",
+    "notes": "Decyzja właściciela 30.10.2026 11:53 („jak coś to wdrażaj”); migracja 31.10.2026 13:46."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -34,6 +34,6 @@
   "production_verification": {
     "code": "14.00: blokady Kosza w bazie, usuwanie zdjęcia przed podpisem, atomowy zapis szczegółów wizyty, poprawka version-bump",
     "release_ci": "WAWIS PR checks + service-visit-sql-v1399 (PostgreSQL 16), smoke-service-admin-v1399, smoke-version-bump-readme-v1399",
-    "postdeploy": "Wymaga decyzji właściciela i wykonania migracji przed scaleniem frontendu."
+    "postdeploy": "Oczekuje: Vercel READY/14.00 i /app-version.json. iPhone poza CI."
   }
 }
