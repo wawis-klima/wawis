@@ -5,6 +5,7 @@
 - Nowy `src/modules/update-reload-position.js`: przed koniecznym przeładowaniem (`update-reload-guard`, „Odśwież aplikację”) zapisywany jest znacznik; po przeładowaniu obie aplikacje wracają do zapamiętanego modułu (tylko gdy znacznik ≤ 30 s, jednorazowo). Zwykłe uruchomienie nadal zaczyna od ekranu startowego. Strażniki ról bez zmian — pracownik nie trafi do modułu administratora.
 - Testy: `smoke-update-reload-position-v1405.mjs` (wykonanie modułu pozycji, strażnika przeładowań z blokadą niezapisanej pracy oraz decyzji po `controllerchange`), E2E `update-reload-position-v1405.spec.js` (telefon: Urządzenia/Paliwo, zwykłe przeładowanie, stary znacznik, pracownik; komputer: Tankowania).
 - Obszar chroniony (service worker / przeładowanie aktualizacji): pełny Closure Gate; test na iPhonie po wdrożeniu.
+- `smoke-sms-package3-v1256.mjs`: sprawdzenie ekranu startowego komputera (Centrum 360) dopasowane do nowego zapisu (`fallbackModule: "center360"`) — ta sama gwarancja.
 
 ## 14.04
 - Serwis / wykonanie (zgłoszenie właściciela 31.10.2026 19:48 — „nic nie jest podświetlone, coś się zablokowało”): przy 2 z 6 zaznaczonych czynności „Zapisz wynik” był nieaktywny, a podpis zablokowany, z jedynym wyjaśnieniem w drobnym szarym tekście.
