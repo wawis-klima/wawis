@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## UPDATE-RELOAD-POSITION-1405 — powrót do pierwszego ekranu po aktualizacji (01.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| URP-1405-SW | FIXED-UNVERIFIED | `controllerchange` przeładowywał bezwarunkowo, choć strona (network-first) była już w nowej wersji. Teraz `pageMatchesLiveVersion()`; test wykonuje funkcję z `main.jsx` (zgodna → bez przeładowania; starsza/offline/błąd → przeładowanie). |
+| URP-1405-POSITION | FIXED-UNVERIFIED | Konieczne przeładowanie zerowało moduł. `update-reload-position.js` + znacznik w `update-reload-guard`; E2E telefon/komputer, kontrprzykłady: zwykłe przeładowanie, stary znacznik, pracownik. |
+| URP-1405-LIVE | EXTERNAL | Efekt od kolejnego wdrożenia po 14.05; sprawdzenie na iPhonie i komputerze. |
+
 ## SERVICE-CHECKLIST-1404 — blokada zapisu przy niepełnej liście czynności (31.10.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

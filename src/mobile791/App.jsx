@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { lazy } from "../modules/lazy-safe.jsx";
+import { rememberActivePosition, restorePositionAfterUpdate } from "../modules/update-reload-position.js";
 import AuthScreen from "./components/AuthScreen";
 import AppAuthenticatedLayout from "./components/layout/AppAuthenticatedLayout.jsx";
 import JobsPanel from "./components/JobsPanel";
@@ -250,11 +251,17 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth <= 700 : false);
   const [isProbablyPhoneDevice, setIsProbablyPhoneDevice] = useState(getIsProbablyPhoneDevice);
   const [commentDrafts, setCommentDrafts] = useState({});
-  const [activeModule, setActiveModule] = useState("jobs");
+  // 14.05: po przeładowaniu przez aktualizację wracamy do modułu użytkownika (strażnik ról poniżej bez zmian).
+  const [initialPosition] = useState(() => restorePositionAfterUpdate({
+    fallbackModule: "jobs", fallbackSection: "orders",
+    allowedModules: ["jobs", "contractors", "fuel", "devices", "pricelist", "calendar"],
+  }));
+  const [activeModule, setActiveModule] = useState(initialPosition.module);
   const [contractorsCatalog, setContractorsCatalog] = useState([]);
   const [contractorsCatalogAll, setContractorsCatalogAll] = useState([]);
   const [requestedContractorId, setRequestedContractorId] = useState(null);
-  const [desktopNavKey, setDesktopNavKey] = useState("orders");
+  const [desktopNavKey, setDesktopNavKey] = useState(initialPosition.section);
+  useEffect(() => { rememberActivePosition(activeModule, desktopNavKey); }, [activeModule, desktopNavKey]);
   const [jobsPage, setJobsPage] = useState(1);
   const [pendingOpenJobId, setPendingOpenJobId] = useState(null);
   const [pendingPushOpenJobId, setPendingPushOpenJobId] = useState("");

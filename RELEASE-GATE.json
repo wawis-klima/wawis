@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.04",
+  "version": "14.05",
   "scope": "full",
-  "release_branch": "release/v14.04",
+  "release_branch": "release/v14.05",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "31.10.2026 20:05: migracja 20261031200000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT."
+    "notes": "Zmiana wyłącznie frontendu (mechanizm przeładowania aktualizacji); bez zmian bazy i service workera."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.04",
+    "source_branch": "release/v14.05",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_PARTIAL_CHECKLIST",
-    "evidence_source": "iPhone: zapis 2 z 6 + usterka, podpis, PDF z „nie wykonano”.",
-    "notes": ""
+    "result": "EXTERNAL_IPHONE_FIRST_OPEN",
+    "evidence_source": "iPhone i komputer: pierwsze otwarcie po wdrożeniu, szybkie przejście do modułu — bez powrotu do pierwszego ekranu.",
+    "notes": "Efekt widoczny dopiero przy KOLEJNYM wdrożeniu po 14.05 (14.05 sama zostanie zainstalowana starym mechanizmem)."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.04: częściowa lista czynności + podpowiedzi blokad",
-    "release_ci": "WAWIS PR checks + SQL v1404 (RED/GREEN) + smoke v1404",
-    "postdeploy": "Kolejność: migracja (właściciel) → SELECT → ready_for_main → merge → Vercel 14.04."
+    "code": "14.05: controllerchange bez zbędnego przeładowania + powrót do modułu",
+    "release_ci": "WAWIS PR checks + smoke v1405 + E2E update-reload-position-v1405",
+    "postdeploy": "Oczekuje: Vercel READY/14.05."
   }
 }

@@ -1,12 +1,9 @@
-# RELEASE RESULT — WAWIS 14.04
+# RELEASE RESULT — WAWIS 14.05
 
 ## Zakres
-- Wynik przeglądu bez kompletu sześciu czynności (min. jedna), niewykonane oznaczone w PDF.
-- Wyraźne podpowiedzi blokad zapisu i podpisu.
-- Zakładka „Wykonane” (zakończone przeglądy, najnowsze najpierw).
+- Brak zbędnego przeładowania po wymianie service workera, gdy strona jest już w najnowszej wersji.
+- Po koniecznym przeładowaniu powrót do modułu użytkownika (telefon i komputer); strażniki ról bez zmian.
 
-## Kolejność
-1. Migracja `20261031200000_service_visit_partial_checklist_v1404.sql` (właściciel, SQL Editor) i kontrola SELECT.
-2. `ready_for_main=true`, CI, scalenie, Vercel 14.04.
-
-Uwaga: nowa aplikacja przed migracją pozwoliłaby kliknąć zapis 2 z 6, a serwer odrzuciłby go starym komunikatem — dlatego migracja najpierw.
+## Uwaga
+- Sama instalacja 14.05 przebiegnie jeszcze starym mechanizmem (jedno przeładowanie). Poprawa działa od kolejnego wdrożenia.
+- Obszar chroniony (aktualizacja / service worker): pełny Closure Gate, test na iPhonie po wdrożeniu.
