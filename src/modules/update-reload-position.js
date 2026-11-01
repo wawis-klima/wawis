@@ -38,7 +38,8 @@ export function markUpdateReload(now = Date.now(), win = typeof window !== 'unde
 }
 
 /** Zwraca {module, section} zapamiętane przed przeładowaniem aktualizacji albo wartości domyślne.
- *  Znacznik jest jednorazowy — kolejne uruchomienie zaczyna od ekranu startowego. */
+ *  Funkcja bez skutków ubocznych (React StrictMode wywołuje inicjalizator stanu dwukrotnie).
+ *  Znacznik usuwa consumeUpdateReloadMarker() po uruchomieniu aplikacji — kolejny start zaczyna od ekranu startowego. */
 export function restorePositionAfterUpdate({ fallbackModule, fallbackSection = fallbackModule, allowedModules = [], now = Date.now(),
   win = typeof window !== 'undefined' ? window : null } = {}) {
   const fallback = { module: fallbackModule, section: fallbackSection, restored: false };
@@ -49,7 +50,6 @@ export function restorePositionAfterUpdate({ fallbackModule, fallbackSection = f
   try {
     markerAt = Number(store.getItem(UPDATE_RELOAD_MARKER_KEY) || 0);
     saved = JSON.parse(store.getItem(POSITION_KEY) || 'null');
-    store.removeItem(UPDATE_RELOAD_MARKER_KEY);
   } catch {
     return fallback;
   }
@@ -57,4 +57,22 @@ export function restorePositionAfterUpdate({ fallbackModule, fallbackSection = f
   const module = String(saved?.module || '');
   if (!module || !allowedModules.includes(module)) return fallback;
   return { module, section: String(saved?.section || module), restored: true };
+}
+
+export function consumeUpdateReloadMarker(win = typeof window !== 'undefined' ? window : null) {
+  const store = storage(win);
+  if (!store) return;
+  try {
+    store.removeItem(UPDATE_RELOAD_MARKER_KEY);
+  } catch {
+    // jw.
+  }
+}
+
+/** Podział przywróconej pozycji: moduł dostępny także dla pracownika ustawiamy od razu,
+ *  moduł tylko administratora — dopiero po wczytaniu profilu z rolą Administrator. */
+export function splitRestoredPosition(restored, { fallbackModule, fallbackSection = fallbackModule, workerModules = [] } = {}) {
+  if (!restored?.restored) return { initial: { module: fallbackModule, section: fallbackSection }, adminPending: null };
+  if (workerModules.includes(restored.module)) return { initial: { module: restored.module, section: restored.section }, adminPending: null };
+  return { initial: { module: fallbackModule, section: fallbackSection }, adminPending: { module: restored.module, section: restored.section } };
 }

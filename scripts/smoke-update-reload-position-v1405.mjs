@@ -19,8 +19,19 @@ assert.deepEqual(r, { module: 'jobs', section: 'orders', restored: false }, 'Bez
 position.markUpdateReload(10_000, win);
 r = position.restorePositionAfterUpdate({ fallbackModule: 'jobs', allowedModules: allowed, now: 12_000, win });
 assert.deepEqual(r, { module: 'devices', section: 'devices', restored: true }, 'Po aktualizacji — ten sam moduł.');
+// StrictMode: inicjalizator stanu wywoływany dwukrotnie — odczyt nie może zużyć znacznika (E2E CI #458).
+r = position.restorePositionAfterUpdate({ fallbackModule: 'jobs', allowedModules: allowed, now: 12_100, win });
+assert.equal(r.restored, true, 'Drugi odczyt (StrictMode) daje ten sam wynik.');
+position.consumeUpdateReloadMarker(win);
 r = position.restorePositionAfterUpdate({ fallbackModule: 'jobs', allowedModules: allowed, now: 12_500, win });
-assert.equal(r.restored, false, 'Znacznik jednorazowy.');
+assert.equal(r.restored, false, 'Po uruchomieniu znacznik zużyty — kolejny start od ekranu startowego.');
+// Moduł administratora czeka na profil; moduł pracownika od razu.
+const split = position.splitRestoredPosition;
+const opts = { fallbackModule: 'jobs', fallbackSection: 'orders', workerModules: ['jobs', 'fuel', 'pricelist'] };
+assert.deepEqual(split({ module: 'fuel', section: 'fuel', restored: true }, opts), { initial: { module: 'fuel', section: 'fuel' }, adminPending: null });
+assert.deepEqual(split({ module: 'devices', section: 'devices', restored: true }, opts),
+  { initial: { module: 'jobs', section: 'orders' }, adminPending: { module: 'devices', section: 'devices' } }, 'Urządzenia dopiero po potwierdzeniu roli.');
+assert.deepEqual(split({ module: 'jobs', section: 'orders', restored: false }, opts), { initial: { module: 'jobs', section: 'orders' }, adminPending: null });
 position.markUpdateReload(10_000, win);
 assert.equal(position.restorePositionAfterUpdate({ fallbackModule: 'jobs', allowedModules: allowed, now: 50_001, win }).restored, false, 'Znacznik starszy niż 30 s ignorowany.');
 position.rememberActivePosition('sms', 'sms', win); position.markUpdateReload(10_000, win);
@@ -80,6 +91,9 @@ const desktop = fs.readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf
 for (const [name, src] of [['mobile', mobile], ['desktop', desktop]]) {
   assert.match(src, /useState\(initialPosition\.module\)/, name + ': moduł startowy z przywrócenia.');
   assert.match(src, /rememberActivePosition\(activeModule, desktopNavKey\)/, name + ': zapamiętanie pozycji.');
+  assert.match(src, /useEffect\(\(\) => \{ consumeUpdateReloadMarker\(\); \}, \[\]\);/, name + ': znacznik zużywany po uruchomieniu.');
+  assert.match(src, /if \(!pending \|\| !profile\) return;\s*pendingAdminPositionRef\.current = null;\s*if \(isAdmin\) handleDesktopNavigation\(pending\.module, pending\.section\);/,
+    name + ': moduł administratora dopiero po wczytaniu profilu z rolą Administrator.');
 }
 assert.match(mobile, /if \(!isAdmin && !\["jobs", "fuel", "pricelist"\]\.includes\(activeModule\)\)/, 'Strażnik ról telefonu bez zmian.');
 assert.match(desktop, /if \(!isAdmin && !\["jobs", "fuel"\]\.includes\(activeModule\)\)/, 'Strażnik ról komputera bez zmian.');
