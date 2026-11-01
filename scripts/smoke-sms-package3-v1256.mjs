@@ -41,7 +41,10 @@ assert.match(migration, /revoke all on function public\.admin_get_sms_settings\(
 assert.match(panel, /if \(isSettingsOnlyView\) \{\s*void reloadSettingsOnly\(\);\s*return;/s);
 assert.match(panel, /if \(!isAdmin \|\| !supabase \|\| isSettingsOnlyView\) return undefined;/);
 assert.match(app, /const SmsPanel = lazy\(\(\) => import\("\.\/components\/sms\/SmsPanel\.jsx"\)\)/);
-assert.match(app, /useState\("center360"\)/);
+// 14.05: ekran startowy komputera nadal Centrum 360 (nie SMS) — teraz jako wartość domyślna przywracania
+// pozycji po aktualizacji; zwykłe uruchomienie zawsze zaczyna od fallbackModule.
+assert.match(app, /restorePositionAfterUpdate\(\{\s*fallbackModule: "center360",/);
+assert.match(app, /const \[activeModule, setActiveModule\] = useState\(initialPosition\.module\);/);
 
 // P2-07: large device catalogs are paged instead of relying on one PostgREST response.
 {

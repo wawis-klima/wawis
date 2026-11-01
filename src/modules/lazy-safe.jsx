@@ -1,4 +1,5 @@
 import React, { lazy as reactLazy } from "react";
+import { markUpdateReload } from "./update-reload-position.js";
 
 // WAWIS 13.76 (test iPhone 26.10.2026, tryb samolotowy, 13.75): Diagnostyka nie była zapisana w telefonie,
 // a nieudane pobranie jej pliku zostawiało CAŁKOWICIE BIAŁY EKRAN — React usuwa całą aplikację, gdy leniwie
@@ -24,7 +25,8 @@ function UnavailableScreen({ name }) {
         type="button"
         className="btn"
         onClick={() => {
-          if (typeof window !== "undefined") window.location.reload();
+          // 14.05: po odświeżeniu wracamy do tego samego modułu.
+          if (typeof window !== "undefined") { markUpdateReload(); window.location.reload(); }
         }}
         disabled={offline}
       >

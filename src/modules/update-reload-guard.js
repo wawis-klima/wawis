@@ -1,3 +1,4 @@
+import { markUpdateReload } from './update-reload-position.js';
 const activeReloadBlockers = new Set();
 const activeBeforeUnloadWarnings = new Set();
 let pendingReload = null;
@@ -75,6 +76,8 @@ function scheduleReload(reason, delayMs = 0) {
     }
     pendingReload = null;
     dispatchGuardEvent('wawis:update-reload-start', { reason: safeReason });
+    // 14.05: po przeładowaniu aplikacja wraca do modułu, w którym był użytkownik.
+    markUpdateReload(Date.now(), windowRef);
     windowRef.location.reload();
   }, safeDelay);
   return true;

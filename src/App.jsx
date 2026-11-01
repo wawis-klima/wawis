@@ -33,6 +33,7 @@ import { useSelectedJobActions } from "./hooks/useSelectedJobActions.js";
 import { getRequestedJobIdFromLocation } from "./utils/jobSelectionState.js";
 import { logDiagnostic, startSilentDiagnosticSync } from "./modules/diagnostics.js";
 import { APP_VERSION } from "./version.js";
+import { rememberActivePosition, restorePositionAfterUpdate, consumeUpdateReloadMarker, splitRestoredPosition } from "./modules/update-reload-position.js";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -131,7 +132,15 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth <= 700 : false);
   const [isProbablyPhoneDevice, setIsProbablyPhoneDevice] = useState(getIsProbablyPhoneDevice);
   const [commentDrafts, setCommentDrafts] = useState({});
-  const [activeModule, setActiveModule] = useState("center360");
+  // 14.05: po przeładowaniu przez aktualizację wracamy do modułu użytkownika. Moduły administratora
+  // ustawiamy dopiero po wczytaniu profilu — strażnik ról poniżej działa bez zmian.
+  const [restoredPosition] = useState(() => splitRestoredPosition(restorePositionAfterUpdate({
+    fallbackModule: "center360",
+    allowedModules: ["center360", "jobs", "contractors", "fuel", "sms", "devices", "calendar", "diagnostics"],
+  }), { fallbackModule: "center360", workerModules: ["jobs", "fuel"] }));
+  const initialPosition = restoredPosition.initial;
+  const pendingAdminPositionRef = useRef(restoredPosition.adminPending);
+  const [activeModule, setActiveModule] = useState(initialPosition.module);
   const [contractorsCatalog, setContractorsCatalog] = useState([]);
   const [globalSearchContractors, setGlobalSearchContractors] = useState([]);
   const [globalSearchDevices, setGlobalSearchDevices] = useState([]);
@@ -139,7 +148,9 @@ export default function App() {
   const [globalSearchRequested, setGlobalSearchRequested] = useState(false);
   const [requestedContractorId, setRequestedContractorId] = useState(null);
   const [requestedDeviceId, setRequestedDeviceId] = useState(null);
-  const [desktopNavKey, setDesktopNavKey] = useState("center360");
+  const [desktopNavKey, setDesktopNavKey] = useState(initialPosition.section);
+  useEffect(() => { rememberActivePosition(activeModule, desktopNavKey); }, [activeModule, desktopNavKey]);
+  useEffect(() => { consumeUpdateReloadMarker(); }, []);
   const [jobsPage, setJobsPage] = useState(1);
   const [pendingOpenJobId, setPendingOpenJobId] = useState(null);
   const [pendingPushOpenJobId, setPendingPushOpenJobId] = useState("");
@@ -197,6 +208,13 @@ export default function App() {
   });
 
   const isAdmin = profile?.role === "Administrator";
+  useEffect(() => {
+    // 14.05: przywrócenie modułu administratora po potwierdzeniu roli (nigdy dla pracownika).
+    const pending = pendingAdminPositionRef.current;
+    if (!pending || !profile) return;
+    pendingAdminPositionRef.current = null;
+    if (isAdmin) handleDesktopNavigation(pending.module, pending.section);
+  }, [profile, isAdmin]);
 
   const applyContractorsCatalogSnapshot = React.useCallback((rows) => {
     const safeRows = Array.isArray(rows) ? rows : [];

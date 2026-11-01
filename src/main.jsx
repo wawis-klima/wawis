@@ -49,6 +49,22 @@ async function checkLiveVersion(reason = 'resume') {
   }
 }
 
+/** true tylko przy potwierdzonej zgodności wersji strony z serwerem; brak sieci lub błąd = false (bezpieczne przeładowanie). */
+async function pageMatchesLiveVersion() {
+  try {
+    const response = await fetch(`/app-version.json?wawis_version_check=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' },
+    })
+    if (!response.ok) return false
+    const payload = await response.json()
+    const liveVersion = String(payload?.version || '').trim()
+    return Boolean(liveVersion) && liveVersion === APP_VERSION
+  } catch {
+    return false
+  }
+}
+
 function installVersionResumeGuard() {
   if (typeof window === 'undefined') return
   const run = (reason) => { checkLiveVersion(reason).catch(() => {}) }
@@ -68,7 +84,18 @@ function registerOfflineWorker() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloadingForWorkerUpdate) return
       reloadingForWorkerUpdate = true
-      requestUpdateReload('service-worker-controllerchange')
+      // 14.05: strona startowa jest pobierana z sieci (network-first), więc przy pierwszym otwarciu po
+      // wdrożeniu działa już w nowej wersji, a nowy service worker przejmuje kontrolę kilka sekund później.
+      // Przeładowanie było wtedy zbędne i cofało użytkownika do pierwszego ekranu.
+      // Przeładowujemy tylko, gdy strona jest starsza niż serwer albo nie da się tego sprawdzić.
+      pageMatchesLiveVersion().then((current) => {
+        if (current) {
+          reloadingForWorkerUpdate = false
+          window.dispatchEvent?.(new CustomEvent('wawis:update-reload-skipped', { detail: { reason: 'service-worker-controllerchange', version: APP_VERSION } }))
+          return
+        }
+        requestUpdateReload('service-worker-controllerchange')
+      })
     })
   }
   window.addEventListener('load', () => {

@@ -34,6 +34,7 @@ const GROUPS = {
     'node scripts/smoke-session-sync-resilience-v1080.mjs',
     'node scripts/smoke-update-reload-guard-v1081.mjs',
     'node scripts/smoke-update-reload-guard-v1082.mjs',
+    'node scripts/smoke-update-reload-position-v1405.mjs',
     'node scripts/smoke-audit-races-v1084.mjs',
     'node scripts/smoke-incremental-rebase-v1387.mjs',
     'npm run test:smoke:diagnostic-report',
