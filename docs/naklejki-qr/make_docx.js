@@ -56,6 +56,6 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then((buf) => {
-  fs.writeFileSync(path.join(out, 'naklejki-qr-wawis.docx'), buf);
+  fs.writeFileSync(path.join(out, `${process.env.WAWIS_QR_NAME || 'naklejki-qr-wawis'}.docx`), buf);
   console.log('docx ok');
 });

@@ -17,7 +17,11 @@ COLS, ROWS, PAGES = 6, 9, 3
 CELL = 30 * mm
 COUNT = COLS * ROWS * PAGES
 
+import os
 codes, seen = [], set()
+for prev in filter(None, os.environ.get('WAWIS_QR_EXCLUDE','').split(',')):
+    seen.update(json.load(open(prev)))
+PREFIX = os.environ.get('WAWIS_QR_NAME', 'naklejki-qr-wawis')
 while len(codes) < COUNT:
     c = ''.join(secrets.choice(ALPHABET) for _ in range(8))
     if c not in seen:
@@ -37,7 +41,7 @@ def matrix(text):
     n = qr.getModuleCount()
     return [[qr.isDark(r, c) for c in range(n)] for r in range(n)]
 
-with open(OUT / 'naklejki-qr-wawis-kody.csv', 'w', newline='', encoding='utf-8') as f:
+with open(OUT / f'{PREFIX}-kody.csv', 'w', newline='', encoding='utf-8') as f:
     w = csv.writer(f, delimiter=';')
     w.writerow(['nr', 'kod', 'kod_na_naklejce', 'adres_w_qr'])
     for i, c in enumerate(codes, 1):
@@ -57,7 +61,7 @@ mx = (page_w - COLS * CELL) / 2
 my = (page_h - ROWS * CELL) / 2
 QR = 18 * mm
 
-pdf = canvas.Canvas(str(OUT / 'naklejki-qr-wawis.pdf'), pagesize=A4)
+pdf = canvas.Canvas(str(OUT / f'{PREFIX}.pdf'), pagesize=A4)
 pdf.setTitle('Naklejki QR WAWIS')
 pdf.setAuthor('WAWIS Klimatyzacja')
 images_dir = OUT / 'png'; images_dir.mkdir(exist_ok=True)

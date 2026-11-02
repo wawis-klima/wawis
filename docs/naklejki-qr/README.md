@@ -7,3 +7,8 @@
 - Decyzje właściciela: naklejka przypisana do urządzenia; instalacja multi = jedna naklejka na cały zestaw.
 - Trasa `/u/<KOD>` w aplikacji i tabela naklejek w bazie — do zbudowania (wymaga SQL właściciela).
   Dopóki trasy nie ma, zeskanowanie aparatem iPhone'a otworzy stronę błędu — naklejki są ważne, kody zostaną zaimportowane z tego pliku.
+
+## Partia 2 (02.11.2026)
+- Kolejne 162 kody (`partia-2-kody.csv`), wygenerowane z wykluczeniem partii 1 (`WAWIS_QR_EXCLUDE`); brak powtórzeń między partiami.
+- Kontrola odczytu: PDF 162/162, Word 162/162.
+- Decyzja właściciela: pracownicy przypisują naklejki przy montażu, ale nie jest to obowiązkowe.
