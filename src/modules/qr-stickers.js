@@ -6,6 +6,18 @@
 export const QR_STICKER_CODE_PATTERN = /^[2-9A-HJKMNP-Z]{8}$/;
 const QR_URL_PATH_PATTERN = /\/u\/([0-9A-Za-z-]{8,9})\/?(?:[?#].*)?$/;
 export const QR_PENDING_STORAGE_KEY = 'wawis-qr-pending-code';
+// 14.09: sygnał dla otwartej karty montażu, że naklejki montażu się zmieniły (np. po zapisie kreatora).
+export const QR_STICKERS_CHANGED_EVENT = 'wawis-qr-stickers-changed';
+
+export function notifyQrStickersChanged(jobId) {
+  try {
+    if (typeof window !== 'undefined' && typeof CustomEvent === 'function') {
+      window.dispatchEvent(new CustomEvent(QR_STICKERS_CHANGED_EVENT, { detail: { jobId: String(jobId || '') } }));
+    }
+  } catch {
+    // brak okna (testy) — bez znaczenia
+  }
+}
 
 /** Zwraca 8-znakowy kod albo '' (adres z QR, kod z myślnikiem, małe litery, spacje). */
 export function normalizeQrStickerCode(input = '') {
@@ -153,6 +165,7 @@ export async function preserveQrStickersAroundDeviceRemoval({ supabase, jobId, r
       qr.failures.push({ code, message: error?.message || 'błąd przypisania' });
     }
   }
+  notifyQrStickersChanged(jobId);
   return { result, qr };
 }
 
@@ -179,6 +192,7 @@ export async function assignPendingJobQrStickers({ supabase, jobId, pending = {}
       outcome.failures.push({ index, code, message: error?.message || 'Nie udało się przypisać naklejki.' });
     }
   }
+  if (outcome.assigned.length) notifyQrStickersChanged(jobId);
   return outcome;
 }
 

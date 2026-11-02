@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import QrStickerScanner from './QrStickerScanner.jsx';
 import {
   assignQrStickerToDevice, assignQrStickerToJobDevice, describeQrAssignFailure, describeQrDevice,
-  formatQrStickerCode, isOnline, loadJobQrStickers, unassignQrSticker,
+  formatQrStickerCode, isOnline, loadJobQrStickers, QR_STICKERS_CHANGED_EVENT, unassignQrSticker,
 } from '../../../modules/qr-stickers.js';
 
 // WAWIS 14.08: naklejka QR przy urządzeniu montażu. Opcjonalna — nie blokuje zakończenia zlecenia.
@@ -27,6 +27,14 @@ export function useJobQrStickers({ supabase, jobId, enabled = true, refreshKey =
   useEffect(() => {
     reload();
   }, [reload, refreshKey]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handler = (event) => {
+      if (!event?.detail?.jobId || String(event.detail.jobId) === String(jobId)) reload();
+    };
+    window.addEventListener(QR_STICKERS_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(QR_STICKERS_CHANGED_EVENT, handler);
+  }, [reload, jobId]);
   return { stickers, available, reload, setStickers };
 }
 
