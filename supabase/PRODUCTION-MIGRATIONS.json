@@ -1085,6 +1085,18 @@
    "verified": "SELECT 31.10.2026: save_item i complete z regułą „co najmniej jedna czynność”, stara reguła usunięta, zasada zdjęcia usterki zachowana; authenticated=tak, anon=nie",
    "repo_file": "supabase/migrations/20261031200000_service_visit_partial_checklist_v1404.sql",
    "note": "Wklejona treść bez komentarzy; obiekty identyczne z plikiem."
+  },
+  {
+   "version": "20261102090000",
+   "name": "sms_snapshot_group_window_v1406",
+   "md5": "395f45d932af191a0d1bc36997324f72",
+   "md5_of_file": true,
+   "bytes": 6728,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-11-02T07:52+01:00",
+   "verified": "SELECT 02.11.2026: admin_get_sms_module_snapshot z oknem grup (anchor<=dziś, window_end>=dziś−62) i wpisami bez grupy z ±124 dni; authenticated=tak, anon=nie; dane bez zmian (1402 wpisy sms_log, 1182 grupy)",
+   "repo_file": "supabase/migrations/20261102090000_sms_snapshot_group_window_v1406.sql",
+   "note": "Funkcja tylko odczytowa; wykonana przez właściciela w SQL Editor."
   }
  ],
  "statuses": {

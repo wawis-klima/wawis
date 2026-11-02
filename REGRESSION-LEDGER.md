@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UKURA-H-COMPAT-1407 — fałszywe ostrzeżenie niezgodności Ukura / Ukura H (02.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UKH-1407-FAMILY | FIXED-UNVERIFIED | Ostrzeżenie przy zakończeniu montażu (Puchacza 13): JZ Ukura + JW Ukura H. Para dodana do wspólnych rodzin; test RED/GREEN, kontrprzykład Imoto + Ukura H. |
+| UKH-1407-LIVE | EXTERNAL | iPhone: zakończenie montażu Ukura + Ukura H bez ostrzeżenia. |
+
 ## SMS-GROUP-WINDOW-1406 — „SMS dla tej grupy klienta został już wysłany” u klientów bez SMS-a (02.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

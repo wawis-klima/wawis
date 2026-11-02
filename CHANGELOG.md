@@ -1,3 +1,9 @@
+## 14.07
+- Urządzenia / zgodność zestawu Single (zgłoszenie właściciela 02.11.2026): przy zakończeniu montażu pojawiało się ostrzeżenie „Niezgodny zestaw Single: JZ to Ukura, a JW to Ukura H”, choć zestaw jest poprawny.
+- Decyzja właściciela: jednostka wewnętrzna Ukura H współpracuje z agregatami Ukura (U26/U35/U50) i Ukura H (UH26/UH35). `rotenso-models.js`: para Ukura / Ukura H dodana do wspólnych rodzin (jak Teta / Teta Mirror). Blokada innych rodzin bez zmian.
+- Test: `smoke-mobile-serial-scanner.cjs` — cztery pary U/UH zgodne (RED bez poprawki), Imoto + Ukura H nadal ostrzega.
+- Rejestr migracji: `20261102090000_sms_snapshot_group_window_v1406` oznaczona jako wykonana przez właściciela (SQL Editor 02.11.2026, potwierdzona SELECT).
+
 ## 14.06
 - Moduł SMS (zgłoszenie właściciela 02.11.2026): zaznaczeni klienci (pojedynczo i grupowo) nie dostawali SMS-a, na ekranie „SMS dla tej grupy klienta został już wysłany.”
 - Przyczyna 1 (lista): grupa przypomnień klienta obejmuje terminy od pierwszego terminu do +62 dni. Klient DROB-STEEL ma dwa urządzenia (terminy 30.08 i 02.10); SMS wysłany 31.08 objął oba, więc serwer słusznie odmawia. Snapshot `admin_get_sms_module_snapshot` zwracał jednak tylko wpisy z terminem z ostatnich 62 dni — od 01.11 wpis z 30.08 wypadł i lista pokazała klienta jako „do wysłania”.

@@ -161,6 +161,8 @@ export function getRotensoModelFamilyFromValue(value = '') {
 
 const ROTENSO_SHARED_SINGLE_FAMILY_GROUPS = Object.freeze([
   Object.freeze(['Teta', 'Teta Mirror']),
+  // 14.07 (decyzja właściciela 02.11.2026): JW Ukura H współpracuje z agregatami U i UH (np. U26/U35/U50, UH26/UH35).
+  Object.freeze(['Ukura', 'Ukura H']),
   Object.freeze(['Elis', 'Elis Silver']),
   Object.freeze(['Luve', 'Luve Black']),
   Object.freeze(['Luve Pro', 'Luve Pro Black']),
