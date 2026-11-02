@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.05",
+  "version": "14.06",
   "scope": "full",
-  "release_branch": "release/v14.05",
+  "release_branch": "release/v14.06",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie frontendu (mechanizm przeładowania aktualizacji); bez zmian bazy i service workera."
+    "notes": "02.11.2026: diagnoza SMS wyłącznie SELECT (sms_log, sms_reminder_groups, devices, contractors); żadnych zapisów."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.05",
+    "source_branch": "release/v14.06",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_FIRST_OPEN",
-    "evidence_source": "iPhone i komputer: pierwsze otwarcie po wdrożeniu, szybkie przejście do modułu — bez powrotu do pierwszego ekranu.",
-    "notes": "Efekt widoczny dopiero przy KOLEJNYM wdrożeniu po 14.05 (14.05 sama zostanie zainstalowana starym mechanizmem)."
+    "result": "EXTERNAL_SMS_SEND_SELECTED",
+    "evidence_source": "Komputer: wysyłka do B. Merty i Sklepu Hamerlik; DROB-STEEL poza listą.",
+    "notes": ""
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.05: controllerchange bez zbędnego przeładowania + powrót do modułu",
-    "release_ci": "WAWIS PR checks + smoke v1405 + E2E update-reload-position-v1405",
-    "postdeploy": "Oczekuje: Vercel READY/14.05."
+    "code": "14.06: snapshot SMS z oknem grup + wysyłka zaznaczonych bez przerywania",
+    "release_ci": "WAWIS PR checks + smoke v1406 (PGlite stary/nowy snapshot)",
+    "postdeploy": "Kolejność: migracja (właściciel) → SELECT → ready_for_main → merge → Vercel 14.06."
   }
 }

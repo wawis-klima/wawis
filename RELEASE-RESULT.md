@@ -1,9 +1,11 @@
-# RELEASE RESULT — WAWIS 14.05
+# RELEASE RESULT — WAWIS 14.06
 
 ## Zakres
-- Brak zbędnego przeładowania po wymianie service workera, gdy strona jest już w najnowszej wersji.
-- Po koniecznym przeładowaniu powrót do modułu użytkownika (telefon i komputer); strażniki ról bez zmian.
+- SMS: klient objęty już wysłanym SMS-em grupy nie jest pokazywany jako „do wysłania” (snapshot zwraca wpisy aktywnych grup).
+- Wysyłka zaznaczonych: odmowa jednego klienta nie zatrzymuje pozostałych; lista odrzuconych z powodem.
 
-## Uwaga
-- Sama instalacja 14.05 przebiegnie jeszcze starym mechanizmem (jedno przeładowanie). Poprawa działa od kolejnego wdrożenia.
-- Obszar chroniony (aktualizacja / service worker): pełny Closure Gate, test na iPhonie po wdrożeniu.
+## Kolejność
+1. Migracja `20261102090000_sms_snapshot_group_window_v1406.sql` (właściciel, SQL Editor; tylko odczytowa funkcja) i kontrola SELECT.
+2. CI, scalenie, Vercel 14.06.
+
+Kod 14.06 działa poprawnie także przed migracją (pozostali klienci są wysyłani); migracja usuwa z listy klientów już objętych SMS-em.

@@ -137,7 +137,8 @@
     "supabase/migrations/20261030120000_service_visit_trash_guard_photo_delete_v1399.sql",
     "supabase/migrations/20261031150000_service_visit_purge_service_role_v1401.sql",
     "supabase/migrations/20261031160000_service_visit_photo_delete_like_jobs_v1403.sql",
-    "supabase/migrations/20261031200000_service_visit_partial_checklist_v1404.sql"
+    "supabase/migrations/20261031200000_service_visit_partial_checklist_v1404.sql",
+    "supabase/migrations/20261102090000_sms_snapshot_group_window_v1406.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
