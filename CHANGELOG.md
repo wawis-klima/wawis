@@ -1,3 +1,8 @@
+## 14.10
+- Skaner naklejki QR (zgłoszenie właściciela 02.11.2026 16:45, zrzut z iPhone'a): okno było przezroczyste nad kreatorem urządzeń (napisy kreatora prześwitywały), duże napisy i przyciski, ciemny ekran — „nie w naszym stylu”.
+- Nowy wygląd w stylu kreatora urządzeń: biały, nieprzezroczysty arkusz nad kreatorem (własna warstwa, z-index 16000), mały nagłówek i link „Zamknij”, jasny podgląd przed włączeniem aparatu (ikona i opis), ramka z narożnikami zamiast grubego kwadratu, kompaktowe przyciski („Zrób zdjęcie”, „Zatwierdź”) i pole numeru. Własne klasy zamiast globalnych `.card/.modal/.btn`. To samo dla okna zeskanowanej naklejki.
+- Test E2E (Chromium i WebKit): okno nieprzezroczyste i na wierzchu, nagłówek ≤ 18 px, przyciski ≤ 15 px i ≤ 50 px wysokości, mieści się w ekranie.
+
 ## 14.09
 - Naklejki QR (prośba właściciela 02.11.2026 po teście 14.08): miejsce dla pracowników przy dodawaniu urządzeń.
 - Kreator „Dodaj urządzenie” (krok 2 z 4): kompaktowa karta „Naklejka QR · opcjonalnie” z przyciskiem „Zeskanuj” (Single pod tabliczkami JZ/JW, Multi — jedna na cały zestaw). Naklejka sprawdzana od razu (obca, zajęta, wybrana dla innego urządzenia — komunikat), przypisywana po „Zapisz urządzenia i tabliczki”; nieudane przypisanie nie blokuje zapisu urządzeń i zdjęć. Podsumowanie (krok 4): „QR: …” albo „Bez naklejki QR”. Przygotowane do późniejszego włączenia wymagania (na razie opcjonalna).

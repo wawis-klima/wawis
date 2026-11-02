@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## QR-SCANNER-LOOK-1410 — wygląd skanera naklejki (02.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QSL-1410-OVERLAY | FIXED-UNVERIFIED | Zrzut właściciela: okno skanera przezroczyste nad kreatorem. Własna warstwa i biały arkusz; E2E `elementFromPoint` na tytule i kolor tła. |
+| QSL-1410-SIZE | FIXED-UNVERIFIED | Duże napisy/przyciski z globalnych stylów. Własne klasy; E2E rozmiarów; podgląd statyczny z CSS aplikacji (Chromium). |
+| QSL-1410-LIVE | EXTERNAL | iPhone: wygląd skanera z włączonym aparatem. |
+
 ## QR-STICKERS-1409 — naklejka w kreatorze, przenumerowanie urządzeń (02.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

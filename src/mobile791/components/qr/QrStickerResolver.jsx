@@ -34,16 +34,16 @@ export default function QrStickerResolver({ code, supabase, isAdmin, onOpenJob, 
   }
 
   return (
-    <AppModal open={Boolean(code)} onClose={onClose} contentClassName="card modal qrScannerModal">
+    <AppModal open={Boolean(code)} onClose={onClose} overlayClassName="qrScannerOverlay" contentClassName="qrScannerModal">
       <div className="qrResolverCard" data-testid="qr-sticker-resolver">
         <div className="qrScannerHead">
           <h3>Naklejka {label || 'QR'}</h3>
-          <button type="button" className="btn qrScannerClose" onClick={onClose}>Zamknij</button>
+          <button type="button" className="qrScannerLink" onClick={onClose}>Zamknij</button>
         </div>
         {state.loading ? <p className="qrScannerHint">Sprawdzam naklejkę…</p> : null}
-        {state.error ? <div className="errorBox" role="alert">{state.error}</div> : null}
+        {state.error ? <div className="qrScannerError" role="alert">{state.error}</div> : null}
         {!state.loading && !state.error && (result.status === 'unknown' || result.status === 'invalid') ? (
-          <div className="errorBox" role="alert">To nie jest naklejka WAWIS albo numer jest nieprawidłowy.</div>
+          <div className="qrScannerError" role="alert">To nie jest naklejka WAWIS albo numer jest nieprawidłowy.</div>
         ) : null}
         {!state.loading && result.status === 'free' ? (
           <>
@@ -63,11 +63,11 @@ export default function QrStickerResolver({ code, supabase, isAdmin, onOpenJob, 
               {device.serial_number ? <><dt>Nr seryjny</dt><dd>{device.serial_number}</dd></> : null}
               {device.installation_date ? <><dt>Montaż</dt><dd>{String(device.installation_date).split('-').reverse().join('.')}</dd></> : null}
             </dl>
-            {openError ? <div className="errorBox" role="alert">{openError}</div> : null}
+            {openError ? <div className="qrScannerError" role="alert">{openError}</div> : null}
             <div className="qrResolverActions">
-              {device.job_id ? <button type="button" className="btn primary" onClick={openJob}>Otwórz montaż</button> : null}
+              {device.job_id ? <button type="button" className="qrScanBtn primary" onClick={openJob}>Otwórz montaż</button> : null}
               {isAdmin && device.contractor_id && onOpenDevices ? (
-                <button type="button" className={device.job_id ? 'btn' : 'btn primary'} onClick={() => { onOpenDevices(device); onClose?.(); }}>
+                <button type="button" className={device.job_id ? 'qrScanBtn' : 'qrScanBtn primary'} onClick={() => { onOpenDevices(device); onClose?.(); }}>
                   Urządzenia i przeglądy klienta
                 </button>
               ) : null}
