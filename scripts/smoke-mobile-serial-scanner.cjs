@@ -233,6 +233,20 @@ assert.match(e2eSource, /toBeDisabled/);
     indoorModel: 'Rotenso Ukura 3,5 kW U35Xi R17',
   })?.message.includes('Niezgodny zestaw Single'), true, 'Wyjątek Teta/Teta Mirror nie może osłabić blokady innych rodzin');
 
+  // 14.07: Ukura i Ukura H to zgodne zestawy (zgłoszenie właściciela 02.11.2026).
+  for (const [outdoorModel, indoorModel, outdoorFamily, indoorFamily] of [
+    ['Rotenso Ukura 3,5 kW U35Xo R17', 'UH35Xi', 'Ukura', 'Ukura H'],
+    ['U26Xo R17', 'UH26Xi', '', ''],
+    ['U50Xo R17', 'UH35Xi', 'Ukura', 'Ukura H'],
+    ['UH35Xo', 'U35Xi R17', 'Ukura H', 'Ukura'],
+  ]) {
+    assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({ outdoorModel, indoorModel, outdoorFamily, indoorFamily }), null,
+      `Ukura/Ukura H musi być zgodna: ${outdoorModel} + ${indoorModel}`);
+  }
+  assert.equal(rotensoCatalog.getSingleSplitModelFamilyMismatch({
+    outdoorModel: 'Rotenso Imoto 3,5 kW I35Xo R14', indoorModel: 'UH35Xi', indoorFamily: 'Ukura H',
+  })?.message.includes('Niezgodny zestaw Single'), true, 'Wyjątek Ukura/Ukura H nie osłabia blokady innych rodzin');
+
   assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('EO35Xo R19'), ['Elis', 'Elis Silver']);
   assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('LO35Xo R19'), ['Luve', 'Luve Black']);
   assert.deepEqual(rotensoCatalog.getRotensoModelFamilyCandidatesFromValue('LOP35Xo R19'), ['Luve Pro', 'Luve Pro Black']);
