@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { describeQrRealignment, preserveQrStickersAroundDeviceRemoval } from "../modules/qr-stickers.js";
 import {
   ADMIN_NOTE_DELETE_ERROR_MESSAGE,
   COMMENT_DELETE_ERROR_MESSAGE,
@@ -221,19 +222,27 @@ export function useSelectedJobActions({
     openConfirmDialog({
       variant: "delete",
       title: `Usunąć urządzenie ${normalizedDeviceIndex}?`,
-      message: `Usunięte zostaną dane urządzenia ${normalizedDeviceIndex} oraz jego tabliczki JZ/JW. Pozostałe urządzenia zostaną poprawnie przenumerowane. Tej operacji nie można cofnąć.`,
+      message: `Usunięte zostaną dane urządzenia ${normalizedDeviceIndex} oraz jego tabliczki JZ/JW. Pozostałe urządzenia zostaną poprawnie przenumerowane. Naklejka QR usuwanego urządzenia zostanie zwolniona, a naklejki pozostałych urządzeń przeniesione razem z nimi. Tej operacji nie można cofnąć.`,
       confirmLabel: "Usuń urządzenie",
       onConfirm: async () => {
         setBusy(true);
         try {
           return await runConfirmAction(async () => {
-            const result = await deleteJobDeviceRecord({
+            // 14.09: naklejki QR zostają przy tych samych fizycznych urządzeniach po przenumerowaniu.
+            const { result, qr } = await preserveQrStickersAroundDeviceRemoval({
               supabase,
-              supabaseUrl,
-              job,
-              deviceIndex: normalizedDeviceIndex,
-              isAdmin,
+              jobId: job.id,
+              removedIndex: normalizedDeviceIndex,
+              run: () => deleteJobDeviceRecord({
+                supabase,
+                supabaseUrl,
+                job,
+                deviceIndex: normalizedDeviceIndex,
+                isAdmin,
+              }),
             });
+            const qrNote = describeQrRealignment(qr);
+            if (qrNote) alert(qrNote);
 
             const patchJob = (current) => {
               if (!current || String(current.id) !== String(job.id)) return current;

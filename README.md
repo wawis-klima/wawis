@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.08
+- 14.09
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.09` — naklejka QR w kreatorze urządzeń (krok 2, opcjonalna, jedna na zestaw multi), kompaktowa linia w karcie montażu, naklejki zostają przy właściwych urządzeniach po usunięciu urządzenia z montażu. Bez zmian bazy.
 - wersja `14.08` — naklejki QR urządzeń: przypisanie przy montażu (opcjonalne, pracownik i administrator) i w Urządzeniach (administrator), skan aparatem iPhone'a otwiera montaż; jedna naklejka na urządzenie (multi = jedna). Migracja `20261102160000` wykonywana przez właściciela.
 - wersja `14.07` — zgodność zestawu: Ukura H z agregatem Ukura (i odwrotnie) nie wywołuje już ostrzeżenia „Niezgodny zestaw Single”; inne pary rodzin nadal ostrzegają.
 - wersja `14.06` — SMS: klient objęty już wysłanym SMS-em grupy (drugie urządzenie w oknie 62 dni) nie jest pokazywany jako „do wysłania” (snapshot zwraca wpisy aktywnych grup; migracja `20261102090000` tylko odczytowa, wykonywana przez właściciela); wysyłka zaznaczonych nie zatrzymuje się na pierwszej odmowie — pozostali klienci dostają SMS, odrzuceni są wymienieni z powodem.

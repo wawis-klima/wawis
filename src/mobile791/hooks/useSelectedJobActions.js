@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { assignPendingJobQrStickers, describeQrRealignment, preserveQrStickersAroundDeviceRemoval } from "../../modules/qr-stickers.js";
 import {
   ADMIN_NOTE_DELETE_ERROR_MESSAGE,
   COMMENT_DELETE_ERROR_MESSAGE,
@@ -582,6 +583,25 @@ export function useSelectedJobActions({
       }
       logDiagnostic('nameplate.save.record.completed', { jobId: editingJobId, operationId });
 
+      // 14.09: naklejki QR zeskanowane w kreatorze — po zapisie urządzeń (wiersze urządzeń już istnieją).
+      // Nieudane przypisanie nie blokuje zapisu urządzeń i tabliczek.
+      let qrNote = '';
+      if (form.pending_qr_stickers && Object.keys(form.pending_qr_stickers).length) {
+        const qrOutcome = await assignPendingJobQrStickers({ supabase, jobId: editingJobId, pending: form.pending_qr_stickers });
+        logDiagnostic('qr.sticker.pending.assigned', { jobId: editingJobId, assigned: qrOutcome.assigned.length, failed: qrOutcome.failures.length });
+        if (qrOutcome.assigned.length) {
+          setJobForm?.((prev) => {
+            const next = { ...(prev.pending_qr_stickers || {}) };
+            qrOutcome.assigned.forEach(({ index }) => { delete next[index]; });
+            return { ...prev, pending_qr_stickers: next };
+          });
+        }
+        if (qrOutcome.failures.length) {
+          qrNote = `Naklejki QR nie przypisano: ${qrOutcome.failures.map((item) => `Urządzenie ${item.index + 1} — ${item.message}`).join(' | ')} Możesz przypisać ją w karcie montażu.`;
+        }
+      }
+      if (qrNote) alert(qrNote);
+
       // Tożsamość i docelowa ścieżka muszą być znane przed rozpoczęciem oczekiwania
       // na upload. Dzięki temu timeout może potwierdzić dokładnie nowy plik, a nie
       // starszą tabliczkę tej samej JW/JZ.
@@ -744,19 +764,27 @@ export function useSelectedJobActions({
     openConfirmDialog({
       variant: "delete",
       title: `Usunąć urządzenie ${normalizedDeviceIndex}?`,
-      message: `Usunięte zostaną dane urządzenia ${normalizedDeviceIndex} oraz jego tabliczki JZ/JW. Pozostałe urządzenia zostaną poprawnie przenumerowane. Tej operacji nie można cofnąć.`,
+      message: `Usunięte zostaną dane urządzenia ${normalizedDeviceIndex} oraz jego tabliczki JZ/JW. Pozostałe urządzenia zostaną poprawnie przenumerowane. Naklejka QR usuwanego urządzenia zostanie zwolniona, a naklejki pozostałych urządzeń przeniesione razem z nimi. Tej operacji nie można cofnąć.`,
       confirmLabel: "Usuń urządzenie",
       onConfirm: async () => {
         setBusy(true);
         try {
           return await runConfirmAction(async () => {
-            const result = await deleteJobDeviceRecord({
+            // 14.09: naklejki QR zostają przy tych samych fizycznych urządzeniach po przenumerowaniu.
+            const { result, qr } = await preserveQrStickersAroundDeviceRemoval({
               supabase,
-              supabaseUrl,
-              job,
-              deviceIndex: normalizedDeviceIndex,
-              isAdmin,
+              jobId: job.id,
+              removedIndex: normalizedDeviceIndex,
+              run: () => deleteJobDeviceRecord({
+                supabase,
+                supabaseUrl,
+                job,
+                deviceIndex: normalizedDeviceIndex,
+                isAdmin,
+              }),
             });
+            const qrNote = describeQrRealignment(qr);
+            if (qrNote) alert(qrNote);
 
             const patchJob = (current) => {
               if (!current || String(current.id) !== String(job.id)) return current;

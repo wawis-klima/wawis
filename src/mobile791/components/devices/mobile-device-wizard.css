@@ -1286,3 +1286,35 @@
   background: #cfe0f7 !important;
   color: #1f3b57 !important;
 }
+
+/* 14.09: naklejka QR w kreatorze — kompaktowa karta w stylu tabliczek */
+.mobileDeviceQrCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px dashed #c9d3e3;
+  border-radius: 14px;
+  background: #fff;
+}
+.mobileDeviceQrCard.ready { border-style: solid; border-color: #bbf7d0; background: #f0fdf4; }
+.mobileDeviceQrText { display: grid; gap: 2px; min-width: 0; }
+.mobileDeviceQrText strong { font-size: 13px; line-height: 1.2; color: #10203a; }
+.mobileDeviceQrText strong small { margin-left: 4px; font-size: 11px; font-weight: 600; color: #64748b; }
+.mobileDeviceQrText span { font-size: 12px; line-height: 1.25; color: #475569; overflow-wrap: anywhere; }
+.mobileDeviceQrCard.ready .mobileDeviceQrText span { color: #166534; font-weight: 700; }
+.mobileDeviceQrActions { display: flex; flex: 0 0 auto; gap: 6px; }
+.mobileDeviceQrBtn {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.mobileDeviceQrBtn.subtle { border-color: #cbd5e1; background: #fff; color: #334155; }
+.mobileDeviceOverviewText small.mobileDeviceOverviewQr { margin-top: 4px; font-size: 11px; color: #475569; }

@@ -2,12 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react';
 import QrStickerScanner from './QrStickerScanner.jsx';
 import {
   assignQrStickerToDevice, assignQrStickerToJobDevice, describeQrAssignFailure, describeQrDevice,
-  formatQrStickerCode, isOnline, loadJobQrStickers, unassignQrSticker,
+  formatQrStickerCode, isOnline, loadJobQrStickers, QR_STICKERS_CHANGED_EVENT, unassignQrSticker,
 } from '../../../modules/qr-stickers.js';
 
 // WAWIS 14.08: naklejka QR przy urządzeniu montażu. Opcjonalna — nie blokuje zakończenia zlecenia.
 
-export function useJobQrStickers({ supabase, jobId, enabled = true }) {
+export function useJobQrStickers({ supabase, jobId, enabled = true, refreshKey = '' }) {
   const [stickers, setStickers] = useState({});
   const [available, setAvailable] = useState(true);
   const reload = useCallback(async () => {
@@ -22,8 +22,19 @@ export function useJobQrStickers({ supabase, jobId, enabled = true }) {
   }, [supabase, jobId, enabled]);
   useEffect(() => {
     setStickers({});
+  }, [jobId]);
+  // 14.09: odświeżenie także po zapisie urządzeń (naklejki z kreatora) — bez czyszczenia widoku.
+  useEffect(() => {
     reload();
-  }, [reload]);
+  }, [reload, refreshKey]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handler = (event) => {
+      if (!event?.detail?.jobId || String(event.detail.jobId) === String(jobId)) reload();
+    };
+    window.addEventListener(QR_STICKERS_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(QR_STICKERS_CHANGED_EVENT, handler);
+  }, [reload, jobId]);
   return { stickers, available, reload, setStickers };
 }
 
@@ -32,16 +43,16 @@ export function JobDeviceQrStickerRow({ code, canAssign, isAdmin, busy, onAssign
   return (
     <div className={`qrStickerRow${label ? ' assigned' : ''}`} data-testid="job-device-qr-sticker">
       <div className="qrStickerLabel">
-        {label ? <strong>Naklejka QR: {label}</strong> : <strong>Naklejka QR: brak</strong>}
-        <small>{label ? 'Zeskanowanie naklejki otworzy to urządzenie.' : 'Opcjonalnie — przyklej naklejkę i zeskanuj.'}</small>
+        <strong>{label ? `Naklejka QR: ${label}` : 'Naklejka QR: brak'}</strong>
+        {!label ? <small>opcjonalnie</small> : null}
       </div>
       {!label && canAssign ? (
-        <button type="button" className="btn primary" disabled={busy} onClick={onAssign}>Przypisz naklejkę QR</button>
+        <button type="button" className="btn qrStickerBtn" disabled={busy} onClick={onAssign}>Przypisz naklejkę QR</button>
       ) : null}
       {label && isAdmin ? (
         <span className="qrStickerAdminActions">
-          <button type="button" className="btn" disabled={busy} onClick={onAssign}>Wymień</button>{' '}
-          <button type="button" className="btn" disabled={busy} onClick={onUnassign}>Zwolnij</button>
+          <button type="button" className="btn qrStickerBtn" disabled={busy} onClick={onAssign}>Wymień</button>
+          <button type="button" className="btn qrStickerBtn" disabled={busy} onClick={onUnassign}>Zwolnij</button>
         </span>
       ) : null}
       {message ? <div className={`qrStickerMessage ${message.ok ? 'ok' : 'err'}`} role="status">{message.text}</div> : null}

@@ -22,6 +22,9 @@ import {
 } from "../../modules/contractors.js";
 import NameplatePhotoCapture from "../nameplate/NameplatePhotoCapture.jsx";
 import MobileDeviceWizard from "../devices/MobileDeviceWizard.jsx";
+import QrStickerScanner from "../qr/QrStickerScanner.jsx";
+import "../qr/QrStickerScanner.css";
+import { loadJobQrStickers, validateWizardQrSticker } from "../../../modules/qr-stickers.js";
 
 
 // iOS can paint the native date text too high. Keep the system date picker
@@ -129,6 +132,40 @@ export default function JobFormModal({
   );
 
   const existingNameplatePhotos = Array.isArray(jobForm.existing_nameplate_photos) ? jobForm.existing_nameplate_photos : [];
+
+  // 14.09: naklejki QR w kreatorze urządzeń. Zapisane = z serwera (numer urządzenia od 0),
+  // oczekujące = zeskanowane teraz, przypisywane po zapisaniu urządzeń (useSelectedJobActions.saveEditedJob).
+  const [qrSaved, setQrSaved] = useState({});
+  const [qrEnabled, setQrEnabled] = useState(false);
+  const [qrScanIndex, setQrScanIndex] = useState(null);
+  const pendingQrStickers = jobForm.pending_qr_stickers && typeof jobForm.pending_qr_stickers === 'object' ? jobForm.pending_qr_stickers : {};
+  useEffect(() => {
+    if (!showModal || !serialOnlyMode || !editingJobId || !supabase) {
+      setQrEnabled(false);
+      setQrSaved({});
+      return undefined;
+    }
+    let active = true;
+    setQrEnabled(true);
+    loadJobQrStickers({ supabase, jobId: editingJobId })
+      .then((map) => {
+        if (!active) return;
+        setQrSaved(Object.fromEntries(Object.entries(map).map(([index, code]) => [Number(index) - 1, code])));
+      })
+      .catch((error) => {
+        // Brak modułu w bazie — karta ukryta. Brak sieci — karta zostaje (skan i tak wymaga internetu).
+        if (active && /nie są jeszcze włączone/.test(String(error?.message || ''))) setQrEnabled(false);
+      });
+    return () => { active = false; };
+  }, [showModal, serialOnlyMode, editingJobId, supabase]);
+
+  function setPendingQrSticker(deviceIndex, code) {
+    setJobForm((prev) => {
+      const next = { ...(prev.pending_qr_stickers || {}) };
+      if (code) next[deviceIndex] = code; else delete next[deviceIndex];
+      return { ...prev, pending_qr_stickers: next };
+    });
+  }
 
   function handleClose() {
     closeJobModal({ busy });
@@ -261,9 +298,15 @@ export default function JobFormModal({
             documentationLabel: `Tabliczka ${unitLabel} • urządzenie ${currentIndex}`,
           };
         });
+      // 14.09: zeskanowane naklejki przesuwają się razem z urządzeniami.
+      const pendingQr = Object.fromEntries(Object.entries(prev.pending_qr_stickers || {})
+        .map(([key, code]) => [Number(key), code])
+        .filter(([key]) => key !== index)
+        .map(([key, code]) => [key > index ? key - 1 : key, code]));
       return {
         ...applyDeviceRows(prev, nextRows.length ? nextRows : [createEmptyJobDevice()]),
         pending_nameplate_photos: pendingDocuments,
+        pending_qr_stickers: pendingQr,
       };
     });
   }
@@ -702,6 +745,22 @@ export default function JobFormModal({
           onRemoveIndoorUnit={removeIndoorUnit}
           onPhotoSelect={(deviceIndex, unitRef, file, reading) => applyNameplatePhoto(deviceIndex, unitRef, file, reading)}
           onPhotoRemove={removePendingNameplatePhoto}
+          qr={qrEnabled ? { enabled: true, saved: qrSaved, pending: pendingQrStickers, required: false } : null}
+          onScanQr={(deviceIndex) => setQrScanIndex(deviceIndex)}
+          onClearQr={(deviceIndex) => setPendingQrSticker(deviceIndex, '')}
+        />
+        <QrStickerScanner
+          open={qrScanIndex !== null}
+          title={`Naklejka QR — Urządzenie ${Number(qrScanIndex) + 1}`}
+          description="Przyklej naklejkę na urządzeniu i zeskanuj kod. Naklejka przypisze się po zapisaniu urządzeń."
+          onCode={async (code) => {
+            const checked = await validateWizardQrSticker({
+              supabase, code, deviceIndex: qrScanIndex, savedStickers: qrSaved, pendingStickers: pendingQrStickers,
+            });
+            setPendingQrSticker(qrScanIndex, checked.already ? '' : checked.code);
+            setQrScanIndex(null);
+          }}
+          onClose={() => setQrScanIndex(null)}
         />
       </AppModal>
     );

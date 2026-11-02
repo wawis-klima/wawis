@@ -32,6 +32,7 @@ export default defineConfig({
     'mobile-protocol-signature-offline-v1377.spec.js',
     'mobile-protocol-record-unknown-v1378.spec.js',
     'qr-stickers-v1408.spec.js',
+    'qr-stickers-wizard-v1409.spec.js',
   ],
   timeout: 240_000,
   expect: { timeout: 15_000 },

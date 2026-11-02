@@ -318,7 +318,7 @@ export default function JobDetailsPanel({
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
   // 14.08: naklejki QR urządzeń (opcjonalne, wymagają internetu).
-  const jobQr = useJobQrStickers({ supabase, jobId: selectedJobId, enabled: Boolean(selectedJobId) && !selectedJob?.offline_pending });
+  const jobQr = useJobQrStickers({ supabase, jobId: selectedJobId, enabled: Boolean(selectedJobId) && !selectedJob?.offline_pending, refreshKey: `${selectedJob?.updated_at || ''}|${selectedJob?.device_model || ''}|${selectedJob?.detailsLoaded ? 1 : 0}` });
   const [qrScanTarget, setQrScanTarget] = React.useState(null);
   const [qrMessage, setQrMessage] = React.useState(null);
   const [qrBusy, setQrBusy] = React.useState(false);
