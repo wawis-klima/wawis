@@ -1,0 +1,38 @@
+/* WAWIS 14.08 — skaner i karta naklejki QR */
+.qrScannerModal { width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; display: grid; gap: 12px; }
+.qrScannerHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.qrScannerHead h3 { margin: 0; font-size: 19px; }
+.qrScannerClose { min-height: 40px; }
+.qrScannerHint { margin: 0; color: #4b5b73; font-size: 14px; line-height: 1.35; }
+.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; background: #0f172a; }
+.qrScannerViewport video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.qrScannerViewport.unavailable video, .qrScannerViewport.idle video { visibility: hidden; }
+.qrScannerFrame { position: absolute; inset: 22%; border: 3px solid rgba(255,255,255,.92); border-radius: 14px; box-shadow: 0 0 0 999px rgba(15,23,42,.35); pointer-events: none; }
+.qrScannerOverlayText { position: absolute; inset: 0; display: grid; place-items: center; color: #e2e8f0; font-weight: 600; text-align: center; padding: 16px; }
+.qrScannerStatus { background: #eef6ff; border: 1px solid #bfdbfe; color: #1e3a8a; border-radius: 12px; padding: 10px 12px; font-weight: 600; }
+.qrScannerActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.qrScannerActions .btn { flex: 1 1 160px; min-height: 44px; }
+.qrScannerManual { display: grid; gap: 6px; }
+.qrScannerManual label { font-size: 14px; font-weight: 600; color: #10203a; }
+.qrScannerManualRow { display: flex; gap: 8px; }
+.qrScannerManualRow .input { flex: 1 1 auto; min-width: 0; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; }
+.qrScannerManualRow .btn { flex: 0 0 auto; min-height: 44px; }
+
+.qrStickerRow { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 10px 12px; border: 1px dashed #c7d2e3; border-radius: 12px; background: #f8fafc; }
+.qrStickerRow.assigned { border-style: solid; border-color: #bbf7d0; background: #f0fdf4; }
+.qrStickerLabel { display: grid; gap: 2px; min-width: 0; }
+.qrStickerLabel strong { font-size: 15px; letter-spacing: .04em; }
+.qrStickerLabel small { color: #5b6b82; font-size: 12.5px; }
+.qrStickerRow .btn { min-height: 40px; }
+.qrStickerBadge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 12px; font-weight: 700; letter-spacing: .03em; }
+.qrStickerMessage { margin-top: 8px; font-size: 13.5px; }
+.qrStickerMessage.ok { color: #166534; }
+.qrStickerMessage.err { color: #b91c1c; }
+
+.qrResolverCard { display: grid; gap: 10px; }
+.qrResolverCard h3 { margin: 0; }
+.qrResolverCard dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14.5px; }
+.qrResolverCard dt { color: #5b6b82; }
+.qrResolverCard dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.qrResolverActions { display: grid; gap: 8px; }
+.qrResolverActions .btn { min-height: 44px; }

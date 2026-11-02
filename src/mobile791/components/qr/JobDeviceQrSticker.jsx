@@ -1,0 +1,85 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import QrStickerScanner from './QrStickerScanner.jsx';
+import {
+  assignQrStickerToDevice, assignQrStickerToJobDevice, describeQrAssignFailure, describeQrDevice,
+  formatQrStickerCode, isOnline, loadJobQrStickers, unassignQrSticker,
+} from '../../../modules/qr-stickers.js';
+
+// WAWIS 14.08: naklejka QR przy urządzeniu montażu. Opcjonalna — nie blokuje zakończenia zlecenia.
+
+export function useJobQrStickers({ supabase, jobId, enabled = true }) {
+  const [stickers, setStickers] = useState({});
+  const [available, setAvailable] = useState(true);
+  const reload = useCallback(async () => {
+    if (!supabase || !jobId || !enabled || !isOnline()) return;
+    try {
+      setStickers(await loadJobQrStickers({ supabase, jobId }));
+      setAvailable(true);
+    } catch {
+      // Brak funkcji w bazie (przed migracją) albo chwilowy błąd sieci — sekcja ukryta, montaż działa normalnie.
+      setAvailable(false);
+    }
+  }, [supabase, jobId, enabled]);
+  useEffect(() => {
+    setStickers({});
+    reload();
+  }, [reload]);
+  return { stickers, available, reload, setStickers };
+}
+
+export function JobDeviceQrStickerRow({ code, canAssign, isAdmin, busy, onAssign, onUnassign, message }) {
+  const label = formatQrStickerCode(code);
+  return (
+    <div className={`qrStickerRow${label ? ' assigned' : ''}`} data-testid="job-device-qr-sticker">
+      <div className="qrStickerLabel">
+        {label ? <strong>Naklejka QR: {label}</strong> : <strong>Naklejka QR: brak</strong>}
+        <small>{label ? 'Zeskanowanie naklejki otworzy to urządzenie.' : 'Opcjonalnie — przyklej naklejkę i zeskanuj.'}</small>
+      </div>
+      {!label && canAssign ? (
+        <button type="button" className="btn primary" disabled={busy} onClick={onAssign}>Przypisz naklejkę QR</button>
+      ) : null}
+      {label && isAdmin ? (
+        <span className="qrStickerAdminActions">
+          <button type="button" className="btn" disabled={busy} onClick={onAssign}>Wymień</button>{' '}
+          <button type="button" className="btn" disabled={busy} onClick={onUnassign}>Zwolnij</button>
+        </span>
+      ) : null}
+      {message ? <div className={`qrStickerMessage ${message.ok ? 'ok' : 'err'}`} role="status">{message.text}</div> : null}
+    </div>
+  );
+}
+
+/** Okno skanera dla urządzenia montażu: przypisanie, a dla administratora także wymiana i przepisanie. */
+export function JobDeviceQrScanner({ supabase, jobId, target, isAdmin, onClose, onAssigned }) {
+  const deviceIndex = target?.deviceIndex || 0;
+  const currentCode = target?.currentCode || '';
+  async function handleCode(code) {
+    let result = await assignQrStickerToJobDevice({ supabase, code, jobId, deviceIndex });
+    if (!result?.ok && isAdmin && result?.can_replace && result?.target_device_id) {
+      const question = result.reason === 'device_has_sticker'
+        ? `Urządzenie ${deviceIndex} ma naklejkę ${formatQrStickerCode(result.existing_code)}.\n\nZastąpić ją naklejką ${formatQrStickerCode(code)}? Stara naklejka zostanie zwolniona.`
+        : `Naklejka ${formatQrStickerCode(code)} jest przypisana do: ${describeQrDevice(result.device || {})}.\n\nPrzepisać ją do Urządzenia ${deviceIndex}?`;
+      if (!window.confirm(question)) throw new Error('Anulowano — nic nie zmieniono.');
+      result = await assignQrStickerToDevice({ supabase, code, deviceId: result.target_device_id, replace: true });
+    }
+    if (!result?.ok) throw new Error(describeQrAssignFailure(result));
+    onAssigned?.(deviceIndex, result.code || code, Boolean(result.already));
+  }
+  return (
+    <QrStickerScanner
+      open={Boolean(target)}
+      title={`${currentCode ? 'Wymiana naklejki' : 'Naklejka QR'} — Urządzenie ${deviceIndex}`}
+      description={currentCode
+        ? `Obecna naklejka: ${formatQrStickerCode(currentCode)}. Zeskanuj nową naklejkę.`
+        : 'Przyklej naklejkę na urządzeniu i zeskanuj kod. Instalacja multi ma jedną naklejkę.'}
+      onCode={handleCode}
+      onClose={onClose}
+    />
+  );
+}
+
+export async function unassignJobDeviceQrSticker({ supabase, code }) {
+  const result = await unassignQrSticker({ supabase, code });
+  if (!result?.ok) throw new Error(describeQrAssignFailure(result));
+  return result;
+}

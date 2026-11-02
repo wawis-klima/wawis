@@ -10,6 +10,12 @@ import {
 import './ServiceAdminPanel.css';
 import ServiceExecutionPanel from './ServiceExecutionPanel.jsx';
 import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
+import QrStickerScanner from '../qr/QrStickerScanner.jsx';
+import '../qr/QrStickerScanner.css';
+import {
+  assignQrStickerToDevice, describeQrAssignFailure, describeQrDevice, formatQrStickerCode,
+  loadDeviceQrStickers, lookupQrSticker, unassignQrSticker,
+} from '../../../modules/qr-stickers.js';
 
 const TODAY = () => {
   const now = new Date();
@@ -70,7 +76,7 @@ function ServiceDateTimeFields({ date, time, onDateChange, onTimeChange, disable
   </div>;
 }
 
-export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
+export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCustomerRequest = null, onOpenJob = null }) {
   const [screen,setScreen] = useState('search');
   const [search,setSearch] = useState('');
   const [groups,setGroups] = useState([]);
@@ -92,6 +98,9 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
   const [refreshKey,setRefreshKey] = useState(0);
   const [visitHistory,setVisitHistory] = useState(null);
   const [returnScreen,setReturnScreen] = useState('visits');
+  // 14.08: naklejki QR urządzeń klienta.
+  const [deviceStickers,setDeviceStickers] = useState({});
+  const [qrScan,setQrScan] = useState(null); // { mode: 'find' } | { mode: 'assign', device }
 
   const staffName = useCallback(id => staff.find(p => p.id === id)?.full_name || (id ? 'Pracownik' : 'Bez przydziału'),[staff]);
   useEffect(() => {
@@ -133,8 +142,64 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         loadAdminServiceVisits({supabase,contractorId:group.id}),
       ]);
       setCustomer(group);setCustomerDevices(devices);setVisits(history);setScreen('customer');
+      refreshDeviceStickers(devices);
     } catch(err) { setError(friendlyError(err)); }
     finally {setBusy(false);}
+  }
+  async function refreshDeviceStickers(devices = customerDevices) {
+    setDeviceStickers({});
+    try { setDeviceStickers(await loadDeviceQrStickers({ supabase, deviceIds: devices.map(d => d.id) })); }
+    catch (_err) { /* przed migracją naklejek: sekcja bez kodów, reszta działa */ }
+  }
+  useEffect(() => {
+    if (!openCustomerRequest?.id || !isAdmin) return;
+    setScreen('search');
+    openCustomer(openCustomerRequest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openCustomerRequest?.nonce]);
+  async function handleScannedSticker(code) {
+    if (qrScan?.mode === 'assign') {
+      const device = qrScan.device;
+      let result = await assignQrStickerToDevice({ supabase, code, deviceId: device.id });
+      if (!result?.ok && result?.can_replace) {
+        const question = result.reason === 'device_has_sticker'
+          ? `To urządzenie ma naklejkę ${formatQrStickerCode(result.existing_code)}.\n\nZastąpić ją naklejką ${formatQrStickerCode(code)}? Stara naklejka zostanie zwolniona.`
+          : `Naklejka ${formatQrStickerCode(code)} jest przypisana do: ${describeQrDevice(result.device || {})}.\n\nPrzepisać ją do tego urządzenia?`;
+        if (!window.confirm(question)) throw new Error('Anulowano — nic nie zmieniono.');
+        result = await assignQrStickerToDevice({ supabase, code, deviceId: device.id, replace: true });
+      }
+      if (!result?.ok) throw new Error(describeQrAssignFailure(result));
+      setQrScan(null);
+      await refreshDeviceStickers();
+      setMessage(result.already ? `Naklejka ${formatQrStickerCode(code)} była już przypisana do tego urządzenia.` : `Przypisano naklejkę ${formatQrStickerCode(code)} do urządzenia ${device.model || ''}.`.replace(' .','.'));
+      return;
+    }
+    const result = await lookupQrSticker({ supabase, code });
+    if (result?.status === 'assigned') {
+      const device = result.device || {};
+      if (device.contractor_id) {
+        setQrScan(null);
+        await openCustomer({ id: device.contractor_id, name: device.contractor_name || device.client || 'Klient',
+          phone: device.contractor_phone || '', city: device.city || '', street: device.street || '' });
+        setMessage(`Naklejka ${formatQrStickerCode(code)}: ${describeQrDevice(device)}.`);
+        return;
+      }
+      if (device.job_id && onOpenJob?.(device.job_id) !== false) { setQrScan(null); return; }
+      throw new Error(`Naklejka ${formatQrStickerCode(code)} należy do: ${describeQrDevice(device)}, ale urządzenie nie ma przypisanego klienta.`);
+    }
+    if (result?.status === 'free') throw new Error(`Naklejka ${formatQrStickerCode(code)} jest wolna. Wyszukaj klienta, a potem przy urządzeniu wybierz „Przypisz naklejkę QR”.`);
+    throw new Error('To nie jest naklejka WAWIS.');
+  }
+  async function releaseSticker(code) {
+    if (!code || busy || !window.confirm(`Zwolnić naklejkę ${formatQrStickerCode(code)}? Będzie można przypisać ją do innego urządzenia.`)) return;
+    setBusy(true);setError('');setMessage('');
+    try {
+      const result = await unassignQrSticker({ supabase, code });
+      if (!result?.ok) throw new Error(describeQrAssignFailure(result));
+      await refreshDeviceStickers();
+      setMessage(`Naklejka ${formatQrStickerCode(code)} zwolniona.`);
+    } catch (err) { setError(friendlyError(err)); }
+    finally { setBusy(false); }
   }
   async function showVisits() {
     setBusy(true);setError('');setMessage('');
@@ -300,6 +365,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
     {error ? <div className="errorBox" role="alert">{error}</div> : null}
     {message ? <div className="serviceAdminNotice" role="status">{message}</div> : null}
     {screen==='search' ? <div className="card serviceAdminCard">
+      <button type="button" className="btn serviceAdminWide" onClick={()=>{setError('');setMessage('');setQrScan({mode:'find'});}} disabled={busy}>Skanuj naklejkę QR</button>
       <label htmlFor="service-device-search">Wyszukaj urządzenie lub klienta</label>
       <input id="service-device-search" className="input" type="search" autoComplete="off"
         value={search} onChange={e=>setSearch(e.target.value)}
@@ -321,7 +387,21 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         {customer.phone ? <a href={`tel:${customer.phone.replace(/[^\d+]/g,'')}`}>{customer.phone}</a> : null}
         <div className="serviceAdminSectionTitle">Urządzenia klienta ({customerDevices.length})</div>
         <div className="serviceAdminStack">{customerDevices.map(d=><DeviceItem key={d.id} device={d}
-          history={<DeviceHistory entries={buildServiceDeviceHistory({visits,deviceId:d.id,nameOf:id=>staff.find(p=>p.id===id)?.full_name})}/>}/>)}</div>
+          history={<>
+            <DeviceHistory entries={buildServiceDeviceHistory({visits,deviceId:d.id,nameOf:id=>staff.find(p=>p.id===id)?.full_name})}/>
+            <div className={`qrStickerRow${deviceStickers[d.id]?' assigned':''}`} data-testid="service-device-qr-sticker">
+              <div className="qrStickerLabel">
+                <strong>Naklejka QR: {deviceStickers[d.id] ? formatQrStickerCode(deviceStickers[d.id]) : 'brak'}</strong>
+              </div>
+              <span>
+                <button type="button" className={deviceStickers[d.id]?'btn':'btn primary'} disabled={busy}
+                  onClick={()=>{setError('');setMessage('');setQrScan({mode:'assign',device:{...d,currentCode:deviceStickers[d.id]||''}});}}>
+                  {deviceStickers[d.id] ? 'Wymień' : 'Przypisz naklejkę QR'}
+                </button>
+                {deviceStickers[d.id] ? <>{' '}<button type="button" className="btn" disabled={busy} onClick={()=>releaseSticker(deviceStickers[d.id])}>Zwolnij</button></> : null}
+              </span>
+            </div>
+          </>}/>)}</div>
         <button className="btn primary serviceAdminWide" type="button" onClick={startPlan} disabled={busy||customerDevices.length===0}>Zaplanuj przegląd</button>
         <div className="serviceAdminSectionTitle">Historia i umówione wizyty</div>
         {visits.length ? visits.map(v=><button className="serviceAdminVisitRow" type="button" key={v.id} onClick={()=>openVisit(v)}>
@@ -425,5 +505,13 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId }) {
         </>}
       </form>
     </> : null}
+    <QrStickerScanner
+      open={Boolean(qrScan)}
+      title={qrScan?.mode==='assign' ? (qrScan.device.currentCode ? 'Wymiana naklejki QR' : 'Przypisz naklejkę QR') : 'Skanuj naklejkę QR'}
+      description={qrScan?.mode==='assign'
+        ? `${qrScan.device.model || 'Urządzenie'}${qrScan.device.serial_number ? ' · SN '+qrScan.device.serial_number : ''}. ${qrScan.device.currentCode ? 'Obecna naklejka: '+formatQrStickerCode(qrScan.device.currentCode)+'.' : 'Przyklej naklejkę na urządzeniu i zeskanuj kod.'}`
+        : 'Zeskanuj naklejkę na urządzeniu, aby otworzyć klienta i historię przeglądów.'}
+      onCode={handleScannedSticker}
+      onClose={()=>setQrScan(null)}/>
   </section>;
 }

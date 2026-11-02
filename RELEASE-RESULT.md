@@ -1,7 +1,11 @@
-# RELEASE RESULT — WAWIS 14.07
+# RELEASE RESULT — WAWIS 14.08
 
 ## Zakres
-- Ukura H zgodna z agregatami Ukura i Ukura H — bez fałszywego ostrzeżenia „Niezgodny zestaw Single”.
-- Rejestr migracji: v1406 oznaczona jako wykonana (SELECT 02.11.2026).
+- Naklejki QR urządzeń: przypisanie przy montażu (opcjonalne) i w Urządzeniach (administrator), skan aparatem otwiera montaż / klienta.
+- Import 324 wydrukowanych kodów (partie 1 i 2).
 
-Bez zmian bazy danych.
+## Kolejność
+1. Migracja `20261102160000_qr_stickers_v1408.sql` (właściciel, SQL Editor) i kontrola SELECT.
+2. CI, scalenie, Vercel 14.08.
+
+Aplikacja przed migracją: sekcja naklejek ukryta, montaże działają bez zmian.

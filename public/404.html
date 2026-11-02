@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>WAWIS Klimatyzacja</title>
+<script>
+// WAWIS 14.08: naklejka QR (aparat iPhone'a) prowadzi pod /u/<KOD>. Statyczny hosting nie ma tej ścieżki,
+// więc przekazujemy kod do aplikacji jako ?qr=<KOD>. Inne nieistniejące adresy — zwykła strona „nie znaleziono”.
+(function () {
+  var match = String(location.pathname || '').match(/^\/u\/([0-9A-Za-z-]{8,9})\/?$/);
+  if (match) location.replace('/?qr=' + encodeURIComponent(match[1]));
+})();
+</script>
+<style>
+  body { margin: 0; font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; background: #f3f6fb; color: #10203a; display: grid; place-items: center; min-height: 100vh; }
+  main { background: #fff; border: 1px solid #d8e0ec; border-radius: 20px; padding: 24px; max-width: 360px; text-align: center; }
+  a { display: inline-block; margin-top: 12px; padding: 12px 18px; border-radius: 14px; background: #2563eb; color: #fff; text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Nie znaleziono strony</h1>
+  <p>Ten adres nie istnieje w aplikacji WAWIS.</p>
+  <a href="/">Otwórz aplikację</a>
+</main>
+</body>
+</html>

@@ -478,6 +478,108 @@ export function createMockSupabaseClient() {
     if (change) emitRealtime(change);
   }
 
+  // 14.08: naklejki QR — zachowanie zgodne z funkcjami SQL (tylko dane fikcyjne E2E).
+  function mockQrStickerRpc(name, payload = {}) {
+    if (!Array.isArray(store.qr_stickers)) {
+      store.qr_stickers = ['UYE8EYCQ', 'BNKJXZDY', 'CXFBEHEP'].map((code) => ({ code, device_id: null }));
+    }
+    const userId = restoreSession(store.users)?.user?.id || null;
+    const role = String(store.profiles.find((item) => item.id === userId)?.role || '').toLowerCase();
+    const isAdmin = role === 'administrator' || role === 'admin';
+    const isStaff = isAdmin || role === 'pracownik' || role === 'employee';
+    const denied = { data: null, error: { message: 'Brak uprawnień.', code: '42501' } };
+    if (!isStaff) return denied;
+    const normalize = (value) => {
+      const code = String(value || '').replace(/[\s-]/g, '').toUpperCase();
+      return /^[2-9A-HJKMNP-Z]{8}$/.test(code) ? code : null;
+    };
+    const deviceIndexOf = (device) => {
+      const match = String(device?.source_job_id || '').match(/::device-(\d+)$/);
+      return match ? Number(match[1]) : (device?.source_job_id ? 1 : null);
+    };
+    const info = (deviceId) => {
+      const device = store.devices.find((item) => item.id === deviceId) || {};
+      const jobId = String(device.source_job_id || '').split('::')[0] || null;
+      const job = store.jobs.find((item) => String(item.id) === jobId) || {};
+      return {
+        device_id: device.id, model: device.model, serial_number: device.serial_number,
+        installation_date: device.installation_date, job_id: job.id || null, device_index: deviceIndexOf(device),
+        contractor_id: device.contractor_id || null, contractor_name: device.contractor_name || null,
+        contractor_phone: device.contractor_phone || null,
+        client: job.client || device.contractor_name || null, city: job.city || device.contractor_city || null,
+        street: job.street || device.contractor_street || null,
+      };
+    };
+    const save = () => persistSharedStore({ table: 'qr_stickers', event: 'UPDATE', newRows: [], oldRows: [] });
+    const assign = (rawCode, deviceId, replace) => {
+      const code = normalize(rawCode);
+      if (!code) return { ok: false, reason: 'invalid_code' };
+      if (!store.devices.some((item) => item.id === deviceId)) return { ok: false, reason: 'device_not_found' };
+      const sticker = store.qr_stickers.find((item) => item.code === code);
+      if (!sticker) return { ok: false, reason: 'unknown_code', code };
+      if (sticker.device_id === deviceId) return { ok: true, code, device_id: deviceId, already: true };
+      const canReplace = isAdmin && Boolean(replace);
+      if (sticker.device_id && !canReplace) {
+        return { ok: false, reason: 'sticker_taken', code, target_device_id: deviceId, device: info(sticker.device_id), can_replace: isAdmin };
+      }
+      const existing = store.qr_stickers.find((item) => item.device_id === deviceId);
+      if (existing && !canReplace) {
+        return { ok: false, reason: 'device_has_sticker', code, existing_code: existing.code, target_device_id: deviceId, can_replace: isAdmin };
+      }
+      if (existing) existing.device_id = null;
+      const previous = sticker.device_id;
+      sticker.device_id = deviceId;
+      save();
+      return { ok: true, code, device_id: deviceId, replaced_code: existing?.code || null, previous_device_id: previous };
+    };
+    if (name === 'qr_sticker_lookup') {
+      const code = normalize(payload.p_code);
+      if (!code) return { data: { ok: true, status: 'invalid' }, error: null };
+      const sticker = store.qr_stickers.find((item) => item.code === code);
+      if (!sticker) return { data: { ok: true, status: 'unknown', code }, error: null };
+      if (!sticker.device_id) return { data: { ok: true, status: 'free', code }, error: null };
+      return { data: { ok: true, status: 'assigned', code, device: info(sticker.device_id) }, error: null };
+    }
+    if (name === 'qr_sticker_assign_job_device') {
+      const job = store.jobs.find((item) => String(item.id) === String(payload.p_job_id || ''));
+      if (!job || (!isAdmin && String(job.status || '').toLowerCase() === 'zakończone')) return denied;
+      const index = Number(payload.p_device_index);
+      const sourceId = index === 1 ? String(job.id) : `${job.id}::device-${index}`;
+      const device = store.devices.find((item) => String(item.source_job_id || '') === sourceId);
+      if (!device) return { data: { ok: false, reason: 'device_not_saved' }, error: null };
+      return { data: assign(payload.p_code, device.id, false), error: null };
+    }
+    if (name === 'qr_sticker_assign_device') {
+      if (!isAdmin) return denied;
+      return { data: assign(payload.p_code, payload.p_device_id, payload.p_replace), error: null };
+    }
+    if (name === 'qr_sticker_unassign') {
+      if (!isAdmin) return denied;
+      const sticker = store.qr_stickers.find((item) => item.code === normalize(payload.p_code));
+      if (!sticker) return { data: { ok: false, reason: 'unknown_code' }, error: null };
+      const previous = sticker.device_id;
+      sticker.device_id = null;
+      save();
+      return { data: { ok: true, code: sticker.code, previous_device_id: previous }, error: null };
+    }
+    if (name === 'qr_stickers_for_job') {
+      const jobId = String(payload.p_job_id || '');
+      const rows = store.qr_stickers.filter((item) => item.device_id).map((item) => {
+        const device = store.devices.find((row) => row.id === item.device_id);
+        const source = String(device?.source_job_id || '');
+        if (source !== jobId && !source.startsWith(`${jobId}::device-`)) return null;
+        return { device_index: deviceIndexOf(device), code: item.code };
+      }).filter(Boolean);
+      return { data: rows, error: null };
+    }
+    if (name === 'qr_stickers_for_devices') {
+      if (!isAdmin) return { data: [], error: null };
+      const ids = new Set(payload.p_device_ids || []);
+      return { data: store.qr_stickers.filter((item) => ids.has(item.device_id)).map((item) => ({ device_id: item.device_id, code: item.code })), error: null };
+    }
+    return { data: null, error: { message: `Mock RPC nie obsługuje funkcji: ${name}` } };
+  }
+
   function resetMockData({ keepSession = false } = {}) {
     store = createSeedData();
     storageObjects.clear();
@@ -880,6 +982,7 @@ export function createMockSupabaseClient() {
           error: null,
         };
       }
+      if (String(name).startsWith('qr_sticker')) return mockQrStickerRpc(name, payload);
       return { data: null, error: { message: `Mock RPC nie obsługuje funkcji: ${name}` } };
     },
     channel() {
