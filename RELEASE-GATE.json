@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "02.11.2026: analiza struktury devices/jobs/RLS wyłącznie SELECT; nowa tabela naklejek — migracja do wykonania przez właściciela."
+    "notes": "02.11.2026 15:46: migracja 20261102160000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT; dane devices/jobs bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -15,7 +15,7 @@
   },
   "main_protection": {
     "source_branch": "release/v14.08",
-    "ready_for_main": false,
+    "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },

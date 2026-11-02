@@ -1097,6 +1097,18 @@
    "verified": "SELECT 02.11.2026: admin_get_sms_module_snapshot z oknem grup (anchor<=dziś, window_end>=dziś−62) i wpisami bez grupy z ±124 dni; authenticated=tak, anon=nie; dane bez zmian (1402 wpisy sms_log, 1182 grupy)",
    "repo_file": "supabase/migrations/20261102090000_sms_snapshot_group_window_v1406.sql",
    "note": "Funkcja tylko odczytowa; wykonana przez właściciela w SQL Editor."
+  },
+  {
+   "version": "20261102160000",
+   "name": "qr_stickers_v1408",
+   "md5": "148eca786f9dcc3dbdbcc6fa905b2253",
+   "md5_of_file": true,
+   "bytes": 20148,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-11-02T15:46+01:00",
+   "verified": "SELECT 02.11.2026: 324 kody (2 partie), 0 przypisanych, 0 zdarzeń; RLS włączone na obu tabelach; authenticated i anon bez dostępu do tabel; 6 funkcji public: authenticated=tak, anon=nie; 3 funkcje private; devices 752 i jobs 169 bez zmian",
+   "repo_file": "supabase/migrations/20261102160000_qr_stickers_v1408.sql",
+   "note": "Wykonana przez właściciela w SQL Editor."
   }
  ],
  "statuses": {
