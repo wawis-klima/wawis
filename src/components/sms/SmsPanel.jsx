@@ -10,6 +10,7 @@ import SmsDeviceDetailsCard from './SmsDeviceDetailsCard.jsx';
 import { buildReminderMessage, buildSmsTargets, calculateServiceDueDate, deriveSmsQueue, formatSmsDate, getDefaultSmsSettings, getSentThisMonthLogs, getSmsStatusLabel, getSmsSummary } from '../../modules/sms.js';
 import { loadSmsHistoryPage, loadSmsModuleData, loadSmsSettingsOnly, saveSmsSettings } from '../../modules/sms-fetch.js';
 import { approveAndSendSmsLogs, deleteServiceSmsQueueItems, generateServiceSmsQueue, sendUnsentSmsLog, sendManualServiceSms, sendTestSms } from '../../modules/sms-send.js';
+import { formatSmsBatchResult, runSmsBatch } from '../../modules/sms-batch-send.js';
 import { buildUnsentSmsLogs } from '../../modules/sms-unsent.js';
 import { getQueueDeleteLogIds, getUnsentDeleteLogIds } from '../../modules/sms-delete.js';
 import { buildFallbackDevicesFromJobs, fetchAdminDevices } from '../../modules/devices-fetch.js';
@@ -459,29 +460,41 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       const regularRows = selectedRows.filter((row) => !retryKeys.has(row.selectionKey));
       const approvalIds = [...new Set(regularRows.map(getPrimaryQueueLogId).filter(Boolean))];
       const manualRows = regularRows.filter((job) => !getPrimaryQueueLogId(job));
-      let sentCount = 0;
+      const rowLabel = (row) => normalizeText(row?.client || row?.title) || 'Klient';
+      const approvalRows = regularRows.filter((job) => getPrimaryQueueLogId(job));
 
-      for (const row of retryRows) {
-        const result = await sendUnsentSmsLog({ supabase, log: row.latestLog });
-        sentCount += result.sentCount || 0;
+      // 14.06: każdy klient osobno — odrzucenie jednego nie zatrzymuje pozostałych zaznaczonych.
+      const steps = [
+        ...retryRows.map((row) => ({
+          label: rowLabel(row),
+          run: async () => (await sendUnsentSmsLog({ supabase, log: row.latestLog })).sentCount || 0,
+        })),
+        ...(approvalIds.length > 0 ? [{
+          label: approvalRows.length === 1 ? rowLabel(approvalRows[0]) : `Zatwierdzane pozycje (${approvalIds.length})`,
+          run: async () => (await approveAndSendSmsLogs({ supabase, logIds: approvalIds })).sentCount || 0,
+        }] : []),
+        ...manualRows.map((row) => ({
+          label: rowLabel(row),
+          run: async () => {
+            const primary = getPrimaryQueueTarget(row);
+            if (primary.target_type === 'device') {
+              await sendManualServiceSms({ supabase, deviceId: primary.id, reminderCycle: row.reminder_cycle, reminderDueDate: row.reminder_due_date || row.service_due_date });
+            } else {
+              await sendManualServiceSms({ supabase, jobId: primary.id, reminderCycle: row.reminder_cycle, reminderDueDate: row.reminder_due_date || row.service_due_date });
+            }
+            return 1;
+          },
+        })),
+      ];
+      const batch = await runSmsBatch(steps, { describeError: normalizeDatabaseErrorMessage });
+      const { info, error: batchError } = formatSmsBatchResult(batch);
+      if (batch.sentCount === 0 && batch.failures.length > 0) {
+        await reloadSmsData({ silent: true });
+        setErrorMessage(batchError);
+        return;
       }
 
-      if (approvalIds.length > 0) {
-        const result = await approveAndSendSmsLogs({ supabase, logIds: approvalIds });
-        sentCount += result.sentCount || 0;
-      }
-
-      for (const row of manualRows) {
-        const primary = getPrimaryQueueTarget(row);
-        if (primary.target_type === 'device') {
-          await sendManualServiceSms({ supabase, deviceId: primary.id, reminderCycle: row.reminder_cycle, reminderDueDate: row.reminder_due_date || row.service_due_date });
-        } else {
-          await sendManualServiceSms({ supabase, jobId: primary.id, reminderCycle: row.reminder_cycle, reminderDueDate: row.reminder_due_date || row.service_due_date });
-        }
-        sentCount += 1;
-      }
-
-      setInfoMessage(`Wysłano ${sentCount} wiadomości SMS.`);
+      setInfoMessage(info);
       setSelectedIds([]);
       setShowHistory(true);
       setActiveSummaryView('sentThisMonth');
@@ -489,6 +502,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
         reloadSmsData,
         refreshAll,
         loadFullHistoryPage,
+        // Odświeżenie czyści komunikat błędu — listę nieudanych klientów pokazujemy po nim.
+        afterRefresh: () => { if (batchError) setErrorMessage(batchError); },
       });
     } catch (error) {
       await reloadSmsData({ silent: true });

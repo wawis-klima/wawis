@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SMS-GROUP-WINDOW-1406 — „SMS dla tej grupy klienta został już wysłany” u klientów bez SMS-a (02.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SGW-1406-SNAPSHOT | FIXED-UNVERIFIED | Produkcja (SELECT): DROB-STEEL — SMS 31.08 dla terminu 30.08, grupa 30.08–31.10 obejmuje 2. urządzenie (termin 02.10); snapshot (filtr termin ≥ dziś−62) od 01.11 gubił wpis. Migracja 20261102090000; test PGlite stary/nowy snapshot + `deriveSmsQueue`. |
+| SGW-1406-BATCH | FIXED-UNVERIFIED | Pętla wysyłki zaznaczonych przerywana pierwszą odmową (B. Merta, Sklep Hamerlik — brak grup i wpisów w bazie, czyli nigdy nie wysłano żądania). `runSmsBatch`: każdy klient osobno; test kolejności i komunikatów. |
+| SGW-1406-LIVE | EXTERNAL | Po migracji i wdrożeniu: właściciel wysyła SMS do B. Merty i Sklepu Hamerlik; DROB-STEEL nie jest już na liście. |
+
 ## UPDATE-RELOAD-POSITION-1405 — powrót do pierwszego ekranu po aktualizacji (01.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

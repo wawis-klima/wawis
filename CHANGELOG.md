@@ -1,3 +1,10 @@
+## 14.06
+- Moduł SMS (zgłoszenie właściciela 02.11.2026): zaznaczeni klienci (pojedynczo i grupowo) nie dostawali SMS-a, na ekranie „SMS dla tej grupy klienta został już wysłany.”
+- Przyczyna 1 (lista): grupa przypomnień klienta obejmuje terminy od pierwszego terminu do +62 dni. Klient DROB-STEEL ma dwa urządzenia (terminy 30.08 i 02.10); SMS wysłany 31.08 objął oba, więc serwer słusznie odmawia. Snapshot `admin_get_sms_module_snapshot` zwracał jednak tylko wpisy z terminem z ostatnich 62 dni — od 01.11 wpis z 30.08 wypadł i lista pokazała klienta jako „do wysłania”.
+- Migracja `20261102090000_sms_snapshot_group_window_v1406.sql` (tylko odczyt): snapshot zwraca też wpisy grup, których okno nadal obejmuje aktywne terminy. Bez zmian danych, tabel, RLS, uprawnień i funkcji wysyłającej.
+- Przyczyna 2 (wysyłka zaznaczonych): pierwsza odmowa przerywała całą pętlę, więc pozostali zaznaczeni klienci (B. Merta, Sklep Hamerlik) w ogóle nie byli wysyłani. Nowy `src/modules/sms-batch-send.js`: każdy klient osobno, wynik „Wysłano N” + lista „Nie wysłano: klient — powód”.
+- Testy: `smoke-sms-group-window-batch-v1406.mjs` — odtworzenie (stary snapshot gubi wpis, lista pokazuje klienta), naprawa w PGlite, pełna kolejka `deriveSmsQueue`, wysyłka mimo odmowy pierwszego klienta.
+
 ## 14.05
 - Aktualizacja aplikacji (zgłoszenie właściciela 01.11.2026): przy pierwszym otwarciu po wdrożeniu kliknięcie modułu (Urządzenia, Paliwo, Kalendarz…) kończyło się przeładowaniem i powrotem do pierwszego ekranu — na telefonie i komputerze.
 - Przyczyna: strona startowa jest pobierana z sieci (network-first), więc działa już w nowej wersji; kilka sekund później nowy service worker (zmieniany przy każdym wdrożeniu) przejmował kontrolę i `controllerchange` bezwarunkowo przeładowywał stronę.
