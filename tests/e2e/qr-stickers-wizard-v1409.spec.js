@@ -30,6 +30,29 @@ test('@mobile 14.09: pracownik skanuje naklejkę w kreatorze urządzeń, zapis p
 
   await card.getByRole('button', { name: 'Zeskanuj' }).click();
   const scanner = page.locator('.qrScannerModal');
+  // 14.10 (zgłoszenie 02.11.2026: „czarny ekran, duże napisy, nie w naszym stylu”): biały, nieprzezroczysty
+  // arkusz nad kreatorem, małe nagłówki i przyciski jak w kreatorze urządzeń.
+  await expect(scanner).toBeVisible();
+  const look = await scanner.evaluate((el) => {
+    const title = el.querySelector('h3');
+    const rect = title.getBoundingClientRect();
+    const top = document.elementFromPoint(rect.left + 4, rect.top + rect.height / 2);
+    return {
+      background: getComputedStyle(el).backgroundColor,
+      titleSize: parseFloat(getComputedStyle(title).fontSize),
+      buttonSize: parseFloat(getComputedStyle(el.querySelector('.qrScanBtn')).fontSize),
+      buttonHeight: el.querySelector('.qrScanBtn').getBoundingClientRect().height,
+      titleOnTop: el.contains(top),
+      right: el.getBoundingClientRect().right,
+      viewport: document.documentElement.clientWidth,
+    };
+  });
+  expect(look.background).toBe('rgb(255, 255, 255)');
+  expect(look.titleSize).toBeLessThanOrEqual(18);
+  expect(look.buttonSize).toBeLessThanOrEqual(15);
+  expect(look.buttonHeight).toBeLessThanOrEqual(50);
+  expect(look.titleOnTop).toBe(true);
+  expect(look.right).toBeLessThanOrEqual(look.viewport);
   await scanner.getByLabel('Albo wpisz numer spod kodu').fill('zzzz-zzzz');
   await scanner.getByRole('button', { name: 'Zatwierdź' }).click();
   await expect(scanner.getByRole('alert')).toContainText('nie pochodzi z naklejek WAWIS');

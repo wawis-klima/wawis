@@ -1,22 +1,58 @@
-/* WAWIS 14.08 — skaner i karta naklejki QR */
-.qrScannerModal { width: min(440px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; display: grid; gap: 12px; }
+/* WAWIS 14.10 — skaner i okno naklejki QR w stylu kreatora urządzeń (biały arkusz, małe nagłówki,
+   jasny podgląd aparatu, kompaktowe przyciski). Własne klasy — bez globalnych .card/.modal/.btn. */
+.appModalOverlay.qrScannerOverlay { z-index: 16000 !important; background: rgba(15, 23, 42, .45) !important; padding: 12px !important; align-items: center !important; justify-content: center !important; }
+.qrScannerModal {
+  --qr-blue: #1464f4; --qr-ink: #132039; --qr-muted: #64748b; --qr-line: #e4e9f1;
+  box-sizing: border-box;
+  display: grid; gap: 12px;
+  width: min(420px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto;
+  padding: 16px; border-radius: 22px; border: 1px solid var(--qr-line);
+  background: #fff !important; color: var(--qr-ink);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, .18);
+  backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+  font-family: inherit;
+}
+.qrScannerModal * { box-sizing: border-box; }
 .qrScannerHead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.qrScannerHead h3 { margin: 0; font-size: 19px; }
-.qrScannerClose { min-height: 40px; }
-.qrScannerHint { margin: 0; color: #4b5b73; font-size: 14px; line-height: 1.35; }
-.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 16px; overflow: hidden; background: #0f172a; }
+.qrScannerModal .qrScannerHead h3 { margin: 0; font-size: 17px !important; line-height: 1.25; font-weight: 800; color: var(--qr-ink); }
+.qrScannerModal .qrScannerLink { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding: 6px 2px; color: var(--qr-muted); font-size: 14px !important; font-weight: 700; cursor: pointer; min-height: 0 !important; box-shadow: none !important; }
+.qrScannerModal .qrScannerHint { margin: 0; color: var(--qr-muted); font-size: 13px !important; line-height: 1.35; }
+.qrScannerModal .qrScannerHint.center { text-align: center; }
+.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: #f1f5f9; border: 1px solid var(--qr-line); }
+.qrScannerViewport.live { background: #0f172a; border-color: #0f172a; }
 .qrScannerViewport video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.qrScannerViewport.unavailable video, .qrScannerViewport.idle video { visibility: hidden; }
-.qrScannerFrame { position: absolute; inset: 22%; border: 3px solid rgba(255,255,255,.92); border-radius: 14px; box-shadow: 0 0 0 999px rgba(15,23,42,.35); pointer-events: none; }
-.qrScannerOverlayText { position: absolute; inset: 0; display: grid; place-items: center; color: #e2e8f0; font-weight: 600; text-align: center; padding: 16px; }
-.qrScannerStatus { background: #eef6ff; border: 1px solid #bfdbfe; color: #1e3a8a; border-radius: 12px; padding: 10px 12px; font-weight: 600; }
+.qrScannerViewport:not(.live) video { visibility: hidden; }
+.qrScannerFrame { position: absolute; left: 50%; top: 50%; width: 52%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%); pointer-events: none; }
+.qrScannerFrame i { position: absolute; width: 26px; height: 26px; border-color: #fff; border-style: solid; border-width: 0; filter: drop-shadow(0 0 2px rgba(0,0,0,.35)); }
+.qrScannerFrame i:nth-child(1) { left: 0; top: 0; border-left-width: 3px; border-top-width: 3px; border-top-left-radius: 10px; }
+.qrScannerFrame i:nth-child(2) { right: 0; top: 0; border-right-width: 3px; border-top-width: 3px; border-top-right-radius: 10px; }
+.qrScannerFrame i:nth-child(3) { left: 0; bottom: 0; border-left-width: 3px; border-bottom-width: 3px; border-bottom-left-radius: 10px; }
+.qrScannerFrame i:nth-child(4) { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; border-bottom-right-radius: 10px; }
+.qrScannerOverlayText { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--qr-muted); font-size: 13px; font-weight: 700; text-align: center; padding: 16px; }
+.qrScannerOverlayText svg { width: 34px; height: 34px; fill: none; stroke: #94a3b8; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.qrScannerStatus { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 700; }
+.qrScannerError { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 600; line-height: 1.35; }
 .qrScannerActions { display: flex; flex-wrap: wrap; gap: 8px; }
-.qrScannerActions .btn { flex: 1 1 160px; min-height: 44px; }
-.qrScannerManual { display: grid; gap: 6px; }
-.qrScannerManual label { font-size: 14px; font-weight: 600; color: #10203a; }
+.qrScannerModal .qrScanBtn {
+  appearance: none; -webkit-appearance: none;
+  flex: 1 1 140px; min-height: 42px !important; height: auto !important; padding: 0 14px !important;
+  border: 1px solid #c9d3e3 !important; border-radius: 12px !important; background: #fff !important;
+  color: var(--qr-ink) !important; font-size: 14px !important; font-weight: 700 !important; line-height: 1.2;
+  box-shadow: none !important; cursor: pointer;
+}
+.qrScannerModal .qrScanBtn.primary { border-color: var(--qr-blue) !important; background: var(--qr-blue) !important; color: #fff !important; }
+.qrScannerModal .qrScanBtn:disabled { opacity: .55; }
+.qrScannerManual { display: grid; gap: 6px; padding-top: 2px; }
+.qrScannerModal .qrScannerManual label { font-size: 12.5px !important; font-weight: 700; color: var(--qr-muted); }
 .qrScannerManualRow { display: flex; gap: 8px; }
-.qrScannerManualRow .input { flex: 1 1 auto; min-width: 0; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; }
-.qrScannerManualRow .btn { flex: 0 0 auto; min-height: 44px; }
+.qrScannerModal .qrScanInput {
+  appearance: none; -webkit-appearance: none;
+  flex: 1 1 auto; min-width: 0; height: 42px !important; padding: 0 12px !important;
+  border: 1px solid #c9d3e3 !important; border-radius: 12px !important; background: #fff !important;
+  color: var(--qr-ink); font-size: 15px !important; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+}
+.qrScannerModal .qrScanInput::placeholder { color: #a0aec0; font-weight: 600; letter-spacing: .02em; text-transform: none; }
+.qrScannerModal .qrScannerManualRow .qrScanBtn { flex: 0 0 auto; }
 
 .qrStickerRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 7px 10px; border: 1px dashed #c7d2e3; border-radius: 10px; background: #f8fafc; }
 .qrStickerRow.assigned { border-style: solid; border-color: #bbf7d0; background: #f0fdf4; }
@@ -33,9 +69,7 @@
 .qrStickerMessage.err { color: #b91c1c; }
 
 .qrResolverCard { display: grid; gap: 10px; }
-.qrResolverCard h3 { margin: 0; }
-.qrResolverCard dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14.5px; }
+.qrResolverCard dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13.5px; }
 .qrResolverCard dt { color: #5b6b82; }
 .qrResolverCard dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .qrResolverActions { display: grid; gap: 8px; }
-.qrResolverActions .btn { min-height: 44px; }

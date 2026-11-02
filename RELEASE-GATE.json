@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.09",
+  "version": "14.10",
   "scope": "full",
-  "release_branch": "release/v14.09",
+  "release_branch": "release/v14.10",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie frontendu (kreator urządzeń, karta montażu, usuwanie urządzenia); funkcje bazy z 14.08 bez zmian."
+    "notes": "Zmiana wyłącznie wyglądu skanera QR (CSS i znaczniki); bez zmian bazy i logiki."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.09",
+    "source_branch": "release/v14.10",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_QR_WIZARD",
-    "evidence_source": "iPhone: „Urządzenia” → urządzenie → „Zeskanuj” → zapis; znaczek QR w karcie montażu.",
+    "result": "EXTERNAL_IPHONE_QR_SCANNER_LOOK",
+    "evidence_source": "iPhone: kreator → Naklejka QR → Zeskanuj — wygląd okna.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.09: naklejka QR w kreatorze + przenumerowanie",
-    "release_ci": "WAWIS PR checks + smoke v1409 + E2E WebKit 24",
-    "postdeploy": "Vercel READY/14.09."
+    "code": "14.10: wygląd skanera QR",
+    "release_ci": "WAWIS PR checks + E2E wygląd skanera (Chromium, WebKit)",
+    "postdeploy": "Vercel READY/14.10."
   }
 }

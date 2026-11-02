@@ -157,27 +157,33 @@ export default function QrStickerScanner({ open, title = 'Naklejka QR', descript
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  const close = () => { stopCamera(); onClose?.(); };
   return (
-    <AppModal open={open} onClose={() => { stopCamera(); onClose?.(); }} contentClassName="card modal qrScannerModal" lockPagePosition>
+    <AppModal open={open} onClose={close} overlayClassName="qrScannerOverlay" contentClassName="qrScannerModal" lockPagePosition>
       <div className="qrScannerHead">
         <h3>{title}</h3>
-        <button type="button" className="btn qrScannerClose" onClick={() => { stopCamera(); onClose?.(); }} aria-label="Zamknij skaner">Zamknij</button>
+        <button type="button" className="qrScannerLink" onClick={close} aria-label="Zamknij skaner">Zamknij</button>
       </div>
       {description ? <p className="qrScannerHint">{description}</p> : null}
       <div className={`qrScannerViewport ${cameraState}`}>
         <video ref={videoRef} playsInline muted aria-label="Podgląd aparatu" />
-        {cameraState === 'live' ? <div className="qrScannerFrame" aria-hidden="true" /> : null}
-        {cameraState === 'starting' ? <span className="qrScannerOverlayText">Uruchamiam aparat…</span> : null}
-        {cameraState === 'unavailable' ? <span className="qrScannerOverlayText">Aparat niedostępny</span> : null}
+        {cameraState === 'live' ? (
+          <div className="qrScannerFrame" aria-hidden="true"><i /><i /><i /><i /></div>
+        ) : (
+          <span className="qrScannerOverlayText">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><rect x="8" y="8" width="8" height="8" rx="1" /></svg>
+            {cameraState === 'starting' ? 'Uruchamiam aparat…' : cameraState === 'unavailable' ? 'Aparat niedostępny' : 'Aparat wyłączony'}
+          </span>
+        )}
       </div>
-      {cameraState === 'live' && !busy ? <p className="qrScannerHint">Skieruj aparat na naklejkę — kod odczyta się sam.</p> : null}
+      {cameraState === 'live' && !busy ? <p className="qrScannerHint center">Skieruj aparat na naklejkę — kod odczyta się sam.</p> : null}
       {status ? <div className="qrScannerStatus" role="status">{status}</div> : null}
-      {error ? <div className="errorBox" role="alert">{error}</div> : null}
+      {error ? <div className="qrScannerError" role="alert">{error}</div> : null}
       <div className="qrScannerActions">
         {cameraState !== 'live' ? (
-          <button type="button" className="btn" onClick={startCamera} disabled={busy}>Włącz aparat</button>
+          <button type="button" className="qrScanBtn" onClick={startCamera} disabled={busy}>Włącz aparat</button>
         ) : null}
-        <button type="button" className="btn" onClick={() => fileRef.current?.click()} disabled={busy}>Zrób zdjęcie naklejki</button>
+        <button type="button" className="qrScanBtn" onClick={() => fileRef.current?.click()} disabled={busy}>Zrób zdjęcie</button>
         <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={handlePhoto} />
       </div>
       <form
@@ -188,7 +194,7 @@ export default function QrStickerScanner({ open, title = 'Naklejka QR', descript
         <div className="qrScannerManualRow">
           <input
             id="qr-sticker-manual"
-            className="input"
+            className="qrScanInput"
             value={manual}
             onChange={(event) => setManual(event.target.value.toUpperCase())}
             placeholder="np. K7M2-P9XA"
@@ -198,7 +204,7 @@ export default function QrStickerScanner({ open, title = 'Naklejka QR', descript
             maxLength={12}
             disabled={busy}
           />
-          <button type="submit" className="btn primary" disabled={busy || !manual.trim()}>{busy ? 'Zapisuję…' : 'Zatwierdź'}</button>
+          <button type="submit" className="qrScanBtn primary" disabled={busy || !manual.trim()}>{busy ? 'Zapisuję…' : 'Zatwierdź'}</button>
         </div>
       </form>
     </AppModal>

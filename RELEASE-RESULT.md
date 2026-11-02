@@ -1,8 +1,6 @@
-# RELEASE RESULT — WAWIS 14.09
+# RELEASE RESULT — WAWIS 14.10
 
 ## Zakres
-- Naklejka QR w kreatorze urządzeń (krok 2 z 4), opcjonalna; jedna na zestaw multi.
-- Kompaktowa linia naklejki w karcie montażu.
-- Naklejki zostają przy właściwych urządzeniach po usunięciu urządzenia z montażu.
+- Skaner i okno naklejki QR w stylu kreatora urządzeń (biały arkusz, małe napisy i przyciski, jasny podgląd aparatu).
 
-Bez zmian bazy danych.
+Tylko wygląd; bez zmian działania i bazy.
