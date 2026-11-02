@@ -1,3 +1,12 @@
+## 14.08
+- Naklejki QR urządzeń (decyzja właściciela 02.11.2026). Naklejka przypisana do URZĄDZENIA; instalacja multi = jedno urządzenie = jedna naklejka.
+- Montaż (pracownik i administrator): w karcie urządzenia „Naklejka QR” → „Przypisz naklejkę QR” — skan aparatem na żywo, zdjęcie albo ręczne wpisanie numeru spod kodu. Opcjonalne: nie blokuje zakończenia montażu. Pracownik tylko w montażu, który może edytować; wymiana i zwolnienie — wyłącznie administrator (z potwierdzeniem).
+- Urządzenia (administrator, telefon): „Skanuj naklejkę QR” otwiera klienta z historią przeglądów; przy każdym urządzeniu klienta przypisanie, wymiana i zwolnienie naklejki (także starsze urządzenia bez montażu).
+- Zeskanowanie naklejki aparatem iPhone'a: `/u/KOD` → `public/404.html` → `/?qr=KOD` → okno z klientem, adresem, urządzeniem i przyciskiem „Otwórz montaż” (po zalogowaniu; kod przetrwa logowanie).
+- Migracja `20261102160000_qr_stickers_v1408.sql` (wykonuje właściciel): tabele `qr_stickers` i `qr_sticker_events` bez bezpośredniego dostępu API (RLS, tylko funkcje), import 324 wydrukowanych kodów (partie 1 i 2), funkcje `qr_sticker_lookup`, `qr_sticker_assign_job_device`, `qr_sticker_assign_device`, `qr_sticker_unassign`, `qr_stickers_for_job`, `qr_stickers_for_devices`. Jedna naklejka na urządzenie wymuszona w bazie; usunięcie urządzenia zwalnia naklejkę. Bez zmian istniejących tabel i danych.
+- Testy: SQL na jednorazowym PostgreSQL 16 (`qr-stickers-sql-v1408.sh`: uprawnienia ról, przypisanie, odmowy, wymiana, historia, ponowne wykonanie migracji), `smoke-qr-stickers-v1408.mjs` (324 kody z wydruku = import migracji, normalizacja, 404.html, RPC, podłączenie), E2E `qr-stickers-v1408.spec.js` (Chromium i WebKit/iPhone).
+- Obszar chroniony: nowa tabela i funkcje bazy (SQL właściciela), karta montażu. Aparat na żywo — test na fizycznym iPhonie po wdrożeniu.
+
 ## 14.07
 - Urządzenia / zgodność zestawu Single (zgłoszenie właściciela 02.11.2026): przy zakończeniu montażu pojawiało się ostrzeżenie „Niezgodny zestaw Single: JZ to Ukura, a JW to Ukura H”, choć zestaw jest poprawny.
 - Decyzja właściciela: jednostka wewnętrzna Ukura H współpracuje z agregatami Ukura (U26/U35/U50) i Ukura H (UH26/UH35). `rotenso-models.js`: para Ukura / Ukura H dodana do wspólnych rodzin (jak Teta / Teta Mirror). Blokada innych rodzin bez zmian.

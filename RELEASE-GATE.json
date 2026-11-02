@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.07",
+  "version": "14.08",
   "scope": "full",
-  "release_branch": "release/v14.07",
+  "release_branch": "release/v14.08",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie frontendu (słownik zgodności rodzin Rotenso); bez zmian bazy."
+    "notes": "02.11.2026 15:46: migracja 20261102160000 wykonana przez właściciela (SQL Editor), potwierdzona SELECT; dane devices/jobs bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.07",
+    "source_branch": "release/v14.08",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_UKURA_H",
-    "evidence_source": "iPhone: zakończenie montażu JZ Ukura + JW Ukura H bez ostrzeżenia.",
+    "result": "EXTERNAL_IPHONE_QR_STICKERS",
+    "evidence_source": "iPhone: skan naklejki w montażu (aparat na żywo), skan aparatem systemowym, Urządzenia → Skanuj naklejkę.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.07: Ukura / Ukura H zgodne",
-    "release_ci": "WAWIS PR checks + smoke-mobile-serial-scanner (RED/GREEN)",
-    "postdeploy": "Vercel READY/14.07."
+    "code": "14.08: naklejki QR urządzeń",
+    "release_ci": "WAWIS PR checks + SQL v1408 (PostgreSQL 16) + smoke v1408 + E2E WebKit 23",
+    "postdeploy": "Kolejność: migracja (właściciel) → SELECT → ready_for_main → merge → Vercel 14.08."
   }
 }

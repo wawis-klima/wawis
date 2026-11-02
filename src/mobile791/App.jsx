@@ -42,6 +42,7 @@ import { APP_VERSION } from "./version.js";
 import { scheduleNameplateReaderWarmup } from "./modules/nameplate-reader-warmup.js";
 import { setDeviceDraftOwner } from "./modules/device-form-drafts.js";
 import { setProtocolSignatureDraftOwner } from "./modules/protocol-signature-drafts.js";
+import { QR_PENDING_STORAGE_KEY, clearQrCodeFromLocation, readQrCodeFromLocation } from "../modules/qr-stickers.js";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -57,6 +58,7 @@ const JobDetailsPanel = lazy(() => import("./components/JobDetailsPanel.jsx"));
 const JobFormModal = lazy(() => import("./components/modals/JobFormModal.jsx"));
 const FuelPanel = lazy(() => import("../components/fuel/FuelPanel.jsx"));
 const PricelistPanel = lazy(() => import("./components/pricelist/PricelistPanel.jsx"));
+const QrStickerResolver = lazy(() => import("./components/qr/QrStickerResolver.jsx"));
 
 const adminModuleFallback = (
   <div className="card authCard">Trwa ładowanie modułu...</div>
@@ -232,8 +234,23 @@ function EmployeeMobileOnlyBlock({ profile, logout }) {
   );
 }
 
+function readPendingQrCode() {
+  // 14.08: naklejka zeskanowana aparatem iPhone'a (/u/KOD → 404.html → /?qr=KOD).
+  // Kod przechowany w sesji karty, żeby przetrwał logowanie.
+  const fromUrl = readQrCodeFromLocation();
+  try {
+    if (fromUrl) window.sessionStorage.setItem(QR_PENDING_STORAGE_KEY, fromUrl);
+    return fromUrl || window.sessionStorage.getItem(QR_PENDING_STORAGE_KEY) || "";
+  } catch {
+    return fromUrl;
+  }
+}
+
 export default function App() {
   const [selectedJob, setSelectedJob] = useState(null);
+  const [qrResolverCode, setQrResolverCode] = useState(readPendingQrCode);
+  const [serviceOpenRequest, setServiceOpenRequest] = useState(null);
+  useEffect(() => { if (readQrCodeFromLocation()) clearQrCodeFromLocation(); }, []);
   const [quickProtocolRequest, setQuickProtocolRequest] = useState(null);
   const selectedJobIdRef = useRef(null);
   const jobDetailsRequestsRef = useRef(new Map());
@@ -1535,7 +1552,14 @@ export default function App() {
                 onContractorsLoaded={applyContractorsCatalogSnapshot}
               />
             ) : activeModule === "devices" && isMobile && isAdmin ? (
-              <ServiceAdminPanel supabase={supabase} isAdmin={isAdmin} userId={sessionUser?.id || ""} />
+              <ServiceAdminPanel supabase={supabase} isAdmin={isAdmin} userId={sessionUser?.id || ""}
+                openCustomerRequest={serviceOpenRequest}
+                onOpenJob={(jobId) => {
+                  const job = jobs.find((item) => String(item.id) === String(jobId || ""));
+                  if (!job) return false;
+                  openJobInJobsModule(job);
+                  return true;
+                }} />
             ) : activeModule === "devices" ? (
               <DevicesPanel key={sessionUser?.id || "signed-out"} userId={sessionUser?.id || ""}
                 supabase={supabase}
@@ -1628,6 +1652,36 @@ export default function App() {
 
       <PreviewModal previewImage={previewImage} setPreviewImage={setPreviewImage} previewNext={previewNext} previewPrev={previewPrev} />
       <ConfirmActionModal {...confirmModalProps} />
+      {profile && qrResolverCode ? (
+        <Suspense fallback={null}>
+          <QrStickerResolver
+            code={qrResolverCode}
+            supabase={supabase}
+            isAdmin={isAdmin}
+            onOpenJob={(jobId) => {
+              const job = jobs.find((item) => String(item.id) === String(jobId || ""));
+              if (!job) return false;
+              openJobInJobsModule(job);
+              return true;
+            }}
+            onOpenDevices={isAdmin && isMobile ? (device) => {
+              setServiceOpenRequest({
+                nonce: Date.now(),
+                id: device.contractor_id,
+                name: device.contractor_name || device.client || "Klient",
+                phone: device.contractor_phone || "",
+                city: device.city || "",
+                street: device.street || "",
+              });
+              handleDesktopNavigation("devices", "devices");
+            } : null}
+            onClose={() => {
+              setQrResolverCode("");
+              try { window.sessionStorage.removeItem(QR_PENDING_STORAGE_KEY); } catch { /* brak sesji */ }
+            }}
+          />
+        </Suspense>
+      ) : null}
       <Suspense fallback={showModal ? jobFormModalFallback : null}>
         <JobFormModal
           showModal={showModal}

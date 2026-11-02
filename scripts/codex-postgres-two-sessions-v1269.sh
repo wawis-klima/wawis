@@ -301,3 +301,6 @@ echo "PASS all Codex dual-session races — disposable real PostgreSQL"
 
 # WAWIS 13.99: prawdziwe migracje modułu serwisowego i blokady Kosza na osobnym, jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/service-visit-sql-v1399.sh"
+
+# WAWIS 14.08: prawdziwa migracja naklejek QR (import kodów, przypisywanie, uprawnienia) na jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/qr-stickers-sql-v1408.sh"

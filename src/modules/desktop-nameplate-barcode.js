@@ -739,4 +739,52 @@ export async function warmUniversalBarcodeReader() {
   return true;
 }
 
+// 14.08: czytnik naklejek QR WAWIS. Najpierw czytnik przeglądarki (jeśli obsługuje QR),
+// w przeciwnym razie ten sam uniwersalny czytnik co dla tabliczek (iPhone).
+let qrDetectorPromise = null;
+async function createQrDetector() {
+  try {
+    if ('BarcodeDetector' in globalThis) {
+      const supported = await globalThis.BarcodeDetector.getSupportedFormats?.().catch(() => []);
+      if (Array.isArray(supported) && supported.includes('qr_code')) {
+        return new globalThis.BarcodeDetector({ formats: ['qr_code'] });
+      }
+    }
+  } catch (_) { /* przejście do czytnika uniwersalnego */ }
+  const Detector = await withTimeout(
+    loadUniversalBarcodeDetector(),
+    UNIVERSAL_BARCODE_LOAD_TIMEOUT_MS,
+    'Czytnik kodów QR nie załadował się w ciągu 12 sekund. Sprawdź internet albo wpisz numer z naklejki.',
+  );
+  if (!Detector) throw new Error('Ta przeglądarka nie ma czytnika kodów QR. Wpisz numer z naklejki.');
+  return new Detector({ formats: ['qr_code'] });
+}
+
+export function getQrDetector() {
+  if (!qrDetectorPromise) {
+    qrDetectorPromise = createQrDetector().catch((error) => {
+      qrDetectorPromise = null;
+      throw error;
+    });
+  }
+  return qrDetectorPromise;
+}
+
+/** Odczytuje wartości kodów QR z klatki wideo, canvas albo zdjęcia (Blob/File). */
+export async function detectQrCodeValues(source) {
+  const detector = await getQrDetector();
+  let target = source;
+  let image = null;
+  if (typeof Blob !== 'undefined' && source instanceof Blob) {
+    image = await loadImage(source);
+    target = createCanvas(image, { maxDimension: 1600 });
+  }
+  try {
+    const detections = await detector.detect(target);
+    return (detections || []).map((item) => String(item?.rawValue || '').trim()).filter(Boolean);
+  } finally {
+    if (image && target !== source) releaseCanvas(target);
+  }
+}
+
 export { ean13IsValid, plausibleSerial };

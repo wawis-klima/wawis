@@ -14,6 +14,9 @@ import { blockUnsavedWork } from "../../modules/update-reload-guard.js";
 import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
 import ConfirmActionModal from "./modals/ConfirmActionModal.jsx";
 import SmoothCollapse from "./jobs/SmoothCollapse.jsx";
+import { JobDeviceQrScanner, JobDeviceQrStickerRow, unassignJobDeviceQrSticker, useJobQrStickers } from "./qr/JobDeviceQrSticker.jsx";
+import { formatQrStickerCode } from "../../modules/qr-stickers.js";
+import "./qr/QrStickerScanner.css";
 
 const PROTOCOL_READ_TIMEOUT_MS = 3200;
 const PROTOCOL_READ_RETRY_DELAYS_MS = Object.freeze([0, 500]);
@@ -314,6 +317,12 @@ export default function JobDetailsPanel({
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
+  // 14.08: naklejki QR urządzeń (opcjonalne, wymagają internetu).
+  const jobQr = useJobQrStickers({ supabase, jobId: selectedJobId, enabled: Boolean(selectedJobId) && !selectedJob?.offline_pending });
+  const [qrScanTarget, setQrScanTarget] = React.useState(null);
+  const [qrMessage, setQrMessage] = React.useState(null);
+  const [qrBusy, setQrBusy] = React.useState(false);
+  React.useEffect(() => { setQrMessage(null); setQrScanTarget(null); }, [selectedJobId]);
 
   function applyPaymentPatchToJobState(paymentPatch = {}) {
     if (!selectedJobId || !paymentPatch || typeof paymentPatch !== 'object') return;
@@ -737,6 +746,7 @@ export default function JobDetailsPanel({
                         >
                           <strong>Urządzenie {deviceIndex}</strong>
                           <span className={`jobDeviceDocumentationType ${isMultiSplit ? 'multi' : 'single'}`}>{isMultiSplit ? 'Multi-split' : 'Single-split'}</span>
+                          {jobQr.stickers[deviceIndex] ? <span className="qrStickerBadge" title="Naklejka QR">QR {formatQrStickerCode(jobQr.stickers[deviceIndex])}</span> : null}
                         </button>
                         <div className="jobDeviceDocumentationTitleActions">
                             {isAdmin ? (
@@ -806,6 +816,30 @@ export default function JobDetailsPanel({
                           <span aria-hidden="true">{missingCount ? '●' : '✓'}</span>
                           <span>{missingCount ? `Brakuje ${missingCount} ${missingCount === 1 ? 'tabliczki lub potwierdzenia' : 'tabliczek lub potwierdzeń'}` : 'Komplet tabliczek potwierdzony'}</span>
                         </div>
+                        {jobQr.available ? (
+                          <JobDeviceQrStickerRow
+                            code={jobQr.stickers[deviceIndex] || ''}
+                            canAssign={canEditSelectedJob && !selectedJob?.offline_pending}
+                            isAdmin={isAdmin}
+                            busy={busy || qrBusy}
+                            message={qrMessage?.deviceIndex === deviceIndex ? qrMessage : null}
+                            onAssign={() => { setQrMessage(null); setQrScanTarget({ deviceIndex, currentCode: jobQr.stickers[deviceIndex] || '' }); }}
+                            onUnassign={async () => {
+                              const code = jobQr.stickers[deviceIndex];
+                              if (!code || !window.confirm(`Zwolnić naklejkę ${formatQrStickerCode(code)} z Urządzenia ${deviceIndex}? Naklejkę będzie można przypisać do innego urządzenia.`)) return;
+                              setQrBusy(true);
+                              try {
+                                await unassignJobDeviceQrSticker({ supabase, code });
+                                await jobQr.reload();
+                                setQrMessage({ deviceIndex, ok: true, text: `Naklejka ${formatQrStickerCode(code)} zwolniona.` });
+                              } catch (error) {
+                                setQrMessage({ deviceIndex, ok: false, text: error?.message || 'Nie udało się zwolnić naklejki.' });
+                              } finally {
+                                setQrBusy(false);
+                              }
+                            }}
+                          />
+                        ) : null}
                       </div>
                       </SmoothCollapse>
                     </section>
@@ -1274,6 +1308,20 @@ export default function JobDetailsPanel({
         </section>
       ) : null}
       </div>
+      <JobDeviceQrScanner
+        supabase={supabase}
+        jobId={selectedJobId}
+        target={qrScanTarget}
+        isAdmin={isAdmin}
+        onClose={() => setQrScanTarget(null)}
+        onAssigned={async (deviceIndex, code, already) => {
+          setQrScanTarget(null);
+          jobQr.setStickers((current) => ({ ...current, [deviceIndex]: code }));
+          setExpandedDeviceIndexes((current) => (current.includes(deviceIndex) ? current : [...current, deviceIndex]));
+          setQrMessage({ deviceIndex, ok: true, text: already ? `Naklejka ${formatQrStickerCode(code)} była już przypisana do tego urządzenia.` : `Przypisano naklejkę ${formatQrStickerCode(code)} do Urządzenia ${deviceIndex}.` });
+          await jobQr.reload();
+        }}
+      />
       <ProtocolTestModal
         open={protocolTestOpen && protocolNameplatesReady}
         canWriteProtocol={protocolNameplatesReady}

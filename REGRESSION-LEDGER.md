@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## QR-STICKERS-1408 — naklejki QR urządzeń (02.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QRS-1408-SQL | FIXED-UNVERIFIED | Migracja wykonana na jednorazowym PostgreSQL 16 (dwukrotnie): anon/bez roli odrzuceni, pracownik tylko w edytowalnym montażu, odmowy `sticker_taken`/`device_has_sticker`/`device_not_saved`/`unknown_code`, wymiana i przepisanie tylko administrator, historia zdarzeń, unikalność urządzenia, ON DELETE SET NULL. |
+| QRS-1408-CODES | FIXED-UNVERIFIED | 324 kody z wydruku (CSV partii 1 i 2) = import w migracji; normalizacja adresu, numeru z myślnikiem i małych liter. |
+| QRS-1408-UI | FIXED-UNVERIFIED | E2E: pracownik przypisuje naklejkę (multi), błędne i obce kody odrzucone, skan adresu otwiera montaż, administrator — anulowana wymiana nic nie zmienia. |
+| QRS-1408-NOT-REQUIRED | FIXED-UNVERIFIED | Naklejka nie wchodzi do wymagań zakończenia montażu (smoke: brak w `nameplate-requirements.js`). |
+| QRS-1408-LIVE | EXTERNAL | iPhone: aparat na żywo w aplikacji, zeskanowanie naklejki aparatem systemowym (Safari/PWA), przypisanie w montażu i w Urządzeniach. |
+
 ## UKURA-H-COMPAT-1407 — fałszywe ostrzeżenie niezgodności Ukura / Ukura H (02.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
