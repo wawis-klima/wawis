@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { formatQrStickerCode } from '../../../modules/qr-stickers.js';
 import {
   DEVICE_TYPE_MULTI,
   DEVICE_TYPE_SINGLE,
@@ -362,6 +363,9 @@ export default function MobileDeviceWizard({
   onRemoveIndoorUnit,
   onPhotoSelect,
   onPhotoRemove,
+  qr = null,
+  onScanQr,
+  onClearQr,
 }) {
   const initializedRef = useRef(false);
   const [screen, setScreen] = useState('overview');
@@ -543,6 +547,36 @@ export default function MobileDeviceWizard({
     );
   }
 
+  // 14.09: naklejka QR w kreatorze — opcjonalna, jedna na urządzenie (multi = jedna).
+  function getQrState(deviceIndex) {
+    if (!qr?.enabled) return null;
+    const saved = qr.saved?.[deviceIndex] || '';
+    const pending = qr.pending?.[deviceIndex] || '';
+    return { saved, pending, code: pending || saved };
+  }
+
+  function renderQrCard() {
+    const state = getQrState(activeDeviceIndex);
+    if (!state) return null;
+    const label = formatQrStickerCode(state.code);
+    return (
+      <div className={`mobileDeviceQrCard${state.code ? ' ready' : ''}`} data-testid="wizard-qr-sticker">
+        <div className="mobileDeviceQrText">
+          <strong>Naklejka QR <small>{qr.required ? 'wymagana' : 'opcjonalnie'}</small></strong>
+          <span>{state.pending
+            ? `${label} · przypisze się po zapisaniu urządzeń`
+            : state.saved ? `${label} · przypisana` : 'Przyklej naklejkę na urządzeniu i zeskanuj kod.'}</span>
+        </div>
+        {!state.saved || state.pending ? (
+          <span className="mobileDeviceQrActions">
+            <button type="button" className="mobileDeviceQrBtn" onClick={() => onScanQr?.(activeDeviceIndex)}>{state.pending ? 'Zmień' : 'Zeskanuj'}</button>
+            {state.pending ? <button type="button" className="mobileDeviceQrBtn subtle" onClick={() => onClearQr?.(activeDeviceIndex)} aria-label="Usuń zeskanowaną naklejkę">Usuń</button> : null}
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+
   function renderSelectorPanel() {
     return (
       <div className="mobileDeviceWizardSelectors">
@@ -589,6 +623,7 @@ export default function MobileDeviceWizard({
               {outdoorPhoto.hasPhoto && indoorPhoto.hasPhoto ? 'Komplet zdjęć dodany' : `Dodano ${(outdoorPhoto.hasPhoto ? 1 : 0) + (indoorPhoto.hasPhoto ? 1 : 0)} z 2 tabliczek`}
             </div>
           </div>
+          {renderQrCard()}
           {renderSelectorPanel()}
         </div>
         <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
@@ -660,6 +695,7 @@ export default function MobileDeviceWizard({
           {indoorSerials.length > 2 ? (
             <button type="button" className="mobileDeviceWizardRemoveUnit" onClick={() => onRemoveIndoorUnit?.(activeDeviceIndex, indoorSerials.length - 1)}>Usuń ostatnią JW</button>
           ) : null}
+          {renderQrCard()}
         </div>
         <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
       </div>
@@ -698,7 +734,7 @@ export default function MobileDeviceWizard({
               <div className="mobileDeviceOverviewCard" key={`device-overview-${index}`}>
                 <button type="button" className="mobileDeviceOverviewOpen" onClick={() => openDevice(index)}>
                   <span className="mobileDeviceOverviewIcon"><DeviceIcon multi={type === DEVICE_TYPE_MULTI} /></span>
-                  <span className="mobileDeviceOverviewText"><strong>Urządzenie {index + 1}</strong><small>{getDeviceSummary(device)}</small><em className={completion.complete ? 'ready' : ''}>{completion.complete ? 'Wszystkie tabliczki dodane' : `${completion.ready} z ${completion.total} tabliczek gotowe`}</em></span>
+                  <span className="mobileDeviceOverviewText"><strong>Urządzenie {index + 1}</strong><small>{getDeviceSummary(device)}</small><em className={completion.complete ? 'ready' : ''}>{completion.complete ? 'Wszystkie tabliczki dodane' : `${completion.ready} z ${completion.total} tabliczek gotowe`}</em>{getQrState(index) ? <small className="mobileDeviceOverviewQr">{getQrState(index).code ? `QR: ${formatQrStickerCode(getQrState(index).code)}${getQrState(index).pending ? ' (do zapisania)' : ''}` : 'Bez naklejki QR'}</small> : null}</span>
                   <span className="mobileDeviceOverviewBadge">{type === DEVICE_TYPE_MULTI ? 'Multi' : 'Single'}</span>
                   <ChevronIcon />
                 </button>

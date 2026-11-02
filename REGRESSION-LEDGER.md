@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## QR-STICKERS-1409 — naklejka w kreatorze, przenumerowanie urządzeń (02.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QRS-1409-REALIGN | FIXED-UNVERIFIED | Odtworzenie w smoke: po usunięciu Urządzenia 1 naklejki wskazywały sąsiednie urządzenia. `preserveQrStickersAroundDeviceRemoval` (telefon i komputer): zwolnienie naklejki usuniętego, przeniesienie kolejnych; błąd usunięcia nie rusza naklejek; brak modułu w bazie = dawne zachowanie. |
+| QRS-1409-WIZARD | FIXED-UNVERIFIED | Karta w kroku 2 (Single i Multi, jedna na zestaw), walidacja przed zapisem, przypisanie po zapisie urządzeń, przesuwanie przy usuwaniu urządzenia w kreatorze; E2E Chromium/WebKit. |
+| QRS-1409-COMPACT | FIXED-UNVERIFIED | E2E: karta kreatora ≤ 90 px, linia w karcie montażu ≤ 60 px. |
+| QRS-1409-LIVE | EXTERNAL | iPhone: skan naklejki w kreatorze przy dodawaniu urządzeń i wygląd karty. |
+
 ## QR-STICKERS-1408 — naklejki QR urządzeń (02.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

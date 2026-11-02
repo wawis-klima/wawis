@@ -117,3 +117,88 @@ export function describeQrAssignFailure(result = {}) {
 export function isOnline() {
   return typeof navigator === 'undefined' || navigator.onLine !== false;
 }
+
+/**
+ * 14.09: usunięcie urządzenia z montażu przenumerowuje kolejne urządzenia (dane urządzenia N+1 trafiają
+ * do wiersza urządzenia N). Naklejki są przypisane do wierszy, więc po usunięciu przenosimy je tak,
+ * żeby zostały przy tych samych fizycznych urządzeniach; naklejka usuniętego urządzenia jest zwalniana.
+ * Tylko administrator (jak samo usuwanie urządzenia). Brak modułu naklejek w bazie = samo usunięcie.
+ */
+export async function preserveQrStickersAroundDeviceRemoval({ supabase, jobId, removedIndex, run }) {
+  const removed = Number(removedIndex);
+  let before = null;
+  try {
+    if (isOnline()) before = await loadJobQrStickers({ supabase, jobId });
+  } catch {
+    before = null;
+  }
+  const result = await run();
+  const qr = { moved: [], freed: '', failures: [] };
+  if (!before) return { result, qr };
+  const affected = Object.entries(before)
+    .map(([index, code]) => [Number(index), code])
+    .filter(([index]) => index >= removed)
+    .sort((a, b) => a[0] - b[0]);
+  if (!affected.length) return { result, qr };
+  for (const [, code] of affected) {
+    try { await unassignQrSticker({ supabase, code }); } catch (error) { qr.failures.push({ code, message: error?.message || 'błąd zwolnienia' }); }
+  }
+  for (const [index, code] of affected) {
+    if (index === removed) { qr.freed = code; continue; }
+    try {
+      const assigned = await assignQrStickerToJobDevice({ supabase, code, jobId, deviceIndex: index - 1 });
+      if (assigned?.ok) qr.moved.push({ code, from: index, to: index - 1 });
+      else qr.failures.push({ code, message: describeQrAssignFailure(assigned) });
+    } catch (error) {
+      qr.failures.push({ code, message: error?.message || 'błąd przypisania' });
+    }
+  }
+  return { result, qr };
+}
+
+export function describeQrRealignment(qr = {}) {
+  const parts = [];
+  if (qr.freed) parts.push(`Naklejka ${formatQrStickerCode(qr.freed)} usuniętego urządzenia została zwolniona.`);
+  if (qr.moved?.length) parts.push(`Naklejki pozostałych urządzeń przeniesiono razem z nimi (${qr.moved.map((item) => `${formatQrStickerCode(item.code)} → Urządzenie ${item.to}`).join(', ')}).`);
+  if (qr.failures?.length) parts.push(`Uwaga: nie udało się przenieść naklejek: ${qr.failures.map((item) => `${formatQrStickerCode(item.code)} (${item.message})`).join('; ')}. Sprawdź naklejki w karcie montażu.`);
+  return parts.join(' ');
+}
+
+/** 14.09: przypisanie naklejek zeskanowanych w kreatorze urządzeń, po zapisaniu urządzeń montażu. */
+export async function assignPendingJobQrStickers({ supabase, jobId, pending = {} }) {
+  const outcome = { assigned: [], failures: [] };
+  const entries = Object.entries(pending || {})
+    .map(([index, code]) => [Number(index), normalizeQrStickerCode(code)])
+    .filter(([index, code]) => Number.isInteger(index) && index >= 0 && code);
+  for (const [index, code] of entries) {
+    try {
+      const result = await assignQrStickerToJobDevice({ supabase, code, jobId, deviceIndex: index + 1 });
+      if (result?.ok) outcome.assigned.push({ index, code });
+      else outcome.failures.push({ index, code, message: describeQrAssignFailure(result) });
+    } catch (error) {
+      outcome.failures.push({ index, code, message: error?.message || 'Nie udało się przypisać naklejki.' });
+    }
+  }
+  return outcome;
+}
+
+/**
+ * 14.09: sprawdzenie naklejki zeskanowanej w kreatorze (przed zapisem urządzeń).
+ * Zwraca kod do zapamiętania albo rzuca błąd z czytelnym komunikatem.
+ */
+export async function validateWizardQrSticker({ supabase, code, deviceIndex, savedStickers = {}, pendingStickers = {} }) {
+  const normalized = normalizeQrStickerCode(code);
+  if (!normalized) throw new Error('To nie jest kod naklejki WAWIS.');
+  const otherPending = Object.entries(pendingStickers || {}).find(([index, value]) => Number(index) !== Number(deviceIndex) && value === normalized);
+  if (otherPending) throw new Error(`Naklejka ${formatQrStickerCode(normalized)} jest już wybrana dla Urządzenia ${Number(otherPending[0]) + 1}.`);
+  const result = await lookupQrSticker({ supabase, code: normalized });
+  if (result?.status === 'unknown' || result?.status === 'invalid') {
+    throw new Error(describeQrAssignFailure({ reason: 'unknown_code', code: normalized }));
+  }
+  if (result?.status === 'assigned') {
+    const savedIndex = Object.entries(savedStickers || {}).find(([, value]) => value === normalized)?.[0];
+    if (savedIndex !== undefined && Number(savedIndex) === Number(deviceIndex)) return { code: normalized, already: true };
+    throw new Error(describeQrAssignFailure({ reason: 'sticker_taken', code: normalized, device: result.device, can_replace: false }));
+  }
+  return { code: normalized, already: false };
+}

@@ -25,6 +25,8 @@ function getComparableJobForm(form, normalizeStatus) {
       serialNumber: String(item.serialNumber || ''),
       fileName: String(item.file?.name || ''),
     })),
+    // 14.09: zeskanowana naklejka QR to niezapisana zmiana (ostrzeżenie przed zamknięciem).
+    pending_qr_stickers: Object.entries(form?.pending_qr_stickers || {}).map(([index, code]) => `${index}:${code}`).sort(),
     status: normalizeStatus(form?.status || "Nowe"),
     installation_date: String(form?.installation_date || ""),
     admin_note: String(form?.admin_note || "").trim(),

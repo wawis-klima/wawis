@@ -1,3 +1,11 @@
+## 14.09
+- Naklejki QR (prośba właściciela 02.11.2026 po teście 14.08): miejsce dla pracowników przy dodawaniu urządzeń.
+- Kreator „Dodaj urządzenie” (krok 2 z 4): kompaktowa karta „Naklejka QR · opcjonalnie” z przyciskiem „Zeskanuj” (Single pod tabliczkami JZ/JW, Multi — jedna na cały zestaw). Naklejka sprawdzana od razu (obca, zajęta, wybrana dla innego urządzenia — komunikat), przypisywana po „Zapisz urządzenia i tabliczki”; nieudane przypisanie nie blokuje zapisu urządzeń i zdjęć. Podsumowanie (krok 4): „QR: …” albo „Bez naklejki QR”. Przygotowane do późniejszego włączenia wymagania (na razie opcjonalna).
+- Karta montażu: mniejsza, jednowierszowa linia „Naklejka QR: …” z małymi przyciskami; znaczek „QR …” przy „Urządzenie N” widoczny bez rozwijania; odświeżenie po zapisie urządzeń.
+- Usunięcie urządzenia z montażu (administrator, telefon i komputer): naklejka usuwanego urządzenia zwalniana, naklejki kolejnych urządzeń przenoszone razem z nimi (wcześniej po przenumerowaniu wskazywałyby sąsiednie urządzenie). Ostrzeżenie w oknie potwierdzenia i podsumowanie po usunięciu.
+- Bez zmian bazy danych (funkcje z 14.08).
+- Testy: `smoke-qr-stickers-v1409.mjs` (symulacja przenumerowania z odtworzeniem błędu, kreator, przypisanie po zapisie, podłączenie), E2E `qr-stickers-wizard-v1409.spec.js` (Chromium i WebKit).
+
 ## 14.08
 - Naklejki QR urządzeń (decyzja właściciela 02.11.2026). Naklejka przypisana do URZĄDZENIA; instalacja multi = jedno urządzenie = jedna naklejka.
 - Montaż (pracownik i administrator): w karcie urządzenia „Naklejka QR” → „Przypisz naklejkę QR” — skan aparatem na żywo, zdjęcie albo ręczne wpisanie numeru spod kodu. Opcjonalne: nie blokuje zakończenia montażu. Pracownik tylko w montażu, który może edytować; wymiana i zwolnienie — wyłącznie administrator (z potwierdzeniem).
