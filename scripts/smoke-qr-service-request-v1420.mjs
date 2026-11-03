@@ -183,6 +183,7 @@ assert.equal(shouldShowPublicQrPage({ code: '', storage: mem(), session: mem() }
 assert.equal(shouldShowPublicQrPage({ code: 'UYE8EYCQ', storage: mem({ 'sb-uohziyaudbpwmupvljyd-auth-token': '{"a":1}' }), session: mem() }), false, 'zalogowany pracownik');
 assert.equal(shouldShowPublicQrPage({ code: 'UYE8EYCQ', storage: mem({ 'klima-mock-supabase-session': '{}' }), session: mem() }), false, 'sesja testowa');
 assert.equal(shouldShowPublicQrPage({ code: 'UYE8EYCQ', storage: mem(), session: mem({ [STAFF_LOGIN_FLAG]: '1' }) }), false, '„Jestem pracownikiem”');
+assert.equal(shouldShowPublicQrPage({ code: 'UYE8EYCQ', storage: mem(), session: mem({ 'klima-mock-supabase-session': '{}' }) }), false, 'sesja w pamięci karty (telefon, wersja testowa)');
 assert.equal(hasStoredWawisSession({ getItem() { throw new Error('private'); } }), false);
 
 const main = fs.readFileSync('src/main.jsx', 'utf8');

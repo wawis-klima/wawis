@@ -31,7 +31,8 @@ export function shouldShowPublicQrPage({ code, storage, session }) {
   } catch {
     // brak sessionStorage — bez znaczenia
   }
-  return !hasStoredWawisSession(storage);
+  // Sesja może być w pamięci trwałej (aplikacja) albo w pamięci karty (wersja testowa telefonu).
+  return !hasStoredWawisSession(storage) && !hasStoredWawisSession(session);
 }
 
 async function call(body, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
