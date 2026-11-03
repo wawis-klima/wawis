@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.11",
+  "version": "14.12",
   "scope": "full",
-  "release_branch": "release/v14.11",
+  "release_branch": "release/v14.12",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Dane testowe E2E, usunięte prototypy i migracja photo_audit_log (usunięcie reguły INSERT) uruchamiana przez właściciela; bez zmian kodu aplikacji."
+    "notes": "Zmiana kodu dwóch funkcji Edge (fuel-reference-prices, gus-bir-lookup) i testu; bez zmian bazy i frontendu. Funkcje wdrażane osobno po zgodzie właściciela."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.11",
+    "source_branch": "release/v14.12",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_OWNER_SQL_V1411",
-    "evidence_source": "Po uruchomieniu migracji: SELECT pg_policies dla photo_audit_log oraz nowe wpisy dziennika po dodaniu zdjęcia.",
+    "result": "EXTERNAL_EDGE_DEPLOY_V1412",
+    "evidence_source": "Po wdrożeniu funkcji: wersja funkcji w Supabase, dry bez sesji = 403, wyszukiwanie NIP w aplikacji działa.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.11: fikcyjne dane w testach E2E, usunięte prototypy, migracja photo_audit_log",
-    "release_ci": "WAWIS PR checks (zmienione E2E: v1091, v1092, v1104)",
-    "postdeploy": "Vercel READY/14.11."
+    "code": "14.12: uprawnienia fuel-reference-prices (dry) i gus-bir-lookup",
+    "release_ci": "WAWIS PR checks + smoke-edge-auth-v1412 (roles, infra)",
+    "postdeploy": "Vercel READY/14.12; funkcje Edge wdrożone osobno."
   }
 }

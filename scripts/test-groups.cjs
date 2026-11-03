@@ -133,6 +133,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-link-v1277.mjs',
     'node scripts/smoke-fakturownia-auto-v1280.mjs',
     'node scripts/smoke-fakturownia-v1281.mjs',
+    'node scripts/smoke-edge-auth-v1412.mjs',
   ],
   push: [
     'node scripts/codex-acceptance-push-v1269.mjs',
@@ -321,6 +322,7 @@ const GROUPS = {
     'npm run test:smoke:release-zip-clean',
     'node scripts/smoke-playwright-runner-fail-closed-v1085.cjs',
     'node scripts/smoke-smsapi-webhook-security-v1085.mjs',
+    'node scripts/smoke-edge-auth-v1412.mjs',
     'node scripts/smoke-sms-p0-race-safety-v1242.mjs',
     'node scripts/smoke-sms-callback-snapshot-v1250.mjs',
     'node scripts/smoke-sms-callback-multi-rotation-v1251.mjs',
