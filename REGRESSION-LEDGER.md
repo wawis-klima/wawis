@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## SEC-HEADERS-1416 — nagłówki bezpieczeństwa (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SH-1416-FRAMING | FIXED-UNVERIFIED | Audyt: odpowiedź produkcji tylko z HSTS. `vercel.json` headers; `smoke-security-headers-v1416.mjs` (RED na 14.15). Po wdrożeniu: odczyt nagłówków. |
+| SH-1416-DEVICE-APIS | EXTERNAL | iPhone: aparat (QR, tabliczka) i dyktowanie po wdrożeniu (bez Permissions-Policy — oczekiwane bez zmian). |
+| ST-1416-WAWIS-BUCKET | EXTERNAL | Pusty publiczny bucket `WaWis` — usunięcie w panelu Supabase przez właściciela. |
+| FD-1415-SAME-MS | VERIFIED | CI 14.15 zielone za pierwszym razem; regresja 20/20. |
+
 ## FLAKY-DIAG-1415 — niestabilny test kolejki diagnostyki (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
