@@ -1109,6 +1109,18 @@
    "verified": "SELECT 02.11.2026: 324 kody (2 partie), 0 przypisanych, 0 zdarzeń; RLS włączone na obu tabelach; authenticated i anon bez dostępu do tabel; 6 funkcji public: authenticated=tak, anon=nie; 3 funkcje private; devices 752 i jobs 169 bez zmian",
    "repo_file": "supabase/migrations/20261102160000_qr_stickers_v1408.sql",
    "note": "Wykonana przez właściciela w SQL Editor."
+  },
+  {
+   "version": "20261103100000",
+   "name": "photo_audit_log_no_direct_insert_v1411",
+   "md5": "1ae25b67374217885675955c5b874c78",
+   "md5_of_file": true,
+   "bytes": 668,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-11-03T09:42+01:00",
+   "verified": "SELECT 03.11.2026: pg_policies dla public.photo_audit_log = tylko photo_audit_log_admin_read (reguła INSERT usunięta); trigger i funkcja photo_audit_log_event (SECURITY DEFINER, postgres) bez zmian; dane bez zmian",
+   "repo_file": "supabase/migrations/20261103100000_photo_audit_log_no_direct_insert_v1411.sql",
+   "note": "Właściciel wkleił w SQL Editor samo polecenie drop policy (bez komentarzy); obiekty identyczne z plikiem."
   }
  ],
  "statuses": {

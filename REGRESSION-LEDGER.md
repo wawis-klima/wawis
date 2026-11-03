@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## INFRA-1413 — region funkcji i limit zdjęć (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| IN-1413-REGION | FIXED-UNVERIFIED | Audyt: funkcje `/api` w `iad1`, baza w eu-central-1. `vercel.json` regions fra1; test konfiguracji (RED na 14.12: brak `regions`). Po wdrożeniu: region w Vercel. |
+| IN-1413-PHOTO-LIMIT | FIXED-UNVERIFIED | Audyt: `job-photos` bez limitu rozmiaru i typu. Migracja `20261103110000` (wykonanie w próbie odtworzenia bazy w CI); produkcja: SELECT po uruchomieniu przez właściciela. |
+| DP-1411-AUDIT | VERIFIED | Migracja `20261103100000` wykonana przez właściciela; SELECT 03.11.2026: brak reguły INSERT na `photo_audit_log`. |
+
 ## EDGE-AUTH-1412 — uprawnienia funkcji Edge (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

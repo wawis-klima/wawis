@@ -1,3 +1,9 @@
+## 14.13
+- Region funkcji Vercel (decyzja właściciela 03.11.2026): `vercel.json` → `regions: ["fra1"]`. Odczyt tabliczki i licznika AI (`api/read-nameplate-ai.js`, `api/read-odometer-ai.js`) działał w Waszyngtonie (`iad1`), a baza jest we Frankfurcie — każde zapytanie kilka razy przechodziło przez Atlantyk. Teraz funkcje działają we Frankfurcie, obok bazy; zdjęcia tabliczek zostają w UE.
+- Limit zdjęć montaży: migracja `20261103110000` ustawia w buckecie `job-photos` limit 20 MB i tylko typy obrazów (`image/*`). Dotąd brak limitu. Stan przed zmianą: 1077 plików JPG, największy 4,49 MB — limit nie blokuje żadnego zdjęcia z aplikacji (kompresja do JPG, a bez kompresji zawsze typ obrazu). Migrację uruchamia właściciel w SQL Editor.
+- Rejestr migracji: `20261103100000` (14.11, dziennik zdjęć) wykonana przez właściciela 03.11.2026, sprawdzona SELECT-em.
+- Test `smoke-infra-photo-limits-v1413.mjs` (grupy `photos`, `infra`).
+
 ## 14.12
 - Uprawnienia funkcji Edge (audyt bezpieczeństwa 03.11.2026):
   - `fuel-reference-prices`: tryb diagnostyczny `x-wawis-dry` działał bez logowania — każdy z internetu mógł zlecić pobranie do 40 PDF-ów z API Sejmu i stron z cenami. Teraz tylko administrator (`current_user_is_admin`), sprawdzane przed jakimkolwiek pobieraniem. Aplikacja z tego trybu nie korzysta. Codzienne zadanie cen rynkowych (`x-wawis-snapshot`, pg_cron) bez zmian.
