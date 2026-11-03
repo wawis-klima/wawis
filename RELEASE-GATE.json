@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie danych testowych E2E i usunięcie nieużywanych prototypów; bez zmian kodu aplikacji, bazy i backendu."
+    "notes": "Dane testowe E2E, usunięte prototypy i migracja photo_audit_log (usunięcie reguły INSERT) uruchamiana przez właściciela; bez zmian kodu aplikacji."
   },
   "drive_backup": {
     "required": false,
@@ -21,8 +21,8 @@
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "NOT_REQUIRED_NO_RUNTIME_CHANGE",
-    "evidence_source": "Zmiana bez wpływu na działanie aplikacji (tylko testy i numer wersji).",
+    "result": "EXTERNAL_OWNER_SQL_V1411",
+    "evidence_source": "Po uruchomieniu migracji: SELECT pg_policies dla photo_audit_log oraz nowe wpisy dziennika po dodaniu zdjęcia.",
     "notes": ""
   },
   "archive": {
@@ -32,7 +32,7 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.11: fikcyjne dane w testach E2E, usunięte prototypy z danymi klienta",
+    "code": "14.11: fikcyjne dane w testach E2E, usunięte prototypy, migracja photo_audit_log",
     "release_ci": "WAWIS PR checks (zmienione E2E: v1091, v1092, v1104)",
     "postdeploy": "Vercel READY/14.11."
   }

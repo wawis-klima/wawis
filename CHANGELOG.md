@@ -1,7 +1,8 @@
 ## 14.11
 - Ochrona danych (audyt bezpieczeństwa 03.11.2026): publiczne repozytorium zawierało dane dwóch prawdziwych klientów — w testach E2E (`mobile-v1091-regressions`, `mobile-v1092-full-layout`, `mobile-v1104-contact-autofit`: imię i nazwisko, telefon, e-mail, adres, notatka i link do mapy) oraz w nieużywanych prototypach `preview-v4.html` / `preview-v4.pdf`.
 - Dane w testach zastąpiono fikcyjnymi o identycznej długości (testy szerokości i zawijania sprawdzają te same przypadki graniczne). Prototypy usunięto (nieużywane przez build, testy ani skrypty; raz już usunięte w historii).
-- Bez zmian działania aplikacji, bazy, Storage i funkcji Edge.
+- Dziennik zdjęć (`photo_audit_log`): migracja `20261103100000` usuwa regułę `photo_audit_log_service_insert`, przez którą każdy zalogowany mógł dopisać wpis z dowolnym autorem i datą. Wpisy nadal tworzy trigger i funkcja bazy (SECURITY DEFINER). Migrację uruchamia właściciel w SQL Editor.
+- Bez zmian działania aplikacji, Storage i funkcji Edge.
 
 ## 14.10
 - Skaner naklejki QR (zgłoszenie właściciela 02.11.2026 16:45, zrzut z iPhone'a): okno było przezroczyste nad kreatorem urządzeń (napisy kreatora prześwitywały), duże napisy i przyciski, ciemny ekran — „nie w naszym stylu”.

@@ -1068,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `14.11` — ochrona danych: z repozytorium usunięto dane prawdziwych klientów (testy E2E na fikcyjnych danych tej samej długości, usunięte prototypy `preview-v4`). Bez zmian działania aplikacji i bazy.
+- wersja `14.11` — ochrona danych: z repozytorium usunięto dane prawdziwych klientów (testy E2E na fikcyjnych danych tej samej długości, usunięte prototypy `preview-v4`). Migracja `20261103100000` (uruchamia właściciel) blokuje podrabianie wpisów dziennika zdjęć.
 - wersja `14.10` — skaner naklejki QR w stylu kreatora urządzeń: biały arkusz nad kreatorem, małe napisy i przyciski, jasny podgląd aparatu.
 - wersja `14.09` — naklejka QR w kreatorze urządzeń (krok 2, opcjonalna, jedna na zestaw multi), kompaktowa linia w karcie montażu, naklejki zostają przy właściwych urządzeniach po usunięciu urządzenia z montażu. Bez zmian bazy.
 - wersja `14.08` — naklejki QR urządzeń: przypisanie przy montażu (opcjonalne, pracownik i administrator) i w Urządzeniach (administrator), skan aparatem iPhone'a otwiera montaż; jedna naklejka na urządzenie (multi = jedna). Migracja `20261102160000` wykonywana przez właściciela.
