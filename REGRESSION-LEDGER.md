@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## FLAKY-DIAG-1415 — niestabilny test kolejki diagnostyki (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| FD-1415-SAME-MS | FIXED-UNVERIFIED | CI 03.11.2026 (run 41601903247): `unsynced error must survive noisy informational events`. Odtworzenie: zamrożony zegar → 16–18/20 nieudanych na 14.14. Poprawka w teście (id zamiast `.at(-1)`); `smoke-diagnostics-same-ms-v1415.mjs` 20/20. |
+| SN-1414-SILENT-LINK | VERIFIED | CI 14.14: 3 E2E `mobile-same-name-client-v1414` wykonane i zaliczone (151 passed). |
+
 ## SAME-NAME-CLIENT-1414 — klient o tej samej nazwie (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

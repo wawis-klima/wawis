@@ -1,3 +1,8 @@
+## 14.15
+- Niestabilny test CI (audyt 03.11.2026): `smoke-diagnostics-ingest-queue-v1274` czasem padał („unsynced error must survive noisy informational events”) i opóźniał wydania. Przyczyna w teście: nowy wpis wybierany jako ostatni na liście (`.at(-1)`), a wpisy z tej samej milisekundy są sortowane po losowym id — test brał starszy, już wysłany wpis. Teraz nowy wpis rozpoznawany po identyfikatorze. Kod aplikacji bez zmian.
+- Regresja `smoke-diagnostics-same-ms-v1415.mjs`: test kolejki 20 razy z zamrożonym zegarem (`scripts/fixtures/freeze-clock-v1415.mjs`). RED na 14.14: 16–18/20 nieudanych; GREEN: 20/20.
+- `CLAUDE.md`: decyzje właściciela z audytu 03.11.2026 (blokada powiększania, zgody SMS starej bazy, puste zdjęcia tabliczek, unikalna nazwa klienta).
+
 ## 14.14
 - Klient o tej samej nazwie (audyt 03.11.2026, decyzja właściciela): gdy pracownik dodawał montaż dla klienta o nazwie, która już jest w bazie (np. drugi „Jan Kowalski”), a telefon ani e-mail się nie zgadzały, `worker_create_or_get_contractor_for_job` po cichu przypisywał montaż do istniejącego klienta. Teraz przed zapisem telefon pyta: „W bazie jest już klient „…” (adres, końcówka telefonu). Czy to ten sam klient?”.
   - OK — montaż trafia do istniejącego klienta (jak dotąd).

@@ -54,8 +54,13 @@ assert.equal(later[0].length,1);
 assert.equal(desktopEntries().filter(e=>!e.remote_synced_at).length,0);
 
 // RED Codex D5: 300 info messages cannot erase an unsynced error.
+// 14.15: nowy wpis rozpoznajemy po identyfikatorze, nie po pozycji. Wpisy z tej samej milisekundy
+// są sortowane po losowym id, więc .at(-1) mógł wskazać starszy (już wysłany) wpis — test był niestabilny.
+const idsBeforeProtectedError=new Set(desktopEntries().map(e=>e.id));
 logDesktop('console.error',{args:['Failed to fetch']});
-const protectedErrorId=desktopEntries().at(-1).id;
+const freshEntries=desktopEntries().filter(e=>!idsBeforeProtectedError.has(e.id));
+assert.equal(freshEntries.length,1,'exactly one new unsynced error entry');
+const protectedErrorId=freshEntries[0].id;
 for(let i=0;i<350;i++)logMobile('diagnostic.report.downloaded',{count:i});
 entries=mobileEntries();
 assert(entries.some(e=>e.id===protectedErrorId && !e.remote_synced_at),'unsynced error must survive noisy informational events');

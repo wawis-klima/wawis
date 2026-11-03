@@ -144,6 +144,18 @@ Bez internetu aplikacja nie zapisuje nowych zdjęć w pamięci telefonu (Indexed
 zdjęcia aparatem i dodać je z galerii później. Zapis offline statusu i komentarzy pozostaje. Nie przywracaj zapisu
 zdjęć offline bez nowej, wyraźnej decyzji właściciela.
 
+Decyzje właściciela (03.11.2026, audyt):
+
+- **Powiększanie ekranu na telefonie jest zablokowane celowo** (`user-scalable=no`, `maximum-scale=1.0` w `index.html`).
+  Nie odblokowuj go i nie proponuj odblokowania — właściciel nie chce możliwości powiększania montażu ani innych ekranów.
+- **Zgody SMS urządzeń z importu starej bazy zostają włączone** (569 urządzeń, `sms_consent = true`). Nie wyłączaj ich
+  i nie zgłaszaj ponownie jako problemu.
+- **Puste zdjęcia tabliczek z sierpnia–września 2026** (6 wpisów `photos` z plikiem 0 B w zakończonych montażach):
+  właściciel zgodził się je usunąć tylko pod warunkiem, że nie spowoduje to problemów. Usunięcie oznaczyłoby zakończone
+  montaże jako bez tabliczki (to jedyne zdjęcia tych miejsc), więc zostają; model i numer seryjny są zapisane w montażu.
+- **Dwóch klientów nie może mieć tej samej nazwy** (unikalny indeks `contractors_company_name_unique_idx`); drugiego
+  odróżniamy miejscowością. Od 14.14 pracownik dostaje pytanie „Czy to ten sam klient?”.
+
 Zasady techniczne wynikające z incydentu kolejki zdjęć (22–24.10.2026, wersje 13.42–13.62):
 
 - Lokalnych baz IndexedDB nie otwieramy z numerem wersji niższym niż istniejąca (VersionError). Otwieramy

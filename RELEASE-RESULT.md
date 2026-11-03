@@ -1,6 +1,7 @@
-# RELEASE RESULT — WAWIS 14.14
+# RELEASE RESULT — WAWIS 14.15
 
 ## Zakres
-- Pracownik dodający klienta o nazwie istniejącej w bazie dostaje pytanie „Czy to ten sam klient?” (adres i końcówka telefonu istniejącego klienta). „Anuluj” zatrzymuje zapis przed utworzeniem montażu; zgodny telefon lub e-mail potwierdza klienta bez pytania.
+- Naprawa niestabilnego testu `smoke-diagnostics-ingest-queue-v1274` (wybór wpisu po identyfikatorze zamiast po pozycji) i trwała regresja z zamrożonym zegarem.
+- Decyzje właściciela z audytu zapisane w `CLAUDE.md`.
 
-Bez zmian bazy. Do sprawdzenia na iPhonie pracownika.
+Bez zmian działania aplikacji, bazy i backendu.

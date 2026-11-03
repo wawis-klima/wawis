@@ -45,6 +45,7 @@ const GROUPS = {
     'node scripts/smoke-diagnostics-stage-codes-v1383.mjs',
     'node scripts/smoke-diagnostics-p0-privacy-v1273.mjs',
     'node scripts/smoke-diagnostics-ingest-queue-v1274.mjs',
+    'node scripts/smoke-diagnostics-same-ms-v1415.mjs',
     'node scripts/smoke-diagnostic-worker-rls-v1274.mjs',
     'node scripts/smoke-diagnostics-package4-v1276.mjs',
     'npm run test:smoke:v1120-stability',
