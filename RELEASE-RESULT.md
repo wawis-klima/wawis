@@ -1,7 +1,8 @@
-# RELEASE RESULT — WAWIS 14.17
+# RELEASE RESULT — WAWIS 14.18
 
 ## Zakres
-- Codzienne odświeżenie kolejki SMS przez zadanie bazy i powiadomienie push administratora, gdy są SMS-y do zatwierdzenia.
-- Funkcja Edge `generate-service-sms-queue` (nowy `daily-run.ts`), migracja `20261103140000` (uruchamia właściciel).
+- Codzienna kolejka SMS i powiadomienie administratora o 6:30 czasu polskiego, od poniedziałku do piątku; weekend do poniedziałku.
+- Faktura: samoczynne ponowne sprawdzanie co 15 s przez 10 min po powrocie z Fakturowni („Czekam na fakturę…” zamiast błędu).
+- Migracja `20261103150000` (po `20261103140000`), uruchamia właściciel w SQL Editor.
 
-SMS-y nadal wysyła tylko administrator. Frontend bez zmian.
+SMS-y nadal wysyła tylko administrator. Funkcje Edge bez zmian; frontend: tylko karta montażu (faktura).

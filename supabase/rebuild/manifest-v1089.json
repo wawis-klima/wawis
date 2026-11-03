@@ -142,7 +142,8 @@
     "supabase/migrations/20261102160000_qr_stickers_v1408.sql",
     "supabase/migrations/20261103100000_photo_audit_log_no_direct_insert_v1411.sql",
     "supabase/migrations/20261103110000_job_photos_bucket_limits_v1413.sql",
-    "supabase/migrations/20261103140000_sms_queue_daily_v1417.sql"
+    "supabase/migrations/20261103140000_sms_queue_daily_v1417.sql",
+    "supabase/migrations/20261103150000_sms_queue_daily_0630_v1418.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
