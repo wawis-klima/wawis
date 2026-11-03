@@ -1,3 +1,12 @@
+## 14.17
+- Codzienna kolejka SMS z powiadomieniem (audyt 03.11.2026, decyzja właściciela — wariant pełny): kolejka przypomnień odświeżała się tylko po otwarciu modułu SMS przez administratora. Teraz zadanie bazy (`wawis-sms-queue-daily-v1417`, 06:17/07:17/08:17 UTC, raz dziennie) wywołuje `generate-service-sms-queue` z jednorazowym kodem potwierdzanym w bazie (`claim_sms_queue_daily_run_v1417`, tylko service_role — bez nowych sekretów, wzorzec 13.30). Po odświeżeniu, gdy są SMS-y do zatwierdzenia (liczone jak na ekranie SMS: wpis główny, grupa bez wysłanego SMS-a — `count_pending_sms_groups_v1417`), administrator dostaje jedno powiadomienie push „SMS-y do zatwierdzenia”.
+  - SMS-y nadal wysyła wyłącznie administrator po zatwierdzeniu — zadanie tylko odświeża kolejkę.
+  - Odświeżanie z ekranu SMS bez zmian (bez powiadomienia).
+  - Nowy plik `supabase/functions/generate-service-sms-queue/daily-run.ts`; w `index.ts` zmienione tylko wejście (autoryzacja) i zakończenie.
+- Migracja `20261103140000_sms_queue_daily_v1417.sql` (uruchamia właściciel po wdrożeniu funkcji).
+- Test `smoke-sms-queue-daily-v1417.mjs` (grupy `sms`, `push`): prawdziwy handler Edge; RED na 14.16 (401 dla zadania bazy).
+- Weryfikacje produkcji 03.11.2026: limit `job-photos` i dziennik zdjęć (9 nowych zdjęć 0,3–1,1 MB, 9 wpisów `photo_inserted`); usunięty pusty bucket `WaWis`; nagłówki bezpieczeństwa 14.16 obecne.
+
 ## 14.16
 - Nagłówki bezpieczeństwa strony (audyt 03.11.2026, decyzja właściciela): `vercel.json` → `X-Frame-Options: SAMEORIGIN`, `Content-Security-Policy: frame-ancestors 'self'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`. Dotąd produkcja ustawiała tylko HSTS — aplikację dało się osadzić w cudzej stronie (np. fałszywej stronie logowania). Celowo bez `Permissions-Policy` i bez CSP dla skryptów: aparat, mikrofon, OCR i podgląd PDF bez zmian.
 - Test `smoke-security-headers-v1416.mjs` (grupa `infra`), RED na 14.15.

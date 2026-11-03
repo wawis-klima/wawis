@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.16",
+  "version": "14.17",
   "scope": "full",
-  "release_branch": "release/v14.16",
+  "release_branch": "release/v14.17",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie nagłówków HTTP w vercel.json; bez zmian kodu aplikacji, bazy i backendu."
+    "notes": "Funkcja Edge generate-service-sms-queue (tryb dzienny + push) i migracja pg_cron uruchamiana przez właściciela; frontend bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.16",
+    "source_branch": "release/v14.17",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_HEADERS_V1416",
-    "evidence_source": "Po wdrożeniu: nagłówki odpowiedzi strony; iPhone: aparat (QR/tabliczka), dyktowanie, podgląd PDF na komputerze.",
+    "result": "EXTERNAL_EDGE_AND_OWNER_SQL_V1417",
+    "evidence_source": "Wdrożenie funkcji Edge (2 pliki), test wywołania bez kodu = 403; po migracji: cron.job i pierwszy wpis private.sms_queue_daily_runs_v1417 z processed_at.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.16: nagłówki bezpieczeństwa",
-    "release_ci": "WAWIS PR checks + smoke-security-headers-v1416 (infra)",
-    "postdeploy": "Vercel READY/14.16; nagłówki obecne."
+    "code": "14.17: dzienna kolejka SMS z powiadomieniem",
+    "release_ci": "WAWIS PR checks + smoke-sms-queue-daily-v1417 (sms, push)",
+    "postdeploy": "Vercel READY/14.17; funkcja Edge wdrożona osobno; migracja przez właściciela."
   }
 }
