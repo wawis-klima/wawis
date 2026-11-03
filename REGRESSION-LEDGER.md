@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SAME-NAME-CLIENT-1414 — klient o tej samej nazwie (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SN-1414-SILENT-LINK | FIXED-UNVERIFIED | Audyt: `worker_create_or_get_contractor_for_job` dopasowuje po samej nazwie. Pytanie przed zapisem; `smoke-worker-same-name-client-v1414.mjs` (RED na 14.13), E2E Anuluj/OK/zgodny telefon. |
+| SN-1414-IPHONE | EXTERNAL | iPhone pracownika: okno pytania i komunikat po „Anuluj”. |
+| IN-1413-PHOTO-LIMIT | VERIFIED | SELECT 03.11.2026 10:34: `job-photos` file_size_limit=20971520, allowed_mime_types={image/*}, 1077 plików bez zmian. |
+
 ## INFRA-1413 — region funkcji i limit zdjęć (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

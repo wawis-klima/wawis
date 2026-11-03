@@ -6,6 +6,7 @@ import {
   shouldSendAssignmentPushForInstallationDate,
 } from './jobs-assignment.js';
 import { applyAutoLinkedContractorToJobForm } from './job-contractors.js';
+import { checkWorkerSameNameClient } from './worker-same-name-client.js';
 import { DEVICE_TYPE_SINGLE, ensureJobFormDevices, getJobDeviceRows, serializeJobDevicesToFields } from './job-devices.js';
 import { getNameplatePhotoMetadata } from './photos.js';
 import { insertJobIdempotently } from '../../modules/job-create-idempotency.js';
@@ -211,6 +212,8 @@ async function resolveEditedJobFormForSave({ supabase, form = {}, contractors = 
 
   if (normalizeJobText(seeded.contractor_id)) return seeded;
 
+  // WAWIS 14.14: klient o tej samej nazwie nie jest przypisywany po cichu — pytamy przed zapisem.
+  await checkWorkerSameNameClient({ supabase, form: seeded });
   const linked = applyAutoLinkedContractorToJobForm(seeded, contractors).form;
   if (normalizeJobText(linked.contractor_id)) return linked;
 
@@ -231,6 +234,8 @@ async function resolveNewJobFormForSave({ supabase, form = {}, contractors = [],
     viewers: [...new Set((form.viewers || []).filter(Boolean))],
     status: normalizeWorkerCreateStatus(form.status),
   };
+  // WAWIS 14.14: klient o tej samej nazwie nie jest przypisywany po cichu — pytamy przed zapisem.
+  await checkWorkerSameNameClient({ supabase, form: workerForm });
   const contractor = await createContractorFromWorkerJobForm({ supabase, form: workerForm });
   return contractor?.id ? mergeContractorSnapshotIntoForm(workerForm, contractor) : workerForm;
 }

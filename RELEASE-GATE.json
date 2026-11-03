@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.13",
+  "version": "14.14",
   "scope": "full",
-  "release_branch": "release/v14.13",
+  "release_branch": "release/v14.14",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Region funkcji Vercel (fra1) i migracja limitu bucketu job-photos (uruchamia właściciel); bez zmian kodu aplikacji. Stan job-photos przed zmianą: 1077 plików image/jpeg, max 4,49 MB."
+    "notes": "Zmiana frontendu mobilnego (nowy montaż i edycja bez klienta u pracownika); bez zmian bazy i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.13",
+    "source_branch": "release/v14.14",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_OWNER_SQL_V1413",
-    "evidence_source": "Po wdrożeniu: region funkcji fra1 w Vercel; po migracji SELECT storage.buckets (job-photos: 20971520, {image/*}); odczyt tabliczki działa.",
+    "result": "EXTERNAL_IPHONE_SAME_NAME_CLIENT",
+    "evidence_source": "iPhone pracownika: „+” → klient o nazwie istniejącej w bazie z innym telefonem → pytanie; Anuluj zostawia formularz.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.13: region fra1, limit job-photos",
-    "release_ci": "WAWIS PR checks + smoke-infra-photo-limits-v1413 (photos, infra)",
-    "postdeploy": "Vercel READY/14.13; region funkcji fra1."
+    "code": "14.14: pytanie o klienta o tej samej nazwie",
+    "release_ci": "WAWIS PR checks + smoke-worker-same-name-client-v1414 + E2E mobile-same-name-client-v1414",
+    "postdeploy": "Vercel READY/14.14."
   }
 }
