@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.14",
+  "version": "14.15",
   "scope": "full",
-  "release_branch": "release/v14.14",
+  "release_branch": "release/v14.15",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana frontendu mobilnego (nowy montaż i edycja bez klienta u pracownika); bez zmian bazy i backendu."
+    "notes": "Zmiana wyłącznie testów i dokumentacji (CLAUDE.md); bez zmian kodu aplikacji, bazy i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.14",
+    "source_branch": "release/v14.15",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_SAME_NAME_CLIENT",
-    "evidence_source": "iPhone pracownika: „+” → klient o nazwie istniejącej w bazie z innym telefonem → pytanie; Anuluj zostawia formularz.",
+    "result": "NOT_REQUIRED_NO_RUNTIME_CHANGE",
+    "evidence_source": "Zmiana bez wpływu na działanie aplikacji (testy, dokumentacja, numer wersji).",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.14: pytanie o klienta o tej samej nazwie",
-    "release_ci": "WAWIS PR checks + smoke-worker-same-name-client-v1414 + E2E mobile-same-name-client-v1414",
-    "postdeploy": "Vercel READY/14.14."
+    "code": "14.15: stabilny test diagnostyki, decyzje właściciela",
+    "release_ci": "WAWIS PR checks + smoke-diagnostics-same-ms-v1415 (core)",
+    "postdeploy": "Vercel READY/14.15."
   }
 }
