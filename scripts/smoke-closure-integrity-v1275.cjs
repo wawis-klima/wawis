@@ -57,7 +57,16 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(),'wawis-closure-1275-'));
 const paths = Object.fromEntries(['impact','grouped','e2e','result','changed'].map(x=>[x,path.join(temp,x+'.json')]));
 const write = (key,obj) => fs.writeFileSync(paths[key],JSON.stringify(obj,null,2)+'\n');
 const head = git('rev-parse','HEAD');
+const scripts = {mobile:'scripts/run-playwright-mobile.cjs',desktop:'scripts/run-playwright-desktop.cjs'};
 const changed = git('diff','--name-only','origin/main...HEAD').split(/\r?\n/).filter(Boolean);
+// 14.19: scenariusze PR wymagają zmian względem main (bramka liczy zakres z git diff). Na gałęzi bez
+// zmian (np. lokalnie na main) nie da się ich uczciwie wykonać — w CI to zawsze błąd, nigdy pozorny PASS.
+if (!changed.length) {
+  assert(!process.env.GITHUB_ACTIONS, 'CI: brak zmian względem origin/main — test bramki nie może się wykonać.');
+  try { runIsolatedE2eScenarios(); } finally { fs.rmSync(temp,{recursive:true,force:true}); }
+  console.log('PARTIAL (lokalnie): brak zmian względem origin/main — scenariusze PR pominięte; uruchom na gałęzi wydania. Scenariusze E2E: PASS.');
+  process.exit(0);
+}
 const impact = classifyRelease({baseRef:'origin/main',changedFiles:changed});
 assert(impact.groups.length>0);
 same(impact.groups,impact.pr_groups);
@@ -73,7 +82,6 @@ const grouped = {
   commands:uniqueCommands(impact.groups).map(command=>({command,status:'passed'})),
   all_passed:true,
 };
-const scripts = {mobile:'scripts/run-playwright-mobile.cjs',desktop:'scripts/run-playwright-desktop.cjs'};
 const e2e = {
  schema_version:2,type:'e2e', ...gitEvidence,
  platforms:impact.e2e,runs:impact.e2e.map(platform=>({platform,script:scripts[platform],status:'passed'})),
@@ -116,7 +124,13 @@ try {
  write('grouped',grouped);
  write('e2e',{...e2e,git_head_sha:'f'.repeat(40)});
  rejected=gate();
- assert.notEqual(rejected.status,0,'stale E2E commit should be rejected');
+ if (impact.needs_playwright) {
+  assert.notEqual(rejected.status,0,'stale E2E commit should be rejected');
+ } else {
+  // 14.19: gałąź bez zmian ekranu (np. tylko baza/testy) nie wymaga E2E — bramka nie czyta wtedy
+  // dowodu E2E. Odrzucenie nieaktualnego E2E sprawdza osobny scenariusz poniżej.
+  assert.equal(rejected.status,0,'E2E not required for this diff — gate must not depend on E2E file:\n'+rejected.stderr);
+ }
 
  write('e2e',e2e);
  write('impact',{...impact,effective_files:[]});
@@ -128,7 +142,39 @@ try {
  rejected=gate();
  assert.notEqual(rejected.status,0,'partial grouped result should fail closed');
 
+ runIsolatedE2eScenarios();
+
  console.log('PASS CODEX G1/G2 C5/C6: global/shared dependencies, platform E2E for all module styles and eight CI integrity/NO-GO mutations.');
 } finally {
  fs.rmSync(temp,{recursive:true,force:true});
+}
+
+// 14.19: dowód E2E sprawdzany zawsze, niezależnie od zmian na bieżącej gałęzi. Klasyfikacja ze zmianą
+// ekranu (mobile CSS) i proweniencja CI z GITHUB_SHA/RUN_ID: nieaktualny, niepełny lub niezgodny E2E = NO-GO.
+function runIsolatedE2eScenarios() {
+  const uiImpact = {...classifyEffectiveFiles(['src/mobile791/styles.css']), base_ref:'origin/main'};
+  assert.equal(uiImpact.needs_playwright,true);
+  const ci = {GITHUB_SHA:'c'.repeat(40),GITHUB_RUN_ID:'9001',GITHUB_RUN_ATTEMPT:'1'};
+  const ciEvidence = {git_sha:ci.GITHUB_SHA,git_head_sha:head,git_run_id:ci.GITHUB_RUN_ID,git_run_attempt:ci.GITHUB_RUN_ATTEMPT};
+  const uiGrouped = {schema_version:2,type:'grouped-checks',...ciEvidence,groups:uiImpact.groups,
+   expected_commands:uniqueCommands(uiImpact.groups),
+   commands:uniqueCommands(uiImpact.groups).map(command=>({command,status:'passed'})),all_passed:true};
+  const uiE2e = {schema_version:2,type:'e2e',...ciEvidence,platforms:uiImpact.e2e,
+   runs:uiImpact.e2e.map(platform=>({platform,script:scripts[platform],status:'passed'})),all_passed:true};
+  const fixtureEnv = {...process.env,...ci}; delete fixtureEnv.WAWIS_PR_HEAD_SHA;
+  const uiGate = ()=>spawnSync(process.execPath,[path.join(repo,'scripts/verify-closure-evidence.cjs'),
+   paths.impact,paths.grouped,paths.e2e,paths.result],{cwd:repo,env:fixtureEnv,encoding:'utf8',timeout:12000});
+  write('impact',uiImpact); write('grouped',uiGrouped); write('e2e',uiE2e);
+  const ok=uiGate();
+  assert.equal(ok.status,0,'valid UI evidence:\n'+ok.stderr+'\n'+ok.stdout);
+  write('e2e',{...uiE2e,git_sha:'f'.repeat(40)});
+  assert.notEqual(uiGate().status,0,'stale E2E commit should be rejected');
+  write('e2e',{...uiE2e,git_run_id:'1'});
+  assert.notEqual(uiGate().status,0,'E2E from another CI run should be rejected');
+  write('e2e',{...uiE2e,all_passed:false});
+  assert.notEqual(uiGate().status,0,'failed E2E should be rejected');
+  write('e2e',{...uiE2e,runs:[]});
+  assert.notEqual(uiGate().status,0,'missing E2E runs should be rejected');
+  fs.rmSync(paths.e2e);
+  assert.notEqual(uiGate().status,0,'required E2E evidence missing should be rejected');
 }

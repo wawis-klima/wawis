@@ -238,6 +238,7 @@ const GROUPS = {
     'node scripts/smoke-sms-queue-daily-0630-v1418.mjs',
   ],
   desktop: [
+    'npm run test:smoke:desktop-new-job-compact',
     'node scripts/smoke-postal-code-v1196.mjs',
     'node scripts/smoke-fakturownia-v1195.cjs',
     'node scripts/smoke-fakturownia-verify-v1203.cjs',
