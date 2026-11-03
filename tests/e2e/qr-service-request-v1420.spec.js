@@ -103,7 +103,11 @@ test.describe('14.20: zakładka Zgłoszenia na komputerze', () => {
     await expect(panel.getByText('Brak nowych zgłoszeń.')).toBeVisible();
     await panel.getByRole('button', { name: 'Wszystkie' }).click();
     await expect(panel.getByTestId('service-request-row')).toHaveCount(2);
-    const store = await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__.getStore().service_requests.map((r) => r.status));
-    expect(store).toEqual(['zalatwione', 'zalatwione']);
+    // Zmiana zapisana w bazie, nie tylko na ekranie: po ponownym wczytaniu listy obie pozycje są załatwione.
+    await panel.getByRole('button', { name: 'Odśwież' }).click();
+    await expect(panel.getByRole('button', { name: 'Nowe (0)' })).toBeVisible();
+    await panel.getByRole('button', { name: 'Załatwione' }).click();
+    await expect(panel.getByTestId('service-request-row')).toHaveCount(2);
+    await expect(panel.getByTestId('service-request-row').first()).toContainText('Klient Testowy A');
   });
 });
