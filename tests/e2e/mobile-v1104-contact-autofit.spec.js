@@ -11,7 +11,7 @@ async function seedAutoFitJob(page) {
   await page.evaluate((storeKey) => {
     const store = window.__KLIMA_MOCK_SUPABASE__.getStore();
     const job = store.jobs.find((item) => item.id === 'mock-job-003');
-    job.email = 'pawel.gruca.zawiercie.paderewskiego112a@onet.pl';
+    job.email = 'jan.przyklad.zawiercie.testowaulica112a@test.pl';
     job.city = 'Zawiercie';
     job.street = 'Aleja Generała Władysława Sikorskiego 112a';
     job.location = 'Zawiercie, Aleja Generała Władysława Sikorskiego 112a';

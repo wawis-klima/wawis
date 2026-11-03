@@ -139,7 +139,8 @@
     "supabase/migrations/20261031160000_service_visit_photo_delete_like_jobs_v1403.sql",
     "supabase/migrations/20261031200000_service_visit_partial_checklist_v1404.sql",
     "supabase/migrations/20261102090000_sms_snapshot_group_window_v1406.sql",
-    "supabase/migrations/20261102160000_qr_stickers_v1408.sql"
+    "supabase/migrations/20261102160000_qr_stickers_v1408.sql",
+    "supabase/migrations/20261103100000_photo_audit_log_no_direct_insert_v1411.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }

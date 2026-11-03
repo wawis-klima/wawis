@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.10",
+  "version": "14.11",
   "scope": "full",
-  "release_branch": "release/v14.10",
+  "release_branch": "release/v14.11",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Zmiana wyłącznie wyglądu skanera QR (CSS i znaczniki); bez zmian bazy i logiki."
+    "notes": "Dane testowe E2E, usunięte prototypy i migracja photo_audit_log (usunięcie reguły INSERT) uruchamiana przez właściciela; bez zmian kodu aplikacji."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.10",
+    "source_branch": "release/v14.11",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_IPHONE_QR_SCANNER_LOOK",
-    "evidence_source": "iPhone: kreator → Naklejka QR → Zeskanuj — wygląd okna.",
+    "result": "EXTERNAL_OWNER_SQL_V1411",
+    "evidence_source": "Po uruchomieniu migracji: SELECT pg_policies dla photo_audit_log oraz nowe wpisy dziennika po dodaniu zdjęcia.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.10: wygląd skanera QR",
-    "release_ci": "WAWIS PR checks + E2E wygląd skanera (Chromium, WebKit)",
-    "postdeploy": "Vercel READY/14.10."
+    "code": "14.11: fikcyjne dane w testach E2E, usunięte prototypy, migracja photo_audit_log",
+    "release_ci": "WAWIS PR checks (zmienione E2E: v1091, v1092, v1104)",
+    "postdeploy": "Vercel READY/14.11."
   }
 }

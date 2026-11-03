@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## DATA-PRIVACY-1411 — dane klientów w publicznym repozytorium (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DP-1411-TESTS | FIXED-UNVERIFIED | Audyt: dane klienta z produkcji w trzech testach E2E. Fikcyjne dane tej samej długości; te same testy E2E uruchamiane w CI. |
+| DP-1411-PREVIEW | FIXED-UNVERIFIED | Audyt: imię, nazwisko i adres klienta w `preview-v4.html/.pdf`. Pliki usunięte; brak odwołań w buildzie i skryptach. |
+| DP-1411-AUDIT | FIXED-UNVERIFIED | Audyt: reguła INSERT `auth.uid() is not null` na `photo_audit_log` pozwala podrobić wpis. Migracja `20261103100000`; dowód po wykonaniu: SELECT z `pg_policies` (brak reguły) i nowe wpisy z triggera. |
+| DP-1411-HISTORY | EXTERNAL | Dane pozostają w historii Git publicznego repozytorium — decyzja właściciela (repozytorium prywatne). |
+
 ## QR-SCANNER-LOOK-1410 — wygląd skanera naklejki (02.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -25,7 +25,7 @@ test.describe('@mobile 10.91 regressions', () => {
             <article class="card premiumCard">
               <div class="jobHead detailHeader">
                 <div class="detailIdentity">
-                  <h2 class="detailTitle">KOROŚ PAWEŁ</h2>
+                  <h2 class="detailTitle">NOWAŚ PAWEŁ</h2>
                   <div class="detailMeta">
                     <div class="infoItem">
                       <span class="infoLabel infoLabelWithIcon"><span>EMAIL</span></span>
@@ -33,7 +33,7 @@ test.describe('@mobile 10.91 regressions', () => {
                     </div>
                     <div class="infoItem">
                       <span class="infoLabel infoLabelWithIcon"><span>ADRES</span></span>
-                      <div class="infoValue"><a class="addressLink">Parkoszowice, Krajobrazowa 39 — bardzo długi dodatkowy opis adresu montażu</a></div>
+                      <div class="infoValue"><a class="addressLink">Przykładowka, Testowa Długa 9 — bardzo długi dodatkowy opis adresu montażu</a></div>
                     </div>
                   </div>
                   <div class="detailActions mobileFourButtons">
