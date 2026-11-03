@@ -14,7 +14,10 @@ const preceding = desktopJobForm.slice(Math.max(0, deviceSectionIndex - 80), dev
 assert.match(preceding, /\{editingJobId\s*\?\s*\(\s*$/, 'Sekcja urządzeń nie jest ograniczona wyłącznie do edycji istniejącego montażu.');
 assert.ok(desktopJobForm.includes('editingJobId ? "Edytuj montaż" : "Nowy montaż / zlecenie"'), 'Brak rozróżnienia trybu nowego i edycji.');
 assert.ok(desktopJobForm.includes('Komentarz administratora'), 'Nowy formularz stracił komentarz administratora.');
-assert.ok(desktopJobForm.includes('Instalatorzy (opcjonalnie)'), 'Nowy formularz stracił przydział instalatorów.');
+// 12.02 (01.10.2026, decyzja właściciela): przydział instalatorów usunięty z formularza desktop —
+// formularz nie może go po cichu przywrócić. (14.19: test dopasowany; wcześniej wymagał starego pola.)
+assert.ok(!desktopJobForm.includes('Instalatorzy (opcjonalnie)'), 'Formularz desktop przywrócił przydział instalatorów usunięty w 12.02.');
+assert.ok(desktopJobForm.includes('desktopJobFormCreate'), 'Brak osobnego układu formularza nowego montażu (12.02).');
 assert.ok(desktopJobForm.includes('Zapisz zlecenie'), 'Nowy formularz stracił zapis zlecenia.');
 
 // 12.97: mobile edits job data only; JZ/JW remain available through the dedicated wizard.

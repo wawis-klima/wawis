@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## TESTS-1419 — przegląd nieprzechodzących testów (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| T-1419-NEWJOB | FIXED-UNVERIFIED | `smoke-desktop-new-job-compact` RED na 14.18 („stracił przydział instalatorów” — pole usunięte celowo w 12.02); GREEN po dopasowaniu; dołączony do grupy `desktop`. |
+| T-1419-CLOSURE | FIXED-UNVERIFIED | `smoke-closure-integrity-v1275`: na `main` bez zmian RED; teraz PARTIAL lokalnie, exit 1 przy `GITHUB_ACTIONS`; na gałęzi ze zmianami PASS + 5 nowych odrzuceń E2E (nieaktualny SHA, inny run, all_passed=false, brak runs, brak pliku). |
+| SQ-1418-LIVE | VERIFIED | SQL właściciela 03.11.2026 14:32: `cron.job` = tylko `wawis-sms-queue-daily-v1418` (`*/15 4-6 * * 1-5`), funkcje tylko service_role; funkcja Edge z fałszywym kodem → 403 „Zadanie nieautoryzowane lub już wykonane.”. Pierwszy przebieg: środa 04.11 6:30. |
+
 ## SMS-QUEUE-0630-1418 — godzina kolejki SMS (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

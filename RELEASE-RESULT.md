@@ -1,8 +1,8 @@
-# RELEASE RESULT — WAWIS 14.18
+# RELEASE RESULT — WAWIS 14.19
 
 ## Zakres
-- Codzienna kolejka SMS i powiadomienie administratora o 6:30 czasu polskiego, od poniedziałku do piątku; weekend do poniedziałku.
-- Faktura: samoczynne ponowne sprawdzanie co 15 s przez 10 min po powrocie z Fakturowni („Czekam na fakturę…” zamiast błędu).
-- Migracja `20261103150000` (po `20261103140000`), uruchamia właściciel w SQL Editor.
+- Test `smoke-desktop-new-job-compact` dopasowany do decyzji 12.02 i dołączony do grupy `desktop`.
+- Test `smoke-closure-integrity-v1275` działa niezależnie od zakresu zmian gałęzi; dodatkowe scenariusze odrzucenia dowodu E2E.
+- Rejestr migracji: `20261103140000` i `20261103150000` wykonane przez właściciela 03.11.2026 14:32.
 
-SMS-y nadal wysyła tylko administrator. Funkcje Edge bez zmian; frontend: tylko karta montażu (faktura).
+Bez zmian działania aplikacji.

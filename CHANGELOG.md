@@ -1,3 +1,9 @@
+## 14.19
+- Testy sprawdzone na prośbę właściciela (03.11.2026) — żaden nie usunięty, aplikacja bez zmian:
+  - `smoke-desktop-new-job-compact`: wymagał pola „Instalatorzy (opcjonalnie)”, które usunięto celowo w 12.02 (01.10.2026); test nie był w CI, więc od miesiąca nikt nie widział, że nie przechodzi. Teraz pilnuje decyzji 12.02 (pole nie wraca, osobny układ nowego montażu) i jest w grupie `desktop`.
+  - `smoke-closure-integrity-v1275`: zakładał, że testy ekranu (E2E) są zawsze wymagane, i padał na gałęzi bez zmian względem `main`. Bramka była szczelna — poprawiony tylko test: odrzucenie nieaktualnego/niepełnego/obcego dowodu E2E sprawdzane osobnym scenariuszem niezależnie od gałęzi; gałąź bez zmian ekranu nie wymaga E2E; brak zmian względem `main` w CI = błąd (nigdy pozorny PASS), lokalnie jawny komunikat PARTIAL.
+  - `smoke-mobile-protocol-v979`: bez zmian — w CI przechodzi; lokalnie brak biblioteki `esbuild` (zablokowany npm w środowisku Claude).
+
 ## 14.18
 - Faktura: samoczynne ponowne sprawdzanie po powrocie z Fakturowni (zgłoszenie właściciela 03.11.2026, faktura 8/11/2026). Aplikacja sprawdzała Fakturownię tylko w chwili powrotu do zakładki WAWIS — gdy administrator zajrzał do WAWIS przed kliknięciem „Zapisz” w Fakturowni, pokazywał się błąd „Nie wykryto jeszcze nowej wystawionej faktury…” i nic się nie działo do kolejnego przełączenia zakładki. Teraz po powrocie, gdy faktury jeszcze nie ma, karta pokazuje „Czekam na fakturę z Fakturowni…” i sama sprawdza co 15 s przez 10 min (tylko gdy karta jest widoczna); po wykryciu faktura potwierdza się jak dotąd. Inne powody (kilka faktur, zmienione dane, niepełna lista) pokazywane od razu. Ręczne „Sprawdź wystawioną fakturę” i powiązanie po numerze bez zmian. Funkcja Edge bez zmian.
   - Moduł `src/modules/fakturownia-recheck.js`, test `smoke-fakturownia-recheck-v1418.mjs` (grupa `roles`, RED na 14.17).
