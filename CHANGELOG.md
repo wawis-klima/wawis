@@ -1,3 +1,13 @@
+## 14.20
+- Zgłoszenia od klientów z naklejki QR (decyzja właściciela 03.11.2026). Klient (bez konta) skanuje naklejkę na klimatyzatorze i zamiast ekranu logowania widzi stronę firmy: model, data montażu, termin przeglądu (jak przy SMS: 11 mies., potem co 12; „Czas na przegląd”, gdy termin trwa), przycisk „Zadzwoń do serwisu” i dwa wybory: „Zgłoś awarię” (opis wymagany) / „Umów przegląd”, plus numer telefonu.
+  - Publiczna strona pokazuje wyłącznie bezpieczne dane — bez nazwiska, adresu, numeru seryjnego i historii (test sprawdza dokładny zestaw pól). Bez service workera i instalacji aplikacji na telefonie klienta.
+  - Funkcja Edge `qr-service-request` (bez logowania, `verify_jwt = false`): nieznany kod = 404, walidacja, pole-pułapka dla robotów, limity (3 zgłoszenia na naklejkę i 5 z jednego adresu IP na dobę, 20 łącznie na godzinę; IP zapisywane tylko jako skrót SHA-256), zapis i powiadomienie push „Nowe zgłoszenie: Awaria/Przegląd” do administratorów (model, klient, miejscowość, telefon, opis; jedno na subskrypcję — `push_claim_delivery_v1268`).
+  - Zalogowany pracownik po zeskanowaniu widzi jak dotąd okno naklejki; na stronie klienta link „Jestem pracownikiem WAWIS — zaloguj się”.
+  - Komputer: nowa zakładka „Zgłoszenia” (KOMUNIKACJA): nowe/załatwione/wszystkie, klient (przejście do karty), urządzenie, naklejka, opis, telefon z formularza i z karty, „Oznacz jako załatwione”.
+  - Migracja `20261103200000_service_requests_v1420.sql` (uruchamia właściciel): tabela `service_requests` bez dostępu API (RLS, zapis tylko funkcją Edge), funkcje administratora `service_requests_list_v1420`, `service_request_set_status_v1420`. Bez zmian istniejących tabel i danych.
+- Testy: `smoke-qr-service-request-v1420.mjs` (prawdziwy handler Edge, logika, start strony, migracja; grupy `roles`, `push`), E2E `qr-service-request-v1420.spec.js` (strona klienta na telefonie, limity, „Jestem pracownikiem”, zakładka na komputerze). `smoke-lazy-modules.cjs`: lista modułów pojedynczej kolumny uzupełniona o „requests”.
+- Uwaga: `smoke-admin-mobile-edit-compact-v1298.cjs` (poza CI) nie przechodzi także na 14.19 — nieaktualny, do przeglądu osobno.
+
 ## 14.19
 - Testy sprawdzone na prośbę właściciela (03.11.2026) — żaden nie usunięty, aplikacja bez zmian:
   - `smoke-desktop-new-job-compact`: wymagał pola „Instalatorzy (opcjonalnie)”, które usunięto celowo w 12.02 (01.10.2026); test nie był w CI, więc od miesiąca nikt nie widział, że nie przechodzi. Teraz pilnuje decyzji 12.02 (pole nie wraca, osobny układ nowego montażu) i jest w grupie `desktop`.

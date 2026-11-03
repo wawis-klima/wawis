@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## QR-REQUESTS-1420 — zgłoszenia klientów z naklejki QR (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1420-PUBLIC | FIXED-UNVERIFIED | Strona klienta tylko z bezpiecznymi polami (dokładny zestaw kluczy w teście); bez service workera; E2E @mobile. |
+| QR-1420-ABUSE | FIXED-UNVERIFIED | Nieznany kod 404, pole-pułapka, limity 3/naklejka, 5/IP na dobę, 20/h; IP tylko jako SHA-256. Prawdziwy handler w `smoke-qr-service-request-v1420.mjs`. |
+| QR-1420-ADMIN | FIXED-UNVERIFIED | Tabela bez dostępu API; lista i zmiana statusu tylko administrator (`current_user_is_admin`); zakładka „Zgłoszenia” E2E. |
+| QR-1420-STAFF | FIXED-UNVERIFIED | Zalogowany pracownik: dotychczasowe okno naklejki (qr-stickers-v1408 bez zmian); „Jestem pracownikiem” → logowanie → okno naklejki (E2E). |
+| QR-1420-LIVE | EXTERNAL | Po wdrożeniu: funkcja Edge, SQL właściciela, prawdziwy skan naklejki iPhone'em, zgłoszenie testowe i push na telefonie administratora. |
+
 ## TESTS-1419 — przegląd nieprzechodzących testów (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

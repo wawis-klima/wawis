@@ -1,8 +1,8 @@
-# RELEASE RESULT — WAWIS 14.19
+# RELEASE RESULT — WAWIS 14.20
 
 ## Zakres
-- Test `smoke-desktop-new-job-compact` dopasowany do decyzji 12.02 i dołączony do grupy `desktop`.
-- Test `smoke-closure-integrity-v1275` działa niezależnie od zakresu zmian gałęzi; dodatkowe scenariusze odrzucenia dowodu E2E.
-- Rejestr migracji: `20261103140000` i `20261103150000` wykonane przez właściciela 03.11.2026 14:32.
+- Publiczna strona naklejki QR dla klienta: model, termin przeglądu, telefon, zgłoszenie awarii lub przeglądu.
+- Funkcja Edge `qr-service-request` (walidacja, limity, push do administratorów), zakładka „Zgłoszenia” na komputerze.
+- Migracja `20261103200000` (uruchamia właściciel) — nowa tabela i funkcje, bez zmian istniejących danych.
 
-Bez zmian działania aplikacji.
+Obszary chronione: start aplikacji (`main.jsx`), nowa publiczna funkcja Edge, powiadomienia push.

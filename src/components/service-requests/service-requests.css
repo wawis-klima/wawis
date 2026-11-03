@@ -1,0 +1,32 @@
+/* WAWIS 14.20 — zakładka „Zgłoszenia” (komputer). */
+.serviceRequestsPanel { display: grid; gap: 14px; }
+.serviceRequestsHead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.serviceRequestsHead h2 { margin: 0; }
+.serviceRequestsLead { margin: 4px 0 0; color: #5a6b80; }
+.serviceRequestsTools, .serviceRequestsFilter { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.serviceRequestsError { color: #b42318; font-weight: 600; margin: 0; }
+.serviceRequestsEmpty { color: #5a6b80; margin: 8px 0; }
+.serviceRequestsList { display: grid; gap: 10px; }
+.serviceRequestRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; border: 1px solid #d8e0ec; border-radius: 14px; padding: 12px 14px; background: #fff; }
+.serviceRequestRow.isNew { border-color: #2563eb; box-shadow: inset 4px 0 0 #2563eb; }
+.serviceRequestMain { display: grid; gap: 4px; min-width: 0; }
+.serviceRequestTop { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.serviceRequestKind { font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; }
+.serviceRequestKind.kind-awaria { background: #fdecea; color: #b42318; }
+.serviceRequestKind.kind-przeglad { background: #e3ecfd; color: #1e4fbf; }
+.serviceRequestDate { color: #5a6b80; font-size: 14px; font-variant-numeric: tabular-nums; }
+.serviceRequestStatus { font-size: 13px; font-weight: 700; color: #5a6b80; }
+.serviceRequestStatus.status-nowe { color: #1e4fbf; }
+.serviceRequestStatus.status-zalatwione { color: #1d7a46; }
+.serviceRequestClient { overflow-wrap: anywhere; }
+.serviceRequestLink { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: #1e4fbf; cursor: pointer; text-decoration: underline; }
+.serviceRequestDevice { color: #5a6b80; font-size: 14px; overflow-wrap: anywhere; }
+.serviceRequestText { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.serviceRequestText.isEmpty { color: #8a99ab; font-style: italic; }
+.serviceRequestSide { display: grid; gap: 6px; justify-items: end; align-content: start; }
+.serviceRequestPhone { font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.serviceRequestPhoneAlt { font-size: 13px; color: #5a6b80; white-space: nowrap; }
+@media (max-width: 900px) {
+  .serviceRequestRow { grid-template-columns: minmax(0, 1fr); }
+  .serviceRequestSide { justify-items: start; }
+}

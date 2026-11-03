@@ -49,6 +49,7 @@ const JobDetailsPanel = lazy(() => import("./components/JobDetailsPanel.jsx"));
 const JobFormModal = lazy(() => import("./components/modals/JobFormModal.jsx"));
 const DiagnosticsPanel = lazy(() => import("./components/diagnostics/DiagnosticsPanel.jsx"));
 const FuelPanel = lazy(() => import("./components/fuel/FuelPanel.jsx"));
+const ServiceRequestsPanel = lazy(() => import("./components/service-requests/ServiceRequestsPanel.jsx"));
 
 const adminModuleFallback = (
   <div className="card authCard">Trwa ładowanie modułu...</div>
@@ -136,7 +137,7 @@ export default function App() {
   // ustawiamy dopiero po wczytaniu profilu — strażnik ról poniżej działa bez zmian.
   const [restoredPosition] = useState(() => splitRestoredPosition(restorePositionAfterUpdate({
     fallbackModule: "center360",
-    allowedModules: ["center360", "jobs", "contractors", "fuel", "sms", "devices", "calendar", "diagnostics"],
+    allowedModules: ["center360", "jobs", "contractors", "fuel", "sms", "devices", "calendar", "diagnostics", "requests"],
   }), { fallbackModule: "center360", workerModules: ["jobs", "fuel"] }));
   const initialPosition = restoredPosition.initial;
   const pendingAdminPositionRef = useRef(restoredPosition.adminPending);
@@ -1114,6 +1115,11 @@ export default function App() {
                 jobs={jobs}
                 focusedDateKey={calendarFocusDateKey}
                 onOpenJob={handleOpenJobFromCalendar}
+              />
+            ) : activeModule === "requests" ? (
+              <ServiceRequestsPanel
+                supabase={supabase}
+                onOpenContractor={(contractorId) => handleOpenContractorFromSms({ contractor_id: contractorId })}
               />
             ) : activeModule === "diagnostics" ? (
               <DiagnosticsPanel
