@@ -158,6 +158,7 @@ const GROUPS = {
     'npm run test:smoke:desktop-push-disabled',
     'node scripts/smoke-session-push-gate-v1083.mjs',
     'node scripts/smoke-audit-fixes-v1087.mjs',
+    'node scripts/smoke-sms-queue-daily-v1417.mjs',
   ],
   fuel: [
     'node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs',
@@ -231,6 +232,7 @@ const GROUPS = {
     'node scripts/smoke-sms-history-mutations-v1258.mjs',
     'node scripts/smoke-sms-delete-identity-v1259.mjs',
     'node scripts/smoke-sms-group-window-batch-v1406.mjs',
+    'node scripts/smoke-sms-queue-daily-v1417.mjs',
   ],
   desktop: [
     'node scripts/smoke-postal-code-v1196.mjs',

@@ -1,7 +1,7 @@
-# RELEASE RESULT — WAWIS 14.16
+# RELEASE RESULT — WAWIS 14.17
 
 ## Zakres
-- Nagłówki bezpieczeństwa: `X-Frame-Options: SAMEORIGIN`, `frame-ancestors 'self'`, `nosniff`, `Referrer-Policy`.
-- Pusty bucket `WaWis` usuwa właściciel w panelu Supabase.
+- Codzienne odświeżenie kolejki SMS przez zadanie bazy i powiadomienie push administratora, gdy są SMS-y do zatwierdzenia.
+- Funkcja Edge `generate-service-sms-queue` (nowy `daily-run.ts`), migracja `20261103140000` (uruchamia właściciel).
 
-Bez zmian działania aplikacji.
+SMS-y nadal wysyła tylko administrator. Frontend bez zmian.

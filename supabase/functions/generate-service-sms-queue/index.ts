@@ -1,4 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
+import { authorizeDailyRun, finishDailyRun } from "./daily-run.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,15 +25,42 @@ Deno.serve(async (request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     if (!supabaseUrl || !supabaseAnonKey || !serviceRoleKey) return json({ error: "Brakuje konfiguracji Supabase." }, 500);
 
-    const authHeader = request.headers.get("Authorization") || "";
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader } } });
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const requestBody = await request.json().catch(() => null);
 
-    const { data: authData, error: authError } = await userClient.auth.getUser();
-    if (authError || !authData.user) return json({ error: "Brak autoryzacji użytkownika." }, 401);
+    // WAWIS 14.17: codzienne zadanie bazy (pg_cron) — jednorazowy kod potwierdzany w bazie zamiast sesji administratora.
+    const dailyRun = await authorizeDailyRun(adminClient, requestBody);
+    let callerProfile: { id: string; role?: string | null };
+    if (dailyRun.isDaily) {
+      if (!dailyRun.ok) return json({ error: dailyRun.error }, dailyRun.status);
+      callerProfile = { id: dailyRun.adminId };
+    } else {
+      const authHeader = request.headers.get("Authorization") || "";
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, { global: { headers: { Authorization: authHeader } } });
 
-    const { data: callerProfile, error: profileError } = await adminClient.from("profiles").select("id, role").eq("id", authData.user.id).single();
-    if (profileError || !callerProfile || !isAdminRole(callerProfile.role)) return json({ error: "Tylko administrator może odświeżać listę SMS." }, 403);
+      const { data: authData, error: authError } = await userClient.auth.getUser();
+      if (authError || !authData.user) return json({ error: "Brak autoryzacji użytkownika." }, 401);
+
+      const { data: profile, error: profileError } = await adminClient.from("profiles").select("id, role").eq("id", authData.user.id).single();
+      if (profileError || !profile || !isAdminRole(profile.role)) return json({ error: "Tylko administrator może odświeżać listę SMS." }, 403);
+      callerProfile = profile;
+    }
+    const finishIfDaily = async (summary: Record<string, unknown>) => {
+      if (!dailyRun.isDaily || !dailyRun.ok) return summary;
+      const daily = await finishDailyRun({
+        adminClient,
+        run: dailyRun,
+        summary,
+        webpush,
+        vapid: {
+          publicKey: Deno.env.get("WEB_PUSH_VAPID_PUBLIC_KEY") || "",
+          privateKey: Deno.env.get("WEB_PUSH_VAPID_PRIVATE_KEY") || "",
+          subject: Deno.env.get("WEB_PUSH_VAPID_SUBJECT") || "mailto:admin@example.com",
+        },
+        receiptEndpoint: `${supabaseUrl.replace(/\/$/, "")}/functions/v1/push-delivery-receipt`,
+      });
+      return { ...summary, daily };
+    };
 
     const { data: settingsRow } = await adminClient.from("sms_settings").select("is_enabled, service_phone, company_name, template_service_reminder").order("updated_at", { ascending: false }).limit(1).maybeSingle();
     const settings = {
@@ -40,7 +69,7 @@ Deno.serve(async (request) => {
       company_name: settingsRow?.company_name ?? "Wawis Klimatyzacja",
       template_service_reminder: settingsRow?.template_service_reminder || "Dzień dobry {client}, przypominamy o obowiązkowym przeglądzie klimatyzacji po 11 miesiącach od montażu. Aby utrzymać gwarancję, prosimy o kontakt: {service_phone}. {company_name}",
     };
-    if (!settings.is_enabled) return json({ ok: true, createdCount: 0, skipped: "disabled" });
+    if (!settings.is_enabled) return json(await finishIfDaily({ ok: true, createdCount: 0, skipped: "disabled" }));
 
     const now = new Date();
     const nowIso = now.toISOString();
@@ -389,7 +418,7 @@ Deno.serve(async (request) => {
       await insertQueueItem(entry.item, entry.identities);
     }
 
-    return json({ ok: true, createdCount, expiredCount, refreshedCount, skippedOrphanCount });
+    return json(await finishIfDaily({ ok: true, createdCount, expiredCount, refreshedCount, skippedOrphanCount }));
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);
   }

@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## SMS-QUEUE-DAILY-1417 — codzienna kolejka SMS (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SQ-1417-AUTO | FIXED-UNVERIFIED | Audyt: kolejka tylko po otwarciu modułu SMS. Zadanie bazy + funkcja Edge z kodem potwierdzanym w bazie; `smoke-sms-queue-daily-v1417.mjs` (RED na 14.16: 401). |
+| SQ-1417-PUSH | FIXED-UNVERIFIED | Push tylko gdy są SMS-y do zatwierdzenia, jeden na zadanie (`push_claim_delivery_v1268`); liczenie jak na ekranie SMS. |
+| SQ-1417-LIVE | EXTERNAL | Po wdrożeniu funkcji i migracji: pierwsze zadanie rano, wpis z `processed_at`; push na telefonie administratora, gdy są SMS-y. |
+| SH-1416-FRAMING | VERIFIED | Produkcja 14.16: X-Frame-Options, CSP frame-ancestors, nosniff, Referrer-Policy obecne; OCR `application/javascript`. |
+| ST-1416-WAWIS-BUCKET | VERIFIED | SELECT 03.11.2026: bucket `WaWis` usunięty, pozostałe 5 bucketów niepubliczne. |
+| IN-1413-PHOTO-LIMIT-LIVE | VERIFIED | 03.11.2026: 9 nowych zdjęć (image/jpeg, 0,3–1,1 MB) zapisanych, 9 wpisów `photo_inserted` w dzienniku. |
+
 ## SEC-HEADERS-1416 — nagłówki bezpieczeństwa (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
