@@ -28,7 +28,7 @@ assert.match(appSource, /activeModule === "contractors"/);
 assert.match(appSource, /activeModule === "devices"/);
 assert.match(appSource, /activeModule === "calendar"/);
 assert.match(appSource, /<SmsPanel/);
-assert.match(authenticatedLayoutSource, /\["center360", "sms", "contractors", "devices", "calendar", "diagnostics", "fuel"\]\.includes\(activeModule\)/);
+assert.match(authenticatedLayoutSource, /\["center360", "sms", "contractors", "devices", "calendar", "diagnostics", "fuel", "requests"\]\.includes\(activeModule\)/);
 
 assert.match(jobsPanelSource, /const MobileJobsLayout = lazy\(\(\) => import\("\.\/jobs\/MobileJobsLayout\.jsx"\)\);/);
 assert.match(jobsPanelSource, /const DesktopJobsLayout = lazy\(\(\) => import\("\.\/jobs\/DesktopJobsLayout\.jsx"\)\);/);

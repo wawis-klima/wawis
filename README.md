@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.19
+- 14.20
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.20` — klient skanuje naklejkę QR i zgłasza awarię lub przegląd; administrator dostaje push i widzi zgłoszenia w zakładce „Zgłoszenia” na komputerze (funkcja Edge `qr-service-request`, migracja `20261103200000`).
 - wersja `14.19` — naprawione dwa nieaktualne testy (formularz nowego montażu, bramka wydania); test formularza wrócił do automatycznych testów. Bez zmian działania aplikacji.
 - wersja `14.18` — faktura z Fakturowni wykrywa się sama w ciągu kilkunastu sekund po zapisaniu, bez przełączania zakładek; powiadomienie o SMS-ach do zatwierdzenia o 6:30, tylko od poniedziałku do piątku (weekend trafia do poniedziałku). Migracja `20261103150000` razem z `20261103140000` uruchamia właściciel.
 - wersja `14.17` — kolejka SMS odświeża się sama codziennie rano, a administrator dostaje powiadomienie, gdy są SMS-y do zatwierdzenia (migracja `20261103140000`, uruchamia właściciel).

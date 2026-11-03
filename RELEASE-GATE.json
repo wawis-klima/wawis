@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.19",
+  "version": "14.20",
   "scope": "full",
-  "release_branch": "release/v14.19",
+  "release_branch": "release/v14.20",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Tylko testy i rejestr migracji; aplikacja, baza i funkcje Edge bez zmian."
+    "notes": "Nowa publiczna funkcja Edge qr-service-request, strona klienta, zakładka Zgłoszenia; migracja 20261103200000 przez właściciela."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.19",
+    "source_branch": "release/v14.20",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.19.",
+    "result": "EXTERNAL_EDGE_AND_OWNER_SQL_V1420",
+    "evidence_source": "Vercel READY/14.20; funkcja Edge qr-service-request (info dla nieznanego kodu = 404); po migracji: tabela i funkcje, skan naklejki iPhone'em.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.19: naprawione testy formularza nowego montażu i bramki wydania",
-    "release_ci": "WAWIS PR checks (desktop + infra)",
-    "postdeploy": "Vercel READY/14.19."
+    "code": "14.20: zgłoszenia klientów z naklejki QR",
+    "release_ci": "WAWIS PR checks + smoke-qr-service-request-v1420 (roles, push) + E2E qr-service-request-v1420",
+    "postdeploy": "Vercel READY/14.20; funkcja Edge wdrożona osobno; migracja przez właściciela."
   }
 }

@@ -77,6 +77,16 @@ function IconMessageModern() {
   );
 }
 
+// 14.20: zgłoszenia klientów z naklejki QR.
+function IconRequestModern() {
+  return (
+    <ShellIcon>
+      <path d="M12 3.6 3.9 18.1a1.2 1.2 0 0 0 1.05 1.8h14.1a1.2 1.2 0 0 0 1.05-1.8L12 3.6Z" />
+      <path d="M12 9.4v4.6M12 16.9h.01" />
+    </ShellIcon>
+  );
+}
+
 function IconSlidersModern() {
   return (
     <ShellIcon>
@@ -113,6 +123,7 @@ const sidebarSections = [
   {
     title: 'KOMUNIKACJA',
     items: [
+      { key: 'requests', label: 'Zgłoszenia', icon: IconRequestModern, target: 'requests' },
       { key: 'sms', label: 'SMS', icon: IconMessageModern, target: 'sms' },
       { key: 'sms_templates', label: 'Szablony SMS', icon: IconTemplateModern, target: 'sms', passive: true },
     ],
@@ -135,6 +146,7 @@ function getSidebarActiveState(item, activeModule, activeNavKey) {
   if (item.key === 'calendar') return activeModule === 'calendar';
   if (item.key === 'orders') return activeModule === 'jobs' && (!activeNavKey || activeNavKey === 'orders');
   if (item.key === 'diagnostics') return activeModule === 'diagnostics';
+  if (item.key === 'requests') return activeModule === 'requests';
   return false;
 }
 

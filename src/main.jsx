@@ -2,6 +2,19 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { APP_VERSION } from './version.js'
 import { requestUpdateReload } from './modules/update-reload-guard.js'
+import { readQrCodeFromLocation } from './modules/qr-stickers.js'
+import { shouldShowPublicQrPage } from './public-qr/public-qr-api.js'
+
+// WAWIS 14.20: klient (bez sesji pracownika) po zeskanowaniu naklejki QR widzi publiczną stronę zgłoszenia,
+// a nie ekran logowania. Bez service workera i sprawdzania wersji — to nie jest instalacja aplikacji.
+const publicQrCode = typeof window !== 'undefined' ? readQrCodeFromLocation() : ''
+const publicQrMode = typeof window !== 'undefined' && (() => {
+  try {
+    return shouldShowPublicQrPage({ code: publicQrCode, storage: window.localStorage, session: window.sessionStorage })
+  } catch {
+    return false
+  }
+})()
 
 const VERSION_CHECK_COOLDOWN_MS = 5000
 let versionCheckInFlight = false
@@ -126,7 +139,19 @@ function isMobileRuntime() {
   return widthLooksMobile || phoneUserAgent || iPhoneLike
 }
 
+async function bootPublicQr() {
+  window.__wawisBootTrace?.mark?.('imports')
+  const { default: PublicQrPage } = await import('./public-qr/PublicQrPage.jsx')
+  window.__wawisBootTrace?.mark?.('render-requested')
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+      <PublicQrPage code={publicQrCode} />
+    </React.StrictMode>
+  )
+}
+
 async function boot() {
+  if (publicQrMode) return bootPublicQr()
   window.__wawisBootTrace?.mark?.('imports')
   const useMobile791 = isMobileRuntime()
   const [appModule, , , diagnosticsModule] = await Promise.all([
@@ -182,5 +207,7 @@ boot().catch((error) => {
   }
 })
 
-registerOfflineWorker()
-installVersionResumeGuard()
+if (!publicQrMode) {
+  registerOfflineWorker()
+  installVersionResumeGuard()
+}

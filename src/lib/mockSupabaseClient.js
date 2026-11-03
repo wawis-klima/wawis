@@ -209,6 +209,11 @@ function createSeedData() {
       },
     ],
     job_protocol_email_log: [],
+    // 14.20: zgłoszenia klientów z naklejki QR (w produkcji tylko przez funkcje bazy).
+    service_requests: [
+      { id: 'mock-service-request-001', created_at: '2026-11-03T08:15:00.000Z', qr_code: 'UYE8EYCQ', kind: 'awaria', description: 'Nie chłodzi, z jednostki kapie woda.', phone: '48600111222', status: 'nowe', handled_at: null, device_id: 'mock-device-001', contractor_id: 'mock-contractor-001' },
+      { id: 'mock-service-request-002', created_at: '2026-11-02T12:40:00.000Z', qr_code: 'BNKJXZDY', kind: 'przeglad', description: '', phone: '48600333444', status: 'zalatwione', handled_at: '2026-11-02T15:00:00.000Z', device_id: 'mock-device-002', contractor_id: 'mock-contractor-002' },
+    ],
     fuel_vehicles: [
       { id: 'mock-fuel-vehicle-001', vehicle_name: 'Doblo', registration_number: 'SZA 6149G', is_active: true, tank_capacity_liters: null, last_odometer_km: null, last_fueled_at: null, created_by: admin.id, created_at: '2026-09-08T10:00:00.000Z', updated_at: '2026-09-08T10:00:00.000Z' },
       { id: 'mock-fuel-vehicle-002', vehicle_name: 'Doblo', registration_number: 'SZA 0673A', is_active: true, tank_capacity_liters: null, last_odometer_km: null, last_fueled_at: null, created_by: admin.id, created_at: '2026-09-08T10:00:00.000Z', updated_at: '2026-09-08T10:00:00.000Z' },
@@ -513,6 +518,27 @@ export function createMockSupabaseClient() {
       return new MockQueryBuilder(store, tableName);
     },
     async rpc(name, payload = {}) {
+      if (name === 'service_requests_list_v1420') {
+        const rows = (store.service_requests || []).map((request) => {
+          const device = (store.devices || []).find((item) => item.id === request.device_id) || null;
+          const contractor = (store.contractors || []).find((item) => item.id === (request.contractor_id || device?.contractor_id)) || null;
+          return {
+            ...clone(request),
+            device_model: device?.model || null, device_serial: device?.serial_number || null, installation_date: device?.installation_date || null,
+            contractor_id: contractor?.id || null, contractor_name: contractor?.company_name || null, contractor_city: contractor?.city || null,
+            contractor_street: contractor?.street || null, contractor_phone: contractor?.phone || null,
+          };
+        });
+        rows.sort((a, b) => (Number(b.status === 'nowe') - Number(a.status === 'nowe')) || String(b.created_at).localeCompare(String(a.created_at)));
+        return { data: rows, error: null };
+      }
+      if (name === 'service_request_set_status_v1420') {
+        const request = (store.service_requests || []).find((item) => item.id === payload.p_id);
+        if (!request) return { data: false, error: null };
+        request.status = payload.p_status;
+        request.handled_at = payload.p_status === 'zalatwione' ? nowIso() : null;
+        return { data: true, error: null };
+      }
       if (name === 'change_job_status_guarded') {
         const job = store.jobs.find((item) => String(item.id || '') === String(payload.p_job_id || ''));
         if (!job) return { data: { outcome: 'not_found', id: payload.p_job_id }, error: null };
