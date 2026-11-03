@@ -1,3 +1,13 @@
+## 14.14
+- Klient o tej samej nazwie (audyt 03.11.2026, decyzja właściciela): gdy pracownik dodawał montaż dla klienta o nazwie, która już jest w bazie (np. drugi „Jan Kowalski”), a telefon ani e-mail się nie zgadzały, `worker_create_or_get_contractor_for_job` po cichu przypisywał montaż do istniejącego klienta. Teraz przed zapisem telefon pyta: „W bazie jest już klient „…” (adres, końcówka telefonu). Czy to ten sam klient?”.
+  - OK — montaż trafia do istniejącego klienta (jak dotąd).
+  - Anuluj — zapis zatrzymany przed utworzeniem montażu, dane zostają w formularzu, prośba o dopisanie miejscowości do nazwy (baza celowo nie pozwala na dwóch klientów o tej samej nazwie).
+  - Zgodny telefon lub e-mail potwierdza klienta bez pytania. Błąd sprawdzenia nie blokuje zapisu.
+  - Dotyczy nowego montażu pracownika i edycji montażu bez przypisanego klienta. Bez zmian bazy.
+- Moduł `src/mobile791/modules/worker-same-name-client.js`; mock Supabase obsługuje `ilike`.
+- Testy: `smoke-worker-same-name-client-v1414.mjs` (wykonywalny, RED na 14.13) i E2E `mobile-same-name-client-v1414.spec.js` (Anuluj / OK / zgodny telefon).
+- Rejestr: limit `job-photos` (14.13, migracja `20261103110000`) wykonany przez właściciela 03.11.2026 10:34, sprawdzony SELECT-em.
+
 ## 14.13
 - Region funkcji Vercel (decyzja właściciela 03.11.2026): `vercel.json` → `regions: ["fra1"]`. Odczyt tabliczki i licznika AI (`api/read-nameplate-ai.js`, `api/read-odometer-ai.js`) działał w Waszyngtonie (`iad1`), a baza jest we Frankfurcie — każde zapytanie kilka razy przechodziło przez Atlantyk. Teraz funkcje działają we Frankfurcie, obok bazy; zdjęcia tabliczek zostają w UE.
 - Limit zdjęć montaży: migracja `20261103110000` ustawia w buckecie `job-photos` limit 20 MB i tylko typy obrazów (`image/*`). Dotąd brak limitu. Stan przed zmianą: 1077 plików JPG, największy 4,49 MB — limit nie blokuje żadnego zdjęcia z aplikacji (kompresja do JPG, a bez kompresji zawsze typ obrazu). Migrację uruchamia właściciel w SQL Editor.

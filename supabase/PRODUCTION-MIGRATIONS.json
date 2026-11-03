@@ -1121,6 +1121,18 @@
    "verified": "SELECT 03.11.2026: pg_policies dla public.photo_audit_log = tylko photo_audit_log_admin_read (reguła INSERT usunięta); trigger i funkcja photo_audit_log_event (SECURITY DEFINER, postgres) bez zmian; dane bez zmian",
    "repo_file": "supabase/migrations/20261103100000_photo_audit_log_no_direct_insert_v1411.sql",
    "note": "Właściciel wkleił w SQL Editor samo polecenie drop policy (bez komentarzy); obiekty identyczne z plikiem."
+  },
+  {
+   "version": "20261103110000",
+   "name": "job_photos_bucket_limits_v1413",
+   "md5": "5498b197f208a6df43b46e76b10d5e22",
+   "md5_of_file": true,
+   "bytes": 782,
+   "status": "applied_sql_editor",
+   "applied_at": "2026-11-03T10:34+01:00",
+   "verified": "SELECT 03.11.2026: storage.buckets job-photos — file_size_limit=20971520, allowed_mime_types={image/*}, public=false; 1077 plików bez zmian",
+   "repo_file": "supabase/migrations/20261103110000_job_photos_bucket_limits_v1413.sql",
+   "note": "Właściciel wkleił w SQL Editor samo polecenie update (bez komentarzy); stan identyczny z plikiem."
   }
  ],
  "statuses": {

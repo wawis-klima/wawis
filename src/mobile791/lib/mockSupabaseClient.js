@@ -318,6 +318,17 @@ class MockQueryBuilder {
     return this;
   }
 
+  // 14.14: ILIKE jak w PostgREST — % i * dowolny ciąg, _ jeden znak, bez rozróżniania wielkości liter.
+  ilike(field, pattern) {
+    const source = String(pattern ?? '')
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/[%*]/g, '.*')
+      .replace(/_/g, '.');
+    const matcher = new RegExp(`^${source}$`, 'is');
+    this.filters.push((item) => matcher.test(String(item?.[field] ?? '')));
+    return this;
+  }
+
   in(field, values = []) {
     const normalized = new Set(values.map((value) => String(value)));
     this.filters.push((item) => normalized.has(String(item?.[field] ?? '')));

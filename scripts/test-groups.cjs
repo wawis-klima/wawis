@@ -80,6 +80,7 @@ const GROUPS = {
     'npm run test:smoke:worker-create-status',
     'npm run test:smoke:job-completion',
     'npm run test:smoke:new-job-author-comment',
+    'node scripts/smoke-worker-same-name-client-v1414.mjs',
   ],
   photos: [
     'node scripts/smoke-p2-audit-closure-v1262.mjs',
@@ -300,6 +301,7 @@ const GROUPS = {
     'npm run test:smoke:mobile-default-installation-date',
     'npm run test:smoke:cache-first-refresh',
     'npm run test:smoke:sms-shared-source',
+    'node scripts/smoke-worker-same-name-client-v1414.mjs',
   ],
   infra: [
     'node scripts/smoke-version-bump-readme-v1399.cjs',
