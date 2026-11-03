@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Migracja pg_cron 14.18 (godzina 6:30 pon.–pt.) uruchamiana przez właściciela razem z 14.17; frontend i funkcja Edge bez zmian."
+    "notes": "Karta montażu: samoczynne ponawianie sprawdzenia faktury; migracja pg_cron 14.18 (6:30 pon.–pt.) uruchamiana przez właściciela razem z 14.17; funkcje Edge bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.18: kolejka SMS o 6:30 pon.–pt.",
-    "release_ci": "WAWIS PR checks + smoke-sms-queue-daily-0630-v1418 (sms, push)",
+    "code": "14.18: kolejka SMS o 6:30 pon.–pt.; ponawianie sprawdzenia faktury",
+    "release_ci": "WAWIS PR checks + smoke-sms-queue-daily-0630-v1418 (sms, push) + smoke-fakturownia-recheck-v1418 (roles)",
     "postdeploy": "Vercel READY/14.18; migracje 14.17+14.18 przez właściciela."
   }
 }

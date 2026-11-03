@@ -136,6 +136,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-link-v1277.mjs',
     'node scripts/smoke-fakturownia-auto-v1280.mjs',
     'node scripts/smoke-fakturownia-v1281.mjs',
+    'node scripts/smoke-fakturownia-recheck-v1418.mjs',
     'node scripts/smoke-edge-auth-v1412.mjs',
   ],
   push: [

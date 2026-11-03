@@ -1068,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `14.18` — powiadomienie o SMS-ach do zatwierdzenia o 6:30, tylko od poniedziałku do piątku (weekend trafia do poniedziałku). Migracja `20261103150000` razem z `20261103140000` uruchamia właściciel.
+- wersja `14.18` — faktura z Fakturowni wykrywa się sama w ciągu kilkunastu sekund po zapisaniu, bez przełączania zakładek; powiadomienie o SMS-ach do zatwierdzenia o 6:30, tylko od poniedziałku do piątku (weekend trafia do poniedziałku). Migracja `20261103150000` razem z `20261103140000` uruchamia właściciel.
 - wersja `14.17` — kolejka SMS odświeża się sama codziennie rano, a administrator dostaje powiadomienie, gdy są SMS-y do zatwierdzenia (migracja `20261103140000`, uruchamia właściciel).
 - wersja `14.16` — nagłówki bezpieczeństwa strony (ochrona przed osadzeniem w cudzej stronie, nosniff, referrer). Bez zmian działania aplikacji.
 - wersja `14.15` — stabilny test kolejki diagnostyki (koniec przypadkowych czerwonych przebiegów CI) i decyzje właściciela z audytu w `CLAUDE.md`. Bez zmian działania aplikacji.

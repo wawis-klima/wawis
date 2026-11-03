@@ -11,6 +11,7 @@ import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 import { confirmVatInvoiceFromFakturownia, saveVatInvoiceStatus } from "../modules/jobs-crud.js";
 import { prepareFakturowniaInvoice, verifyFakturowniaInvoice, lookupFakturowniaInvoiceByNumber, hasPendingFakturowniaInvoice } from "../modules/fakturownia.js";
+import { createFakturowniaRecheck, fakturowniaVerifyFailureMessage, FAKTUROWNIA_AUTO_RECHECK_INTERVAL_MS, FAKTUROWNIA_WAITING_MESSAGE, FAKTUROWNIA_WAITING_TIMEOUT_MESSAGE } from "../modules/fakturownia-recheck.js";
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -170,6 +171,16 @@ export default function JobDetailsPanel({
 
     let timer = null;
     let disposed = false;
+    // WAWIS 14.18: po powrocie do WAWIS faktura mogła jeszcze nie być zapisana w Fakturowni
+    // (np. zajrzenie do zakładki przed kliknięciem „Zapisz”). Przez kilka minut sprawdzamy
+    // ponownie w tle, zamiast czekać na kolejny powrót do zakładki.
+    const recheck = createFakturowniaRecheck({
+      isVisible: () => document.visibilityState !== 'hidden' && activeInvoiceJobIdRef.current === selectedJobId,
+      verify: () => { if (!disposed) void verifyPendingFakturowniaInvoice(true, { waiting: true, quiet: true }); },
+      onTimeout: () => setInvoiceVerificationMessage((current) => (current === FAKTUROWNIA_WAITING_MESSAGE
+        ? FAKTUROWNIA_WAITING_TIMEOUT_MESSAGE
+        : current)),
+    });
     const verifyAfterReturn = () => {
       if (document.visibilityState === 'hidden') return;
       if (timer) window.clearTimeout(timer);
@@ -180,13 +191,17 @@ export default function JobDetailsPanel({
           const pending = fakturowniaVerificationRef.current
             || await hasPendingFakturowniaInvoice({ supabase, jobId: selectedJobId });
           if (pending && !disposed && activeInvoiceJobIdRef.current === selectedJobId) {
-            void verifyPendingFakturowniaInvoice(true);
+            recheck.start();
+            void verifyPendingFakturowniaInvoice(true, { waiting: true });
+          } else {
+            recheck.stop();
           }
         } catch (error) {
           console.warn('Nie udało się sprawdzić rozpoczętej faktury.', error);
         }
       }, 700);
     };
+    const pollTimer = window.setInterval(() => recheck.tick(), FAKTUROWNIA_AUTO_RECHECK_INTERVAL_MS);
 
     // Also recover the just-issued invoice when the WAWIS page was reloaded.
     verifyAfterReturn();
@@ -195,6 +210,7 @@ export default function JobDetailsPanel({
     return () => {
       disposed = true;
       if (timer) window.clearTimeout(timer);
+      window.clearInterval(pollTimer);
       window.removeEventListener('focus', verifyAfterReturn);
       document.removeEventListener('visibilitychange', verifyAfterReturn);
     };
@@ -397,7 +413,7 @@ export default function JobDetailsPanel({
     }
   }
 
-  async function verifyPendingFakturowniaInvoice(force = false) {
+  async function verifyPendingFakturowniaInvoice(force = false, { waiting = false, quiet = false } = {}) {
     const pending = fakturowniaVerificationRef.current;
     if (!isAdmin || !isCompletedJob || !selectedJobId || (!pending && !force) || fakturowniaVerificationBusyRef.current) return;
     if (selectedJob?.vat_invoice_fakturownia_confirmed) {
@@ -407,7 +423,7 @@ export default function JobDetailsPanel({
     if (pending && String(pending.jobId || '') !== selectedJobId) return;
 
     fakturowniaVerificationBusyRef.current = true;
-    setFakturowniaVerifying(true);
+    if (!quiet) setFakturowniaVerifying(true);
     try {
       const result = await verifyFakturowniaInvoice({
         supabase,
@@ -418,19 +434,21 @@ export default function JobDetailsPanel({
       if (!result?.found || !result?.invoiceId) {
         if (activeInvoiceJobIdRef.current === selectedJobId) {
           setInvoiceVerificationCandidates(Array.isArray(result?.candidates) ? result.candidates : []);
-          setInvoiceVerificationMessage(result?.reason || 'Nie znaleziono wystawionej faktury. Możesz spróbować ponownie lub powiązać dokument po numerze.');
+          // Brak nowej faktury tuż po powrocie z Fakturowni zwykle znaczy „jeszcze niezapisana”.
+          setInvoiceVerificationMessage(fakturowniaVerifyFailureMessage(result, { waiting }));
         }
         return;
       }
       await confirmAndPatchVerifiedInvoice(result);
     } catch (error) {
       console.warn('Nie udało się automatycznie sprawdzić faktury w Fakturowni.', error);
-      if (activeInvoiceJobIdRef.current === selectedJobId) {
+      // Chwilowy błąd sprawdzania w tle nie zastępuje komunikatu „Czekam…” — kolejna próba za 15 s.
+      if (!quiet && activeInvoiceJobIdRef.current === selectedJobId) {
         setInvoiceVerificationMessage(`Nie udało się sprawdzić faktury: ${error?.message || 'błąd połączenia z Fakturownią'}`);
       }
     } finally {
       fakturowniaVerificationBusyRef.current = false;
-      setFakturowniaVerifying(false);
+      if (!quiet) setFakturowniaVerifying(false);
     }
   }
 
