@@ -12,27 +12,27 @@ async function seedOverflowJob(page) {
     store.jobs.unshift({
       ...base,
       id: 'mock-job-v1092-overflow',
-      title: 'KOROŚ PAWEŁ',
-      client: 'KOROŚ PAWEŁ',
-      email: 'obracamy360@gmail.com',
-      phone: '792404929',
-      city: 'Parkoszowice',
-      street: 'Krajobrazowa 39',
-      location: 'Parkoszowice, Krajobrazowa 39',
+      title: 'NOWAŚ PAWEŁ',
+      client: 'NOWAŚ PAWEŁ',
+      email: 'klient360@example.com',
+      phone: '500000929',
+      city: 'Przykładowka',
+      street: 'Testowa Długa 9',
+      location: 'Przykładowka, Testowa Długa 9',
       status: 'W trakcie',
       installation_date: '2026-09-09',
       device_model: '',
       device_serial_number: '',
-      admin_note: 'Montaż Kaset Mitsubishi Rusztowanie w razie czego 3 wysokości blat pod rusztowanie Instalacji 2 x po 8-10 metrów 1 kpl około 5 mb Normalnie nawigacja źle pokazuje jak to na Krajobrazowej link do adresu https://maps.app.goo.gl/pYtbjZTkYRLFqtYa7?g_st=ic',
+      admin_note: 'Montaż Kaset Mitsubishi Rusztowanie w razie czego 3 wysokości blat pod rusztowanie Instalacji 2 x po 8-10 metrów 1 kpl około 5 mb Normalnie nawigacja źle pokazuje jak to na Testowej Dług link do adresu https://maps.app.goo.gl/TESTxTESTxTESTxTE?g_st=ic',
       contractor_id: 'mock-contractor-v1092-overflow',
     });
     store.contractors.unshift({
       id: 'mock-contractor-v1092-overflow',
-      company_name: 'KOROŚ PAWEŁ',
-      email: 'obracamy360@gmail.com',
-      phone: '792404929',
-      city: 'Parkoszowice',
-      street: 'Krajobrazowa 39',
+      company_name: 'NOWAŚ PAWEŁ',
+      email: 'klient360@example.com',
+      phone: '500000929',
+      city: 'Przykładowka',
+      street: 'Testowa Długa 9',
       is_active: true,
       created_at: '2026-09-09T06:00:00.000Z',
     });
@@ -41,13 +41,13 @@ async function seedOverflowJob(page) {
 }
 
 test.describe('@mobile 10.92 full WebKit layout', () => {
-  test('pełny widok Koroś nie może poszerzyć ekranu iPhone', async ({ page, browserName }) => {
+  test('pełny widok Nowaś nie może poszerzyć ekranu iPhone', async ({ page, browserName }) => {
     test.skip(browserName !== 'webkit', 'Pełny layout 10.92 jest testem WebKit/iPhone; Chromium ma osobne regresje mobilne.');
     await seedOverflowJob(page);
     await loginWithoutReset(page, ADMIN);
 
-    await expect(page.getByText('KOROŚ PAWEŁ', { exact: true }).first()).toBeVisible();
-    const card = page.locator('.mobileJobCard').filter({ hasText: 'KOROŚ PAWEŁ' }).first();
+    await expect(page.getByText('NOWAŚ PAWEŁ', { exact: true }).first()).toBeVisible();
+    const card = page.locator('.mobileJobCard').filter({ hasText: 'NOWAŚ PAWEŁ' }).first();
     await card.locator('.mobileJobCardButton').click();
     await expect(page.locator('.mobileInlineJobDetails')).toBeVisible();
 

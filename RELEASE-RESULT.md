@@ -1,6 +1,6 @@
-# RELEASE RESULT — WAWIS 14.10
+# RELEASE RESULT — WAWIS 14.11
 
 ## Zakres
-- Skaner i okno naklejki QR w stylu kreatora urządzeń (biały arkusz, małe napisy i przyciski, jasny podgląd aparatu).
+- Dane prawdziwych klientów usunięte z repozytorium: testy E2E na fikcyjnych danych tej samej długości, usunięte nieużywane prototypy `preview-v4.html` i `preview-v4.pdf`.
 
-Tylko wygląd; bez zmian działania i bazy.
+Bez zmian działania aplikacji, bazy i backendu.

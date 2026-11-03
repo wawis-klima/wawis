@@ -1,3 +1,8 @@
+## 14.11
+- Ochrona danych (audyt bezpieczeństwa 03.11.2026): publiczne repozytorium zawierało dane dwóch prawdziwych klientów — w testach E2E (`mobile-v1091-regressions`, `mobile-v1092-full-layout`, `mobile-v1104-contact-autofit`: imię i nazwisko, telefon, e-mail, adres, notatka i link do mapy) oraz w nieużywanych prototypach `preview-v4.html` / `preview-v4.pdf`.
+- Dane w testach zastąpiono fikcyjnymi o identycznej długości (testy szerokości i zawijania sprawdzają te same przypadki graniczne). Prototypy usunięto (nieużywane przez build, testy ani skrypty; raz już usunięte w historii).
+- Bez zmian działania aplikacji, bazy, Storage i funkcji Edge.
+
 ## 14.10
 - Skaner naklejki QR (zgłoszenie właściciela 02.11.2026 16:45, zrzut z iPhone'a): okno było przezroczyste nad kreatorem urządzeń (napisy kreatora prześwitywały), duże napisy i przyciski, ciemny ekran — „nie w naszym stylu”.
 - Nowy wygląd w stylu kreatora urządzeń: biały, nieprzezroczysty arkusz nad kreatorem (własna warstwa, z-index 16000), mały nagłówek i link „Zamknij”, jasny podgląd przed włączeniem aparatu (ikona i opis), ramka z narożnikami zamiast grubego kwadratu, kompaktowe przyciski („Zrób zdjęcie”, „Zatwierdź”) i pole numeru. Własne klasy zamiast globalnych `.card/.modal/.btn`. To samo dla okna zeskanowanej naklejki.
