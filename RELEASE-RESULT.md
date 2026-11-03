@@ -1,7 +1,7 @@
-# RELEASE RESULT — WAWIS 14.15
+# RELEASE RESULT — WAWIS 14.16
 
 ## Zakres
-- Naprawa niestabilnego testu `smoke-diagnostics-ingest-queue-v1274` (wybór wpisu po identyfikatorze zamiast po pozycji) i trwała regresja z zamrożonym zegarem.
-- Decyzje właściciela z audytu zapisane w `CLAUDE.md`.
+- Nagłówki bezpieczeństwa: `X-Frame-Options: SAMEORIGIN`, `frame-ancestors 'self'`, `nosniff`, `Referrer-Policy`.
+- Pusty bucket `WaWis` usuwa właściciel w panelu Supabase.
 
-Bez zmian działania aplikacji, bazy i backendu.
+Bez zmian działania aplikacji.

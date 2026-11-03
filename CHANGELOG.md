@@ -1,3 +1,9 @@
+## 14.16
+- Nagłówki bezpieczeństwa strony (audyt 03.11.2026, decyzja właściciela): `vercel.json` → `X-Frame-Options: SAMEORIGIN`, `Content-Security-Policy: frame-ancestors 'self'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`. Dotąd produkcja ustawiała tylko HSTS — aplikację dało się osadzić w cudzej stronie (np. fałszywej stronie logowania). Celowo bez `Permissions-Policy` i bez CSP dla skryptów: aparat, mikrofon, OCR i podgląd PDF bez zmian.
+- Test `smoke-security-headers-v1416.mjs` (grupa `infra`), RED na 14.15.
+- Pusty publiczny bucket `WaWis` (nieużywany przez aplikację): usuwa właściciel w panelu Supabase (Storage) — Supabase blokuje usuwanie bucketów poleceniem SQL.
+- Punkt audytu „NIP u pracownika” pominięty decyzją właściciela (pracownik może edytować każdy otwarty montaż — zgodnie z założeniem).
+
 ## 14.15
 - Niestabilny test CI (audyt 03.11.2026): `smoke-diagnostics-ingest-queue-v1274` czasem padał („unsynced error must survive noisy informational events”) i opóźniał wydania. Przyczyna w teście: nowy wpis wybierany jako ostatni na liście (`.at(-1)`), a wpisy z tej samej milisekundy są sortowane po losowym id — test brał starszy, już wysłany wpis. Teraz nowy wpis rozpoznawany po identyfikatorze. Kod aplikacji bez zmian.
 - Regresja `smoke-diagnostics-same-ms-v1415.mjs`: test kolejki 20 razy z zamrożonym zegarem (`scripts/fixtures/freeze-clock-v1415.mjs`). RED na 14.14: 16–18/20 nieudanych; GREEN: 20/20.

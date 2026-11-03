@@ -11,5 +11,28 @@
     }
   },
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src public package.json package-lock.json index.html vite.config.js vite.config.mjs supabase api scripts vercel.json .github",
-  "buildCommand": "node scripts/vercel-deploy-guard.cjs && WAWIS_STANDARD_DEPLOY_GATE='node scripts/release-policy-gate.cjs --deploy' bash scripts/deploy-gate-router.sh && npm run build"
+  "buildCommand": "node scripts/vercel-deploy-guard.cjs && WAWIS_STANDARD_DEPLOY_GATE='node scripts/release-policy-gate.cjs --deploy' bash scripts/deploy-gate-router.sh && npm run build",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self'"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
 }
