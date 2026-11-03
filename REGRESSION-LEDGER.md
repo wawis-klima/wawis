@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## EDGE-AUTH-1412 — uprawnienia funkcji Edge (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| EA-1412-FUEL-DRY | FIXED-UNVERIFIED | Audyt: `x-wawis-dry` bez autoryzacji. Handler w vm: bez sesji/Oczekujący/Pracownik = 403 i 0 pobrań; administrator 200; snapshot cron 200. RED na 14.11. |
+| EA-1412-GUS-ROLE | FIXED-UNVERIFIED | Audyt: GUS tylko `getUser()`. Handler w vm: Oczekujący = 403 i 0 zapytań do BIR; Pracownik i Administrator 200. RED na 14.11. |
+| EA-1412-DEPLOY | EXTERNAL | Wdrożenie obu funkcji w Supabase po zgodzie właściciela; kontrola: dry bez sesji = 403. |
+
 ## DATA-PRIVACY-1411 — dane klientów w publicznym repozytorium (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

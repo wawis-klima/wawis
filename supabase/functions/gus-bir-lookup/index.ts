@@ -40,6 +40,12 @@ Deno.serve(async (request: Request) => {
     if (authError || !authData.user) {
       return json({ error: "Sesja wygasła. Zaloguj się ponownie." }, 401);
     }
+    // WAWIS 14.12: tylko pracownik lub administrator — konto bez roli (np. „Oczekujący”
+    // po samodzielnej rejestracji) nie może korzystać z klucza GUS firmy.
+    const { data: isStaff, error: staffError } = await userClient.rpc("current_user_is_staff");
+    if (staffError || isStaff !== true) {
+      return json({ error: "Wyszukiwanie w GUS jest dostępne tylko dla pracowników WAWIS." }, 403);
+    }
 
     const body = await request.json();
     const nip = digitsOnly(body?.nip);

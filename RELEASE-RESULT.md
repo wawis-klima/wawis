@@ -1,7 +1,8 @@
-# RELEASE RESULT — WAWIS 14.11
+# RELEASE RESULT — WAWIS 14.12
 
 ## Zakres
-- Dane prawdziwych klientów usunięte z repozytorium: testy E2E na fikcyjnych danych tej samej długości, usunięte nieużywane prototypy `preview-v4.html` i `preview-v4.pdf`.
-- Migracja `20261103100000_photo_audit_log_no_direct_insert_v1411.sql`: koniec bezpośredniego zapisu do dziennika zdjęć z API (uruchamia właściciel w SQL Editor).
+- `fuel-reference-prices`: tryb diagnostyczny tylko dla administratora (wcześniej bez logowania).
+- `gus-bir-lookup`: tylko pracownik lub administrator (wcześniej każde zalogowane konto).
+- Test wykonywalny `smoke-edge-auth-v1412.mjs` (RED 14.11 → GREEN 14.12).
 
-Bez zmian działania aplikacji, Storage i funkcji Edge.
+Bez zmian bazy i aplikacji. Funkcje Edge wdrażane osobno po zgodzie właściciela.

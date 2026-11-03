@@ -1,3 +1,10 @@
+## 14.12
+- Uprawnienia funkcji Edge (audyt bezpieczeństwa 03.11.2026):
+  - `fuel-reference-prices`: tryb diagnostyczny `x-wawis-dry` działał bez logowania — każdy z internetu mógł zlecić pobranie do 40 PDF-ów z API Sejmu i stron z cenami. Teraz tylko administrator (`current_user_is_admin`), sprawdzane przed jakimkolwiek pobieraniem. Aplikacja z tego trybu nie korzysta. Codzienne zadanie cen rynkowych (`x-wawis-snapshot`, pg_cron) bez zmian.
+  - `gus-bir-lookup`: wystarczało dowolne zalogowane konto, także „Oczekujący” po samodzielnej rejestracji. Teraz tylko pracownik lub administrator (`current_user_is_staff`); konto bez roli dostaje 403 i nie zużywa klucza GUS firmy.
+- Test `smoke-edge-auth-v1412.mjs` uruchamia prawdziwe handlery Edge (atrapy Supabase i sieci): RED na 14.11, GREEN na 14.12; w grupach `roles` i `infra`.
+- Funkcje Edge wdraża się osobno (nie przez Vercel) — po zgodzie właściciela.
+
 ## 14.11
 - Ochrona danych (audyt bezpieczeństwa 03.11.2026): publiczne repozytorium zawierało dane dwóch prawdziwych klientów — w testach E2E (`mobile-v1091-regressions`, `mobile-v1092-full-layout`, `mobile-v1104-contact-autofit`: imię i nazwisko, telefon, e-mail, adres, notatka i link do mapy) oraz w nieużywanych prototypach `preview-v4.html` / `preview-v4.pdf`.
 - Dane w testach zastąpiono fikcyjnymi o identycznej długości (testy szerokości i zawijania sprawdzają te same przypadki graniczne). Prototypy usunięto (nieużywane przez build, testy ani skrypty; raz już usunięte w historii).

@@ -2,7 +2,7 @@
 // „Oszczędności” w module paliwa. Tylko administrator. Zapis wyłącznie do public.fuel_reference_prices.
 //
 // POST (administrator, JWT) — dociąga brakujące obwieszczenia od początku liczenia zbiornika.
-// POST z nagłówkiem x-wawis-dry: 1 — bez logowania i bez zapisu: odczyt i analiza ostatnich obwieszczeń
+// POST z nagłówkiem x-wawis-dry: 1 (od 14.12 tylko administrator, JWT) — bez zapisu: odczyt i analiza ostatnich obwieszczeń
 // (domyślnie 3, body {"limit": n} do 40; diagnostyka parsera; wyłącznie dane publiczne);
 // body {"action":"market"} — podgląd średnich dla Śląska (AutoCentrum, zapaliwo.pl), też bez zapisu.
 // POST z nagłówkiem x-wawis-snapshot: 1 (codzienne zadanie pg_cron) — zapis WYŁĄCZNIE publicznych średnich cen
@@ -152,6 +152,14 @@ Deno.serve(async (request) => {
 
   try {
     if (request.headers.get("x-wawis-dry") === "1") {
+      // WAWIS 14.12: tryb diagnostyczny tylko dla administratora — wcześniej działał bez logowania
+      // i pozwalał każdemu zlecić pobranie do 40 PDF-ów z API Sejmu oraz stron z cenami.
+      const dryUrl = Deno.env.get("SUPABASE_URL") || "";
+      const dryAnonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+      if (!dryUrl || !dryAnonKey) return json({ error: "Brakuje konfiguracji Supabase." }, 500);
+      const dryUser = createClient(dryUrl, dryAnonKey, { global: { headers: { Authorization: request.headers.get("Authorization") || "" } } });
+      const { data: dryIsAdmin, error: dryAdminError } = await dryUser.rpc("current_user_is_admin");
+      if (dryAdminError || dryIsAdmin !== true) return json({ error: "Tryb diagnostyczny cen paliwa jest dostępny tylko dla administratora." }, 403);
       const body = await request.json().catch(() => ({}));
       if (body?.action === "market") return json({ ok: true, dry: true, market: await readMarketPrices() });
       const limit = Math.min(Math.max(Number(body?.limit) || 3, 1), MAX_PDFS_PER_RUN);
