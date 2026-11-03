@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.17",
+  "version": "14.18",
   "scope": "full",
-  "release_branch": "release/v14.17",
+  "release_branch": "release/v14.18",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Funkcja Edge generate-service-sms-queue (tryb dzienny + push) i migracja pg_cron uruchamiana przez właściciela; frontend bez zmian."
+    "notes": "Migracja pg_cron 14.18 (godzina 6:30 pon.–pt.) uruchamiana przez właściciela razem z 14.17; frontend i funkcja Edge bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,15 +14,15 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.17",
+    "source_branch": "release/v14.18",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_EDGE_AND_OWNER_SQL_V1417",
-    "evidence_source": "Wdrożenie funkcji Edge (2 pliki), test wywołania bez kodu = 403; po migracji: cron.job i pierwszy wpis private.sms_queue_daily_runs_v1417 z processed_at.",
+    "result": "EXTERNAL_OWNER_SQL_V1417_V1418",
+    "evidence_source": "Po migracjach: cron.job = wawis-sms-queue-daily-v1418, funkcje okna i zadania; pierwszy wpis private.sms_queue_daily_runs_v1417 w dzień roboczy o 6:30 z processed_at.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.17: dzienna kolejka SMS z powiadomieniem",
-    "release_ci": "WAWIS PR checks + smoke-sms-queue-daily-v1417 (sms, push)",
-    "postdeploy": "Vercel READY/14.17; funkcja Edge wdrożona osobno; migracja przez właściciela."
+    "code": "14.18: kolejka SMS o 6:30 pon.–pt.",
+    "release_ci": "WAWIS PR checks + smoke-sms-queue-daily-0630-v1418 (sms, push)",
+    "postdeploy": "Vercel READY/14.18; migracje 14.17+14.18 przez właściciela."
   }
 }

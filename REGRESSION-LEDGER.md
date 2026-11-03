@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SMS-QUEUE-0630-1418 — godzina kolejki SMS (03.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SQ-1418-WINDOW | FIXED-UNVERIFIED | Okno pon.–pt. 6:30–8:00 Europe/Warsaw; `smoke-sms-queue-daily-0630-v1418.mjs` na PGlite (zima, lato, weekend; RED na 14.17). To samo wyrażenie sprawdzone SELECT-em na produkcji (6 przypadków zgodnych). |
+| SQ-1418-LIVE | EXTERNAL | Po migracjach: `cron.job` = tylko `wawis-sms-queue-daily-v1418`; pierwszy wpis w dzień roboczy o 6:30 z `processed_at`. |
+| SQ-1417-EDGE-LIVE | VERIFIED | Funkcja v32 wdrożona 03.11.2026: zły kod zadania odrzucony (503 przed migracją), bez sesji 401. Vercel 14.17 READY. |
+
 ## SMS-QUEUE-DAILY-1417 — codzienna kolejka SMS (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
