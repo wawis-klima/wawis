@@ -41,5 +41,15 @@ test.describe('14.21: zgłoszenia — liczniki i przegląd ze zgłoszenia', () =
     const device = page.locator('.serviceAdminCheck').filter({ hasText: 'Mitsubishi Mock 2.5 kW' }).locator('input[type="checkbox"]');
     await expect(device).toBeChecked();
     await expect(page.getByLabel('Uwagi')).toHaveValue(/^Zgłoszenie klienta z naklejki QR \(.+\): Przegląd\. Tel\. klienta: 600 333 444\.$/);
+
+    // 14.22: telefon klienta przy nazwie; kliknięcie w pole daty/godziny myszką otwiera kalendarz (showPicker).
+    await expect(page.locator('.serviceAdminCard').filter({ hasText: 'Umówiony przegląd' }).locator('.serviceAdminPhone')).toHaveText('500300400');
+    await page.evaluate(() => {
+      window.__pickerCalls = [];
+      HTMLInputElement.prototype.showPicker = function showPicker() { window.__pickerCalls.push(this.type); };
+    });
+    await page.getByLabel('Data', { exact: true }).click();
+    await page.getByLabel('Godzina', { exact: true }).click();
+    expect(await page.evaluate(() => window.__pickerCalls)).toEqual(['date', 'time']);
   });
 });

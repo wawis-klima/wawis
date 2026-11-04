@@ -1,3 +1,9 @@
+## 14.22
+- Przeglądy serwisowe na komputerze (uwaga właściciela 04.11.2026, przegląd ze zgłoszenia QR): kliknięcie w pole daty lub godziny nic nie robiło. Pole systemowe jest przezroczyste nad czytelnym tekstem (układ dla Safari na iPhonie), a Chrome/Edge otwierają kalendarz tylko z niewidocznej tu ikonki. Teraz przy myszce kliknięcie w całe pole otwiera kalendarz/zegar (`showPicker`); na ekranie dotykowym bez zmian. Błąd istniał od początku zakładki „Przeglądy serwisowe” na komputerze.
+- Telefon klienta przy nazwie (klient, umówiony przegląd, szczegóły wizyty), jako numer do kliknięcia.
+- Decyzja właściciela: zgłoszenia i przeglądy obsługiwane na komputerze; na iPhonie bez zmian (nic nie usuwamy).
+- Testy: `smoke-communication-v1421.mjs` (punkt 6), E2E `service-requests-v1421.spec.js` (telefon, kliknięcie daty i godziny wywołuje kalendarz).
+
 ## 14.21
 - Uwagi właściciela po pierwszym zgłoszeniu z naklejki QR (04.11.2026, iPhone):
   - Kreator urządzeń: po zapisie lista pokazywała „Bez naklejki QR”, choć naklejka została przypisana (przypisanie usuwało ją z „do zapisania”, a listy zapisanych nie odświeżano). Kreator wczytuje naklejki ponownie po zdarzeniu `QR_STICKERS_CHANGED_EVENT`.
