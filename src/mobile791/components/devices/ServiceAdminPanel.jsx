@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   searchServiceDevices, groupServiceSearchResults, loadServiceCustomerDevices,
   loadServiceStaff, loadAdminServiceVisits, createAdminServiceVisit,
@@ -76,7 +76,7 @@ function ServiceDateTimeFields({ date, time, onDateChange, onTimeChange, disable
   </div>;
 }
 
-export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCustomerRequest = null, onOpenJob = null }) {
+export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCustomerRequest = null, onOpenJob = null, onRequestPlanned = null }) {
   const [screen,setScreen] = useState('search');
   const [search,setSearch] = useState('');
   const [groups,setGroups] = useState([]);
@@ -101,6 +101,8 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
   // 14.08: naklejki QR urządzeń klienta.
   const [deviceStickers,setDeviceStickers] = useState({});
   const [qrScan,setQrScan] = useState(null); // { mode: 'find' } | { mode: 'assign', device }
+  // 14.21: przegląd planowany ze zgłoszenia klienta (naklejka QR) — po zapisie zgłoszenie jest oznaczane jako załatwione.
+  const planRequestIdRef = useRef('');
 
   const staffName = useCallback(id => staff.find(p => p.id === id)?.full_name || (id ? 'Pracownik' : 'Bez przydziału'),[staff]);
   useEffect(() => {
@@ -143,7 +145,8 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
       ]);
       setCustomer(group);setCustomerDevices(devices);setVisits(history);setScreen('customer');
       refreshDeviceStickers(devices);
-    } catch(err) { setError(friendlyError(err)); }
+      return devices;
+    } catch(err) { setError(friendlyError(err)); return null; }
     finally {setBusy(false);}
   }
   async function refreshDeviceStickers(devices = customerDevices) {
@@ -154,7 +157,12 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
   useEffect(() => {
     if (!openCustomerRequest?.id || !isAdmin) return;
     setScreen('search');
-    openCustomer(openCustomerRequest);
+    const plan = openCustomerRequest.plan || null;
+    openCustomer(openCustomerRequest).then((devices) => {
+      if (!plan || !Array.isArray(devices)) return;
+      const known = new Set(devices.map(d => d.id));
+      startPlan({ deviceIds: (plan.deviceIds || []).filter(id => known.has(id)), notes: plan.notes || '', requestId: plan.requestId || '' });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openCustomerRequest?.nonce]);
   async function handleScannedSticker(code) {
@@ -263,9 +271,12 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
     }catch(err){setError(friendlyError(err));}
     finally{setBusy(false);}
   }
-  function startPlan() {
-    setSelectedIds([]);setCreateOperationId(crypto.randomUUID());setDate(TODAY());setTime('');setNotes('');
-    setSelectedTechnicians([]);setError('');setMessage('');setScreen('plan');
+  function startPlan(prefill = null) {
+    // Wywołanie z przycisku przekazuje zdarzenie kliknięcia — prefill tylko z obiektu planu zgłoszenia.
+    const fromRequest = prefill && Array.isArray(prefill.deviceIds) ? prefill : null;
+    planRequestIdRef.current = fromRequest?.requestId || '';
+    setSelectedIds(fromRequest ? fromRequest.deviceIds : []);setCreateOperationId(crypto.randomUUID());setDate(TODAY());setTime('');setNotes(fromRequest ? fromRequest.notes : '');
+    setSelectedTechnicians([]);setError('');setMessage(fromRequest ? 'Zgłoszenie klienta: urządzenie i uwagi wpisane. Ustal termin i zapisz przegląd.' : '');setScreen('plan');
   }
   function toggleId(id) {
     setSelectedIds(current => current.includes(id)?current.filter(x=>x!==id):[...current,id]);
@@ -285,6 +296,12 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
       if (assignment.needsAssignmentUpdate) {
         try { await updateAdminServiceAssignment({supabase,visitId,technicianId:assignment.primaryId,additionalTechnicianIds:assignment.additionalIds}); }
         catch(err) { setMessage('Zlecenie zapisane, ale nie udało się zapisać przydziału pracowników: '+friendlyError(err)); }
+      }
+      const requestId=planRequestIdRef.current;
+      planRequestIdRef.current='';
+      if (requestId && typeof onRequestPlanned === 'function') {
+        try { await onRequestPlanned(requestId, visitId); }
+        catch(err) { setMessage('Przegląd zapisany, ale nie udało się oznaczyć zgłoszenia jako załatwionego: '+friendlyError(err)); }
       }
       const rows=await loadVisits(customer.id);
       const newVisit=rows.find(v=>v.id===visitId);

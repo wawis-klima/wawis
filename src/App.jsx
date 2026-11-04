@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { lazy } from "./modules/lazy-safe.jsx";
 import AuthScreen from "./components/AuthScreen";
 import AppAuthenticatedLayout from "./components/layout/AppAuthenticatedLayout.jsx";
@@ -50,6 +50,8 @@ const JobFormModal = lazy(() => import("./components/modals/JobFormModal.jsx"));
 const DiagnosticsPanel = lazy(() => import("./components/diagnostics/DiagnosticsPanel.jsx"));
 const FuelPanel = lazy(() => import("./components/fuel/FuelPanel.jsx"));
 const ServiceRequestsPanel = lazy(() => import("./components/service-requests/ServiceRequestsPanel.jsx"));
+import { formatNavBadge, loadNewServiceRequestCount, loadPendingSmsCount } from "./modules/communication-counters.js";
+import { setServiceRequestStatus } from "./modules/service-requests.js";
 
 const adminModuleFallback = (
   <div className="card authCard">Trwa ładowanie modułu...</div>
@@ -149,6 +151,9 @@ export default function App() {
   const [globalSearchRequested, setGlobalSearchRequested] = useState(false);
   const [requestedContractorId, setRequestedContractorId] = useState(null);
   const [requestedDeviceId, setRequestedDeviceId] = useState(null);
+  // 14.21: liczniki KOMUNIKACJA i przegląd planowany ze zgłoszenia klienta.
+  const [communicationCounts, setCommunicationCounts] = useState({ requests: 0, sms: 0 });
+  const [serviceOpenRequest, setServiceOpenRequest] = useState(null);
   const [desktopNavKey, setDesktopNavKey] = useState(initialPosition.section);
   useEffect(() => { rememberActivePosition(activeModule, desktopNavKey); }, [activeModule, desktopNavKey]);
   useEffect(() => { consumeUpdateReloadMarker(); }, []);
@@ -701,6 +706,31 @@ export default function App() {
 
   const smsDueTodayCount = dashboardMetrics?.smsDueToday ?? fallbackSmsDueTodayCount;
 
+  // 14.21: liczniki w lewym panelu — nowe zgłoszenia klientów i SMS-y do zatwierdzenia. Błąd = bez znaczka.
+  const refreshCommunicationCounts = useCallback(async () => {
+    if (!isAdmin || !supabase) return;
+    const [requests, sms] = await Promise.allSettled([
+      loadNewServiceRequestCount({ supabase }),
+      loadPendingSmsCount({ supabase }),
+    ]);
+    setCommunicationCounts({
+      requests: requests.status === "fulfilled" ? requests.value : 0,
+      sms: sms.status === "fulfilled" ? sms.value : 0,
+    });
+  }, [isAdmin, supabase]);
+  useEffect(() => {
+    if (!isAdmin || !sessionUser?.id) return undefined;
+    void refreshCommunicationCounts();
+    const tick = () => { if (document.visibilityState !== "hidden") void refreshCommunicationCounts(); };
+    const timer = window.setInterval(tick, 60000);
+    window.addEventListener("focus", tick);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", tick); };
+  }, [isAdmin, sessionUser?.id, refreshCommunicationCounts, activeModule]);
+  const communicationNavBadges = useMemo(() => ({
+    requests: formatNavBadge(communicationCounts.requests),
+    sms: formatNavBadge(communicationCounts.sms),
+  }), [communicationCounts]);
+
 
 
   useEffect(() => {
@@ -1021,6 +1051,7 @@ export default function App() {
   return (
     <>
       <AppAuthenticatedLayout
+        navBadges={communicationNavBadges}
         isMobile={isMobile}
         isAdmin={isAdmin}
         showAssignedJobsOnly={showAssignedJobsOnly}
@@ -1109,6 +1140,11 @@ export default function App() {
                 isAdmin={isAdmin}
                 refreshAll={refreshAll}
                 requestedDeviceId={requestedDeviceId}
+                openServiceRequest={serviceOpenRequest}
+                onRequestPlanned={async (requestId) => {
+                  await setServiceRequestStatus({ supabase, id: requestId, status: "zalatwione" });
+                  void refreshCommunicationCounts();
+                }}
               />
             ) : activeModule === "calendar" ? (
               <CalendarPanel
@@ -1120,6 +1156,19 @@ export default function App() {
               <ServiceRequestsPanel
                 supabase={supabase}
                 onOpenContractor={(contractorId) => handleOpenContractorFromSms({ contractor_id: contractorId })}
+                onChanged={refreshCommunicationCounts}
+                onPlanVisit={(row) => {
+                  setServiceOpenRequest({
+                    nonce: Date.now(),
+                    id: row.contractor_id,
+                    name: row.contractor_name || "Klient",
+                    phone: row.contractor_phone || "",
+                    city: row.contractor_city || "",
+                    street: row.contractor_street || "",
+                    plan: { deviceIds: [row.device_id], notes: row.notes || "", requestId: row.id },
+                  });
+                  handleDesktopNavigation("devices", "devices");
+                }}
               />
             ) : activeModule === "diagnostics" ? (
               <DiagnosticsPanel

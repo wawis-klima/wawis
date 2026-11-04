@@ -1,4 +1,5 @@
 import React from 'react';
+import './admin-nav-badge.css';
 import { APP_VERSION } from '../../version';
 import GlobalDesktopSearch from '../desktop/GlobalDesktopSearch.jsx';
 
@@ -150,7 +151,7 @@ function getSidebarActiveState(item, activeModule, activeNavKey) {
   return false;
 }
 
-export default function AdminDesktopShell({ activeModule, activeNavKey, setActiveModule, onNavigate, profile, onLogout, globalSearchProps = null, children }) {
+export default function AdminDesktopShell({ activeModule, activeNavKey, setActiveModule, onNavigate, profile, onLogout, globalSearchProps = null, navBadges = null, children }) {
   const displayName = profile?.full_name || profile?.email || 'Administrator';
   const initials = String(displayName).trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'AD';
 
@@ -169,16 +170,19 @@ export default function AdminDesktopShell({ activeModule, activeNavKey, setActiv
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const active = getSidebarActiveState(item, activeModule, activeNavKey);
+                  // 14.21: licznik przy Zgłoszeniach i SMS (tylko gdy coś czeka).
+                  const badge = item.passive ? '' : String(navBadges?.[item.key] || '');
                   return (
                     <button
                       key={item.key}
                       type="button"
                       className={`adminDesktopNavItem ${active ? 'active' : ''}`}
                       onClick={() => (typeof onNavigate === 'function' ? onNavigate(item.target, item.key) : setActiveModule(item.target))}
-                      title={item.label}
+                      title={badge ? `${item.label}: ${badge}` : item.label}
                     >
                       <span className="adminDesktopNavItemIcon"><Icon /></span>
                       <span>{item.label}</span>
+                      {badge ? <span className="adminDesktopNavBadge" data-testid={`nav-badge-${item.key}`} aria-hidden="true">{badge}</span> : null}
                     </button>
                   );
                 })}

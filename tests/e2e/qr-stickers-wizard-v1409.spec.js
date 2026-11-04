@@ -69,11 +69,11 @@ test('@mobile 14.09: pracownik skanuje naklejkę w kreatorze urządzeń, zapis p
   await expect(wizard(page)).toHaveCount(0, { timeout: 30_000 });
   expect(dialogs.join(' | ')).not.toContain('Naklejki QR nie przypisano');
 
-  // Karta montażu: znaczek przy urządzeniu bez rozwijania, kompaktowa linia po rozwinięciu.
-  await expect(page.locator('.qrStickerBadge').first()).toHaveText('QR BNKJ-XZDY', { timeout: 20_000 });
+  // Karta montażu: 14.21 (decyzja właściciela) — bez znaczka w nagłówku urządzenia, naklejka w linii po rozwinięciu.
   await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
   const row = page.getByTestId('job-device-qr-sticker').first();
-  await expect(row).toContainText('Naklejka QR: BNKJ-XZDY');
+  await expect(row).toContainText('Naklejka QR: BNKJ-XZDY', { timeout: 20_000 });
+  await expect(page.locator('.qrStickerBadge')).toHaveCount(0);
   const rowBox = await row.boundingBox();
   expect(rowBox.height).toBeLessThanOrEqual(60);
 

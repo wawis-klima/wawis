@@ -746,7 +746,7 @@ export default function JobDetailsPanel({
                         >
                           <strong>Urządzenie {deviceIndex}</strong>
                           <span className={`jobDeviceDocumentationType ${isMultiSplit ? 'multi' : 'single'}`}>{isMultiSplit ? 'Multi-split' : 'Single-split'}</span>
-                          {jobQr.stickers[deviceIndex] ? <span className="qrStickerBadge" title="Naklejka QR">QR {formatQrStickerCode(jobQr.stickers[deviceIndex])}</span> : null}
+                          {/* 14.21 (decyzja właściciela): bez znaczka QR w nagłówku — ucinał nazwę urządzenia; naklejka jest w sekcji „Naklejka QR” poniżej. */}
                         </button>
                         <div className="jobDeviceDocumentationTitleActions">
                             {isAdmin ? (

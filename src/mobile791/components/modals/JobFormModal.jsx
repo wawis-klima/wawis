@@ -24,7 +24,7 @@ import NameplatePhotoCapture from "../nameplate/NameplatePhotoCapture.jsx";
 import MobileDeviceWizard from "../devices/MobileDeviceWizard.jsx";
 import QrStickerScanner from "../qr/QrStickerScanner.jsx";
 import "../qr/QrStickerScanner.css";
-import { loadJobQrStickers, validateWizardQrSticker } from "../../../modules/qr-stickers.js";
+import { loadJobQrStickers, QR_STICKERS_CHANGED_EVENT, validateWizardQrSticker } from "../../../modules/qr-stickers.js";
 
 
 // iOS can paint the native date text too high. Keep the system date picker
@@ -138,6 +138,17 @@ export default function JobFormModal({
   const [qrSaved, setQrSaved] = useState({});
   const [qrEnabled, setQrEnabled] = useState(false);
   const [qrScanIndex, setQrScanIndex] = useState(null);
+  // 14.21: po zapisie kreatora naklejki przechodzą z „do zapisania” do zapisanych — wczytujemy je ponownie,
+  // inaczej lista urządzeń pokazywała „Bez naklejki QR”, choć naklejka była już przypisana.
+  const [qrReloadKey, setQrReloadKey] = useState(0);
+  useEffect(() => {
+    if (!editingJobId || typeof window === 'undefined') return undefined;
+    const onChanged = (event) => {
+      if (String(event?.detail?.jobId || '') === String(editingJobId)) setQrReloadKey((value) => value + 1);
+    };
+    window.addEventListener(QR_STICKERS_CHANGED_EVENT, onChanged);
+    return () => window.removeEventListener(QR_STICKERS_CHANGED_EVENT, onChanged);
+  }, [editingJobId]);
   const pendingQrStickers = jobForm.pending_qr_stickers && typeof jobForm.pending_qr_stickers === 'object' ? jobForm.pending_qr_stickers : {};
   useEffect(() => {
     if (!showModal || !serialOnlyMode || !editingJobId || !supabase) {
@@ -157,7 +168,7 @@ export default function JobFormModal({
         if (active && /nie są jeszcze włączone/.test(String(error?.message || ''))) setQrEnabled(false);
       });
     return () => { active = false; };
-  }, [showModal, serialOnlyMode, editingJobId, supabase]);
+  }, [showModal, serialOnlyMode, editingJobId, supabase, qrReloadKey]);
 
   function setPendingQrSticker(deviceIndex, code) {
     setJobForm((prev) => {

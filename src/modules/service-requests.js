@@ -39,3 +39,19 @@ export async function setServiceRequestStatus({ supabase, id, status }) {
   if (data !== true) throw new Error('Nie znaleziono zgłoszenia — odśwież listę.');
   return true;
 }
+
+/** 14.21: przegląd można zaplanować, gdy zgłoszenie wskazuje klienta i urządzenie. */
+export function canPlanServiceVisit(row) {
+  return Boolean(row?.contractor_id && row?.device_id);
+}
+
+/** Uwagi przeglądu z treści zgłoszenia (pole „Uwagi” w Przeglądach serwisowych, maks. 4000 znaków). */
+export function buildServiceVisitNotes(row) {
+  const label = SERVICE_REQUEST_KIND_LABELS[row?.kind] || 'Zgłoszenie';
+  const parts = [
+    `Zgłoszenie klienta z naklejki QR (${formatRequestDate(row?.created_at)}): ${label}.`,
+    row?.description ? String(row.description).trim() : '',
+    row?.phone ? `Tel. klienta: ${formatRequestPhone(row.phone)}.` : '',
+  ].filter(Boolean);
+  return parts.join(' ').slice(0, 4000);
+}

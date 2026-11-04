@@ -1,5 +1,16 @@
 # WAWIS — Regression Ledger
 
+## QR-FEEDBACK-1421 — uwagi po pierwszym zgłoszeniu (04.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1421-WIZARD | FIXED-UNVERIFIED | iPhone 04.11 07:21: „Bez naklejki QR” po zapisie, naklejka przypisana (qr_stickers.assigned_at 06:21:35Z). Ponowne wczytanie po zdarzeniu; `smoke-communication-v1421.mjs`. Do sprawdzenia na iPhonie. |
+| QR-1421-BADGE | FIXED-UNVERIFIED | Znaczek QR usunięty z nagłówka urządzenia; E2E 14.08/14.09 sprawdzają brak znaczka i linię „Naklejka QR”. |
+| REQ-1421-TABS-PLAN | FIXED-UNVERIFIED | Zakładki rodzaju, „Zaplanuj przegląd” z urządzeniem i uwagami (E2E `service-requests-v1421`). Zamknięcie zgłoszenia po zapisie przeglądu — do sprawdzenia na produkcji. |
+| NAV-1421-COUNTERS | FIXED-UNVERIFIED | Liczniki Zgłoszenia/SMS; SMS jak `count_pending_sms_groups_v1417` (bez ukrytych wpisów grup). |
+| QR-1420-LIVE | VERIFIED | 04.11: 2 zgłoszenia z naklejki HCU2-W92K, push wysłany na 2 subskrypcje, wyświetlony na iPhonie; widoczne w zakładce na komputerze. |
+| SQ-1418-FIRST-RUN | VERIFIED | 04.11 05:30Z: jedno wywołanie, processed_at 05:30:08Z, pending 0 (bez push — poprawnie). |
+
 ## QR-REQUESTS-1420 — zgłoszenia klientów z naklejki QR (03.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

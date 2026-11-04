@@ -1,8 +1,9 @@
-# RELEASE RESULT — WAWIS 14.20
+# RELEASE RESULT — WAWIS 14.21
 
 ## Zakres
-- Publiczna strona naklejki QR dla klienta: model, termin przeglądu, telefon, zgłoszenie awarii lub przeglądu.
-- Funkcja Edge `qr-service-request` (walidacja, limity, push do administratorów), zakładka „Zgłoszenia” na komputerze.
-- Migracja `20261103200000` (uruchamia właściciel) — nowa tabela i funkcje, bez zmian istniejących danych.
+- Zgłoszenia: zakładki Awarie / Przeglądy z licznikami, „Zaplanuj przegląd” → Przeglądy serwisowe (zgłoszenie zamykane po zapisie).
+- Liczniki w lewym panelu: Zgłoszenia (nowe), SMS (do zatwierdzenia).
+- Kreator urządzeń: przypisana naklejka QR widoczna po zapisie; karta montażu bez znaczka QR w nagłówku urządzenia.
+- Rejestr migracji: 14.20 (`20261103200000`).
 
-Obszary chronione: start aplikacji (`main.jsx`), nowa publiczna funkcja Edge, powiadomienia push.
+Bez zmian bazy i funkcji Edge.
