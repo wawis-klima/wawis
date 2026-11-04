@@ -30,3 +30,10 @@
   .serviceRequestRow { grid-template-columns: minmax(0, 1fr); }
   .serviceRequestSide { justify-items: start; }
 }
+/* 14.21: zakładki rodzaju z licznikami nowych. */
+.serviceRequestsKinds { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #d8e0ec; padding-bottom: 10px; }
+.serviceRequestsKindTab { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #d8e0ec; background: #fff; color: #10203a;
+  border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+.serviceRequestsKindTab.active { border-color: #2563eb; background: #e3ecfd; color: #1e4fbf; }
+.serviceRequestsKindCount { font-size: 12px; font-weight: 800; border-radius: 999px; padding: 2px 8px; background: #2563eb; color: #fff; }
+.serviceRequestsKindTab.kindTab-awaria .serviceRequestsKindCount { background: #b42318; }

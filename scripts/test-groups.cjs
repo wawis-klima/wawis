@@ -138,6 +138,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-v1281.mjs',
     'node scripts/smoke-fakturownia-recheck-v1418.mjs',
     'node scripts/smoke-qr-service-request-v1420.mjs',
+    'node scripts/smoke-communication-v1421.mjs',
     'node scripts/smoke-edge-auth-v1412.mjs',
   ],
   push: [
@@ -163,6 +164,7 @@ const GROUPS = {
     'node scripts/smoke-sms-queue-daily-v1417.mjs',
     'node scripts/smoke-sms-queue-daily-0630-v1418.mjs',
     'node scripts/smoke-qr-service-request-v1420.mjs',
+    'node scripts/smoke-communication-v1421.mjs',
   ],
   fuel: [
     'node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs',

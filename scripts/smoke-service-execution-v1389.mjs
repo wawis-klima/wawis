@@ -131,7 +131,8 @@ assert.match(permanentEdge,/admin\.storage\.from\("service-visit-files"\)\.remov
 assert.match(permanentEdge,/remaining\.length!==0/,'Storage empty verification before database delete');
 assert.match(permanentEdge,/service_visit_purge_finalize_v1395/);
 assert.match(permanentConfig,/\[functions\.purge-service-visit\]\s+verify_jwt = true/);
-const purgeSource=adminService.match(/  async function purgeVisit\(\) \{[\s\S]*?\n  \}\n  function startPlan\(\)/)?.[0].replace(/\n  function startPlan\(\)$/, '');
+// 14.21: startPlan przyjmuje opcjonalne dane planu ze zgłoszenia klienta — granica wycinka bez zmian.
+const purgeSource=adminService.match(/  async function purgeVisit\(\) \{[\s\S]*?\n  \}\n  function startPlan\(/)?.[0].replace(/\n  function startPlan\($/, '');
 assert.ok(purgeSource,'Real purge handler is present');
 assert.doesNotMatch(purgeSource,/window\.prompt|USUN/,'Never require typed confirmation');
 assert.equal((purgeSource.match(/window\.confirm\(/g)||[]).length,1,'Exactly one confirmation');

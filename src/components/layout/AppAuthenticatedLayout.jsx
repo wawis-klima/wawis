@@ -51,6 +51,7 @@ export default function AppAuthenticatedLayout({
   profile = null,
   logout = () => {},
   globalSearchProps = null,
+  navBadges = null,
 }) {
   const isDesktopJobsSplitScroll = !isMobile && isAdmin && activeModule === "jobs" && Boolean(detailsPanel);
   const desktopJobsListPaneRef = useIndependentWheelScroll(isDesktopJobsSplitScroll);
@@ -104,7 +105,7 @@ export default function AppAuthenticatedLayout({
 
   if (!isMobile && isAdmin) {
     return (
-      <AdminDesktopShell activeModule={activeModule} activeNavKey={activeNavKey} setActiveModule={setActiveModule} onNavigate={onDesktopNavigate} profile={profile} onLogout={logout} globalSearchProps={globalSearchProps}>
+      <AdminDesktopShell activeModule={activeModule} activeNavKey={activeNavKey} setActiveModule={setActiveModule} onNavigate={onDesktopNavigate} profile={profile} onLogout={logout} globalSearchProps={globalSearchProps} navBadges={navBadges}>
         <div className={activeModule === "calendar" ? "adminDesktopPage calendarDesktopPageWide" : "page pageDesktopStatusLeft adminDesktopPage"}>
           {content}
         </div>

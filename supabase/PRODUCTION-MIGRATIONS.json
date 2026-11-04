@@ -1157,6 +1157,18 @@
       "verified": "SELECT 03.11.2026: cron.job = tylko wawis-sms-queue-daily-v1418 (*/15 4-6 * * 1-5, aktywne); okno 6:30–8:00 pon.–pt. (środa 05:30Z true, sobota false); funkcja Edge z fałszywym kodem → 403",
       "repo_file": "supabase/migrations/20261103150000_sms_queue_daily_0630_v1418.sql",
       "note": "Właściciel wkleił w SQL Editor obie migracje razem (bez komentarzy); stan zgodny z plikami."
+    },
+    {
+      "version": "20261103200000",
+      "name": "service_requests_v1420",
+      "md5": "b1b02ad45935dd826930c7c0381d1dde",
+      "md5_of_file": true,
+      "bytes": 4396,
+      "status": "applied_sql_editor",
+      "applied_at": "2026-11-03T21:05+01:00",
+      "verified": "SELECT 03.11.2026: tabela service_requests (RLS, bez uprawnień anon/authenticated), funkcje list/set_status tylko authenticated + admin; 04.11 pierwsze 2 zgłoszenia właściciela, push dostarczony (2 subskrypcje)",
+      "repo_file": "supabase/migrations/20261103200000_service_requests_v1420.sql",
+      "note": "Właściciel wkleił plik migracji w SQL Editor; stan zgodny z plikiem."
     }
   ],
   "statuses": {

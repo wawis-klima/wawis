@@ -1,3 +1,12 @@
+## 14.21
+- Uwagi właściciela po pierwszym zgłoszeniu z naklejki QR (04.11.2026, iPhone):
+  - Kreator urządzeń: po zapisie lista pokazywała „Bez naklejki QR”, choć naklejka została przypisana (przypisanie usuwało ją z „do zapisania”, a listy zapisanych nie odświeżano). Kreator wczytuje naklejki ponownie po zdarzeniu `QR_STICKERS_CHANGED_EVENT`.
+  - Karta montażu (telefon): bez znaczka „QR XXXX-XXXX” w nagłówku urządzenia — ucinał nazwę; naklejka zostaje w sekcji „Naklejka QR” (Wymień / Zwolnij).
+  - Zgłoszenia (komputer): zakładki Wszystkie / Awarie / Przeglądy z liczbą nowych; „Zaplanuj przegląd” otwiera Urządzenia → Przeglądy serwisowe z klientem, zaznaczonym urządzeniem i uwagami ze zgłoszenia (rodzaj, opis, telefon). Po zapisaniu przeglądu zgłoszenie oznacza się jako załatwione.
+  - Lewy panel (komputer): liczniki przy „Zgłoszenia” (nowe) i „SMS” (do zatwierdzenia — liczone jak poranne zadanie: wpis główny grupy, bez grup już wysłanych), odświeżane co minutę i po powrocie do okna. Licznik nie zmienia nazwy przycisku menu.
+- Test `smoke-communication-v1421.mjs` (grupy `roles`, `push`), E2E `service-requests-v1421.spec.js`; `qr-stickers-v1408`/`-wizard-v1409` dopasowane do decyzji (bez znaczka w nagłówku); `smoke-service-execution-v1389` — granica wycinka `startPlan(` z parametrem.
+- Rejestr migracji: `20261103200000` (03.11 21:05) wykonana przez właściciela, sprawdzona SELECT-em (14.17/14.18 zapisane w 14.19). Pierwsza poranna kolejka SMS 04.11 o 6:30: wykonana, 0 SMS-ów do zatwierdzenia. Pierwsze zgłoszenia QR 04.11: zapisane, push wyświetlony na iPhonie.
+
 ## 14.20
 - Zgłoszenia od klientów z naklejki QR (decyzja właściciela 03.11.2026). Klient (bez konta) skanuje naklejkę na klimatyzatorze i zamiast ekranu logowania widzi stronę firmy: model, data montażu, termin przeglądu (jak przy SMS: 11 mies., potem co 12; „Czas na przegląd”, gdy termin trwa), przycisk „Zadzwoń do serwisu” i dwa wybory: „Zgłoś awarię” (opis wymagany) / „Umów przegląd”, plus numer telefonu.
   - Publiczna strona pokazuje wyłącznie bezpieczne dane — bez nazwiska, adresu, numeru seryjnego i historii (test sprawdza dokładny zestaw pól). Bez service workera i instalacji aplikacji na telefonie klienta.

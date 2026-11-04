@@ -37,7 +37,8 @@ test.describe('@mobile 14.08: naklejki QR', () => {
     await expect(page.locator('.qrScannerModal')).toHaveCount(0);
     await expect(row).toContainText('Naklejka QR: UYE8-EYCQ');
     await expect(row).toContainText('Przypisano naklejkę UYE8-EYCQ do Urządzenia 1.');
-    await expect(page.locator('.qrStickerBadge').first()).toHaveText('QR UYE8-EYCQ');
+    // 14.21 (decyzja właściciela): bez znaczka QR w nagłówku urządzenia — naklejka tylko w sekcji „Naklejka QR”.
+    await expect(page.locator('.qrStickerBadge')).toHaveCount(0);
     // Jedna naklejka na zestaw: pracownik nie wymienia ani nie zwalnia naklejki.
     await expect(row.getByRole('button')).toHaveCount(0);
 
