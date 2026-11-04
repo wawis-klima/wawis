@@ -83,4 +83,10 @@ assert.match(read('src/modules/qr-stickers.js'), /if \(outcome\.assigned\.length
 // 5. Bez znaczka QR w nagłówku urządzenia (decyzja właściciela).
 assert.doesNotMatch(read('src/mobile791/components/JobDetailsPanel.jsx'), /className="qrStickerBadge"/);
 
+// 6. 14.22: kalendarz daty/godziny przeglądu otwierany kliknięciem myszką (Chrome/Edge), telefon klienta przy nazwie.
+assert.match(service, /window\.matchMedia\?\.\('\(pointer: fine\)'\)\.matches/, 'tylko myszka — iPhone bez zmian');
+assert.match(service, /event\.currentTarget\.showPicker\?\.\(\)/);
+assert.equal((service.match(/onClick=\{openNativePickerOnDesktop\}/g) || []).length, 2, 'data i godzina');
+assert.match(service, /href=\{`tel:\$\{digits\}`\}/);
+
 console.log('PASS WAWIS 14.21 — liczniki KOMUNIKACJA, Awarie/Przeglądy, zgłoszenie → przegląd, napis QR w kreatorze, bez znaczka QR w nagłówku.');

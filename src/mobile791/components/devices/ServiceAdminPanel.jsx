@@ -31,7 +31,20 @@ function friendlyError(error) {
 }
 function CustomerAddress({ client }) {
   const address = [client?.street, client?.city].filter(Boolean).join(', ');
-  return <span className="serviceAdminMuted">{address || 'Brak adresu'}</span>;
+  // 14.22 (uwaga właściciela): telefon klienta przy nazwie — przegląd umawia się telefonicznie.
+  const phone = String(client?.phone || '').trim();
+  const digits = phone.replace(/[^0-9+]/g, '');
+  return <span className="serviceAdminMuted">{address || 'Brak adresu'}
+    {phone ? <> · tel. <a className="serviceAdminPhone" href={`tel:${digits}`}>{phone}</a></> : null}
+  </span>;
+}
+// 14.22: Chrome i Edge na komputerze otwierają kalendarz tylko z ikonki, która w tym polu jest niewidoczna
+// (pole systemowe jest przezroczyste nad czytelnym tekstem — układ dla Safari na iPhonie). Przy myszce
+// otwieramy wybór daty/godziny kliknięciem w całe pole; na ekranie dotykowym bez zmian.
+function openNativePickerOnDesktop(event) {
+  if (event.currentTarget.disabled) return;
+  if (typeof window === 'undefined' || !window.matchMedia?.('(pointer: fine)').matches) return;
+  try { event.currentTarget.showPicker?.(); } catch { /* przeglądarka bez showPicker — zostaje wpisywanie z klawiatury */ }
 }
 function DeviceItem({ device, history = null, children }) {
   return <div className="serviceAdminDevice">
@@ -63,14 +76,14 @@ function ServiceDateTimeFields({ date, time, onDateChange, onTimeChange, disable
       <span className="serviceAdminPickerSurface">
         <span className="serviceAdminPickerValue" aria-hidden="true">{formatServiceDate(date)}</span>
         <input type="date" className="serviceAdminNativePicker" aria-label="Data"
-          value={date} required disabled={disabled} onChange={e=>onDateChange(e.target.value)}/>
+          value={date} required disabled={disabled} onClick={openNativePickerOnDesktop} onChange={e=>onDateChange(e.target.value)}/>
       </span>
     </label>
     <label>Godzina
       <span className="serviceAdminPickerSurface">
         <span className="serviceAdminPickerValue" aria-hidden="true">{time || '—:—'}</span>
         <input type="time" className="serviceAdminNativePicker" aria-label="Godzina"
-          value={time} disabled={disabled} onChange={e=>onTimeChange(e.target.value)}/>
+          value={time} disabled={disabled} onClick={openNativePickerOnDesktop} onChange={e=>onTimeChange(e.target.value)}/>
       </span>
     </label>
   </div>;

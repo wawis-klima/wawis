@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SERVICE-DESKTOP-1422 — data/godzina przeglądu na komputerze (04.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SV-1422-PICKER | FIXED-UNVERIFIED | Zdjęcie właściciela 08:27: pole daty nie reaguje (Chrome, Windows). `showPicker` przy `pointer: fine`; E2E sprawdza wywołanie dla daty i godziny. Dotyk bez zmian (testy WebKit 13.92). |
+| SV-1422-PHONE | FIXED-UNVERIFIED | Telefon klienta przy nazwie (E2E). |
+| REQ-1421-PLAN-LIVE | VERIFIED | 04.11 08:27: „Zaplanuj przegląd” otworzył formularz z klientem, urządzeniem i uwagami ze zgłoszenia (zdjęcie właściciela). |
+
 ## QR-FEEDBACK-1421 — uwagi po pierwszym zgłoszeniu (04.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

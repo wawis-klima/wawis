@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.21",
+  "version": "14.22",
   "scope": "full",
-  "release_branch": "release/v14.21",
+  "release_branch": "release/v14.22",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Frontend: zgłoszenia (zakładki, przegląd ze zgłoszenia), liczniki menu, kreator QR; bez zmian bazy i funkcji Edge."
+    "notes": "Frontend: przeglądy serwisowe na komputerze (kalendarz, telefon); bez zmian bazy i funkcji Edge."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.21",
+    "source_branch": "release/v14.22",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.21.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.22.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.21: uwagi po pierwszym zgłoszeniu QR",
+    "code": "14.22: data/godzina przeglądu na komputerze, telefon klienta",
     "release_ci": "WAWIS PR checks + smoke-communication-v1421 + E2E service-requests-v1421",
-    "postdeploy": "Vercel READY/14.21."
+    "postdeploy": "Vercel READY/14.22."
   }
 }
