@@ -31,6 +31,9 @@ assert.doesNotMatch(pdf, /\.upload\(|\.insert\(|\.rpc\(|\.from\(/, 'PDF niczego 
 const mobile = read('src/mobile791/components/JobDetailsPanel.jsx');
 assert.match(mobile, /\{isAdmin && selectedJobIsCompleted \? \(\s+<button\s+type="button"\s+className="btn leakTestProtocolBtn"/);
 assert.match(mobile, /openLeakTestProtocolPdf\(\{ job: selectedJob, profiles, supabase \}\)/);
+// Regresja CI 06.11: efekt użyty przed deklaracją selectedJobId (TDZ) wywracał kartę montażu.
+assert.ok(mobile.indexOf('const selectedJobId = String(selectedJob?.id || "");') < mobile.indexOf('React.useEffect(() => { setLeakTestMessage(""); }, [selectedJobId]);'),
+  'selectedJobId zadeklarowany przed użyciem');
 const desktop = read('src/components/JobDetailsPanel.jsx');
 assert.match(desktop, /\{isAdmin && selectedJobIsCompleted \? \(\s+<button\s+type="button"\s+className="btn premiumActionBtn jobDetailsQuickBtn"\s+data-testid="leak-test-protocol-btn"/);
 assert.match(desktop, /import \{ openLeakTestProtocolPdf \} from '\.\.\/mobile791\/modules\/leak-test-protocol-pdf\.js';/);

@@ -307,7 +307,6 @@ export default function JobDetailsPanel({
   const [protocolMessage, setProtocolMessage] = React.useState("");
   const [leakTestBusy, setLeakTestBusy] = React.useState(false);
   const [leakTestMessage, setLeakTestMessage] = React.useState("");
-  React.useEffect(() => { setLeakTestMessage(""); }, [selectedJobId]);
   const [protocolBackendAvailable, setProtocolBackendAvailable] = React.useState(true);
   const [protocolReloadKey, setProtocolReloadKey] = React.useState(0);
   // WAWIS 13.78 (test iPhone 26.10.2026, 13.77): bez internetu nie da się sprawdzić, czy montaż ma już protokół —
@@ -321,6 +320,8 @@ export default function JobDetailsPanel({
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
+  // 14.28: komunikat protokołu szczelności dotyczy tylko otwartego montażu.
+  React.useEffect(() => { setLeakTestMessage(""); }, [selectedJobId]);
   // 14.08: naklejki QR urządzeń (opcjonalne, wymagają internetu).
   const jobQr = useJobQrStickers({ supabase, jobId: selectedJobId, enabled: Boolean(selectedJobId) && !selectedJob?.offline_pending, refreshKey: `${selectedJob?.updated_at || ''}|${selectedJob?.device_model || ''}|${selectedJob?.detailsLoaded ? 1 : 0}` });
   const [qrScanTarget, setQrScanTarget] = React.useState(null);
