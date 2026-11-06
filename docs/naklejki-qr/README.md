@@ -12,3 +12,10 @@
 - Kolejne 162 kody (`partia-2-kody.csv`), wygenerowane z wykluczeniem partii 1 (`WAWIS_QR_EXCLUDE`); brak powtórzeń między partiami.
 - Kontrola odczytu: PDF 162/162, Word 162/162.
 - Decyzja właściciela: pracownicy przypisują naklejki przy montażu, ale nie jest to obowiązkowe.
+
+## Partia 2 — wersja „ZGŁOŚ AWARIĘ LUB SERWIS” (06.11.2026)
+- Prośba właściciela: oprócz „WAWIS Klimatyzacja” większy napis „ZGŁOŚ AWARIĘ / LUB SERWIS” (niebieski, 2 linie).
+- Te same 162 kody co `partia-2-kody.csv` (zgodne z bazą); QR 14,5 mm, korekcja M (29 modułów, moduł 0,5 mm).
+- Generator: `gen_v2_zglos.py <csv> <katalog> <nazwa>` + `make_docx_v2_zglos.js <katalog> <nazwa>`.
+- Kontrola odczytu: PDF 162/162, Word 162/162.
+- Uwaga: publiczna strona zgłoszenia dla klienta jeszcze nie istnieje — skan bez logowania prowadzi do logowania WAWIS.
