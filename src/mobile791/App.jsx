@@ -43,6 +43,7 @@ import { scheduleNameplateReaderWarmup } from "./modules/nameplate-reader-warmup
 import { setDeviceDraftOwner } from "./modules/device-form-drafts.js";
 import { setProtocolSignatureDraftOwner } from "./modules/protocol-signature-drafts.js";
 import { QR_PENDING_STORAGE_KEY, clearQrCodeFromLocation, readQrCodeFromLocation } from "../modules/qr-stickers.js";
+import LeakTestSignBanner from "./components/leak-tests/LeakTestSignBanner.jsx";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -1490,6 +1491,9 @@ export default function App() {
         logout={logout}
         jobsPanel={activeModule === "jobs" ? (
           <JobsPanel
+            // 14.29: instalator podpisuje swoje protokoły szczelności (tylko gdy są do podpisu).
+            // Przez prop — układ telefonu klonuje element JobsPanel (inlineDetailsPanel), fragment by to zepsuł.
+            topNotice={<LeakTestSignBanner supabase={supabase} userId={sessionUser?.id || ""} />}
             desktopStatusLabels={desktopStatusLabels}
             desktopStatusFilter={desktopStatusFilter}
             statuses={STATUSES}

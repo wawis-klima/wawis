@@ -5,7 +5,7 @@ export const LEAK_TEST_RESULTS = [['pozytywny', 'Pozytywny'], ['negatywny', 'Neg
 
 function rpcError(error) {
   const message = String(error?.message || '');
-  if (/leak_test|PGRST202|schema cache|does not exist|Could not find/i.test(message)) {
+  if (/leak_test|PGRST202|schema cache|does not exist|Could not find/i.test(message) && !/staff_only|admin_only|42501/i.test(message)) {
     return new Error('Próby szczelności nie są jeszcze włączone w bazie (brak migracji 14.28).');
   }
   if (/admin_only|42501/i.test(message)) return new Error('Próby szczelności widzi tylko administrator.');
@@ -57,4 +57,23 @@ export function defaultLeakTestDate(completedAt) {
 
 export function countFilledLeakTests(rows = []) {
   return (Array.isArray(rows) ? rows : []).filter((row) => row?.test_date).length;
+}
+
+// 14.29: instalator podpisuje SWOJE protokoły (telefon). Wzór podpisu w bazie, nie w telefonie.
+export async function loadOwnPendingLeakTests({ supabase }) {
+  const { data, error } = await supabase.rpc('leak_test_pending_own_v1429');
+  if (error) throw rpcError(error);
+  return Array.isArray(data) ? data : [];
+}
+
+export async function signOwnLeakTests({ supabase, jobIds = [], imagePng = null }) {
+  const ids = (Array.isArray(jobIds) ? jobIds : []).map(String).filter(Boolean);
+  if (!ids.length) return 0;
+  if (imagePng != null && !/^data:image\/png;base64,/.test(String(imagePng))) throw new Error('Podpis nie został zapisany jako obraz.');
+  const { data, error } = await supabase.rpc('leak_test_sign_own_v1429', { p_job_ids: ids, p_image_png: imagePng });
+  if (error) {
+    if (/leak_sign_no_saved_signature/.test(String(error.message || ''))) throw new Error('Brak zapisanego podpisu — podpisz palcem.');
+    throw rpcError(error);
+  }
+  return Number(data) || 0;
 }

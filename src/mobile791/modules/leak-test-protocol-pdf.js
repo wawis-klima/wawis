@@ -75,6 +75,9 @@ export function buildLeakTestProtocolData({ job = {}, profiles = [], record = nu
     testDate: record?.test_date ? formatLeakTestDate(record.test_date) : '',
     temperature: record?.temperature_c != null && record?.test_date ? String(Number(record.temperature_c)).replace('.', ',') : '',
     result: record?.test_date && ['pozytywny', 'negatywny'].includes(record?.result) ? record.result : '',
+    // 14.29: podpis złożony przez samego instalatora (jego wzór, data złożenia podpisu).
+    signaturePng: record?.test_date && /^data:image\/png;base64,/.test(String(record?.signature_png || '')) ? record.signature_png : '',
+    signedDate: record?.signed_at ? formatLeakTestDate(record.signed_at) : '',
     pages,
   };
 }
@@ -165,6 +168,21 @@ function drawPage(doc, data, page) {
   dots(doc, LEFT - 6, RIGHT - 20, y + 1);
 
   const sigY = 700;
+  if (data.signaturePng) {
+    // Podpis instalatora nad kropkami (jak na papierze: data i podpis), proporcje obrazu zachowane.
+    try {
+      const props = doc.getImageProperties(data.signaturePng);
+      const maxW = 150; const maxH = 46;
+      const scale = Math.min(maxW / props.width, maxH / props.height);
+      const w = props.width * scale; const h = props.height * scale;
+      doc.addImage(data.signaturePng, 'PNG', LEFT + 78 - w / 2, sigY - h - 2, w, h);
+    } catch { /* uszkodzony obraz — protokół bez podpisu zamiast błędu */ }
+    if (data.signedDate) {
+      doc.setFont(FONT, 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
+      doc.text(data.signedDate, LEFT - 8, sigY - 30);
+      doc.setTextColor(0, 0, 0);
+    }
+  }
   dots(doc, LEFT - 10, LEFT + 165, sigY);
   dots(doc, RIGHT - 190, RIGHT - 10, sigY);
   doc.setFontSize(8.5);

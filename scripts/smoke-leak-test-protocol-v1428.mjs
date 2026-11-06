@@ -22,7 +22,9 @@ assert.match(pdf, /String\(profile\?\.id \|\| ''\) === String\(job\?\.completed_
 assert.match(pdf, /const devices = getJobDeviceRows\(job\);/);
 // 14.28: temperatura, data i wynik wyłącznie z wpisu administratora (przepisane z protokołu) — bez wpisu puste.
 assert.match(pdf, /const leakRecord = record !== undefined \? record : await loadLeakTest\(\{ supabase, jobId: job\?\.id \}\);/);
-assert.doesNotMatch(pdf, /addImage/, 'bez podpisów');
+// 14.29: podpis wyłącznie z wpisu złożonego przez samego instalatora (signature_png z bazy).
+assert.match(pdf, /signaturePng: record\?\.test_date && \/\^data:image\\\/png;base64,\/\.test\(String\(record\?\.signature_png \|\| ''\)\) \? record\.signature_png : ''/);
+assert.equal((pdf.match(/addImage\(/g) || []).length, 1, 'jedno miejsce na podpis instalatora');
 assert.doesNotMatch(pdf, /Kopia elektroniczna|oryginale papierowym/, 'bez dopisków (decyzja właściciela)');
 assert.doesNotMatch(pdf, /previewWindow\.opener = null/, 'WebKit: blob w karcie wymaga połączenia z aplikacją');
 // Nic nie zapisuje w bazie ani w Storage.

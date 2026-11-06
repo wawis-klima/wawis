@@ -313,3 +313,6 @@ bash "$ROOT/scripts/job-completion-qr-sql-v1424.sh"
 
 # WAWIS 14.28: dane prób szczelności (tylko administrator) na jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/leak-tests-sql-v1428.sh"
+
+# WAWIS 14.29: podpisy protokołów szczelności (tylko sam instalator) na jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/leak-test-signatures-sql-v1429.sh"

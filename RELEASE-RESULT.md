@@ -1,6 +1,6 @@
-# RELEASE RESULT — WAWIS 14.28
+# RELEASE RESULT — WAWIS 14.29
 
 ## Zakres
-- Zakładka „Próby szczelności” (komputer, administrator): dane z protokołów papierowych dla zakończonych montaży z aplikacji, PDF.
-- Przycisk „Protokół szczelności (PDF)” w karcie zakończonego montażu (administrator).
-- Migracja `20261106130000_leak_tests_v1428.sql` (uruchamia właściciel).
+- Instalator podpisuje swoje protokoły szczelności w aplikacji (wzór w bazie, nie w telefonie); podpis na PDF.
+- Zakładka „Próby szczelności”: status podpisu. Zmiana danych usuwa podpis.
+- Migracja `20261106140000_leak_test_signatures_v1429.sql` (uruchamia właściciel).

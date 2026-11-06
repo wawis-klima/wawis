@@ -19,7 +19,10 @@ test('@mobile 14.28: administrator otwiera protokół szczelności PDF zakończo
   await page.evaluate(() => {
     const key = 'klima-mock-supabase-store-v3';
     const store = JSON.parse(localStorage.getItem(key) || '{}');
-    store.leak_test_records = [{ job_id: 'mock-job-003', test_date: '2026-04-22', temperature_c: 18, result: 'pozytywny' }];
+    // 14.29: z podpisem instalatora (obraz PNG 1×1 — test ścieżki addImage).
+    store.leak_test_signatures = [{ id: 'mock-sig-1', profile_id: 'x', confirmed_name: 'Pracownik Testowy',
+      image_png: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' }];
+    store.leak_test_records = [{ job_id: 'mock-job-003', test_date: '2026-04-22', temperature_c: 18, result: 'pozytywny', signature_id: 'mock-sig-1', signed_at: '2026-11-06T12:00:00Z' }];
     localStorage.setItem(key, JSON.stringify(store));
   });
   const consoleLines = [];

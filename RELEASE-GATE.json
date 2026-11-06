@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.28",
+  "version": "14.29",
   "scope": "full",
-  "release_branch": "release/v14.28",
+  "release_branch": "release/v14.29",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Próby szczelności: nowa tabela i funkcje administratora (migracja 20261106130000, uruchamia właściciel), zakładka i PDF."
+    "notes": "Podpisy instalatorów na protokołach szczelności: migracja 20261106140000 (uruchamia właściciel), baner w aplikacji, podpis na PDF."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.28",
+    "source_branch": "release/v14.29",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.28.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.29.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.28: próby szczelności — zakładka i PDF",
-    "release_ci": "WAWIS PR checks + leak-tests-sql-v1428 (PostgreSQL 16) + smoke-leak-tests-v1428 + E2E leak-tests-panel-v1428, leak-test-protocol-v1428",
-    "postdeploy": "Vercel READY/14.28."
+    "code": "14.29: podpisy instalatorów na protokołach szczelności",
+    "release_ci": "WAWIS PR checks + leak-test-signatures-sql-v1429 (PostgreSQL 16) + smoke-leak-test-signatures-v1429 + E2E leak-test-sign-v1429",
+    "postdeploy": "Vercel READY/14.29."
   }
 }

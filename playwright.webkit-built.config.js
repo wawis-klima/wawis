@@ -35,6 +35,7 @@ export default defineConfig({
     'qr-stickers-wizard-v1409.spec.js',
     'job-qr-required-v1424.spec.js',
     'leak-test-protocol-v1428.spec.js',
+    'leak-test-sign-v1429.spec.js',
   ],
   timeout: 240_000,
   expect: { timeout: 15_000 },

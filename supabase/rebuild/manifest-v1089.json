@@ -148,7 +148,8 @@
     "supabase/migrations/20261106090000_qr_sticker_przeglad_v1423.sql",
     "supabase/migrations/20261106120000_job_completion_qr_sticker_v1424.sql",
     "supabase/migrations/20261106100000_qr_stickers_batch2_fill_v1427.sql",
-    "supabase/migrations/20261106130000_leak_tests_v1428.sql"
+    "supabase/migrations/20261106130000_leak_tests_v1428.sql",
+    "supabase/migrations/20261106140000_leak_test_signatures_v1429.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
