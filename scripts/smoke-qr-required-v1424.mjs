@@ -27,10 +27,11 @@ for (const fn of [mobileDbMessage, desktopDbMessage]) {
   assert.match(fn({ message: 'job_qr_sticker_required: 1, 3' }), /\(urządzenia 1, 3\)/);
 }
 
-// 3. Montaż (iPhone): krok przed protokołem i zakończeniem, tylko pracownik; nieodczytane ≠ brak.
+// 3. Montaż (iPhone): krok przed protokołem i zakończeniem, tylko pracownik; nieodczytane naklejki (offline) nie blokują protokołu.
 const panel = read('src/mobile791/components/JobDetailsPanel.jsx');
 assert.match(panel, /const qrStickersRequired = Boolean\(selectedJob\) && !isAdmin && !selectedJobIsCompleted && canWorkerFinishJob\(selectedJob, isAdmin\);/);
 assert.match(panel, /const qrStickersChecked = Boolean\(selectedJobId\) && jobQr\.loadedJobId === selectedJobId && jobQr\.available;/);
+assert.match(panel, /const protocolQrReady = !qrStickersRequired \|\| !qrStickersChecked \|\| qrMissingDevices\.length === 0;/, 'blokada tylko przy potwierdzonym braku — protokół offline (13.78) bez zmian');
 assert.match(panel, /const protocolStepsReady = protocolNameplatesReady && protocolQrReady;/);
 assert.match(panel, /disabled=\{busy \|\| !protocolStepsReady\}/, 'Protokół zablokowany bez naklejek');
 assert.match(panel, /!protocolNameplatesReady \|\| !protocolQrReady \|\| !protocolReadyForCompletion/, 'Zakończ zablokowane bez naklejek');

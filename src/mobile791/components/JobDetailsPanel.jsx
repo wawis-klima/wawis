@@ -353,7 +353,9 @@ export default function JobDetailsPanel({
     ? missingJobQrStickers({ deviceCount: getJobDeviceRows(selectedJob).length, stickers: jobQr.stickers })
     : [];
   const qrStickersChecked = Boolean(selectedJobId) && jobQr.loadedJobId === selectedJobId && jobQr.available;
-  const protocolQrReady = !qrStickersRequired || (qrStickersChecked && qrMissingDevices.length === 0);
+  // Blokujemy tylko przy POTWIERDZONYM braku. Bez internetu (13.78: protokół i podpis dostępne offline) naklejek
+  // nie da się sprawdzić — wtedy decyduje kontrola przy „Zakończ” (online) i wyzwalacz w bazie (job_qr_sticker_required).
+  const protocolQrReady = !qrStickersRequired || !qrStickersChecked || qrMissingDevices.length === 0;
   const protocolStepsReady = protocolNameplatesReady && protocolQrReady;
   const qrMissingLabel = formatMissingQrDevices(qrMissingDevices);
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
@@ -508,9 +510,7 @@ export default function JobDetailsPanel({
       return;
     }
     if (!protocolQrReady) {
-      setProtocolMessage(qrStickersChecked
-        ? `Najpierw przypisz naklejkę QR: ${qrMissingLabel}.`
-        : "Najpierw sprawdzimy naklejki QR urządzeń — potrzebny internet.");
+      setProtocolMessage(`Najpierw przypisz naklejkę QR: ${qrMissingLabel}.`);
       onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
       return;
     }
@@ -1012,11 +1012,7 @@ export default function JobDetailsPanel({
           ) : null}
           {qrStickersRequired && protocolNameplatesReady && !protocolQrReady ? (
             <div className="finishNameplateRequirement missing" data-testid="finish-qr-step-missing">
-              {qrStickersChecked
-                ? <>Krok 2/3: przypisz naklejkę QR ({qrMissingLabel}) — przycisk „Przypisz naklejkę QR” przy urządzeniu. Dopiero potem aktywuje się „Protokół”.</>
-                : jobQr.available
-                  ? 'Sprawdzam naklejki QR urządzeń… (potrzebny internet)'
-                  : 'Nie udało się sprawdzić naklejek QR. Sprawdź internet i otwórz montaż ponownie.'}
+              Krok 2/3: przypisz naklejkę QR ({qrMissingLabel}) — przycisk „Przypisz naklejkę QR” przy urządzeniu. Dopiero potem aktywuje się „Protokół”.
             </div>
           ) : null}
           {isAdmin && canFinishJob && jobQr.loadedJobId === selectedJobId && jobQr.available && qrMissingDevices.length ? (
