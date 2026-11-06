@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { ADMIN, login } from './mock-helpers.js';
 
@@ -6,7 +7,7 @@ import { ADMIN, login } from './mock-helpers.js';
 test.describe('14.28: próby szczelności — komputer', () => {
   test.use({ viewport: { width: 1440, height: 1000 } });
 
-  test('lista, walidacja, zapis i PDF', async ({ page }) => {
+  test('lista, walidacja, zapis i PDF', async ({ page }, testInfo) => {
     await login(page, ADMIN);
     await page.getByRole('button', { name: /^Próby szczelności$/ }).click();
     const panel = page.getByTestId('leak-tests-panel');
@@ -37,11 +38,26 @@ test.describe('14.28: próby szczelności — komputer', () => {
     const popupPromise = page.waitForEvent('popup');
     await rows.first().getByRole('button', { name: 'PDF' }).click();
     const popup = await popupPromise;
-    await expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/);
-    const head = await popup.evaluate(async () => {
-      const res = await fetch(window.location.href);
-      return new TextDecoder().decode((await res.arrayBuffer()).slice(0, 5));
-    });
+    // PDF w karcie (blob:) albo pobrany (przeglądarka bez podglądu PDF) — w obu przypadkach sprawdzamy plik.
+    const downloadPromise = popup.waitForEvent('download', { timeout: 20_000 }).catch(() => null);
+    const outcome = await Promise.race([
+      expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
+      downloadPromise,
+    ]);
+    let head = '';
+    if (outcome === 'tab') {
+      head = await popup.evaluate(async () => {
+        const res = await fetch(window.location.href);
+        return new TextDecoder().decode((await res.arrayBuffer()).slice(0, 5));
+      });
+    } else {
+      const download = outcome || await downloadPromise;
+      const message = await panel.getByRole('alert').allTextContents().catch(() => []);
+      expect(download, `PDF w karcie albo pobrany — popup=${popup.isClosed() ? 'zamknięty' : popup.url()} komunikat=${message.join(' / ') || '-'}`).toBeTruthy();
+      const target = testInfo.outputPath('leak-test.pdf');
+      await download.saveAs(target);
+      head = fs.readFileSync(target).subarray(0, 5).toString();
+    }
     expect(head).toBe('%PDF-');
   });
 });
