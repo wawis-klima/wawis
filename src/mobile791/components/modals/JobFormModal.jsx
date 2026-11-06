@@ -641,6 +641,28 @@ export default function JobFormModal({
     handleContractorSelect(match);
   }, [showModal, editingJobId, contractorOptions, jobForm.nip, jobForm.contractor_id]);
 
+  // 14.24: każde otwarcie formularza pozwala ponowić wyszukiwanie tego samego NIP-u (wcześniej jedna próba na sesję).
+  useEffect(() => {
+    if (showModal) gusLookupAttemptRef.current = '';
+  }, [showModal]);
+
+  // 14.24: „Szukaj w GUS” — ręczne wyszukanie po NIP-ie (np. po nieudanej automatycznej próbie przy słabym internecie).
+  async function handleManualGusLookup() {
+    const nip = normalizeGusNip(jobForm.nip);
+    if (nip.length !== 10) {
+      setGusLookupMessage('Wpisz 10 cyfr NIP-u.');
+      return;
+    }
+    const localMatch = findContractorByNip(contractorOptions, nip);
+    if (localMatch) {
+      handleContractorSelect(localMatch);
+      setGusLookupMessage('Klient z tym NIP-em jest już w bazie — wybrano go.');
+      return;
+    }
+    gusLookupAttemptRef.current = nip;
+    await refreshGusByNip(nip);
+  }
+
   useEffect(() => {
     if (!showModal || editingJobId || !supabase || jobForm.contractor_id) return undefined;
     const nip = normalizeGusNip(jobForm.nip);
@@ -850,13 +872,34 @@ export default function JobFormModal({
         ) : (
           <>
             <input className="input" placeholder="Telefon klienta / SMS" value={jobForm.phone} onChange={(e) => updateField("phone", e.target.value)} />
-            <input
-              className="input jobNipCompactInput"
-              inputMode="numeric"
-              placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"}
-              value={jobForm.nip || ''}
-              onChange={(e) => updateField("nip", e.target.value)}
-            />
+            {editingJobId ? (
+              <input
+                className="input jobNipCompactInput"
+                inputMode="numeric"
+                placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"}
+                value={jobForm.nip || ''}
+                onChange={(e) => updateField("nip", e.target.value)}
+              />
+            ) : (
+              <div className="jobNipLookupRow">
+                <input
+                  className="input jobNipCompactInput"
+                  inputMode="numeric"
+                  aria-label="NIP (opcjonalnie)"
+                  placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"}
+                  value={jobForm.nip || ''}
+                  onChange={(e) => updateField("nip", e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn jobNipLookupBtn"
+                  onClick={() => { void handleManualGusLookup(); }}
+                  disabled={busy || gusLookupBusy || !supabase || normalizeGusNip(jobForm.nip).length !== 10}
+                >
+                  {gusLookupBusy ? 'Szukam…' : 'Szukaj w GUS'}
+                </button>
+              </div>
+            )}
           </>
         )}
         {gusLookupMessage ? <small className="jobNipLookupStatus" role="status">{gusLookupMessage}</small> : null}

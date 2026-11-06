@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## QR-REQUIRED-1424 — naklejka QR do zakończenia, NIP w formularzu (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1424-JOB-DB | FIXED-UNVERIFIED | Wyzwalacz: pracownik zablokowany bez naklejki (także urządzenie niezapisane w devices), z kompletem kończy; administrator kończy bez naklejki; tabliczki nadal pilnowane (test SQL na PostgreSQL 16). |
+| QR-1424-JOB-UI | FIXED-UNVERIFIED | Pracownik: „Krok 2/3”, „Protokół” i „Zakończ” zablokowane do przypisania naklejki; administrator: tylko informacja (E2E). |
+| QR-1424-SERVICE | FIXED-UNVERIFIED | Przegląd: pracownik bez naklejek nie podpisze ani nie zakończy; administrator po potwierdzeniu (smoke). |
+| NIP-1424-GUS | FIXED-UNVERIFIED | „Szukaj w GUS” przy NIP w formularzu montażu (telefon i komputer), ponowienie po otwarciu formularza (smoke). |
+| QR-1424-IPHONE | PENDING-IPHONE | Pełny montaż pracownika z naklejką na fizycznym iPhonie po wdrożeniu i migracji. |
+
 ## QR-SERVICE-1423 — naklejka QR podczas przeglądu (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

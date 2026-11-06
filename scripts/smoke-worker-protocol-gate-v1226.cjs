@@ -21,7 +21,8 @@ assert.match(migration, /job_protocols_storage_insert_completed_job[\s\S]*curren
 
 assert.match(panel, /const completionProtocolRequired = canFinishJob/);
 assert.match(panel, /const protocolReadyForCompletion = !completionProtocolRequired \|\| \(/);
-assert.match(panel, /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolNameplatesReady \|\| !protocolReadyForCompletion/);
+// 14.24: między tabliczkami a protokołem doszedł wymóg naklejek QR (pracownik) — kolejność i protokół bez zmian.
+assert.match(panel, /disabled=\{busy \|\| showDetailsLoading \|\| !effectiveNameplateComplete \|\| !protocolNameplatesReady \|\| !protocolQrReady \|\| !protocolReadyForCompletion/);
 assert.match(panel, /Najpierw wypełnij, podpisz i zapisz protokół klienta/);
 assert.match(panel, /protocolCheckedJobId === selectedJobId/);
 assert.match(panel, /adminProtocolActionGridV1323/);

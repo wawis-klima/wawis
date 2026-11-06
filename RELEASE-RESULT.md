@@ -1,8 +1,7 @@
-# RELEASE RESULT — WAWIS 14.23
+# RELEASE RESULT — WAWIS 14.24
 
 ## Zakres
-- Ekran wykonania przeglądu: „Naklejka QR” przy każdym urządzeniu i „Przypisz naklejkę QR”, gdy urządzenie jej nie ma.
-- Każdy pracownik (nie tylko przydzielony), tylko wolna naklejka, bez wymiany i zwalniania.
-- Migracja `20261106090000_qr_sticker_przeglad_v1423.sql` (dwie nowe funkcje; uruchamia właściciel). Przed migracją przycisk pokazuje czytelny komunikat i nic nie zapisuje.
-
-Ekran przeglądów widzi dziś tylko administrator. Bez zmian funkcji Edge.
+- Naklejka QR wymagana do zakończenia montażu przez pracownika (aplikacja + wyzwalacz w bazie); administrator może zakończyć.
+- Przegląd serwisowy: pracownik bez naklejek nie podpisze ani nie zakończy; administrator po potwierdzeniu.
+- „Szukaj w GUS” przy NIP w formularzu montażu (iPhone i komputer).
+- Migracja `20261106120000_job_completion_qr_sticker_v1424.sql` (uruchamia właściciel). Obszar chroniony: zakończenie montażu.

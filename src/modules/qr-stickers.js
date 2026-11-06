@@ -123,6 +123,38 @@ export async function loadDeviceQrStickers({ supabase, deviceIds = [] }) {
   return Object.fromEntries((Array.isArray(rows) ? rows : []).map((row) => [String(row.device_id), String(row.code)]));
 }
 
+/**
+ * 14.24: numery urządzeń montażu (1..deviceCount) bez przypisanej naklejki QR.
+ * Pracownik nie zakończy montażu, dopóki lista nie jest pusta (administrator może — decyzja właściciela 06.11.2026).
+ */
+export function missingJobQrStickers({ deviceCount = 0, stickers = {} } = {}) {
+  const count = Math.max(0, Math.floor(Number(deviceCount) || 0));
+  const missing = [];
+  for (let index = 1; index <= count; index += 1) {
+    if (!String(stickers?.[index] || '').trim()) missing.push(index);
+  }
+  return missing;
+}
+
+export function formatMissingQrDevices(missing = []) {
+  const list = (Array.isArray(missing) ? missing : []).map(Number).filter((n) => n > 0);
+  if (!list.length) return '';
+  return list.length === 1 ? `urządzenie ${list[0]}` : `urządzenia ${list.join(', ')}`;
+}
+
+/** 14.24: numery urządzeń z błędu bazy „job_qr_sticker_required: 1, 2” (puste, gdy to inny błąd). */
+export function parseQrStickerRequiredError(error) {
+  const text = [error?.message, error?.details, error?.hint, typeof error === 'string' ? error : ''].filter(Boolean).join(' ');
+  const match = text.match(/job_qr_sticker_required:\s*([0-9]+(?:\s*,\s*[0-9]+)*)/i);
+  if (!match) return null;
+  return match[1].split(',').map((part) => Number(part.trim())).filter((n) => n > 0);
+}
+
+export function describeQrStickerRequired(missing = []) {
+  const label = formatMissingQrDevices(missing);
+  return `Nie można zakończyć zlecenia. Przypisz naklejkę QR${label ? ` (${label})` : ''} — przycisk „Przypisz naklejkę QR” jest przy urządzeniu.`;
+}
+
 export function describeQrDevice(device = {}) {
   const place = [device.street, device.city].filter(Boolean).join(', ');
   const unit = device.device_index ? `Urządzenie ${device.device_index}` : 'Urządzenie';

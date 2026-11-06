@@ -307,3 +307,6 @@ bash "$ROOT/scripts/qr-stickers-sql-v1408.sh"
 
 # WAWIS 14.23: naklejka QR podczas przeglądu (każdy pracownik, tylko wolna naklejka) na jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/qr-service-visit-sql-v1423.sh"
+
+# WAWIS 14.24: naklejka QR wymagana do zakończenia montażu przez pracownika (prawdziwy wyzwalacz) na jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/job-completion-qr-sql-v1424.sh"
