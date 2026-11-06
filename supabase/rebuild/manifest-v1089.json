@@ -146,7 +146,8 @@
     "supabase/migrations/20261103150000_sms_queue_daily_0630_v1418.sql",
     "supabase/migrations/20261103200000_service_requests_v1420.sql",
     "supabase/migrations/20261106090000_qr_sticker_przeglad_v1423.sql",
-    "supabase/migrations/20261106120000_job_completion_qr_sticker_v1424.sql"
+    "supabase/migrations/20261106120000_job_completion_qr_sticker_v1424.sql",
+    "supabase/migrations/20261106100000_qr_stickers_batch2_fill_v1427.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }

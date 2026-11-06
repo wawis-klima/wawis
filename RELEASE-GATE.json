@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.26",
+  "version": "14.27",
   "scope": "full",
-  "release_branch": "release/v14.26",
+  "release_branch": "release/v14.27",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Frontend: kreator urządzeń — naklejka QR wymagana przy „Dalej do podsumowania”; bez zmian bazy."
+    "notes": "06.11.2026: SELECT qr_stickers — partia-1 162, partia-2 162, 0 przypisanych przed migracją."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.26",
+    "source_branch": "release/v14.27",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.26.",
-    "notes": ""
+    "result": "EXTERNAL_QR_BATCH2_FILL",
+    "evidence_source": "SELECT: partia 2 = 180 kodów.",
+    "notes": "Migracja wykonana 06.11.2026 10:55, SELECT: partia 2 = 180."
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.26: naklejka QR wymagana w kreatorze urządzeń",
-    "release_ci": "WAWIS PR checks + smoke-qr-required-v1424 + E2E mobile-serial-scanner, qr-stickers-wizard-v1409",
-    "postdeploy": "Vercel READY/14.26."
+    "code": "14.27: 18 kodów naklejek QR",
+    "release_ci": "WAWIS PR checks + smoke v1427",
+    "postdeploy": "Kolejność: migracja (właściciel) → SELECT → ready_for_main → merge → Vercel 14.27."
   }
 }
