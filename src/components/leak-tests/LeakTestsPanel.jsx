@@ -36,10 +36,13 @@ export default function LeakTestsPanel({ supabase }) {
   const [error, setError] = useState('');
   const [rowState, setRowState] = useState({});
   const [filter, setFilter] = useState('todo');
+  // Zapisany wiersz zostaje w „Do uzupełnienia” z „Zapisano” aż do zmiany filtra lub odświeżenia.
+  const [recentlySaved, setRecentlySaved] = useState(() => new Set());
 
   const reload = useCallback(async () => {
     setLoading(true);
     setError('');
+    setRecentlySaved(new Set());
     try {
       const list = await loadLeakTests({ supabase });
       setRows(list);
@@ -55,8 +58,8 @@ export default function LeakTestsPanel({ supabase }) {
 
   const filled = countFilledLeakTests(rows);
   const visible = useMemo(
-    () => rows.filter((row) => (filter === 'todo' ? !row.test_date : filter === 'done' ? Boolean(row.test_date) : true)),
-    [rows, filter],
+    () => rows.filter((row) => (filter === 'todo' ? (!row.test_date || recentlySaved.has(row.job_id)) : filter === 'done' ? Boolean(row.test_date) : true)),
+    [rows, filter, recentlySaved],
   );
 
   function setDraft(jobId, patch) {
@@ -77,6 +80,7 @@ export default function LeakTestsPanel({ supabase }) {
       setRows((prev) => prev.map((item) => (item.job_id === row.job_id
         ? { ...item, test_date: saved.testDate, temperature_c: saved.temperature, result: saved.result }
         : item)));
+      setRecentlySaved((prev) => new Set(prev).add(row.job_id));
       setRowState((prev) => ({ ...prev, [row.job_id]: { saved: true } }));
     } catch (saveError) {
       setRowState((prev) => ({ ...prev, [row.job_id]: { error: saveError?.message || 'Nie udało się zapisać.' } }));
@@ -109,7 +113,7 @@ export default function LeakTestsPanel({ supabase }) {
       <div className="leakTestsFilter" role="tablist" aria-label="Filtr">
         {[['todo', 'Do uzupełnienia'], ['done', 'Uzupełnione'], ['all', 'Wszystkie']].map(([key, label]) => (
           <button key={key} type="button" role="tab" aria-selected={filter === key}
-            className={`leakTestsFilterTab${filter === key ? ' active' : ''}`} onClick={() => setFilter(key)}>{label}</button>
+            className={`leakTestsFilterTab${filter === key ? ' active' : ''}`} onClick={() => { setFilter(key); setRecentlySaved(new Set()); }}>{label}</button>
         ))}
       </div>
       {error ? <p className="leakTestsError" role="alert">{error}</p> : null}
