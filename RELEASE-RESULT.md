@@ -1,8 +1,6 @@
-# RELEASE RESULT — WAWIS 14.27
+# RELEASE RESULT — WAWIS 14.28
 
 ## Zakres
-- Uzupełnienie partii 2 naklejek QR o 18 kodów (4 pełne strony wydruku).
-
-## Kolejność
-1. Migracja `20261106100000` (właściciel, SQL Editor) i kontrola SELECT.
-2. CI, scalenie, Vercel 14.27.
+- Zakładka „Próby szczelności” (komputer, administrator): dane z protokołów papierowych dla zakończonych montaży z aplikacji, PDF.
+- Przycisk „Protokół szczelności (PDF)” w karcie zakończonego montażu (administrator).
+- Migracja `20261106130000_leak_tests_v1428.sql` (uruchamia właściciel).

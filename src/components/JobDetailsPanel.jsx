@@ -12,6 +12,7 @@ import { blockUnsavedWork } from "../modules/update-reload-guard.js";
 import { confirmVatInvoiceFromFakturownia, saveVatInvoiceStatus } from "../modules/jobs-crud.js";
 import { prepareFakturowniaInvoice, verifyFakturowniaInvoice, lookupFakturowniaInvoiceByNumber, hasPendingFakturowniaInvoice } from "../modules/fakturownia.js";
 import { createFakturowniaRecheck, fakturowniaVerifyFailureMessage, FAKTUROWNIA_AUTO_RECHECK_INTERVAL_MS, FAKTUROWNIA_WAITING_MESSAGE, FAKTUROWNIA_WAITING_TIMEOUT_MESSAGE } from "../modules/fakturownia-recheck.js";
+import { openLeakTestProtocolPdf } from '../mobile791/modules/leak-test-protocol-pdf.js';
 
 
 function getSafeJobDeviceRows(job = {}) {
@@ -137,6 +138,7 @@ export default function JobDetailsPanel({
   const [manualInvoiceBusy, setManualInvoiceBusy] = React.useState(false);
   const selectedJobStatus = String(selectedJob?.status || '');
   const selectedJobIsCompleted = selectedJobStatus === 'Zakończone';
+  const [leakTestBusy, setLeakTestBusy] = React.useState(false);
   const [desktopDevicesExpanded, setDesktopDevicesExpanded] = React.useState(!selectedJobIsCompleted);
   const [desktopPhotosExpanded, setDesktopPhotosExpanded] = React.useState(!selectedJobIsCompleted);
   const fakturowniaVerificationRef = React.useRef(null);
@@ -557,6 +559,23 @@ export default function JobDetailsPanel({
           {canEditSelectedJob && isAdmin ? (
             <button className="btn premiumActionBtn jobDetailsQuickBtn" onClick={() => openEditJob(selectedJob)}>
               Edytuj
+            </button>
+          ) : null}
+          {/* 14.28: protokół z próby szczelności (PDF z danych montażu) — zakończony montaż, administrator. */}
+          {isAdmin && selectedJobIsCompleted ? (
+            <button
+              type="button"
+              className="btn premiumActionBtn jobDetailsQuickBtn"
+              data-testid="leak-test-protocol-btn"
+              disabled={leakTestBusy}
+              onClick={() => {
+                setLeakTestBusy(true);
+                openLeakTestProtocolPdf({ job: selectedJob, profiles, supabase })
+                  .catch((error) => window.alert(error?.message || 'Nie udało się przygotować protokołu szczelności.'))
+                  .finally(() => setLeakTestBusy(false));
+              }}
+            >
+              {leakTestBusy ? 'Przygotowuję…' : 'Protokół szczelności (PDF)'}
             </button>
           ) : null}
           <button className="btn premiumActionBtn jobDetailsQuickBtn" onClick={() => setSelectedJob(null)}>

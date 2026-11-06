@@ -16,6 +16,7 @@ import ConfirmActionModal from "./modals/ConfirmActionModal.jsx";
 import SmoothCollapse from "./jobs/SmoothCollapse.jsx";
 import { JobDeviceQrScanner, JobDeviceQrStickerRow, unassignJobDeviceQrSticker, useJobQrStickers } from "./qr/JobDeviceQrSticker.jsx";
 import { formatMissingQrDevices, formatQrStickerCode, missingJobQrStickers } from "../../modules/qr-stickers.js";
+import { openLeakTestProtocolPdf } from "../modules/leak-test-protocol-pdf.js";
 import "./qr/QrStickerScanner.css";
 
 const PROTOCOL_READ_TIMEOUT_MS = 3200;
@@ -304,6 +305,8 @@ export default function JobDetailsPanel({
   const [protocolRecord, setProtocolRecord] = React.useState(null);
   const [protocolLoading, setProtocolLoading] = React.useState(false);
   const [protocolMessage, setProtocolMessage] = React.useState("");
+  const [leakTestBusy, setLeakTestBusy] = React.useState(false);
+  const [leakTestMessage, setLeakTestMessage] = React.useState("");
   const [protocolBackendAvailable, setProtocolBackendAvailable] = React.useState(true);
   const [protocolReloadKey, setProtocolReloadKey] = React.useState(0);
   // WAWIS 13.78 (test iPhone 26.10.2026, 13.77): bez internetu nie da się sprawdzić, czy montaż ma już protokół —
@@ -317,6 +320,8 @@ export default function JobDetailsPanel({
   const [commentSaving, setCommentSaving] = React.useState(false);
   const [manualVerificationBusyKey, setManualVerificationBusyKey] = React.useState('');
   const selectedJobId = String(selectedJob?.id || "");
+  // 14.28: komunikat protokołu szczelności dotyczy tylko otwartego montażu.
+  React.useEffect(() => { setLeakTestMessage(""); }, [selectedJobId]);
   // 14.08: naklejki QR urządzeń (opcjonalne, wymagają internetu).
   const jobQr = useJobQrStickers({ supabase, jobId: selectedJobId, enabled: Boolean(selectedJobId) && !selectedJob?.offline_pending, refreshKey: `${selectedJob?.updated_at || ''}|${selectedJob?.device_model || ''}|${selectedJob?.detailsLoaded ? 1 : 0}` });
   const [qrScanTarget, setQrScanTarget] = React.useState(null);
@@ -1036,6 +1041,25 @@ export default function JobDetailsPanel({
             </div>
           ) : null}
           {selectedJobSupportsProtocol && protocolMessage ? <div className="protocolActionMessage" role="status">{protocolMessage}</div> : null}
+          {/* 14.28: protokół z próby szczelności (PDF z danych montażu) — zakończony montaż, administrator. */}
+          {isAdmin && selectedJobIsCompleted ? (
+            <button
+              type="button"
+              className="btn leakTestProtocolBtn"
+              data-testid="leak-test-protocol-btn"
+              disabled={leakTestBusy}
+              onClick={() => {
+                setLeakTestBusy(true);
+                setLeakTestMessage('');
+                openLeakTestProtocolPdf({ job: selectedJob, profiles, supabase })
+                  .catch((error) => setLeakTestMessage(error?.message || 'Nie udało się przygotować protokołu szczelności.'))
+                  .finally(() => setLeakTestBusy(false));
+              }}
+            >
+              {leakTestBusy ? 'Przygotowuję…' : 'Protokół szczelności (PDF)'}
+            </button>
+          ) : null}
+          {leakTestMessage ? <div className="protocolActionMessage" role="alert">{leakTestMessage}</div> : null}
         </div>
       </div>
 

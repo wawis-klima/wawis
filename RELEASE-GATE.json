@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.27",
+  "version": "14.28",
   "scope": "full",
-  "release_branch": "release/v14.27",
+  "release_branch": "release/v14.28",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "06.11.2026: SELECT qr_stickers — partia-1 162, partia-2 162, 0 przypisanych przed migracją."
+    "notes": "Próby szczelności: nowa tabela i funkcje administratora (migracja 20261106130000, uruchamia właściciel), zakładka i PDF."
   },
   "drive_backup": {
     "required": false,
@@ -14,16 +14,16 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.27",
+    "source_branch": "release/v14.28",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
   },
   "postdeploy_diagnostics": {
     "checked": false,
-    "result": "EXTERNAL_QR_BATCH2_FILL",
-    "evidence_source": "SELECT: partia 2 = 180 kodów.",
-    "notes": "Migracja wykonana 06.11.2026 10:55, SELECT: partia 2 = 180."
+    "result": "READ_ONLY",
+    "evidence_source": "Vercel READY, /app-version.json = 14.28.",
+    "notes": ""
   },
   "archive": {
     "source_of_truth": "github-main",
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.27: 18 kodów naklejek QR",
-    "release_ci": "WAWIS PR checks + smoke v1427",
-    "postdeploy": "Kolejność: migracja (właściciel) → SELECT → ready_for_main → merge → Vercel 14.27."
+    "code": "14.28: próby szczelności — zakładka i PDF",
+    "release_ci": "WAWIS PR checks + leak-tests-sql-v1428 (PostgreSQL 16) + smoke-leak-tests-v1428 + E2E leak-tests-panel-v1428, leak-test-protocol-v1428",
+    "postdeploy": "Vercel READY/14.28."
   }
 }

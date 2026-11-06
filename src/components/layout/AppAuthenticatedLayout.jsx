@@ -89,7 +89,7 @@ export default function AppAuthenticatedLayout({
       {errorMsg ? <div className="errorBox">{errorMsg}</div> : null}
 
       <div
-        className={`twoCol twoColDesktopStatusLeft ${["center360", "sms", "contractors", "devices", "calendar", "diagnostics", "fuel", "requests"].includes(activeModule) ? "singleModuleColumn" : ""} ${isDesktopJobsSplitScroll ? "desktopJobsSplitScroll" : ""}`}
+        className={`twoCol twoColDesktopStatusLeft ${["center360", "sms", "contractors", "devices", "calendar", "diagnostics", "fuel", "requests", "leaktests"].includes(activeModule) ? "singleModuleColumn" : ""} ${isDesktopJobsSplitScroll ? "desktopJobsSplitScroll" : ""}`}
       >
         <div
           ref={desktopJobsListPaneRef}

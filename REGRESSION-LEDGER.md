@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## LEAK-1428 — protokoły z próby szczelności (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| LEAK-1428-DB | FIXED-UNVERIFIED | Tylko administrator (lista, odczyt, zapis), tylko zakończony montaż, poprawka bez duplikatu, kaskada przy usunięciu montażu (test SQL na PostgreSQL 16). |
+| LEAK-1428-PANEL | FIXED-UNVERIFIED | Zakładka: walidacja temperatury, zapis, filtry, licznik, PDF (E2E komputer). |
+| LEAK-1428-PDF | FIXED-UNVERIFIED | PDF z karty montażu (iPhone, administrator), pracownik bez przycisku (E2E; plik w artefakcie WebKit). |
+| LEAK-1428-IPHONE | PENDING-IPHONE | Otwarcie PDF protokołu szczelności na iPhonie po wdrożeniu i migracji. |
+
 ## QR-BATCH2-FILL-1427 — 18 kodów uzupełnienia partii 2 (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

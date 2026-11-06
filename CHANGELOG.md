@@ -1,3 +1,10 @@
+## 14.28
+- Decyzja właściciela 06.11.2026: **protokoły z próby szczelności w wersji elektronicznej** dla zakończonych montaży z aplikacji (z wpisanym instalatorem — 78 montaży). Nowa zakładka administratora na komputerze **„Próby szczelności”**: lista montaży (filtry: do uzupełnienia / uzupełnione / wszystkie, licznik), przy każdym data badania (domyślnie dzień zakończenia), temperatura i wynik przepisywane z podpisanego protokołu papierowego, „Zapisz” i „PDF”. Temperatura zawsze wpisywana ręcznie.
+- PDF w firmowym wzorze (PN-EN 378-2+A2:2012, PS 46 bar, gaz obojętny, manometr 53020, termometr CPS): urządzenie (strona na każde urządzenie), adres, osoba kończąca montaż oraz data, temperatura i wynik (podkreślony) z wpisu; bez wpisu pola puste. Bez podpisów i dopisków. Przycisk „Protokół szczelności (PDF)” także w karcie zakończonego montażu (administrator, telefon i komputer). PDF tworzony na bieżąco.
+- Baza: migracja `20261106130000_leak_tests_v1428.sql` — tabela `leak_test_records` (RLS, bez dostępu bezpośredniego) i trzy funkcje tylko dla administratora; bez zmian montaży. Uruchamia właściciel.
+- Zamykanie nowych montaży bez zmian (automatyczny protokół — osobno, później).
+- Testy: `scripts/leak-tests-sql-v1428.sh` (PostgreSQL 16), `smoke-leak-tests-v1428.mjs`, `smoke-leak-test-protocol-v1428.mjs`, E2E `leak-tests-panel-v1428.spec.js` (komputer), `leak-test-protocol-v1428.spec.js` (iPhone, Chromium i WebKit; PDF w artefakcie).
+
 ## 14.27
 - Naklejki QR (prośba właściciela 06.11.2026): partia 2 w nowym wzorze 35 × 30 mm („WAWIS Klimatyzacja”, „ZGŁOŚ” / „AWARIĘ LUB SERWIS”, mniejszy numer) uzupełniona o 18 nowych kodów, żeby wydruk miał 4 pełne strony A4 (180 naklejek).
 - Migracja `20261106100000_qr_stickers_batch2_fill_v1427.sql` (wykonuje właściciel): tylko dopisanie 18 wolnych kodów do `qr_stickers` (partia 2), `on conflict do nothing`. Bez zmian schematu, uprawnień i istniejących danych.

@@ -17,6 +17,8 @@ const GROUPS = {
     'node scripts/smoke-qr-stickers-v1409.mjs',
     'node scripts/smoke-qr-service-visit-v1423.mjs',
     'node scripts/smoke-qr-required-v1424.mjs',
+    'node scripts/smoke-leak-test-protocol-v1428.mjs',
+    'node scripts/smoke-leak-tests-v1428.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',

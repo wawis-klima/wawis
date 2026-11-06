@@ -50,6 +50,7 @@ const JobFormModal = lazy(() => import("./components/modals/JobFormModal.jsx"));
 const DiagnosticsPanel = lazy(() => import("./components/diagnostics/DiagnosticsPanel.jsx"));
 const FuelPanel = lazy(() => import("./components/fuel/FuelPanel.jsx"));
 const ServiceRequestsPanel = lazy(() => import("./components/service-requests/ServiceRequestsPanel.jsx"));
+const LeakTestsPanel = lazy(() => import("./components/leak-tests/LeakTestsPanel.jsx"));
 import { formatNavBadge, loadNewServiceRequestCount, loadPendingSmsCount } from "./modules/communication-counters.js";
 import { setServiceRequestStatus } from "./modules/service-requests.js";
 
@@ -139,7 +140,7 @@ export default function App() {
   // ustawiamy dopiero po wczytaniu profilu — strażnik ról poniżej działa bez zmian.
   const [restoredPosition] = useState(() => splitRestoredPosition(restorePositionAfterUpdate({
     fallbackModule: "center360",
-    allowedModules: ["center360", "jobs", "contractors", "fuel", "sms", "devices", "calendar", "diagnostics", "requests"],
+    allowedModules: ["center360", "jobs", "contractors", "fuel", "sms", "devices", "calendar", "diagnostics", "requests", "leaktests"],
   }), { fallbackModule: "center360", workerModules: ["jobs", "fuel"] }));
   const initialPosition = restoredPosition.initial;
   const pendingAdminPositionRef = useRef(restoredPosition.adminPending);
@@ -1152,6 +1153,8 @@ export default function App() {
                 focusedDateKey={calendarFocusDateKey}
                 onOpenJob={handleOpenJobFromCalendar}
               />
+            ) : activeModule === "leaktests" ? (
+              <LeakTestsPanel supabase={supabase} />
             ) : activeModule === "requests" ? (
               <ServiceRequestsPanel
                 supabase={supabase}
