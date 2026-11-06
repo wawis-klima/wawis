@@ -1193,6 +1193,30 @@
       "verified": "SELECT 06.11.2026: private.guard_job_completion_nameplates zawiera job_qr_sticker_required; 06.11 07:59 montaż „Piotr wasik” zakończony przez administratora bez naklejki (zgodnie z wyjątkiem administratora w bazie)",
       "repo_file": "supabase/migrations/20261106120000_job_completion_qr_sticker_v1424.sql",
       "note": "Właściciel wkleił plik migracji w SQL Editor; stan zgodny z plikiem."
+    },
+    {
+      "version": "20261106100000",
+      "name": "qr_stickers_batch2_fill_v1427",
+      "md5": "a49faf79757182ea25a8cdcecb8f76dd",
+      "md5_of_file": true,
+      "bytes": 932,
+      "status": "applied_sql_editor",
+      "applied_at": "2026-11-06T10:55+01:00",
+      "verified": "SELECT 06.11.2026: partia-1 162, partia-2 180 (18 nowych kodów obecnych i wolnych); bez zmian przypisań",
+      "repo_file": "supabase/migrations/20261106100000_qr_stickers_batch2_fill_v1427.sql",
+      "note": "Wykonana przez właściciela w SQL Editor. Plik przemianowany z 20261106090000 (kolizja numeru z v1423); treść bez zmian."
+    },
+    {
+      "version": "20261106130000",
+      "name": "leak_tests_v1428",
+      "md5": "6f4b97895eb21fe2db1ca6f9c3a56224",
+      "md5_of_file": true,
+      "bytes": 3830,
+      "status": "applied_sql_editor",
+      "applied_at": "2026-11-06 (przed 11:20, potwierdzone SELECT)",
+      "verified": "SELECT 06.11.2026: leak_test_records z RLS, bez SELECT dla anon/authenticated, 3 funkcje _v1428, 0 wpisów",
+      "repo_file": "supabase/migrations/20261106130000_leak_tests_v1428.sql",
+      "note": "Właściciel wkleił plik migracji w SQL Editor; stan zgodny z plikiem."
     }
   ],
   "statuses": {

@@ -9,6 +9,13 @@
 | LEAK-1428-PDF | FIXED-UNVERIFIED | PDF z karty montażu (iPhone, administrator), pracownik bez przycisku (E2E; plik w artefakcie WebKit). |
 | LEAK-1428-IPHONE | PENDING-IPHONE | Otwarcie PDF protokołu szczelności na iPhonie po wdrożeniu i migracji. |
 
+## QR-BATCH2-FILL-1427 — 18 kodów uzupełnienia partii 2 (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QB2-1427-CODES | FIXED-UNVERIFIED | Smoke: 18 kodów = lista, brak powtórzeń z 324 kodami, alfabet, tylko INSERT z `on conflict do nothing`. Wydruk 180/180 odczytanych (PDF i Word). |
+| QB2-1427-DB | EXTERNAL | Właściciel wykonuje SQL; kontrola SELECT: partia 2 = 180 kodów. |
+
 ## QR-WIZARD-1426 — naklejka wymagana w kreatorze urządzeń (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

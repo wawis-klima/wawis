@@ -5,6 +5,12 @@
 - Zamykanie nowych montaży bez zmian (automatyczny protokół — osobno, później).
 - Testy: `scripts/leak-tests-sql-v1428.sh` (PostgreSQL 16), `smoke-leak-tests-v1428.mjs`, `smoke-leak-test-protocol-v1428.mjs`, E2E `leak-tests-panel-v1428.spec.js` (komputer), `leak-test-protocol-v1428.spec.js` (iPhone, Chromium i WebKit; PDF w artefakcie).
 
+## 14.27
+- Naklejki QR (prośba właściciela 06.11.2026): partia 2 w nowym wzorze 35 × 30 mm („WAWIS Klimatyzacja”, „ZGŁOŚ” / „AWARIĘ LUB SERWIS”, mniejszy numer) uzupełniona o 18 nowych kodów, żeby wydruk miał 4 pełne strony A4 (180 naklejek).
+- Migracja `20261106100000_qr_stickers_batch2_fill_v1427.sql` (wykonuje właściciel): tylko dopisanie 18 wolnych kodów do `qr_stickers` (partia 2), `on conflict do nothing`. Bez zmian schematu, uprawnień i istniejących danych.
+- `docs/naklejki-qr`: lista `partia-2-uzupelnienie-kody.csv`, generatory wzorów 35 × 30 mm (`gen_v5_zglos.py` — wiele list kodów, pełne strony).
+- Test: `smoke-qr-stickers-v1427.mjs` (18 kodów w migracji = lista, brak powtórzeń z partiami 1 i 2, alfabet, pełne strony, tylko INSERT).
+
 ## 14.26
 - Decyzja właściciela 06.11.2026 (zdjęcie 08:31, kreator „Dodaj urządzenie”): naklejka QR w kreatorze urządzeń jest **wymagana** (dotąd „opcjonalnie”). Gdy tabliczki urządzenia są kompletne, a naklejki nie ma, „Dalej do podsumowania” zatrzymuje z komunikatem „Zeskanuj naklejkę QR…” i czerwoną kartą naklejki. Przy niepełnych tabliczkach przejście dalej bez zmian (zapis częściowy). Wymóg działa dopiero po odczycie naklejek z bazy — bez odczytu (np. brak internetu) kreator nie blokuje na ślepo; zakończenie montażu i tak pilnują 14.24/14.25.
 - Testy: `smoke-qr-required-v1424.mjs` (punkt 8), `smoke-qr-stickers-v1409.mjs` (nowa decyzja), E2E `mobile-serial-scanner` (zatrzymanie i skan w kreatorze), `qr-stickers-wizard-v1409` („wymagana”).
