@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## QR-SERVICE-1423 — naklejka QR podczas przeglądu (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1423-ASSIGN | FIXED-UNVERIFIED | Pracownik (także nieprzydzielony) przypisuje wolną naklejkę do urządzenia z wizyty: test SQL na PostgreSQL 16 (dwóch pracowników, urządzenia ze starej bazy). |
+| QR-1423-NO-REPLACE | FIXED-UNVERIFIED | Zajęta naklejka / urządzenie z naklejką: odmowa dla każdego, także administratora w tej funkcji; zwalnianie nadal tylko administrator (test SQL). |
+| QR-1423-SCOPE | FIXED-UNVERIFIED | Urządzenie spoza wizyty, wizyta odwołana, w Koszu, nieistniejąca: odmowa bez zmian (test SQL). |
+| QR-1423-READ-ERROR | FIXED-UNVERIFIED | Błąd odczytu naklejek pokazuje „nie udało się sprawdzić” i „Sprawdź ponownie”, nigdy „brak” (smoke). |
+| QR-1423-IPHONE | PENDING-IPHONE | Skan naklejki aparatem na ekranie przeglądu — sprawdzenie na iPhonie po wdrożeniu i migracji. |
+
 ## SERVICE-DESKTOP-1422 — data/godzina przeglądu na komputerze (04.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

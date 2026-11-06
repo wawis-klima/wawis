@@ -15,6 +15,11 @@ import PreviewModal from '../modals/PreviewModal.jsx';
 import { formatDate, getInitials } from '../../utils/jobHelpers.jsx';
 import { captureServiceSignature } from '../../modules/service-visit-signature.js';
 import { refreshServicePushContext } from '../../modules/service-visit-push-health.js';
+import QrStickerScanner from '../qr/QrStickerScanner.jsx';
+import '../qr/QrStickerScanner.css';
+import {
+  assignQrStickerToServiceDevice, describeQrAssignFailure, formatQrStickerCode, loadServiceVisitQrStickers,
+} from '../../../modules/qr-stickers.js';
 
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
@@ -36,6 +41,9 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  const [preview,setPreview]=useState(null);
  const [uploaders,setUploaders]=useState({});
  const [deletingPhotoId,setDeletingPhotoId]=useState('');
+ // 14.23: naklejki QR urządzeń z wizyty. null = jeszcze nie wczytane, 'error' = błąd (nigdy nie udaje „brak”).
+ const [qrCodes,setQrCodes]=useState(null);
+ const [qrTarget,setQrTarget]=useState(null);
  const canvasRef=useRef(null);
  const drawingRef=useRef(false);
  const lastPointRef=useRef(null);
@@ -112,6 +120,32 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
      const {entries,failed}=await loadServiceVisitHistory({supabase,visitId});
      setEmailHistory({entries:entries.filter(e=>e.kind==='email'),failed:failed.includes('wysyłki e-mail')});
    }catch(_e){setEmailHistory({entries:[],failed:true});}
+ }
+ async function refreshQrCodes() {
+   try { setQrCodes(await loadServiceVisitQrStickers({supabase,visitId})); }
+   catch(_e){ setQrCodes('error'); }
+ }
+ useEffect(()=>{
+   let active=true;
+   loadServiceVisitQrStickers({supabase,visitId})
+     .then(map=>{if(active)setQrCodes(map);})
+     .catch(()=>{if(active)setQrCodes('error');});
+   return ()=>{active=false;};
+ },[supabase,visitId]);
+ // 14.23 (decyzja właściciela 06.11.2026): każdy pracownik na serwisie może przykleić WOLNĄ naklejkę
+ // na urządzenie bez naklejki. Wymiana i zwalnianie — tylko administrator przy urządzeniach klienta.
+ async function handleQrCode(code) {
+   const item=qrTarget;
+   if(!item)return;
+   const result=await assignQrStickerToServiceDevice({supabase,code,visitId,itemId:item.id});
+   if(!result?.ok){
+     const hint=result?.can_replace?' Wymianę zrobisz w Przeglądach serwisowych przy urządzeniu klienta.':'';
+     throw new Error(describeQrAssignFailure(result)+hint);
+   }
+   setQrTarget(null);
+   await refreshQrCodes();
+   setMessage(result.already?'Naklejka '+formatQrStickerCode(code)+' była już przypisana do tego urządzenia.'
+     :'Przypisano naklejkę '+formatQrStickerCode(code)+' do urządzenia '+(item.model_snapshot||'')+'.');
  }
  useEffect(()=>{
    if(!protocol?.id)return;
@@ -303,6 +337,14 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
      return <div className="card serviceAdminCard" key={item.id}>
        <h3>Urządzenie {index+1} — {item.model_snapshot||'Klimatyzator'}</h3>
        <p className="serviceAdminMuted">S/N: {item.serial_snapshot||'Brak'} · {item.result?'Zapisany wynik: '+(item.result==='sprawne'?'Sprawne':'Usterka'):'Jeszcze bez wyniku'}</p>
+       {item.device_id?<div className={'qrStickerRow'+(qrCodes&&qrCodes!=='error'&&qrCodes[item.id]?' assigned':'')} data-testid="service-execution-qr-sticker">
+         <div className="qrStickerLabel"><strong>Naklejka QR: {qrCodes===null?'sprawdzam…'
+           :qrCodes==='error'?'nie udało się sprawdzić'
+           :qrCodes[item.id]?formatQrStickerCode(qrCodes[item.id]):'brak'}</strong></div>
+         {qrCodes==='error'?<button type="button" className="btn" disabled={Boolean(busy)} onClick={refreshQrCodes}>Sprawdź ponownie</button>
+           :qrCodes&&!qrCodes[item.id]&&visit.status!=='odwolany'?<button type="button" className="btn primary" disabled={Boolean(busy)}
+             onClick={()=>{setError('');setMessage('');setQrTarget(item);}}>Przypisz naklejkę QR</button>:null}
+       </div>:null}
        <div className="serviceAdminSectionTitle">Wykonane czynności</div>
        {SERVICE_VISIT_CHECKS.map(({key,label})=><label key={key} className="serviceAdminCheck">
          <input type="checkbox" disabled={readonly||Boolean(busy)}
@@ -400,6 +442,9 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
      <p className="serviceAdminMuted">Jeśli zmienisz wynik urządzenia, najpierw zapisz go osobno. Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
    </div>}
+   <QrStickerScanner open={Boolean(qrTarget)} title="Przypisz naklejkę QR"
+     description={(qrTarget?.model_snapshot||'Urządzenie')+(qrTarget?.serial_snapshot?' · SN '+qrTarget.serial_snapshot:'')+'. Przyklej naklejkę na urządzeniu i zeskanuj kod.'}
+     onCode={handleQrCode} onClose={()=>setQrTarget(null)}/>
    <PreviewModal previewImage={preview?.url||null}
    setPreviewImage={value=>{if(!value)setPreview(null);}}
    previewNext={()=>stepPreview(1)} previewPrev={()=>stepPreview(-1)}/>
