@@ -25,3 +25,8 @@
 - Te same 162 kody; A4 5 × 9 = 45 naklejek na stronę, 4 strony (ostatnia 27). QR 16 mm, korekcja M, moduł 0,55 mm.
 - Word: każda naklejka jako obraz 600 dpi (wygląd identyczny z PDF niezależnie od czcionek).
 - Generator: `gen_v3_zglos_35x30.py` + `make_docx_v3_zglos_35x30.js`. Kontrola odczytu: PDF 162/162, Word 162/162.
+
+## Partia 2 — wersja „ZGŁOŚ” / „AWARIĘ LUB SERWIS” (06.11.2026, obecna)
+- Prośba właściciela: „ZGŁOŚ” w pierwszej linii, „AWARIĘ LUB SERWIS” pod spodem (czarne, 7,6 pt), numer pod kodem o połowę mniejszy (3,7 pt).
+- 35 × 30 mm, te same 162 kody, QR 15 mm (moduł 0,52 mm), 4 strony A4. Word: `make_docx_v3_zglos_35x30.js` (obrazy 600 dpi).
+- Kontrola odczytu: PDF 162/162, Word 162/162.
