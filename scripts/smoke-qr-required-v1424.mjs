@@ -29,7 +29,8 @@ for (const fn of [mobileDbMessage, desktopDbMessage]) {
 
 // 3. Montaż (iPhone): krok przed protokołem i zakończeniem, tylko pracownik; nieodczytane naklejki (offline) nie blokują protokołu.
 const panel = read('src/mobile791/components/JobDetailsPanel.jsx');
-assert.match(panel, /const qrStickersRequired = Boolean\(selectedJob\) && !isAdmin && !selectedJobIsCompleted && canWorkerFinishJob\(selectedJob, isAdmin\);/);
+// 14.25: na iPhonie także administrator (bez „!isAdmin”); ominięcie tylko na komputerze.
+assert.match(panel, /const qrStickersRequired = Boolean\(selectedJob\) && !selectedJobIsCompleted && canWorkerFinishJob\(selectedJob, isAdmin\);/);
 assert.match(panel, /const qrStickersChecked = Boolean\(selectedJobId\) && jobQr\.loadedJobId === selectedJobId && jobQr\.available;/);
 assert.match(panel, /const protocolQrReady = !qrStickersRequired \|\| !qrStickersChecked \|\| qrMissingDevices\.length === 0;/, 'blokada tylko przy potwierdzonym braku — protokół offline (13.78) bez zmian');
 assert.match(panel, /const protocolStepsReady = protocolNameplatesReady && protocolQrReady;/);
@@ -37,12 +38,15 @@ assert.match(panel, /disabled=\{busy \|\| !protocolStepsReady\}/, 'Protokół za
 assert.match(panel, /!protocolNameplatesReady \|\| !protocolQrReady \|\| !protocolReadyForCompletion/, 'Zakończ zablokowane bez naklejek');
 assert.match(panel, /open=\{protocolTestOpen && protocolStepsReady\}/);
 assert.match(panel, /data-testid="finish-qr-step-missing"/);
-assert.match(panel, /data-testid="finish-qr-admin-note"/);
+assert.doesNotMatch(panel, /finish-qr-admin-note/, '14.25: na iPhonie administrator nie ma wyjątku');
 const hook = read('src/mobile791/components/qr/JobDeviceQrSticker.jsx');
 assert.match(hook, /setLoadedJobId\(String\(jobId\)\);/);
 assert.match(hook, /return \{ stickers, available, reload, setStickers, loadedJobId \};/);
 const actions = read('src/mobile791/hooks/useSelectedJobActions.js');
-assert.match(actions, /if \(completingNow && workerFinishing\) \{\s+let qrMissing = \[\];/);
+assert.match(actions, /if \(completingNow\) \{\s+let qrMissing = \[\];/, '14.25: każdy na iPhonie');
+assert.match(actions, /if \(isAdmin\) \{\s+alert\('Nie udało się sprawdzić naklejek QR/, 'administrator bez sprawdzenia nie kończy (baza go zwalnia)');
+assert.match(actions, /if \(isAdmin && normalizeStatus\(form\.status\) === 'Zakończone'\) \{\s+alert\('Na iPhonie montaż kończy się po przypisaniu naklejek QR/, 'nowy montaż administratora');
+assert.match(actions, /const editedBaseJob = getResolvedJob\(editingJobId\);/, 'edycja statusu administratora');
 assert.match(actions, /alert\(describeQrStickerRequired\(qrMissing\)\);/);
 
 // 4. Baza: tylko pracownik, tylko przy zmianie statusu; tabliczki i protokół bez zmian.
@@ -57,11 +61,14 @@ assert.match(read('scripts/codex-postgres-two-sessions-v1269.sh'), /bash "\$ROOT
 
 // 5. Przegląd: pracownik bez naklejek nie podpisze i nie zakończy; administrator po potwierdzeniu.
 const service = read('src/mobile791/components/devices/ServiceExecutionPanel.jsx');
-assert.match(service, /const qrBlocksWorker=!isAdmin&&qrItems\.length>0&&\(!qrChecked\|\|qrMissingItems\.length>0\);/);
+assert.match(service, /const canOverrideQr=isAdmin&&allowQrOverride;/, '14.25: ominięcie tylko administrator na komputerze');
+assert.match(service, /const qrBlocksWorker=!canOverrideQr&&qrItems\.length>0&&\(!qrChecked\|\|qrMissingItems\.length>0\);/);
 assert.equal((service.match(/\|\|qrBlocksWorker\}/g) || []).length, 2, 'podpis i zakończenie');
-assert.match(service, /if\(!isAdmin\)\{setError\(qrBlockMessage\);return;\}/);
+assert.match(service, /if\(!canOverrideQr\)\{setError\(qrBlockMessage\);return;\}/);
 assert.match(service, /window\.confirm\('Brak naklejki QR: '/);
-assert.match(read('src/mobile791/components/devices/ServiceAdminPanel.jsx'), /visitId=\{currentVisit\.id\} isAdmin=\{isAdmin\}/);
+assert.match(read('src/mobile791/components/devices/ServiceAdminPanel.jsx'), /visitId=\{currentVisit\.id\} isAdmin=\{isAdmin\} allowQrOverride=\{allowQrOverride\}/);
+assert.match(read('src/components/devices/DevicesAndServicesPanel.jsx'), /<ServiceAdminPanel key=\{userId\|\|'admin'\} supabase=\{supabase\} isAdmin=\{isAdmin\} allowQrOverride/, 'komputer');
+assert.doesNotMatch(read('src/mobile791/App.jsx'), /allowQrOverride/, 'iPhone bez ominięcia');
 
 // 6. NIP: „Szukaj w GUS” w formularzu montażu (telefon i komputer), ponowienie po otwarciu formularza.
 for (const path of ['src/mobile791/components/modals/JobFormModal.jsx', 'src/components/modals/JobFormModal.jsx']) {
@@ -77,4 +84,4 @@ const mock = read('src/mobile791/lib/mockSupabaseClient.js');
 assert.match(mock, /\['MKAAAA2B', 'mock-device-002'\]/);
 assert.match(mock, /\['UYE8EYCQ', 'BNKJXZDY', 'CXFBEHEP'\]\.map\(\(code\) => \(\{ code, device_id: null \}\)\)/);
 
-console.log('PASS WAWIS 14.24 — naklejka QR do zakończenia montażu i przeglądu (pracownik), „Szukaj w GUS” w formularzu montażu.');
+console.log('PASS WAWIS 14.24/14.25 — naklejka QR do zakończenia montażu i przeglądu (na iPhonie każdy, bez naklejki tylko administrator na komputerze), „Szukaj w GUS”.');

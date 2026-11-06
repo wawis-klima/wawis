@@ -298,6 +298,12 @@ export function useSelectedJobActions({
         return;
       }
     }
+    // 14.25: na iPhonie montaż kończy się dopiero z naklejką QR na każdym urządzeniu — także u administratora.
+    // Nowy montaż nie ma jeszcze zapisanych urządzeń, więc naklejek nie da się przypisać przed zapisem.
+    if (isAdmin && normalizeStatus(form.status) === 'Zakończone') {
+      alert('Na iPhonie montaż kończy się po przypisaniu naklejek QR. Zapisz go jako „W trakcie”, przypisz naklejki przy urządzeniach i zakończ z karty montażu (bez naklejek — tylko na komputerze).');
+      return;
+    }
     setBusy(true);
 
     try {
@@ -536,6 +542,25 @@ export function useSelectedJobActions({
       return;
     }
     const form = formOverride || jobFormRef.current;
+    // 14.25: administrator zmieniający w edycji status na „Zakończone” — na iPhonie wymagane naklejki QR
+    // (jak przy przycisku „Zakończ”). Bez internetu pełna edycja i tak jest zablokowana niżej.
+    const editedBaseJob = getResolvedJob(editingJobId);
+    if (isAdmin && !isBrowserOffline() && normalizeStatus(form.status) === 'Zakończone'
+      && normalizeStatus(editedBaseJob?.status) !== 'Zakończone') {
+      let qrMissing = [];
+      try {
+        const stickers = await loadJobQrStickers({ supabase, jobId: editingJobId });
+        qrMissing = missingJobQrStickers({ deviceCount: getJobDeviceRows(editedBaseJob || form).length, stickers });
+      } catch (qrError) {
+        console.warn('Nie udało się sprawdzić naklejek QR przed zakończeniem.', qrError?.message || qrError);
+        alert('Nie udało się sprawdzić naklejek QR. Sprawdź internet i spróbuj ponownie.');
+        return;
+      }
+      if (qrMissing.length) {
+        alert(describeQrStickerRequired(qrMissing));
+        return;
+      }
+    }
     const pendingDocuments = form.pending_nameplate_photos || [];
     const operationId = `${editingJobId}-${Date.now()}`;
     setBusy(true);
@@ -911,15 +936,20 @@ export function useSelectedJobActions({
 
     if (completingNow || workerRestarting) setBusy(true);
     try {
-      // 14.24: pracownik kończy montaż tylko z naklejką QR na każdym urządzeniu (administrator może bez).
-      // Ostateczną kontrolę robi baza (job_qr_sticker_required); błąd odczytu tutaj nie blokuje — decyduje baza.
-      if (completingNow && workerFinishing) {
+      // 14.24/14.25: w aplikacji na iPhonie montaż kończy się tylko z naklejką QR na każdym urządzeniu —
+      // pracownik i administrator. Pracownika dodatkowo blokuje baza (job_qr_sticker_required), więc błąd
+      // odczytu u pracownika nie blokuje; administratora baza zwalnia, więc bez sprawdzenia nie kończymy.
+      if (completingNow) {
         let qrMissing = [];
         try {
           const stickers = await loadJobQrStickers({ supabase, jobId });
           qrMissing = missingJobQrStickers({ deviceCount: getJobDeviceRows(job).length, stickers });
         } catch (qrError) {
           console.warn('Nie udało się sprawdzić naklejek QR przed zakończeniem.', qrError?.message || qrError);
+          if (isAdmin) {
+            alert('Nie udało się sprawdzić naklejek QR. Sprawdź internet i spróbuj ponownie.');
+            return;
+          }
         }
         if (qrMissing.length) {
           alert(describeQrStickerRequired(qrMissing));

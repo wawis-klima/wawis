@@ -1,7 +1,6 @@
-# RELEASE RESULT — WAWIS 14.24
+# RELEASE RESULT — WAWIS 14.25
 
 ## Zakres
-- Naklejka QR wymagana do zakończenia montażu przez pracownika (aplikacja + wyzwalacz w bazie); administrator może zakończyć.
-- Przegląd serwisowy: pracownik bez naklejek nie podpisze ani nie zakończy; administrator po potwierdzeniu.
-- „Szukaj w GUS” przy NIP w formularzu montażu (iPhone i komputer).
-- Migracja `20261106120000_job_completion_qr_sticker_v1424.sql` (uruchamia właściciel). Obszar chroniony: zakończenie montażu.
+- iPhone: naklejka QR wymagana do zakończenia montażu i przeglądu także od administratora (przycisk „Zakończ”, edycja statusu, nowy montaż).
+- Komputer: administrator może zakończyć bez naklejki (montaż; przegląd po potwierdzeniu).
+- Bez zmian bazy. Rejestr: migracja 14.24 wykonana.

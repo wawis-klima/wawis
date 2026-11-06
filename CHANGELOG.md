@@ -1,3 +1,10 @@
+## 14.25
+- Decyzja właściciela 06.11.2026 (po teście 14.24 — montaż zakończony z konta administratora na iPhonie bez naklejki): w aplikacji na iPhonie naklejka QR na każdym urządzeniu jest wymagana do zakończenia montażu **także od administratora** (jak tabliczki). Zakończyć bez naklejki może tylko administrator w wersji na komputerze. Pracownika blokuje dodatkowo baza (14.24) — bez zmian bazy.
+- iPhone, administrator: „Krok 2/3” i blokada „Protokół”/„Zakończ” jak u pracownika; zmiana statusu na „Zakończone” w edycji montażu i nowy montaż od razu „Zakończone” — sprawdzenie naklejek (nowy montaż: zapis „W trakcie”, naklejki, zakończenie z karty). Bez sprawdzenia naklejek (brak internetu) administrator na iPhonie nie kończy — baza go nie zatrzyma.
+- Przeglądy: brak naklejki może ominąć (po potwierdzeniu) tylko administrator na komputerze; na iPhonie wymagana od każdego.
+- Rejestr migracji: 14.24 (`20261106120000`) wykonana przez właściciela 06.11.2026.
+- Testy: `smoke-qr-required-v1424.mjs` (rozszerzony), E2E `job-qr-required-v1424.spec.js` (administrator na iPhonie zablokowany).
+
 ## 14.24
 - Decyzja właściciela 06.11.2026: **naklejka QR wymagana do zakończenia montażu** — tak jak tabliczki: pracownik nie zakończy montażu, dopóki każde urządzenie nie ma przypisanej naklejki; administrator może zakończyć mimo braku (np. brak naklejek, demontaż). Kolejność kroków pracownika: tabliczki → naklejki QR („Krok 2/3”, przycisk „Przypisz naklejkę QR” przy urządzeniu) → protokół → „Zakończ”. Blokada tylko przy potwierdzonym braku naklejki: montaż otwarty bez internetu nadal pozwala na protokół i podpis (13.78) — wtedy pilnuje sprawdzenie przy „Zakończ” i wyzwalacz w bazie.
 - Baza: migracja `20261106120000_job_completion_qr_sticker_v1424.sql` — wyzwalacz zakończenia montażu (treść z 12.26 + warunek naklejek dla pracownika przy zmianie statusu na „Zakończone”) i funkcja pomocnicza. Bez zmian tabel i danych; zakończone montaże bez zmian. Uruchamia właściciel. Komunikat błędu bazy pokazuje numery urządzeń.

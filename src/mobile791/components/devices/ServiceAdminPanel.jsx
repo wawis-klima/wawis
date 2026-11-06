@@ -89,7 +89,7 @@ function ServiceDateTimeFields({ date, time, onDateChange, onTimeChange, disable
   </div>;
 }
 
-export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCustomerRequest = null, onOpenJob = null, onRequestPlanned = null }) {
+export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCustomerRequest = null, onOpenJob = null, onRequestPlanned = null, allowQrOverride = false }) {
   const [screen,setScreen] = useState('search');
   const [search,setSearch] = useState('');
   const [groups,setGroups] = useState([]);
@@ -373,7 +373,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
 
   if (!isAdmin) return null;
   if (screen==='execution' && currentVisit) return <ServiceExecutionPanel
-    supabase={supabase} userId={userId} visitId={currentVisit.id} isAdmin={isAdmin}
+    supabase={supabase} userId={userId} visitId={currentVisit.id} isAdmin={isAdmin} allowQrOverride={allowQrOverride}
     staffNames={[staffName(currentVisit.primary_technician_id),...(currentVisit.additional_technician_ids||[]).map(staffName)].filter(s=>s && s!=='Bez przydziału')}
     onBack={()=>{setScreen('detail');setMessage('');}}
     onFinalized={async (finished)=>{

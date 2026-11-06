@@ -1,7 +1,7 @@
 import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
-// WAWIS 14.24 — naklejka QR wymagana do zakończenia montażu przez pracownika (jak tabliczki).
+// WAWIS 14.24/14.25 — naklejka QR wymagana do zakończenia montażu na iPhonie (pracownik i administrator).
 // Montaż „Klient Testowy B” z kompletem tabliczek, urządzenie bez naklejki. Dane wyłącznie fikcyjne (mock).
 const { defaultBrowserType: _unused, ...iphone14 } = devices['iPhone 14'];
 test.use(iphone14);
@@ -52,11 +52,13 @@ test.describe('@mobile 14.24: naklejka QR do zakończenia montażu', () => {
     await expect(protocolButton).toBeEnabled();
   });
 
-  test('administrator: brak naklejki tylko informuje, nie blokuje', async ({ page }) => {
+  // 14.25 (decyzja właściciela 06.11.2026): na iPhonie naklejka wymagana także od administratora;
+  // zakończyć bez naklejki może tylko administrator w wersji na komputerze.
+  test('administrator na iPhonie: bez naklejki „Krok 2/3”, „Zakończ” zablokowane', async ({ page }) => {
     await prepareJobWithoutSticker(page);
     await loginWithoutReset(page, ADMIN);
     await openJobB(page);
-    await expect(page.getByTestId('finish-qr-admin-note')).toContainText('Brak naklejki QR: urządzenie 1');
-    await expect(page.getByTestId('finish-qr-step-missing')).toHaveCount(0);
+    await expect(page.getByTestId('finish-qr-step-missing')).toContainText('Krok 2/3: przypisz naklejkę QR (urządzenie 1)');
+    await expect(page.locator('.mobileInlineJobDetails .finishJobBtn')).toBeDisabled();
   });
 });

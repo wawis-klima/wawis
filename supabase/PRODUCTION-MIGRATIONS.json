@@ -1181,6 +1181,18 @@
       "verified": "SELECT 06.11.2026: funkcje qr_sticker_assign_service_device_v1423 i qr_stickers_for_service_visit_v1423 (SECURITY DEFINER), execute tylko authenticated, bez anon",
       "repo_file": "supabase/migrations/20261106090000_qr_sticker_przeglad_v1423.sql",
       "note": "Właściciel wkleił plik migracji w SQL Editor (pod wcześniejszą nazwą pliku ..._qr_sticker_service_visit_v1423.sql, treść identyczna); nazwa zmieniona, bo test serwisu 13.99 dołącza wszystkie pliki *service_visit*."
+    },
+    {
+      "version": "20261106120000",
+      "name": "job_completion_qr_sticker_v1424",
+      "md5": "477581ff32b8eceb71e2ec45e228b5c1",
+      "md5_of_file": true,
+      "bytes": 4001,
+      "status": "applied_sql_editor",
+      "applied_at": "2026-11-06 (przed 07:27, potwierdzone SELECT)",
+      "verified": "SELECT 06.11.2026: private.guard_job_completion_nameplates zawiera job_qr_sticker_required; 06.11 07:59 montaż „Piotr wasik” zakończony przez administratora bez naklejki (zgodnie z wyjątkiem administratora w bazie)",
+      "repo_file": "supabase/migrations/20261106120000_job_completion_qr_sticker_v1424.sql",
+      "note": "Właściciel wkleił plik migracji w SQL Editor; stan zgodny z plikiem."
     }
   ],
   "statuses": {
