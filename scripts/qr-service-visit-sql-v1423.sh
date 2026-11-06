@@ -13,10 +13,13 @@ elif [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
   image="public.ecr.aws/docker/library/postgres:16"
   docker pull -q "$image" >/dev/null || { image="mirror.gcr.io/library/postgres:16"; docker pull -q "$image" >/dev/null; } \
     || { echo "NO-GO: PostgreSQL 16 cannot be pulled" >&2; exit 16; }
-  container="$(docker run --rm -d --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD="$(openssl rand -hex 18)" "$image")"
+  pg_password="$(openssl rand -hex 18)"
+  container="$(docker run --rm -d --env POSTGRES_USER=postgres --env POSTGRES_PASSWORD="$pg_password" "$image")"
   trap 'docker rm -f "$container" >/dev/null 2>&1 || true' EXIT
-  for _ in $(seq 1 40); do
-    docker exec "$container" psql -X -qAt -U postgres -d postgres -c 'select 1' 2>/dev/null | grep -qx 1 && break
+  for _ in $(seq 1 60); do
+    # Przez TCP (127.0.0.1): obraz postgres najpierw uruchamia serwer tymczasowy tylko na gnieździe i restartuje go
+    # po inicjalizacji — połączenie w tym oknie kończy się „terminating connection due to administrator command”.
+    docker exec -e PGPASSWORD="$pg_password" "$container" psql -X -qAt -h 127.0.0.1 -U postgres -d postgres -c 'select 1' 2>/dev/null | grep -qx 1 && break
     sleep 1
   done
   admin() { docker exec -i "$container" psql -X -q -v ON_ERROR_STOP=1 -At -U postgres -d postgres "$@"; }
