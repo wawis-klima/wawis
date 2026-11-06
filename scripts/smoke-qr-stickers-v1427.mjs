@@ -12,7 +12,7 @@ assert.equal(fill.length, 18, '18 nowych kodów');
 assert.equal((p2.length + fill.length) % 45, 0, 'Partia 2 wypełnia pełne strony A4 (45 naklejek 35 × 30 mm).');
 const all = [...p1, ...p2, ...fill.map((r) => r[1])];
 assert.equal(new Set(all).size, all.length, 'Brak powtórzeń z partiami 1 i 2.');
-const migration = read('supabase/migrations/20261106090000_qr_stickers_batch2_fill_v1427.sql');
+const migration = read('supabase/migrations/20261106100000_qr_stickers_batch2_fill_v1427.sql');
 for (const [, code, label, url] of fill) {
   assert.equal(normalizeQrStickerCode(code), code, `alfabet ${code}`);
   assert.equal(normalizeQrStickerCode(label), code);

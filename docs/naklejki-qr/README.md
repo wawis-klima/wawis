@@ -32,5 +32,5 @@
 - Kontrola odczytu: PDF 162/162, Word 162/162.
 
 ## Partia 2 — uzupełnienie do 4 pełnych stron (06.11.2026)
-- 18 nowych kodów (`partia-2-uzupelnienie-kody.csv`, nr 163–180), bez powtórzeń z partiami 1 i 2; w bazie jako partia 2 (migracja 20261106090000).
+- 18 nowych kodów (`partia-2-uzupelnienie-kody.csv`, nr 163–180), bez powtórzeń z partiami 1 i 2; w bazie jako partia 2 (migracja 20261106100000).
 - Wydruk: `gen_v5_zglos.py <katalog> <nazwa> partia-2-kody.csv partia-2-uzupelnienie-kody.csv` → 180 naklejek, 4 pełne strony. Kontrola odczytu: PDF 180/180, Word 180/180.

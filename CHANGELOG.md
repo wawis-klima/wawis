@@ -1,6 +1,6 @@
 ## 14.27
 - Naklejki QR (prośba właściciela 06.11.2026): partia 2 w nowym wzorze 35 × 30 mm („WAWIS Klimatyzacja”, „ZGŁOŚ” / „AWARIĘ LUB SERWIS”, mniejszy numer) uzupełniona o 18 nowych kodów, żeby wydruk miał 4 pełne strony A4 (180 naklejek).
-- Migracja `20261106090000_qr_stickers_batch2_fill_v1427.sql` (wykonuje właściciel): tylko dopisanie 18 wolnych kodów do `qr_stickers` (partia 2), `on conflict do nothing`. Bez zmian schematu, uprawnień i istniejących danych.
+- Migracja `20261106100000_qr_stickers_batch2_fill_v1427.sql` (wykonuje właściciel): tylko dopisanie 18 wolnych kodów do `qr_stickers` (partia 2), `on conflict do nothing`. Bez zmian schematu, uprawnień i istniejących danych.
 - `docs/naklejki-qr`: lista `partia-2-uzupelnienie-kody.csv`, generatory wzorów 35 × 30 mm (`gen_v5_zglos.py` — wiele list kodów, pełne strony).
 - Test: `smoke-qr-stickers-v1427.mjs` (18 kodów w migracji = lista, brak powtórzeń z partiami 1 i 2, alfabet, pełne strony, tylko INSERT).
 
