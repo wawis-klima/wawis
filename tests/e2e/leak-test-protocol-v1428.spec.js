@@ -22,6 +22,9 @@ test('@mobile 14.28: administrator otwiera protokół szczelności PDF zakończo
     store.leak_test_records = [{ job_id: 'mock-job-003', test_date: '2026-04-22', temperature_c: 18, result: 'pozytywny' }];
     localStorage.setItem(key, JSON.stringify(store));
   });
+  const consoleLines = [];
+  page.on('console', (msg) => { if (['error', 'warning'].includes(msg.type())) consoleLines.push(`${msg.type()}: ${msg.text()}`); });
+  page.on('pageerror', (err) => consoleLines.push(`pageerror: ${err.message}`));
   await loginWithoutReset(page, ADMIN);
   await page.locator('.statusActionButton[title="Zakończone"]').click();
   await page.getByText('Klient Testowy C Zakończony', { exact: true }).click();
@@ -45,7 +48,10 @@ test('@mobile 14.28: administrator otwiera protokół szczelności PDF zakończo
     pdf = Buffer.from(bytes);
   } else {
     const download = outcome || await downloadPromise;
-    expect(download, 'PDF otwarty w karcie albo pobrany').toBeTruthy();
+    const panelMessage = await page.locator('.mobileInlineJobDetails .protocolActionMessage[role="alert"]').allTextContents().catch(() => []);
+    const diagnostics = `popup=${popup.isClosed() ? 'zamknięty' : popup.url()} | komunikat=${panelMessage.join(' / ') || '-'} | konsola=${consoleLines.slice(-6).join(' || ') || '-'}`;
+    console.log(`DIAG 14.28 PDF: ${diagnostics}`);
+    expect(download, `PDF otwarty w karcie albo pobrany — ${diagnostics}`).toBeTruthy();
     const target = testInfo.outputPath('download.pdf');
     await download.saveAs(target);
     pdf = fs.readFileSync(target);
