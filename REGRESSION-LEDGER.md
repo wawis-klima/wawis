@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## LEAK-SIGN-1429 — podpisy instalatorów na protokołach szczelności (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| LEAK-1429-DB | FIXED-UNVERIFIED | Tylko sam instalator, tylko swoje zatwierdzone protokoły, zapisany wzór, administrator nie podpisuje za instalatora, zmiana danych usuwa podpis (test SQL na PostgreSQL 16). |
+| LEAK-1429-UI | FIXED-UNVERIFIED | Baner i podpis palcem na iPhonie (E2E), PDF z podpisem (E2E). |
+| LEAK-1429-IPHONE | PENDING-IPHONE | Podpis palcem na fizycznym iPhonie i wygląd podpisu na PDF. |
+
 ## LEAK-1428 — protokoły z próby szczelności (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

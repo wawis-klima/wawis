@@ -1000,11 +1000,39 @@ export function createMockSupabaseClient() {
         };
       }
       if (String(name).startsWith('qr_sticker')) return mockQrStickerRpc(name, payload);
-      // 14.28: dane prób szczelności (PDF w karcie montażu).
-      if (name === 'leak_test_get_v1428') {
-        const rows = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
-        const row = rows.find((item) => String(item.job_id) === String(payload?.p_job_id));
-        return { data: row ? [row] : [], error: null };
+      // 14.28/14.29: dane prób szczelności i podpisy instalatorów (dane fikcyjne).
+      if (name === 'leak_test_get_v1428' || name === 'leak_test_pending_own_v1429' || name === 'leak_test_sign_own_v1429') {
+        const records = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
+        store.leak_test_signatures = Array.isArray(store.leak_test_signatures) ? store.leak_test_signatures : [];
+        const uid = String(restoreSession(store.users)?.user?.id || '');
+        const ownJob = (jobId) => store.jobs.find((job) => String(job.id) === String(jobId) && job.status === 'Zakończone' && String(job.completed_by) === uid);
+        if (name === 'leak_test_get_v1428') {
+          const row = records.find((item) => String(item.job_id) === String(payload?.p_job_id));
+          const sig = row ? store.leak_test_signatures.find((item) => item.id === row.signature_id) : null;
+          return { data: row ? [{ ...row, signature_png: sig?.image_png || null, signed_name: sig?.confirmed_name || null }] : [], error: null };
+        }
+        const pending = records.filter((row) => !row.signature_id && ownJob(row.job_id));
+        if (name === 'leak_test_pending_own_v1429') {
+          const hasSaved = store.leak_test_signatures.some((item) => item.profile_id === uid);
+          return { data: pending.map((row) => {
+            const job = ownJob(row.job_id);
+            return { job_id: row.job_id, client: job.client, city: job.city, street: job.street, test_date: row.test_date, temperature_c: row.temperature_c, result: row.result, has_saved_signature: hasSaved };
+          }), error: null };
+        }
+        const ids = new Set((payload?.p_job_ids || []).map(String));
+        const targets = pending.filter((row) => ids.has(String(row.job_id)));
+        if (!targets.length) return { data: 0, error: null };
+        let signature = null;
+        if (payload?.p_image_png) {
+          signature = { id: `mock-sig-${Date.now()}`, profile_id: uid, confirmed_name: 'Instalator', image_png: payload.p_image_png };
+          store.leak_test_signatures.push(signature);
+        } else {
+          signature = [...store.leak_test_signatures].reverse().find((item) => item.profile_id === uid);
+          if (!signature) return { data: null, error: { message: 'leak_sign_no_saved_signature' } };
+        }
+        targets.forEach((row) => { row.signature_id = signature.id; row.signed_at = new Date().toISOString(); });
+        persistSharedStore({ table: 'leak_test_records', event: 'UPDATE', newRows: [], oldRows: [] });
+        return { data: targets.length, error: null };
       }
       return { data: null, error: { message: `Mock RPC nie obsługuje funkcji: ${name}` } };
     },

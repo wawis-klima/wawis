@@ -26,3 +26,7 @@
   .leakTestRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .leakTestInfo { grid-column: 1 / -1; }
 }
+/* 14.29: status podpisu instalatora. */
+.leakTestsCount.signed { color: #1d7a46; }
+.leakTestSign { font-size: 13px; font-weight: 700; color: #b45309; }
+.leakTestSign.signed { color: #1d7a46; }

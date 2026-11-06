@@ -7,6 +7,7 @@ import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-proto
 
 // WAWIS 14.28 — zakładka „Próby szczelności” (komputer, administrator). Zakończone montaże z instalatorem;
 // administrator przepisuje z podpisanego protokołu papierowego datę badania, temperaturę i wynik, potem PDF.
+// 14.29: podpis składa sam instalator w swojej aplikacji; tutaj widać, co jest podpisane.
 
 function formatDate(value) {
   const date = new Date(value || '');
@@ -77,9 +78,12 @@ export default function LeakTestsPanel({ supabase }) {
     setRowState((prev) => ({ ...prev, [row.job_id]: { busy: true } }));
     try {
       const saved = await saveLeakTest({ supabase, jobId: row.job_id, ...draft });
-      setRows((prev) => prev.map((item) => (item.job_id === row.job_id
-        ? { ...item, test_date: saved.testDate, temperature_c: saved.temperature, result: saved.result }
-        : item)));
+      // 14.29: zmiana danych po podpisie usuwa podpis (tak samo robi baza) — instalator podpisze ponownie.
+      setRows((prev) => prev.map((item) => {
+        if (item.job_id !== row.job_id) return item;
+        const changed = item.test_date !== saved.testDate || Number(item.temperature_c) !== saved.temperature || item.result !== saved.result;
+        return { ...item, test_date: saved.testDate, temperature_c: saved.temperature, result: saved.result, signed_at: changed ? null : item.signed_at };
+      }));
       setRecentlySaved((prev) => new Set(prev).add(row.job_id));
       setRowState((prev) => ({ ...prev, [row.job_id]: { saved: true } }));
     } catch (saveError) {
@@ -88,11 +92,11 @@ export default function LeakTestsPanel({ supabase }) {
   }
 
   function handlePdf(row) {
-    const record = row.test_date ? { test_date: row.test_date, temperature_c: row.temperature_c, result: row.result } : null;
+    // Dane próby i podpis instalatora odczytywane z bazy przy otwarciu PDF.
     openLeakTestProtocolPdf({
       job: rowToJob(row),
       profiles: row.completed_by ? [{ id: row.completed_by, full_name: row.completed_by_name }] : [],
-      record,
+      supabase,
     }).catch((pdfError) => setRowState((prev) => ({ ...prev, [row.job_id]: { error: pdfError?.message || 'Nie udało się przygotować PDF.' } })));
   }
 
@@ -107,6 +111,7 @@ export default function LeakTestsPanel({ supabase }) {
         </div>
         <div className="leakTestsTools">
           <span className="leakTestsCount" data-testid="leak-tests-count">Uzupełniono {filled} z {rows.length}</span>
+          <span className="leakTestsCount signed" data-testid="leak-tests-signed">Podpisane przez instalatorów: {rows.filter((row) => row.signed_at).length}</span>
           <button type="button" className="btn" onClick={() => void reload()} disabled={loading}>Odśwież</button>
         </div>
       </div>
@@ -132,6 +137,11 @@ export default function LeakTestsPanel({ supabase }) {
                 <span>{[row.city, row.street].filter(Boolean).join(', ') || '—'}</span>
                 <span className="leakTestMeta">{row.device_model ? String(row.device_model).split('\n')[0] : 'Urządzenie —'}</span>
                 <span className="leakTestMeta">Zakończony {formatDate(row.completed_at)} · {row.completed_by_name || '—'}</span>
+                {row.test_date ? (
+                  <span className={`leakTestSign${row.signed_at ? ' signed' : ''}`} data-testid="leak-test-sign-status">
+                    {row.signed_at ? `Podpisany przez instalatora ${formatDate(row.signed_at)}` : 'Czeka na podpis instalatora (w jego aplikacji)'}
+                  </span>
+                ) : null}
               </div>
               <label className="leakTestField">
                 <span>Data badania</span>

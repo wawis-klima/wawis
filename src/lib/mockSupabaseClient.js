@@ -524,13 +524,16 @@ export function createMockSupabaseClient() {
         if (name === 'leak_test_save_v1428') {
           const job = (store.jobs || []).find((item) => String(item.id) === String(payload.p_job_id));
           if (!job || job.status !== 'Zakończone') return { data: false, error: null };
-          const row = { job_id: job.id, test_date: payload.p_test_date, temperature_c: payload.p_temperature_c, result: payload.p_result, updated_at: nowIso() };
+          const previous = store.leak_test_records.find((item) => item.job_id === job.id) || {};
+          const same = previous.test_date === payload.p_test_date && Number(previous.temperature_c) === Number(payload.p_temperature_c) && previous.result === payload.p_result;
+          const row = { job_id: job.id, test_date: payload.p_test_date, temperature_c: payload.p_temperature_c, result: payload.p_result, updated_at: nowIso(),
+            signed_at: same ? previous.signed_at || null : null, signature_png: same ? previous.signature_png || null : null, signed_name: same ? previous.signed_name || null : null };
           store.leak_test_records = [...store.leak_test_records.filter((item) => item.job_id !== job.id), row];
           return { data: true, error: null };
         }
         if (name === 'leak_test_get_v1428') {
           const row = store.leak_test_records.find((item) => String(item.job_id) === String(payload.p_job_id));
-          return { data: row ? [{ test_date: row.test_date, temperature_c: row.temperature_c, result: row.result }] : [], error: null };
+          return { data: row ? [{ test_date: row.test_date, temperature_c: row.temperature_c, result: row.result, signed_at: row.signed_at || null, signature_png: row.signature_png || null, signed_name: row.signed_name || null }] : [], error: null };
         }
         const rows = (store.jobs || [])
           .filter((job) => job.status === 'Zakończone' && job.completed_by)
@@ -540,7 +543,7 @@ export function createMockSupabaseClient() {
             return {
               job_id: job.id, client: job.client, city: job.city, street: job.street, device_model: job.device_model,
               completed_at: job.completed_at, completed_by: job.completed_by, completed_by_name: person.full_name || null,
-              test_date: record.test_date || null, temperature_c: record.temperature_c ?? null, result: record.result || null, updated_at: record.updated_at || null,
+              test_date: record.test_date || null, temperature_c: record.temperature_c ?? null, result: record.result || null, updated_at: record.updated_at || null, signed_at: record.signed_at || null,
             };
           });
         return { data: rows, error: null };

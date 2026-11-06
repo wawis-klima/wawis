@@ -1,0 +1,21 @@
+/* WAWIS 14.29 — podpis protokołów szczelności przez instalatora (telefon). */
+.leakSignBanner { margin: 0 0 10px; display: grid; gap: 6px; }
+.leakSignBannerRow { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 1px solid #bfd3fb; background: #eef4ff; border-radius: 14px; padding: 10px 12px; font-size: 14px; }
+.leakSignBannerRow .btn { min-height: 36px; padding: 6px 14px; border-radius: 11px; }
+.leakSignDone { margin: 0; color: #1d7a46; font-weight: 700; font-size: 14px; }
+.leakSignOverlay { position: fixed; inset: 0; z-index: 2000; background: rgba(15, 23, 42, 0.45); display: flex; align-items: flex-end; justify-content: center; }
+.leakSignSheet { width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; background: #fff; border-radius: 18px 18px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); display: grid; gap: 10px; }
+.leakSignSheet h3 { margin: 0; font-size: 17px; }
+.leakSignLead, .leakSignConfirm { margin: 0; color: #5a6b80; font-size: 13px; }
+.leakSignList { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 32vh; overflow-y: auto; }
+.leakSignList li { display: grid; gap: 1px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 7px 10px; font-size: 13px; }
+.leakSignList li span { color: #5a6b80; }
+.leakSignPad { display: grid; gap: 6px; }
+.leakSignCanvas { width: 100%; height: 160px; border: 1px dashed #94a3b8; border-radius: 12px; background: #fff; touch-action: none; }
+.leakSignClear { justify-self: end; min-height: 32px; padding: 4px 12px; font-size: 13px; }
+.leakSignSaved { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #f1f5f9; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.leakSignError { margin: 0; color: #b42318; font-weight: 700; font-size: 13px; }
+.leakSignActions { display: flex; gap: 8px; justify-content: flex-end; }
+.leakSignActions .btn { min-height: 40px; }

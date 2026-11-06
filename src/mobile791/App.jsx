@@ -43,6 +43,7 @@ import { scheduleNameplateReaderWarmup } from "./modules/nameplate-reader-warmup
 import { setDeviceDraftOwner } from "./modules/device-form-drafts.js";
 import { setProtocolSignatureDraftOwner } from "./modules/protocol-signature-drafts.js";
 import { QR_PENDING_STORAGE_KEY, clearQrCodeFromLocation, readQrCodeFromLocation } from "../modules/qr-stickers.js";
+import LeakTestSignBanner from "./components/leak-tests/LeakTestSignBanner.jsx";
 
 const statusBlueImg = "/status-buttons/status-blue.png";
 const statusAmberImg = "/status-buttons/status-amber.png";
@@ -1489,6 +1490,9 @@ export default function App() {
         profile={profile}
         logout={logout}
         jobsPanel={activeModule === "jobs" ? (
+          <>
+          {/* 14.29: instalator podpisuje swoje protokoły szczelności (tylko gdy są do podpisu). */}
+          <LeakTestSignBanner supabase={supabase} userId={sessionUser?.id || ""} />
           <JobsPanel
             desktopStatusLabels={desktopStatusLabels}
             desktopStatusFilter={desktopStatusFilter}
@@ -1539,6 +1543,7 @@ export default function App() {
             discardOfflineOperation={discardOfflineOperation}
             discardQueuedPhoto={discardQueuedPhoto}
           />
+          </>
         ) : (
           <Suspense fallback={adminModuleFallback}>
             {activeModule === "contractors" ? (
