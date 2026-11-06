@@ -5,3 +5,5 @@ create table public.service_visit_devices (id uuid primary key, service_visit_id
   device_id uuid references public.devices(id) on delete set null, model_snapshot text not null default '');
 alter table public.service_visits enable row level security;
 alter table public.service_visit_devices enable row level security;
+-- Jak w produkcji: pracownik nie czyta tych tabel bezpośrednio w tym teście (tylko przez funkcje 14.23).
+grant select, insert, update, delete on public.service_visits, public.service_visit_devices to service_role;
