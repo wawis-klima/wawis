@@ -32,6 +32,9 @@ assert.match(banner, /signOwnLeakTests\(\{ supabase, jobIds: rows\.map\(\(row\) 
 assert.match(banner, /if \(!rows\.length && !message\) return null;/, 'bez protokołów — nic na ekranie');
 assert.doesNotMatch(banner, /localStorage|indexedDB|caches\./, 'nic w pamięci telefonu');
 assert.match(read('src/mobile791/App.jsx'), /<LeakTestSignBanner supabase=\{supabase\} userId=\{sessionUser\?\.id \|\| ""\} \/>/);
+// Regresja CI 06.11: fragment wokół JobsPanel psuł cloneElement(inlineDetailsPanel) w układzie telefonu.
+assert.match(read('src/mobile791/App.jsx'), /jobsPanel=\{activeModule === "jobs" \? \(\n\s+<JobsPanel\n/);
+assert.match(read('src/mobile791/components/JobsPanel.jsx'), /if \(props\.topNotice\) return <>\{props\.topNotice\}\{tableContent\}<\/>;/);
 assert.match(read('src/components/leak-tests/LeakTestsPanel.jsx'), /Czeka na podpis instalatora \(w jego aplikacji\)/);
 
 console.log('PASS WAWIS 14.29 — podpis protokołów szczelności: sam instalator, swoje zatwierdzone protokoły, wzór w bazie, zmiana danych usuwa podpis.');

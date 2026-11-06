@@ -1490,10 +1490,10 @@ export default function App() {
         profile={profile}
         logout={logout}
         jobsPanel={activeModule === "jobs" ? (
-          <>
-          {/* 14.29: instalator podpisuje swoje protokoły szczelności (tylko gdy są do podpisu). */}
-          <LeakTestSignBanner supabase={supabase} userId={sessionUser?.id || ""} />
           <JobsPanel
+            // 14.29: instalator podpisuje swoje protokoły szczelności (tylko gdy są do podpisu).
+            // Przez prop — układ telefonu klonuje element JobsPanel (inlineDetailsPanel), fragment by to zepsuł.
+            topNotice={<LeakTestSignBanner supabase={supabase} userId={sessionUser?.id || ""} />}
             desktopStatusLabels={desktopStatusLabels}
             desktopStatusFilter={desktopStatusFilter}
             statuses={STATUSES}
@@ -1543,7 +1543,6 @@ export default function App() {
             discardOfflineOperation={discardOfflineOperation}
             discardQueuedPhoto={discardQueuedPhoto}
           />
-          </>
         ) : (
           <Suspense fallback={adminModuleFallback}>
             {activeModule === "contractors" ? (

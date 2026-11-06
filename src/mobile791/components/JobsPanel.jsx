@@ -55,5 +55,7 @@ export default function JobsPanel(props) {
     );
   }
 
+  // 14.29: komunikat nad listą (np. protokoły szczelności do podpisu) — pusty, gdy nic nie ma.
+  if (props.topNotice) return <>{props.topNotice}{tableContent}</>;
   return tableContent;
 }
