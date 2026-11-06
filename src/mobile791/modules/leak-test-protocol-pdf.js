@@ -199,7 +199,8 @@ export async function openLeakTestProtocolPdf({ job, profiles, supabase = null, 
   const previewWindow = typeof window !== 'undefined' && typeof window.open === 'function' ? window.open('', '_blank') : null;
   try {
     if (previewWindow) {
-      previewWindow.opener = null;
+      // Bez „opener = null”: WebKit (iPhone) nie otwiera wtedy pliku blob: z aplikacji (pusta karta — test CI 06.11).
+      // Plik jest z tej samej aplikacji, więc połączenie z kartą nie stanowi ryzyka.
       previewWindow.document.title = 'Protokół szczelności';
       previewWindow.document.body.innerHTML = '<p style="font:16px system-ui;padding:24px">Przygotowuję protokół PDF…</p>';
     }

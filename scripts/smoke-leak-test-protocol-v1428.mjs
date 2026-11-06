@@ -24,6 +24,7 @@ assert.match(pdf, /const devices = getJobDeviceRows\(job\);/);
 assert.match(pdf, /const leakRecord = record !== undefined \? record : await loadLeakTest\(\{ supabase, jobId: job\?\.id \}\);/);
 assert.doesNotMatch(pdf, /addImage/, 'bez podpisów');
 assert.doesNotMatch(pdf, /Kopia elektroniczna|oryginale papierowym/, 'bez dopisków (decyzja właściciela)');
+assert.doesNotMatch(pdf, /previewWindow\.opener = null/, 'WebKit: blob w karcie wymaga połączenia z aplikacją');
 // Nic nie zapisuje w bazie ani w Storage.
 assert.doesNotMatch(pdf, /\.upload\(|\.insert\(|\.rpc\(|\.from\(/, 'PDF niczego nie zapisuje');
 
