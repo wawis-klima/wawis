@@ -18,7 +18,7 @@ export default function DevicesAndServicesPanel({
    <Suspense fallback={<div className="card">Otwieram moduł urządzeń…</div>}>
      {tab==='catalog' ?
        <DevicesPanel {...deviceProps} supabase={supabase} isAdmin={isAdmin} userId={userId}/>
-       : <ServiceAdminPanel key={userId||'admin'} supabase={supabase} isAdmin={isAdmin}
+       : <ServiceAdminPanel key={userId||'admin'} supabase={supabase} isAdmin={isAdmin} allowQrOverride
           userId={userId} openCustomerRequest={openServiceRequest} onRequestPlanned={onRequestPlanned}/>}
    </Suspense>
  </div>;

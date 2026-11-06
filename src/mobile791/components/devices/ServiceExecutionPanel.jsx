@@ -24,7 +24,9 @@ import {
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
 }
-export default function ServiceExecutionPanel({supabase,userId,visitId,staffNames,onBack,onFinalized,isAdmin=false}) {
+export default function ServiceExecutionPanel({supabase,userId,visitId,staffNames,onBack,onFinalized,isAdmin=false,allowQrOverride=false}) {
+ // 14.25: brak naklejki QR może ominąć tylko administrator w wersji na komputerze (na iPhonie wymagana od każdego).
+ const canOverrideQr=isAdmin&&allowQrOverride;
  const [visit,setVisit]=useState(null);
  const [photos,setPhotos]=useState([]);
  const [drafts,setDrafts]=useState({});
@@ -272,9 +274,9 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  }
  async function complete() {
    if(!signatureDataUrl){setError('Klient musi podpisać protokół.');return;}
-   // 14.24: bez naklejek QR pracownik nie zakończy przeglądu; administrator — po potwierdzeniu.
+   // 14.24/14.25: bez naklejek QR nie kończymy; administrator na komputerze — po potwierdzeniu.
    if(qrMissingItems.length){
-     if(!isAdmin){setError(qrBlockMessage);return;}
+     if(!canOverrideQr){setError(qrBlockMessage);return;}
      if(!window.confirm('Brak naklejki QR: '+qrMissingNames+'.\n\nZakończyć przegląd mimo to?'))return;
    }
    setBusy('complete');setError('');setMessage('');
@@ -325,7 +327,7 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  const qrChecked=qrCodes!==null&&qrCodes!=='error';
  const qrMissingItems=qrChecked?qrItems.filter(i=>!qrCodes[i.id]):[];
  const qrMissingNames=qrMissingItems.map(i=>'urządzenie '+((visit.items||[]).indexOf(i)+1)+(i.model_snapshot?' ('+i.model_snapshot+')':'')).join(', ');
- const qrBlocksWorker=!isAdmin&&qrItems.length>0&&(!qrChecked||qrMissingItems.length>0);
+ const qrBlocksWorker=!canOverrideQr&&qrItems.length>0&&(!qrChecked||qrMissingItems.length>0);
  const qrBlockMessage=!qrChecked
    ?'Nie udało się sprawdzić naklejek QR. Sprawdź internet i naciśnij „Sprawdź ponownie” przy urządzeniu.'
    :'Przypisz naklejkę QR: '+qrMissingNames+'. Bez niej nie można zakończyć przeglądu.';
@@ -443,7 +445,7 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
      <h3>Potwierdzenie klienta</h3>
      <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>
      {qrBlocksWorker?<p className="serviceAdminHint" role="note" data-testid="service-qr-required">{qrBlockMessage}</p>:null}
-     {isAdmin&&qrMissingItems.length?<p className="serviceAdminMuted" data-testid="service-qr-admin-note">Brak naklejki QR: {qrMissingNames}. Pracownik nie zakończy bez niej; administrator może po potwierdzeniu.</p>:null}
+     {canOverrideQr&&qrMissingItems.length?<p className="serviceAdminMuted" data-testid="service-qr-admin-note">Brak naklejki QR: {qrMissingNames}. Na komputerze administrator może zakończyć po potwierdzeniu; na iPhonie naklejka jest wymagana.</p>:null}
      {doneCount===0?<p className="serviceAdminHint" role="note">Najpierw zapisz wynik co najmniej jednego urządzenia — wtedy odblokuje się podpis.</p>
        :unsaved?<p className="serviceAdminHint" role="note">Masz niezapisane zmiany w wyniku urządzenia — zapisz je przed podpisem.</p>:null}
      <button type="button" className="btn primary serviceAdminWide" disabled={Boolean(busy)||doneCount===0||unsaved||qrBlocksWorker}

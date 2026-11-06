@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## QR-IPHONE-1425 — naklejka wymagana na iPhonie także od administratora (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1425-ADMIN-IPHONE | FIXED-UNVERIFIED | 06.11 07:59 montaż „Piotr wasik” zakończony z konta administratora na iPhonie bez naklejki (zgodnie z 14.24). Teraz: „Krok 2/3” i „Zakończ” zablokowane u administratora na iPhonie (E2E), edycja statusu i nowy montaż sprawdzane (smoke). |
+| QR-1425-DESKTOP | FIXED-UNVERIFIED | Komputer: administrator kończy montaż bez naklejki (baza zwalnia administratora — test SQL 14.24); przegląd po potwierdzeniu (smoke). |
+| QR-1425-IPHONE | PENDING-IPHONE | Konto administratora na iPhonie: montaż bez naklejki nie daje się zakończyć. |
+
 ## QR-REQUIRED-1424 — naklejka QR do zakończenia, NIP w formularzu (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

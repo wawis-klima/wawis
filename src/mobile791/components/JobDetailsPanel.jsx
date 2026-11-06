@@ -346,9 +346,10 @@ export default function JobDetailsPanel({
     Boolean(selectedJob?.detailsLoaded)
     && areJobNameplatesReadyForProtocol(selectedJob)
   );
-  // 14.24 (decyzja właściciela 06.11.2026): pracownik przed protokołem i zakończeniem przypisuje naklejkę QR
-  // do każdego urządzenia (jak tabliczki). Administrator może zakończyć mimo braku. Nieodczytane naklejki ≠ „brak”.
-  const qrStickersRequired = Boolean(selectedJob) && !isAdmin && !selectedJobIsCompleted && canWorkerFinishJob(selectedJob, isAdmin);
+  // 14.24/14.25 (decyzje właściciela 06.11.2026): w aplikacji na iPhonie naklejka QR na każdym urządzeniu jest
+  // wymagana przed protokołem i zakończeniem — od pracownika i od administratora (jak tabliczki). Ominąć brak
+  // może tylko administrator w wersji na komputerze (baza zwalnia administratora, blokuje pracownika).
+  const qrStickersRequired = Boolean(selectedJob) && !selectedJobIsCompleted && canWorkerFinishJob(selectedJob, isAdmin);
   const qrMissingDevices = selectedJob
     ? missingJobQrStickers({ deviceCount: getJobDeviceRows(selectedJob).length, stickers: jobQr.stickers })
     : [];
@@ -1013,11 +1014,6 @@ export default function JobDetailsPanel({
           {qrStickersRequired && protocolNameplatesReady && !protocolQrReady ? (
             <div className="finishNameplateRequirement missing" data-testid="finish-qr-step-missing">
               Krok 2/3: przypisz naklejkę QR ({qrMissingLabel}) — przycisk „Przypisz naklejkę QR” przy urządzeniu. Dopiero potem aktywuje się „Protokół”.
-            </div>
-          ) : null}
-          {isAdmin && canFinishJob && jobQr.loadedJobId === selectedJobId && jobQr.available && qrMissingDevices.length ? (
-            <div className="finishNameplateRequirement checking" data-testid="finish-qr-admin-note">
-              Brak naklejki QR: {qrMissingLabel}. Pracownik nie zakończy bez niej; administrator może.
             </div>
           ) : null}
           {completionProtocolRequired && protocolLoading ? (
