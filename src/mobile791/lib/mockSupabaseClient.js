@@ -579,12 +579,6 @@ export function createMockSupabaseClient() {
       save();
       return { data: { ok: true, code: sticker.code, previous_device_id: previous }, error: null };
     }
-    // 14.28: dane prób szczelności (PDF w karcie montażu) — w testowej bazie brak wpisów.
-    if (name === 'leak_test_get_v1428') {
-      const rows = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
-      const row = rows.find((item) => String(item.job_id) === String(payload?.p_job_id));
-      return { data: row ? [row] : [], error: null };
-    }
     if (name === 'qr_stickers_for_job') {
       const jobId = String(payload.p_job_id || '');
       const rows = store.qr_stickers.filter((item) => item.device_id).map((item) => {
@@ -1006,6 +1000,12 @@ export function createMockSupabaseClient() {
         };
       }
       if (String(name).startsWith('qr_sticker')) return mockQrStickerRpc(name, payload);
+      // 14.28: dane prób szczelności (PDF w karcie montażu).
+      if (name === 'leak_test_get_v1428') {
+        const rows = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
+        const row = rows.find((item) => String(item.job_id) === String(payload?.p_job_id));
+        return { data: row ? [row] : [], error: null };
+      }
       return { data: null, error: { message: `Mock RPC nie obsługuje funkcji: ${name}` } };
     },
     channel() {
