@@ -34,7 +34,7 @@ function SignaturePad({ onChange }) {
   }
   function start(event) {
     event.preventDefault();
-    canvasRef.current.setPointerCapture?.(event.pointerId);
+    try { canvasRef.current.setPointerCapture?.(event.pointerId); } catch { /* syntetyczne zdarzenie — bez przechwycenia */ }
     drawing.current = true;
     const ctx = canvasRef.current.getContext('2d');
     const p = point(event);

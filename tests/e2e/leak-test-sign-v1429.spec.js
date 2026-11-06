@@ -24,11 +24,13 @@ test('@mobile 14.29: pracownik widzi swoje protokoły do podpisu, bez podpisu ni
   await sheet.getByRole('button', { name: 'Podpisz (1)' }).click();
   await expect(sheet.getByRole('alert')).toContainText('Podpisz się palcem');
 
-  const box = await sheet.getByTestId('leak-sign-canvas').boundingBox();
-  await page.mouse.move(box.x + 30, box.y + 100);
-  await page.mouse.down();
-  for (const [dx, dy] of [[60, -40], [110, 20], [170, -30], [230, 10]]) await page.mouse.move(box.x + dx, box.y + 80 + dy, { steps: 6 });
-  await page.mouse.up();
+  // Zdarzenia wskaźnika dotykowego (jak palec na iPhonie) — działają w Chromium i WebKit.
+  const canvas = sheet.getByTestId('leak-sign-canvas');
+  const box = await canvas.boundingBox();
+  const at = (dx, dy) => ({ pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: box.x + dx, clientY: box.y + dy, buttons: 1 });
+  await canvas.dispatchEvent('pointerdown', at(30, 100));
+  for (const [dx, dy] of [[60, 60], [110, 110], [170, 70], [230, 100], [280, 80]]) await canvas.dispatchEvent('pointermove', at(dx, dy));
+  await canvas.dispatchEvent('pointerup', at(280, 80));
   await sheet.getByRole('button', { name: 'Podpisz (1)' }).click();
   await expect(banner).toContainText('Podpisano protokołów: 1.');
   await expect(banner).not.toContainText('do podpisu');
