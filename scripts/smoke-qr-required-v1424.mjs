@@ -84,4 +84,15 @@ const mock = read('src/mobile791/lib/mockSupabaseClient.js');
 assert.match(mock, /\['MKAAAA2B', 'mock-device-002'\]/);
 assert.match(mock, /\['UYE8EYCQ', 'BNKJXZDY', 'CXFBEHEP'\]\.map\(\(code\) => \(\{ code, device_id: null \}\)\)/);
 
+// 8. 14.26: kreator urządzeń — naklejka wymagana; „Dalej do podsumowania” zatrzymuje przy komplecie tabliczek bez naklejki.
+const wizardSrc = read('src/mobile791/components/devices/MobileDeviceWizard.jsx');
+assert.equal((wizardSrc.match(/onClick=\{continueToOverview\}>Dalej do podsumowania/g) || []).length, 2, 'single i multi');
+assert.doesNotMatch(wizardSrc, /onClick=\{\(\) => setScreen\('overview'\)\}>Dalej do podsumowania/);
+assert.match(wizardSrc, /if \(!state \|\| !qr\?\.required \|\| state\.code\) return false;/);
+assert.match(wizardSrc, /getDevicePhotoCompletion\(\{ device, deviceIndex, pendingPhotos, existingPhotos \}\)\.complete/, 'tylko przy komplecie tabliczek');
+assert.match(wizardSrc, /data-testid="wizard-qr-required"/);
+const formSrc = read('src/mobile791/components/modals/JobFormModal.jsx');
+assert.match(formSrc, /required: qrSavedLoaded \}/, 'wymóg dopiero po odczycie naklejek z bazy');
+assert.match(formSrc, /setQrSavedLoaded\(true\);/);
+
 console.log('PASS WAWIS 14.24/14.25 — naklejka QR do zakończenia montażu i przeglądu (na iPhonie każdy, bez naklejki tylko administrator na komputerze), „Szukaj w GUS”.');

@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## QR-WIZARD-1426 — naklejka wymagana w kreatorze urządzeń (06.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1426-WIZARD | FIXED-UNVERIFIED | Zdjęcie właściciela 08:31: „Naklejka QR opcjonalnie”, wyjście dalej bez skanu. Teraz komplet tabliczek bez naklejki — „Dalej do podsumowania” zatrzymuje (E2E mobile-serial-scanner), skan odblokowuje. |
+| QR-1426-IPHONE | PENDING-IPHONE | Kreator na iPhonie: tabliczki bez naklejki → zatrzymanie, skan aparatem → dalej. |
+
 ## QR-IPHONE-1425 — naklejka wymagana na iPhonie także od administratora (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

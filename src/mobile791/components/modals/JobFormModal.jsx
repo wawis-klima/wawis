@@ -137,6 +137,8 @@ export default function JobFormModal({
   // oczekujące = zeskanowane teraz, przypisywane po zapisaniu urządzeń (useSelectedJobActions.saveEditedJob).
   const [qrSaved, setQrSaved] = useState({});
   const [qrEnabled, setQrEnabled] = useState(false);
+  // 14.26: naklejki odczytane z bazy — dopiero wtedy kreator wymaga naklejki (bez odczytu nie blokujemy na ślepo).
+  const [qrSavedLoaded, setQrSavedLoaded] = useState(false);
   const [qrScanIndex, setQrScanIndex] = useState(null);
   // 14.21: po zapisie kreatora naklejki przechodzą z „do zapisania” do zapisanych — wczytujemy je ponownie,
   // inaczej lista urządzeń pokazywała „Bez naklejki QR”, choć naklejka była już przypisana.
@@ -154,14 +156,17 @@ export default function JobFormModal({
     if (!showModal || !serialOnlyMode || !editingJobId || !supabase) {
       setQrEnabled(false);
       setQrSaved({});
+      setQrSavedLoaded(false);
       return undefined;
     }
     let active = true;
     setQrEnabled(true);
+    setQrSavedLoaded(false);
     loadJobQrStickers({ supabase, jobId: editingJobId })
       .then((map) => {
         if (!active) return;
         setQrSaved(Object.fromEntries(Object.entries(map).map(([index, code]) => [Number(index) - 1, code])));
+        setQrSavedLoaded(true);
       })
       .catch((error) => {
         // Brak modułu w bazie — karta ukryta. Brak sieci — karta zostaje (skan i tak wymaga internetu).
@@ -778,7 +783,7 @@ export default function JobFormModal({
           onRemoveIndoorUnit={removeIndoorUnit}
           onPhotoSelect={(deviceIndex, unitRef, file, reading) => applyNameplatePhoto(deviceIndex, unitRef, file, reading)}
           onPhotoRemove={removePendingNameplatePhoto}
-          qr={qrEnabled ? { enabled: true, saved: qrSaved, pending: pendingQrStickers, required: false } : null}
+          qr={qrEnabled ? { enabled: true, saved: qrSaved, pending: pendingQrStickers, required: qrSavedLoaded } : null}
           onScanQr={(deviceIndex) => setQrScanIndex(deviceIndex)}
           onClearQr={(deviceIndex) => setPendingQrSticker(deviceIndex, '')}
         />

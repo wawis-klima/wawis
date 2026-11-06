@@ -1,3 +1,7 @@
+## 14.26
+- Decyzja właściciela 06.11.2026 (zdjęcie 08:31, kreator „Dodaj urządzenie”): naklejka QR w kreatorze urządzeń jest **wymagana** (dotąd „opcjonalnie”). Gdy tabliczki urządzenia są kompletne, a naklejki nie ma, „Dalej do podsumowania” zatrzymuje z komunikatem „Zeskanuj naklejkę QR…” i czerwoną kartą naklejki. Przy niepełnych tabliczkach przejście dalej bez zmian (zapis częściowy). Wymóg działa dopiero po odczycie naklejek z bazy — bez odczytu (np. brak internetu) kreator nie blokuje na ślepo; zakończenie montażu i tak pilnują 14.24/14.25.
+- Testy: `smoke-qr-required-v1424.mjs` (punkt 8), `smoke-qr-stickers-v1409.mjs` (nowa decyzja), E2E `mobile-serial-scanner` (zatrzymanie i skan w kreatorze), `qr-stickers-wizard-v1409` („wymagana”).
+
 ## 14.25
 - Decyzja właściciela 06.11.2026 (po teście 14.24 — montaż zakończony z konta administratora na iPhonie bez naklejki): w aplikacji na iPhonie naklejka QR na każdym urządzeniu jest wymagana do zakończenia montażu **także od administratora** (jak tabliczki). Zakończyć bez naklejki może tylko administrator w wersji na komputerze. Pracownika blokuje dodatkowo baza (14.24) — bez zmian bazy.
 - iPhone, administrator: „Krok 2/3” i blokada „Protokół”/„Zakończ” jak u pracownika; zmiana statusu na „Zakończone” w edycji montażu i nowy montaż od razu „Zakończone” — sprawdzenie naklejek (nowy montaż: zapis „W trakcie”, naklejki, zakończenie z karty). Bez sprawdzenia naklejek (brak internetu) administrator na iPhonie nie kończy — baza go nie zatrzyma.
