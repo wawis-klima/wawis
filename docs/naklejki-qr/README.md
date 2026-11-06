@@ -19,3 +19,9 @@
 - Generator: `gen_v2_zglos.py <csv> <katalog> <nazwa>` + `make_docx_v2_zglos.js <katalog> <nazwa>`.
 - Kontrola odczytu: PDF 162/162, Word 162/162.
 - Uwaga: publiczna strona zgłoszenia dla klienta jeszcze nie istnieje — skan bez logowania prowadzi do logowania WAWIS.
+
+## Partia 2 — wersja 35 × 30 mm, napis w jednej linii (06.11.2026)
+- Prośba właściciela: naklejka 3,5 × 3 cm, czarny „ZGŁOŚ AWARIĘ LUB SERWIS” w jednej linii (DejaVu Sans Condensed Bold 6,4 pt, 32,2 mm).
+- Te same 162 kody; A4 5 × 9 = 45 naklejek na stronę, 4 strony (ostatnia 27). QR 16 mm, korekcja M, moduł 0,55 mm.
+- Word: każda naklejka jako obraz 600 dpi (wygląd identyczny z PDF niezależnie od czcionek).
+- Generator: `gen_v3_zglos_35x30.py` + `make_docx_v3_zglos_35x30.js`. Kontrola odczytu: PDF 162/162, Word 162/162.
