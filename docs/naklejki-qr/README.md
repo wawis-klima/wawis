@@ -30,3 +30,7 @@
 - Prośba właściciela: „ZGŁOŚ” w pierwszej linii, „AWARIĘ LUB SERWIS” pod spodem (czarne, 7,6 pt), numer pod kodem o połowę mniejszy (3,7 pt).
 - 35 × 30 mm, te same 162 kody, QR 15 mm (moduł 0,52 mm), 4 strony A4. Word: `make_docx_v3_zglos_35x30.js` (obrazy 600 dpi).
 - Kontrola odczytu: PDF 162/162, Word 162/162.
+
+## Partia 2 — uzupełnienie do 4 pełnych stron (06.11.2026)
+- 18 nowych kodów (`partia-2-uzupelnienie-kody.csv`, nr 163–180), bez powtórzeń z partiami 1 i 2; w bazie jako partia 2 (migracja 20261106090000).
+- Wydruk: `gen_v5_zglos.py <katalog> <nazwa> partia-2-kody.csv partia-2-uzupelnienie-kody.csv` → 180 naklejek, 4 pełne strony. Kontrola odczytu: PDF 180/180, Word 180/180.

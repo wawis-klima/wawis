@@ -1,5 +1,8 @@
-# RELEASE RESULT — WAWIS 14.26
+# RELEASE RESULT — WAWIS 14.27
 
 ## Zakres
-- Kreator urządzeń (iPhone): naklejka QR wymagana; „Dalej do podsumowania” zatrzymuje przy komplecie tabliczek bez naklejki.
-- Bez zmian bazy.
+- Uzupełnienie partii 2 naklejek QR o 18 kodów (4 pełne strony wydruku).
+
+## Kolejność
+1. Migracja `20261106090000` (właściciel, SQL Editor) i kontrola SELECT.
+2. CI, scalenie, Vercel 14.27.
