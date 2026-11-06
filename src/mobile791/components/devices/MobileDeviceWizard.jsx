@@ -369,7 +369,10 @@ export default function MobileDeviceWizard({
 }) {
   const initializedRef = useRef(false);
   const [screen, setScreen] = useState('overview');
+  // 14.26: „Dalej do podsumowania” zatrzymuje, gdy tabliczki są kompletne, a urządzenie nie ma naklejki QR.
+  const [qrRequiredNotice, setQrRequiredNotice] = useState(false);
   const [activeDeviceIndex, setActiveDeviceIndex] = useState(0);
+  useEffect(() => { setQrRequiredNotice(false); }, [activeDeviceIndex]);
   const [activeUnitRef, setActiveUnitRef] = useState('jz');
   const [picker, setPicker] = useState(null);
   const [selectedType, setSelectedType] = useState(DEVICE_TYPE_SINGLE);
@@ -547,7 +550,25 @@ export default function MobileDeviceWizard({
     );
   }
 
-  // 14.09: naklejka QR w kreatorze — opcjonalna, jedna na urządzenie (multi = jedna).
+  // 14.09: naklejka QR w kreatorze — jedna na urządzenie (multi = jedna).
+  // 14.26 (decyzja właściciela 06.11.2026): wymagana — bez niej nie zakończy się montażu na iPhonie (14.24/14.25).
+  function isQrMissingWithCompleteNameplates(deviceIndex) {
+    const state = getQrState(deviceIndex);
+    if (!state || !qr?.required || state.code) return false;
+    const device = safeDevices[deviceIndex];
+    if (!device) return false;
+    return getDevicePhotoCompletion({ device, deviceIndex, pendingPhotos, existingPhotos }).complete;
+  }
+
+  function continueToOverview() {
+    if (isQrMissingWithCompleteNameplates(activeDeviceIndex)) {
+      setQrRequiredNotice(true);
+      return;
+    }
+    setQrRequiredNotice(false);
+    setScreen('overview');
+  }
+
   function getQrState(deviceIndex) {
     if (!qr?.enabled) return null;
     const saved = qr.saved?.[deviceIndex] || '';
@@ -559,8 +580,10 @@ export default function MobileDeviceWizard({
     const state = getQrState(activeDeviceIndex);
     if (!state) return null;
     const label = formatQrStickerCode(state.code);
+    const showRequired = qrRequiredNotice && !state.code;
     return (
-      <div className={`mobileDeviceQrCard${state.code ? ' ready' : ''}`} data-testid="wizard-qr-sticker">
+      <>
+      <div className={`mobileDeviceQrCard${state.code ? ' ready' : ''}${showRequired ? ' missing' : ''}`} data-testid="wizard-qr-sticker">
         <div className="mobileDeviceQrText">
           <strong>Naklejka QR <small>{qr.required ? 'wymagana' : 'opcjonalnie'}</small></strong>
           <span>{state.pending
@@ -574,6 +597,12 @@ export default function MobileDeviceWizard({
           </span>
         ) : null}
       </div>
+      {showRequired ? (
+        <div className="mobileDeviceQrRequired" role="alert" data-testid="wizard-qr-required">
+          Zeskanuj naklejkę QR. Bez niej nie przejdziesz dalej i nie zakończysz montażu.
+        </div>
+      ) : null}
+      </>
     );
   }
 
@@ -626,7 +655,7 @@ export default function MobileDeviceWizard({
           {renderQrCard()}
           {renderSelectorPanel()}
         </div>
-        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
+        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={continueToOverview}>Dalej do podsumowania</button></div>
         <PickerSheet picker={picker} descriptor={activeDescriptor} deviceType={activeDevice ? getDeviceType(activeDevice) : selectedType} unitRef={activeUnitRef} onApply={applyPicker} onClose={() => setPicker(null)} />
       </div>
     );
@@ -697,7 +726,7 @@ export default function MobileDeviceWizard({
           ) : null}
           {renderQrCard()}
         </div>
-        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={() => setScreen('overview')}>Dalej do podsumowania</button></div>
+        <div className="mobileDeviceWizardFooter"><button type="button" className="btn primary" onClick={continueToOverview}>Dalej do podsumowania</button></div>
       </div>
     );
   }

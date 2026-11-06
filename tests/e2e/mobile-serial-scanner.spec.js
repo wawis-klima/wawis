@@ -603,6 +603,16 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     }
 
     await expect(page.getByText('Tabliczka dodana', { exact: true })).toHaveCount(4);
+    // 14.26: komplet tabliczek bez naklejki QR — „Dalej do podsumowania” zatrzymuje i prosi o skan.
+    await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
+    await expect(page.getByTestId('wizard-qr-required')).toContainText('Zeskanuj naklejkę QR');
+    await expect(page.getByText('Wszystkie tabliczki dodane', { exact: true })).toHaveCount(0);
+    await page.getByTestId('wizard-qr-sticker').getByRole('button', { name: 'Zeskanuj' }).click();
+    const qrDialog = page.locator('.qrScannerModal');
+    await qrDialog.getByLabel('Albo wpisz numer spod kodu').fill('UYE8-EYCQ');
+    await qrDialog.getByRole('button', { name: 'Zatwierdź' }).click();
+    await expect(qrDialog).toHaveCount(0);
+    await expect(page.getByTestId('wizard-qr-required')).toHaveCount(0);
     await page.getByRole('button', { name: 'Dalej do podsumowania' }).click();
     await expect(page.getByText('Wszystkie tabliczki dodane', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Zapisz urządzenia i tabliczki' }).click();
@@ -618,16 +628,8 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     await expect(page.locator('.mobileDeviceWizard')).toBeHidden({ timeout: 20_000 });
 
     await expect(page.getByText('Wszystkie wymagane zdjęcia tabliczek są zapisane.')).toBeVisible();
-    // 14.24: po tabliczkach pracownik przypisuje naklejkę QR (Krok 2/3) — dopiero potem protokół.
-    const qrStep = page.getByTestId('finish-qr-step-missing');
-    await expect(qrStep).toContainText('Krok 2/3: przypisz naklejkę QR (urządzenie 1)');
-    await expect(page.getByRole('button', { name: 'Zakończ', exact: true })).toBeDisabled();
-    await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
-    await page.getByTestId('job-device-qr-sticker').first().getByRole('button', { name: 'Przypisz naklejkę QR' }).click();
-    const qrDialog = page.locator('.qrScannerModal');
-    await qrDialog.getByLabel('Albo wpisz numer spod kodu').fill('UYE8-EYCQ');
-    await qrDialog.getByRole('button', { name: 'Zatwierdź' }).click();
-    await expect(qrStep).toHaveCount(0);
+    // 14.24/14.26: naklejka zeskanowana w kreatorze przypisała się przy zapisie — bez „Krok 2/3”.
+    await expect(page.getByTestId('finish-qr-step-missing')).toHaveCount(0);
     // Komplet tabliczek i naklejek usuwa blokadę urządzeń, ale od 12.26 pracownik
     // nadal musi zapisać protokół klienta przed zakończeniem.
     await expect(page.getByText(/Najpierw wypełnij, podpisz i zapisz protokół klienta/)).toBeVisible();

@@ -1,7 +1,7 @@
 import { devices, expect, test } from '@playwright/test';
 import { WORKER, login } from './mock-helpers.js';
 
-// WAWIS 14.09 — naklejka QR w kreatorze urządzeń (krok 2 z 4), opcjonalna, jedna na instalację multi;
+// WAWIS 14.09 — naklejka QR w kreatorze urządzeń (krok 2 z 4), od 14.26 wymagana, jedna na instalację multi;
 // przypisanie po „Zapisz urządzenia i tabliczki”, kompaktowa linia w karcie montażu. Dane fikcyjne (mock).
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
 test.use(iphone14);
@@ -19,12 +19,13 @@ test('@mobile 14.09: pracownik skanuje naklejkę w kreatorze urządzeń, zapis p
   await expect(w.getByRole('heading', { name: 'Urządzenia', exact: true })).toBeVisible({ timeout: 20_000 });
   await expect(w.locator('.mobileDeviceOverviewQr').first()).toHaveText('Bez naklejki QR');
 
-  // Krok 2 (multi): jedna karta naklejki na cały zestaw, opcjonalna.
+  // Krok 2 (multi): jedna karta naklejki na cały zestaw.
   await w.locator('.mobileDeviceOverviewOpen').first().click();
   await expect(w.getByText('Tryb: Multi', { exact: true })).toBeVisible();
   const card = w.getByTestId('wizard-qr-sticker');
   await expect(card).toHaveCount(1);
-  await expect(card).toContainText('opcjonalnie');
+  // 14.26 (decyzja właściciela 06.11.2026): naklejka wymagana (bez niej nie zakończy się montażu).
+  await expect(card).toContainText('wymagana');
   const cardBox = await card.boundingBox();
   expect(cardBox.height).toBeLessThanOrEqual(90);
 

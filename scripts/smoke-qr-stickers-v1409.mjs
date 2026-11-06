@@ -116,10 +116,11 @@ function fakeDb({ rows = 3, stickers = {}, known = ['AAAA2222', 'BBBB3333', 'CCC
 // ---------- 4. Podłączenie ----------
 const wizard = read('src/mobile791/components/devices/MobileDeviceWizard.jsx');
 assert.equal((wizard.match(/\{renderQrCard\(\)\}/g) || []).length, 2, 'Karta naklejki w trybie Single i Multi (jedna na zestaw).');
-assert.match(wizard, /qr\.required \? 'wymagana' : 'opcjonalnie'/, 'Na razie opcjonalna; gotowe do włączenia wymagania.');
+assert.match(wizard, /qr\.required \? 'wymagana' : 'opcjonalnie'/, 'Napis zależny od wymogu (od 14.26 wymagana).');
 assert.match(wizard, /Bez naklejki QR/);
 const modal = read('src/mobile791/components/modals/JobFormModal.jsx');
-assert.match(modal, /required: false/, 'Naklejka nie jest wymagana (decyzja właściciela 02.11.2026).');
+// 14.26 (nowa decyzja właściciela 06.11.2026, zastępuje 02.11.2026): naklejka wymagana po odczycie naklejek z bazy.
+assert.match(modal, /required: qrSavedLoaded \}/, 'Naklejka wymagana (decyzja właściciela 06.11.2026).');
 assert.match(modal, /pending_qr_stickers: pendingQr/, 'Zeskanowane naklejki przesuwają się przy usuwaniu urządzenia w kreatorze.');
 assert.match(modal, /validateWizardQrSticker\(\{/);
 assert.match(read('src/mobile791/hooks/useJobFormModal.js'), /pending_qr_stickers: Object\.entries/);
