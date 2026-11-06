@@ -5,16 +5,20 @@ import {
   formatQrStickerCode, isOnline, loadJobQrStickers, QR_STICKERS_CHANGED_EVENT, unassignQrSticker,
 } from '../../../modules/qr-stickers.js';
 
-// WAWIS 14.08: naklejka QR przy urządzeniu montażu. Opcjonalna — nie blokuje zakończenia zlecenia.
+// WAWIS 14.08: naklejka QR przy urządzeniu montażu.
+// 14.24 (decyzja właściciela 06.11.2026): wymagana do zakończenia montażu przez pracownika (jak tabliczki).
 
 export function useJobQrStickers({ supabase, jobId, enabled = true, refreshKey = '' }) {
   const [stickers, setStickers] = useState({});
   const [available, setAvailable] = useState(true);
+  // 14.24: dla którego montażu naklejki zostały faktycznie wczytane — puste {} przed odczytem to nie „brak naklejek”.
+  const [loadedJobId, setLoadedJobId] = useState('');
   const reload = useCallback(async () => {
     if (!supabase || !jobId || !enabled || !isOnline()) return;
     try {
       setStickers(await loadJobQrStickers({ supabase, jobId }));
       setAvailable(true);
+      setLoadedJobId(String(jobId));
     } catch {
       // Brak funkcji w bazie (przed migracją) albo chwilowy błąd sieci — sekcja ukryta, montaż działa normalnie.
       setAvailable(false);
@@ -22,7 +26,15 @@ export function useJobQrStickers({ supabase, jobId, enabled = true, refreshKey =
   }, [supabase, jobId, enabled]);
   useEffect(() => {
     setStickers({});
+    setLoadedJobId('');
+    setAvailable(true);
   }, [jobId]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onOnline = () => { reload(); };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, [reload]);
   // 14.09: odświeżenie także po zapisie urządzeń (naklejki z kreatora) — bez czyszczenia widoku.
   useEffect(() => {
     reload();
@@ -35,7 +47,7 @@ export function useJobQrStickers({ supabase, jobId, enabled = true, refreshKey =
     window.addEventListener(QR_STICKERS_CHANGED_EVENT, handler);
     return () => window.removeEventListener(QR_STICKERS_CHANGED_EVENT, handler);
   }, [reload, jobId]);
-  return { stickers, available, reload, setStickers };
+  return { stickers, available, reload, setStickers, loadedJobId };
 }
 
 export function JobDeviceQrStickerRow({ code, canAssign, isAdmin, busy, onAssign, onUnassign, message }) {

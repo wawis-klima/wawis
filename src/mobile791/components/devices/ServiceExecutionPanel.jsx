@@ -24,7 +24,7 @@ import {
 function newDraft(item) {
  return {checklist:normalizeServiceChecklist(item.checklist),result:item.result||'',notes:item.notes||''};
 }
-export default function ServiceExecutionPanel({supabase,userId,visitId,staffNames,onBack,onFinalized}) {
+export default function ServiceExecutionPanel({supabase,userId,visitId,staffNames,onBack,onFinalized,isAdmin=false}) {
  const [visit,setVisit]=useState(null);
  const [photos,setPhotos]=useState([]);
  const [drafts,setDrafts]=useState({});
@@ -272,6 +272,11 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  }
  async function complete() {
    if(!signatureDataUrl){setError('Klient musi podpisać protokół.');return;}
+   // 14.24: bez naklejek QR pracownik nie zakończy przeglądu; administrator — po potwierdzeniu.
+   if(qrMissingItems.length){
+     if(!isAdmin){setError(qrBlockMessage);return;}
+     if(!window.confirm('Brak naklejki QR: '+qrMissingNames+'.\n\nZakończyć przegląd mimo to?'))return;
+   }
    setBusy('complete');setError('');setMessage('');
    try {
      const pushReady=await refreshServicePushContext({supabase,userId});
@@ -314,6 +319,16 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
  const readonly=Boolean(protocol)||visit.status==='wykonany'||visit.status==='odwolany';
  const doneCount=(visit.items||[]).filter(i=>i.result).length;
  const unsaved=(visit.items||[]).some(i=>JSON.stringify(drafts[i.id]||newDraft(i))!==JSON.stringify(newDraft(i)));
+ // 14.24 (decyzja właściciela 06.11.2026): naklejka QR na każdym urządzeniu przeglądu — wymagana od pracownika
+ // przed podpisem i zakończeniem, jak tabliczki w montażu. Administrator może zakończyć mimo braku.
+ const qrItems=(visit.items||[]).filter(i=>i.device_id);
+ const qrChecked=qrCodes!==null&&qrCodes!=='error';
+ const qrMissingItems=qrChecked?qrItems.filter(i=>!qrCodes[i.id]):[];
+ const qrMissingNames=qrMissingItems.map(i=>'urządzenie '+((visit.items||[]).indexOf(i)+1)+(i.model_snapshot?' ('+i.model_snapshot+')':'')).join(', ');
+ const qrBlocksWorker=!isAdmin&&qrItems.length>0&&(!qrChecked||qrMissingItems.length>0);
+ const qrBlockMessage=!qrChecked
+   ?'Nie udało się sprawdzić naklejek QR. Sprawdź internet i naciśnij „Sprawdź ponownie” przy urządzeniu.'
+   :'Przypisz naklejkę QR: '+qrMissingNames+'. Bez niej nie można zakończyć przeglądu.';
  return <section className="serviceAdminPage" aria-label="Wykonanie przeglądu">
    <button className="btn" type="button" onClick={onBack} disabled={Boolean(busy)}>← Wróć do wizyty</button>
    <header className="serviceAdminHeader"><h2>Przegląd klimatyzacji</h2>
@@ -427,9 +442,11 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
    </div> : visit.status==='odwolany'?<div className="card serviceAdminCard">Wizyta odwołana.</div>:<div className="card serviceAdminCard">
      <h3>Potwierdzenie klienta</h3>
      <p className="serviceAdminMuted">Podpis jest obowiązkowy. Zapisz wyniki urządzeń przed podpisaniem.</p>
+     {qrBlocksWorker?<p className="serviceAdminHint" role="note" data-testid="service-qr-required">{qrBlockMessage}</p>:null}
+     {isAdmin&&qrMissingItems.length?<p className="serviceAdminMuted" data-testid="service-qr-admin-note">Brak naklejki QR: {qrMissingNames}. Pracownik nie zakończy bez niej; administrator może po potwierdzeniu.</p>:null}
      {doneCount===0?<p className="serviceAdminHint" role="note">Najpierw zapisz wynik co najmniej jednego urządzenia — wtedy odblokuje się podpis.</p>
        :unsaved?<p className="serviceAdminHint" role="note">Masz niezapisane zmiany w wyniku urządzenia — zapisz je przed podpisem.</p>:null}
-     <button type="button" className="btn primary serviceAdminWide" disabled={Boolean(busy)||doneCount===0||unsaved}
+     <button type="button" className="btn primary serviceAdminWide" disabled={Boolean(busy)||doneCount===0||unsaved||qrBlocksWorker}
        onClick={()=>{setError('');setMessage('');setSigned(false);setSignatureOpen(true);}}>
        {signatureDataUrl?'✍ Podpisz ponownie':'✍ Zrób podpis'}
      </button>
@@ -438,7 +455,7 @@ export default function ServiceExecutionPanel({supabase,userId,visitId,staffName
        disabled={Boolean(busy)||doneCount===0||unsaved}
        onClick={waitForSignature}>{busy==='waiting'?'Zapisuję…':'Zapisz — oczekuje na podpis klienta'}</button> : null}
      <button type="button" className="btn primary serviceAdminWide"
-       disabled={Boolean(busy)||!signatureDataUrl||doneCount===0||unsaved}
+       disabled={Boolean(busy)||!signatureDataUrl||doneCount===0||unsaved||qrBlocksWorker}
        onClick={complete}>{busy==='complete'?'Zapisuję podpisany PDF…':'Zakończ przegląd i zapisz PDF'}</button>
      <p className="serviceAdminMuted">Jeśli zmienisz wynik urządzenia, najpierw zapisz go osobno. Wizyta będzie oznaczona jako wykonana wyłącznie po zapisaniu podpisanego PDF i pozytywnej kontroli dokumentacji usterek na serwerze.</p>
    </div>}

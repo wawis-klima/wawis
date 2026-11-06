@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.23",
+  "version": "14.24",
   "scope": "full",
-  "release_branch": "release/v14.23",
+  "release_branch": "release/v14.24",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Ekran przeglądu: przypisanie wolnej naklejki QR przez każdego pracownika; nowa migracja 20261106090000 (tylko nowe funkcje, uruchamia właściciel)."
+    "notes": "Zakończenie montażu: wymóg naklejki QR dla pracownika (wyzwalacz + UI), przegląd: wymóg dla pracownika, GUS przy NIP; migracja 20261106120000 (uruchamia właściciel)."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.23",
+    "source_branch": "release/v14.24",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.23.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.24.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.23: naklejka QR podczas przeglądu",
-    "release_ci": "WAWIS PR checks + qr-service-visit-sql-v1423 (PostgreSQL 16) + smoke-qr-service-visit-v1423",
-    "postdeploy": "Vercel READY/14.23."
+    "code": "14.24: naklejka QR do zakończenia, Szukaj w GUS",
+    "release_ci": "WAWIS PR checks + job-completion-qr-sql-v1424 (PostgreSQL 16) + smoke-qr-required-v1424 + E2E job-qr-required-v1424",
+    "postdeploy": "Vercel READY/14.24."
   }
 }

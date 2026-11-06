@@ -373,7 +373,7 @@ export default function ServiceAdminPanel({ supabase, isAdmin, userId, openCusto
 
   if (!isAdmin) return null;
   if (screen==='execution' && currentVisit) return <ServiceExecutionPanel
-    supabase={supabase} userId={userId} visitId={currentVisit.id}
+    supabase={supabase} userId={userId} visitId={currentVisit.id} isAdmin={isAdmin}
     staffNames={[staffName(currentVisit.primary_technician_id),...(currentVisit.additional_technician_ids||[]).map(staffName)].filter(s=>s && s!=='Bez przydziału')}
     onBack={()=>{setScreen('detail');setMessage('');}}
     onFinalized={async (finished)=>{

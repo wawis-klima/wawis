@@ -493,6 +493,12 @@ export function createMockSupabaseClient() {
   function mockQrStickerRpc(name, payload = {}) {
     if (!Array.isArray(store.qr_stickers)) {
       store.qr_stickers = ['UYE8EYCQ', 'BNKJXZDY', 'CXFBEHEP'].map((code) => ({ code, device_id: null }));
+      // 14.24: naklejka QR jest wymagana do zakończenia montażu przez pracownika — urządzenia montaży A–D
+      // mają już naklejki (fikcyjne kody), żeby istniejące scenariusze zakończenia działały jak w terenie.
+      // Montaż Multi-Split (testy naklejek) i trzy kody powyżej pozostają wolne.
+      [['MKAAAA2A', 'mock-device-001'], ['MKAAAA2B', 'mock-device-002'], ['MKAAAA2C', 'mock-device-003'], ['MKAAAA2D', 'mock-device-004']]
+        .filter(([, deviceId]) => store.devices.some((item) => item.id === deviceId))
+        .forEach(([code, device_id]) => store.qr_stickers.push({ code, device_id }));
     }
     const userId = restoreSession(store.users)?.user?.id || null;
     const role = String(store.profiles.find((item) => item.id === userId)?.role || '').toLowerCase();

@@ -75,7 +75,8 @@ test.describe('@mobile 10.91 regressions', () => {
     expect(mobileDetailsSource).toContain('Najpierw dodaj urządzenie (JW/JZ), aby zakończyć zlecenie.');
     expect(mobileDetailsSource).toContain('const completionProtocolRequired = canFinishJob;');
     expect(mobileDetailsSource).toContain('const protocolReadyForCompletion = !completionProtocolRequired || (');
-    expect(mobileDetailsSource).toContain('disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolNameplatesReady || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}');
+    // 14.24: naklejka QR (pracownik) między tabliczkami a protokołem; administrator — protocolQrReady zawsze true.
+    expect(mobileDetailsSource).toContain('disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolNameplatesReady || !protocolQrReady || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}');
 
     expect(backendGuardSource).toContain('public.current_user_is_admin()');
     expect(backendGuardSource).toContain('v_admin_bypass');

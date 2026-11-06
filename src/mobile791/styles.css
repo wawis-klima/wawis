@@ -8782,6 +8782,28 @@ img.previewImage{
 }
 
 
+/* 14.24: NIP + „Szukaj w GUS” w jednym wierszu (nowy montaż / klient). */
+.jobNipLookupRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:6px;
+  align-items:center;
+  min-width:0;
+  margin:0 0 6px;
+}
+.jobNipLookupRow > .jobNipCompactInput,
+.formModal .jobFormCreateMode .jobNipLookupRow > .jobNipCompactInput{
+  margin:0 !important;
+}
+.jobNipLookupBtn{
+  min-height:36px;
+  padding:5px 12px;
+  border-radius:11px;
+  font-size:13px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+
 .jobNipLookupStatus {
   display: block;
   margin-top: 4px;

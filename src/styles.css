@@ -10769,6 +10769,11 @@ img.previewImage{
 
 
 /* --- v11.96 adres + kod pocztowy --- */
+/* 14.24: NIP + „Szukaj w GUS” w jednym wierszu (nowy montaż). */
+.jobNipLookupRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;min-width:0}
+.jobNipLookupRow > .input{margin:0;min-width:0;width:100%}
+.jobNipLookupBtn{white-space:nowrap}
+
 .jobNipCompactInput{
   width:100%;
   min-width:0;

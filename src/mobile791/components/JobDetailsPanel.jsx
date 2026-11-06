@@ -15,7 +15,7 @@ import ProtocolTestModal from "./modals/ProtocolTestModal.jsx";
 import ConfirmActionModal from "./modals/ConfirmActionModal.jsx";
 import SmoothCollapse from "./jobs/SmoothCollapse.jsx";
 import { JobDeviceQrScanner, JobDeviceQrStickerRow, unassignJobDeviceQrSticker, useJobQrStickers } from "./qr/JobDeviceQrSticker.jsx";
-import { formatQrStickerCode } from "../../modules/qr-stickers.js";
+import { formatMissingQrDevices, formatQrStickerCode, missingJobQrStickers } from "../../modules/qr-stickers.js";
 import "./qr/QrStickerScanner.css";
 
 const PROTOCOL_READ_TIMEOUT_MS = 3200;
@@ -346,6 +346,18 @@ export default function JobDetailsPanel({
     Boolean(selectedJob?.detailsLoaded)
     && areJobNameplatesReadyForProtocol(selectedJob)
   );
+  // 14.24 (decyzja właściciela 06.11.2026): pracownik przed protokołem i zakończeniem przypisuje naklejkę QR
+  // do każdego urządzenia (jak tabliczki). Administrator może zakończyć mimo braku. Nieodczytane naklejki ≠ „brak”.
+  const qrStickersRequired = Boolean(selectedJob) && !isAdmin && !selectedJobIsCompleted && canWorkerFinishJob(selectedJob, isAdmin);
+  const qrMissingDevices = selectedJob
+    ? missingJobQrStickers({ deviceCount: getJobDeviceRows(selectedJob).length, stickers: jobQr.stickers })
+    : [];
+  const qrStickersChecked = Boolean(selectedJobId) && jobQr.loadedJobId === selectedJobId && jobQr.available;
+  // Blokujemy tylko przy POTWIERDZONYM braku. Bez internetu (13.78: protokół i podpis dostępne offline) naklejek
+  // nie da się sprawdzić — wtedy decyduje kontrola przy „Zakończ” (online) i wyzwalacz w bazie (job_qr_sticker_required).
+  const protocolQrReady = !qrStickersRequired || !qrStickersChecked || qrMissingDevices.length === 0;
+  const protocolStepsReady = protocolNameplatesReady && protocolQrReady;
+  const qrMissingLabel = formatMissingQrDevices(qrMissingDevices);
   const photosCollapsible = selectedJobIsCompleted || selectedJobStatus === "Niezrealizowane";
   const [adminNoteExpanded, setAdminNoteExpanded] = React.useState(!selectedJobIsCompleted);
   const [photosExpanded, setPhotosExpanded] = React.useState(!photosCollapsible);
@@ -497,12 +509,17 @@ export default function JobDetailsPanel({
       onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
       return;
     }
+    if (!protocolQrReady) {
+      setProtocolMessage(`Najpierw przypisz naklejkę QR: ${qrMissingLabel}.`);
+      onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
+      return;
+    }
     if (protocolBackendAvailable || protocolCheckOffline) {
       setProtocolAutoSaveRequested(Boolean(quickProtocolRequest.autoSave));
       setProtocolTestOpen(true);
     }
     onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
-  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolCheckOffline, protocolNameplatesReady, onQuickProtocolRequestHandled]);
+  }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolCheckOffline, protocolNameplatesReady, protocolQrReady, qrStickersChecked, qrMissingLabel, onQuickProtocolRequestHandled]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
@@ -901,11 +918,13 @@ export default function JobDetailsPanel({
               <button
                 className="btn premiumActionBtn finishJobBtn mobileActionCompact workerActionFinishV1295"
                 onClick={() => updateStatus(selectedJob.id, "Zakończone")}
-                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolNameplatesReady || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
+                disabled={busy || showDetailsLoading || !effectiveNameplateComplete || !protocolNameplatesReady || !protocolQrReady || !protocolReadyForCompletion || (completionProtocolRequired && (protocolLoading || !protocolBackendAvailable))}
                 title={!hasConfiguredDevices
                   ? 'Dodaj urządzenie przed zakończeniem'
                   : !effectiveNameplateComplete || !protocolNameplatesReady
                     ? 'Najpierw uzupełnij i zsynchronizuj tabliczki znamionowe'
+                    : !protocolQrReady
+                      ? 'Najpierw przypisz naklejki QR do urządzeń'
                     : completionProtocolRequired && !protocolRecord
                       ? 'Wypełnij i zapisz protokół przed zakończeniem'
                       : 'Zakończ zlecenie'}
@@ -935,10 +954,12 @@ export default function JobDetailsPanel({
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
-                disabled={busy || !protocolNameplatesReady}
-                onClick={() => { if (protocolNameplatesReady) setProtocolTestOpen(true); }}
+                disabled={busy || !protocolStepsReady}
+                onClick={() => { if (protocolStepsReady) setProtocolTestOpen(true); }}
                 title={!protocolNameplatesReady
                   ? "Najpierw dodaj i zsynchronizuj wymagane tabliczki znamionowe"
+                  : !protocolQrReady
+                  ? "Najpierw przypisz naklejki QR do urządzeń"
                   : protocolRecord
                   ? "Otwórz zapisany protokół"
                   : selectedJobIsCompleted
@@ -953,8 +974,8 @@ export default function JobDetailsPanel({
               <button
                 type="button"
                 className="btn premiumActionBtn protocolTestButton mobileActionCompact workerActionProtocolV1295"
-                disabled={!protocolNameplatesReady || busy}
-                onClick={() => { if (protocolNameplatesReady) setProtocolReloadKey((value) => value + 1); }}
+                disabled={!protocolStepsReady || busy}
+                onClick={() => { if (protocolStepsReady) setProtocolReloadKey((value) => value + 1); }}
                 title={protocolNameplatesReady ? "Sprawdź ponownie dostępność protokołu" : "Najpierw dodaj wymagane tabliczki"}
               >
                 <span className="desktopLabel">Sprawdź protokół</span>
@@ -989,13 +1010,23 @@ export default function JobDetailsPanel({
               {missingServerNameplatesLabel ? <> Brakuje: {missingServerNameplatesLabel}.</> : null}
             </div>
           ) : null}
+          {qrStickersRequired && protocolNameplatesReady && !protocolQrReady ? (
+            <div className="finishNameplateRequirement missing" data-testid="finish-qr-step-missing">
+              Krok 2/3: przypisz naklejkę QR ({qrMissingLabel}) — przycisk „Przypisz naklejkę QR” przy urządzeniu. Dopiero potem aktywuje się „Protokół”.
+            </div>
+          ) : null}
+          {isAdmin && canFinishJob && jobQr.loadedJobId === selectedJobId && jobQr.available && qrMissingDevices.length ? (
+            <div className="finishNameplateRequirement checking" data-testid="finish-qr-admin-note">
+              Brak naklejki QR: {qrMissingLabel}. Pracownik nie zakończy bez niej; administrator może.
+            </div>
+          ) : null}
           {completionProtocolRequired && protocolLoading ? (
             <div className="finishNameplateRequirement checking">Sprawdzam zapisany protokół klienta…</div>
           ) : null}
-          {completionProtocolRequired && protocolNameplatesReady && !protocolLoading && !protocolRecord ? (
+          {completionProtocolRequired && protocolStepsReady && !protocolLoading && !protocolRecord ? (
             <div className="finishNameplateRequirement missing">Najpierw wypełnij, podpisz i zapisz protokół klienta, aby zakończyć zlecenie.</div>
           ) : null}
-          {completionProtocolRequired && protocolNameplatesReady && !protocolLoading && protocolRecord ? (
+          {completionProtocolRequired && protocolStepsReady && !protocolLoading && protocolRecord ? (
             <div className="finishNameplateRequirement ready">Protokół klienta jest zapisany.</div>
           ) : null}
           {isWorkerCompletedLock ? (
@@ -1323,8 +1354,8 @@ export default function JobDetailsPanel({
         }}
       />
       <ProtocolTestModal
-        open={protocolTestOpen && protocolNameplatesReady}
-        canWriteProtocol={protocolNameplatesReady}
+        open={protocolTestOpen && protocolStepsReady}
+        canWriteProtocol={protocolStepsReady}
         job={selectedJob}
         profiles={profiles}
         supabase={supabase}
@@ -1336,7 +1367,7 @@ export default function JobDetailsPanel({
           setProtocolAutoSaveRequested(false);
           const shouldRemind = pendingFinishReminderRef.current === selectedJobId
             && canFinishJob
-            && protocolNameplatesReady
+            && protocolStepsReady
             && String(protocolRecord?.job_id || "") === selectedJobId
             && Boolean(protocolRecord?.signed_at && protocolRecord?.storage_path)
             && Number(protocolRecord?.file_size_bytes || 0) > 0;

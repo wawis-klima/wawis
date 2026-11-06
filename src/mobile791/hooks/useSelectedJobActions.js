@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { assignPendingJobQrStickers, describeQrRealignment, preserveQrStickersAroundDeviceRemoval } from "../../modules/qr-stickers.js";
+import { assignPendingJobQrStickers, describeQrRealignment, describeQrStickerRequired, loadJobQrStickers, missingJobQrStickers, preserveQrStickersAroundDeviceRemoval } from "../../modules/qr-stickers.js";
 import {
   ADMIN_NOTE_DELETE_ERROR_MESSAGE,
   COMMENT_DELETE_ERROR_MESSAGE,
@@ -911,6 +911,21 @@ export function useSelectedJobActions({
 
     if (completingNow || workerRestarting) setBusy(true);
     try {
+      // 14.24: pracownik kończy montaż tylko z naklejką QR na każdym urządzeniu (administrator może bez).
+      // Ostateczną kontrolę robi baza (job_qr_sticker_required); błąd odczytu tutaj nie blokuje — decyduje baza.
+      if (completingNow && workerFinishing) {
+        let qrMissing = [];
+        try {
+          const stickers = await loadJobQrStickers({ supabase, jobId });
+          qrMissing = missingJobQrStickers({ deviceCount: getJobDeviceRows(job).length, stickers });
+        } catch (qrError) {
+          console.warn('Nie udało się sprawdzić naklejek QR przed zakończeniem.', qrError?.message || qrError);
+        }
+        if (qrMissing.length) {
+          alert(describeQrStickerRequired(qrMissing));
+          return;
+        }
+      }
       if (completingNow) {
         let verificationJob = job;
         try {

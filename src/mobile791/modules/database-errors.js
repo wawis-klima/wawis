@@ -58,6 +58,11 @@ export function isJobDevicesMissingError(error) {
   return /job_devices_missing/i.test(message);
 }
 
+export function isJobQrStickerRequiredError(error) {
+  const message = collectErrorText(error);
+  return /job_qr_sticker_required/i.test(message);
+}
+
 export function isJobProtocolRequiredError(error) {
   const message = collectErrorText(error);
   return /job_protocol_required/i.test(message);
@@ -81,6 +86,14 @@ export function normalizeDatabaseErrorMessage(error, fallbackMessage = 'Wystąpi
 
   if (isJobDevicesMissingError(error)) {
     return 'Nie można zakończyć zlecenia. Najpierw dodaj urządzenie (JW/JZ).';
+  }
+
+  // 14.24: brak naklejki QR na urządzeniu (pracownik) — numery urządzeń z komunikatu bazy.
+  if (isJobQrStickerRequiredError(error)) {
+    const numbers = (collectErrorText(error).match(/job_qr_sticker_required:\s*([0-9]+(?:\s*,\s*[0-9]+)*)/i)?.[1] || '')
+      .split(',').map((part) => part.trim()).filter(Boolean);
+    const label = numbers.length === 1 ? ` (urządzenie ${numbers[0]})` : numbers.length ? ` (urządzenia ${numbers.join(', ')})` : '';
+    return `Nie można zakończyć zlecenia. Przypisz naklejkę QR${label} — przycisk „Przypisz naklejkę QR” jest przy urządzeniu.`;
   }
 
   if (isJobProtocolRequiredError(error)) {
