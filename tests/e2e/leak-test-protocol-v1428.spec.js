@@ -30,12 +30,26 @@ test('@mobile 14.28: administrator otwiera protokół szczelności PDF zakończo
   const popupPromise = page.waitForEvent('popup');
   await button.click();
   const popup = await popupPromise;
-  await expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/);
-  const bytes = await popup.evaluate(async () => {
-    const res = await fetch(window.location.href);
-    return Array.from(new Uint8Array(await res.arrayBuffer()));
-  });
-  const pdf = Buffer.from(bytes);
+  // Chromium pokazuje PDF w karcie (blob:); WebKit bez przeglądarki PDF pobiera plik — oba wyniki to PDF.
+  const downloadPromise = popup.waitForEvent('download', { timeout: 20_000 }).catch(() => null);
+  let pdf = null;
+  const outcome = await Promise.race([
+    expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
+    downloadPromise.then((download) => (download ? download : null)),
+  ]);
+  if (outcome === 'tab') {
+    const bytes = await popup.evaluate(async () => {
+      const res = await fetch(window.location.href);
+      return Array.from(new Uint8Array(await res.arrayBuffer()));
+    });
+    pdf = Buffer.from(bytes);
+  } else {
+    const download = outcome || await downloadPromise;
+    expect(download, 'PDF otwarty w karcie albo pobrany').toBeTruthy();
+    const target = testInfo.outputPath('download.pdf');
+    await download.saveAs(target);
+    pdf = fs.readFileSync(target);
+  }
   expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
   expect(pdf.length).toBeGreaterThan(10_000);
   fs.writeFileSync(testInfo.outputPath('protokol-szczelnosci-v1428.pdf'), pdf);
