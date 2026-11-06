@@ -14,6 +14,7 @@ const GROUPS = {
     'node scripts/smoke-service-partial-checklist-v1404.mjs',
     'node scripts/smoke-qr-stickers-v1408.mjs',
     'node scripts/smoke-qr-stickers-v1409.mjs',
+    'node scripts/smoke-qr-service-visit-v1423.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',
@@ -139,6 +140,7 @@ const GROUPS = {
     'node scripts/smoke-fakturownia-recheck-v1418.mjs',
     'node scripts/smoke-qr-service-request-v1420.mjs',
     'node scripts/smoke-communication-v1421.mjs',
+    'node scripts/smoke-qr-service-visit-v1423.mjs',
     'node scripts/smoke-edge-auth-v1412.mjs',
   ],
   push: [
@@ -165,6 +167,7 @@ const GROUPS = {
     'node scripts/smoke-sms-queue-daily-0630-v1418.mjs',
     'node scripts/smoke-qr-service-request-v1420.mjs',
     'node scripts/smoke-communication-v1421.mjs',
+    'node scripts/smoke-qr-service-visit-v1423.mjs',
   ],
   fuel: [
     'node scripts/codex-acceptance-fuel-old-rpc-v1269.mjs',

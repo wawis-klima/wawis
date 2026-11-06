@@ -63,6 +63,9 @@ export function clearQrCodeFromLocation(win = typeof window !== 'undefined' ? wi
 function rpcResult({ data, error }) {
   if (error) {
     const message = String(error?.message || '');
+    if (/_v1423/.test(message) && /PGRST202|schema cache|does not exist|Could not find/i.test(message)) {
+      throw new Error('Przypisywanie naklejek przy przeglądzie wymaga aktualizacji bazy (14.23). Nic nie zostało zapisane.');
+    }
     if (/qr_sticker|PGRST202|schema cache|does not exist/i.test(message)) {
       throw new Error('Naklejki QR nie są jeszcze włączone w bazie. Nic nie zostało zapisane.');
     }
@@ -85,6 +88,20 @@ export async function assignQrStickerToDevice({ supabase, code, deviceId, replac
   return rpcResult(await supabase.rpc('qr_sticker_assign_device', {
     p_code: normalizeQrStickerCode(code), p_device_id: deviceId, p_replace: Boolean(replace),
   }));
+}
+
+/** 14.23: naklejka podczas przeglądu — każdy pracownik, tylko wolna naklejka i urządzenie bez naklejki. */
+export async function assignQrStickerToServiceDevice({ supabase, code, visitId, itemId }) {
+  return rpcResult(await supabase.rpc('qr_sticker_assign_service_device_v1423', {
+    p_code: normalizeQrStickerCode(code), p_visit_id: visitId, p_item_id: itemId,
+  }));
+}
+
+/** 14.23: mapa pozycja przeglądu → kod naklejki. */
+export async function loadServiceVisitQrStickers({ supabase, visitId }) {
+  if (!supabase || !visitId) return {};
+  const rows = rpcResult(await supabase.rpc('qr_stickers_for_service_visit_v1423', { p_visit_id: visitId })) || [];
+  return Object.fromEntries((Array.isArray(rows) ? rows : []).map((row) => [String(row.item_id), String(row.code)]));
 }
 
 export async function unassignQrSticker({ supabase, code }) {
@@ -119,6 +136,9 @@ export function describeQrAssignFailure(result = {}) {
     case 'invalid_code': return 'To nie jest kod naklejki WAWIS. Sprawdź numer pod kodem QR (8 znaków, np. K7M2-P9XA).';
     case 'unknown_code': return `${code} nie pochodzi z naklejek WAWIS. Użyj naklejki z wydrukowanej partii.`;
     case 'device_not_saved': return 'To urządzenie nie jest jeszcze zapisane na serwerze. Zapisz urządzenie (z internetem) i spróbuj ponownie.';
+    case 'visit_not_found': return 'Nie znaleziono przeglądu (mógł zostać usunięty). Odśwież dane.';
+    case 'visit_cancelled': return 'Przegląd jest odwołany — naklejki nie można przypisać.';
+    case 'visit_item_not_found': return 'To urządzenie nie należy do tego przeglądu. Odśwież dane.';
     case 'device_not_found': return 'Nie znaleziono urządzenia. Odśwież dane i spróbuj ponownie.';
     case 'sticker_taken': return `${code} jest już przypisana: ${describeQrDevice(result.device || {})}. ${result.can_replace ? '' : 'Przepisać ją może tylko administrator.'}`.trim();
     case 'device_has_sticker': return `To urządzenie ma już naklejkę ${formatQrStickerCode(result.existing_code)}. ${result.can_replace ? '' : 'Wymianę naklejki zgłoś administratorowi.'}`.trim();

@@ -1,7 +1,8 @@
-# RELEASE RESULT — WAWIS 14.22
+# RELEASE RESULT — WAWIS 14.23
 
 ## Zakres
-- Przeglądy serwisowe (komputer): kliknięcie w pole daty/godziny otwiera kalendarz (`showPicker`, tylko myszka).
-- Telefon klienta przy nazwie w przeglądach serwisowych.
+- Ekran wykonania przeglądu: „Naklejka QR” przy każdym urządzeniu i „Przypisz naklejkę QR”, gdy urządzenie jej nie ma.
+- Każdy pracownik (nie tylko przydzielony), tylko wolna naklejka, bez wymiany i zwalniania.
+- Migracja `20261106090000_qr_sticker_przeglad_v1423.sql` (dwie nowe funkcje; uruchamia właściciel). Przed migracją przycisk pokazuje czytelny komunikat i nic nie zapisuje.
 
-iPhone bez zmian. Bez zmian bazy i funkcji Edge.
+Ekran przeglądów widzi dziś tylko administrator. Bez zmian funkcji Edge.

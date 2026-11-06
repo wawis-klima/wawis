@@ -1,3 +1,10 @@
+## 14.23
+- Naklejka QR podczas przeglądu (decyzja właściciela 06.11.2026): na ekranie wykonania przeglądu przy każdym urządzeniu jest „Naklejka QR: …” i przycisk „Przypisz naklejkę QR”, gdy urządzenie nie ma naklejki. Dotyczy także urządzeń ze starej bazy (569 bez montażu), do których dotąd naklejkę mógł przypisać tylko administrator w Przeglądach serwisowych.
+- Może to zrobić każdy pracownik, nie tylko przydzielony do wizyty (na serwis jadą często dwie osoby). Tylko wolna naklejka i tylko urządzenie bez naklejki; wymiana i zwalnianie zostają dla administratora. Odwołana wizyta i wizyta w Koszu: bez przypisywania. Błąd odczytu naklejek nie wygląda jak „brak”.
+- Baza: migracja `20261106090000_qr_sticker_przeglad_v1423.sql` — dwie nowe funkcje (`qr_sticker_assign_service_device_v1423`, `qr_stickers_for_service_visit_v1423`), bez zmian tabel, danych i istniejących uprawnień. Uruchamia właściciel.
+- Ekran przeglądów widzi dziś tylko administrator; pracownicy zobaczą przycisk, gdy dostaną dostęp do przeglądów.
+- Testy: `scripts/qr-service-visit-sql-v1423.sh` (prawdziwy PostgreSQL 16, w CI), `smoke-qr-service-visit-v1423.mjs`.
+
 ## 14.22
 - Przeglądy serwisowe na komputerze (uwaga właściciela 04.11.2026, przegląd ze zgłoszenia QR): kliknięcie w pole daty lub godziny nic nie robiło. Pole systemowe jest przezroczyste nad czytelnym tekstem (układ dla Safari na iPhonie), a Chrome/Edge otwierają kalendarz tylko z niewidocznej tu ikonki. Teraz przy myszce kliknięcie w całe pole otwiera kalendarz/zegar (`showPicker`); na ekranie dotykowym bez zmian. Błąd istniał od początku zakładki „Przeglądy serwisowe” na komputerze.
 - Telefon klienta przy nazwie (klient, umówiony przegląd, szczegóły wizyty), jako numer do kliknięcia.
