@@ -88,6 +88,16 @@ function IconRequestModern() {
   );
 }
 
+// 14.28: próby szczelności (manometr).
+function IconGaugeModern() {
+  return (
+    <ShellIcon>
+      <circle cx="12" cy="12.6" r="7.4" />
+      <path d="M12 12.6 15.4 9.2M8.2 15.9h7.6" />
+    </ShellIcon>
+  );
+}
+
 function IconSlidersModern() {
   return (
     <ShellIcon>
@@ -117,6 +127,7 @@ const sidebarSections = [
       { key: 'orders', label: 'Montaże', icon: IconBriefcaseModern, target: 'jobs' },
       { key: 'calendar', label: 'Kalendarz', icon: IconCalendarShell, target: 'calendar' },
       { key: 'devices', label: 'Urządzenia', icon: IconDeviceModern, target: 'devices' },
+      { key: 'leaktests', label: 'Próby szczelności', icon: IconGaugeModern, target: 'leaktests' },
       { key: 'fuel', label: 'Tankowania', icon: IconFuel, target: 'fuel' },
       { key: 'contractors', label: 'Kontrahenci', icon: IconContactsModern, target: 'contractors' },
     ],
@@ -148,6 +159,7 @@ function getSidebarActiveState(item, activeModule, activeNavKey) {
   if (item.key === 'orders') return activeModule === 'jobs' && (!activeNavKey || activeNavKey === 'orders');
   if (item.key === 'diagnostics') return activeModule === 'diagnostics';
   if (item.key === 'requests') return activeModule === 'requests';
+  if (item.key === 'leaktests') return activeModule === 'leaktests';
   return false;
 }
 

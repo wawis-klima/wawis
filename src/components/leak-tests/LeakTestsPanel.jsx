@@ -1,0 +1,161 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import './leak-tests.css';
+import {
+  LEAK_TEST_RESULTS, countFilledLeakTests, defaultLeakTestDate, loadLeakTests, saveLeakTest, validateLeakTestDraft,
+} from '../../modules/leak-tests.js';
+import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-protocol-pdf.js';
+
+// WAWIS 14.28 — zakładka „Próby szczelności” (komputer, administrator). Zakończone montaże z instalatorem;
+// administrator przepisuje z podpisanego protokołu papierowego datę badania, temperaturę i wynik, potem PDF.
+
+function formatDate(value) {
+  const date = new Date(value || '');
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+}
+
+function draftFromRow(row) {
+  return {
+    testDate: row.test_date || defaultLeakTestDate(row.completed_at),
+    temperature: row.temperature_c != null && row.test_date ? String(Number(row.temperature_c)).replace('.', ',') : '',
+    result: row.result || 'pozytywny',
+  };
+}
+
+function rowToJob(row) {
+  return {
+    id: row.job_id, client: row.client, city: row.city, street: row.street,
+    device_model: row.device_model, completed_at: row.completed_at, completed_by: row.completed_by, status: 'Zakończone',
+  };
+}
+
+export default function LeakTestsPanel({ supabase }) {
+  const [rows, setRows] = useState([]);
+  const [drafts, setDrafts] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [rowState, setRowState] = useState({});
+  const [filter, setFilter] = useState('todo');
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const list = await loadLeakTests({ supabase });
+      setRows(list);
+      setDrafts(Object.fromEntries(list.map((row) => [row.job_id, draftFromRow(row)])));
+    } catch (loadError) {
+      setError(loadError?.message || 'Nie udało się wczytać listy.');
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
+
+  useEffect(() => { void reload(); }, [reload]);
+
+  const filled = countFilledLeakTests(rows);
+  const visible = useMemo(
+    () => rows.filter((row) => (filter === 'todo' ? !row.test_date : filter === 'done' ? Boolean(row.test_date) : true)),
+    [rows, filter],
+  );
+
+  function setDraft(jobId, patch) {
+    setDrafts((prev) => ({ ...prev, [jobId]: { ...prev[jobId], ...patch } }));
+    setRowState((prev) => ({ ...prev, [jobId]: { ...prev[jobId], error: '', saved: false } }));
+  }
+
+  async function handleSave(row) {
+    const draft = drafts[row.job_id] || draftFromRow(row);
+    const checked = validateLeakTestDraft(draft);
+    if (!checked.ok) {
+      setRowState((prev) => ({ ...prev, [row.job_id]: { error: checked.error } }));
+      return;
+    }
+    setRowState((prev) => ({ ...prev, [row.job_id]: { busy: true } }));
+    try {
+      const saved = await saveLeakTest({ supabase, jobId: row.job_id, ...draft });
+      setRows((prev) => prev.map((item) => (item.job_id === row.job_id
+        ? { ...item, test_date: saved.testDate, temperature_c: saved.temperature, result: saved.result }
+        : item)));
+      setRowState((prev) => ({ ...prev, [row.job_id]: { saved: true } }));
+    } catch (saveError) {
+      setRowState((prev) => ({ ...prev, [row.job_id]: { error: saveError?.message || 'Nie udało się zapisać.' } }));
+    }
+  }
+
+  function handlePdf(row) {
+    const record = row.test_date ? { test_date: row.test_date, temperature_c: row.temperature_c, result: row.result } : null;
+    openLeakTestProtocolPdf({
+      job: rowToJob(row),
+      profiles: row.completed_by ? [{ id: row.completed_by, full_name: row.completed_by_name }] : [],
+      record,
+    }).catch((pdfError) => setRowState((prev) => ({ ...prev, [row.job_id]: { error: pdfError?.message || 'Nie udało się przygotować PDF.' } })));
+  }
+
+  return (
+    <section className="card leakTestsPanel" data-testid="leak-tests-panel">
+      <div className="leakTestsHead">
+        <div>
+          <h2>Próby szczelności</h2>
+          <p className="leakTestsLead">
+            Zakończone montaże z aplikacji. Przepisz z podpisanego protokołu datę badania, temperaturę i wynik — PDF wypełni się tymi danymi.
+          </p>
+        </div>
+        <div className="leakTestsTools">
+          <span className="leakTestsCount" data-testid="leak-tests-count">Uzupełniono {filled} z {rows.length}</span>
+          <button type="button" className="btn" onClick={() => void reload()} disabled={loading}>Odśwież</button>
+        </div>
+      </div>
+      <div className="leakTestsFilter" role="tablist" aria-label="Filtr">
+        {[['todo', 'Do uzupełnienia'], ['done', 'Uzupełnione'], ['all', 'Wszystkie']].map(([key, label]) => (
+          <button key={key} type="button" role="tab" aria-selected={filter === key}
+            className={`leakTestsFilterTab${filter === key ? ' active' : ''}`} onClick={() => setFilter(key)}>{label}</button>
+        ))}
+      </div>
+      {error ? <p className="leakTestsError" role="alert">{error}</p> : null}
+      {loading ? <p className="leakTestsEmpty">Wczytuję…</p> : null}
+      {!loading && !error && !visible.length ? (
+        <p className="leakTestsEmpty">{filter === 'todo' ? 'Wszystkie montaże uzupełnione.' : 'Brak montaży.'}</p>
+      ) : null}
+      <div className="leakTestsList">
+        {visible.map((row) => {
+          const draft = drafts[row.job_id] || draftFromRow(row);
+          const state = rowState[row.job_id] || {};
+          return (
+            <div key={row.job_id} className={`leakTestRow${row.test_date ? ' done' : ''}`} data-testid="leak-test-row">
+              <div className="leakTestInfo">
+                <strong>{row.client || 'Klient'}</strong>
+                <span>{[row.city, row.street].filter(Boolean).join(', ') || '—'}</span>
+                <span className="leakTestMeta">{row.device_model ? String(row.device_model).split('\n')[0] : 'Urządzenie —'}</span>
+                <span className="leakTestMeta">Zakończony {formatDate(row.completed_at)} · {row.completed_by_name || '—'}</span>
+              </div>
+              <label className="leakTestField">
+                <span>Data badania</span>
+                <input type="date" className="input" value={draft.testDate} onChange={(e) => setDraft(row.job_id, { testDate: e.target.value })} />
+              </label>
+              <label className="leakTestField small">
+                <span>Temperatura °C</span>
+                <input type="text" inputMode="decimal" className="input" placeholder="np. 18" value={draft.temperature}
+                  onChange={(e) => setDraft(row.job_id, { temperature: e.target.value })} />
+              </label>
+              <label className="leakTestField small">
+                <span>Wynik</span>
+                <select className="input" value={draft.result} onChange={(e) => setDraft(row.job_id, { result: e.target.value })}>
+                  {LEAK_TEST_RESULTS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </label>
+              <div className="leakTestActions">
+                <button type="button" className="btn primary" disabled={state.busy} onClick={() => void handleSave(row)}>
+                  {state.busy ? 'Zapisuję…' : 'Zapisz'}
+                </button>
+                <button type="button" className="btn" onClick={() => handlePdf(row)}>PDF</button>
+              </div>
+              {state.error ? <p className="leakTestRowError" role="alert">{state.error}</p> : null}
+              {state.saved ? <p className="leakTestRowSaved" role="status">Zapisano</p> : null}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}

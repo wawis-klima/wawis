@@ -53,7 +53,7 @@ jobs:
 
       - name: Verify WebKit E2E evidence (fail-closed)
         if: always()
-        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 26  # 14.02: +1 karty zdjęć serwisu; 14.04: +1 zakładki serwisu; 14.08: +2 naklejki QR; 14.09: +1 naklejka w kreatorze; 14.24: +2 naklejka wymagana do zakończenia
+        run: node scripts/verify-built-photo-queue-e2e.cjs playwright-report-webkit/results.json 28  # 14.28: +2 protokół szczelności; 14.02: +1 karty zdjęć serwisu; 14.04: +1 zakładki serwisu; 14.08: +2 naklejki QR; 14.09: +1 naklejka w kreatorze; 14.24: +2 naklejka wymagana do zakończenia
 
       - name: Upload report
         if: always()

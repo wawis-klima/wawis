@@ -8856,3 +8856,13 @@ img.previewImage{
   .smsHistoryErrorWide{grid-column:1 / -1}
 }
 
+
+/* 14.28: protokół z próby szczelności (PDF) w karcie zakończonego montażu. */
+.leakTestProtocolBtn{
+  width:100%;
+  min-height:40px;
+  margin-top:8px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:700;
+}

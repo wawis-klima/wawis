@@ -518,6 +518,33 @@ export function createMockSupabaseClient() {
       return new MockQueryBuilder(store, tableName);
     },
     async rpc(name, payload = {}) {
+      // 14.28: próby szczelności (tylko dane fikcyjne).
+      if (name === 'leak_tests_list_v1428' || name === 'leak_test_get_v1428' || name === 'leak_test_save_v1428') {
+        if (!Array.isArray(store.leak_test_records)) store.leak_test_records = [];
+        if (name === 'leak_test_save_v1428') {
+          const job = (store.jobs || []).find((item) => String(item.id) === String(payload.p_job_id));
+          if (!job || job.status !== 'Zakończone') return { data: false, error: null };
+          const row = { job_id: job.id, test_date: payload.p_test_date, temperature_c: payload.p_temperature_c, result: payload.p_result, updated_at: nowIso() };
+          store.leak_test_records = [...store.leak_test_records.filter((item) => item.job_id !== job.id), row];
+          return { data: true, error: null };
+        }
+        if (name === 'leak_test_get_v1428') {
+          const row = store.leak_test_records.find((item) => String(item.job_id) === String(payload.p_job_id));
+          return { data: row ? [{ test_date: row.test_date, temperature_c: row.temperature_c, result: row.result }] : [], error: null };
+        }
+        const rows = (store.jobs || [])
+          .filter((job) => job.status === 'Zakończone' && job.completed_by)
+          .map((job) => {
+            const record = store.leak_test_records.find((item) => item.job_id === job.id) || {};
+            const person = (store.profiles || []).find((item) => item.id === job.completed_by) || {};
+            return {
+              job_id: job.id, client: job.client, city: job.city, street: job.street, device_model: job.device_model,
+              completed_at: job.completed_at, completed_by: job.completed_by, completed_by_name: person.full_name || null,
+              test_date: record.test_date || null, temperature_c: record.temperature_c ?? null, result: record.result || null, updated_at: record.updated_at || null,
+            };
+          });
+        return { data: rows, error: null };
+      }
       if (name === 'service_requests_list_v1420') {
         const rows = (store.service_requests || []).map((request) => {
           const device = (store.devices || []).find((item) => item.id === request.device_id) || null;

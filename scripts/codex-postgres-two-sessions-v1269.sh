@@ -310,3 +310,6 @@ bash "$ROOT/scripts/qr-service-visit-sql-v1423.sh"
 
 # WAWIS 14.24: naklejka QR wymagana do zakończenia montażu przez pracownika (prawdziwy wyzwalacz) na jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/job-completion-qr-sql-v1424.sh"
+
+# WAWIS 14.28: dane prób szczelności (tylko administrator) na jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/leak-tests-sql-v1428.sh"

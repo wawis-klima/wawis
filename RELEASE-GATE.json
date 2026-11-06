@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.26",
+  "version": "14.28",
   "scope": "full",
-  "release_branch": "release/v14.26",
+  "release_branch": "release/v14.28",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Frontend: kreator urządzeń — naklejka QR wymagana przy „Dalej do podsumowania”; bez zmian bazy."
+    "notes": "Próby szczelności: nowa tabela i funkcje administratora (migracja 20261106130000, uruchamia właściciel), zakładka i PDF."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.26",
+    "source_branch": "release/v14.28",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.26.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.28.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.26: naklejka QR wymagana w kreatorze urządzeń",
-    "release_ci": "WAWIS PR checks + smoke-qr-required-v1424 + E2E mobile-serial-scanner, qr-stickers-wizard-v1409",
-    "postdeploy": "Vercel READY/14.26."
+    "code": "14.28: próby szczelności — zakładka i PDF",
+    "release_ci": "WAWIS PR checks + leak-tests-sql-v1428 (PostgreSQL 16) + smoke-leak-tests-v1428 + E2E leak-tests-panel-v1428, leak-test-protocol-v1428",
+    "postdeploy": "Vercel READY/14.28."
   }
 }

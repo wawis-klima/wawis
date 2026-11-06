@@ -1,5 +1,6 @@
-# RELEASE RESULT — WAWIS 14.26
+# RELEASE RESULT — WAWIS 14.28
 
 ## Zakres
-- Kreator urządzeń (iPhone): naklejka QR wymagana; „Dalej do podsumowania” zatrzymuje przy komplecie tabliczek bez naklejki.
-- Bez zmian bazy.
+- Zakładka „Próby szczelności” (komputer, administrator): dane z protokołów papierowych dla zakończonych montaży z aplikacji, PDF.
+- Przycisk „Protokół szczelności (PDF)” w karcie zakończonego montażu (administrator).
+- Migracja `20261106130000_leak_tests_v1428.sql` (uruchamia właściciel).
