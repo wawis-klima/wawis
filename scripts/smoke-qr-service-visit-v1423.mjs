@@ -35,12 +35,12 @@ assert.match(panel, /<QrStickerScanner open=\{Boolean\(qrTarget\)\}/);
 assert.doesNotMatch(panel, /qr_sticker_unassign|unassignQrSticker|replace: ?true/, 'bez wymiany i zwalniania na ekranie przeglądu');
 
 // 4. Migracja: każdy pracownik, bez wymiany, bez zmian tabel.
-const sql = read('supabase/migrations/20261106090000_qr_sticker_service_visit_v1423.sql');
+const sql = read('supabase/migrations/20261106090000_qr_sticker_przeglad_v1423.sql');
 assert.match(sql, /if not public\.current_user_is_staff\(\) then/);
 assert.doesNotMatch(sql, /primary_technician_id|additional_technician_ids/, 'nie tylko przydzielony pracownik');
 assert.match(sql, /return private\.qr_sticker_assign\(p_code, v_device, false\);/);
 assert.doesNotMatch(sql, /\b(alter|drop|delete|update|insert|truncate)\b/i, 'tylko nowe funkcje');
-assert.match(read('supabase/rebuild/manifest-v1089.json'), /20261106090000_qr_sticker_service_visit_v1423\.sql/);
+assert.match(read('supabase/rebuild/manifest-v1089.json'), /20261106090000_qr_sticker_przeglad_v1423\.sql/);
 assert.match(read('scripts/codex-postgres-two-sessions-v1269.sh'), /bash "\$ROOT\/scripts\/qr-service-visit-sql-v1423\.sh"/, 'test SQL w CI');
 
 console.log('PASS WAWIS 14.23 — naklejka QR podczas przeglądu: każdy pracownik, tylko wolna naklejka, bez wymiany.');

@@ -31,6 +31,6 @@ pg < "$ROOT/supabase/migrations/20261102160000_qr_stickers_v1408.sql" >/dev/null
 # Migracja musi dać się wykonać ponownie (właściciel może wkleić ją dwa razy).
 pg < "$ROOT/supabase/migrations/20261102160000_qr_stickers_v1408.sql" >/dev/null
 pg < "$ROOT/scripts/sql/qr-service-visit-scaffold-v1423.sql"
-pg < "$ROOT/supabase/migrations/20261106090000_qr_sticker_service_visit_v1423.sql" >/dev/null
-pg < "$ROOT/supabase/migrations/20261106090000_qr_sticker_service_visit_v1423.sql" >/dev/null
+pg < "$ROOT/supabase/migrations/20261106090000_qr_sticker_przeglad_v1423.sql" >/dev/null
+pg < "$ROOT/supabase/migrations/20261106090000_qr_sticker_przeglad_v1423.sql" >/dev/null
 pg < "$ROOT/scripts/sql/qr-service-visit-test-v1423.sql"
