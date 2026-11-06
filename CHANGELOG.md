@@ -1,3 +1,6 @@
+## 14.27
+- W PRZYGOTOWANIU (niewdrożone, czeka na decyzję właściciela): protokół z próby szczelności PDF w karcie zakończonego montażu (administrator, telefon i komputer) — wzór firmowy, urządzenie, adres, osoba kończąca montaż; pola temperatury, daty i wyniku do wypełnienia; bez podpisów. Testy: `smoke-leak-test-protocol-v1427.mjs`, E2E `leak-test-protocol-v1427.spec.js`.
+
 ## 14.26
 - Decyzja właściciela 06.11.2026 (zdjęcie 08:31, kreator „Dodaj urządzenie”): naklejka QR w kreatorze urządzeń jest **wymagana** (dotąd „opcjonalnie”). Gdy tabliczki urządzenia są kompletne, a naklejki nie ma, „Dalej do podsumowania” zatrzymuje z komunikatem „Zeskanuj naklejkę QR…” i czerwoną kartą naklejki. Przy niepełnych tabliczkach przejście dalej bez zmian (zapis częściowy). Wymóg działa dopiero po odczycie naklejek z bazy — bez odczytu (np. brak internetu) kreator nie blokuje na ślepo; zakończenie montażu i tak pilnują 14.24/14.25.
 - Testy: `smoke-qr-required-v1424.mjs` (punkt 8), `smoke-qr-stickers-v1409.mjs` (nowa decyzja), E2E `mobile-serial-scanner` (zatrzymanie i skan w kreatorze), `qr-stickers-wizard-v1409` („wymagana”).
