@@ -91,5 +91,12 @@ test('14.31: protokół szczelności przy urządzeniach, numery seryjne i drugi 
   const popupPromise = page.waitForEvent('popup');
   await button.click();
   const popup = await popupPromise;
-  await expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/);
+  // Jak w 14.28: przeglądarka z podglądem PDF pokazuje go w karcie (blob:), bez podglądu (headless) pobiera plik.
+  const downloadPromise = popup.waitForEvent('download', { timeout: 20_000 }).catch(() => null);
+  const outcome = await Promise.race([
+    expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
+    downloadPromise.then((download) => (download ? 'download' : null)),
+  ]);
+  expect(outcome || (await downloadPromise ? 'download' : null), 'PDF otwarty w karcie albo pobrany').toBeTruthy();
+  await expect(button).toHaveText('Protokół szczelności (PDF)');
 });
