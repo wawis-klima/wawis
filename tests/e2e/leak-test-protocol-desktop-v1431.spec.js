@@ -69,16 +69,17 @@ test('14.31: protokół szczelności przy urządzeniach, numery seryjne i drugi 
       const start = match.index + match[0].length;
       const end = text.indexOf('endstream', start);
       if (end < 0) continue;
-      // Rozpakowanie z tolerancją końcówki (znak nowej linii przed „endstream” bywa traktowany jako nadmiarowy).
-      const reader = new Blob([bytes.slice(start, end)]).stream().pipeThrough(new DecompressionStream('deflate')).getReader();
+      // Znak nowej linii przed „endstream” nie należy do danych — bez obcięcia rozpakowanie kończy się błędem.
+      let stop = end;
+      while (stop > start && (bytes[stop - 1] === 10 || bytes[stop - 1] === 13)) stop -= 1;
       let inflated = '';
-      try {
-        for (;;) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          inflated += new TextDecoder('latin1').decode(value);
-        }
-      } catch { /* koniec danych albo strumień nieskompresowany (obraz) */ }
+      // Ostatni bajt danych też może być 0x0A/0x0D — próbujemy kolejne długości aż do „endstream”.
+      for (let len = stop; len <= end && !inflated; len += 1) {
+        try {
+          const out = new Blob([bytes.slice(start, len)]).stream().pipeThrough(new DecompressionStream('deflate'));
+          inflated = new TextDecoder('latin1').decode(await new Response(out).arrayBuffer());
+        } catch { /* nie ta długość albo strumień nieskompresowany (np. obraz) */ }
+      }
       count += (inflated.match(/\/\S+ Do\b/g) || []).length;
     }
     return { count, size: blob.size };
