@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import './leak-test-sign.css';
+// Styl (leak-test-sign.css) ładuje src/main.jsx — import CSS tutaj nie dotarłby do telefonu (14.30).
 import { loadOwnPendingLeakTests, signOwnLeakTests } from '../../../modules/leak-tests.js';
 
 // WAWIS 14.29 — instalator podpisuje SWOJE protokoły z próby szczelności (dane przepisał administrator

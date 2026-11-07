@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## LEAK-SIGN-CSS-1430 — okno podpisu protokołów szczelności bez stylów na telefonie (07.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| LEAK-1430-CSS | FIXED-UNVERIFIED | Zgłoszenie właściciela (konto Michała, produkcja 14.29): okno bez stylów, brak pola podpisu. Mechanizm potwierdzony w produkcyjnym `index-*.js`: gałąź telefonu dostaje listę zależności App komputera, `App-*.css` telefonu nie jest wczytywany. Test `smoke-mobile-static-css-v1430` (odtwarza mechanizm, nie przechodził przed poprawką) + E2E nakładki z hit-testem na zbudowanej aplikacji. |
+| LEAK-1430-IPHONE | PENDING-IPHONE | Otwarcie okna i podpis palcem na fizycznym iPhonie po wdrożeniu. |
+
 ## LEAK-SIGN-1429 — podpisy instalatorów na protokołach szczelności (06.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

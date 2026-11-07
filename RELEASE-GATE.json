@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.29",
+  "version": "14.30",
   "scope": "full",
-  "release_branch": "release/v14.29",
+  "release_branch": "release/v14.30",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Podpisy instalatorów na protokołach szczelności: migracja 20261106140000 (uruchamia właściciel), baner w aplikacji, podpis na PDF."
+    "notes": "Naprawa okna podpisu protokołów szczelności na telefonie (CSS ładowany w main.jsx). Bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.29",
+    "source_branch": "release/v14.30",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.29.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.30.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.29: podpisy instalatorów na protokołach szczelności",
-    "release_ci": "WAWIS PR checks + leak-test-signatures-sql-v1429 (PostgreSQL 16) + smoke-leak-test-signatures-v1429 + E2E leak-test-sign-v1429",
-    "postdeploy": "Vercel READY/14.29."
+    "code": "14.30: style okna podpisu protokołów szczelności na telefonie",
+    "release_ci": "WAWIS PR checks + smoke-mobile-static-css-v1430 + E2E leak-test-sign-v1429 (dev i built)",
+    "postdeploy": "Vercel READY/14.30."
   }
 }
