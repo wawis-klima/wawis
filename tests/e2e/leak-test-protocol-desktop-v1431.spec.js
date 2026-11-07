@@ -91,17 +91,20 @@ test('14.31: protokół szczelności przy urządzeniach, numery seryjne i drugi 
   expect(images.count).toBe(2);
   expect(images.size).toBeGreaterThan(10_000);
 
-  // Kliknięcie otwiera PDF w nowej karcie.
-  const popupPromise = page.waitForEvent('popup');
+  // Kliknięcie otwiera PDF w nowej karcie. Okno podstawione (headless Chromium bywa niestabilny przy blob: w nowej karcie;
+  // prawdziwe otwarcie karty sprawdzają testy 14.28) — sprawdzamy, że aplikacja kieruje kartę na gotowy plik PDF.
+  await page.evaluate(() => {
+    window.__pdfTab = { url: '', closed: false };
+    window.open = () => ({
+      document: { title: '', body: { innerHTML: '' } },
+      location: { replace: (url) => { window.__pdfTab.url = url; } },
+      close: () => { window.__pdfTab.closed = true; },
+    });
+  });
   await button.click();
-  const popup = await popupPromise;
-  // Jak w 14.28: przeglądarka z podglądem PDF pokazuje go w karcie (blob:), bez podglądu (headless) pobiera plik.
-  const downloadPromise = popup.waitForEvent('download', { timeout: 20_000 }).catch(() => null);
-  const outcome = await Promise.race([
-    expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
-    downloadPromise.then((download) => (download ? 'download' : null)),
-  ]);
-  expect(outcome || (await downloadPromise ? 'download' : null),
-    `PDF otwarty w karcie albo pobrany — popup=${popup.isClosed() ? 'zamknięty' : popup.url()} | ${diag.slice(-6).join(' || ') || '-'}`).toBeTruthy();
+  await expect.poll(() => page.evaluate(() => window.__pdfTab.url), { timeout: 30_000 }).toMatch(/^blob:/);
+  const head = await page.evaluate(async () => new TextDecoder().decode((await (await fetch(window.__pdfTab.url)).arrayBuffer()).slice(0, 5)));
+  expect(head, diag.slice(-6).join(' || ') || '-').toBe('%PDF-');
+  expect(await page.evaluate(() => window.__pdfTab.closed)).toBe(false);
   await expect(button).toHaveText('Protokół szczelności (PDF)');
 });

@@ -98,3 +98,25 @@ export async function signOwnLeakTests({ supabase, jobIds = [], imagePng = null 
   }
   return Number(data) || 0;
 }
+
+// 14.33: wzór podpisu pracownika (Diagnostyka → „Wzór podpisu”). Zapisany wzór automatycznie podpisuje jego
+// protokoły z próby szczelności (data podpisu = data badania). Wzór w bazie, nie w telefonie.
+export async function loadOwnSignaturePattern({ supabase }) {
+  const { data, error } = await supabase.rpc('staff_signature_get_own_v1433');
+  if (error) {
+    if (missingFunction(error, 'staff_signature_get_own_v1433')) throw new Error('Wzór podpisu wymaga aktualizacji bazy (14.33).');
+    throw rpcError(error);
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  return row?.image_png ? { imagePng: row.image_png, createdAt: row.created_at || null } : null;
+}
+
+export async function saveOwnSignaturePattern({ supabase, imagePng }) {
+  if (!/^data:image\/png;base64,/.test(String(imagePng || ''))) throw new Error('Podpis nie został zapisany jako obraz.');
+  const { data, error } = await supabase.rpc('staff_signature_save_own_v1433', { p_image_png: imagePng });
+  if (error) {
+    if (missingFunction(error, 'staff_signature_save_own_v1433')) throw new Error('Wzór podpisu wymaga aktualizacji bazy (14.33).');
+    throw rpcError(error);
+  }
+  return Number(data) || 0;
+}

@@ -35,7 +35,8 @@ export default defineConfig({
     'qr-stickers-wizard-v1409.spec.js',
     'job-qr-required-v1424.spec.js',
     'leak-test-protocol-v1428.spec.js',
-    'leak-test-sign-v1429.spec.js',
+    // 14.33: baner do podpisu usunięty — wzór podpisu w Diagnostyce (palec na iPhonie, WebKit).
+    'signature-pattern-v1433.spec.js',
   ],
   timeout: 240_000,
   expect: { timeout: 15_000 },

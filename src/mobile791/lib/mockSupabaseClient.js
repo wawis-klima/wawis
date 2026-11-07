@@ -1001,13 +1001,28 @@ export function createMockSupabaseClient() {
       }
       if (String(name).startsWith('qr_sticker')) return mockQrStickerRpc(name, payload);
       // 14.28/14.29: dane prób szczelności i podpisy instalatorów (dane fikcyjne).
-      if (name === 'leak_test_get_v1428' || name === 'leak_test_pending_own_v1429' || name === 'leak_test_sign_own_v1429') {
+      if (name === 'leak_test_get_v1428' || name === 'leak_test_pending_own_v1429' || name === 'leak_test_sign_own_v1429'
+        || name === 'staff_signature_get_own_v1433' || name === 'staff_signature_save_own_v1433') {
         const records = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
         store.leak_test_signatures = Array.isArray(store.leak_test_signatures) ? store.leak_test_signatures : [];
         const uid = String(restoreSession(store.users)?.user?.id || '');
         // 14.32: instalator z aplikacji albo przypisany przez administratora (leak_test_records.installer_id).
         const installerOf = (job) => String(job.completed_by || records.find((row) => String(row.job_id) === String(job.id))?.installer_id || '');
         const ownJob = (jobId) => store.jobs.find((job) => String(job.id) === String(jobId) && job.status === 'Zakończone' && installerOf(job) === uid);
+        // 14.33: wzór podpisu pracownika i automatyczny podpis jego protokołów (data podpisu = data badania).
+        if (name === 'staff_signature_get_own_v1433') {
+          const own = [...store.leak_test_signatures].reverse().find((item) => item.profile_id === uid);
+          return { data: own ? [{ image_png: own.image_png, created_at: own.created_at || null }] : [], error: null };
+        }
+        if (name === 'staff_signature_save_own_v1433') {
+          if (!/^data:image\/png;base64,/.test(String(payload?.p_image_png || ''))) return { data: null, error: { message: 'check constraint image_png (23514)' } };
+          const signature = { id: `mock-sig-${Date.now()}`, profile_id: uid, confirmed_name: 'Pracownik', image_png: payload.p_image_png, created_at: new Date().toISOString() };
+          store.leak_test_signatures.push(signature);
+          const toSign = records.filter((row) => !row.signature_id && row.test_date && ownJob(row.job_id));
+          toSign.forEach((row) => { row.signature_id = signature.id; row.signed_at = `${row.test_date}T11:00:00.000Z`; });
+          persistSharedStore({ table: 'leak_test_records', event: 'UPDATE', newRows: [], oldRows: [] });
+          return { data: toSign.length, error: null };
+        }
         if (name === 'leak_test_get_v1428') {
           const row = records.find((item) => String(item.job_id) === String(payload?.p_job_id));
           const sig = row ? store.leak_test_signatures.find((item) => item.id === row.signature_id) : null;

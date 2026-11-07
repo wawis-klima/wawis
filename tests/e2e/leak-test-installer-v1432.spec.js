@@ -1,5 +1,5 @@
-import { devices, expect, test } from '@playwright/test';
-import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
+import { expect, test } from '@playwright/test';
+import { ADMIN, login } from './mock-helpers.js';
 
 // WAWIS 14.32 — próby szczelności dla starych montaży bez instalatora w aplikacji (decyzja właściciela 07.11.2026):
 // administrator wybiera instalatora (montaż bez zmian), protokół trafia do podpisu w aplikacji tego instalatora.
@@ -9,6 +9,17 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
   test.use({ viewport: { width: 1440, height: 1000 } });
 
   test('stary montaż: wybór instalatora wymagany, zapis, nazwisko w PDF', async ({ page }) => {
+    // 14.33: atrapa Open-Meteo — średnia dnia 7,4 °C → podpowiedź „7”.
+    const weatherCalls = [];
+    await page.route(/open-meteo\.com/, async (route) => {
+      const url = route.request().url();
+      weatherCalls.push(url);
+      if (url.includes('geocoding-api')) {
+        await route.fulfill({ json: { results: [{ name: 'Gdańsk', latitude: 54.35, longitude: 18.65 }] } });
+      } else {
+        await route.fulfill({ json: { daily: { time: ['x'], temperature_2m_mean: [7.4] } } });
+      }
+    });
     await login(page, ADMIN);
     // Uchwyt bazy testowej komputera — moduły telefonu ładowane później podmieniają window.__KLIMA_MOCK_SUPABASE__.
     await page.evaluate(() => { window.__desktopMock = window.__KLIMA_MOCK_SUPABASE__; });
@@ -25,6 +36,16 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
     await expect(oldRow).toContainText('bez instalatora w aplikacji');
     await expect(appRow.getByTestId('leak-test-installer')).toHaveCount(0);
     await expect(oldRow.getByLabel('Data badania')).toHaveValue('2026-04-15');
+    // Podpowiedź temperatury: średnia dnia badania dla miejscowości montażu.
+    await expect(oldRow.getByLabel('Temperatura °C')).toHaveValue('7');
+    await expect(oldRow.getByTestId('leak-test-temp-hint')).toHaveText('Średnia dnia · Gdańsk');
+    expect(weatherCalls.some((url) => /archive-api\.open-meteo\.com\/v1\/archive\?.*start_date=2026-04-15.*daily=temperature_2m_mean/.test(url))).toBe(true);
+    // Zmiana daty: nowa podpowiedź; ręczny wpis zostaje.
+    await oldRow.getByLabel('Data badania').fill('2026-04-16');
+    await expect(oldRow.getByLabel('Temperatura °C')).toHaveValue('7');
+    expect(weatherCalls.some((url) => /start_date=2026-04-16/.test(url))).toBe(true);
+    await oldRow.getByLabel('Data badania').fill('2026-04-15');
+    await expect(oldRow.getByLabel('Temperatura °C')).toHaveValue('7');
 
     // Bez instalatora — nie zapisze.
     await oldRow.getByLabel('Temperatura °C').fill('16');
@@ -38,7 +59,7 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
     await expect(oldRow.getByRole('status')).toHaveText('Zapisano');
     await expect(panel.getByTestId('leak-tests-count')).toHaveText('Uzupełniono 1 z 2');
     await expect(oldRow).toContainText('przypisany: Pracownik Testowy');
-    await expect(oldRow.getByTestId('leak-test-sign-status')).toContainText('Czeka na podpis instalatora');
+    await expect(oldRow.getByTestId('leak-test-sign-status')).toContainText('Czeka na wzór podpisu instalatora');
 
     // Baza (mock): wpis z instalatorem, montaż bez zmian; dane PDF z nazwiskiem przypisanego instalatora.
     const check = await page.evaluate(async () => {
@@ -54,39 +75,4 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
     expect(check).toEqual({ installerOk: true, jobUnchanged: true, performedBy: 'Pracownik Testowy', responsible: 'Pracownik Testowy' });
   });
 });
-
-test.describe('14.32: instalator w próbach szczelności — telefon', () => {
-  const { defaultBrowserType: _unused, ...iphone14 } = devices['iPhone 14'];
-  test.use(iphone14);
-
-  test('@mobile 14.32: przypisany instalator widzi stary protokół do podpisu i go podpisuje', async ({ page }) => {
-    await resetMockSupabase(page);
-    await page.evaluate(() => {
-      const key = 'klima-mock-supabase-store-v3';
-      const store = JSON.parse(localStorage.getItem(key) || '{}');
-      const live = window.__KLIMA_MOCK_SUPABASE__.getStore();
-      const jobs = Array.isArray(store.jobs) && store.jobs.length ? store.jobs : live.jobs;
-      const profiles = Array.isArray(store.profiles) && store.profiles.length ? store.profiles : live.profiles;
-      const worker = profiles.find((item) => String(item.role) === 'Pracownik');
-      const base = jobs.find((job) => job.id === 'mock-job-003');
-      store.jobs = [...jobs, { ...base, id: 'mock-job-old', client: 'Stary Klient Kwiecień', completed_at: null, completed_by: null }];
-      store.profiles = profiles;
-      store.leak_test_records = [{ job_id: 'mock-job-old', test_date: '2026-04-15', temperature_c: 16, result: 'pozytywny', installer_id: worker.id, signature_id: null, signed_at: null }];
-      localStorage.setItem(key, JSON.stringify({ ...live, ...store }));
-    });
-    await loginWithoutReset(page, WORKER);
-    const banner = page.getByTestId('leak-sign-banner');
-    await expect(banner).toContainText('Protokoły szczelności do podpisu: 1');
-    await banner.getByRole('button', { name: 'Podpisz' }).click();
-    const sheet = page.getByRole('dialog', { name: 'Podpis protokołów szczelności' });
-    await expect(sheet).toContainText('Stary Klient Kwiecień');
-    const canvas = sheet.getByTestId('leak-sign-canvas');
-    const box = await canvas.boundingBox();
-    const at = (dx, dy) => ({ pointerId: 7, pointerType: 'touch', isPrimary: true, clientX: box.x + dx, clientY: box.y + dy, buttons: 1 });
-    await canvas.dispatchEvent('pointerdown', at(30, 100));
-    for (const [dx, dy] of [[60, 60], [110, 110], [170, 70], [230, 100]]) await canvas.dispatchEvent('pointermove', at(dx, dy));
-    await canvas.dispatchEvent('pointerup', at(230, 100));
-    await sheet.getByRole('button', { name: 'Podpisz (1)' }).click();
-    await expect(banner).toContainText('Podpisano protokołów: 1.');
-  });
-});
+// 14.33: podpis na telefonie przez wzór z Diagnostyki — test: signature-pattern-v1433.spec.js.
