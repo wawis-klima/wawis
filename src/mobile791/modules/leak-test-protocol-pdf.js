@@ -71,7 +71,8 @@ export function deviceSerialText(device = {}) {
 /** Dane protokołu: jedna strona na urządzenie montażu (jak papierowy protokół „na klimatyzator”). */
 export function buildLeakTestProtocolData({ job = {}, profiles = [], record = null } = {}) {
   const person = (profiles || []).find((profile) => String(profile?.id || '') === String(job?.completed_by || ''));
-  const performedBy = clean(person?.full_name);
+  // 14.32: stary montaż bez instalatora w aplikacji — instalator przypisany przez administratora (z wpisu próby).
+  const performedBy = clean(person?.full_name) || clean(record?.installer_name);
   const devices = getJobDeviceRows(job);
   const pages = (devices.length ? devices : [null]).map((device, index) => ({
     deviceIndex: index + 1,

@@ -19,7 +19,8 @@ assert.equal(countFilledLeakTests([{ test_date: '2026-01-01' }, { test_date: nul
 const calls = [];
 const fake = (data, error = null) => ({ rpc: async (name, args) => { calls.push([name, args]); return { data, error }; } });
 await saveLeakTest({ supabase: fake(true), jobId: 'j1', testDate: '2026-05-02', temperature: '18', result: 'pozytywny' });
-assert.deepEqual(calls.at(-1), ['leak_test_save_v1428', { p_job_id: 'j1', p_test_date: '2026-05-02', p_temperature_c: 18, p_result: 'pozytywny' }]);
+// 14.32: zapis przez leak_test_save_v1432 (instalator tylko przy starych montażach; tu z aplikacji — null).
+assert.deepEqual(calls.at(-1), ['leak_test_save_v1432', { p_job_id: 'j1', p_test_date: '2026-05-02', p_temperature_c: 18, p_result: 'pozytywny', p_installer_id: null }]);
 await assert.rejects(saveLeakTest({ supabase: fake(false), jobId: 'j1', testDate: '2026-05-02', temperature: '18', result: 'pozytywny' }), /nie jest zakończony/);
 await assert.rejects(saveLeakTest({ supabase: fake(true), jobId: 'j1', testDate: '2026-05-02', temperature: '', result: 'pozytywny' }), /Temperatura/);
 assert.equal(await loadLeakTest({ supabase: fake([]), jobId: 'j1' }), null);

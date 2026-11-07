@@ -1005,11 +1005,16 @@ export function createMockSupabaseClient() {
         const records = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
         store.leak_test_signatures = Array.isArray(store.leak_test_signatures) ? store.leak_test_signatures : [];
         const uid = String(restoreSession(store.users)?.user?.id || '');
-        const ownJob = (jobId) => store.jobs.find((job) => String(job.id) === String(jobId) && job.status === 'Zakończone' && String(job.completed_by) === uid);
+        // 14.32: instalator z aplikacji albo przypisany przez administratora (leak_test_records.installer_id).
+        const installerOf = (job) => String(job.completed_by || records.find((row) => String(row.job_id) === String(job.id))?.installer_id || '');
+        const ownJob = (jobId) => store.jobs.find((job) => String(job.id) === String(jobId) && job.status === 'Zakończone' && installerOf(job) === uid);
         if (name === 'leak_test_get_v1428') {
           const row = records.find((item) => String(item.job_id) === String(payload?.p_job_id));
           const sig = row ? store.leak_test_signatures.find((item) => item.id === row.signature_id) : null;
-          return { data: row ? [{ ...row, signature_png: sig?.image_png || null, signed_name: sig?.confirmed_name || null }] : [], error: null };
+          const job = store.jobs.find((item) => String(item.id) === String(payload?.p_job_id));
+          const installerId = job ? installerOf(job) : '';
+          const installerName = (store.profiles || []).find((item) => String(item.id) === installerId)?.full_name || null;
+          return { data: row ? [{ ...row, signature_png: sig?.image_png || null, signed_name: sig?.confirmed_name || null, installer_id: installerId || null, installer_name: installerName }] : [], error: null };
         }
         const pending = records.filter((row) => !row.signature_id && ownJob(row.job_id));
         if (name === 'leak_test_pending_own_v1429') {

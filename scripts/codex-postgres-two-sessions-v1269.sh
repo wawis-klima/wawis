@@ -316,3 +316,6 @@ bash "$ROOT/scripts/leak-tests-sql-v1428.sh"
 
 # WAWIS 14.29: podpisy protokołów szczelności (tylko sam instalator) na jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/leak-test-signatures-sql-v1429.sh"
+
+# WAWIS 14.32: instalator przypisany do starych montaży w próbach szczelności na jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/leak-test-installer-sql-v1432.sh"

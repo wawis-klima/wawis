@@ -1,3 +1,9 @@
+## 14.32
+- Decyzja właściciela 07.11.2026: **próby szczelności także dla starszych montaży bez instalatora w aplikacji** (85 zakończonych montaży z 07.04–07.08.2026; aplikacja zapisuje instalatora od 10.08.2026). Zakładka „Próby szczelności” pokazuje wszystkie zakończone montaże; przy starszych jest pole „Instalator” — wybór wymagany do zapisu. Protokół trafia do podpisu w aplikacji wybranego instalatora (baner „Protokoły szczelności do podpisu”, jeden podpis na całą listę), a jego imię i nazwisko — do PDF.
+- Montaż (tabela `jobs`) bez zmian: instalator zapisany tylko przy wpisie próby (`leak_test_records.installer_id`). Zmiana instalatora po podpisie usuwa podpis (jak zmiana danych).
+- Baza: migracja `20261107100000_leak_test_installer_v1432.sql` — 1 kolumna, funkcje prób szczelności odtworzone, 2 nowe (`leak_test_installers_v1432`, `leak_test_save_v1432`). Uruchamia właściciel. Aplikacja działa także przed migracją (bez pola „Instalator”, jak w 14.31).
+- Testy: SQL `leak-test-installer-sql-v1432` (PostgreSQL 16), smoke `smoke-leak-test-installer-v1432`, E2E `leak-test-installer-v1432` (komputer: wybór i zapis; telefon: podpis przez przypisanego instalatora).
+
 ## 14.31
 - Decyzje właściciela 07.11.2026 — protokół z próby szczelności (PDF):
   - **podpis i data instalatora także w polu „Data i podpis osoby odpowiedzialnej za badanie”** (to ta sama osoba); w wierszu „Osoba odpowiedzialna za badania” wpisane to samo imię i nazwisko co w „Osoba przeprowadzająca badanie”,

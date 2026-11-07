@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.31",
+  "version": "14.32",
   "scope": "full",
-  "release_branch": "release/v14.31",
+  "release_branch": "release/v14.32",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Protokół szczelności: podpis w obu polach, numery seryjne, przycisk PDF w sekcji Urządzenia (komputer). Bez zmian bazy."
+    "notes": "Instalator dla starszych montaży w próbach szczelności: migracja 20261107100000 (uruchamia właściciel); aplikacja zgodna przed migracją."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.31",
+    "source_branch": "release/v14.32",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.31.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.32.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.31: protokół szczelności — drugi podpis, numery seryjne, przycisk przy urządzeniach",
-    "release_ci": "WAWIS PR checks + smoke-leak-test-protocol-v1428 + E2E leak-test-protocol-desktop-v1431",
-    "postdeploy": "Vercel READY/14.31."
+    "code": "14.32: instalator dla starszych montaży w próbach szczelności",
+    "release_ci": "WAWIS PR checks + leak-test-installer-sql-v1432 (PostgreSQL 16) + smoke-leak-test-installer-v1432 + E2E leak-test-installer-v1432",
+    "postdeploy": "Vercel READY/14.32."
   }
 }
