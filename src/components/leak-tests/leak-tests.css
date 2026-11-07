@@ -13,6 +13,7 @@
 .leakTestsList { display: grid; gap: 10px; }
 .leakTestRow { display: grid; grid-template-columns: minmax(0, 1.6fr) 160px 120px 140px auto; gap: 12px; align-items: end;
   border: 1px solid #d8e0ec; border-radius: 14px; padding: 12px 14px; background: #fff; }
+.leakTestRow.withInstaller { grid-template-columns: minmax(0, 1.4fr) 180px 160px 120px 140px auto; }
 .leakTestRow.done { border-color: #bbf7d0; background: #f6fef9; }
 .leakTestInfo { display: grid; gap: 2px; min-width: 0; align-self: center; }
 .leakTestInfo strong, .leakTestInfo span { overflow-wrap: anywhere; }
@@ -23,7 +24,7 @@
 .leakTestRowError { grid-column: 1 / -1; margin: 0; color: #b42318; font-weight: 600; }
 .leakTestRowSaved { grid-column: 1 / -1; margin: 0; color: #1d7a46; font-weight: 700; }
 @media (max-width: 1100px) {
-  .leakTestRow { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .leakTestRow, .leakTestRow.withInstaller { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .leakTestInfo { grid-column: 1 / -1; }
 }
 /* 14.29: status podpisu instalatora. */

@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## LEAK-INSTALLER-1432 — instalator dla starszych montaży w próbach szczelności (07.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| LEAK-1432-DB | FIXED-UNVERIFIED | Wybór wymagany, tylko pracownik/administrator, montaż bez zmian, podpis tylko przypisanego, zmiana instalatora usuwa podpis, funkcja 14.28 nie zmienia instalatora (SQL na PostgreSQL 16; test 14.29 przechodzi po migracji 14.32). |
+| LEAK-1432-UI | FIXED-UNVERIFIED | Pole „Instalator” tylko przy montażach bez instalatora z aplikacji; zgodność przed migracją (smoke); E2E komputer + telefon. |
+| LEAK-1432-PROD | PENDING-OWNER | Migracja `20261107100000` uruchamiana przez właściciela; po niej lista 165 zakończonych montaży. |
+
 ## LEAK-PDF-1431 — protokół szczelności: drugi podpis, numery seryjne, przycisk przy urządzeniach (07.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

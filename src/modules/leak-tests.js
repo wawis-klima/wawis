@@ -3,8 +3,15 @@
 
 export const LEAK_TEST_RESULTS = [['pozytywny', 'Pozytywny'], ['negatywny', 'Negatywny']];
 
+function missingFunction(error, name) {
+  const message = String(error?.message || '');
+  return /PGRST202|schema cache|does not exist|Could not find/i.test(message) && message.includes(name);
+}
+
 function rpcError(error) {
   const message = String(error?.message || '');
+  if (/leak_installer_required/.test(message)) return new Error('Wybierz instalatora — tylko on podpisze ten protokół.');
+  if (/leak_installer_invalid/.test(message)) return new Error('Wybrana osoba nie jest instalatorem. Odśwież listę.');
   if (/leak_test|PGRST202|schema cache|does not exist|Could not find/i.test(message) && !/staff_only|admin_only|42501/i.test(message)) {
     return new Error('Próby szczelności nie są jeszcze włączone w bazie (brak migracji 14.28).');
   }
@@ -37,15 +44,29 @@ export function validateLeakTestDraft({ testDate, temperature, result } = {}) {
   return { ok: true, value: { testDate: date, temperature: Math.round(temp * 10) / 10, result } };
 }
 
-export async function saveLeakTest({ supabase, jobId, testDate, temperature, result }) {
+// 14.32: instalator przypisany przez administratora do montaży bez instalatora z aplikacji (montaż bez zmian).
+export async function loadLeakInstallers({ supabase }) {
+  const { data, error } = await supabase.rpc('leak_test_installers_v1432');
+  if (error) {
+    if (missingFunction(error, 'leak_test_installers_v1432')) return null; // baza przed 14.32 — bez wyboru instalatora
+    throw rpcError(error);
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+export async function saveLeakTest({ supabase, jobId, testDate, temperature, result, installerId = null, needsInstaller = false }) {
   const checked = validateLeakTestDraft({ testDate, temperature, result });
   if (!checked.ok) throw new Error(checked.error);
-  const { data, error } = await supabase.rpc('leak_test_save_v1428', {
-    p_job_id: jobId, p_test_date: checked.value.testDate, p_temperature_c: checked.value.temperature, p_result: checked.value.result,
-  });
+  if (needsInstaller && !installerId) throw new Error('Wybierz instalatora — tylko on podpisze ten protokół.');
+  const base = { p_job_id: jobId, p_test_date: checked.value.testDate, p_temperature_c: checked.value.temperature, p_result: checked.value.result };
+  let { data, error } = await supabase.rpc('leak_test_save_v1432', { ...base, p_installer_id: installerId || null });
+  // Baza przed 14.32: zapis jak w 14.28 (montaże z instalatorem z aplikacji).
+  if (error && missingFunction(error, 'leak_test_save_v1432') && !needsInstaller) {
+    ({ data, error } = await supabase.rpc('leak_test_save_v1428', base));
+  }
   if (error) throw rpcError(error);
   if (data !== true) throw new Error('Montaż nie jest zakończony — odśwież listę.');
-  return checked.value;
+  return { ...checked.value, installerId: needsInstaller ? installerId : null };
 }
 
 /** Domyślna data badania w formularzu = dzień zakończenia montażu (Europe/Warsaw). */

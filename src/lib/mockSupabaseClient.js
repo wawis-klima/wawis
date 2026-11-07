@@ -519,31 +519,53 @@ export function createMockSupabaseClient() {
     },
     async rpc(name, payload = {}) {
       // 14.28: próby szczelności (tylko dane fikcyjne).
-      if (name === 'leak_tests_list_v1428' || name === 'leak_test_get_v1428' || name === 'leak_test_save_v1428') {
+      // 14.32: instalator przypisany do montaży bez instalatora z aplikacji (jak migracja 20261107100000).
+      if (['leak_tests_list_v1428', 'leak_test_get_v1428', 'leak_test_save_v1428', 'leak_test_save_v1432', 'leak_test_installers_v1432'].includes(name)) {
         if (!Array.isArray(store.leak_test_records)) store.leak_test_records = [];
-        if (name === 'leak_test_save_v1428') {
+        const staff = (store.profiles || []).filter((item) => /^(employee|pracownik|admin|administrator)$/i.test(String(item.role || '').trim()) && item.full_name);
+        const nameOf = (id) => (store.profiles || []).find((item) => item.id === id)?.full_name || null;
+        if (name === 'leak_test_installers_v1432') {
+          return { data: staff.map((item) => ({ id: item.id, full_name: item.full_name })).sort((a, b) => a.full_name.localeCompare(b.full_name, 'pl')), error: null };
+        }
+        if (name === 'leak_test_save_v1428' || name === 'leak_test_save_v1432') {
           const job = (store.jobs || []).find((item) => String(item.id) === String(payload.p_job_id));
           if (!job || job.status !== 'Zakończone') return { data: false, error: null };
           const previous = store.leak_test_records.find((item) => item.job_id === job.id) || {};
-          const same = previous.test_date === payload.p_test_date && Number(previous.temperature_c) === Number(payload.p_temperature_c) && previous.result === payload.p_result;
-          const row = { job_id: job.id, test_date: payload.p_test_date, temperature_c: payload.p_temperature_c, result: payload.p_result, updated_at: nowIso(),
+          let installer = previous.installer_id || null;
+          if (name === 'leak_test_save_v1432') {
+            installer = null;
+            if (!job.completed_by) {
+              if (!payload.p_installer_id) return { data: null, error: { message: 'leak_installer_required' } };
+              if (!staff.some((item) => item.id === payload.p_installer_id)) return { data: null, error: { message: 'leak_installer_invalid' } };
+              installer = payload.p_installer_id;
+            }
+          }
+          const same = previous.test_date === payload.p_test_date && Number(previous.temperature_c) === Number(payload.p_temperature_c)
+            && previous.result === payload.p_result && (previous.installer_id || null) === installer;
+          const row = { ...previous, job_id: job.id, test_date: payload.p_test_date, temperature_c: payload.p_temperature_c, result: payload.p_result, updated_at: nowIso(),
+            installer_id: installer,
+            signature_id: same ? previous.signature_id || null : null,
             signed_at: same ? previous.signed_at || null : null, signature_png: same ? previous.signature_png || null : null, signed_name: same ? previous.signed_name || null : null };
           store.leak_test_records = [...store.leak_test_records.filter((item) => item.job_id !== job.id), row];
           return { data: true, error: null };
         }
         if (name === 'leak_test_get_v1428') {
           const row = store.leak_test_records.find((item) => String(item.job_id) === String(payload.p_job_id));
-          return { data: row ? [{ test_date: row.test_date, temperature_c: row.temperature_c, result: row.result, signed_at: row.signed_at || null, signature_png: row.signature_png || null, signed_name: row.signed_name || null }] : [], error: null };
+          const job = (store.jobs || []).find((item) => String(item.id) === String(payload.p_job_id)) || {};
+          const installerId = job.completed_by || row?.installer_id || null;
+          return { data: row ? [{ test_date: row.test_date, temperature_c: row.temperature_c, result: row.result, signed_at: row.signed_at || null, signature_png: row.signature_png || null, signed_name: row.signed_name || null,
+            installer_id: installerId, installer_name: nameOf(installerId) }] : [], error: null };
         }
         const rows = (store.jobs || [])
-          .filter((job) => job.status === 'Zakończone' && job.completed_by)
+          .filter((job) => job.status === 'Zakończone')
           .map((job) => {
             const record = store.leak_test_records.find((item) => item.job_id === job.id) || {};
-            const person = (store.profiles || []).find((item) => item.id === job.completed_by) || {};
+            const installerId = job.completed_by || record.installer_id || null;
             return {
               job_id: job.id, client: job.client, city: job.city, street: job.street, device_model: job.device_model,
-              completed_at: job.completed_at, completed_by: job.completed_by, completed_by_name: person.full_name || null,
+              completed_at: job.completed_at || null, completed_by: job.completed_by || null, completed_by_name: nameOf(job.completed_by),
               test_date: record.test_date || null, temperature_c: record.temperature_c ?? null, result: record.result || null, updated_at: record.updated_at || null, signed_at: record.signed_at || null,
+              installation_date: job.installation_date || null, installer_id: installerId, installer_name: nameOf(installerId), installer_from_app: Boolean(job.completed_by),
             };
           });
         return { data: rows, error: null };
