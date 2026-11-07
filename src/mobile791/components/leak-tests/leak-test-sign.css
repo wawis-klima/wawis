@@ -19,3 +19,7 @@
 .leakSignError { margin: 0; color: #b42318; font-weight: 700; font-size: 13px; }
 .leakSignActions { display: flex; gap: 8px; justify-content: flex-end; }
 .leakSignActions .btn { min-height: 40px; }
+/* 14.33: Diagnostyka → wzór podpisu (podgląd zapisanego). */
+.signaturePatternPreview { display: grid; gap: 4px; justify-items: start; }
+.signaturePatternPreview img { max-width: 100%; max-height: 90px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px 8px; }
+.signaturePatternPreview small { color: #5a6b80; }

@@ -8,6 +8,7 @@ import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-proto
 // WAWIS 14.28 — zakładka „Próby szczelności” (komputer, administrator). Zakończone montaże z instalatorem;
 // administrator przepisuje z podpisanego protokołu papierowego datę badania, temperaturę i wynik, potem PDF.
 // 14.29: podpis składa sam instalator w swojej aplikacji; tutaj widać, co jest podpisane.
+// 14.33: podpis wstawia baza ze wzoru instalatora (Diagnostyka → „Wzór podpisu”), z datą badania.
 // 14.32: także starsze montaże bez instalatora w aplikacji — administrator wybiera instalatora (montaż bez zmian),
 // protokół trafia do podpisu w aplikacji tego instalatora.
 
@@ -107,6 +108,11 @@ export default function LeakTestsPanel({ supabase }) {
       }));
       setRecentlySaved((prev) => new Set(prev).add(row.job_id));
       setRowState((prev) => ({ ...prev, [row.job_id]: { saved: true } }));
+      // 14.33: baza od razu podpisuje wzorem instalatora — pobieramy aktualny stan podpisu tego wiersza.
+      loadLeakTests({ supabase }).then((list) => {
+        const fresh = list.find((item) => item.job_id === row.job_id);
+        if (fresh) setRows((prev) => prev.map((item) => (item.job_id === row.job_id ? { ...item, signed_at: fresh.signed_at, installer_name: fresh.installer_name } : item)));
+      }).catch(() => {});
     } catch (saveError) {
       setRowState((prev) => ({ ...prev, [row.job_id]: { error: saveError?.message || 'Nie udało się zapisać.' } }));
     }
@@ -134,7 +140,7 @@ export default function LeakTestsPanel({ supabase }) {
         </div>
         <div className="leakTestsTools">
           <span className="leakTestsCount" data-testid="leak-tests-count">Uzupełniono {filled} z {rows.length}</span>
-          <span className="leakTestsCount signed" data-testid="leak-tests-signed">Podpisane przez instalatorów: {rows.filter((row) => row.signed_at).length}</span>
+          <span className="leakTestsCount signed" data-testid="leak-tests-signed">Podpisane: {rows.filter((row) => row.signed_at).length}</span>
           <button type="button" className="btn" onClick={() => void reload()} disabled={loading}>Odśwież</button>
         </div>
       </div>
@@ -166,7 +172,7 @@ export default function LeakTestsPanel({ supabase }) {
                 )}
                 {row.test_date ? (
                   <span className={`leakTestSign${row.signed_at ? ' signed' : ''}`} data-testid="leak-test-sign-status">
-                    {row.signed_at ? `Podpisany przez instalatora ${formatDate(row.signed_at)}` : 'Czeka na podpis instalatora (w jego aplikacji)'}
+                    {row.signed_at ? `Podpisany wzorem instalatora ${formatDate(row.signed_at)}` : 'Czeka na wzór podpisu instalatora (Diagnostyka → Wzór podpisu)'}
                   </span>
                 ) : null}
               </div>

@@ -4,6 +4,7 @@ import { APP_VERSION } from '../../version.js';
 import { downloadDiagnosticReportImmediate, logDiagnostic } from '../../modules/diagnostics.js';
 import { sendTestPush } from '../../modules/push-subscriptions.js';
 import { supabase } from '../../lib/supabase.js';
+import SignaturePatternCard from './SignaturePatternCard.jsx';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
 import { confirmAndRepairPhotoQueue } from '../../modules/photo-queue-repair.js';
 import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
@@ -205,6 +206,9 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         <p>Oczekuje: {offlineSummary.pending} · Wysyłane: {offlineSummary.syncing} · Konflikty: {offlineSummary.conflict} · Błędy: {offlineSummary.error}</p>
         <p>Etapy zdjęć: przygotowane {queueSummary.prepared || 0} · wysłane do Storage {queueSummary.storageUploaded || 0}. Szczegóły pozostają w Centrum synchronizacji.</p>
       </section>
+
+      {/* 14.33: wzór podpisu pracownika — automatyczny podpis jego protokołów. */}
+      <SignaturePatternCard supabase={supabase} profile={profile} />
 
       <section className="mobileDiagnosticsCard" data-testid="diagnostics-nameplate-readers">
         <h2>Odczyt tabliczek bez internetu</h2>

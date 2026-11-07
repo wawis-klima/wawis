@@ -27,14 +27,12 @@ assert.doesNotMatch(sql, /\b(update public\.jobs|delete from public\.jobs|delete
 assert.match(read('supabase/rebuild/manifest-v1089.json'), /20261106140000_leak_test_signatures_v1429\.sql/);
 assert.match(read('scripts/codex-postgres-two-sessions-v1269.sh'), /bash "\$ROOT\/scripts\/leak-test-signatures-sql-v1429\.sh"/);
 
-const banner = read('src/mobile791/components/leak-tests/LeakTestSignBanner.jsx');
-assert.match(banner, /signOwnLeakTests\(\{ supabase, jobIds: rows\.map\(\(row\) => row\.job_id\), imagePng \}\)/, 'podpis na protokoły z widocznej listy');
-assert.match(banner, /if \(!rows\.length && !message\) return null;/, 'bez protokołów — nic na ekranie');
-assert.doesNotMatch(banner, /localStorage|indexedDB|caches\./, 'nic w pamięci telefonu');
-assert.match(read('src/mobile791/App.jsx'), /<LeakTestSignBanner supabase=\{supabase\} userId=\{sessionUser\?\.id \|\| ""\} \/>/);
+// 14.33: baner „do podpisu” usunięty — podpisuje wzór z Diagnostyki (smoke-signature-pattern-v1433).
+assert.ok(!fs.existsSync(new URL('../src/mobile791/components/leak-tests/LeakTestSignBanner.jsx', import.meta.url)), 'bez banera do podpisu');
+assert.doesNotMatch(read('src/mobile791/App.jsx'), /LeakTestSignBanner/);
 // Regresja CI 06.11: fragment wokół JobsPanel psuł cloneElement(inlineDetailsPanel) w układzie telefonu.
 assert.match(read('src/mobile791/App.jsx'), /jobsPanel=\{activeModule === "jobs" \? \(\n\s+<JobsPanel\n/);
 assert.match(read('src/mobile791/components/JobsPanel.jsx'), /if \(props\.topNotice\) return <>\{props\.topNotice\}\{tableContent\}<\/>;/);
-assert.match(read('src/components/leak-tests/LeakTestsPanel.jsx'), /Czeka na podpis instalatora \(w jego aplikacji\)/);
+assert.match(read('src/components/leak-tests/LeakTestsPanel.jsx'), /Czeka na wzór podpisu instalatora \(Diagnostyka → Wzór podpisu\)/);
 
 console.log('PASS WAWIS 14.29 — podpis protokołów szczelności: sam instalator, swoje zatwierdzone protokoły, wzór w bazie, zmiana danych usuwa podpis.');

@@ -53,6 +53,6 @@ assert.match(
   /if \(useMobile791\) \{[\s\S]*await import\('\.\/mobile791\/components\/leak-tests\/leak-test-sign\.css'\)[\s\S]*\}[\s\S]*window\.__wawisBootTrace\?\.mark\?\.\('styles-ready'\)/,
   'Styl okna podpisu protokołów szczelności musi być ładowany w main.jsx przed renderem aplikacji telefonu.'
 );
-const banner = fs.readFileSync(path.join(root, 'src/mobile791/components/leak-tests/LeakTestSignBanner.jsx'), 'utf8');
-assert.doesNotMatch(banner, /import\s+['"][^'"]+\.css['"]/, 'LeakTestSignBanner nie może sam importować CSS (nie dotrze do telefonu).');
+const pad = fs.readFileSync(path.join(root, 'src/mobile791/components/signature/SignaturePad.jsx'), 'utf8');
+assert.doesNotMatch(pad, /import\s+['"][^'"]+\.css['"]/, 'SignaturePad nie może sam importować CSS (nie dotrze do telefonu).');
 console.log(`OK: ${modules} modułów telefonu bez statycznego CSS; styl podpisu ładowany w main.jsx.`);

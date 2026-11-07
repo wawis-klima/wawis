@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SIGNATURE-PATTERN-1433 — wzór podpisu i automatyczny podpis protokołów (07.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SIG-1433-DB | FIXED-UNVERIFIED | Autopodpis tylko protokołów instalatora, data = data badania, nowy wzór nie zmienia podpisanych, zmiana danych/instalatora podpisuje ponownie, funkcja wewnętrzna niedostępna dla użytkowników (SQL PostgreSQL 16 + symulacja uzupełnienia jak w produkcji). |
+| SIG-1433-UI | FIXED-UNVERIFIED | Diagnostyka → Wzór podpisu: walidacja, nakładka na wierzchu (hit-test), podgląd, zapis — E2E dev i build. Lista montaży bez banera. |
+| SIG-1433-IPHONE | PENDING-IPHONE | Złożenie wzoru palcem na fizycznym iPhonie i wygląd podpisu w PDF. |
+
 ## LEAK-INSTALLER-1432 — instalator dla starszych montaży w próbach szczelności (07.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
