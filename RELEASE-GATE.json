@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.34",
+  "version": "14.35",
   "scope": "full",
-  "release_branch": "release/v14.34",
+  "release_branch": "release/v14.35",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Protokół szczelności przy zakończeniu montażu: wyzwalacz na jobs (wyjątek przechwycony), migracja 20261107140000 (uruchamia właściciel)."
+    "notes": "Temperatura protokołu z serwera: pg_cron + pg_net, migracja 20261107150000 (uruchamia właściciel). Aplikacja bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.34",
+    "source_branch": "release/v14.35",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.34.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.35.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.34: protokół szczelności tworzy się sam przy zakończeniu montażu",
-    "release_ci": "WAWIS PR checks + leak-test-auto-sql-v1434 (PostgreSQL 16) + smoke-leak-test-auto-v1434 + E2E leak-test-auto-v1434",
-    "postdeploy": "Vercel READY/14.34."
+    "code": "14.35: temperatura protokołu szczelności uzupełniana przez serwer",
+    "release_ci": "WAWIS PR checks + leak-test-temperature-cron-sql-v1435 (PostgreSQL 16, atrapa pg_net) + smoke-leak-test-temperature-cron-v1435",
+    "postdeploy": "Vercel READY/14.35."
   }
 }

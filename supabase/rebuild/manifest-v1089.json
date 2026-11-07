@@ -152,7 +152,8 @@
     "supabase/migrations/20261106140000_leak_test_signatures_v1429.sql",
     "supabase/migrations/20261107100000_leak_test_installer_v1432.sql",
     "supabase/migrations/20261107120000_signature_pattern_v1433.sql",
-    "supabase/migrations/20261107140000_leak_test_auto_v1434.sql"
+    "supabase/migrations/20261107140000_leak_test_auto_v1434.sql",
+    "supabase/migrations/20261107150000_leak_test_temperature_cron_v1435.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
