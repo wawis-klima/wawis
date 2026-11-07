@@ -23,6 +23,7 @@ const GROUPS = {
     'node scripts/smoke-mobile-static-css-v1430.mjs',
     'node scripts/smoke-leak-test-installer-v1432.mjs',
     'node scripts/smoke-signature-pattern-v1433.mjs',
+    'node scripts/smoke-weather-daily-mean-v1433.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',

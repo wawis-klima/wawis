@@ -32,4 +32,6 @@ assert.match(diag, /<SignaturePatternCard supabase=\{supabase\} profile=\{profil
 const card = read('src/mobile791/components/diagnostics/SignaturePatternCard.jsx');
 assert.doesNotMatch(card, /localStorage|indexedDB|caches\./, 'wzór w bazie, nie w telefonie');
 assert.match(read('playwright.built.config.js'), /'signature-pattern-v1433\.spec\.js'/, 'okno wzoru sprawdzane na buildzie (style telefonu)');
+assert.match(read('playwright.webkit-built.config.js'), /'signature-pattern-v1433\.spec\.js'/, 'wzór podpisu palcem w WebKit (iPhone)');
+assert.doesNotMatch(read('playwright.webkit-built.config.js'), /leak-test-sign-v1429/, 'usunięty test banera');
 console.log('PASS WAWIS 14.33 — wzór podpisu w diagnostyce, automatyczny podpis protokołów z datą badania, montaże bez zmian.');

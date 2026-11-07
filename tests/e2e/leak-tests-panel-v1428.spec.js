@@ -8,6 +8,8 @@ test.describe('14.28: próby szczelności — komputer', () => {
   test.use({ viewport: { width: 1440, height: 1000 } });
 
   test('lista, walidacja, zapis i PDF', async ({ page }, testInfo) => {
+    // 14.33: bez prawdziwej pogody — podpowiedź temperatury niedostępna, pole zostaje puste (walidacja jak w 14.28).
+    await page.route(/open-meteo\.com/, (route) => route.abort());
     await login(page, ADMIN);
     await page.getByRole('button', { name: /^Próby szczelności$/ }).click();
     const panel = page.getByTestId('leak-tests-panel');

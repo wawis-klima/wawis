@@ -9,6 +9,17 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
   test.use({ viewport: { width: 1440, height: 1000 } });
 
   test('stary montaż: wybór instalatora wymagany, zapis, nazwisko w PDF', async ({ page }) => {
+    // 14.33: atrapa Open-Meteo — średnia dnia 7,4 °C → podpowiedź „7”.
+    const weatherCalls = [];
+    await page.route(/open-meteo\.com/, async (route) => {
+      const url = route.request().url();
+      weatherCalls.push(url);
+      if (url.includes('geocoding-api')) {
+        await route.fulfill({ json: { results: [{ name: 'Gdańsk', latitude: 54.35, longitude: 18.65 }] } });
+      } else {
+        await route.fulfill({ json: { daily: { time: ['x'], temperature_2m_mean: [7.4] } } });
+      }
+    });
     await login(page, ADMIN);
     // Uchwyt bazy testowej komputera — moduły telefonu ładowane później podmieniają window.__KLIMA_MOCK_SUPABASE__.
     await page.evaluate(() => { window.__desktopMock = window.__KLIMA_MOCK_SUPABASE__; });
@@ -25,6 +36,16 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
     await expect(oldRow).toContainText('bez instalatora w aplikacji');
     await expect(appRow.getByTestId('leak-test-installer')).toHaveCount(0);
     await expect(oldRow.getByLabel('Data badania')).toHaveValue('2026-04-15');
+    // Podpowiedź temperatury: średnia dnia badania dla miejscowości montażu.
+    await expect(oldRow.getByLabel('Temperatura °C')).toHaveValue('7');
+    await expect(oldRow.getByTestId('leak-test-temp-hint')).toHaveText('Średnia dnia · Gdańsk');
+    expect(weatherCalls.some((url) => /archive-api\.open-meteo\.com\/v1\/archive\?.*start_date=2026-04-15.*daily=temperature_2m_mean/.test(url))).toBe(true);
+    // Zmiana daty: nowa podpowiedź; ręczny wpis zostaje.
+    await oldRow.getByLabel('Data badania').fill('2026-04-16');
+    await expect(oldRow.getByLabel('Temperatura °C')).toHaveValue('7');
+    expect(weatherCalls.some((url) => /start_date=2026-04-16/.test(url))).toBe(true);
+    await oldRow.getByLabel('Data badania').fill('2026-04-15');
+    await expect(oldRow.getByLabel('Temperatura °C')).toHaveValue('7');
 
     // Bez instalatora — nie zapisze.
     await oldRow.getByLabel('Temperatura °C').fill('16');

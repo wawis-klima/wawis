@@ -1,13 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './leak-tests.css';
 import {
   LEAK_TEST_RESULTS, countFilledLeakTests, defaultLeakTestDate, loadLeakInstallers, loadLeakTests, saveLeakTest, validateLeakTestDraft,
 } from '../../modules/leak-tests.js';
 import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-protocol-pdf.js';
+import { dailyMeanTemperature } from '../../modules/weather-daily-mean.js';
 
 // WAWIS 14.28 — zakładka „Próby szczelności” (komputer, administrator). Zakończone montaże z instalatorem;
 // administrator przepisuje z podpisanego protokołu papierowego datę badania, temperaturę i wynik, potem PDF.
 // 14.29: podpis składa sam instalator w swojej aplikacji; tutaj widać, co jest podpisane.
+// 14.33: temperatura — podpowiedź: średnia dnia badania dla miejscowości montażu (Open-Meteo); zatwierdza „Zapisz”.
 // 14.33: podpis wstawia baza ze wzoru instalatora (Diagnostyka → „Wzór podpisu”), z datą badania.
 // 14.32: także starsze montaże bez instalatora w aplikacji — administrator wybiera instalatora (montaż bez zmian),
 // protokół trafia do podpisu w aplikacji tego instalatora.
@@ -43,6 +45,11 @@ function rowToJob(row) {
 export default function LeakTestsPanel({ supabase }) {
   const [rows, setRows] = useState([]);
   const [installers, setInstallers] = useState([]);
+  // 14.33: podpowiedzi temperatury: jobId → { status: 'loading' | 'auto' | 'none' | 'error', date, city }.
+  const [tempHints, setTempHints] = useState({});
+  const tempRequested = useRef(new Set());
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [drafts, setDrafts] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -79,9 +86,53 @@ export default function LeakTestsPanel({ supabase }) {
   );
 
   function setDraft(jobId, patch) {
-    setDrafts((prev) => ({ ...prev, [jobId]: { ...prev[jobId], ...patch } }));
+    // Powrót do wcześniejszej daty — podpowiedź pobierana ponownie (z pamięci modułu pogody).
+    if (patch.testDate) tempRequested.current.delete(`${jobId}|${patch.testDate}`);
+    setDrafts((prev) => {
+      const current = prev[jobId] || {};
+      const next = { ...current, ...patch };
+      // Ręczna temperatura zostaje; zmiana daty przy podpowiedzi — nowa podpowiedź dla nowej daty.
+      if ('temperature' in patch) next.tempAuto = false;
+      if ('testDate' in patch && patch.testDate !== current.testDate && (current.tempAuto || !String(current.temperature || '').trim())) {
+        next.temperature = ''; next.tempAuto = false;
+      }
+      return { ...prev, [jobId]: next };
+    });
     setRowState((prev) => ({ ...prev, [jobId]: { ...prev[jobId], error: '', saved: false } }));
   }
+
+  // 14.33: dla widocznych, nieuzupełnionych wierszy bez temperatury — średnia dnia badania (po kolei, z pamięcią).
+  useEffect(() => {
+    const queue = visible.filter((row) => {
+      const draft = drafts[row.job_id];
+      return draft && !row.test_date && !String(draft.temperature || '').trim() && row.city && draft.testDate
+        && !tempRequested.current.has(`${row.job_id}|${draft.testDate}`);
+    }).slice(0, 40);
+    if (!queue.length) return;
+    // Bez przerywania przy kolejnych zmianach formularza (wpisana podpowiedź zmienia drafts) — tylko po zamknięciu zakładki.
+    queue.forEach((row) => tempRequested.current.add(`${row.job_id}|${drafts[row.job_id].testDate}`));
+    (async () => {
+      const workers = Array.from({ length: 3 }, async (_, w) => {
+        for (let i = w; i < queue.length; i += 3) {
+          const row = queue[i];
+          const date = drafts[row.job_id].testDate;
+          setTempHints((prev) => ({ ...prev, [row.job_id]: { status: 'loading', date, city: row.city } }));
+          let mean = null; let failed = false;
+          try { mean = await dailyMeanTemperature({ city: row.city, date }); } catch { failed = true; }
+          if (!mounted.current) return;
+          setTempHints((prev) => ({ ...prev, [row.job_id]: { status: failed ? 'error' : mean == null ? 'none' : 'auto', date, city: row.city } }));
+          if (mean != null) {
+            setDrafts((prev) => {
+              const current = prev[row.job_id];
+              if (!current || current.testDate !== date || String(current.temperature || '').trim()) return prev;
+              return { ...prev, [row.job_id]: { ...current, temperature: String(mean).replace('.', ','), tempAuto: true } };
+            });
+          }
+        }
+      });
+      await Promise.all(workers);
+    })();
+  }, [visible, drafts]);
 
   async function handleSave(row) {
     const draft = drafts[row.job_id] || draftFromRow(row);
@@ -194,6 +245,14 @@ export default function LeakTestsPanel({ supabase }) {
                 <span>Temperatura °C</span>
                 <input type="text" inputMode="decimal" className="input" placeholder="np. 18" value={draft.temperature}
                   onChange={(e) => setDraft(row.job_id, { temperature: e.target.value })} />
+                {!row.test_date && tempHints[row.job_id] && tempHints[row.job_id].date === draft.testDate ? (
+                  <small className={`leakTestTempHint ${tempHints[row.job_id].status}`} data-testid="leak-test-temp-hint">
+                    {tempHints[row.job_id].status === 'loading' ? 'Pobieram średnią dnia…'
+                      : tempHints[row.job_id].status === 'auto' && draft.tempAuto ? `Średnia dnia · ${tempHints[row.job_id].city}`
+                        : tempHints[row.job_id].status === 'none' ? 'Brak danych pogodowych — wpisz ręcznie'
+                          : tempHints[row.job_id].status === 'error' ? 'Nie udało się pobrać — wpisz ręcznie' : ''}
+                  </small>
+                ) : null}
               </label>
               <label className="leakTestField small">
                 <span>Wynik</span>
