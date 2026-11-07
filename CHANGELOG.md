@@ -1,3 +1,10 @@
+## 14.31
+- Decyzje właściciela 07.11.2026 — protokół z próby szczelności (PDF):
+  - **podpis i data instalatora także w polu „Data i podpis osoby odpowiedzialnej za badanie”** (to ta sama osoba); w wierszu „Osoba odpowiedzialna za badania” wpisane to samo imię i nazwisko co w „Osoba przeprowadzająca badanie”,
+  - **numery seryjne** badanego urządzenia w nowym wierszu „Numery seryjne:” pod nazwą obiektu (jedn. wewn. / jedn. zewn., przy multi split numerowane; stary zapis numeru — bez zmian); bez numeru wiersz zostaje z kropkami.
+- Komputer: przycisk „Protokół szczelności (PDF)” przeniesiony z górnego paska karty montażu (rozbijał menu) do nagłówka sekcji „Urządzenia” — widoczny po jej rozwinięciu, obok „Dodaj / edytuj urządzenia i tabliczki”. Telefon bez zmian.
+- Testy: E2E `leak-test-protocol-desktop-v1431` (przycisk przy urządzeniach i na wierzchu, brak w górnym pasku, numery seryjne, dwa podpisy w PDF); `smoke-leak-test-protocol-v1428` rozszerzony.
+
 ## 14.30
 - Naprawa 14.29: na telefonie okno „Podpis protokołów z próby szczelności” otwierało się bez stylów — lista z kropkami i sklejonym tekstem, bez pola do podpisu i przycisków „Anuluj” / „Podpisz (N)”, więc instalator nie mógł podpisać. Przyczyna: CSS okna był importowany w komponencie telefonu, a po buildzie aplikacja telefonu wczytuje przy starcie listę stylów przygotowaną dla wersji komputerowej (wspólny `import()` w `main.jsx`). Styl okna ładowany teraz w `main.jsx` razem z pozostałymi stylami telefonu.
 - Zachowanie bez zmian: okno pokazuje całą listę protokołów instalatora i jeden podpis zatwierdza wszystkie („Podpisz (N)”).

@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.30
+- 14.31
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.31` — protokół szczelności: podpis także w polu osoby odpowiedzialnej, numery seryjne urządzenia; przycisk PDF na komputerze w sekcji „Urządzenia”.
 - wersja `14.30` — naprawa okna podpisu protokołów szczelności na telefonie (style nie wczytywały się po buildzie: brak pola podpisu i przycisków).
 - wersja `14.29` — instalator sam podpisuje swoje protokoły szczelności w aplikacji (wzór w bazie); podpis na PDF; migracja `20261106140000`.
 - wersja `14.28` — zakładka „Próby szczelności” (komputer) i protokół z próby szczelności PDF dla zakończonych montaży; migracja `20261106130000`.

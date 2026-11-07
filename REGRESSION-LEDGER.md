@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## LEAK-PDF-1431 — protokół szczelności: drugi podpis, numery seryjne, przycisk przy urządzeniach (07.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| LEAK-1431-PDF | FIXED-UNVERIFIED | Podpis i data w obu polach, osoba odpowiedzialna = przeprowadzająca, wiersz „Numery seryjne” — E2E `leak-test-protocol-desktop-v1431` (dane protokołu i liczba wstawień podpisu w PDF), smoke 14.28. |
+| LEAK-1431-UI | FIXED-UNVERIFIED | Komputer: przycisk w sekcji „Urządzenia”, górny pasek bez przycisku (E2E z hit-testem). |
+
 ## LEAK-SIGN-CSS-1430 — okno podpisu protokołów szczelności bez stylów na telefonie (07.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
