@@ -21,6 +21,25 @@ test('@mobile 14.29: pracownik widzi swoje protokoły do podpisu, bez podpisu ni
   await expect(sheet).toContainText('Klient Testowy C Zakończony');
   await expect(sheet).toContainText('22.04.2026 · 18 °C · Pozytywny');
 
+  // 14.30: okno ma być nakładką ze stylami (na telefonie po buildzie CSS się nie wczytywał — lista bez stylu,
+  // brak pola podpisu). Sprawdzamy styl, rozmiar pola i to, że przyciski są na wierzchu (hit-test).
+  const overlay = page.locator('.leakSignOverlay');
+  await expect(overlay).toHaveCSS('position', 'fixed');
+  await expect(page.locator('.leakSignList')).toHaveCSS('list-style-type', 'none');
+  const padBox = await sheet.getByTestId('leak-sign-canvas').boundingBox();
+  expect(padBox?.height).toBeGreaterThanOrEqual(150);
+  expect(padBox?.width).toBeGreaterThan(250);
+  const onTop = await page.evaluate(() => {
+    const viewportH = window.innerHeight;
+    return [...document.querySelectorAll('.leakSignActions button, canvas.leakSignCanvas')].map((el) => {
+      const r = el.getBoundingClientRect();
+      const x = r.left + r.width / 2; const y = r.top + r.height / 2;
+      return { name: el.textContent || el.tagName, inView: y > 0 && y < viewportH, hit: el.contains(document.elementFromPoint(x, y)) };
+    });
+  });
+  expect(onTop.length).toBe(3);
+  for (const item of onTop) expect(item, `widoczny i na wierzchu: ${item.name}`).toEqual({ ...item, inView: true, hit: true });
+
   await sheet.getByRole('button', { name: 'Podpisz (1)' }).click();
   await expect(sheet.getByRole('alert')).toContainText('Podpisz się palcem');
 

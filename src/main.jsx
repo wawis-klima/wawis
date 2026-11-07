@@ -180,6 +180,9 @@ async function boot() {
     await import('./mobile791/components/pricelist/pricelist-mobile.css')
     // 5 zakładek wyłącznie administratora; CSS ładowany przed pierwszym renderem.
     await import('./mobile791/components/devices/ServiceAdminPanel.css')
+    // 14.30: okno podpisu protokołów szczelności. CSS importowany przez komponenty z mobile791/App.jsx nie
+    // dociera do telefonu po buildzie (wspólna lista zależności z App komputera) — style telefonu tylko tutaj.
+    await import('./mobile791/components/leak-tests/leak-test-sign.css')
   }
 
   window.__wawisBootTrace?.mark?.('styles-ready')

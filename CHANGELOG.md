@@ -1,3 +1,8 @@
+## 14.30
+- Naprawa 14.29: na telefonie okno „Podpis protokołów z próby szczelności” otwierało się bez stylów — lista z kropkami i sklejonym tekstem, bez pola do podpisu i przycisków „Anuluj” / „Podpisz (N)”, więc instalator nie mógł podpisać. Przyczyna: CSS okna był importowany w komponencie telefonu, a po buildzie aplikacja telefonu wczytuje przy starcie listę stylów przygotowaną dla wersji komputerowej (wspólny `import()` w `main.jsx`). Styl okna ładowany teraz w `main.jsx` razem z pozostałymi stylami telefonu.
+- Zachowanie bez zmian: okno pokazuje całą listę protokołów instalatora i jeden podpis zatwierdza wszystkie („Podpisz (N)”).
+- Testy: nowy `smoke-mobile-static-css-v1430` (w statycznym drzewie importów `mobile791/App.jsx` nie może być CSS — wykrył ten błąd); E2E `leak-test-sign-v1429` sprawdza nakładkę (position fixed, pole podpisu, przyciski na wierzchu) i działa teraz także na zbudowanej aplikacji (built E2E: 14 testów).
+
 ## 14.29
 - Decyzja właściciela 06.11.2026: **podpisy instalatorów na protokołach z próby szczelności** — składa je sam instalator w swojej aplikacji. Na liście montaży pojawia się „Protokoły szczelności do podpisu: N” (tylko gdy są jego protokoły z danymi przepisanymi przez administratora); widzi listę (klient, adres, data, temperatura, wynik), podpisuje palcem i zatwierdza „Podpisz (N)”. Wzór podpisu zapisuje się w bazie (nie w telefonie) — kolejne protokoły podpisze jednym kliknięciem („Użyję Twojego zapisanego podpisu”).
 - Podpis trafia wyłącznie na protokoły, które instalator widział i zatwierdził; administrator nie podpisuje za instalatora. Zmiana daty, temperatury lub wyniku po podpisie usuwa podpis z tego protokołu.
