@@ -520,8 +520,17 @@ export function createMockSupabaseClient() {
     async rpc(name, payload = {}) {
       // 14.28: próby szczelności (tylko dane fikcyjne).
       // 14.32: instalator przypisany do montaży bez instalatora z aplikacji (jak migracja 20261107100000).
-      if (['leak_tests_list_v1428', 'leak_test_get_v1428', 'leak_test_save_v1428', 'leak_test_save_v1432', 'leak_test_installers_v1432'].includes(name)) {
+      if (['leak_tests_list_v1428', 'leak_test_get_v1428', 'leak_test_save_v1428', 'leak_test_save_v1432', 'leak_test_installers_v1432', 'leak_test_set_temperature_v1434'].includes(name)) {
         if (!Array.isArray(store.leak_test_records)) store.leak_test_records = [];
+        // 14.34: temperatura dociągana w tle — tylko gdy jej brak (jak migracja 20261107140000).
+        if (name === 'leak_test_set_temperature_v1434') {
+          const temp = Number(payload.p_temperature_c);
+          if (!Number.isFinite(temp) || temp < -30 || temp > 50) return { data: null, error: { message: 'leak_temperature_invalid' } };
+          const record = store.leak_test_records.find((item) => String(item.job_id) === String(payload.p_job_id));
+          if (!record || record.temperature_c != null) return { data: false, error: null };
+          record.temperature_c = Math.round(temp * 10) / 10;
+          return { data: true, error: null };
+        }
         const staff = (store.profiles || []).filter((item) => /^(employee|pracownik|admin|administrator)$/i.test(String(item.role || '').trim()) && item.full_name);
         const nameOf = (id) => (store.profiles || []).find((item) => item.id === id)?.full_name || null;
         if (name === 'leak_test_installers_v1432') {

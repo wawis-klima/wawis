@@ -4,7 +4,8 @@
 // stałe dane z firmowego wzoru oraz datę, temperaturę i wynik przepisane przez administratora z podpisanego
 // protokołu papierowego (zakładka „Próby szczelności”, tabela leak_test_records). Bez wpisu te pola zostają puste.
 // PDF tworzony na bieżąco, nic nie zapisuje w bazie.
-import { loadLeakTest } from '../../modules/leak-tests.js';
+import { loadLeakTest, setLeakTestTemperature } from '../../modules/leak-tests.js';
+import { dailyMeanTemperature } from '../../modules/weather-daily-mean.js';
 import regularFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans.ttf?url';
 import boldFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url';
 import { getDeviceIndoorUnits, getDeviceOutdoorModel, getDeviceSerialDisplay, getJobDeviceRows } from './job-devices.js';
@@ -233,6 +234,19 @@ export async function createLeakTestProtocolPdfBlob({ job, profiles, record = nu
 }
 
 /**
+ * 14.34: protokół utworzony przy zakończeniu montażu nie ma jeszcze temperatury — dociągamy średnią dnia badania
+ * (Open-Meteo) i zapisujemy w bazie (tylko gdy jej brak). Błąd pogody/zapisu nie blokuje PDF (pole zostaje z kropkami).
+ */
+export async function withBackgroundTemperature({ supabase, job, record }) {
+  if (!record || record.temperature_c != null || !record.test_date || !job?.city) return record;
+  let mean = null;
+  try { mean = await dailyMeanTemperature({ city: job.city, date: record.test_date }); } catch { mean = null; }
+  if (mean == null) return record;
+  try { await setLeakTestTemperature({ supabase, jobId: job.id, temperature: mean }); } catch { /* zapis w tle — PDF i tak z temperaturą */ }
+  return { ...record, temperature_c: mean };
+}
+
+/**
  * Otwiera PDF w nowej karcie (okno otwierane synchronicznie w kliknięciu — iPhone nie blokuje),
  * a gdy przeglądarka nie pozwala — pobiera plik.
  */
@@ -246,7 +260,8 @@ export async function openLeakTestProtocolPdf({ job, profiles, supabase = null, 
       previewWindow.document.body.innerHTML = '<p style="font:16px system-ui;padding:24px">Przygotowuję protokół PDF…</p>';
     }
     // Dane próby: przekazane z listy albo odczytane z bazy (administrator). Błąd odczytu ≠ „brak danych”.
-    const leakRecord = record !== undefined ? record : await loadLeakTest({ supabase, jobId: job?.id });
+    let leakRecord = record !== undefined ? record : await loadLeakTest({ supabase, jobId: job?.id });
+    leakRecord = await withBackgroundTemperature({ supabase, job, record: leakRecord });
     const { blob, fileName } = await createLeakTestProtocolPdfBlob({ job, profiles, record: leakRecord });
     const url = URL.createObjectURL(blob);
     if (previewWindow) {

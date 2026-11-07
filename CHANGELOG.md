@@ -1,3 +1,10 @@
+## 14.34
+- Decyzja właściciela 07.11.2026: **protokół z próby szczelności tworzy się sam przy zakończeniu montażu**, bez udziału pracownika i administratora. Baza (wyzwalacz) w chwili przejścia montażu w „Zakończone” — dowolną drogą, także z kolejki offline — zakłada wpis: data badania = dzień zakończenia (czas polski), wynik „Pozytywny”, instalator = osoba kończąca, od razu podpis ze wzoru (14.33). Dane klimatyzatora, numery seryjne i klient — z montażu (jak dotąd).
+- **Temperatura** (średnia dnia badania dla miejscowości, Open-Meteo) dociągana i zapisywana w tle przy pierwszym otwarciu zakładki „Próby szczelności” albo PDF protokołu (baza nie łączy się z internetem). Zapis tylko gdy temperatury brak — nie nadpisuje poprawki administratora; podpis zostaje.
+- **Bezpieczeństwo:** błąd zakładania protokołu nigdy nie blokuje zakończenia montażu (sprawdzone testem z wymuszoną awarią).
+- Baza: migracja `20261107140000_leak_test_auto_v1434.sql` — temperatura może być pusta, wyzwalacz na `jobs` (tylko zapis do `leak_test_records`), funkcja `leak_test_set_temperature_v1434`. Uruchamia właściciel.
+- Testy: SQL `leak-test-auto-sql-v1434` (PostgreSQL 16), smoke `smoke-leak-test-auto-v1434`, E2E `leak-test-auto-v1434`.
+
 ## 14.33
 - Decyzja właściciela 07.11.2026: **wzór podpisu pracownika w Diagnostyce** i **automatyczny podpis protokołów**. Telefon: Diagnostyka → karta „Wzór podpisu” → „Złóż wzór podpisu” (pole do podpisu palcem) → „Zapisz wzór”. Wzór zapisuje się w bazie (nie w telefonie); podgląd i „Zmień wzór podpisu”.
 - Protokoły z próby szczelności podpisują się same wzorem instalatora — od razu przy zapisie danych przez administratora albo w chwili złożenia wzoru (wszystkie oczekujące). **Data podpisu = data badania.** Nowy wzór trafia na protokoły podpisywane od teraz; podpisane zostają bez zmian. Zmiana danych lub instalatora podpisuje ponownie (aktualny wzór, nowa data).

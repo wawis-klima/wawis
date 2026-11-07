@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.33",
+  "version": "14.34",
   "scope": "full",
-  "release_branch": "release/v14.33",
+  "release_branch": "release/v14.34",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Wzór podpisu w Diagnostyce i automatyczny podpis protokołów: migracja 20261107120000 (uruchamia właściciel)."
+    "notes": "Protokół szczelności przy zakończeniu montażu: wyzwalacz na jobs (wyjątek przechwycony), migracja 20261107140000 (uruchamia właściciel)."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.33",
+    "source_branch": "release/v14.34",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.33.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.34.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.33: wzór podpisu pracownika i automatyczny podpis protokołów",
-    "release_ci": "WAWIS PR checks + signature-pattern-sql-v1433 (PostgreSQL 16) + smoke-signature-pattern-v1433 + E2E signature-pattern-v1433 (dev i built)",
-    "postdeploy": "Vercel READY/14.33."
+    "code": "14.34: protokół szczelności tworzy się sam przy zakończeniu montażu",
+    "release_ci": "WAWIS PR checks + leak-test-auto-sql-v1434 (PostgreSQL 16) + smoke-leak-test-auto-v1434 + E2E leak-test-auto-v1434",
+    "postdeploy": "Vercel READY/14.34."
   }
 }
