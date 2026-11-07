@@ -561,23 +561,6 @@ export default function JobDetailsPanel({
               Edytuj
             </button>
           ) : null}
-          {/* 14.28: protokół z próby szczelności (PDF z danych montażu) — zakończony montaż, administrator. */}
-          {isAdmin && selectedJobIsCompleted ? (
-            <button
-              type="button"
-              className="btn premiumActionBtn jobDetailsQuickBtn"
-              data-testid="leak-test-protocol-btn"
-              disabled={leakTestBusy}
-              onClick={() => {
-                setLeakTestBusy(true);
-                openLeakTestProtocolPdf({ job: selectedJob, profiles, supabase })
-                  .catch((error) => window.alert(error?.message || 'Nie udało się przygotować protokołu szczelności.'))
-                  .finally(() => setLeakTestBusy(false));
-              }}
-            >
-              {leakTestBusy ? 'Przygotowuję…' : 'Protokół szczelności (PDF)'}
-            </button>
-          ) : null}
           <button className="btn premiumActionBtn jobDetailsQuickBtn" onClick={() => setSelectedJob(null)}>
             Zamknij
           </button>
@@ -772,15 +755,37 @@ export default function JobDetailsPanel({
             ) : (
               <h4 className="sectionHeadingWithIcon"><IconCheckCircle /><span>Urządzenia</span></h4>
             )}
-            {isAdmin && canEditSelectedJob && (!isCompletedJob || desktopDevicesExpanded) ? (
-              <button
-                type="button"
-                className="btn secondary desktopJobDevicesManageBtn"
-                onClick={() => openSerialNumbersJob?.(selectedJob)}
-                disabled={busy}
-              >
-                Dodaj / edytuj urządzenia i tabliczki
-              </button>
+            {(isAdmin && canEditSelectedJob && (!isCompletedJob || desktopDevicesExpanded))
+              || (isAdmin && selectedJobIsCompleted && desktopDevicesExpanded) ? (
+              <div className="desktopJobDevicesActions">
+                {/* 14.31: protokół z próby szczelności przy urządzeniach (w górnym pasku rozbijał menu). */}
+                {isAdmin && selectedJobIsCompleted && desktopDevicesExpanded ? (
+                  <button
+                    type="button"
+                    className="btn secondary desktopJobDevicesManageBtn"
+                    data-testid="leak-test-protocol-btn"
+                    disabled={leakTestBusy}
+                    onClick={() => {
+                      setLeakTestBusy(true);
+                      openLeakTestProtocolPdf({ job: selectedJob, profiles, supabase })
+                        .catch((error) => window.alert(error?.message || 'Nie udało się przygotować protokołu szczelności.'))
+                        .finally(() => setLeakTestBusy(false));
+                    }}
+                  >
+                    {leakTestBusy ? 'Przygotowuję…' : 'Protokół szczelności (PDF)'}
+                  </button>
+                ) : null}
+                {isAdmin && canEditSelectedJob && (!isCompletedJob || desktopDevicesExpanded) ? (
+                  <button
+                    type="button"
+                    className="btn secondary desktopJobDevicesManageBtn"
+                    onClick={() => openSerialNumbersJob?.(selectedJob)}
+                    disabled={busy}
+                  >
+                    Dodaj / edytuj urządzenia i tabliczki
+                  </button>
+                ) : null}
+              </div>
             ) : null}
           </div>
           {(!isCompletedJob || desktopDevicesExpanded) ? (

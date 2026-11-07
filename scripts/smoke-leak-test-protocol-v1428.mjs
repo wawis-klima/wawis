@@ -24,7 +24,15 @@ assert.match(pdf, /const devices = getJobDeviceRows\(job\);/);
 assert.match(pdf, /const leakRecord = record !== undefined \? record : await loadLeakTest\(\{ supabase, jobId: job\?\.id \}\);/);
 // 14.29: podpis wyłącznie z wpisu złożonego przez samego instalatora (signature_png z bazy).
 assert.match(pdf, /signaturePng: record\?\.test_date && \/\^data:image\\\/png;base64,\/\.test\(String\(record\?\.signature_png \|\| ''\)\) \? record\.signature_png : ''/);
-assert.equal((pdf.match(/addImage\(/g) || []).length, 1, 'jedno miejsce na podpis instalatora');
+assert.equal((pdf.match(/addImage\(/g) || []).length, 1, 'jeden kod rysowania podpisu instalatora');
+// 14.31 (decyzje właściciela 07.11.2026): podpis i data w obu polach (ta sama osoba), osoba odpowiedzialna wpisana,
+// numery seryjne urządzenia w protokole.
+assert.equal((pdf.match(/^  drawSignature\(doc, data, /gm) || []).length, 2, 'podpis: przeprowadzający i odpowiedzialny');
+assert.match(pdf, /drawSignature\(doc, data, LEFT \+ 78, sigY\);\s+drawSignature\(doc, data, RIGHT - 100, sigY\);/);
+assert.match(pdf, /field\(doc, 'Osoba odpowiedzialna za badania:', data\.responsiblePerson, y\)/);
+assert.match(pdf, /responsiblePerson: performedBy,/);
+assert.match(pdf, /field\(doc, 'Numery seryjne:', page\.serialNumbers, y\)/);
+assert.match(pdf, /serialNumbers: device \? deviceSerialText\(device\) : '',/);
 assert.doesNotMatch(pdf, /Kopia elektroniczna|oryginale papierowym/, 'bez dopisków (decyzja właściciela)');
 assert.doesNotMatch(pdf, /previewWindow\.opener = null/, 'WebKit: blob w karcie wymaga połączenia z aplikacją');
 // Nic nie zapisuje w bazie ani w Storage.
@@ -38,7 +46,11 @@ assert.match(mobile, /openLeakTestProtocolPdf\(\{ job: selectedJob, profiles, su
 assert.ok(mobile.indexOf('const selectedJobId = String(selectedJob?.id || "");') < mobile.indexOf('React.useEffect(() => { setLeakTestMessage(""); }, [selectedJobId]);'),
   'selectedJobId zadeklarowany przed użyciem');
 const desktop = read('src/components/JobDetailsPanel.jsx');
-assert.match(desktop, /\{isAdmin && selectedJobIsCompleted \? \(\s+<button\s+type="button"\s+className="btn premiumActionBtn jobDetailsQuickBtn"\s+data-testid="leak-test-protocol-btn"/);
+// 14.31: na komputerze przycisk w sekcji „Urządzenia” (w górnym pasku rozbijał menu).
+assert.match(desktop, /\{isAdmin && selectedJobIsCompleted && desktopDevicesExpanded \? \(\s+<button\s+type="button"\s+className="btn secondary desktopJobDevicesManageBtn"\s+data-testid="leak-test-protocol-btn"/);
+const quickStart = desktop.indexOf('<div className="jobDetailsQuickActions"');
+const quickBlock = desktop.slice(quickStart, desktop.indexOf('</div>', desktop.indexOf('Zamknij', quickStart)));
+assert.ok(quickStart > 0 && !quickBlock.includes('leak-test-protocol-btn'), 'górny pasek bez protokołu szczelności');
 assert.match(desktop, /import \{ openLeakTestProtocolPdf \} from '\.\.\/mobile791\/modules\/leak-test-protocol-pdf\.js';/);
 
 console.log('PASS WAWIS 14.28 — protokół z próby szczelności PDF (wzór firmowy, dane montażu, pomiary z wpisu administratora, bez podpisów i dopisków).');

@@ -7,7 +7,7 @@
 import { loadLeakTest } from '../../modules/leak-tests.js';
 import regularFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans.ttf?url';
 import boldFontUrl from 'dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf?url';
-import { getDeviceIndoorUnits, getDeviceOutdoorModel, getJobDeviceRows } from './job-devices.js';
+import { getDeviceIndoorUnits, getDeviceOutdoorModel, getDeviceSerialDisplay, getJobDeviceRows } from './job-devices.js';
 import { getJobAddress } from '../utils/jobHelpers.jsx';
 
 const FONT = 'DejaVuSans';
@@ -54,16 +54,30 @@ function deviceObjectName(device = {}) {
   return model ? `Klimatyzator ${model}` : '';
 }
 
+// 14.31: numery seryjne badanego urządzenia (z tabliczek zapisanych w montażu), w pełnych nazwach jednostek.
+export function deviceSerialText(device = {}) {
+  const indoor = getDeviceIndoorUnits(device, { keepEmpty: true });
+  const outdoor = clean(device?.outdoor_serial_number);
+  const parts = [];
+  indoor.forEach((unit, index) => {
+    const serial = clean(unit?.serialNumber);
+    if (serial) parts.push(`jedn. wewn.${indoor.length > 1 ? ` ${unit.unitNumber || index + 1}` : ''}: ${serial}`);
+  });
+  if (outdoor) parts.push(`jedn. zewn.: ${outdoor}`);
+  if (parts.length) return parts.join('; ');
+  return clean(getDeviceSerialDisplay(device));
+}
+
 /** Dane protokołu: jedna strona na urządzenie montażu (jak papierowy protokół „na klimatyzator”). */
 export function buildLeakTestProtocolData({ job = {}, profiles = [], record = null } = {}) {
   const person = (profiles || []).find((profile) => String(profile?.id || '') === String(job?.completed_by || ''));
   const performedBy = clean(person?.full_name);
   const devices = getJobDeviceRows(job);
-  const names = devices.map(deviceObjectName);
-  const pages = (names.length ? names : ['']).map((objectName, index) => ({
+  const pages = (devices.length ? devices : [null]).map((device, index) => ({
     deviceIndex: index + 1,
-    deviceCount: Math.max(1, names.length),
-    objectName,
+    deviceCount: Math.max(1, devices.length),
+    objectName: device ? deviceObjectName(device) : '',
+    serialNumbers: device ? deviceSerialText(device) : '',
   }));
   return {
     jobId: String(job?.id || ''),
@@ -71,6 +85,8 @@ export function buildLeakTestProtocolData({ job = {}, profiles = [], record = nu
     client: clean(job?.client || job?.title),
     place: clean(getJobAddress(job)),
     performedBy,
+    // 14.31 (decyzja właściciela 07.11.2026): osoba odpowiedzialna za badanie to ta sama osoba co przeprowadzająca.
+    responsiblePerson: performedBy,
     completedDate: formatLeakTestDate(job?.completed_at || job?.installation_date),
     testDate: record?.test_date ? formatLeakTestDate(record.test_date) : '',
     temperature: record?.temperature_c != null && record?.test_date ? String(Number(record.temperature_c)).replace('.', ',') : '',
@@ -127,6 +143,23 @@ function field(doc, label, value, y, { suffix = '' } = {}) {
   return next + 26;
 }
 
+// Podpis instalatora nad kropkami (jak na papierze: data i podpis), proporcje obrazu zachowane.
+function drawSignature(doc, data, centerX, sigY) {
+  if (!data.signaturePng) return;
+  try {
+    const props = doc.getImageProperties(data.signaturePng);
+    const maxW = 150; const maxH = 46;
+    const scale = Math.min(maxW / props.width, maxH / props.height);
+    const w = props.width * scale; const h = props.height * scale;
+    doc.addImage(data.signaturePng, 'PNG', centerX - w / 2, sigY - h - 2, w, h);
+  } catch { /* uszkodzony obraz — protokół bez podpisu zamiast błędu */ }
+  if (data.signedDate) {
+    doc.setFont(FONT, 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
+    doc.text(data.signedDate, centerX - 86, sigY - 30);
+    doc.setTextColor(0, 0, 0);
+  }
+}
+
 function drawPage(doc, data, page) {
   doc.setTextColor(0, 0, 0);
   doc.setFont(FONT, 'bold'); doc.setFontSize(17); doc.text('PROTOKÓŁ', W / 2, 92, { align: 'center' });
@@ -135,6 +168,7 @@ function drawPage(doc, data, page) {
 
   let y = 186;
   y = field(doc, 'Nazwa badanego obiektu:', page.objectName, y);
+  y = field(doc, 'Numery seryjne:', page.serialNumbers, y);
   y = field(doc, 'Miejsce badania:', data.place, y);
   doc.setFont(FONT, 'normal'); doc.setFontSize(10.5);
   doc.text(`Maksymalne dopuszczalne ciśnienie PS (zgodne z EN 378-2:2000)  ${LEAK_TEST_TEMPLATE.maxPressureBar}  [bar]`, LEFT, y); y += 26;
@@ -151,7 +185,7 @@ function drawPage(doc, data, page) {
   doc.circle(LEFT + 22, y - 3.5, 1.6, 'F'); doc.text('Inne:', LEFT + 34, y); dots(doc, LEFT + 64, RIGHT - 20, y + 1); y += 30;
   y = field(doc, 'Data badania:', data.testDate ? `${data.testDate} r.` : '', y);
   y = field(doc, 'Osoba przeprowadzająca badanie:', data.performedBy, y);
-  y = field(doc, 'Osoba odpowiedzialna za badania:', '', y);
+  y = field(doc, 'Osoba odpowiedzialna za badania:', data.responsiblePerson, y);
   doc.setFont(FONT, 'normal'); doc.setFontSize(10.5);
   const resultLabel = 'Wynik badania: ';
   doc.text(`${resultLabel}Pozytywny – Negatywny`, LEFT, y);
@@ -168,21 +202,9 @@ function drawPage(doc, data, page) {
   dots(doc, LEFT - 6, RIGHT - 20, y + 1);
 
   const sigY = 700;
-  if (data.signaturePng) {
-    // Podpis instalatora nad kropkami (jak na papierze: data i podpis), proporcje obrazu zachowane.
-    try {
-      const props = doc.getImageProperties(data.signaturePng);
-      const maxW = 150; const maxH = 46;
-      const scale = Math.min(maxW / props.width, maxH / props.height);
-      const w = props.width * scale; const h = props.height * scale;
-      doc.addImage(data.signaturePng, 'PNG', LEFT + 78 - w / 2, sigY - h - 2, w, h);
-    } catch { /* uszkodzony obraz — protokół bez podpisu zamiast błędu */ }
-    if (data.signedDate) {
-      doc.setFont(FONT, 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
-      doc.text(data.signedDate, LEFT - 8, sigY - 30);
-      doc.setTextColor(0, 0, 0);
-    }
-  }
+  // 14.31: ta sama osoba przeprowadza badanie i za nie odpowiada — podpis i data w obu miejscach.
+  drawSignature(doc, data, LEFT + 78, sigY);
+  drawSignature(doc, data, RIGHT - 100, sigY);
   dots(doc, LEFT - 10, LEFT + 165, sigY);
   dots(doc, RIGHT - 190, RIGHT - 10, sigY);
   doc.setFontSize(8.5);

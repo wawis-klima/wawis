@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.30",
+  "version": "14.31",
   "scope": "full",
-  "release_branch": "release/v14.30",
+  "release_branch": "release/v14.31",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Naprawa okna podpisu protokołów szczelności na telefonie (CSS ładowany w main.jsx). Bez zmian bazy."
+    "notes": "Protokół szczelności: podpis w obu polach, numery seryjne, przycisk PDF w sekcji Urządzenia (komputer). Bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.30",
+    "source_branch": "release/v14.31",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.30.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.31.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.30: style okna podpisu protokołów szczelności na telefonie",
-    "release_ci": "WAWIS PR checks + smoke-mobile-static-css-v1430 + E2E leak-test-sign-v1429 (dev i built)",
-    "postdeploy": "Vercel READY/14.30."
+    "code": "14.31: protokół szczelności — drugi podpis, numery seryjne, przycisk przy urządzeniach",
+    "release_ci": "WAWIS PR checks + smoke-leak-test-protocol-v1428 + E2E leak-test-protocol-desktop-v1431",
+    "postdeploy": "Vercel READY/14.31."
   }
 }

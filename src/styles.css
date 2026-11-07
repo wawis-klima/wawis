@@ -10267,6 +10267,7 @@ img.previewImage{
   margin-bottom:10px;
 }
 .desktopJobDevicesHeadingRow .sectionHeadingWithIcon{margin:0;}
+.desktopJobDevicesActions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;min-width:0;}
 .desktopJobDevicesManageBtn{
   flex:0 0 auto;
   min-height:34px;
@@ -10540,6 +10541,7 @@ img.previewImage{
 }
 @media(max-width:900px){
   .desktopJobDevicesHeadingRow{align-items:flex-start;flex-direction:column;}
+  .desktopJobDevicesActions{width:100%;flex-direction:column;}
   .desktopJobDevicesManageBtn{width:100%;}
 }
 .appDataRefreshStatus{
