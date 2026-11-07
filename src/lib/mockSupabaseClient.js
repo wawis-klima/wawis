@@ -519,6 +519,14 @@ export function createMockSupabaseClient() {
     },
     async rpc(name, payload = {}) {
       // 14.28: próby szczelności (tylko dane fikcyjne).
+      // 14.36: Diagnostyka (komputer) — wzory podpisów pracowników (jak staff_signatures_admin_list_v1434).
+      if (name === 'staff_signatures_admin_list_v1434') {
+        const signatures = Array.isArray(store.leak_test_signatures) ? store.leak_test_signatures : [];
+        const staff = (store.profiles || []).filter((item) => /^(employee|pracownik|admin|administrator)$/i.test(String(item.role || '').trim()));
+        const latest = (id) => [...signatures].reverse().find((item) => String(item.profile_id) === String(id));
+        return { data: staff.map((item) => ({ profile_id: item.id, full_name: item.full_name, role: item.role,
+          image_png: latest(item.id)?.image_png || null, created_at: latest(item.id)?.created_at || null })), error: null };
+      }
       // 14.32: instalator przypisany do montaży bez instalatora z aplikacji (jak migracja 20261107100000).
       if (['leak_tests_list_v1428', 'leak_test_get_v1428', 'leak_test_save_v1428', 'leak_test_save_v1432', 'leak_test_installers_v1432', 'leak_test_set_temperature_v1434'].includes(name)) {
         if (!Array.isArray(store.leak_test_records)) store.leak_test_records = [];

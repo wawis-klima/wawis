@@ -19,6 +19,7 @@ import {
 import { sendTestPush } from '../../modules/push-subscriptions.js';
 import { settleDiagnosticSection, getPushAcceptanceMessage } from '../../modules/diagnostics-package4.js';
 import { supabase } from '../../lib/supabase.js';
+import StaffSignaturesCard from './StaffSignaturesCard.jsx';
 
 function formatDateTime(value) {
   if (!value) return 'Brak zapisów';
@@ -274,6 +275,9 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
           </div>
         </section>
       ) : null}
+
+      {/* 14.36: wzory podpisów pracowników (podgląd, administrator). */}
+      {profile?.role === 'Administrator' ? <StaffSignaturesCard supabase={supabase} /> : null}
 
       <section className="diagnosticsEventsCard">
         <div className="diagnosticsEventsHeader">
