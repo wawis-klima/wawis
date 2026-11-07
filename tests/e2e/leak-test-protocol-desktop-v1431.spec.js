@@ -16,6 +16,10 @@ test('14.31: protokół szczelności przy urządzeniach, numery seryjne i drugi 
     store.leak_test_records = [{ job_id: 'mock-job-003', test_date: '2026-04-22', temperature_c: 18, result: 'pozytywny', signature_id: 'mock-sig-1', signed_at: '2026-11-06T12:00:00Z' }];
     localStorage.setItem(key, JSON.stringify(store));
   });
+  const diag = [];
+  page.on('dialog', (dialog) => { diag.push(`dialog: ${dialog.message()}`); void dialog.dismiss(); });
+  page.on('pageerror', (err) => diag.push(`pageerror: ${err.message}`));
+  page.on('console', (msg) => { if (msg.type() === 'error') diag.push(`console: ${msg.text()}`); });
   await loginWithoutReset(page, ADMIN);
   await page.getByRole('button', { name: /^Montaże$/ }).click();
   await page.getByRole('button', { name: /Zakończone:/ }).click();
@@ -97,6 +101,7 @@ test('14.31: protokół szczelności przy urządzeniach, numery seryjne i drugi 
     expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
     downloadPromise.then((download) => (download ? 'download' : null)),
   ]);
-  expect(outcome || (await downloadPromise ? 'download' : null), 'PDF otwarty w karcie albo pobrany').toBeTruthy();
+  expect(outcome || (await downloadPromise ? 'download' : null),
+    `PDF otwarty w karcie albo pobrany — popup=${popup.isClosed() ? 'zamknięty' : popup.url()} | ${diag.slice(-6).join(' || ') || '-'}`).toBeTruthy();
   await expect(button).toHaveText('Protokół szczelności (PDF)');
 });

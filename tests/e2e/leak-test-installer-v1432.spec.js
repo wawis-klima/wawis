@@ -10,8 +10,10 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
 
   test('stary montaż: wybór instalatora wymagany, zapis, nazwisko w PDF', async ({ page }) => {
     await login(page, ADMIN);
+    // Uchwyt bazy testowej komputera — moduły telefonu ładowane później podmieniają window.__KLIMA_MOCK_SUPABASE__.
+    await page.evaluate(() => { window.__desktopMock = window.__KLIMA_MOCK_SUPABASE__; });
     // Stary zakończony montaż bez instalatora w aplikacji (jak 85 montaży z kwietnia–sierpnia 2026).
-    await page.evaluate(() => window.__KLIMA_MOCK_SUPABASE__.mutate((store) => {
+    await page.evaluate(() => window.__desktopMock.mutate((store) => {
       const base = store.jobs.find((job) => job.id === 'mock-job-003');
       store.jobs.push({ ...base, id: 'mock-job-old', client: 'Stary Klient Kwiecień', completed_at: null, completed_by: null, installation_date: '2026-04-15' });
     }));
@@ -40,7 +42,7 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
 
     // Baza (mock): wpis z instalatorem, montaż bez zmian; dane PDF z nazwiskiem przypisanego instalatora.
     const check = await page.evaluate(async () => {
-      const store = window.__KLIMA_MOCK_SUPABASE__.getStore();
+      const store = window.__desktopMock.getStore();
       const worker = store.profiles.find((item) => item.full_name === 'Pracownik Testowy');
       const record = store.leak_test_records.find((item) => item.job_id === 'mock-job-old');
       const job = store.jobs.find((item) => item.id === 'mock-job-old');
