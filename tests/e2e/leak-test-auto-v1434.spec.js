@@ -27,7 +27,7 @@ test('14.34: temperatura protokołu z zakończenia montażu dociągana i zapisyw
   await page.getByRole('button', { name: /^Próby szczelności$/ }).click();
   const panel = page.getByTestId('leak-tests-panel');
   await expect(panel).toContainText('Protokoły tworzą się same przy zakończeniu montażu');
-  await panel.getByRole('button', { name: 'Uzupełnione' }).click();
+  await panel.getByRole('tab', { name: 'Uzupełnione' }).click();
   const row = panel.getByTestId('leak-test-row').filter({ hasText: 'Klient Testowy C Zakończony' });
   await expect(row.getByLabel('Temperatura °C')).toHaveValue('7');
   await expect(row.getByTestId('leak-test-temp-hint')).toHaveText('Średnia dnia · Gdańsk');
