@@ -120,3 +120,25 @@ export async function saveOwnSignaturePattern({ supabase, imagePng }) {
   }
   return Number(data) || 0;
 }
+
+// 14.34: protokół tworzy baza przy zakończeniu montażu (bez temperatury); aplikacja dociąga średnią dnia w tle.
+// Zapis tylko gdy temperatury jeszcze brak (nie nadpisuje wpisu administratora). Baza przed 14.34 → false, bez błędu.
+export async function setLeakTestTemperature({ supabase, jobId, temperature }) {
+  if (!supabase || !jobId || temperature == null || String(temperature).trim() === '' || !Number.isFinite(Number(temperature))) return false;
+  const { data, error } = await supabase.rpc('leak_test_set_temperature_v1434', { p_job_id: jobId, p_temperature_c: Number(temperature) });
+  if (error) {
+    if (missingFunction(error, 'leak_test_set_temperature_v1434')) return false;
+    throw rpcError(error);
+  }
+  return data === true;
+}
+
+// 14.34: administrator (Diagnostyka) — podgląd wzorów podpisów pracowników (najnowszy wzór każdego).
+export async function loadStaffSignaturesAdmin({ supabase }) {
+  const { data, error } = await supabase.rpc('staff_signatures_admin_list_v1434');
+  if (error) {
+    if (missingFunction(error, 'staff_signatures_admin_list_v1434')) throw new Error('Podgląd wzorów wymaga aktualizacji bazy (14.34).');
+    throw rpcError(error);
+  }
+  return Array.isArray(data) ? data : [];
+}

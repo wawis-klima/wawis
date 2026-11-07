@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './leak-tests.css';
 import {
-  LEAK_TEST_RESULTS, countFilledLeakTests, defaultLeakTestDate, loadLeakInstallers, loadLeakTests, saveLeakTest, validateLeakTestDraft,
+  LEAK_TEST_RESULTS, countFilledLeakTests, defaultLeakTestDate, loadLeakInstallers, loadLeakTests, saveLeakTest, setLeakTestTemperature, validateLeakTestDraft,
 } from '../../modules/leak-tests.js';
 import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-protocol-pdf.js';
 import { dailyMeanTemperature } from '../../modules/weather-daily-mean.js';
@@ -101,6 +101,32 @@ export default function LeakTestsPanel({ supabase }) {
     setRowState((prev) => ({ ...prev, [jobId]: { ...prev[jobId], error: '', saved: false } }));
   }
 
+  // 14.34: protokoły utworzone przy zakończeniu montażu bez temperatury — średnia dnia dociągana i ZAPISYWANA w tle
+  // (wszystkie wiersze, nie tylko widoczne; zapis tylko gdy w bazie brak temperatury).
+  const autoSaving = useRef(new Set());
+  useEffect(() => {
+    const queue = rows.filter((row) => row.test_date && row.temperature_c == null && row.city && !autoSaving.current.has(row.job_id)).slice(0, 60);
+    if (!queue.length) return;
+    queue.forEach((row) => autoSaving.current.add(row.job_id));
+    (async () => {
+      for (const row of queue) {
+        let mean = null;
+        try { mean = await dailyMeanTemperature({ city: row.city, date: row.test_date }); } catch { mean = null; }
+        if (mean == null || !mounted.current) continue;
+        let saved = false;
+        try { saved = await setLeakTestTemperature({ supabase, jobId: row.job_id, temperature: mean }); } catch { saved = false; }
+        if (!saved || !mounted.current) continue;
+        setRows((prev) => prev.map((item) => (item.job_id === row.job_id ? { ...item, temperature_c: mean } : item)));
+        setDrafts((prev) => {
+          const current = prev[row.job_id];
+          if (!current || String(current.temperature || '').trim()) return prev;
+          return { ...prev, [row.job_id]: { ...current, temperature: String(mean), tempAuto: true } };
+        });
+        setTempHints((prev) => ({ ...prev, [row.job_id]: { status: 'auto', date: row.test_date, city: row.city } }));
+      }
+    })();
+  }, [rows, supabase]);
+
   // 14.33: dla widocznych, nieuzupełnionych wierszy bez temperatury — średnia dnia badania (po kolei, z pamięcią).
   useEffect(() => {
     const queue = visible.filter((row) => {
@@ -185,7 +211,8 @@ export default function LeakTestsPanel({ supabase }) {
         <div>
           <h2>Próby szczelności</h2>
           <p className="leakTestsLead">
-            Zakończone montaże. Przepisz z podpisanego protokołu datę badania, temperaturę i wynik — PDF wypełni się tymi danymi.
+            Protokoły tworzą się same przy zakończeniu montażu: data zakończenia, wynik pozytywny, temperatura — średnia dnia,
+            podpis — wzór instalatora. Tu możesz je poprawić.
             Przy starszych montażach bez instalatora w aplikacji wybierz instalatora — protokół trafi do podpisu w jego aplikacji.
           </p>
         </div>
@@ -245,7 +272,7 @@ export default function LeakTestsPanel({ supabase }) {
                 <span>Temperatura °C</span>
                 <input type="text" inputMode="decimal" className="input" placeholder="np. 18" value={draft.temperature}
                   onChange={(e) => setDraft(row.job_id, { temperature: e.target.value })} />
-                {!row.test_date && tempHints[row.job_id] && tempHints[row.job_id].date === draft.testDate ? (
+                {tempHints[row.job_id] && tempHints[row.job_id].date === draft.testDate ? (
                   <small className={`leakTestTempHint ${tempHints[row.job_id].status}`} data-testid="leak-test-temp-hint">
                     {tempHints[row.job_id].status === 'loading' ? 'Pobieram średnią dnia…'
                       : tempHints[row.job_id].status === 'auto' && draft.tempAuto ? `Średnia dnia · ${tempHints[row.job_id].city}`

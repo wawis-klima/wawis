@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## LEAK-AUTO-1434 — protokół szczelności przy zakończeniu montażu (07.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| AUTO-1434-DB | FIXED-UNVERIFIED | Wpis przy zakończeniu (update i insert), data zakończenia w czasie polskim, podpis ze wzoru, istniejący wpis bez zmian, bez instalatora bez wpisu, **awaria nie blokuje zakończenia montażu**, temperatura tylko gdy brak (SQL PostgreSQL 16; testy 14.28–14.33 po migracji). |
+| AUTO-1434-TEMP | FIXED-UNVERIFIED | Temperatura w tle: zakładka i PDF, zapis bez nadpisywania (E2E, atrapa Open-Meteo). |
+| AUTO-1434-PROD | PENDING-OWNER | Migracja `20261107140000` (właściciel); pierwszy prawdziwy montaż zakończony po wdrożeniu — sprawdzić wpis zapytaniem SELECT. |
+
 ## SIGNATURE-PATTERN-1433 — wzór podpisu i automatyczny podpis protokołów (07.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

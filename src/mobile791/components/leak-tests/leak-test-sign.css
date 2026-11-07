@@ -23,3 +23,9 @@
 .signaturePatternPreview { display: grid; gap: 4px; justify-items: start; }
 .signaturePatternPreview img { max-width: 100%; max-height: 90px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 4px 8px; }
 .signaturePatternPreview small { color: #5a6b80; }
+/* 14.34: Diagnostyka administratora — wzory podpisów pracowników. */
+.staffSignaturesList { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.staffSignaturesList li { display: grid; gap: 4px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px 10px; }
+.staffSignaturesHead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.staffSignaturesHead small { color: #5a6b80; }
+.staffSignaturesList img { max-width: 100%; max-height: 80px; background: #fff; justify-self: start; }
