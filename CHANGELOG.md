@@ -1,3 +1,10 @@
+## 14.35
+- Decyzja właściciela 07.11.2026: **temperatura protokołu szczelności uzupełniana przez serwer**, bez otwierania zakładki czy PDF. Baza co 5 minut (pg_cron) bierze protokoły bez temperatury, zamienia miejscowość montażu na współrzędne (Open-Meteo; pamięć miejscowości w bazie), pobiera średnią temperaturę dnia badania (archiwum; dla ostatnich dni dane bieżące) i zapisuje ją zaokrągloną do pełnych stopni — zwykle w ciągu kilkunastu minut od zakończenia montażu. Nie nadpisuje temperatury wpisanej przez administratora.
+- Błędy serwisu pogodowego: ponowienia (30 min; brak danych dnia — 6 h); po wielu próbach wpis kolejki „failed” z przyczyną (np. nieznana miejscowość). Do serwisu trafia tylko miejscowość i data.
+- Dociąganie w aplikacji (14.34) zostaje jako dodatkowe zabezpieczenie.
+- Baza: migracja `20261107150000_leak_test_temperature_cron_v1435.sql` — kolejka i pamięć miejscowości w schemacie `private`, funkcja przebiegu, zadanie cron `wawis-leak-test-temperature-v1435`. Uruchamia właściciel. Aplikacja bez zmian.
+- Testy: SQL `leak-test-temperature-cron-sql-v1435` (PostgreSQL 16, atrapa pg_net z odpowiedziami: sukces, brak danych, błąd HTTP, nieznana miejscowość, ujemna temperatura), smoke `smoke-leak-test-temperature-cron-v1435`.
+
 ## 14.34
 - Decyzja właściciela 07.11.2026: **protokół z próby szczelności tworzy się sam przy zakończeniu montażu**, bez udziału pracownika i administratora. Baza (wyzwalacz) w chwili przejścia montażu w „Zakończone” — dowolną drogą, także z kolejki offline — zakłada wpis: data badania = dzień zakończenia (czas polski), wynik „Pozytywny”, instalator = osoba kończąca, od razu podpis ze wzoru (14.33). Dane klimatyzatora, numery seryjne i klient — z montażu (jak dotąd).
 - **Temperatura** (średnia dnia badania dla miejscowości, Open-Meteo) dociągana i zapisywana w tle przy pierwszym otwarciu zakładki „Próby szczelności” albo PDF protokołu (baza nie łączy się z internetem). Zapis tylko gdy temperatury brak — nie nadpisuje poprawki administratora; podpis zostaje.

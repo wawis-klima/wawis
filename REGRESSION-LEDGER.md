@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## LEAK-TEMP-CRON-1435 — temperatura protokołu z serwera (07.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| TEMP-1435-DB | FIXED-UNVERIFIED | Kolejka, geokodowanie z pamięcią, archiwum/dane bieżące, zapis tylko gdy brak, ponowienia, „failed” z przyczyną, brak dostępu z aplikacji (SQL PostgreSQL 16, atrapa pg_net). |
+| TEMP-1435-PROD | PENDING-OWNER | Migracja `20261107150000` (właściciel); po uruchomieniu — SELECT kolejki i `net._http_response` po pierwszym przebiegu na prawdziwym montażu. |
+
 ## LEAK-AUTO-1434 — protokół szczelności przy zakończeniu montażu (07.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

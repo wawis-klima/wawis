@@ -325,3 +325,6 @@ bash "$ROOT/scripts/signature-pattern-sql-v1433.sh"
 
 # WAWIS 14.34: protokół szczelności przy zakończeniu montażu na jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/leak-test-auto-sql-v1434.sh"
+
+# WAWIS 14.35: temperatura protokołu z serwera (kolejka + atrapa pg_net) na jednorazowym PostgreSQL 16.
+bash "$ROOT/scripts/leak-test-temperature-cron-sql-v1435.sh"
