@@ -10935,3 +10935,9 @@ img.previewImage{
     width: 100%;
   }
 }
+
+/* 14.36: Diagnostyka (komputer) — wzory podpisów pracowników. */
+.diagnosticsSignatureGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 10px 0; }
+.diagnosticsSignatureItem { display: grid; gap: 4px; border: 1px solid #d8e0ec; border-radius: 14px; padding: 10px 12px; background: #fff; }
+.diagnosticsSignatureItem span { color: #5a6b80; font-size: 13px; }
+.diagnosticsSignatureItem img { max-width: 100%; max-height: 80px; justify-self: start; background: #fff; }

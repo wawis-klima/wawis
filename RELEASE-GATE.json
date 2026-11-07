@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.35",
+  "version": "14.36",
   "scope": "full",
-  "release_branch": "release/v14.35",
+  "release_branch": "release/v14.36",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Temperatura protokołu z serwera: pg_cron + pg_net, migracja 20261107150000 (uruchamia właściciel). Aplikacja bez zmian."
+    "notes": "Diagnostyka na komputerze: wzory podpisów pracowników (podgląd). Bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.35",
+    "source_branch": "release/v14.36",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.35.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.36.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.35: temperatura protokołu szczelności uzupełniana przez serwer",
-    "release_ci": "WAWIS PR checks + leak-test-temperature-cron-sql-v1435 (PostgreSQL 16, atrapa pg_net) + smoke-leak-test-temperature-cron-v1435",
-    "postdeploy": "Vercel READY/14.35."
+    "code": "14.36: wzory podpisów w Diagnostyce na komputerze",
+    "release_ci": "WAWIS PR checks + E2E staff-signatures-desktop-v1436 + smoke",
+    "postdeploy": "Vercel READY/14.36."
   }
 }

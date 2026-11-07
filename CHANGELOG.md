@@ -1,3 +1,7 @@
+## 14.36
+- Diagnostyka **na komputerze**: karta „Wzory podpisów pracowników” (jak w Diagnostyce telefonu od 14.34) — wzór każdego pracownika z datą zapisu, „Brak wzoru” u tych bez wzoru, licznik „Złożone wzory: X z Y”, „Odśwież wzory”. Tylko administrator, tylko podgląd. Bez zmian bazy.
+- Testy: E2E `staff-signatures-desktop-v1436` (administrator widzi, pracownik nie), smoke `smoke-staff-signatures-desktop-v1436`.
+
 ## 14.35
 - Decyzja właściciela 07.11.2026: **temperatura protokołu szczelności uzupełniana przez serwer**, bez otwierania zakładki czy PDF. Baza co 5 minut (pg_cron) bierze protokoły bez temperatury, zamienia miejscowość montażu na współrzędne (Open-Meteo; pamięć miejscowości w bazie), pobiera średnią temperaturę dnia badania (archiwum; dla ostatnich dni dane bieżące) i zapisuje ją zaokrągloną do pełnych stopni — zwykle w ciągu kilkunastu minut od zakończenia montażu. Nie nadpisuje temperatury wpisanej przez administratora.
 - Błędy serwisu pogodowego: ponowienia (30 min; brak danych dnia — 6 h); po wielu próbach wpis kolejki „failed” z przyczyną (np. nieznana miejscowość). Do serwisu trafia tylko miejscowość i data.
