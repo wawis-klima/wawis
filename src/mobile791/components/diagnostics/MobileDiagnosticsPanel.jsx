@@ -5,6 +5,7 @@ import { downloadDiagnosticReportImmediate, logDiagnostic } from '../../modules/
 import { sendTestPush } from '../../modules/push-subscriptions.js';
 import { supabase } from '../../lib/supabase.js';
 import SignaturePatternCard from './SignaturePatternCard.jsx';
+import StaffSignaturesAdminCard from './StaffSignaturesAdminCard.jsx';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
 import { confirmAndRepairPhotoQueue } from '../../modules/photo-queue-repair.js';
 import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
@@ -209,6 +210,8 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
 
       {/* 14.33: wzór podpisu pracownika — automatyczny podpis jego protokołów. */}
       <SignaturePatternCard supabase={supabase} profile={profile} />
+      {/* 14.34: administrator — podgląd wzorów podpisów pracowników. */}
+      {profile?.role === 'Administrator' ? <StaffSignaturesAdminCard supabase={supabase} /> : null}
 
       <section className="mobileDiagnosticsCard" data-testid="diagnostics-nameplate-readers">
         <h2>Odczyt tabliczek bez internetu</h2>

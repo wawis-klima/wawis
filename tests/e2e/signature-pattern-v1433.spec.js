@@ -1,5 +1,5 @@
 import { devices, expect, test } from '@playwright/test';
-import { WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
+import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 // WAWIS 14.33 — Diagnostyka → „Wzór podpisu” (decyzja właściciela 07.11.2026). Pracownik składa wzór; jego protokoły
 // podpisują się same (data podpisu = data badania). Bez banera „do podpisu” na liście montaży. Dane fikcyjne (mock).
@@ -58,4 +58,34 @@ test('@mobile 14.33: wzór podpisu w diagnostyce podpisuje protokoły pracownika
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('klima-mock-supabase-store-v3') || '{}'));
   expect(stored.leak_test_records[0].signature_id).toBeTruthy();
   expect(String(stored.leak_test_records[0].signed_at)).toMatch(/^2026-04-22/);
+});
+
+// WAWIS 14.34 — administrator widzi w Diagnostyce wzory podpisów pracowników (podgląd). Pracownik — nie.
+test('@mobile 14.34: administrator widzi wzory podpisów pracowników', async ({ page }) => {
+  await resetMockSupabase(page);
+  await page.evaluate(() => {
+    const key = 'klima-mock-supabase-store-v3';
+    const store = JSON.parse(localStorage.getItem(key) || '{}');
+    const worker = (store.profiles || []).find((item) => item.role === 'Pracownik');
+    store.leak_test_signatures = [{ id: 'mock-sig-w', profile_id: worker.id, confirmed_name: worker.full_name,
+      image_png: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', created_at: '2026-11-07T10:00:00Z' }];
+    localStorage.setItem(key, JSON.stringify(store));
+  });
+  await loginWithoutReset(page, ADMIN);
+  await page.locator('.wawisVersionDiagnosticsButton').click();
+  const card = page.getByTestId('staff-signatures-card');
+  await expect(card).toContainText('Wzory podpisów pracowników');
+  await expect(card.getByTestId('staff-signatures-count')).toContainText('Złożone wzory: 1 z');
+  const workerRow = card.getByTestId('staff-signature-row').filter({ hasText: 'Pracownik Testowy' });
+  await expect(workerRow).toContainText('Zapisany 07.11.2026');
+  await expect(workerRow.locator('img')).toHaveAttribute('src', /^data:image\/png;base64,/);
+  await expect(card.getByTestId('staff-signature-row').filter({ hasText: 'Brak wzoru' }).first()).toBeVisible();
+});
+
+test('@mobile 14.34: pracownik nie widzi wzorów innych', async ({ page }) => {
+  await resetMockSupabase(page);
+  await loginWithoutReset(page, WORKER);
+  await page.locator('.wawisVersionDiagnosticsButton').click();
+  await expect(page.getByTestId('signature-pattern-card')).toBeVisible();
+  await expect(page.getByTestId('staff-signatures-card')).toHaveCount(0);
 });

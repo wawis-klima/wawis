@@ -70,6 +70,12 @@ select wawis_test.as_user('a0000000-0000-4000-8000-000000000001');
 select wawis_test.expect(public.leak_test_set_temperature_v1434('b0000000-0000-4000-8000-00000000000e', 7.2), 'administrator: E');
 select wawis_test.expect((select temperature_c = 7.2 and signed_at is not null from public.leak_test_get_v1428('b0000000-0000-4000-8000-00000000000e')), 'E: temperatura, podpis zostaje');
 select wawis_test.expect((select temperature_c = 6.4 and signed_at is not null from public.leak_test_get_v1428('b0000000-0000-4000-8000-00000000000c')), 'C: 6,4 i podpis');
+-- Podgląd wzorów (administrator): Michał i Paweł ze wzorem, administrator bez; pracownik nie ma dostępu.
+select wawis_test.expect((select count(*) from public.staff_signatures_admin_list_v1434()) = 3, 'lista: wszyscy pracownicy');
+select wawis_test.expect((select count(*) from public.staff_signatures_admin_list_v1434() where image_png is not null) = 2, 'lista: 2 wzory');
+select wawis_test.expect((select image_png like 'data:image/png;base64,P%' from public.staff_signatures_admin_list_v1434() where full_name = 'Paweł Testowy'), 'najnowszy wzór Pawła');
+select wawis_test.as_user('a0000000-0000-4000-8000-000000000003');
+select wawis_test.expect_error($q$select * from public.staff_signatures_admin_list_v1434()$q$, '42501', 'pracownik: bez podglądu cudzych wzorów');
 select wawis_test.as_user(null);
 select wawis_test.expect_error($q$select public.leak_test_set_temperature_v1434('b0000000-0000-4000-8000-00000000000c', 5)$q$, '42501', 'bez logowania');
 select wawis_test.as_user('a0000000-0000-4000-8000-000000000002');

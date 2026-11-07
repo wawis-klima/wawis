@@ -1002,7 +1002,7 @@ export function createMockSupabaseClient() {
       if (String(name).startsWith('qr_sticker')) return mockQrStickerRpc(name, payload);
       // 14.28/14.29: dane prób szczelności i podpisy instalatorów (dane fikcyjne).
       if (name === 'leak_test_get_v1428' || name === 'leak_test_pending_own_v1429' || name === 'leak_test_sign_own_v1429'
-        || name === 'staff_signature_get_own_v1433' || name === 'staff_signature_save_own_v1433') {
+        || name === 'staff_signature_get_own_v1433' || name === 'staff_signature_save_own_v1433' || name === 'staff_signatures_admin_list_v1434') {
         const records = Array.isArray(store.leak_test_records) ? store.leak_test_records : [];
         store.leak_test_signatures = Array.isArray(store.leak_test_signatures) ? store.leak_test_signatures : [];
         const uid = String(restoreSession(store.users)?.user?.id || '');
@@ -1010,6 +1010,15 @@ export function createMockSupabaseClient() {
         const installerOf = (job) => String(job.completed_by || records.find((row) => String(row.job_id) === String(job.id))?.installer_id || '');
         const ownJob = (jobId) => store.jobs.find((job) => String(job.id) === String(jobId) && job.status === 'Zakończone' && installerOf(job) === uid);
         // 14.33: wzór podpisu pracownika i automatyczny podpis jego protokołów (data podpisu = data badania).
+        // 14.34: administrator — najnowszy wzór każdego pracownika.
+        if (name === 'staff_signatures_admin_list_v1434') {
+          const me = (store.profiles || []).find((item) => String(item.id) === uid);
+          if (me?.role !== 'Administrator') return { data: null, error: { message: 'admin_only (42501)' } };
+          const staff = (store.profiles || []).filter((item) => /^(employee|pracownik|admin|administrator)$/i.test(String(item.role || '').trim()));
+          const latest = (id) => [...store.leak_test_signatures].reverse().find((item) => String(item.profile_id) === String(id));
+          return { data: staff.map((item) => ({ profile_id: item.id, full_name: item.full_name, role: item.role,
+            image_png: latest(item.id)?.image_png || null, created_at: latest(item.id)?.created_at || null })), error: null };
+        }
         if (name === 'staff_signature_get_own_v1433') {
           const own = [...store.leak_test_signatures].reverse().find((item) => item.profile_id === uid);
           return { data: own ? [{ image_png: own.image_png, created_at: own.created_at || null }] : [], error: null };

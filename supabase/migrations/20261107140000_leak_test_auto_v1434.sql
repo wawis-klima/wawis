@@ -4,6 +4,7 @@
 -- podpisem ze wzoru instalatora (14.33). Temperatura (średnia dnia dla miejscowości) dociągana przez aplikację w tle
 -- (baza nie pobiera danych z internetu) — do tego czasu NULL. Administrator może wszystko poprawić w „Próbach szczelności”.
 -- Bezpieczeństwo: błąd przy zakładaniu protokołu NIGDY nie blokuje zakończenia montażu (wyjątek przechwycony).
+-- Administrator widzi w Diagnostyce wzory podpisów pracowników (tylko podgląd).
 -- Istniejące wpisy bez zmian (on conflict do nothing). Montaże (jobs) bez zmian. Można uruchomić ponownie.
 
 alter table public.leak_test_records alter column temperature_c drop not null;
@@ -62,6 +63,32 @@ end;
 $$;
 revoke all on function public.leak_test_set_temperature_v1434(uuid, numeric) from public, anon;
 grant execute on function public.leak_test_set_temperature_v1434(uuid, numeric) to authenticated, service_role;
+
+-- Administrator (Diagnostyka): wzory podpisów pracowników do podglądu — najnowszy wzór każdego pracownika.
+create or replace function public.staff_signatures_admin_list_v1434()
+returns table(profile_id uuid, full_name text, role text, image_png text, created_at timestamptz)
+language plpgsql
+stable
+security definer
+set search_path to ''
+as $$
+begin
+  if not public.current_user_is_admin() then
+    raise exception 'admin_only' using errcode = '42501';
+  end if;
+  return query
+  select p.id, p.full_name, p.role, s.image_png, s.created_at
+  from public.profiles p
+  left join lateral (
+    select x.image_png, x.created_at from public.leak_test_signatures x
+    where x.profile_id = p.id order by x.created_at desc, x.id desc limit 1
+  ) s on true
+  where lower(btrim(coalesce(p.role, ''))) in ('employee', 'pracownik', 'admin', 'administrator')
+  order by (s.image_png is null), p.full_name, p.id;
+end;
+$$;
+revoke all on function public.staff_signatures_admin_list_v1434() from public, anon;
+grant execute on function public.staff_signatures_admin_list_v1434() to authenticated, service_role;
 
 -- Jednorazowo: zakończone montaże z instalatorem bez wpisu (np. zakończone przed uruchomieniem migracji).
 insert into public.leak_test_records(job_id, test_date, temperature_c, result, updated_at, updated_by)

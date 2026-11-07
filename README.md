@@ -1068,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `14.34` — protokół szczelności tworzy się sam przy zakończeniu montażu (podpis ze wzoru, temperatura w tle); migracja `20261107140000`.
+- wersja `14.34` — protokół szczelności tworzy się sam przy zakończeniu montażu (podpis ze wzoru, temperatura w tle); podgląd wzorów podpisów w Diagnostyce administratora; migracja `20261107140000`.
 - wersja `14.33` — wzór podpisu pracownika w Diagnostyce; protokoły szczelności podpisują się automatycznie (data badania); bez banera do podpisu; temperatura próby podpowiadana (średnia dnia, Open-Meteo); migracja `20261107120000`.
 - wersja `14.32` — próby szczelności dla starszych montaży: administrator wybiera instalatora, protokół trafia do jego podpisu; migracja `20261107100000`.
 - wersja `14.31` — protokół szczelności: podpis także w polu osoby odpowiedzialnej, numery seryjne urządzenia; przycisk PDF na komputerze w sekcji „Urządzenia”.

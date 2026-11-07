@@ -132,3 +132,13 @@ export async function setLeakTestTemperature({ supabase, jobId, temperature }) {
   }
   return data === true;
 }
+
+// 14.34: administrator (Diagnostyka) — podgląd wzorów podpisów pracowników (najnowszy wzór każdego).
+export async function loadStaffSignaturesAdmin({ supabase }) {
+  const { data, error } = await supabase.rpc('staff_signatures_admin_list_v1434');
+  if (error) {
+    if (missingFunction(error, 'staff_signatures_admin_list_v1434')) throw new Error('Podgląd wzorów wymaga aktualizacji bazy (14.34).');
+    throw rpcError(error);
+  }
+  return Array.isArray(data) ? data : [];
+}

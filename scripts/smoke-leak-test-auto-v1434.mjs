@@ -25,4 +25,7 @@ assert.match(read('scripts/codex-postgres-two-sessions-v1269.sh'), /bash "\$ROOT
 const pdf = read('src/mobile791/modules/leak-test-protocol-pdf.js');
 assert.match(pdf, /leakRecord = await withBackgroundTemperature\(\{ supabase, job, record: leakRecord \}\);/);
 assert.match(read('src/components/leak-tests/LeakTestsPanel.jsx'), /setLeakTestTemperature\(\{ supabase, jobId: row\.job_id, temperature: mean \}\)/);
+// Podgląd wzorów podpisów pracowników — tylko administrator.
+assert.match(sql, /create or replace function public\.staff_signatures_admin_list_v1434\(\)[\s\S]*?if not public\.current_user_is_admin\(\) then/);
+assert.match(read('src/mobile791/components/diagnostics/MobileDiagnosticsPanel.jsx'), /\{profile\?\.role === 'Administrator' \? <StaffSignaturesAdminCard supabase=\{supabase\} \/> : null\}/);
 console.log('PASS WAWIS 14.34 — protokół przy zakończeniu montażu, temperatura w tle, bez blokowania zakończenia.');
