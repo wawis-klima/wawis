@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOLS-EXPORT-1437 — zakładka „Protokoły”, pobieranie zbiorcze (08.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| EXPORT-1437-ZIP | FIXED-UNVERIFIED | ZIP bez bibliotek, zgodny z zipfile (CRC, nazwy UTF-8), duplikaty nazw, zakres dat w czasie polskim, pominięte pliki, przerwanie (smoke). |
+| EXPORT-1437-UI | FIXED-UNVERIFIED | Menu nad Diagnostyką, walidacja zakresu, pobrany ZIP z folderami (E2E). |
+| LEAK-1437-SERIAL | FIXED-UNVERIFIED | PDF z listy z numerami seryjnymi (doczytanie montażu po otwarciu karty). |
+
 ## LEAK-TEMP-CRON-1435 — temperatura protokołu z serwera (07.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.36",
+  "version": "14.37",
   "scope": "full",
-  "release_branch": "release/v14.36",
+  "release_branch": "release/v14.37",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Diagnostyka na komputerze: wzory podpisów pracowników (podgląd). Bez zmian bazy."
+    "notes": "Zakładka Protokoły: pobieranie zbiorcze ZIP (tylko odczyt). Bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.36",
+    "source_branch": "release/v14.37",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.36.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.37.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.36: wzory podpisów w Diagnostyce na komputerze",
-    "release_ci": "WAWIS PR checks + E2E staff-signatures-desktop-v1436 + smoke",
-    "postdeploy": "Vercel READY/14.36."
+    "code": "14.37: zakładka Protokoły, pobieranie zbiorcze ZIP",
+    "release_ci": "WAWIS PR checks + smoke-protocols-export-v1437 + E2E protocols-export-v1437",
+    "postdeploy": "Vercel READY/14.37."
   }
 }

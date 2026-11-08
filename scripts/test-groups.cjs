@@ -27,6 +27,7 @@ const GROUPS = {
     'node scripts/smoke-leak-test-auto-v1434.mjs',
     'node scripts/smoke-leak-test-temperature-cron-v1435.mjs',
     'node scripts/smoke-staff-signatures-desktop-v1436.mjs',
+    'node scripts/smoke-protocols-export-v1437.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',

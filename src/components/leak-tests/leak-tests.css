@@ -35,3 +35,13 @@
 .leakTestTempHint { font-size: 11px; font-weight: 600; color: #5a6b80; }
 .leakTestTempHint.auto { color: #1d4ed8; }
 .leakTestTempHint.error, .leakTestTempHint.none { color: #b45309; }
+/* 14.37: zakładka „Protokoły” — pobieranie zbiorcze. */
+.protocolsExportCard { display: grid; gap: 12px; margin-bottom: 16px; }
+.protocolsExportPresets { display: flex; flex-wrap: wrap; gap: 8px; }
+.protocolsExportPresets .btn { min-height: 34px; padding: 6px 12px; }
+.protocolsExportRow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.protocolsExportRow .leakTestField { min-width: 160px; }
+.protocolsExportKind { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; min-height: 40px; }
+.protocolsExportHint { color: #5a6b80; }
+.protocolsExportProgress { margin: 0; font-weight: 600; color: #1d4ed8; }
+.protocolsExportDone { margin: 0; font-weight: 700; color: #1d7a46; }

@@ -89,11 +89,13 @@ function IconRequestModern() {
 }
 
 // 14.28: próby szczelności (manometr).
-function IconGaugeModern() {
+// 14.37: dokument z linijkami — zakładka „Protokoły”.
+function IconProtocolsModern() {
   return (
     <ShellIcon>
-      <circle cx="12" cy="12.6" r="7.4" />
-      <path d="M12 12.6 15.4 9.2M8.2 15.9h7.6" />
+      <path d="M7 3.9h6.6L18.5 8.8v9.05A2.25 2.25 0 0 1 16.25 20.1h-9A2.25 2.25 0 0 1 5 17.85V6.15A2.25 2.25 0 0 1 7 3.9Z" />
+      <path d="M13.4 4.2v4.8h4.8" />
+      <path d="M8.4 12.2h6.8M8.4 15.4h6.8M8.4 9.2h2.6" />
     </ShellIcon>
   );
 }
@@ -127,7 +129,6 @@ const sidebarSections = [
       { key: 'orders', label: 'Montaże', icon: IconBriefcaseModern, target: 'jobs' },
       { key: 'calendar', label: 'Kalendarz', icon: IconCalendarShell, target: 'calendar' },
       { key: 'devices', label: 'Urządzenia', icon: IconDeviceModern, target: 'devices' },
-      { key: 'leaktests', label: 'Próby szczelności', icon: IconGaugeModern, target: 'leaktests' },
       { key: 'fuel', label: 'Tankowania', icon: IconFuel, target: 'fuel' },
       { key: 'contractors', label: 'Kontrahenci', icon: IconContactsModern, target: 'contractors' },
     ],
@@ -143,6 +144,8 @@ const sidebarSections = [
   {
     title: 'SYSTEM',
     items: [
+      // 14.37: „Protokoły” (pobieranie zbiorcze + poprawki prób szczelności) nad Diagnostyką.
+      { key: 'leaktests', label: 'Protokoły', icon: IconProtocolsModern, target: 'leaktests' },
       { key: 'diagnostics', label: 'Diagnostyka', icon: IconSlidersModern, target: 'diagnostics' },
     ],
   },

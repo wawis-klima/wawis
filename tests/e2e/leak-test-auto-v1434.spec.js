@@ -24,7 +24,7 @@ test('14.34: temperatura protokołu z zakończenia montażu dociągana i zapisyw
   await page.evaluate(() => window.__desktopMock.mutate((store) => {
     store.leak_test_records = [{ job_id: 'mock-job-003', test_date: '2026-04-22', temperature_c: null, result: 'pozytywny', updated_at: new Date().toISOString(), signed_at: '2026-04-22T10:00:00Z' }];
   }));
-  await page.getByRole('button', { name: /^Próby szczelności$/ }).click();
+  await page.getByRole('button', { name: /^Protokoły$/ }).click();
   const panel = page.getByTestId('leak-tests-panel');
   await expect(panel).toContainText('Protokoły tworzą się same przy zakończeniu montażu');
   await panel.getByRole('tab', { name: 'Uzupełnione' }).click();

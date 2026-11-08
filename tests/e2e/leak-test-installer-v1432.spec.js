@@ -28,7 +28,7 @@ test.describe('14.32: instalator w próbach szczelności — komputer', () => {
       const base = store.jobs.find((job) => job.id === 'mock-job-003');
       store.jobs.push({ ...base, id: 'mock-job-old', client: 'Stary Klient Kwiecień', completed_at: null, completed_by: null, installation_date: '2026-04-15' });
     }));
-    await page.getByRole('button', { name: /^Próby szczelności$/ }).click();
+    await page.getByRole('button', { name: /^Protokoły$/ }).click();
     const panel = page.getByTestId('leak-tests-panel');
     await expect(panel.getByTestId('leak-tests-count')).toHaveText('Uzupełniono 0 z 2');
     const oldRow = panel.getByTestId('leak-test-row').filter({ hasText: 'Stary Klient Kwiecień' });

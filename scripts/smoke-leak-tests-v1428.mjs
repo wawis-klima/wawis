@@ -42,7 +42,8 @@ assert.match(pdf, /field\(doc, 'Temperatura przeprowadzania próby:', data\.temp
 assert.match(pdf, /field\(doc, 'Data badania:', data\.testDate \? `\$\{data\.testDate\} r\.` : '', y\)/);
 assert.match(pdf, /result: record\?\.test_date && \['pozytywny', 'negatywny'\]\.includes\(record\?\.result\) \? record\.result : ''/, 'bez wpisu — pola puste');
 const shell = read('src/components/layout/AdminDesktopShell.jsx');
-assert.match(shell, /\{ key: 'leaktests', label: 'Próby szczelności', icon: IconGaugeModern, target: 'leaktests' \}/);
+// 14.37: zakładka „Protokoły” w sekcji SYSTEM, bezpośrednio nad Diagnostyką.
+assert.match(shell, /\{ key: 'leaktests', label: 'Protokoły', icon: IconProtocolsModern, target: 'leaktests' \},\s+\{ key: 'diagnostics', label: 'Diagnostyka'/);
 const app = read('src/App.jsx');
 assert.match(app, /activeModule === "leaktests" \? \(\n\s+<LeakTestsPanel supabase=\{supabase\} \/>/);
 assert.match(app, /"requests", "leaktests"\]/);
