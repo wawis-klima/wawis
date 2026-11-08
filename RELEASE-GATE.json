@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.38",
+  "version": "14.39",
   "scope": "full",
-  "release_branch": "release/v14.38",
+  "release_branch": "release/v14.39",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Protokół montażu: podpis instalatora ze wzoru (obszar chroniony: protokoły; nie blokuje zapisu). Bez zmian bazy."
+    "notes": "Podpis instalatora w protokołach sprzed 14.38: nowe wersje plików (oryginały zachowane), uruchamia właściciel. Bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.38",
+    "source_branch": "release/v14.39",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.38.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.39.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.38: podpis instalatora w protokole montażu",
-    "release_ci": "WAWIS PR checks + smoke-installer-signature-protocol-v1438 + E2E installer-signature-protocol-v1438",
-    "postdeploy": "Vercel READY/14.38."
+    "code": "14.39: podpis instalatora w starszych protokołach montażu",
+    "release_ci": "WAWIS PR checks + smoke-installer-signature-backfill-v1439 + E2E installer-signature-backfill-v1439",
+    "postdeploy": "Vercel READY/14.39."
   }
 }

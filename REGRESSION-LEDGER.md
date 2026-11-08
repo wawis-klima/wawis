@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## INSTALLER-SIGN-BACKFILL-1439 — podpis instalatora w starszych protokołach montażu (08.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| BACKFILL-1439-PDF | FIXED-UNVERIFIED | Aktualizacja przyrostowa: oryginalne bajty bez zmian, qpdf bez błędów, render — zmiana tylko w polu instalatora (lokalnie); E2E na PDF z generatora aplikacji (+1 obraz, te same strony). |
+| BACKFILL-1439-DATA | FIXED-UNVERIFIED | Nowa wersja pliku (upsert false), oryginał w Storage i historii, update tylko storage_path/rozmiar/historia z warunkiem na stary storage_path, bez kasowania (smoke + E2E). Zgoda właściciela na zmianę zapisanych protokołów: rozmowa 08.11.2026. |
+| BACKFILL-1439-PROD | PENDING-OWNER | Uruchomienie przez właściciela w zakładce „Protokoły”; po nim SELECT: 41 protokołów z wpisem historii `installer_signature_added`. |
+
 ## PROTOCOL-INSTALLER-SIGN-1438 — podpis instalatora w protokole montażu (08.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
