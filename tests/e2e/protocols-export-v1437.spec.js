@@ -13,8 +13,10 @@ test('14.37: Protokoły — menu nad Diagnostyką, ZIP z protokołami montażu i
   }));
 
   // Menu: „Protokoły” bezpośrednio nad „Diagnostyka”; brak starej pozycji.
-  const labels = await page.locator('.adminDesktopSidebar button, .adminDesktopSidebar a').allInnerTexts();
-  const clean = labels.map((text) => text.trim()).filter(Boolean);
+  // textContent (nie innerText) — menu pokazuje etykiety wielkimi literami (CSS text-transform).
+  const labels = await page.locator('.adminDesktopSidebar button, .adminDesktopSidebar a').allTextContents();
+  const clean = labels.map((text) => text.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  expect(clean).toContain('Protokoły');
   expect(clean.indexOf('Diagnostyka') - clean.indexOf('Protokoły')).toBe(1);
   expect(clean).not.toContain('Próby szczelności');
 
