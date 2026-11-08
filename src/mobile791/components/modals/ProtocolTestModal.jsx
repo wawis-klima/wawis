@@ -45,6 +45,7 @@ import {
   withProtocolSaveTimeout,
 } from "../../modules/protocol-save-timeout.js";
 import "../devices/mobile-device-wizard.css";
+import { resolveInstallerSignature } from "../../../modules/leak-tests.js";
 
 const SIGNATURE_HEIGHT = 280;
 const SIGNATURE_MIN_WIDTH = 1.65;
@@ -827,8 +828,10 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
         setSaveProgressLabel("Tworzę PDF…");
         await waitForProtocolUiPaint();
         const orientedSignatureDataUrl = await orientSignatureForPdf(signatureDataUrl, signatureRotation);
+        // 14.38: podpis instalatora ze wzoru (brak/błąd → puste pole, zapis protokołu bez zmian).
+        const installerSignatureDataUrl = await resolveInstallerSignature({ supabase, job: updatedJob });
         const result = await withProtocolSaveTimeout(
-          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl: orientedSignatureDataUrl, signedAt, payment, note: protocolNoteValue, addressCorrection }),
+          createJobProtocolPdfFile({ job: updatedJob, profiles, signatureDataUrl: orientedSignatureDataUrl, signedAt, payment, note: protocolNoteValue, addressCorrection, installerSignatureDataUrl }),
           { phase: "pdf", timeoutMs: PROTOCOL_SAVE_STEP_TIMEOUT_MS },
         );
         progress.phase = "storage";

@@ -142,3 +142,32 @@ export async function loadStaffSignaturesAdmin({ supabase }) {
   }
   return Array.isArray(data) ? data : [];
 }
+
+// 14.38: podpis instalatora do protokołu montażu (decyzja właściciela 08.11.2026). Instalator = osoba, która zakończyła
+// montaż (jobs.completed_by), a przed zakończeniem — zalogowany pracownik podpisujący protokół z klientem.
+// Własny wzór — każdy pracownik; cudzy — tylko administrator. Każdy błąd/brak → '' (protokół powstaje bez podpisu
+// instalatora, jak dotąd — nigdy nie blokuje zapisu protokołu klienta).
+export async function resolveInstallerSignature({ supabase, job, timeoutMs = 6000 }) {
+  if (!supabase?.rpc) return '';
+  const work = (async () => {
+    let uid = '';
+    try {
+      const { data } = await supabase.auth.getSession();
+      uid = String(data?.session?.user?.id || '');
+    } catch { uid = ''; }
+    const target = String(job?.completed_by || uid || '');
+    if (!target) return '';
+    if (target === uid) {
+      const { data, error } = await supabase.rpc('staff_signature_get_own_v1433');
+      if (error) return '';
+      const row = Array.isArray(data) ? data[0] : data;
+      return /^data:image\/png;base64,/.test(String(row?.image_png || '')) ? row.image_png : '';
+    }
+    const { data, error } = await supabase.rpc('staff_signatures_admin_list_v1434');
+    if (error || !Array.isArray(data)) return '';
+    const row = data.find((item) => String(item?.profile_id) === target);
+    return /^data:image\/png;base64,/.test(String(row?.image_png || '')) ? row.image_png : '';
+  })().catch(() => '');
+  const timeout = new Promise((resolve) => { setTimeout(() => resolve(''), timeoutMs); });
+  return Promise.race([work, timeout]);
+}

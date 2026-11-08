@@ -509,7 +509,7 @@ function drawFooter(doc, data) {
   }
 }
 
-export async function buildPdfDocument({ data, signatureDataUrl }) {
+export async function buildPdfDocument({ data, signatureDataUrl, installerSignatureDataUrl = "" }) {
   const jspdfModule = await import("jspdf");
   const jsPDF = jspdfModule.jsPDF || jspdfModule.default?.jsPDF || jspdfModule.default;
   const doc = new jsPDF({ unit: "pt", format: "a4", compress: true });
@@ -715,6 +715,15 @@ export async function buildPdfDocument({ data, signatureDataUrl }) {
     const signatureY = clientSignatureLineY - signatureSize.height - 4;
     doc.addImage(signatureDataUrl, "PNG", signatureX, signatureY, signatureSize.width, signatureSize.height, undefined, "FAST");
   }
+  // 14.38: podpis instalatora ze wzoru (Diagnostyka → „Wzór podpisu”); brak wzoru → puste pole jak dotąd.
+  if (installerSignatureDataUrl) {
+    try {
+      const image = doc.getImageProperties(installerSignatureDataUrl);
+      const size = getContainedSignatureSize(image.width, image.height, clientSignatureMaxWidth, clientSignatureMaxHeight);
+      const x = installerSignatureLeft + (clientSignatureWidth - size.width) / 2;
+      doc.addImage(installerSignatureDataUrl, "PNG", x, clientSignatureLineY - size.height - 4, size.width, size.height, undefined, "FAST");
+    } catch { /* uszkodzony wzór — protokół bez podpisu instalatora zamiast błędu */ }
+  }
   doc.setDrawColor(212, 224, 230);
   doc.line(clientSignatureLeft, clientSignatureLineY, clientSignatureLeft + clientSignatureWidth, clientSignatureLineY);
   doc.line(installerSignatureLeft, clientSignatureLineY, installerSignatureLeft + clientSignatureWidth, clientSignatureLineY);
@@ -754,10 +763,10 @@ export async function generateJobProtocolPdf({ job, profiles, signatureDataUrl, 
   return { fileName, shared: false };
 }
 
-export async function createJobProtocolPdfFile({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null, note = "", addressCorrection = false }) {
+export async function createJobProtocolPdfFile({ job, profiles, signatureDataUrl, signedAt = new Date(), payment = null, note = "", addressCorrection = false, installerSignatureDataUrl = "" }) {
   if (!signatureDataUrl) throw new Error("Złóż podpis klienta przed utworzeniem PDF.");
   const data = buildJobProtocolData({ job, profiles, signedAt, payment, note, addressCorrection });
-  const doc = await buildPdfDocument({ data, signatureDataUrl });
+  const doc = await buildPdfDocument({ data, signatureDataUrl, installerSignatureDataUrl });
   const fileName = getProtocolFileName(data);
   const pdfBlob = doc.output("blob");
   return { data, doc, fileName, pdfBlob };

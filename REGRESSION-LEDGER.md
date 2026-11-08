@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## PROTOCOL-INSTALLER-SIGN-1438 — podpis instalatora w protokole montażu (08.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SIGN-1438-PDF | FIXED-UNVERIFIED | Podpis instalatora w PDF, uszkodzony wzór → bez podpisu i bez błędu (E2E). |
+| SIGN-1438-SAFE | FIXED-UNVERIFIED | Wybór wzoru: własny/cudzy/brak/błąd/limit 6 s → nigdy nie blokuje zapisu protokołu (smoke). Obszar chroniony: protokoły. |
+| SIGN-1438-IPHONE | PENDING-IPHONE | Pierwszy prawdziwy protokół po wdrożeniu — sprawdzić podpis instalatora w PDF. |
+
 ## PROTOCOLS-EXPORT-1437 — zakładka „Protokoły”, pobieranie zbiorcze (08.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

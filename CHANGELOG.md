@@ -1,3 +1,9 @@
+## 14.38
+- Decyzja właściciela 08.11.2026: **protokół montażu z podpisem instalatora.** W polu „Pieczątka i podpis instalatora” wstawiany automatycznie wzór podpisu instalatora (Diagnostyka → „Wzór podpisu”, 14.33). Instalator = osoba, która zakończyła montaż, a przed zakończeniem — pracownik podpisujący protokół z klientem na swoim telefonie. Pracownik nic dodatkowo nie robi.
+- Brak wzoru, brak internetu albo błąd odczytu (limit 6 s) → pole zostaje puste jak dotąd; zapis protokołu klienta nigdy nie jest przez to blokowany. Pracownik nie ma dostępu do cudzych wzorów (np. ponowny podpis przy korekcie adresu montażu zakończonego przez kogoś innego → bez podpisu instalatora); administrator — tak.
+- Dotyczy protokołów zapisanych od tej wersji; 41 już zapisanych protokołów (dokumenty podpisane przez klientów) bez zmian. Bez zmian bazy.
+- Testy: smoke `smoke-installer-signature-protocol-v1438` (własny / cudzy / brak / błąd / limit czasu), E2E `installer-signature-protocol-v1438` (PDF: podpis klienta + instalatora; uszkodzony wzór → bez podpisu instalatora, bez błędu).
+
 ## 14.37
 - Decyzja właściciela 08.11.2026: zakładka **„Protokoły”** zamiast „Próby szczelności” (komputer), w menu w sekcji SYSTEM **bezpośrednio nad „Diagnostyką”**.
 - **Pobieranie zbiorcze:** zakres dat (Od/Do; szybki wybór: ten miesiąc, poprzedni miesiąc, ten rok, wszystkie) i rodzaje — „Protokoły montażu” (podpisane przez klienta, zapisane PDF-y) i „Protokoły szczelności” (PDF z danych próby i wzoru podpisu) — z liczbą protokołów przy każdym. „Pobierz ZIP (N)” → jeden plik `wawis-protokoly-<od>_<do>.zip` z folderami na każdy rodzaj; nazwy plików „RRRR-MM-DD Klient, Miejscowość.pdf”. Postęp „X z N”, „Przerwij”. Plik, którego nie da się pobrać, nie przerywa całości — trafia do „Pominięte.txt” w archiwum. Data: dzień zakończenia montażu (szczelność: data badania). Tylko odczyt.
