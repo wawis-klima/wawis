@@ -9,8 +9,10 @@ test.use({ viewport: { width: 1440, height: 1000 } });
 test('14.39: dopisanie podpisu instalatora do starego protokołu montażu', async ({ page }) => {
   await page.route(/open-meteo\.com/, (route) => route.abort());
   await login(page, ADMIN);
+  // Uchwyt bazy testowej komputera — moduły telefonu importowane w teście podmieniają window.__KLIMA_MOCK_SUPABASE__.
+  await page.evaluate(() => { window.__desktopMock = window.__KLIMA_MOCK_SUPABASE__; });
   const original = await page.evaluate(async () => {
-    const mock = window.__KLIMA_MOCK_SUPABASE__;
+    const mock = window.__desktopMock;
     const store = mock.getStore();
     const job = store.jobs.find((item) => item.id === 'mock-job-003');
     const canvas = document.createElement('canvas'); canvas.width = 600; canvas.height = 200;
@@ -35,7 +37,7 @@ test('14.39: dopisanie podpisu instalatora do starego protokołu montażu', asyn
   await expect(card.getByTestId('installer-signature-backfill-result')).toContainText('Dodano podpis instalatora: 1.', { timeout: 30_000 });
 
   const after = await page.evaluate(async () => {
-    const mock = window.__KLIMA_MOCK_SUPABASE__;
+    const mock = window.__desktopMock;
     const record = mock.getStore().job_protocols.find((item) => item.job_id === 'mock-job-003');
     const fresh = mock.getFile('job-protocols', record.storage_path);
     const old = mock.getFile('job-protocols', 'mock-job-003/protocol-testowy.pdf');
