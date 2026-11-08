@@ -29,6 +29,7 @@ const GROUPS = {
     'node scripts/smoke-staff-signatures-desktop-v1436.mjs',
     'node scripts/smoke-protocols-export-v1437.mjs',
     'node scripts/smoke-installer-signature-protocol-v1438.mjs',
+    'node scripts/smoke-installer-signature-backfill-v1439.mjs',
     'node scripts/smoke-service-desktop-sms-push-v1389.mjs',
     'npm run test:smoke:mobile-version-diagnostics',
     'npm run test:smoke:admin-mobile-edit-compact',

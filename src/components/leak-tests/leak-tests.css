@@ -45,3 +45,5 @@
 .protocolsExportHint { color: #5a6b80; }
 .protocolsExportProgress { margin: 0; font-weight: 600; color: #1d4ed8; }
 .protocolsExportDone { margin: 0; font-weight: 700; color: #1d7a46; }
+/* 14.39: podpis instalatora w starszych protokołach. */
+.protocolsBackfillList { margin: 0; padding-left: 18px; color: #8a4b08; font-size: 13px; display: grid; gap: 2px; }

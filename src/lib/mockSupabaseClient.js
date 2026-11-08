@@ -466,9 +466,13 @@ export function createMockSupabaseClient() {
     }
   }
 
+  const mockFiles = new Map();
   if (typeof window !== 'undefined') {
     window.__KLIMA_MOCK_SUPABASE__ = {
       reset: resetMockData,
+      // 14.39: pliki Storage w pamięci (testy E2E: prawdziwy PDF protokołu, odczyt nowych wersji).
+      putFile: (bucket, path, blob) => { mockFiles.set(`${bucket}/${path}`, blob); return true; },
+      getFile: (bucket, path) => mockFiles.get(`${bucket}/${path}`) || null,
       getStore: () => clone(store),
       // 13.97: testy E2E mogą dopisać dane do bieżącej (nieutrwalanej) bazy bez przeładowania strony.
       mutate: (updater) => { if (typeof updater === 'function') updater(store); return clone(store); },
@@ -938,9 +942,14 @@ export function createMockSupabaseClient() {
         return {
           getPublicUrl(path) { return { data: { publicUrl: `mock://${bucket}/${path}` } }; },
           async createSignedUrl(path) { return { data: { signedUrl: `mock-signed://${bucket}/${path}` }, error: null }; },
-          async upload() { return { data: {}, error: null }; },
+          async upload(path, body) {
+            if (body instanceof Blob) mockFiles.set(`${bucket}/${path}`, body);
+            return { data: { path }, error: null };
+          },
           async remove() { return { data: {}, error: null }; },
           async download(path) {
+            const stored = mockFiles.get(`${bucket}/${path}`);
+            if (stored) return { data: stored, error: null };
             const protocol = store.job_protocols.find((item) => item.storage_path === path);
             if (bucket !== 'job-protocols' || !protocol) return { data: null, error: { message: 'Nie znaleziono pliku protokołu mock.' } };
             return { data: new Blob(['%PDF-1.4 mock desktop protocol'], { type: 'application/pdf' }), error: null };

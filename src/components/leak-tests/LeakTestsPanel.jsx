@@ -7,6 +7,7 @@ import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-proto
 import { dailyMeanTemperature } from '../../modules/weather-daily-mean.js';
 import { loadJobForLeakPdf } from '../../modules/protocol-export.js';
 import ProtocolsExportCard from './ProtocolsExportCard.jsx';
+import InstallerSignatureBackfillCard from './InstallerSignatureBackfillCard.jsx';
 
 // WAWIS 14.28 — zakładka „Próby szczelności” (komputer, administrator). Zakończone montaże z instalatorem;
 // administrator przepisuje z podpisanego protokołu papierowego datę badania, temperaturę i wynik, potem PDF.
@@ -213,6 +214,8 @@ export default function LeakTestsPanel({ supabase }) {
     <>
     {/* 14.37: zakładka „Protokoły” — pobieranie zbiorcze nad listą prób szczelności. */}
     <ProtocolsExportCard supabase={supabase} />
+    {/* 14.39: jednorazowo — podpis instalatora w protokołach sprzed 14.38 (znika, gdy nie ma czego uzupełniać). */}
+    <InstallerSignatureBackfillCard supabase={supabase} />
     <section className="card leakTestsPanel" data-testid="leak-tests-panel">
       <div className="leakTestsHead">
         <div>
