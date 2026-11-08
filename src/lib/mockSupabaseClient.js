@@ -426,6 +426,8 @@ class MockQueryBuilder {
     if (this.pendingMutation?.type === 'update') {
       const filtered = this.applyFilters(table);
       for (const item of filtered) Object.assign(item, this.pendingMutation.payload, { updated_at: nowIso() });
+      // 14.39: .single()/.maybeSingle() po update zwraca jeden rekord (jak Supabase), nie listę.
+      if (this.maybeSingleMode) return { data: clone(filtered[0] || null), error: null };
       return { data: clone(filtered), error: null };
     }
 
