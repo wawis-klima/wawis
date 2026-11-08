@@ -1,3 +1,11 @@
+## 14.37
+- Decyzja właściciela 08.11.2026: zakładka **„Protokoły”** zamiast „Próby szczelności” (komputer), w menu w sekcji SYSTEM **bezpośrednio nad „Diagnostyką”**.
+- **Pobieranie zbiorcze:** zakres dat (Od/Do; szybki wybór: ten miesiąc, poprzedni miesiąc, ten rok, wszystkie) i rodzaje — „Protokoły montażu” (podpisane przez klienta, zapisane PDF-y) i „Protokoły szczelności” (PDF z danych próby i wzoru podpisu) — z liczbą protokołów przy każdym. „Pobierz ZIP (N)” → jeden plik `wawis-protokoly-<od>_<do>.zip` z folderami na każdy rodzaj; nazwy plików „RRRR-MM-DD Klient, Miejscowość.pdf”. Postęp „X z N”, „Przerwij”. Plik, którego nie da się pobrać, nie przerywa całości — trafia do „Pominięte.txt” w archiwum. Data: dzień zakończenia montażu (szczelność: data badania). Tylko odczyt.
+- Pod spodem bez zmian lista do poprawek: „Próby szczelności — poprawki”.
+- **Poprawka 14.31:** PDF protokołu szczelności otwierany z listy w zakładce nie miał numerów seryjnych (lista nie zawiera pełnych danych montażu) — dane montażu doczytywane po otwarciu karty. Z karty montażu było poprawnie.
+- ZIP tworzony w przeglądarce bez dodatkowych bibliotek (`src/modules/zip-store.js`; PDF-y są już skompresowane). Bez zmian bazy.
+- Testy: smoke `smoke-protocols-export-v1437` (archiwum sprawdzane niezależnie przez zipfile Pythona, zakres dat, pominięte pliki, przerwanie, tylko odczyt), E2E `protocols-export-v1437` (menu nad Diagnostyką, walidacja zakresu, pobrany ZIP z obydwoma folderami).
+
 ## 14.36
 - Diagnostyka **na komputerze**: karta „Wzory podpisów pracowników” (jak w Diagnostyce telefonu od 14.34) — wzór każdego pracownika z datą zapisu, „Brak wzoru” u tych bez wzoru, licznik „Złożone wzory: X z Y”, „Odśwież wzory”. Tylko administrator, tylko podgląd. Bez zmian bazy.
 - Testy: E2E `staff-signatures-desktop-v1436` (administrator widzi, pracownik nie), smoke `smoke-staff-signatures-desktop-v1436`.

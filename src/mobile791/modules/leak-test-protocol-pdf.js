@@ -250,7 +250,8 @@ export async function withBackgroundTemperature({ supabase, job, record }) {
  * Otwiera PDF w nowej karcie (okno otwierane synchronicznie w kliknięciu — iPhone nie blokuje),
  * a gdy przeglądarka nie pozwala — pobiera plik.
  */
-export async function openLeakTestProtocolPdf({ job, profiles, supabase = null, record = undefined }) {
+export async function openLeakTestProtocolPdf({ job: baseJob, profiles, supabase = null, record = undefined, loadJob = null }) {
+  let job = baseJob;
   const previewWindow = typeof window !== 'undefined' && typeof window.open === 'function' ? window.open('', '_blank') : null;
   try {
     if (previewWindow) {
@@ -258,6 +259,11 @@ export async function openLeakTestProtocolPdf({ job, profiles, supabase = null, 
       // Plik jest z tej samej aplikacji, więc połączenie z kartą nie stanowi ryzyka.
       previewWindow.document.title = 'Protokół szczelności';
       previewWindow.document.body.innerHTML = '<p style="font:16px system-ui;padding:24px">Przygotowuję protokół PDF…</p>';
+    }
+    // 14.37: pełne dane montażu (numery seryjne) doczytywane PO otwarciu karty — przeglądarka nie blokuje okna.
+    if (typeof loadJob === 'function') {
+      const full = await loadJob().catch(() => null);
+      if (full) job = { ...job, ...full, completed_by: baseJob?.completed_by || full.completed_by };
     }
     // Dane próby: przekazane z listy albo odczytane z bazy (administrator). Błąd odczytu ≠ „brak danych”.
     let leakRecord = record !== undefined ? record : await loadLeakTest({ supabase, jobId: job?.id });

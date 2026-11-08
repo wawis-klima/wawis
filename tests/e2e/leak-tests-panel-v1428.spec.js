@@ -11,7 +11,7 @@ test.describe('14.28: próby szczelności — komputer', () => {
     // 14.33: bez prawdziwej pogody — podpowiedź temperatury niedostępna, pole zostaje puste (walidacja jak w 14.28).
     await page.route(/open-meteo\.com/, (route) => route.abort());
     await login(page, ADMIN);
-    await page.getByRole('button', { name: /^Próby szczelności$/ }).click();
+    await page.getByRole('button', { name: /^Protokoły$/ }).click();
     const panel = page.getByTestId('leak-tests-panel');
     const rows = panel.getByTestId('leak-test-row');
     await expect(panel.getByTestId('leak-tests-count')).toHaveText('Uzupełniono 0 z 1');

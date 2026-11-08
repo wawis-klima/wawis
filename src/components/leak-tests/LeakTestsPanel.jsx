@@ -5,6 +5,8 @@ import {
 } from '../../modules/leak-tests.js';
 import { openLeakTestProtocolPdf } from '../../mobile791/modules/leak-test-protocol-pdf.js';
 import { dailyMeanTemperature } from '../../modules/weather-daily-mean.js';
+import { loadJobForLeakPdf } from '../../modules/protocol-export.js';
+import ProtocolsExportCard from './ProtocolsExportCard.jsx';
 
 // WAWIS 14.28 — zakładka „Próby szczelności” (komputer, administrator). Zakończone montaże z instalatorem;
 // administrator przepisuje z podpisanego protokołu papierowego datę badania, temperaturę i wynik, potem PDF.
@@ -199,6 +201,8 @@ export default function LeakTestsPanel({ supabase }) {
     // Dane próby i podpis instalatora odczytywane z bazy przy otwarciu PDF.
     openLeakTestProtocolPdf({
       job: rowToJob(row),
+      // 14.37: numery seryjne i pełne dane urządzeń z montażu (lista ich nie zawiera).
+      loadJob: () => loadJobForLeakPdf({ supabase, row }),
       profiles: (row.installer_id || row.completed_by)
         ? [{ id: row.installer_id || row.completed_by, full_name: row.installer_name || row.completed_by_name }] : [],
       supabase,
@@ -206,10 +210,13 @@ export default function LeakTestsPanel({ supabase }) {
   }
 
   return (
+    <>
+    {/* 14.37: zakładka „Protokoły” — pobieranie zbiorcze nad listą prób szczelności. */}
+    <ProtocolsExportCard supabase={supabase} />
     <section className="card leakTestsPanel" data-testid="leak-tests-panel">
       <div className="leakTestsHead">
         <div>
-          <h2>Próby szczelności</h2>
+          <h2>Próby szczelności — poprawki</h2>
           <p className="leakTestsLead">
             Protokoły tworzą się same przy zakończeniu montażu: data zakończenia, wynik pozytywny, temperatura — średnia dnia,
             podpis — wzór instalatora. Tu możesz je poprawić.
@@ -300,5 +307,6 @@ export default function LeakTestsPanel({ supabase }) {
         })}
       </div>
     </section>
+    </>
   );
 }
