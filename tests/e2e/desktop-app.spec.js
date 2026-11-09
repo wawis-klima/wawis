@@ -21,6 +21,23 @@ test.describe('desktop E2E na mock Supabase', () => {
     expect(state.jobs).toEqual(['Klient Testowy A', 'Klient Testowy B', 'Klient Testowy C Zakończony', 'Klient Testowy D Cudzy']);
   });
 
+  test('14.40: Szukaj w GUS przy edycji montażu pokazuje dane i nie zmienia adresu', async ({ page }) => {
+    await login(page, ADMIN);
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /W trakcie:/ }).click();
+    await page.getByRole('table').getByText('Klient Testowy B', { exact: true }).click();
+    await page.getByRole('button', { name: 'Edytuj', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Edytuj montaż' })).toBeVisible();
+
+    const street = page.getByPlaceholder('Ulica i numer', { exact: true });
+    const streetBefore = await street.inputValue();
+    await page.getByPlaceholder('NIP (opcjonalnie)').fill('5730208483');
+    await page.getByRole('button', { name: 'Szukaj w GUS' }).click();
+
+    await expect(page.locator('.jobNipLookupStatus')).toContainText('FIRMA Z GUS SP. Z O.O.');
+    await expect(street).toHaveValue(streetBefore);
+  });
+
   test('administrator loguje się i przechodzi przez Montaże, Kalendarz oraz SMS', async ({ page }) => {
     await login(page, ADMIN);
 

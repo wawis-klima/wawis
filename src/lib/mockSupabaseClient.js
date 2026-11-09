@@ -907,6 +907,7 @@ export function createMockSupabaseClient() {
       async invoke(name, { body = {} } = {}) {
         // 13.97: ceny urzędowe są już w danych testowych (fuel_reference_prices) — nic nie dociągamy.
         if (name === 'fuel-reference-prices') return { data: { ok: true, added: 0, pending: 0, failures: [] }, error: null };
+        if (name === 'gus-bir-lookup') return { data: { found: true, nip: body.nip, name: 'FIRMA Z GUS SP. Z O.O.', street: 'Siedzibowa 1', city: 'Warszawa', postalCode: '00-001', source: 'GUS REGON BIR' }, error: null };
         if (name !== 'send-job-protocol-email') return { data: null, error: { message: `Mock Functions nie obsługuje funkcji: ${name}` } };
         const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
         const protocol = store.job_protocols.find((item) => String(item.id) === String(body.protocolId) && String(item.job_id) === String(body.jobId));

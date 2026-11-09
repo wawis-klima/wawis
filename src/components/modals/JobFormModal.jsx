@@ -4,7 +4,7 @@ import AppModal from "./AppModal.jsx";
 import ClientVoiceInput, { VoiceFieldButton, VoiceNoteButton, appendVoiceNoteText } from "../voice/ClientVoiceInput.jsx";
 import { normalizeVoiceEmail, normalizeVoicePhone } from "../../modules/client-voice-input.js";
 import { composePostalCity, lookupPostalCode, normalizePostalCode, splitPostalCity } from "../../modules/postal-code.js";
-import { lookupCompanyByNip, normalizeGusNip } from "../../modules/gus-bir.js";
+import { applyGusResultToEditedJob, lookupCompanyByNip, normalizeGusNip } from "../../modules/gus-bir.js";
 import {
   applyAutoLinkedContractorToJobForm,
   buildContractorOptionLabel,
@@ -452,12 +452,12 @@ export default function JobFormModal({
     }
   }
 
-  async function refreshGusByNip(nipValue) {
+  async function refreshGusByNip(nipValue, { editMode = false } = {}) {
     const nip = normalizeGusNip(nipValue);
     if (!supabase || nip.length !== 10 || gusLookupInFlightRef.current) return;
 
     const localMatch = findContractorByNip(contractorOptions, nip);
-    if (localMatch) return;
+    if (localMatch && !editMode) return;
 
     gusLookupInFlightRef.current = true;
     setGusLookupBusy(true);
@@ -466,6 +466,12 @@ export default function JobFormModal({
       const result = await lookupCompanyByNip({ supabase, nip });
       if (!result?.found) {
         setGusLookupMessage('Nie znaleziono firmy w GUS.');
+        return;
+      }
+
+      if (editMode) {
+        setJobForm((prev) => applyGusResultToEditedJob(prev, result, nip).form);
+        setGusLookupMessage(applyGusResultToEditedJob(jobForm, result, nip).message);
         return;
       }
 
@@ -525,6 +531,16 @@ export default function JobFormModal({
       return;
     }
     const localMatch = findContractorByNip(contractorOptions, nip);
+    if (editingJobId) {
+      // 14.40: edycja nigdy nie przepina montażu na innego klienta tylko dlatego, że znaleziono jego NIP.
+      if (localMatch && String(localMatch.id) !== String(jobForm.contractor_id || '')) {
+        setGusLookupMessage(`Ten NIP ma w bazie klient: ${localMatch.company_name}. Montaż nie został zmieniony.`);
+        return;
+      }
+      gusLookupAttemptRef.current = nip;
+      await refreshGusByNip(nip, { editMode: true });
+      return;
+    }
     if (localMatch) {
       handleContractorSelect(localMatch);
       setGusLookupMessage('Klient z tym NIP-em jest już w bazie — wybrano go.');
@@ -776,17 +792,13 @@ export default function JobFormModal({
         </div>
         <label className="inputLabel">
           <span>NIP (opcjonalnie)</span>
-          {editingJobId ? (
+          <div className="jobNipLookupRow">
             <input className="input" inputMode="numeric" placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"} value={jobForm.nip || ''} onChange={(e) => updateField("nip", e.target.value)} />
-          ) : (
-            <div className="jobNipLookupRow">
-              <input className="input" inputMode="numeric" placeholder={gusLookupBusy ? "Pobieram z GUS…" : "NIP (opcjonalnie)"} value={jobForm.nip || ''} onChange={(e) => updateField("nip", e.target.value)} />
-              <button type="button" className="btn jobNipLookupBtn" onClick={() => { void handleManualGusLookup(); }}
-                disabled={busy || gusLookupBusy || !supabase || normalizeGusNip(jobForm.nip).length !== 10}>
-                {gusLookupBusy ? 'Szukam…' : 'Szukaj w GUS'}
-              </button>
-            </div>
-          )}
+            <button type="button" className="btn jobNipLookupBtn" onClick={() => { void handleManualGusLookup(); }}
+              disabled={busy || gusLookupBusy || !supabase || normalizeGusNip(jobForm.nip).length !== 10}>
+              {gusLookupBusy ? 'Szukam…' : 'Szukaj w GUS'}
+            </button>
+          </div>
           {gusLookupMessage ? <small className="jobNipLookupStatus" role="status">{gusLookupMessage}</small> : null}
         </label>
         {linkedContractor ? (

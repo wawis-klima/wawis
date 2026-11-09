@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## JOB-EDIT-GUS-1440 — „Szukaj w GUS” przy edycji montażu (09.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| EDIT-GUS-1440-DATA | FIXED-UNVERIFIED | Powiązany montaż bez zmian, wypełniony i częściowy adres nietknięte, spóźniona odpowiedź dla innego NIP-u ignorowana (smoke uruchamia moduł desktop i mobile). |
+| EDIT-GUS-1440-UI | FIXED-UNVERIFIED | E2E desktop: przycisk w edycji, komunikat z GUS, ulica bez zmian. |
+| EDIT-GUS-1440-IPHONE | PENDING-IPHONE | Układ przycisku w edycji montażu na fizycznym iPhonie. |
+
 ## INSTALLER-SIGN-BACKFILL-1439 — podpis instalatora w starszych protokołach montażu (08.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
