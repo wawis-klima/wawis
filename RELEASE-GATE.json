@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.41",
+  "version": "14.42",
   "scope": "full",
-  "release_branch": "release/v14.41",
+  "release_branch": "release/v14.42",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Licznik SMS przez istniejące RPC; tylko frontend, bez zmian bazy."
+    "notes": "Poprawka zadania w tle temperatury (kod pocztowy w miejscowości); migracja uruchamiana przez właściciela. Produkcja: tylko SELECT."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.41",
+    "source_branch": "release/v14.42",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.41.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.42.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.41: licznik SMS do zatwierdzenia w lewym panelu",
-    "release_ci": "WAWIS PR checks + smoke-communication-v1421 + E2E service-requests-v1421",
-    "postdeploy": "Vercel READY/14.41."
+    "code": "14.42: temperatura protokołu szczelności — miejscowość bez kodu pocztowego",
+    "release_ci": "WAWIS PR checks + leak-test-city-postal-sql-v1442 + smoke-leak-test-city-postal-v1442",
+    "postdeploy": "Vercel READY/14.42; po migracji SELECT temperatury 2 nowych protokołów."
   }
 }

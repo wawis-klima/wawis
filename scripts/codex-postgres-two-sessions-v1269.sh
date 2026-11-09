@@ -328,3 +328,6 @@ bash "$ROOT/scripts/leak-test-auto-sql-v1434.sh"
 
 # WAWIS 14.35: temperatura protokołu z serwera (kolejka + atrapa pg_net) na jednorazowym PostgreSQL 16.
 bash "$ROOT/scripts/leak-test-temperature-cron-sql-v1435.sh"
+
+# WAWIS 14.42: miejscowość bez kodu pocztowego przy wyszukiwaniu pogody (jednorazowy PostgreSQL 16).
+bash "$ROOT/scripts/leak-test-city-postal-sql-v1442.sh"
