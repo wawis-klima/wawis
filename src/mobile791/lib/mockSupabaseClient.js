@@ -1089,6 +1089,7 @@ export function createMockSupabaseClient() {
     },
     functions: {
       async invoke(name, options = {}) {
+        if (name === 'gus-bir-lookup') return { data: { found: true, nip: body.nip, name: 'FIRMA Z GUS SP. Z O.O.', street: 'Siedzibowa 1', city: 'Warszawa', postalCode: '00-001', source: 'GUS REGON BIR' }, error: null };
         if (name !== 'send-job-protocol-email') {
           return { data: null, error: { message: `Mock Edge Function nie obsługuje funkcji: ${name}` } };
         }

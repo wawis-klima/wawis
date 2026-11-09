@@ -1,3 +1,8 @@
+## 14.40
+- Zgłoszenie właściciela 09.11.2026: **„Szukaj w GUS” także przy edycji montażu** (komputer i telefon; wcześniej przycisk był tylko w nowym montażu).
+- Edycja nie nadpisuje danych: montaż powiązany z kartą klienta pozostaje bez zmian, a dane z GUS są pokazane pod polem NIP. Bez powiązania uzupełniana jest tylko pusta nazwa i całkowicie pusty adres — adres montażu bywa inny niż siedziba firmy. NIP należący do innego klienta nie przepina montażu. Bez automatycznych zapytań przy otwarciu edycji. Bez zmian bazy.
+- Testy: smoke `smoke-job-edit-gus-v1440`, E2E w `desktop-app.spec.js`.
+
 ## 14.39
 - Decyzja właściciela 08.11.2026: **podpis instalatora także w protokołach montażu zapisanych przed 14.38.** Zakładka „Protokoły” → karta „Podpis instalatora w starszych protokołach” → „Dodaj podpis instalatora (N)” (administrator, jednorazowo; karta znika, gdy nie ma czego uzupełniać).
 - Instalator: osoba, która zakończyła montaż; gdy brak — instalator przypisany w próbach szczelności (14.32). Bez wzoru podpisu → protokół pominięty z opisem przyczyny.

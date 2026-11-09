@@ -14,6 +14,36 @@ export function isValidPolishNip(value = '') {
   return checksum !== 10 && checksum === Number(nip[9]);
 }
 
+// 14.40: „Szukaj w GUS” przy edycji montażu. Adres montażu bywa inny niż siedziba firmy, dlatego pola
+// wypełnione zostają nietknięte, a montaż powiązany z kartą klienta nie jest zmieniany wcale.
+function formatGusSummary(result = {}) {
+  const postalCity = [cleanText(result.postalCode), cleanText(result.city)].filter(Boolean).join(' ');
+  return [cleanText(result.name), cleanText(result.street), postalCity].filter(Boolean).join(', ');
+}
+
+export function applyGusResultToEditedJob(form = {}, result = {}, nip = '') {
+  if (normalizeGusNip(form.nip) !== normalizeGusNip(nip)) return { form, message: '' };
+
+  const summary = formatGusSummary(result);
+  if (cleanText(form.contractor_id)) {
+    return { form, message: `GUS: ${summary}. Montaż jest powiązany z kartą klienta — dane nie zostały zmienione.` };
+  }
+
+  const next = { ...form };
+  if (!cleanText(next.client) && result.name) next.client = result.name;
+  if (!cleanText(next.street) && !cleanText(next.city)) {
+    if (result.street) next.street = result.street;
+    if (result.city) next.city = [cleanText(result.postalCode), cleanText(result.city)].filter(Boolean).join(' ');
+  }
+  const changed = next.client !== form.client || next.street !== form.street || next.city !== form.city;
+  return {
+    form: changed ? next : form,
+    message: changed
+      ? `GUS: ${summary}. Uzupełniono puste pola.`
+      : `GUS: ${summary}. Wypełnione pola nie zostały zmienione.`,
+  };
+}
+
 async function getFreshAccessToken(supabase) {
   if (!supabase) throw new Error('Brak połączenia z Supabase.');
   const {

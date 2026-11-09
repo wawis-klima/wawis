@@ -8795,6 +8795,7 @@ img.previewImage{
 .formModal .jobFormCreateMode .jobNipLookupRow > .jobNipCompactInput{
   margin:0 !important;
 }
+.adminContactPairV1302 > .jobNipLookupBtnEdit{grid-column:1 / -1;justify-self:end;}
 .jobNipLookupBtn{
   min-height:36px;
   padding:5px 12px;
