@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## LEAK-TEMP-POSTAL-1442 — temperatura protokołu szczelności przy kodzie pocztowym (09.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| POSTAL-1442-SQL | FIXED-UNVERIFIED | Test SQL (PostgreSQL 16): „42-400 Zawiercie” → zapytanie o „Zawiercie”, temperatura wpisana; wpis z błędem „nie znaleziono” wraca do kolejki; istniejąca temperatura bez zmian. |
+| POSTAL-1442-APP | FIXED-UNVERIFIED | Smoke: `normalizeCity` usuwa kod pocztowy (różne zapisy), nazwa bez kodu bez zmian. |
+| POSTAL-1442-PROD | PENDING-OWNER | Po migracji właściciela SELECT: protokoły Szymocha (Zawiercie) i Ciszewski (Pradła) z temperaturą. |
+
 ## SMS-BADGE-1441 — licznik SMS w lewym panelu (09.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

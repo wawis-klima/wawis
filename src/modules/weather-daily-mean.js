@@ -9,8 +9,9 @@ const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const geocodeCache = new Map();
 const meanCache = new Map();
 
-function normalizeCity(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim();
+// 14.42: miejscowość w montażu bywa zapisana z kodem pocztowym („42-400 Zawiercie”) — wyszukiwarka go nie zna.
+export function normalizeCity(value) {
+  return String(value || '').replace(/^\s*\d{2}\s*-\s*\d{3}\s*,?\s*/, '').replace(/\s+/g, ' ').trim();
 }
 
 function isIsoDate(value) {

@@ -1,3 +1,8 @@
+## 14.42
+- Kontrola 09.11.2026 pierwszych montaży po 14.34: **protokoły szczelności tworzą się i podpisują automatycznie, ale bez temperatury.** Przyczyna: miejscowość montażu zapisana z kodem pocztowym („42-400 Zawiercie”), a wyszukiwarka miejscowości Open-Meteo jej nie znajdowała (dotyczy ok. 85 montaży). Kod pocztowy jest teraz pomijany przy wyszukiwaniu — w bazie (zadanie w tle, 14.35) i w aplikacji (`normalizeCity`). Dane montażu bez zmian.
+- **Migracja do uruchomienia przez właściciela:** `20261109180000_leak_test_city_postal_v1442.sql` — nowa funkcja `private.leak_test_city_name_v1442`, poprawione zadanie w tle; wpisy kolejki zakończone „nie znaleziono miejscowości” wracają do ponownej próby. Temperatury już wpisanej nie zmienia.
+- Testy: SQL `leak-test-city-postal-sql-v1442` (PostgreSQL 16, atrapa HTTP), smoke `smoke-leak-test-city-postal-v1442`.
+
 ## 14.41
 - Zgłoszenie właściciela 09.11.2026: **brak cyfry przy „SMS” w lewym panelu**, mimo SMS-a do zatwierdzenia. Przyczyna: licznik od 14.21 czytał tabelę `sms_log` bezpośrednio, a zalogowani nie mają do niej uprawnienia SELECT; błąd był ukrywany jako „0”. Licznik korzysta teraz z tego samego RPC co ekran SMS (`admin_get_sms_module_snapshot`); błąd trafia do konsoli. Poranne powiadomienie działało poprawnie. Bez zmian bazy.
 - Testy: smoke `smoke-communication-v1421` (bezpośredni odczyt tabeli odrzucany jak na produkcji), E2E `service-requests-v1421` (cyfra przy „SMS”).
