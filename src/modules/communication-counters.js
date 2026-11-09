@@ -1,5 +1,6 @@
 // WAWIS 14.21 — liczniki w lewym panelu komputera (KOMUNIKACJA): nowe zgłoszenia i SMS-y do zatwierdzenia.
 import { loadServiceRequests } from './service-requests.js';
+import { loadSmsModuleData } from './sms-fetch.js';
 
 const SENT_STATUSES = new Set(['sent', 'provider_sent', 'delivered']);
 const norm = (value) => String(value || '').trim().toLowerCase();
@@ -19,19 +20,12 @@ export function countPendingSmsGroups({ pending = [], sentGroupIds = [] }) {
   }).length;
 }
 
+// 14.41: przez RPC jak ekran SMS. Tabela sms_log nie ma uprawnienia SELECT dla zalogowanych, więc bezpośredni
+// odczyt zawsze kończył się błędem, a licznik znikał.
 export async function loadPendingSmsCount({ supabase }) {
-  const { data: pending, error } = await supabase.from('sms_log')
-    .select('id, status, reminder_group_id, reminder_group_primary')
-    .eq('sms_type', 'service_reminder').eq('status', 'pending_approval').limit(1000);
-  if (error) throw error;
-  const groupIds = [...new Set((pending || []).map((row) => String(row?.reminder_group_id || '')).filter(Boolean))];
-  let sentGroupIds = [];
-  for (let from = 0; from < groupIds.length; from += 100) {
-    const { data: sent, error: sentError } = await supabase.from('sms_log')
-      .select('reminder_group_id, status').in('reminder_group_id', groupIds.slice(from, from + 100));
-    if (sentError) throw sentError;
-    sentGroupIds = sentGroupIds.concat((sent || []).filter((row) => SENT_STATUSES.has(norm(row?.status))).map((row) => row.reminder_group_id));
-  }
+  const { logs } = await loadSmsModuleData({ supabase, isAdmin: true });
+  const pending = (logs || []).filter((row) => norm(row?.sms_type) === 'service_reminder');
+  const sentGroupIds = pending.filter((row) => SENT_STATUSES.has(norm(row?.status)) && row?.reminder_group_id).map((row) => row.reminder_group_id);
   return countPendingSmsGroups({ pending, sentGroupIds });
 }
 

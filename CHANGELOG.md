@@ -1,3 +1,7 @@
+## 14.41
+- Zgłoszenie właściciela 09.11.2026: **brak cyfry przy „SMS” w lewym panelu**, mimo SMS-a do zatwierdzenia. Przyczyna: licznik od 14.21 czytał tabelę `sms_log` bezpośrednio, a zalogowani nie mają do niej uprawnienia SELECT; błąd był ukrywany jako „0”. Licznik korzysta teraz z tego samego RPC co ekran SMS (`admin_get_sms_module_snapshot`); błąd trafia do konsoli. Poranne powiadomienie działało poprawnie. Bez zmian bazy.
+- Testy: smoke `smoke-communication-v1421` (bezpośredni odczyt tabeli odrzucany jak na produkcji), E2E `service-requests-v1421` (cyfra przy „SMS”).
+
 ## 14.40
 - Zgłoszenie właściciela 09.11.2026: **„Szukaj w GUS” także przy edycji montażu** (komputer i telefon; wcześniej przycisk był tylko w nowym montażu).
 - Edycja nie nadpisuje danych: montaż powiązany z kartą klienta pozostaje bez zmian, a dane z GUS są pokazane pod polem NIP. Bez powiązania uzupełniana jest tylko pusta nazwa i całkowicie pusty adres — adres montażu bywa inny niż siedziba firmy. NIP należący do innego klienta nie przepina montażu. Bez automatycznych zapytań przy otwarciu edycji. Bez zmian bazy.
