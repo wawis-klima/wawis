@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.40",
+  "version": "14.41",
   "scope": "full",
-  "release_branch": "release/v14.40",
+  "release_branch": "release/v14.41",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Szukaj w GUS przy edycji montażu; tylko frontend, bez zmian bazy."
+    "notes": "Licznik SMS przez istniejące RPC; tylko frontend, bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.40",
+    "source_branch": "release/v14.41",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.40.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.41.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.40: Szukaj w GUS przy edycji montażu",
-    "release_ci": "WAWIS PR checks + smoke-job-edit-gus-v1440 + E2E desktop-app",
-    "postdeploy": "Vercel READY/14.40."
+    "code": "14.41: licznik SMS do zatwierdzenia w lewym panelu",
+    "release_ci": "WAWIS PR checks + smoke-communication-v1421 + E2E service-requests-v1421",
+    "postdeploy": "Vercel READY/14.41."
   }
 }

@@ -23,27 +23,24 @@ assert.equal(countPendingSmsGroups({ pending: [
   { status: 'pending_approval', reminder_group_id: 'c', reminder_group_primary: false },
 ], sentGroupIds: ['a', 'b', 'c'] }), 0);
 
-// Zapytania: tylko odczyt sms_log, grupy po 100.
-const calls = [];
+// 14.41: produkcja nie daje zalogowanym SELECT na sms_log — licznik musi działać przez RPC ekranu SMS.
+const rpcCalls = [];
 const fake = {
-  from(table) {
-    const q = { table, ops: [] };
-    const b = {
-      select(c) { q.ops.push(['select', c]); return b; }, eq(k, v) { q.ops.push(['eq', k, v]); return b; },
-      in(k, v) { q.ops.push(['in', k, v.length]); return b; }, limit(n) { q.ops.push(['limit', n]); return b; },
-      then(resolve) {
-        calls.push(q);
-        const isIn = q.ops.some((o) => o[0] === 'in');
-        return resolve(isIn
-          ? { data: [{ reminder_group_id: 'g2', status: 'delivered' }, { reminder_group_id: 'g1', status: 'pending_approval' }], error: null }
-          : { data: pending, error: null });
-      },
-    };
-    return b;
+  from(table) { throw new Error(`permission denied for table ${table}`); },
+  async rpc(name) {
+    rpcCalls.push(name);
+    return { data: { settings: {}, queue_logs: [
+      { sms_type: 'service_reminder', status: 'pending_approval', reminder_group_id: 'dudek', reminder_group_primary: true },
+      { sms_type: 'service_reminder', status: 'pending_approval', reminder_group_id: 'old', reminder_group_primary: false },
+      { sms_type: 'service_reminder', status: 'pending_approval', reminder_group_id: 'done', reminder_group_primary: true },
+      { sms_type: 'service_reminder', status: 'delivered', reminder_group_id: 'done', reminder_group_primary: false },
+      { sms_type: 'other', status: 'pending_approval', reminder_group_id: null },
+    ] }, error: null };
   },
 };
-assert.equal(await loadPendingSmsCount({ supabase: fake }), 3);
-assert.ok(calls.every((c) => c.table === 'sms_log' && !c.ops.some((o) => ['update', 'insert', 'delete'].includes(o[0]))));
+assert.equal(await loadPendingSmsCount({ supabase: fake }), 1);
+assert.deepEqual(rpcCalls, ['admin_get_sms_module_snapshot']);
+await assert.rejects(() => loadPendingSmsCount({ supabase: { rpc: async () => ({ data: null, error: new Error('x') }) } }));
 
 assert.equal(formatNavBadge(0), '');
 assert.equal(formatNavBadge(null), '');

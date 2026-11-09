@@ -714,6 +714,7 @@ export default function App() {
       loadNewServiceRequestCount({ supabase }),
       loadPendingSmsCount({ supabase }),
     ]);
+    if (sms.status === "rejected") console.warn("Nie udało się policzyć SMS-ów do zatwierdzenia.", sms.reason?.message || sms.reason);
     setCommunicationCounts({
       requests: requests.status === "fulfilled" ? requests.value : 0,
       sms: sms.status === "fulfilled" ? sms.value : 0,

@@ -10,6 +10,17 @@ test.describe('14.21: zgłoszenia — liczniki i przegląd ze zgłoszenia', () =
     await login(page, ADMIN);
     await expect(page.getByTestId('nav-badge-requests')).toHaveText('1');
     await expect(page.getByTestId('nav-badge-sms')).toHaveCount(0, { timeout: 2000 });
+    // 14.41: SMS czekający na zatwierdzenie pokazuje cyfrę przy „SMS” (dane z RPC ekranu SMS).
+    await page.evaluate(() => {
+      window.__KLIMA_MOCK_SUPABASE__.mutate((store) => {
+        store.sms_log.push({ id: 'pending-1441', sms_type: 'service_reminder', status: 'pending_approval', reminder_group_id: 'g-1441', reminder_group_primary: true, client: 'Klient SMS', phone: '500100200', created_at: new Date().toISOString() });
+      });
+      window.dispatchEvent(new Event('focus'));
+    });
+    await expect(page.getByTestId('nav-badge-sms')).toHaveText('1');
+    await page.evaluate(() => {
+      window.__KLIMA_MOCK_SUPABASE__.mutate((store) => { store.sms_log = store.sms_log.filter((row) => row.id !== 'pending-1441'); });
+    });
     await page.getByRole('button', { name: /^Zgłoszenia$/ }).click();
 
     const panel = page.getByTestId('service-requests-panel');

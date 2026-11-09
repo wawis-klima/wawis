@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## SMS-BADGE-1441 — licznik SMS w lewym panelu (09.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| BADGE-1441-RPC | FIXED-UNVERIFIED | Produkcja: `authenticated` bez SELECT na `sms_log` (SELECT has_table_privilege). Smoke odrzuca bezpośredni odczyt tabeli; E2E: cyfra przy „SMS”. |
+| BADGE-1441-PROD | PENDING-OWNER | Po odświeżeniu komputera cyfra 1 przy „SMS” (Aneta Dudek), o ile SMS jeszcze niewysłany. |
+
 ## JOB-EDIT-GUS-1440 — „Szukaj w GUS” przy edycji montażu (09.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
