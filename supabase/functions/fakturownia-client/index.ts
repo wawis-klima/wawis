@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.105.4";
+import { unresolvedConcurrentJobIds } from "./concurrent-attempts.ts";
 import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, isIssuedVatInvoiceRecord } from "./invoice-match.js";
 
 type SyncInvoiceClientRequest = {
@@ -565,9 +566,22 @@ async function tryAutoMatchPreparedInvoice({
   let otherAttemptsQuery = adminClient.from("fakturownia_invoice_attempts").select("job_id");
   if (!globalScope) otherAttemptsQuery = otherAttemptsQuery.eq("client_id", cid);
   const { data: otherAttempts, error: otherError } = await otherAttemptsQuery
-    .gt("expires_at", new Date().toISOString()).neq("job_id", jobId).limit(1);
+    .gt("expires_at", new Date().toISOString()).neq("job_id", jobId).limit(200);
   if (otherError) throw new Error("Nie udało się sprawdzić równoczesnych prób wystawiania.");
-  if (otherAttempts?.length) return no("Inne zlecenie tego klienta ma jednocześnie otwarte wystawianie faktury.");
+  const otherJobIds = (otherAttempts || []).map((row) => normalizeText(row.job_id)).filter(Boolean);
+  if (otherAttempts?.length && otherJobIds.length !== otherAttempts.length) {
+    return no("Inne zlecenie ma jednocześnie otwarte wystawianie faktury.");
+  }
+  if (otherJobIds.length) {
+    // 14.43: wystawienie zakończone potwierdzoną fakturą nie blokuje kolejnego montażu.
+    const { data: otherJobs, error: otherJobsError } = await adminClient.from("jobs")
+      .select("id, vat_invoice_fakturownia_confirmed, vat_invoice_fakturownia_invoice_id")
+      .in("id", otherJobIds);
+    if (otherJobsError) throw new Error("Nie udało się sprawdzić równoczesnych prób wystawiania.");
+    if (unresolvedConcurrentJobIds(otherJobIds, otherJobs || []).length) {
+      return no("Inne zlecenie ma jednocześnie otwarte wystawianie faktury.");
+    }
+  }
   const { data: job, error: jobError } = await adminClient.from("jobs")
     .select("contractor_id").eq("id", jobId).maybeSingle();
   if (jobError || !job) return no("Brak danych montażu do kontroli kolizji.");
