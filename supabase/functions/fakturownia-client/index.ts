@@ -526,6 +526,21 @@ async function hydrateInvoice(apiToken: string, invoice: FakturowniaInvoice): Pr
 }
 
 
+// WAWIS 14.43 — które inne rozpoczęte wystawienia naprawdę blokują automatyczne potwierdzenie.
+// Od 13.60 nowa faktura jest szukana w całym koncie, więc każde otwarte wystawienie (2 h) mogłoby
+// „zabrać” tę samą fakturę. Montaż z potwierdzoną i powiązaną fakturą ma wystawienie zakończone
+// (jego faktura jest zajęta i wykluczona z dopasowania), więc nie blokuje kolejnego montażu.
+function unresolvedConcurrentJobIds(otherJobIds: unknown[], jobs: Array<Record<string, unknown>>): string[] {
+  const finished = new Set(
+    (Array.isArray(jobs) ? jobs : [])
+      .filter((job) => job?.vat_invoice_fakturownia_confirmed === true
+        && String(job?.vat_invoice_fakturownia_invoice_id ?? "").trim() !== "")
+      .map((job) => String(job?.id ?? "").trim()),
+  );
+  return [...new Set((Array.isArray(otherJobIds) ? otherJobIds : []).map((id) => String(id ?? "").trim()).filter(Boolean))]
+    .filter((id) => !finished.has(id));
+}
+
 type AutoMatchResult = { invoice: FakturowniaInvoice | null; reason: string };
 
 async function tryAutoMatchPreparedInvoice({
@@ -565,9 +580,22 @@ async function tryAutoMatchPreparedInvoice({
   let otherAttemptsQuery = adminClient.from("fakturownia_invoice_attempts").select("job_id");
   if (!globalScope) otherAttemptsQuery = otherAttemptsQuery.eq("client_id", cid);
   const { data: otherAttempts, error: otherError } = await otherAttemptsQuery
-    .gt("expires_at", new Date().toISOString()).neq("job_id", jobId).limit(1);
+    .gt("expires_at", new Date().toISOString()).neq("job_id", jobId).limit(200);
   if (otherError) throw new Error("Nie udało się sprawdzić równoczesnych prób wystawiania.");
-  if (otherAttempts?.length) return no("Inne zlecenie tego klienta ma jednocześnie otwarte wystawianie faktury.");
+  const otherJobIds = (otherAttempts || []).map((row) => normalizeText(row.job_id)).filter(Boolean);
+  if (otherAttempts?.length && otherJobIds.length !== otherAttempts.length) {
+    return no("Inne zlecenie ma jednocześnie otwarte wystawianie faktury.");
+  }
+  if (otherJobIds.length) {
+    // 14.43: wystawienie zakończone potwierdzoną fakturą nie blokuje kolejnego montażu.
+    const { data: otherJobs, error: otherJobsError } = await adminClient.from("jobs")
+      .select("id, vat_invoice_fakturownia_confirmed, vat_invoice_fakturownia_invoice_id")
+      .in("id", otherJobIds);
+    if (otherJobsError) throw new Error("Nie udało się sprawdzić równoczesnych prób wystawiania.");
+    if (unresolvedConcurrentJobIds(otherJobIds, otherJobs || []).length) {
+      return no("Inne zlecenie ma jednocześnie otwarte wystawianie faktury.");
+    }
+  }
   const { data: job, error: jobError } = await adminClient.from("jobs")
     .select("contractor_id").eq("id", jobId).maybeSingle();
   if (jobError || !job) return no("Brak danych montażu do kontroli kolizji.");

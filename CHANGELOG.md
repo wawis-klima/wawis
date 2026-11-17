@@ -1,3 +1,8 @@
+## 14.43
+- Zgłoszenie właściciela 17.11.2026: **faktura Iwony Hąc nie potwierdziła się sama** („Inne zlecenie tego klienta ma jednocześnie otwarte wystawianie faktury”). Przyczyna: od 13.60 każde wystawienie rozpoczęte w ciągu ostatnich 2 godzin blokowało automatyczne potwierdzenie innych montaży — także wystawienie już zakończone potwierdzoną fakturą (sklep obuwniczy 06:38 → Iwona Hąc 06:41). Nie zależało to od osoby prywatnej czy firmy, tylko od kolejności.
+- Poprawka w Edge Function `fakturownia-client`: wystawienie, którego montaż ma potwierdzoną i powiązaną fakturę, nie blokuje kolejnego. Naprawdę równoległe wystawienia nadal blokują. Komunikat bez mylącego „tego klienta”. **Wymaga zgody właściciela na wdrożenie funkcji Supabase.** Bez zmian bazy i aplikacji.
+- Test: `smoke-invoice-concurrent-v1443`.
+
 ## 14.42
 - Kontrola 09.11.2026 pierwszych montaży po 14.34: **protokoły szczelności tworzą się i podpisują automatycznie, ale bez temperatury.** Przyczyna: miejscowość montażu zapisana z kodem pocztowym („42-400 Zawiercie”), a wyszukiwarka miejscowości Open-Meteo jej nie znajdowała (dotyczy ok. 85 montaży). Kod pocztowy jest teraz pomijany przy wyszukiwaniu — w bazie (zadanie w tle, 14.35) i w aplikacji (`normalizeCity`). Dane montażu bez zmian.
 - **Migracja do uruchomienia przez właściciela:** `20261109180000_leak_test_city_postal_v1442.sql` — nowa funkcja `private.leak_test_city_name_v1442`, poprawione zadanie w tle; wpisy kolejki zakończone „nie znaleziono miejscowości” wracają do ponownej próby. Temperatury już wpisanej nie zmienia.
