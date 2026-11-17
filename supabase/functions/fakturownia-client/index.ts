@@ -1,5 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2.105.4";
-import { unresolvedConcurrentJobIds } from "./concurrent-attempts.ts";
 import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, isIssuedVatInvoiceRecord } from "./invoice-match.js";
 
 type SyncInvoiceClientRequest = {
@@ -526,6 +525,21 @@ async function hydrateInvoice(apiToken: string, invoice: FakturowniaInvoice): Pr
   return value as FakturowniaInvoice;
 }
 
+
+// WAWIS 14.43 — które inne rozpoczęte wystawienia naprawdę blokują automatyczne potwierdzenie.
+// Od 13.60 nowa faktura jest szukana w całym koncie, więc każde otwarte wystawienie (2 h) mogłoby
+// „zabrać” tę samą fakturę. Montaż z potwierdzoną i powiązaną fakturą ma wystawienie zakończone
+// (jego faktura jest zajęta i wykluczona z dopasowania), więc nie blokuje kolejnego montażu.
+function unresolvedConcurrentJobIds(otherJobIds: unknown[], jobs: Array<Record<string, unknown>>): string[] {
+  const finished = new Set(
+    (Array.isArray(jobs) ? jobs : [])
+      .filter((job) => job?.vat_invoice_fakturownia_confirmed === true
+        && String(job?.vat_invoice_fakturownia_invoice_id ?? "").trim() !== "")
+      .map((job) => String(job?.id ?? "").trim()),
+  );
+  return [...new Set((Array.isArray(otherJobIds) ? otherJobIds : []).map((id) => String(id ?? "").trim()).filter(Boolean))]
+    .filter((id) => !finished.has(id));
+}
 
 type AutoMatchResult = { invoice: FakturowniaInvoice | null; reason: string };
 
