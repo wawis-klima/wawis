@@ -6,6 +6,7 @@ import { getInitials, getJobTypeClass, getJobTypeLabel, getViewerNames, renderIn
 import JobAddressLink from "./JobAddressLink.jsx";
 import DesktopJobDeviceCards from "./desktop/DesktopJobDeviceCards.jsx";
 import DesktopJobProtocolCard from "./desktop/DesktopJobProtocolCard.jsx";
+import DesktopJobInvoiceCard from "./desktop/DesktopJobInvoiceCard.jsx";
 import { canAddJobComment, canDeleteJob, canDeleteJobComment, canEditJob, canManageAdminNote, canManageJobViewers, canModifyJobPhotos, canWorkerFinishJob, isWorkerLockedCompletedJob, STATUSES } from "../utils/jobPermissions.js";
 import { getJobDeviceRows } from "../modules/job-devices.js";
 import { blockUnsavedWork } from "../modules/update-reload-guard.js";
@@ -738,6 +739,7 @@ export default function JobDetailsPanel({
         </section>
 
         {isAdmin && isCompletedJob ? <DesktopJobProtocolCard job={selectedJob} supabase={supabase} /> : null}
+        {isAdmin && isCompletedJob && selectedJob.vat_invoice_fakturownia_confirmed && selectedJob.vat_invoice_fakturownia_invoice_id ? <DesktopJobInvoiceCard job={selectedJob} supabase={supabase} /> : null}
 
         <section className={`detailsSection jobDetailsSectionCard desktopJobDevicesSection${isCompletedJob ? ` desktopCompletedCollapsibleSection ${desktopDevicesExpanded ? 'isExpanded' : 'isCollapsed'}` : ''}`}>
           <div className="desktopJobDevicesHeadingRow">

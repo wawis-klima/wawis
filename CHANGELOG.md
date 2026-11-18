@@ -1,3 +1,8 @@
+## 14.45
+- Prośba właściciela 18.11.2026: **PDF faktury z Fakturowni w aplikacji**. W szczegółach zakończonego montażu z potwierdzoną fakturą jest karta „Faktura VAT” z przyciskami „Podgląd faktury” i „Pobierz PDF” — **tylko administrator** (karta i serwer).
+- PDF pobierany na żądanie z Fakturowni (nowa akcja `invoice_pdf` w Edge Function `fakturownia-client`, wyłącznie odczyt GET, liczbowe ID faktury zapisane przy potwierdzeniu). WAWIS nie przechowuje plików, więc po korekcie w Fakturowni widać aktualną wersję. Bez zmian bazy i Storage. **Wdrożenie funkcji za zgodą właściciela (18.11.2026).**
+- Testy: smoke `smoke-invoice-pdf-v1445` (handler: administrator/pracownik, niepotwierdzona faktura, nieprawidłowe ID, odpowiedź inna niż PDF, 404), E2E `desktop-app` (podgląd i pobranie).
+
 ## 14.44
 - Zgłoszenie właściciela 18.11.2026: **podpis złożony na obróconym telefonie trafiał do protokołu bokiem**. Tryb „Automatycznie” obracał tylko podpis wyraźnie wyższy niż szerszy i zawsze w prawo; podpis z zawijasem był szerszy i zostawał bokiem.
 - Aplikacja rozpoznaje teraz kierunek pisania z ruchu palca (przemieszczenie pociągnięć) i sama ustawia obrót: 90° w lewo, 90° w prawo albo 180° (do góry nogami tylko przy bardzo wyraźnym kierunku). Pracownik widzi podgląd i może zmienić ustawienie. Przy niepewnym kierunku zostaje dotychczasowe „Automatycznie”. Oryginalny podpis w Storage bez zmian. Obszar chroniony: protokoły — tylko wybór obrotu przed PDF.

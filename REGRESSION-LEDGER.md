@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## INVOICE-PDF-1445 — PDF faktury z Fakturowni (18.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| INV-PDF-1445-AUTH | FIXED-UNVERIFIED | Smoke uruchamia handler: pracownik 403, niepotwierdzona faktura 409, ID inne niż liczba 409 — bez zapytania do Fakturowni. |
+| INV-PDF-1445-FILE | FIXED-UNVERIFIED | Odpowiedź bez nagłówka %PDF- odrzucona; 404 z czytelnym komunikatem; tylko GET. |
+| INV-PDF-1445-UI | FIXED-UNVERIFIED | E2E: karta tylko przy potwierdzonej fakturze, podgląd i pobranie pliku. |
+| INV-PDF-1445-PROD | PENDING-OWNER | Podgląd prawdziwej faktury (np. 22/11/2026) na komputerze. |
+
 ## SIGNATURE-DIR-1444 — obrót podpisu z obróconego telefonu (18.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
