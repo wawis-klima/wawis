@@ -3,6 +3,7 @@
 - Ta sama akcja `invoice_pdf` funkcji `fakturownia-client` co w 14.45 — bez zmian backendu, bazy i Storage. Numer faktury odczytywany osobnym zapytaniem tylko dla administratora; lista montaży pracownika bez zmian. Karta otwierana od razu po dotknięciu (jak protokół szczelności), więc Safari jej nie blokuje.
 - Poprawka atrapy bazy testowej (tylko testy): GUS w wersji telefonicznej odwoływał się do `body` przed deklaracją (14.40).
 - Testy: smoke `smoke-mobile-invoice-pdf-v1446`, E2E `mobile-invoice-pdf-v1446` (Chromium i WebKit).
+- Workflow testowy `webkit-built-e2e`: oczekiwana liczba testów 31 → 34 (nowe testy faktury na telefonie; bramka nadal wymaga zaliczenia wszystkich).
 
 ## 14.45
 - Prośba właściciela 18.11.2026: **PDF faktury z Fakturowni w aplikacji**. W szczegółach zakończonego montażu z potwierdzoną fakturą jest karta „Faktura VAT” z przyciskami „Podgląd faktury” i „Pobierz PDF” — **tylko administrator** (karta i serwer).

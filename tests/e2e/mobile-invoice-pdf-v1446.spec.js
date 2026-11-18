@@ -32,15 +32,18 @@ test('@mobile 14.46: administrator otwiera PDF faktury z Fakturowni', async ({ p
   await openCompleted(page, ADMIN);
   const button = page.getByTestId('invoice-pdf-btn');
   await expect(button).toHaveText('Faktura VAT 22/11/2026 (PDF)');
+  // Atrapa odpowiada natychmiast — pobieranie może się zacząć, zanim test dostanie uchwyt nowej karty.
+  // Nasłuch pobrań na każdej karcie kontekstu rejestrujemy PRZED kliknięciem.
+  const downloads = [];
+  page.context().on('page', (opened) => opened.on('download', (download) => downloads.push(download)));
   const popupPromise = page.waitForEvent('popup');
   await button.click();
   const popup = await popupPromise;
-  // Chromium pokazuje PDF w karcie (blob:); WebKit bez przeglądarki PDF pobiera plik (bez nazwy) — sprawdzamy treść.
-  const downloadPromise = popup.waitForEvent('download', { timeout: 20_000 }).catch(() => null);
-  const outcome = await Promise.race([
-    expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
-    downloadPromise.then((download) => download || null),
-  ]);
+  // Chromium pokazuje PDF w karcie (blob:) albo go pobiera; WebKit pobiera plik (bez nazwy) — sprawdzamy treść.
+  const outcome = await expect.poll(() => {
+    if (downloads.length) return 'download';
+    return /^blob:/.test(popup.isClosed() ? '' : popup.url()) ? 'tab' : '';
+  }, { timeout: 20_000 }).toMatch(/^(tab|download)$/).then(() => (downloads.length ? downloads[0] : 'tab')).catch(() => null);
   let pdf;
   if (outcome === 'tab') {
     const bytes = await popup.evaluate(async () => {
@@ -49,7 +52,7 @@ test('@mobile 14.46: administrator otwiera PDF faktury z Fakturowni', async ({ p
     });
     pdf = Buffer.from(bytes);
   } else {
-    const download = outcome || await downloadPromise;
+    const download = outcome;
     const panelMessage = await page.locator('.mobileInlineJobDetails .protocolActionMessage[role="alert"]').allTextContents().catch(() => []);
     const diagnostics = `popup=${popup.isClosed() ? 'zamknięty' : popup.url()} | komunikat=${panelMessage.join(' / ') || '-'} | konsola=${consoleLines.slice(-6).join(' || ') || '-'}`;
     console.log(`DIAG 14.46 PDF: ${diagnostics}`);
