@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
@@ -23,33 +24,41 @@ async function openCompleted(page, credentials) {
   await expect(page.locator('.mobileInlineJobDetails')).toBeVisible();
 }
 
-test('@mobile 14.46: administrator otwiera PDF faktury z Fakturowni', async ({ page }) => {
+test('@mobile 14.46: administrator otwiera PDF faktury z Fakturowni', async ({ page }, testInfo) => {
   await seedConfirmedInvoice(page);
+  const consoleLines = [];
+  page.on('console', (msg) => { if (['error', 'warning'].includes(msg.type())) consoleLines.push(`${msg.type()}: ${msg.text()}`); });
+  page.on('pageerror', (err) => consoleLines.push(`pageerror: ${err.message}`));
   await openCompleted(page, ADMIN);
   const button = page.getByTestId('invoice-pdf-btn');
   await expect(button).toHaveText('Faktura VAT 22/11/2026 (PDF)');
   const popupPromise = page.waitForEvent('popup');
   await button.click();
   const popup = await popupPromise;
-  // Chromium pokazuje PDF w karcie (blob:); WebKit bez przeglądarki PDF pobiera plik — oba wyniki to PDF.
+  // Chromium pokazuje PDF w karcie (blob:); WebKit bez przeglądarki PDF pobiera plik (bez nazwy) — sprawdzamy treść.
   const downloadPromise = popup.waitForEvent('download', { timeout: 20_000 }).catch(() => null);
   const outcome = await Promise.race([
     expect.poll(() => popup.url(), { timeout: 20_000 }).toMatch(/^blob:/).then(() => 'tab').catch(() => null),
     downloadPromise.then((download) => download || null),
   ]);
-  let head = '';
+  let pdf;
   if (outcome === 'tab') {
-    head = await popup.evaluate(async () => {
+    const bytes = await popup.evaluate(async () => {
       const res = await fetch(window.location.href);
-      return new TextDecoder().decode((await res.arrayBuffer()).slice(0, 5));
+      return Array.from(new Uint8Array(await res.arrayBuffer()));
     });
+    pdf = Buffer.from(bytes);
   } else {
     const download = outcome || await downloadPromise;
-    expect(download, 'PDF otwarty w karcie albo pobrany').toBeTruthy();
-    expect(download.suggestedFilename()).toBe('faktura-mock.pdf');
-    head = '%PDF-';
+    const panelMessage = await page.locator('.mobileInlineJobDetails .protocolActionMessage[role="alert"]').allTextContents().catch(() => []);
+    const diagnostics = `popup=${popup.isClosed() ? 'zamknięty' : popup.url()} | komunikat=${panelMessage.join(' / ') || '-'} | konsola=${consoleLines.slice(-6).join(' || ') || '-'}`;
+    console.log(`DIAG 14.46 PDF: ${diagnostics}`);
+    expect(download, `PDF otwarty w karcie albo pobrany — ${diagnostics}`).toBeTruthy();
+    const target = testInfo.outputPath('faktura.pdf');
+    await download.saveAs(target);
+    pdf = fs.readFileSync(target);
   }
-  expect(head).toBe('%PDF-');
+  expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
   await expect(button).toHaveText('Faktura VAT 22/11/2026 (PDF)');
 });
 

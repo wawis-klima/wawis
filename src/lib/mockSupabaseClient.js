@@ -911,7 +911,7 @@ export function createMockSupabaseClient() {
         if (name === 'fakturownia-client' && body.action === 'invoice_pdf') {
           const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
           if (!job?.vat_invoice_fakturownia_confirmed) return { data: { error: 'Ten montaż nie ma potwierdzonej faktury z Fakturowni.' }, error: null };
-          return { data: { ok: true, invoiceNumber: job.vat_invoice_fakturownia_invoice_number || '', fileName: 'faktura-mock.pdf', pdfBase64: btoa('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n') }, error: null };
+          return { data: { ok: true, invoiceNumber: job.vat_invoice_fakturownia_invoice_number || '', fileName: 'faktura-mock.pdf', pdfBase64: 'JVBERi0xLjQKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCAyMDAgMjAwXS9SZXNvdXJjZXM8PD4+Pj4KZW5kb2JqCnhyZWYKMCA0CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU0IDAwMDAwIG4gCjAwMDAwMDAxMDUgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDQvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgoxODQKJSVFT0YK' }, error: null };
         }
         if (name !== 'send-job-protocol-email') return { data: null, error: { message: `Mock Functions nie obsługuje funkcji: ${name}` } };
         const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
