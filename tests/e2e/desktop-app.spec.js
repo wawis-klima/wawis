@@ -149,6 +149,9 @@ test.describe('desktop E2E na mock Supabase', () => {
 
   test('14.45: administrator otwiera PDF potwierdzonej faktury z Fakturowni', async ({ page }) => {
     await login(page, ADMIN);
+    // Szczegóły montażu ładują moduł z wersji telefonicznej, którego atrapa nadpisuje globalny uchwyt
+    // (bez mutate). Zapamiętujemy uchwyt bazy desktopowej przed otwarciem montażu.
+    await page.evaluate(() => { window.__WAWIS_DESKTOP_MOCK_1445__ = window.__KLIMA_MOCK_SUPABASE__; });
     await page.getByRole('button', { name: /^Montaże$/ }).click();
     await page.getByRole('button', { name: /Zakończone:/ }).click();
     await page.getByRole('table').getByText('Klient Testowy C Zakończony', { exact: true }).click();
@@ -156,7 +159,7 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(page.locator('[data-desktop-protocol="9.96"]')).toBeVisible();
     await expect(page.locator('[data-desktop-invoice="14.45"]')).toHaveCount(0);
     await page.evaluate(() => {
-      window.__KLIMA_MOCK_SUPABASE__.mutate((store) => {
+      window.__WAWIS_DESKTOP_MOCK_1445__.mutate((store) => {
         const job = store.jobs.find((item) => item.id === 'mock-job-003');
         Object.assign(job, { vat_invoice_issued: true, vat_invoice_fakturownia_confirmed: true, vat_invoice_fakturownia_invoice_id: '584755572', vat_invoice_fakturownia_invoice_number: '22/11/2026' });
       });
