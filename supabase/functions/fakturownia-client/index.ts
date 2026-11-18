@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.105.4";
 import { buildJobInvoiceOid, findIssuedVatInvoiceForJob, inspectManualInvoiceMatch, findInvoiceCandidatesForManualConfirmation, isIssuedVatInvoiceRecord } from "./invoice-match.js";
 
 type SyncInvoiceClientRequest = {
-  action?: "prepare" | "verify" | "link_by_number" | "pending";
+  action?: "prepare" | "verify" | "link_by_number" | "pending" | "invoice_pdf";
   jobId?: string;
   clientId?: string | number;
   invoiceNumber?: string;
@@ -102,6 +102,26 @@ Deno.serve(async (request: Request) => {
         .select("job_id, expires_at").eq("job_id", jobId).maybeSingle();
       if (attemptError) throw new Error("Nie udało się sprawdzić rozpoczętej faktury.");
       return json({ ok: true, pending: Boolean(attempt && Date.parse(attempt.expires_at) > Date.now()) });
+    }
+
+    if (action === "invoice_pdf") {
+      // 14.45: podgląd potwierdzonej faktury w WAWIS (tylko administrator — sprawdzone wyżej).
+      // Plik pobierany na żądanie z Fakturowni; WAWIS go nie przechowuje, więc zawsze jest aktualny.
+      const jobId = normalizeText(body.jobId);
+      if (!isUuid(jobId)) return json({ error: "Nieprawidłowy montaż." }, 400);
+      const { data: job, error: jobError } = await adminClient.from("jobs")
+        .select("id, vat_invoice_fakturownia_confirmed, vat_invoice_fakturownia_invoice_id, vat_invoice_fakturownia_invoice_number")
+        .eq("id", jobId).maybeSingle();
+      if (jobError) throw new Error("Nie udało się odczytać montażu.");
+      if (!job) return json({ error: "Nie znaleziono montażu." }, 404);
+      const invoiceId = normalizeText(job.vat_invoice_fakturownia_invoice_id);
+      if (job.vat_invoice_fakturownia_confirmed !== true || !/^[1-9][0-9]{0,17}$/.test(invoiceId)) {
+        return json({ error: "Ten montaż nie ma potwierdzonej faktury z Fakturowni." }, 409);
+      }
+      const pdfBase64 = await fakturowniaGetInvoicePdfBase64(apiToken, invoiceId);
+      const invoiceNumber = normalizeText(job.vat_invoice_fakturownia_invoice_number);
+      const fileStem = (invoiceNumber || invoiceId).replace(/[^0-9A-Za-z]+/g, "-").replace(/^-+|-+$/g, "") || invoiceId;
+      return json({ ok: true, invoiceNumber, fileName: `faktura-${fileStem}.pdf`, pdfBase64 });
     }
 
     if (action === "verify") {
@@ -741,6 +761,38 @@ async function fakturowniaRequest<T>(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+const INVOICE_PDF_MAX_BYTES = 8 * 1024 * 1024;
+
+async function fakturowniaGetInvoicePdfBase64(apiToken: string, invoiceId: string): Promise<string> {
+  const url = new URL(`/invoices/${encodeURIComponent(invoiceId)}.pdf`, FAKTUROWNIA_BASE_URL);
+  url.searchParams.set("api_token", apiToken);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
+  let bytes: Uint8Array;
+  try {
+    const response = await fetch(url, { method: "GET", headers: { Accept: "application/pdf" }, signal: controller.signal });
+    if (response.status === 404) throw new Error("Fakturownia nie znalazła tej faktury. Mogła zostać usunięta.");
+    if (!response.ok) throw new Error(`Fakturownia odrzuciła pobranie PDF (${response.status}).`);
+    bytes = new Uint8Array(await response.arrayBuffer());
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error("Fakturownia nie odpowiedziała w wymaganym czasie.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+  if (bytes.length > INVOICE_PDF_MAX_BYTES) throw new Error("PDF faktury jest zbyt duży do podglądu.");
+  if (bytes.length < 5 || String.fromCharCode(...bytes.subarray(0, 5)) !== "%PDF-") {
+    throw new Error("Fakturownia nie zwróciła pliku PDF.");
+  }
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return btoa(binary);
 }
 
 function getPrimaryAddress(contractor: Record<string, unknown> | null): { city: string; street: string } {

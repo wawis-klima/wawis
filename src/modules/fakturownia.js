@@ -85,3 +85,31 @@ export async function hasPendingFakturowniaInvoice({ supabase, jobId }) {
   });
   return Boolean(data?.pending);
 }
+
+/**
+ * 14.45: PDF potwierdzonej faktury pobierany na żądanie z Fakturowni (tylko administrator).
+ * Zwraca Blob — WAWIS niczego nie zapisuje w bazie ani w Storage.
+ */
+export function decodeInvoicePdfBase64(pdfBase64) {
+  const text = String(pdfBase64 || '');
+  if (!text || !/^[A-Za-z0-9+/]+={0,2}$/.test(text)) throw new Error('Fakturownia nie zwróciła pliku PDF.');
+  const binary = atob(text);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  if (binary.slice(0, 5) !== '%PDF-') throw new Error('Fakturownia nie zwróciła pliku PDF.');
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+
+export async function getFakturowniaInvoicePdf({ supabase, jobId }) {
+  const normalizedJobId = String(jobId || '').trim();
+  if (!normalizedJobId) throw new Error('Brak identyfikatora montażu.');
+  const data = await invokeFakturowniaClient({
+    supabase,
+    body: { action: 'invoice_pdf', jobId: normalizedJobId },
+  });
+  return {
+    blob: decodeInvoicePdfBase64(data?.pdfBase64),
+    fileName: String(data?.fileName || 'faktura.pdf'),
+    invoiceNumber: String(data?.invoiceNumber || ''),
+  };
+}

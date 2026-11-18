@@ -147,6 +147,36 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(protocolCard.getByText('Protokół został wysłany z biuro@wawis.pl do klient.c@example.test.')).toBeVisible();
   });
 
+  test('14.45: administrator otwiera PDF potwierdzonej faktury z Fakturowni', async ({ page }) => {
+    await login(page, ADMIN);
+    // Szczegóły montażu ładują moduł z wersji telefonicznej, którego atrapa nadpisuje globalny uchwyt
+    // (bez mutate). Zapamiętujemy uchwyt bazy desktopowej przed otwarciem montażu.
+    await page.evaluate(() => { window.__WAWIS_DESKTOP_MOCK_1445__ = window.__KLIMA_MOCK_SUPABASE__; });
+    await page.getByRole('button', { name: /^Montaże$/ }).click();
+    await page.getByRole('button', { name: /Zakończone:/ }).click();
+    await page.getByRole('table').getByText('Klient Testowy C Zakończony', { exact: true }).click();
+    // Faktura bez potwierdzenia: karty nie ma.
+    await expect(page.locator('[data-desktop-protocol="9.96"]')).toBeVisible();
+    await expect(page.locator('[data-desktop-invoice="14.45"]')).toHaveCount(0);
+    await page.evaluate(() => {
+      window.__WAWIS_DESKTOP_MOCK_1445__.mutate((store) => {
+        const job = store.jobs.find((item) => item.id === 'mock-job-003');
+        Object.assign(job, { vat_invoice_issued: true, vat_invoice_fakturownia_confirmed: true, vat_invoice_fakturownia_invoice_id: '584755572', vat_invoice_fakturownia_invoice_number: '22/11/2026' });
+      });
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    const invoiceCard = page.locator('[data-desktop-invoice="14.45"]');
+    await expect(invoiceCard.getByText('Faktura 22/11/2026')).toBeVisible();
+    await invoiceCard.getByRole('button', { name: 'Podgląd faktury' }).click();
+    await expect(page.locator('.desktopJobInvoicePreviewModal iframe')).toBeVisible();
+    await page.locator('.desktopJobInvoicePreviewModal .desktopJobProtocolPreviewHeader').getByRole('button', { name: 'Zamknij' }).click();
+
+    const download = page.waitForEvent('download');
+    await invoiceCard.getByRole('button', { name: 'Pobierz PDF' }).click();
+    expect((await download).suggestedFilename()).toBe('faktura-mock.pdf');
+  });
+
   test('pracownik loguje się — pracownik na komputerze jest kierowany do aplikacji telefonicznej', async ({ page }) => {
     await login(page, WORKER);
 

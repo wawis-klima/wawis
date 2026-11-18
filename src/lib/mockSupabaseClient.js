@@ -908,6 +908,11 @@ export function createMockSupabaseClient() {
         // 13.97: ceny urzędowe są już w danych testowych (fuel_reference_prices) — nic nie dociągamy.
         if (name === 'fuel-reference-prices') return { data: { ok: true, added: 0, pending: 0, failures: [] }, error: null };
         if (name === 'gus-bir-lookup') return { data: { found: true, nip: body.nip, name: 'FIRMA Z GUS SP. Z O.O.', street: 'Siedzibowa 1', city: 'Warszawa', postalCode: '00-001', source: 'GUS REGON BIR' }, error: null };
+        if (name === 'fakturownia-client' && body.action === 'invoice_pdf') {
+          const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
+          if (!job?.vat_invoice_fakturownia_confirmed) return { data: { error: 'Ten montaż nie ma potwierdzonej faktury z Fakturowni.' }, error: null };
+          return { data: { ok: true, invoiceNumber: job.vat_invoice_fakturownia_invoice_number || '', fileName: 'faktura-mock.pdf', pdfBase64: btoa('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n') }, error: null };
+        }
         if (name !== 'send-job-protocol-email') return { data: null, error: { message: `Mock Functions nie obsługuje funkcji: ${name}` } };
         const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
         const protocol = store.job_protocols.find((item) => String(item.id) === String(body.protocolId) && String(item.job_id) === String(body.jobId));
