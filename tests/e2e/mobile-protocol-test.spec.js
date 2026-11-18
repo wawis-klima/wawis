@@ -204,6 +204,32 @@ test.describe('@mobile protokół i zakończenie zlecenia', () => {
     await expect(canvas).toBeVisible();
   });
 
+  test('14.44: podpis złożony na obróconym telefonie dostaje automatyczny obrót', async ({ page }) => {
+    await openJob(page, WORKER, 'Zakończone', 'Klient Testowy C Zakończony');
+    await page.locator('.protocolTestButton').click();
+    await page.getByRole('button', { name: 'Podpis klienta', exact: true }).click();
+    const canvas = page.locator('#protocol-test-signature');
+    await expect(canvas).toBeVisible();
+    const box = await canvas.boundingBox();
+    if (!box) throw new Error('Brak pola podpisu.');
+    // Telefon obrócony w prawo: klient pisze z góry na dół, a na końcu dodaje zawijas w poprzek.
+    const x = box.x + box.width / 2;
+    await page.mouse.move(x - 20, box.y + 40);
+    await page.mouse.down();
+    for (const [dx, y] of [[25, 90], [-20, 140], [25, 190], [-20, 240], [20, 290]]) {
+      await page.mouse.move(x + dx, box.y + y, { steps: 6 });
+    }
+    await page.mouse.up();
+    await page.mouse.move(x + 40, box.y + 50);
+    await page.mouse.down();
+    await page.mouse.move(x + 55, box.y + 160, { steps: 6 });
+    await page.mouse.move(x + 35, box.y + 280, { steps: 6 });
+    await page.mouse.up();
+    await page.getByRole('button', { name: 'Zatwierdź podpis', exact: true }).click();
+    await expect(page.locator('#protocolSignatureRotationMode')).toHaveValue('270');
+    await expect(page.getByAltText('Podgląd ułożenia podpisu na PDF')).toBeVisible();
+  });
+
   test('pracownik nie może zakończyć bez zapisanego protokołu', async ({ page }) => {
     await openJob(page, WORKER, 'W trakcie', 'Klient Testowy B');
     await expect(page.locator('.protocolTestButton')).toBeVisible();

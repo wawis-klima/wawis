@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SIGNATURE-DIR-1444 — obrót podpisu z obróconego telefonu (18.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SIG-DIR-1444-DETECT | FIXED-UNVERIFIED | Smoke: 4 ułożenia telefonu, podpis z zawijasem, zawijas cofający się nie daje 180°, niepewne przypadki = „auto”. |
+| SIG-DIR-1444-UI | FIXED-UNVERIFIED | E2E iPhone 14: podpis pisany z góry na dół → wybór „270” i podgląd. |
+| SIG-DIR-1444-IPHONE | PENDING-IPHONE | Podpis na fizycznym iPhonie obróconym w prawo, w lewo i do góry nogami; podgląd przed zapisem PDF. |
+
 ## LEAK-TEMP-POSTAL-1442 — temperatura protokołu szczelności przy kodzie pocztowym (09.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
