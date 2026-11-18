@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.45
+- 14.46
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.46` — PDF faktury z Fakturowni także na telefonie (administrator).
 - wersja `14.45` — podgląd i pobranie PDF faktury z Fakturowni (tylko administrator).
 - wersja `14.44` — automatyczny obrót podpisu z obróconego telefonu według kierunku pisania.
 - wersja `14.43` — automatyczne potwierdzenie drugiej faktury z rzędu (Edge Function `fakturownia-client`).

@@ -35,6 +35,8 @@ export default defineConfig({
     'qr-stickers-wizard-v1409.spec.js',
     'job-qr-required-v1424.spec.js',
     'leak-test-protocol-v1428.spec.js',
+    // 14.46: faktura PDF w karcie Safari (ten sam sposób otwierania co protokół szczelności).
+    'mobile-invoice-pdf-v1446.spec.js',
     // 14.33: baner do podpisu usunięty — wzór podpisu w Diagnostyce (palec na iPhonie, WebKit).
     'signature-pattern-v1433.spec.js',
   ],

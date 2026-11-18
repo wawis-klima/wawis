@@ -1,3 +1,9 @@
+## 14.46
+- Prośba właściciela 18.11.2026: **PDF faktury z Fakturowni także na telefonie**. W karcie zakończonego montażu z potwierdzoną fakturą administrator ma przycisk „Faktura VAT <numer> (PDF)” obok protokołu szczelności. Pracownik go nie widzi (serwer też odmawia).
+- Ta sama akcja `invoice_pdf` funkcji `fakturownia-client` co w 14.45 — bez zmian backendu, bazy i Storage. Numer faktury odczytywany osobnym zapytaniem tylko dla administratora; lista montaży pracownika bez zmian. Karta otwierana od razu po dotknięciu (jak protokół szczelności), więc Safari jej nie blokuje.
+- Poprawka atrapy bazy testowej (tylko testy): GUS w wersji telefonicznej odwoływał się do `body` przed deklaracją (14.40).
+- Testy: smoke `smoke-mobile-invoice-pdf-v1446`, E2E `mobile-invoice-pdf-v1446` (Chromium i WebKit).
+
 ## 14.45
 - Prośba właściciela 18.11.2026: **PDF faktury z Fakturowni w aplikacji**. W szczegółach zakończonego montażu z potwierdzoną fakturą jest karta „Faktura VAT” z przyciskami „Podgląd faktury” i „Pobierz PDF” — **tylko administrator** (karta i serwer).
 - PDF pobierany na żądanie z Fakturowni (nowa akcja `invoice_pdf` w Edge Function `fakturownia-client`, wyłącznie odczyt GET, liczbowe ID faktury zapisane przy potwierdzeniu). WAWIS nie przechowuje plików, więc po korekcie w Fakturowni widać aktualną wersję. Bez zmian bazy i Storage. **Wdrożenie funkcji za zgodą właściciela (18.11.2026).**

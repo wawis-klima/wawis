@@ -17,6 +17,7 @@ import SmoothCollapse from "./jobs/SmoothCollapse.jsx";
 import { JobDeviceQrScanner, JobDeviceQrStickerRow, unassignJobDeviceQrSticker, useJobQrStickers } from "./qr/JobDeviceQrSticker.jsx";
 import { formatMissingQrDevices, formatQrStickerCode, missingJobQrStickers } from "../../modules/qr-stickers.js";
 import { openLeakTestProtocolPdf } from "../modules/leak-test-protocol-pdf.js";
+import { loadConfirmedInvoiceInfo, openFakturowniaInvoicePdf } from "../modules/invoice-pdf.js";
 import "./qr/QrStickerScanner.css";
 
 const PROTOCOL_READ_TIMEOUT_MS = 3200;
@@ -526,6 +527,21 @@ export default function JobDetailsPanel({
     }
     onQuickProtocolRequestHandled(quickProtocolRequest.nonce);
   }, [quickProtocolRequest, selectedJobId, selectedJobSupportsProtocol, selectedJob?.detailsLoaded, protocolCheckedJobId, protocolLoading, protocolBackendAvailable, protocolCheckOffline, protocolNameplatesReady, protocolQrReady, qrStickersChecked, qrMissingLabel, onQuickProtocolRequestHandled]);
+
+  // 14.46: faktura VAT z Fakturowni — tylko administrator, zakończony montaż z potwierdzoną fakturą.
+  const [invoiceInfo, setInvoiceInfo] = React.useState(null);
+  const [invoiceBusy, setInvoiceBusy] = React.useState(false);
+  const [invoiceMessage, setInvoiceMessage] = React.useState('');
+  React.useEffect(() => {
+    setInvoiceInfo(null);
+    setInvoiceMessage('');
+    if (!isAdmin || !selectedJobIsCompleted || !selectedJobId || !supabase) return undefined;
+    let cancelled = false;
+    loadConfirmedInvoiceInfo({ supabase, jobId: selectedJobId })
+      .then((info) => { if (!cancelled) setInvoiceInfo(info); })
+      .catch(() => { if (!cancelled) setInvoiceInfo(null); });
+    return () => { cancelled = true; };
+  }, [isAdmin, selectedJobIsCompleted, selectedJobId, supabase]);
 
   if (!selectedJob) {
     return <div className="card premiumCard"><div className="muted">Kliknij dowolny wiersz w tabeli, aby zobaczyć szczegóły montażu.</div></div>;
@@ -1060,6 +1076,24 @@ export default function JobDetailsPanel({
             </button>
           ) : null}
           {leakTestMessage ? <div className="protocolActionMessage" role="alert">{leakTestMessage}</div> : null}
+          {isAdmin && selectedJobIsCompleted && invoiceInfo ? (
+            <button
+              type="button"
+              className="btn leakTestProtocolBtn invoicePdfBtn"
+              data-testid="invoice-pdf-btn"
+              disabled={invoiceBusy}
+              onClick={() => {
+                setInvoiceBusy(true);
+                setInvoiceMessage('');
+                openFakturowniaInvoicePdf({ supabase, jobId: selectedJobId })
+                  .catch((error) => setInvoiceMessage(error?.message || 'Nie udało się pobrać faktury z Fakturowni.'))
+                  .finally(() => setInvoiceBusy(false));
+              }}
+            >
+              {invoiceBusy ? 'Pobieram fakturę…' : `Faktura VAT${invoiceInfo.invoiceNumber ? ` ${invoiceInfo.invoiceNumber}` : ''} (PDF)`}
+            </button>
+          ) : null}
+          {invoiceMessage ? <div className="protocolActionMessage" role="alert">{invoiceMessage}</div> : null}
         </div>
       </div>
 

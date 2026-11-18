@@ -1089,7 +1089,13 @@ export function createMockSupabaseClient() {
     },
     functions: {
       async invoke(name, options = {}) {
-        if (name === 'gus-bir-lookup') return { data: { found: true, nip: body.nip, name: 'FIRMA Z GUS SP. Z O.O.', street: 'Siedzibowa 1', city: 'Warszawa', postalCode: '00-001', source: 'GUS REGON BIR' }, error: null };
+        // 14.46: wcześniej „body.nip” przed deklaracją body (błąd TDZ w atrapie 14.40).
+        if (name === 'gus-bir-lookup') return { data: { found: true, nip: options?.body?.nip, name: 'FIRMA Z GUS SP. Z O.O.', street: 'Siedzibowa 1', city: 'Warszawa', postalCode: '00-001', source: 'GUS REGON BIR' }, error: null };
+        if (name === 'fakturownia-client' && options?.body?.action === 'invoice_pdf') {
+          const invoiceJob = store.jobs.find((item) => String(item.id) === String(options.body.jobId));
+          if (!invoiceJob?.vat_invoice_fakturownia_confirmed) return { data: { error: 'Ten montaż nie ma potwierdzonej faktury z Fakturowni.' }, error: null };
+          return { data: { ok: true, invoiceNumber: invoiceJob.vat_invoice_fakturownia_invoice_number || '', fileName: 'faktura-mock.pdf', pdfBase64: btoa('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n') }, error: null };
+        }
         if (name !== 'send-job-protocol-email') {
           return { data: null, error: { message: `Mock Edge Function nie obsługuje funkcji: ${name}` } };
         }
