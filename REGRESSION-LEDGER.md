@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## INVOICE-PDF-MOBILE-1446 — PDF faktury na telefonie (18.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| INV-MOB-1446-ADMIN | FIXED-UNVERIFIED | E2E iPhone 14 (Chromium + WebKit): administrator otwiera PDF; pracownik i montaż bez potwierdzonej faktury — brak przycisku. |
+| INV-MOB-1446-HOOKS | FIXED-UNVERIFIED | Smoke: hooki faktury przed wczesnym return; lista montaży pracownika bez pól faktury. |
+| INV-MOB-1446-IPHONE | PENDING-IPHONE | Otwarcie prawdziwej faktury z karty montażu na fizycznym iPhonie (PWA). |
+
 ## INVOICE-PDF-1445 — PDF faktury z Fakturowni (18.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
