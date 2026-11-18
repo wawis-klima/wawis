@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppModal from "./AppModal.jsx";
 import { buildJobProtocolData, createJobProtocolPdfFile } from "../../modules/job-protocol-pdf.js";
-import { orientSignatureForPdf } from "../../modules/protocol-signature-orientation.js";
+import { detectSignatureWritingAngle, orientSignatureForPdf } from "../../modules/protocol-signature-orientation.js";
 import { getLegacyInstallerSuggestionIds } from "../../modules/jobs-assignment.js";
 import { canReuseProtocolSignature, createProtocolSigningSnapshot, hasProtocolAddressCorrection } from "../../modules/protocol-signature-reuse.js";
 import {
@@ -237,6 +237,8 @@ function getTrimmedSignatureDataUrl(canvas) {
 
 export default function ProtocolTestModal({ open, job, profiles, supabase, protocolRecord = null, protocolRecordUnknown = false, autoSaveRestoredDraft = false, canWriteProtocol = true, onClose, onSaved, onPaymentLoaded }) {
   const canvasRef = useRef(null);
+  // 14.44: punkty pociągnięć do rozpoznania kierunku pisania (obrócony telefon).
+  const signatureStrokesRef = useRef([]);
   const protocolModalRef = useRef(null);
   const protocolBottomStartRef = useRef(null);
   const protocolConfirmationRef = useRef(null);
@@ -455,6 +457,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
       const canvas = canvasRef.current;
       const context = setupSignatureCanvas(canvas, { forceClear: true });
       signatureCanvasInkRef.current = false;
+      signatureStrokesRef.current = [];
       if (!canvas || !context) return;
       if (!signatureDataUrl) {
         setSignatureCanvasReady(true);
@@ -642,6 +645,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   function clearSignature() {
     setupSignatureCanvas(canvasRef.current, { forceClear: true });
     signatureCanvasInkRef.current = false;
+    signatureStrokesRef.current = [];
     drawingRef.current = false;
     lastPointRef.current = null;
     setDraftHasSignature(false);
@@ -657,6 +661,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     setupSignatureCanvas(canvas, { preserveDrawing: signatureCanvasInkRef.current });
     canvas.setPointerCapture?.(event.pointerId);
     const point = getCanvasPoint(canvas, event.nativeEvent || event);
+    signatureStrokesRef.current.push([{ x: point.x, y: point.y }]);
     drawingRef.current = true;
     lastPointRef.current = {
       point,
@@ -672,6 +677,8 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
     event.preventDefault();
     const context = canvas.getContext("2d");
     const points = getCoalescedSignaturePoints(canvas, event);
+    const currentStroke = signatureStrokesRef.current[signatureStrokesRef.current.length - 1];
+    if (currentStroke) points.forEach((point) => currentStroke.push({ x: point.x, y: point.y }));
 
     points.forEach((point) => {
       const state = lastPointRef.current;
@@ -728,7 +735,9 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
   function confirmSignature() {
     if (!draftHasSignature || !signatureCanvasReady || !canvasRef.current) return;
     setSignatureDataUrl(getTrimmedSignatureDataUrl(canvasRef.current));
-    setSignatureRotation("auto");
+    // 14.44: ułożenie wybrane z kierunku pisania; pracownik widzi podgląd i może je zmienić.
+    const detectedAngle = detectSignatureWritingAngle(signatureStrokesRef.current);
+    setSignatureRotation(detectedAngle === null ? "auto" : String(detectedAngle));
     setReusedSignature(false);
     previousSignatureRef.current = "";
     setHasSignature(true);
@@ -1237,7 +1246,7 @@ export default function ProtocolTestModal({ open, job, profiles, supabase, proto
                     <select id="protocolSignatureRotationMode" className="input"
                       value={signatureRotation} onChange={(event) => setSignatureRotation(event.target.value)}
                       disabled={isGenerating}>
-                      <option value="auto">Automatycznie — pionowy podpis obróć o 90° w prawo</option>
+                      <option value="auto">Automatycznie (według kształtu podpisu)</option>
                       <option value="0">Bez obrotu</option>
                       <option value="90">Obróć 90° w prawo</option>
                       <option value="270">Obróć 90° w lewo</option>

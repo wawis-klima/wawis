@@ -1,3 +1,8 @@
+## 14.44
+- Zgłoszenie właściciela 18.11.2026: **podpis złożony na obróconym telefonie trafiał do protokołu bokiem**. Tryb „Automatycznie” obracał tylko podpis wyraźnie wyższy niż szerszy i zawsze w prawo; podpis z zawijasem był szerszy i zostawał bokiem.
+- Aplikacja rozpoznaje teraz kierunek pisania z ruchu palca (przemieszczenie pociągnięć) i sama ustawia obrót: 90° w lewo, 90° w prawo albo 180° (do góry nogami tylko przy bardzo wyraźnym kierunku). Pracownik widzi podgląd i może zmienić ustawienie. Przy niepewnym kierunku zostaje dotychczasowe „Automatycznie”. Oryginalny podpis w Storage bez zmian. Obszar chroniony: protokoły — tylko wybór obrotu przed PDF.
+- Testy: smoke `smoke-signature-writing-direction-v1444`, E2E `mobile-protocol-test` (podpis pisany z góry na dół → obrót 90° w lewo).
+
 ## 14.43
 - Zgłoszenie właściciela 17.11.2026: **faktura Iwony Hąc nie potwierdziła się sama** („Inne zlecenie tego klienta ma jednocześnie otwarte wystawianie faktury”). Przyczyna: od 13.60 każde wystawienie rozpoczęte w ciągu ostatnich 2 godzin blokowało automatyczne potwierdzenie innych montaży — także wystawienie już zakończone potwierdzoną fakturą (sklep obuwniczy 06:38 → Iwona Hąc 06:41). Nie zależało to od osoby prywatnej czy firmy, tylko od kolejności.
 - Poprawka w Edge Function `fakturownia-client`: wystawienie, którego montaż ma potwierdzoną i powiązaną fakturę, nie blokuje kolejnego. Naprawdę równoległe wystawienia nadal blokują. Komunikat bez mylącego „tego klienta”. **Wymaga zgody właściciela na wdrożenie funkcji Supabase.** Bez zmian bazy i aplikacji.

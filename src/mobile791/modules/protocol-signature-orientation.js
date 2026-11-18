@@ -13,6 +13,49 @@ export function selectSignatureRotation(width, height, mode = "auto") {
   return value;
 }
 
+/**
+ * 14.44: kierunek pisania z ruchu palca. Gdy pracownik obraca telefon (bokiem albo do góry nogami),
+ * ekran z blokadą orientacji się nie obraca i klient pisze wzdłuż innej osi płótna. Sam kształt
+ * podpisu nie wystarcza (zawijas potrafi zrobić z pionowego podpisu szeroki), dlatego liczymy,
+ * w którą stronę przesuwa się pismo: przemieszczenie każdego pociągnięcia + przesunięcie między
+ * początkiem pierwszego i ostatniego pociągnięcia.
+ *
+ * Zwraca kąt dla orientSignatureForPdf (0, 90, 180, 270) albo null, gdy kierunek jest niepewny
+ * (wtedy zostaje dotychczasowy tryb „auto”).
+ */
+export function detectSignatureWritingAngle(strokes) {
+  const list = (Array.isArray(strokes) ? strokes : [])
+    .map((stroke) => (Array.isArray(stroke) ? stroke : [])
+      .filter((p) => Number.isFinite(p?.x) && Number.isFinite(p?.y)))
+    .filter((stroke) => stroke.length > 0);
+  if (!list.length) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const stroke of list) for (const p of stroke) {
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+  }
+  const size = Math.max(maxX - minX, maxY - minY);
+  if (!(size > 0)) return null;
+  let vx = 0, vy = 0;
+  for (const stroke of list) {
+    vx += stroke[stroke.length - 1].x - stroke[0].x;
+    vy += stroke[stroke.length - 1].y - stroke[0].y;
+  }
+  if (list.length > 1) {
+    vx += list[list.length - 1][0].x - list[0][0].x;
+    vy += list[list.length - 1][0].y - list[0][0].y;
+  }
+  const ax = Math.abs(vx), ay = Math.abs(vy);
+  const major = Math.max(ax, ay), minor = Math.min(ax, ay);
+  if (major < size * 0.3 || major < minor * 1.5) return null;
+  if (ax >= ay) {
+    if (vx > 0) return 0;
+    // Do góry nogami tylko przy bardzo wyraźnym kierunku — błędny obrót o 180° jest najgorszy.
+    return major >= size * 0.5 && major >= minor * 2.5 ? 180 : null;
+  }
+  return vy > 0 ? 270 : 90;
+}
+
 export async function orientSignatureForPdf(dataUrl, mode = "auto") {
   if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(String(dataUrl || ""))) {
     throw new Error("Nieprawidłowy obraz podpisu PNG.");

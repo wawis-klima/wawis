@@ -125,6 +125,7 @@ const GROUPS = {
     'node scripts/smoke-protocol-signature-v1377.mjs',
     'node scripts/smoke-protocol-client-data-v1385.mjs',
     'node scripts/smoke-protocol-signature-orientation-v1350.mjs',
+    'node scripts/smoke-signature-writing-direction-v1444.mjs',
     'node scripts/smoke-protocol-signature-reuse-v1322.mjs',
     'node scripts/smoke-p1-data-integrity-v1261.mjs',
     'node scripts/smoke-worker-protocol-gate-v1226.cjs',
