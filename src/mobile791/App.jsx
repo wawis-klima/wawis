@@ -1221,9 +1221,9 @@ export default function App() {
 
   function openJobInJobsModule(jobLike, options = {}) {
     const requestedJobId = String(jobLike?.source_job_id || jobLike?.job_id || jobLike?.id || '').trim();
-    if (!requestedJobId) return;
+    if (!requestedJobId) return false;
     const resolvedJob = jobs.find((job) => String(job.id) === requestedJobId);
-    if (!resolvedJob) return;
+    if (!resolvedJob) return false;
 
     if (options.fromCalendar) {
       const dateKey = options.calendarDateKey || getCalendarDateKeyForJob(resolvedJob);
@@ -1239,10 +1239,12 @@ export default function App() {
     setSelectedJob(resolvedJob);
     setPendingOpenJobId(String(resolvedJob.id));
     handleDesktopNavigation('jobs', 'orders');
+    return true;
   }
 
   function handleOpenJobFromSms(jobLike) {
-    openJobInJobsModule(jobLike);
+    // 14.48: jak na komputerze (14.47) — moduł SMS pokazuje komunikat, gdy montażu nie ma na liście.
+    return openJobInJobsModule(jobLike);
   }
 
   function handleOpenJobFromCalendar(jobLike) {

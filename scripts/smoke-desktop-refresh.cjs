@@ -32,7 +32,7 @@ assert.doesNotMatch(shellSource, /Klienci/);
 assert.doesNotMatch(shellSource, /Przeglądy/);
 assert.match(smsPanelSource, /SMS – przypomnienia serwisowe/);
 assert.doesNotMatch(smsPanelSource, /większe filtry/);
-assert.match(smsPanelSource, /Eksportuj do XLSX/);
+assert.match(smsPanelSource, /Eksportuj do Excela \(CSV\)/); // 14.48: przycisk eksportuje CSV — nazwa zgodna z formatem
 assert.doesNotMatch(smsPanelSource, /aktywny kafelek/);
 assert.match(smsPanelSource, /Zarządzaj szablonami SMS/);
 assert.doesNotMatch(smsPanelSource, /Wszystkie statusy/);

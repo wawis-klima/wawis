@@ -1,3 +1,15 @@
+## 14.48
+- Pełny przegląd przycisków modułu SMS na prośbę właściciela (19.11.2026), komputer i telefon. Poprawione:
+  - podgląd klienta otwarty z „Wysłane w tym miesiącu” / „Niewysłane” znikał przy automatycznym odświeżeniu kolejki (co 5 min, powrót do okna) — teraz zostaje;
+  - „Więcej filtrów” nie miał żadnej akcji (brak dodatkowych filtrów) — usunięty;
+  - „Eksportuj do XLSX” zapisywał CSV — nazwa „Eksportuj do Excela (CSV)”;
+  - „Niewysłane” na komputerze: przy wysyłanym wierszu brakowało „Wysyłanie…”;
+  - „Wyślij zaznaczone” w „Niewysłane” po cichu pomijał pozycje bez powiązania — teraz mówi o tym w potwierdzeniu; błąd odświeżenia po wysyłce jest pokazany;
+  - aplikacja na telefonie: „Przejdź do montażu” bez komunikatu, gdy montażu nie ma na liście (na komputerze od 14.47);
+  - telefon: „Aktywny widok” pokazywał „Historia bieżącego miesiąca” w widoku „Niewysłane”;
+  - zapobiegawczo (0 takich wpisów na produkcji): SMS montażu z jednym zapisanym urządzeniem dostaje cel tego urządzenia (ponowna wysyłka i dane w podglądzie); podgląd urządzenia z wpisu bez celu ma powiązania z montażu.
+- Bez zmian bazy i backendu. Test: smoke `smoke-sms-module-audit-v1448`; `smoke-desktop-refresh` — nowa nazwa eksportu.
+
 ## 14.47
 - Zgłoszenie właściciela 19.11.2026: w module SMS, w „Wysłane w tym miesiącu”, podgląd klienta (np. Minimarket Jurajski) miał nieaktywne „Przejdź do montażu” i „Przejdź do kontrahenta”. Przyczyna: podgląd otwierano z samego wpisu SMS, bez powiązań urządzenia/montażu. Teraz wpis jest łączony z urządzeniem lub montażem, którego dotyczy.
 - Gdy montaż ma zapisane urządzenia, lista celów SMS zawiera tylko urządzenia — wpis SMS montażu bierze wtedy kontrahenta z samego montażu (wykryte przez E2E).

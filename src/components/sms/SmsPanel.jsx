@@ -212,6 +212,16 @@ export function buildSmsDetailsRow(row, jobById = null) {
   return { ...row, source_job_id: jobId, contractor_id: row.contractor_id || job.contractor_id || '', sms_log_id: row.id };
 }
 
+// 14.48: po przeliczeniu kolejki (co 5 min, powrót do okna, katalog urządzeń) podgląd z kolejki
+// odświeżamy z nowej pozycji; podgląd z „Wysłane” / „Niewysłane” nie jest pozycją kolejki i zostaje
+// otwarty (wcześniej znikał). Pozycja kolejki, której już nie ma (np. wysłana), zamyka podgląd.
+export function keepSelectedSmsClient(prev, queue) {
+  if (!prev) return null;
+  const key = String(prev.selectionKey || '');
+  if (!key || key.startsWith('unsent:') || prev.sms_log_id) return prev;
+  return (queue || []).find((item) => item.selectionKey === key) || null;
+}
+
 export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, refreshAll, onOpenJob, onOpenContractor, requestedSection = 'sms' }) {
   const [settings, setSettings] = useState(getDefaultSmsSettings());
   const [logs, setLogs] = useState([]);
@@ -356,10 +366,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   }, [queue]);
 
   useEffect(() => {
-    setSelectedClient((prev) => {
-      if (!prev?.selectionKey) return null;
-      return queue.find((item) => item.selectionKey === prev.selectionKey) || null;
-    });
+    setSelectedClient((prev) => keepSelectedSmsClient(prev, queue));
   }, [queue]);
 
   useEffect(() => {
@@ -681,8 +688,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   async function handleRetryUnsentSelected() {
     if (smsSendLockRef.current || deleteBusy) return;
     const selectedRows = unsentRows.filter((row) => (row.canSend ?? row.canSelect) && selectedUnsentIds.includes(row.selectionKey));
+    // 14.48: pozycje bez powiązanego urządzenia/montażu nie są wysyłane — mówimy o tym zamiast milczeć.
+    const skippedCount = unsentRows.filter((row) => selectedUnsentIds.includes(row.selectionKey)).length - selectedRows.length;
     if (selectedRows.length === 0) return;
-    if (!window.confirm(`Na pewno wysłać ponownie ${selectedRows.length} zaznaczonych SMS-ów? Wysyłki nie można cofnąć.`)) return;
+    const skippedNote = skippedCount > 0 ? ` ${skippedCount} zaznaczonych pozycji bez powiązanego urządzenia lub montażu zostanie pominiętych.` : '';
+    if (!window.confirm(`Na pewno wysłać ponownie ${selectedRows.length} zaznaczonych SMS-ów? Wysyłki nie można cofnąć.${skippedNote}`)) return;
 
     smsSendLockRef.current = true;
     setSendBusy(true);
@@ -716,7 +726,8 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
       if (failures.length > 0) {
         setErrorMessage(`Nie udało się wysłać ${failures.length} pozycji. ${failures.slice(0, 3).join(' | ')}`);
       }
-
+    } catch (error) {
+      setErrorMessage(normalizeDatabaseErrorMessage(error, 'Nie udało się odświeżyć listy po wysyłce. Sprawdź „Wysłane w tym miesiącu”.'));
     } finally {
       smsSendLockRef.current = false;
       setSendingUnsentIds([]);
@@ -879,6 +890,17 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
     targets.forEach((target) => {
       const key = target.target_type === 'device' ? `device:${target.id}` : `job:${target.id}`;
       map.set(key, target);
+    });
+    // 14.48: montaż z zapisanymi urządzeniami ma cele tylko „device:”. Wpis SMS z samym job_id
+    // dostaje cel urządzenia tego montażu — tylko gdy jest dokładnie jedno (bez zgadywania).
+    const devicesByJob = new Map();
+    targets.forEach((target) => {
+      const jobId = String(target.source_job_id || '').trim();
+      if (target.target_type !== 'device' || !jobId) return;
+      devicesByJob.set(jobId, [...(devicesByJob.get(jobId) || []), target]);
+    });
+    devicesByJob.forEach((list, jobId) => {
+      if (list.length === 1 && !map.has(`job:${jobId}`)) map.set(`job:${jobId}`, list[0]);
     });
     return map;
   }, [targets]);
@@ -1056,7 +1078,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
             </div>
             <div className="desktopHeroHint">
               <span>Aktywny widok</span>
-              <strong>{activeSummaryView === 'queue' ? 'Kolejka do wysyłki' : 'Historia bieżącego miesiąca'}</strong>
+              <strong>{activeSummaryView === 'queue' ? 'Kolejka do wysyłki' : activeSummaryView === 'unsent' ? 'Niewysłane' : 'Historia bieżącego miesiąca'}</strong>
             </div>
           </div>
         </div>
@@ -1134,7 +1156,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   deleteBusy={deleteBusy}
                   onPageChange={setCurrentPage}
                   onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row, jobById)); setSelectedDevice(null); }}
-                  onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
+                  onSelectDevice={(row) => { setSelectedDevice(row?.target_type ? row : buildSmsDetailsRow(row, jobById)); setSelectedClient(null); }}
                 />
               ) : (
                 <SmsSentThisMonthCard
@@ -1145,7 +1167,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   totalRows={filteredSentRows.length}
                   onPageChange={setCurrentPage}
                   onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row, jobById)); setSelectedDevice(null); }}
-                  onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
+                  onSelectDevice={(row) => { setSelectedDevice(row?.target_type ? row : buildSmsDetailsRow(row, jobById)); setSelectedClient(null); }}
                 />
               )}
 
@@ -1243,13 +1265,12 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
 
         <div className="smsDesktopFiltersActions">
           <div className="smsDesktopFiltersLeftActions">
-            <button type="button" className="smsDesktopSubtleBtn desktopToolbarActionBtn"><IconFilter /> Więcej filtrów</button>
             <button type="button" className="smsDesktopGhostBtn desktopToolbarActionBtn" onClick={clearFilters}>Wyczyść filtry</button>
             <button type="button" className="smsDesktopGhostBtn desktopToolbarActionBtn" onClick={() => refreshQueueAutomatically({ showBusy: true, showMessage: true })}>
               <IconRefresh /> {autoRefreshBusy ? 'Odświeżanie…' : 'Odśwież listę'}
             </button>
           </div>
-          <button type="button" className="smsDesktopExportBtn desktopToolbarActionBtn" onClick={handleExportCurrentView}><IconFileText /> Eksportuj do XLSX</button>
+          <button type="button" className="smsDesktopExportBtn desktopToolbarActionBtn" onClick={handleExportCurrentView}><IconFileText /> Eksportuj do Excela (CSV)</button>
         </div>
       </section>
 
@@ -1297,10 +1318,11 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               onSendNow={handleRetryUnsentNow}
               onDeleteNow={handleDeleteUnsentNow}
               sendBusy={sendBusy}
+              sendingIds={sendingUnsentIds}
               deleteBusy={deleteBusy}
               onPageChange={setCurrentPage}
               onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row, jobById)); setSelectedDevice(null); }}
-              onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
+              onSelectDevice={(row) => { setSelectedDevice(row?.target_type ? row : buildSmsDetailsRow(row, jobById)); setSelectedClient(null); }}
             />
           ) : (
             <SmsSentThisMonthCard
@@ -1318,7 +1340,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                 setSelectedClient(queueMatch || buildSmsDetailsRow(row, jobById));
                 setSelectedDevice(null);
               }}
-              onSelectDevice={(row) => { setSelectedDevice(row); setSelectedClient(null); }}
+              onSelectDevice={(row) => { setSelectedDevice(row?.target_type ? row : buildSmsDetailsRow(row, jobById)); setSelectedClient(null); }}
             />
           )}
 
