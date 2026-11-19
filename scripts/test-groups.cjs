@@ -157,6 +157,7 @@ const GROUPS = {
     'node scripts/smoke-invoice-concurrent-v1443.mjs',
     'node scripts/smoke-invoice-pdf-v1445.mjs',
     'node scripts/smoke-mobile-invoice-pdf-v1446.mjs',
+    'node scripts/smoke-sms-details-links-v1447.mjs',
     'node scripts/smoke-fakturownia-v1281.mjs',
     'node scripts/smoke-fakturownia-recheck-v1418.mjs',
     'node scripts/smoke-qr-service-request-v1420.mjs',
