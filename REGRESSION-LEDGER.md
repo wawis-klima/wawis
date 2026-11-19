@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SMS-AUDIT-1448 — przegląd przycisków modułu SMS (19.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SMS-AUDIT-1448-PREVIEW | FIXED-UNVERIFIED | Smoke wykonuje keepSelectedSmsClient: podgląd z „Wysłane”/„Niewysłane” zostaje, kolejka odświeżona, wysłana pozycja zamyka. |
+| SMS-AUDIT-1448-UI | FIXED-UNVERIFIED | Smoke: bez martwego „Więcej filtrów”, eksport „Excel (CSV)”, „Wysyłanie…” w „Niewysłane”, komunikat o pominiętych, telefon — komunikat montażu i etykieta. |
+| SMS-AUDIT-1448-PROD | PENDING-OWNER | Podgląd z „Wysłane” otwarty dłużej niż 5 min nie znika. |
+
 ## SMS-LINKS-1447 — przejścia z podglądów modułu SMS (19.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

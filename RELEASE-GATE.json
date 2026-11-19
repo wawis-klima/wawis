@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.47",
+  "version": "14.48",
   "scope": "full",
-  "release_branch": "release/v14.47",
+  "release_branch": "release/v14.48",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Przejścia z podglądów modułu SMS; tylko frontend, bez zmian bazy."
+    "notes": "Przegląd przycisków modułu SMS; tylko frontend, bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.47",
+    "source_branch": "release/v14.48",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.47.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.48.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.47: przejścia z podglądów modułu SMS",
-    "release_ci": "WAWIS PR checks + smoke-sms-details-links-v1447 + E2E desktop-app",
-    "postdeploy": "Vercel READY/14.47."
+    "code": "14.48: przegląd przycisków modułu SMS",
+    "release_ci": "WAWIS PR checks + smoke-sms-module-audit-v1448",
+    "postdeploy": "Vercel READY/14.48."
   }
 }
