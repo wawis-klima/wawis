@@ -200,6 +200,14 @@ function SmsTestCard({ phone, setPhone, busy, onSend }) {
   );
 }
 
+// 14.47: wpis SMS (wysłane / niewysłane) nie ma powiązań klienta. Do podglądu łączymy go z urządzeniem
+// albo montażem, którego dotyczy (linkedTarget), żeby działały „Przejdź do montażu / kontrahenta”.
+export function buildSmsDetailsRow(row) {
+  const target = row?.linkedTarget || null;
+  if (!target) return row;
+  return { ...row, ...target, client: target.client || row.client, linkedTarget: target, sms_log_id: row.id };
+}
+
 export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, refreshAll, onOpenJob, onOpenContractor, requestedSection = 'sms' }) {
   const [settings, setSettings] = useState(getDefaultSmsSettings());
   const [logs, setLogs] = useState([]);
@@ -1120,15 +1128,24 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   sendingIds={sendingUnsentIds}
                   deleteBusy={deleteBusy}
                   onPageChange={setCurrentPage}
-                  onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
+                  onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row)); setSelectedDevice(null); }}
                   onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
                 />
               ) : (
-                <SmsSentThisMonthCard rows={filteredSentRows} pageRows={pagedRows} currentPage={currentPageSafe} totalPages={totalPages} totalRows={filteredSentRows.length} onPageChange={setCurrentPage} />
+                <SmsSentThisMonthCard
+                  rows={filteredSentRows}
+                  pageRows={pagedRows}
+                  currentPage={currentPageSafe}
+                  totalPages={totalPages}
+                  totalRows={filteredSentRows.length}
+                  onPageChange={setCurrentPage}
+                  onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row)); setSelectedDevice(null); }}
+                  onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
+                />
               )}
 
               {selectedClient ? <SmsClientDetailsCard client={selectedClient} onClose={() => setSelectedClient(null)} onOpenJob={onOpenJob} onOpenContractor={onOpenContractor} /> : null}
-              {selectedDevice ? <SmsDeviceDetailsCard device={selectedDevice} onClose={() => setSelectedDevice(null)} /> : null}
+              {selectedDevice ? <SmsDeviceDetailsCard device={selectedDevice} onClose={() => setSelectedDevice(null)} onOpenJob={onOpenJob} onOpenContractor={onOpenContractor} /> : null}
             </div>
           </div>
         ) : null}
@@ -1277,7 +1294,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               sendBusy={sendBusy}
               deleteBusy={deleteBusy}
               onPageChange={setCurrentPage}
-              onSelectLog={(row) => { setSelectedClient(row.linkedTarget || row); setSelectedDevice(null); }}
+              onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row)); setSelectedDevice(null); }}
               onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
             />
           ) : (
@@ -1293,7 +1310,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                 const queueMatch = linked?.source_job_id
                   ? queue.find((item) => String(item.source_job_id || item.id) === String(linked.source_job_id || linked.id))
                   : null;
-                setSelectedClient(queueMatch || row);
+                setSelectedClient(queueMatch || buildSmsDetailsRow(row));
                 setSelectedDevice(null);
               }}
               onSelectDevice={(row) => { setSelectedDevice(row); setSelectedClient(null); }}
@@ -1301,7 +1318,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
           )}
 
           {selectedClient ? <SmsClientDetailsCard client={selectedClient} onClose={() => setSelectedClient(null)} onOpenJob={onOpenJob} onOpenContractor={onOpenContractor} /> : null}
-          {selectedDevice ? <SmsDeviceDetailsCard device={selectedDevice} onClose={() => setSelectedDevice(null)} /> : null}
+          {selectedDevice ? <SmsDeviceDetailsCard device={selectedDevice} onClose={() => setSelectedDevice(null)} onOpenJob={onOpenJob} onOpenContractor={onOpenContractor} /> : null}
 
           <div className="smsDesktopInfoStrip">
             <span className="smsDesktopInfoIcon">i</span>

@@ -147,6 +147,26 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(protocolCard.getByText('Protokół został wysłany z biuro@wawis.pl do klient.c@example.test.')).toBeVisible();
   });
 
+  test('14.47: SMS wysłany dla urządzenia — podgląd klienta prowadzi do kontrahenta', async ({ page }) => {
+    await login(page, ADMIN);
+    await page.evaluate(() => {
+      window.__KLIMA_MOCK_SUPABASE__.mutate((store) => {
+        store.sms_log.push({ id: 'mock-sms-1447', job_id: null, device_id: 'mock-device-001', client: 'Klient Testowy A', phone: '500100200', sms_type: 'service_reminder', status: 'delivered', sent_at: new Date().toISOString(), created_at: new Date().toISOString() });
+      });
+    });
+    await page.getByRole('button', { name: /^SMS$/ }).click();
+    await page.locator('.smsDesktopMetricCard', { hasText: 'Wysłane w tym miesiącu' }).click();
+    await page.locator('.smsDesktopClientButton', { hasText: 'Klient Testowy A' }).first().click();
+
+    const card = page.locator('.smsClientDetailsCard').filter({ hasText: 'Dane klienta' });
+    await expect(card).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Przejdź do montażu' })).toBeEnabled();
+    const toContractor = card.getByRole('button', { name: 'Przejdź do kontrahenta' });
+    await expect(toContractor).toBeEnabled();
+    await toContractor.click();
+    await expect(page.getByRole('heading', { name: 'Kontrahenci', exact: true })).toBeVisible();
+  });
+
   test('14.45: administrator otwiera PDF potwierdzonej faktury z Fakturowni', async ({ page }) => {
     await login(page, ADMIN);
     // Szczegóły montażu ładują moduł z wersji telefonicznej, którego atrapa nadpisuje globalny uchwyt

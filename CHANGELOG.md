@@ -1,3 +1,8 @@
+## 14.47
+- Zgłoszenie właściciela 19.11.2026: w module SMS, w „Wysłane w tym miesiącu”, podgląd klienta (np. Minimarket Jurajski) miał nieaktywne „Przejdź do montażu” i „Przejdź do kontrahenta”. Przyczyna: podgląd otwierano z samego wpisu SMS, bez powiązań urządzenia/montażu. Teraz wpis jest łączony z urządzeniem lub montażem, którego dotyczy.
+- Przegląd modułu SMS (prośba właściciela): w widoku mobilnym „Wysłane w tym miesiącu” kliknięcie klienta/numeru nic nie robiło (brak akcji) — naprawione; „Źródło” pokazywało „Montaż” dla SMS-ów urządzeń z importu — teraz „Urządzenie”; podgląd „Dane urządzenia” ma przyciski „Przejdź do montażu / kontrahenta”; gdy montażu nie ma na liście, pojawia się komunikat zamiast braku reakcji; nieaktywne przyciski mają podpowiedź (np. import starej bazy bez montażu).
+- Bez zmian bazy i backendu. Testy: smoke `smoke-sms-details-links-v1447`, E2E `desktop-app` (SMS urządzenia → kontrahent).
+
 ## 14.46
 - Prośba właściciela 18.11.2026: **PDF faktury z Fakturowni także na telefonie**. W karcie zakończonego montażu z potwierdzoną fakturą administrator ma przycisk „Faktura VAT <numer> (PDF)” obok protokołu szczelności. Pracownik go nie widzi (serwer też odmawia).
 - Ta sama akcja `invoice_pdf` funkcji `fakturownia-client` co w 14.45 — bez zmian backendu, bazy i Storage. Numer faktury odczytywany osobnym zapytaniem tylko dla administratora; lista montaży pracownika bez zmian. Karta otwierana od razu po dotknięciu (jak protokół szczelności), więc Safari jej nie blokuje.

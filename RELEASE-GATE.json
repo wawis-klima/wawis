@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.46",
+  "version": "14.47",
   "scope": "full",
-  "release_branch": "release/v14.46",
+  "release_branch": "release/v14.47",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "PDF faktury na telefonie (administrator); ta sama funkcja co 14.45, bez zmian backendu i bazy."
+    "notes": "Przejścia z podglądów modułu SMS; tylko frontend, bez zmian bazy."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.46",
+    "source_branch": "release/v14.47",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.46.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.47.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.46: PDF faktury z Fakturowni na telefonie",
-    "release_ci": "WAWIS PR checks + smoke-mobile-invoice-pdf-v1446 + E2E mobile-invoice-pdf-v1446 (Chromium, WebKit)",
-    "postdeploy": "Vercel READY/14.46."
+    "code": "14.47: przejścia z podglądów modułu SMS",
+    "release_ci": "WAWIS PR checks + smoke-sms-details-links-v1447 + E2E desktop-app",
+    "postdeploy": "Vercel READY/14.47."
   }
 }

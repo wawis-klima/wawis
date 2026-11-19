@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## SMS-LINKS-1447 — przejścia z podglądów modułu SMS (19.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SMS-LINKS-1447-SENT | FIXED-UNVERIFIED | E2E: SMS urządzenia w „Wysłane w tym miesiącu” → podgląd → „Przejdź do kontrahenta”. Smoke wykonuje łączenie wpisu z urządzeniem. |
+| SMS-LINKS-1447-MOBILE | FIXED-UNVERIFIED | Smoke: widok mobilny „Wysłane” ma akcje wyboru klienta i urządzenia. |
+| SMS-LINKS-1447-PROD | PENDING-OWNER | Minimarket Jurajski: „Przejdź do kontrahenta” aktywne; „Przejdź do montażu” nieaktywne (import bez montażu). |
+
 ## INVOICE-PDF-MOBILE-1446 — PDF faktury na telefonie (18.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
