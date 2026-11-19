@@ -147,11 +147,13 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(protocolCard.getByText('Protokół został wysłany z biuro@wawis.pl do klient.c@example.test.')).toBeVisible();
   });
 
-  test('14.47: SMS wysłany dla urządzenia — podgląd klienta prowadzi do kontrahenta', async ({ page }) => {
+  test('14.47: SMS wysłany w tym miesiącu — podgląd klienta prowadzi do kontrahenta', async ({ page }) => {
     await login(page, ADMIN);
+    // Wpis SMS nie zawiera kontrahenta; przed 14.47 „Przejdź do kontrahenta” było nieaktywne.
+    // (Atrapa nie ma katalogu urządzeń v2, więc test używa SMS-a montażu; łączenie urządzeń — smoke 14.47.)
     await page.evaluate(() => {
       window.__KLIMA_MOCK_SUPABASE__.mutate((store) => {
-        store.sms_log.push({ id: 'mock-sms-1447', job_id: null, device_id: 'mock-device-001', client: 'Klient Testowy A', phone: '500100200', sms_type: 'service_reminder', status: 'delivered', sent_at: new Date().toISOString(), created_at: new Date().toISOString() });
+        store.sms_log.push({ id: 'mock-sms-1447', job_id: 'mock-job-001', device_id: null, client: 'Klient Testowy A', phone: '500100200', sms_type: 'service_reminder', status: 'delivered', sent_at: new Date().toISOString(), created_at: new Date().toISOString() });
       });
     });
     await page.getByRole('button', { name: /^SMS$/ }).click();

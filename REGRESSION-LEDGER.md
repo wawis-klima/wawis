@@ -4,7 +4,7 @@
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
-| SMS-LINKS-1447-SENT | FIXED-UNVERIFIED | E2E: SMS urządzenia w „Wysłane w tym miesiącu” → podgląd → „Przejdź do kontrahenta”. Smoke wykonuje łączenie wpisu z urządzeniem. |
+| SMS-LINKS-1447-SENT | FIXED-UNVERIFIED | E2E: SMS montażu w „Wysłane w tym miesiącu” → podgląd → „Przejdź do kontrahenta” (atrapa nie ma katalogu urządzeń v2). Smoke wykonuje łączenie wpisu z urządzeniem. |
 | SMS-LINKS-1447-MOBILE | FIXED-UNVERIFIED | Smoke: widok mobilny „Wysłane” ma akcje wyboru klienta i urządzenia. |
 | SMS-LINKS-1447-PROD | PENDING-OWNER | Minimarket Jurajski: „Przejdź do kontrahenta” aktywne; „Przejdź do montażu” nieaktywne (import bez montażu). |
 
