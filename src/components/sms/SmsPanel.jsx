@@ -202,10 +202,14 @@ function SmsTestCard({ phone, setPhone, busy, onSend }) {
 
 // 14.47: wpis SMS (wysłane / niewysłane) nie ma powiązań klienta. Do podglądu łączymy go z urządzeniem
 // albo montażem, którego dotyczy (linkedTarget), żeby działały „Przejdź do montażu / kontrahenta”.
-export function buildSmsDetailsRow(row) {
+// Bez celu (np. montaż z urządzeniami ma cele tylko dla urządzeń) — kontrahent z samego montażu wpisu.
+export function buildSmsDetailsRow(row, jobById = null) {
   const target = row?.linkedTarget || null;
-  if (!target) return row;
-  return { ...row, ...target, client: target.client || row.client, linkedTarget: target, sms_log_id: row.id };
+  if (target) return { ...row, ...target, client: target.client || row.client, linkedTarget: target, sms_log_id: row.id };
+  const jobId = String(row?.job_id || '').trim();
+  const job = jobId && jobById?.get ? jobById.get(jobId) : null;
+  if (!job) return row;
+  return { ...row, source_job_id: jobId, contractor_id: row.contractor_id || job.contractor_id || '', sms_log_id: row.id };
 }
 
 export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, refreshAll, onOpenJob, onOpenContractor, requestedSection = 'sms' }) {
@@ -241,6 +245,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
   const [currentPage, setCurrentPage] = useState(1);
 
   const targets = useMemo(() => buildSmsTargets({ jobs, devices }), [jobs, devices]);
+  const jobById = useMemo(() => new Map((jobs || []).map((job) => [String(job.id), job])), [jobs]);
   const queue = useMemo(() => deriveSmsQueue(targets, logs), [targets, logs]);
   const sentThisMonthLogs = useMemo(() => getSentThisMonthLogs(sentMonthSourceLogs), [sentMonthSourceLogs]);
   const summary = useMemo(() => ({
@@ -1128,7 +1133,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   sendingIds={sendingUnsentIds}
                   deleteBusy={deleteBusy}
                   onPageChange={setCurrentPage}
-                  onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row)); setSelectedDevice(null); }}
+                  onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row, jobById)); setSelectedDevice(null); }}
                   onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
                 />
               ) : (
@@ -1139,7 +1144,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                   totalPages={totalPages}
                   totalRows={filteredSentRows.length}
                   onPageChange={setCurrentPage}
-                  onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row)); setSelectedDevice(null); }}
+                  onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row, jobById)); setSelectedDevice(null); }}
                   onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
                 />
               )}
@@ -1294,7 +1299,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
               sendBusy={sendBusy}
               deleteBusy={deleteBusy}
               onPageChange={setCurrentPage}
-              onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row)); setSelectedDevice(null); }}
+              onSelectLog={(row) => { setSelectedClient(buildSmsDetailsRow(row, jobById)); setSelectedDevice(null); }}
               onSelectDevice={(row) => { setSelectedDevice(row.linkedTarget || row); setSelectedClient(null); }}
             />
           ) : (
@@ -1310,7 +1315,7 @@ export default function SmsPanel({ supabase, jobs, isAdmin, isMobile = false, re
                 const queueMatch = linked?.source_job_id
                   ? queue.find((item) => String(item.source_job_id || item.id) === String(linked.source_job_id || linked.id))
                   : null;
-                setSelectedClient(queueMatch || buildSmsDetailsRow(row));
+                setSelectedClient(queueMatch || buildSmsDetailsRow(row, jobById));
                 setSelectedDevice(null);
               }}
               onSelectDevice={(row) => { setSelectedDevice(row); setSelectedClient(null); }}

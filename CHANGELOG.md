@@ -1,5 +1,6 @@
 ## 14.47
 - Zgłoszenie właściciela 19.11.2026: w module SMS, w „Wysłane w tym miesiącu”, podgląd klienta (np. Minimarket Jurajski) miał nieaktywne „Przejdź do montażu” i „Przejdź do kontrahenta”. Przyczyna: podgląd otwierano z samego wpisu SMS, bez powiązań urządzenia/montażu. Teraz wpis jest łączony z urządzeniem lub montażem, którego dotyczy.
+- Gdy montaż ma zapisane urządzenia, lista celów SMS zawiera tylko urządzenia — wpis SMS montażu bierze wtedy kontrahenta z samego montażu (wykryte przez E2E).
 - Przegląd modułu SMS (prośba właściciela): w widoku mobilnym „Wysłane w tym miesiącu” kliknięcie klienta/numeru nic nie robiło (brak akcji) — naprawione; „Źródło” pokazywało „Montaż” dla SMS-ów urządzeń z importu — teraz „Urządzenie”; podgląd „Dane urządzenia” ma przyciski „Przejdź do montażu / kontrahenta”; gdy montażu nie ma na liście, pojawia się komunikat zamiast braku reakcji; nieaktywne przyciski mają podpowiedź (np. import starej bazy bez montażu).
 - Bez zmian bazy i backendu. Testy: smoke `smoke-sms-details-links-v1447`, E2E `desktop-app` (SMS z „Wysłane w tym miesiącu” → kontrahent).
 
