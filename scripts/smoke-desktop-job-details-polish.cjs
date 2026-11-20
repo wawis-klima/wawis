@@ -6,7 +6,11 @@ const root = path.resolve(__dirname, '..');
 const panelSource = fs.readFileSync(path.join(root, 'src', 'components', 'JobDetailsPanel.jsx'), 'utf8');
 const rowSource = fs.readFileSync(path.join(root, 'src', 'components', 'DesktopJobsTableRow.jsx'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'src', 'styles.css'), 'utf8');
-const compactStyles = fs.readFileSync(path.join(root, 'src', 'components', 'job-details-desktop-v1215.css'), 'utf8');
+// 14.54: kolory w arkuszu są zmiennymi wspólnej palety (src/styles/tokens.css) — sprawdzamy wartości po podstawieniu.
+const paletteTokens = Object.fromEntries([...fs.readFileSync(path.join(root, 'src', 'styles', 'tokens.css'), 'utf8')
+  .matchAll(/(--wx-[a-z0-9-]+):\s*(#[0-9a-f]+);/g)].map((m) => [m[1], m[2]]));
+const compactStyles = fs.readFileSync(path.join(root, 'src', 'components', 'job-details-desktop-v1215.css'), 'utf8')
+  .replace(/var\((--wx-[a-z0-9-]+)\)/g, (whole, name) => paletteTokens[name] || whole);
 
 assert.match(panelSource, /jobDetailsStickyBar/, 'Prawy panel Montaże musi mieć przyklejoną górną belkę.');
 assert.match(panelSource, /jobDetailsQuickActions/, 'Prawy panel Montaże musi mieć kontener szybkich akcji.');

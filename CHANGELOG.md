@@ -1,3 +1,8 @@
+## 14.54
+- Wspólna paleta kolorów, etap 4 (wygląd bez zmian): **szczegóły montażu** — telefon `v1091-mobile-details-hardening.css` (7 kolorów → 6 zmiennych), komputer `job-details-desktop-v1215.css` (15 → 13) i pasek faktury VAT `job-details-invoice-v1210.css` (16 → 13). Paleta: 127 kolorów. Pozostałe arkusze szczegółów (`v1090`, `v1100–v1102`, `v1108`) nie mają kolorów.
+- Test w przeglądarce: szczegóły montażu w trakcie i zakończonego — telefon administratora oraz komputer administratora (z paskiem faktury VAT), po 3 szerokości.
+- `smoke-desktop-job-details-polish` sprawdza kolor obramowania strzałki po podstawieniu palety (arkusz ma teraz zmienną zamiast `#bcc9d8`).
+
 ## 14.53
 - Wspólna paleta kolorów, etap 3 (wygląd bez zmian): **Kontrahenci na telefonie** — `v1062-contractors-mobile.css` (47 kolorów → 28 zmiennych). Paleta: 103 kolory. `v1064-contractors-compact.css` nie ma kolorów. Kontrahenci na komputerze korzystają z głównego `styles.css` — osobny etap.
 - Test w przeglądarce: nowy scenariusz Kontrahenci (telefon, administrator) — lista, rozwinięta karta, formularz nowego kontrahenta, 3 szerokości.
