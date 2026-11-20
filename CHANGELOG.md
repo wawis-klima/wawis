@@ -1,3 +1,8 @@
+## 14.52
+- Wspólna paleta kolorów, etap 2 (decyzja właściciela 20.11.2026, wygląd bez zmian): **moduł Paliwo** — `FuelPanelV1034.css` (54 kolory → 37 zmiennych) i `FuelSavingsPanel.css` (48 → 25). Paleta: 78 kolorów.
+- Usunięte nieużywane arkusze `FuelPanelV1032.css` i `FuelPanelV1033.css` (nigdzie nie importowane, nie trafiały do aplikacji).
+- Test w przeglądarce `css-tokens-equivalence-v1451` rozszerzony o komputer i role: Urządzenia (telefon, administrator), Paliwo — telefon pracownika, telefon administratora (formularz, wybrany samochód), komputer administratora (zestawienie, historia samochodu, oszczędności) przy 3 szerokościach. W każdym widoku styl obliczony wszystkich elementów identyczny po podmianie arkusza na oryginał.
+
 ## 14.51
 - Decyzja właściciela 20.11.2026: **wspólna paleta kolorów, wygląd bez zmian, „duża kontrola”**. Etap 1: narzędzie, zabezpieczenia i pierwszy moduł.
 - `src/styles/tokens.css` — paleta jako zmienne `--wx-*` w `:root`, ładowana statycznie przez `src/main.jsx` (CSS wejścia: telefon, komputer, strona naklejki QR). Każda zmienna ma dokładnie wartość koloru, który zastąpiła; bliskie, ale różne kolory zostają osobne (ich łączenie zmieniłoby piksele — osobna decyzja). Rozmiary czcionek bez zmian (decyzja z 20.11).

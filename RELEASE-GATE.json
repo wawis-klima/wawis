@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.51",
+  "version": "14.52",
   "scope": "full",
-  "release_branch": "release/v14.51",
+  "release_branch": "release/v14.52",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Paleta kolorów etap 1 (moduł Serwis), wygląd bez zmian; bez zmian bazy i backendu."
+    "notes": "Paleta kolorów etap 2 (Paliwo), wygląd bez zmian; bez zmian bazy i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.51",
+    "source_branch": "release/v14.52",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.51.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.52.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.51: paleta kolorów etap 1 (ServiceAdminPanel.css)",
-    "release_ci": "WAWIS PR checks + smoke-css-tokens-v1451 + E2E css-tokens-equivalence-v1451",
-    "postdeploy": "Vercel READY/14.51."
+    "code": "14.52: paleta kolorów etap 2 (Paliwo)",
+    "release_ci": "WAWIS PR checks + smoke-css-tokens-v1451 + E2E css-tokens-equivalence (telefon i komputer)",
+    "postdeploy": "Vercel READY/14.52."
   }
 }

@@ -1,4 +1,4 @@
-// WAWIS 14.51 — paleta kolorów (zmienne --wx-*) bez zmiany wyglądu: dowód w przeglądarce.
+// WAWIS 14.51+ — paleta kolorów (zmienne --wx-*) bez zmiany wyglądu: dowód w przeglądarce.
 // Dla każdego przekonwertowanego pliku CSS na żywym ekranie aplikacji:
 //   1. zapisujemy pełny styl obliczony (getComputedStyle, wszystkie właściwości, także ::before/::after)
 //      każdego elementu ekranu;
@@ -6,36 +6,130 @@
 //   3. styl obliczony musi być identyczny co do znaku — inaczej konwersja zmieniła wygląd.
 // Dodatkowo: każda deklaracja ze zmienną była poprawna w oryginale (CSS.supports) — inaczej przeglądarka
 // zignorowałaby ją w oryginale, a po konwersji unieważniła dopiero przy liczeniu stylu (inny wynik kaskady).
+// 14.52: scenariusze na telefonie (@mobile) i na komputerze, administrator i pracownik.
 import fs from 'node:fs';
 import { devices, expect, test } from '@playwright/test';
-import { ADMIN, login } from './mock-helpers.js';
+import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 import { REGISTRY_FILE, TOKENS_FILE, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
-test.use(iphone14);
 
 const tokens = readTokens(fs.readFileSync(TOKENS_FILE, 'utf8'));
 const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).files;
 
-// Każdy przekonwertowany plik musi mieć tu ekran, na którym jest sprawdzany (bez tego test nie przejdzie).
-const SCENARIOS = {
-  'src/mobile791/components/devices/ServiceAdminPanel.css': {
-    root: '.serviceAdminPage',
-    negativeControl: ['padding-bottom:18px;color:#172b45}', 'padding-bottom:18px;color:#ff00ff}'],
+const SERVICE_CSS = 'src/mobile791/components/devices/ServiceAdminPanel.css';
+const FUEL_CSS = 'src/components/fuel/FuelPanelV1034.css';
+const SAVINGS_CSS = 'src/components/fuel/FuelSavingsPanel.css';
+
+async function seedDesktopFuel(page) {
+  await page.evaluate(() => {
+    window.__KLIMA_MOCK_SUPABASE__.mutate((store) => {
+      const opening = {
+        id: 'mock-fuel-tank-opening', movement_type: 'opening', delta_liters: 5000, fuel_entry_id: null,
+        note: 'Stan początkowy zbiornika — dostawa 5000 l', happened_at: '2026-10-07T07:57:00.000Z', created_by: null,
+        created_at: '2026-10-07T07:57:00.000Z', purchase_gross_per_liter: 7.25, purchase_vat_rate: 8, purchase_net_per_liter: 6.713,
+      };
+      const refuels = [
+        ['mock-1452-e1', 'mock-fuel-vehicle-001', 56.9, '2026-10-09T12:48:01.000Z', 125000],
+        ['mock-1452-e2', 'mock-fuel-vehicle-001', 56.73, '2026-10-12T05:49:27.000Z', 125600],
+        ['mock-1452-e3', 'mock-fuel-vehicle-002', 51.87, '2026-10-21T06:07:59.000Z', 98000],
+      ];
+      store.fuel_entries = refuels.map(([id, vehicleId, liters, at, km]) => ({
+        id, vehicle_id: vehicleId, liters, odometer_km: km, fueled_at: at, created_at: at, created_by: 'mock-admin-1', odometer_read_source: 'manual',
+      }));
+      store.fuel_tank_movements = [opening, ...refuels.map(([id, , liters, at]) => ({
+        id: `mov-${id}`, movement_type: 'refuel', delta_liters: -liters, fuel_entry_id: id, note: 'Tankowanie pojazdu', happened_at: at, created_by: null, created_at: at,
+      }))];
+    });
+  });
+}
+
+async function seedMobileFuel(page) {
+  await resetMockSupabase(page);
+  await page.evaluate(() => {
+    const key = 'klima-mock-supabase-store-v3';
+    const store = JSON.parse(localStorage.getItem(key) || '{}');
+    store.fuel_vehicles = [{ id: 'mock-fuel-vehicle-001', vehicle_name: 'Doblo', registration_number: 'SZA 6149G', is_active: true, tank_capacity_liters: null, last_odometer_km: null, last_fueled_at: null, created_at: '2026-09-08T10:00:00.000Z', updated_at: '2026-09-08T10:00:00.000Z' }];
+    store.fuel_entries = [{ id: 'mock-1452-m1', vehicle_id: 'mock-fuel-vehicle-001', liters: 41.2, odometer_km: 125400, fueled_at: '2026-11-18T08:00:00.000Z', created_at: '2026-11-18T08:00:00.000Z', created_by: 'mock-admin-1', odometer_read_source: 'manual' }];
+    localStorage.setItem(key, JSON.stringify(store));
+  });
+}
+
+// Każdy przekonwertowany plik musi być sprawdzany w co najmniej jednym scenariuszu (bez tego test nie przejdzie).
+// state.files — arkusze obecne na stronie w danym widoku (np. oszczędności ładują się dopiero po rozwinięciu).
+const SCENARIOS = [
+  {
+    id: 'urzadzenia-telefon-administrator', platform: 'mobile', root: '.serviceAdminPage', widths: [360, 390, 430],
+    negativeControl: [SERVICE_CSS, 'padding-bottom:18px;color:#172b45}', 'padding-bottom:18px;color:#ff00ff}'],
     async open(page) {
       await login(page, ADMIN);
       await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
       await expect(page.locator('.serviceAdminPage')).toBeVisible();
     },
-    // Widoki modułu: wyszukiwarka, zaplanowane, wykonane, kosz.
+    states: ['Szukaj', 'Zaplanowane', 'Wykonane', 'Kosz'].map((name) => ({
+      name, files: [SERVICE_CSS],
+      async go(page) { await page.locator('.serviceAdminNav button', { hasText: name }).click(); },
+    })),
+  },
+  {
+    id: 'paliwo-telefon-pracownik', platform: 'mobile', root: '.fuelModule', widths: [360, 390, 430],
+    async open(page) {
+      await seedMobileFuel(page);
+      await loginWithoutReset(page, WORKER);
+      await page.getByRole('button', { name: 'Paliwo' }).click();
+      await expect(page.locator('.fuelModule')).toBeVisible();
+    },
+    states: [{ name: 'Formularz i historia', files: [FUEL_CSS], async go() {} }],
+  },
+  {
+    id: 'paliwo-telefon-administrator', platform: 'mobile', root: '.fuelModule', widths: [360, 390, 430],
+    async open(page) {
+      await seedMobileFuel(page);
+      await loginWithoutReset(page, ADMIN);
+      await page.getByRole('button', { name: 'Paliwo' }).click();
+      await expect(page.locator('.fuelModule')).toBeVisible();
+    },
     states: [
-      { name: 'Szukaj', async go(page) { await page.locator('.serviceAdminNav button', { hasText: 'Szukaj' }).click(); } },
-      { name: 'Zaplanowane', async go(page) { await page.locator('.serviceAdminNav button', { hasText: 'Zaplanowane' }).click(); } },
-      { name: 'Wykonane', async go(page) { await page.locator('.serviceAdminNav button', { hasText: 'Wykonane' }).click(); } },
-      { name: 'Kosz', async go(page) { await page.locator('.serviceAdminNav button', { hasText: 'Kosz' }).click(); } },
+      { name: 'Formularz', files: [FUEL_CSS], async go() {} },
+      {
+        name: 'Wybrany samochód', files: [FUEL_CSS],
+        async go(page) { await page.getByLabel('Numer rejestracyjny').selectOption({ label: 'Doblo — SZA 6149G' }); },
+      },
     ],
   },
-};
+  {
+    id: 'paliwo-komputer-administrator', platform: 'desktop', root: '.fuelModule', widths: [1280, 1440, 1920],
+    async open(page) {
+      await login(page, ADMIN);
+      await seedDesktopFuel(page);
+      await page.getByRole('button', { name: /Tankowania|Paliwo/ }).click();
+      await expect(page.locator('.fuelModule')).toBeVisible();
+    },
+    states: [
+      { name: 'Zestawienie', files: [FUEL_CSS], async go() {} },
+      {
+        name: 'Historia samochodu', files: [FUEL_CSS],
+        async go(page) {
+          const row = page.locator('.fuelVehicleSummaryRow').filter({ hasText: 'SZA 6149G' });
+          if (!((await row.getAttribute('class')) || '').includes('isActive')) await row.click();
+          await expect(page.locator('.fuelHistoryRow').first()).toBeVisible();
+        },
+      },
+      {
+        name: 'Oszczędności', files: [FUEL_CSS, SAVINGS_CSS],
+        async go(page) {
+          const panel = page.getByTestId('fuel-savings-panel');
+          if (!(await panel.isVisible())) {
+            const section = page.getByTestId('fuel-savings-section');
+            await expect(section).toBeVisible({ timeout: 20_000 });
+            await section.getByRole('button', { name: 'Rozwiń oszczędności na własnym zbiorniku' }).click();
+          }
+          await expect(panel).toBeVisible({ timeout: 20_000 });
+        },
+      },
+    ],
+  },
+];
 
 function declarationsWithTokens(css) {
   const out = [];
@@ -92,51 +186,72 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
   }, { file, rootSelector, originalCss });
 }
 
-test.describe('@mobile paleta kolorów 14.51 — wygląd identyczny z oryginałem', () => {
-  test('każdy przekonwertowany plik ma ekran do sprawdzenia', () => {
-    expect(Object.keys(registry).filter((file) => !SCENARIOS[file])).toEqual([]);
-  });
+const originals = Object.fromEntries(Object.keys(registry).map((file) => [file, resolveTokens(fs.readFileSync(file, 'utf8'), tokens)]));
 
-  for (const [file, scenario] of Object.entries(SCENARIOS)) {
-    test(`${file}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
-      const converted = fs.readFileSync(file, 'utf8');
-      const originalCss = resolveTokens(converted, tokens);
-      await scenario.open(page);
+async function runScenario(page, scenario) {
+  await scenario.open(page);
 
-      // Paleta jest wczytana w aplikacji (wartości zmiennych = kolory z tokens.css).
-      const loaded = await page.evaluate((names) => {
-        const cs = getComputedStyle(document.documentElement);
-        return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
-      }, Object.keys(tokens));
-      expect(loaded).toEqual(tokens);
+  // Paleta jest wczytana w aplikacji (wartości zmiennych = kolory z tokens.css).
+  const loaded = await page.evaluate((names) => {
+    const cs = getComputedStyle(document.documentElement);
+    return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
+  }, Object.keys(tokens));
+  expect(loaded).toEqual(tokens);
 
-      // Każda deklaracja ze zmienną była poprawna w oryginale.
-      const declarations = declarationsWithTokens(converted);
-      expect(declarations.length).toBeGreaterThan(0);
-      const invalid = await page.evaluate((list) => list.filter(({ property, original }) =>
-        CSS.supports(property, 'inherit') && !CSS.supports(property, original)), declarations);
-      expect(invalid).toEqual([]);
+  // Każda deklaracja ze zmienną była poprawna w oryginale.
+  const files = [...new Set(scenario.states.flatMap((state) => state.files))];
+  for (const file of files) {
+    const declarations = declarationsWithTokens(fs.readFileSync(file, 'utf8'));
+    expect(declarations.length, file).toBeGreaterThan(0);
+    const invalid = await page.evaluate((list) => list.filter(({ property, original }) =>
+      CSS.supports(property, 'inherit') && !CSS.supports(property, original)), declarations);
+    expect(invalid, `${file}: deklaracje niepoprawne w oryginale`).toEqual([]);
+  }
 
-      // Kontrola samego testu: celowo zmieniony kolor w „oryginale” MUSI zostać wykryty.
-      if (scenario.negativeControl) {
-        const [from, to] = scenario.negativeControl;
-        expect(originalCss.includes(from), 'kontrola negatywna: fragment w oryginale').toBe(true);
-        const tampered = await swapAndCompare(page, file, scenario.root, originalCss.replace(from, to));
-        expect(tampered.error).toBeUndefined();
-        expect(tampered.diffs.length, 'zmieniony kolor musi być wykryty').toBeGreaterThan(0);
+  // Kontrola samego testu: celowo zmieniony kolor w „oryginale” MUSI zostać wykryty.
+  if (scenario.negativeControl) {
+    const [file, from, to] = scenario.negativeControl;
+    expect(originals[file].includes(from), 'kontrola negatywna: fragment w oryginale').toBe(true);
+    const tampered = await swapAndCompare(page, file, scenario.root, originals[file].replace(from, to));
+    expect(tampered.error).toBeUndefined();
+    expect(tampered.diffs.length, 'zmieniony kolor musi być wykryty').toBeGreaterThan(0);
+  }
+
+  for (const width of scenario.widths) {
+    await page.setViewportSize({ width, height: scenario.platform === 'mobile' ? 844 : 1000 });
+    for (const state of scenario.states) {
+      await state.go(page);
+      await expect(page.locator(scenario.root)).toBeVisible();
+      for (const file of state.files) {
+        const label = `${scenario.id} / ${state.name} @${width}px / ${file}`;
+        const result = await swapAndCompare(page, file, scenario.root, originals[file]);
+        expect(result.error, label).toBeUndefined();
+        expect(result.elements, `${label}: elementy na ekranie`).toBeGreaterThan(5);
+        expect(result.diffs, `${label}: styl po podmianie na oryginał`).toEqual([]);
       }
+    }
+  }
+}
 
-      for (const width of [360, 390, 430]) {
-        await page.setViewportSize({ width, height: 844 });
-        for (const state of scenario.states) {
-          await state.go(page);
-          await expect(page.locator(scenario.root)).toBeVisible();
-          const result = await swapAndCompare(page, file, scenario.root, originalCss);
-          expect(result.error, `${state.name} @${width}px`).toBeUndefined();
-          expect(result.elements, `${state.name} @${width}px: elementy na ekranie`).toBeGreaterThan(5);
-          expect(result.diffs, `${state.name} @${width}px: styl po podmianie na oryginał`).toEqual([]);
-        }
-      }
+test('paleta kolorów — każdy przekonwertowany plik ma ekran do sprawdzenia', () => {
+  const covered = new Set(SCENARIOS.flatMap((scenario) => scenario.states.flatMap((state) => state.files)));
+  expect(Object.keys(registry).filter((file) => !covered.has(file))).toEqual([]);
+  expect([...covered].filter((file) => !registry[file])).toEqual([]);
+});
+
+test.describe('@mobile paleta kolorów — wygląd identyczny z oryginałem (telefon)', () => {
+  test.use(iphone14);
+  for (const scenario of SCENARIOS.filter((s) => s.platform === 'mobile')) {
+    test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
+      await runScenario(page, scenario);
+    });
+  }
+});
+
+test.describe('paleta kolorów — wygląd identyczny z oryginałem (komputer)', () => {
+  for (const scenario of SCENARIOS.filter((s) => s.platform === 'desktop')) {
+    test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
+      await runScenario(page, scenario);
     });
   }
 });

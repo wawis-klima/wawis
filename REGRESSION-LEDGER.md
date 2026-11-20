@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1452 — paleta kolorów, moduł Paliwo
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1452-FUEL | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (3 pliki, podstawienie = oryginał) + E2E `css-tokens-equivalence-v1451`: Paliwo na telefonie (pracownik, administrator) i komputerze (zestawienie, historia, oszczędności), 3 szerokości — styl obliczony identyczny po podmianie na oryginał. |
+| CSS-1452-IPHONE | PENDING-OWNER | Paliwo na iPhonie i komputerze wygląda jak przed 14.52. |
+
 ## CSS-TOKENS-1451 — paleta kolorów bez zmiany wyglądu (decyzja właściciela 20.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
