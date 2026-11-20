@@ -30,7 +30,8 @@ async function openMobileJob(page, status, client) {
   if (await close.count() && await close.first().isVisible()) await close.first().click();
   await page.locator(`.statusActionButton[title="${status}"]`).click();
   await page.getByText(client, { exact: true }).first().click();
-  await expect(page.locator('.premiumCard:has(.detailHeader)')).toBeVisible();
+  await expect(page.locator('.mobileInlineJobDetails .detailHeader')).toHaveCount(1);
+  await expect(page.locator('.mobileInlineJobDetails .detailHeader')).toBeVisible();
 }
 
 async function openDesktopJob(page, statusPrefix, client) {
@@ -152,7 +153,7 @@ const SCENARIOS = [
   },
   {
     // 14.54: szczegóły montażu na telefonie (administrator) — montaż w trakcie i zakończony.
-    id: 'szczegoly-montazu-telefon-administrator', platform: 'mobile', root: '.premiumCard:has(.detailHeader)', widths: [360, 390, 430],
+    id: 'szczegoly-montazu-telefon-administrator', platform: 'mobile', root: '.mobileInlineJobDetails', widths: [360, 390, 430],
     async open(page) { await login(page, ADMIN); },
     states: [
       { name: 'W trakcie', files: [MOBILE_DETAILS_CSS], async go(page) { await openMobileJob(page, 'W trakcie', 'Klient Testowy B'); } },
