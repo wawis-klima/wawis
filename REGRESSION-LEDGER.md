@@ -1,5 +1,11 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1455 — paleta kolorów, kreator urządzeń i tabliczki
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1455-WIZARD | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (9 plików) + E2E `css-tokens-equivalence-v1451`: kreator na telefonie (lista, urządzenie, zdjęcie JW, kadrowanie) i na komputerze (okno, urządzenie), 3 szerokości — styl obliczony identyczny po podmianie na oryginał. Testy kolorów (`v984`, `serial-scanner`, `ai-gate-v1124`, `v979`) — te same asercje po podstawieniu palety. |
+
 ## CSS-TOKENS-1454 — paleta kolorów, szczegóły montażu
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

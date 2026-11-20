@@ -21,7 +21,9 @@ const setupSql = read('supabase', 'migrations', 'archive', 'setup-job-protocols-
 const paymentSql = read('supabase', 'migrations', 'archive', 'setup-job-payment-confirmation-v9.86.sql');
 const protocolNoteSql = read('supabase', 'migrations', '20261004092411_add_job_protocol_note_v1240.sql');
 const styles = read('src', 'mobile791', 'styles.css');
-const wizardStyles = read('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
+// 14.55: kolory z palety podstawione (arkusz ma zmienne --wx-*).
+const { readCssResolved } = require('./css-palette-resolve.cjs');
+const wizardStyles = readCssResolved('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
 const serviceWorker = read('public', 'push-sw.js');
 
 assert.equal(packageJson.version, appVersion.version);

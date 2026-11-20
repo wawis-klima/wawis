@@ -24,6 +24,13 @@ const CONTRACTORS_CSS = 'src/mobile791/v1062-contractors-mobile.css';
 const MOBILE_DETAILS_CSS = 'src/mobile791/v1091-mobile-details-hardening.css';
 const DESKTOP_DETAILS_CSS = 'src/components/job-details-desktop-v1215.css';
 const DESKTOP_INVOICE_CSS = 'src/components/job-details-invoice-v1210.css';
+const WIZARD_CSS = 'src/mobile791/components/devices/mobile-device-wizard.css';
+const NAMEPLATE_CSS = 'src/mobile791/components/nameplate/nameplate-photo-capture.css';
+// Prosty obraz do kadrowania (bez tabliczki) — tylko po to, żeby otworzyć okno kadrowania.
+const CROP_TEST_IMAGE = {
+  name: 'kadr-test.svg', mimeType: 'image/svg+xml',
+  buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="1200" height="800" fill="#d9d9d9"/><rect x="200" y="200" width="800" height="400" fill="#f4f4f4"/></svg>'),
+};
 
 async function openMobileJob(page, status, client) {
   const close = page.getByRole('button', { name: 'Zamknij', exact: true });
@@ -179,6 +186,68 @@ const SCENARIOS = [
     ],
   },
   {
+    // 14.55: kreator urządzeń i zdjęcie tabliczki na telefonie (pracownik): lista urządzeń → urządzenie →
+    // zdjęcie tabliczki JW → okno kadrowania. Dla każdej szerokości kreator otwierany od nowa.
+    id: 'kreator-urzadzen-telefon-pracownik', platform: 'mobile', root: '.mobileDeviceWizardModal', widths: [360, 390, 430],
+    reopenPerWidth: true, timeout: 420_000,
+    async open(page) {
+      await resetMockSupabase(page);
+      await loginWithoutReset(page, WORKER);
+      await page.locator('.statusActionButton[title="W trakcie"]').click();
+      await page.getByText('Klient Testowy Multi-Split', { exact: true }).click();
+      await page.getByRole('button', { name: 'Tabliczki', exact: true }).click();
+      await expect(page.locator('.mobileDeviceOverviewOpen').first()).toBeVisible({ timeout: 20_000 });
+    },
+    states: [
+      { name: 'Lista urządzeń', files: [WIZARD_CSS, NAMEPLATE_CSS], async go() {} },
+      {
+        name: 'Urządzenie', files: [WIZARD_CSS, NAMEPLATE_CSS],
+        async go(page) {
+          await page.locator('.mobileDeviceOverviewOpen').first().click();
+          await expect(page.locator('.mobileMultiIndoorCard').first()).toBeVisible();
+        },
+      },
+      {
+        name: 'Zdjęcie tabliczki JW', files: [WIZARD_CSS, NAMEPLATE_CSS],
+        async go(page) {
+          await page.locator('.mobileMultiIndoorCard').first().click();
+          await expect(page.locator('.nameplateGalleryInput')).toHaveCount(1);
+        },
+      },
+      {
+        name: 'Kadrowanie', root: '.nameplateCropModal', files: [NAMEPLATE_CSS, WIZARD_CSS],
+        async go(page) {
+          await page.locator('.nameplateGalleryInput').setInputFiles(CROP_TEST_IMAGE);
+          await expect(page.locator('.nameplateCropModal')).toBeVisible();
+        },
+      },
+    ],
+  },
+  {
+    // 14.55: ten sam kreator w oknie na komputerze (administrator, „Dodaj / edytuj urządzenia i tabliczki”).
+    id: 'kreator-urzadzen-komputer-administrator', platform: 'desktop', root: '.desktopAdminDeviceWizardModal', widths: [1280, 1440, 1920],
+    reopenPerWidth: true, timeout: 420_000,
+    async open(page) {
+      await resetMockSupabase(page);
+      await login(page, ADMIN);
+      await page.getByRole('button', { name: /^Montaże$/ }).click();
+      await page.getByRole('button', { name: /W trakcie:/ }).click();
+      await page.getByRole('table').getByText('Klient Testowy B', { exact: true }).first().click();
+      await page.getByRole('button', { name: 'Dodaj / edytuj urządzenia i tabliczki' }).click();
+      await expect(page.locator('.desktopAdminDeviceWizardModal .mobileDeviceOverviewCard').first()).toBeVisible();
+    },
+    states: [
+      { name: 'Lista urządzeń', files: [WIZARD_CSS, NAMEPLATE_CSS], async go() {} },
+      {
+        name: 'Urządzenie', files: [WIZARD_CSS, NAMEPLATE_CSS],
+        async go(page) {
+          await page.locator('.desktopAdminDeviceWizardModal .mobileDeviceOverviewOpen').first().click();
+          await expect(page.locator('.desktopAdminDeviceWizardModal .mobileDeviceWizardFooter')).toBeVisible();
+        },
+      },
+    ],
+  },
+  {
     id: 'paliwo-komputer-administrator', platform: 'desktop', root: '.fuelModule', widths: [1280, 1440, 1920],
     async open(page) {
       await login(page, ADMIN);
@@ -307,14 +376,16 @@ async function runScenario(page, scenario) {
     expect(tampered.diffs.length, 'zmieniony kolor musi być wykryty').toBeGreaterThan(0);
   }
 
-  for (const width of scenario.widths) {
+  for (const [index, width] of scenario.widths.entries()) {
     await page.setViewportSize({ width, height: scenario.platform === 'mobile' ? 844 : 1000 });
+    if (scenario.reopenPerWidth && index > 0) await scenario.open(page);
     for (const state of scenario.states) {
       await state.go(page);
-      await expect(page.locator(scenario.root)).toBeVisible();
+      const root = state.root || scenario.root;
+      await expect(page.locator(root).first()).toBeVisible();
       for (const file of state.files) {
         const label = `${scenario.id} / ${state.name} @${width}px / ${file}`;
-        const result = await swapAndCompare(page, file, scenario.root, originals[file]);
+        const result = await swapAndCompare(page, file, root, originals[file]);
         expect(result.error, label).toBeUndefined();
         expect(result.elements, `${label}: elementy na ekranie`).toBeGreaterThan(5);
         expect(result.diffs, `${label}: styl po podmianie na oryginał`).toEqual([]);
@@ -334,7 +405,7 @@ test.describe('@mobile paleta kolorów — wygląd identyczny z oryginałem (tel
   for (const scenario of SCENARIOS.filter((s) => s.platform === 'mobile')) {
     test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
       // Pełny styl obliczony wszystkich elementów × widoki × szerokości — dłużej niż domyślne 60 s.
-      test.setTimeout(240_000);
+      test.setTimeout(scenario.timeout || 240_000);
       await runScenario(page, scenario);
     });
   }
@@ -344,7 +415,7 @@ test.describe('paleta kolorów — wygląd identyczny z oryginałem (komputer)',
   for (const scenario of SCENARIOS.filter((s) => s.platform === 'desktop')) {
     test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
       // Pełny styl obliczony wszystkich elementów × widoki × szerokości — dłużej niż domyślne 60 s.
-      test.setTimeout(240_000);
+      test.setTimeout(scenario.timeout || 240_000);
       await runScenario(page, scenario);
     });
   }

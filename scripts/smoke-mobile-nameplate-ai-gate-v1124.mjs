@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -106,7 +107,9 @@ assert(reader.indexOf('if (!evidence.hasEvidence && !weakEvidenceFallback)') < r
 
 
 const capture = read('src/mobile791/components/nameplate/NameplatePhotoCapture.jsx');
-const captureCss = read('src/mobile791/components/nameplate/nameplate-photo-capture.css');
+// 14.55: kolory z palety podstawione (arkusz ma zmienne --wx-*).
+const { readCssResolved } = createRequire(import.meta.url)('./css-palette-resolve.cjs');
+const captureCss = readCssResolved('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
 assert(capture.includes('AI sprawdziła zdjęcie, ale nie potwierdziła dokładnego modelu urządzenia i numeru seryjnego.'), 'UI must explain guarded AI rejection.');
 assert(capture.includes('AI nie zostało uruchomione. Zrób zdjęcie tabliczki ponownie.'), 'UI must still explain the true AI-skipped path.');
 assert(capture.includes('disabled={noNameplateEvidence}'), 'Fields must be disabled for a non-nameplate photo');

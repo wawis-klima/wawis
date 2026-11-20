@@ -20,10 +20,20 @@
       "replaced": 16,
       "original_sha256": "fd72e503300e127df62d1f7c0cadcd0fbb63a5f587e7953f8463c5ba322d46f8"
     },
+    "src/mobile791/components/devices/mobile-device-wizard.css": {
+      "version": "14.55",
+      "replaced": 174,
+      "original_sha256": "9f87592f2a7203d63602485876915fcc5dff0c9c742488a1eebe5434b0dbac8b"
+    },
     "src/mobile791/components/devices/ServiceAdminPanel.css": {
       "version": "14.51",
       "replaced": 38,
       "original_sha256": "0d4b260a6a7b4bb515ea9dbb536935133f70327d1a981d220477b6741b72272c"
+    },
+    "src/mobile791/components/nameplate/nameplate-photo-capture.css": {
+      "version": "14.55",
+      "replaced": 97,
+      "original_sha256": "16416f6600b272f694ca47969a804b46a1eb73b4198a251c32fcb27ade72d7d8"
     },
     "src/mobile791/v1062-contractors-mobile.css": {
       "version": "14.53",

@@ -7,12 +7,14 @@ const root = path.resolve(__dirname, '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const formSource = read('src', 'mobile791', 'components', 'modals', 'JobFormModal.jsx');
 const wizardSource = read('src', 'mobile791', 'components', 'devices', 'MobileDeviceWizard.jsx');
-const wizardStyles = read('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
+// 14.55: kolory z palety podstawione (arkusze mają zmienne --wx-*).
+const { readCssResolved } = require('./css-palette-resolve.cjs');
+const wizardStyles = readCssResolved('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
 const captureSource = read('src', 'mobile791', 'components', 'nameplate', 'NameplatePhotoCapture.jsx');
 assert.match(captureSource, /import \{ createPortal \} from ["']react-dom["']/, 'Nameplate modals must use React portal.');
 assert.match(captureSource, /verification && typeof document !== ["']undefined["'] \? createPortal\(/, 'Verification must render outside wizard clipping.');
 assert.match(captureSource, /cropSource && typeof document !== ["']undefined["'] \? createPortal\(/, 'Crop modal must render outside wizard clipping.');
-const captureStyles = read('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
+const captureStyles = readCssResolved('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
 // WAWIS 12.87: prevent a dark crop screen returning in the light mobile wizard.
 assert.match(captureStyles, /\.nameplateCropModal\s*\{[^}]*background:\s*#f8fafc\s*;/, 'Crop surface must remain light.');
 assert.match(captureStyles, /\.nameplateCropHeader\s*\{[^}]*background:\s*#ffffff\s*;/, 'Crop header must remain light.');
