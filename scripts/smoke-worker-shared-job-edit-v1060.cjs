@@ -9,7 +9,7 @@ const form = read('src','mobile791','modules','jobs-form.js');
 const modal = read('src','mobile791','components','modals','JobFormModal.jsx');
 const details = read('src','mobile791','components','JobDetailsPanel.jsx');
 const edge = read('supabase','functions','send-assignment-push','index.ts');
-const sql = read('worker-shared-job-edit-v10.60.sql');
+const sql = read('supabase', 'migrations', 'archive', 'worker-shared-job-edit-v10.60.sql');
 const protocolResignSql = read('supabase','migrations','current','protocol-resign-shared-staff-v11.47.sql');
 
 assert.ok(permissions.includes('return false;'), 'Przypisanie nadal blokuje edycję cudzego montażu.');

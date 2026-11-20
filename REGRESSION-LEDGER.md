@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## HOUSEKEEPING-1450 — porządek w repozytorium i atrapa bazy (audyt 20.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| REPO-1450-SQL | FIXED-UNVERIFIED | `smoke-repo-housekeeping-v1450`: RED na 14.49 (57 SQL w katalogu głównym, 41 duplikatów archiwum). Katalog główny bez SQL/CSV/RELEASE-RESULT-*, manifest odbudowy bez brakujących plików; testy czytające SQL uruchamiane w CI na nowych ścieżkach. |
+| BUNDLE-1450-MOCK | FIXED-UNVERIFIED | `smoke-no-mock-in-production-v1450`: build produkcyjny Vite bez kont testowych i `mock://supabase`; build `VITE_SUPABASE_MODE=mock` nadal z atrapą (E2E). |
+
 ## SEC-AUDIT-1449 — CSP, Permissions-Policy i rola administratora (audyt 20.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

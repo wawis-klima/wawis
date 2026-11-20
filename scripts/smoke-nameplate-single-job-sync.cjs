@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
 const save = fs.readFileSync(path.join(root, 'src/modules/desktop-nameplate-ocr-save.js'), 'utf8');
-const migration = fs.readFileSync(path.join(root, 'nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'supabase', 'migrations', 'archive', 'nameplate-single-job-sync-dashboard-safe-uuid-v9.27.sql'), 'utf8');
 assert(!save.includes("supabase.rpc('admin_sync_device_from_job'"), 'Zapis tabliczki nie powinien wykonywać dodatkowego RPC po aktualizacji jobs');
 assert(save.includes('jobs_sync_device_after_change'), 'Kod nie dokumentuje automatycznej synchronizacji przez trigger');
 assert(!save.includes("supabase.rpc('admin_sync_devices_from_jobs')"), 'Zapis tabliczki nadal uruchamia pełną synchronizację wszystkich zleceń');

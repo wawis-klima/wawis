@@ -14,7 +14,7 @@ import {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const edgeFunction = read('supabase', 'functions', 'send-job-protocol-email', 'index.ts');
-const setupSql = read('supabase', 'setup-job-protocol-email-v9.87.sql');
+const setupSql = read('supabase', 'migrations', 'archive', 'setup-job-protocol-email-v9.87.sql');
 const modal = read('src', 'mobile791', 'components', 'modals', 'ProtocolTestModal.jsx');
 const storageModule = read('src', 'mobile791', 'modules', 'job-protocol-storage.js');
 

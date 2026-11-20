@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const sqlPath = path.join(root, 'devices-empty-serial-hotfix-v8.60.sql');
+const sqlPath = path.join(root, 'supabase', 'migrations', 'archive', 'devices-empty-serial-hotfix-v8.60.sql');
 const archivedSqlPath = path.join(root, 'supabase', 'migrations', 'current', 'devices-empty-serial-hotfix-v8.60.sql');
 const mobileErrorsPath = path.join(root, 'src', 'mobile791', 'modules', 'database-errors.js');
 const packagePath = path.join(root, 'package.json');

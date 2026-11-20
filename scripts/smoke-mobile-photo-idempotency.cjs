@@ -12,7 +12,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
   const requirementsSource = read('src/mobile791/modules/nameplate-requirements.js');
   const actionsSource = read('src/mobile791/hooks/useSelectedJobActions.js');
   const appSource = read('src/mobile791/App.jsx');
-  const migrationSource = read('photo-upload-idempotency-v8.82.sql');
+  const migrationSource = read('supabase/migrations/archive/photo-upload-idempotency-v8.82.sql');
 
   const queueVersion = Number(queueSource.match(/const DB_VERSION = (\d+);/)?.[1] || 0);
   assert(queueVersion >= 2, 'Kolejka IndexedDB nie zachowuje migracji identyfikatorów uploadu z wersji 2.');
