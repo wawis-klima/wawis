@@ -1,5 +1,15 @@
 {
   "files": {
+    "src/components/fuel/FuelPanelV1034.css": {
+      "version": "14.52",
+      "replaced": 54,
+      "original_sha256": "15cc7a141bc28ca6998bda216784fba68e80a1b0a2a06690d15d7bde80233edc"
+    },
+    "src/components/fuel/FuelSavingsPanel.css": {
+      "version": "14.52",
+      "replaced": 48,
+      "original_sha256": "cc2226f6f3f6b364e089439d224a8718b8a6e36f91f72c8d34d13d0959856785"
+    },
     "src/mobile791/components/devices/ServiceAdminPanel.css": {
       "version": "14.51",
       "replaced": 38,
