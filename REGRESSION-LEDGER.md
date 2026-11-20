@@ -1,5 +1,11 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1453 — paleta kolorów, Kontrahenci (telefon)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1453-CONTRACTORS | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (4 pliki) + E2E `css-tokens-equivalence-v1451`: Kontrahenci na telefonie (lista, rozwinięta karta, nowy kontrahent), 3 szerokości — styl obliczony identyczny po podmianie na oryginał. |
+
 ## CSS-TOKENS-1452 — paleta kolorów, moduł Paliwo
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

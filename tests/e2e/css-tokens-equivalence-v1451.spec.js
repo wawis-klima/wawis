@@ -20,6 +20,7 @@ const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).files;
 const SERVICE_CSS = 'src/mobile791/components/devices/ServiceAdminPanel.css';
 const FUEL_CSS = 'src/components/fuel/FuelPanelV1034.css';
 const SAVINGS_CSS = 'src/components/fuel/FuelSavingsPanel.css';
+const CONTRACTORS_CSS = 'src/mobile791/v1062-contractors-mobile.css';
 
 async function seedDesktopFuel(page) {
   await page.evaluate(() => {
@@ -98,6 +99,41 @@ const SCENARIOS = [
     ],
   },
   {
+    // 14.53: Kontrahenci na telefonie (tylko administrator) — lista, rozwinięta karta, formularz nowego kontrahenta.
+    id: 'kontrahenci-telefon-administrator', platform: 'mobile', root: '.contractorsV1062Page', widths: [360, 390, 430],
+    async open(page) {
+      await login(page, ADMIN);
+      await page.locator('.moduleSwitcherMobile button[data-module="contractors"]').click();
+      await expect(page.locator('.contractorsV1062Card').first()).toBeVisible();
+    },
+    states: [
+      {
+        name: 'Lista', files: [CONTRACTORS_CSS],
+        async go(page) {
+          const close = page.locator('.contractorsV1062Editor button', { hasText: 'Anuluj' });
+          if (await close.count()) await close.first().click();
+          const expanded = page.locator('.contractorsV1062Card.isExpanded .contractorsV1062CardMain');
+          if (await expanded.count()) await expanded.first().click();
+          await expect(page.locator('.contractorsV1062Card.isExpanded')).toHaveCount(0);
+        },
+      },
+      {
+        name: 'Rozwinięta karta', files: [CONTRACTORS_CSS],
+        async go(page) {
+          await page.locator('.contractorsV1062CardMain').first().click();
+          await expect(page.locator('.contractorsV1062Card.isExpanded')).toHaveCount(1);
+        },
+      },
+      {
+        name: 'Nowy kontrahent', files: [CONTRACTORS_CSS],
+        async go(page) {
+          await page.locator('.contractorsV1062ActionCard', { hasText: 'Nowy' }).click();
+          await expect(page.locator('.contractorsV1062Editor')).toBeVisible();
+        },
+      },
+    ],
+  },
+  {
     id: 'paliwo-komputer-administrator', platform: 'desktop', root: '.fuelModule', widths: [1280, 1440, 1920],
     async open(page) {
       await login(page, ADMIN);
@@ -153,11 +189,19 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
     if (!styleEl) return { error: `brak arkusza ${file} na stronie` };
     const root = document.querySelector(rootSelector);
     if (!root) return { error: `brak ekranu ${rootSelector}` };
+    // 14.53: animacje i przejścia zatrzymane na czas porównania (np. pulsujący przycisk mikrofonu zmieniał tło
+    // między zapisami). Ten sam styl obowiązuje przy obu zapisach, więc porównanie arkuszy zostaje ścisłe.
+    const freeze = document.createElement('style');
+    freeze.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}';
+    document.head.appendChild(freeze);
+    await frame();
     const elements = [document.documentElement, document.body, root, ...root.querySelectorAll('*')];
     const snapshot = () => elements.map((el) => {
       const parts = [];
       for (const pseudo of [null, '::before', '::after']) {
         const cs = getComputedStyle(el, pseudo);
+        // 14.53: pseudo-element bez treści (content: none) nie jest rysowany — zapisujemy tylko to (szybciej na komputerze).
+        if (pseudo && cs.getPropertyValue('content') === 'none') { parts.push('content=none'); continue; }
         const props = [];
         for (let i = 0; i < cs.length; i += 1) props.push(`${cs[i]}=${cs.getPropertyValue(cs[i])}`);
         parts.push(props.join(';'));
@@ -173,6 +217,7 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
     const after = snapshot();
     original.remove();
     styleEl.sheet.disabled = false;
+    freeze.remove();
     await frame();
     const diffs = [];
     for (let i = 0; i < elements.length && diffs.length < 5; i += 1) {
@@ -243,6 +288,8 @@ test.describe('@mobile paleta kolorów — wygląd identyczny z oryginałem (tel
   test.use(iphone14);
   for (const scenario of SCENARIOS.filter((s) => s.platform === 'mobile')) {
     test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
+      // Pełny styl obliczony wszystkich elementów × widoki × szerokości — dłużej niż domyślne 60 s.
+      test.setTimeout(240_000);
       await runScenario(page, scenario);
     });
   }
@@ -251,6 +298,8 @@ test.describe('@mobile paleta kolorów — wygląd identyczny z oryginałem (tel
 test.describe('paleta kolorów — wygląd identyczny z oryginałem (komputer)', () => {
   for (const scenario of SCENARIOS.filter((s) => s.platform === 'desktop')) {
     test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
+      // Pełny styl obliczony wszystkich elementów × widoki × szerokości — dłużej niż domyślne 60 s.
+      test.setTimeout(240_000);
       await runScenario(page, scenario);
     });
   }
