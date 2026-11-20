@@ -5,7 +5,9 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const modal = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'modals', 'ProtocolTestModal.jsx'), 'utf8');
 const jobForm = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'modals', 'JobFormModal.jsx'), 'utf8');
-const wizardCss = fs.readFileSync(path.join(root, 'src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css'), 'utf8');
+// 14.55: kolory z palety podstawione (arkusz ma zmienne --wx-*).
+const { readCssResolved } = require('./css-palette-resolve.cjs');
+const wizardCss = readCssResolved('src', 'mobile791', 'components', 'devices', 'mobile-device-wizard.css');
 
 assert.match(jobForm, /contentClassName="card modal mobileDeviceWizardModal"/, 'Nie znaleziono sprawdzonej obudowy dodawania urządzenia.');
 assert.match(modal, /overlayClassName="formOverlay mobileDeviceWizardOverlay"/);

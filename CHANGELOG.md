@@ -1,3 +1,8 @@
+## 14.55
+- Wspólna paleta kolorów, etap 5 (wygląd bez zmian): **kreator urządzeń i zdjęcia tabliczek** — `mobile-device-wizard.css` (174 kolory → 85 zmiennych) i `nameplate-photo-capture.css` (97 → 35). Paleta: 209 kolorów. Kreator działa na telefonie i w oknie na komputerze.
+- Test w przeglądarce: telefon pracownika (lista urządzeń, urządzenie, zdjęcie tabliczki JW, okno kadrowania) i komputer administratora (okno urządzeń, urządzenie); dla każdej szerokości kreator otwierany od nowa.
+- `scripts/css-palette-resolve.cjs` — odczyt arkusza z podstawioną paletą dla testów sprawdzających konkretne kolory (`smoke-mobile-protocol-layout-v984`, `smoke-mobile-serial-scanner`, `smoke-mobile-nameplate-ai-gate-v1124`, `smoke-mobile-protocol-v979`, `smoke-desktop-job-details-polish`) — te same asercje kolorów, po podstawieniu zmiennych.
+
 ## 14.54
 - Wspólna paleta kolorów, etap 4 (wygląd bez zmian): **szczegóły montażu** — telefon `v1091-mobile-details-hardening.css` (7 kolorów → 6 zmiennych), komputer `job-details-desktop-v1215.css` (15 → 13) i pasek faktury VAT `job-details-invoice-v1210.css` (16 → 13). Paleta: 127 kolorów. Pozostałe arkusze szczegółów (`v1090`, `v1100–v1102`, `v1108`) nie mają kolorów.
 - Test w przeglądarce: szczegóły montażu w trakcie i zakończonego — telefon administratora oraz komputer administratora (z paskiem faktury VAT), po 3 szerokości.
