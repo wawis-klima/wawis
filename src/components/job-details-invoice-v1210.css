@@ -18,10 +18,10 @@
   justify-content:center;
   min-height:30px;
   padding:6px 11px;
-  border:1px solid #cbd5e1;
+  border:1px solid var(--wx-slate-300);
   border-radius:999px;
-  background:#fff;
-  color:#334155;
+  background:var(--wx-white);
+  color:var(--wx-slate-700);
   font-size:11px;
   font-weight:850;
   line-height:1;
@@ -31,33 +31,33 @@
 }
 
 .desktopFakturowniaButton.desktopFakturowniaButtonV1210:hover:not(:disabled){
-  background:#f8fafc;
-  border-color:#94a3b8;
-  color:#0f172a;
+  background:var(--wx-slate-50);
+  border-color:var(--wx-slate-400);
+  color:var(--wx-slate-900);
 }
 
 .desktopFakturowniaButton.desktopFakturowniaButtonV1210:disabled{
   opacity:.6;
 }
 
-.desktopInvoiceVerificationToolsV1277{padding:8px 12px 10px;border-bottom:1px solid #e2e8f0}
-.desktopInvoiceVerificationFeedbackV1277{margin:0 0 8px;color:#92400e;font-size:12px;line-height:1.4}
+.desktopInvoiceVerificationToolsV1277{padding:8px 12px 10px;border-bottom:1px solid var(--wx-slate-200)}
+.desktopInvoiceVerificationFeedbackV1277{margin:0 0 8px;color:var(--wx-amber-800);font-size:12px;line-height:1.4}
 .desktopInvoiceVerificationButtonsV1277{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .desktopInvoiceVerificationButtonsV1277 .btn{min-height:28px;padding:5px 9px;font-size:11px}
 .desktopInvoiceManualFormV1277{display:grid;gap:7px;max-width:540px;margin-top:10px}
 .desktopInvoiceManualFormV1277 label{font-size:12px;font-weight:700}
 .desktopInvoiceManualInputRowV1277{display:flex;gap:8px;flex-wrap:wrap}
-.desktopInvoiceManualInputRowV1277 input{min-width:190px;flex:1 1 220px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px}
+.desktopInvoiceManualInputRowV1277 input{min-width:190px;flex:1 1 220px;padding:7px 10px;border:1px solid var(--wx-slate-300);border-radius:8px;font-size:13px}
 .desktopInvoiceManualInputRowV1277 .btn{font-size:12px}
-.desktopInvoiceManualFormV1277 small{color:#64748b;font-size:11px}
+.desktopInvoiceManualFormV1277 small{color:var(--wx-slate-500);font-size:11px}
 
-.desktopInvoiceCandidatesV1278{display:grid;gap:7px;margin:8px 0;padding:9px;border:1px solid #f4d09b;border-radius:9px;background:#fffbf5}
+.desktopInvoiceCandidatesV1278{display:grid;gap:7px;margin:8px 0;padding:9px;border:1px solid var(--wx-c-f4d09b);border-radius:9px;background:var(--wx-c-fffbf5)}
 .desktopInvoiceCandidateRowV1278{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
 .desktopInvoiceCandidateRowV1278 .btn{min-height:28px;padding:5px 10px;font-size:11px}
-.desktopInvoiceCandidatesV1278 small{font-size:11px;line-height:1.4;color:#875a21}
+.desktopInvoiceCandidatesV1278 small{font-size:11px;line-height:1.4;color:var(--wx-c-875a21)}
 
 /* v12.81: emergency recovery is available without cluttering the invoice header. */
-.desktopInvoiceEmergencyToggleV1281{display:inline-flex;align-items:center;gap:5px;padding:4px 0;background:transparent;border:0;color:#64748b;font-size:11px;font-weight:600;cursor:pointer}
-.desktopInvoiceEmergencyToggleV1281:hover{color:#334155;text-decoration:underline}
-.desktopInvoiceEmergencyToggleV1281:focus-visible{outline:2px solid #2563eb;outline-offset:3px;border-radius:3px}
+.desktopInvoiceEmergencyToggleV1281{display:inline-flex;align-items:center;gap:5px;padding:4px 0;background:transparent;border:0;color:var(--wx-slate-500);font-size:11px;font-weight:600;cursor:pointer}
+.desktopInvoiceEmergencyToggleV1281:hover{color:var(--wx-slate-700);text-decoration:underline}
+.desktopInvoiceEmergencyToggleV1281:focus-visible{outline:2px solid var(--wx-blue-600);outline-offset:3px;border-radius:3px}
 .desktopInvoiceEmergencyContentsV1281{display:grid;gap:8px;padding:6px 0 2px}

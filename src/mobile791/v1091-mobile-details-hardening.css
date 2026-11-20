@@ -136,10 +136,10 @@
     margin: 7px auto 0;
     padding: 6px 12px;
     box-sizing: border-box;
-    border: 1px solid #93c5fd;
+    border: 1px solid var(--wx-blue-300);
     border-radius: 10px;
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: var(--wx-blue-50);
+    color: var(--wx-blue-700);
     font: inherit;
     font-size: 12px;
     font-weight: 800;
@@ -149,9 +149,9 @@
   }
 
   .deviceUnitManualVerifyBtn.revoke {
-    border-color: #cbd5e1;
-    background: #f8fafc;
-    color: #475569;
+    border-color: var(--wx-slate-300);
+    background: var(--wx-slate-50);
+    color: var(--wx-slate-600);
   }
 
   .deviceUnitManualVerifyBtn:disabled {
@@ -161,6 +161,6 @@
 
   .deviceUnitDocumentationRow.manualNameplate .deviceUnitDocumentationSync,
   .deviceUnitDocumentationState.manual {
-    color: #1d4ed8 !important;
+    color: var(--wx-blue-700) !important;
   }
 }

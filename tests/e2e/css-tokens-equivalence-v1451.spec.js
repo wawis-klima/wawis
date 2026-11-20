@@ -21,6 +21,23 @@ const SERVICE_CSS = 'src/mobile791/components/devices/ServiceAdminPanel.css';
 const FUEL_CSS = 'src/components/fuel/FuelPanelV1034.css';
 const SAVINGS_CSS = 'src/components/fuel/FuelSavingsPanel.css';
 const CONTRACTORS_CSS = 'src/mobile791/v1062-contractors-mobile.css';
+const MOBILE_DETAILS_CSS = 'src/mobile791/v1091-mobile-details-hardening.css';
+const DESKTOP_DETAILS_CSS = 'src/components/job-details-desktop-v1215.css';
+const DESKTOP_INVOICE_CSS = 'src/components/job-details-invoice-v1210.css';
+
+async function openMobileJob(page, status, client) {
+  const close = page.getByRole('button', { name: 'Zamknij', exact: true });
+  if (await close.count() && await close.first().isVisible()) await close.first().click();
+  await page.locator(`.statusActionButton[title="${status}"]`).click();
+  await page.getByText(client, { exact: true }).first().click();
+  await expect(page.locator('.premiumCard:has(.detailHeader)')).toBeVisible();
+}
+
+async function openDesktopJob(page, statusPrefix, client) {
+  await page.getByRole('button', { name: new RegExp(`^${statusPrefix}:`) }).click();
+  await page.getByRole('table').getByText(client, { exact: true }).click();
+  await expect(page.locator('.jobDetailsPanelCard .jobDetailsStickyTitle')).toHaveText(client);
+}
 
 async function seedDesktopFuel(page) {
   await page.evaluate(() => {
@@ -129,6 +146,33 @@ const SCENARIOS = [
         async go(page) {
           await page.locator('.contractorsV1062ActionCard', { hasText: 'Nowy' }).click();
           await expect(page.locator('.contractorsV1062Editor')).toBeVisible();
+        },
+      },
+    ],
+  },
+  {
+    // 14.54: szczegóły montażu na telefonie (administrator) — montaż w trakcie i zakończony.
+    id: 'szczegoly-montazu-telefon-administrator', platform: 'mobile', root: '.premiumCard:has(.detailHeader)', widths: [360, 390, 430],
+    async open(page) { await login(page, ADMIN); },
+    states: [
+      { name: 'W trakcie', files: [MOBILE_DETAILS_CSS], async go(page) { await openMobileJob(page, 'W trakcie', 'Klient Testowy B'); } },
+      { name: 'Zakończony', files: [MOBILE_DETAILS_CSS], async go(page) { await openMobileJob(page, 'Zakończone', 'Klient Testowy C Zakończony'); } },
+    ],
+  },
+  {
+    // 14.54: szczegóły montażu na komputerze (administrator) — w trakcie oraz zakończony z paskiem faktury VAT.
+    id: 'szczegoly-montazu-komputer-administrator', platform: 'desktop', root: '.jobDetailsPanelCard', widths: [1280, 1440, 1920],
+    async open(page) {
+      await login(page, ADMIN);
+      await page.getByRole('button', { name: /^Montaże$/ }).click();
+    },
+    states: [
+      { name: 'W trakcie', files: [DESKTOP_DETAILS_CSS, DESKTOP_INVOICE_CSS], async go(page) { await openDesktopJob(page, 'W trakcie', 'Klient Testowy B'); } },
+      {
+        name: 'Zakończony z fakturą', files: [DESKTOP_DETAILS_CSS, DESKTOP_INVOICE_CSS],
+        async go(page) {
+          await openDesktopJob(page, 'Zakończone', 'Klient Testowy C Zakończony');
+          await expect(page.locator('.desktopInvoiceActionsRowV1210')).toBeVisible();
         },
       },
     ],

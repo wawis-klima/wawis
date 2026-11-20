@@ -10,6 +10,16 @@
       "replaced": 48,
       "original_sha256": "cc2226f6f3f6b364e089439d224a8718b8a6e36f91f72c8d34d13d0959856785"
     },
+    "src/components/job-details-desktop-v1215.css": {
+      "version": "14.54",
+      "replaced": 15,
+      "original_sha256": "8d8e2f4cb1292f6d025f5623eca6aa5338f5ca3d4a4d1b5a03e291cef66cdd12"
+    },
+    "src/components/job-details-invoice-v1210.css": {
+      "version": "14.54",
+      "replaced": 16,
+      "original_sha256": "fd72e503300e127df62d1f7c0cadcd0fbb63a5f587e7953f8463c5ba322d46f8"
+    },
     "src/mobile791/components/devices/ServiceAdminPanel.css": {
       "version": "14.51",
       "replaced": 38,
@@ -19,6 +29,11 @@
       "version": "14.53",
       "replaced": 47,
       "original_sha256": "461430b4fefa7c9830dfb069abbbcb5cecaf8328da6f3517ca2b22be86af036d"
+    },
+    "src/mobile791/v1091-mobile-details-hardening.css": {
+      "version": "14.54",
+      "replaced": 7,
+      "original_sha256": "e43aa56392f16390b8bcf38d7c8bfd5d143cca8a2c7850e23f0d65f77ffdb4f0"
     }
   }
 }

@@ -5,6 +5,10 @@
   --wx-amber-100: #fef3c7;
   --wx-amber-300: #fcd34d;
   --wx-amber-800: #92400e;
+  --wx-blue-300: #93c5fd;
+  --wx-blue-50: #eff6ff;
+  --wx-blue-600: #2563eb;
+  --wx-blue-700: #1d4ed8;
   --wx-c-10203a: #10203a;
   --wx-c-102348: #102348;
   --wx-c-12325f: #12325f;
@@ -12,6 +16,7 @@
   --wx-c-143761: #143761;
   --wx-c-147c87: #147c87;
   --wx-c-153568: #153568;
+  --wx-c-172235: #172235;
   --wx-c-172b45: #172b45;
   --wx-c-173d6c: #173d6c;
   --wx-c-173f6f: #173f6f;
@@ -21,6 +26,7 @@
   --wx-c-18828c: #18828c;
   --wx-c-1d5da9: #1d5da9;
   --wx-c-245d9f: #245d9f;
+  --wx-c-26364a: #26364a;
   --wx-c-263b50: #263b50;
   --wx-c-2e73cc: #2e73cc;
   --wx-c-2f75cf: #2f75cf;
@@ -28,6 +34,7 @@
   --wx-c-34465f: #34465f;
   --wx-c-36526f: #36526f;
   --wx-c-415a78: #415a78;
+  --wx-c-44546a: #44546a;
   --wx-c-45658d: #45658d;
   --wx-c-4f6f98: #4f6f98;
   --wx-c-516477: #516477;
@@ -51,15 +58,19 @@
   --wx-c-7a5a00: #7a5a00;
   --wx-c-7b8ea8: #7b8ea8;
   --wx-c-8190a4: #8190a4;
+  --wx-c-875a21: #875a21;
   --wx-c-8a6a1f: #8a6a1f;
   --wx-c-8a99ad: #8a99ad;
+  --wx-c-8aa4c3: #8aa4c3;
   --wx-c-9a2929: #9a2929;
   --wx-c-9a3d35: #9a3d35;
   --wx-c-9d174d: #9d174d;
   --wx-c-a9d8c4: #a9d8c4;
+  --wx-c-aebdce: #aebdce;
   --wx-c-b42318: #b42318;
   --wx-c-b7d4ff: #b7d4ff;
   --wx-c-b9d7ff: #b9d7ff;
+  --wx-c-bcc9d8: #bcc9d8;
   --wx-c-c4b5fd: #c4b5fd;
   --wx-c-c4e5d6: #c4e5d6;
   --wx-c-c64848: #c64848;
@@ -68,6 +79,7 @@
   --wx-c-cbd9e7: #cbd9e7;
   --wx-c-cbd9e9: #cbd9e9;
   --wx-c-cbd9ea: #cbd9ea;
+  --wx-c-cfd9e6: #cfd9e6;
   --wx-c-d5e1ef: #d5e1ef;
   --wx-c-d8e4f2: #d8e4f2;
   --wx-c-d9e5f3: #d9e5f3;
@@ -85,12 +97,15 @@
   --wx-c-e6edf6: #e6edf6;
   --wx-c-e8eef6: #e8eef6;
   --wx-c-ede9fe: #ede9fe;
+  --wx-c-edf3f9: #edf3f9;
   --wx-c-edf4fc: #edf4fc;
   --wx-c-edf4fd: #edf4fd;
   --wx-c-eefaf4: #eefaf4;
   --wx-c-f0c36d: #f0c36d;
   --wx-c-f0fbf5: #f0fbf5;
   --wx-c-f3d38a: #f3d38a;
+  --wx-c-f3f7fb: #f3f7fb;
+  --wx-c-f4d09b: #f4d09b;
   --wx-c-f7fbff: #f7fbff;
   --wx-c-f8fbff: #f8fbff;
   --wx-c-f9a8d4: #f9a8d4;
@@ -101,8 +116,17 @@
   --wx-c-fff7e6: #fff7e6;
   --wx-c-fff8e6: #fff8e6;
   --wx-c-fffaf0: #fffaf0;
+  --wx-c-fffbf5: #fffbf5;
   --wx-green-100: #dcfce7;
   --wx-green-300: #86efac;
   --wx-green-900: #14532d;
+  --wx-slate-200: #e2e8f0;
+  --wx-slate-300: #cbd5e1;
+  --wx-slate-400: #94a3b8;
+  --wx-slate-50: #f8fafc;
+  --wx-slate-500: #64748b;
+  --wx-slate-600: #475569;
+  --wx-slate-700: #334155;
+  --wx-slate-900: #0f172a;
   --wx-white: #ffffff;
 }
