@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## SEC-AUDIT-1449 — CSP, Permissions-Policy i rola administratora (audyt 20.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SEC-1449-CSP | FIXED-UNVERIFIED | `smoke-csp-report-only-v1449`: RED na 14.48 (brak CSP dla skryptów/połączeń). Report-Only z listą źródeł wyprowadzoną z kodu (Supabase, Open-Meteo, jsDelivr z push-sw), hash skryptu startowego liczony z `index.html`, zgłoszenia w diagnostyce bez URL (deduplikacja, limit 40). |
+| SEC-1449-PERMISSIONS | FIXED-UNVERIFIED | Ten sam test + `smoke-security-headers-v1416`: aparat i mikrofon `(self)`, pozostałe funkcje wyłączone. |
+| SEC-1449-ROLE | FIXED-UNVERIFIED | `smoke-admin-role-unify-v1449` (PGlite; lokalnie także PostgreSQL 16): RED na 14.48 — alias `admin` administratorem dla `current_user_is_admin()`, ale nie dla `admin_delete_comment`; GREEN — CHECK ról, usuwanie komentarzy zgodne z helperem, migracja idempotentna i zatrzymuje się przy nieznanej roli. |
+| SEC-1449-ROLE-PROD | PENDING-OWNER | Właściciel uruchamia migrację `20261120180000_profiles_role_values_admin_check_v1449.sql` w SQL Editor; kontrola SELECT: constraint `profiles_role_allowed_values_v1449` istnieje. |
+| SEC-1449-CSP-PROD | PENDING-OWNER | Po tygodniu: Diagnostyka bez `CSP_REPORT_ONLY_VIOLATION` (albo lista uzupełniona) → przełączenie na wymuszaną CSP w osobnym wydaniu. |
+
 ## SMS-AUDIT-1448 — przegląd przycisków modułu SMS (19.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

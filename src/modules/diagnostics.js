@@ -1,3 +1,4 @@
+import { installCspViolationDiagnostics } from './csp-violation-diagnostics.js';
 import { readSafeBootTrace } from './diagnostics-package4.js';
 import { APP_VERSION } from '../version.js';
 import {
@@ -469,6 +470,8 @@ export function installGlobalDiagnosticHandlers() {
     });
   });
 
+  // 14.49: zgłoszenia CSP Report-Only (bez adresów URL) — patrz csp-violation-diagnostics.js.
+  installCspViolationDiagnostics(logDiagnostic);
   window.addEventListener('online', () => logDiagnostic('network.online'));
   window.addEventListener('offline', () => logDiagnostic('network.offline'));
 }

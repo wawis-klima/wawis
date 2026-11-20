@@ -54,12 +54,15 @@ const DESCRIPTIONS = Object.freeze({
   PUSH_SIGNOUT_FAILED: 'Nie udało się wyłączyć powiadomień PUSH przy wylogowaniu.',
   NOTIFICATION_CREATE_FAILED: 'Nie udało się utworzyć powiadomienia w aplikacji.',
   NOTIFICATION_MARK_READ_FAILED: 'Nie udało się oznaczyć powiadomienia jako przeczytane.',
+  // 14.49: polityka CSP w trybie Report-Only — przeglądarka zgłosiła źródło spoza listy (nic nie zablokowano).
+  CSP_REPORT_ONLY_VIOLATION: 'Polityka CSP (tryb obserwacji) zgłosiła źródło spoza listy dozwolonych; nic nie zostało zablokowane.',
   DIAGNOSTIC_UNCLASSIFIED: 'Niesklasyfikowane zdarzenie techniczne; sprawdź kontekst zdarzenia.',
 });
 
 // 13.83: rodzaj zdarzenia lub stały początek komunikatu z kodu WAWIS → kod etapu. Używane tylko wtedy, gdy
 // przyczyna (sieć, limit czasu, serwer) nie została rozpoznana wyżej — nie zmienia dotychczasowej klasyfikacji.
 const STAGE_PATTERNS = Object.freeze([
+  [/^app\.csp\./, 'CSP_REPORT_ONLY_VIOLATION'],
   [/^job\.details\.retry\b|chwilowy błąd szczegółów montażu/, 'JOB_DETAILS_RETRY'],
   [/tło szczegółów montażu nie odświeżyło się/, 'JOB_DETAILS_BACKGROUND_FAILED'],
   [/^job\.details\.failed\b/, 'JOB_DETAILS_FAILED'],
