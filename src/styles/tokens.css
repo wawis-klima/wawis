@@ -1,0 +1,25 @@
+/* WAWIS — wspólna paleta kolorów (14.51+). Generowane przez scripts/css-tokens.mjs — nie edytuj ręcznie.
+   Każda zmienna ma dokładnie wartość koloru, który zastąpiła w plikach CSS, więc wygląd się nie zmienia.
+   Ładowane statycznie przez src/main.jsx (telefon, komputer, strona naklejki QR). */
+:root {
+  --wx-c-126b4f: #126b4f;
+  --wx-c-147c87: #147c87;
+  --wx-c-172b45: #172b45;
+  --wx-c-176b85: #176b85;
+  --wx-c-18828c: #18828c;
+  --wx-c-34465f: #34465f;
+  --wx-c-51647c: #51647c;
+  --wx-c-61738a: #61738a;
+  --wx-c-7a4b00: #7a4b00;
+  --wx-c-9a2929: #9a2929;
+  --wx-c-c4e5d6: #c4e5d6;
+  --wx-c-c64848: #c64848;
+  --wx-c-c9d6e4: #c9d6e4;
+  --wx-c-dce5ef: #dce5ef;
+  --wx-c-e0e8f1: #e0e8f1;
+  --wx-c-f0c36d: #f0c36d;
+  --wx-c-f0fbf5: #f0fbf5;
+  --wx-c-fff3f2: #fff3f2;
+  --wx-c-fff8e6: #fff8e6;
+  --wx-white: #ffffff;
+}

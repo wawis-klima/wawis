@@ -68,6 +68,7 @@ const GROUPS = {
     'node scripts/smoke-diagnostics-package4-v1276.mjs',
     'node scripts/smoke-csp-report-only-v1449.mjs',
     'npm run test:smoke:v1120-stability',
+    'node scripts/smoke-css-tokens-v1451.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],

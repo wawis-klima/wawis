@@ -1,3 +1,10 @@
+## 14.51
+- Decyzja właściciela 20.11.2026: **wspólna paleta kolorów, wygląd bez zmian, „duża kontrola”**. Etap 1: narzędzie, zabezpieczenia i pierwszy moduł.
+- `src/styles/tokens.css` — paleta jako zmienne `--wx-*` w `:root`, ładowana statycznie przez `src/main.jsx` (CSS wejścia: telefon, komputer, strona naklejki QR). Każda zmienna ma dokładnie wartość koloru, który zastąpiła; bliskie, ale różne kolory zostają osobne (ich łączenie zmieniłoby piksele — osobna decyzja). Rozmiary czcionek bez zmian (decyzja z 20.11).
+- `scripts/css-tokens.mjs convert <plik>` — zamienia kolory hex tylko w wartościach deklaracji (nie w selektorach `#id`, `@media`, komentarzach, napisach i `url()`), sprawdza, że po podstawieniu plik = oryginał, i zapisuje skrót oryginału w `scripts/css-token-registry.json`.
+- Pierwszy moduł: `ServiceAdminPanel.css` (moduł Serwis, telefon) — 38 kolorów → 20 zmiennych.
+- Zabezpieczenia: smoke `smoke-css-tokens-v1451` (zmienne tylko w wartościach, podstawienie = oryginał co do skrótu, paleta zdefiniowana raz, ładowana w wejściu; przypadki brzegowe konwertera); E2E `css-tokens-equivalence-v1451` — na żywym ekranie Serwisu (4 widoki × 3 szerokości telefonu) styl obliczony wszystkich elementów (z `::before/::after`) jest identyczny po podmianie arkusza na oryginał; każda deklaracja ze zmienną była poprawna w oryginale (`CSS.supports`); kontrola negatywna: celowo zmieniony kolor jest wykrywany.
+
 ## 14.50
 - Porządki po audycie 20.11.2026 (decyzja właściciela) — **bez zmian w działaniu aplikacji**.
 - Repozytorium: historyczne pliki SQL z katalogu głównego (57) i `supabase/setup-*.sql` (11) są w `supabase/migrations/archive/` — 41 z nich było identycznymi kopiami, `sms-module-stage-9-log-cleanup.sql` w archiwum zastąpiony nowszą wersją v12.17. Raporty dawnych wydań (`RELEASE-RESULT-<wersja>.md`, 66), katalogi CSV Rotenso i stare instrukcje są w `docs/archive/`. Nic nie usunięto z historii. Aktywne migracje: wyłącznie pliki z datą w `supabase/migrations/`. Testy i manifest odbudowy bazy czytają nowe ścieżki.

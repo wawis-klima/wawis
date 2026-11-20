@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1451 — paleta kolorów bez zmiany wyglądu (decyzja właściciela 20.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1451-STATIC | FIXED-UNVERIFIED | `smoke-css-tokens-v1451`: zmienne tylko w wartościach deklaracji; podstawienie palety = oryginał (SHA-256 z rejestru); paleta tylko w `tokens.css`, import statyczny w `src/main.jsx`; konwerter nie rusza `#id`, `@media`, komentarzy, napisów, `url()`. Kontrola: podmiana zmiennej lub zmienna w selektorze → test nie przechodzi. |
+| CSS-1451-BROWSER | FIXED-UNVERIFIED | E2E `css-tokens-equivalence-v1451` (@mobile): moduł Serwis, 4 widoki × 3 szerokości — styl obliczony identyczny po podmianie na oryginał; `CSS.supports` dla deklaracji ze zmiennymi; kontrola negatywna wykrywa zmieniony kolor. |
+| CSS-1451-IPHONE | PENDING-OWNER | Moduł Serwis na iPhonie wygląda jak przed 14.51. |
+
 ## HOUSEKEEPING-1450 — porządek w repozytorium i atrapa bazy (audyt 20.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
