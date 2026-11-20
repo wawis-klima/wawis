@@ -20,6 +20,7 @@ const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).files;
 const SERVICE_CSS = 'src/mobile791/components/devices/ServiceAdminPanel.css';
 const FUEL_CSS = 'src/components/fuel/FuelPanelV1034.css';
 const SAVINGS_CSS = 'src/components/fuel/FuelSavingsPanel.css';
+const CONTRACTORS_CSS = 'src/mobile791/v1062-contractors-mobile.css';
 
 async function seedDesktopFuel(page) {
   await page.evaluate(() => {
@@ -94,6 +95,41 @@ const SCENARIOS = [
       {
         name: 'Wybrany samochód', files: [FUEL_CSS],
         async go(page) { await page.getByLabel('Numer rejestracyjny').selectOption({ label: 'Doblo — SZA 6149G' }); },
+      },
+    ],
+  },
+  {
+    // 14.53: Kontrahenci na telefonie (tylko administrator) — lista, rozwinięta karta, formularz nowego kontrahenta.
+    id: 'kontrahenci-telefon-administrator', platform: 'mobile', root: '.contractorsV1062Page', widths: [360, 390, 430],
+    async open(page) {
+      await login(page, ADMIN);
+      await page.locator('.moduleSwitcherMobile button[data-module="contractors"]').click();
+      await expect(page.locator('.contractorsV1062Card').first()).toBeVisible();
+    },
+    states: [
+      {
+        name: 'Lista', files: [CONTRACTORS_CSS],
+        async go(page) {
+          const close = page.locator('.contractorsV1062Editor button', { hasText: 'Anuluj' });
+          if (await close.count()) await close.first().click();
+          const expanded = page.locator('.contractorsV1062Card.isExpanded .contractorsV1062CardMain');
+          if (await expanded.count()) await expanded.first().click();
+          await expect(page.locator('.contractorsV1062Card.isExpanded')).toHaveCount(0);
+        },
+      },
+      {
+        name: 'Rozwinięta karta', files: [CONTRACTORS_CSS],
+        async go(page) {
+          await page.locator('.contractorsV1062CardMain').first().click();
+          await expect(page.locator('.contractorsV1062Card.isExpanded')).toHaveCount(1);
+        },
+      },
+      {
+        name: 'Nowy kontrahent', files: [CONTRACTORS_CSS],
+        async go(page) {
+          await page.locator('.contractorsV1062ActionCard', { hasText: 'Nowy' }).click();
+          await expect(page.locator('.contractorsV1062Editor')).toBeVisible();
+        },
       },
     ],
   },

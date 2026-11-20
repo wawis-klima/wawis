@@ -14,6 +14,11 @@
       "version": "14.51",
       "replaced": 38,
       "original_sha256": "0d4b260a6a7b4bb515ea9dbb536935133f70327d1a981d220477b6741b72272c"
+    },
+    "src/mobile791/v1062-contractors-mobile.css": {
+      "version": "14.53",
+      "replaced": 47,
+      "original_sha256": "461430b4fefa7c9830dfb069abbbcb5cecaf8328da6f3517ca2b22be86af036d"
     }
   }
 }

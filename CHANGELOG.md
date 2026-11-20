@@ -1,3 +1,7 @@
+## 14.53
+- Wspólna paleta kolorów, etap 3 (wygląd bez zmian): **Kontrahenci na telefonie** — `v1062-contractors-mobile.css` (47 kolorów → 28 zmiennych). Paleta: 103 kolory. `v1064-contractors-compact.css` nie ma kolorów. Kontrahenci na komputerze korzystają z głównego `styles.css` — osobny etap.
+- Test w przeglądarce: nowy scenariusz Kontrahenci (telefon, administrator) — lista, rozwinięta karta, formularz nowego kontrahenta, 3 szerokości.
+
 ## 14.52
 - Wspólna paleta kolorów, etap 2 (decyzja właściciela 20.11.2026, wygląd bez zmian): **moduł Paliwo** — `FuelPanelV1034.css` (54 kolory → 37 zmiennych) i `FuelSavingsPanel.css` (48 → 25). Paleta: 78 kolorów.
 - Usunięte nieużywane arkusze `FuelPanelV1032.css` i `FuelPanelV1033.css` (nigdzie nie importowane, nie trafiały do aplikacji).
