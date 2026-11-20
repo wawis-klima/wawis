@@ -148,6 +148,9 @@ Decyzje właściciela (03.11.2026, audyt):
 
 - **Powiększanie ekranu na telefonie jest zablokowane celowo** (`user-scalable=no`, `maximum-scale=1.0` w `index.html`).
   Nie odblokowuj go i nie proponuj odblokowania — właściciel nie chce możliwości powiększania montażu ani innych ekranów.
+- **Rozmiary czcionek zostają bez zmian** (decyzja właściciela 20.11.2026, po audycie): nie zwiększamy ani nie zmniejszamy
+  tekstu w aplikacji (w tym 10–11 px) i nie proponujemy tego w audytach ani przy innych zmianach. Razem z blokadą
+  powiększania obowiązuje do odwołania przez właściciela.
 - **Zgody SMS urządzeń z importu starej bazy zostają włączone** (569 urządzeń, `sms_consent = true`). Nie wyłączaj ich
   i nie zgłaszaj ponownie jako problemu.
 - **Puste zdjęcia tabliczek z sierpnia–września 2026** (6 wpisów `photos` z plikiem 0 B w zakończonych montażach):
