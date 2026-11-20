@@ -194,6 +194,8 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
       const parts = [];
       for (const pseudo of [null, '::before', '::after']) {
         const cs = getComputedStyle(el, pseudo);
+        // 14.53: pseudo-element bez treści (content: none) nie jest rysowany — zapisujemy tylko to (szybciej na komputerze).
+        if (pseudo && cs.getPropertyValue('content') === 'none') { parts.push('content=none'); continue; }
         const props = [];
         for (let i = 0; i < cs.length; i += 1) props.push(`${cs[i]}=${cs.getPropertyValue(cs[i])}`);
         parts.push(props.join(';'));
@@ -279,6 +281,8 @@ test.describe('@mobile paleta kolorów — wygląd identyczny z oryginałem (tel
   test.use(iphone14);
   for (const scenario of SCENARIOS.filter((s) => s.platform === 'mobile')) {
     test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
+      // Pełny styl obliczony wszystkich elementów × widoki × szerokości — dłużej niż domyślne 60 s.
+      test.setTimeout(240_000);
       await runScenario(page, scenario);
     });
   }
@@ -287,6 +291,8 @@ test.describe('@mobile paleta kolorów — wygląd identyczny z oryginałem (tel
 test.describe('paleta kolorów — wygląd identyczny z oryginałem (komputer)', () => {
   for (const scenario of SCENARIOS.filter((s) => s.platform === 'desktop')) {
     test(`${scenario.id}: podmiana na oryginał nie zmienia stylu obliczonego`, async ({ page }) => {
+      // Pełny styl obliczony wszystkich elementów × widoki × szerokości — dłużej niż domyślne 60 s.
+      test.setTimeout(240_000);
       await runScenario(page, scenario);
     });
   }
