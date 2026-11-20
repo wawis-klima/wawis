@@ -189,6 +189,12 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
     if (!styleEl) return { error: `brak arkusza ${file} na stronie` };
     const root = document.querySelector(rootSelector);
     if (!root) return { error: `brak ekranu ${rootSelector}` };
+    // 14.53: animacje i przejścia zatrzymane na czas porównania (np. pulsujący przycisk mikrofonu zmieniał tło
+    // między zapisami). Ten sam styl obowiązuje przy obu zapisach, więc porównanie arkuszy zostaje ścisłe.
+    const freeze = document.createElement('style');
+    freeze.textContent = '*,*::before,*::after{transition:none!important;animation:none!important}';
+    document.head.appendChild(freeze);
+    await frame();
     const elements = [document.documentElement, document.body, root, ...root.querySelectorAll('*')];
     const snapshot = () => elements.map((el) => {
       const parts = [];
@@ -211,6 +217,7 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
     const after = snapshot();
     original.remove();
     styleEl.sheet.disabled = false;
+    freeze.remove();
     await frame();
     const diffs = [];
     for (let i = 0; i < elements.length && diffs.length < 5; i += 1) {
