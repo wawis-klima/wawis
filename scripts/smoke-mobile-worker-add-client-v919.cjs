@@ -11,7 +11,7 @@ const jobsForm = read('src','mobile791','modules','jobs-form.js');
 const css = read('src','mobile791','styles.css');
 const jobsPanel = read('src','mobile791','components','JobsPanel.jsx');
 const runtimeCss = read('src','mobile791','v1048-runtime-fix.css');
-const sql = read('worker-create-contractor-v9.19.sql');
+const sql = read('supabase', 'migrations', 'archive', 'worker-create-contractor-v9.19.sql');
 
 assert.match(layout, /title=\{isAdmin \? "Dodaj zlecenie" : "Dodaj nowego klienta"\}/, 'Pracownik nie ma plusa do dodania nowego klienta.');
 assert.doesNotMatch(layout, /MobileDiagnosticButton/, 'Przycisk D nie powinien wracać do jednoliniowego nagłówka mobile.');

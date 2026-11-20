@@ -6,13 +6,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8').replace(/\r\n/g, '\n');
 
-const migration = read('nameplate-product-catalog-v8.92.sql');
+const migration = read('supabase/migrations/archive/nameplate-product-catalog-v8.92.sql');
 assert.match(migration, /create table if not exists public\.nameplate_product_catalog/i);
 assert.match(migration, /admin_upsert_nameplate_product/i);
 assert.match(migration, /admin_import_nameplate_products/i);
 assert.match(migration, /current_user_is_admin\(\)/i);
 
-const seedMigration = read('nameplate-product-catalog-full-current-v9.02.sql');
+const seedMigration = read('supabase/migrations/archive/nameplate-product-catalog-full-current-v9.02.sql');
 assert.match(seedMigration, /pełny aktualny katalog Rotenso 2026\/2027/i);
 assert.match(seedMigration, /5905567601170/);
 assert.match(seedMigration, /5905567600814/);
@@ -77,7 +77,7 @@ assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606113')?.model_code, 'H
 assert.equal(data.getBuiltInRotensoCatalogEntry('5905567606434')?.model_code, 'UO160Xo R15');
 assert.equal(data.getBuiltInRotensoCatalogEntry('0000000000000'), null);
 
-const csv = read('wawis-katalog-ean-rotenso-v9.02.csv').replace(/^\ufeff/, '').trim().split(/\r?\n/);
+const csv = read('docs/archive/catalogs/wawis-katalog-ean-rotenso-v9.02.csv').replace(/^\ufeff/, '').trim().split(/\r?\n/);
 assert.equal(csv.length, 215, 'CSV powinien zawierać nagłówek i 214 pozycji.');
 assert.match(csv.join('\n'), /5905567601170;Rotenso;Revio;RO35Xo R14/);
 

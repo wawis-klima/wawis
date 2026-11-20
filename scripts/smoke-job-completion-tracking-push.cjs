@@ -5,7 +5,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
-const sql = read('job-completion-tracking-v9.14.sql');
+const sql = read('supabase/migrations/archive/job-completion-tracking-v9.14.sql');
 assert(sql.includes('completed_at timestamptz'), 'SQL 9.14 musi dodawać completed_at');
 assert(sql.includes('completed_by uuid'), 'SQL 9.14 musi dodawać completed_by');
 assert(sql.includes('trg_jobs_completion_metadata'), 'SQL 9.14 musi tworzyć trigger zakończenia');

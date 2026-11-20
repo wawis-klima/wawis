@@ -85,7 +85,7 @@ async function main() {
   assert.match(cardsSource, /Cofnij ręczne/);
   assert.match(cardsSource, /potwierdzony ręcznie/);
 
-  const sql = fs.readFileSync(path.join(root, 'nameplate-manual-verifications-v9.13.sql'), 'utf8');
+  const sql = fs.readFileSync(path.join(root, 'supabase', 'migrations', 'archive', 'nameplate-manual-verifications-v9.13.sql'), 'utf8');
   assert.match(sql, /create table if not exists public\.nameplate_manual_verifications/i);
   assert.match(sql, /unique \(job_id, device_index, unit_ref\)/i);
   assert.match(sql, /current_user_is_admin\(\)/i);

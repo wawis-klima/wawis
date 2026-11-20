@@ -372,6 +372,8 @@ const GROUPS = {
     'node scripts/smoke-security-headers-v1416.mjs',
     'node scripts/smoke-csp-report-only-v1449.mjs',
     'node scripts/smoke-sms-p0-race-safety-v1242.mjs',
+    'node scripts/smoke-repo-housekeeping-v1450.mjs',
+    'node scripts/smoke-no-mock-in-production-v1450.mjs',
     'node scripts/smoke-sms-callback-snapshot-v1250.mjs',
     'node scripts/smoke-sms-callback-multi-rotation-v1251.mjs',
     'node scripts/smoke-sms-history-membership-v1252.mjs',

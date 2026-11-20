@@ -5,7 +5,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const mobilePhotosPath = path.join(root, 'src', 'mobile791', 'modules', 'photos.js');
 const mobileActionsPath = path.join(root, 'src', 'mobile791', 'hooks', 'useSelectedJobActions.js');
-const sqlPath = path.join(root, 'mobile-photo-upload-rls-v8.32.sql');
+const sqlPath = path.join(root, 'supabase', 'migrations', 'archive', 'mobile-photo-upload-rls-v8.32.sql');
 const migrationSqlPath = path.join(root, 'supabase', 'migrations', 'mobile-photo-upload-rls-v8.32.sql');
 const desktopPhotosPath = path.join(root, 'src', 'modules', 'photos.js');
 

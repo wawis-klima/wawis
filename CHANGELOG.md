@@ -1,3 +1,10 @@
+## 14.50
+- Porządki po audycie 20.11.2026 (decyzja właściciela) — **bez zmian w działaniu aplikacji**.
+- Repozytorium: historyczne pliki SQL z katalogu głównego (57) i `supabase/setup-*.sql` (11) są w `supabase/migrations/archive/` — 41 z nich było identycznymi kopiami, `sms-module-stage-9-log-cleanup.sql` w archiwum zastąpiony nowszą wersją v12.17. Raporty dawnych wydań (`RELEASE-RESULT-<wersja>.md`, 66), katalogi CSV Rotenso i stare instrukcje są w `docs/archive/`. Nic nie usunięto z historii. Aktywne migracje: wyłącznie pliki z datą w `supabase/migrations/`. Testy i manifest odbudowy bazy czytają nowe ścieżki.
+- Atrapa bazy (`mockSupabaseClient.js`, ok. 2 × 1100 linii z kontami testowymi) nie trafia już do paczki produkcyjnej: tryb atrapy ustala stała `__WAWIS_SUPABASE_MOCK__` z `vite.config.js` (czas budowania). Testy E2E (`VITE_SUPABASE_MODE=mock`) bez zmian.
+- `CLAUDE.md`: decyzja właściciela 20.11.2026 — rozmiary czcionek i powiększanie ekranu bez zmian.
+- Testy: smoke `smoke-repo-housekeeping-v1450` (RED na 14.49: SQL w katalogu głównym), `smoke-no-mock-in-production-v1450` (dwa buildy Vite: produkcyjny bez atrapy, testowy z atrapą).
+
 ## 14.49
 - Audyt bezpieczeństwa 20.11.2026, polecenie właściciela: **pełna polityka CSP i Permissions-Policy** oraz **jedno sprawdzanie roli administratora**.
 - `vercel.json`: nowy nagłówek `Content-Security-Policy-Report-Only` — lista dozwolonych źródeł (aplikacja, Supabase z Realtime, Open-Meteo, jsDelivr czytnika kodów, WASM dla OCR, `blob:`/`data:` dla zdjęć i PDF, hash skryptu startowego z `index.html`). **Tryb obserwacji: przeglądarka niczego nie blokuje.** Zgłoszenia trafiają do Diagnostyki jako `app.csp.<dyrektywa>.<źródło>.warning` (kod `CSP_REPORT_ONLY_VIOLATION`, bez adresów URL). Po tygodniu bez zgłoszeń politykę można przełączyć na wymuszaną. Wymuszana CSP bez zmian (`frame-ancestors 'self'`).

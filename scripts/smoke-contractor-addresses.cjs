@@ -33,7 +33,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   assert.ok(appended.address?.id, 'Nowy adres musi otrzymać trwały identyfikator.');
   assert.strictEqual(buildContractorPayload(appended.contractor).p_addresses.length, 2);
 
-  const migration = read('contractor-addresses-v8.81.sql');
+  const migration = read('supabase/migrations/archive/contractor-addresses-v8.81.sql');
   assert.ok(migration.includes('add column if not exists addresses jsonb'), 'Migracja musi dodawać listę adresów do contractors.');
   assert.ok(migration.includes('add column if not exists contractor_address_id text'), 'Migracja musi zapisywać wybrany adres na zleceniu.');
   assert.ok(migration.includes('normalize_contractor_addresses'), 'Migracja musi normalizować stare i nowe adresy.');

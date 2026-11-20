@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.49
+- 14.50
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -539,7 +539,7 @@ Wersja 11.80 dodaje wyłącznie w aplikacji mobilnej zoom zdjęć w pełnym podg
 
 ## Firmowa wysyłka protokołu — 9.87
 
-1. Przed wdrożeniem wykonaj konfigurację opisaną w `SUPABASE-EDGE-DEPLOY-v9.87.md`.
+1. Przed wdrożeniem wykonaj konfigurację opisaną w `docs/archive/notes/SUPABASE-EDGE-DEPLOY-v9.87.md`.
 2. Telefon pracownika nie otwiera Outlooka, Mail ani prywatnej skrzynki. Przycisk `Wyślij z biuro@wawis.pl` wywołuje zabezpieczoną Edge Function.
 3. Serwer sprawdza zalogowanego użytkownika, jego dostęp do zlecenia, status `Zakończone`, zapisany protokół oraz zgodność odbiorcy z adresem klienta w zleceniu.
 4. Prywatny PDF jest pobierany przez serwer i dołączany do wiadomości wysyłanej jako `WAWIS Klimatyzacja <biuro@wawis.pl>`.
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.50` — porządki w repozytorium (archiwum SQL i notatek) i atrapa bazy poza paczką produkcyjną.
 - wersja `14.49` — CSP w trybie obserwacji i Permissions-Policy; jedna lista ról i jedno sprawdzanie administratora.
 - wersja `14.48` — przegląd i poprawki przycisków modułu SMS (komputer i telefon).
 - wersja `14.47` — przejścia do montażu/kontrahenta z podglądów modułu SMS.
