@@ -31,6 +31,14 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; script-src 'self' 'sha256-6OdfgvRR776r+c3dwuhVAhdhzmUJmjFjEQVzIuDz/LI=' 'wasm-unsafe-eval' https://fastly.jsdelivr.net https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://uohziyaudbpwmupvljyd.supabase.co; font-src 'self' data:; connect-src 'self' data: blob: https://uohziyaudbpwmupvljyd.supabase.co wss://uohziyaudbpwmupvljyd.supabase.co https://geocoding-api.open-meteo.com https://archive-api.open-meteo.com https://api.open-meteo.com https://fastly.jsdelivr.net https://cdn.jsdelivr.net; media-src 'self' blob: data:; worker-src 'self' blob:; frame-src 'self' blob: data: https://uohziyaudbpwmupvljyd.supabase.co; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=(), display-capture=()"
         }
       ]
     }

@@ -66,6 +66,7 @@ const GROUPS = {
     'node scripts/smoke-diagnostics-same-ms-v1415.mjs',
     'node scripts/smoke-diagnostic-worker-rls-v1274.mjs',
     'node scripts/smoke-diagnostics-package4-v1276.mjs',
+    'node scripts/smoke-csp-report-only-v1449.mjs',
     'npm run test:smoke:v1120-stability',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
@@ -166,6 +167,7 @@ const GROUPS = {
     'node scripts/smoke-qr-service-visit-v1423.mjs',
     'node scripts/smoke-qr-required-v1424.mjs',
     'node scripts/smoke-edge-auth-v1412.mjs',
+    'node scripts/smoke-admin-role-unify-v1449.mjs',
   ],
   push: [
     'node scripts/codex-acceptance-push-v1269.mjs',
@@ -368,6 +370,7 @@ const GROUPS = {
     'node scripts/smoke-edge-auth-v1412.mjs',
     'node scripts/smoke-infra-photo-limits-v1413.mjs',
     'node scripts/smoke-security-headers-v1416.mjs',
+    'node scripts/smoke-csp-report-only-v1449.mjs',
     'node scripts/smoke-sms-p0-race-safety-v1242.mjs',
     'node scripts/smoke-sms-callback-snapshot-v1250.mjs',
     'node scripts/smoke-sms-callback-multi-rotation-v1251.mjs',
