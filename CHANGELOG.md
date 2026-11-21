@@ -1,3 +1,9 @@
+## 14.72
+- **Kod z telefonu przy logowaniu (MFA), etap 1** — decyzja właściciela 21.11.2026 (kod z aplikacji zamiast SMS). Diagnostyka → „Kod z telefonu przy logowaniu” (tylko administrator, komputer i telefon): kod QR, link „Dodaj do Haseł” na iPhonie, klucz do wpisania ręcznie, potwierdzenie 6 cyframi; wyłączenie w tym samym miejscu.
+- Po włączeniu: po haśle ekran „Potwierdź logowanie” (6 cyfr), zanim aplikacja pokaże dane; z ekranu można się wylogować. Kod potrzebny tylko przy nowym logowaniu — sesja z kodem zostaje po przeładowaniu. Pracownicy bez zmian.
+- Błąd odczytu poziomu zabezpieczeń (np. bez internetu) nie blokuje pracy. Pełna ochrona (baza wymaga kodu do funkcji administratora) to etap 2 — po teście na iPhonie i zgodzie właściciela.
+- Testy: `smoke-mfa-v1472`, E2E `mfa-admin-v1472` (komputer i iPhone, atrapa MFA tylko w trybie testowym).
+
 ## 14.71
 - Diagnostyka — mniej szumu: stałe komunikaty aplikacji z modułów PUSH, logowania i kontrahentów, które dotąd trafiały do „niesklasyfikowanych” (ok. 130 zdarzeń w 14 dni), mają teraz własne kody: m.in. `SERVICE_WORKER_REGISTER_FAILED`, `PUSH_PERMISSION_REQUIRED`, `PUSH_STATE_CHECK_FAILED`, `PUSH_ADMIN_NOTIFY_FAILED`, `CONTRACTORS_LOAD_FAILED`, `AUTH_MULTIPLE_CLIENTS`. Przyczyna sieciowa (np. brak połączenia) nadal ma pierwszeństwo.
 - Niesklasyfikowane zdarzenie dostaje „ślad” (skrót stałego komunikatu, bez treści i danych), który `scripts/diagnostic-fingerprint-lookup.mjs` tłumaczy na komunikat z kodu — następne nieznane zdarzenie da się wskazać bez zgadywania.

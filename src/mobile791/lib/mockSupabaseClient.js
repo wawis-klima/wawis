@@ -1,3 +1,4 @@
+import { createMockMfa } from '../../lib/mockMfa.js';
 const MOCK_SESSION_KEY = 'klima-mock-supabase-session';
 const MOCK_STORE_KEY = 'klima-mock-supabase-store-v3';
 const MOCK_RESET_EVENT = 'klima:mock-reset';
@@ -657,8 +658,18 @@ export function createMockSupabaseClient() {
     });
   }
 
+  // 14.72: atrapa kodu z telefonu (MFA).
+  const mockMfa = createMockMfa({
+    getUserId: () => restoreSession(store.users)?.user?.id || '',
+    emit: (event) => {
+      const session = restoreSession(store.users);
+      for (const listener of listeners) queueMicrotask(() => listener(event, session));
+    },
+  });
+
   const client = {
     auth: {
+      mfa: mockMfa.api,
       async getSession() {
         return { data: { session: restoreSession(store.users) }, error: null };
       },
@@ -670,6 +681,7 @@ export function createMockSupabaseClient() {
         }
         const session = { access_token: `mock-token-${user.id}`, user };
         persistSession(session);
+        mockMfa.onSignIn(user.id);
         notifyAuth(session);
         return { data: { user, session }, error: null };
       },
