@@ -134,6 +134,18 @@ begin
 end;
 $function$;
 
+-- Repozytorium (current/worker-create-contractor-v9.19.sql) definiuje wynik public.contractors, a produkcja od dawna
+-- zwraca jsonb. Na produkcji ten blok nic nie robi; odbudowa bazy z migracji dochodzi do stanu produkcji.
+do $$
+begin
+  if to_regprocedure('public.worker_create_or_get_contractor_for_job(text,text,text,text,text)') is not null
+     and (select p.prorettype from pg_proc p
+          where p.oid = to_regprocedure('public.worker_create_or_get_contractor_for_job(text,text,text,text,text)')) <> 'jsonb'::regtype then
+    drop function public.worker_create_or_get_contractor_for_job(text, text, text, text, text);
+  end if;
+end
+$$;
+
 create or replace function public.worker_create_or_get_contractor_for_job(p_company_name text, p_phone text default null::text, p_email text default null::text, p_city text default null::text, p_street text default null::text)
  returns jsonb
  language plpgsql
@@ -187,6 +199,8 @@ exception
     return jsonb_build_object('id', v_id, 'company_name', v_name, 'phone', v_phone, 'email', v_email, 'city', v_city, 'street', v_street);
 end;
 $function$;
+revoke all on function public.worker_create_or_get_contractor_for_job(text, text, text, text, text) from public, anon;
+grant execute on function public.worker_create_or_get_contractor_for_job(text, text, text, text, text) to authenticated, service_role;
 
 do $$
 declare

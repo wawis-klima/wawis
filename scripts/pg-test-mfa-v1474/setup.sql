@@ -37,6 +37,9 @@ create or replace function public.current_user_is_admin() returns boolean langua
   select coalesce(exists (select 1 from public.profiles p where p.id = auth.uid() and lower(trim(coalesce(p.role, ''))) in ('administrator', 'admin')), false); $f$;
 create or replace function public.current_user_is_staff() returns boolean language sql stable security definer set search_path to 'public' as $f$
   select coalesce(auth.uid() is not null and exists (select 1 from public.profiles p where p.id = auth.uid() and lower(trim(coalesce(p.role, ''))) in ('employee','pracownik','admin','administrator')), false); $f$;
+-- jak w repozytorium (v9.19): inny typ wyniku niż na produkcji — migracja 14.74 musi to obsłużyć
+create function public.worker_create_or_get_contractor_for_job(p_company_name text, p_phone text default null, p_email text default null, p_city text default null, p_street text default null)
+returns public.contractors language sql as $f$ select null::public.contractors $f$;
 grant execute on all functions in schema public to authenticated, anon, service_role;
 create policy profiles_staff on public.profiles for select to authenticated using (public.current_user_is_staff());
 create policy contractors_staff on public.contractors for select to authenticated using (public.current_user_is_staff());
