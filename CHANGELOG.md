@@ -1,3 +1,7 @@
+## 14.69
+- Domknięcie porządków w stylach: usunięty nieużywany punkt wejścia `src/mobile791/main.jsx` (aplikację ładuje wyłącznie `src/main.jsx`) i jego jedyny arkusz `v1056-new-job-spacing.css`. Ostatni kolor zapisany wprost (`v1103-completed-note-compact.css`, wczytywany przez `v1092`) przeszedł do palety — wygląd bez zmian.
+- Nowy test `smoke-css-housekeeping-v1469`: każdy arkusz CSS jest importowany, a kolory hex są wyłącznie w palecie. `smoke-mobile-device-table-v889` sprawdza teraz rzeczywisty punkt wejścia.
+
 ## 14.68
 - Wspólne kolory półprzezroczyste, etap 2 — łączenie kolorów o ledwo widocznej różnicy: **84 → 59**, 40 ze 185 miejsc. Granica liczona od koloru pierwotnego: kolor wynikowy na białym i na ciemnym tle ΔE2000 < 2, krycie różni się najwyżej o 0,03; całkiem przezroczysty zostaje przezroczysty.
 - Bez łączenia: kolory stanów przycisków (najechany / wciśnięty / aktywny i ich stan zwykły) oraz kolory sprawdzane dosłownie w testach; `smoke-css-alpha` pilnuje, że stany z różnymi kolorami mają je nadal.
