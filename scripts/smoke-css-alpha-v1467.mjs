@@ -21,6 +21,7 @@ assert.equal(normalizeRgba('rgb(255,255,255)'), 'rgba(255,255,255,1)');
 assert.equal(alphaNameFor('rgba(15,35,69,.06)'), '--wxa-0f2345-060');
 assert.ok(alphaWithinLimits(alphaDistance('rgba(15,23,42,.06)', 'rgba(15,23,42,.07)')), 'niewidoczna różnica krycia');
 assert.ok(!alphaWithinLimits(alphaDistance('rgba(15,23,42,.06)', 'rgba(15,23,42,.45)')), 'przyciemnienie pod oknem ≠ delikatne tło');
+assert.ok(!alphaWithinLimits(alphaDistance('rgba(16,35,72,0)', 'rgba(15,23,42,.03)')), 'przezroczysty zostaje przezroczysty');
 assert.ok(!alphaWithinLimits(alphaDistance('rgba(37,99,235,.12)', 'rgba(220,38,38,.12)')), 'niebieski ≠ czerwony');
 const sample = '.a{background:rgba(0,0,0,.1);box-shadow:0 1px 2px rgba(0,0,0,.1)}/* rgba(1,1,1,.1) */.b{background:url("x.svg#rgba(1,1,1,1)")}';
 assert.equal(literalAlphaUses(sample).length, 1, 'tylko wartość deklaracji, bez cieni, komentarzy i url()');

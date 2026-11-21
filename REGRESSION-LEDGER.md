@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-ALPHA-1468 — łączenie kolorów półprzezroczystych
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1468-MERGE | FIXED-UNVERIFIED | `smoke-css-alpha-v1467`: 40 miejsc z kolorem innym niż w 14.67, każde w granicy `ALPHA_LIMITS` od pierwotnego (kolor wynikowy na białym i ciemnym tle); przezroczysty ≠ widoczny; stany przycisków zachowują różne kolory; poza kolorami pliki = oryginał. |
+| CSS-1468-OWNER | PENDING-OWNER | Właściciel ogląda ekrany po 14.68. |
+
 ## CSS-ALPHA-1467 — wspólne kolory półprzezroczyste bez zmiany wyglądu
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

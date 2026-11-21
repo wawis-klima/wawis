@@ -1,3 +1,7 @@
+## 14.68
+- Wspólne kolory półprzezroczyste, etap 2 — łączenie kolorów o ledwo widocznej różnicy: **84 → 59**, 40 ze 185 miejsc. Granica liczona od koloru pierwotnego: kolor wynikowy na białym i na ciemnym tle ΔE2000 < 2, krycie różni się najwyżej o 0,03; całkiem przezroczysty zostaje przezroczysty.
+- Bez łączenia: kolory stanów przycisków (najechany / wciśnięty / aktywny i ich stan zwykły) oraz kolory sprawdzane dosłownie w testach; `smoke-css-alpha` pilnuje, że stany z różnymi kolorami mają je nadal.
+
 ## 14.67
 - Wspólne kolory półprzezroczyste, etap 1 (wygląd bez zmian): 185 kolorów `rgba(…)` w 28 plikach stylów (poza cieniami) → 84 zmienne `--wxa-*` w `src/styles/alpha.css` o dokładnie tych samych wartościach.
 - Pierwotny tekst każdego koloru zapisany pozycja po pozycji (`scripts/css-alpha-baseline.json`). Kontrola: `smoke-css-alpha-v1467` (nowy), `smoke-css-tokens` (pliki po odtworzeniu = oryginał), test w przeglądarce (styl obliczony = oryginał), test WebKit (kolory wczytane i poprawne).

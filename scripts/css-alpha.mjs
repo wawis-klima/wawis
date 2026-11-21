@@ -3,7 +3,7 @@
 // 14.67: każdy rgba(r,g,b,a) w wartościach deklaracji przekonwertowanych plików (poza box-shadow — cienie mają własną
 //        paletę, scripts/css-shadows.mjs) zastępujemy zmienną o DOKŁADNIE tej samej wartości (src/styles/alpha.css).
 //        Pierwotny tekst każdego koloru zapisany pozycja po pozycji: scripts/css-alpha-baseline.json.
-// 14.68: łączenie kolorów, których różnicy nie widać: kolor wynikowy na białym i na ciemnym tle różni się od
+// 14.68: łączenie kolorów o ledwo widocznej różnicy: kolor wynikowy na białym i na ciemnym tle różni się od
 //        pierwotnego o mniej niż ALPHA_LIMITS.de2000 (ΔE2000), a krycie o najwyżej ALPHA_LIMITS.dalpha.
 //        Kolory stanów przycisków (najechany / wciśnięty / aktywny) i kolory użyte dosłownie w testach — bez łączenia.
 //
@@ -20,7 +20,7 @@ export const ALPHA_FILE = 'src/styles/alpha.css';
 export const ALPHA_BASELINE_FILE = 'scripts/css-alpha-baseline.json';
 export const ALPHA_MERGES_FILE = 'scripts/css-alpha-merges.json';
 export const ALPHA_VAR_RE = /var\((--wxa-[a-z0-9-]+)\)/g;
-export const ALPHA_LIMITS = Object.freeze({ de2000: 3, dalpha: 0.05 });
+export const ALPHA_LIMITS = Object.freeze({ de2000: 2, dalpha: 0.03 });
 // Tła, na których sprawdzamy kolor wynikowy: białe karty i najciemniejszy granat aplikacji.
 export const ALPHA_BACKDROPS = Object.freeze(['#ffffff', '#0f172a']);
 const RGBA_RE = /rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(\d*\.?\d+%?)\s*)?\)/gi;
@@ -54,6 +54,8 @@ function over(value, backdrop) {
 // Największa różnica koloru wynikowego (ΔE2000) na tłach ALPHA_BACKDROPS i różnica krycia.
 export function alphaDistance(orig, next) {
   const A = parseRgba(orig); const B = parseRgba(next);
+  // Całkiem przezroczysty (koniec cieniowania) zostaje przezroczysty — nie łączymy go z widocznym.
+  if ((A.a === 0) !== (B.a === 0)) return { de2000: Infinity, dalpha: Math.abs(A.a - B.a) };
   return {
     de2000: Math.max(...ALPHA_BACKDROPS.map((bg) => deltaE2000(over(orig, bg), over(next, bg)))),
     dalpha: Math.round(Math.abs(A.a - B.a) * 1e6) / 1e6,
