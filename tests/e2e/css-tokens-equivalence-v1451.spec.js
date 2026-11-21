@@ -293,6 +293,8 @@ const SCENARIOS = [
       await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
       await page.getByTestId('job-device-qr-sticker').first().getByRole('button', { name: 'Przypisz naklejkę QR' }).click();
       await expect(page.locator('.qrScannerModal')).toBeVisible();
+      // Aparat startuje asynchronicznie (starting → live/unavailable) — porównujemy dopiero stan ustalony.
+      await expect(page.locator('.qrScannerViewport')).toHaveClass(/(^|\s)(live|unavailable)(\s|$)/, { timeout: 15_000 });
     },
     states: [{ name: 'Skaner', files: [QR_SCANNER_CSS], async go() {} }],
   },

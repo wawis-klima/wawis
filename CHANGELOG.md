@@ -1,6 +1,7 @@
 ## 14.56
 - Wspólna paleta kolorów, etap 6 (wygląd bez zmian): **naklejki QR, protokoły szczelności i zgłoszenia** — skaner naklejki `QrStickerScanner.css` (35 kolorów → 25 zmiennych), strona klienta po zeskanowaniu `public-qr.css` (27 → 25), Protokoły szczelności `leak-tests.css` (29 → 14), pole podpisu `leak-test-sign.css` (17 → 9), Zgłoszenia `service-requests.css` (29 → 11). Paleta: 243 kolory.
 - Test w przeglądarce: strona klienta z naklejki (informacje, formularz awarii), skaner QR (pracownik), wzór podpisu (pracownik), Protokoły szczelności i Zgłoszenia na komputerze (administrator) — po 3 szerokości.
+- Test skanera QR czeka na ustalony stan aparatu (`live`/`unavailable`) — w CI aparat przełączył się z „uruchamiam” na „działa” między dwoma zapisami stylu (różnica ze stanu ekranu, nie z palety).
 
 ## 14.55
 - Wspólna paleta kolorów, etap 5 (wygląd bez zmian): **kreator urządzeń i zdjęcia tabliczek** — `mobile-device-wizard.css` (174 kolory → 85 zmiennych) i `nameplate-photo-capture.css` (97 → 35). Paleta: 209 kolorów. Kreator działa na telefonie i w oknie na komputerze.
