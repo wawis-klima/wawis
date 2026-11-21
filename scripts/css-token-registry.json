@@ -85,6 +85,11 @@
       "replaced": 50,
       "original_sha256": "89cf73de01b4331c6bf07a076c0004d4cd9122ad67ba71ad4af9aa7ffa2ce081"
     },
+    "src/mobile791/styles.css": {
+      "version": "14.58",
+      "replaced": 1104,
+      "original_sha256": "2512e6b68094b474686c6a73cbe21c8dfb7d1919570ce58093127ab5784baa4f"
+    },
     "src/mobile791/v1048-runtime-fix.css": {
       "version": "14.57",
       "replaced": 1,

@@ -20,6 +20,7 @@ const baseURL = `http://127.0.0.1:${PORT}`;
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: [
+    'css-tokens-webkit-v1458.spec.js',
     'service-date-time-ios-v1392.spec.js',
     'mobile-photo-queue-repair-v1362.spec.js',
     'mobile-photo-queue-legacy-hold-v1362.spec.js',

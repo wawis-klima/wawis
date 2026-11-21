@@ -1,3 +1,10 @@
+## 14.58
+- Wspólna paleta kolorów, etap 8 (wygląd bez zmian): **główny arkusz telefonu** `src/mobile791/styles.css` — 1104 kolory → 430 zmiennych. Paleta: 617 kolorów. Arkusz wczytywany na każdym ekranie telefonu po zalogowaniu.
+- Test w przeglądarce: główny arkusz telefonu porównywany we wszystkich widokach telefonu z testu palety (Urządzenia, Paliwo, Kontrahenci, szczegóły montażu, kreator i tabliczki, skaner QR, wzór podpisu, lista/szczegóły/edycja montażu, nowy klient, Diagnostyka), po 3 szerokości.
+- Nowy test `css-tokens-webkit-v1458` w silniku **Safari (WebKit)** na zbudowanej aplikacji: paleta wczytana i każda deklaracja ze zmienną poprawna w oryginale dla WebKit (ponad 1000 deklaracji) — wykrywa różnice, które pokazałyby się tylko na iPhonie. Ten sam test w Chromium.
+- Workflow WebKit (testowy, bez sekretów): oczekiwana liczba testów 34 → 35 (nowy test palety).
+- Testy niezwiązane (`smoke-mobile-protocol-isolation-v982`, `-v981`, `smoke-mobile-new-job-layout-v921`, `smoke-push-mandatory-v970`, `smoke-mobile-device-table-v889`, `smoke-client-voice-input`, `smoke-desktop-device-wizard-polish-v935`) nie przechodzą już na `main` (przed 14.58) i nie są w CI — bez zmian w tym wydaniu.
+
 ## 14.57
 - Wspólna paleta kolorów, etap 7 (wygląd bez zmian): **mniejsze pliki stylów** — ogólne style telefonu (`mobile.css`, `v1048`, `v1057`, `v1295`, `v1297`, `v1323`), menu/cennik na telefonie (`pricelist-mobile.css`), przesuwane karty montaży, przycisk mikrofonu w formularzu, Diagnostyka na telefonie, tabela montaży i licznik w menu na komputerze. 12 plików, 135 kolorów; paleta: 285 kolorów.
 - Usunięty nieużywany `src/styles/premium-ops-dark.css` (nigdzie nie importowany).
