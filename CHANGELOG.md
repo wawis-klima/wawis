@@ -1,3 +1,9 @@
+## 14.74
+- **Kod z telefonu (MFA), etap 2 — baza wymaga potwierdzenia kodem** (zgoda właściciela 21.11.2026 20:38). Konto z włączonym kodem ma dostęp do danych, plików i funkcji tylko w sesji potwierdzonej kodem (aal2); samo hasło — także z pominięciem aplikacji — nie wystarcza. Konta bez kodu (pracownicy), usługi systemowe i zadania w tle bez zmian.
+- Migracja `20261121200000_mfa_aal2_required_v1474.sql`: `current_user_mfa_ok()`, warunek w `current_user_is_admin()` / `current_user_is_staff()` (68 funkcji i większość reguł), w `save_job_contractor_nip` i `worker_create_or_get_contractor_for_job`, reguła RESTRICTIVE na każdej tabeli public z RLS i na plikach (`storage.objects`). Wycofanie: `docs/mfa-etap2-rollback-v1474.sql`.
+- Testy: `smoke-mfa-aal2-v1474` (statyczny) i `scripts/pg-test-mfa-v1474/run.sh` (PostgreSQL: administrator z kodem w sesji aal1 zablokowany w tabelach, plikach i funkcjach; aal2, pracownik i usługi bez zmian; migracja powtarzalna; wycofanie przywraca stan).
+- Funkcje serwerowe (Edge) z własnym sprawdzaniem roli — faktury, SMS, usuwanie wizyty, e-mail protokołu, powiadomienia — nie są jeszcze objęte; osobny krok za zgodą właściciela.
+
 ## 14.73
 - PUSH (obszar chroniony): gdy aplikacja kilka razy naraz sprawdzała stan powiadomień, a sprawdzenie się nie udało, kolejne wywołania zostawiały nieobsłużony błąd (Diagnostyka 21.11.2026, iPhone administratora: 1 ostrzeżenie + 2 „unhandledrejection”). Teraz każde wywołanie dostaje zapisany stan, bez nieobsłużonego błędu (komputer i telefon).
 - Diagnostyka: limit czasu operacji PUSH ma własny kod `PUSH_LIFECYCLE_TIMEOUT` (wcześniej ogólne „nie udało się sprawdzić stanu PUSH”); ślad niesklasyfikowanego zdarzenia zachowuje się przy wysyłce z lokalnego dziennika (wcześniej liczony powtórnie z opisu); tabela śladów obejmuje też komunikaty błędów (`new Error`).
