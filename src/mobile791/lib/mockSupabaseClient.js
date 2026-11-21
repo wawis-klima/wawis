@@ -461,6 +461,27 @@ class MockQueryBuilder {
   }
 }
 
+// 14.70: aplikacja wczytuje obie atrapy (komputer i telefon — moduły współdzielone), a późniejsza nadpisywała
+// window.__KLIMA_MOCK_SUPABASE__ zależnie od kolejności ładowania (wyścig w testach E2E). Teraz łączymy:
+// reset/getStore — jak dotąd ostatnia atrapa; mutate — trafia do obu baz; putFile/getFile — z atrapy, która je ma.
+function registerMockSupabaseApi(own) {
+  const prev = window.__KLIMA_MOCK_SUPABASE__;
+  const combined = { ...(prev || {}), ...own };
+  combined.mutate = (updater) => {
+    const errors = [];
+    let result;
+    let ok = 0;
+    for (const target of [own, prev]) {
+      if (!target || typeof target.mutate !== 'function') continue;
+      try { const value = target.mutate(updater); if (target === own) result = value; ok += 1; } catch (error) { errors.push(error); }
+    }
+    if (!ok && errors.length) throw errors[0];
+    return result ?? combined.getStore?.();
+  };
+  if (!own.putFile && prev?.putFile) { combined.putFile = prev.putFile; combined.getFile = prev.getFile; }
+  window.__KLIMA_MOCK_SUPABASE__ = combined;
+}
+
 export function createMockSupabaseClient() {
   let store = restoreSharedStore();
   const storageObjects = new Map();
@@ -627,11 +648,13 @@ export function createMockSupabaseClient() {
         // Nieprawidłowe dane testowe nie powinny zatrzymać strony E2E.
       }
     });
-    window.__KLIMA_MOCK_SUPABASE__ = {
+    registerMockSupabaseApi({
       reset: resetMockData,
       getStore: () => clone(store),
+      // 14.70: dopisanie danych testowych także do bazy telefonu (patrz registerMockSupabaseApi).
+      mutate: (updater) => { if (typeof updater === 'function') updater(store); return clone(store); },
       credentials: MOCK_SUPABASE_CREDENTIALS,
-    };
+    });
   }
 
   const client = {
