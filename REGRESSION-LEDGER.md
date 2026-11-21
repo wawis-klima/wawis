@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-MERGE-1461 — łączenie odcieni, próg 1
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1461-MERGE | FIXED-UNVERIFIED | `smoke-css-tokens-v1451`: 28 plików = oryginał poza kolorami (SHA po podstawieniu pierwotnych kolorów z `css-palette-baseline.json`); 751 zmienionych miejsc, każde zapisane w `css-color-merges.json` z ΔE2000 < 1 od pierwotnego; kontrola negatywna (podmieniony kolor → NIE). Kolory dosłownie sprawdzane w testach zablokowane. |
+| CSS-1461-OWNER | PENDING-OWNER | Właściciel ogląda miejsca z listy w raporcie (różnice niewidoczne gołym okiem). |
+
 ## CSS-TOKENS-1460 — paleta kolorów, główny arkusz komputera
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

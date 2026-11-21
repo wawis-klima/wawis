@@ -123,7 +123,7 @@
   margin-top: 0;
   padding: 9px 10px;
   border-radius: 14px;
-  background: var(--wx-c-fbfcfe);
+  background: var(--wx-c-fbfdff);
 }
 
 .nameplateCapture.compact.hasPhoto {
@@ -183,7 +183,7 @@
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   min-height: 100dvh;
-  color: var(--wx-c-132039);
+  color: var(--wx-c-10203a);
   background: var(--wx-slate-50);
   overscroll-behavior: contain;
 }
@@ -205,7 +205,7 @@
 }
 
 .nameplateCropHeader strong {
-  color: var(--wx-c-132039);
+  color: var(--wx-c-10203a);
   font-size: 18px;
   line-height: 1.15;
 }
@@ -365,7 +365,7 @@
 .nameplateCropFooter .btn.secondary {
   border-color: var(--wx-slate-300);
   background: var(--wx-white);
-  color: var(--wx-c-132039);
+  color: var(--wx-c-10203a);
 }
 
 .nameplateCropFooter .btn.primary {
@@ -566,7 +566,7 @@
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--wx-c-dbe5f2);
+  background: var(--wx-c-dbe6f2);
 }
 
 .nameplateVerifyProgressTrack span {
@@ -633,7 +633,7 @@
 
 .nameplateVerifyField .input:disabled {
   border-color: var(--wx-c-d7dee8);
-  background: var(--wx-c-eef2f7);
+  background: var(--wx-slate-100);
   color: var(--wx-slate-400);
   -webkit-text-fill-color: var(--wx-slate-400);
   opacity: 1;

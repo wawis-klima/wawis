@@ -122,11 +122,11 @@
     max-width:100%;
     min-height:42px;
     padding:6px 7px 6px 11px;
-    border:1px solid var(--wx-c-cfd9e6);
+    border:1px solid var(--wx-c-cfdae8);
     border-radius:12px;
-    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-c-f3f7fb) 100%);
+    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-100) 100%);
     box-shadow:0 2px 7px rgba(15,23,42,.06);
-    color:var(--wx-c-172235);
+    color:var(--wx-c-162033);
     font:inherit;
     font-size:14px;
     font-weight:850;
@@ -138,7 +138,7 @@
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle:hover{
     border-color:var(--wx-c-aebdce);
-    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-c-edf3f9) 100%);
+    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-c-edf2f8) 100%);
     box-shadow:0 4px 10px rgba(15,23,42,.09);
   }
 
@@ -155,7 +155,7 @@
   .jobDetailsPanelCard .desktopDetailsSectionToggle .inlineIcon{
     width:18px;
     height:18px;
-    color:var(--wx-c-44546a);
+    color:var(--wx-slate-600);
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle > span:not(.desktopDetailsSectionChevron){

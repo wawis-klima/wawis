@@ -1,3 +1,8 @@
+## 14.61
+- Łączenie bardzo podobnych odcieni, **próg 1 — niewidoczne gołym okiem** (ΔE2000 < 1; decyzja właściciela 21.11.2026). Paleta: **760 → 482 kolory**; 751 z 3418 miejsc dostało odcień różniący się od pierwotnego o mniej niż 1 ΔE.
+- Pierwotne kolory z 14.60 zapisane pozycja po pozycji (`scripts/css-palette-baseline.json`), połączenia w `scripts/css-color-merges.json`. `smoke-css-tokens` sprawdza, że poza kolorami każdy plik jest znak w znak oryginałem, a każda zmiana koloru jest zapisana i mieści się w limicie (licząc od pierwotnego koloru — etapy się nie sumują). Kolory sprawdzane dosłownie w testach zostają bez zmian.
+- Narzędzie `scripts/css-color-merge.mjs` (plan / apply / report).
+
 ## 14.60
 - Wspólna paleta kolorów, etap 9 (wygląd bez zmian): **główny arkusz komputera** `src/styles.css` — 1546 kolorów → 547 zmiennych. Paleta: 760 kolorów. Arkusz wczytywany na każdym ekranie komputera po zalogowaniu.
 - Test w przeglądarce: główny arkusz komputera porównywany we wszystkich widokach komputera z testu palety (lista montaży, szczegóły montażu, kreator urządzeń, protokoły szczelności, zgłoszenia, paliwo), po 3 szerokości (1280, 1440, 1920). Test WebKit sprawdza też deklaracje tego arkusza.

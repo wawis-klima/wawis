@@ -1,12 +1,12 @@
 /* WAWIS 14.20 — strona klienta po zeskanowaniu naklejki QR. Samodzielne style (bez CSS aplikacji). */
 :root {
-  --pqr-bg: var(--wx-c-eef3f9); --pqr-surface: var(--wx-white); --pqr-fg: var(--wx-c-10203a); --pqr-muted: var(--wx-c-5a6b80); --pqr-line: var(--wx-c-d6e0ec);
+  --pqr-bg: var(--wx-c-edf2f8); --pqr-surface: var(--wx-white); --pqr-fg: var(--wx-c-10203a); --pqr-muted: var(--wx-c-5a6b80); --pqr-line: var(--wx-c-d6e0ec);
   --pqr-accent: var(--wx-blue-600); --pqr-accent-ink: var(--wx-white); --pqr-accent-soft: var(--wx-c-e3ecfd);
-  --pqr-warn: var(--wx-c-9a5b00); --pqr-warn-bg: var(--wx-c-fff3dc); --pqr-crit: var(--wx-c-b42318); --pqr-ok: var(--wx-c-1d7a46); --pqr-ok-bg: var(--wx-c-e5f4ec);
+  --pqr-warn: var(--wx-c-9a5b00); --pqr-warn-bg: var(--wx-c-fff5df); --pqr-crit: var(--wx-c-b42318); --pqr-ok: var(--wx-c-1d7a46); --pqr-ok-bg: var(--wx-c-e5f4ec);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --pqr-bg: var(--wx-c-0e1620); --pqr-surface: var(--wx-c-16212d); --pqr-fg: var(--wx-c-e4ecf5); --pqr-muted: var(--wx-c-97a8bb); --pqr-line: var(--wx-c-2a3a4b);
+    --pqr-bg: var(--wx-c-0e1620); --pqr-surface: var(--wx-c-16212d); --pqr-fg: var(--wx-c-e2ebf5); --pqr-muted: var(--wx-c-97a8bb); --pqr-line: var(--wx-c-2a3a4b);
     --pqr-accent: var(--wx-c-5b8ff5); --pqr-accent-ink: var(--wx-c-08142a); --pqr-accent-soft: var(--wx-c-1b2b48);
     --pqr-warn: var(--wx-c-f2b45a); --pqr-warn-bg: var(--wx-c-33260f); --pqr-crit: var(--wx-c-ff8a7a); --pqr-ok: var(--wx-c-6fd39b); --pqr-ok-bg: var(--wx-c-163024);
     color-scheme: dark;
