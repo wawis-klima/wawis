@@ -20,6 +20,7 @@ export default defineConfig({
     colorScheme: 'light',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    ...(process.env.PW_DIAG_SW ? { serviceWorkers: process.env.PW_DIAG_SW } : {}),
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
       ? {
         executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,

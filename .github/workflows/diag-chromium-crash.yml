@@ -1,0 +1,32 @@
+name: DIAG chromium crash (test only)
+# Izolowany workflow diagnostyczny: tylko gałęzie diag/**, bez sekretów, bez wdrożenia.
+on:
+  push:
+    branches: ['diag/**']
+permissions:
+  contents: read
+jobs:
+  experiment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        sw: ['allow', 'block']
+    env:
+      CI: 'true'
+      PW_DIAG_SW: ${{ matrix.sw }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: '22', cache: npm }
+      - run: npm ci --include=optional --registry=https://registry.npmjs.org/
+      - run: npx playwright install chromium --only-shell
+      - name: Repeat suspect specs
+        continue-on-error: true
+        run: |
+          npx playwright test tests/e2e/session-push-isolation-v1083.spec.js tests/e2e/mobile-protocol-client-data-v1385.spec.js tests/e2e/mobile-offline-atomic-v1075.spec.js --repeat-each=12 --retries=0 --reporter=line 2>&1 | tee run.log
+      - name: Summary
+        run: |
+          echo "SW=${{ matrix.sw }} crashes=$(grep -c 'Received signal 11' run.log) closed=$(grep -c 'has been closed' run.log)"
+          grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' run.log || true
