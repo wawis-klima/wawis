@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.66",
+  "version": "14.67",
   "scope": "full",
-  "release_branch": "release/v14.66",
+  "release_branch": "release/v14.67",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Łączenie odcieni progi 4 i 5 (ΔE2000 < 5 od koloru z 14.60, wyjątki właściciela); bez zmian bazy i backendu."
+    "notes": "Wspólne kolory półprzezroczyste (--wxa-*), wygląd bez zmian; bez zmian bazy i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.66",
+    "source_branch": "release/v14.67",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.66.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.67.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.66: łączenie odcieni ΔE2000 < 5 (224 → 141 kolorów)",
-    "release_ci": "WAWIS PR checks + smoke-css-shadows + smoke-css-tokens + WebKit E2E + E2E css-tokens-equivalence",
-    "postdeploy": "Vercel READY/14.66."
+    "code": "14.67: kolory rgba, 185 miejsc → 84 zmienne",
+    "release_ci": "WAWIS PR checks + smoke-css-alpha + smoke-css-shadows + smoke-css-tokens + WebKit E2E + E2E css-tokens-equivalence",
+    "postdeploy": "Vercel READY/14.67."
   }
 }

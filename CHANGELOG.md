@@ -1,3 +1,8 @@
+## 14.67
+- Wspólne kolory półprzezroczyste, etap 1 (wygląd bez zmian): 185 kolorów `rgba(…)` w 28 plikach stylów (poza cieniami) → 84 zmienne `--wxa-*` w `src/styles/alpha.css` o dokładnie tych samych wartościach.
+- Pierwotny tekst każdego koloru zapisany pozycja po pozycji (`scripts/css-alpha-baseline.json`). Kontrola: `smoke-css-alpha-v1467` (nowy), `smoke-css-tokens` (pliki po odtworzeniu = oryginał), test w przeglądarce (styl obliczony = oryginał), test WebKit (kolory wczytane i poprawne).
+- Narzędzie `scripts/css-alpha.mjs` (convert / plan / apply / report).
+
 ## 14.66
 - Łączenie podobnych odcieni, **progi 4 i 5 naraz** (ΔE2000 < 5 licząc od pierwotnego koloru z 14.60; decyzja właściciela 21.11.2026 po obejrzeniu przykładów). Paleta: **224 → 141 kolorów** (od 14.60: 760 → 141); 527 miejsc zmienia odcień w tym wydaniu.
 - Wyjątki właściciela bez zmian: ramki kart (`#dbe6f2`, `#e7edf6`) i tło aktywnej zakładki / plakietek (`#dbeafe`) — `OWNER_KEEP` w `css-color-merge.mjs`, pilnowane w `smoke-css-tokens`.

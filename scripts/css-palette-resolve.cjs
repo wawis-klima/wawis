@@ -21,6 +21,13 @@ function readShadowPalette() {
 function resolvePalette(css) {
   const palette = readPalette();
   const shadows = readShadowPalette();
+  // 14.67: kolory półprzezroczyste (--wxa-*) z src/styles/alpha.css.
+  const alphaFile = path.join(root, 'src', 'styles', 'alpha.css');
+  const alpha = fs.existsSync(alphaFile) ? Object.fromEntries([...fs.readFileSync(alphaFile, 'utf8').matchAll(/(--wxa-[a-z0-9-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()])) : {};
+  css = css.replace(/var\((--wxa-[a-z0-9-]+)\)/g, (whole, name) => {
+    if (!alpha[name]) throw new Error(`Nieznany kolor ${name}`);
+    return alpha[name];
+  });
   css = css.replace(/var\((--wxs-[a-z0-9-]+)\)/g, (whole, name) => {
     if (!shadows[name]) throw new Error(`Nieznany cień ${name}`);
     return shadows[name];

@@ -12,6 +12,7 @@ import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 import { REGISTRY_FILE, TOKENS_FILE, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
 import { SHADOWS_FILE, readShadows, resolveShadows } from '../../scripts/css-shadows.mjs';
+import { ALPHA_FILE, readAlpha, resolveAlpha } from '../../scripts/css-alpha.mjs';
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
 
@@ -543,7 +544,9 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
 
 // 14.64: oryginał = arkusz z wpisanymi wprost wartościami cieni (--wxs-*) i kolorów (--wx-*).
 const shadowTokens = readShadows(fs.readFileSync(SHADOWS_FILE, 'utf8'));
-const originals = Object.fromEntries(Object.keys(registry).map((file) => [file, resolveTokens(resolveShadows(fs.readFileSync(file, 'utf8'), shadowTokens), tokens)]));
+// 14.67: także kolory półprzezroczyste (--wxa-*) wpisane wprost.
+const alphaTokens = readAlpha(fs.readFileSync(ALPHA_FILE, 'utf8'));
+const originals = Object.fromEntries(Object.keys(registry).map((file) => [file, resolveTokens(resolveAlpha(resolveShadows(fs.readFileSync(file, 'utf8'), shadowTokens), alphaTokens), tokens)]));
 
 async function runScenario(page, scenario) {
   await scenario.open(page);

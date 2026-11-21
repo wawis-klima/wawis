@@ -306,7 +306,7 @@
   bottom: 0;
   z-index: 4;
   padding: 12px 4px 2px;
-  background: linear-gradient(180deg, rgba(255,255,255,.15), var(--wx-white) 25%);
+  background: linear-gradient(180deg, var(--wxa-ffffff-150), var(--wx-white) 25%);
 }
 .mobileDeviceWizardFooter .btn { width: 100%; min-height: 52px; border-radius: 16px; font-size: 16px; }
 
@@ -318,7 +318,7 @@
   align-items: flex-end;
   justify-content: center;
   padding: 12px;
-  background: rgba(15, 23, 42, .32);
+  background: var(--wxa-0f172a-320);
 }
 .mobileDevicePickerSheet {
   width: min(560px, 100%);
