@@ -2,12 +2,12 @@
    jasny podgląd aparatu, kompaktowe przyciski). Własne klasy — bez globalnych .card/.modal/.btn. */
 .appModalOverlay.qrScannerOverlay { z-index: 16000 !important; background: rgba(15, 23, 42, .45) !important; padding: 12px !important; align-items: center !important; justify-content: center !important; }
 .qrScannerModal {
-  --qr-blue: #1464f4; --qr-ink: #132039; --qr-muted: #64748b; --qr-line: #e4e9f1;
+  --qr-blue: var(--wx-c-1464f4); --qr-ink: var(--wx-c-132039); --qr-muted: var(--wx-slate-500); --qr-line: var(--wx-c-e4e9f1);
   box-sizing: border-box;
   display: grid; gap: 12px;
   width: min(420px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto;
   padding: 16px; border-radius: 22px; border: 1px solid var(--qr-line);
-  background: #fff !important; color: var(--qr-ink);
+  background: var(--wx-white) !important; color: var(--qr-ink);
   box-shadow: 0 18px 48px rgba(15, 23, 42, .18);
   backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
   font-family: inherit;
@@ -18,29 +18,29 @@
 .qrScannerModal .qrScannerLink { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding: 6px 2px; color: var(--qr-muted); font-size: 14px !important; font-weight: 700; cursor: pointer; min-height: 0 !important; box-shadow: none !important; }
 .qrScannerModal .qrScannerHint { margin: 0; color: var(--qr-muted); font-size: 13px !important; line-height: 1.35; }
 .qrScannerModal .qrScannerHint.center { text-align: center; }
-.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: #f1f5f9; border: 1px solid var(--qr-line); }
-.qrScannerViewport.live { background: #0f172a; border-color: #0f172a; }
+.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: var(--wx-slate-100); border: 1px solid var(--qr-line); }
+.qrScannerViewport.live { background: var(--wx-slate-900); border-color: var(--wx-slate-900); }
 .qrScannerViewport video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .qrScannerViewport:not(.live) video { visibility: hidden; }
 .qrScannerFrame { position: absolute; left: 50%; top: 50%; width: 52%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%); pointer-events: none; }
-.qrScannerFrame i { position: absolute; width: 26px; height: 26px; border-color: #fff; border-style: solid; border-width: 0; filter: drop-shadow(0 0 2px rgba(0,0,0,.35)); }
+.qrScannerFrame i { position: absolute; width: 26px; height: 26px; border-color: var(--wx-white); border-style: solid; border-width: 0; filter: drop-shadow(0 0 2px rgba(0,0,0,.35)); }
 .qrScannerFrame i:nth-child(1) { left: 0; top: 0; border-left-width: 3px; border-top-width: 3px; border-top-left-radius: 10px; }
 .qrScannerFrame i:nth-child(2) { right: 0; top: 0; border-right-width: 3px; border-top-width: 3px; border-top-right-radius: 10px; }
 .qrScannerFrame i:nth-child(3) { left: 0; bottom: 0; border-left-width: 3px; border-bottom-width: 3px; border-bottom-left-radius: 10px; }
 .qrScannerFrame i:nth-child(4) { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; border-bottom-right-radius: 10px; }
 .qrScannerOverlayText { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--qr-muted); font-size: 13px; font-weight: 700; text-align: center; padding: 16px; }
-.qrScannerOverlayText svg { width: 34px; height: 34px; fill: none; stroke: #94a3b8; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.qrScannerStatus { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 700; }
-.qrScannerError { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 600; line-height: 1.35; }
+.qrScannerOverlayText svg { width: 34px; height: 34px; fill: none; stroke: var(--wx-slate-400); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.qrScannerStatus { background: var(--wx-blue-50); border: 1px solid var(--wx-blue-200); color: var(--wx-blue-800); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 700; }
+.qrScannerError { background: var(--wx-red-50); border: 1px solid var(--wx-red-200); color: var(--wx-red-700); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 600; line-height: 1.35; }
 .qrScannerActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .qrScannerModal .qrScanBtn {
   appearance: none; -webkit-appearance: none;
   flex: 1 1 140px; min-height: 42px !important; height: auto !important; padding: 0 14px !important;
-  border: 1px solid #c9d3e3 !important; border-radius: 12px !important; background: #fff !important;
+  border: 1px solid var(--wx-c-c9d3e3) !important; border-radius: 12px !important; background: var(--wx-white) !important;
   color: var(--qr-ink) !important; font-size: 14px !important; font-weight: 700 !important; line-height: 1.2;
   box-shadow: none !important; cursor: pointer;
 }
-.qrScannerModal .qrScanBtn.primary { border-color: var(--qr-blue) !important; background: var(--qr-blue) !important; color: #fff !important; }
+.qrScannerModal .qrScanBtn.primary { border-color: var(--qr-blue) !important; background: var(--qr-blue) !important; color: var(--wx-white) !important; }
 .qrScannerModal .qrScanBtn:disabled { opacity: .55; }
 .qrScannerManual { display: grid; gap: 6px; padding-top: 2px; }
 .qrScannerModal .qrScannerManual label { font-size: 12.5px !important; font-weight: 700; color: var(--qr-muted); }
@@ -48,28 +48,28 @@
 .qrScannerModal .qrScanInput {
   appearance: none; -webkit-appearance: none;
   flex: 1 1 auto; min-width: 0; height: 42px !important; padding: 0 12px !important;
-  border: 1px solid #c9d3e3 !important; border-radius: 12px !important; background: #fff !important;
+  border: 1px solid var(--wx-c-c9d3e3) !important; border-radius: 12px !important; background: var(--wx-white) !important;
   color: var(--qr-ink); font-size: 15px !important; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
 }
-.qrScannerModal .qrScanInput::placeholder { color: #a0aec0; font-weight: 600; letter-spacing: .02em; text-transform: none; }
+.qrScannerModal .qrScanInput::placeholder { color: var(--wx-c-a0aec0); font-weight: 600; letter-spacing: .02em; text-transform: none; }
 .qrScannerModal .qrScannerManualRow .qrScanBtn { flex: 0 0 auto; }
 
-.qrStickerRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 7px 10px; border: 1px dashed #c7d2e3; border-radius: 10px; background: #f8fafc; }
-.qrStickerRow.assigned { border-style: solid; border-color: #bbf7d0; background: #f0fdf4; }
+.qrStickerRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 7px 10px; border: 1px dashed var(--wx-c-c7d2e3); border-radius: 10px; background: var(--wx-slate-50); }
+.qrStickerRow.assigned { border-style: solid; border-color: var(--wx-green-200); background: var(--wx-green-50); }
 .qrStickerLabel { display: grid; gap: 1px; min-width: 0; }
 .qrStickerLabel strong { font-size: 12.5px; font-weight: 700; letter-spacing: .02em; }
-.qrStickerLabel small { color: #5b6b82; font-size: 11px; }
-.qrStickerRow .btn.qrStickerBtn { min-height: 32px !important; height: auto !important; width: auto !important; padding: 0 12px !important; font-size: 12.5px !important; font-weight: 700; border-radius: 9px !important; border: 1px solid #2563eb; background: #fff; color: #1d4ed8; box-shadow: none !important; }
+.qrStickerLabel small { color: var(--wx-c-5b6b82); font-size: 11px; }
+.qrStickerRow .btn.qrStickerBtn { min-height: 32px !important; height: auto !important; width: auto !important; padding: 0 12px !important; font-size: 12.5px !important; font-weight: 700; border-radius: 9px !important; border: 1px solid var(--wx-blue-600); background: var(--wx-white); color: var(--wx-blue-700); box-shadow: none !important; }
 .qrStickerRow .qrStickerLabel strong { font-size: 12.5px !important; line-height: 1.25; }
 .qrStickerRow .qrStickerLabel small { font-size: 11px !important; }
 .qrStickerAdminActions { display: inline-flex; gap: 6px; }
-.qrStickerBadge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 10.5px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.qrStickerBadge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 999px; background: var(--wx-green-100); color: var(--wx-green-800); font-size: 10.5px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
 .qrStickerMessage { flex-basis: 100%; font-size: 12px; }
-.qrStickerMessage.ok { color: #166534; }
-.qrStickerMessage.err { color: #b91c1c; }
+.qrStickerMessage.ok { color: var(--wx-green-800); }
+.qrStickerMessage.err { color: var(--wx-red-700); }
 
 .qrResolverCard { display: grid; gap: 10px; }
 .qrResolverCard dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13.5px; }
-.qrResolverCard dt { color: #5b6b82; }
+.qrResolverCard dt { color: var(--wx-c-5b6b82); }
 .qrResolverCard dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .qrResolverActions { display: grid; gap: 8px; }

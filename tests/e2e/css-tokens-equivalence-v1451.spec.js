@@ -26,6 +26,16 @@ const DESKTOP_DETAILS_CSS = 'src/components/job-details-desktop-v1215.css';
 const DESKTOP_INVOICE_CSS = 'src/components/job-details-invoice-v1210.css';
 const WIZARD_CSS = 'src/mobile791/components/devices/mobile-device-wizard.css';
 const NAMEPLATE_CSS = 'src/mobile791/components/nameplate/nameplate-photo-capture.css';
+const QR_SCANNER_CSS = 'src/mobile791/components/qr/QrStickerScanner.css';
+const PUBLIC_QR_CSS = 'src/public-qr/public-qr.css';
+const LEAK_TESTS_CSS = 'src/components/leak-tests/leak-tests.css';
+const LEAK_SIGN_CSS = 'src/mobile791/components/leak-tests/leak-test-sign.css';
+const SERVICE_REQUESTS_CSS = 'src/components/service-requests/service-requests.css';
+const PUBLIC_QR_ENDPOINT = 'https://mock-supabase.invalid/functions/v1/qr-service-request';
+const PUBLIC_QR_INFO = {
+  ok: true, code: 'UYE8EYCQ', company: 'WaWis-Klima', phone: '606 553 984', phoneHref: '+48606553984',
+  assigned: true, model: 'Rotenso Imoto 3.5 kW', installationDate: '20.11.2025', nextInspection: '20.10.2026', inspectionDueNow: true,
+};
 // Prosty obraz do kadrowania (bez tabliczki) — tylko po to, żeby otworzyć okno kadrowania.
 const CROP_TEST_IMAGE = {
   name: 'kadr-test.svg', mimeType: 'image/svg+xml',
@@ -245,6 +255,88 @@ const SCENARIOS = [
           await expect(page.locator('.desktopAdminDeviceWizardModal .mobileDeviceWizardFooter')).toBeVisible();
         },
       },
+    ],
+  },
+  {
+    // 14.56: strona klienta po zeskanowaniu naklejki QR (bez logowania) — informacje i formularz awarii.
+    id: 'naklejka-qr-strona-klienta', platform: 'mobile', root: '[data-testid="public-qr-page"]', widths: [360, 390, 430],
+    reopenPerWidth: true,
+    async open(page) {
+      await page.unroute(PUBLIC_QR_ENDPOINT).catch(() => {});
+      await page.route(PUBLIC_QR_ENDPOINT, async (route) => {
+        const request = route.request();
+        const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type' };
+        if (request.method() === 'OPTIONS') return route.fulfill({ status: 200, headers: cors });
+        const body = JSON.parse(request.postData() || '{}');
+        const payload = body.action === 'info' ? PUBLIC_QR_INFO : { ok: true };
+        return route.fulfill({ status: 200, headers: { ...cors, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      });
+      await page.goto('/?qr=UYE8EYCQ');
+      await expect(page.getByTestId('public-qr-page')).toBeVisible();
+      await expect(page.getByTestId('public-qr-call')).toBeVisible();
+    },
+    states: [
+      { name: 'Informacje o urządzeniu', files: [PUBLIC_QR_CSS], async go() {} },
+      {
+        name: 'Formularz awarii', files: [PUBLIC_QR_CSS],
+        async go(page) { await page.getByRole('button', { name: 'Zgłoś awarię' }).click(); },
+      },
+    ],
+  },
+  {
+    // 14.56: okno skanera naklejki QR (pracownik przypisuje naklejkę do urządzenia).
+    id: 'skaner-qr-telefon-pracownik', platform: 'mobile', root: '.qrScannerModal', widths: [360, 390, 430],
+    reopenPerWidth: true,
+    async open(page) {
+      await login(page, WORKER);
+      await page.getByText('Klient Testowy Multi-Split', { exact: true }).first().click();
+      await page.getByRole('button', { name: 'Rozwiń Urządzenie 1' }).click();
+      await page.getByTestId('job-device-qr-sticker').first().getByRole('button', { name: 'Przypisz naklejkę QR' }).click();
+      await expect(page.locator('.qrScannerModal')).toBeVisible();
+      // Aparat startuje asynchronicznie (starting → live/unavailable) — porównujemy dopiero stan ustalony.
+      await expect(page.locator('.qrScannerViewport')).toHaveClass(/(^|\s)(live|unavailable)(\s|$)/, { timeout: 15_000 });
+    },
+    states: [{ name: 'Skaner', files: [QR_SCANNER_CSS], async go() {} }],
+  },
+  {
+    // 14.56: wzór podpisu pracownika (Diagnostyka → Wzór podpisu) — pole podpisu z leak-test-sign.css.
+    id: 'wzor-podpisu-telefon-pracownik', platform: 'mobile', root: '.leakSignOverlay', widths: [360, 390, 430],
+    reopenPerWidth: true,
+    async open(page) {
+      await resetMockSupabase(page);
+      await loginWithoutReset(page, WORKER);
+      await expect(page.locator('.statusButtonsBar')).toBeVisible();
+      await page.locator('.wawisVersionDiagnosticsButton').click();
+      await page.getByTestId('signature-pattern-card').getByTestId('signature-pattern-open').click();
+      await expect(page.getByRole('dialog', { name: 'Wzór podpisu' })).toBeVisible();
+    },
+    states: [{ name: 'Wzór podpisu', files: [LEAK_SIGN_CSS], async go() {} }],
+  },
+  {
+    // 14.56: Protokoły szczelności na komputerze (administrator) — do uzupełnienia i wszystkie.
+    id: 'protokoly-szczelnosci-komputer-administrator', platform: 'desktop', root: '[data-testid="leak-tests-panel"]', widths: [1280, 1440, 1920],
+    async open(page) {
+      await page.route(/open-meteo\.com/, (route) => route.abort());
+      await login(page, ADMIN);
+      await page.getByRole('button', { name: /^Protokoły$/ }).click();
+      await expect(page.getByTestId('leak-test-row').first()).toBeVisible();
+    },
+    states: [
+      { name: 'Do uzupełnienia', files: [LEAK_TESTS_CSS], async go(page) { await page.getByTestId('leak-tests-panel').getByRole('tab', { name: 'Do uzupełnienia' }).click(); } },
+      { name: 'Wszystkie', files: [LEAK_TESTS_CSS], async go(page) { await page.getByTestId('leak-tests-panel').getByRole('tab', { name: 'Wszystkie' }).click(); } },
+    ],
+  },
+  {
+    // 14.56: Zgłoszenia klientów na komputerze (administrator) — awarie i przeglądy.
+    id: 'zgloszenia-komputer-administrator', platform: 'desktop', root: '[data-testid="service-requests-panel"]', widths: [1280, 1440, 1920],
+    async open(page) {
+      await login(page, ADMIN);
+      await page.getByRole('button', { name: /^Zgłoszenia$/ }).click();
+      await expect(page.getByTestId('service-requests-panel')).toBeVisible();
+    },
+    states: [
+      { name: 'Awarie', files: [SERVICE_REQUESTS_CSS], async go(page) { await page.getByTestId('service-requests-panel').getByRole('tab', { name: /Awarie/ }).click(); } },
+      { name: 'Przeglądy', files: [SERVICE_REQUESTS_CSS], async go(page) { await page.getByTestId('service-requests-panel').getByRole('tab', { name: /Przeglądy/ }).click(); } },
     ],
   },
   {

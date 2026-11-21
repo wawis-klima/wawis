@@ -20,6 +20,16 @@
       "replaced": 16,
       "original_sha256": "fd72e503300e127df62d1f7c0cadcd0fbb63a5f587e7953f8463c5ba322d46f8"
     },
+    "src/components/leak-tests/leak-tests.css": {
+      "version": "14.56",
+      "replaced": 29,
+      "original_sha256": "43d39101899c91373a28f9d6151ef281872350ed0f115228a97238d12432d5e6"
+    },
+    "src/components/service-requests/service-requests.css": {
+      "version": "14.56",
+      "replaced": 29,
+      "original_sha256": "975169ddd69ad449e5476eeaf53b29db2af0ecec8d7db43c230c917a97c2fb53"
+    },
     "src/mobile791/components/devices/mobile-device-wizard.css": {
       "version": "14.55",
       "replaced": 174,
@@ -30,10 +40,20 @@
       "replaced": 38,
       "original_sha256": "0d4b260a6a7b4bb515ea9dbb536935133f70327d1a981d220477b6741b72272c"
     },
+    "src/mobile791/components/leak-tests/leak-test-sign.css": {
+      "version": "14.56",
+      "replaced": 17,
+      "original_sha256": "6e691ef6695e5873836ccf6bcb879d9b15d4b5ae32785cd5f2740ee2b11ed4e5"
+    },
     "src/mobile791/components/nameplate/nameplate-photo-capture.css": {
       "version": "14.55",
       "replaced": 97,
       "original_sha256": "16416f6600b272f694ca47969a804b46a1eb73b4198a251c32fcb27ade72d7d8"
+    },
+    "src/mobile791/components/qr/QrStickerScanner.css": {
+      "version": "14.56",
+      "replaced": 35,
+      "original_sha256": "a43f5df7e446c1ff89ad1537fdae8d512ae9df547dff47211c2153ec3249f392"
     },
     "src/mobile791/v1062-contractors-mobile.css": {
       "version": "14.53",
@@ -44,6 +64,11 @@
       "version": "14.54",
       "replaced": 7,
       "original_sha256": "e43aa56392f16390b8bcf38d7c8bfd5d143cca8a2c7850e23f0d65f77ffdb4f0"
+    },
+    "src/public-qr/public-qr.css": {
+      "version": "14.56",
+      "replaced": 27,
+      "original_sha256": "479927350f3bde3047ddd221195c371fdf6efc95a2a3be4fb6b0069024a19a51"
     }
   }
 }
