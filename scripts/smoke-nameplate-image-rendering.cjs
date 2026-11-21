@@ -7,8 +7,9 @@ const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 
 const capture = read('src', 'mobile791', 'components', 'nameplate', 'NameplatePhotoCapture.jsx');
 const captureCss = read('src', 'mobile791', 'components', 'nameplate', 'nameplate-photo-capture.css');
-const mobileCss = read('src', 'mobile791', 'styles.css');
-const desktopCss = read('src', 'styles.css');
+const mobileCss = require('./css-palette-resolve.cjs').readCssResolved('src', 'mobile791', 'styles.css');
+// 14.60: arkusze z paletą --wx-* — kolory sprawdzane po podstawieniu.
+const desktopCss = require('./css-palette-resolve.cjs').readCssResolved('src', 'styles.css');
 const desktopDetails = read('src', 'components', 'JobDetailsPanel.jsx');
 const desktopDeviceCards = read('src', 'components', 'desktop', 'DesktopJobDeviceCards.jsx');
 const mobilePhotos = read('src', 'mobile791', 'modules', 'photos.js');

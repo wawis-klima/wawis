@@ -789,7 +789,8 @@ async function runConfirmationSmoke() {
   assert.match(jobDetailsPanelSource, /disabled=\{!canSubmitComment\}/);
   assert.match(jobDetailsPanelSource, /className="photoMetaText">\{formatDate\(photo\.created_at\)\}<\/span>/);
   assert.match(jobDetailsPanelSource, /className="photoMetaText" title=\{photo\.uploader_name \|\| "Pracownik"\}>\{getInitials\(photo\.uploader_name \|\| "Pracownik"\)\}<\/span>/);
-  const stylesSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'styles.css'), 'utf8');
+  // 14.60: arkusz komputera ma zmienne palety — kolory sprawdzamy po podstawieniu (css-palette-resolve).
+  const stylesSource = require('./css-palette-resolve.cjs').readCssResolved('src', 'styles.css');
   assert.match(stylesSource, /\.infoValueActions/);
   assert.match(stylesSource, /\.photoMetaText/);
   assert.match(stylesSource, /\.thumbGrid\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(110px,1fr\)\);gap:12px;align-items:start\}/);
