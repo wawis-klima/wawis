@@ -1,5 +1,11 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1457 — paleta kolorów, mniejsze pliki stylów
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1457-SMALL | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (26 plików) + E2E `css-tokens-equivalence-v1451`: lista/szczegóły/edycja montażu i nowy klient (telefon), Diagnostyka, tabela montaży (komputer); porównanie całej aplikacji, 3 szerokości. |
+
 ## CSS-TOKENS-1456 — paleta kolorów, QR, protokoły szczelności, zgłoszenia
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

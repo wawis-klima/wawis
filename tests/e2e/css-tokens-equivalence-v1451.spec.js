@@ -31,6 +31,16 @@ const PUBLIC_QR_CSS = 'src/public-qr/public-qr.css';
 const LEAK_TESTS_CSS = 'src/components/leak-tests/leak-tests.css';
 const LEAK_SIGN_CSS = 'src/mobile791/components/leak-tests/leak-test-sign.css';
 const SERVICE_REQUESTS_CSS = 'src/components/service-requests/service-requests.css';
+const MOBILE_GLOBAL_CSS = [
+  'src/mobile791/mobile.css', 'src/mobile791/v1048-runtime-fix.css', 'src/mobile791/v1057-new-job-form-fix.css',
+  'src/mobile791/v1295-worker-ui.css', 'src/mobile791/v1297-admin-edit.css', 'src/mobile791/v1323-mobile-protocol-actions.css',
+  'src/mobile791/components/pricelist/pricelist-mobile.css',
+];
+const SWIPE_CARD_CSS = 'src/mobile791/components/jobs/swipeable-job-card.css';
+const MIC_CSS = 'src/mobile791/components/modals/new-job-comment-mic-v1311.css';
+const MOBILE_DIAGNOSTICS_CSS = 'src/mobile791/components/diagnostics/MobileDiagnosticsPanel.css';
+const DESKTOP_JOBS_TABLE_CSS = 'src/styles/desktop-jobs-table.css';
+const ADMIN_NAV_BADGE_CSS = 'src/components/layout/admin-nav-badge.css';
 const PUBLIC_QR_ENDPOINT = 'https://mock-supabase.invalid/functions/v1/qr-service-request';
 const PUBLIC_QR_INFO = {
   ok: true, code: 'UYE8EYCQ', company: 'WaWis-Klima', phone: '606 553 984', phoneHref: '+48606553984',
@@ -337,6 +347,79 @@ const SCENARIOS = [
     states: [
       { name: 'Awarie', files: [SERVICE_REQUESTS_CSS], async go(page) { await page.getByTestId('service-requests-panel').getByRole('tab', { name: /Awarie/ }).click(); } },
       { name: 'Przeglądy', files: [SERVICE_REQUESTS_CSS], async go(page) { await page.getByTestId('service-requests-panel').getByRole('tab', { name: /Przeglądy/ }).click(); } },
+    ],
+  },
+  {
+    // 14.57: ogólne style telefonu (menu, lista montaży, karty, szczegóły z akcjami pracownika) — cała aplikacja.
+    id: 'lista-montazy-telefon-pracownik', platform: 'mobile', root: '#root', widths: [360, 390, 430],
+    async open(page) {
+      await login(page, WORKER);
+      await expect(page.locator('.statusButtonsBar')).toBeVisible();
+    },
+    states: [
+      { name: 'Lista montaży', files: [...MOBILE_GLOBAL_CSS, SWIPE_CARD_CSS], async go(page) { await page.locator('.statusActionButton[title="W trakcie"]').click(); } },
+      {
+        name: 'Szczegóły z akcjami pracownika', files: [...MOBILE_GLOBAL_CSS, SWIPE_CARD_CSS],
+        async go(page) {
+          if (!(await page.locator('.mobileInlineJobDetails').count())) await page.getByText('Klient Testowy B', { exact: true }).click();
+          await expect(page.locator('.mobileInlineJobDetails .workerDetailsActionGridV1295')).toBeVisible();
+        },
+      },
+    ],
+  },
+  {
+    // 14.57: administrator na telefonie — lista, edycja montażu (v1297), formularz nowego klienta z mikrofonem.
+    id: 'montaze-telefon-administrator', platform: 'mobile', root: '#root', widths: [360, 390, 430],
+    reopenPerWidth: true,
+    async open(page) {
+      await login(page, ADMIN);
+      await expect(page.locator('.statusButtonsBar')).toBeVisible();
+    },
+    states: [
+      { name: 'Lista montaży', files: [...MOBILE_GLOBAL_CSS, SWIPE_CARD_CSS], async go() {} },
+      {
+        name: 'Edycja montażu', files: [...MOBILE_GLOBAL_CSS],
+        async go(page) {
+          await page.locator('.statusActionButton[title="W trakcie"]').click();
+          await page.getByText('Klient Testowy B', { exact: true }).click();
+          await page.locator('.mobileInlineJobDetails .detailActionsBottom.mobileFourButtons').getByRole('button', { name: 'Edytuj', exact: true }).click();
+          await expect(page.locator('.formModal.adminMobileEditModalV1297')).toBeVisible();
+        },
+      },
+    ],
+  },
+  {
+    // 14.57: formularz nowego klienta (pracownik) — przycisk mikrofonu i poprawki formularza.
+    id: 'nowy-klient-telefon-pracownik', platform: 'mobile', root: '#root', widths: [360, 390, 430],
+    reopenPerWidth: true,
+    async open(page) {
+      await login(page, WORKER);
+      await page.getByRole('button', { name: /Dodaj nowego klienta/ }).first().click();
+      await expect(page.locator('.formModal').first()).toBeVisible();
+    },
+    states: [{ name: 'Formularz nowego klienta', files: [...MOBILE_GLOBAL_CSS, MIC_CSS], async go() {} }],
+  },
+  {
+    // 14.57: Diagnostyka na telefonie (pracownik).
+    id: 'diagnostyka-telefon-pracownik', platform: 'mobile', root: '.mobileDiagnosticsPage', widths: [360, 390, 430],
+    async open(page) {
+      await login(page, WORKER);
+      await page.locator('.wawisVersionDiagnosticsButton').click();
+      await expect(page.locator('.mobileDiagnosticsPage')).toBeVisible();
+    },
+    states: [{ name: 'Diagnostyka', files: [MOBILE_DIAGNOSTICS_CSS], async go() {} }],
+  },
+  {
+    // 14.57: lista montaży na komputerze (tabela) i licznik w menu administratora.
+    id: 'lista-montazy-komputer-administrator', platform: 'desktop', root: '#root', widths: [1280, 1440, 1920],
+    async open(page) {
+      await login(page, ADMIN);
+      await page.getByRole('button', { name: /^Montaże$/ }).click();
+      await expect(page.getByRole('table')).toBeVisible();
+    },
+    states: [
+      { name: 'Wszystkie', files: [DESKTOP_JOBS_TABLE_CSS, ADMIN_NAV_BADGE_CSS], async go() {} },
+      { name: 'W trakcie', files: [DESKTOP_JOBS_TABLE_CSS, ADMIN_NAV_BADGE_CSS], async go(page) { await page.getByRole('button', { name: /^W trakcie:/ }).click(); } },
     ],
   },
   {

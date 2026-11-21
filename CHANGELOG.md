@@ -1,3 +1,9 @@
+## 14.57
+- Wspólna paleta kolorów, etap 7 (wygląd bez zmian): **mniejsze pliki stylów** — ogólne style telefonu (`mobile.css`, `v1048`, `v1057`, `v1295`, `v1297`, `v1323`), menu/cennik na telefonie (`pricelist-mobile.css`), przesuwane karty montaży, przycisk mikrofonu w formularzu, Diagnostyka na telefonie, tabela montaży i licznik w menu na komputerze. 12 plików, 135 kolorów; paleta: 285 kolorów.
+- Usunięty nieużywany `src/styles/premium-ops-dark.css` (nigdzie nie importowany).
+- Pominięte celowo: `v1103-completed-note-compact.css` (wczytywany przez `@import` wewnątrz innego arkusza — test porównujący go nie znajdzie; 1 kolor) i `v1056-new-job-spacing.css` (importowany tylko przez nieużywany `src/mobile791/main.jsx`). Do decyzji przy porządkach.
+- Test w przeglądarce: lista i szczegóły montażu (telefon pracownika), lista i edycja montażu (telefon administratora), formularz nowego klienta, Diagnostyka, tabela montaży na komputerze — porównanie całej aplikacji (`#root`), po 3 szerokości.
+
 ## 14.56
 - Wspólna paleta kolorów, etap 6 (wygląd bez zmian): **naklejki QR, protokoły szczelności i zgłoszenia** — skaner naklejki `QrStickerScanner.css` (35 kolorów → 25 zmiennych), strona klienta po zeskanowaniu `public-qr.css` (27 → 25), Protokoły szczelności `leak-tests.css` (29 → 14), pole podpisu `leak-test-sign.css` (17 → 9), Zgłoszenia `service-requests.css` (29 → 11). Paleta: 243 kolory.
 - Test w przeglądarce: strona klienta z naklejki (informacje, formularz awarii), skaner QR (pracownik), wzór podpisu (pracownik), Protokoły szczelności i Zgłoszenia na komputerze (administrator) — po 3 szerokości.

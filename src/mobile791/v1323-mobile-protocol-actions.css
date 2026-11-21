@@ -18,7 +18,7 @@
   .mobileInlineJobDetails .workerDetailsActionGridV1295 > .protocolTestButton:disabled,
   .mobileInlineJobDetails .adminProtocolActionGridV1323 > .finishJobBtn:disabled,
   .mobileInlineJobDetails .workerDetailsActionGridV1295 > .finishJobBtn:disabled {
-    background:#e2e8f0!important;color:#64748b!important;border-color:#cbd5e1!important;
+    background:var(--wx-slate-200)!important;color:var(--wx-slate-500)!important;border-color:var(--wx-slate-300)!important;
     box-shadow:none!important;opacity:1!important;cursor:not-allowed!important;
   }
 }

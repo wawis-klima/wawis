@@ -176,7 +176,7 @@
   .desktopClientAddress {
     min-width: 0;
     max-width: 100%;
-    color: var(--text-muted, #64748b);
+    color: var(--text-muted, var(--wx-slate-500));
     font-size: 11px;
     font-weight: 500;
     line-height: 1.25;
@@ -311,21 +311,21 @@
   }
 
   .desktopNameplateSummaryBadge.approved {
-    color: #166534;
-    background: #dcfce7;
-    border-color: #86efac;
+    color: var(--wx-green-800);
+    background: var(--wx-green-100);
+    border-color: var(--wx-green-300);
   }
 
   .desktopNameplateSummaryBadge.pending {
-    color: #b91c1c;
-    background: #fef2f2;
-    border-color: #fecaca;
+    color: var(--wx-red-700);
+    background: var(--wx-red-50);
+    border-color: var(--wx-red-200);
   }
 
   .desktopNameplateSummaryBadge.none {
-    color: #64748b;
-    background: #f8fafc;
-    border-color: #e2e8f0;
+    color: var(--wx-slate-500);
+    background: var(--wx-slate-50);
+    border-color: var(--wx-slate-200);
   }
 
   .desktopJobsHeaderCellVatInvoice {
@@ -345,11 +345,11 @@
 
   .desktopVatInvoiceDot.issued,
   .desktopVatInvoiceToggle.issued .desktopVatInvoiceDot {
-    background: #22c55e;
+    background: var(--wx-green-500);
   }
 
   .desktopVatInvoiceDot.missing,
   .desktopVatInvoiceToggle.missing .desktopVatInvoiceDot {
-    background: #ef4444;
+    background: var(--wx-red-500);
   }
 }

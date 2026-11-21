@@ -35,7 +35,7 @@
     border-radius:12px!important;
     background:transparent!important;
     box-shadow:none!important;
-    color:#64748b!important;
+    color:var(--wx-slate-500)!important;
     font-size:10px!important;
     font-weight:600!important;
     line-height:1!important;

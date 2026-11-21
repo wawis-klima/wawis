@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.56",
+  "version": "14.57",
   "scope": "full",
-  "release_branch": "release/v14.56",
+  "release_branch": "release/v14.57",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Paleta kolorów etap 6 (QR, protokoły szczelności, zgłoszenia), wygląd bez zmian; bez zmian bazy i backendu."
+    "notes": "Paleta kolorów etap 7 (mniejsze pliki stylów), wygląd bez zmian; bez zmian bazy i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.56",
+    "source_branch": "release/v14.57",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.56.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.57.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.56: paleta kolorów etap 6",
+    "code": "14.57: paleta kolorów etap 7",
     "release_ci": "WAWIS PR checks + smoke-css-tokens-v1451 + E2E css-tokens-equivalence",
-    "postdeploy": "Vercel READY/14.56."
+    "postdeploy": "Vercel READY/14.57."
   }
 }

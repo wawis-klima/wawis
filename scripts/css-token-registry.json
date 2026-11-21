@@ -20,6 +20,11 @@
       "replaced": 16,
       "original_sha256": "fd72e503300e127df62d1f7c0cadcd0fbb63a5f587e7953f8463c5ba322d46f8"
     },
+    "src/components/layout/admin-nav-badge.css": {
+      "version": "14.57",
+      "replaced": 3,
+      "original_sha256": "97e8fead8ba2d18f5402a03714d4d81119c9a342d673b0cbeee1dd299c11cda9"
+    },
     "src/components/leak-tests/leak-tests.css": {
       "version": "14.56",
       "replaced": 29,
@@ -40,20 +45,55 @@
       "replaced": 38,
       "original_sha256": "0d4b260a6a7b4bb515ea9dbb536935133f70327d1a981d220477b6741b72272c"
     },
+    "src/mobile791/components/diagnostics/MobileDiagnosticsPanel.css": {
+      "version": "14.57",
+      "replaced": 21,
+      "original_sha256": "3356792c109a5c646caf92de003f26d9e053d4f2957a74bb9042f66b536ffe52"
+    },
+    "src/mobile791/components/jobs/swipeable-job-card.css": {
+      "version": "14.57",
+      "replaced": 14,
+      "original_sha256": "b6e26b987f25091edf7cad727fc1421a2f550a3de279784310e9a3d828dbcafc"
+    },
     "src/mobile791/components/leak-tests/leak-test-sign.css": {
       "version": "14.56",
       "replaced": 17,
       "original_sha256": "6e691ef6695e5873836ccf6bcb879d9b15d4b5ae32785cd5f2740ee2b11ed4e5"
+    },
+    "src/mobile791/components/modals/new-job-comment-mic-v1311.css": {
+      "version": "14.57",
+      "replaced": 2,
+      "original_sha256": "3c0dc69694a32d4d812512b5639c870dffb4c519038c7ae362f61631c6191998"
     },
     "src/mobile791/components/nameplate/nameplate-photo-capture.css": {
       "version": "14.55",
       "replaced": 97,
       "original_sha256": "16416f6600b272f694ca47969a804b46a1eb73b4198a251c32fcb27ade72d7d8"
     },
+    "src/mobile791/components/pricelist/pricelist-mobile.css": {
+      "version": "14.57",
+      "replaced": 21,
+      "original_sha256": "2ee73dc743912a83fce6d9bf95054364c5d7b5b411bb3a442db3f465969477db"
+    },
     "src/mobile791/components/qr/QrStickerScanner.css": {
       "version": "14.56",
       "replaced": 35,
       "original_sha256": "a43f5df7e446c1ff89ad1537fdae8d512ae9df547dff47211c2153ec3249f392"
+    },
+    "src/mobile791/mobile.css": {
+      "version": "14.57",
+      "replaced": 50,
+      "original_sha256": "89cf73de01b4331c6bf07a076c0004d4cd9122ad67ba71ad4af9aa7ffa2ce081"
+    },
+    "src/mobile791/v1048-runtime-fix.css": {
+      "version": "14.57",
+      "replaced": 1,
+      "original_sha256": "e49e65ffdcc98fb2905c36acd7608dbb969915b3c5acb8a1c5a6017a4f5e6ddd"
+    },
+    "src/mobile791/v1057-new-job-form-fix.css": {
+      "version": "14.57",
+      "replaced": 1,
+      "original_sha256": "66fea26f3ec00c00a6ca1be75a69a1807c1ef2e1adfa9ff9f3bdd21167269084"
     },
     "src/mobile791/v1062-contractors-mobile.css": {
       "version": "14.53",
@@ -65,10 +105,30 @@
       "replaced": 7,
       "original_sha256": "e43aa56392f16390b8bcf38d7c8bfd5d143cca8a2c7850e23f0d65f77ffdb4f0"
     },
+    "src/mobile791/v1295-worker-ui.css": {
+      "version": "14.57",
+      "replaced": 2,
+      "original_sha256": "b6d6d8b6ccf3d4104465a494b90edda7374d6a5de03f74a0854a6969316ccff8"
+    },
+    "src/mobile791/v1297-admin-edit.css": {
+      "version": "14.57",
+      "replaced": 5,
+      "original_sha256": "903b8a6b1912a9d22a1b162281b8a9e8297b57ee0c9f94c9e165f397befd2efb"
+    },
+    "src/mobile791/v1323-mobile-protocol-actions.css": {
+      "version": "14.57",
+      "replaced": 3,
+      "original_sha256": "8ea8e742bee07a2c327cc535cca1f448714d91368bede8ec82ea9c20bcd1f016"
+    },
     "src/public-qr/public-qr.css": {
       "version": "14.56",
       "replaced": 27,
       "original_sha256": "479927350f3bde3047ddd221195c371fdf6efc95a2a3be4fb6b0069024a19a51"
+    },
+    "src/styles/desktop-jobs-table.css": {
+      "version": "14.57",
+      "replaced": 12,
+      "original_sha256": "ba67fe37fa49631d41b087cfb18b5d915009bfeaded8aa7c049ce1efc54a2c78"
     }
   }
 }
