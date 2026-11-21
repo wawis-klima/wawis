@@ -159,6 +159,32 @@ function writeShadows(shadows) {
   fs.writeFileSync(path.join(ROOT, SHADOWS_FILE), `${header}:root {\n${lines.join('\n')}\n}\n`);
 }
 
+const STATE_RE = /:(hover|active|focus|focus-visible|focus-within|checked|disabled)\b|\.(active|isActive|selected|isSelected|is-active)\b/g;
+
+export function selectorAt(css, index) {
+  const before = css.slice(0, index);
+  const open = before.lastIndexOf('{');
+  return before.slice(Math.max(before.lastIndexOf('}', open), before.lastIndexOf(';', open)) + 1, open)
+    .replace(/\/\*[\s\S]*?\*\//g, '').trim().replace(/\s+/g, ' ');
+}
+export const baseSelector = (sel) => sel.replace(STATE_RE, '').replace(/\s+/g, ' ').trim();
+const hasState = (sel) => { STATE_RE.lastIndex = 0; const r = STATE_RE.test(sel); STATE_RE.lastIndex = 0; return r; };
+
+// Element w różnych stanach (zwykły / najechany / wciśnięty / aktywny) — cienie tych stanów nie mogą się zlać,
+// bo zniknęłaby reakcja na dotyk. Takie cienie nie są łączone (14.65).
+export function interactiveShadowValues(files, valueAt) {
+  const pins = new Set();
+  for (const file of files) {
+    const css = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    const rows = [...css.matchAll(SHADOW_VAR_RE)].map((m, i) => ({ sel: selectorAt(css, m.index), v: valueAt(file, i, m[1]) }));
+    const stateBases = new Set(rows.filter((r) => hasState(r.sel)).flatMap((r) => r.sel.split(',').map((p) => baseSelector(p))));
+    for (const r of rows) {
+      if (hasState(r.sel) || r.sel.split(',').some((p) => stateBases.has(baseSelector(p)))) pins.add(r.v);
+    }
+  }
+  return pins;
+}
+
 function registryFiles() { return Object.keys(JSON.parse(read(REGISTRY_FILE)).files); }
 
 function convert() {
@@ -210,13 +236,14 @@ function state() {
 }
 
 function plan() {
-  const { usage, groups } = state();
+  const { shadows, baseline, usage, groups } = state();
+  const pins = interactiveShadowValues(Object.keys(baseline), (file, i, name) => shadows[name]);
   const order = [...groups.keys()].sort((a, b) => usage.get(b) - usage.get(a) || a.localeCompare(b));
   const centers = [];
   const target = new Map();
   for (const v of order) {
     let best = null;
-    for (const c of centers) {
+    for (const c of (pins.has(v) ? [] : centers)) {
       const ds = [...groups.get(v)].map((o) => shadowDistance(o, c));
       if (!ds.every(withinLimits)) continue;
       const score = Math.max(...ds.map((d) => d.dblur + d.dy * 2 + d.dalpha * 100));
@@ -224,7 +251,7 @@ function plan() {
     }
     if (best) target.set(v, best.c); else { centers.push(v); target.set(v, v); }
   }
-  return { target, centers, usage, groups };
+  return { target, centers, usage, groups, pins };
 }
 
 function apply() {
@@ -257,7 +284,7 @@ function apply() {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const cmd = process.argv[2];
   if (cmd === 'convert') convert();
-  else if (cmd === 'plan') { const p = plan(); console.log(`Cienie: ${p.groups.size} → ${p.centers.length}`); }
+  else if (cmd === 'plan') { const p = plan(); console.log(`Cienie: ${p.groups.size} → ${p.centers.length} (cieni stanów przycisków bez łączenia: ${p.pins.size})`); }
   else if (cmd === 'apply') apply();
   else if (cmd === 'report') {
     const { shadows, baseline } = state();

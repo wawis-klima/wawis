@@ -11,7 +11,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {
   SHADOWS_FILE, SHADOW_BASELINE_FILE, SHADOW_MERGES_FILE, SHADOW_LIMITS, SHADOW_VAR_RE, literalShadowDeclarations,
-  misplacedShadowUses, normalizeShadow, parseShadow, readShadows, restoreShadows, shadowDistance, shadowNameFor,
+  misplacedShadowUses, normalizeShadow, selectorAt, baseSelector, parseShadow, readShadows, restoreShadows, shadowDistance, shadowNameFor,
   withinLimits,
 } from './css-shadows.mjs';
 import { REGISTRY_FILE } from './css-tokens.mjs';
@@ -84,6 +84,26 @@ for (const file of registry) {
     positions += 1;
     if (expected !== orig) changed += 1;
   });
+}
+// 14.65: element w różnych stanach (zwykły / :hover / :active / aktywny) zachowuje różne cienie, jeśli różniły się
+// pierwotnie — łączenie nie może zabrać reakcji przycisku na dotyk.
+for (const file of registry) {
+  const css = fs.readFileSync(file, 'utf8');
+  const raws = baseline[file] || [];
+  const byBase = new Map();
+  [...css.matchAll(SHADOW_VAR_RE)].forEach((m, i) => {
+    for (const part of selectorAt(css, m.index).split(',')) {
+      const key = baseSelector(part);
+      if (!byBase.has(key)) byBase.set(key, []);
+      byBase.get(key).push({ orig: normalizeShadow(raws[i]), now: shadows[m[1]], sel: part.trim() });
+    }
+  });
+  for (const [key, rows] of byBase) {
+    for (const a of rows) for (const b of rows) {
+      const stateVsOther = a.sel !== b.sel && (a.sel !== baseSelector(a.sel) || b.sel !== baseSelector(b.sel));
+      if (stateVsOther && a.orig !== b.orig) assert.notEqual(a.now, b.now, `${file}: „${a.sel}” i „${b.sel}” miały różne cienie, a po łączeniu mają ten sam (${key})`);
+    }
+  }
 }
 for (const file of Object.keys(baseline)) assert.ok(registry.includes(file), `${file}: w zapisie cieni, ale nie w rejestrze`);
 assert.deepEqual(Object.keys(shadows).filter((n) => !used.has(n)), [], 'brak nieużywanych cieni');
