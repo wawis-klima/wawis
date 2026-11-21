@@ -1,11 +1,18 @@
 # WAWIS — Regression Ledger
 
+## BADGE-1459 — kolory plakietek z inicjałami
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| BADGE-1459-ADMIN | FIXED-UNVERIFIED | `smoke-badge-colors-v1459`: Piotr Wasik → badgeBlue w obu kopiach `jobHelpers.jsx`; Kacper/Krystian/Michał/Paweł bez zmian; brak powtórzeń w zespole. Kod komputera i telefonu identyczny. |
+| BADGE-1459-IPHONE | PENDING-OWNER | Na liście montaży i w szczegółach PW niebieski, KW zielony. |
+
 ## CSS-TOKENS-1458 — paleta kolorów, główny arkusz telefonu
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1458-MOBILE-MAIN | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (27 plików, w tym `mobile791/styles.css` 1104 kolory) + E2E `css-tokens-equivalence-v1451` (arkusz porównywany we wszystkich widokach telefonu) + `css-tokens-webkit-v1458` (WebKit i Chromium: `CSS.supports` dla każdej deklaracji ze zmienną, paleta wczytana w buildzie). |
-| CSS-1458-IPHONE | PENDING-OWNER | Główne ekrany na iPhonie (lista, szczegóły, kreator, menu) wyglądają jak przed 14.58. |
+| CSS-1458-IPHONE | VERIFIED-OWNER | Potwierdzone przez właściciela 21.11.2026 (wpis BADGE-1459). |
 
 ## CSS-TOKENS-1457 — paleta kolorów, mniejsze pliki stylów
 

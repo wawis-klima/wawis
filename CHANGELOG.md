@@ -1,3 +1,7 @@
+## 14.59
+- Plakietki z inicjałami: **Piotr Wasik** (administrator) ma teraz kolor **niebieski** zamiast zielonego — wcześniej miał ten sam zielony co Kacper Wydmański. Kolory pozostałych osób bez zmian (Kacper — zielony, Krystian — różowy, Michał — bursztynowy, Paweł — fioletowy). Komputer i telefon.
+- Test `smoke-badge-colors-v1459` (obie kopie kodu, brak powtórzonych kolorów w obecnym zespole).
+
 ## 14.58
 - Wspólna paleta kolorów, etap 8 (wygląd bez zmian): **główny arkusz telefonu** `src/mobile791/styles.css` — 1104 kolory → 430 zmiennych. Paleta: 617 kolorów. Arkusz wczytywany na każdym ekranie telefonu po zalogowaniu.
 - Test w przeglądarce: główny arkusz telefonu porównywany we wszystkich widokach telefonu z testu palety (Urządzenia, Paliwo, Kontrahenci, szczegóły montażu, kreator i tabliczki, skaner QR, wzór podpisu, lista/szczegóły/edycja montażu, nowy klient, Diagnostyka), po 3 szerokości.
