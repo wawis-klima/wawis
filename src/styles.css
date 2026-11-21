@@ -860,7 +860,7 @@ body{background:linear-gradient(180deg,var(--wx-slate-50) 0%,var(--wx-slate-50) 
 /* Mobile header 2.0 built from scratch */
 .mobileHeaderV2{
   width:100%;
-  background:var(--wxa-ffffff-950);
+  background:var(--wxa-ffffff-960);
   border:1px solid var(--wx-c-dbe6f2);
   border-radius:24px;
   padding:14px;
@@ -3436,7 +3436,7 @@ img.previewImage{
   }
 
   .activeStatusActionButton .statusActionImage{
-    filter:drop-shadow(0 14px 24px var(--wxa-0f2345-200));
+    filter:drop-shadow(0 14px 24px var(--wxa-0f2345-220));
   }
 }
 
@@ -4323,7 +4323,7 @@ img.previewImage{
   width:100%;
   height:100%;
   z-index:1;
-  filter:drop-shadow(0 20px 26px var(--wxa-0f2345-180));
+  filter:drop-shadow(0 20px 26px var(--wxa-0f2345-160));
 }
 
 .statusActionPlate{
@@ -4457,7 +4457,7 @@ img.previewImage{
 .statusBadgeGreen{ background:var(--wx-c-6aa93b); }
 
 .activeStatusActionButton .statusBlobSvg{
-  filter:drop-shadow(0 24px 34px var(--wxa-0f2345-240)) saturate(1.06);
+  filter:drop-shadow(0 24px 34px var(--wxa-0f2345-220)) saturate(1.06);
 }
 
 .activeStatusActionButton .statusActionPlate{
@@ -4580,7 +4580,7 @@ img.previewImage{
   }
 
   .activeStatusActionButton .statusBlobSvg{
-    filter:drop-shadow(0 12px 20px var(--wxa-0f2345-180)) saturate(1.08);
+    filter:drop-shadow(0 12px 20px var(--wxa-0f2345-160)) saturate(1.08);
   }
 }
 
@@ -4639,7 +4639,7 @@ img.previewImage{
   display:flex;
   align-items:center;
   justify-content:center;
-  background:var(--wxa-ffffff-980);
+  background:var(--wxa-ffffff-960);
   color:var(--wx-c-203252);
   font-size:12px;
   font-weight:800;
@@ -5241,7 +5241,7 @@ img.previewImage{
 .moduleSwitcherWrap{margin:0 0 18px}
 
 .dashboardMiniCounters{display:flex;gap:12px;align-items:stretch;margin:0 0 18px}
-.dashboardMiniCounter{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:280px;padding:12px 16px;border:1px solid var(--wx-c-dbe6f2);border-radius:18px;background:var(--wxa-ffffff-860);box-shadow:var(--wxs-10-24-0e68)}
+.dashboardMiniCounter{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:280px;padding:12px 16px;border:1px solid var(--wx-c-dbe6f2);border-radius:18px;background:var(--wxa-ffffff-880);box-shadow:var(--wxs-10-24-0e68)}
 .dashboardMiniCounter span{font-size:13px;font-weight:700;color:var(--wx-slate-500)}
 .dashboardMiniCounter strong{font-size:28px;line-height:1;color:var(--wx-c-102348)}
 .moduleSwitcher{display:inline-flex;gap:8px;padding:8px;border:1px solid var(--wx-c-dbe6f2);border-radius:22px;background:var(--wxa-ffffff-780);box-shadow:var(--wxs-10-24-0e68)}
@@ -5570,7 +5570,7 @@ img.previewImage{
   padding: 12px;
   border: 1px solid var(--wxa-94a3b8-280);
   border-radius: 18px;
-  background: var(--wxa-f8fbff-720);
+  background: var(--wxa-ffffff-720);
 }
 
 .jobDevicesHeader {
@@ -5637,7 +5637,7 @@ img.previewImage{
   justify-content: space-between;
   gap: 12px;
   padding: 8px 10px;
-  border: 1px solid var(--wxa-dbe6f2-900);
+  border: 1px solid var(--wxa-dbe6f2-920);
   border-radius: 14px;
   background: var(--wx-slate-50);
 }
@@ -5796,7 +5796,7 @@ img.previewImage{
 
 .desktopModuleShell{display:grid;gap:20px}
 .desktopHeroCard,.desktopFilterCard,.desktopDataCard{position:relative;overflow:hidden}
-.desktopHeroCard::before,.desktopFilterCard::before,.desktopDataCard::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;background:linear-gradient(90deg,var(--wxa-102348-180),var(--wxa-2dd4bf-220),var(--wxa-102348-000));pointer-events:none}
+.desktopHeroCard::before,.desktopFilterCard::before,.desktopDataCard::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;background:linear-gradient(90deg,var(--wxa-0f2345-160),var(--wxa-2dd4bf-220),var(--wxa-102348-000));pointer-events:none}
 .desktopHeroHint{display:grid;gap:6px;padding:16px 18px;border:1px solid var(--wx-c-dbe6f2);border-radius:18px;background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-50) 100%)}
 .desktopHeroHint span{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--wx-slate-500)}
 .desktopHeroHint strong{font-size:18px;color:var(--wx-c-102348)}
@@ -6799,7 +6799,7 @@ img.previewImage{
 
 .jobIndoorUnitsBlock.single {
   border-style: solid;
-  background: var(--wxa-f8fafc-780);
+  background: var(--wxa-ffffff-780);
 }
 
 .jobIndoorUnitsBlock.multi {
@@ -6995,7 +6995,7 @@ img.previewImage{
   content:"";
   height:1px;
   flex:1;
-  background:linear-gradient(90deg,var(--wxa-d2deee-950),var(--wxa-d2deee-000));
+  background:linear-gradient(90deg,var(--wxa-d2deee-950),var(--wxa-102348-000));
 }
 
 .adminDesktopSidebarLightPremium .adminDesktopNavItem{
@@ -7687,7 +7687,7 @@ img.previewImage{
   justify-content:space-between;
   gap:14px;
   padding:16px 16px 14px;
-  border-bottom:1px solid var(--wxa-d8e0ec-920);
+  border-bottom:1px solid var(--wxa-dbe6f2-920);
   background:var(--wxa-ffffff-960);
   backdrop-filter:blur(10px);
   z-index:5;
@@ -8389,7 +8389,7 @@ img.previewImage{
     --wawisDesktopHeaderHeight:70px;
     --wawisDesktopToolbarHeight:118px;
     --wawisDesktopPanelWidth:clamp(440px,35vw,540px);
-    --wawisDesktopShadow:0 12px 28px var(--wxa-0f2345-055);
+    --wawisDesktopShadow:0 12px 28px var(--wxa-0f172a-030);
     grid-template-columns:var(--wawisSidebarWidth) minmax(0,1fr);
   }
 
@@ -9550,7 +9550,7 @@ img.previewImage{
   box-sizing:border-box;
   border:2px solid var(--wx-c-2f74f3);
   border-radius:10px;
-  background:var(--wxa-1677ff-060);
+  background:var(--wxa-0a6ef2-060);
   box-shadow:var(--wxs-0-0-318c);
   cursor:move;
   touch-action:none;
@@ -9851,7 +9851,7 @@ img.previewImage{
   padding: 16px;
   border: 1px solid var(--line, var(--wxa-94a3b8-240));
   border-radius: 16px;
-  background: var(--wxa-0f172a-180);
+  background: var(--wxa-0f2345-160);
 }
 
 .contractorAddressesEditorHeader,
@@ -9880,9 +9880,9 @@ img.previewImage{
 
 .contractorAddressEditorRow,
 .contractorAddressPreviewItem {
-  border: 1px solid var(--line, var(--wxa-94a3b8-220));
+  border: 1px solid var(--line, var(--wxa-94a3b8-240));
   border-radius: 14px;
-  background: var(--wxa-0f172a-220);
+  background: var(--wxa-0f2345-220);
 }
 
 .contractorAddressEditorRow {
@@ -10005,7 +10005,7 @@ img.previewImage{
 /* --- v8.97 diagnostyka administratora --- */
 .diagnosticsPage{display:flex;flex-direction:column;gap:16px;min-width:0;}
 .diagnosticsHeaderCard p{margin:6px 0 0;color:var(--wx-slate-500);max-width:780px;}
-.diagnosticsPrivacyCard,.diagnosticsActionsCard,.diagnosticsEventsCard{background:var(--wx-white);border:1px solid var(--wxa-94a3b8-250);border-radius:20px;padding:20px;box-shadow:var(--wxs-12-30-ab85);}
+.diagnosticsPrivacyCard,.diagnosticsActionsCard,.diagnosticsEventsCard{background:var(--wx-white);border:1px solid var(--wxa-94a3b8-240);border-radius:20px;padding:20px;box-shadow:var(--wxs-12-30-ab85);}
 .diagnosticsPrivacyCard{background:linear-gradient(135deg,var(--wx-blue-50),var(--wx-slate-50));border-color:var(--wx-c-cbdcf6);}
 .diagnosticsPrivacyCard strong{display:block;color:var(--wx-blue-900);font-size:15px;margin-bottom:5px;}
 .diagnosticsPrivacyCard p{margin:0;color:var(--wx-slate-600);line-height:1.55;}
@@ -10556,7 +10556,7 @@ img.previewImage{
   padding:0 12px;
   border:1px solid var(--wxa-94a3b8-340);
   border-radius:999px;
-  background:var(--wxa-ffffff-940);
+  background:var(--wxa-ffffff-920);
   color:var(--wx-c-526172);
   box-shadow:var(--wxs-8-18-5c35);
   font-size:12px;
@@ -10726,7 +10726,7 @@ img.previewImage{
     gap: 12px;
     margin: 10px 0 4px;
     padding: 10px 12px;
-    border: 1px solid var(--wxa-b91c1c-220);
+    border: 1px solid var(--wxa-b91c1c-200);
     border-radius: 10px;
     background: var(--wxa-fef2f2-860);
     font-size: 12px;
