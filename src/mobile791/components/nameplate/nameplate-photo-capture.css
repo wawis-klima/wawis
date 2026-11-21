@@ -154,7 +154,7 @@
 .nameplateCapture.compact .nameplateCaptureCameraBtn {
   min-height: 42px;
   border-radius: 13px;
-  background: var(--wx-c-1464f4);
+  background: var(--wx-blue-600);
   color: var(--wx-white);
   font-size: 12px;
   font-weight: 900;
@@ -194,7 +194,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: max(14px, env(safe-area-inset-top)) 16px 10px;
-  border-bottom: 1px solid var(--wx-slate-200);
+  border-bottom: 1px solid var(--wx-c-e7edf6);
   background: var(--wx-white);
 }
 
@@ -255,7 +255,7 @@
   max-height: 100%;
   overflow: hidden;
   line-height: 0;
-  background: var(--wx-slate-200);
+  background: var(--wx-c-e7edf6);
 }
 
 .nameplateCropImageWrap > img {
@@ -351,7 +351,7 @@
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   gap: 10px;
   padding: 12px 14px max(14px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--wx-slate-200);
+  border-top: 1px solid var(--wx-c-e7edf6);
   background: var(--wx-white);
 }
 
@@ -497,7 +497,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: max(9px, env(safe-area-inset-top)) 14px 8px;
-  border-bottom: 1px solid var(--wx-slate-200);
+  border-bottom: 1px solid var(--wx-c-e7edf6);
   background: var(--wx-white);
 }
 
@@ -701,7 +701,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
   padding: 8px 14px max(10px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--wx-slate-200);
+  border-top: 1px solid var(--wx-c-e7edf6);
   background: var(--wx-white);
 }
 
@@ -722,7 +722,7 @@
 
 .nameplateVerifyFooter .btn.primary:disabled {
   border-color: var(--wx-slate-300);
-  background: var(--wx-slate-200);
+  background: var(--wx-c-e7edf6);
   color: var(--wx-slate-400);
   opacity: 1;
 }

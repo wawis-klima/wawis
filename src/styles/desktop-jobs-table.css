@@ -325,7 +325,7 @@
   .desktopNameplateSummaryBadge.none {
     color: var(--wx-slate-500);
     background: var(--wx-slate-50);
-    border-color: var(--wx-slate-200);
+    border-color: var(--wx-c-e7edf6);
   }
 
   .desktopJobsHeaderCellVatInvoice {

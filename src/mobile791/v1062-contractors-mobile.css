@@ -8,10 +8,10 @@
   .contractorsV1062Actions {display:grid;grid-template-columns:1.2fr repeat(3,.92fr);gap:8px}
   .contractorsV1062StatCard,.contractorsV1062ActionCard {min-height:78px;border:1px solid var(--wx-c-dbe6f2);border-radius:18px;background:var(--wx-white);color:var(--wx-c-102348);box-shadow:0 6px 18px rgba(15,35,69,.04)}
   .contractorsV1062StatCard {display:grid;align-content:center;gap:5px;padding:10px 12px}
-  .contractorsV1062StatCard>span {font-size:11px;line-height:1.15;color:var(--wx-c-60748c);font-weight:700}
+  .contractorsV1062StatCard>span {font-size:11px;line-height:1.15;color:var(--wx-slate-500);font-weight:700}
   .contractorsV1062StatCard>div {display:flex;align-items:center;gap:7px}
-  .contractorsV1062StatCard svg {width:18px;height:18px;color:var(--wx-c-57739b)}
-  .contractorsV1062StatCard strong {font-size:24px;line-height:1;color:var(--wx-c-153568)}
+  .contractorsV1062StatCard svg {width:18px;height:18px;color:var(--wx-c-4f6f98)}
+  .contractorsV1062StatCard strong {font-size:24px;line-height:1;color:var(--wx-c-143761)}
   .contractorsV1062ActionCard {appearance:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 8px;cursor:pointer;font:inherit;text-align:left}
   .contractorsV1062ActionCard strong {flex:0 0 auto;font-size:25px;line-height:1;font-weight:500}
   .contractorsV1062ActionCard span {font-size:11px;line-height:1.15;font-weight:800}
@@ -19,38 +19,38 @@
   .contractorsV1062Message {margin:0}
   .contractorsV1062List {display:grid;gap:9px}
   .contractorsV1062Card {overflow:hidden;border:1px solid var(--wx-c-dbe6f2);border-radius:20px;background:var(--wx-white);box-shadow:0 7px 22px rgba(15,35,69,.045)}
-  .contractorsV1062Card.isExpanded {border-color:var(--wx-c-b9d7ff);box-shadow:0 9px 24px rgba(37,99,235,.08)}
+  .contractorsV1062Card.isExpanded {border-color:var(--wx-c-b7d4ff);box-shadow:0 9px 24px rgba(37,99,235,.08)}
   .contractorsV1062CardMain {width:100%;display:grid;grid-template-columns:54px minmax(0,1fr) 24px;gap:12px;align-items:center;padding:14px 14px 13px;border:0;background:transparent;color:var(--wx-c-102348);text-align:left;font:inherit;cursor:pointer}
   .contractorsV1062Avatar {width:54px;height:54px;display:grid;place-items:center;border-radius:50%;background:var(--wx-blue-50);color:var(--wx-c-45658d);font-size:20px;font-weight:800}
   .contractorsV1062CardContent {min-width:0;display:grid;gap:4px}
   .contractorsV1062Name {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;line-height:1.25;color:var(--wx-c-102348)}
-  .contractorsV1062Meta {min-width:0;display:flex;align-items:center;gap:6px;color:var(--wx-c-60748c);font-size:12px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .contractorsV1062Meta {min-width:0;display:flex;align-items:center;gap:6px;color:var(--wx-slate-500);font-size:12px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .contractorsV1062Meta svg {flex:0 0 15px;width:15px;height:15px;color:var(--wx-c-4f6f98)}
   .contractorsV1062ContactRow {display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.25fr);gap:10px;min-width:0}
-  .contractorsV1062Chevron {justify-self:end;font-size:30px;line-height:1;color:var(--wx-c-12325f)}
-  .contractorsV1062Expanded {display:grid;gap:12px;padding:13px 15px 15px;border-top:1px solid var(--wx-c-e2ebf5);background:var(--wx-c-fbfdff)}
+  .contractorsV1062Chevron {justify-self:end;font-size:30px;line-height:1;color:var(--wx-c-0f2f61)}
+  .contractorsV1062Expanded {display:grid;gap:12px;padding:13px 15px 15px;border-top:1px solid var(--wx-c-e7edf6);background:var(--wx-c-fbfdff)}
   .contractorsV1062DetailsGrid {display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
   .contractorsV1062DetailItem {display:grid;gap:2px;min-width:0}
-  .contractorsV1062DetailItem span,.contractorsV1062ExtraLabel {color:var(--wx-c-72839b);font-size:11px;font-weight:700}
+  .contractorsV1062DetailItem span,.contractorsV1062ExtraLabel {color:var(--wx-c-718096);font-size:11px;font-weight:700}
   .contractorsV1062DetailItem strong {color:var(--wx-c-102348);font-size:13px;overflow-wrap:anywhere}
   .contractorsV1062ExtraBlock {display:grid;gap:5px;padding-top:9px;border-top:1px solid var(--wx-c-e7edf6);color:var(--wx-c-102348);font-size:13px}
-  .contractorsV1062ExtraBlock p {margin:0;line-height:1.45;color:var(--wx-c-415a78)}
+  .contractorsV1062ExtraBlock p {margin:0;line-height:1.45;color:var(--wx-c-405675)}
   .contractorsV1062ExtraLine,.contractorsV1062DeviceLine {display:flex;align-items:center;gap:7px;min-width:0}
   .contractorsV1062ExtraLine svg {width:14px;height:14px;flex:0 0 14px}
   .contractorsV1062DeviceLine {justify-content:space-between}
   .contractorsV1062DeviceLine span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .contractorsV1062DeviceLine small {color:var(--wx-c-718096);overflow-wrap:anywhere;text-align:right}
   .contractorsV1062Muted {color:var(--wx-c-718096)}
-  .contractorsV1062FallbackNote {padding:9px 10px;border-radius:12px;background:var(--wx-c-fff6d8);color:var(--wx-c-7a5a00);font-size:12px;line-height:1.35}
+  .contractorsV1062FallbackNote {padding:9px 10px;border-radius:12px;background:var(--wx-c-fff6d8);color:var(--wx-c-7f5b00);font-size:12px;line-height:1.35}
   .contractorsV1062ExpandedActions,.contractorsV1062EditorActions {display:flex;gap:8px;flex-wrap:wrap}
   .contractorsV1062SmallBtn {min-height:36px;padding:8px 12px;font-size:12px}
-  .contractorsV1062Empty {padding:30px 18px;border:1px dashed var(--wx-c-cbd9ea);border-radius:18px;background:var(--wx-white);color:var(--wx-c-667b95);text-align:center;font-size:14px}
+  .contractorsV1062Empty {padding:30px 18px;border:1px dashed var(--wx-c-cbd9ea);border-radius:18px;background:var(--wx-white);color:var(--wx-c-687b91);text-align:center;font-size:14px}
   .contractorsV1062Footer {display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:4px 1px 0}
-  .contractorsV1062PerPage,.contractorsV1062Range {color:var(--wx-c-667b95);font-size:10px;white-space:nowrap}
+  .contractorsV1062PerPage,.contractorsV1062Range {color:var(--wx-c-687b91);font-size:10px;white-space:nowrap}
   .contractorsV1062Pagination {min-width:0;display:flex;align-items:center;justify-content:center;gap:5px}
   .contractorsV1062PageNumbers {display:flex;align-items:center;gap:4px;min-width:0}
-  .contractorsV1062PageButton {min-width:32px;height:34px;padding:0 8px;border:1px solid var(--wx-c-d6e0ec);border-radius:11px;background:var(--wx-white);color:var(--wx-c-153568);font:inherit;font-size:12px;font-weight:800}
-  .contractorsV1062PageButton.isActive {border-color:var(--wx-c-153568);background:var(--wx-c-153568);color:var(--wx-white)}
+  .contractorsV1062PageButton {min-width:32px;height:34px;padding:0 8px;border:1px solid var(--wx-c-dbe6f2);border-radius:11px;background:var(--wx-white);color:var(--wx-c-143761);font:inherit;font-size:12px;font-weight:800}
+  .contractorsV1062PageButton.isActive {border-color:var(--wx-c-143761);background:var(--wx-c-143761);color:var(--wx-white)}
   .contractorsV1062PageButton:disabled {opacity:.35}
   .contractorsV1062PageGap {color:var(--wx-c-8190a4);font-size:12px}
   .contractorsV1062Editor {display:grid;gap:14px;padding:16px;border-radius:22px}
@@ -61,9 +61,9 @@
   .contractorsV1062Editor .contractorsTextarea {min-height:100px}
   .contractorsV1062ImportReview {display:grid;gap:14px}
   .contractorsV1062ImportStats {display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .contractorsV1062ImportStats>div {display:grid;gap:4px;padding:12px;border:1px solid var(--wx-c-dbe6f2);border-radius:14px;background:var(--wx-c-f8fbff)}
-  .contractorsV1062ImportStats span {font-size:11px;color:var(--wx-c-6b7f98)}
-  .contractorsV1062ImportStats strong {font-size:20px;color:var(--wx-c-153568)}
+  .contractorsV1062ImportStats>div {display:grid;gap:4px;padding:12px;border:1px solid var(--wx-c-dbe6f2);border-radius:14px;background:var(--wx-slate-50)}
+  .contractorsV1062ImportStats span {font-size:11px;color:var(--wx-c-718096)}
+  .contractorsV1062ImportStats strong {font-size:20px;color:var(--wx-c-143761)}
 }
 @media (max-width:390px) {
   .contractorsV1062Page {padding-left:9px;padding-right:9px}

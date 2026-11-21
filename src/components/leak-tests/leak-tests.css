@@ -5,14 +5,14 @@
 .leakTestsLead { margin: 4px 0 0; color: var(--wx-c-5a6b80); max-width: 720px; }
 .leakTestsTools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .leakTestsCount { font-weight: 700; color: var(--wx-c-1e4fbf); font-variant-numeric: tabular-nums; }
-.leakTestsFilter { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--wx-c-dbe3ef); padding-bottom: 10px; }
-.leakTestsFilterTab { border: 1px solid var(--wx-c-dbe3ef); background: var(--wx-white); color: var(--wx-c-10203a); border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+.leakTestsFilter { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--wx-c-dbe6f2); padding-bottom: 10px; }
+.leakTestsFilterTab { border: 1px solid var(--wx-c-dbe6f2); background: var(--wx-white); color: var(--wx-c-10203a); border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 700; cursor: pointer; }
 .leakTestsFilterTab.active { border-color: var(--wx-blue-600); background: var(--wx-c-e3ecfd); color: var(--wx-c-1e4fbf); }
-.leakTestsError { color: var(--wx-c-b42318); font-weight: 600; margin: 0; }
+.leakTestsError { color: var(--wx-red-700); font-weight: 600; margin: 0; }
 .leakTestsEmpty { color: var(--wx-c-5a6b80); margin: 8px 0; }
 .leakTestsList { display: grid; gap: 10px; }
 .leakTestRow { display: grid; grid-template-columns: minmax(0, 1.6fr) 160px 120px 140px auto; gap: 12px; align-items: end;
-  border: 1px solid var(--wx-c-dbe3ef); border-radius: 14px; padding: 12px 14px; background: var(--wx-white); }
+  border: 1px solid var(--wx-c-dbe6f2); border-radius: 14px; padding: 12px 14px; background: var(--wx-white); }
 .leakTestRow.withInstaller { grid-template-columns: minmax(0, 1.4fr) 180px 160px 120px 140px auto; }
 .leakTestRow.done { border-color: var(--wx-green-200); background: var(--wx-c-f7fff9); }
 .leakTestInfo { display: grid; gap: 2px; min-width: 0; align-self: center; }
@@ -21,7 +21,7 @@
 .leakTestField { display: grid; gap: 4px; font-size: 12px; font-weight: 700; color: var(--wx-c-5a6b80); min-width: 0; }
 .leakTestField .input { margin: 0; width: 100%; min-width: 0; }
 .leakTestActions { display: flex; gap: 8px; }
-.leakTestRowError { grid-column: 1 / -1; margin: 0; color: var(--wx-c-b42318); font-weight: 600; }
+.leakTestRowError { grid-column: 1 / -1; margin: 0; color: var(--wx-red-700); font-weight: 600; }
 .leakTestRowSaved { grid-column: 1 / -1; margin: 0; color: var(--wx-c-1d7a46); font-weight: 700; }
 @media (max-width: 1100px) {
   .leakTestRow, .leakTestRow.withInstaller { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -46,4 +46,4 @@
 .protocolsExportProgress { margin: 0; font-weight: 600; color: var(--wx-blue-700); }
 .protocolsExportDone { margin: 0; font-weight: 700; color: var(--wx-c-1d7a46); }
 /* 14.39: podpis instalatora w starszych protokołach. */
-.protocolsBackfillList { margin: 0; padding-left: 18px; color: var(--wx-c-8a4b08); font-size: 13px; display: grid; gap: 2px; }
+.protocolsBackfillList { margin: 0; padding-left: 18px; color: var(--wx-c-854d0e); font-size: 13px; display: grid; gap: 2px; }
