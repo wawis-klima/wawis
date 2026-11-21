@@ -3,14 +3,14 @@
   gap: 7px;
   margin-top: 4px;
   padding: 8px;
-  border: 1px solid var(--wx-slate-300);
+  border: 1px solid var(--wx-c-bcc9d8);
   border-radius: 12px;
   background: var(--wx-white);
 }
 
 .nameplateCapture.hasPhoto {
   border-color: var(--wx-green-300);
-  background: var(--wx-c-f7fff9);
+  background: var(--wx-green-50);
 }
 
 .nameplateCaptureSummary {
@@ -61,7 +61,7 @@
 }
 
 .nameplateCaptureStatus.missing {
-  background: var(--wx-red-100);
+  background: var(--wx-c-ffeaea);
   color: var(--wx-red-700);
 }
 
@@ -127,7 +127,7 @@
 }
 
 .nameplateCapture.compact.hasPhoto {
-  background: var(--wx-c-f7fff9);
+  background: var(--wx-green-50);
 }
 
 .nameplateCapture.compact .nameplateCaptureSummary {
@@ -224,7 +224,7 @@
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid var(--wx-slate-300);
+  border: 1px solid var(--wx-c-bcc9d8);
   border-radius: 999px;
   background: var(--wx-white);
   color: var(--wx-slate-700);
@@ -340,7 +340,7 @@
   padding: 9px 11px;
   border: 1px solid var(--wx-red-200);
   border-radius: 10px;
-  background: var(--wx-red-50);
+  background: var(--wx-c-fff7f7);
   color: var(--wx-red-700);
   font-size: 11px;
   line-height: 1.35;
@@ -363,7 +363,7 @@
 }
 
 .nameplateCropFooter .btn.secondary {
-  border-color: var(--wx-slate-300);
+  border-color: var(--wx-c-bcc9d8);
   background: var(--wx-white);
   color: var(--wx-c-10203a);
 }
@@ -525,7 +525,7 @@
   flex-basis: 36px;
   width: 36px;
   height: 36px;
-  border-color: var(--wx-slate-300);
+  border-color: var(--wx-c-bcc9d8);
   background: var(--wx-white);
   color: var(--wx-slate-900);
 }
@@ -549,7 +549,7 @@
   height: auto !important;
   max-height: 22dvh !important;
   margin: 0 auto 8px;
-  border: 1px solid var(--wx-slate-300);
+  border: 1px solid var(--wx-c-bcc9d8);
   border-radius: 12px;
   background: var(--wx-white);
   object-fit: contain !important;
@@ -593,7 +593,7 @@
   display: inline-flex;
   margin-bottom: 6px;
   padding: 4px 8px;
-  border: 1px solid var(--wx-slate-300);
+  border: 1px solid var(--wx-c-bcc9d8);
   border-radius: 999px;
   background: var(--wx-white);
   color: var(--wx-slate-600);
@@ -618,7 +618,7 @@
 .nameplateVerifyField .input {
   min-height: 41px;
   padding: 7px 11px;
-  border-color: var(--wx-slate-300);
+  border-color: var(--wx-c-bcc9d8);
   border-radius: 12px;
   background: var(--wx-white);
   color: var(--wx-slate-900);
@@ -659,7 +659,7 @@
 
 .nameplateVerifyMismatch {
   border: 1px solid var(--wx-c-f87171);
-  background: var(--wx-red-50);
+  background: var(--wx-c-fff7f7);
   color: var(--wx-red-700);
 }
 
@@ -715,13 +715,13 @@
 }
 
 .nameplateVerifyFooter .btn.secondary {
-  border-color: var(--wx-slate-300);
+  border-color: var(--wx-c-bcc9d8);
   background: var(--wx-white);
   color: var(--wx-slate-900);
 }
 
 .nameplateVerifyFooter .btn.primary:disabled {
-  border-color: var(--wx-slate-300);
+  border-color: var(--wx-c-bcc9d8);
   background: var(--wx-c-e7edf6);
   color: var(--wx-slate-400);
   opacity: 1;

@@ -149,7 +149,7 @@
   }
 
   .deviceUnitManualVerifyBtn.revoke {
-    border-color: var(--wx-slate-300);
+    border-color: var(--wx-c-bcc9d8);
     background: var(--wx-slate-50);
     color: var(--wx-slate-600);
   }

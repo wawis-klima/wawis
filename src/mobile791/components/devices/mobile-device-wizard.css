@@ -1,7 +1,7 @@
 .mobileDeviceWizard {
   --wizard-blue: var(--wx-blue-600);
   --wizard-ink: var(--wx-c-10203a);
-  --wizard-muted: var(--wx-c-7a889b);
+  --wizard-muted: var(--wx-c-718096);
   position: relative;
   display: flex;
   min-height: min(760px, 92vh);
@@ -58,7 +58,7 @@
   margin: 5px 0 22px;
   padding: 9px 15px;
   border-radius: 999px;
-  background: var(--wx-c-eaf3ff);
+  background: var(--wx-c-e7edf6);
   color: var(--wizard-blue);
   font-size: 13px;
   font-weight: 800;
@@ -238,9 +238,9 @@
 .mobileMultiIndoorText strong { font-size: 15px; }
 .mobileMultiOutdoorText small,
 .mobileMultiIndoorText small { overflow: hidden; margin-top: 3px; color: var(--wizard-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.mobileMultiOutdoorText em { margin-top: 9px; color: var(--wx-c-7a889b); font-size: 11px; font-style: normal; font-weight: 800; }
+.mobileMultiOutdoorText em { margin-top: 9px; color: var(--wx-c-718096); font-size: 11px; font-style: normal; font-weight: 800; }
 .mobileMultiOutdoorText em.ready { color: var(--wx-green-600); }
-.mobileMultiIndoorStatus { display: inline-flex; align-items: center; gap: 5px; color: var(--wx-c-667080); font-size: 12px; font-weight: 900; }
+.mobileMultiIndoorStatus { display: inline-flex; align-items: center; gap: 5px; color: var(--wx-slate-500); font-size: 12px; font-weight: 900; }
 .mobileMultiIndoorStatus.ready { color: var(--wx-green-600); }
 .mobileMultiIndoorStatus small { white-space: nowrap; font-size: 10px; }
 
@@ -269,7 +269,7 @@
 .mobileDeviceOverviewText small { overflow: hidden; margin-top: 4px; color: var(--wizard-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .mobileDeviceOverviewText em { margin-top: 8px; color: var(--wx-amber-600); font-size: 11px; font-style: normal; font-weight: 800; }
 .mobileDeviceOverviewText em.ready { color: var(--wx-green-600); }
-.mobileDeviceOverviewBadge { padding: 5px 8px; border-radius: 999px; background: var(--wx-c-eaf3ff); color: var(--wizard-blue); font-size: 10px; font-weight: 900; }
+.mobileDeviceOverviewBadge { padding: 5px 8px; border-radius: 999px; background: var(--wx-c-e7edf6); color: var(--wizard-blue); font-size: 10px; font-weight: 900; }
 .mobileDeviceOverviewRemove { width: 100%; padding: 8px; border: 0; border-top: 1px solid var(--wx-slate-50); background: var(--wx-white); color: var(--wx-red-600); font-size: 10px; font-weight: 800; cursor: pointer; }
 .mobileDeviceAddAnother { margin-top: 3px; }
 
@@ -329,7 +329,7 @@
   background: var(--wx-white);
   box-shadow: var(--wxs-m20-50-2105);
 }
-.mobileDevicePickerHandle { width: 42px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: var(--wx-slate-300); }
+.mobileDevicePickerHandle { width: 42px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: var(--wx-c-bcc9d8); }
 .mobileDevicePickerTitleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mobileDevicePickerTitleRow h3 { margin: 0; font-size: 18px; }
 .mobileDevicePickerTitleRow button { border: 0; background: transparent; color: var(--wizard-blue); font-size: 11px; font-weight: 800; cursor: pointer; }
@@ -432,7 +432,7 @@
   gap: 6px;
   min-height: 38px;
   padding: 8px 10px;
-  border: 1px solid var(--wx-slate-300);
+  border: 1px solid var(--wx-c-bcc9d8);
   border-radius: 999px;
   background: var(--wx-white);
   color: var(--wx-c-252d3a);
@@ -542,7 +542,7 @@
 
 .mobileProtocolWizard .protocolTestClientName {
   margin: 0 !important;
-  color: var(--wx-c-142a3a) !important;
+  color: var(--wx-c-243746) !important;
   font-size: 17px !important;
   line-height: 1.25 !important;
   font-weight: 900 !important;
@@ -557,7 +557,7 @@
 }
 .mobileProtocolWizard .protocolTestNotice.saved {
   border-color: var(--wx-c-a8d7c4) !important;
-  background: var(--wx-c-f7fff9) !important;
+  background: var(--wx-green-50) !important;
   color: var(--wx-c-176b4d) !important;
 }
 
@@ -569,7 +569,7 @@
 
 .mobileProtocolWizard .protocolTestSection h3 {
   margin: 0 0 11px !important;
-  color: var(--wx-c-142a3a) !important;
+  color: var(--wx-c-243746) !important;
   font-size: 16px !important;
   line-height: 1.25 !important;
   font-weight: 900 !important;
@@ -699,7 +699,7 @@
   padding: 9px 10px;
   border-radius: 11px;
   background: var(--wx-slate-50);
-  color: var(--wx-c-465a68);
+  color: var(--wx-c-526172);
   font-size: 11px !important;
   line-height: 1.35 !important;
 }
@@ -715,7 +715,7 @@
 .protocolTestSignatureStatus > div { display: grid; gap: 3px; }
 .protocolTestSignatureStatus strong { color: var(--wx-c-243746); font-size: 13px !important; line-height: 1.35 !important; }
 .protocolTestSignatureStatus span { color: var(--wx-c-647783); font-size: 11px !important; line-height: 1.4 !important; }
-.protocolTestSignatureStatus.ready { border-color: var(--wx-c-a8d7c4); background: var(--wx-c-f7fff9); }
+.protocolTestSignatureStatus.ready { border-color: var(--wx-c-a8d7c4); background: var(--wx-green-50); }
 .protocolTestSignatureStatus.ready strong { color: var(--wx-c-176b4d); }
 .protocolTestSignatureOpen { width: 100%; min-height: 44px; border-radius: 12px; font-size: 13px !important; font-weight: 900; }
 
@@ -725,7 +725,7 @@
 .mobileProtocolWizard .protocolPaymentHeading h3 { margin: 0 !important; font-size: 17px !important; line-height: 1.2 !important; }
 .protocolBottomStartAnchor { height: 0; scroll-margin-top: 10px; }
 
-.protocolNoteToggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; padding: 10px 12px !important; border: 1px dashed var(--wx-c-a9bac6) !important; border-radius: 12px !important; background: var(--wx-slate-50) !important; color: var(--wx-c-2b4b5d) !important; font-size: 13px !important; font-weight: 850 !important; text-align: left; }
+.protocolNoteToggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; padding: 10px 12px !important; border: 1px dashed var(--wx-c-bcc9d8) !important; border-radius: 12px !important; background: var(--wx-slate-50) !important; color: var(--wx-c-2b4b5d) !important; font-size: 13px !important; font-weight: 850 !important; text-align: left; }
 .protocolNoteToggle > span:first-child { color: var(--wx-c-168d91); font-size: 18px; line-height: 1; font-weight: 900; }
 .protocolNoteToggle small,
 .mobileProtocolWizard .protocolNoteHeading small { color: var(--wx-c-71838f); font-size: 10px !important; font-weight: 750; }
@@ -738,14 +738,14 @@
 .protocolNoteReadOnly { white-space: pre-wrap; overflow-wrap: anywhere; padding: 9px 10px; border: 1px solid var(--wx-c-e5e7eb); border-radius: 10px; background: var(--wx-white); color: var(--wx-c-243746); font-size: 12px; line-height: 1.4; font-weight: 650; }
 
 .protocolPaymentForm { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; min-width: 0; padding: 9px 10px; border: 1px solid var(--wx-c-e5e7eb); border-radius: 11px; background: var(--wx-white); box-sizing: border-box; overflow: hidden; }
-.protocolPaymentForm > label { display: grid; gap: 3px; min-width: 0; color: var(--wx-c-465a68); font-size: 10px !important; line-height: 1.2 !important; font-weight: 850; }
+.protocolPaymentForm > label { display: grid; gap: 3px; min-width: 0; color: var(--wx-c-526172); font-size: 10px !important; line-height: 1.2 !important; font-weight: 850; }
 .protocolPaymentMethodField,
 .protocolPaymentAmountField,
 .protocolPaymentDateField { grid-column: 1 / -1; }
 .protocolPaymentForm .input { width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; padding: 6px 9px; border-radius: 9px; box-sizing: border-box; font-size: 16px !important; line-height: 1.05 !important; font-weight: 700; letter-spacing: -.015em; }
 .protocolPaymentForm select.input { font-size: 16px !important; }
 /* v11.29 — iOS date ma własną ramkę o identycznym wymiarze jak select „Gotówka”. */
-.protocolPaymentDateShell { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; max-height: 38px; border: 1px solid var(--wx-c-cbd9ea); border-radius: 9px; background: var(--wx-white); box-sizing: border-box; overflow: hidden; }
+.protocolPaymentDateShell { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; max-height: 38px; border: 1px solid var(--wx-c-cbdcf6); border-radius: 9px; background: var(--wx-white); box-sizing: border-box; overflow: hidden; }
 .protocolPaymentForm input[type="date"] { -webkit-appearance: none !important; appearance: none !important; display: flex !important; align-items: center !important; justify-content: center !important; inline-size: 100% !important; width: 100% !important; min-inline-size: 0 !important; min-width: 0 !important; max-inline-size: 100% !important; max-width: 100% !important; block-size: 100% !important; height: 100% !important; min-block-size: 0 !important; min-height: 0 !important; max-block-size: 100% !important; max-height: 100% !important; margin: 0 !important; padding: 0 9px !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-sizing: border-box !important; overflow: hidden !important; color: var(--wx-c-243746) !important; -webkit-text-fill-color: var(--wx-c-243746) !important; opacity: 1 !important; font-size: 16px !important; line-height: 1 !important; font-weight: 700; letter-spacing: -.015em; text-align: center !important; }
 .protocolPaymentForm input[type="date"]::-webkit-date-and-time-value { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-width: 0; margin: 0; padding: 0; color: var(--wx-c-243746); -webkit-text-fill-color: var(--wx-c-243746); font-size: 14px; line-height: 1; text-align: center; transform: none; }
 .protocolPaymentForm input[type="date"]::-webkit-calendar-picker-indicator { margin: 0; padding: 0; max-width: 18px; }
@@ -756,11 +756,11 @@
 .protocolPaymentSummary > div:nth-last-child(-n+2) { border-bottom: 0; }
 .protocolPaymentSummary dt { margin: 0 0 3px; color: var(--wx-c-647783); font-size: 10px !important; font-weight: 800; }
 .protocolPaymentSummary dd { margin: 0; color: var(--wx-c-243746); font-size: 13px !important; font-weight: 900; overflow-wrap: anywhere; }
-.protocolOutputActions { display: grid; gap: 8px; padding: 14px; scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom)); border: 1px solid var(--wx-c-a8d7c4); border-radius: 16px; background: var(--wx-c-f7fff9); }
+.protocolOutputActions { display: grid; gap: 8px; padding: 14px; scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom)); border: 1px solid var(--wx-c-a8d7c4); border-radius: 16px; background: var(--wx-green-50); }
 .mobileProtocolWizard .protocolOutputActions h3 { margin: 0 0 3px !important; color: var(--wx-c-176b4d) !important; font-size: 15px !important; }
 .protocolOutputActions .btn { width: 100%; min-height: 46px; border-radius: 12px; font-size: 13px !important; font-weight: 900; }
 .protocolEmailAction { display: grid; gap: 5px; }
-.protocolEmailAction > span { padding: 0 5px; color: var(--wx-c-5b6b78); font-size: 10px !important; line-height: 1.35 !important; font-weight: 750; overflow-wrap: anywhere; }
+.protocolEmailAction > span { padding: 0 5px; color: var(--wx-c-526172); font-size: 10px !important; line-height: 1.35 !important; font-weight: 750; overflow-wrap: anywhere; }
 .protocolEmailAction .btn:disabled + span { color: var(--wx-c-8a5a35); }
 
 @media (max-width: 430px) {
@@ -810,10 +810,10 @@
   touch-action: none;
 }
 .protocolSignatureHeader { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 10px; }
-.protocolSignatureHeader h2 { margin: 0; color: var(--wx-c-142a3a); font-size: 20px !important; line-height: 1.2 !important; font-weight: 950; }
+.protocolSignatureHeader h2 { margin: 0; color: var(--wx-c-243746); font-size: 20px !important; line-height: 1.2 !important; font-weight: 950; }
 .protocolSignatureHeader p { margin: 3px 0 0; color: var(--wx-c-647783); font-size: 12px !important; line-height: 1.3 !important; font-weight: 750; overflow-wrap: anywhere; }
-.protocolSignatureBack { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-white); color: var(--wx-c-142a3a); }
-.protocolSignatureInstruction { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--wx-white); color: var(--wx-c-465a68); font-size: 12px !important; line-height: 1.45 !important; font-weight: 750; }
+.protocolSignatureBack { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-white); color: var(--wx-c-243746); }
+.protocolSignatureInstruction { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--wx-white); color: var(--wx-c-526172); font-size: 12px !important; line-height: 1.45 !important; font-weight: 750; }
 .protocolSignatureCanvasWrap { min-height: 0; padding: 8px; overflow: hidden; border: 1px solid var(--wx-c-dbe6f2); border-radius: 16px; background: var(--wx-white); }
 .protocolSignatureCanvas {
   display: block;
@@ -1261,30 +1261,30 @@
 /* 13.85: dane klienta w protokole (imię i nazwisko obowiązkowe, e-mail zalecany). */
 .protocolClientSection { display: grid; gap: 8px; }
 .protocolClientSection.needsAttention { border: 1px solid var(--wx-amber-300) !important; background: var(--wx-orange-50) !important; }
-.mobileProtocolWizard .protocolClientSection h3 small { font-weight: 650; color: var(--wx-c-5b6b78); font-size: 12px; }
+.mobileProtocolWizard .protocolClientSection h3 small { font-weight: 650; color: var(--wx-c-526172); font-size: 12px; }
 .protocolClientField { display: grid; gap: 4px; }
-.protocolClientField > span { font-size: 13px; font-weight: 800; color: var(--wx-c-31475a); }
-.protocolClientField > span small { font-weight: 600; color: var(--wx-c-5b6b78); }
+.protocolClientField > span { font-size: 13px; font-weight: 800; color: var(--wx-slate-700); }
+.protocolClientField > span small { font-weight: 600; color: var(--wx-c-526172); }
 .protocolClientField .input { width: 100%; box-sizing: border-box; font-size: 16px !important; padding: 10px 11px !important; border-radius: 10px !important; }
-.protocolClientCheck { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--wx-c-31475a); min-height: 32px; }
+.protocolClientCheck { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--wx-slate-700); min-height: 32px; }
 .protocolClientCheck input { width: 20px; height: 20px; flex: 0 0 auto; }
 .protocolClientError { font-size: 13px; line-height: 1.35; color: var(--wx-red-900); background: var(--wx-c-ffeaea); border-radius: 10px; padding: 8px 10px; display: grid; gap: 6px; }
-.protocolClientHint { font-size: 13px; line-height: 1.35; color: var(--wx-c-72510d); background: var(--wx-c-fff5df); border-radius: 10px; padding: 8px 10px; }
+.protocolClientHint { font-size: 13px; line-height: 1.35; color: var(--wx-c-72510d); background: var(--wx-amber-50); border-radius: 10px; padding: 8px 10px; }
 .protocolClientFix { justify-self: start; padding: 6px 10px !important; font-size: 13px !important; }
 
 /* 13.86 (prośba właściciela po teście iPhone): niedostępne „Podpis klienta” i „Zapisz protokół” są wyraźnie szare. */
 .mobileProtocolWizard .protocolTestGenerate:disabled,
 .mobileProtocolWizard .protocolTestSignatureOpen:disabled {
   background: var(--wx-c-e5e7eb) !important;
-  border-color: var(--wx-c-cfd4da) !important;
-  color: var(--wx-c-9ca3af) !important;
+  border-color: var(--wx-c-e5e7eb) !important;
+  color: var(--wx-slate-400) !important;
   box-shadow: none !important;
   opacity: 1 !important;
   cursor: not-allowed;
 }
 .mobileProtocolWizard .protocolTestGenerate[aria-busy="true"]:disabled {
   background: var(--wx-c-cbdcf6) !important;
-  color: var(--wx-c-203750) !important;
+  color: var(--wx-c-143761) !important;
 }
 
 /* 14.09: naklejka QR w kreatorze — kompaktowa karta w stylu tabliczek */
@@ -1295,14 +1295,14 @@
   gap: 10px;
   margin-top: 10px;
   padding: 10px 12px;
-  border: 1px dashed var(--wx-c-cbd9ea);
+  border: 1px dashed var(--wx-c-cbdcf6);
   border-radius: 14px;
   background: var(--wx-white);
 }
 .mobileDeviceQrCard.ready { border-style: solid; border-color: var(--wx-green-200); background: var(--wx-green-50); }
 /* 14.26: naklejka wymagana — zatrzymanie przy „Dalej do podsumowania”. */
-.mobileDeviceQrCard.missing { border-style: solid; border-color: var(--wx-c-f87171); background: var(--wx-red-50); }
-.mobileDeviceQrRequired { margin: -4px 0 10px; padding: 8px 12px; border-radius: 12px; background: var(--wx-red-50); color: var(--wx-red-700); font-size: 13px; font-weight: 700; line-height: 1.3; }
+.mobileDeviceQrCard.missing { border-style: solid; border-color: var(--wx-c-f87171); background: var(--wx-c-fff7f7); }
+.mobileDeviceQrRequired { margin: -4px 0 10px; padding: 8px 12px; border-radius: 12px; background: var(--wx-c-fff7f7); color: var(--wx-red-700); font-size: 13px; font-weight: 700; line-height: 1.3; }
 .mobileDeviceQrText { display: grid; gap: 2px; min-width: 0; }
 .mobileDeviceQrText strong { font-size: 13px; line-height: 1.2; color: var(--wx-c-10203a); }
 .mobileDeviceQrText strong small { margin-left: 4px; font-size: 11px; font-weight: 600; color: var(--wx-slate-500); }
@@ -1319,5 +1319,5 @@
   font-size: 12.5px;
   font-weight: 700;
 }
-.mobileDeviceQrBtn.subtle { border-color: var(--wx-slate-300); background: var(--wx-white); color: var(--wx-slate-700); }
+.mobileDeviceQrBtn.subtle { border-color: var(--wx-c-bcc9d8); background: var(--wx-white); color: var(--wx-slate-700); }
 .mobileDeviceOverviewText small.mobileDeviceOverviewQr { margin-top: 4px; font-size: 11px; color: var(--wx-slate-600); }

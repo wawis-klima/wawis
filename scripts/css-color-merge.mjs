@@ -61,6 +61,10 @@ export function deltaE2000(hexA, hexB) {
 // Kolor z kanałem przezroczystości (#rrggbbaa) łączymy tylko z kolorem o tej samej przezroczystości.
 const alphaOf = (hex) => (canonicalHex(hex).length === 9 ? canonicalHex(hex).slice(7) : 'ff');
 
+// Decyzja właściciela 21.11.2026 (progi 4 i 5): te kolory zostają bez zmian — ramki kart (#dbe6f2, #e7edf6)
+// i tło aktywnej zakładki / plakietek (#dbeafe). Mogą być „środkiem”, do którego dołącza podobny odcień.
+export const OWNER_KEEP = Object.freeze(['#dbe6f2', '#e7edf6', '#dbeafe']);
+
 // Kolory zapisane dosłownie w testach (hex i rgb()) — zostają bez zmian, żeby testy nadal sprawdzały to samo.
 export function pinnedColors() {
   const pins = new Set();
@@ -79,6 +83,7 @@ export function pinnedColors() {
     }
   };
   dirs.forEach(walk);
+  for (const hex of OWNER_KEEP) pins.add(hex);
   return pins;
 }
 

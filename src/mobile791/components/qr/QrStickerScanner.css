@@ -30,13 +30,13 @@
 .qrScannerFrame i:nth-child(4) { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; border-bottom-right-radius: 10px; }
 .qrScannerOverlayText { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; color: var(--qr-muted); font-size: 13px; font-weight: 700; text-align: center; padding: 16px; }
 .qrScannerOverlayText svg { width: 34px; height: 34px; fill: none; stroke: var(--wx-slate-400); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.qrScannerStatus { background: var(--wx-blue-50); border: 1px solid var(--wx-blue-200); color: var(--wx-blue-800); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 700; }
-.qrScannerError { background: var(--wx-red-50); border: 1px solid var(--wx-red-200); color: var(--wx-red-700); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 600; line-height: 1.35; }
+.qrScannerStatus { background: var(--wx-blue-50); border: 1px solid var(--wx-c-cbdcf6); color: var(--wx-blue-800); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 700; }
+.qrScannerError { background: var(--wx-c-fff7f7); border: 1px solid var(--wx-red-200); color: var(--wx-red-700); border-radius: 12px; padding: 9px 12px; font-size: 13px; font-weight: 600; line-height: 1.35; }
 .qrScannerActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .qrScannerModal .qrScanBtn {
   appearance: none; -webkit-appearance: none;
   flex: 1 1 140px; min-height: 42px !important; height: auto !important; padding: 0 14px !important;
-  border: 1px solid var(--wx-c-cbd9ea) !important; border-radius: 12px !important; background: var(--wx-white) !important;
+  border: 1px solid var(--wx-c-cbdcf6) !important; border-radius: 12px !important; background: var(--wx-white) !important;
   color: var(--qr-ink) !important; font-size: 14px !important; font-weight: 700 !important; line-height: 1.2;
   box-shadow: none !important; cursor: pointer;
 }
@@ -48,13 +48,13 @@
 .qrScannerModal .qrScanInput {
   appearance: none; -webkit-appearance: none;
   flex: 1 1 auto; min-width: 0; height: 42px !important; padding: 0 12px !important;
-  border: 1px solid var(--wx-c-cbd9ea) !important; border-radius: 12px !important; background: var(--wx-white) !important;
+  border: 1px solid var(--wx-c-cbdcf6) !important; border-radius: 12px !important; background: var(--wx-white) !important;
   color: var(--qr-ink); font-size: 15px !important; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
 }
-.qrScannerModal .qrScanInput::placeholder { color: var(--wx-c-a0aec0); font-weight: 600; letter-spacing: .02em; text-transform: none; }
+.qrScannerModal .qrScanInput::placeholder { color: var(--wx-slate-400); font-weight: 600; letter-spacing: .02em; text-transform: none; }
 .qrScannerModal .qrScannerManualRow .qrScanBtn { flex: 0 0 auto; }
 
-.qrStickerRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 7px 10px; border: 1px dashed var(--wx-c-cbd9ea); border-radius: 10px; background: var(--wx-slate-50); }
+.qrStickerRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding: 7px 10px; border: 1px dashed var(--wx-c-cbdcf6); border-radius: 10px; background: var(--wx-slate-50); }
 .qrStickerRow.assigned { border-style: solid; border-color: var(--wx-green-200); background: var(--wx-green-50); }
 .qrStickerLabel { display: grid; gap: 1px; min-width: 0; }
 .qrStickerLabel strong { font-size: 12.5px; font-weight: 700; letter-spacing: .02em; }
