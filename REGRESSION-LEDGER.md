@@ -1,11 +1,18 @@
 # WAWIS — Regression Ledger
 
+## CSS-HOUSEKEEPING-1469 — domknięcie porządków w stylach
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1469-DEAD-FILES | FIXED-UNVERIFIED | `smoke-css-housekeeping-v1469`: `src/mobile791/main.jsx` i `v1056` usunięte (nieimportowane; jedyny punkt wejścia `src/main.jsx`), każdy arkusz importowany, kolory hex tylko w palecie. Build i E2E w CI. |
+| CSS-1469-V1103 | FIXED-UNVERIFIED | `v1103-completed-note-compact.css` w rejestrze palety; `smoke-css-tokens`: po podstawieniu = oryginał. |
+
 ## CSS-ALPHA-1468 — łączenie kolorów półprzezroczystych
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1468-MERGE | FIXED-UNVERIFIED | `smoke-css-alpha-v1467`: 40 miejsc z kolorem innym niż w 14.67, każde w granicy `ALPHA_LIMITS` od pierwotnego (kolor wynikowy na białym i ciemnym tle); przezroczysty ≠ widoczny; stany przycisków zachowują różne kolory; poza kolorami pliki = oryginał. |
-| CSS-1468-OWNER | PENDING-OWNER | Właściciel ogląda ekrany po 14.68. |
+| CSS-1468-OWNER | VERIFIED-OWNER | Właściciel 21.11.2026 14:14 — bez uwag, zlecił domknięcie. |
 
 ## CSS-ALPHA-1467 — wspólne kolory półprzezroczyste bez zmiany wyglądu
 
