@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## DIAG-NOISE-1471 — niesklasyfikowane zdarzenia w Diagnostyce
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DIAG-1471-CODES | FIXED-UNVERIFIED | `smoke-diagnostic-noise-v1471`: 38 stałych komunikatów PUSH / logowania / kontrahentów z kodu → własne kody; przyczyna sieciowa ma pierwszeństwo; istniejące `smoke-diagnostic-error-codes-v1272`, `smoke-diagnostics-stage-codes-v1383`, prywatność `v1273` bez zmian. |
+| DIAG-1471-FINGERPRINT | FIXED-UNVERIFIED | Ślad = FNV-1a pierwszego tekstu zdarzenia (bez liczb, identyfikatorów, adresów); test: brak danych i treści w komunikacie, ≤ 500 znaków. Weryfikacja po wdrożeniu: zapytanie `SELECT` o kody z ostatnich dni. |
+
 ## CI-STABILITY-1470 — awarie przeglądarki testowej
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
