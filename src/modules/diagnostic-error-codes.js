@@ -56,6 +56,16 @@ const DESCRIPTIONS = Object.freeze({
   NOTIFICATION_MARK_READ_FAILED: 'Nie udało się oznaczyć powiadomienia jako przeczytane.',
   // 14.49: polityka CSP w trybie Report-Only — przeglądarka zgłosiła źródło spoza listy (nic nie zablokowano).
   CSP_REPORT_ONLY_VIOLATION: 'Polityka CSP (tryb obserwacji) zgłosiła źródło spoza listy dozwolonych; nic nie zostało zablokowane.',
+  // 14.71: stałe komunikaty WAWIS, które dotąd trafiały do „niesklasyfikowanych” (szum w Diagnostyce).
+  SERVICE_WORKER_REGISTER_FAILED: 'Nie udało się uruchomić obsługi offline i powiadomień (service worker).',
+  PUSH_PERMISSION_REQUIRED: 'Powiadomienia PUSH czekają na zgodę użytkownika lub ustawienia systemowe telefonu.',
+  PUSH_STATE_CHECK_FAILED: 'Nie udało się sprawdzić stanu powiadomień PUSH na urządzeniu.',
+  PUSH_DISABLE_FAILED: 'Nie udało się wyłączyć powiadomień PUSH na urządzeniu.',
+  PUSH_CLEANUP_RETRY_FAILED: 'Ponowne sprzątanie starej subskrypcji PUSH nie powiodło się.',
+  PUSH_ACCOUNT_SWITCH_FAILED: 'Nie udało się uzgodnić powiadomień PUSH po zmianie konta.',
+  PUSH_ADMIN_NOTIFY_FAILED: 'Zapis się udał, ale powiadomienie PUSH do administratora nie zostało wysłane.',
+  CONTRACTORS_LOAD_FAILED: 'Nie udało się pobrać danych kontrahentów (lista do formularza lub urządzenia kontrahenta).',
+  AUTH_MULTIPLE_CLIENTS: 'Biblioteka logowania wykryła dwa klienty sesji w jednej karcie (informacyjne, sesja jest wspólna).',
   DIAGNOSTIC_UNCLASSIFIED: 'Niesklasyfikowane zdarzenie techniczne; sprawdź kontekst zdarzenia.',
 });
 
@@ -88,7 +98,38 @@ const STAGE_PATTERNS = Object.freeze([
   [/wyłączyć push przed wylogowaniem|dokończyć poprzedniego wylogowania push/, 'PUSH_SIGNOUT_FAILED'],
   [/\bcreatenotification failed\b/, 'NOTIFICATION_CREATE_FAILED'],
   [/\bmarknotificationasread failed\b/, 'NOTIFICATION_MARK_READ_FAILED'],
+  // 14.71
+  [/nie udało się uruchomić obsługi offline i powiadomień/, 'SERVICE_WORKER_REGISTER_FAILED'],
+  [/push wymaga działania użytkownika lub ustawień systemowych/, 'PUSH_PERMISSION_REQUIRED'],
+  [/nie udało się sprawdzić stanu push/, 'PUSH_STATE_CHECK_FAILED'],
+  [/nie udało się wyłączyć push:/, 'PUSH_DISABLE_FAILED'],
+  [/nie udało się ponowić sprzątania starego push/, 'PUSH_CLEANUP_RETRY_FAILED'],
+  [/nie udało się uzgodnić push po zmianie konta/, 'PUSH_ACCOUNT_SWITCH_FAILED'],
+  [/push do administratora nie został wysłany/, 'PUSH_ADMIN_NOTIFY_FAILED'],
+  [/nie udało się utworzyć powiadomienia w aplikacji/, 'NOTIFICATION_CREATE_FAILED'],
+  [/nie udało się pobrać bazy kontrahentów|nie udało się pobrać urządzeń kontrahenta/, 'CONTRACTORS_LOAD_FAILED'],
+  [/multiple gotrueclient instances/, 'AUTH_MULTIPLE_CLIENTS'],
 ]);
+
+// 14.71: „ślad” niesklasyfikowanego zdarzenia — skrót (FNV-1a, 32 bity) znormalizowanej treści technicznej.
+// Pozwala zgrupować powtarzające się zdarzenia i dopasować je do komunikatu w kodzie, bez wysyłania treści
+// (skrótu nie da się odwrócić; liczby i identyfikatory są usuwane przed liczeniem).
+export function diagnosticFingerprint(text = '') {
+  const normalized = String(text)
+    .toLowerCase()
+    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, '<id>')
+    .replace(/https?:\/\/\S+/g, '<url>')
+    .replace(/\d+/g, '#')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < normalized.length; i += 1) {
+    hash ^= normalized.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+}
 
 export function getKnownDiagnosticCodeDetails(code) {
   return Object.prototype.hasOwnProperty.call(DESCRIPTIONS, String(code || ''))
@@ -120,11 +161,14 @@ function technicalEvidence(entry = {}) {
     }
   }
   if (typeof entry.error_code === 'string') codes.push(entry.error_code.slice(0, 80));
-  return { text: textParts.filter(Boolean).join(' ').toLowerCase().slice(0, 1800), codes };
+  // 14.71: pierwszy tekst zdarzenia (zwykle stały komunikat z kodu) — podstawa „śladu”, gdy brak kodu.
+  const lead = [payload.message, ...args, payload.error?.message, payload.reason?.message, payload.reason]
+    .find((value) => typeof value === 'string' && value.trim()) || entry.type || entry.event_type || '';
+  return { text: textParts.filter(Boolean).join(' ').toLowerCase().slice(0, 1800), codes, lead: String(lead).slice(0, 350) };
 }
 
 export function getSafeDiagnosticDetails(entry = {}) {
-  const { text, codes } = technicalEvidence(entry);
+  const { text, codes, lead } = technicalEvidence(entry);
   const normalizedCodes = codes.map((code) => String(code).toUpperCase());
   const hasCode = (code) => normalizedCodes.includes(code);
   let code = 'DIAGNOSTIC_UNCLASSIFIED';
@@ -168,5 +212,9 @@ export function getSafeDiagnosticDetails(entry = {}) {
     if (stage) code = stage[1];
   }
 
+  if (code === 'DIAGNOSTIC_UNCLASSIFIED') {
+    const fingerprint = diagnosticFingerprint(lead);
+    return { code, message: `${DESCRIPTIONS[code]} Ślad: ${fingerprint}.`, fingerprint };
+  }
   return { code, message: DESCRIPTIONS[code] };
 }
