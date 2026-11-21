@@ -23,7 +23,8 @@ async function routeEndpoint(page, { info = INFO, infoStatus = 200, submitStatus
 }
 
 test.describe('@mobile 14.20: strona klienta z naklejki QR', () => {
-  test.use({ viewport: { width: 390, height: 844 } });
+  // 14.70: service worker włączony jawnie — test sprawdza, że publiczna strona QR go NIE rejestruje.
+  test.use({ viewport: { width: 390, height: 844 }, serviceWorkers: 'allow' });
 
   test('klient widzi model, termin przeglądu i telefon, zgłasza awarię; bez service workera', async ({ page }) => {
     const submitted = await routeEndpoint(page);

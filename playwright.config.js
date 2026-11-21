@@ -20,6 +20,11 @@ export default defineConfig({
     colorScheme: 'light',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
+    // 14.70: obsługa offline (service worker) domyślnie zablokowana w testach. Chromium headless shell (1223) wysypuje
+    // cały proces przeglądarki (SIGSEGV SEGV_MAPERR 0x1b0) przy zamykaniu kontekstu, gdy service worker jeszcze się
+    // instaluje — eksperyment diag/chromium-crash 21.11.2026: 13 awarii na 320 testów z SW, 0 na 320 bez SW.
+    // Testy, które sprawdzają service worker, włączają go jawnie: test.use({ serviceWorkers: 'allow' }).
+    serviceWorkers: 'block',
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
       ? {
         executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
