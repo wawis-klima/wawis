@@ -109,7 +109,7 @@
 .mobileDeviceTypeCard.selected {
   border-color: var(--wizard-blue);
   background: var(--wx-slate-50);
-  box-shadow: 0 10px 25px rgba(20, 100, 244, .08);
+  box-shadow: var(--wxs-10-25-b20e);
 }
 
 .mobileDeviceTypeIcon,
@@ -327,7 +327,7 @@
   padding: 9px 14px 16px;
   border-radius: 24px 24px 18px 18px;
   background: var(--wx-white);
-  box-shadow: 0 -20px 50px rgba(15, 23, 42, .18);
+  box-shadow: var(--wxs-m20-50-2105);
 }
 .mobileDevicePickerHandle { width: 42px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: var(--wx-slate-300); }
 .mobileDevicePickerTitleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }

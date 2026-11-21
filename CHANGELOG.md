@@ -1,3 +1,8 @@
+## 14.64
+- Wspólne cienie, etap 1 (wygląd bez zmian): 279 cieni zapisanych wprost w 28 plikach stylów → 155 zmiennych `--wxs-*` w `src/styles/shadows.css` o dokładnie tych samych wartościach. Cienie z kolorem ze zmiennej, `none` i `currentColor` bez zmian.
+- Pierwotny tekst każdego cienia zapisany pozycja po pozycji (`scripts/css-shadow-baseline.json`). Kontrola: `smoke-css-shadows-v1464` (nowy) i `smoke-css-tokens` (pliki po odtworzeniu = oryginał); test w przeglądarce porównuje styl obliczony z oryginałem we wszystkich widokach; test WebKit sprawdza, że każdy cień jest wczytany i poprawny dla Safari.
+- Narzędzie `scripts/css-shadows.mjs` (convert / plan / apply / report).
+
 ## 14.63
 - Łączenie podobnych odcieni, **etap 3 — widoczne przy porównaniu obok siebie** (ΔE2000 < 3 licząc od pierwotnego koloru z 14.60; decyzja właściciela 21.11.2026 po obejrzeniu 14.62). Paleta: **316 → 224 kolory** (od 14.60: 760 → 224). Łącznie 1551 z 3418 miejsc ma odcień inny niż w 14.60.
 - Limit w `smoke-css-tokens` podniesiony z 2 do 3 zgodnie z decyzją właściciela; wyższy nadal blokowany.
