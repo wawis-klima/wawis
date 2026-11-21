@@ -1,13 +1,13 @@
 # RELEASE RESULT
 
 ## Wersja
-- 14.69
+- 14.73
 
 ## Tryb
 - auto:fast-ui/full
 
 ## Wygenerowano
-- 2026-11-21T13:17:37.199Z
+- 2026-11-21T18:32:29.710Z
 
 ## Podsumowanie
 - status release: BŁĄD

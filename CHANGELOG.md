@@ -1,3 +1,8 @@
+## 14.73
+- PUSH (obszar chroniony): gdy aplikacja kilka razy naraz sprawdzała stan powiadomień, a sprawdzenie się nie udało, kolejne wywołania zostawiały nieobsłużony błąd (Diagnostyka 21.11.2026, iPhone administratora: 1 ostrzeżenie + 2 „unhandledrejection”). Teraz każde wywołanie dostaje zapisany stan, bez nieobsłużonego błędu (komputer i telefon).
+- Diagnostyka: limit czasu operacji PUSH ma własny kod `PUSH_LIFECYCLE_TIMEOUT` (wcześniej ogólne „nie udało się sprawdzić stanu PUSH”); ślad niesklasyfikowanego zdarzenia zachowuje się przy wysyłce z lokalnego dziennika (wcześniej liczony powtórnie z opisu); tabela śladów obejmuje też komunikaty błędów (`new Error`).
+- Test `smoke-push-sync-v1473`.
+
 ## 14.72
 - **Kod z telefonu przy logowaniu (MFA), etap 1** — decyzja właściciela 21.11.2026 (kod z aplikacji zamiast SMS). Diagnostyka → „Kod z telefonu przy logowaniu” (tylko administrator, komputer i telefon): kod QR, link „Dodaj do Haseł” na iPhonie, klucz do wpisania ręcznie, potwierdzenie 6 cyframi; wyłączenie w tym samym miejscu.
 - Po włączeniu: po haśle ekran „Potwierdź logowanie” (6 cyfr), zanim aplikacja pokaże dane; z ekranu można się wylogować. Kod potrzebny tylko przy nowym logowaniu — sesja z kodem zostaje po przeładowaniu. Pracownicy bez zmian.

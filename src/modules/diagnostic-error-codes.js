@@ -59,6 +59,7 @@ const DESCRIPTIONS = Object.freeze({
   // 14.71: stałe komunikaty WAWIS, które dotąd trafiały do „niesklasyfikowanych” (szum w Diagnostyce).
   SERVICE_WORKER_REGISTER_FAILED: 'Nie udało się uruchomić obsługi offline i powiadomień (service worker).',
   PUSH_PERMISSION_REQUIRED: 'Powiadomienia PUSH czekają na zgodę użytkownika lub ustawienia systemowe telefonu.',
+  PUSH_LIFECYCLE_TIMEOUT: 'Operacja powiadomień PUSH na urządzeniu przekroczyła limit czasu (system telefonu nie odpowiedział).',
   PUSH_STATE_CHECK_FAILED: 'Nie udało się sprawdzić stanu powiadomień PUSH na urządzeniu.',
   PUSH_DISABLE_FAILED: 'Nie udało się wyłączyć powiadomień PUSH na urządzeniu.',
   PUSH_CLEANUP_RETRY_FAILED: 'Ponowne sprzątanie starej subskrypcji PUSH nie powiodło się.',
@@ -101,6 +102,7 @@ const STAGE_PATTERNS = Object.freeze([
   // 14.71
   [/nie udało się uruchomić obsługi offline i powiadomień/, 'SERVICE_WORKER_REGISTER_FAILED'],
   [/push wymaga działania użytkownika lub ustawień systemowych/, 'PUSH_PERMISSION_REQUIRED'],
+  [/przekroczono limit czasu operacji push|push_lifecycle_timeout/, 'PUSH_LIFECYCLE_TIMEOUT'],
   [/nie udało się sprawdzić stanu push/, 'PUSH_STATE_CHECK_FAILED'],
   [/nie udało się wyłączyć push:/, 'PUSH_DISABLE_FAILED'],
   [/nie udało się ponowić sprzątania starego push/, 'PUSH_CLEANUP_RETRY_FAILED'],
@@ -213,7 +215,9 @@ export function getSafeDiagnosticDetails(entry = {}) {
   }
 
   if (code === 'DIAGNOSTIC_UNCLASSIFIED') {
-    const fingerprint = diagnosticFingerprint(lead);
+    // 14.73: zdarzenie już oczyszczone (lokalny dziennik → wysyłka) zachowuje pierwotny ślad zamiast liczyć go od opisu.
+    const kept = /ślad: ([0-9a-f]{8})\./.exec(text);
+    const fingerprint = kept ? kept[1] : diagnosticFingerprint(lead);
     return { code, message: `${DESCRIPTIONS[code]} Ślad: ${fingerprint}.`, fingerprint };
   }
   return { code, message: DESCRIPTIONS[code] };
