@@ -339,7 +339,7 @@
     height: 13px;
     flex: 0 0 13px;
     border-radius: 50%;
-    border: 1px solid rgba(15, 23, 42, .12);
+    border: 1px solid var(--wxa-0f172a-120);
     box-shadow: var(--wxs-i0-0-e36f);
   }
 

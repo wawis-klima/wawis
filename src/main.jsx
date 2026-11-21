@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client'
 // ładowany przez index.html przed każdym ekranem (telefon, komputer, strona naklejki QR).
 import './styles/tokens.css'
 import './styles/shadows.css'
+import './styles/alpha.css'
 import { APP_VERSION } from './version.js'
 import { requestUpdateReload } from './modules/update-reload-guard.js'
 import { readQrCodeFromLocation } from './modules/qr-stickers.js'

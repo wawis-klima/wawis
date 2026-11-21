@@ -13,6 +13,7 @@ import {
 } from './css-tokens.mjs';
 import { OWNER_KEEP, deltaE2000 } from './css-color-merge.mjs';
 import { SHADOW_BASELINE_FILE, restoreShadows } from './css-shadows.mjs';
+import { ALPHA_BASELINE_FILE, restoreAlpha } from './css-alpha.mjs';
 
 // --- Zachowanie konwertera na trudnych przypadkach (selektory #id, url(), komentarze, napisy, @media, :hover) ---
 const tricky = [
@@ -102,6 +103,7 @@ for (const [from, { to, de2000 }] of Object.entries(merges.map)) {
   assert.ok(Math.abs(deltaE2000(from, to) - de2000) < 0.01 && de2000 < merges.limit_de2000, `${from} → ${to}: zapisana różnica się zgadza i mieści w limicie`);
 }
 let changedPositions = 0;
+const alphaBaseline = fs.existsSync(ALPHA_BASELINE_FILE) ? JSON.parse(fs.readFileSync(ALPHA_BASELINE_FILE, 'utf8')).files : {};
 const shadowBaseline = fs.existsSync(SHADOW_BASELINE_FILE) ? JSON.parse(fs.readFileSync(SHADOW_BASELINE_FILE, 'utf8')).files : {};
 for (const [file, meta] of files) {
   const current = fs.readFileSync(file, 'utf8');
@@ -115,7 +117,8 @@ for (const [file, meta] of files) {
   assert.equal(now.length, orig.length, `${file}: liczba miejsc z kolorem różni się od pierwotnej`);
   let k = 0;
   // 14.64: cienie (var(--wxs-…)) najpierw wracają do pierwotnego tekstu (css-shadow-baseline.json, smoke-css-shadows).
-  const reconstructed = restoreShadows(current, shadowBaseline[file] || []).replace(/var\((--wx-[a-z0-9-]+)\)/g, () => orig[k++]);
+  // 14.67: kolory półprzezroczyste (var(--wxa-…)) też wracają do pierwotnego tekstu (css-alpha-baseline.json).
+  const reconstructed = restoreAlpha(restoreShadows(current, shadowBaseline[file] || []), alphaBaseline[file] || []).replace(/var\((--wx-[a-z0-9-]+)\)/g, () => orig[k++]);
   assert.equal(sha256(normalizeForCompare(reconstructed)), meta.original_sha256,
     `${file}: poza kolorami plik różni się od oryginału — zmiana wyglądu wymaga osobnej decyzji właściciela`);
   now.forEach((hex, i) => {

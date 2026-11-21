@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { REGISTRY_FILE, TOKENS_FILE, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
 import { SHADOWS_FILE, readShadows } from '../../scripts/css-shadows.mjs';
+import { ALPHA_FILE, readAlpha } from '../../scripts/css-alpha.mjs';
 
 const tokens = readTokens(fs.readFileSync(TOKENS_FILE, 'utf8'));
 const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).files;
@@ -54,4 +55,16 @@ test('@mobile paleta kolorów 14.58 — deklaracje poprawne w silniku przegląda
   }, Object.entries(shadows));
   expect(shadowState, `cienie (${testInfo.project.name})`).toEqual({ missing: [], invalid: [] });
   expect(Object.keys(shadows).length).toBeGreaterThan(50);
+
+  // 14.67: wspólne kolory półprzezroczyste — wczytane i poprawne dla silnika przeglądarki.
+  const alpha = readAlpha(fs.readFileSync(ALPHA_FILE, 'utf8'));
+  const alphaState = await page.evaluate((list) => {
+    const cs = getComputedStyle(document.documentElement);
+    return {
+      missing: list.filter(([name]) => !cs.getPropertyValue(name).trim()).map(([name]) => name),
+      invalid: list.filter(([, value]) => !CSS.supports('color', value)).map(([name, value]) => `${name}: ${value}`),
+    };
+  }, Object.entries(alpha));
+  expect(alphaState, `kolory półprzezroczyste (${testInfo.project.name})`).toEqual({ missing: [], invalid: [] });
+  expect(Object.keys(alpha).length).toBeGreaterThan(20);
 });

@@ -1,11 +1,17 @@
 # WAWIS — Regression Ledger
 
+## CSS-ALPHA-1467 — wspólne kolory półprzezroczyste bez zmiany wyglądu
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1467-ALPHA | FIXED-UNVERIFIED | `smoke-css-alpha-v1467` (zmienne tylko w wartościach, nie w box-shadow; pozycja po pozycji = pierwotny; brak rgba wprost; kontrole negatywne) + `smoke-css-tokens` (po odtworzeniu pliki = oryginał) + E2E równoważności + WebKit (`CSS.supports('color')`, kolory wczytane). |
+
 ## CSS-MERGE-1466 — łączenie odcieni, progi 4 i 5
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1466-MERGE | FIXED-UNVERIFIED | `smoke-css-tokens-v1451`: 1814 miejsc z odcieniem innym niż w 14.60, każde < 5 ΔE2000 od pierwotnego (limit > 5 blokowany); wyjątki właściciela (`OWNER_KEEP`: ramki kart, aktywna zakładka) niezmienione w każdym miejscu; poza kolorami pliki = oryginał. |
-| CSS-1466-OWNER | PENDING-OWNER | Właściciel ogląda ekrany po 14.66 (zmiany widoczne, m.in. przycisk w Paliwie, nagłówki protokołu). |
+| CSS-1466-OWNER | VERIFIED-OWNER | Właściciel 21.11.2026 13:13: „wygląda wszystko w porządku”. |
 
 ## CSS-SHADOWS-1465 — łączenie podobnych cieni
 
