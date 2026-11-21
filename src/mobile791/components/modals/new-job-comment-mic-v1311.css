@@ -46,10 +46,10 @@
   }
   .formModal .jobFormCreateMode .workerNewClientCommentMicActions .voiceFieldMicBtn:hover,
   .formModal .jobFormCreateMode .workerNewClientCommentMicActions .voiceFieldMicBtn:focus-visible {
-    background-color: #eef4fc;
+    background-color: var(--wx-c-eef4fc);
   }
   .formModal .jobFormCreateMode .workerNewClientCommentMicActions .voiceFieldMicBtn:focus-visible {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--wx-blue-500);
     outline-offset: 2px;
   }
   .formModal .jobFormCreateMode .row.rightAlign {
