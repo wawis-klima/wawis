@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## MFA-1474 — etap 2: baza wymaga aal2 (zgoda właściciela 21.11.2026 20:38)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| MFA-1474-DB | FIXED-UNVERIFIED | `scripts/pg-test-mfa-v1474/run.sh` (PostgreSQL 16, lokalnie: PASS): admin z kodem aal1 → is_admin=false, 0 wierszy w tabelach (także „własne” push), 0 plików, 2 funkcje z własnym sprawdzaniem roli → błąd, INSERT → RLS; aal2 → wszystko; pracownik bez kodu → bez zmian; admin z niedokończonym kodem → bez zmian; usługa bez użytkownika → OK; migracja 2× bez błędu; wycofanie → stan sprzed. `smoke-mfa-aal2-v1474` (statyczny). |
+| MFA-1474-PROD | VERIFIED | Zastosowana 21.11.2026 ~21:23 (apply_migration, za zgodą). SELECT: funkcja 1, reguły 39 (38 tabel public z RLS + storage.objects), helpery i 2 funkcje z warunkiem. Symulacja w wycofywanej transakcji: pracownik aal1 — 189 montaży; administrator aal1 — 0 montaży / 0 plików / is_admin=false; administrator aal2 — 189 montaży / 1323 pliki. Logi Postgres: brak odmów RLS po zmianie. |
+| MFA-1474-REHEARSAL | FIXED-UNVERIFIED | Próba odbudowy z migracji: (1) atrapa auth bez `auth.mfa_factors` — dodana; (2) dawna rozbieżność repo↔produkcja: `worker_create_or_get_contractor_for_job` w repo (v9.19) zwraca `public.contractors`, na produkcji `jsonb` — migracja usuwa funkcję tylko przy innym typie wyniku (na produkcji nic nie robi; SELECT: jsonb) i ustawia uprawnienia identyczne z produkcją (authenticated, service_role). Test PostgreSQL z wersją z repo: PASS. |
+| MFA-1474-EDGE | OPEN | Funkcje Edge z własnym sprawdzaniem roli (fakturownia-client, send-service-sms, generate-service-sms-queue, purge-service-visit, send-service-visit-protocol-email, send-assignment-push, send-fuel-entry-push) nie sprawdzają aal — osobna zgoda. |
+
 ## PUSH-SYNC-1473 — nieobsłużony błąd sprawdzania stanu PUSH (obszar chroniony: push)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
@@ -12,7 +21,7 @@
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | MFA-1472-GATE | FIXED-UNVERIFIED | `smoke-mfa-v1472`: aal1→aal2 wymaga kodu; brak kodu / błąd odczytu / brak API → bez kroku (offline nie blokuje); hook przed wczesnymi powrotami, ekran kodu po logowaniu i przed danymi w obu aplikacjach. E2E `mfa-admin-v1472`: włączenie, zły kod, przeładowanie bez ponownego kodu, nowe logowanie z kodem, wyłączenie; iPhone: krok kodu (`one-time-code`, klawiatura numeryczna); pracownik bez zmian. |
-| MFA-1472-IPHONE | PARTIAL-OWNER | 21.11.2026 19:19: kod włączony na iPhonie (Hasła) i zweryfikowany (`auth.mfa_factors` verified, sesja aal2 — SELECT). Pozostaje: wylogowanie i logowanie z kodem. Potem etap 2. |
+| MFA-1472-IPHONE | VERIFIED-OWNER | 21.11.2026 19:19: kod włączony na iPhonie (Hasła) i zweryfikowany (`auth.mfa_factors` verified, sesja aal2 — SELECT). 20:19–20:20: wylogowanie i logowanie z kodem (wklejony z Haseł) — nowa sesja aal1 → aal2 (SELECT). |
 
 ## DIAG-NOISE-1471 — niesklasyfikowane zdarzenia w Diagnostyce
 

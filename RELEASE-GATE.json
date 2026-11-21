@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.73",
+  "version": "14.74",
   "scope": "full",
-  "release_branch": "release/v14.73",
+  "release_branch": "release/v14.74",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "PUSH: obsłużony błąd równoległego sprawdzania stanu (obszar chroniony: push); Diagnostyka; bez zmian bazy i backendu."
+    "notes": "MFA etap 2: migracja RLS/funkcji (aal2 dla kont z kodem) — zgoda właściciela 21.11.2026; aplikacja bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.73",
+    "source_branch": "release/v14.74",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.73.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.74.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.73: PUSH — nieobsłużony błąd sprawdzania stanu",
-    "release_ci": "WAWIS PR checks + smoke-push-sync + smoke-mfa + E2E mfa-admin-v1472 + smoke-diagnostic-noise + smoke-css-housekeeping + smoke-css-alpha + smoke-css-shadows + smoke-css-tokens + WebKit E2E + E2E css-tokens-equivalence",
-    "postdeploy": "Vercel READY/14.73."
+    "code": "14.74: MFA etap 2 — wymuszenie w bazie",
+    "release_ci": "WAWIS PR checks + smoke-mfa-aal2 + pg-test-mfa-v1474 (lokalnie) + smoke-push-sync + smoke-mfa + E2E mfa-admin-v1472 + smoke-diagnostic-noise + smoke-css-housekeeping + smoke-css-alpha + smoke-css-shadows + smoke-css-tokens + WebKit E2E + E2E css-tokens-equivalence",
+    "postdeploy": "Vercel READY/14.74."
   }
 }

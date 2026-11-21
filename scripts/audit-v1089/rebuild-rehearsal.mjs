@@ -42,6 +42,7 @@ create schema auth;create schema storage;create schema extensions;create schema 
 create function net.http_post(url text, body jsonb default '{}'::jsonb, params jsonb default '{}'::jsonb, headers jsonb default '{}'::jsonb, timeout_milliseconds integer default 5000) returns bigint language sql as $fn$select 1::bigint$fn$;
 create function extensions.gen_random_bytes(integer) returns bytea language sql volatile as $fn$select decode(repeat('ab',$1),'hex')$fn$;
 create table auth.users(id uuid primary key,raw_user_meta_data jsonb,email text);
+create table auth.mfa_factors(id uuid primary key default gen_random_uuid(),user_id uuid not null,friendly_name text,factor_type text,status text not null,created_at timestamptz default now(),updated_at timestamptz default now());
 create function auth.uid() returns uuid language sql as $$select null::uuid$$;
 create function auth.role() returns text language sql as $$select 'service_role'::text$$;
 create function auth.jwt() returns jsonb language sql as $$select '{}'::jsonb$$;
