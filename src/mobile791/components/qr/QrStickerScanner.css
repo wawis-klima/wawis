@@ -18,7 +18,7 @@
 .qrScannerModal .qrScannerLink { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding: 6px 2px; color: var(--qr-muted); font-size: 14px !important; font-weight: 700; cursor: pointer; min-height: 0 !important; box-shadow: none !important; }
 .qrScannerModal .qrScannerHint { margin: 0; color: var(--qr-muted); font-size: 13px !important; line-height: 1.35; }
 .qrScannerModal .qrScannerHint.center { text-align: center; }
-.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: var(--wx-slate-100); border: 1px solid var(--qr-line); }
+.qrScannerViewport { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 18px; overflow: hidden; background: var(--wx-slate-50); border: 1px solid var(--qr-line); }
 .qrScannerViewport.live { background: var(--wx-slate-900); border-color: var(--wx-slate-900); }
 .qrScannerViewport video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .qrScannerViewport:not(.live) video { visibility: hidden; }

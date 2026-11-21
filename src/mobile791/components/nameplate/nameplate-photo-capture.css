@@ -632,8 +632,8 @@
 }
 
 .nameplateVerifyField .input:disabled {
-  border-color: var(--wx-c-d7dee8);
-  background: var(--wx-slate-100);
+  border-color: var(--wx-c-dbe6f2);
+  background: var(--wx-slate-50);
   color: var(--wx-slate-400);
   -webkit-text-fill-color: var(--wx-slate-400);
   opacity: 1;

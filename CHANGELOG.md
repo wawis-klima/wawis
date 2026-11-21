@@ -1,3 +1,7 @@
+## 14.63
+- Łączenie podobnych odcieni, **etap 3 — widoczne przy porównaniu obok siebie** (ΔE2000 < 3 licząc od pierwotnego koloru z 14.60; decyzja właściciela 21.11.2026 po obejrzeniu 14.62). Paleta: **316 → 224 kolory** (od 14.60: 760 → 224). Łącznie 1551 z 3418 miejsc ma odcień inny niż w 14.60.
+- Limit w `smoke-css-tokens` podniesiony z 2 do 3 zgodnie z decyzją właściciela; wyższy nadal blokowany.
+
 ## 14.62
 - Łączenie podobnych odcieni, **próg 2 — ledwo widoczne**, tylko przy porównaniu obok siebie (ΔE2000 < 2 licząc od pierwotnego koloru z 14.60; decyzja właściciela 21.11.2026). Paleta: **482 → 316 kolorów** (od 14.60: 760 → 316). Łącznie 1322 z 3418 miejsc ma odcień inny niż w 14.60, każde < 2 ΔE od pierwotnego.
 - Zapis różnicy w `css-color-merges.json` zaokrąglany w dół (1,9997 nie może wyglądać jak 2,000).

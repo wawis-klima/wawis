@@ -1,13 +1,13 @@
 /* WAWIS 14.20 — strona klienta po zeskanowaniu naklejki QR. Samodzielne style (bez CSS aplikacji). */
 :root {
-  --pqr-bg: var(--wx-slate-100); --pqr-surface: var(--wx-white); --pqr-fg: var(--wx-c-10203a); --pqr-muted: var(--wx-c-5a6b80); --pqr-line: var(--wx-c-dbe6f2);
-  --pqr-accent: var(--wx-blue-600); --pqr-accent-ink: var(--wx-white); --pqr-accent-soft: var(--wx-c-e3ecfd);
-  --pqr-warn: var(--wx-c-9a5a08); --pqr-warn-bg: var(--wx-c-fff5df); --pqr-crit: var(--wx-red-700); --pqr-ok: var(--wx-c-1d7a46); --pqr-ok-bg: var(--wx-c-e3f6ef);
+  --pqr-bg: var(--wx-slate-50); --pqr-surface: var(--wx-white); --pqr-fg: var(--wx-c-10203a); --pqr-muted: var(--wx-c-5a6b80); --pqr-line: var(--wx-c-dbe6f2);
+  --pqr-accent: var(--wx-blue-600); --pqr-accent-ink: var(--wx-white); --pqr-accent-soft: var(--wx-blue-100);
+  --pqr-warn: var(--wx-c-9a5a08); --pqr-warn-bg: var(--wx-c-fff5df); --pqr-crit: var(--wx-red-700); --pqr-ok: var(--wx-c-1d7a46); --pqr-ok-bg: var(--wx-green-50);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --pqr-bg: var(--wx-c-151b24); --pqr-surface: var(--wx-c-16212d); --pqr-fg: var(--wx-c-e7edf6); --pqr-muted: var(--wx-slate-400); --pqr-line: var(--wx-c-263b50);
-    --pqr-accent: var(--wx-c-5b8ff5); --pqr-accent-ink: var(--wx-slate-900); --pqr-accent-soft: var(--wx-c-1b2842);
+    --pqr-bg: var(--wx-c-151b24); --pqr-surface: var(--wx-c-151b24); --pqr-fg: var(--wx-c-e7edf6); --pqr-muted: var(--wx-slate-400); --pqr-line: var(--wx-c-263445);
+    --pqr-accent: var(--wx-c-4c8bea); --pqr-accent-ink: var(--wx-slate-900); --pqr-accent-soft: var(--wx-c-172b45);
     --pqr-warn: var(--wx-c-f2b45a); --pqr-warn-bg: var(--wx-c-33260f); --pqr-crit: var(--wx-c-ff8a7a); --pqr-ok: var(--wx-c-6fd39b); --pqr-ok-bg: var(--wx-c-163024);
     color-scheme: dark;
   }

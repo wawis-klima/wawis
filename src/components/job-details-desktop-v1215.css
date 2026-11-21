@@ -124,7 +124,7 @@
     padding:6px 7px 6px 11px;
     border:1px solid var(--wx-c-cbd9ea);
     border-radius:12px;
-    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-100) 100%);
+    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-50) 100%);
     box-shadow:0 2px 7px rgba(15,23,42,.06);
     color:var(--wx-c-162033);
     font:inherit;
@@ -137,8 +137,8 @@
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle:hover{
-    border-color:var(--wx-c-aebdce);
-    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-100) 100%);
+    border-color:var(--wx-c-a9bac6);
+    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-50) 100%);
     box-shadow:0 4px 10px rgba(15,23,42,.09);
   }
 

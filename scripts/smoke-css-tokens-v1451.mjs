@@ -91,8 +91,9 @@ assert.ok(files.length >= 1, 'co najmniej jeden przekonwertowany plik');
 const usedEverywhere = new Set();
 const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'));
 const merges = fs.existsSync(MERGES_FILE) ? JSON.parse(fs.readFileSync(MERGES_FILE, 'utf8')) : { limit_de2000: 0, map: {} };
-// Granica właściciela (21.11.2026): co najwyżej „ledwo widoczne” (ΔE2000 < 2). Wyższy próg = nowa decyzja właściciela.
-assert.ok(merges.limit_de2000 <= 2, `limit łączenia ${merges.limit_de2000} > 2 bez decyzji właściciela`);
+// Granica właściciela: 21.11.2026 rano „ledwo widoczne” (ΔE2000 < 2), 21.11.2026 11:15 po obejrzeniu 14.62 — etap 3
+// („widoczne obok siebie”, ΔE2000 < 3). Wyższy próg = nowa decyzja właściciela.
+assert.ok(merges.limit_de2000 <= 3, `limit łączenia ${merges.limit_de2000} > 3 bez decyzji właściciela`);
 for (const [from, { to, de2000 }] of Object.entries(merges.map)) {
   assert.ok(!(to in merges.map) || merges.map[to].to === to, `${from} → ${to}: łączenie jednokrokowe`);
   assert.ok(Math.abs(deltaE2000(from, to) - de2000) < 0.01 && de2000 < merges.limit_de2000, `${from} → ${to}: zapisana różnica się zgadza i mieści w limicie`);

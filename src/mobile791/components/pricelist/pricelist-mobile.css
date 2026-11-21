@@ -15,7 +15,7 @@
   font-size:clamp(11.5px, 3.25vw, 13px);
   letter-spacing:-.15px;
 }
-.wawisPricelistGroupTitle::marker { color:var(--wx-c-476280); }
+.wawisPricelistGroupTitle::marker { color:var(--wx-c-52657f); }
 .wawisPricelistCount { display:inline-flex; justify-content:center; align-items:center; flex-shrink:0; min-width:22px; height:22px; border-radius:9px; background:var(--wx-blue-50); color:var(--wx-c-385b8e); font-size:11px; font-weight:850; }
 .wawisPricelistGrid { min-width:0; width:100%; padding:0 7px 8px; box-sizing:border-box; }
 .wawisPricelistRow { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.05fr); gap:4px; align-items:center; border-top:1px solid var(--wx-c-e7edf6); padding:10px 0; color:var(--wx-c-324964); }

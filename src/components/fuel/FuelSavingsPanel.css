@@ -3,7 +3,7 @@
 .fuelSavingsBody { display: grid; gap: 14px; }
 .fuelSavingsToolbar { display: flex; justify-content: flex-end; }
 .fuelSavingsStep { background: var(--wx-c-17614b); color: var(--wx-white); font-size: 11px; }
-.fuelSavingsWarning { background: var(--wx-amber-50); border: 1px solid var(--wx-c-f3d38a); color: var(--wx-c-7a5300); }
+.fuelSavingsWarning { background: var(--wx-amber-50); border: 1px solid var(--wx-c-f3d38a); color: var(--wx-c-72510d); }
 
 .fuelSavingsTiles { display: grid; grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); gap: 10px; }
 .fuelSavingsTiles > div { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-slate-50); }
@@ -26,7 +26,7 @@
 .fuelSavingsChartGap { fill: rgba(23, 97, 75, 0.13); }
 .fuelSavingsChartTank { stroke: var(--wx-c-17614b); stroke-width: 2; stroke-dasharray: 6 4; }
 .fuelSavingsChartStation { fill: none; stroke: var(--wx-c-2f75cf); stroke-width: 2.2; stroke-linejoin: round; }
-.fuelSavingsChart figcaption { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; color: var(--wx-c-607086); font-size: 12px; }
+.fuelSavingsChart figcaption { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; color: var(--wx-slate-500); font-size: 12px; }
 .fuelSavingsChart figcaption i { display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
 .fuelSavingsChart figcaption i.isStation { background: var(--wx-c-2f75cf); }
 .fuelSavingsChart figcaption i.isTank { background: var(--wx-c-17614b); }
@@ -42,7 +42,7 @@
 
 .fuelSavingsTable { display: grid; border: 1px solid var(--wx-c-dbe6f2); border-radius: 14px; overflow: hidden; }
 .fuelSavingsTableHeader, .fuelSavingsTableRow { display: grid; grid-template-columns: minmax(100px, 0.6fr) minmax(150px, 1fr) minmax(80px, 0.5fr) minmax(100px, 0.6fr) minmax(100px, 0.6fr) minmax(130px, 0.8fr); align-items: center; gap: 12px; padding: 10px 14px; }
-.fuelSavingsTableHeader { background: var(--wx-blue-50); color: var(--wx-c-607086); font-size: 12px; font-weight: 850; text-transform: uppercase; }
+.fuelSavingsTableHeader { background: var(--wx-blue-50); color: var(--wx-slate-500); font-size: 12px; font-weight: 850; text-transform: uppercase; }
 .fuelSavingsTableRow { border-top: 1px solid var(--wx-c-e7edf6); color: var(--wx-c-324964); font-size: 14px; }
 .fuelSavingsTableRow strong { color: var(--wx-c-143761); }
 .fuelSavingsTableRow a { color: var(--wx-c-245d9f); }

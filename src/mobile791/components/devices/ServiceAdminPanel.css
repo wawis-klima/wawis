@@ -50,7 +50,7 @@
   padding:0!important;box-sizing:border-box!important;opacity:0;
   cursor:pointer;font-size:16px!important;
 }
-.serviceAdminPickerSurface:focus-within{outline:2px solid var(--wx-c-18828c);outline-offset:2px}
+.serviceAdminPickerSurface:focus-within{outline:2px solid var(--wx-c-147c87);outline-offset:2px}
 .serviceAdminNativePicker:disabled{cursor:not-allowed}
 .serviceAdminPage .serviceAdminNativePicker:disabled{opacity:0!important}
 .serviceAdminExtras{border:1px solid var(--wx-c-dbe6f2);border-radius:12px;padding:7px 10px;display:grid;gap:2px;min-width:0}
@@ -115,10 +115,10 @@
 /* WAWIS 13.93: podpis serwisu korzysta z pełnoekranowego modalu montażowego. */
 .serviceAdminPage .serviceAdminSignatureWrap{display:none}
 
-.serviceAdminPage .serviceAdminDanger{background:var(--wx-red-50);border:1px solid var(--wx-c-c64848);color:var(--wx-c-9a2929);font-weight:800}
+.serviceAdminPage .serviceAdminDanger{background:var(--wx-red-50);border:1px solid var(--wx-c-c64848);color:var(--wx-c-a4262d);font-weight:800}
 .serviceAdminPage .serviceAdminDanger:disabled{opacity:.55}
 /* 14.03: zdjęcia serwisu w wrapperze .mobileInlineJobDetails — te same reguły mobile co montaże. */
 .serviceAdminPage .serviceAdminPhotosV1403{margin:4px 0 2px}
 /* 14.04: wyraźna podpowiedź, dlaczego przycisk jest nieaktywny (zamiast drobnego szarego tekstu). */
-.serviceAdminPage .serviceAdminHint{margin:2px 0 0;padding:9px 11px;border:1px solid var(--wx-c-f0c36d);border-radius:12px;background:var(--wx-amber-50);color:var(--wx-c-7a4b00);font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
-.serviceAdminPage .serviceAdminDefectText{color:var(--wx-c-9a2929);font-weight:700}
+.serviceAdminPage .serviceAdminHint{margin:2px 0 0;padding:9px 11px;border:1px solid var(--wx-c-f5c16c);border-radius:12px;background:var(--wx-amber-50);color:var(--wx-c-7a4b00);font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.serviceAdminPage .serviceAdminDefectText{color:var(--wx-c-a4262d);font-weight:700}
