@@ -42,7 +42,9 @@ test.describe('14.72: kod z telefonu — komputer', () => {
     await challenge.getByLabel('Kod z telefonu').fill('000000');
     await challenge.getByRole('button', { name: 'Potwierdź' }).click();
     await expect(page.getByTestId('mfa-challenge-error')).toContainText('nieprawidłowy');
-    await challenge.getByLabel('Kod z telefonu').fill(CODE);
+    // Wklejony kod ze spacją (np. z autouzupełniania) też działa.
+    await challenge.getByLabel('Kod z telefonu').fill('123 456');
+    await expect(challenge.getByLabel('Kod z telefonu')).toHaveValue(CODE);
     await challenge.getByRole('button', { name: 'Potwierdź' }).click();
     await expect(page.getByRole('button', { name: 'Diagnostyka' })).toBeVisible();
     await expect(page.getByTestId('mfa-challenge')).toHaveCount(0);

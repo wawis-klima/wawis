@@ -54,6 +54,10 @@ for (const file of ['src/App.jsx', 'src/mobile791/App.jsx']) {
 for (const file of ['src/components/diagnostics/DiagnosticsPanel.jsx', 'src/mobile791/components/diagnostics/MobileDiagnosticsPanel.jsx']) {
   assert.match(fs.readFileSync(file, 'utf8'), /profile\?\.role === 'Administrator' \? <MfaSettingsCard/, `${file}: karta tylko dla administratora`);
 }
+// Pole kodu bez maxLength — wklejony „123 456” nie może zostać ucięty przed usunięciem spacji.
+for (const file of ['src/components/auth/MfaChallengeScreen.jsx', 'src/components/auth/MfaSettingsCard.jsx']) {
+  assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /maxLength/, `${file}: bez maxLength`);
+}
 // Atrapa MFA tylko w atrapach bazy (wyłączanych z wersji produkcyjnej — smoke-no-mock-in-production).
 for (const file of ['src/lib/mockSupabaseClient.js', 'src/mobile791/lib/mockSupabaseClient.js']) {
   assert.match(fs.readFileSync(file, 'utf8'), /createMockMfa/);

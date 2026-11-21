@@ -23,7 +23,6 @@ export default function MfaChallengeScreen({ email = '', busy = false, error = '
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9]*"
-                maxLength={6}
                 placeholder="123456"
                 aria-label="Kod z telefonu"
                 value={code}

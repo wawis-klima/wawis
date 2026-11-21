@@ -67,7 +67,7 @@ export default function MfaSettingsCard({ supabase, variant = 'desktop' }) {
           {enrollment.uri ? <p><a href={enrollment.uri} data-testid="mfa-otpauth-link">Dodaj do Haseł</a></p> : null}
           {enrollment.secret ? <p className="muted">Albo wpisz ręcznie klucz: <code data-testid="mfa-secret">{enrollment.secret}</code></p> : null}
           <p><strong>2.</strong> Wpisz 6 cyfr, które pokazuje aplikacja:</p>
-          <input className="input" name="mfa-enroll-code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={6}
+          <input className="input" name="mfa-enroll-code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*"
             placeholder="123456" aria-label="Kod z aplikacji" value={code} onChange={(event) => setCode(normalizeMfaCode(event.target.value))} />
           <div className={variant === 'mobile' ? 'mobileDiagnosticsActions' : undefined}>
             <button type="submit" className="btn" disabled={busy || !isCompleteMfaCode(code)}>{busy ? 'Sprawdzam…' : 'Potwierdź i włącz'}</button>
