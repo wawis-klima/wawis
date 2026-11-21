@@ -20,11 +20,20 @@ export function getInitials(name) {
     .join("");
 }
 
+// Stałe kolory dla osób, którym automatyczny wybór dał ten sam kolor co komuś
+// innemu (14.59: Piotr Wasik i Kacper Wydmański mieli obaj zielony).
+// Klucz: imię i nazwisko małymi literami. Pozostałe osoby — bez zmian.
+const BADGE_COLOR_OVERRIDES = {
+  "piotr wasik": "badgeBlue",
+};
+
 export function getBadgeColorClass(personKey) {
   const classes = ["badgeBlue", "badgeGreen", "badgeAmber", "badgePurple", "badgePink", "badgeSlate"];
   const normalizedKey = String(personKey || "").trim().toLowerCase();
 
   if (!normalizedKey) return classes[0];
+  const override = BADGE_COLOR_OVERRIDES[normalizedKey.replace(/\s+/g, " ")];
+  if (override) return override;
 
   let hash = 0;
   for (let i = 0; i < normalizedKey.length; i += 1) {
