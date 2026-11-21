@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-SHADOWS-1465 — łączenie podobnych cieni
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1465-MERGE | FIXED-UNVERIFIED | `smoke-css-shadows-v1464`: 91 miejsc z cieniem innym niż w 14.64, każde w granicy (`SHADOW_LIMITS`) od pierwotnego; stany przycisków zachowują różne cienie (kontrola negatywna); poza cieniami pliki = oryginał. |
+| CSS-1465-OWNER | PENDING-OWNER | Właściciel ogląda karty, przyciski i panele po 14.65. |
+
 ## CSS-SHADOWS-1464 — wspólne cienie bez zmiany wyglądu
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

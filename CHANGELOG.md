@@ -1,3 +1,7 @@
+## 14.65
+- Wspólne cienie, etap 2 — łączenie cieni różniących się kosmetycznie: **155 → 107 cieni**, 91 z 279 miejsc. Granica liczona od cienia pierwotnego: ten sam kształt (liczba warstw, wewnętrzny/zewnętrzny, przesunięcie poziome, rozszerzenie), przesunięcie pionowe ≤ 2 px, rozmycie ≤ 6 px, krycie ≤ 0,02, kolor ΔE2000 < 3.
+- Cienie stanów przycisków (zwykły / najechany / wciśnięty / aktywny) nie są łączone — przyciski zachowują reakcję na dotyk; `smoke-css-shadows` pilnuje, że stany, które miały różne cienie, mają je nadal.
+
 ## 14.64
 - Wspólne cienie, etap 1 (wygląd bez zmian): 279 cieni zapisanych wprost w 28 plikach stylów → 155 zmiennych `--wxs-*` w `src/styles/shadows.css` o dokładnie tych samych wartościach. Cienie z kolorem ze zmiennej, `none` i `currentColor` bez zmian.
 - Pierwotny tekst każdego cienia zapisany pozycja po pozycji (`scripts/css-shadow-baseline.json`). Kontrola: `smoke-css-shadows-v1464` (nowy) i `smoke-css-tokens` (pliki po odtworzeniu = oryginał); test w przeglądarce porównuje styl obliczony z oryginałem we wszystkich widokach; test WebKit sprawdza, że każdy cień jest wczytany i poprawny dla Safari.

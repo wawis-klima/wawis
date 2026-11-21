@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.64",
+  "version": "14.65",
   "scope": "full",
-  "release_branch": "release/v14.64",
+  "release_branch": "release/v14.65",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Wspólne cienie (zmienne --wxs-*), wygląd bez zmian; bez zmian bazy i backendu."
+    "notes": "Łączenie podobnych cieni (granica kosmetyczna od cienia pierwotnego, stany przycisków bez łączenia); bez zmian bazy i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.64",
+    "source_branch": "release/v14.65",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.64.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.65.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.64: wspólne cienie, 279 miejsc → 155 zmiennych",
+    "code": "14.65: łączenie cieni 155 → 107",
     "release_ci": "WAWIS PR checks + smoke-css-shadows + smoke-css-tokens + WebKit E2E + E2E css-tokens-equivalence",
-    "postdeploy": "Vercel READY/14.64."
+    "postdeploy": "Vercel READY/14.65."
   }
 }
