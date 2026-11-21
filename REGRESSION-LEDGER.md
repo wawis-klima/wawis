@@ -1,11 +1,17 @@
 # WAWIS — Regression Ledger
 
+## CSS-SHADOWS-1464 — wspólne cienie bez zmiany wyglądu
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1464-SHADOWS | FIXED-UNVERIFIED | `smoke-css-shadows-v1464` (cień tylko jako cała wartość box-shadow, pozycja po pozycji = pierwotny, brak cieni wprost, kontrole negatywne) + `smoke-css-tokens` (po odtworzeniu cieni i kolorów pliki = oryginał) + E2E równoważności (styl obliczony = oryginał z cieniami wprost) + WebKit (`CSS.supports('box-shadow')`, cienie wczytane). |
+
 ## CSS-MERGE-1463 — łączenie odcieni, etap 3
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1463-MERGE | FIXED-UNVERIFIED | `smoke-css-tokens-v1451`: 1551 miejsc z odcieniem innym niż w 14.60, każde < 3 ΔE2000 od pierwotnego (limit > 3 blokowany); poza kolorami pliki = oryginał. |
-| CSS-1463-OWNER | PENDING-OWNER | Właściciel ogląda ekrany po 14.63 (różnice widoczne przy porównaniu obok siebie). |
+| CSS-1463-OWNER | VERIFIED-OWNER | Właściciel 21.11.2026 11:36 — bez uwag, zlecił dalszą analizę. |
 
 ## CSS-MERGE-1462 — łączenie odcieni, próg 2
 

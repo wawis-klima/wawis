@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 // WAWIS 14.51: wspólna paleta kolorów (zmienne --wx-*). Import statyczny w punkcie wejścia → plik CSS wejścia,
 // ładowany przez index.html przed każdym ekranem (telefon, komputer, strona naklejki QR).
 import './styles/tokens.css'
+import './styles/shadows.css'
 import { APP_VERSION } from './version.js'
 import { requestUpdateReload } from './modules/update-reload-guard.js'
 import { readQrCodeFromLocation } from './modules/qr-stickers.js'

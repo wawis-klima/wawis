@@ -97,7 +97,7 @@
     white-space:nowrap !important;
   }
   .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isAdmin .moduleSwitcherBtn.active {
-    box-shadow:0 3px 9px rgba(16,35,72,.14) !important;
+    box-shadow:var(--wxs-3-9-2c16) !important;
   }
   /* Pracownik ma tylko trzy zakładki, więc nie potrzebuje zmniejszania czcionki. */
   .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcherMobile.isWorker .moduleSwitcherBtn {

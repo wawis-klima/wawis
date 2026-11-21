@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { REGISTRY_FILE, TOKENS_FILE, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
+import { SHADOWS_FILE, readShadows } from '../../scripts/css-shadows.mjs';
 
 const tokens = readTokens(fs.readFileSync(TOKENS_FILE, 'utf8'));
 const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).files;
@@ -41,4 +42,16 @@ test('@mobile paleta kolorów 14.58 — deklaracje poprawne w silniku przegląda
     expect(invalid, `${file}: deklaracje niepoprawne w oryginale (${testInfo.project.name})`).toEqual([]);
   }
   expect(checked).toBeGreaterThan(1000);
+
+  // 14.64: wspólne cienie — wczytane w zbudowanej aplikacji i poprawne dla silnika przeglądarki.
+  const shadows = readShadows(fs.readFileSync(SHADOWS_FILE, 'utf8'));
+  const shadowState = await page.evaluate((list) => {
+    const cs = getComputedStyle(document.documentElement);
+    return {
+      missing: list.filter(([name]) => !cs.getPropertyValue(name).trim()).map(([name]) => name),
+      invalid: list.filter(([, value]) => !CSS.supports('box-shadow', value)).map(([name, value]) => `${name}: ${value}`),
+    };
+  }, Object.entries(shadows));
+  expect(shadowState, `cienie (${testInfo.project.name})`).toEqual({ missing: [], invalid: [] });
+  expect(Object.keys(shadows).length).toBeGreaterThan(50);
 });

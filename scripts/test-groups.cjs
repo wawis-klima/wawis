@@ -70,6 +70,7 @@ const GROUPS = {
     'npm run test:smoke:v1120-stability',
     'node scripts/smoke-css-tokens-v1451.mjs',
     'node scripts/smoke-badge-colors-v1459.mjs',
+    'node scripts/smoke-css-shadows-v1464.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],
