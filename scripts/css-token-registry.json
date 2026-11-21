@@ -110,11 +110,6 @@
       "replaced": 7,
       "original_sha256": "e43aa56392f16390b8bcf38d7c8bfd5d143cca8a2c7850e23f0d65f77ffdb4f0"
     },
-    "src/mobile791/v1103-completed-note-compact.css": {
-      "version": "14.69",
-      "replaced": 1,
-      "original_sha256": "4b7ecbff8a558a976d2d448021352dc992b0c864a1be728f72bfbd1d359bb7b5"
-    },
     "src/mobile791/v1295-worker-ui.css": {
       "version": "14.57",
       "replaced": 2,

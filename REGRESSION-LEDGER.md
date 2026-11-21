@@ -5,7 +5,7 @@
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1469-DEAD-FILES | FIXED-UNVERIFIED | `smoke-css-housekeeping-v1469`: `src/mobile791/main.jsx` i `v1056` usunięte (nieimportowane; jedyny punkt wejścia `src/main.jsx`), każdy arkusz importowany, kolory hex tylko w palecie. Build i E2E w CI. |
-| CSS-1469-V1103 | FIXED-UNVERIFIED | `v1103-completed-note-compact.css` w rejestrze palety; `smoke-css-tokens`: po podstawieniu = oryginał. |
+| CSS-1469-V1103 | ACCEPTED | `v1103` (1 kolor, tylko przez `@import` w `v1092`) bez zmian — E2E palety nie może go podmienić osobno (wykryte w CI: „każdy przekonwertowany plik ma ekran do sprawdzenia”); wyjątek `IMPORT_ONLY` w `smoke-css-housekeeping`. |
 
 ## CSS-ALPHA-1468 — łączenie kolorów półprzezroczystych
 

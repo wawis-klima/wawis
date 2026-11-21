@@ -6,7 +6,7 @@
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Domknięcie porządków w stylach (usunięte nieużywane pliki, ostatni kolor w palecie), wygląd bez zmian; bez zmian bazy i backendu."
+    "notes": "Domknięcie porządków w stylach (usunięte nieużywane pliki), wygląd bez zmian; bez zmian bazy i backendu."
   },
   "drive_backup": {
     "required": false,

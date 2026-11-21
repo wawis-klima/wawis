@@ -1068,7 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
-- wersja `14.69` — domknięcie porządków w stylach: usunięte nieużywane pliki, ostatni kolor w palecie; wygląd bez zmian.
+- wersja `14.69` — domknięcie porządków w stylach: usunięte nieużywane pliki; wygląd bez zmian.
 - wersja `14.68` — łączenie podobnych kolorów półprzezroczystych: 84 → 59.
 - wersja `14.67` — wspólne kolory półprzezroczyste (84 zmienne), wygląd bez zmian.
 - wersja `14.66` — łączenie odcieni, progi 4 i 5: paleta 224 → 141 kolorów; ramki kart i aktywna zakładka bez zmian.
