@@ -1,14 +1,14 @@
 /* WAWIS 14.20 — strona klienta po zeskanowaniu naklejki QR. Samodzielne style (bez CSS aplikacji). */
 :root {
-  --pqr-bg: #eef3f9; --pqr-surface: #ffffff; --pqr-fg: #10203a; --pqr-muted: #5a6b80; --pqr-line: #d6e0ec;
-  --pqr-accent: #2563eb; --pqr-accent-ink: #ffffff; --pqr-accent-soft: #e3ecfd;
-  --pqr-warn: #9a5b00; --pqr-warn-bg: #fff3dc; --pqr-crit: #b42318; --pqr-ok: #1d7a46; --pqr-ok-bg: #e5f4ec;
+  --pqr-bg: var(--wx-c-eef3f9); --pqr-surface: var(--wx-white); --pqr-fg: var(--wx-c-10203a); --pqr-muted: var(--wx-c-5a6b80); --pqr-line: var(--wx-c-d6e0ec);
+  --pqr-accent: var(--wx-blue-600); --pqr-accent-ink: var(--wx-white); --pqr-accent-soft: var(--wx-c-e3ecfd);
+  --pqr-warn: var(--wx-c-9a5b00); --pqr-warn-bg: var(--wx-c-fff3dc); --pqr-crit: var(--wx-c-b42318); --pqr-ok: var(--wx-c-1d7a46); --pqr-ok-bg: var(--wx-c-e5f4ec);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --pqr-bg: #0e1620; --pqr-surface: #16212d; --pqr-fg: #e4ecf5; --pqr-muted: #97a8bb; --pqr-line: #2a3a4b;
-    --pqr-accent: #5b8ff5; --pqr-accent-ink: #08142a; --pqr-accent-soft: #1b2b48;
-    --pqr-warn: #f2b45a; --pqr-warn-bg: #33260f; --pqr-crit: #ff8a7a; --pqr-ok: #6fd39b; --pqr-ok-bg: #163024;
+    --pqr-bg: var(--wx-c-0e1620); --pqr-surface: var(--wx-c-16212d); --pqr-fg: var(--wx-c-e4ecf5); --pqr-muted: var(--wx-c-97a8bb); --pqr-line: var(--wx-c-2a3a4b);
+    --pqr-accent: var(--wx-c-5b8ff5); --pqr-accent-ink: var(--wx-c-08142a); --pqr-accent-soft: var(--wx-c-1b2b48);
+    --pqr-warn: var(--wx-c-f2b45a); --pqr-warn-bg: var(--wx-c-33260f); --pqr-crit: var(--wx-c-ff8a7a); --pqr-ok: var(--wx-c-6fd39b); --pqr-ok-bg: var(--wx-c-163024);
     color-scheme: dark;
   }
 }
@@ -18,7 +18,7 @@ body { margin: 0; color: var(--pqr-fg); font-family: Inter, "Segoe UI", Roboto, 
   padding: max(14px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   box-sizing: border-box; gap: 14px; }
 .pqrHeader { display: flex; align-items: center; gap: 12px; padding: 6px 2px; }
-.pqrLogo { width: 52px; height: 52px; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; border: 1px solid var(--pqr-line); }
+.pqrLogo { width: 52px; height: 52px; object-fit: contain; border-radius: 12px; background: var(--wx-white); padding: 4px; border: 1px solid var(--pqr-line); }
 .pqrBrand { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
 .pqrTagline { color: var(--pqr-muted); font-size: 14px; }
 .pqrMain { display: grid; gap: 12px; flex: 1; align-content: start; }

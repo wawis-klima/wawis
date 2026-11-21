@@ -1,5 +1,11 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1456 — paleta kolorów, QR, protokoły szczelności, zgłoszenia
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1456-MODULES | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (14 plików) + E2E `css-tokens-equivalence-v1451`: strona klienta QR, skaner QR, wzór podpisu (telefon), Protokoły szczelności i Zgłoszenia (komputer), 3 szerokości — styl obliczony identyczny po podmianie na oryginał. |
+
 ## CSS-TOKENS-1455 — paleta kolorów, kreator urządzeń i tabliczki
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
