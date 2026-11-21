@@ -79,7 +79,7 @@ async function run(label,{after=[newInvoice],competing=false,otherJob=false,wron
     buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,
     findInvoiceCandidatesForManualConfirmation,inspectInvoiceBuyer,isIssuedVatInvoiceRecord,
     createClient(_url,key){return key==='anon'?{
-      auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}}
+      auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}},async rpc(name){return {data:name==='current_user_mfa_ok',error:null};} /* 14.75 MFA */
     }:{from};},
     Deno:{serve(cb){handler=cb;},env:{get(k){return env[k]||'';}}},
     async fetch(value,opts){

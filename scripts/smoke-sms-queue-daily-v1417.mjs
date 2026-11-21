@@ -83,11 +83,13 @@ for (const [pending, word] of [[1, '1 SMS czeka'], [3, '3 SMS-y czekają'], [7, 
 }
 
 // ---------- 2. Prawdziwy handler generate-service-sms-queue ----------
-function loadHandler({ adminClient, webpush, userAuthorized }) {
+function loadHandler({ adminClient, webpush, userAuthorized, mfaOk = true }) {
   const source = fs.readFileSync(new URL('../supabase/functions/generate-service-sms-queue/index.ts', import.meta.url), 'utf8')
     .replace(/^import\s[\s\S]*?;\s*$/gm, '');
   let handler = null;
-  const userClient = { auth: { getUser: async () => (userAuthorized ? { data: { user: { id: ADMIN.id } }, error: null } : { data: { user: null }, error: { message: 'no session' } }) } };
+  const userClient = { auth: { getUser: async () => (userAuthorized ? { data: { user: { id: ADMIN.id } }, error: null } : { data: { user: null }, error: { message: 'no session' } }) },
+    // WAWIS 14.75: sprawdzenie kodu z telefonu (current_user_mfa_ok) klientem użytkownika.
+    rpc: async (name) => (name === 'current_user_mfa_ok' ? { data: mfaOk, error: null } : { data: null, error: { message: `unexpected rpc ${name}` } }) };
   const context = {
     Deno: { env: { get: (name) => `fixture-${name}` }, serve: (fn) => { handler = fn; } },
     createClient: (_url, key) => (key === 'fixture-SUPABASE_SERVICE_ROLE_KEY' ? adminClient : userClient),
@@ -140,6 +142,17 @@ const post = (body, headers = {}) => new Request('https://local.invalid/fn', { m
   const body = await response.json();
   assert.equal(response.status, 200, JSON.stringify(body));
   assert.equal(body.daily, undefined, 'odświeżenie z ekranu SMS nie wysyła powiadomienia');
+  assert.equal(webpush.sent.length, 0);
+}
+
+{ // 14.75: administrator z włączonym kodem, sesja bez potwierdzenia kodem — odmowa, bez zmian w kolejce
+  const adminClient = makeAdminClient({ pending: 5 });
+  const webpush = makeWebpush();
+  const handler = loadHandler({ adminClient, webpush, userAuthorized: true, mfaOk: false });
+  const response = await handler(post({}, { Authorization: 'Bearer fixture' }));
+  const body = await response.json();
+  assert.equal(response.status, 403, JSON.stringify(body));
+  assert.equal(body.error, 'Potwierdź logowanie kodem z telefonu.');
   assert.equal(webpush.sent.length, 0);
 }
 

@@ -41,6 +41,11 @@ Deno.serve(async (request) => {
       const { data: authData, error: authError } = await userClient.auth.getUser();
       if (authError || !authData.user) return json({ error: "Brak autoryzacji użytkownika." }, 401);
 
+      // WAWIS 14.75: konto z włączonym kodem z telefonu musi mieć sesję potwierdzoną kodem (aal2).
+      // Zadanie dzienne (pg_cron) idzie gałęzią dailyRun powyżej i tego sprawdzenia nie dotyczy.
+      const { data: mfaOk, error: mfaError } = await userClient.rpc("current_user_mfa_ok");
+      if (mfaError || mfaOk !== true) return json({ error: "Potwierdź logowanie kodem z telefonu." }, 403);
+
       const { data: profile, error: profileError } = await adminClient.from("profiles").select("id, role").eq("id", authData.user.id).single();
       if (profileError || !profile || !isAdminRole(profile.role)) return json({ error: "Tylko administrator może odświeżać listę SMS." }, 403);
       callerProfile = profile;

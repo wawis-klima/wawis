@@ -52,7 +52,7 @@ async function run(label, opts={}, expected={}) {
  const env={SUPABASE_URL:'https://fake.supabase.test',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service',FAKTUROWNIA_API_TOKEN:'placeholder'};
  const sandbox={
    buildJobInvoiceOid,findIssuedVatInvoiceForJob,inspectManualInvoiceMatch,findInvoiceCandidatesForManualConfirmation,inspectInvoiceBuyer,isIssuedVatInvoiceRecord,
-   createClient(_url,key){return key==='anon'?{auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}}}:adminDb;},
+   createClient(_url,key){return key==='anon'?{auth:{async getUser(){return {data:{user:{id:'dddddddd-dddd-4ddd-8ddd-dddddddddddd'}},error:null};}},async rpc(name){return {data:name==='current_user_mfa_ok',error:null};} /* 14.75 MFA */}:adminDb;},
    Deno:{serve(f){handler=f;},env:{get(k){return env[k]||'';}}},
    async fetch(value,options){
       const u=new URL(String(value)),method=options?.method||'GET';

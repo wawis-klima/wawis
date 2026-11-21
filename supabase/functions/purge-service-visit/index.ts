@@ -34,6 +34,9 @@ Deno.serve(async(request:Request)=>{
     const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}});
     const {data:identity,error:identityError}=await session.auth.getUser();
     if(identityError||!identity.user)return reply({error:"Sesja wygasła."},401);
+    // WAWIS 14.75: konto z włączonym kodem z telefonu musi mieć sesję potwierdzoną kodem (aal2).
+    const {data:mfaOk,error:mfaError}=await session.rpc("current_user_mfa_ok");
+    if(mfaError||mfaOk!==true)return reply({error:"Potwierdź logowanie kodem z telefonu."},403);
     const {data:profile,error:profileError}=await admin.from("profiles")
       .select("role").eq("id",identity.user.id).maybeSingle();
     if(profileError||profile?.role!=="Administrator")

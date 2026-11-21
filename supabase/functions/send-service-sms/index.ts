@@ -71,6 +71,10 @@ Deno.serve(async (request) => {
     const { data: authData, error: authError } = await userClient.auth.getUser();
     if (authError || !authData.user) return json({ error: `Brak autoryzacji użytkownika. ${authError?.message || ""}`.trim() }, 401);
 
+    // WAWIS 14.75: konto z włączonym kodem z telefonu musi mieć sesję potwierdzoną kodem (aal2).
+    const { data: mfaOk, error: mfaError } = await userClient.rpc("current_user_mfa_ok");
+    if (mfaError || mfaOk !== true) return json({ error: "Potwierdź logowanie kodem z telefonu." }, 403);
+
     const { data: callerProfile, error: callerProfileError } = await adminClient.from("profiles").select("id, role").eq("id", authData.user.id).single();
     if (callerProfileError || !callerProfile || !isAdminRole(callerProfile.role)) return json({ error: "Tylko administrator może wysyłać SMS-y serwisowe." }, 403);
 
