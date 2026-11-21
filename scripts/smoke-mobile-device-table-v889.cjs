@@ -6,7 +6,8 @@ const root = path.resolve(__dirname, '..');
 const componentPath = path.join(root, 'src/mobile791/components/JobDetailsPanel.jsx');
 const styleModulePath = path.join(root, 'src/mobile791/components/mobile-device-table-v889.css.js');
 const globalCssPath = path.join(root, 'src/mobile791/styles.css');
-const mainPath = path.join(root, 'src/mobile791/main.jsx');
+// 14.69: nieużywany src/mobile791/main.jsx usunięty — ekrany telefonu ładuje src/main.jsx.
+const mainPath = path.join(root, 'src/main.jsx');
 const widthGuardPath = path.join(root, 'src/mobile791/v1090-details-width.css');
 const component = fs.readFileSync(componentPath, 'utf8');
 const styleModule = fs.readFileSync(styleModulePath, 'utf8');
@@ -47,7 +48,7 @@ assert.match(styleModule, /jobDeviceDocumentationBody\[hidden\][\s\S]*display:\s
 assert.doesNotMatch(globalCss, /mobile-device-table-v889|data-mobile-device-table="8\.89"/, 'Krytyczny układ 8.89 nie może zależeć od cache’owanego styles.css.');
 
 // 10.90: regresja dla kart Kumor/Koroś i innych rekordów z długimi wartościami.
-assert.match(mainSource, /import ['"]\.\/v1090-details-width\.css['"]/, 'Mobilny bootstrap musi ładować osłonę szerokości 10.90.');
+assert.match(mainSource, /import\(['"]\.\/mobile791\/v1090-details-width\.css['"]\)/, 'Mobilny bootstrap musi ładować osłonę szerokości 10.90.');
 assert.match(widthGuard, /@media\s*\(max-width:\s*700px\)/, 'Osłona szerokości ma działać na telefonach.');
 assert.match(widthGuard, /\.infoValue[\s\S]*min-width:\s*0\s*!important;/, 'Wartości szczegółów muszą móc się zwężać.');
 assert.match(widthGuard, /\.infoValue \.addressLink[\s\S]*overflow-wrap:\s*anywhere\s*!important;/, 'Długi adres musi zawijać się wewnątrz karty.');
