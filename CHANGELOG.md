@@ -2,6 +2,7 @@
 - Wspólna paleta kolorów, etap 8 (wygląd bez zmian): **główny arkusz telefonu** `src/mobile791/styles.css` — 1104 kolory → 430 zmiennych. Paleta: 617 kolorów. Arkusz wczytywany na każdym ekranie telefonu po zalogowaniu.
 - Test w przeglądarce: główny arkusz telefonu porównywany we wszystkich widokach telefonu z testu palety (Urządzenia, Paliwo, Kontrahenci, szczegóły montażu, kreator i tabliczki, skaner QR, wzór podpisu, lista/szczegóły/edycja montażu, nowy klient, Diagnostyka), po 3 szerokości.
 - Nowy test `css-tokens-webkit-v1458` w silniku **Safari (WebKit)** na zbudowanej aplikacji: paleta wczytana i każda deklaracja ze zmienną poprawna w oryginale dla WebKit (ponad 1000 deklaracji) — wykrywa różnice, które pokazałyby się tylko na iPhonie. Ten sam test w Chromium.
+- Workflow WebKit (testowy, bez sekretów): oczekiwana liczba testów 34 → 35 (nowy test palety).
 - Testy niezwiązane (`smoke-mobile-protocol-isolation-v982`, `-v981`, `smoke-mobile-new-job-layout-v921`, `smoke-push-mandatory-v970`, `smoke-mobile-device-table-v889`, `smoke-client-voice-input`, `smoke-desktop-device-wizard-polish-v935`) nie przechodzą już na `main` (przed 14.58) i nie są w CI — bez zmian w tym wydaniu.
 
 ## 14.57
