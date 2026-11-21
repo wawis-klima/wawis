@@ -1,3 +1,7 @@
+## 14.66
+- Łączenie podobnych odcieni, **progi 4 i 5 naraz** (ΔE2000 < 5 licząc od pierwotnego koloru z 14.60; decyzja właściciela 21.11.2026 po obejrzeniu przykładów). Paleta: **224 → 141 kolorów** (od 14.60: 760 → 141); 527 miejsc zmienia odcień w tym wydaniu.
+- Wyjątki właściciela bez zmian: ramki kart (`#dbe6f2`, `#e7edf6`) i tło aktywnej zakładki / plakietek (`#dbeafe`) — `OWNER_KEEP` w `css-color-merge.mjs`, pilnowane w `smoke-css-tokens`.
+
 ## 14.65
 - Wspólne cienie, etap 2 — łączenie cieni różniących się kosmetycznie: **155 → 107 cieni**, 91 z 279 miejsc. Granica liczona od cienia pierwotnego: ten sam kształt (liczba warstw, wewnętrzny/zewnętrzny, przesunięcie poziome, rozszerzenie), przesunięcie pionowe ≤ 2 px, rozmycie ≤ 6 px, krycie ≤ 0,02, kolor ΔE2000 < 3.
 - Cienie stanów przycisków (zwykły / najechany / wciśnięty / aktywny) nie są łączone — przyciski zachowują reakcję na dotyk; `smoke-css-shadows` pilnuje, że stany, które miały różne cienie, mają je nadal.

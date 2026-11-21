@@ -110,7 +110,8 @@ async function seedMobileFuel(page) {
 const SCENARIOS = [
   {
     id: 'urzadzenia-telefon-administrator', platform: 'mobile', root: '.serviceAdminPage', widths: [360, 390, 430],
-    negativeControl: [SERVICE_CSS, 'padding-bottom:18px;color:#172b45}', 'padding-bottom:18px;color:#ff00ff}'],
+    // 14.66: fragment bez konkretnego koloru (kolory zmieniają się przy łączeniu odcieni) — kolor podmieniany na #ff00ff.
+    negativeControl: [SERVICE_CSS, /padding-bottom:18px;color:#[0-9a-f]{6}\}/, 'padding-bottom:18px;color:#ff00ff}'],
     async open(page) {
       await login(page, ADMIN);
       await page.locator('.moduleSwitcherMobile button[data-module="devices"]').click();
@@ -567,7 +568,7 @@ async function runScenario(page, scenario) {
   // Kontrola samego testu: celowo zmieniony kolor w „oryginale” MUSI zostać wykryty.
   if (scenario.negativeControl) {
     const [file, from, to] = scenario.negativeControl;
-    expect(originals[file].includes(from), 'kontrola negatywna: fragment w oryginale').toBe(true);
+    expect(from instanceof RegExp ? from.test(originals[file]) : originals[file].includes(from), 'kontrola negatywna: fragment w oryginale').toBe(true);
     const tampered = await swapAndCompare(page, file, scenario.root, originals[file].replace(from, to));
     expect(tampered.error).toBeUndefined();
     expect(tampered.diffs.length, 'zmieniony kolor musi być wykryty').toBeGreaterThan(0);

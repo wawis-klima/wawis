@@ -4,7 +4,7 @@
 .mobileDiagnosticsHero{grid-template-columns:minmax(0,1fr) auto;align-items:start}
 .mobileDiagnosticsHero h1{font-size:19px;line-height:1.2;color:var(--wx-c-102348);margin:6px 0 4px}
 .mobileDiagnosticsHero p,.mobileDiagnosticsPrivacy p{font-size:12px;line-height:1.45;color:var(--wx-slate-500);margin:0}
-.mobileDiagnosticsHero .sectionPill{display:inline-flex;border-radius:99px;background:var(--wx-c-eaf3ff);color:var(--wx-blue-700);padding:4px 9px;font-weight:800;font-size:10px}
+.mobileDiagnosticsHero .sectionPill{display:inline-flex;border-radius:99px;background:var(--wx-c-e7edf6);color:var(--wx-blue-700);padding:4px 9px;font-weight:800;font-size:10px}
 .mobileDiagnosticsVersion{font-size:13px;font-weight:800;color:var(--wx-slate-500);white-space:nowrap}
 .mobileDiagnosticsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;min-width:0}
 .mobileDiagnosticsMetric{min-width:0;display:grid;gap:5px;border:1px solid var(--wx-c-dbe6f2);background:var(--wx-slate-50);border-radius:12px;padding:12px}

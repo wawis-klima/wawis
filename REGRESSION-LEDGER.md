@@ -1,11 +1,18 @@
 # WAWIS — Regression Ledger
 
+## CSS-MERGE-1466 — łączenie odcieni, progi 4 i 5
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1466-MERGE | FIXED-UNVERIFIED | `smoke-css-tokens-v1451`: 1814 miejsc z odcieniem innym niż w 14.60, każde < 5 ΔE2000 od pierwotnego (limit > 5 blokowany); wyjątki właściciela (`OWNER_KEEP`: ramki kart, aktywna zakładka) niezmienione w każdym miejscu; poza kolorami pliki = oryginał. |
+| CSS-1466-OWNER | PENDING-OWNER | Właściciel ogląda ekrany po 14.66 (zmiany widoczne, m.in. przycisk w Paliwie, nagłówki protokołu). |
+
 ## CSS-SHADOWS-1465 — łączenie podobnych cieni
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1465-MERGE | FIXED-UNVERIFIED | `smoke-css-shadows-v1464`: 91 miejsc z cieniem innym niż w 14.64, każde w granicy (`SHADOW_LIMITS`) od pierwotnego; stany przycisków zachowują różne cienie (kontrola negatywna); poza cieniami pliki = oryginał. |
-| CSS-1465-OWNER | PENDING-OWNER | Właściciel ogląda karty, przyciski i panele po 14.65. |
+| CSS-1465-OWNER | VERIFIED-OWNER | Właściciel 21.11.2026 12:24 — bez uwag, zlecił kolejny etap kolorów. |
 
 ## CSS-SHADOWS-1464 — wspólne cienie bez zmiany wyglądu
 

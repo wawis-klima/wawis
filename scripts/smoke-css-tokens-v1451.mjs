@@ -11,7 +11,7 @@ import {
   REGISTRY_FILE, TOKENS_FILE, canonicalHex, misplacedTokenUses, normalizeForCompare, readTokens, resolveTokens,
   scanDeclarationValues, sha256, tokenNameFor, tokenizeCss, BASELINE_FILE, MERGES_FILE, tokenSequence,
 } from './css-tokens.mjs';
-import { deltaE2000 } from './css-color-merge.mjs';
+import { OWNER_KEEP, deltaE2000 } from './css-color-merge.mjs';
 import { SHADOW_BASELINE_FILE, restoreShadows } from './css-shadows.mjs';
 
 // --- Zachowanie konwertera na trudnych przypadkach (selektory #id, url(), komentarze, napisy, @media, :hover) ---
@@ -93,8 +93,10 @@ const usedEverywhere = new Set();
 const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'));
 const merges = fs.existsSync(MERGES_FILE) ? JSON.parse(fs.readFileSync(MERGES_FILE, 'utf8')) : { limit_de2000: 0, map: {} };
 // Granica właściciela: 21.11.2026 rano „ledwo widoczne” (ΔE2000 < 2), 21.11.2026 11:15 po obejrzeniu 14.62 — etap 3
-// („widoczne obok siebie”, ΔE2000 < 3). Wyższy próg = nowa decyzja właściciela.
-assert.ok(merges.limit_de2000 <= 3, `limit łączenia ${merges.limit_de2000} > 3 bez decyzji właściciela`);
+// („widoczne obok siebie”, ΔE2000 < 3); 21.11.2026 12:29 progi 4 i 5 naraz (ΔE2000 < 5) z wyjątkami OWNER_KEEP.
+// Wyższy próg = nowa decyzja właściciela.
+assert.ok(merges.limit_de2000 <= 5, `limit łączenia ${merges.limit_de2000} > 5 bez decyzji właściciela`);
+for (const hex of OWNER_KEEP) assert.ok(!(hex in merges.map), `${hex} (wyjątek właściciela) nie może być łączony`);
 for (const [from, { to, de2000 }] of Object.entries(merges.map)) {
   assert.ok(!(to in merges.map) || merges.map[to].to === to, `${from} → ${to}: łączenie jednokrokowe`);
   assert.ok(Math.abs(deltaE2000(from, to) - de2000) < 0.01 && de2000 < merges.limit_de2000, `${from} → ${to}: zapisana różnica się zgadza i mieści w limicie`);
@@ -118,6 +120,7 @@ for (const [file, meta] of files) {
     `${file}: poza kolorami plik różni się od oryginału — zmiana wyglądu wymaga osobnej decyzji właściciela`);
   now.forEach((hex, i) => {
     const expected = merges.map[orig[i]]?.to || orig[i];
+    if (OWNER_KEEP.includes(orig[i])) assert.equal(hex, orig[i], `${file}: ${orig[i]} to wyjątek właściciela — bez zmian`);
     assert.equal(hex, expected, `${file}: miejsce ${i + 1} ma kolor ${hex}, a zapis połączeń mówi ${expected} (pierwotnie ${orig[i]})`);
     if (hex !== orig[i]) {
       changedPositions += 1;

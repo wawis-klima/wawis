@@ -13,13 +13,13 @@
 .serviceRequestTop { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .serviceRequestKind { font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; }
 .serviceRequestKind.kind-awaria { background: var(--wx-c-ffeaea); color: var(--wx-red-700); }
-.serviceRequestKind.kind-przeglad { background: var(--wx-blue-100); color: var(--wx-c-1e4fbf); }
+.serviceRequestKind.kind-przeglad { background: var(--wx-blue-100); color: var(--wx-blue-700); }
 .serviceRequestDate { color: var(--wx-c-5a6b80); font-size: 14px; font-variant-numeric: tabular-nums; }
 .serviceRequestStatus { font-size: 13px; font-weight: 700; color: var(--wx-c-5a6b80); }
-.serviceRequestStatus.status-nowe { color: var(--wx-c-1e4fbf); }
+.serviceRequestStatus.status-nowe { color: var(--wx-blue-700); }
 .serviceRequestStatus.status-zalatwione { color: var(--wx-c-1d7a46); }
 .serviceRequestClient { overflow-wrap: anywhere; }
-.serviceRequestLink { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--wx-c-1e4fbf); cursor: pointer; text-decoration: underline; }
+.serviceRequestLink { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--wx-blue-700); cursor: pointer; text-decoration: underline; }
 .serviceRequestDevice { color: var(--wx-c-5a6b80); font-size: 14px; overflow-wrap: anywhere; }
 .serviceRequestText { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .serviceRequestText.isEmpty { color: var(--wx-c-8a98aa); font-style: italic; }
@@ -34,6 +34,6 @@
 .serviceRequestsKinds { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--wx-c-dbe6f2); padding-bottom: 10px; }
 .serviceRequestsKindTab { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--wx-c-dbe6f2); background: var(--wx-white); color: var(--wx-c-10203a);
   border-radius: 999px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; }
-.serviceRequestsKindTab.active { border-color: var(--wx-blue-600); background: var(--wx-blue-100); color: var(--wx-c-1e4fbf); }
+.serviceRequestsKindTab.active { border-color: var(--wx-blue-600); background: var(--wx-blue-100); color: var(--wx-blue-700); }
 .serviceRequestsKindCount { font-size: 12px; font-weight: 800; border-radius: 999px; padding: 2px 8px; background: var(--wx-blue-600); color: var(--wx-white); }
 .serviceRequestsKindTab.kindTab-awaria .serviceRequestsKindCount { background: var(--wx-red-700); }

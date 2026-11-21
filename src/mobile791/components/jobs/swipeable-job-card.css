@@ -4,11 +4,11 @@
   .mobileJobsShellV959 .wawisSwipeActions{position:absolute;top:0;bottom:0;width:144px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));background:var(--wx-slate-50)}
   .mobileJobsShellV959 .wawisSwipeActions.isLeft{left:0;right:auto}
   .mobileJobsShellV959 .wawisSwipeActions.isRight{right:0;left:auto}
-  .mobileJobsShellV959 .wawisSwipeAction{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:48px;padding:6px 2px;border:0;border-right:1px solid var(--wx-c-dbe6f2);border-radius:0;color:var(--wx-c-275987);text-decoration:none;font-size:10px;font-weight:700;text-align:center;cursor:pointer;font-family:inherit}
+  .mobileJobsShellV959 .wawisSwipeAction{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:48px;padding:6px 2px;border:0;border-right:1px solid var(--wx-c-dbe6f2);border-radius:0;color:var(--wx-c-245d9f);text-decoration:none;font-size:10px;font-weight:700;text-align:center;cursor:pointer;font-family:inherit}
   .mobileJobsShellV959 .wawisSwipeAction.isPhone{background:var(--wx-green-50);color:var(--wx-c-176b4d)}
-  .mobileJobsShellV959 .wawisSwipeAction.isMap{background:var(--wx-c-eaf3ff);color:var(--wx-c-275987)}
-  .mobileJobsShellV959 .wawisSwipeAction.isNameplates{background:var(--wx-c-eaf3ff);color:var(--wx-c-275987)}
-  .mobileJobsShellV959 .wawisSwipeAction.isProtocol{background:var(--wx-c-eef1ff);color:var(--wx-c-51449a)}
+  .mobileJobsShellV959 .wawisSwipeAction.isMap{background:var(--wx-c-e7edf6);color:var(--wx-c-245d9f)}
+  .mobileJobsShellV959 .wawisSwipeAction.isNameplates{background:var(--wx-c-e7edf6);color:var(--wx-c-245d9f)}
+  .mobileJobsShellV959 .wawisSwipeAction.isProtocol{background:var(--wx-c-e7edf6);color:var(--wx-c-51449a)}
   .mobileJobsShellV959 .wawisSwipeAction.isDisabled,.mobileJobsShellV959 .wawisSwipeAction:disabled{color:var(--wx-c-8a98aa);background:var(--wx-slate-50);cursor:not-allowed}
   .mobileJobsShellV959 .wawisSwipeAction .inlineIcon{width:20px;height:20px;flex:none}
   .mobileJobsShellV959 .wawisSwipeAction:focus-visible{outline:2px solid var(--wx-blue-700);outline-offset:-3px}

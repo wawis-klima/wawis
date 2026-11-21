@@ -318,7 +318,7 @@
 
   .desktopNameplateSummaryBadge.pending {
     color: var(--wx-red-700);
-    background: var(--wx-red-50);
+    background: var(--wx-c-fff7f7);
     border-color: var(--wx-red-200);
   }
 
