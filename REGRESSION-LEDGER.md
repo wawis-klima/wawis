@@ -12,7 +12,7 @@
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | CSS-1458-MOBILE-MAIN | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (27 plików, w tym `mobile791/styles.css` 1104 kolory) + E2E `css-tokens-equivalence-v1451` (arkusz porównywany we wszystkich widokach telefonu) + `css-tokens-webkit-v1458` (WebKit i Chromium: `CSS.supports` dla każdej deklaracji ze zmienną, paleta wczytana w buildzie). |
-| CSS-1458-IPHONE | VERIFIED-OWNER | Potwierdzone przez właściciela 21.11.2026 (wpis BADGE-1459). |
+| CSS-1458-IPHONE | VERIFIED-OWNER | Właściciel 21.11.2026 na iPhonie: dodaj montaż, urządzenia, montaże (niezrealizowane i zrealizowane) wyglądają dobrze. |
 
 ## CSS-TOKENS-1457 — paleta kolorów, mniejsze pliki stylów
 
