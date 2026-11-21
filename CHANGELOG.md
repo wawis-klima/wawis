@@ -1,3 +1,7 @@
+## 14.60
+- Wspólna paleta kolorów, etap 9 (wygląd bez zmian): **główny arkusz komputera** `src/styles.css` — 1546 kolorów → 547 zmiennych. Paleta: 760 kolorów. Arkusz wczytywany na każdym ekranie komputera po zalogowaniu.
+- Test w przeglądarce: główny arkusz komputera porównywany we wszystkich widokach komputera z testu palety (lista montaży, szczegóły montażu, kreator urządzeń, protokoły szczelności, zgłoszenia, paliwo), po 3 szerokości (1280, 1440, 1920). Test WebKit sprawdza też deklaracje tego arkusza.
+
 ## 14.59
 - Plakietki z inicjałami: **Piotr Wasik** (administrator) ma teraz kolor **niebieski** zamiast zielonego — wcześniej miał ten sam zielony co Kacper Wydmański. Kolory pozostałych osób bez zmian (Kacper — zielony, Krystian — różowy, Michał — bursztynowy, Paweł — fioletowy). Komputer i telefon.
 - Test `smoke-badge-colors-v1459` (obie kopie kodu, brak powtórzonych kolorów w obecnym zespole).

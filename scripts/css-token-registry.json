@@ -130,6 +130,11 @@
       "replaced": 27,
       "original_sha256": "479927350f3bde3047ddd221195c371fdf6efc95a2a3be4fb6b0069024a19a51"
     },
+    "src/styles.css": {
+      "version": "14.59",
+      "replaced": 1546,
+      "original_sha256": "8eb141b5d40877e0dde22b703460d03e6ba126306320cf3a8d0c5da1edf1a761"
+    },
     "src/styles/desktop-jobs-table.css": {
       "version": "14.57",
       "replaced": 12,

@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-TOKENS-1460 — paleta kolorów, główny arkusz komputera
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1460-DESKTOP-MAIN | FIXED-UNVERIFIED | `smoke-css-tokens-v1451` (28 plików, w tym `src/styles.css` 1546 kolorów) + E2E `css-tokens-equivalence-v1451` (arkusz porównywany we wszystkich widokach komputera) + `css-tokens-webkit-v1458` (`CSS.supports` dla każdej deklaracji ze zmienną). |
+| CSS-1460-DESKTOP-OWNER | PENDING-OWNER | Właściciel przegląda główne ekrany na komputerze (lista montaży, szczegóły, kalendarz, kontrahenci, ustawienia). |
+
 ## BADGE-1459 — kolory plakietek z inicjałami
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
