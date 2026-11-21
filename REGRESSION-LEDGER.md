@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CI-STABILITY-1470 — awarie przeglądarki testowej
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CI-1470-SW-CRASH | FIXED-UNVERIFIED | Przyczyna: Chromium headless shell 1223 — SIGSEGV w procesie przeglądarki przy zamykaniu kontekstu z instalującym się service workerem (16 awarii w 25 uruchomieniach PR 14.53–14.69, zawsze ten sam podpis). Eksperyment `diag/chromium-crash`: 13/320 z SW, 0/320 bez SW. Poprawka: `serviceWorkers: 'block'` domyślnie, jawne `allow` w testach SW; `smoke-playwright-sw-block-v1470`. Weryfikacja: kolejne uruchomienia PR bez awarii. |
+| CI-1470-MOCK-RACE | FIXED-UNVERIFIED | Ujawnione przez blokadę SW (14.21 zgłoszenia: `mutate is not a function` 2/2): obie atrapy Supabase nadpisywały globalne API. `registerMockSupabaseApi` łączy je (mutate do obu baz); sprawdzone w Node na atrapach; E2E w CI. |
+
 ## CSS-HOUSEKEEPING-1469 — domknięcie porządków w stylach
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

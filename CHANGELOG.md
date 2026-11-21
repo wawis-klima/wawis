@@ -1,3 +1,8 @@
+## 14.70
+- Stabilność testów automatycznych (aplikacja bez zmian): przyczyną powtarzających się „padnięć” przeglądarki testowej (`Target page, context or browser has been closed`, `SIGSEGV SEGV_MAPERR 0x1b0` w Chromium headless shell) jest zamykanie okna testu, gdy obsługa offline (service worker) jeszcze się instaluje. Eksperyment na izolowanej gałęzi diagnostycznej: z service workerem 13 awarii na 320 testów, bez — 0 na 320. Od 14.70 główna konfiguracja Playwright domyślnie blokuje service worker; testy, które go sprawdzają, włączają go jawnie (precache offline, tabliczki offline, publiczna strona QR). Osobne testy zbudowanej aplikacji (zdjęcia, tabliczki, WebKit) bez zmian.
+- Zablokowanie service workera ujawniło ukryty wyścig w atrapie bazy testowej: aplikacja wczytuje obie atrapy (komputer i telefon), a wczytana później nadpisywała `window.__KLIMA_MOCK_SUPABASE__` (test zgłoszeń 14.21 dostawał atrapę telefonu bez `mutate`). Teraz atrapy się łączą: `mutate` trafia do obu baz, pliki z atrapy, która je ma; `reset`/`getStore` jak dotąd. Tylko tryb testowy — atrapy nie ma w wersji produkcyjnej.
+- Nowy test `smoke-playwright-sw-block-v1470` pilnuje tej zasady (test używający prawdziwego service workera musi mieć `serviceWorkers: 'allow'`).
+
 ## 14.69
 - Domknięcie porządków w stylach: usunięty nieużywany punkt wejścia `src/mobile791/main.jsx` (aplikację ładuje wyłącznie `src/main.jsx`) i jego jedyny arkusz `v1056-new-job-spacing.css`. Wygląd bez zmian.
 - `v1103-completed-note-compact.css` (1 kolor, wczytywany wyłącznie przez `@import` w `v1092`) zostaje z kolorem zapisanym wprost — test w przeglądarce nie może podmienić go osobno, a przeniesienie poza `@import` zmieniłoby kolejność stylów. Kolor ma tę samą wartość co w palecie.
