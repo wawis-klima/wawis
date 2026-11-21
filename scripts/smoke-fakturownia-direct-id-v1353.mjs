@@ -33,7 +33,7 @@ async function scenario(label, body, overrides, expected) {
         : null, error: null };} };
   } };
   const sandbox = { createClient(_url,key) {
-    return key==='anon' ? {auth:{async getUser(){return {data:{user:{id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'}},error:null};}}} : db;
+    return key==='anon' ? {auth:{async getUser(){return {data:{user:{id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'}},error:null};}},async rpc(name){return {data:name==='current_user_mfa_ok',error:null};} /* 14.75 MFA */} : db;
   },
   buildJobInvoiceOid, findIssuedVatInvoiceForJob:()=>null, inspectManualInvoiceMatch,
   findInvoiceCandidatesForManualConfirmation:()=>[], isIssuedVatInvoiceRecord,

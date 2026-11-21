@@ -78,6 +78,7 @@ const GROUPS = {
     'node scripts/smoke-mfa-v1472.mjs',
     'node scripts/smoke-push-sync-v1473.mjs',
     'node scripts/smoke-mfa-aal2-v1474.mjs',
+    'node scripts/smoke-mfa-edge-v1475.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],

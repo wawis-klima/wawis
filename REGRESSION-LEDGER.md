@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## MFA-1475 — etap 3: funkcje Edge wymagają aal2 (zgoda właściciela 21.11.2026, „Ok działamy”)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| MFA-1475-EDGE | FIXED-UNVERIFIED | fakturownia-client, send-service-sms, generate-service-sms-queue (tylko wywołanie z aplikacji, nie pg_cron), purge-service-visit, send-service-visit-protocol-email: po `getUser()` `rpc("current_user_mfa_ok")` klientem użytkownika (JWT), przy błędzie lub ≠ true → 403 przed odczytem profilu kluczem serwisowym. Kod bazowy = wdrożone wersje (porównanie z produkcją 21.11.2026: purge v1 i protocol-email v1 identyczne, fakturownia v27 różni się tylko zapisem `\u0300-\u036f` w regex — semantycznie to samo, SMS v40 i kolejka v32 zgodne z repo). `smoke-mfa-edge-v1475` (statyczny), `smoke-sms-queue-daily-v1417` (wykonywalny handler: 403 bez kodu, 200 z kodem, zadanie dzienne bez zmian), testy Fakturowni z atrapą rpc. |
+| MFA-1475-SCOPE | ACCEPTED | `send-assignment-push`, `send-fuel-entry-push` pominięte: wysyłają tylko powiadomienie, bez danych klientów; wdrożona wersja może być nowsza niż repo — bez zmiany w ciemno. |
+
 ## MFA-1474 — etap 2: baza wymaga aal2 (zgoda właściciela 21.11.2026 20:38)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
@@ -7,7 +14,7 @@
 | MFA-1474-DB | FIXED-UNVERIFIED | `scripts/pg-test-mfa-v1474/run.sh` (PostgreSQL 16, lokalnie: PASS): admin z kodem aal1 → is_admin=false, 0 wierszy w tabelach (także „własne” push), 0 plików, 2 funkcje z własnym sprawdzaniem roli → błąd, INSERT → RLS; aal2 → wszystko; pracownik bez kodu → bez zmian; admin z niedokończonym kodem → bez zmian; usługa bez użytkownika → OK; migracja 2× bez błędu; wycofanie → stan sprzed. `smoke-mfa-aal2-v1474` (statyczny). |
 | MFA-1474-PROD | VERIFIED | Zastosowana 21.11.2026 ~21:23 (apply_migration, za zgodą). SELECT: funkcja 1, reguły 39 (38 tabel public z RLS + storage.objects), helpery i 2 funkcje z warunkiem. Symulacja w wycofywanej transakcji: pracownik aal1 — 189 montaży; administrator aal1 — 0 montaży / 0 plików / is_admin=false; administrator aal2 — 189 montaży / 1323 pliki. Logi Postgres: brak odmów RLS po zmianie. |
 | MFA-1474-REHEARSAL | FIXED-UNVERIFIED | Próba odbudowy z migracji: (1) atrapa auth bez `auth.mfa_factors` — dodana; (2) dawna rozbieżność repo↔produkcja: `worker_create_or_get_contractor_for_job` w repo (v9.19) zwraca `public.contractors`, na produkcji `jsonb` — migracja usuwa funkcję tylko przy innym typie wyniku (na produkcji nic nie robi; SELECT: jsonb) i ustawia uprawnienia identyczne z produkcją (authenticated, service_role). Test PostgreSQL z wersją z repo: PASS. |
-| MFA-1474-EDGE | OPEN | Funkcje Edge z własnym sprawdzaniem roli (fakturownia-client, send-service-sms, generate-service-sms-queue, purge-service-visit, send-service-visit-protocol-email, send-assignment-push, send-fuel-entry-push) nie sprawdzają aal — osobna zgoda. |
+| MFA-1474-EDGE | FIXED w 14.75 | Zob. MFA-1475. |
 
 ## PUSH-SYNC-1473 — nieobsłużony błąd sprawdzania stanu PUSH (obszar chroniony: push)
 

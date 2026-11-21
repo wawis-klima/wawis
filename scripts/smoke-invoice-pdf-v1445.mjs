@@ -21,7 +21,7 @@ async function run({ role = 'Administrator', job, pdfBody = PDF, pdfStatus = 200
   const fetched = [];
   const sandbox = {
     createClient(_url, key) {
-      if (key === 'anon') return { auth: { async getUser() { return { data: { user: { id: 'u1' } }, error: null }; } } };
+      if (key === 'anon') return { auth: { async getUser() { return { data: { user: { id: 'u1' } }, error: null }; } },async rpc(name){return {data:name==='current_user_mfa_ok',error:null};} /* 14.75 MFA */ };
       return { from(table) { return { select() { return this; }, eq() { return this; },
         async maybeSingle() { return { data: table === 'profiles' ? { role } : table === 'jobs' ? job : null, error: null }; } }; } };
     },

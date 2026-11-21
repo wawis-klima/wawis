@@ -27,7 +27,7 @@ async function scenario(label, resolver, expected) {
   };
   const sandbox={
     createClient(_url,key){
-      if(key==='anon')return {auth:{async getUser(){return {data:{user:{id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'}},error:null};}}};
+      if(key==='anon')return {auth:{async getUser(){return {data:{user:{id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc'}},error:null};}},async rpc(name){return {data:name==='current_user_mfa_ok',error:null};} /* 14.75 MFA */};
       return db;
     },
     buildJobInvoiceOid:id=>'WAWIS-JOB-'+id,

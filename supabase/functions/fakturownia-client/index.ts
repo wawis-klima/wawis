@@ -79,6 +79,10 @@ Deno.serve(async (request: Request) => {
       return json({ error: "Sesja wygasła. Zaloguj się ponownie." }, 401);
     }
 
+    // WAWIS 14.75: konto z włączonym kodem z telefonu musi mieć sesję potwierdzoną kodem (aal2).
+    const { data: mfaOk, error: mfaError } = await userClient.rpc("current_user_mfa_ok");
+    if (mfaError || mfaOk !== true) return json({ error: "Potwierdź logowanie kodem z telefonu." }, 403);
+
     const { data: profile, error: profileError } = await adminClient
       .from("profiles")
       .select("role")
