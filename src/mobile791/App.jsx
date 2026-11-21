@@ -12,6 +12,8 @@ import { countSmsDueToday } from "../modules/sms.js";
 import { normalizeStatus, STATUSES } from "./utils/jobPermissions.js";
 import { areJobNameplatesReadyForProtocol } from "./modules/nameplate-requirements.js";
 import { supabase, supabaseUrl, LOGOUT_FLAG_KEY, isSupabaseConfigured } from "./lib/supabase.js";
+import { useMfaGate } from "../hooks/useMfaGate.js";
+import MfaChallengeScreen from "../components/auth/MfaChallengeScreen.jsx";
 import { EMPTY_JOB_FORM, loadJobDetailsData, loadJobSummaryData } from "./modules/jobs.js";
 import { loadContractors } from "./modules/contractors-fetch.js";
 import {
@@ -335,6 +337,12 @@ export default function App() {
     normalizeStatus,
     selectedJobIdRef,
     setSelectedJob,
+  });
+  // 14.72: kod z telefonu (MFA) — po haśle, zanim pokażemy dane.
+  const mfaGate = useMfaGate({
+    supabase,
+    sessionUser,
+    onVerified: (user) => { if (user) void refreshAll(user, { silent: true, preserveJobDetails: true }); },
   });
 
   const isAdmin = profile?.role === "Administrator";
@@ -1413,6 +1421,22 @@ export default function App() {
         showRegisterModal={showRegisterModal}
         setShowRegisterModal={setShowRegisterModal}
         errorMsg={errorMsg}
+      />
+    );
+  }
+
+  if (mfaGate.status === "checking") {
+    return <div className="page"><div className="card authCard">Trwa przywracanie sesji...</div></div>;
+  }
+
+  if (mfaGate.status === "required") {
+    return (
+      <MfaChallengeScreen
+        email={sessionUser?.email || ""}
+        busy={mfaGate.busy}
+        error={mfaGate.error}
+        onVerify={mfaGate.verify}
+        onLogout={logout}
       />
     );
   }

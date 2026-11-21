@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## MFA-1472 — kod z telefonu przy logowaniu, etap 1 (obszar chroniony: logowanie)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| MFA-1472-GATE | FIXED-UNVERIFIED | `smoke-mfa-v1472`: aal1→aal2 wymaga kodu; brak kodu / błąd odczytu / brak API → bez kroku (offline nie blokuje); hook przed wczesnymi powrotami, ekran kodu po logowaniu i przed danymi w obu aplikacjach. E2E `mfa-admin-v1472`: włączenie, zły kod, przeładowanie bez ponownego kodu, nowe logowanie z kodem, wyłączenie; iPhone: krok kodu (`one-time-code`, klawiatura numeryczna); pracownik bez zmian. |
+| MFA-1472-IPHONE | PENDING-OWNER | Właściciel na iPhonie: włączenie (Hasła / aplikacja z kodami), wylogowanie, logowanie z kodem. Dopiero potem etap 2 (wymuszenie w bazie). |
+
 ## DIAG-NOISE-1471 — niesklasyfikowane zdarzenia w Diagnostyce
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
