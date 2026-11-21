@@ -33,6 +33,7 @@ const LEAK_SIGN_CSS = 'src/mobile791/components/leak-tests/leak-test-sign.css';
 const SERVICE_REQUESTS_CSS = 'src/components/service-requests/service-requests.css';
 // 14.58: główny arkusz telefonu (wczytywany na każdym ekranie aplikacji na telefonie — poza stroną klienta z naklejki QR).
 const MOBILE_MAIN_CSS = 'src/mobile791/styles.css';
+const DESKTOP_MAIN_CSS = 'src/styles.css';
 const MOBILE_GLOBAL_CSS = [
   'src/mobile791/mobile.css', 'src/mobile791/v1048-runtime-fix.css', 'src/mobile791/v1057-new-job-form-fix.css',
   'src/mobile791/v1295-worker-ui.css', 'src/mobile791/v1297-admin-edit.css', 'src/mobile791/v1323-mobile-protocol-actions.css',
@@ -463,6 +464,14 @@ for (const scenario of SCENARIOS) {
   if (scenario.platform !== 'mobile' || scenario.id === 'naklejka-qr-strona-klienta') continue;
   for (const state of scenario.states) {
     if (!state.files.includes(MOBILE_MAIN_CSS)) state.files.push(MOBILE_MAIN_CSS);
+  }
+}
+
+// 14.60: główny arkusz komputera sprawdzany w każdym widoku komputera.
+for (const scenario of SCENARIOS) {
+  if (scenario.platform !== 'desktop') continue;
+  for (const state of scenario.states) {
+    if (!state.files.includes(DESKTOP_MAIN_CSS)) state.files.push(DESKTOP_MAIN_CSS);
   }
 }
 
