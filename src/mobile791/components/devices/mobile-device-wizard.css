@@ -1,7 +1,7 @@
 .mobileDeviceWizard {
-  --wizard-blue: var(--wx-c-1464f4);
+  --wizard-blue: var(--wx-blue-600);
   --wizard-ink: var(--wx-c-10203a);
-  --wizard-muted: var(--wx-c-7b879d);
+  --wizard-muted: var(--wx-c-7a889b);
   position: relative;
   display: flex;
   min-height: min(760px, 92vh);
@@ -58,7 +58,7 @@
   margin: 5px 0 22px;
   padding: 9px 15px;
   border-radius: 999px;
-  background: var(--wx-c-eef4ff);
+  background: var(--wx-c-eaf3ff);
   color: var(--wizard-blue);
   font-size: 13px;
   font-weight: 800;
@@ -98,7 +98,7 @@
   width: 100%;
   min-height: 94px;
   padding: 14px 17px;
-  border: 1px solid var(--wx-slate-200);
+  border: 1px solid var(--wx-c-e7edf6);
   border-radius: 18px;
   background: var(--wx-white);
   color: var(--wizard-ink);
@@ -108,7 +108,7 @@
 
 .mobileDeviceTypeCard.selected {
   border-color: var(--wizard-blue);
-  background: var(--wx-c-f8fbff);
+  background: var(--wx-slate-50);
   box-shadow: 0 10px 25px rgba(20, 100, 244, .08);
 }
 
@@ -150,7 +150,7 @@
   gap: 8px;
   min-height: 38px;
   padding: 7px 12px;
-  border: 1px solid var(--wx-c-dbe3ef);
+  border: 1px solid var(--wx-c-dbe6f2);
   border-radius: 999px;
   color: var(--wizard-blue);
   background: var(--wx-white);
@@ -173,7 +173,7 @@
   min-height: 78px;
   width: 100%;
   padding: 12px 15px;
-  border: 1px solid var(--wx-slate-200);
+  border: 1px solid var(--wx-c-e7edf6);
   border-radius: 18px;
   background: var(--wx-white);
   color: var(--wizard-blue);
@@ -194,7 +194,7 @@
   gap: 8px;
   margin-top: 3px;
   padding: 13px;
-  border: 1px solid var(--wx-slate-200);
+  border: 1px solid var(--wx-c-e7edf6);
   border-radius: 18px;
   background: var(--wx-white);
 }
@@ -210,7 +210,7 @@
   font-size: 11px;
   font-weight: 800;
 }
-.mobileDeviceWizardCompletion.ready { background: var(--wx-c-ecfdf3); color: var(--wx-green-700); }
+.mobileDeviceWizardCompletion.ready { background: var(--wx-green-50); color: var(--wx-green-700); }
 
 .mobileMultiOutdoorCard,
 .mobileMultiIndoorCard,
@@ -218,7 +218,7 @@
   display: grid;
   align-items: center;
   width: 100%;
-  border: 1px solid var(--wx-slate-200);
+  border: 1px solid var(--wx-c-e7edf6);
   border-radius: 17px;
   background: var(--wx-white);
   color: var(--wizard-ink);
@@ -238,9 +238,9 @@
 .mobileMultiIndoorText strong { font-size: 15px; }
 .mobileMultiOutdoorText small,
 .mobileMultiIndoorText small { overflow: hidden; margin-top: 3px; color: var(--wizard-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.mobileMultiOutdoorText em { margin-top: 9px; color: var(--wx-c-7c879a); font-size: 11px; font-style: normal; font-weight: 800; }
+.mobileMultiOutdoorText em { margin-top: 9px; color: var(--wx-c-7a889b); font-size: 11px; font-style: normal; font-weight: 800; }
 .mobileMultiOutdoorText em.ready { color: var(--wx-green-600); }
-.mobileMultiIndoorStatus { display: inline-flex; align-items: center; gap: 5px; color: var(--wx-c-6b7280); font-size: 12px; font-weight: 900; }
+.mobileMultiIndoorStatus { display: inline-flex; align-items: center; gap: 5px; color: var(--wx-c-667080); font-size: 12px; font-weight: 900; }
 .mobileMultiIndoorStatus.ready { color: var(--wx-green-600); }
 .mobileMultiIndoorStatus small { white-space: nowrap; font-size: 10px; }
 
@@ -259,7 +259,7 @@
 .mobileDeviceWizardRemoveUnit { border: 0; background: transparent; color: var(--wx-red-600); font-size: 11px; font-weight: 800; cursor: pointer; }
 
 .mobileDeviceOverviewList { display: grid; gap: 10px; }
-.mobileDeviceOverviewCard { overflow: hidden; border: 1px solid var(--wx-slate-200); border-radius: 18px; background: var(--wx-white); }
+.mobileDeviceOverviewCard { overflow: hidden; border: 1px solid var(--wx-c-e7edf6); border-radius: 18px; background: var(--wx-white); }
 .mobileDeviceOverviewOpen { grid-template-columns: 43px minmax(0, 1fr) auto 18px; gap: 10px; min-height: 105px; padding: 13px 14px; border: 0; border-radius: 0; }
 .mobileDeviceOverviewText { min-width: 0; }
 .mobileDeviceOverviewText strong,
@@ -269,8 +269,8 @@
 .mobileDeviceOverviewText small { overflow: hidden; margin-top: 4px; color: var(--wizard-muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .mobileDeviceOverviewText em { margin-top: 8px; color: var(--wx-amber-600); font-size: 11px; font-style: normal; font-weight: 800; }
 .mobileDeviceOverviewText em.ready { color: var(--wx-green-600); }
-.mobileDeviceOverviewBadge { padding: 5px 8px; border-radius: 999px; background: var(--wx-c-eef4ff); color: var(--wizard-blue); font-size: 10px; font-weight: 900; }
-.mobileDeviceOverviewRemove { width: 100%; padding: 8px; border: 0; border-top: 1px solid var(--wx-c-eceef1); background: var(--wx-white); color: var(--wx-red-600); font-size: 10px; font-weight: 800; cursor: pointer; }
+.mobileDeviceOverviewBadge { padding: 5px 8px; border-radius: 999px; background: var(--wx-c-eaf3ff); color: var(--wizard-blue); font-size: 10px; font-weight: 900; }
+.mobileDeviceOverviewRemove { width: 100%; padding: 8px; border: 0; border-top: 1px solid var(--wx-slate-100); background: var(--wx-white); color: var(--wx-red-600); font-size: 10px; font-weight: 800; cursor: pointer; }
 .mobileDeviceAddAnother { margin-top: 3px; }
 
 /* Different Single-family models are a review warning, not a data-entry blocker. */
@@ -299,7 +299,7 @@
   text-decoration: underline;
   cursor: pointer;
 }
-.mobileDeviceWizardHint { padding: 10px 12px; border-radius: 13px; background: var(--wx-c-f8fbff); color: var(--wx-slate-500); font-size: 10px; line-height: 1.45; }
+.mobileDeviceWizardHint { padding: 10px 12px; border-radius: 13px; background: var(--wx-slate-50); color: var(--wx-slate-500); font-size: 10px; line-height: 1.45; }
 
 .mobileDeviceWizardFooter {
   position: sticky;
@@ -329,13 +329,13 @@
   background: var(--wx-white);
   box-shadow: 0 -20px 50px rgba(15, 23, 42, .18);
 }
-.mobileDevicePickerHandle { width: 42px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: var(--wx-c-cbd2de); }
+.mobileDevicePickerHandle { width: 42px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: var(--wx-slate-300); }
 .mobileDevicePickerTitleRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mobileDevicePickerTitleRow h3 { margin: 0; font-size: 18px; }
 .mobileDevicePickerTitleRow button { border: 0; background: transparent; color: var(--wizard-blue); font-size: 11px; font-weight: 800; cursor: pointer; }
 .mobileDevicePickerOptions { display: grid; gap: 7px; margin-top: 13px; }
-.mobileDevicePickerOptions button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 11px 13px; border: 1px solid var(--wx-slate-200); border-radius: 14px; background: var(--wx-white); color: var(--wizard-ink); font-size: 14px; font-weight: 800; cursor: pointer; }
-.mobileDevicePickerOptions button.selected { border-color: var(--wizard-blue); background: var(--wx-c-f8fbff); color: var(--wizard-blue); }
+.mobileDevicePickerOptions button { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 11px 13px; border: 1px solid var(--wx-c-e7edf6); border-radius: 14px; background: var(--wx-white); color: var(--wizard-ink); font-size: 14px; font-weight: 800; cursor: pointer; }
+.mobileDevicePickerOptions button.selected { border-color: var(--wizard-blue); background: var(--wx-slate-50); color: var(--wizard-blue); }
 .mobileDevicePickerCheck,
 .mobileDevicePickerRadio { display: inline-flex; align-items: center; justify-content: center; width: 25px; height: 25px; border-radius: 50%; }
 .mobileDevicePickerCheck { background: var(--wizard-blue); color: var(--wx-white); }
@@ -399,7 +399,7 @@
 .mobileDevicePickerManualOption {
   margin-top: 2px;
   padding-top: 10px;
-  border-top: 1px solid var(--wx-c-edf2f8);
+  border-top: 1px solid var(--wx-slate-100);
 }
 
 .mobileDevicePickerEmpty {
@@ -417,7 +417,7 @@
   padding: 10px;
   border: 1px solid var(--wx-c-e7edf6);
   border-radius: 14px;
-  background: var(--wx-c-f8fbff);
+  background: var(--wx-slate-50);
 }
 
 .mobileDevicePickerQuickModels {
@@ -557,7 +557,7 @@
 }
 .mobileProtocolWizard .protocolTestNotice.saved {
   border-color: var(--wx-c-a8d7c4) !important;
-  background: var(--wx-c-f2faf6) !important;
+  background: var(--wx-c-f7fff9) !important;
   color: var(--wx-c-176b4d) !important;
 }
 
@@ -649,7 +649,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: var(--wx-c-eaf7f0);
+  background: var(--wx-green-50);
   color: var(--wx-c-176b4d);
   font-size: 11px !important;
   font-weight: 950;
@@ -698,7 +698,7 @@
 .mobileProtocolWizard .protocolTestPhotoSummary > span {
   padding: 9px 10px;
   border-radius: 11px;
-  background: var(--wx-c-edf4f6);
+  background: var(--wx-slate-100);
   color: var(--wx-c-465a68);
   font-size: 11px !important;
   line-height: 1.35 !important;
@@ -715,7 +715,7 @@
 .protocolTestSignatureStatus > div { display: grid; gap: 3px; }
 .protocolTestSignatureStatus strong { color: var(--wx-c-243746); font-size: 13px !important; line-height: 1.35 !important; }
 .protocolTestSignatureStatus span { color: var(--wx-c-647783); font-size: 11px !important; line-height: 1.4 !important; }
-.protocolTestSignatureStatus.ready { border-color: var(--wx-c-a8d7c4); background: var(--wx-c-f2faf6); }
+.protocolTestSignatureStatus.ready { border-color: var(--wx-c-a8d7c4); background: var(--wx-c-f7fff9); }
 .protocolTestSignatureStatus.ready strong { color: var(--wx-c-176b4d); }
 .protocolTestSignatureOpen { width: 100%; min-height: 44px; border-radius: 12px; font-size: 13px !important; font-weight: 900; }
 
@@ -728,7 +728,7 @@
 .protocolNoteToggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: flex-start; gap: 7px; padding: 10px 12px !important; border: 1px dashed var(--wx-c-a9bac6) !important; border-radius: 12px !important; background: var(--wx-slate-50) !important; color: var(--wx-c-2b4b5d) !important; font-size: 13px !important; font-weight: 850 !important; text-align: left; }
 .protocolNoteToggle > span:first-child { color: var(--wx-c-168d91); font-size: 18px; line-height: 1; font-weight: 900; }
 .protocolNoteToggle small,
-.mobileProtocolWizard .protocolNoteHeading small { color: var(--wx-c-758793); font-size: 10px !important; font-weight: 750; }
+.mobileProtocolWizard .protocolNoteHeading small { color: var(--wx-c-71838f); font-size: 10px !important; font-weight: 750; }
 .protocolNoteSection { display: grid; gap: 7px; padding: 11px 12px !important; border-color: var(--wx-c-c7d8df) !important; background: var(--wx-c-fbfdff) !important; }
 .protocolNoteHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .mobileProtocolWizard .protocolNoteHeading h3 { margin: 0 !important; font-size: 15px !important; line-height: 1.2 !important; }
@@ -745,7 +745,7 @@
 .protocolPaymentForm .input { width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; padding: 6px 9px; border-radius: 9px; box-sizing: border-box; font-size: 16px !important; line-height: 1.05 !important; font-weight: 700; letter-spacing: -.015em; }
 .protocolPaymentForm select.input { font-size: 16px !important; }
 /* v11.29 — iOS date ma własną ramkę o identycznym wymiarze jak select „Gotówka”. */
-.protocolPaymentDateShell { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; max-height: 38px; border: 1px solid var(--wx-c-c9d3e3); border-radius: 9px; background: var(--wx-white); box-sizing: border-box; overflow: hidden; }
+.protocolPaymentDateShell { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; max-width: 100%; height: 38px; min-height: 38px; max-height: 38px; border: 1px solid var(--wx-c-cbd9ea); border-radius: 9px; background: var(--wx-white); box-sizing: border-box; overflow: hidden; }
 .protocolPaymentForm input[type="date"] { -webkit-appearance: none !important; appearance: none !important; display: flex !important; align-items: center !important; justify-content: center !important; inline-size: 100% !important; width: 100% !important; min-inline-size: 0 !important; min-width: 0 !important; max-inline-size: 100% !important; max-width: 100% !important; block-size: 100% !important; height: 100% !important; min-block-size: 0 !important; min-height: 0 !important; max-block-size: 100% !important; max-height: 100% !important; margin: 0 !important; padding: 0 9px !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-sizing: border-box !important; overflow: hidden !important; color: var(--wx-c-243746) !important; -webkit-text-fill-color: var(--wx-c-243746) !important; opacity: 1 !important; font-size: 16px !important; line-height: 1 !important; font-weight: 700; letter-spacing: -.015em; text-align: center !important; }
 .protocolPaymentForm input[type="date"]::-webkit-date-and-time-value { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; min-width: 0; margin: 0; padding: 0; color: var(--wx-c-243746); -webkit-text-fill-color: var(--wx-c-243746); font-size: 14px; line-height: 1; text-align: center; transform: none; }
 .protocolPaymentForm input[type="date"]::-webkit-calendar-picker-indicator { margin: 0; padding: 0; max-width: 18px; }
@@ -756,7 +756,7 @@
 .protocolPaymentSummary > div:nth-last-child(-n+2) { border-bottom: 0; }
 .protocolPaymentSummary dt { margin: 0 0 3px; color: var(--wx-c-647783); font-size: 10px !important; font-weight: 800; }
 .protocolPaymentSummary dd { margin: 0; color: var(--wx-c-243746); font-size: 13px !important; font-weight: 900; overflow-wrap: anywhere; }
-.protocolOutputActions { display: grid; gap: 8px; padding: 14px; scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom)); border: 1px solid var(--wx-c-a8d7c4); border-radius: 16px; background: var(--wx-c-f2faf6); }
+.protocolOutputActions { display: grid; gap: 8px; padding: 14px; scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom)); border: 1px solid var(--wx-c-a8d7c4); border-radius: 16px; background: var(--wx-c-f7fff9); }
 .mobileProtocolWizard .protocolOutputActions h3 { margin: 0 0 3px !important; color: var(--wx-c-176b4d) !important; font-size: 15px !important; }
 .protocolOutputActions .btn { width: 100%; min-height: 46px; border-radius: 12px; font-size: 13px !important; font-weight: 900; }
 .protocolEmailAction { display: grid; gap: 5px; }
@@ -778,7 +778,7 @@
   padding: 0 !important;
   overflow: hidden !important;
   overscroll-behavior: none !important;
-  background: var(--wx-c-edf2f8) !important;
+  background: var(--wx-slate-100) !important;
 }
 
 .protocolSignatureModal {
@@ -791,7 +791,7 @@
   overflow: hidden !important;
   border: 0 !important;
   border-radius: 0 !important;
-  background: var(--wx-c-edf2f8) !important;
+  background: var(--wx-slate-100) !important;
   box-shadow: none !important;
   -webkit-text-size-adjust: 100% !important;
   text-size-adjust: 100% !important;
@@ -812,9 +812,9 @@
 .protocolSignatureHeader { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 10px; }
 .protocolSignatureHeader h2 { margin: 0; color: var(--wx-c-142a3a); font-size: 20px !important; line-height: 1.2 !important; font-weight: 950; }
 .protocolSignatureHeader p { margin: 3px 0 0; color: var(--wx-c-647783); font-size: 12px !important; line-height: 1.3 !important; font-weight: 750; overflow-wrap: anywhere; }
-.protocolSignatureBack { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--wx-c-d6e0ec); border-radius: 13px; background: var(--wx-white); color: var(--wx-c-142a3a); }
+.protocolSignatureBack { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-white); color: var(--wx-c-142a3a); }
 .protocolSignatureInstruction { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--wx-white); color: var(--wx-c-465a68); font-size: 12px !important; line-height: 1.45 !important; font-weight: 750; }
-.protocolSignatureCanvasWrap { min-height: 0; padding: 8px; overflow: hidden; border: 1px solid var(--wx-c-d6e0ec); border-radius: 16px; background: var(--wx-white); }
+.protocolSignatureCanvasWrap { min-height: 0; padding: 8px; overflow: hidden; border: 1px solid var(--wx-c-dbe6f2); border-radius: 16px; background: var(--wx-white); }
 .protocolSignatureCanvas {
   display: block;
   width: 100%;
@@ -1260,7 +1260,7 @@
 
 /* 13.85: dane klienta w protokole (imię i nazwisko obowiązkowe, e-mail zalecany). */
 .protocolClientSection { display: grid; gap: 8px; }
-.protocolClientSection.needsAttention { border: 1px solid var(--wx-c-f2c94c) !important; background: var(--wx-c-fffaf0) !important; }
+.protocolClientSection.needsAttention { border: 1px solid var(--wx-c-f2c94c) !important; background: var(--wx-orange-50) !important; }
 .mobileProtocolWizard .protocolClientSection h3 small { font-weight: 650; color: var(--wx-c-5b6b78); font-size: 12px; }
 .protocolClientField { display: grid; gap: 4px; }
 .protocolClientField > span { font-size: 13px; font-weight: 800; color: var(--wx-c-31475a); }
@@ -1268,7 +1268,7 @@
 .protocolClientField .input { width: 100%; box-sizing: border-box; font-size: 16px !important; padding: 10px 11px !important; border-radius: 10px !important; }
 .protocolClientCheck { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--wx-c-31475a); min-height: 32px; }
 .protocolClientCheck input { width: 20px; height: 20px; flex: 0 0 auto; }
-.protocolClientError { font-size: 13px; line-height: 1.35; color: var(--wx-c-8a1c1c); background: var(--wx-c-fdecea); border-radius: 10px; padding: 8px 10px; display: grid; gap: 6px; }
+.protocolClientError { font-size: 13px; line-height: 1.35; color: var(--wx-c-8a2323); background: var(--wx-c-ffeaea); border-radius: 10px; padding: 8px 10px; display: grid; gap: 6px; }
 .protocolClientHint { font-size: 13px; line-height: 1.35; color: var(--wx-c-6b4e00); background: var(--wx-c-fff6d8); border-radius: 10px; padding: 8px 10px; }
 .protocolClientFix { justify-self: start; padding: 6px 10px !important; font-size: 13px !important; }
 
@@ -1283,7 +1283,7 @@
   cursor: not-allowed;
 }
 .mobileProtocolWizard .protocolTestGenerate[aria-busy="true"]:disabled {
-  background: var(--wx-c-cfe0f8) !important;
+  background: var(--wx-c-cbdcf6) !important;
   color: var(--wx-c-1f3b57) !important;
 }
 
@@ -1295,14 +1295,14 @@
   gap: 10px;
   margin-top: 10px;
   padding: 10px 12px;
-  border: 1px dashed var(--wx-c-c9d3e3);
+  border: 1px dashed var(--wx-c-cbd9ea);
   border-radius: 14px;
   background: var(--wx-white);
 }
 .mobileDeviceQrCard.ready { border-style: solid; border-color: var(--wx-green-200); background: var(--wx-green-50); }
 /* 14.26: naklejka wymagana — zatrzymanie przy „Dalej do podsumowania”. */
 .mobileDeviceQrCard.missing { border-style: solid; border-color: var(--wx-c-f87171); background: var(--wx-red-50); }
-.mobileDeviceQrRequired { margin: -4px 0 10px; padding: 8px 12px; border-radius: 12px; background: var(--wx-red-50); color: var(--wx-c-b42318); font-size: 13px; font-weight: 700; line-height: 1.3; }
+.mobileDeviceQrRequired { margin: -4px 0 10px; padding: 8px 12px; border-radius: 12px; background: var(--wx-red-50); color: var(--wx-red-700); font-size: 13px; font-weight: 700; line-height: 1.3; }
 .mobileDeviceQrText { display: grid; gap: 2px; min-width: 0; }
 .mobileDeviceQrText strong { font-size: 13px; line-height: 1.2; color: var(--wx-c-10203a); }
 .mobileDeviceQrText strong small { margin-left: 4px; font-size: 11px; font-weight: 600; color: var(--wx-slate-500); }

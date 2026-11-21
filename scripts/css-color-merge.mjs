@@ -146,7 +146,7 @@ function apply(threshold, version) {
       i += 1;
       newTokens[tokenNameFor(next)] = next;
       if (next !== now) changedUses += 1;
-      if (next !== orig) merges.map[orig] = { to: next, de2000: Number(deltaE2000(orig, next).toFixed(3)) };
+      if (next !== orig) merges.map[orig] = { to: next, de2000: Math.floor(deltaE2000(orig, next) * 1000) / 1000 };
       else delete merges.map[orig];
       return `var(${tokenNameFor(next)})`;
     });

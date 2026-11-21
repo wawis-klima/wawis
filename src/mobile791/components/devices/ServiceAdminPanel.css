@@ -9,20 +9,20 @@
 .serviceAdminNav .btn{min-height:44px;white-space:nowrap;padding:8px 3px;letter-spacing:-.01em}
 .serviceAdminCard{display:grid;gap:12px;padding:13px!important;min-width:0}
 .serviceAdminCard h3{font-size:17px;line-height:1.3;margin:0;color:var(--wx-c-172b45)}
-.serviceAdminCard label{display:grid;gap:5px;font-size:13px;font-weight:750;color:var(--wx-c-34465f);min-width:0}
+.serviceAdminCard label{display:grid;gap:5px;font-size:13px;font-weight:750;color:var(--wx-c-324964);min-width:0}
 .serviceAdminCard .input{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;font-size:16px}
 .serviceAdminCard textarea.input{min-height:75px}
-.serviceAdminMuted{display:block;font-size:12px!important;line-height:1.45;color:var(--wx-c-60748c);font-weight:400;margin:0}
+.serviceAdminMuted{display:block;font-size:12px!important;line-height:1.45;color:var(--wx-slate-500);font-weight:400;margin:0}
 .serviceAdminStack{display:grid;gap:7px}
 .serviceAdminClientRow,.serviceAdminVisitRow{display:grid;gap:4px;text-align:left;min-height:52px;padding:12px 11px;width:100%;border:1px solid var(--wx-c-dbe6f2);border-radius:13px;background:var(--wx-white);color:var(--wx-c-172b45);cursor:pointer;box-sizing:border-box;font:inherit}
 .serviceAdminClientRow strong,.serviceAdminVisitRow strong{font-size:14px;font-weight:800}
 .serviceAdminClientRow span,.serviceAdminVisitRow span{font-size:12px;color:var(--wx-c-52657f);line-height:1.35}
-.serviceAdminClientRow small,.serviceAdminVisitRow small{font-size:11px;color:var(--wx-c-60748c);line-height:1.35}
-.serviceAdminSectionTitle{font-size:13px;font-weight:850;color:var(--wx-c-34465f);border-top:1px solid var(--wx-c-e2ebf5);padding-top:11px}
+.serviceAdminClientRow small,.serviceAdminVisitRow small{font-size:11px;color:var(--wx-slate-500);line-height:1.35}
+.serviceAdminSectionTitle{font-size:13px;font-weight:850;color:var(--wx-c-324964);border-top:1px solid var(--wx-c-e7edf6);padding-top:11px}
 .serviceAdminDevice{display:flex;gap:7px;align-items:center;border:1px solid var(--wx-c-dbe6f2);border-radius:12px;padding:10px;background:var(--wx-white);min-width:0;box-sizing:border-box;width:100%}
 .serviceAdminDeviceInfo{display:grid;gap:3px;min-width:0;flex:1}
 .serviceAdminDeviceInfo strong{font-size:13px;overflow-wrap:anywhere}
-.serviceAdminDeviceInfo small{font-size:11px;color:var(--wx-c-60748c);overflow-wrap:anywhere}
+.serviceAdminDeviceInfo small{font-size:11px;color:var(--wx-slate-500);overflow-wrap:anywhere}
 .serviceAdminCheck{display:flex!important;align-items:center;gap:9px!important;min-height:44px;min-width:0;font-size:12px;font-weight:650}
 .serviceAdminCheck input[type=checkbox]{width:19px;height:19px;flex:0 0 19px;accent-color:var(--wx-c-147c87)}
 .serviceAdminCheck .serviceAdminDevice{flex:1}
@@ -54,10 +54,10 @@
 .serviceAdminNativePicker:disabled{cursor:not-allowed}
 .serviceAdminPage .serviceAdminNativePicker:disabled{opacity:0!important}
 .serviceAdminExtras{border:1px solid var(--wx-c-dbe6f2);border-radius:12px;padding:7px 10px;display:grid;gap:2px;min-width:0}
-.serviceAdminExtras legend{font-size:12px;font-weight:750;color:var(--wx-c-34465f);padding:0 4px}
+.serviceAdminExtras legend{font-size:12px;font-weight:750;color:var(--wx-c-324964);padding:0 4px}
 .serviceAdminExtras .serviceAdminCheck{font-size:12px;font-weight:500}
 .serviceAdminWide{width:100%;min-height:44px;justify-content:center}
-.serviceAdminNotice{border:1px solid var(--wx-c-c4e5d6);border-radius:11px;background:var(--wx-c-eef8f1);color:var(--wx-c-176b4d);padding:10px 12px;font-size:12px;line-height:1.45}
+.serviceAdminNotice{border:1px solid var(--wx-c-c4e5d6);border-radius:11px;background:var(--wx-green-50);color:var(--wx-c-176b4d);padding:10px 12px;font-size:12px;line-height:1.45}
 .serviceAdminPage a{color:var(--wx-c-176b85);word-break:break-word}
 @media(max-width:700px){
   /* 13.90: czytelne, niesciskane zakładki. Pięć nazw admina w jednym rzędzie. */
@@ -106,7 +106,7 @@
   }
 }
 
-.serviceAdminSignatureWrap{width:100%;min-width:0;border:1px solid var(--wx-c-c9d6e4);border-radius:12px;background:var(--wx-white);overflow:hidden}
+.serviceAdminSignatureWrap{width:100%;min-width:0;border:1px solid var(--wx-c-cbd9ea);border-radius:12px;background:var(--wx-white);overflow:hidden}
 .serviceAdminSignature{display:block;width:100%;height:164px;background:var(--wx-white);touch-action:none;cursor:crosshair}
 .serviceAdminCard input[type=file]{font-size:13px;min-width:0}
 .serviceAdminCard input[type=radio]{width:19px;height:19px;accent-color:var(--wx-c-147c87);flex:0 0 19px}
@@ -120,5 +120,5 @@
 /* 14.03: zdjęcia serwisu w wrapperze .mobileInlineJobDetails — te same reguły mobile co montaże. */
 .serviceAdminPage .serviceAdminPhotosV1403{margin:4px 0 2px}
 /* 14.04: wyraźna podpowiedź, dlaczego przycisk jest nieaktywny (zamiast drobnego szarego tekstu). */
-.serviceAdminPage .serviceAdminHint{margin:2px 0 0;padding:9px 11px;border:1px solid var(--wx-c-f0c36d);border-radius:12px;background:var(--wx-c-fff8e8);color:var(--wx-c-7a4b00);font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.serviceAdminPage .serviceAdminHint{margin:2px 0 0;padding:9px 11px;border:1px solid var(--wx-c-f0c36d);border-radius:12px;background:var(--wx-amber-50);color:var(--wx-c-7a4b00);font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
 .serviceAdminPage .serviceAdminDefectText{color:var(--wx-c-9a2929);font-weight:700}

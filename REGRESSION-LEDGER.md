@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-MERGE-1462 — łączenie odcieni, próg 2
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-1462-MERGE | FIXED-UNVERIFIED | `smoke-css-tokens-v1451`: 1322 miejsca z odcieniem innym niż w 14.60, każde < 2 ΔE2000 od pierwotnego (limit > 2 blokowany); poza kolorami pliki = oryginał. |
+| CSS-1462-OWNER | PENDING-OWNER | Właściciel ogląda miejsca z listy w raporcie (różnice widoczne najwyżej przy porównaniu obok siebie). |
+
 ## CSS-MERGE-1461 — łączenie odcieni, próg 1
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -3,13 +3,13 @@
 .fuelSavingsBody { display: grid; gap: 14px; }
 .fuelSavingsToolbar { display: flex; justify-content: flex-end; }
 .fuelSavingsStep { background: var(--wx-c-17614b); color: var(--wx-white); font-size: 11px; }
-.fuelSavingsWarning { background: var(--wx-c-fff8e8); border: 1px solid var(--wx-c-f3d38a); color: var(--wx-c-7a5300); }
+.fuelSavingsWarning { background: var(--wx-amber-50); border: 1px solid var(--wx-c-f3d38a); color: var(--wx-c-7a5300); }
 
 .fuelSavingsTiles { display: grid; grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr)); gap: 10px; }
-.fuelSavingsTiles > div { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-c-f8fbff); }
+.fuelSavingsTiles > div { display: grid; gap: 4px; padding: 13px 14px; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-slate-50); }
 .fuelSavingsTiles span, .fuelSavingsTiles small { color: var(--wx-c-718096); font-size: 12px; }
-.fuelSavingsTiles strong { color: var(--wx-c-173d6c); font-size: 20px; }
-.fuelSavingsTiles > div.isMain { border-color: var(--wx-c-a8d7c4); background: var(--wx-c-eef8f1); }
+.fuelSavingsTiles strong { color: var(--wx-c-123f73); font-size: 20px; }
+.fuelSavingsTiles > div.isMain { border-color: var(--wx-c-a8d7c4); background: var(--wx-green-50); }
 .fuelSavingsTiles > div.isMain strong { color: var(--wx-c-17614b); font-size: 26px; }
 
 .fuelSavingsExplain { padding: 12px 14px; border: 1px solid var(--wx-c-dbe6f2); border-radius: 13px; background: var(--wx-white); }
@@ -32,12 +32,12 @@
 .fuelSavingsChart figcaption i.isTank { background: var(--wx-c-17614b); }
 .fuelSavingsChart figcaption i.isGap { height: 10px; background: rgba(23, 97, 75, 0.2); }
 
-.fuelSavingsMissing { padding: 12px 14px; border: 1px solid var(--wx-c-f3d38a); border-radius: 13px; background: var(--wx-c-fffaf0); }
+.fuelSavingsMissing { padding: 12px 14px; border: 1px solid var(--wx-c-f3d38a); border-radius: 13px; background: var(--wx-orange-50); }
 .fuelSavingsMissingRow { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(140px, 0.6fr) auto auto; gap: 10px; align-items: center; }
 .fuelSavingsMissingRow select { min-height: 38px; border: 1px solid var(--wx-c-cbd9ea); border-radius: 10px; background: var(--wx-white); font: inherit; padding: 6px 8px; }
 
 .fuelSavingsMonths { display: flex; flex-wrap: wrap; gap: 8px; }
-.fuelSavingsMonths span { padding: 6px 10px; border: 1px solid var(--wx-c-dbe6f2); border-radius: 999px; background: var(--wx-c-f8fbff); color: var(--wx-c-324964); font-size: 12px; }
+.fuelSavingsMonths span { padding: 6px 10px; border: 1px solid var(--wx-c-dbe6f2); border-radius: 999px; background: var(--wx-slate-50); color: var(--wx-c-324964); font-size: 12px; }
 .fuelSavingsMonths b { margin-right: 6px; color: var(--wx-c-143761); }
 
 .fuelSavingsTable { display: grid; border: 1px solid var(--wx-c-dbe6f2); border-radius: 14px; overflow: hidden; }
@@ -47,7 +47,7 @@
 .fuelSavingsTableRow strong { color: var(--wx-c-143761); }
 .fuelSavingsTableRow a { color: var(--wx-c-245d9f); }
 .fuelSavingsTableRow .isPositive { color: var(--wx-c-17614b); font-weight: 850; }
-.fuelSavingsTableRow .isNegative { color: var(--wx-c-b42318); font-weight: 850; }
+.fuelSavingsTableRow .isNegative { color: var(--wx-red-700); font-weight: 850; }
 .fuelSavingsTableRow .isMissing { color: var(--wx-c-8a6a1f); font-size: 12px; }
 .fuelSavingsEmpty { padding: 14px; color: var(--wx-c-718096); font-size: 13px; }
 
