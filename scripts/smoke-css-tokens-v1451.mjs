@@ -9,8 +9,9 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {
   REGISTRY_FILE, TOKENS_FILE, canonicalHex, misplacedTokenUses, normalizeForCompare, readTokens, resolveTokens,
-  scanDeclarationValues, sha256, tokenNameFor, tokenizeCss,
+  scanDeclarationValues, sha256, tokenNameFor, tokenizeCss, BASELINE_FILE, MERGES_FILE, tokenSequence,
 } from './css-tokens.mjs';
+import { deltaE2000 } from './css-color-merge.mjs';
 
 // --- Zachowanie konwertera na trudnych przypadkach (selektory #id, url(), komentarze, napisy, @media, :hover) ---
 const tricky = [
@@ -39,6 +40,11 @@ assert.equal(normalizeForCompare(resolveTokens(converted, toks)), normalizeForCo
 assert.equal(canonicalHex('#ABC'), '#aabbcc');
 assert.equal(tokenNameFor('#FFF'), '--wx-white');
 assert.equal(scanDeclarationValues('.a{color:#fff}').length, 1);
+
+// --- Miara różnicy kolorów (14.61) ---
+assert.equal(deltaE2000('#64748b', '#64748b'), 0, 'ten sam kolor → 0');
+assert.ok(Math.abs(deltaE2000('#ffffff', '#000000') - 100) < 0.01, 'biały/czarny → 100');
+assert.ok(deltaE2000('#f8fafc', '#f7f9fc') < 1 && deltaE2000('#2563eb', '#dc2626') > 40, 'bliskie < 1, niebieski/czerwony > 40');
 
 // --- Paleta ---
 const tokensCss = fs.readFileSync(TOKENS_FILE, 'utf8');
@@ -83,12 +89,38 @@ const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8'));
 const files = Object.entries(registry.files);
 assert.ok(files.length >= 1, 'co najmniej jeden przekonwertowany plik');
 const usedEverywhere = new Set();
+const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'));
+const merges = fs.existsSync(MERGES_FILE) ? JSON.parse(fs.readFileSync(MERGES_FILE, 'utf8')) : { limit_de2000: 0, map: {} };
+// Granica właściciela (21.11.2026): co najwyżej „ledwo widoczne” (ΔE2000 < 2). Wyższy próg = nowa decyzja właściciela.
+assert.ok(merges.limit_de2000 <= 2, `limit łączenia ${merges.limit_de2000} > 2 bez decyzji właściciela`);
+for (const [from, { to, de2000 }] of Object.entries(merges.map)) {
+  assert.ok(!(to in merges.map) || merges.map[to].to === to, `${from} → ${to}: łączenie jednokrokowe`);
+  assert.ok(Math.abs(deltaE2000(from, to) - de2000) < 0.01 && de2000 < merges.limit_de2000, `${from} → ${to}: zapisana różnica się zgadza i mieści w limicie`);
+}
+let changedPositions = 0;
 for (const [file, meta] of files) {
   const current = fs.readFileSync(file, 'utf8');
   assert.deepEqual(misplacedTokenUses(current), [], `${file}: zmienne tylko w wartościach deklaracji`);
-  const resolved = resolveTokens(current, tokens); // rzuca przy nieznanej zmiennej
-  assert.equal(sha256(normalizeForCompare(resolved)), meta.original_sha256,
-    `${file}: po podstawieniu palety plik różni się od oryginału — zmiana wyglądu wymaga osobnej decyzji właściciela`);
+  resolveTokens(current, tokens); // rzuca przy nieznanej zmiennej
+  // 14.61: po łączeniu odcieni plik po podstawieniu PIERWOTNYCH kolorów (css-palette-baseline.json, pozycja po pozycji)
+  // musi być znak w znak oryginałem, a każda pozycja ma kolor = pierwotny albo jego zapisane połączenie (ΔE2000 < limit).
+  const now = tokenSequence(current, tokens);
+  const orig = baseline.files[file];
+  assert.ok(Array.isArray(orig), `${file}: brak zapisu pierwotnych kolorów`);
+  assert.equal(now.length, orig.length, `${file}: liczba miejsc z kolorem różni się od pierwotnej`);
+  let k = 0;
+  const reconstructed = current.replace(/var\((--wx-[a-z0-9-]+)\)/g, () => orig[k++]);
+  assert.equal(sha256(normalizeForCompare(reconstructed)), meta.original_sha256,
+    `${file}: poza kolorami plik różni się od oryginału — zmiana wyglądu wymaga osobnej decyzji właściciela`);
+  now.forEach((hex, i) => {
+    const expected = merges.map[orig[i]]?.to || orig[i];
+    assert.equal(hex, expected, `${file}: miejsce ${i + 1} ma kolor ${hex}, a zapis połączeń mówi ${expected} (pierwotnie ${orig[i]})`);
+    if (hex !== orig[i]) {
+      changedPositions += 1;
+      const de = deltaE2000(orig[i], hex);
+      assert.ok(de < merges.limit_de2000, `${file}: ${orig[i]} → ${hex} ΔE2000 ${de.toFixed(2)} ≥ ${merges.limit_de2000}`);
+    }
+  });
   for (const m of current.matchAll(/var\((--wx-[a-z0-9-]+)\)/g)) usedEverywhere.add(m[1]);
   // Ten sam plik nie może mieć pozostawionych kolorów hex w wartościach (konwersja kompletna, poza url/komentarzami).
   const leftover = tokenizeCss(current).count;
@@ -97,4 +129,4 @@ for (const [file, meta] of files) {
 const unused = Object.keys(tokens).filter((name) => !usedEverywhere.has(name));
 assert.deepEqual(unused, [], 'paleta bez nieużywanych zmiennych');
 
-console.log(`PASS WAWIS 14.51 — paleta ${Object.keys(tokens).length} kolorów; ${files.length} plik(i) CSS równoważne oryginałom (zmienne tylko w wartościach, podstawienie = oryginał, paleta ładowana w wejściu).`);
+console.log(`PASS WAWIS 14.51/14.61 — paleta ${Object.keys(tokens).length} kolorów; ${files.length} plik(i) CSS zgodne z oryginałem poza ${changedPositions} połączonymi odcieniami (ΔE2000 < ${merges.limit_de2000 || 0}); zmienne tylko w wartościach, paleta ładowana w wejściu.`);

@@ -573,7 +573,7 @@
   }
   .formModal.adminMobileEditModalV1297 .voiceClientIconOnlyV1302:hover,
   .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 .voiceFieldMicBtn:hover {
-    background-color:var(--wx-c-eef4fc)!important;
+    background-color:var(--wx-blue-50)!important;
   }
   .formModal.adminMobileEditModalV1297 .voiceClientIconOnlyV1302:focus-visible,
   .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 .voiceFieldMicBtn:focus-visible {

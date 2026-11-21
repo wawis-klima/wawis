@@ -21,6 +21,27 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TOKENS_FILE = 'src/styles/tokens.css';
 export const REGISTRY_FILE = 'scripts/css-token-registry.json';
 export const TOKEN_PREFIX = '--wx-';
+// 14.61: łączenie bardzo podobnych odcieni (decyzja właściciela 21.11.2026) — zob. scripts/css-color-merge.mjs.
+export const BASELINE_FILE = 'scripts/css-palette-baseline.json';
+export const MERGES_FILE = 'scripts/css-color-merges.json';
+export const MERGED_NOTE = 'Od 14.61 bardzo podobne odcienie są połączone (scripts/css-color-merges.json, różnica ΔE2000 względem pierwotnego koloru w granicy zapisanej w tym pliku).';
+
+// Kolejność pierwotnych kolorów (po jednym na każde var(--wx-…) w pliku) — podstawa dowodu w smoke-css-tokens.
+export function tokenSequence(css, tokens) {
+  return [...css.matchAll(/var\((--wx-[a-z0-9-]+)\)/g)].map((m) => {
+    if (!(m[1] in tokens)) throw new Error(`Nieznana zmienna ${m[1]}`);
+    return tokens[m[1]];
+  });
+}
+
+function appendBaseline(rel, css, tokens) {
+  const file = path.join(ROOT, BASELINE_FILE);
+  if (!fs.existsSync(file)) return;
+  const baseline = JSON.parse(fs.readFileSync(file, 'utf8'));
+  baseline.files[rel] = tokenSequence(css, tokens);
+  baseline.files = Object.fromEntries(Object.entries(baseline.files).sort(([a], [b]) => a.localeCompare(b)));
+  fs.writeFileSync(file, `${JSON.stringify(baseline)}\n`);
+}
 
 // Nazwy dla kolorów z typowej palety (Tailwind) — czytelniejsze niż sam kod. Pozostałe: --wx-c-<kod>.
 const NAMED = Object.freeze({
@@ -173,12 +194,12 @@ export function misplacedTokenUses(css) {
   return bad;
 }
 
-function writeTokens(tokens) {
+export function writeTokens(tokens, note = 'Każda zmienna ma dokładnie wartość koloru, który zastąpiła w plikach CSS, więc wygląd się nie zmienia.') {
   const lines = Object.entries(tokens)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([name, hex]) => `  ${name}: ${hex};`);
   const header = `/* WAWIS — wspólna paleta kolorów (14.51+). Generowane przez scripts/css-tokens.mjs — nie edytuj ręcznie.
-   Każda zmienna ma dokładnie wartość koloru, który zastąpiła w plikach CSS, więc wygląd się nie zmienia.
+   ${note}
    Ładowane statycznie przez src/main.jsx (telefon, komputer, strona naklejki QR). */\n`;
   fs.writeFileSync(path.join(ROOT, TOKENS_FILE), `${header}:root {\n${lines.join('\n')}\n}\n`);
 }
@@ -202,6 +223,7 @@ function convert(files) {
     if (bad.length) throw new Error(`${rel}: zmienna poza wartością deklaracji (linie ${bad.map((b) => b.line).join(', ')})`);
     if (normalizeForCompare(resolveTokens(css, tokens)) !== normalizeForCompare(original)) throw new Error(`${rel}: po podstawieniu plik różni się od oryginału`);
     fs.writeFileSync(path.join(ROOT, rel), css);
+    appendBaseline(rel, css, tokens);
     registry.files[rel] = {
       version,
       replaced: count,
@@ -209,7 +231,7 @@ function convert(files) {
     };
     console.log(`${rel}: ${count} kolorów → zmienne (${used.size} różnych)`);
   }
-  writeTokens(tokens);
+  writeTokens(tokens, fs.existsSync(path.join(ROOT, MERGES_FILE)) ? MERGED_NOTE : undefined);
   registry.files = Object.fromEntries(Object.entries(registry.files).sort(([a], [b]) => a.localeCompare(b)));
   fs.writeFileSync(registryPath, `${JSON.stringify(registry, null, 2)}\n`);
 }
