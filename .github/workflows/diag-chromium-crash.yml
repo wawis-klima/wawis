@@ -8,7 +8,7 @@ permissions:
 jobs:
   experiment:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +25,7 @@ jobs:
       - name: Repeat suspect specs
         continue-on-error: true
         run: |
-          npx playwright test tests/e2e/session-push-isolation-v1083.spec.js tests/e2e/mobile-protocol-client-data-v1385.spec.js tests/e2e/mobile-offline-atomic-v1075.spec.js --repeat-each=12 --retries=0 --reporter=line 2>&1 | tee run.log
+          npx playwright test tests/e2e/session-push-isolation-v1083.spec.js tests/e2e/mobile-protocol-client-data-v1385.spec.js tests/e2e/mobile-offline-atomic-v1075.spec.js --repeat-each=40 --retries=0 --reporter=line 2>&1 | tee run.log
       - name: Summary
         run: |
           echo "SW=${{ matrix.sw }} crashes=$(grep -c 'Received signal 11' run.log) closed=$(grep -c 'has been closed' run.log)"
