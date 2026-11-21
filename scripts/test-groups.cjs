@@ -76,6 +76,7 @@ const GROUPS = {
     'node scripts/smoke-playwright-sw-block-v1470.mjs',
     'node scripts/smoke-diagnostic-noise-v1471.mjs',
     'node scripts/smoke-mfa-v1472.mjs',
+    'node scripts/smoke-push-sync-v1473.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],

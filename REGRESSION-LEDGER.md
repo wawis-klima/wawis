@@ -1,11 +1,18 @@
 # WAWIS — Regression Ledger
 
+## PUSH-SYNC-1473 — nieobsłużony błąd sprawdzania stanu PUSH (obszar chroniony: push)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PUSH-1473-UNHANDLED | FIXED-UNVERIFIED | Wykryte przez ślad 14.71 (`01728078`, 2× unhandledrejection + 1× PUSH_STATE_CHECK_FAILED o 18:16:01, iPhone administratora). `smoke-push-sync-v1473`: równoległe wywołania → obsłużona obietnica, 0 nieobsłużonych odrzuceń w symulacji; oba hooki. Weryfikacja po wdrożeniu: brak `window.unhandledrejection` w module push (SELECT). |
+| DIAG-1473-FINGERPRINT | FIXED-UNVERIFIED | Ślad zachowany po oczyszczeniu wpisu (test); `PUSH_LIFECYCLE_TIMEOUT` przed ogólnym kodem. |
+
 ## MFA-1472 — kod z telefonu przy logowaniu, etap 1 (obszar chroniony: logowanie)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
 |---|---|---|
 | MFA-1472-GATE | FIXED-UNVERIFIED | `smoke-mfa-v1472`: aal1→aal2 wymaga kodu; brak kodu / błąd odczytu / brak API → bez kroku (offline nie blokuje); hook przed wczesnymi powrotami, ekran kodu po logowaniu i przed danymi w obu aplikacjach. E2E `mfa-admin-v1472`: włączenie, zły kod, przeładowanie bez ponownego kodu, nowe logowanie z kodem, wyłączenie; iPhone: krok kodu (`one-time-code`, klawiatura numeryczna); pracownik bez zmian. |
-| MFA-1472-IPHONE | PENDING-OWNER | Właściciel na iPhonie: włączenie (Hasła / aplikacja z kodami), wylogowanie, logowanie z kodem. Dopiero potem etap 2 (wymuszenie w bazie). |
+| MFA-1472-IPHONE | PARTIAL-OWNER | 21.11.2026 19:19: kod włączony na iPhonie (Hasła) i zweryfikowany (`auth.mfa_factors` verified, sesja aal2 — SELECT). Pozostaje: wylogowanie i logowanie z kodem. Potem etap 2. |
 
 ## DIAG-NOISE-1471 — niesklasyfikowane zdarzenia w Diagnostyce
 

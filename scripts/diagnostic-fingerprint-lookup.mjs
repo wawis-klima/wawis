@@ -21,6 +21,11 @@ const rows = [];
 for (const file of files) {
   const src = fs.readFileSync(file, 'utf8');
   for (const m of src.matchAll(/console\.(warn|error)\(\s*(['"`])((?:(?!\2).){3,300})\2/g)) rows.push([diagnosticFingerprint(m[3]), file, m[3]]);
+  // 14.73: także komunikaty błędów (new Error('…')) — ślad nieobsłużonych odrzuceń (unhandledrejection).
+  for (const m of src.matchAll(/new Error\(\s*(['"`])((?:(?!\1).){3,300})\1/g)) {
+    rows.push([diagnosticFingerprint(m[2]), file, m[2]]);
+    if (m[2].includes('${')) rows.push([diagnosticFingerprint(m[2].replace(/\$\{[^}]*\}/g, '')), file, `${m[2]} (bez wstawek)`]);
+  }
 }
 for (const text of library) rows.push([diagnosticFingerprint(text), '(biblioteka)', text]);
 export const FINGERPRINTS = rows;

@@ -101,7 +101,9 @@ export function usePushNotificationsState({ supabase, sessionUser }) {
 
   async function syncPushState({ force = false } = {}) {
     if (!sessionUser) return INITIAL_PUSH_STATE;
-    if (syncInFlightRef.current) return syncInFlightRef.current;
+    // 14.73: kolejne wywołanie w trakcie sprawdzania dostaje obsłużoną obietnicę — wcześniej błąd sprawdzenia trafiał
+    // do „unhandledrejection” (Diagnostyka 21.11.2026: 1 ostrzeżenie + 2 nieobsłużone na iPhonie administratora).
+    if (syncInFlightRef.current) return syncInFlightRef.current.catch(() => readStoredPushState(userId));
     const syncEpoch = syncEpochRef.current;
     const isCurrentSync = () => syncEpoch === syncEpochRef.current;
     if (!force && Date.now() - lastSuccessfulSyncAtRef.current < PUSH_MIN_SYNC_INTERVAL_MS) {
