@@ -236,7 +236,7 @@
 }
 
 .fuelTankStockHeading > span {
-  color: var(--wx-c-5c6f82);
+  color: var(--wx-c-5a6b80);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -251,7 +251,7 @@
 }
 
 .fuelTankStockHeading > small {
-  color: var(--wx-c-66788a);
+  color: var(--wx-c-687b91);
   font-size: 12px;
 }
 
@@ -278,7 +278,7 @@
 }
 
 .fuelTankStockStats b {
-  color: var(--wx-c-263b50);
+  color: var(--wx-c-263445);
   font-size: 14px;
 }
 
@@ -412,7 +412,7 @@
   font-size: 12px;
 }
 
-.fuelTankMovementRow > b.isPositive { color: var(--wx-c-17723c); }
+.fuelTankMovementRow > b.isPositive { color: var(--wx-c-1d7a46); }
 .fuelTankMovementRow > b.isNegative { color: var(--wx-c-9a3d35); }
 
 @media (max-width: 780px) {
