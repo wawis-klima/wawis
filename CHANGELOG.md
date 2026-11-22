@@ -1,3 +1,8 @@
+## 14.80
+- **PUSH: telefon z nowymi kluczami nie jest już blokowany** (zgłoszenie właściciela 22.11.2026, zgoda na zmianę funkcji w bazie). iPhone administratora po ponownym logowaniu dostał od Apple nowe klucze szyfrujące dla tego samego adresu; baza trzymała stare, więc powiadomienia (logowanie, test) nie docierały, a włączenie/wyłączenie PUSH kończyło się `push_credentials_mismatch`. Teraz `push_subscription_sync_atomic` przyjmuje nowe klucze, gdy to ten sam użytkownik albo wpis jest wyłączony (`rekeyed`), a `push_subscription_disable_atomic` pozwala właścicielowi wyłączyć PUSH (`disabled-rekeyed`). Aktywny PUSH innego użytkownika nadal chroniony.
+- Naprawa doraźna 22.11 (zgoda właściciela): usunięty jeden martwy wpis subskrypcji administratora z 21.11 (bez danych klientów).
+- Migracja `20261122130000_push_rekey_v1480.sql`, wycofanie `docs/push-rekey-rollback-v1480.sql`. Testy: `smoke-push-rekey-v1480`, `scripts/pg-test-push-rekey-v1480/run.sh` (PostgreSQL, RED na starych definicjach).
+
 ## 14.79
 - **Licznik SMS znikał po ponownym zalogowaniu** (zgłoszenie właściciela 22.11.2026 10:38, regresja z 14.78). Licznik liczył się zaraz po haśle, przed kodem z telefonu — baza (słusznie, MFA 14.74) zwracała wtedy 0 urządzeń, a pusta lista zostawała w pamięci na 10 min. Teraz liczniki w menu (SMS i zgłoszenia) liczą się dopiero po potwierdzeniu kodem i od razu po jego wpisaniu; pusta albo zastępcza lista urządzeń nie jest zapamiętywana, a pamięć dotyczy jednego konta.
 - Test `smoke-sms-nav-badge-relogin-v1479` (RED na 14.78).
