@@ -98,6 +98,11 @@ test.describe('@mobile 14.84 motyw ciemny', () => {
     await page.getByText('Klient Testowy B', { exact: true }).click();
     await expect(page.locator('.mobileInlineJobDetails').first()).toBeVisible();
     expectReadable(await shot(page, testInfo, '02-ciemny-szczegoly'), 'szczegóły montażu');
+    // 14.87: zaznaczeni monterzy wyraźnie inni niż niezaznaczeni (czerwone wypełnienie vs grafit).
+    const chips = await page.locator('.viewerDot').evaluateAll((els) => els.map((el) => ({ active: el.classList.contains('active'), bg: getComputedStyle(el).backgroundColor })));
+    expect(chips.some((c) => c.active)).toBe(true);
+    expect(chips.some((c) => !c.active)).toBe(true);
+    for (const c of chips) expect(c.bg).toBe(c.active ? 'rgb(220, 38, 38)' : 'rgb(31, 31, 34)');
     await page.evaluate(() => window.scrollBy(0, 500));
     await shot(page, testInfo, '03-ciemny-szczegoly-dol');
 
