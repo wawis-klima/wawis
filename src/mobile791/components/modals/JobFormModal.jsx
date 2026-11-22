@@ -833,12 +833,8 @@ export default function JobFormModal({
           <h2>{serialOnlyMode ? "Zdjęcia tabliczek znamionowych" : (editingJobId ? "Edytuj montaż" : (isAdmin ? "Nowy montaż / zlecenie" : "Dodaj nowego klienta"))}</h2>
           {/* 14.85 (decyzja właściciela 22.11.2026): przy edycji „Zamknij” jest na dole, obok „Zapisz zmiany”. */}
         </div>
-        {!editingJobId ? (
-          <div className="jobFormQuickActions">
-            <button type="button" className="btn jobFormCloseBtn" onClick={handleClose}>Zamknij</button>
-            <ClientVoiceInput onApply={applyVoiceClientData} disabled={busy} />
-          </div>
-        ) : null}
+        {/* 14.88 (decyzja właściciela 22.11.2026): nowe zlecenie bez „Wprowadź głosowo” u góry; „Zamknij” na dole
+            obok „Zapisz zlecenie”, jak w edycji (14.85). */}
         {serialOnlyMode ? (
           <div className="jobSerialOnlyIntro">
             Dodaj zdjęcie tabliczki jednostki zewnętrznej JZ i każdej jednostki wewnętrznej JW. Zdjęcia są wymagane do zakończenia zlecenia.
@@ -1073,8 +1069,8 @@ export default function JobFormModal({
             </div>
           </div>
         ) : null}
-        <div className={`row rightAlign${editingJobId ? " jobFormEditActions" : ""}`}>
-          {editingJobId ? <button type="button" className="btn jobFormEditClose" onClick={handleClose}>Zamknij</button> : null}
+        <div className="row rightAlign jobFormEditActions">
+          <button type="button" className="btn jobFormEditClose" onClick={handleClose}>Zamknij</button>
           <button type="submit" className="btn primary saveJobBtn" disabled={busy}>
             {serialOnlyMode ? "Zapisz tabliczki" : (editingJobId ? "Zapisz zmiany" : (isAdmin ? "Zapisz zlecenie" : "Dodaj klienta"))}
           </button>

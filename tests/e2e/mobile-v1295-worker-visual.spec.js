@@ -135,8 +135,10 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         phoneHeight:phone?.height,
         nipHeight:nip?.height,
         phoneGap:phone && email ? phone.top-email.bottom : -1,
-        nipRowDelta:nip && phone ? Math.abs(nip.top-phone.top) : 999,
-        nipColumnGap:nip && phone ? nip.left-phone.right : -1,
+        // 14.88: telefon w całej linii, pod nim NIP i „Szukaj w GUS” w jednej linii.
+        nipBelowPhone:nip && phone ? nip.top-phone.bottom : -1,
+        gusRowDelta:nip ? Math.abs(nip.top-(rect('.jobNipLookupBtnEdit')?.top ?? 999)) : 999,
+        gusGap:nip ? (rect('.jobNipLookupBtnEdit')?.left ?? 0)-nip.right : -1,
         closeHeight:rect('.jobFormEditActions .jobFormEditClose')?.height,
         saveHeight:rect('.jobFormEditActions .saveJobBtn')?.height,
         voiceHeight:rect('.voiceClientMainBtn')?.height,
@@ -161,8 +163,9 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     expect(compactLayout.emailHeight).toBe(36);
     expect(compactLayout.phoneGap).toBeGreaterThanOrEqual(3);
     expect(compactLayout.phoneGap).toBeLessThanOrEqual(8);
-    expect(compactLayout.nipRowDelta).toBeLessThanOrEqual(2);
-    expect(compactLayout.nipColumnGap).toBeGreaterThanOrEqual(2);
+    expect(compactLayout.nipBelowPhone).toBeGreaterThanOrEqual(2);
+    expect(compactLayout.gusRowDelta).toBeLessThanOrEqual(2);
+    expect(compactLayout.gusGap).toBeGreaterThanOrEqual(2);
     for (const key of ['fontSize','addressFont','statusFont','dateFont','noteFont']) {
       expect(compactLayout[key], key + ' must be visibly smaller on mobile').toBeGreaterThanOrEqual(13);
       expect(compactLayout[key], key + ' must no longer be 16px').toBeLessThanOrEqual(14.5);
@@ -222,8 +225,10 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         clientHeight:client?.height,
         phoneWidth:phone?.width,
         nipWidth:nip?.width,
-        pairGap:nip && phone ? nip.left-phone.right : -1,
-        pairTop:nip && phone ? Math.abs(nip.top-phone.top) : 999,
+        gusRight:rect('.jobNipLookupBtnEdit')?.right,
+        phoneRight:phone?.right,
+        nipLeft:nip?.left,
+        phoneLeft:phone?.left,
         titleRight:title?.right,
         micLeft:mic?.left,
         micRight:mic?.right,
@@ -233,10 +238,10 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     });
     expect(compactRow.titleRight).toBeLessThanOrEqual(compactRow.micLeft+1);
     expect(compactRow.micRight).toBeLessThanOrEqual(compactRow.closeLeft+1);
-    expect(Math.abs(compactRow.phoneWidth - compactRow.nipWidth)).toBeLessThanOrEqual(2);
-    expect(compactRow.pairTop).toBeLessThanOrEqual(2);
-    expect(compactRow.pairGap).toBeGreaterThanOrEqual(7);
-    expect(compactRow.pairGap).toBeLessThanOrEqual(11);
+    // 14.88: telefon na całą szerokość; NIP + „Szukaj w GUS” wyrównane do jego krawędzi.
+    expect(Math.abs(compactRow.nipLeft - compactRow.phoneLeft)).toBeLessThanOrEqual(1);
+    expect(Math.abs(compactRow.gusRight - compactRow.phoneRight)).toBeLessThanOrEqual(1);
+    expect(compactRow.phoneWidth).toBeGreaterThan(compactRow.nipWidth + 40);
     expect(compactRow.noteHeight).toBeGreaterThanOrEqual(94);
     // 13.03: microphone lives in the administrator-note heading; textarea stays full width.
     const adminNoteMic = modal.getByRole('button', { name:'Nagraj głosowo: Komentarz administratora' });
