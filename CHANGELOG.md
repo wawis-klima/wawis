@@ -1,3 +1,7 @@
+## 14.79
+- **Licznik SMS znikał po ponownym zalogowaniu** (zgłoszenie właściciela 22.11.2026 10:38, regresja z 14.78). Licznik liczył się zaraz po haśle, przed kodem z telefonu — baza (słusznie, MFA 14.74) zwracała wtedy 0 urządzeń, a pusta lista zostawała w pamięci na 10 min. Teraz liczniki w menu (SMS i zgłoszenia) liczą się dopiero po potwierdzeniu kodem i od razu po jego wpisaniu; pusta albo zastępcza lista urządzeń nie jest zapamiętywana, a pamięć dotyczy jednego konta.
+- Test `smoke-sms-nav-badge-relogin-v1479` (RED na 14.78).
+
 ## 14.78
 - **Licznik SMS w menu komputera = „Klienci na liście” w module SMS** (zgłoszenie właściciela 22.11.2026: na liście 2 SMS-y „Oczekuje”, a przy „SMS” brak licznika). Licznik liczył tylko wpisy w kolejce, którą poranne zadanie uzupełnia od poniedziałku do piątku — terminy z soboty i niedzieli były na liście, ale nie w liczniku. Teraz licznik liczy dokładnie to, co lista modułu SMS (terminy z urządzeń i montaży + kolejka), także w weekend.
 - Urządzenia do licznika pobierane najwyżej co 10 min (kolejka co minutę jak dotąd); gdy bazy urządzeń nie da się pobrać — licznik z samej kolejki (jak do 14.77). Poranne powiadomienie PUSH bez zmian (dni robocze, 6:30).

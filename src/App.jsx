@@ -720,26 +720,29 @@ export default function App() {
   const communicationJobsRef = useRef(jobs);
   communicationJobsRef.current = jobs;
   const communicationJobsReady = Array.isArray(jobs) && jobs.length > 0;
+  // 14.79: liczymy dopiero po potwierdzeniu kodem z telefonu — przed nim baza (słusznie) nie zwraca danych,
+  // a pusty wynik zapamiętany na 10 min ukrywał licznik po ponownym logowaniu.
+  const communicationReady = mfaGate.status === "ok";
   const refreshCommunicationCounts = useCallback(async () => {
-    if (!isAdmin || !supabase) return;
+    if (!isAdmin || !supabase || !communicationReady) return;
     const [requests, sms] = await Promise.allSettled([
       loadNewServiceRequestCount({ supabase }),
-      loadSmsNavCount({ supabase, jobs: communicationJobsRef.current || [] }),
+      loadSmsNavCount({ supabase, jobs: communicationJobsRef.current || [], userId: sessionUser?.id || "" }),
     ]);
     if (sms.status === "rejected") console.warn("Nie udało się policzyć SMS-ów na liście.", sms.reason?.message || sms.reason);
     setCommunicationCounts({
       requests: requests.status === "fulfilled" ? requests.value : 0,
       sms: sms.status === "fulfilled" ? sms.value : 0,
     });
-  }, [isAdmin, supabase]);
+  }, [isAdmin, supabase, communicationReady, sessionUser?.id]);
   useEffect(() => {
-    if (!isAdmin || !sessionUser?.id) return undefined;
+    if (!isAdmin || !sessionUser?.id || !communicationReady) return undefined;
     void refreshCommunicationCounts();
     const tick = () => { if (document.visibilityState !== "hidden") void refreshCommunicationCounts(); };
     const timer = window.setInterval(tick, 60000);
     window.addEventListener("focus", tick);
     return () => { window.clearInterval(timer); window.removeEventListener("focus", tick); };
-  }, [isAdmin, sessionUser?.id, refreshCommunicationCounts, activeModule, communicationJobsReady]);
+  }, [isAdmin, sessionUser?.id, communicationReady, refreshCommunicationCounts, activeModule, communicationJobsReady]);
   const communicationNavBadges = useMemo(() => ({
     requests: formatNavBadge(communicationCounts.requests),
     sms: formatNavBadge(communicationCounts.sms),

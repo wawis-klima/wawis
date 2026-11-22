@@ -37,27 +37,30 @@ export async function loadPendingSmsCount({ supabase }) {
 const DEVICES_CACHE_MS = 10 * 60 * 1000;
 const devicesCache = new WeakMap();
 
-async function loadDevicesForCount({ supabase, jobs, now }) {
+// 14.79: pamięć tylko dla tego samego konta i tylko niepustej, pełnej listy (nie zastępczej z montaży) —
+// pusty wynik (np. sesja przed kodem z telefonu albo chwilowy błąd) nie może ukryć licznika na 10 min.
+async function loadDevicesForCount({ supabase, jobs, now, userId }) {
   const cached = devicesCache.get(supabase);
-  if (cached?.devices && now - cached.at < DEVICES_CACHE_MS) return cached.devices;
+  if (cached?.devices?.length && cached.userId === userId && now - cached.at < DEVICES_CACHE_MS) return cached.devices;
   const result = await fetchAdminDevices({ supabase, isAdmin: true, jobs, trySync: false });
   const devices = Array.isArray(result?.devices) ? result.devices : [];
-  devicesCache.set(supabase, { at: now, devices });
+  if (devices.length && result?.source !== 'fallback') devicesCache.set(supabase, { at: now, devices, userId });
+  else devicesCache.delete(supabase);
   return devices;
 }
 
-export async function loadSmsListCount({ supabase, jobs = [], now = Date.now() }) {
+export async function loadSmsListCount({ supabase, jobs = [], now = Date.now(), userId = '' }) {
   const [{ logs }, devices] = await Promise.all([
     loadSmsModuleData({ supabase, isAdmin: true }),
-    loadDevicesForCount({ supabase, jobs, now }),
+    loadDevicesForCount({ supabase, jobs, now, userId }),
   ]);
   return deriveSmsQueue(buildSmsTargets({ jobs, devices }), logs || []).length;
 }
 
 /** Licznik w menu: lista jak w module SMS; gdy urządzeń nie da się pobrać — sama kolejka (jak do 14.77). */
-export async function loadSmsNavCount({ supabase, jobs = [], now = Date.now() }) {
+export async function loadSmsNavCount({ supabase, jobs = [], now = Date.now(), userId = '' }) {
   try {
-    return await loadSmsListCount({ supabase, jobs, now });
+    return await loadSmsListCount({ supabase, jobs, now, userId });
   } catch (error) {
     console.warn('Licznik SMS: lista niedostępna, liczę samą kolejkę.', error?.message || error);
     return loadPendingSmsCount({ supabase });
