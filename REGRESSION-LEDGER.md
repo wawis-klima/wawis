@@ -1,5 +1,11 @@
 # WAWIS — Regression Ledger
 
+## SMS-BADGE-1479 — licznik SMS po ponownym logowaniu (regresja 14.78)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SMS-BADGE-1479 | FIXED-UNVERIFIED | Przyczyna (SELECT 22.11): `admin_list_devices_with_contractor_v2` dla administratora w sesji aal1 zwraca 0 wierszy; 14.78 liczył przed kodem i zapamiętywał pustą listę 10 min. Liczniki po `mfaGate.status === "ok"`, bez pamięci pustej/zastępczej listy, pamięć per konto. `smoke-sms-nav-badge-relogin-v1479` (RED na 14.78). |
+
 ## SMS-BADGE-1478 — licznik SMS w menu niezgodny z listą (zgłoszenie właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -53,7 +53,7 @@ assert.equal(await loadSmsNavCount({ supabase: broken, jobs: [] }), 1, 'awaryjni
 
 // 4. Aplikacja używa nowego licznika i liczy ponownie po wczytaniu montaży.
 const app = fs.readFileSync('src/App.jsx', 'utf8');
-assert.match(app, /loadSmsNavCount\(\{ supabase, jobs: communicationJobsRef\.current \|\| \[\] \}\)/);
+assert.match(app, /loadSmsNavCount\(\{ supabase, jobs: communicationJobsRef\.current \|\| \[\], userId: sessionUser\?\.id \|\| "" \}\)/);
 assert.match(app, /refreshCommunicationCounts, activeModule, communicationJobsReady\]/);
 assert.doesNotMatch(app, /loadPendingSmsCount\(/, 'menu nie liczy już samej kolejki');
 

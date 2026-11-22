@@ -82,6 +82,7 @@ const GROUPS = {
     'node scripts/smoke-login-notice-block-v1476.mjs',
     'node scripts/smoke-diagnostics-collapsible-v1477.mjs',
     'node scripts/smoke-sms-nav-badge-v1478.mjs',
+    'node scripts/smoke-sms-nav-badge-relogin-v1479.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],
