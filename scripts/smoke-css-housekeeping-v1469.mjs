@@ -35,7 +35,8 @@ for (const [file, parent] of Object.entries(IMPORT_ONLY)) {
   assert.equal(tokenizeCss(fs.readFileSync(file, 'utf8')).count, 1, `${file}: nadal jeden kolor wprost`);
 }
 const registry = JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).files;
-const palette = new Set([TOKENS_FILE, 'src/styles/shadows.css', 'src/styles/alpha.css']);
+// 14.84: src/styles/theme-dark.css — kolory motywu ciemnego, generowane (smoke-dark-theme-v1484 sprawdza zgodność z generatorem).
+const palette = new Set([TOKENS_FILE, 'src/styles/shadows.css', 'src/styles/alpha.css', 'src/styles/theme-dark.css']);
 const leftovers = css.filter((f) => !palette.has(f) && !registry[f] && !IMPORT_ONLY[f] && tokenizeCss(fs.readFileSync(f, 'utf8')).count > 0);
 assert.deepEqual(leftovers, [], 'kolory hex tylko w palecie — pozostałe pliki CSS bez kolorów zapisanych wprost');
 

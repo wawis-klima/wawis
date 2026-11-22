@@ -86,6 +86,7 @@ const GROUPS = {
     'node scripts/smoke-push-rekey-v1480.mjs',
     'node scripts/smoke-css-roles-v1481.mjs',
     'node scripts/smoke-js-colors-v1483.mjs',
+    'node scripts/smoke-dark-theme-v1484.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],

@@ -5,9 +5,12 @@ import ReactDOM from 'react-dom/client'
 import './styles/tokens.css'
 // 14.81: role kolorów (krok 1 do motywu ciemnego) — zaraz po palecie.
 import './styles/roles.css'
+// 14.84: motyw ciemny — działa tylko z data-theme="dark" na <html> (przełącznik w nagłówku telefonu).
+import './styles/theme-dark.css'
 import './styles/shadows.css'
 import './styles/alpha.css'
 import { APP_VERSION } from './version.js'
+import { applyTheme, readStoredTheme } from './modules/theme.js'
 import { requestUpdateReload } from './modules/update-reload-guard.js'
 import { readQrCodeFromLocation } from './modules/qr-stickers.js'
 import { shouldShowPublicQrPage } from './public-qr/public-qr-api.js'
@@ -161,6 +164,13 @@ async function boot() {
   if (publicQrMode) return bootPublicQr()
   window.__wawisBootTrace?.mark?.('imports')
   const useMobile791 = isMobileRuntime()
+  // 14.84: motyw zapamiętany na telefonie, ustawiony przed załadowaniem ekranów (bez mignięcia jasnego).
+  // Komputer zostaje zawsze jasny.
+  if (useMobile791) {
+    let storage = null
+    try { storage = window.localStorage } catch { storage = null }
+    applyTheme(readStoredTheme(storage))
+  }
   const [appModule, , , diagnosticsModule] = await Promise.all([
     useMobile791 ? import('./mobile791/App.jsx') : import('./App.jsx'),
     useMobile791 ? import('./mobile791/styles.css') : import('./styles.css'),

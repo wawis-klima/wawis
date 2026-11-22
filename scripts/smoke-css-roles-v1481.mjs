@@ -101,6 +101,13 @@ let uses = 0;
 let filesWithRoles = 0;
 for (const file of cssFiles) {
   if (file === TOKENS_FILE || file === ROLES_FILE || file === ALPHA_FILE) continue;
+  // 14.84: motyw ciemny nadpisuje role tylko pod :root[data-theme="dark"] (smoke-dark-theme-v1484).
+  if (file === 'src/styles/theme-dark.css') {
+    const darkCss = fs.readFileSync(file, 'utf8');
+    assert.equal((darkCss.match(/--wr-[a-z0-9-]+\s*:/g) || []).length, Object.keys(roles).length, 'motyw ciemny: każda rola raz');
+    assert.ok(darkCss.indexOf(':root[data-theme="dark"] {') < darkCss.indexOf('--wr-'), 'role ciemne tylko pod data-theme="dark"');
+    continue;
+  }
   const css = fs.readFileSync(file, 'utf8');
   if (file !== ROLES_FILE) assert.doesNotMatch(css, /--wr-[a-z0-9-]+\s*:/, `${file} nie definiuje ról`);
   if (ROLE_EXEMPT_FILES.includes(file)) {
