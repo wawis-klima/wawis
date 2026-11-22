@@ -1,5 +1,11 @@
 # WAWIS — Regression Ledger
 
+## SMS-BADGE-1478 — licznik SMS w menu niezgodny z listą (zgłoszenie właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| SMS-BADGE-1478 | FIXED-UNVERIFIED | Przyczyna (SELECT 22.11): kolejka sms_log 0 wpisów pending_approval (zadanie tylko pn–pt), lista modułu liczona z urządzeń: 2 klientów (terminy 21.11 i 22.11). Licznik = `deriveSmsQueue(buildSmsTargets(...))` jak ekran SMS; urządzenia co 10 min; awaryjnie kolejka. `smoke-sms-nav-badge-v1478` (RED na 14.77), `smoke-communication-v1421` bez zmian. |
+
 ## DIAG-1477 — Diagnostyka: działy zwijane (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

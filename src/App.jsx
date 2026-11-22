@@ -53,7 +53,7 @@ const DiagnosticsPanel = lazy(() => import("./components/diagnostics/Diagnostics
 const FuelPanel = lazy(() => import("./components/fuel/FuelPanel.jsx"));
 const ServiceRequestsPanel = lazy(() => import("./components/service-requests/ServiceRequestsPanel.jsx"));
 const LeakTestsPanel = lazy(() => import("./components/leak-tests/LeakTestsPanel.jsx"));
-import { formatNavBadge, loadNewServiceRequestCount, loadPendingSmsCount } from "./modules/communication-counters.js";
+import { formatNavBadge, loadNewServiceRequestCount, loadSmsNavCount } from "./modules/communication-counters.js";
 import { setServiceRequestStatus } from "./modules/service-requests.js";
 
 const adminModuleFallback = (
@@ -715,14 +715,18 @@ export default function App() {
 
   const smsDueTodayCount = dashboardMetrics?.smsDueToday ?? fallbackSmsDueTodayCount;
 
-  // 14.21: liczniki w lewym panelu — nowe zgłoszenia klientów i SMS-y do zatwierdzenia. Błąd = bez znaczka.
+  // 14.21: liczniki w lewym panelu — nowe zgłoszenia klientów i SMS-y. Błąd = bez znaczka.
+  // 14.78: SMS = liczba klientów na liście modułu SMS (jak „Klienci na liście”), także w weekend.
+  const communicationJobsRef = useRef(jobs);
+  communicationJobsRef.current = jobs;
+  const communicationJobsReady = Array.isArray(jobs) && jobs.length > 0;
   const refreshCommunicationCounts = useCallback(async () => {
     if (!isAdmin || !supabase) return;
     const [requests, sms] = await Promise.allSettled([
       loadNewServiceRequestCount({ supabase }),
-      loadPendingSmsCount({ supabase }),
+      loadSmsNavCount({ supabase, jobs: communicationJobsRef.current || [] }),
     ]);
-    if (sms.status === "rejected") console.warn("Nie udało się policzyć SMS-ów do zatwierdzenia.", sms.reason?.message || sms.reason);
+    if (sms.status === "rejected") console.warn("Nie udało się policzyć SMS-ów na liście.", sms.reason?.message || sms.reason);
     setCommunicationCounts({
       requests: requests.status === "fulfilled" ? requests.value : 0,
       sms: sms.status === "fulfilled" ? sms.value : 0,
@@ -735,7 +739,7 @@ export default function App() {
     const timer = window.setInterval(tick, 60000);
     window.addEventListener("focus", tick);
     return () => { window.clearInterval(timer); window.removeEventListener("focus", tick); };
-  }, [isAdmin, sessionUser?.id, refreshCommunicationCounts, activeModule]);
+  }, [isAdmin, sessionUser?.id, refreshCommunicationCounts, activeModule, communicationJobsReady]);
   const communicationNavBadges = useMemo(() => ({
     requests: formatNavBadge(communicationCounts.requests),
     sms: formatNavBadge(communicationCounts.sms),

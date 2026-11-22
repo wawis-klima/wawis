@@ -1,3 +1,8 @@
+## 14.78
+- **Licznik SMS w menu komputera = „Klienci na liście” w module SMS** (zgłoszenie właściciela 22.11.2026: na liście 2 SMS-y „Oczekuje”, a przy „SMS” brak licznika). Licznik liczył tylko wpisy w kolejce, którą poranne zadanie uzupełnia od poniedziałku do piątku — terminy z soboty i niedzieli były na liście, ale nie w liczniku. Teraz licznik liczy dokładnie to, co lista modułu SMS (terminy z urządzeń i montaży + kolejka), także w weekend.
+- Urządzenia do licznika pobierane najwyżej co 10 min (kolejka co minutę jak dotąd); gdy bazy urządzeń nie da się pobrać — licznik z samej kolejki (jak do 14.77). Poranne powiadomienie PUSH bez zmian (dni robocze, 6:30).
+- Test `smoke-sms-nav-badge-v1478` (RED na 14.77).
+
 ## 14.77
 - **Diagnostyka uporządkowana** (decyzja właściciela 22.11.2026). Działy są zwijane i domyślnie zwinięte, w nagłówku tytuł i krótki stan, np. „Kod z telefonu — Włączony”, „Logowania i blokada kont — Zalogowani: 4”, „Wzory podpisów pracowników — 3 z 5”, „Zmiany offline — Wszystko wysłane”. Bez opisów pod tytułami.
 - Telefon: zwijane „Zmiany offline”, „Wzór podpisu” (otwiera się sam, gdy brakuje wzoru — protokoły czekają na podpis), „Kod z telefonu”, „Logowania i blokada kont”, „Wzory podpisów pracowników”; „Akcje” otwarte. Usunięte karty „AI tabliczek — ten telefon” i „Odczyt tabliczek bez internetu” (czytniki dalej pobierają się same przy starcie aplikacji).

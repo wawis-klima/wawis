@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.77",
+  "version": "14.78",
   "scope": "full",
-  "release_branch": "release/v14.77",
+  "release_branch": "release/v14.78",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Diagnostyka: działy zwijane, bez opisów i kart AI/czytników tabliczek — tylko aplikacja, baza i backend bez zmian."
+    "notes": "Licznik SMS w menu = lista modułu SMS — tylko aplikacja, baza i backend bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.77",
+    "source_branch": "release/v14.78",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.77.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.78.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.77: Diagnostyka uporządkowana",
-    "release_ci": "WAWIS PR checks + smoke-diagnostics-collapsible-v1477 + E2E mfa-admin/user-access/signature-pattern/staff-signatures/mobile-precache-offline + WebKit E2E",
-    "postdeploy": "Vercel READY/14.77."
+    "code": "14.78: licznik SMS w menu",
+    "release_ci": "WAWIS PR checks + smoke-sms-nav-badge-v1478 + smoke-communication-v1421",
+    "postdeploy": "Vercel READY/14.78."
   }
 }
