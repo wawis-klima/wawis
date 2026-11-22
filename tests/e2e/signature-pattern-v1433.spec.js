@@ -76,6 +76,9 @@ test('@mobile 14.34: administrator widzi wzory podpisów pracowników', async ({
   const card = page.getByTestId('staff-signatures-card');
   await expect(card).toContainText('Wzory podpisów pracowników');
   await expect(card.getByTestId('staff-signatures-count')).toContainText('Złożone wzory: 1 z');
+  // 14.77: dział zwinięty — w nagłówku „1 z N”; rozwijamy.
+  await expect(card.getByTestId('staff-signatures-card-status')).toContainText('1 z');
+  await card.getByTestId('staff-signatures-card-toggle').click();
   const workerRow = card.getByTestId('staff-signature-row').filter({ hasText: 'Pracownik Testowy' });
   await expect(workerRow).toContainText('Zapisany 07.11.2026');
   await expect(workerRow.locator('img')).toHaveAttribute('src', /^data:image\/png;base64,/);

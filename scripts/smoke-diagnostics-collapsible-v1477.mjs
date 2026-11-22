@@ -8,8 +8,8 @@ let checks = 0;
 const ok = (cond, message) => { assert.ok(cond, message); checks += 1; };
 
 const card = read('src/components/common/CollapsibleCard.jsx');
-ok(/<details className=\{cardClass\}/.test(card) && /<summary className="collapsibleCardSummary"/.test(card), 'dział = details/summary (zwijanie bez skryptu)');
-ok(/open=\{defaultOpen \|\| undefined\}/.test(card), 'domyślnie zwinięty');
+ok(/<details ref=\{detailsRef\} className=\{cardClass\}/.test(card) && /<summary className="collapsibleCardSummary"/.test(card), 'dział = details/summary (zwijanie bez skryptu)');
+ok(!/open=\{/.test(card) && /detailsRef\.current\.open = true/.test(card) && !/\.open = false/.test(card), 'domyślnie zwinięty; otwiera się programowo, nigdy nie zwija sam');
 
 const usesCard = {
   'src/components/auth/MfaSettingsCard.jsx': 'Kod z telefonu przy logowaniu',
