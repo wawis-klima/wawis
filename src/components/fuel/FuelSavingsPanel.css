@@ -23,14 +23,14 @@
 .fuelSavingsChart svg { display: block; width: 100%; height: auto; }
 .fuelSavingsChartGrid { stroke: var(--wr-icon-c-e7edf6); stroke-width: 1; }
 .fuelSavingsChartAxis { fill: var(--wr-icon-c-8a98aa); font-size: 10px; }
-.fuelSavingsChartGap { fill: var(--wxa-17614b-130); }
+.fuelSavingsChartGap { fill: var(--wr-icon-a-17614b-130); }
 .fuelSavingsChartTank { stroke: var(--wr-icon-c-176b4d); stroke-width: 2; stroke-dasharray: 6 4; }
 .fuelSavingsChartStation { fill: none; stroke: var(--wr-icon-c-2f75cf); stroke-width: 2.2; stroke-linejoin: round; }
 .fuelSavingsChart figcaption { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; color: var(--wr-text-slate-500); font-size: 12px; }
 .fuelSavingsChart figcaption i { display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
 .fuelSavingsChart figcaption i.isStation { background: var(--wr-bg-c-2f75cf); }
 .fuelSavingsChart figcaption i.isTank { background: var(--wr-bg-c-176b4d); }
-.fuelSavingsChart figcaption i.isGap { height: 10px; background: var(--wxa-17614b-200); }
+.fuelSavingsChart figcaption i.isGap { height: 10px; background: var(--wr-bg-a-17614b-200); }
 
 .fuelSavingsMissing { padding: 12px 14px; border: 1px solid var(--wr-line-c-f3d38a); border-radius: 13px; background: var(--wr-bg-orange-50); }
 .fuelSavingsMissingRow { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(140px, 0.6fr) auto auto; gap: 10px; align-items: center; }

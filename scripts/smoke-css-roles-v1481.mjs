@@ -1,4 +1,4 @@
-// WAWIS 14.81 — role kolorów (krok 1 do motywu ciemnego, decyzja właściciela 22.11.2026): wygląd bez zmian.
+// WAWIS 14.81/14.82 — role kolorów (krok 1 do motywu ciemnego, decyzja właściciela 22.11.2026): wygląd bez zmian.
 // Arkusze ekranów odwołują się do ról var(--wr-<rodzaj>-<kolor>), a nie wprost do palety var(--wx-<kolor>).
 // Dowód, że motyw jasny wygląda tak samo:
 //   • każda rola w src/styles/roles.css (:root) = dokładnie var(--wx-<kolor z nazwy roli>), więc kolor się nie zmienia;
@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
+import { ALPHA_FILE, readAlpha } from './css-alpha.mjs';
 import {
   ROLES_FILE, ROLE_EXEMPT_FILES, ROLE_KINDS, ROLE_PREFIX, TOKENS_FILE, assignRoles, misplacedTokenUses, readRoles, readTokens,
   resolveRoles, roleKindFor, roleNameFor, roleUses,
@@ -29,6 +30,8 @@ assert.equal(roleKindFor('--wizard-blue'), 'accent');
 assert.equal(roleKindFor('width'), null, 'kolor we właściwości bez roli → błąd konwersji, nie zgadywanie');
 assert.equal(roleNameFor('bg', '--wx-white'), '--wr-bg-white');
 assert.equal(roleNameFor('line', '--wx-c-dbe6f2'), '--wr-line-c-dbe6f2');
+assert.equal(roleNameFor('bg', '--wxa-0f172a-080'), '--wr-bg-a-0f172a-080', '14.82: kolor półprzezroczysty → rola z „a-”');
+assert.match(assignRoles('.m{background:var(--wxa-000000-500);color:var(--wx-white)}').css, /background:var\(--wr-bg-a-000000-500\);color:var\(--wr-text-white\)/);
 assert.throws(() => roleNameFor('glow', '--wx-white'), /Nieznany rodzaj/);
 
 const sample = [
@@ -53,6 +56,8 @@ assert.deepEqual(roleUses('.a{border-top:1px solid var(--wr-line-white)}').map((
 
 // --- roles.css: jeden blok :root, rola = kolor palety ze swojej nazwy ---
 const tokens = readTokens(fs.readFileSync(TOKENS_FILE, 'utf8'));
+// 14.82: także kolory półprzezroczyste (--wxa-*).
+const alpha = readAlpha(fs.readFileSync(ALPHA_FILE, 'utf8'));
 const rolesCss = fs.readFileSync(ROLES_FILE, 'utf8');
 const roles = readRoles(rolesCss);
 assert.equal((rolesCss.match(/\{/g) || []).length, 1, 'roles.css ma tylko blok :root (motyw ciemny = osobna decyzja)');
@@ -60,7 +65,7 @@ assert.match(rolesCss, /^:root \{$/m);
 assert.equal((rolesCss.match(/--wr-[a-z0-9-]+\s*:/g) || []).length, Object.keys(roles).length, 'każda rola zapisana jako var(--wx-…)');
 assert.doesNotMatch(rolesCss, /#[0-9a-f]{3,8}\b|rgba?\(/i, 'role bez kolorów wpisanych wprost');
 for (const [role, palette] of Object.entries(roles)) {
-  assert.ok(palette in tokens, `${role}: ${palette} jest w palecie`);
+  assert.ok(palette in tokens || palette in alpha, `${role}: ${palette} jest w palecie`);
   const kind = role.slice(ROLE_PREFIX.length).split('-')[0];
   assert.ok(kind in ROLE_KINDS, `${role}: znany rodzaj roli`);
   assert.equal(role, roleNameFor(kind, palette), `${role}: w motywie jasnym kolor z nazwy (${palette})`);
@@ -80,7 +85,7 @@ walk('public');
 for (const file of fs.readdirSync('src', { recursive: true }).filter((f) => /\.(jsx?|mjs)$/.test(f))) {
   const src = fs.readFileSync(path.join('src', file), 'utf8');
   assert.doesNotMatch(src, /setProperty\(\s*['"]--wr-/, `src/${file} nie zmienia ról w JS`);
-  assert.doesNotMatch(src, /var\(--wx-/, `src/${file}: kolory z palety tylko przez role w arkuszach`);
+  assert.doesNotMatch(src, /var\(--wxa?-/, `src/${file}: kolory z palety tylko przez role w arkuszach`);
 }
 
 // Wejście: role ładowane statycznie zaraz po palecie.
@@ -95,7 +100,7 @@ const usedRoles = new Set();
 let uses = 0;
 let filesWithRoles = 0;
 for (const file of cssFiles) {
-  if (file === TOKENS_FILE || file === ROLES_FILE) continue;
+  if (file === TOKENS_FILE || file === ROLES_FILE || file === ALPHA_FILE) continue;
   const css = fs.readFileSync(file, 'utf8');
   if (file !== ROLES_FILE) assert.doesNotMatch(css, /--wr-[a-z0-9-]+\s*:/, `${file} nie definiuje ról`);
   if (ROLE_EXEMPT_FILES.includes(file)) {
@@ -103,7 +108,7 @@ for (const file of cssFiles) {
     assert.match(css, /prefers-color-scheme: dark/, `${file}: ma własny motyw ciemny`);
     continue;
   }
-  assert.doesNotMatch(css, /var\(--wx-/, `${file}: kolor z palety bez roli`);
+  assert.doesNotMatch(css, /var\(--wxa?-/, `${file}: kolor z palety bez roli`);
   const list = roleUses(css);
   if (!list.length) continue;
   filesWithRoles += 1;
@@ -118,8 +123,9 @@ for (const file of cssFiles) {
   }
 }
 assert.deepEqual(Object.keys(roles).filter((r) => !usedRoles.has(r)), [], 'brak nieużywanych ról');
-assert.ok(uses > 3000 && filesWithRoles >= 28, `role w ${uses} miejscach, ${filesWithRoles} arkuszach`);
+assert.ok(uses > 3500 && filesWithRoles >= 28, `role w ${uses} miejscach, ${filesWithRoles} arkuszach`);
 
 const byKind = {};
 for (const r of Object.keys(roles)) { const k = r.slice(ROLE_PREFIX.length).split('-')[0]; byKind[k] = (byKind[k] || 0) + 1; }
-console.log(`PASS WAWIS 14.81 — ${Object.keys(roles).length} ról kolorów (${Object.entries(byKind).map(([k, n]) => `${k} ${n}`).join(', ')}) w ${uses} miejscach, ${filesWithRoles} arkuszach; w motywie jasnym rola = kolor palety ze swojej nazwy.`);
+const alphaRoles = Object.values(roles).filter((p) => p.startsWith('--wxa-')).length;
+console.log(`PASS WAWIS 14.81/14.82 — ${Object.keys(roles).length} ról kolorów (w tym ${alphaRoles} półprzezroczystych) (${Object.entries(byKind).map(([k, n]) => `${k} ${n}`).join(', ')}) w ${uses} miejscach, ${filesWithRoles} arkuszach; w motywie jasnym rola = kolor palety ze swojej nazwy.`);

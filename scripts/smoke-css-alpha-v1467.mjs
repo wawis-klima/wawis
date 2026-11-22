@@ -6,6 +6,7 @@
 //   • paleta zdefiniowana raz (:root w alpha.css), ładowana statycznie w src/main.jsx.
 // Dowód w przeglądarce: tests/e2e/css-tokens-equivalence-v1451.spec.js.
 import fs from 'node:fs';
+import { readStyleSource } from './css-tokens.mjs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {
@@ -61,7 +62,7 @@ const registry = Object.keys(JSON.parse(fs.readFileSync(REGISTRY_FILE, 'utf8')).
 const used = new Set();
 let positions = 0; let changed = 0;
 for (const file of registry) {
-  const css = fs.readFileSync(file, 'utf8');
+  const css = readStyleSource(file); // 14.82: role → zmienne palety
   assert.deepEqual(misplacedAlphaUses(css), [], `${file}: zmienne rgba tylko w wartościach`);
   assert.deepEqual(literalAlphaUses(css).map((u) => u.raw), [], `${file}: brak rgba zapisanych wprost`);
   const raws = baseline[file] || [];

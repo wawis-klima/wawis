@@ -1,10 +1,48 @@
 /* WAWIS — role kolorów (14.81+). Generowane przez scripts/css-tokens.mjs roles — nie edytuj ręcznie bloku :root.
    Rola = rodzaj użycia + kolor palety: --wr-bg-white to biały jako tło, --wr-text-white to biały jako tekst.
+   Od 14.82 także kolory półprzezroczyste: --wr-bg-a-000000-500 to rgba z --wxa-000000-500 jako tło.
    W motywie jasnym każda rola ma dokładnie kolor palety ze swojej nazwy, więc wygląd jest taki sam jak przed 14.81.
    Motyw ciemny (w przyszłości) nadpisze role w osobnym bloku, bez zmian w arkuszach ekranów.
    Ładowane statycznie przez src/main.jsx zaraz po palecie (tokens.css). */
 :root {
   /* tło */
+  --wr-bg-a-000000-350: var(--wxa-000000-350);
+  --wr-bg-a-000000-400: var(--wxa-000000-400);
+  --wr-bg-a-000000-500: var(--wxa-000000-500);
+  --wr-bg-a-000000-600: var(--wxa-000000-600);
+  --wr-bg-a-0a182b-780: var(--wxa-0a182b-780);
+  --wr-bg-a-0a182b-820: var(--wxa-0a182b-820);
+  --wr-bg-a-0a6ef2-060: var(--wxa-0a6ef2-060);
+  --wr-bg-a-0f172a-030: var(--wxa-0f172a-030);
+  --wr-bg-a-0f172a-320: var(--wxa-0f172a-320);
+  --wr-bg-a-0f172a-360: var(--wxa-0f172a-360);
+  --wr-bg-a-0f172a-450: var(--wxa-0f172a-450);
+  --wr-bg-a-0f172a-520: var(--wxa-0f172a-520);
+  --wr-bg-a-0f172a-580: var(--wxa-0f172a-580);
+  --wr-bg-a-0f172a-780: var(--wxa-0f172a-780);
+  --wr-bg-a-0f2345-160: var(--wxa-0f2345-160);
+  --wr-bg-a-0f2345-220: var(--wxa-0f2345-220);
+  --wr-bg-a-102348-000: var(--wxa-102348-000);
+  --wr-bg-a-17614b-200: var(--wxa-17614b-200);
+  --wr-bg-a-22c55e-140: var(--wxa-22c55e-140);
+  --wr-bg-a-2dd4bf-220: var(--wxa-2dd4bf-220);
+  --wr-bg-a-94a3b8-080: var(--wxa-94a3b8-080);
+  --wr-bg-a-d2deee-950: var(--wxa-d2deee-950);
+  --wr-bg-a-e2e8f0-450: var(--wxa-e2e8f0-450);
+  --wr-bg-a-e2e8f0-760: var(--wxa-e2e8f0-760);
+  --wr-bg-a-eff6ff-550: var(--wxa-eff6ff-550);
+  --wr-bg-a-f0fdf4-920: var(--wxa-f0fdf4-920);
+  --wr-bg-a-fef2f2-860: var(--wxa-fef2f2-860);
+  --wr-bg-a-fef2f2-900: var(--wxa-fef2f2-900);
+  --wr-bg-a-ffffff-160: var(--wxa-ffffff-160);
+  --wr-bg-a-ffffff-200: var(--wxa-ffffff-200);
+  --wr-bg-a-ffffff-440: var(--wxa-ffffff-440);
+  --wr-bg-a-ffffff-720: var(--wxa-ffffff-720);
+  --wr-bg-a-ffffff-780: var(--wxa-ffffff-780);
+  --wr-bg-a-ffffff-820: var(--wxa-ffffff-820);
+  --wr-bg-a-ffffff-880: var(--wxa-ffffff-880);
+  --wr-bg-a-ffffff-920: var(--wxa-ffffff-920);
+  --wr-bg-a-ffffff-960: var(--wxa-ffffff-960);
   --wr-bg-amber-100: var(--wx-amber-100);
   --wr-bg-amber-50: var(--wx-amber-50);
   --wr-bg-amber-500: var(--wx-amber-500);
@@ -66,6 +104,7 @@
   --wr-bg-slate-900: var(--wx-slate-900);
   --wr-bg-white: var(--wx-white);
   /* tekst */
+  --wr-text-a-ffffff-600: var(--wxa-ffffff-600);
   --wr-text-amber-600: var(--wx-amber-600);
   --wr-text-amber-700: var(--wx-amber-700);
   --wr-text-amber-800: var(--wx-amber-800);
@@ -144,6 +183,27 @@
   --wr-text-slate-900: var(--wx-slate-900);
   --wr-text-white: var(--wx-white);
   /* ramka lub linia */
+  --wr-line-a-0f172a-120: var(--wxa-0f172a-120);
+  --wr-line-a-0f2345-160: var(--wxa-0f2345-160);
+  --wr-line-a-22c55e-300: var(--wxa-22c55e-300);
+  --wr-line-a-2563eb-180: var(--wxa-2563eb-180);
+  --wr-line-a-2563eb-220: var(--wxa-2563eb-220);
+  --wr-line-a-3b82f6-300: var(--wxa-3b82f6-300);
+  --wr-line-a-4763f4-720: var(--wxa-4763f4-720);
+  --wr-line-a-555f79-580: var(--wxa-555f79-580);
+  --wr-line-a-64748b-260: var(--wxa-64748b-260);
+  --wr-line-a-65ab39-550: var(--wxa-65ab39-550);
+  --wr-line-a-94a3b8-180: var(--wxa-94a3b8-180);
+  --wr-line-a-94a3b8-240: var(--wxa-94a3b8-240);
+  --wr-line-a-94a3b8-280: var(--wxa-94a3b8-280);
+  --wr-line-a-94a3b8-340: var(--wxa-94a3b8-340);
+  --wr-line-a-b91c1c-200: var(--wxa-b91c1c-200);
+  --wr-line-a-d0ddee-780: var(--wxa-d0ddee-780);
+  --wr-line-a-dbe6f2-920: var(--wxa-dbe6f2-920);
+  --wr-line-a-ff8f19-680: var(--wxa-ff8f19-680);
+  --wr-line-a-ffffff-160: var(--wxa-ffffff-160);
+  --wr-line-a-ffffff-250: var(--wxa-ffffff-250);
+  --wr-line-a-ffffff-780: var(--wxa-ffffff-780);
   --wr-line-amber-200: var(--wx-amber-200);
   --wr-line-amber-300: var(--wx-amber-300);
   --wr-line-amber-500: var(--wx-amber-500);
@@ -203,6 +263,7 @@
   --wr-line-slate-900: var(--wx-slate-900);
   --wr-line-white: var(--wx-white);
   /* ikona, wypełnienie, pole wyboru */
+  --wr-icon-a-17614b-130: var(--wxa-17614b-130);
   --wr-icon-amber-700: var(--wx-amber-700);
   --wr-icon-c-147c87: var(--wx-c-147c87);
   --wr-icon-c-176b4d: var(--wx-c-176b4d);
@@ -212,6 +273,11 @@
   --wr-icon-c-e7edf6: var(--wx-c-e7edf6);
   --wr-icon-slate-400: var(--wx-slate-400);
   /* kolor cienia */
+  --wr-shadow-a-000000-080: var(--wxa-000000-080);
+  --wr-shadow-a-000000-350: var(--wxa-000000-350);
+  --wr-shadow-a-000000-700: var(--wxa-000000-700);
+  --wr-shadow-a-0f2345-160: var(--wxa-0f2345-160);
+  --wr-shadow-a-0f2345-220: var(--wxa-0f2345-220);
   --wr-shadow-blue-600: var(--wx-blue-600);
   --wr-shadow-c-18a3ba: var(--wx-c-18a3ba);
   --wr-shadow-c-2f74f3: var(--wx-c-2f74f3);
@@ -222,6 +288,7 @@
   --wr-shadow-slate-50: var(--wx-slate-50);
   --wr-shadow-white: var(--wx-white);
   /* zmienna lokalna arkusza o mieszanym użyciu */
+  --wr-accent-a-0f172a-030: var(--wxa-0f172a-030);
   --wr-accent-blue-600: var(--wx-blue-600);
   --wr-accent-c-243746: var(--wx-c-243746);
 }

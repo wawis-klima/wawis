@@ -4,7 +4,7 @@
   border: 1px solid var(--wr-line-c-b7d4ff); background: var(--wr-bg-c-e7edf6); border-radius: 14px; padding: 10px 12px; font-size: 14px; }
 .leakSignBannerRow .btn { min-height: 36px; padding: 6px 14px; border-radius: 11px; }
 .leakSignDone { margin: 0; color: var(--wr-text-c-1d7a46); font-weight: 700; font-size: 14px; }
-.leakSignOverlay { position: fixed; inset: 0; z-index: 2000; background: var(--wxa-0f172a-450); display: flex; align-items: flex-end; justify-content: center; }
+.leakSignOverlay { position: fixed; inset: 0; z-index: 2000; background: var(--wr-bg-a-0f172a-450); display: flex; align-items: flex-end; justify-content: center; }
 .leakSignSheet { width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; background: var(--wr-bg-white); border-radius: 18px 18px 0 0;
   padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); display: grid; gap: 10px; }
 .leakSignSheet h3 { margin: 0; font-size: 17px; }
