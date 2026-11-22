@@ -11,9 +11,9 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     margin: 8px 0 !important;
     padding: 14px 8px 13px !important;
     overflow: hidden !important;
-    border: 1px solid #dbe5f0 !important;
+    border: 1px solid var(--wr-line-c-dbe5f0) !important;
     border-radius: 18px !important;
-    background: #ffffff !important;
+    background: var(--wr-bg-white) !important;
     box-shadow: 0 8px 22px rgba(15, 35, 69, .055) !important;
     box-sizing: border-box !important;
   }
@@ -36,7 +36,7 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     min-width: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    color: #10203a !important;
+    color: var(--wr-text-c-10203a) !important;
     font-size: 12px !important;
     font-weight: 950 !important;
     line-height: 1.15 !important;
@@ -49,7 +49,7 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     width: 20px !important;
     height: 20px !important;
     flex: 0 0 20px !important;
-    color: #183a68 !important;
+    color: var(--wr-text-c-183a68) !important;
   }
 
   .jobDevicesTableV888 .jobDevicesTableV888Type {
@@ -59,10 +59,10 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     flex: 0 0 auto !important;
     min-height: 28px !important;
     padding: 5px 9px !important;
-    border: 1px solid #d7e4f5 !important;
+    border: 1px solid var(--wr-line-c-d7e4f5) !important;
     border-radius: 999px !important;
-    background: #f8fbff !important;
-    color: #2458d8 !important;
+    background: var(--wr-bg-c-f8fbff) !important;
+    color: var(--wr-text-c-2458d8) !important;
     font-size: 9px !important;
     font-weight: 850 !important;
     line-height: 1 !important;
@@ -71,9 +71,9 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
   }
 
   .jobDevicesTableV888 .jobDevicesTableV888Type.multi {
-    border-color: #ddd6fe !important;
-    background: #faf8ff !important;
-    color: #6d28d9 !important;
+    border-color: var(--wr-line-c-ddd6fe) !important;
+    background: var(--wr-bg-c-faf8ff) !important;
+    color: var(--wr-text-c-6d28d9) !important;
   }
 
   .jobDevicesTableV888 .jobDeviceDocumentationList,
@@ -96,9 +96,9 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     margin: 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
-    border: 1px solid #dfe7f0 !important;
+    border: 1px solid var(--wr-line-c-dfe7f0) !important;
     border-radius: 13px !important;
-    background: #ffffff !important;
+    background: var(--wr-bg-white) !important;
     box-shadow: none !important;
     box-sizing: border-box !important;
   }
@@ -111,8 +111,8 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     min-height: 36px !important;
     padding: 8px 10px !important;
     border: 0 !important;
-    border-bottom: 1px solid #e6edf5 !important;
-    background: #fbfdff !important;
+    border-bottom: 1px solid var(--wr-line-c-e6edf5) !important;
+    background: var(--wr-bg-c-fbfdff) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationTableHeader,
@@ -131,15 +131,15 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     min-height: 36px !important;
     padding: 7px 8px !important;
     border: 0 !important;
-    border-bottom: 1px solid #e4ebf3 !important;
-    background: #f7f9fc !important;
+    border-bottom: 1px solid var(--wr-line-c-e4ebf3) !important;
+    background: var(--wr-bg-c-f7f9fc) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationTableHeader > span {
     display: block !important;
     min-width: 0 !important;
     margin: 0 !important;
-    color: #465a78 !important;
+    color: var(--wr-text-c-465a78) !important;
     font-size: 6.7px !important;
     font-weight: 950 !important;
     line-height: 1.08 !important;
@@ -158,22 +158,22 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     min-height: 76px !important;
     padding: 9px 8px !important;
     border: 0 !important;
-    border-bottom: 1px solid #e6edf5 !important;
+    border-bottom: 1px solid var(--wr-line-c-e6edf5) !important;
     border-radius: 0 !important;
-    background: #ffffff !important;
+    background: var(--wr-bg-white) !important;
     cursor: pointer !important;
-    -webkit-tap-highlight-color: rgba(36, 88, 216, .10) !important;
+    -webkit-tap-highlight-color: var(--wr-icon-a-2458d8-100) !important;
     touch-action: manipulation !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationRow:active {
-    background: #f7faff !important;
+    background: var(--wr-bg-c-f7faff) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationRow:focus-visible {
     position: relative !important;
     z-index: 1 !important;
-    outline: 2px solid #4f7ee8 !important;
+    outline: 2px solid var(--wr-line-c-4f7ee8) !important;
     outline-offset: -2px !important;
   }
 
@@ -211,20 +211,20 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationCode.outdoor {
-    background: #e8efff !important;
-    color: #2458d8 !important;
+    background: var(--wr-bg-c-e8efff) !important;
+    color: var(--wr-text-c-2458d8) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationCode.indoor {
-    background: #eaf8ef !important;
-    color: #168347 !important;
+    background: var(--wr-bg-c-eaf8ef) !important;
+    color: var(--wr-text-c-168347) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationKind {
     display: block !important;
     min-width: 0 !important;
     margin: 0 !important;
-    color: #1a2a43 !important;
+    color: var(--wr-text-c-1a2a43) !important;
     font-size: 8.2px !important;
     font-weight: 760 !important;
     line-height: 1.22 !important;
@@ -237,7 +237,7 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     display: block !important;
     min-width: 0 !important;
     margin: 0 !important;
-    color: #17233a !important;
+    color: var(--wr-text-c-17233a) !important;
     font-size: 9.2px !important;
     font-weight: 720 !important;
     line-height: 1.25 !important;
@@ -260,14 +260,14 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     width: 13px !important;
     height: 13px !important;
     margin-top: 1px !important;
-    color: #526985 !important;
+    color: var(--wr-text-c-526985) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationSync {
     display: block !important;
     min-width: 0 !important;
     margin: 0 !important;
-    color: #17233a !important;
+    color: var(--wr-text-c-17233a) !important;
     font-size: 7.7px !important;
     font-weight: 760 !important;
     line-height: 1.2 !important;
@@ -286,10 +286,10 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     justify-self: center !important;
     margin: 0 !important;
     padding: 0 !important;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--wr-line-slate-300) !important;
     border-radius: 999px !important;
-    background: #f8fafc !important;
-    color: #64748b !important;
+    background: var(--wr-bg-slate-50) !important;
+    color: var(--wr-text-slate-500) !important;
     box-sizing: border-box !important;
   }
 
@@ -300,22 +300,22 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationState.ready {
-    border-color: #9fdfb8 !important;
-    background: #effbf3 !important;
-    color: #168347 !important;
+    border-color: var(--wr-line-c-9fdfb8) !important;
+    background: var(--wr-bg-c-effbf3) !important;
+    color: var(--wr-text-c-168347) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationState.error {
-    border-color: #f4a7a7 !important;
-    background: #fff1f2 !important;
-    color: #b91c1c !important;
+    border-color: var(--wr-line-c-f4a7a7) !important;
+    background: var(--wr-bg-c-fff1f2) !important;
+    color: var(--wr-text-red-700) !important;
   }
 
   .jobDevicesTableV888 .deviceUnitDocumentationState.uploading,
   .jobDevicesTableV888 .deviceUnitDocumentationState.local {
-    border-color: #b9cef7 !important;
-    background: #eff6ff !important;
-    color: #2458d8 !important;
+    border-color: var(--wr-line-c-b9cef7) !important;
+    background: var(--wr-bg-blue-50) !important;
+    color: var(--wr-text-c-2458d8) !important;
   }
 
   .jobDevicesTableV888 .jobDeviceDocumentationCompletion {
@@ -326,16 +326,16 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     margin: 0 !important;
     padding: 9px 10px !important;
     border: 0 !important;
-    border-top: 1px solid #e6edf5 !important;
-    background: #ffffff !important;
-    color: #168347 !important;
+    border-top: 1px solid var(--wr-line-c-e6edf5) !important;
+    background: var(--wr-bg-white) !important;
+    color: var(--wr-text-c-168347) !important;
     font-size: 10px !important;
     font-weight: 800 !important;
     line-height: 1.2 !important;
   }
 
   .jobDevicesTableV888 .jobDeviceDocumentationCompletion.missing {
-    color: #b45309 !important;
+    color: var(--wr-text-amber-700) !important;
   }
 }
 
@@ -371,10 +371,10 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
 
   .jobDevicesTableV888 .jobDeviceDocumentationDeleteBtn {
     appearance: none !important;
-    border: 1px solid #fecaca !important;
+    border: 1px solid var(--wr-line-red-200) !important;
     border-radius: 9px !important;
-    background: #fff5f5 !important;
-    color: #b91c1c !important;
+    background: var(--wr-bg-c-fff5f5) !important;
+    color: var(--wr-text-red-700) !important;
     padding: 5px 7px !important;
     font: inherit !important;
     font-size: 9px !important;
@@ -446,8 +446,8 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
     height: 8px !important;
     flex: 0 0 8px !important;
     margin: -4px 2px 0 auto !important;
-    border-right: 2px solid #526985 !important;
-    border-bottom: 2px solid #526985 !important;
+    border-right: 2px solid var(--wr-line-c-526985) !important;
+    border-bottom: 2px solid var(--wr-line-c-526985) !important;
     transform: rotate(45deg) !important;
     transition: transform .16s ease, margin .16s ease !important;
     box-sizing: border-box !important;
@@ -459,7 +459,7 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
   }
 
   .jobDevicesTableV888 .jobDeviceDocumentationToggle:focus-visible {
-    outline: 2px solid #4f7ee8 !important;
+    outline: 2px solid var(--wr-line-c-4f7ee8) !important;
     outline-offset: 4px !important;
     border-radius: 6px !important;
   }
@@ -493,10 +493,10 @@ const MOBILE_DEVICE_TABLE_V889_CSS = String.raw`
   bottom: 5px;
   min-width: 42px;
   padding: 5px 7px;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--wr-line-red-200);
   border-radius: 7px;
-  background: #fff5f5;
-  color: #b91c1c;
+  background: var(--wr-bg-c-fff5f5);
+  color: var(--wr-text-red-700);
   font-size: 10px;
   font-weight: 800;
   cursor: pointer;

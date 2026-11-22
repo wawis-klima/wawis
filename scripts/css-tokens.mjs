@@ -213,7 +213,7 @@ export function roleKindFor(property) {
   if (/^background(-color|-image)?$/.test(p)) return 'bg';
   if (/^(color|-webkit-text-fill-color|caret-color|text-decoration(-color)?|-webkit-text-stroke(-color)?)$/.test(p)) return 'text';
   if (/^(border|outline|column-rule)(-[a-z-]+)?$/.test(p)) return 'line';
-  if (/^(fill|stroke|accent-color)$/.test(p)) return 'icon';
+  if (/^(fill|stroke|accent-color|-webkit-tap-highlight-color)$/.test(p)) return 'icon'; // 14.83: podświetlenie dotyku
   if (/^(box-shadow|text-shadow|filter|drop-shadow)$/.test(p)) return 'shadow';
   return null;
 }

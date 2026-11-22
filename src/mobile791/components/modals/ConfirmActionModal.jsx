@@ -35,18 +35,18 @@ const FINISH_PANEL = {
   overflowY: "auto",
   margin: 0,
   padding: "18px",
-  background: "#fff",
-  color: "#10203a",
-  border: "1px solid #d8e0ec",
+  background: "var(--wr-bg-white)",
+  color: "var(--wr-text-c-10203a)",
+  border: "1px solid var(--wr-line-c-d8e0ec)",
   borderRadius: "18px",
   boxShadow: "0 16px 38px rgba(16,32,58,.18)",
 };
 const FINISH_TITLE = {
-  margin: 0, color: "#10203a", fontSize: "20px",
+  margin: 0, color: "var(--wr-text-c-10203a)", fontSize: "20px",
   fontWeight: 800, lineHeight: 1.2, letterSpacing: "-.015em",
 };
 const FINISH_MESSAGE = {
-  margin: "8px 0 0", color: "#62748b",
+  margin: "8px 0 0", color: "var(--wr-text-c-62748b)",
   fontSize: "14px", lineHeight: 1.4,
 };
 const FINISH_ACTIONS = {
@@ -66,13 +66,13 @@ const FINISH_BUTTON_BASE = {
 };
 const FINISH_CANCEL = {
   ...FINISH_BUTTON_BASE,
-  background: "#fff", border: "1px solid #c9d3e3",
-  color: "#10203a", fontWeight: 500,
+  background: "var(--wr-bg-white)", border: "1px solid var(--wr-line-c-c9d3e3)",
+  color: "var(--wr-text-c-10203a)", fontWeight: 500,
 };
 const FINISH_CONFIRM = {
   ...FINISH_BUTTON_BASE,
-  background: "#dcecff", border: "1px solid #b7d4ff",
-  color: "#10203a", fontWeight: 700,
+  background: "var(--wr-bg-c-dcecff)", border: "1px solid var(--wr-line-c-b7d4ff)",
+  color: "var(--wr-text-c-10203a)", fontWeight: 700,
 };
 
 export default function ConfirmActionModal({

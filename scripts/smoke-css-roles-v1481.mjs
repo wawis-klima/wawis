@@ -122,10 +122,19 @@ for (const file of cssFiles) {
     uses += 1;
   }
 }
+// 14.83: role w kodzie JS (scripts/js-colors.mjs; rodzaj roli sprawdza smoke-js-colors-v1483).
+let jsUses = 0;
+for (const file of fs.readdirSync('src', { recursive: true }).filter((f) => /\.(jsx?|mjs)$/.test(f))) {
+  for (const m of fs.readFileSync(path.join('src', file), 'utf8').matchAll(/var\((--wr-[a-z0-9-]+)\)/g)) {
+    assert.ok(m[1] in roles, `src/${file}: nieznana rola ${m[1]}`);
+    usedRoles.add(m[1]);
+    jsUses += 1;
+  }
+}
 assert.deepEqual(Object.keys(roles).filter((r) => !usedRoles.has(r)), [], 'brak nieużywanych ról');
 assert.ok(uses > 3500 && filesWithRoles >= 28, `role w ${uses} miejscach, ${filesWithRoles} arkuszach`);
 
 const byKind = {};
 for (const r of Object.keys(roles)) { const k = r.slice(ROLE_PREFIX.length).split('-')[0]; byKind[k] = (byKind[k] || 0) + 1; }
 const alphaRoles = Object.values(roles).filter((p) => p.startsWith('--wxa-')).length;
-console.log(`PASS WAWIS 14.81/14.82 — ${Object.keys(roles).length} ról kolorów (w tym ${alphaRoles} półprzezroczystych) (${Object.entries(byKind).map(([k, n]) => `${k} ${n}`).join(', ')}) w ${uses} miejscach, ${filesWithRoles} arkuszach; w motywie jasnym rola = kolor palety ze swojej nazwy.`);
+console.log(`PASS WAWIS 14.81/14.82 — ${Object.keys(roles).length} ról kolorów (w tym ${alphaRoles} półprzezroczystych) (${Object.entries(byKind).map(([k, n]) => `${k} ${n}`).join(', ')}) w ${uses} miejscach w ${filesWithRoles} arkuszach i ${jsUses} w kodzie JS; w motywie jasnym rola = kolor palety ze swojej nazwy.`);

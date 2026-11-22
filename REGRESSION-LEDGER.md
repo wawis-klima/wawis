@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## CSS-ROLES-1483 — kolory z kodu JS przez role (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-ROLES-1483 | FIXED-UNVERIFIED | 121 kolorów w 5 plikach JS (tabela urządzeń, centrum zdjęć, okno potwierdzenia, pasek szkiców urządzeń, pole daty) → role `--wr-*`; 41 kolorów i 3 rgba dopisane do palety z dokładną wartością. `smoke-js-colors-v1483` (odtworzenie = oryginał SHA-256, rola = pierwotny kolor, rodzaj roli = właściwość; 3 kontrole negatywne). |
+| CSS-ROLES-1482-IPHONE | ACCEPTED | Właściciel 22.11.2026 16:37: 14.82 na iPhonie „wszystko wygląda ok”. |
+| CSS-ROLES-1483-IPHONE | OPEN | Na iPhonie: tabela urządzeń w montażu, centrum wysyłki zdjęć, okno „Zakończ montaż”, pasek szkiców urządzeń (oczekiwane: bez zmian). |
+
 ## CSS-ROLES-1482 — role kolorów półprzezroczystych (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
