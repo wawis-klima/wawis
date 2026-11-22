@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## CSS-ROLES-1481 — role kolorów, krok 1 do motywu ciemnego (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-ROLES-1481 | FIXED-UNVERIFIED | 3395 odwołań do palety w 28 arkuszach → 214 ról `--wr-*` (`src/styles/roles.css`, rola = `var(--wx-<kolor z nazwy>)`). Konwersja sprawdzona plik po pliku: po zamianie ról na paletę = arkusz z 14.80 (28/28). `smoke-css-roles-v1481` (kontrole negatywne: zła wartość roli, zły rodzaj roli → FAIL), `smoke-css-tokens` po zamianie ról. E2E: `css-tokens-equivalence-v1451` (role wczytane, podmiana na oryginał bez zmian stylu), `css-tokens-webkit-v1458`. |
+| CSS-ROLES-1481-IPHONE | OPEN | Wygląd na fizycznym iPhonie po wdrożeniu (oczekiwane: bez zmian). |
+
 ## PUSH-REKEY-1480 — iPhone z nowymi kluczami PUSH (zgłoszenie właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

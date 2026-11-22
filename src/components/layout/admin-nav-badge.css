@@ -5,13 +5,13 @@
   height: 24px;
   padding: 0 7px;
   border-radius: 999px;
-  background: var(--wx-red-600);
-  color: var(--wx-white);
+  background: var(--wr-bg-red-600);
+  color: var(--wr-text-white);
   font-size: 13px;
   font-weight: 800;
   line-height: 24px;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 0 0 2px var(--wx-white);
+  box-shadow: 0 0 0 2px var(--wr-shadow-white);
   flex: none;
 }

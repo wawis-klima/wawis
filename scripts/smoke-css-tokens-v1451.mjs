@@ -9,7 +9,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {
   REGISTRY_FILE, TOKENS_FILE, canonicalHex, misplacedTokenUses, normalizeForCompare, readTokens, resolveTokens,
-  scanDeclarationValues, sha256, tokenNameFor, tokenizeCss, BASELINE_FILE, MERGES_FILE, tokenSequence,
+  scanDeclarationValues, sha256, tokenNameFor, tokenizeCss, BASELINE_FILE, MERGES_FILE, tokenSequence, readStyleSource,
 } from './css-tokens.mjs';
 import { OWNER_KEEP, deltaE2000 } from './css-color-merge.mjs';
 import { SHADOW_BASELINE_FILE, restoreShadows } from './css-shadows.mjs';
@@ -106,7 +106,8 @@ let changedPositions = 0;
 const alphaBaseline = fs.existsSync(ALPHA_BASELINE_FILE) ? JSON.parse(fs.readFileSync(ALPHA_BASELINE_FILE, 'utf8')).files : {};
 const shadowBaseline = fs.existsSync(SHADOW_BASELINE_FILE) ? JSON.parse(fs.readFileSync(SHADOW_BASELINE_FILE, 'utf8')).files : {};
 for (const [file, meta] of files) {
-  const current = fs.readFileSync(file, 'utf8');
+  // 14.81: arkusze używają ról (--wr-*); dowód liczony na postaci z rolami zamienionymi na zmienne palety (smoke-css-roles).
+  const current = readStyleSource(file);
   assert.deepEqual(misplacedTokenUses(current), [], `${file}: zmienne tylko w wartościach deklaracji`);
   resolveTokens(current, tokens); // rzuca przy nieznanej zmiennej
   // 14.61: po łączeniu odcieni plik po podstawieniu PIERWOTNYCH kolorów (css-palette-baseline.json, pozycja po pozycji)

@@ -176,7 +176,7 @@
   .desktopClientAddress {
     min-width: 0;
     max-width: 100%;
-    color: var(--text-muted, var(--wx-slate-500));
+    color: var(--text-muted, var(--wr-text-slate-500));
     font-size: 11px;
     font-weight: 500;
     line-height: 1.25;
@@ -311,21 +311,21 @@
   }
 
   .desktopNameplateSummaryBadge.approved {
-    color: var(--wx-green-800);
-    background: var(--wx-green-100);
-    border-color: var(--wx-green-300);
+    color: var(--wr-text-green-800);
+    background: var(--wr-bg-green-100);
+    border-color: var(--wr-line-green-300);
   }
 
   .desktopNameplateSummaryBadge.pending {
-    color: var(--wx-red-700);
-    background: var(--wx-c-fff7f7);
-    border-color: var(--wx-red-200);
+    color: var(--wr-text-red-700);
+    background: var(--wr-bg-c-fff7f7);
+    border-color: var(--wr-line-red-200);
   }
 
   .desktopNameplateSummaryBadge.none {
-    color: var(--wx-slate-500);
-    background: var(--wx-slate-50);
-    border-color: var(--wx-c-e7edf6);
+    color: var(--wr-text-slate-500);
+    background: var(--wr-bg-slate-50);
+    border-color: var(--wr-line-c-e7edf6);
   }
 
   .desktopJobsHeaderCellVatInvoice {
@@ -345,11 +345,11 @@
 
   .desktopVatInvoiceDot.issued,
   .desktopVatInvoiceToggle.issued .desktopVatInvoiceDot {
-    background: var(--wx-green-500);
+    background: var(--wr-bg-green-500);
   }
 
   .desktopVatInvoiceDot.missing,
   .desktopVatInvoiceToggle.missing .desktopVatInvoiceDot {
-    background: var(--wx-red-500);
+    background: var(--wr-bg-red-500);
   }
 }

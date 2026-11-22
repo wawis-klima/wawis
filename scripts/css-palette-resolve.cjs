@@ -18,7 +18,20 @@ function readShadowPalette() {
   return Object.fromEntries([...fs.readFileSync(file, 'utf8').matchAll(/(--wxs-[a-z0-9-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 }
 
+// 14.81: role kolorów (--wr-*) z src/styles/roles.css → zmienne palety.
+function readRoles() {
+  const file = path.join(root, 'src', 'styles', 'roles.css');
+  if (!fs.existsSync(file)) return {};
+  const block = fs.readFileSync(file, 'utf8').match(/:root\s*\{([\s\S]*?)\}/);
+  return block ? Object.fromEntries([...block[1].matchAll(/(--wr-[a-z0-9-]+)\s*:\s*var\((--wx-[a-z0-9-]+)\)\s*;/g)].map((m) => [m[1], m[2]])) : {};
+}
+
 function resolvePalette(css) {
+  const roles = readRoles();
+  css = css.replace(/var\((--wr-[a-z0-9-]+)\)/g, (whole, name) => {
+    if (!roles[name]) throw new Error(`Nieznana rola koloru ${name}`);
+    return `var(${roles[name]})`;
+  });
   const palette = readPalette();
   const shadows = readShadowPalette();
   // 14.67: kolory półprzezroczyste (--wxa-*) z src/styles/alpha.css.

@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
-import { REGISTRY_FILE, TOKENS_FILE, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
+import { REGISTRY_FILE, ROLES_FILE, TOKENS_FILE, readRoles, readStyleSource, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
 import { SHADOWS_FILE, readShadows, resolveShadows } from '../../scripts/css-shadows.mjs';
 import { ALPHA_FILE, readAlpha, resolveAlpha } from '../../scripts/css-alpha.mjs';
 
@@ -546,7 +546,9 @@ async function swapAndCompare(page, file, rootSelector, originalCss) {
 const shadowTokens = readShadows(fs.readFileSync(SHADOWS_FILE, 'utf8'));
 // 14.67: także kolory półprzezroczyste (--wxa-*) wpisane wprost.
 const alphaTokens = readAlpha(fs.readFileSync(ALPHA_FILE, 'utf8'));
-const originals = Object.fromEntries(Object.keys(registry).map((file) => [file, resolveTokens(resolveAlpha(resolveShadows(fs.readFileSync(file, 'utf8'), shadowTokens), alphaTokens), tokens)]));
+// 14.81: arkusze używają ról (--wr-*) — oryginał ma także role zamienione na kolory wpisane wprost.
+const originals = Object.fromEntries(Object.keys(registry).map((file) => [file, resolveTokens(resolveAlpha(resolveShadows(readStyleSource(file), shadowTokens), alphaTokens), tokens)]));
+const roles = readRoles(fs.readFileSync(ROLES_FILE, 'utf8'));
 
 async function runScenario(page, scenario) {
   await scenario.open(page);
@@ -557,11 +559,17 @@ async function runScenario(page, scenario) {
     return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
   }, Object.keys(tokens));
   expect(loaded).toEqual(tokens);
+  // 14.81: role wczytane — w motywie jasnym każda rola ma kolor palety ze swojej nazwy.
+  const loadedRoles = await page.evaluate((names) => {
+    const cs = getComputedStyle(document.documentElement);
+    return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
+  }, Object.keys(roles));
+  expect(loadedRoles).toEqual(Object.fromEntries(Object.entries(roles).map(([role, palette]) => [role, tokens[palette]])));
 
   // Każda deklaracja ze zmienną była poprawna w oryginale.
   const files = [...new Set(scenario.states.flatMap((state) => state.files))];
   for (const file of files) {
-    const declarations = declarationsWithTokens(fs.readFileSync(file, 'utf8'));
+    const declarations = declarationsWithTokens(readStyleSource(file));
     expect(declarations.length, file).toBeGreaterThan(0);
     const invalid = await page.evaluate((list) => list.filter(({ property, original }) =>
       CSS.supports(property, 'inherit') && !CSS.supports(property, original)), declarations);

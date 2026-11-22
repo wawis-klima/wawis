@@ -15,7 +15,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   BASELINE_FILE, MERGED_NOTE, MERGES_FILE, REGISTRY_FILE, TOKENS_FILE, canonicalHex, readTokens, tokenNameFor,
-  tokenSequence, writeTokens,
+  tokenSequence, writeTokens, readStyleSource,
 } from './css-tokens.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -94,7 +94,7 @@ function currentState() {
   const usage = new Map();
   const groups = new Map(); // obecny kolor → zbiór pierwotnych kolorów, które dziś go używają
   for (const file of Object.keys(registry)) {
-    const now = tokenSequence(read(file), tokens);
+    const now = tokenSequence(readStyleSource(file), tokens);
     const orig = baseline[file];
     if (!orig || orig.length !== now.length) throw new Error(`${file}: brak lub niezgodny zapis pierwotnych kolorów`);
     now.forEach((hex, i) => {
@@ -131,6 +131,9 @@ function plan(threshold) {
 }
 
 function apply(threshold, version) {
+  // 14.81: arkusze używają ról (--wr-*); zapis zmiennych palety wprost zniszczyłby role. Ewentualne dalsze
+  // łączenie odcieni wymaga przeróbki narzędzia pod role i osobnej decyzji właściciela.
+  throw new Error('Od 14.81 łączenie odcieni w arkuszach z rolami jest wyłączone — zob. scripts/css-color-merge.mjs');
   const state = currentState();
   const { target, centers } = plan(threshold);
   const { tokens, registry, baseline } = state;
@@ -182,7 +185,7 @@ export function changedPlaces() {
   const baseline = readJson(BASELINE_FILE).files;
   const out = [];
   for (const file of Object.keys(registry)) {
-    const css = read(file);
+    const css = readStyleSource(file);
     let i = 0;
     for (const m of css.matchAll(/var\((--wx-[a-z0-9-]+)\)/g)) {
       const orig = baseline[file][i]; i += 1;
