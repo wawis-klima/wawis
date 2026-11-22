@@ -116,3 +116,27 @@ test('@mobile 14.88 administrator: edycja — NIP i „Szukaj w GUS” w jednej 
   expect(nip.x + nip.width).toBeLessThanOrEqual(gus.x);
   expect(nip.y).toBeGreaterThan(phone.y + phone.height - 1);
 });
+
+// 14.89 (zgłoszenie właściciela 22.11.2026): strona pod otwartym oknem jest unieruchomiona i wraca na to samo miejsce.
+test('@mobile 14.89 administrator: nowe zlecenie — lista pod oknem się nie przewija', async ({ page }) => {
+  await resetMockSupabase(page);
+  await loginWithoutReset(page, ADMIN);
+  await page.locator('.statusActionButton[title="Zakończone"]').click();
+  await page.evaluate(() => window.scrollTo(0, 120));
+  const before = await page.evaluate(() => window.scrollY);
+  await page.locator('.mobileActionBtn.primary.wawisOneLineAction').click();
+  const modal = page.locator('.formModal');
+  await expect(modal.locator('.jobHead h2')).toBeVisible();
+  const locked = await page.evaluate(() => ({
+    position: getComputedStyle(document.body).position,
+    rootOverflow: getComputedStyle(document.documentElement).overflow,
+  }));
+  expect(locked).toEqual({ position: 'fixed', rootOverflow: 'hidden' });
+  // Próba przewinięcia strony nie rusza listy pod oknem.
+  await page.evaluate(() => window.scrollBy(0, 400));
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await modal.locator('.jobFormEditActions').getByRole('button', { name: 'Zamknij', exact: true }).click();
+  await expect(modal).toHaveCount(0);
+  expect(await page.evaluate(() => getComputedStyle(document.body).position)).not.toBe('fixed');
+  expect(Math.abs((await page.evaluate(() => window.scrollY)) - before)).toBeLessThanOrEqual(2);
+});

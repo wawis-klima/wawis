@@ -1,3 +1,7 @@
+## 14.89
+- **Okna na telefonie nie przewijają już strony pod spodem** (zgłoszenie właściciela 22.11.2026: przesuwanie palcem w „Dodaj nowy montaż” przewijało listę montaży pod oknem). Na iPhonie samo `overflow: hidden` nie blokuje przewijania palcem, więc każde okno (`AppModal`) domyślnie unieruchamia stronę (`body position: fixed`). Po zamknięciu lista wraca dokładnie na to samo miejsce. Dotąd tak działały tylko protokół, podgląd zdjęć i podpis wizyty serwisowej.
+- Testy: `smoke-modal-page-lock-v1489`, E2E `mobile-device-table-fit-v1485` (14.89: strona unieruchomiona przy nowym zleceniu, pozycja po zamknięciu).
+
 ## 14.88
 - **Nowe zlecenie: bez „Wprowadź głosowo” u góry, „Zamknij” na dole obok „Zapisz zlecenie” / „Dodaj klienta”** (decyzja właściciela 22.11.2026). Wygląda tak samo jak edycja (14.85). Mikrofony przy polach (np. komentarz administratora) i wprowadzanie głosowe w edycji montażu bez zmian.
 - **Edycja montażu (administrator): telefon w całej linii, NIP i „Szukaj w GUS” razem w jednej linii.** Wcześniej telefon i NIP były w jednej linii, a przycisk GUS osobno pod spodem.

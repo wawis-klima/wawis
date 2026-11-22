@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.88",
+  "version": "14.89",
   "scope": "full",
-  "release_branch": "release/v14.88",
+  "release_branch": "release/v14.89",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Telefon: formularz zlecenia (przyciski, NIP + GUS) i napis o braku zdjęć — bez zmian backendu."
+    "notes": "Telefon: blokada przewijania strony pod oknami — bez zmian backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.88",
+    "source_branch": "release/v14.89",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.88.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.89.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.88: formularz zlecenia",
-    "release_ci": "WAWIS PR checks + smoke-edit-actions-device-table-v1485 + E2E mobile-device-table-fit-v1485",
-    "postdeploy": "Vercel READY/14.88; brak błędów runtime."
+    "code": "14.89: blokada strony pod oknem",
+    "release_ci": "WAWIS PR checks + smoke-modal-page-lock-v1489 + E2E",
+    "postdeploy": "Vercel READY/14.89; brak błędów runtime."
   }
 }

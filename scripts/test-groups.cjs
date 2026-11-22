@@ -88,6 +88,7 @@ const GROUPS = {
     'node scripts/smoke-js-colors-v1483.mjs',
     'node scripts/smoke-dark-theme-v1484.mjs',
     'node scripts/smoke-edit-actions-device-table-v1485.mjs',
+    'node scripts/smoke-modal-page-lock-v1489.mjs',
     'npm run test:smoke:startup-chunk',
     'npm run test:smoke:realtime-lite',
   ],
