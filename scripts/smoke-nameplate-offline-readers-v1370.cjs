@@ -24,7 +24,9 @@ const warm = read('src/mobile791/modules/nameplate-reader-warmup.js');
 assert.match(warm, /navigator\.onLine === false/);
 assert.match(warm, /navigator\.serviceWorker\.controller/);
 assert.match(read('src/mobile791/App.jsx'), /scheduleNameplateReaderWarmup\(\)/);
-assert.match(read('src/mobile791/components/diagnostics/MobileDiagnosticsPanel.jsx'), /data-testid="diagnostics-prepare-readers"/);
+// 14.77: karta „Odczyt tabliczek bez internetu” usunięta z Diagnostyki (decyzja właściciela 22.11.2026);
+// czytniki pobierają się same przy starcie aplikacji (scheduleNameplateReaderWarmup powyżej).
+assert.match(warm, /export async function prepareNameplateReadersNow/);
 assert.match(read('src/modules/desktop-nameplate-barcode.js'), /export async function warmUniversalBarcodeReader/);
 
 console.log('smoke-nameplate-offline-readers-v1370: OK');

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import CollapsibleCard from '../common/CollapsibleCard.jsx';
 import {
   confirmTotpEnrollment, disableTotp, getMfaErrorMessage, isCompleteMfaCode, listTotpFactors, normalizeMfaCode,
   startTotpEnrollment,
@@ -47,14 +48,9 @@ export default function MfaSettingsCard({ supabase, variant = 'desktop' }) {
   });
 
   const enabled = state.verified.length > 0;
-  const cardClass = variant === 'mobile' ? 'mobileDiagnosticsCard' : 'diagnosticsEventsCard';
   return (
-    <section className={cardClass} data-testid="mfa-settings-card">
-      <div className={variant === 'mobile' ? undefined : 'diagnosticsEventsHeader'}>
-        <h2>Kod z telefonu przy logowaniu</h2>
-        <span data-testid="mfa-settings-status">{state.loading ? '' : enabled ? 'Włączony' : 'Wyłączony'}</span>
-      </div>
-      <p className="muted">Po haśle aplikacja prosi o 6 cyfr z aplikacji z kodami na telefonie (np. „Hasła” w iPhonie, Google Authenticator). Kod jest potrzebny tylko przy nowym logowaniu.</p>
+    <CollapsibleCard variant={variant} testId="mfa-settings-card" title="Kod z telefonu przy logowaniu"
+      status={state.loading ? '' : enabled ? 'Włączony' : 'Wyłączony'} statusTone={state.loading ? '' : enabled ? 'ok' : 'warn'} statusTestId="mfa-settings-status">
       {error ? <p className="errorBox" role="alert" data-testid="mfa-settings-error">{error}</p> : null}
       {info ? <p className="muted" data-testid="mfa-settings-info">{info}</p> : null}
       {!state.loading && !enabled && !enrollment ? (
@@ -80,6 +76,6 @@ export default function MfaSettingsCard({ supabase, variant = 'desktop' }) {
           <button type="button" className="btn secondary" onClick={() => void disable(state.verified[0].id)} disabled={busy}>Wyłącz kod z telefonu</button>
         </div>
       ) : null}
-    </section>
+    </CollapsibleCard>
   );
 }

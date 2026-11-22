@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import CollapsibleCard from '../common/CollapsibleCard.jsx';
 import { loadStaffSignaturesAdmin } from '../../modules/leak-tests.js';
 
 // WAWIS 14.36 — Diagnostyka na komputerze: wzory podpisów pracowników (decyzja właściciela 07.11.2026).
@@ -32,12 +33,9 @@ export default function StaffSignaturesCard({ supabase }) {
 
   const withPattern = rows.filter((row) => row.image_png).length;
   return (
-    <section className="diagnosticsEventsCard" data-testid="desktop-staff-signatures-card">
-      <div className="diagnosticsEventsHeader">
-        <h2>Wzory podpisów pracowników</h2>
-        <span data-testid="desktop-staff-signatures-count">{loading || error ? '' : `Złożone wzory: ${withPattern} z ${rows.length}`}</span>
-      </div>
-      <p className="muted">Wzorem pracownika podpisują się automatycznie jego protokoły. Nowy pracownik składa wzór raz na telefonie: Diagnostyka → „Wzór podpisu”.</p>
+    <CollapsibleCard testId="desktop-staff-signatures-card" title="Wzory podpisów pracowników"
+      status={loading || error ? '' : `Złożone wzory: ${withPattern} z ${rows.length}`} statusTestId="desktop-staff-signatures-count"
+      statusTone={!loading && !error && withPattern < rows.length ? 'warn' : ''}>
       {loading ? <div className="muted">Wczytuję…</div> : null}
       {error ? <div role="alert">{error}</div> : null}
       {!loading && !error ? (
@@ -54,6 +52,6 @@ export default function StaffSignaturesCard({ supabase }) {
       <div className="diagnosticsActions">
         <button type="button" className="btn" onClick={() => void reload()}>Odśwież wzory</button>
       </div>
-    </section>
+    </CollapsibleCard>
   );
 }

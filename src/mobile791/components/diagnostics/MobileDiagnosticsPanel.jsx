@@ -8,11 +8,10 @@ import SignaturePatternCard from './SignaturePatternCard.jsx';
 import StaffSignaturesAdminCard from './StaffSignaturesAdminCard.jsx';
 import MfaSettingsCard from '../../../components/auth/MfaSettingsCard.jsx';
 import UserAccessCard from '../../../components/auth/UserAccessCard.jsx';
+import CollapsibleCard from '../../../components/common/CollapsibleCard.jsx';
 import { getPhotoQueueSummary, PHOTO_QUEUE_CHANGED_EVENT } from '../../modules/photo-offline-queue.js';
 import { confirmAndRepairPhotoQueue } from '../../modules/photo-queue-repair.js';
 import { listOfflineJobOperations, JOB_OFFLINE_CHANGED_EVENT } from '../../modules/job-offline-store.js';
-import { inspectNameplateReaderCache, prepareNameplateReadersNow } from '../../modules/nameplate-reader-warmup.js';
-import { getNameplateAiUsageSummary } from '../../modules/nameplate-ai-usage.js';
 import { getRefreshFeedback, getPushAcceptanceMessage, summarizeOfflineDiagnosticQueue } from '../../../modules/diagnostics-package4.js';
 
 const EMPTY_QUEUE = { total: 0, local: 0, uploading: 0, error: 0 };
@@ -26,27 +25,6 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
   const [message, setMessage] = useState('');
   const [repairBusy, setRepairBusy] = useState(false);
   const [syncBusy, setSyncBusy] = useState(false);
-  const [readerStatus, setReaderStatus] = useState(null);
-  const [readerBusy, setReaderBusy] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    inspectNameplateReaderCache().then((status) => { if (mounted) setReaderStatus(status); }).catch(() => {});
-    return () => { mounted = false; };
-  }, []);
-
-  async function handlePrepareReaders() {
-    setReaderBusy(true);
-    try {
-      const result = await prepareNameplateReadersNow();
-      setReaderStatus(await inspectNameplateReaderCache());
-      setMessage(result?.ready
-        ? 'Czytniki tabliczek są zapisane w telefonie — numer SN odczyta się także bez internetu.'
-        : (result?.error || 'Nie udało się zapisać wszystkich czytników. Spróbuj ponownie z lepszym internetem.'));
-    } finally {
-      setReaderBusy(false);
-    }
-  }
 
   useEffect(() => {
     let mounted = true;
@@ -204,11 +182,12 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
         </article>
       </section>
 
-      <section className="mobileDiagnosticsCard">
-        <h2>Zmiany offline — to konto</h2>
+      <CollapsibleCard variant="mobile" testId="diagnostics-offline-card" title="Zmiany offline — to konto"
+        status={(offlineSummary.pending + offlineSummary.syncing + offlineSummary.conflict + offlineSummary.error) > 0 ? `Do wysłania: ${offlineSummary.pending + offlineSummary.syncing + offlineSummary.conflict + offlineSummary.error}` : 'Wszystko wysłane'}
+        statusTone={(offlineSummary.conflict + offlineSummary.error) > 0 ? 'warn' : ''}>
         <p>Oczekuje: {offlineSummary.pending} · Wysyłane: {offlineSummary.syncing} · Konflikty: {offlineSummary.conflict} · Błędy: {offlineSummary.error}</p>
-        <p>Etapy zdjęć: przygotowane {queueSummary.prepared || 0} · wysłane do Storage {queueSummary.storageUploaded || 0}. Szczegóły pozostają w Centrum synchronizacji.</p>
-      </section>
+        <p>Etapy zdjęć: przygotowane {queueSummary.prepared || 0} · wysłane do Storage {queueSummary.storageUploaded || 0}</p>
+      </CollapsibleCard>
 
       {/* 14.33: wzór podpisu pracownika — automatyczny podpis jego protokołów. */}
       <SignaturePatternCard supabase={supabase} profile={profile} />
@@ -217,23 +196,7 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
       {profile?.role === 'Administrator' ? <UserAccessCard supabase={supabase} variant="mobile" /> : null}
       {profile?.role === 'Administrator' ? <StaffSignaturesAdminCard supabase={supabase} /> : null}
 
-      <section className="mobileDiagnosticsCard" data-testid="diagnostics-nameplate-readers">
-        <h2>Odczyt tabliczek bez internetu</h2>
-        <p>
-          Czytnik kodu SN: <strong>{readerStatus?.barcode ? 'zapisany w telefonie' : 'nie pobrany'}</strong>
-          {' · '}Czytnik tekstu: <strong>{readerStatus?.ocr ? 'zapisany w telefonie' : 'nie pobrany'}</strong>
-        </p>
-        {!(readerStatus?.barcode && readerStatus?.ocr) ? (
-          <button type="button" className="btn" onClick={handlePrepareReaders} disabled={readerBusy} data-testid="diagnostics-prepare-readers">
-            {readerBusy ? 'Pobieranie czytników…' : 'Pobierz czytniki teraz'}
-          </button>
-        ) : null}
-      </section>
-
-      <NameplateAiUsageCard />
-
-      <section className="mobileDiagnosticsCard">
-        <h2>Akcje</h2>
+      <CollapsibleCard variant="mobile" testId="diagnostics-actions-card" title="Akcje" defaultOpen>
         <div className="mobileDiagnosticsActions">
           {onSyncNow ? (
             <button type="button" className="btn primary" onClick={handleSyncNow} disabled={syncBusy} data-testid="diagnostics-sync-now">
@@ -256,37 +219,12 @@ export default function MobileDiagnosticsPanel({ profile = null, sessionUser = n
           </button>
         </div>
         {message ? <div className="mobileDiagnosticsMessage" role="status">{message}</div> : null}
-      </section>
+      </CollapsibleCard>
 
       <section className="mobileDiagnosticsCard mobileDiagnosticsPrivacy">
         <strong>Raport bez danych klientów</strong>
         <p>Plik diagnostyczny nie zawiera zdjęć, komentarzy, nazw klientów, adresów, telefonów ani e-maili.</p>
       </section>
     </div>
-  );
-}
-
-// WAWIS 13.73: ile razy na tym telefonie użyto płatnego AI tabliczek, a ile razy czytnik wystarczył.
-function NameplateAiUsageCard() {
-  let usage = null;
-  try {
-    usage = getNameplateAiUsageSummary();
-  } catch {
-    usage = null;
-  }
-  if (!usage) return null;
-  const row = (label, value) => (
-    <p>
-      {label}: AI użyte <strong>{value.ai}</strong>
-      {' · '}AI niepotrzebne (czytnik) <strong>{value.skipped}</strong>
-      {' · '}ponowny odczyt bez opłaty <strong>{value.cached}</strong>
-    </p>
-  );
-  return (
-    <section className="mobileDiagnosticsCard" data-testid="diagnostics-nameplate-ai-usage">
-      <h2>AI tabliczek — ten telefon</h2>
-      {row('Dziś', usage.today)}
-      {row('Ostatnie 7 dni', usage.week)}
-    </section>
   );
 }

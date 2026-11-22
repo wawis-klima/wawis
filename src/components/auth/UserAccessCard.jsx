@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { formatLoginTime, listUserLogins, setUserBlocked } from '../../modules/user-access.js';
+import CollapsibleCard from '../common/CollapsibleCard.jsx';
 
 // WAWIS 14.76 — Diagnostyka (administrator): aktywne logowania kont, „Wyloguj i zablokuj”, „Odblokuj”.
 // O każdym nowym logowaniu administrator dostaje PUSH (zadanie bazy + funkcja notify-new-login).
@@ -39,14 +40,12 @@ export default function UserAccessCard({ supabase, variant = 'desktop' }) {
     }
   };
 
-  const cardClass = variant === 'mobile' ? 'mobileDiagnosticsCard' : 'diagnosticsEventsCard';
+  const blockedCount = (users || []).filter((user) => user.blocked).length;
+  const loggedIn = (users || []).filter((user) => user.sessions.length > 0).length;
+  const status = users === null ? '' : blockedCount ? `Zablokowane: ${blockedCount}` : `Zalogowani: ${loggedIn}`;
   return (
-    <section className={cardClass} data-testid="user-access-card">
-      <div className={variant === 'mobile' ? undefined : 'diagnosticsEventsHeader'}>
-        <h2>Logowania i blokada kont</h2>
-        <button type="button" className="btn secondary" onClick={() => { setError(''); setInfo(''); void reload(); }} disabled={!!busyId}>Odśwież</button>
-      </div>
-      <p className="muted">O każdym nowym logowaniu dostajesz powiadomienie. Gdy logowanie jest podejrzane, zablokuj konto — wszystkie urządzenia tej osoby od razu tracą dostęp, a konto i historia zostają.</p>
+    <CollapsibleCard variant={variant} testId="user-access-card" title="Logowania i blokada kont"
+      status={status} statusTone={blockedCount ? 'warn' : ''}>
       {error ? <p className="errorBox" role="alert" data-testid="user-access-error">{error}</p> : null}
       {info ? <p className="muted" data-testid="user-access-info">{info}</p> : null}
       {users === null ? <p className="muted">Wczytywanie…</p> : null}
@@ -82,6 +81,9 @@ export default function UserAccessCard({ supabase, variant = 'desktop' }) {
           )}
         </div>
       ))}
-    </section>
+      <div className={variant === 'mobile' ? 'mobileDiagnosticsActions' : 'diagnosticsActions'}>
+        <button type="button" className="btn secondary" onClick={() => { setError(''); setInfo(''); void reload(); }} disabled={!!busyId}>Odśwież</button>
+      </div>
+    </CollapsibleCard>
   );
 }
