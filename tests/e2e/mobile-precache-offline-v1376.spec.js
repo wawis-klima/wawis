@@ -69,7 +69,7 @@ test('13.76: po instalacji cała wersja jest w telefonie — bez internetu start
   }
   // Diagnostyka (test iPhone 26.10, 13.75: bez internetu biały ekran — ekran nie był zapisany w telefonie).
   await page.locator('.wawisVersionDiagnosticsButton').click();
-  await expect(page.getByTestId('diagnostics-nameplate-readers'), `Diagnostyka bez sieci: ${failedRequests.join('; ')}`).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('diagnostics-actions-card'), `Diagnostyka bez sieci: ${failedRequests.join('; ')}`).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId('lazy-screen-unavailable')).toHaveCount(0);
   await page.locator('.wawisVersionDiagnosticsButton').click();
 

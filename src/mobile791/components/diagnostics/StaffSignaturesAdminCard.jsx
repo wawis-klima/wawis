@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { loadStaffSignaturesAdmin } from '../../../modules/leak-tests.js';
+import CollapsibleCard from '../../../components/common/CollapsibleCard.jsx';
 
 // WAWIS 14.34 — Diagnostyka administratora: podgląd wzorów podpisów pracowników (decyzja właściciela 07.11.2026).
 // Tylko podgląd; wzór składa i zmienia sam pracownik na swoim koncie (karta „Wzór podpisu”).
@@ -32,8 +33,8 @@ export default function StaffSignaturesAdminCard({ supabase }) {
 
   const withPattern = rows.filter((row) => row.image_png).length;
   return (
-    <section className="mobileDiagnosticsCard" data-testid="staff-signatures-card">
-      <h2>Wzory podpisów pracowników</h2>
+    <CollapsibleCard variant="mobile" testId="staff-signatures-card" title="Wzory podpisów pracowników"
+      status={loading || error ? '' : `${withPattern} z ${rows.length}`} statusTone={!loading && !error && withPattern < rows.length ? 'warn' : ''}>
       {loading ? <p>Wczytuję…</p> : null}
       {error ? <p className="leakSignError" role="alert">{error}</p> : null}
       {!loading && !error ? (
@@ -55,6 +56,6 @@ export default function StaffSignaturesAdminCard({ supabase }) {
           </div>
         </>
       ) : null}
-    </section>
+    </CollapsibleCard>
   );
 }

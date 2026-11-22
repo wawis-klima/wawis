@@ -10,6 +10,9 @@ test.describe('14.76: logowania i blokada kont — komputer', () => {
     await page.getByRole('button', { name: 'Diagnostyka' }).click();
     const card = page.getByTestId('user-access-card');
     await expect(card).toBeVisible();
+    // 14.77: dział zwinięty, w nagłówku liczba zalogowanych.
+    await expect(card.getByTestId('user-access-card-status')).toContainText('Zalogowani:');
+    await card.getByTestId('user-access-card-toggle').click();
     const rows = card.getByTestId('user-access-row');
     await expect(rows.first()).toBeVisible();
     await expect(card).toContainText('iPhone, Safari');
@@ -33,6 +36,7 @@ test.describe('14.76: logowania i blokada kont — komputer', () => {
     const blockedRow = rows.filter({ hasText: workerName });
     await expect(blockedRow.getByTestId('user-access-blocked')).toHaveText('Zablokowane');
     await expect(blockedRow).toContainText('Brak aktywnych logowań.');
+    await expect(card.getByTestId('user-access-card-status')).toHaveText('Zablokowane: 1');
 
     page.once('dialog', (dialog) => dialog.accept());
     await blockedRow.getByRole('button', { name: 'Odblokuj' }).click();

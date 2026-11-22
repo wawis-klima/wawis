@@ -1,3 +1,9 @@
+## 14.77
+- **Diagnostyka uporządkowana** (decyzja właściciela 22.11.2026). Działy są zwijane i domyślnie zwinięte, w nagłówku tytuł i krótki stan, np. „Kod z telefonu — Włączony”, „Logowania i blokada kont — Zalogowani: 4”, „Wzory podpisów pracowników — 3 z 5”, „Zmiany offline — Wszystko wysłane”. Bez opisów pod tytułami.
+- Telefon: zwijane „Zmiany offline”, „Wzór podpisu” (otwiera się sam, gdy brakuje wzoru — protokoły czekają na podpis), „Kod z telefonu”, „Logowania i blokada kont”, „Wzory podpisów pracowników”; „Akcje” otwarte. Usunięte karty „AI tabliczek — ten telefon” i „Odczyt tabliczek bez internetu” (czytniki dalej pobierają się same przy starcie aplikacji).
+- Komputer: te same działy zwijane (kod z telefonu, logowania, wzory podpisów pracowników). Pozostałe sekcje bez zmian.
+- Funkcje, rozmiary czcionek i kolory bez zmian. Test `smoke-diagnostics-collapsible-v1477`; testy E2E rozwijają działy przed użyciem.
+
 ## 14.76
 - **Powiadomienie o nowym logowaniu i blokada kont** (decyzja właściciela 22.11.2026: „powiadomienie plus blokada”, w Diagnostyce). Pracownicy nadal widzą wszystkich klientów i nic nie konfigurują.
 - Nowe logowanie (nowa sesja w Supabase, także z pominięciem aplikacji) → w ciągu ok. minuty PUSH do administratora: „Nowe logowanie — Kacper Wydmański — iPhone, Safari, 22.11, 07:45”. Zadanie bazy co minutę (`wawis-login-notify-v1476`) + funkcja `notify-new-login` (jednorazowy kod, wzorzec 14.17); jedno powiadomienie na logowanie. Logowania sprzed wdrożenia nie są zgłaszane.

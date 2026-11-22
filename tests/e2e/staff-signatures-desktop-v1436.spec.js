@@ -15,6 +15,8 @@ test('14.36: administrator widzi wzory podpisów w Diagnostyce na komputerze', a
   const card = page.getByTestId('desktop-staff-signatures-card');
   await expect(card).toContainText('Wzory podpisów pracowników');
   await expect(card.getByTestId('desktop-staff-signatures-count')).toContainText('Złożone wzory: 1 z');
+  // 14.77: dział zwinięty — rozwijamy.
+  await card.getByTestId('desktop-staff-signatures-card-toggle').click();
   const row = card.getByTestId('desktop-staff-signature-row').filter({ hasText: 'Pracownik Testowy' });
   await expect(row).toContainText('Zapisany 07.11.2026');
   await expect(row.locator('img')).toHaveAttribute('src', /^data:image\/png;base64,/);

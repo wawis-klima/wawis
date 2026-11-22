@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { SignaturePad, exportSignaturePng } from '../signature/SignaturePad.jsx';
 import { loadOwnSignaturePattern, saveOwnSignaturePattern } from '../../../modules/leak-tests.js';
+import CollapsibleCard from '../../../components/common/CollapsibleCard.jsx';
 
 // WAWIS 14.33 — Diagnostyka → „Wzór podpisu” (decyzja właściciela 07.11.2026). Pracownik składa raz swój podpis;
 // wzór zapisuje się w bazie (nie w telefonie) i automatycznie podpisuje jego protokoły (próby szczelności —
@@ -59,12 +60,11 @@ export default function SignaturePatternCard({ supabase, profile = null }) {
   }
 
   return (
-    <section className="mobileDiagnosticsCard" data-testid="signature-pattern-card">
-      <h2>Wzór podpisu</h2>
-      <p>
-        {profile?.full_name ? <strong>{profile.full_name}. </strong> : null}
-        Twój podpis, którym aplikacja sama podpisuje Twoje protokoły (np. z próby szczelności).
-      </p>
+    // 14.77: zwinięte; rozwinięte samo, gdy brakuje wzoru (protokoły czekają na podpis).
+    <CollapsibleCard variant="mobile" testId="signature-pattern-card" title="Wzór podpisu"
+      status={loading ? '' : loadError ? 'Błąd odczytu' : pattern ? 'Zapisany' : 'Brak wzoru'}
+      statusTone={loading ? '' : pattern && !loadError ? 'ok' : 'warn'}
+      defaultOpen={!loading && !loadError && !pattern}>
       {loading ? <p>Wczytuję…</p> : null}
       {loadError ? <p className="leakSignError" role="alert">{loadError}</p> : null}
       {!loading && !loadError ? (
@@ -101,6 +101,6 @@ export default function SignaturePatternCard({ supabase, profile = null }) {
           </div>
         </div>
       ) : null}
-    </section>
+    </CollapsibleCard>
   );
 }

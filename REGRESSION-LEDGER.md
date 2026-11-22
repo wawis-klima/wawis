@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## DIAG-1477 — Diagnostyka: działy zwijane (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DIAG-1477-UI | FIXED-UNVERIFIED | `CollapsibleCard` (details/summary, domyślnie zwinięty, stan w nagłówku) w 5 działach; usunięte opisy i karty AI/czytników tabliczek. `smoke-diagnostics-collapsible-v1477`: bez nowych kolorów i rozmiarów czcionek, akcje i automatyczne czytniki bez zmian, brak wzoru podpisu otwiera dział. E2E (mfa-admin, user-access, signature-pattern, staff-signatures-desktop, mobile-precache-offline) rozwijają działy. |
+| DIAG-1477-IPHONE | OPEN | details/summary w Safari na iPhonie — do sprawdzenia przez właściciela po wdrożeniu (WebKit E2E w CI). |
+
 ## LOGIN-1476 — powiadomienie o nowym logowaniu i blokada kont (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

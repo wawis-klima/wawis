@@ -14,6 +14,8 @@ test.describe('14.72: kod z telefonu — komputer', () => {
     await page.getByRole('button', { name: 'Diagnostyka' }).click();
     const card = page.getByTestId('mfa-settings-card');
     await expect(card.getByTestId('mfa-settings-status')).toHaveText('Wyłączony');
+    // 14.77: dział zwinięty — rozwijamy.
+    await card.getByTestId('mfa-settings-card-toggle').click();
     await card.getByRole('button', { name: 'Włącz kod z telefonu' }).click();
     await expect(card.getByTestId('mfa-qr')).toBeVisible();
     await expect(card.getByTestId('mfa-secret')).toHaveText('MOCKSECRETWAWIS');
@@ -52,6 +54,7 @@ test.describe('14.72: kod z telefonu — komputer', () => {
     // Wyłączenie (sesja z kodem) — kolejne logowanie bez kroku kodu.
     await page.getByRole('button', { name: 'Diagnostyka' }).click();
     page.once('dialog', (dialog) => dialog.accept());
+    await page.getByTestId('mfa-settings-card-toggle').click();
     await page.getByTestId('mfa-settings-card').getByRole('button', { name: 'Wyłącz kod z telefonu' }).click();
     await expect(page.getByTestId('mfa-settings-status')).toHaveText('Wyłączony');
     await page.getByRole('button', { name: 'Wyloguj' }).first().click();
