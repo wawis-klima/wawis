@@ -1,5 +1,5 @@
 ## Aktualna wersja
-- 14.79
+- 14.80
 
 WAWIS 13.62: pilna naprawa zapisu zdjęć i tabliczek na iPhonach z lokalną bazą zdjęć v4 (pozostałość po wycofanych 13.42–13.48). Aplikacja otwiera bazę v3, v4 i przyszłe bez obniżania wersji, pokazuje „Zapisano na telefonie” tylko po rzeczywistym zapisie, nie zawiesza się przy zablokowanej bazie wstrzymuje stare zdjęcia z 22.10 do decyzji użytkownika („Wyślij stare zdjęcia” / „Usuń stare zdjęcia”) i oferuje akcję „Napraw kolejkę zdjęć” (wyłącznie po potwierdzeniu; usuwa tylko niewysłane zdjęcia z telefonu). Bez zmian backendu i transportu uploadu.
 
@@ -1068,6 +1068,7 @@ Aplikacja do katalogowania montaży klimatyzatorów dla firmy Wawis Klimatyzacja
 8. Globalne wyszukiwanie desktopowe znajduje klienta również po dodatkowym adresie, nazwie lokalizacji i notatce.
 
 ## Ostatnia poprawka
+- wersja `14.80` — PUSH: nowe klucze telefonu dla tego samego adresu przyjmowane (bez blokady `push_credentials_mismatch`).
 - wersja `14.79` — licznik SMS po ponownym logowaniu z kodem z telefonu.
 - wersja `14.78` — licznik SMS w menu komputera liczy klientów na liście modułu SMS (także w weekend).
 - wersja `14.77` — Diagnostyka: działy zwijane, bez opisów i bez kart AI/czytników tabliczek.

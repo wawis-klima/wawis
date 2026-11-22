@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## PUSH-REKEY-1480 — iPhone z nowymi kluczami PUSH (zgłoszenie właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| PUSH-REKEY-1480 | FIXED-UNVERIFIED | Przyczyna (SELECT + logi 22.11): subskrypcja administratora z 21.11 22:16, login_notice i push_test → Apple 201, brak received_at; sync/disable z iPhone'a → 409 `push_credentials_mismatch` (ten sam endpoint, inne p256dh/auth). Doraźnie usunięty 1 wpis subskrypcji (zgoda). Funkcje: ten sam użytkownik / wpis wyłączony → nowe klucze; aktywny cudzy → odrzucony. `pg-test-push-rekey-v1480` (PASS, RED na starych definicjach), `smoke-push-rekey-v1480`. |
+| PUSH-REKEY-1480-WORKERS | ACCEPTED | Pracownicy: 4 aktywne subskrypcje z ostatnim potwierdzonym odbiorem 20.11 (przed zmianami 14.72–14.79); synchronizacje 20.11 bez błędów. Zmiany 14.72–14.79 nie dotykały wysyłki PUSH ani zapisu subskrypcji. |
+
 ## SMS-BADGE-1479 — licznik SMS po ponownym logowaniu (regresja 14.78)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

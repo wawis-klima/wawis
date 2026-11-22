@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.79",
+  "version": "14.80",
   "scope": "full",
-  "release_branch": "release/v14.79",
+  "release_branch": "release/v14.80",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Licznik SMS po ponownym logowaniu z kodem — tylko aplikacja."
+    "notes": "PUSH: przyjmowanie nowych kluczy tego samego użytkownika — migracja funkcji (zgoda właściciela 22.11.2026)."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.79",
+    "source_branch": "release/v14.80",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.79.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.80; funkcje push_* z gałęzią rekeyed.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.79: licznik SMS po ponownym logowaniu",
-    "release_ci": "WAWIS PR checks + smoke-sms-nav-badge-relogin-v1479 + smoke-sms-nav-badge-v1478",
-    "postdeploy": "Vercel READY/14.79."
+    "code": "14.80: PUSH rekey",
+    "release_ci": "WAWIS PR checks + smoke-push-rekey-v1480 + pg-test-push-rekey-v1480 (lokalnie)",
+    "postdeploy": "Vercel READY/14.80; iPhone administratora: sync 200, push_test received."
   }
 }

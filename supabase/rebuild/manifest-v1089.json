@@ -158,7 +158,8 @@
     "supabase/migrations/20261120170000_cron_history_cleanup_v1449.sql",
     "supabase/migrations/20261120180000_profiles_role_values_admin_check_v1449.sql",
     "supabase/migrations/20261121200000_mfa_aal2_required_v1474.sql",
-    "supabase/migrations/20261122090000_login_notice_block_v1476.sql"
+    "supabase/migrations/20261122090000_login_notice_block_v1476.sql",
+    "supabase/migrations/20261122130000_push_rekey_v1480.sql"
   ],
   "migrationCoverageFrom": "20260917000000"
 }
