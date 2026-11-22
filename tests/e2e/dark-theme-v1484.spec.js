@@ -55,8 +55,13 @@ async function shot(page, testInfo, name) {
   const path = testInfo.outputPath(`${name}.png`);
   await page.screenshot({ path });
   await testInfo.attach(name, { path, contentType: 'image/png' });
+  // Podgląd do przeglądu wyglądu z logu CI (mały JPEG, w częściach): WAWIS-SHOT <projekt>/<nazwa> <nr>/<razem> <base64>
+  const preview = (await page.screenshot({ type: 'jpeg', quality: 70, scale: 'css' })).toString('base64');
+  const parts = Math.ceil(preview.length / 6000);
+  for (let i = 0; i < parts; i += 1) console.log(`WAWIS-SHOT ${testInfo.project.name}/${name} ${i + 1}/${parts} ${preview.slice(i * 6000, (i + 1) * 6000)}`);
   const audit = await contrastAudit(page);
   await testInfo.attach(`${name}-kontrast.json`, { body: JSON.stringify(audit, null, 2), contentType: 'application/json' });
+  console.log(`WAWIS-CONTRAST ${testInfo.project.name}/${name} sprawdzone=${audit.checked} ponizej4.5=${JSON.stringify(audit.failures.slice(0, 25))}`);
   return audit;
 }
 
@@ -93,7 +98,7 @@ test.describe('@mobile 14.84 motyw ciemny', () => {
     await page.getByText('Klient Testowy B', { exact: true }).click();
     await expect(page.locator('.mobileInlineJobDetails').first()).toBeVisible();
     expectReadable(await shot(page, testInfo, '02-ciemny-szczegoly'), 'szczegóły montażu');
-    await page.mouse.wheel(0, 500);
+    await page.evaluate(() => window.scrollBy(0, 500));
     await shot(page, testInfo, '03-ciemny-szczegoly-dol');
 
     // Zapamiętanie po ponownym uruchomieniu.
