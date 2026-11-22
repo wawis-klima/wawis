@@ -65,3 +65,18 @@ for (const [label, credentials] of [['administrator', ADMIN], ['pracownik', WORK
     await expect(modal.getByRole('heading', { name: 'Edytuj montaż' })).toHaveCount(0);
   });
 }
+
+// 14.86 (decyzja właściciela 22.11.2026): bez pustych napisów w szczegółach montażu.
+for (const [label, credentials] of [['administrator', ADMIN], ['pracownik', WORKER]]) {
+  test(`@mobile 14.86 ${label}: szczegóły montażu bez napisów o braku urządzeń i komentarzy`, async ({ page }) => {
+    await openJob(page, credentials);
+    const details = page.locator('.mobileInlineJobDetails').first();
+    await expect(details.getByText('Komentarze i pytania')).toBeVisible();
+    for (const text of ['Brak urządzeń.', 'Brak komentarzy.', 'Brak komentarza.']) {
+      await expect(details.getByText(text, { exact: true })).toHaveCount(0);
+    }
+    if (await details.locator('.adminNoteText').count() === 0) {
+      await expect(details.locator('.adminNoteDeleteBtn')).toHaveCount(0);
+    }
+  });
+}

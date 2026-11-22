@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## UI-1486 — puste napisy w szczegółach montażu (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1486 | FIXED-UNVERIFIED | Usunięte napisy o braku urządzeń, komentarzy i komentarza administratora; „Usuń” komentarza administratora tylko gdy komentarz jest. `smoke-mobile-ui-copy`, E2E `mobile-device-table-fit-v1485` (14.86). |
+| UI-1485-IPHONE | ACCEPTED | Właściciel 22.11.2026 19:26: „spoko to wygląda, jest ok”. |
+| UI-1486-IPHONE | OPEN | Na iPhonie: montaż bez urządzeń i bez komentarzy. |
+
 ## UI-1485 — przyciski edycji i tabela tabliczek (zgłoszenie właściciela 22.11.2026, zrzuty z iPhone'a)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

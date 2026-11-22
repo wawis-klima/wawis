@@ -1,3 +1,7 @@
+## 14.86
+- **Szczegóły montażu bez zbędnych napisów** (decyzja właściciela 22.11.2026). W „Urządzenia i tabliczki” bez urządzeń jest sam nagłówek, bez napisu o braku urządzeń. W „Komentarzach i pytaniach” bez komentarzy jest od razu pole do wpisania. Pusty „Komentarz administratora” nie ma napisu o braku komentarza ani przycisku „Usuń” (przycisk wraca, gdy komentarz jest).
+- Testy: `smoke-mobile-ui-copy` (brak tych napisów), E2E `mobile-device-table-fit-v1485` (+2: administrator i pracownik).
+
 ## 14.85
 - **Edycja montażu: „Zamknij” i „Zapisz zmiany” obok siebie na dole okna** (zgłoszenie właściciela 22.11.2026). Dotyczy administratora i pracownika na telefonie. „Zamknij” zniknął z nagłówka okna; nowe zlecenie bez zmian (tam „Zamknij” zostaje u góry obok wprowadzania głosowego).
 - **Tabela tabliczek w karcie urządzenia mieści się na ekranie** (zgłoszenie właściciela, zrzut z iPhone'a). Od podziału na karty urządzeń tabela była węższa, a 4 kolumny z minimalnymi szerokościami wypychały zielony znacznik ✓ poza kartę. Teraz są 3 kolumny: Urządzenie, Model / moc i Tabliczka (znacznik ✓ / ! / ↻ / • / —). Napis „Zapisano w systemie” dublował zielony ✓, więc został tylko dla czytnika ekranu. Inne stany („Brak tabliczki”, „Wysyłanie”, „Błąd wysyłania”, „Zapisano na telefonie”, „Potwierdzono ręcznie”) są widoczne pod modelem.

@@ -882,9 +882,7 @@ export default function JobDetailsPanel({
                       </SmoothCollapse>
                     </section>
                   );
-                }) : (
-                  <div className="muted">Brak urządzeń.</div>
-                )}
+                }) : null /* 14.86 (decyzja właściciela): bez napisu o braku urządzeń — sam nagłówek sekcji. */}
               </div>
             </div>
 
@@ -1115,8 +1113,9 @@ export default function JobDetailsPanel({
         )}
         <SmoothCollapse open={showAdminNoteContents} id={`admin-note-content-${selectedJobId}`}>
           <div className="adminNoteContent">
-            <div className="muted adminNoteText">{selectedJob.admin_note || "Brak komentarza."}</div>
-            {canManageSelectedAdminNote ? (
+            {/* 14.86 (decyzja właściciela): pusty komentarz = bez napisu o braku komentarza i bez przycisku „Usuń”. */}
+            {selectedJob.admin_note ? <div className="muted adminNoteText">{selectedJob.admin_note}</div> : null}
+            {canManageSelectedAdminNote && selectedJob.admin_note ? (
               <div className="row leftAlign adminNoteActions">
                 <button
                   type="button"
@@ -1369,7 +1368,7 @@ export default function JobDetailsPanel({
               </div>
             ))}
             {comments.length === 0 && showDetailsLoading ? <div className="muted">Ładowanie komentarzy…</div> : null}
-            {detailsLoaded && comments.length === 0 ? <div className="muted">Brak komentarzy.</div> : null}
+            {/* 14.86 (decyzja właściciela): bez napisu o braku komentarzy — pole do wpisania wystarcza. */}
             </div>
             {canAddSelectedJobComment ? (
               <>
