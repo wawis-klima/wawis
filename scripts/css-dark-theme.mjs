@@ -86,7 +86,8 @@ export function darkFor(kind, value) {
   if (kind === 'bg') {
     if (!tinted && l >= 0.965) return mix(DARK.card, '#101012', Math.min(1, (1 - l) / 0.035));
     if (!tinted && l >= 0.6) return mix(DARK.raised, '#3f3f46', Math.min(1, (0.965 - l) / 0.365));
-    if (tinted && l > 0.72) return hslToHex(h, Math.min(s, 0.5), 0.15 + (l > 0.93 ? 0 : 0.03));
+    // 14.87: ciemniejsze zabarwienie w jasnym (mocniejsze wyróżnienie, np. zaznaczenie) = jaśniejsze w ciemnym.
+    if (tinted && l > 0.72) return hslToHex(h, Math.min(s, 0.5), 0.15 + Math.max(0, 0.97 - l) * 0.5);
     if (l < 0.3 && (navyText || s < 0.35)) return mix(DARK.raised2, hslToHex(h, s, 0.25), 0.25);
     if (!tinted) return mix('#3f3f46', '#71717a', Math.min(1, (l - 0.3) / 0.3));
     return value; // pełny kolor (przyciski, plakietki) — bez zmian
@@ -135,6 +136,9 @@ export const DARK_OVERRIDES = Object.freeze([
   ['.wawisThemeToggle', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important;color:${DARK.accentText} !important`],
   ['.wawisUserInitialsBadge', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important;color:${DARK.accentText} !important`],
   ['.mobileJobCard.activeMobileJobCard', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important`],
+  // 14.87 (zgłoszenie właściciela 22.11.2026): zaznaczeni monterzy wyraźnie inni niż niezaznaczeni.
+  ['.viewerDot', 'background:#1f1f22 !important;border-color:#3a3a40 !important;color:#a1a1aa !important;box-shadow:none !important'],
+  ['.viewerDot.active', `background:${DARK.accent} !important;border-color:${DARK.accent} !important;color:#ffffff !important`],
   // Jasne pełne tło z ciemnym napisem (żółta plakietka próby szczelności) — napis zostaje ciemny.
   ['.protocolTestBadge', 'color:#111827 !important'],
   // v1103-completed-note-compact.css: jedyny kolor zapisany wprost w arkuszu (#10203a) — tekst notatki zakończonego montażu.

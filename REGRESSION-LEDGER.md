@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## DARK-THEME-1487 — zaznaczeni monterzy w trybie ciemnym (zgłoszenie właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DARK-THEME-1487 | FIXED-UNVERIFIED | `.viewerDot.active` → czerwone wypełnienie `#dc2626`, biały napis; niezaznaczony grafit `#1f1f22`. Generator: zabarwione tła zachowują kolejność wyróżnienia. E2E `dark-theme-v1484` sprawdza kolory obu stanów. |
+| UI-1486-IPHONE | ACCEPTED | Właściciel 22.11.2026 20:09 — kolejne zgłoszenie bez uwag do 14.86. |
+| DARK-THEME-1487-IPHONE | OPEN | Na iPhonie: monterzy w szczegółach montażu w trybie ciemnym. |
+
 ## UI-1486 — puste napisy w szczegółach montażu (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

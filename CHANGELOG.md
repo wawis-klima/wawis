@@ -1,3 +1,8 @@
+## 14.87
+- **Tryb ciemny: zaznaczeni monterzy wyraźnie widoczni** (zgłoszenie właściciela 22.11.2026). Zaznaczony monter ma czerwone wypełnienie i biały napis (akcent motywu), niezaznaczony jest grafitowy z szarym napisem. Wcześniej oba były ciemnoniebieskie i różniły się tylko odcieniem ramki.
+- Przyczyna ogólna, poprawiona w generatorze (`scripts/css-dark-theme.mjs`): wszystkie jasne zabarwione tła zamieniały się na prawie ten sam ciemny odcień, więc mocniejsze wyróżnienie (np. `#8ab4ff` zaznaczenia) wyglądało jak zwykłe tło (`#eff6ff`). Teraz mocniejsze w jasnym = jaśniejsze w ciemnym (np. `#13243a` → `#203760`). Motyw jasny bez zmian.
+- Testy: `smoke-dark-theme-v1484` (pary tło + tekst po zmianie), E2E `dark-theme-v1484` (kolor zaznaczonych i niezaznaczonych monterów).
+
 ## 14.86
 - **Szczegóły montażu bez zbędnych napisów** (decyzja właściciela 22.11.2026). W „Urządzenia i tabliczki” bez urządzeń jest sam nagłówek, bez napisu o braku urządzeń. W „Komentarzach i pytaniach” bez komentarzy jest od razu pole do wpisania. Pusty „Komentarz administratora” nie ma napisu o braku komentarza ani przycisku „Usuń” (przycisk wraca, gdy komentarz jest).
 - Testy: `smoke-mobile-ui-copy` (brak tych napisów), E2E `mobile-device-table-fit-v1485` (+2: administrator i pracownik).

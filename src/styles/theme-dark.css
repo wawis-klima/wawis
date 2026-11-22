@@ -43,11 +43,11 @@
   --wr-bg-a-ffffff-880: rgba(24,24,26,0.88);
   --wr-bg-a-ffffff-920: rgba(24,24,26,0.92);
   --wr-bg-a-ffffff-960: rgba(24,24,26,0.96);
-  --wr-bg-amber-100: #453c17;
-  --wr-bg-amber-50: #393213;
+  --wr-bg-amber-100: #493f18;
+  --wr-bg-amber-50: #3b3314;
   --wr-bg-amber-500: #f59e0b;
-  --wr-bg-blue-100: #172b45;
-  --wr-bg-blue-50: #132439;
+  --wr-bg-blue-100: #162942;
+  --wr-bg-blue-50: #13243a;
   --wr-bg-blue-500: #3b82f6;
   --wr-bg-blue-600: #2563eb;
   --wr-bg-blue-700: #1d4ed8;
@@ -71,18 +71,18 @@
   --wr-bg-c-6aa93b: #6aa93b;
   --wr-bg-c-6d28d9: #6d28d9;
   --wr-bg-c-7c3aed: #7c3aed;
-  --wr-bg-c-8ab4ff: #172745;
+  --wr-bg-c-8ab4ff: #203760;
   --wr-bg-c-bcc9d8: #303035;
-  --wr-bg-c-cbdcf6: #172945;
+  --wr-bg-c-cbdcf6: #192c4b;
   --wr-bg-c-dbe6f2: #28282b;
-  --wr-bg-c-dcecff: #132539;
+  --wr-bg-c-dcecff: #162941;
   --wr-bg-c-e5e7eb: #27272b;
   --wr-bg-c-e7edf6: #252529;
-  --wr-bg-c-e8efff: #131f39;
-  --wr-bg-c-e8fbff: #133339;
+  --wr-bg-c-e8efff: #14203c;
+  --wr-bg-c-e8fbff: #14353c;
   --wr-bg-c-eab308: #eab308;
   --wr-bg-c-eaf8ef: #252528;
-  --wr-bg-c-ede9fe: #1a1339;
+  --wr-bg-c-ede9fe: #1c143c;
   --wr-bg-c-eef2f7: #242427;
   --wr-bg-c-effbf3: #232326;
   --wr-bg-c-f6f7f8: #111113;
@@ -92,22 +92,22 @@
   --wr-bg-c-f8fbff: #151517;
   --wr-bg-c-faf8ff: #151517;
   --wr-bg-c-fbfdff: #161618;
-  --wr-bg-c-fce7f3: #391329;
+  --wr-bg-c-fce7f3: #3e152c;
   --wr-bg-c-ff931c: #ff931c;
-  --wr-bg-c-ffeaea: #391313;
+  --wr-bg-c-ffeaea: #3c1414;
   --wr-bg-c-fff1f2: #391316;
   --wr-bg-c-fff5f5: #141416;
   --wr-bg-c-fff7f7: #141416;
-  --wr-bg-c-fff8e1: #393013;
-  --wr-bg-green-100: #174527;
-  --wr-bg-green-200: #174527;
-  --wr-bg-green-50: #13391f;
+  --wr-bg-c-fff8e1: #3f3515;
+  --wr-bg-green-100: #164225;
+  --wr-bg-green-200: #1b502d;
+  --wr-bg-green-50: #133a1f;
   --wr-bg-green-500: #22c55e;
   --wr-bg-green-600: #16a34a;
-  --wr-bg-orange-100: #453117;
-  --wr-bg-orange-50: #392813;
+  --wr-bg-orange-100: #433016;
+  --wr-bg-orange-50: #3a2913;
   --wr-bg-orange-500: #f97316;
-  --wr-bg-red-100: #391313;
+  --wr-bg-red-100: #3f1515;
   --wr-bg-red-50: #391313;
   --wr-bg-red-500: #ef4444;
   --wr-bg-red-600: #dc2626;
@@ -348,6 +348,17 @@ html[data-theme="dark"] .wawisUserInitialsBadge {
 html[data-theme="dark"] .mobileJobCard.activeMobileJobCard {
   background:#2a1718 !important;
   border-color:#7f2a2a !important;
+}
+html[data-theme="dark"] .viewerDot {
+  background:#1f1f22 !important;
+  border-color:#3a3a40 !important;
+  color:#a1a1aa !important;
+  box-shadow:none !important;
+}
+html[data-theme="dark"] .viewerDot.active {
+  background:#dc2626 !important;
+  border-color:#dc2626 !important;
+  color:#ffffff !important;
 }
 html[data-theme="dark"] .protocolTestBadge {
   color:#111827 !important;
