@@ -101,10 +101,10 @@
     width:22px;
     height:22px;
     flex:0 0 22px;
-    border:1px solid var(--wx-c-bcc9d8);
+    border:1px solid var(--wr-line-c-bcc9d8);
     border-radius:999px;
-    background:var(--wx-slate-50);
-    color:var(--wx-slate-700);
+    background:var(--wr-bg-slate-50);
+    color:var(--wr-text-slate-700);
     font-size:9px;
     font-weight:900;
     letter-spacing:.01em;
@@ -122,11 +122,11 @@
     max-width:100%;
     min-height:42px;
     padding:6px 7px 6px 11px;
-    border:1px solid var(--wx-c-cbdcf6);
+    border:1px solid var(--wr-line-c-cbdcf6);
     border-radius:12px;
-    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-50) 100%);
+    background:linear-gradient(180deg,var(--wr-bg-white) 0%,var(--wr-bg-slate-50) 100%);
     box-shadow:var(--wxs-2-7-3d3f);
-    color:var(--wx-c-10203a);
+    color:var(--wr-text-c-10203a);
     font:inherit;
     font-size:14px;
     font-weight:850;
@@ -137,8 +137,8 @@
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle:hover{
-    border-color:var(--wx-c-bcc9d8);
-    background:linear-gradient(180deg,var(--wx-white) 0%,var(--wx-slate-50) 100%);
+    border-color:var(--wr-line-c-bcc9d8);
+    background:linear-gradient(180deg,var(--wr-bg-white) 0%,var(--wr-bg-slate-50) 100%);
     box-shadow:var(--wxs-4-10-f123);
   }
 
@@ -148,14 +148,14 @@
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle:focus-visible{
-    outline:2px solid var(--wx-slate-400);
+    outline:2px solid var(--wr-line-slate-400);
     outline-offset:2px;
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle .inlineIcon{
     width:18px;
     height:18px;
-    color:var(--wx-slate-600);
+    color:var(--wr-text-slate-600);
   }
 
   .jobDetailsPanelCard .desktopDetailsSectionToggle > span:not(.desktopDetailsSectionChevron){
@@ -172,10 +172,10 @@
     width:28px;
     height:28px;
     margin-left:0;
-    border:1px solid var(--wx-c-bcc9d8);
+    border:1px solid var(--wr-line-c-bcc9d8);
     border-radius:9px;
-    background:var(--wx-white);
-    color:var(--wx-c-243746);
+    background:var(--wr-bg-white);
+    color:var(--wr-text-c-243746);
     box-shadow:var(--wxs-1-4-08f7);
   }
 

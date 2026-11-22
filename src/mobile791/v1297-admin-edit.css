@@ -22,7 +22,7 @@
     font-size:16px!important;
     font-weight:400!important;
     line-height:1.25!important;
-    color:var(--wx-slate-900)!important;
+    color:var(--wr-text-slate-900)!important;
     text-align:center!important;
     white-space:nowrap!important;
     pointer-events:none!important;
@@ -43,7 +43,7 @@
     z-index:1!important;
   }
   .adminMobileEditModalV1297 .installationDateInputShell:focus-within {
-    outline:2px solid var(--wx-blue-300);
+    outline:2px solid var(--wr-line-blue-300);
     outline-offset:1px;
   }
 }
@@ -324,7 +324,7 @@
     position:sticky!important;
     bottom:0!important;
     z-index:2!important;
-    background:var(--wx-white)!important;
+    background:var(--wr-bg-white)!important;
   }
 }
 
@@ -573,11 +573,11 @@
   }
   .formModal.adminMobileEditModalV1297 .voiceClientIconOnlyV1302:hover,
   .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 .voiceFieldMicBtn:hover {
-    background-color:var(--wx-blue-50)!important;
+    background-color:var(--wr-bg-blue-50)!important;
   }
   .formModal.adminMobileEditModalV1297 .voiceClientIconOnlyV1302:focus-visible,
   .formModal.adminMobileEditModalV1297 .adminNoteHeaderActionsV1303 .voiceFieldMicBtn:focus-visible {
-    outline:2px solid var(--wx-blue-500)!important;
+    outline:2px solid var(--wr-line-blue-500)!important;
     outline-offset:2px!important;
   }
   html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) input.input:not(textarea),

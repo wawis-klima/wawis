@@ -12,7 +12,7 @@
     font-size:16px;
     font-weight:700;
     line-height:1.2;
-    color:var(--wx-slate-700);
+    color:var(--wr-text-slate-700);
   }
 
   /* Większe pole komentarza — wykorzystujemy wolne miejsce nad przyciskiem zapisu. */

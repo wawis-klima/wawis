@@ -6,11 +6,11 @@
 .collapsibleCard>.collapsibleCardSummary h2{margin:0 !important;flex:1 1 auto;min-width:0}
 .collapsibleCard>.collapsibleCardSummary::after{content:"";flex:0 0 auto;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:0 4px 4px}
 .collapsibleCard[open]>.collapsibleCardSummary::after{transform:rotate(-135deg);margin:4px 4px 0}
-.collapsibleCardStatus{color:var(--wx-slate-500)}
+.collapsibleCardStatus{color:var(--wr-text-slate-500)}
 .diagnosticsEventsCard.collapsibleCard .collapsibleCardStatus{font-size:12px}
-.collapsibleCardStatus.diagnosticsOk,.collapsibleCardStatus.isOk{color:var(--wx-green-700)}
-.collapsibleCardStatus.diagnosticsError{color:var(--wx-red-700)}
-.collapsibleCardStatus.isWarn{color:var(--wx-c-a16207)}
+.collapsibleCardStatus.diagnosticsOk,.collapsibleCardStatus.isOk{color:var(--wr-text-green-700)}
+.collapsibleCardStatus.diagnosticsError{color:var(--wr-text-red-700)}
+.collapsibleCardStatus.isWarn{color:var(--wr-text-c-a16207)}
 .diagnosticsEventsCard.collapsibleCard[open]>.collapsibleCardBody{margin-top:14px}
 .mobileDiagnosticsCard.collapsibleCard>.collapsibleCardSummary{gap:9px;min-height:24px}
 .mobileDiagnosticsCard.collapsibleCard[open]>.collapsibleCardBody{display:grid;gap:9px;margin-top:9px}

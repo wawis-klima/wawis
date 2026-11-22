@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 // WAWIS 14.51: wspólna paleta kolorów (zmienne --wx-*). Import statyczny w punkcie wejścia → plik CSS wejścia,
 // ładowany przez index.html przed każdym ekranem (telefon, komputer, strona naklejki QR).
 import './styles/tokens.css'
+// 14.81: role kolorów (krok 1 do motywu ciemnego) — zaraz po palecie.
+import './styles/roles.css'
 import './styles/shadows.css'
 import './styles/alpha.css'
 import { APP_VERSION } from './version.js'

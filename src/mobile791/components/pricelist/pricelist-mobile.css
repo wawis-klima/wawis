@@ -1,13 +1,13 @@
 /* WAWIS 13.38 — niższe nagłówki kart przy minimum 44 px dotyku. */
 .wawisPricelist { display:grid; gap:12px; min-width:0; max-width:100%; }
-.wawisPricelistIntro { padding:14px; background:var(--wx-white); border:1px solid var(--wx-c-e7edf6); border-radius:17px; }
-.wawisPricelistIntro h1 { font-size:21px; line-height:1.2; margin:0 0 6px; color:var(--wx-c-203252); }
-.wawisPricelistIntro p { color:var(--wx-c-52657f); font-size:12px; line-height:1.45; margin:0 0 12px; }
-.wawisPricelistSearchLabel { display:block; font-size:12px; font-weight:750; color:var(--wx-slate-700); margin:0 0 5px; }
-.wawisPricelistSearch { width:100%; min-width:0; min-height:44px; font-size:16px; color:var(--wx-c-203252); border:1px solid var(--wx-c-cbdcf6); border-radius:12px; padding:10px 11px; background:var(--wx-white); box-sizing:border-box; }
+.wawisPricelistIntro { padding:14px; background:var(--wr-bg-white); border:1px solid var(--wr-line-c-e7edf6); border-radius:17px; }
+.wawisPricelistIntro h1 { font-size:21px; line-height:1.2; margin:0 0 6px; color:var(--wr-text-c-203252); }
+.wawisPricelistIntro p { color:var(--wr-text-c-52657f); font-size:12px; line-height:1.45; margin:0 0 12px; }
+.wawisPricelistSearchLabel { display:block; font-size:12px; font-weight:750; color:var(--wr-text-slate-700); margin:0 0 5px; }
+.wawisPricelistSearch { width:100%; min-width:0; min-height:44px; font-size:16px; color:var(--wr-text-c-203252); border:1px solid var(--wr-line-c-cbdcf6); border-radius:12px; padding:10px 11px; background:var(--wr-bg-white); box-sizing:border-box; }
 .wawisPricelistGroups { display:grid; gap:7px; min-width:0; }
-.wawisPricelistGroup { overflow:hidden; min-width:0; border:1px solid var(--wx-c-dbe6f2); background:var(--wx-white); border-radius:15px; }
-.wawisPricelistGroupTitle { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:44px; padding:7px 11px; box-sizing:border-box; cursor:pointer; color:var(--wx-c-203252); font-weight:850; font-size:13px; line-height:1.3; }
+.wawisPricelistGroup { overflow:hidden; min-width:0; border:1px solid var(--wr-line-c-dbe6f2); background:var(--wr-bg-white); border-radius:15px; }
+.wawisPricelistGroupTitle { display:flex; justify-content:space-between; align-items:center; gap:8px; min-height:44px; padding:7px 11px; box-sizing:border-box; cursor:pointer; color:var(--wr-text-c-203252); font-weight:850; font-size:13px; line-height:1.3; }
 .wawisPricelistGroupTitle > span:first-child { flex:1; min-width:0; overflow-wrap:break-word; }
 .wawisPricelistGroupTitle .wawisPricelistCompactMulti {
   white-space:nowrap;
@@ -15,19 +15,19 @@
   font-size:clamp(11.5px, 3.25vw, 13px);
   letter-spacing:-.15px;
 }
-.wawisPricelistGroupTitle::marker { color:var(--wx-c-52657f); }
-.wawisPricelistCount { display:inline-flex; justify-content:center; align-items:center; flex-shrink:0; min-width:22px; height:22px; border-radius:9px; background:var(--wx-blue-50); color:var(--wx-c-245d9f); font-size:11px; font-weight:850; }
+.wawisPricelistGroupTitle::marker { color:var(--wr-text-c-52657f); }
+.wawisPricelistCount { display:inline-flex; justify-content:center; align-items:center; flex-shrink:0; min-width:22px; height:22px; border-radius:9px; background:var(--wr-bg-blue-50); color:var(--wr-text-c-245d9f); font-size:11px; font-weight:850; }
 .wawisPricelistGrid { min-width:0; width:100%; padding:0 7px 8px; box-sizing:border-box; }
-.wawisPricelistRow { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.05fr); gap:4px; align-items:center; border-top:1px solid var(--wx-c-e7edf6); padding:10px 0; color:var(--wx-slate-700); }
+.wawisPricelistRow { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.05fr) minmax(0,1fr) minmax(0,1.05fr); gap:4px; align-items:center; border-top:1px solid var(--wr-line-c-e7edf6); padding:10px 0; color:var(--wr-text-slate-700); }
 .wawisPricelistRow > * { min-width:0; font-size:clamp(10px,2.75vw,12px); line-height:1.3; }
-.wawisPricelistHead { border-top:1px solid var(--wx-c-e7edf6); padding:8px 0; color:var(--wx-c-718096); }
+.wawisPricelistHead { border-top:1px solid var(--wr-line-c-e7edf6); padding:8px 0; color:var(--wr-text-c-718096); }
 .wawisPricelistHead > * { font-size:clamp(9px,2.5vw,11px); line-height:1.25; font-weight:750; overflow-wrap:break-word; }
 .wawisPricelistRow > :nth-child(n+3) { text-align:right; }
 .wawisPricelistModel { font-weight:800; }
 .wawisPricelistMoney { white-space:nowrap; letter-spacing:-.2px; font-variant-numeric:tabular-nums; }
-.wawisPricelistGross { color:var(--wx-c-176b4d); font-weight:900; }
-.wawisPricelistFootnote { color:var(--wx-slate-500); line-height:1.5; font-size:11px; margin:2px 4px 14px; }
-.wawisPricelistEmpty { font-size:13px; color:var(--wx-slate-500); padding:12px; margin:0; }
+.wawisPricelistGross { color:var(--wr-text-c-176b4d); font-weight:900; }
+.wawisPricelistFootnote { color:var(--wr-text-slate-500); line-height:1.5; font-size:11px; margin:2px 4px 14px; }
+.wawisPricelistEmpty { font-size:13px; color:var(--wr-text-slate-500); padding:12px; margin:0; }
 
 /* Bez zwijania w drugi rząd, wielokropka ani obcinania żadnej etykiety.
    Mała czcionka tylko w GÓRNYM MENU MOBILE i tylko przy czterech kolumnach administratora.

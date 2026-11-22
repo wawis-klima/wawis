@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.80",
+  "version": "14.81",
   "scope": "full",
-  "release_branch": "release/v14.80",
+  "release_branch": "release/v14.81",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "PUSH: przyjmowanie nowych kluczy tego samego użytkownika — migracja funkcji (zgoda właściciela 22.11.2026)."
+    "notes": "Role kolorów (krok 1 do motywu ciemnego) — tylko arkusze CSS, wygląd bez zmian; bez zmian backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.80",
+    "source_branch": "release/v14.81",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.80; funkcje push_* z gałęzią rekeyed.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.81; roles.css w buildzie.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.80: PUSH rekey",
-    "release_ci": "WAWIS PR checks + smoke-push-rekey-v1480 + pg-test-push-rekey-v1480 (lokalnie)",
-    "postdeploy": "Vercel READY/14.80; iPhone administratora: sync 200, push_test received."
+    "code": "14.81: role kolorów",
+    "release_ci": "WAWIS PR checks + smoke-css-roles-v1481 + smoke-css-tokens + E2E css-tokens-equivalence/webkit",
+    "postdeploy": "Vercel READY/14.81; brak błędów runtime."
   }
 }

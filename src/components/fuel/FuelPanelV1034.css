@@ -91,10 +91,10 @@
   height: 26px;
   margin-left: auto;
   padding: 0;
-  border: 1px solid var(--wx-c-cbdcf6);
+  border: 1px solid var(--wr-line-c-cbdcf6);
   border-radius: 999px;
-  background: var(--wx-white);
-  color: var(--wx-c-36526f);
+  background: var(--wr-bg-white);
+  color: var(--wr-text-c-36526f);
   box-shadow: none;
   font: inherit;
   font-size: 16px;
@@ -126,10 +126,10 @@
   min-width: 20px;
   height: 16px;
   padding: 0 4px;
-  border: 1px solid var(--wx-c-b7d4ff);
+  border: 1px solid var(--wr-line-c-b7d4ff);
   border-radius: 999px;
-  background: var(--wx-blue-100);
-  color: var(--wx-c-10203a) !important;
+  background: var(--wr-bg-blue-100);
+  color: var(--wr-text-c-10203a) !important;
   font-size: 7.8px !important;
   font-weight: 850;
   line-height: 1;
@@ -137,33 +137,33 @@
 }
 
 .fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Kacper Wydmański"] {
-  background: var(--wx-green-100) !important;
-  border-color: var(--wx-green-300) !important;
-  color: var(--wx-green-900) !important;
+  background: var(--wr-bg-green-100) !important;
+  border-color: var(--wr-line-green-300) !important;
+  color: var(--wr-text-green-900) !important;
 }
 
 .fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Krystian Swat"] {
-  background: var(--wx-c-fce7f3) !important;
-  border-color: var(--wx-c-f9a8d4) !important;
-  color: var(--wx-c-9d174d) !important;
+  background: var(--wr-bg-c-fce7f3) !important;
+  border-color: var(--wr-line-c-f9a8d4) !important;
+  color: var(--wr-text-c-9d174d) !important;
 }
 
 .fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Michał Fiutak"] {
-  background: var(--wx-amber-100) !important;
-  border-color: var(--wx-amber-300) !important;
-  color: var(--wx-amber-800) !important;
+  background: var(--wr-bg-amber-100) !important;
+  border-color: var(--wr-line-amber-300) !important;
+  color: var(--wr-text-amber-800) !important;
 }
 
 .fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Paweł Makieła"] {
-  background: var(--wx-c-ede9fe) !important;
-  border-color: var(--wx-c-c4b5fd) !important;
-  color: var(--wx-c-5b21b6) !important;
+  background: var(--wr-bg-c-ede9fe) !important;
+  border-color: var(--wr-line-c-c4b5fd) !important;
+  color: var(--wr-text-c-5b21b6) !important;
 }
 
 .fuelModuleCompactMobile .fuelCreatorBadge[title="Dodał: Piotr Wasik"] {
-  background: var(--wx-green-100) !important;
-  border-color: var(--wx-green-300) !important;
-  color: var(--wx-green-900) !important;
+  background: var(--wr-bg-green-100) !important;
+  border-color: var(--wr-line-green-300) !important;
+  color: var(--wr-text-green-900) !important;
 }
 
 .fuelModuleCompactMobile .fuelHistoryPagination {
@@ -173,7 +173,7 @@
   gap: 4px;
   margin-top: 2px;
   padding-top: 6px;
-  border-top: 1px solid var(--wx-c-e7edf6);
+  border-top: 1px solid var(--wr-line-c-e7edf6);
 }
 
 .fuelModuleCompactMobile .fuelHistoryPageNumbers {
@@ -192,10 +192,10 @@
   min-width: 27px;
   height: 27px;
   padding: 0 5px;
-  border: 1px solid var(--wx-c-cbdcf6);
+  border: 1px solid var(--wr-line-c-cbdcf6);
   border-radius: 7px;
-  background: var(--wx-white);
-  color: var(--wx-c-36526f);
+  background: var(--wr-bg-white);
+  color: var(--wr-text-c-36526f);
   font: inherit;
   font-size: 9px;
   font-weight: 800;
@@ -204,9 +204,9 @@
 }
 
 .fuelModuleCompactMobile .fuelHistoryPageButton.isActive {
-  border-color: var(--wx-c-2f75cf);
-  background: var(--wx-c-2f75cf);
-  color: var(--wx-white);
+  border-color: var(--wr-line-c-2f75cf);
+  background: var(--wr-bg-c-2f75cf);
+  color: var(--wr-text-white);
 }
 
 .fuelModuleCompactMobile .fuelHistoryPageArrow:disabled {
@@ -219,8 +219,8 @@
 .fuelTankStockCard {
   display: grid;
   gap: 12px;
-  border: 1px solid var(--wx-c-cbdcf6);
-  background: linear-gradient(135deg, var(--wx-slate-50) 0%, var(--wx-white) 70%);
+  border: 1px solid var(--wr-line-c-cbdcf6);
+  background: linear-gradient(135deg, var(--wr-bg-slate-50) 0%, var(--wr-bg-white) 70%);
 }
 
 .fuelTankStockTop {
@@ -236,7 +236,7 @@
 }
 
 .fuelTankStockHeading > span {
-  color: var(--wx-c-5a6b80);
+  color: var(--wr-text-c-5a6b80);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -244,14 +244,14 @@
 }
 
 .fuelTankStockHeading > strong {
-  color: var(--wx-c-143761);
+  color: var(--wr-text-c-143761);
   font-size: clamp(28px, 4vw, 42px);
   line-height: 1;
   letter-spacing: -.03em;
 }
 
 .fuelTankStockHeading > small {
-  color: var(--wx-c-718096);
+  color: var(--wr-text-c-718096);
   font-size: 12px;
 }
 
@@ -266,29 +266,29 @@
   gap: 2px;
   min-width: 118px;
   padding: 8px 10px;
-  border: 1px solid var(--wx-c-dbe6f2);
+  border: 1px solid var(--wr-line-c-dbe6f2);
   border-radius: 10px;
-  background: var(--wx-white);
+  background: var(--wr-bg-white);
 }
 
 .fuelTankStockStats small {
-  color: var(--wx-c-718096);
+  color: var(--wr-text-c-718096);
   font-size: 10px;
   font-weight: 700;
 }
 
 .fuelTankStockStats b {
-  color: var(--wx-c-243746);
+  color: var(--wr-text-c-243746);
   font-size: 14px;
 }
 
 .fuelTankDeliveryToggle {
   min-height: 34px;
   padding: 0 14px;
-  border: 1px solid var(--wx-c-2f75cf);
+  border: 1px solid var(--wr-line-c-2f75cf);
   border-radius: 9px;
-  background: var(--wx-white);
-  color: var(--wx-c-245d9f);
+  background: var(--wr-bg-white);
+  color: var(--wr-text-c-245d9f);
   font: inherit;
   font-size: 12px;
   font-weight: 800;
@@ -301,13 +301,13 @@
   align-items: end;
   gap: 10px;
   padding-top: 10px;
-  border-top: 1px solid var(--wx-c-e7edf6);
+  border-top: 1px solid var(--wr-line-c-e7edf6);
 }
 
 .fuelTankDeliveryForm > label {
   display: grid;
   gap: 5px;
-  color: var(--wx-c-526172);
+  color: var(--wr-text-c-526172);
   font-size: 12px;
   font-weight: 700;
 }
@@ -328,28 +328,28 @@
 .fuelTankDeliveryPrice > select {
   min-height: 38px;
   padding: 0 8px;
-  border: 1px solid var(--wx-c-cbdcf6);
+  border: 1px solid var(--wr-line-c-cbdcf6);
   border-radius: 9px;
-  background: var(--wx-white);
+  background: var(--wr-bg-white);
   font: inherit;
 }
 
 .fuelTankDeliveryNote > input {
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid var(--wx-c-cbdcf6);
+  border: 1px solid var(--wr-line-c-cbdcf6);
   border-radius: 9px;
-  background: var(--wx-white);
+  background: var(--wr-bg-white);
   font: inherit;
 }
 
 .fuelTankMovements {
   padding-top: 8px;
-  border-top: 1px solid var(--wx-c-e7edf6);
+  border-top: 1px solid var(--wr-line-c-e7edf6);
 }
 
 .fuelTankMovements summary {
-  color: var(--wx-c-36526f);
+  color: var(--wr-text-c-36526f);
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
@@ -384,9 +384,9 @@
   justify-content: space-between;
   gap: 12px;
   padding: 7px 9px;
-  border: 1px solid var(--wx-c-e7edf6);
+  border: 1px solid var(--wr-line-c-e7edf6);
   border-radius: 8px;
-  background: var(--wx-white);
+  background: var(--wr-bg-white);
 }
 
 .fuelTankMovementRow > span {
@@ -401,7 +401,7 @@
 
 .fuelTankMovementRow small {
   overflow: hidden;
-  color: var(--wx-c-718096);
+  color: var(--wr-text-c-718096);
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -412,8 +412,8 @@
   font-size: 12px;
 }
 
-.fuelTankMovementRow > b.isPositive { color: var(--wx-c-1d7a46); }
-.fuelTankMovementRow > b.isNegative { color: var(--wx-c-af2f2f); }
+.fuelTankMovementRow > b.isPositive { color: var(--wr-text-c-1d7a46); }
+.fuelTankMovementRow > b.isNegative { color: var(--wr-text-c-af2f2f); }
 
 @media (max-width: 780px) {
   .fuelTankStockCard {

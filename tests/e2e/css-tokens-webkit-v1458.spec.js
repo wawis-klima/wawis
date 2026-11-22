@@ -4,7 +4,7 @@
 // Uruchamiane w WebKit (playwright.webkit-built.config.js, zbudowana aplikacja) i w Chromium (zwykłe E2E).
 import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { REGISTRY_FILE, TOKENS_FILE, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
+import { REGISTRY_FILE, ROLES_FILE, TOKENS_FILE, readRoles, readStyleSource, readTokens, resolveTokens, scanDeclarationValues } from '../../scripts/css-tokens.mjs';
 import { SHADOWS_FILE, readShadows } from '../../scripts/css-shadows.mjs';
 import { ALPHA_FILE, readAlpha } from '../../scripts/css-alpha.mjs';
 
@@ -34,9 +34,19 @@ test('@mobile paleta kolorów 14.58 — deklaracje poprawne w silniku przegląda
   }, Object.keys(tokens));
   expect(loaded, 'paleta wczytana w zbudowanej aplikacji').toEqual(tokens);
 
+  // 14.81: role kolorów wczytane w zbudowanej aplikacji; w motywie jasnym rola = kolor palety ze swojej nazwy.
+  const roles = readRoles(fs.readFileSync(ROLES_FILE, 'utf8'));
+  const loadedRoles = await page.evaluate((names) => {
+    const cs = getComputedStyle(document.documentElement);
+    return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
+  }, Object.keys(roles));
+  expect(loadedRoles, 'role wczytane w zbudowanej aplikacji').toEqual(
+    Object.fromEntries(Object.entries(roles).map(([role, palette]) => [role, tokens[palette]])));
+  expect(Object.keys(roles).length).toBeGreaterThan(100);
+
   let checked = 0;
   for (const file of Object.keys(registry)) {
-    const declarations = declarationsWithTokens(fs.readFileSync(file, 'utf8'));
+    const declarations = declarationsWithTokens(readStyleSource(file));
     checked += declarations.length;
     const invalid = await page.evaluate((list) => list.filter(({ property, original }) =>
       CSS.supports(property, 'inherit') && !CSS.supports(property, original)), declarations);

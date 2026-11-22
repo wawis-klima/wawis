@@ -182,6 +182,153 @@ export function resolveTokens(css, tokens) {
 
 export function sha256(text) { return crypto.createHash('sha256').update(text, 'utf8').digest('hex'); }
 
+// --- 14.81: role kolorów (krok 1 do motywu ciemnego, decyzja właściciela 22.11.2026) ---
+// Arkusze nie odwołują się już wprost do palety, tylko do roli: var(--wr-<rodzaj>-<kolor>), np. var(--wr-bg-white)
+// (biały jako tło) i var(--wr-text-white) (biały jako tekst). Rola jest zdefiniowana w src/styles/roles.css jako
+// var(--wx-<kolor>) — w motywie jasnym DOKŁADNIE ten sam kolor, więc wygląd się nie zmienia. Motyw ciemny nadpisze
+// same role (np. tło białe → ciemne), a tekst biały na niebieskim przycisku zostanie biały.
+// Rodzaj roli wynika z właściwości CSS, w której stoi kolor (roleKindFor) — sprawdzane w smoke-css-roles.
+export const ROLES_FILE = 'src/styles/roles.css';
+export const ROLE_PREFIX = '--wr-';
+export const ROLE_KINDS = Object.freeze({
+  bg: 'tło',
+  text: 'tekst',
+  line: 'ramka lub linia',
+  icon: 'ikona, wypełnienie, pole wyboru',
+  shadow: 'kolor cienia',
+  accent: 'zmienna lokalna arkusza o mieszanym użyciu',
+});
+// Arkusze z własnymi rolami i własnym motywem ciemnym (prefers-color-scheme) — bez warstwy --wr-*.
+export const ROLE_EXEMPT_FILES = Object.freeze(['src/public-qr/public-qr.css']);
+const ROLE_VAR_RE = /var\((--wr-[a-z0-9-]+)\)/g;
+
+export function roleKindFor(property) {
+  const p = String(property).trim().toLowerCase();
+  if (p.startsWith('--')) {
+    if (/border|line/.test(p)) return 'line';
+    if (/bg|surface|soft|background/.test(p)) return 'bg';
+    if (/ink|muted|fg|text|color|title|heading|body/.test(p)) return 'text';
+    return 'accent';
+  }
+  if (/^background(-color|-image)?$/.test(p)) return 'bg';
+  if (/^(color|-webkit-text-fill-color|caret-color|text-decoration(-color)?|-webkit-text-stroke(-color)?)$/.test(p)) return 'text';
+  if (/^(border|outline|column-rule)(-[a-z-]+)?$/.test(p)) return 'line';
+  if (/^(fill|stroke|accent-color)$/.test(p)) return 'icon';
+  if (/^(box-shadow|text-shadow|filter|drop-shadow)$/.test(p)) return 'shadow';
+  return null;
+}
+
+export function roleNameFor(kind, paletteName) {
+  if (!(kind in ROLE_KINDS)) throw new Error(`Nieznany rodzaj roli ${kind}`);
+  if (!paletteName.startsWith(TOKEN_PREFIX)) throw new Error(`To nie jest zmienna palety: ${paletteName}`);
+  return `${ROLE_PREFIX}${kind}-${paletteName.slice(TOKEN_PREFIX.length)}`;
+}
+
+// Nazwa właściwości przed wartością deklaracji zaczynającą się w `valueStart`.
+export function propertyBefore(css, valueStart) {
+  let p = valueStart - 2;
+  while (p >= 0 && !/[;{}]/.test(css[p])) p -= 1;
+  return css.slice(p + 1, valueStart - 1).trim();
+}
+
+// Role z pierwszego bloku :root w roles.css: { '--wr-bg-white': '--wx-white', … }.
+export function readRoles(rolesCss) {
+  const rootBlock = String(rolesCss || '').match(/:root\s*\{([\s\S]*?)\}/);
+  const roles = {};
+  if (!rootBlock) return roles;
+  for (const m of rootBlock[1].matchAll(/(--wr-[a-z0-9-]+)\s*:\s*var\((--wx-[a-z0-9-]+)\)\s*;/g)) roles[m[1]] = m[2];
+  return roles;
+}
+
+export function readRolesFile() {
+  const file = path.join(ROOT, ROLES_FILE);
+  return fs.existsSync(file) ? readRoles(fs.readFileSync(file, 'utf8')) : {};
+}
+
+// var(--wr-…) → var(--wx-…) — arkusz w postaci sprzed 14.81 (podstawa wszystkich dowodów równoważności).
+export function resolveRoles(css, roles = readRolesFile()) {
+  return css.replace(ROLE_VAR_RE, (whole, name) => {
+    if (!(name in roles)) throw new Error(`Nieznana rola koloru ${name}`);
+    return `var(${roles[name]})`;
+  });
+}
+
+// Treść arkusza z rolami zamienionymi na zmienne palety.
+export function readStyleSource(rel, roles = readRolesFile()) {
+  return resolveRoles(fs.readFileSync(path.join(ROOT, rel), 'utf8'), roles);
+}
+
+// Każde użycie roli z właściwością, w której stoi (do kontroli rodzaju).
+export function roleUses(css) {
+  const out = [];
+  const values = scanDeclarationValues(css);
+  for (const match of css.matchAll(ROLE_VAR_RE)) {
+    const at = match.index;
+    const value = values.find((v) => at >= v.start && at < v.end && !inSkips(at, v.skips));
+    out.push({ at, role: match[1], property: value ? propertyBefore(css, value.start) : null, line: css.slice(0, at).split('\n').length });
+  }
+  return out;
+}
+
+// Zamiana var(--wx-…) w wartościach deklaracji na role według właściwości. Zwraca nowy tekst i użyte role.
+export function assignRoles(css, rel = '') {
+  const used = new Map();
+  const replacements = [];
+  for (const value of scanDeclarationValues(css)) {
+    const text = css.slice(value.start, value.end);
+    const property = propertyBefore(css, value.start);
+    for (const match of text.matchAll(VAR_RE)) {
+      const at = value.start + match.index;
+      if (inSkips(at, value.skips)) continue;
+      const kind = roleKindFor(property);
+      if (!kind) throw new Error(`${rel}: nie wiem, jaką rolę ma kolor we właściwości „${property}” (linia ${css.slice(0, at).split('\n').length})`);
+      const role = roleNameFor(kind, match[1]);
+      used.set(role, match[1]);
+      replacements.push([at, at + match[0].length, `var(${role})`]);
+    }
+  }
+  let out = css;
+  for (const [a, b, text] of replacements.sort((x, y) => y[0] - x[0])) out = out.slice(0, a) + text + out.slice(b);
+  return { css: out, used, count: replacements.length };
+}
+
+export function writeRoles(roles) {
+  const byKind = new Map(Object.keys(ROLE_KINDS).map((k) => [k, []]));
+  for (const [role, palette] of Object.entries(roles)) byKind.get(role.slice(ROLE_PREFIX.length).split('-')[0]).push([role, palette]);
+  const sections = [];
+  for (const [kind, rows] of byKind) {
+    if (!rows.length) continue;
+    rows.sort(([a], [b]) => a.localeCompare(b));
+    sections.push(`  /* ${ROLE_KINDS[kind]} */\n${rows.map(([role, palette]) => `  ${role}: var(${palette});`).join('\n')}`);
+  }
+  const header = `/* WAWIS — role kolorów (14.81+). Generowane przez scripts/css-tokens.mjs roles — nie edytuj ręcznie bloku :root.
+   Rola = rodzaj użycia + kolor palety: --wr-bg-white to biały jako tło, --wr-text-white to biały jako tekst.
+   W motywie jasnym każda rola ma dokładnie kolor palety ze swojej nazwy, więc wygląd jest taki sam jak przed 14.81.
+   Motyw ciemny (w przyszłości) nadpisze role w osobnym bloku, bez zmian w arkuszach ekranów.
+   Ładowane statycznie przez src/main.jsx zaraz po palecie (tokens.css). */\n`;
+  fs.writeFileSync(path.join(ROOT, ROLES_FILE), `${header}:root {\n${sections.join('\n')}\n}\n`);
+}
+
+function convertRoles(files) {
+  const roles = readRolesFile();
+  for (const file of files) {
+    const rel = path.relative(ROOT, path.resolve(file)).split(path.sep).join('/');
+    if (ROLE_EXEMPT_FILES.includes(rel)) throw new Error(`${rel} ma własne role i motyw ciemny — bez zmian`);
+    const original = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    if (ROLE_VAR_RE.test(original)) { ROLE_VAR_RE.lastIndex = 0; throw new Error(`${rel} ma już role`); }
+    const { css, used, count } = assignRoles(original, rel);
+    for (const [role, palette] of used) {
+      if (roles[role] && roles[role] !== palette) throw new Error(`Kolizja roli ${role}`);
+      roles[role] = palette;
+    }
+    if (resolveRoles(css, roles) !== original) throw new Error(`${rel}: po podstawieniu ról plik różni się od oryginału`);
+    if (/var\(--wx-/.test(css)) throw new Error(`${rel}: zostało odwołanie do palety poza wartością deklaracji`);
+    fs.writeFileSync(path.join(ROOT, rel), css);
+    console.log(`${rel}: ${count} kolorów → role (${used.size} różnych)`);
+  }
+  writeRoles(roles);
+}
+
 // Każde var(--wx-…) musi stać w wartości deklaracji (nie w selektorze, @media, komentarzu, napisie ani url()).
 export function misplacedTokenUses(css) {
   const values = scanDeclarationValues(css);
@@ -238,9 +385,10 @@ function convert(files) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [command, ...files] = process.argv.slice(2);
-  if (command !== 'convert' || !files.length) {
-    console.error('Użycie: node scripts/css-tokens.mjs convert <plik.css> [...]');
+  if (!['convert', 'roles'].includes(command) || !files.length) {
+    console.error('Użycie: node scripts/css-tokens.mjs convert|roles <plik.css> [...]');
     process.exit(2);
   }
-  convert(files);
+  if (command === 'roles') convertRoles(files);
+  else convert(files);
 }
