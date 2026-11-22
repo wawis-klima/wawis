@@ -109,6 +109,10 @@ export function isSupabaseAuthorizationError(error) {
 export function getSupabaseUserMessage(error, fallbackMessage = 'Wystąpił nieznany błąd.') {
   if (isTransientSupabaseError(error)) return TRANSIENT_SUPABASE_MESSAGE;
   if (isJwtExpiredError(error)) return 'Sesja wygasła — zaloguj się ponownie.';
+  // 14.76: konto zablokowane przez administratora (Diagnostyka → „Wyloguj i zablokuj”).
+  if (/user_banned|user is banned/i.test(`${error?.code || ''} ${error?.error_code || ''} ${error?.message || ''}`)) {
+    return 'Konto zostało zablokowane przez administratora. Skontaktuj się z administratorem.';
+  }
   if (!error) return fallbackMessage;
   if (typeof error === 'string') return error || fallbackMessage;
   return error.message || error.details || error.hint || fallbackMessage;

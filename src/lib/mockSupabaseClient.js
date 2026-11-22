@@ -557,6 +557,29 @@ export function createMockSupabaseClient() {
       return new MockQueryBuilder(store, tableName);
     },
     async rpc(name, payload = {}) {
+      // 14.76: Diagnostyka — logowania kont i blokada (jak admin_list_user_logins_v1476 / admin_set_user_blocked_v1476).
+      if (name === 'admin_list_user_logins_v1476' || name === 'admin_set_user_blocked_v1476') {
+        const me = restoreSession(store.users)?.user?.id || "";
+        const profiles = Array.isArray(store.profiles) ? store.profiles : [];
+        const meProfile = profiles.find((item) => String(item.id) === String(me));
+        if (!/^(admin|administrator)$/i.test(String(meProfile?.role || '').trim())) {
+          return { data: null, error: { message: 'Tylko administrator może przeglądać logowania.', code: '42501' } };
+        }
+        if (!store.__userBlocks || typeof store.__userBlocks !== 'object') store.__userBlocks = {};
+        if (name === 'admin_set_user_blocked_v1476') {
+          const target = String(payload.p_user_id || '');
+          if (target === String(me)) return { data: null, error: { message: 'Nie można zablokować własnego konta.' } };
+          if (!profiles.some((item) => String(item.id) === target)) return { data: null, error: { message: 'Nie znaleziono konta.' } };
+          store.__userBlocks[target] = payload.p_blocked === true;
+          return { data: { userId: target, blocked: payload.p_blocked === true, sessionsEnded: payload.p_blocked === true ? 1 : 0 }, error: null };
+        }
+        return { data: profiles.map((item) => {
+          const blocked = store.__userBlocks[String(item.id)] === true;
+          return { userId: item.id, fullName: item.full_name || item.email, email: item.email || null, role: item.role, isSelf: String(item.id) === String(me), blocked,
+            sessions: blocked ? [] : [{ createdAt: '2026-11-20T06:45:00Z', lastActiveAt: '2026-11-22T06:30:00Z',
+              userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1', current: String(item.id) === String(me) }] };
+        }), error: null };
+      }
       // 14.28: próby szczelności (tylko dane fikcyjne).
       // 14.36: Diagnostyka (komputer) — wzory podpisów pracowników (jak staff_signatures_admin_list_v1434).
       if (name === 'staff_signatures_admin_list_v1434') {

@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## LOGIN-1476 — powiadomienie o nowym logowaniu i blokada kont (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| LOGIN-1476-DB | FIXED-UNVERIFIED | `scripts/pg-test-login-block-v1476/run.sh` (PostgreSQL 16, lokalnie: PASS): sesje sprzed wdrożenia nie są zgłaszane; nowa sesja → jedno wywołanie funkcji, ponowne w 2 min — brak; zły kod zadania → brak, poprawny → 1 logowanie z nazwiskiem, powtórzenie → brak; administrator aal2 blokuje pracownika → banned_until, 0 sesji, wpis w historii, pracownik z ważnym tokenem: mfa_ok=false, 0 montaży, is_staff=false; odblokowanie → dostęp wraca; negatywne: własne konto, administrator aal1, pracownik (lista), aplikacja (claim) → błąd; migracja 2×; wycofanie usuwa zadanie i funkcje, przywraca mfa_ok z 14.74. |
+| LOGIN-1476-EDGE | FIXED-UNVERIFIED | `notify-new-login` (verify_jwt false, tylko z jednorazowym kodem bazy): PUSH tylko do administratorów, `push_claim_delivery_v1268` (jedno na logowanie i subskrypcję), payload zgodny z push-safety. `smoke-login-notice-block-v1476` (treść, opis urządzenia, walidacja zadania). |
+| LOGIN-1476-UI | FIXED-UNVERIFIED | Karta w Diagnostyce (komputer i telefon, tylko administrator), potwierdzenie przed blokadą, bez przycisku dla własnego konta, sukces dopiero po potwierdzeniu przez bazę. Komunikat logowania zablokowanego konta. E2E `user-access-v1476` (atrapa RPC). |
+| LOGIN-1476-LIMIT | ACCEPTED | Zablokowany pracownik z ważnym tokenem (do 1 h) może jeszcze wywołać funkcje PUSH pracownika (komentarz, tankowanie) — bez dostępu do danych; kończy się z wygaśnięciem tokenu. Powiadomienie wymaga aktywnej subskrypcji PUSH administratora. |
+
 ## MFA-1475 — etap 3: funkcje Edge wymagają aal2 (zgoda właściciela 21.11.2026, „Ok działamy”)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

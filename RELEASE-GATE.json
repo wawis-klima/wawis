@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.75",
+  "version": "14.76",
   "scope": "full",
-  "release_branch": "release/v14.75",
+  "release_branch": "release/v14.76",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "MFA etap 3: 5 funkcji Edge sprawdza current_user_mfa_ok() — zgoda właściciela 21.11.2026; aplikacja bez zmian, baza bez zmian."
+    "notes": "Powiadomienie o nowym logowaniu + blokada kont: migracja, nowa funkcja Edge, karta w Diagnostyce — zgoda właściciela na bazę i funkcję przed wdrożeniem."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.75",
+    "source_branch": "release/v14.76",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.75.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.76.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.75: MFA etap 3 — funkcje Edge",
-    "release_ci": "WAWIS PR checks + smoke-mfa-edge-v1475 + smoke-sms-queue-daily-v1417 + testy Fakturowni + smoke-mfa-aal2-v1474",
-    "postdeploy": "Vercel READY/14.75; Supabase list_edge_functions: nowe wersje 5 funkcji."
+    "code": "14.76: powiadomienie o logowaniu + blokada",
+    "release_ci": "WAWIS PR checks + smoke-login-notice-block-v1476 + pg-test-login-block-v1476 (lokalnie) + E2E user-access-v1476 + smoke-mfa-edge + smoke-mfa-aal2",
+    "postdeploy": "Vercel READY/14.76; cron wawis-login-notify-v1476; notify-new-login ACTIVE."
   }
 }
