@@ -21,7 +21,8 @@ assert.match(storedProtocolStatus, /:\s*"Protokół zapisany"/, 'Pracownik powin
 assert.doesNotMatch(panel, /karta jest tylko do podglądu dla pracownika/);
 assert.doesNotMatch(panel, /pracownik nie może już dodawać ani usuwać zdjęć/);
 assert.doesNotMatch(panel, /pracownik nie może już dodawać komentarzy ani pytań/);
-assert.match(panel, /Brak urządzeń\./);
+// 14.86 (decyzja właściciela 22.11.2026): bez napisów „Brak urządzeń.”, „Brak komentarzy.”, „Brak komentarza.”.
+assert.doesNotMatch(panel, /Brak urządzeń\.|Brak komentarzy\.|Brak komentarza\./);
 assert.match(panel, /Brak zdjęć\./);
 assert.match(panel, /Ładowanie zdjęć…/);
 assert.match(panel, /Ładowanie komentarzy…/);
