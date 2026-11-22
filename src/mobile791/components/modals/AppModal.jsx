@@ -115,7 +115,10 @@ export default function AppModal({
   overlayStyle = undefined,
   contentStyle = undefined,
   warnBeforeUnload = false,
-  lockPagePosition = false,
+  // 14.89 (zgłoszenie właściciela 22.11.2026): na iPhonie samo overflow:hidden nie blokuje przewijania strony
+  // pod oknem — przesuwanie palcem po oknie (np. „Nowy montaż”) przewijało listę pod spodem. Domyślnie strona
+  // pod każdym oknem jest unieruchomiona (body position:fixed, pozycja przywracana po zamknięciu).
+  lockPagePosition = true,
 }) {
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;

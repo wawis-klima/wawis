@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1489 — przewijanie strony pod oknem na iPhonie (zgłoszenie właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1489 | FIXED-UNVERIFIED | `AppModal` (telefon): `lockPagePosition` domyślnie `true` — body `position: fixed`, `overscroll-behavior: none`, przywrócenie `scrollY` po zamknięciu (mechanizm z protokołu, 13.x). `smoke-modal-page-lock-v1489`, E2E (14.89) w `mobile-device-table-fit-v1485`; pełny zestaw E2E z oknami. |
+| UI-1489-IPHONE | OPEN | Fizyczny iPhone: przesuwanie palcem w nowym zleceniu, edycji, oknach potwierdzeń — lista pod spodem stoi; po zamknięciu ta sama pozycja listy. |
+
 ## UI-1488 — formularz zlecenia i zdjęcia (decyzja właściciela 22.11.2026, zrzuty z iPhone'a)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
