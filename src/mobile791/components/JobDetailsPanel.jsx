@@ -1247,7 +1247,7 @@ export default function JobDetailsPanel({
           );
         })}
         {regularPhotos.length === 0 && showDetailsLoading ? <div className="muted">Ładowanie zdjęć…</div> : null}
-        {detailsLoaded && regularPhotos.length === 0 ? <div className="muted">Brak zdjęć.</div> : null}
+        {/* 14.88 (decyzja właściciela): bez napisu o braku zdjęć — przyciski „Aparat” i „Galeria” wystarczają. */}
         </div>
         {canModifySelectedJobPhotos ? (
           <div className="photoUploadActions" aria-label="Dodawanie zdjęć do zlecenia">

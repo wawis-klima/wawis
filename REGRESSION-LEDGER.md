@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## UI-1488 — formularz zlecenia i zdjęcia (decyzja właściciela 22.11.2026, zrzuty z iPhone'a)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1488 | FIXED-UNVERIFIED | Nowe zlecenie: usunięty górny rząd („Zamknij”, „Wprowadź głosowo”), „Zamknij” w dolnym rzędzie. Edycja administratora: siatka telefon / NIP + GUS. Bez napisu o braku zdjęć. E2E `mobile-device-table-fit-v1485` (14.88), `mobile-v1295-worker-visual`. |
+| DARK-THEME-1487-IPHONE | OPEN | Zrzut właściciela 20:22 jeszcze z 14.86 (monterzy niebiescy) — 14.87 wdrożona 20:27; sprawdzenie po odświeżeniu. |
+| UI-1488-IPHONE | OPEN | Na iPhonie: nowe zlecenie, edycja (NIP + GUS), szczegóły bez zdjęć. |
+
 ## DARK-THEME-1487 — zaznaczeni monterzy w trybie ciemnym (zgłoszenie właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

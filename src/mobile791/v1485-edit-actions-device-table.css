@@ -1,6 +1,6 @@
-/* WAWIS 14.85 (zgłoszenie właściciela 22.11.2026) — wczytywany po wszystkich arkuszach telefonu. */
+/* WAWIS 14.85 / 14.88 (zgłoszenia właściciela 22.11.2026) — wczytywany po wszystkich arkuszach telefonu. */
 @media (max-width: 700px) {
-  /* Edycja montażu: „Zamknij” i „Zapisz zmiany” obok siebie na dole okna (zamiast „Zamknij” w nagłówku). */
+  /* Edycja montażu (14.85) i nowe zlecenie (14.88): „Zamknij” obok przycisku zapisu na dole okna. */
   html body .formModal .row.jobFormEditActions {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -75,5 +75,23 @@
     overflow: hidden !important;
     clip: rect(0 0 0 0) !important;
     white-space: nowrap !important;
+  }
+
+  /* 14.88: edycja montażu (administrator) — telefon w całej linii, NIP i „Szukaj w GUS” razem w jednej linii. */
+  html body .formModal.adminMobileEditModalV1297 form:not(.jobSerialOnlyForm) .jobFormGeneralFields > .adminContactPairV1302 {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  html body .formModal.adminMobileEditModalV1297 .adminContactPairV1302 > input.input:first-child {
+    grid-column: 1 / -1 !important;
+  }
+
+  html body .formModal.adminMobileEditModalV1297 .adminContactPairV1302 > .jobNipLookupBtnEdit {
+    grid-column: 2 !important;
+    justify-self: stretch !important;
+    align-self: stretch !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
   }
 }

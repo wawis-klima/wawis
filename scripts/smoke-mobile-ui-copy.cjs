@@ -23,7 +23,8 @@ assert.doesNotMatch(panel, /pracownik nie może już dodawać ani usuwać zdję�
 assert.doesNotMatch(panel, /pracownik nie może już dodawać komentarzy ani pytań/);
 // 14.86 (decyzja właściciela 22.11.2026): bez napisów „Brak urządzeń.”, „Brak komentarzy.”, „Brak komentarza.”.
 assert.doesNotMatch(panel, /Brak urządzeń\.|Brak komentarzy\.|Brak komentarza\./);
-assert.match(panel, /Brak zdjęć\./);
+// 14.88: bez napisu o braku zdjęć.
+assert.doesNotMatch(panel, /Brak zdjęć\./);
 assert.match(panel, /Ładowanie zdjęć…/);
 assert.match(panel, /Ładowanie komentarzy…/);
 assert.match(panel, /const \[viewersExpanded, setViewersExpanded\] = React\.useState\(!selectedJobIsCompleted\);/, 'Monterzy zakończonego montażu powinni startować zwinięci.');

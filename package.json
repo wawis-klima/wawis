@@ -1,7 +1,7 @@
 {
   "name": "klima-app-table-v2",
   "private": true,
-  "version": "14.87",
+  "version": "14.88",
   "type": "module",
   "scripts": {
     "dev": "npm run prepare:deps && npm run prepare:bins && node node_modules/vite/bin/vite.js",

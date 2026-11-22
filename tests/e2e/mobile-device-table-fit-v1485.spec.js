@@ -80,3 +80,39 @@ for (const [label, credentials] of [['administrator', ADMIN], ['pracownik', WORK
     }
   });
 }
+
+// 14.88 (decyzja właściciela 22.11.2026): nowe zlecenie — bez „Wprowadź głosowo” u góry, „Zamknij” obok zapisu;
+// edycja administratora — NIP i „Szukaj w GUS” w jednej linii; szczegóły — bez napisu o braku zdjęć.
+for (const [label, credentials, saveLabel] of [['administrator', ADMIN, 'Zapisz zlecenie'], ['pracownik', WORKER, 'Dodaj klienta']]) {
+  test(`@mobile 14.88 ${label}: nowe zlecenie — Zamknij obok „${saveLabel}” na dole, bez wprowadzania głosowego u góry`, async ({ page }) => {
+    await resetMockSupabase(page);
+    await loginWithoutReset(page, credentials);
+    await page.locator('.mobileActionBtn.primary.wawisOneLineAction').click();
+    const modal = page.locator('.formModal');
+    await expect(modal.locator('.jobHead h2')).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Wprowadź głosowo', exact: true })).toHaveCount(0);
+    const close = modal.locator('.jobFormEditActions').getByRole('button', { name: 'Zamknij', exact: true });
+    const save = modal.locator('.jobFormEditActions').getByRole('button', { name: saveLabel, exact: true });
+    await save.scrollIntoViewIfNeeded();
+    const [c, s] = [await close.boundingBox(), await save.boundingBox()];
+    expect(Math.abs((c.y + c.height / 2) - (s.y + s.height / 2))).toBeLessThanOrEqual(2);
+    expect(c.x + c.width).toBeLessThanOrEqual(s.x);
+    expect(Math.abs(c.height - s.height)).toBeLessThanOrEqual(1);
+    await close.click();
+    await expect(modal).toHaveCount(0);
+  });
+}
+
+test('@mobile 14.88 administrator: edycja — NIP i „Szukaj w GUS” w jednej linii, szczegóły bez napisu o braku zdjęć', async ({ page }) => {
+  await openJob(page, ADMIN);
+  await expect(page.locator('.mobileInlineJobDetails').first().getByText('Brak zdjęć.', { exact: true })).toHaveCount(0);
+  await page.locator('.mobileInlineJobDetails').getByRole('button', { name: 'Edytuj', exact: true }).first().click();
+  const modal = page.locator('.formModal');
+  await expect(modal.getByRole('heading', { name: 'Edytuj montaż' })).toBeVisible();
+  const nip = await modal.locator('.jobNipCompactInput').boundingBox();
+  const gus = await modal.getByRole('button', { name: 'Szukaj w GUS' }).boundingBox();
+  const phone = await modal.getByLabel('Telefon klienta / SMS').boundingBox();
+  expect(Math.abs(nip.y - gus.y)).toBeLessThanOrEqual(2);
+  expect(nip.x + nip.width).toBeLessThanOrEqual(gus.x);
+  expect(nip.y).toBeGreaterThan(phone.y + phone.height - 1);
+});

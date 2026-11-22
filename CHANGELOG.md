@@ -1,3 +1,9 @@
+## 14.88
+- **Nowe zlecenie: bez „Wprowadź głosowo” u góry, „Zamknij” na dole obok „Zapisz zlecenie” / „Dodaj klienta”** (decyzja właściciela 22.11.2026). Wygląda tak samo jak edycja (14.85). Mikrofony przy polach (np. komentarz administratora) i wprowadzanie głosowe w edycji montażu bez zmian.
+- **Edycja montażu (administrator): telefon w całej linii, NIP i „Szukaj w GUS” razem w jednej linii.** Wcześniej telefon i NIP były w jednej linii, a przycisk GUS osobno pod spodem.
+- **Szczegóły montażu bez napisu „Brak zdjęć.”**: przyciski „Aparat” i „Galeria” wystarczają.
+- Testy: `smoke-edit-actions-device-table-v1485`, `smoke-mobile-ui-copy`, E2E `mobile-device-table-fit-v1485` (+3) i `mobile-v1295-worker-visual` (nowe położenie NIP/GUS).
+
 ## 14.87
 - **Tryb ciemny: zaznaczeni monterzy wyraźnie widoczni** (zgłoszenie właściciela 22.11.2026). Zaznaczony monter ma czerwone wypełnienie i biały napis (akcent motywu), niezaznaczony jest grafitowy z szarym napisem. Wcześniej oba były ciemnoniebieskie i różniły się tylko odcieniem ramki.
 - Przyczyna ogólna, poprawiona w generatorze (`scripts/css-dark-theme.mjs`): wszystkie jasne zabarwione tła zamieniały się na prawie ten sam ciemny odcień, więc mocniejsze wyróżnienie (np. `#8ab4ff` zaznaczenia) wyglądało jak zwykłe tło (`#eff6ff`). Teraz mocniejsze w jasnym = jaśniejsze w ciemnym (np. `#13243a` → `#203760`). Motyw jasny bez zmian.
