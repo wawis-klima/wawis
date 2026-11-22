@@ -21,6 +21,8 @@ export default defineConfig({
   testDir: './tests/e2e',
   testMatch: [
     'css-tokens-webkit-v1458.spec.js',
+    // 14.84: motyw ciemny — przełącznik, czytelność i zrzuty ekranów w silniku Safari.
+    'dark-theme-v1484.spec.js',
     'service-date-time-ios-v1392.spec.js',
     'mobile-photo-queue-repair-v1362.spec.js',
     'mobile-photo-queue-legacy-hold-v1362.spec.js',

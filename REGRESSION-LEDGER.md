@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## DARK-THEME-1484 — motyw ciemny na telefonie (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DARK-THEME-1484 | FIXED-UNVERIFIED | Przełącznik w nagłówku (zamiast „Synchronizuj dane”; synchronizacja w Diagnostyce), `data-theme="dark"` na `<html>`, wybór w localStorage telefonu (`wawis-theme-v1484`), kolor paska `#0c0c0d`. 327 ról z ciemnym kolorem (`theme-dark.css`, generator). `smoke-dark-theme-v1484`; E2E `dark-theme-v1484` (Chromium + WebKit, zrzuty ekranów, kontrast). |
+| DARK-THEME-1484-LIGHT | FIXED-UNVERIFIED | Motyw jasny bez zmian: reguły tylko pod `data-theme="dark"`; E2E równoważności palety (14.51) bez zmian; komputer bez przełącznika. |
+| DARK-THEME-1484-IPHONE | OPEN | Na iPhonie: przełącznik, wygląd listy, szczegółów, protokołu, kreatora urządzeń, zdjęć i diagnostyki w trybie ciemnym; pasek stanu iPhone'a; powrót do jasnego. |
+| CSS-ROLES-1483-IPHONE | ACCEPTED | Właściciel 22.11.2026 przeszedł do wyboru motywu ciemnego po 14.83 bez uwag do wyglądu. |
+
 ## CSS-ROLES-1483 — kolory z kodu JS przez role (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

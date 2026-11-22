@@ -3,7 +3,8 @@ import { lazy } from "../../../modules/lazy-safe.jsx";
 import "../../styles/mobile-job-card-name-v1292.css";
 import React, { useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "../../version";
-import { IconFilter, IconPlus, IconRefresh } from "../ui";
+import { IconFilter, IconMoon, IconPlus, IconSun } from "../ui";
+import { currentTheme, toggleTheme } from "../../../modules/theme.js";
 import { getJobDisplayAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
 import JobsPagination from "./JobsPagination.jsx";
 import SwipeableJobCard from "./SwipeableJobCard.jsx";
@@ -133,16 +134,14 @@ export default function MobileJobsLayout({
     };
   }, [selectedJob?.id]);
 
-  async function handleManualReload() {
-    const isOnline = typeof navigator === "undefined" || navigator.onLine !== false;
-    if (isOnline) {
-      // Najpierw zawsze odświeżamy listę montaży. Kolejka zdjęć nie może
-      // blokować pojawienia się zlecenia dodanego na innym urządzeniu.
-      await refreshAll?.(sessionUser, { preserveJobDetails: true });
-      void retryAllPhotoUploads?.();
-      return;
-    }
-    await retryAllPhotoUploads?.();
+  // 14.84 (decyzja właściciela 22.11.2026): w nagłówku przełącznik motywu ciemnego zamiast przycisku
+  // „Synchronizuj dane”. Dane odświeżają się same (realtime, powrót do aplikacji, powrót internetu),
+  // a ręcznie: Diagnostyka → „Odśwież dane” / „Synchronizuj teraz”.
+  const [theme, setTheme] = useState(() => currentTheme());
+  function handleToggleTheme() {
+    let storage = null;
+    try { storage = window.localStorage; } catch { storage = null; }
+    setTheme(toggleTheme(storage));
   }
 
   function toggleFilter() {
@@ -193,8 +192,16 @@ export default function MobileJobsLayout({
             <IconPlus />
           </button>
 
-          <button className="mobileActionBtn wawisOneLineAction" onClick={handleManualReload} title="Synchronizuj dane" aria-label="Synchronizuj dane">
-            <IconRefresh />
+          <button
+            type="button"
+            className="mobileActionBtn wawisOneLineAction wawisThemeToggle"
+            onClick={handleToggleTheme}
+            title={theme === "dark" ? "Włącz tryb jasny" : "Włącz tryb ciemny"}
+            aria-label={theme === "dark" ? "Włącz tryb jasny" : "Włącz tryb ciemny"}
+            aria-pressed={theme === "dark"}
+            data-testid="theme-toggle"
+          >
+            {theme === "dark" ? <IconSun /> : <IconMoon />}
           </button>
 
           <div className="wawisOneLinePushSlot" aria-label="Powiadomienia push">{pushControl}</div>

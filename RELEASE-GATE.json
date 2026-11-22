@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.83",
+  "version": "14.84",
   "scope": "full",
-  "release_branch": "release/v14.83",
+  "release_branch": "release/v14.84",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Role kolorów, krok 3 (kolory z kodu JS telefonu) — wygląd bez zmian; bez zmian backendu."
+    "notes": "Motyw ciemny na telefonie (CSS + przełącznik w nagłówku) — bez zmian backendu, danych, zdjęć i offline."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.83",
+    "source_branch": "release/v14.84",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.83.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.84.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.83: kolory z kodu JS przez role",
-    "release_ci": "WAWIS PR checks + smoke-js-colors-v1483 + smoke-css-roles + smoke-css-tokens + smoke-css-alpha",
-    "postdeploy": "Vercel READY/14.83; brak błędów runtime."
+    "code": "14.84: motyw ciemny na telefonie",
+    "release_ci": "WAWIS PR checks + smoke-dark-theme-v1484 + E2E dark-theme-v1484 (Chromium, WebKit)",
+    "postdeploy": "Vercel READY/14.84; brak błędów runtime."
   }
 }

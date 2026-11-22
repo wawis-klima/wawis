@@ -1,3 +1,10 @@
+## 14.84
+- **Motyw ciemny na telefonie — „Grafit z czerwienią”** (decyzja właściciela 22.11.2026: propozycja nr 8 z 30). W nagłówku telefonu, w miejscu przycisku „Synchronizuj dane”, jest przełącznik z księżycem/słońcem. Zmienia wygląd od razu, bez przeładowania. Wybór jest zapamiętany na tym telefonie, a każdy pracownik ustawia go sobie sam. Domyślnie jasny, jak dotąd.
+- Ręczna synchronizacja zostaje w Diagnostyce („Synchronizuj teraz”, „Odśwież dane”). Dane i tak odświeżają się same: zmiany na żywo, powrót do aplikacji, powrót internetu.
+- Kolory: tło grafitowe, karty ciemnoszare, tekst jasny. Kolorowe statusy i plakietki zachowują swoje kolory w przygaszonej wersji. Czerwony akcent: przycisk „+”, przełącznik, inicjały i zaznaczona karta montażu. Wszystkie 327 ról kolorów ma ciemny odpowiednik (`src/styles/theme-dark.css`, generowany przez `scripts/css-dark-theme.mjs`). Tekst ma kontrast co najmniej 4,5:1 na kartach i tłach.
+- Bez zmian: motyw jasny (reguły działają tylko z `data-theme="dark"`), komputer (zawsze jasny), pole podpisu, zdjęcia, PDF protokołu, strona naklejki QR (od 14.20 sama dopasowuje się do telefonu). Rozmiary czcionek bez zmian.
+- Testy: `smoke-dark-theme-v1484` (plik = generator, każda rola, reguły tylko w motywie ciemnym, 485 par tło + tekst, przełącznik i pamięć), E2E `dark-theme-v1484` (Chromium i WebKit: przełącznik, zapamiętanie po ponownym uruchomieniu, czytelność listy, szczegółów, diagnostyki i nowego zlecenia, zrzuty ekranów). `smoke-mobile-admin-header-v915` zaktualizowany: przełącznik zamiast synchronizacji.
+
 ## 14.83
 - **Role kolorów, krok 3 — kolory zapisane w kodzie telefonu** (decyzja właściciela 22.11.2026 po sprawdzeniu 14.82 na iPhonie: „wszystko wygląda ok”). **Wygląd bez zmian.** 121 kolorów zapisanych dotąd wprost w kodzie JS używa ról, jak arkusze CSS: tabela urządzeń w szczegółach montażu, centrum wysyłki zdjęć, okno potwierdzenia (np. „Zakończ montaż”), pasek niedokończonych urządzeń i pole daty montażu.
 - Paleta: 141 → 182 kolorów, bo kolory z kodu dodane są z dokładnie tą samą wartością, bez łączenia odcieni. Kolory półprzezroczyste 59 → 62, role 280 → 327.
