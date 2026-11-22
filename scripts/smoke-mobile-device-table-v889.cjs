@@ -10,7 +10,8 @@ const globalCssPath = path.join(root, 'src/mobile791/styles.css');
 const mainPath = path.join(root, 'src/main.jsx');
 const widthGuardPath = path.join(root, 'src/mobile791/v1090-details-width.css');
 const component = fs.readFileSync(componentPath, 'utf8');
-const styleModule = fs.readFileSync(styleModulePath, 'utf8');
+// 14.83: kolory w module stylu przez role (--wr-*) — sprawdzane po podstawieniu palety.
+const styleModule = require('./css-palette-resolve.cjs').resolvePalette(fs.readFileSync(styleModulePath, 'utf8'));
 const globalCss = fs.readFileSync(globalCssPath, 'utf8');
 const mainSource = fs.readFileSync(mainPath, 'utf8');
 const widthGuard = fs.readFileSync(widthGuardPath, 'utf8');

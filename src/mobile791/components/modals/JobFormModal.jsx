@@ -1023,7 +1023,7 @@ export default function JobFormModal({
           </div>
           <div
             className="installationDateInputShell"
-            style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: 50, overflow: 'hidden', border: '1px solid #cfdbea', borderRadius: 16, background: '#fff', boxSizing: 'border-box', marginTop: 8 }}
+            style={{ width: '100%', minWidth: 0, maxWidth: '100%', height: 50, overflow: 'hidden', border: '1px solid var(--wr-line-c-cfdbea)', borderRadius: 16, background: 'var(--wr-bg-white)', boxSizing: 'border-box', marginTop: 8 }}
           >
             {editingJobId && isAdmin ? (
               <span className="adminDateVisibleLabelV1297" aria-hidden="true">

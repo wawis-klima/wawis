@@ -9,7 +9,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {
   REGISTRY_FILE, TOKENS_FILE, canonicalHex, misplacedTokenUses, normalizeForCompare, readTokens, resolveTokens,
-  scanDeclarationValues, sha256, tokenNameFor, tokenizeCss, BASELINE_FILE, MERGES_FILE, tokenSequence, readStyleSource,
+  scanDeclarationValues, sha256, tokenNameFor, tokenizeCss, BASELINE_FILE, MERGES_FILE, tokenSequence, readStyleSource, readRolesFile,
 } from './css-tokens.mjs';
 import { OWNER_KEEP, deltaE2000 } from './css-color-merge.mjs';
 import { SHADOW_BASELINE_FILE, restoreShadows } from './css-shadows.mjs';
@@ -137,6 +137,8 @@ for (const [file, meta] of files) {
   const leftover = tokenizeCss(current).count;
   assert.equal(leftover, 0, `${file}: wszystkie kolory hex w wartościach zastąpione zmiennymi`);
 }
+// 14.83: kolory z kodu JS (scripts/js-colors.mjs) są w palecie i używane przez role (smoke-css-roles, smoke-js-colors).
+for (const palette of Object.values(readRolesFile())) usedEverywhere.add(palette);
 const unused = Object.keys(tokens).filter((name) => !usedEverywhere.has(name));
 assert.deepEqual(unused, [], 'paleta bez nieużywanych zmiennych');
 

@@ -6,7 +6,7 @@
 //   • paleta zdefiniowana raz (:root w alpha.css), ładowana statycznie w src/main.jsx.
 // Dowód w przeglądarce: tests/e2e/css-tokens-equivalence-v1451.spec.js.
 import fs from 'node:fs';
-import { readStyleSource } from './css-tokens.mjs';
+import { readRolesFile, readStyleSource } from './css-tokens.mjs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {
@@ -93,6 +93,8 @@ for (const file of registry) {
   }
 }
 for (const file of Object.keys(baseline)) assert.ok(registry.includes(file), `${file}: w zapisie, ale nie w rejestrze`);
+// 14.83: kolory rgba z kodu JS (scripts/js-colors.mjs) używane przez role.
+for (const palette of Object.values(readRolesFile())) used.add(palette);
 assert.deepEqual(Object.keys(alpha).filter((k) => !used.has(k)), [], 'brak nieużywanych kolorów');
 
 console.log(`PASS WAWIS 14.67 — ${Object.keys(alpha).length} wspólnych kolorów półprzezroczystych w ${positions} miejscach; połączonych: ${changed} (granica: kolor na białym i ciemnym tle ΔE < ${ALPHA_LIMITS.de2000}, krycie ≤ ${ALPHA_LIMITS.dalpha}).`);

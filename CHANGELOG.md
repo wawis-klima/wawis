@@ -1,3 +1,9 @@
+## 14.83
+- **Role kolorów, krok 3 — kolory zapisane w kodzie telefonu** (decyzja właściciela 22.11.2026 po sprawdzeniu 14.82 na iPhonie: „wszystko wygląda ok”). **Wygląd bez zmian.** 121 kolorów zapisanych dotąd wprost w kodzie JS używa ról, jak arkusze CSS: tabela urządzeń w szczegółach montażu, centrum wysyłki zdjęć, okno potwierdzenia (np. „Zakończ montaż”), pasek niedokończonych urządzeń i pole daty montażu.
+- Paleta: 141 → 182 kolorów, bo kolory z kodu dodane są z dokładnie tą samą wartością, bez łączenia odcieni. Kolory półprzezroczyste 59 → 62, role 280 → 327.
+- Bez zmian (świadomie): cienie, rysowanie podpisów, zdjęć i kodów kreskowych (zawsze jasne tło i ciemny tusz), PDF protokołu, ekran awarii startu, okno „Łączenie z Fakturownią”, wykres w Centrum 360.
+- Dowód: nowy `smoke-js-colors-v1483` (plik po odtworzeniu kolorów = oryginał, SHA-256; rola = pierwotny kolor; rodzaj roli = właściwość; kontrole negatywne), `smoke-css-roles` (role w kodzie JS liczone), `smoke-css-tokens` / `smoke-css-alpha` (kolory z kodu w palecie). Narzędzie `scripts/js-colors.mjs`.
+
 ## 14.82
 - **Role kolorów, krok 2 — kolory półprzezroczyste** (decyzja właściciela 22.11.2026 po sprawdzeniu 14.81 na iPhonie: „wszystko wygląda po staremu, możemy działać dalej”). **Wygląd bez zmian.** 185 miejsc z kolorami półprzezroczystymi (przyciemnienie za oknami, delikatne tła i ramki) używa teraz ról, np. `var(--wr-bg-a-000000-500)` zamiast `var(--wxa-000000-500)`. Motyw ciemny będzie mógł zmienić je osobno dla tła, tekstu i ramek.
 - Role: 214 → 280 (66 nowych dla kolorów półprzezroczystych), 3580 miejsc w 28 arkuszach. W motywie jasnym każda rola = kolor ze swojej nazwy.

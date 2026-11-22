@@ -12,9 +12,9 @@ const BAR_STYLE = {
   margin: "8px 0",
   padding: "10px 12px",
   borderRadius: 14,
-  border: "1px solid #f2c94c",
-  background: "#fff8e1",
-  color: "#5c4400",
+  border: "1px solid var(--wr-line-c-f2c94c)",
+  background: "var(--wr-bg-c-fff8e1)",
+  color: "var(--wr-text-c-5c4400)",
 };
 const ROW_STYLE = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 };
 const TEXT_STYLE = { minWidth: 0, fontSize: 14, lineHeight: 1.25, overflowWrap: "anywhere" };

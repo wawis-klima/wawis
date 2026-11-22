@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.82",
+  "version": "14.83",
   "scope": "full",
-  "release_branch": "release/v14.82",
+  "release_branch": "release/v14.83",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Role kolorów, krok 2 (kolory półprzezroczyste) — tylko arkusze CSS, wygląd bez zmian; bez zmian backendu."
+    "notes": "Role kolorów, krok 3 (kolory z kodu JS telefonu) — wygląd bez zmian; bez zmian backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.82",
+    "source_branch": "release/v14.83",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.82.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.83.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.82: role kolorów półprzezroczystych",
-    "release_ci": "WAWIS PR checks + smoke-css-roles-v1481 + smoke-css-alpha + smoke-css-tokens + E2E css-tokens-equivalence/webkit",
-    "postdeploy": "Vercel READY/14.82; brak błędów runtime."
+    "code": "14.83: kolory z kodu JS przez role",
+    "release_ci": "WAWIS PR checks + smoke-js-colors-v1483 + smoke-css-roles + smoke-css-tokens + smoke-css-alpha",
+    "postdeploy": "Vercel READY/14.83; brak błędów runtime."
   }
 }
