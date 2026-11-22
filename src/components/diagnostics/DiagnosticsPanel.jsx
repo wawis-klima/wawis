@@ -21,6 +21,7 @@ import { settleDiagnosticSection, getPushAcceptanceMessage } from '../../modules
 import { supabase } from '../../lib/supabase.js';
 import StaffSignaturesCard from './StaffSignaturesCard.jsx';
 import MfaSettingsCard from '../auth/MfaSettingsCard.jsx';
+import UserAccessCard from '../auth/UserAccessCard.jsx';
 
 function formatDateTime(value) {
   if (!value) return 'Brak zapisów';
@@ -279,6 +280,7 @@ export default function DiagnosticsPanel({ profile = null, selectedJobId = '' })
 
       {/* 14.36: wzory podpisów pracowników (podgląd, administrator). */}
       {profile?.role === 'Administrator' ? <MfaSettingsCard supabase={supabase} /> : null}
+      {profile?.role === 'Administrator' ? <UserAccessCard supabase={supabase} /> : null}
       {profile?.role === 'Administrator' ? <StaffSignaturesCard supabase={supabase} /> : null}
 
       <section className="diagnosticsEventsCard">
