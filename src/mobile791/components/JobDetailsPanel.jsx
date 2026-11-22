@@ -809,7 +809,6 @@ export default function JobDetailsPanel({
                           <span>Urządzenie</span>
                           <span>Model / moc</span>
                           <span>Tabliczka</span>
-                          <span>Status</span>
                         </div>
                         <div className="jobDeviceDocumentationUnits">
                           <DeviceUnitDocumentationRow

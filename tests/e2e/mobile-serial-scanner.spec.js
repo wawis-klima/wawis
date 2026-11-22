@@ -221,11 +221,11 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
       'Urządzenie',
       'Model / moc',
       'Tabliczka',
-      'Status',
-    ]);
+    ]); // 14.85: 3 kolumny — „Zapisano w systemie” dublował znacznik ✓ i wypychał go poza kartę
     const deviceTableLayout = await page.locator('.deviceUnitDocumentationRow').first().evaluate((row) => {
       const style = getComputedStyle(row);
-      const cells = [...row.children].map((cell) => {
+      // 14.85: widoczne komórki w jednym rzędzie (napis stanu zapisanej tabliczki tylko dla czytnika ekranu).
+      const cells = ['.deviceUnitDocumentationIdentity', '.deviceUnitDocumentationModel', '.deviceUnitDocumentationState'].map((sel) => row.querySelector(sel)).map((cell) => {
         const rect = cell.getBoundingClientRect();
         return { x: rect.x, y: rect.y, right: rect.right };
       });
@@ -240,7 +240,7 @@ test.describe('@mobile iPhone — uproszczony kreator urządzeń bez OCR z kadro
     });
     expect(deviceTableLayout).toEqual({
       display: 'grid',
-      columns: 4,
+      columns: 3,
       noRowOverflow: true,
       noPageOverflow: true,
       leftToRight: true,

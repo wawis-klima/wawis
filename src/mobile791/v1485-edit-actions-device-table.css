@@ -1,0 +1,79 @@
+/* WAWIS 14.85 (zgłoszenie właściciela 22.11.2026) — wczytywany po wszystkich arkuszach telefonu. */
+@media (max-width: 700px) {
+  /* Edycja montażu: „Zamknij” i „Zapisz zmiany” obok siebie na dole okna (zamiast „Zamknij” w nagłówku). */
+  html body .formModal .row.jobFormEditActions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  html body .formModal .row.jobFormEditActions > .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Wysokość „Zamknij” = wysokość „Zapisz zmiany” (rząd rozciąga oba przyciski). */
+  html body .formModal .row.jobFormEditActions > .jobFormEditClose {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-block: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Tabliczki w szczegółach montażu: 3 kolumny (Urządzenie, Model / moc, Tabliczka) mieszczą się w karcie
+     urządzenia. Kolumna „Status” z napisem „Zapisano w systemie” dublowała zielony znacznik ✓ i wystawała poza
+     kartę. Napis zostaje tylko dla innych stanów (brak, wysyłanie, błąd, na telefonie, potwierdzono ręcznie),
+     pod modelem; dla zapisanej tabliczki tylko dla czytnika ekranu. */
+  html body .jobDevicesTableV888 .deviceUnitDocumentationTableHeader,
+  html body .jobDevicesTableV888 .deviceUnitDocumentationRow {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 52px !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationTableHeader > span:last-child {
+    justify-self: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationRow {
+    position: relative !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationIdentity {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationModel {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationState {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationStatus {
+    grid-column: 2 / -1 !important;
+    grid-row: 2 !important;
+    margin-top: 3px !important;
+  }
+
+  html body .jobDevicesTableV888 .deviceUnitDocumentationStatus:has(.sync-uploaded) {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+  }
+}
