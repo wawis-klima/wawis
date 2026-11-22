@@ -40,8 +40,14 @@ test('@mobile paleta kolorów 14.58 — deklaracje poprawne w silniku przegląda
     const cs = getComputedStyle(document.documentElement);
     return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
   }, Object.keys(roles));
+  // 14.82: rola koloru półprzezroczystego = wartość jej zmiennej --wxa-* w tej samej przeglądarce.
+  const loadedAlpha = await page.evaluate((names) => {
+    const cs = getComputedStyle(document.documentElement);
+    return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
+  }, [...new Set(Object.values(roles).filter((p) => p.startsWith('--wxa-')))]);
+  expect(Object.values(loadedAlpha).every(Boolean)).toBe(true);
   expect(loadedRoles, 'role wczytane w zbudowanej aplikacji').toEqual(
-    Object.fromEntries(Object.entries(roles).map(([role, palette]) => [role, tokens[palette]])));
+    Object.fromEntries(Object.entries(roles).map(([role, palette]) => [role, palette.startsWith('--wxa-') ? loadedAlpha[palette] : tokens[palette]])));
   expect(Object.keys(roles).length).toBeGreaterThan(100);
 
   let checked = 0;

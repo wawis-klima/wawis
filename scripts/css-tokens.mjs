@@ -218,8 +218,12 @@ export function roleKindFor(property) {
   return null;
 }
 
+// 14.82: także kolory półprzezroczyste (--wxa-<kolor>-<krycie>) → --wr-<rodzaj>-a-<kolor>-<krycie>.
+export const ALPHA_TOKEN_PREFIX = '--wxa-';
+const ROLE_SOURCE_RE = /var\((--wxa?-[a-z0-9-]+)\)/g;
 export function roleNameFor(kind, paletteName) {
   if (!(kind in ROLE_KINDS)) throw new Error(`Nieznany rodzaj roli ${kind}`);
+  if (paletteName.startsWith(ALPHA_TOKEN_PREFIX)) return `${ROLE_PREFIX}${kind}-a-${paletteName.slice(ALPHA_TOKEN_PREFIX.length)}`;
   if (!paletteName.startsWith(TOKEN_PREFIX)) throw new Error(`To nie jest zmienna palety: ${paletteName}`);
   return `${ROLE_PREFIX}${kind}-${paletteName.slice(TOKEN_PREFIX.length)}`;
 }
@@ -236,7 +240,7 @@ export function readRoles(rolesCss) {
   const rootBlock = String(rolesCss || '').match(/:root\s*\{([\s\S]*?)\}/);
   const roles = {};
   if (!rootBlock) return roles;
-  for (const m of rootBlock[1].matchAll(/(--wr-[a-z0-9-]+)\s*:\s*var\((--wx-[a-z0-9-]+)\)\s*;/g)) roles[m[1]] = m[2];
+  for (const m of rootBlock[1].matchAll(/(--wr-[a-z0-9-]+)\s*:\s*var\((--wxa?-[a-z0-9-]+)\)\s*;/g)) roles[m[1]] = m[2];
   return roles;
 }
 
@@ -277,7 +281,7 @@ export function assignRoles(css, rel = '') {
   for (const value of scanDeclarationValues(css)) {
     const text = css.slice(value.start, value.end);
     const property = propertyBefore(css, value.start);
-    for (const match of text.matchAll(VAR_RE)) {
+    for (const match of text.matchAll(ROLE_SOURCE_RE)) {
       const at = value.start + match.index;
       if (inSkips(at, value.skips)) continue;
       const kind = roleKindFor(property);
@@ -303,6 +307,7 @@ export function writeRoles(roles) {
   }
   const header = `/* WAWIS — role kolorów (14.81+). Generowane przez scripts/css-tokens.mjs roles — nie edytuj ręcznie bloku :root.
    Rola = rodzaj użycia + kolor palety: --wr-bg-white to biały jako tło, --wr-text-white to biały jako tekst.
+   Od 14.82 także kolory półprzezroczyste: --wr-bg-a-000000-500 to rgba z --wxa-000000-500 jako tło.
    W motywie jasnym każda rola ma dokładnie kolor palety ze swojej nazwy, więc wygląd jest taki sam jak przed 14.81.
    Motyw ciemny (w przyszłości) nadpisze role w osobnym bloku, bez zmian w arkuszach ekranów.
    Ładowane statycznie przez src/main.jsx zaraz po palecie (tokens.css). */\n`;
@@ -315,14 +320,13 @@ function convertRoles(files) {
     const rel = path.relative(ROOT, path.resolve(file)).split(path.sep).join('/');
     if (ROLE_EXEMPT_FILES.includes(rel)) throw new Error(`${rel} ma własne role i motyw ciemny — bez zmian`);
     const original = fs.readFileSync(path.join(ROOT, rel), 'utf8');
-    if (ROLE_VAR_RE.test(original)) { ROLE_VAR_RE.lastIndex = 0; throw new Error(`${rel} ma już role`); }
     const { css, used, count } = assignRoles(original, rel);
     for (const [role, palette] of used) {
       if (roles[role] && roles[role] !== palette) throw new Error(`Kolizja roli ${role}`);
       roles[role] = palette;
     }
-    if (resolveRoles(css, roles) !== original) throw new Error(`${rel}: po podstawieniu ról plik różni się od oryginału`);
-    if (/var\(--wx-/.test(css)) throw new Error(`${rel}: zostało odwołanie do palety poza wartością deklaracji`);
+    if (resolveRoles(css, roles) !== resolveRoles(original, roles)) throw new Error(`${rel}: po podstawieniu ról plik różni się od oryginału`);
+    if (/var\(--wxa?-/.test(css)) throw new Error(`${rel}: zostało odwołanie do palety poza wartością deklaracji`);
     fs.writeFileSync(path.join(ROOT, rel), css);
     console.log(`${rel}: ${count} kolorów → role (${used.size} różnych)`);
   }

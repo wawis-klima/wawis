@@ -1,3 +1,9 @@
+## 14.82
+- **Role kolorów, krok 2 — kolory półprzezroczyste** (decyzja właściciela 22.11.2026 po sprawdzeniu 14.81 na iPhonie: „wszystko wygląda po staremu, możemy działać dalej”). **Wygląd bez zmian.** 185 miejsc z kolorami półprzezroczystymi (przyciemnienie za oknami, delikatne tła i ramki) używa teraz ról, np. `var(--wr-bg-a-000000-500)` zamiast `var(--wxa-000000-500)`. Motyw ciemny będzie mógł zmienić je osobno dla tła, tekstu i ramek.
+- Role: 214 → 280 (66 nowych dla kolorów półprzezroczystych), 3580 miejsc w 28 arkuszach. W motywie jasnym każda rola = kolor ze swojej nazwy.
+- Cienie (`--wxs-*`) bez ról — są tylko w `box-shadow`, więc motyw ciemny nadpisze je bezpośrednio. Dalej: kolory zapisane w kodzie JS telefonu.
+- Dowód: `smoke-css-roles-v1481` (rozszerzony), `smoke-css-alpha` i `smoke-css-tokens` po zamianie ról, testy w przeglądarce i WebKit (rola = wartość koloru w tej samej przeglądarce; podmiana na oryginał bez zmian stylu). Łączenie kolorów półprzezroczystych (`css-alpha apply`) wyłączone.
+
 ## 14.81
 - **Role kolorów — krok 1 do motywu ciemnego** (decyzja właściciela 22.11.2026: „to robimy krok 1”). **Wygląd bez zmian.** Arkusze ekranów nie odwołują się już wprost do palety (`var(--wx-white)`), tylko do roli: rodzaj użycia + kolor, np. `var(--wr-bg-white)` (biały jako tło) i `var(--wr-text-white)` (biały jako tekst, np. na niebieskim przycisku). Motyw ciemny będzie mógł zmienić tło na ciemne, zostawiając biały napis na przycisku.
 - 214 ról w nowym `src/styles/roles.css` (tło 60, tekst 77, ramki i linie 58, ikony i pola wyboru 8, kolory cieni 9, zmienne lokalne o mieszanym użyciu 2), w 3395 miejscach w 28 arkuszach. W motywie jasnym każda rola = kolor palety ze swojej nazwy. Rola wynika z właściwości CSS, w której stoi kolor.

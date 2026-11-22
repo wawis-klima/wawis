@@ -11,7 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { REGISTRY_FILE, scanDeclarationValues } from './css-tokens.mjs';
+import { REGISTRY_FILE, readStyleSource, scanDeclarationValues } from './css-tokens.mjs';
 import { deltaE2000 } from './css-color-merge.mjs';
 import { baseSelector, selectorAt } from './css-shadows.mjs';
 
@@ -173,7 +173,7 @@ function state() {
   const baseline = JSON.parse(read(ALPHA_BASELINE_FILE)).files;
   const usage = new Map(); const groups = new Map();
   for (const [file, raws] of Object.entries(baseline)) {
-    const names = [...read(file).matchAll(ALPHA_VAR_RE)].map((m) => m[1]);
+    const names = [...readStyleSource(file).matchAll(ALPHA_VAR_RE)].map((m) => m[1]);
     if (names.length !== raws.length) throw new Error(`${file}: liczba kolorów rgba ≠ zapis pierwotny`);
     names.forEach((nm, i) => {
       const v = alpha[nm];
@@ -206,6 +206,8 @@ function plan() {
 }
 
 function apply() {
+  // 14.82: arkusze używają ról (--wr-*, src/styles/roles.css) — łączenie zapisałoby zmienne rgba wprost i zniszczyło role.
+  throw new Error('Od 14.82 łączenie kolorów półprzezroczystych w arkuszach z rolami jest wyłączone');
   const { alpha, baseline } = state();
   const { target, centers } = plan();
   const merges = { note: 'Kolor pierwotny (14.67, postać kanoniczna) → kolor po łączeniu.', limits: ALPHA_LIMITS, backdrops: ALPHA_BACKDROPS, steps: [], map: {} };
@@ -241,7 +243,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const { alpha, baseline } = state();
     const rows = [];
     for (const [file, raws] of Object.entries(baseline)) {
-      const css = read(file);
+      const css = readStyleSource(file);
       [...css.matchAll(ALPHA_VAR_RE)].forEach((m, i) => {
         const orig = normalizeRgba(raws[i]); const now = alpha[m[1]];
         if (orig !== now) rows.push({ file, selector: selectorAt(css, m.index), from: orig, to: now });

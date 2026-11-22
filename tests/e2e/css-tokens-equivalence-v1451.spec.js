@@ -564,7 +564,14 @@ async function runScenario(page, scenario) {
     const cs = getComputedStyle(document.documentElement);
     return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
   }, Object.keys(roles));
-  expect(loadedRoles).toEqual(Object.fromEntries(Object.entries(roles).map(([role, palette]) => [role, tokens[palette]])));
+  // 14.82: rola koloru półprzezroczystego = wartość jej zmiennej --wxa-* w tej samej przeglądarce.
+  const loadedAlpha = await page.evaluate((names) => {
+    const cs = getComputedStyle(document.documentElement);
+    return Object.fromEntries(names.map((name) => [name, cs.getPropertyValue(name).trim()]));
+  }, [...new Set(Object.values(roles).filter((p) => p.startsWith('--wxa-')))]);
+  expect(Object.values(loadedAlpha).every(Boolean)).toBe(true);
+  expect(loadedRoles).toEqual(
+    Object.fromEntries(Object.entries(roles).map(([role, palette]) => [role, palette.startsWith('--wxa-') ? loadedAlpha[palette] : tokens[palette]])));
 
   // Każda deklaracja ze zmienną była poprawna w oryginale.
   const files = [...new Set(scenario.states.flatMap((state) => state.files))];

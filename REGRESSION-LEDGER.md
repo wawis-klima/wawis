@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## CSS-ROLES-1482 — role kolorów półprzezroczystych (decyzja właściciela 22.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| CSS-ROLES-1482 | FIXED-UNVERIFIED | 185 odwołań `var(--wxa-*)` w 9 arkuszach → 66 ról `--wr-<rodzaj>-a-*`. Konwersja: 9/9 arkuszy po zamianie ról = wersja z 14.81; role z 14.81 bez zmian. `smoke-css-roles-v1481`, `smoke-css-alpha`, `smoke-css-tokens`; E2E równoważności i WebKit porównują role z wartościami w przeglądarce. |
+| CSS-ROLES-1481-IPHONE | ACCEPTED | Właściciel 22.11.2026 16:14: 14.81 na iPhonie „wszystko wygląda po staremu”. |
+| CSS-ROLES-1482-IPHONE | OPEN | Wygląd na fizycznym iPhonie po wdrożeniu (oczekiwane: bez zmian). |
+
 ## CSS-ROLES-1481 — role kolorów, krok 1 do motywu ciemnego (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

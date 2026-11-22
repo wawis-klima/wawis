@@ -282,7 +282,7 @@
 .nameplateCropGrid {
   position: absolute;
   display: block;
-  background: var(--wxa-ffffff-440);
+  background: var(--wr-bg-a-ffffff-440);
   pointer-events: none;
 }
 
@@ -322,7 +322,7 @@
   border-color: var(--wr-line-white);
   border-style: solid;
   content: "";
-  filter: drop-shadow(0 1px 2px var(--wxa-000000-700));
+  filter: drop-shadow(0 1px 2px var(--wr-shadow-a-000000-700));
 }
 
 .nameplateCropHandle.topLeft { top: -15px; left: -15px; }

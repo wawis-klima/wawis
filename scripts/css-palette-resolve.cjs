@@ -23,7 +23,7 @@ function readRoles() {
   const file = path.join(root, 'src', 'styles', 'roles.css');
   if (!fs.existsSync(file)) return {};
   const block = fs.readFileSync(file, 'utf8').match(/:root\s*\{([\s\S]*?)\}/);
-  return block ? Object.fromEntries([...block[1].matchAll(/(--wr-[a-z0-9-]+)\s*:\s*var\((--wx-[a-z0-9-]+)\)\s*;/g)].map((m) => [m[1], m[2]])) : {};
+  return block ? Object.fromEntries([...block[1].matchAll(/(--wr-[a-z0-9-]+)\s*:\s*var\((--wxa?-[a-z0-9-]+)\)\s*;/g)].map((m) => [m[1], m[2]])) : {};
 }
 
 function resolvePalette(css) {
