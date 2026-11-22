@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## UI-1485 — przyciski edycji i tabela tabliczek (zgłoszenie właściciela 22.11.2026, zrzuty z iPhone'a)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1485-EDIT | FIXED-UNVERIFIED | „Zamknij” z nagłówka edycji → dolny rząd obok „Zapisz zmiany” (2 równe kolumny). E2E `mobile-device-table-fit-v1485` (administrator, pracownik), `mobile-v1295-worker-visual`. |
+| UI-1485-NAMEPLATE-TABLE | FIXED-UNVERIFIED | Przyczyna: 4 kolumny z minimum 88+70+92+44 px w karcie urządzenia ~260 px → znacznik ✓ poza kartą. Teraz 3 kolumny `minmax(0,…)`, „Zapisano w systemie” tylko dla czytnika ekranu (tekst zostaje w DOM — `mobile-resilience` bez zmian). E2E sprawdza położenie znacznika. |
+| DARK-THEME-1484-IPHONE | ACCEPTED | Właściciel 22.11.2026 18:39: „ten tryb ciemny jest ok”. |
+| UI-1485-IPHONE | OPEN | Na iPhonie: tabela tabliczek, przyciski w edycji (administrator i pracownik). |
+
 ## DARK-THEME-1484 — motyw ciemny na telefonie (decyzja właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -137,7 +137,8 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         phoneGap:phone && email ? phone.top-email.bottom : -1,
         nipRowDelta:nip && phone ? Math.abs(nip.top-phone.top) : 999,
         nipColumnGap:nip && phone ? nip.left-phone.right : -1,
-        closeHeight:rect('.jobHead > .btn')?.height,
+        closeHeight:rect('.jobFormEditActions .jobFormEditClose')?.height,
+        saveHeight:rect('.jobFormEditActions .saveJobBtn')?.height,
         voiceHeight:rect('.voiceClientMainBtn')?.height,
         dateHeight:rect('.installationDateInputShell')?.height,
         fontSize:input ? parseFloat(getComputedStyle(input).fontSize) : 0,
@@ -150,7 +151,9 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
       };
     });
-    for (const k of ['emailHeight','phoneHeight','nipHeight','closeHeight','dateHeight']) {
+    // 14.85: „Zamknij” na dole obok „Zapisz zmiany”, ta sama wysokość.
+    expect(Math.abs(compactLayout.closeHeight - compactLayout.saveHeight)).toBeLessThanOrEqual(1);
+    for (const k of ['emailHeight','phoneHeight','nipHeight','dateHeight']) {
       expect(compactLayout[k], k + ' must actually render in compact size').toBeGreaterThanOrEqual(32);
       expect(compactLayout[k], k + ' must not render with old large size').toBeLessThanOrEqual(36);
     }
@@ -171,7 +174,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
     const oneScreen = await modal.evaluate(el => {
       const box = node => node.getBoundingClientRect();
       const header = box(el.querySelector('.jobHead h2'));
-      const close = box(el.querySelector('.jobHead > .btn'));
+      const close = box(el.querySelector('.jobFormEditActions .jobFormEditClose'));
       const note = el.querySelector('.adminNoteTextareaCompact');
       const noteRect = box(note);
       const saveRect = box(el.querySelector('.saveJobBtn'));
@@ -180,6 +183,9 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       return {
         headerCenter: header.y+header.height/2,
         closeCenter: close.y+close.height/2,
+        closeRight: close.right,
+        saveLeft: el.querySelector('.saveJobBtn').getBoundingClientRect().left,
+        saveCenter: el.querySelector('.saveJobBtn').getBoundingClientRect().y+el.querySelector('.saveJobBtn').getBoundingClientRect().height/2,
         noteHeight:noteRect.height,
         noteFont:parseFloat(getComputedStyle(note).fontSize),
         saveBottom:saveRect.bottom,
@@ -189,7 +195,11 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         viewportHeight:window.innerHeight,
       };
     });
-    expect(Math.abs(oneScreen.headerCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(4);
+    // 14.85 (decyzja właściciela): „Zamknij” i „Zapisz zmiany” w jednym rzędzie na dole okna.
+    expect(Math.abs(oneScreen.saveCenter-oneScreen.closeCenter)).toBeLessThanOrEqual(2);
+    expect(oneScreen.closeRight).toBeLessThanOrEqual(oneScreen.saveLeft);
+    expect(oneScreen.closeCenter).toBeGreaterThan(oneScreen.headerCenter + 100);
+    await expect(modal.locator('.jobHead > .btn')).toHaveCount(0);
     // 13.19: on short iPhones keep readable spacing (6px), and a scrollable editor.
     // Vertical scrolling is intentional; do not reintroduce 3px / 94px compact fallbacks.
     expect(oneScreen.noteHeight).toBeGreaterThanOrEqual(115);
@@ -206,7 +216,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
       const nip = rect('.adminContactPairV1302 .jobNipCompactInput');
       const title = rect('.jobHead h2');
       const mic = rect('.voiceClientIconOnlyV1302');
-      const close = rect('.jobHead > .btn');
+      const close = el.getBoundingClientRect();
       const note = rect('.adminNoteTextareaCompact');
       return {
         clientHeight:client?.height,
@@ -217,7 +227,7 @@ test.describe('@mobile 12.95 — zmiany pracownika bez naruszania administratora
         titleRight:title?.right,
         micLeft:mic?.left,
         micRight:mic?.right,
-        closeLeft:close?.left,
+        closeLeft:close?.right,
         noteHeight:note?.height,
       };
     });

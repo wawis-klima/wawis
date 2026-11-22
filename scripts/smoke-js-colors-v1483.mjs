@@ -29,6 +29,7 @@ const roleValue = (role) => {
   return palette.startsWith('--wxa-') ? alpha[palette] : tokens[palette];
 };
 
+const unchanged = {};
 function checkFile(file, mode, current) {
   const { colors, original_sha256: sha, mode: savedMode } = baseline[file];
   assert.equal(savedMode, mode, `${file}: tryb`);
@@ -36,7 +37,10 @@ function checkFile(file, mode, current) {
   assert.equal(uses.length, colors.length, `${file}: liczba ról = liczba pierwotnych kolorów`);
   let k = 0;
   const reconstructed = current.replace(/var\((--wr-[a-z0-9-]+)\)/g, () => colors[k++]);
-  assert.equal(sha256(reconstructed), sha, `${file}: poza kolorami plik różni się od oryginału`);
+  // 14.85: SHA-256 dowodził w 14.83, że konwersja zmieniła tylko kolory. Później te pliki wolno zwyczajnie
+  // edytować (np. przyciski okna edycji) — kolory nadal sprawdzamy miejsce po miejscu (niżej), a zgodność
+  // z oryginałem tylko zgłaszamy.
+  unchanged[file] = sha256(reconstructed) === sha;
   uses.forEach((m, i) => {
     const raw = colors[i];
     const expected = raw.startsWith('#') ? canonicalHex(raw) : normalizeRgba(raw);
@@ -63,7 +67,8 @@ for (const [file, mode] of Object.entries(JS_COLOR_FILES)) total += checkFile(fi
   const current = fs.readFileSync(file, 'utf8');
   assert.throws(() => checkFile(file, mode, current.replace('var(--wr-bg-white)', 'var(--wr-bg-slate-50)')), /pierwotny kolor/);
   assert.throws(() => checkFile(file, mode, current.replace('background: "var(--wr-bg-white)"', 'background: "var(--wr-text-white)"')), /właściwości/);
-  assert.throws(() => checkFile(file, mode, current.replace('borderRadius: "18px"', 'borderRadius: "19px"')), /różni się od oryginału/);
+  assert.throws(() => checkFile(file, mode, current.replace('var(--wr-bg-white)', '#ffffff')), /liczba ról|przez role/);
 }
 
-console.log(`PASS WAWIS 14.83 — ${total} kolorów z kodu JS w ${Object.keys(JS_COLOR_FILES).length} plikach przez role; pliki po odtworzeniu = oryginał, role = pierwotne kolory.`);
+const edited = Object.keys(unchanged).filter((f) => !unchanged[f]);
+console.log(`PASS WAWIS 14.83 — ${total} kolorów z kodu JS w ${Object.keys(JS_COLOR_FILES).length} plikach przez role; role = pierwotne kolory${edited.length ? `; edytowane od 14.83 (kolory bez zmian): ${edited.join(', ')}` : '; pliki po odtworzeniu = oryginał'}.`);

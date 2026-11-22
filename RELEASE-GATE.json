@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.84",
+  "version": "14.85",
   "scope": "full",
-  "release_branch": "release/v14.84",
+  "release_branch": "release/v14.85",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Motyw ciemny na telefonie (CSS + przełącznik w nagłówku) — bez zmian backendu, danych, zdjęć i offline."
+    "notes": "Układ telefonu: przyciski edycji montażu i tabela tabliczek — bez zmian backendu i danych."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.84",
+    "source_branch": "release/v14.85",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.84.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.85.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.84: motyw ciemny na telefonie",
-    "release_ci": "WAWIS PR checks + smoke-dark-theme-v1484 + E2E dark-theme-v1484 (Chromium, WebKit)",
-    "postdeploy": "Vercel READY/14.84; brak błędów runtime."
+    "code": "14.85: przyciski edycji, tabela tabliczek",
+    "release_ci": "WAWIS PR checks + smoke-edit-actions-device-table-v1485 + E2E mobile-device-table-fit-v1485",
+    "postdeploy": "Vercel READY/14.85; brak błędów runtime."
   }
 }

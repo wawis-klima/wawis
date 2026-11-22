@@ -1,3 +1,9 @@
+## 14.85
+- **Edycja montażu: „Zamknij” i „Zapisz zmiany” obok siebie na dole okna** (zgłoszenie właściciela 22.11.2026). Dotyczy administratora i pracownika na telefonie. „Zamknij” zniknął z nagłówka okna; nowe zlecenie bez zmian (tam „Zamknij” zostaje u góry obok wprowadzania głosowego).
+- **Tabela tabliczek w karcie urządzenia mieści się na ekranie** (zgłoszenie właściciela, zrzut z iPhone'a). Od podziału na karty urządzeń tabela była węższa, a 4 kolumny z minimalnymi szerokościami wypychały zielony znacznik ✓ poza kartę. Teraz są 3 kolumny: Urządzenie, Model / moc i Tabliczka (znacznik ✓ / ! / ↻ / • / —). Napis „Zapisano w systemie” dublował zielony ✓, więc został tylko dla czytnika ekranu. Inne stany („Brak tabliczki”, „Wysyłanie”, „Błąd wysyłania”, „Zapisano na telefonie”, „Potwierdzono ręcznie”) są widoczne pod modelem.
+- Arkusz `src/mobile791/v1485-edit-actions-device-table.css` (po wszystkich arkuszach telefonu). `smoke-js-colors-v1483`: pliki z kolorami w rolach wolno edytować, kolory nadal sprawdzane miejsce po miejscu.
+- Testy: `smoke-edit-actions-device-table-v1485`, E2E `mobile-device-table-fit-v1485` (administrator i pracownik: znacznik w karcie, przyciski w jednym rzędzie), `mobile-v1295-worker-visual` zaktualizowany do nowego położenia „Zamknij”.
+
 ## 14.84
 - **Motyw ciemny na telefonie — „Grafit z czerwienią”** (decyzja właściciela 22.11.2026: propozycja nr 8 z 30). W nagłówku telefonu, w miejscu przycisku „Synchronizuj dane”, jest przełącznik z księżycem/słońcem. Zmienia wygląd od razu, bez przeładowania. Wybór jest zapamiętany na tym telefonie, a każdy pracownik ustawia go sobie sam. Domyślnie jasny, jak dotąd.
 - Ręczna synchronizacja zostaje w Diagnostyce („Synchronizuj teraz”, „Odśwież dane”). Dane i tak odświeżają się same: zmiany na żywo, powrót do aplikacji, powrót internetu.
