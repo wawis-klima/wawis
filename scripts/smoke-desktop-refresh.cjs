@@ -21,7 +21,7 @@ assert.doesNotMatch(shellSource, /Pulpit/);
 assert.match(shellSource, /Centrum 360/);
 assert.match(shellSource, /Kalendarz/);
 assert.match(shellSource, /Montaże|Zlecenia/);
-assert.match(shellSource, /Szablony SMS/);
+assert.doesNotMatch(shellSource, /label: 'Szablony SMS'/, '14.92: szablony SMS tylko w module SMS, nie w menu bocznym.');
 assert.doesNotMatch(shellSource, /Użytkownicy/);
 assert.doesNotMatch(shellSource, /key:\s*'settings'/);
 assert.doesNotMatch(shellSource, /key:\s*'users'/);
