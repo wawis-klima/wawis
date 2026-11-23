@@ -17,8 +17,9 @@ test('14.92 komputer: menu boczne bez Szablonów SMS mieści się bez przewijani
   const sidebar = page.locator('.adminDesktopSidebar');
   await expect(sidebar.getByTestId('desktop-theme-toggle')).toBeVisible();
   await expect(sidebar.locator('.adminDesktopNavItem', { hasText: /^Szablony SMS$/ })).toHaveCount(0);
+  // Zgłoszenia i SMS mogą mieć licznik (liczba za nazwą).
   for (const label of ['Centrum 360', 'Montaże', 'Kalendarz', 'Urządzenia', 'Tankowania', 'Kontrahenci', 'Zgłoszenia', 'SMS', 'Protokoły', 'Diagnostyka']) {
-    await expect(sidebar.locator('.adminDesktopNavItem', { hasText: new RegExp(`^${label}$`) })).toHaveCount(1);
+    await expect(sidebar.locator('.adminDesktopNavItem', { hasText: new RegExp(`^${label}\\d*$`) })).toHaveCount(1);
   }
 
   // Ekran laptopa (1080p, skala 125%, z paskami przeglądarki): całe menu bez przewijania.
@@ -33,7 +34,7 @@ test('14.92 komputer: menu boczne bez Szablonów SMS mieści się bez przewijani
   for (let i = 0; i < parts; i += 1) console.log(`WAWIS-SHOT ${testInfo.project.name}/menu-760 ${i + 1}/${parts} ${preview.slice(i * 6000, (i + 1) * 6000)}`);
 
   // Szablony SMS nadal w module SMS.
-  await sidebar.locator('.adminDesktopNavItem', { hasText: /^SMS$/ }).click();
+  await sidebar.locator('.adminDesktopNavItem', { hasText: /^SMS\d*$/ }).click();
   await expect(page.getByRole('button', { name: 'Zarządzaj szablonami SMS' })).toBeVisible();
 
   // Informacyjnie: najmniejsza wysokość okna bez przewijania menu.
