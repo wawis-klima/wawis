@@ -133,6 +133,7 @@ export function darkRoleColors() {
 // Akcent „Grafit z czerwienią” i miejsca z kolorem zapisanym wprost (poza rolami) — tylko w motywie ciemnym.
 export const DARK_OVERRIDES = Object.freeze([
   ['.mobileActionBtn.primary.wawisOneLineAction', `background:${DARK.accent} !important;border-color:${DARK.accent} !important;color:#ffffff !important`],
+  ['.adminDesktopThemeToggle', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important;color:${DARK.accentText} !important`],
   ['.wawisThemeToggle', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important;color:${DARK.accentText} !important`],
   ['.wawisUserInitialsBadge', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important;color:${DARK.accentText} !important`],
   ['.mobileJobCard.activeMobileJobCard', `background:${DARK.accentSoft} !important;border-color:${DARK.accentLine} !important`],

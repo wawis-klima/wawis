@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.89",
+  "version": "14.90",
   "scope": "full",
-  "release_branch": "release/v14.89",
+  "release_branch": "release/v14.90",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Telefon: blokada przewijania strony pod oknami — bez zmian backendu."
+    "notes": "Komputer: przełącznik trybu ciemnego — tylko interfejs, bez zmian backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.89",
+    "source_branch": "release/v14.90",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.89.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.90.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.89: blokada strony pod oknem",
-    "release_ci": "WAWIS PR checks + smoke-modal-page-lock-v1489 + E2E",
-    "postdeploy": "Vercel READY/14.89; brak błędów runtime."
+    "code": "14.90: tryb ciemny na komputerze",
+    "release_ci": "WAWIS PR checks + smoke-dark-theme-v1484 + E2E dark-theme-desktop-v1490",
+    "postdeploy": "Vercel READY/14.90; brak błędów runtime."
   }
 }
