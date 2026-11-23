@@ -1,7 +1,9 @@
 /* WAWIS 14.93 (decyzja właściciela 23.11.2026) — kolory osób.
    Każda osoba ma jeden kolor: w kartach montaży i w kółku z inicjałami w górnym pasku telefonu.
    Kolory przez role (--wr-*), więc działają w trybie jasnym i ciemnym. Wielkość liter bez zmian. */
-.badgeRed{background:var(--wr-bg-red-100);border-color:var(--wr-line-red-300);color:var(--wr-text-red-800)}
+/* Ten plik ładuje się przed styles.css, więc sama klasa .badgeRed przegrywa z domyślnym .initialBadge (niebieski);
+   stąd mocniejszy selektor .initialBadge.badgeRed. */
+.badgeRed,.initialBadge.badgeRed{background:var(--wr-bg-red-100);border-color:var(--wr-line-red-300);color:var(--wr-text-red-800)}
 
 .mobileJobsShellV959 .wawisUserInitialsBadge.badgeBlue{background:var(--wr-bg-blue-100) !important;border-color:var(--wr-line-c-b7d4ff) !important;color:var(--wr-text-c-10203a) !important}
 .mobileJobsShellV959 .wawisUserInitialsBadge.badgeGreen{background:var(--wr-bg-green-100) !important;border-color:var(--wr-line-green-300) !important;color:var(--wr-text-green-900) !important}

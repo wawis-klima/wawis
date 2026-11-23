@@ -52,7 +52,7 @@ const css = readFileSync('src/styles/person-badge-colors-v1493.css', 'utf8');
 const layout = readFileSync('src/mobile791/components/jobs/MobileJobsLayout.jsx', 'utf8');
 const main = readFileSync('src/main.jsx', 'utf8');
 const checks = [
-  [/^\.badgeRed\{background:var\(--wr-bg-red-100\)/m.test(css), 'klasa .badgeRed'],
+  [/^\.badgeRed,\.initialBadge\.badgeRed\{background:var\(--wr-bg-red-100\)/m.test(css), 'klasa .badgeRed (silniejsza niż domyślne .initialBadge)'],
   [['badgeBlue', 'badgeGreen', 'badgeAmber', 'badgePurple', 'badgePink', 'badgeSlate', 'badgeRed'].every((c) => css.includes(`.wawisUserInitialsBadge.${c}{`)), 'kółko w pasku: wszystkie kolory'],
   [/className=\{`wawisUserInitialsBadge \$\{getBadgeColorClass\(profile\.full_name\)\}`\}/.test(layout), 'kółko w pasku: kolor osoby'],
   [/import '\.\/styles\/person-badge-colors-v1493\.css'/.test(main), 'CSS w punkcie wejścia'],
