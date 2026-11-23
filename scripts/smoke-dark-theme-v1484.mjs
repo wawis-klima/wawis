@@ -94,13 +94,15 @@ assert.equal(applyTheme('dark', null), 'dark', 'bez dokumentu bez wyjątku');
 const main = fs.readFileSync('src/main.jsx', 'utf8');
 const rolesAt = main.indexOf("import './styles/roles.css'"); const darkAt = main.indexOf("import './styles/theme-dark.css'");
 assert.ok(rolesAt > 0 && darkAt > rolesAt && darkAt < main.indexOf('import('), 'theme-dark.css statycznie, po rolach');
-assert.match(main, /if \(useMobile791\) \{[\s\S]{0,200}applyTheme\(readStoredTheme\(storage\)\)/, 'zapamiętany motyw tylko na telefonie, przed ekranami');
+// 14.90: zapamiętany motyw także na komputerze — przed pierwszym ekranem, dla obu wersji.
+assert.match(main, /\/\/ 14\.90[^\n]*\n  \{\n    let storage = null\n[\s\S]{0,120}applyTheme\(readStoredTheme\(storage\)\)\n  \}/, 'zapamiętany motyw przed ekranami (telefon i komputer)');
 const layout = fs.readFileSync('src/mobile791/components/jobs/MobileJobsLayout.jsx', 'utf8');
 assert.match(layout, /wawisThemeToggle[\s\S]{0,300}onClick=\{handleToggleTheme\}[\s\S]{0,300}aria-pressed=\{theme === "dark"\}/, 'przełącznik w nagłówku');
 assert.match(layout, /setTheme\(toggleTheme\(storage\)\)/);
 assert.doesNotMatch(layout, /location\.reload/, 'bez przeładowania');
-for (const f of ['src/App.jsx', 'src/components/jobs/MobileJobsLayout.jsx']) {
-  assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /toggleTheme|applyTheme/, `${f}: komputer bez motywu ciemnego`);
-}
+const shell = fs.readFileSync('src/components/layout/AdminDesktopShell.jsx', 'utf8');
+assert.match(shell, /className="adminDesktopThemeToggle"[\s\S]{0,120}onClick=\{handleToggleTheme\}[\s\S]{0,80}aria-pressed=\{theme === 'dark'\}/, '14.90: przełącznik w menu bocznym komputera');
+assert.match(shell, /setTheme\(toggleTheme\(storage\)\)/);
+assert.doesNotMatch(shell, /location\.reload/, 'komputer: bez przeładowania');
 
 console.log(`PASS WAWIS 14.84 — motyw ciemny: ${Object.keys(dark).length} ról, ${DARK_OVERRIDES.length} akcentów; ${pairs} par tło + tekst sprawdzonych; przełącznik zapisuje wybór na telefonie.`);

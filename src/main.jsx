@@ -164,9 +164,9 @@ async function boot() {
   if (publicQrMode) return bootPublicQr()
   window.__wawisBootTrace?.mark?.('imports')
   const useMobile791 = isMobileRuntime()
-  // 14.84: motyw zapamiętany na telefonie, ustawiony przed załadowaniem ekranów (bez mignięcia jasnego).
-  // Komputer zostaje zawsze jasny.
-  if (useMobile791) {
+  // 14.84: motyw zapamiętany na urządzeniu, ustawiony przed załadowaniem ekranów (bez mignięcia jasnego).
+  // 14.90: także na komputerze (przełącznik w menu bocznym administratora).
+  {
     let storage = null
     try { storage = window.localStorage } catch { storage = null }
     applyTheme(readStoredTheme(storage))

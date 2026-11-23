@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './admin-nav-badge.css';
+import './desktop-theme-toggle.css';
+import { currentTheme, toggleTheme } from '../../modules/theme.js';
 import { APP_VERSION } from '../../version';
 import GlobalDesktopSearch from '../desktop/GlobalDesktopSearch.jsx';
 
@@ -169,6 +171,13 @@ function getSidebarActiveState(item, activeModule, activeNavKey) {
 export default function AdminDesktopShell({ activeModule, activeNavKey, setActiveModule, onNavigate, profile, onLogout, globalSearchProps = null, navBadges = null, children }) {
   const displayName = profile?.full_name || profile?.email || 'Administrator';
   const initials = String(displayName).trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'AD';
+  // 14.90 (decyzja właściciela 23.11.2026): przełącznik trybu ciemnego także na komputerze (jak w telefonie od 14.84).
+  const [theme, setTheme] = useState(() => currentTheme());
+  const handleToggleTheme = () => {
+    let storage = null;
+    try { storage = window.localStorage; } catch { storage = null; }
+    setTheme(toggleTheme(storage));
+  };
 
   return (
     <div className="adminDesktopShell">
@@ -207,6 +216,21 @@ export default function AdminDesktopShell({ activeModule, activeNavKey, setActiv
         </nav>
 
         <div className="adminDesktopSidebarFooter">
+          <button
+            type="button"
+            className="adminDesktopThemeToggle"
+            onClick={handleToggleTheme}
+            aria-pressed={theme === 'dark'}
+            data-testid="desktop-theme-toggle"
+            title={theme === 'dark' ? 'Włącz tryb jasny' : 'Włącz tryb ciemny'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {theme === 'dark'
+                ? (<><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4" /></>)
+                : (<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />)}
+            </svg>
+            <span>{theme === 'dark' ? 'Tryb jasny' : 'Tryb ciemny'}</span>
+          </button>
           <div className="adminDesktopSidebarProfileCard">
             <div className="adminDesktopProfileAvatar">{initials}</div>
             <div className="adminDesktopProfileCopy">

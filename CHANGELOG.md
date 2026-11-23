@@ -1,3 +1,8 @@
+## 14.90
+- **Tryb ciemny także na komputerze** (decyzja właściciela 23.11.2026). W menu bocznym, nad profilem, jest przycisk „Tryb ciemny” / „Tryb jasny” (księżyc / słońce). Zmienia wygląd od razu, bez przeładowania. Wybór jest zapamiętany w tej przeglądarce, osobno dla każdego komputera i telefonu. Kolory jak w telefonie: „Grafit z czerwienią”, z czerwonym akcentem przełącznika.
+- Motyw zapamiętany na urządzeniu jest ustawiany przed pierwszym ekranem także w wersji na komputer (`src/main.jsx`). Domyślnie jasny, jak dotąd.
+- Testy: `smoke-dark-theme-v1484` (przełącznik w menu bocznym), nowy E2E `dark-theme-desktop-v1490`: przełączanie, zapamiętanie i czytelność (kontrast) Centrum 360, Montaży, Kalendarza, Urządzeń, Kontrahentów, SMS, Protokołów, Diagnostyki i szczegółów montażu, ze zrzutami ekranów.
+
 ## 14.89
 - **Okna na telefonie nie przewijają już strony pod spodem** (zgłoszenie właściciela 22.11.2026: przesuwanie palcem w „Dodaj nowy montaż” przewijało listę montaży pod oknem). Na iPhonie samo `overflow: hidden` nie blokuje przewijania palcem, więc każde okno (`AppModal`) domyślnie unieruchamia stronę (`body position: fixed`). Po zamknięciu lista wraca dokładnie na to samo miejsce. Dotąd tak działały tylko protokół, podgląd zdjęć i podpis wizyty serwisowej.
 - Testy: `smoke-modal-page-lock-v1489`, E2E `mobile-device-table-fit-v1485` (14.89: strona unieruchomiona przy nowym zleceniu, pozycja po zamknięciu).

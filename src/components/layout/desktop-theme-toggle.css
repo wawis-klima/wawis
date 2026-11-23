@@ -1,0 +1,31 @@
+/* WAWIS 14.90 — przełącznik trybu ciemnego w stopce menu bocznego komputera (nad profilem). */
+.adminDesktopSidebarLightPremium .adminDesktopThemeToggle,
+.adminDesktopThemeToggle {
+  order: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--wr-line-c-dbe6f2);
+  background: var(--wr-bg-white);
+  color: var(--wr-text-c-526172);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.adminDesktopThemeToggle svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+.adminDesktopThemeToggle:hover {
+  background: var(--wr-bg-slate-50);
+  color: var(--wr-text-c-10203a);
+}

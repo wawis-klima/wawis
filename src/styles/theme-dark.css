@@ -335,6 +335,11 @@ html[data-theme="dark"] .mobileActionBtn.primary.wawisOneLineAction {
   border-color:#dc2626 !important;
   color:#ffffff !important;
 }
+html[data-theme="dark"] .adminDesktopThemeToggle {
+  background:#2a1718 !important;
+  border-color:#7f2a2a !important;
+  color:#fca5a5 !important;
+}
 html[data-theme="dark"] .wawisThemeToggle {
   background:#2a1718 !important;
   border-color:#7f2a2a !important;

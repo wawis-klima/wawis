@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## DARK-THEME-1490 — tryb ciemny na komputerze (decyzja właściciela 23.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| DARK-THEME-1490 | FIXED-UNVERIFIED | Przełącznik `adminDesktopThemeToggle` w stopce menu bocznego (`AdminDesktopShell`), `applyTheme` przed pierwszym ekranem także na komputerze. Kolory z `theme-dark.css` (te same role). E2E `dark-theme-desktop-v1490` (8 modułów + szczegóły, kontrast, zrzuty), `smoke-dark-theme-v1484`. |
+| UI-1489-IPHONE | OPEN | Bez potwierdzenia właściciela. |
+| DARK-THEME-1490-PC | OPEN | Na komputerze właściciela: przełączenie i przegląd modułów w trybie ciemnym. |
+
 ## UI-1489 — przewijanie strony pod oknem na iPhonie (zgłoszenie właściciela 22.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
