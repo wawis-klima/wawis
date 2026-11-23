@@ -1,3 +1,11 @@
+## 14.92
+- **Menu boczne na komputerze bez „Szablony SMS”** (decyzja właściciela 23.11.2026). Szablony są w module SMS: przycisk „Zarządzaj szablonami SMS”.
+- **Menu mieści się bez przewijania.** Od 14.90 w stopce jest przycisk trybu ciemnego, więc na laptopie menu zaczęło się przewijać. Mniejsze są tylko odstępy i wysokość wierszy (`src/components/layout/desktop-sidebar-fit.css`). Rozmiary liter i ikon są bez zmian.
+- Testy: `smoke-desktop-refresh`, `smoke-sidebar-settings` (brak pozycji, szablony w SMS), nowy E2E `desktop-sidebar-fit-v1492` (okno 1536×760 bez przewijania menu, litery 17 px, szablony w module SMS).
+
+## 14.92
+- uzupełnij opis zmian dla wersji 14.92
+
 ## 14.91
 - **Nowe naklejki QR z adresem `https://serwis.wawis.pl/u/<KOD>`** (decyzja właściciela; domena firmy podłączona do Vercel 23.11.2026, certyfikat SSL wystawiony). Zmienione generatory w `docs/naklejki-qr` (`BASE_URL`) i opis. Już wydrukowane naklejki z adresem `wawis-klima.vercel.app` działają dalej bez zmian. Aplikacja rozpoznaje kod z obu adresów.
 - Sama aplikacja bez zmian działania; `serwis.wawis.pl` otwiera tę samą wersję co `wawis-klima.vercel.app`.

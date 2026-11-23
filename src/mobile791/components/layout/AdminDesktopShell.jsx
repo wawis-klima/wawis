@@ -33,22 +33,6 @@ function IconChecklist() {
 function IconMessage() {
   return <ShellIcon><path d="M20 11a7.5 7.5 0 0 1-7.5 7.5H8l-4 2 1.5-4A7.5 7.5 0 1 1 20 11Z" /></ShellIcon>;
 }
-function IconFile() {
-  return <ShellIcon><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" /><path d="M14 3v5h5" /><path d="M9 13h6M9 17h4" /></ShellIcon>;
-}
-function IconGear() {
-  return <ShellIcon><circle cx="12" cy="12" r="3.2" /><path d="M19 12a7 7 0 0 0-.08-1l2.03-1.58-2-3.46-2.46 1a7.08 7.08 0 0 0-1.72-1L14.4 3h-4.8l-.37 2.96a7.08 7.08 0 0 0-1.72 1l-2.46-1-2 3.46L5.08 11a7 7 0 0 0 0 2l-2.03 1.58 2 3.46 2.46-1a7.08 7.08 0 0 0 1.72 1L9.6 21h4.8l.37-2.96a7.08 7.08 0 0 0 1.72-1l2.46 1 2-3.46L18.92 13c.05-.33.08-.66.08-1Z" /></ShellIcon>;
-}
-function IconBell() {
-  return <ShellIcon><path d="M15 18H5.5a1 1 0 0 1-.8-1.6l1.1-1.47A4 4 0 0 0 6.6 12.5V10a5.4 5.4 0 0 1 10.8 0v2.5c0 .88.29 1.73.8 2.43l1.1 1.47A1 1 0 0 1 18.5 18H15" /><path d="M10 18a2 2 0 0 0 4 0" /></ShellIcon>;
-}
-function IconChevronDown() {
-  return <ShellIcon><path d="m7 10 5 5 5-5" /></ShellIcon>;
-}
-function IconSupport() {
-  return <ShellIcon><path d="M5 12a7 7 0 0 1 14 0v4a2 2 0 0 1-2 2h-2v-4h4" /><path d="M5 14h4v4H7a2 2 0 0 1-2-2v-4Z" /></ShellIcon>;
-}
-
 function LogoSnowflake() {
   return (
     <svg viewBox="0 0 48 48" className="adminShellLogoIcon" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -83,7 +67,6 @@ const sidebarSections = [
   {
     title: 'USTAWIENIA',
     items: [
-      { key: 'sms_templates', label: 'Szablony SMS', icon: IconFile, target: 'sms', passive: true },
       { key: 'settings', label: 'Ustawienia', icon: IconGear, target: 'sms', passive: true },
       { key: 'users', label: 'Użytkownicy', icon: IconUsersShell, target: 'jobs', passive: true },
     ],

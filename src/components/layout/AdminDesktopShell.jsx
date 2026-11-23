@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './admin-nav-badge.css';
 import './desktop-theme-toggle.css';
+import './desktop-sidebar-fit.css';
 import { currentTheme, toggleTheme } from '../../modules/theme.js';
 import { APP_VERSION } from '../../version';
 import GlobalDesktopSearch from '../desktop/GlobalDesktopSearch.jsx';
@@ -113,16 +114,6 @@ function IconSlidersModern() {
   );
 }
 
-function IconTemplateModern() {
-  return (
-    <ShellIcon>
-      <path d="M7.2 3.9h6.9L19 8.75v9.1a2.25 2.25 0 0 1-2.25 2.25h-9.5A2.25 2.25 0 0 1 5 17.85V6.15A2.25 2.25 0 0 1 7.2 3.9Z" />
-      <path d="M14 4.2v4.9h4.75" />
-      <path d="M8.35 12.1h7.3M8.35 15.2h4.8" />
-    </ShellIcon>
-  );
-}
-
 const sidebarSections = [
   {
     title: null,
@@ -140,7 +131,8 @@ const sidebarSections = [
     items: [
       { key: 'requests', label: 'Zgłoszenia', icon: IconRequestModern, target: 'requests' },
       { key: 'sms', label: 'SMS', icon: IconMessageModern, target: 'sms' },
-      { key: 'sms_templates', label: 'Szablony SMS', icon: IconTemplateModern, target: 'sms', passive: true },
+      // 14.92 (decyzja właściciela 23.11.2026): bez osobnej pozycji szablonów — są w module SMS
+      // („Zarządzaj szablonami SMS”), a menu ma się mieścić bez przewijania.
     ],
   },
   {

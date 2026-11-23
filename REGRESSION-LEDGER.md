@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1492 — menu boczne komputera (decyzja właściciela 23.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1492 | FIXED-UNVERIFIED | Usunięta pozycja `sms_templates` z menu (`AdminDesktopShell`, także wariant mobile791); szablony w module SMS („Zarządzaj szablonami SMS”, widok `requestedSection === 'sms_templates'` bez zmian). `desktop-sidebar-fit.css`: tylko odstępy i wysokość wierszy. E2E `desktop-sidebar-fit-v1492`. |
+| UI-1492-PC | OPEN | Komputer właściciela: całe menu widoczne bez przewijania. |
+
 ## QR-1491 — adres serwis.wawis.pl w nowych naklejkach (23.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

@@ -1,0 +1,43 @@
+/* WAWIS 14.92 — menu boczne komputera mieści się bez przewijania (decyzja właściciela 23.11.2026).
+   Od 14.90 stopka ma przycisk trybu ciemnego, więc na laptopach menu zaczęło się przewijać.
+   Zmieniamy wyłącznie odstępy i wysokość wierszy — rozmiary liter i ikon bez zmian. */
+@media (min-width: 901px) {
+  .adminDesktopSidebar.adminDesktopSidebarLightPremium {
+    padding-top: 14px !important;
+    padding-bottom: 12px !important;
+    gap: 12px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopBrand.adminDesktopBrandWawis {
+    min-height: 0 !important;
+    padding-bottom: 8px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopNav {
+    gap: 12px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopNavSection {
+    gap: 6px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopNavList {
+    gap: 3px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopNavItem {
+    min-height: 42px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopSidebarFooter {
+    padding-top: 10px !important;
+    gap: 6px !important;
+  }
+
+  .adminDesktopSidebarLightPremium .adminDesktopSidebarProfileCard {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+}
