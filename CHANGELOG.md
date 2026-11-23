@@ -1,3 +1,11 @@
+## 14.91
+- **Nowe naklejki QR z adresem `https://serwis.wawis.pl/u/<KOD>`** (decyzja właściciela; domena firmy podłączona do Vercel 23.11.2026, certyfikat SSL wystawiony). Zmienione generatory w `docs/naklejki-qr` (`BASE_URL`) i opis. Już wydrukowane naklejki z adresem `wawis-klima.vercel.app` działają dalej bez zmian. Aplikacja rozpoznaje kod z obu adresów.
+- Sama aplikacja bez zmian działania; `serwis.wawis.pl` otwiera tę samą wersję co `wawis-klima.vercel.app`.
+- Testy: `smoke-qr-stickers-v1408` (kod z adresu serwis.wawis.pl, generatory z nowym adresem). E2E `mfa-admin-v1472`: po „Wyloguj” test czeka na przeładowanie strony (zdarzenie `load`), a nie tylko na ekran logowania, który pojawia się przed przeładowaniem. Usuwa niestabilność „interrupted by another navigation”.
+
+## 14.91
+- uzupełnij opis zmian dla wersji 14.91
+
 ## 14.90
 - **Tryb ciemny także na komputerze** (decyzja właściciela 23.11.2026). W menu bocznym, nad profilem, jest przycisk „Tryb ciemny” / „Tryb jasny” (księżyc / słońce). Zmienia wygląd od razu, bez przeładowania. Wybór jest zapamiętany w tej przeglądarce, osobno dla każdego komputera i telefonu. Kolory jak w telefonie: „Grafit z czerwienią”, z czerwonym akcentem przełącznika.
 - Motyw zapamiętany na urządzeniu jest ustawiany przed pierwszym ekranem także w wersji na komputer (`src/main.jsx`). Domyślnie jasny, jak dotąd.

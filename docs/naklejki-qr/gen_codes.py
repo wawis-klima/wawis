@@ -11,7 +11,7 @@ from PIL import Image
 
 OUT = Path(sys.argv[1])
 OUT.mkdir(parents=True, exist_ok=True)
-BASE_URL = 'https://wawis-klima.vercel.app/u/'
+BASE_URL = 'https://serwis.wawis.pl/u/'
 ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ'  # bez 0/O, 1/I/L
 COLS, ROWS, PAGES = 6, 9, 3
 CELL = 30 * mm

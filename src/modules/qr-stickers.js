@@ -1,7 +1,8 @@
 // WAWIS 14.08 — naklejki QR urządzeń (decyzja właściciela 02.11.2026).
 // Naklejka = urządzenie (instalacja multi to jedno urządzenie, więc jedna naklejka).
 // Kod: 8 znaków z alfabetu bez znaków mylących (0/O, 1/I/L). Na naklejce: XXXX-XXXX,
-// w QR adres https://wawis-klima.vercel.app/u/<KOD>.
+// w QR adres https://serwis.wawis.pl/u/<KOD> (od 14.91; starsze naklejki: https://wawis-klima.vercel.app/u/<KOD>,
+// działają dalej — rozpoznajemy samą ścieżkę /u/<KOD>, bez względu na domenę).
 
 export const QR_STICKER_CODE_PATTERN = /^[2-9A-HJKMNP-Z]{8}$/;
 const QR_URL_PATH_PATTERN = /\/u\/([0-9A-Za-z-]{8,9})\/?(?:[?#].*)?$/;

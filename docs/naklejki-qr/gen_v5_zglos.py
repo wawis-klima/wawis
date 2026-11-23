@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw, ImageFont
 OUT, PREFIX = Path(sys.argv[1]), sys.argv[2]
 src_csvs = [Path(p) for p in sys.argv[3:]]
 OUT.mkdir(parents=True, exist_ok=True)
-BASE_URL = 'https://wawis-klima.vercel.app/u/'
+BASE_URL = 'https://serwis.wawis.pl/u/'
 codes = [r['kod'] for src in src_csvs for r in csv.DictReader(open(src, encoding='utf-8'), delimiter=';')]
 assert len(codes) == len(set(codes)) and len(codes) % 45 == 0, len(codes)
 W, H = 35 * mm, 30 * mm

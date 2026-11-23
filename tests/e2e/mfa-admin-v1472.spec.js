@@ -1,6 +1,17 @@
 import { devices, expect, test } from '@playwright/test';
 import { ADMIN, WORKER, login, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
+// 14.91: wylogowanie czyści sesję, a potem (setTimeout 0) przeładowuje stronę przez location.replace.
+// Ekran logowania pojawia się jeszcze PRZED tym przeładowaniem, więc czekanie na pole e-mail nie wystarcza:
+// page.goto trafiał w trwającą nawigację (net::ERR_ABORTED / „interrupted by another navigation”).
+// Czekamy na zdarzenie load nowej strony, nasłuchując od chwili przed kliknięciem.
+async function logoutAndWaitForReload(page) {
+  const reloaded = page.waitForEvent('load');
+  await page.getByRole('button', { name: 'Wyloguj' }).first().click();
+  await reloaded;
+  await expect(page.locator('input[name="email"]')).toBeVisible();
+}
+
 // WAWIS 14.72 — kod z telefonu przy logowaniu administratora (MFA TOTP). Atrapa MFA: poprawny kod 123456.
 const CODE = '123456';
 const { defaultBrowserType: _unused, ...iphone14 } = devices['iPhone 14'];
@@ -36,11 +47,7 @@ test.describe('14.72: kod z telefonu — komputer', () => {
     await expect(page.getByTestId('mfa-challenge')).toHaveCount(0);
 
     // Nowe logowanie: po haśle krok kodu, bez danych w tle.
-    await page.getByRole('button', { name: 'Wyloguj' }).first().click();
-    // 14.90: wylogowanie przeładowuje stronę — czekamy na ekran logowania, zanim test otworzy stronę od nowa
-    // (inaczej page.goto trafia w trwające przeładowanie: net::ERR_ABORTED, niestabilny test od 14.76).
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await page.waitForLoadState('load');
+    await logoutAndWaitForReload(page);
     await loginWithoutReset(page, ADMIN);
     const challenge = page.getByTestId('mfa-challenge');
     await expect(challenge).toBeVisible();
@@ -61,11 +68,7 @@ test.describe('14.72: kod z telefonu — komputer', () => {
     await page.getByTestId('mfa-settings-card-toggle').click();
     await page.getByTestId('mfa-settings-card').getByRole('button', { name: 'Wyłącz kod z telefonu' }).click();
     await expect(page.getByTestId('mfa-settings-status')).toHaveText('Wyłączony');
-    await page.getByRole('button', { name: 'Wyloguj' }).first().click();
-    // 14.90: wylogowanie przeładowuje stronę — czekamy na ekran logowania, zanim test otworzy stronę od nowa
-    // (inaczej page.goto trafia w trwające przeładowanie: net::ERR_ABORTED, niestabilny test od 14.76).
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await page.waitForLoadState('load');
+    await logoutAndWaitForReload(page);
     await loginWithoutReset(page, ADMIN);
     await expect(page.getByRole('button', { name: 'Diagnostyka' })).toBeVisible();
     await expect(page.getByTestId('mfa-challenge')).toHaveCount(0);
