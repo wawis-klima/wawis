@@ -37,6 +37,10 @@ test.describe('14.72: kod z telefonu — komputer', () => {
 
     // Nowe logowanie: po haśle krok kodu, bez danych w tle.
     await page.getByRole('button', { name: 'Wyloguj' }).first().click();
+    // 14.90: wylogowanie przeładowuje stronę — czekamy na ekran logowania, zanim test otworzy stronę od nowa
+    // (inaczej page.goto trafia w trwające przeładowanie: net::ERR_ABORTED, niestabilny test od 14.76).
+    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await page.waitForLoadState('load');
     await loginWithoutReset(page, ADMIN);
     const challenge = page.getByTestId('mfa-challenge');
     await expect(challenge).toBeVisible();
@@ -58,6 +62,10 @@ test.describe('14.72: kod z telefonu — komputer', () => {
     await page.getByTestId('mfa-settings-card').getByRole('button', { name: 'Wyłącz kod z telefonu' }).click();
     await expect(page.getByTestId('mfa-settings-status')).toHaveText('Wyłączony');
     await page.getByRole('button', { name: 'Wyloguj' }).first().click();
+    // 14.90: wylogowanie przeładowuje stronę — czekamy na ekran logowania, zanim test otworzy stronę od nowa
+    // (inaczej page.goto trafia w trwające przeładowanie: net::ERR_ABORTED, niestabilny test od 14.76).
+    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await page.waitForLoadState('load');
     await loginWithoutReset(page, ADMIN);
     await expect(page.getByRole('button', { name: 'Diagnostyka' })).toBeVisible();
     await expect(page.getByTestId('mfa-challenge')).toHaveCount(0);

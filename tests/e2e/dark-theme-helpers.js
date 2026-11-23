@@ -12,8 +12,11 @@ export async function contrastAudit(page) {
       const layers = [];
       for (let e = el; e; e = e.parentElement) {
         const cs = getComputedStyle(e);
-        // Gradient (np. tło strony, przyciski): przybliżenie pierwszym kolorem gradientu.
-        const gradient = cs.backgroundImage && cs.backgroundImage !== 'none' && !/url\(/.test(cs.backgroundImage) ? parse(cs.backgroundImage) : null;
+        // Gradient: tło strony (html/body) — przybliżenie pierwszym kolorem; gradient elementu (awatar, wykres
+        // kołowy) — tła pod tekstem nie da się wyznaczyć, więc tekstu nie oceniamy (14.90).
+        const hasGradient = cs.backgroundImage && cs.backgroundImage !== 'none' && !/url\(/.test(cs.backgroundImage);
+        if (hasGradient && e !== document.body && e !== document.documentElement) return null;
+        const gradient = hasGradient ? parse(cs.backgroundImage) : null;
         const bg = gradient && gradient.a > 0 ? gradient : parse(cs.backgroundColor);
         if (bg && bg.a > 0) { layers.push(bg); if (bg.a >= 0.99) break; }
       }
