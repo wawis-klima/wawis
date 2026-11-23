@@ -7,6 +7,8 @@ import './styles/tokens.css'
 import './styles/roles.css'
 // 14.84: motyw ciemny — działa tylko z data-theme="dark" na <html> (przełącznik w nagłówku telefonu).
 import './styles/theme-dark.css'
+// 14.93: kolory osób — czerwony (Piotr) i kółko z inicjałami w górnym pasku w kolorze osoby.
+import './styles/person-badge-colors-v1493.css'
 import './styles/shadows.css'
 import './styles/alpha.css'
 import { APP_VERSION } from './version.js'

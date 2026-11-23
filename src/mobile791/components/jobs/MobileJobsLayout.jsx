@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { APP_VERSION } from "../../version";
 import { IconFilter, IconMoon, IconPlus, IconSun } from "../ui";
 import { currentTheme, toggleTheme } from "../../../modules/theme.js";
-import { getJobDisplayAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
+import { getBadgeColorClass, getJobDisplayAddress, getJobTypeClass, getJobTypeLabel, getViewerNames, renderInitialBadges } from "../../utils/jobHelpers.jsx";
 import JobsPagination from "./JobsPagination.jsx";
 import SwipeableJobCard from "./SwipeableJobCard.jsx";
 import "./swipeable-job-card.css";
@@ -219,7 +219,7 @@ export default function MobileJobsLayout({
 
           <button
             type="button"
-            className="wawisUserInitialsBadge"
+            className={`wawisUserInitialsBadge ${getBadgeColorClass(profile.full_name)}`}
             title={`Wyloguj: ${profile.full_name}`}
             aria-label={`Wyloguj użytkownika ${profile.full_name}`}
             onClick={logout}

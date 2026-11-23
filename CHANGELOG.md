@@ -1,3 +1,12 @@
+## 14.93
+- **Każda osoba ma jeden kolor** (decyzja właściciela 23.11.2026). Kółko z inicjałami w górnym pasku telefonu ma ten sam kolor co plakietka tej osoby w kartach montaży, w trybie jasnym i ciemnym.
+- **Piotr Wasik: czerwony** (nowa klasa `badgeRed`). **Krystian Swat: niebieski** zamiast różowego, bo różowy był za bliski czerwonemu. Kacper (zielony), Michał (żółty) i Paweł (fioletowy) bez zmian.
+- Kolory idą przez role (`src/styles/person-badge-colors-v1493.css`, import w punkcie wejścia). Wielkość liter bez zmian.
+- Testy: `smoke-badge-colors-v1459` (nowe kolory, brak powtórzeń, kółko w pasku), nowy E2E `person-badge-colors-v1493` (kółko = plakietka w obu motywach, administrator i pracownik; czerwony czytelny).
+
+## 14.93
+- uzupełnij opis zmian dla wersji 14.93
+
 ## 14.92
 - **Menu boczne na komputerze bez „Szablony SMS”** (decyzja właściciela 23.11.2026). Szablony są w module SMS: przycisk „Zarządzaj szablonami SMS”.
 - **Menu mieści się bez przewijania.** Od 14.90 w stopce jest przycisk trybu ciemnego, więc na laptopie menu zaczęło się przewijać. Mniejsze są tylko odstępy i wysokość wierszy (`src/components/layout/desktop-sidebar-fit.css`). Rozmiary liter i ikon są bez zmian.

@@ -1,0 +1,12 @@
+/* WAWIS 14.93 (decyzja właściciela 23.11.2026) — kolory osób.
+   Każda osoba ma jeden kolor: w kartach montaży i w kółku z inicjałami w górnym pasku telefonu.
+   Kolory przez role (--wr-*), więc działają w trybie jasnym i ciemnym. Wielkość liter bez zmian. */
+.badgeRed{background:var(--wr-bg-red-100);border-color:var(--wr-line-red-300);color:var(--wr-text-red-800)}
+
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgeBlue{background:var(--wr-bg-blue-100) !important;border-color:var(--wr-line-c-b7d4ff) !important;color:var(--wr-text-c-10203a) !important}
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgeGreen{background:var(--wr-bg-green-100) !important;border-color:var(--wr-line-green-300) !important;color:var(--wr-text-green-900) !important}
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgeAmber{background:var(--wr-bg-amber-100) !important;border-color:var(--wr-line-amber-300) !important;color:var(--wr-text-amber-800) !important}
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgePurple{background:var(--wr-bg-c-ede9fe) !important;border-color:var(--wr-line-c-c4b5fd) !important;color:var(--wr-text-c-5b21b6) !important}
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgePink{background:var(--wr-bg-c-fce7f3) !important;border-color:var(--wr-line-c-f9a8d4) !important;color:var(--wr-text-c-9d174d) !important}
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgeSlate{background:var(--wr-bg-c-e7edf6) !important;border-color:var(--wr-line-c-bcc9d8) !important;color:var(--wr-text-slate-700) !important}
+.mobileJobsShellV959 .wawisUserInitialsBadge.badgeRed{background:var(--wr-bg-red-100) !important;border-color:var(--wr-line-red-300) !important;color:var(--wr-text-red-800) !important}
