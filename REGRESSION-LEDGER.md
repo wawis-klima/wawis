@@ -1,5 +1,13 @@
 # WAWIS — Regression Ledger
 
+## QR-1491 — adres serwis.wawis.pl w nowych naklejkach (23.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-1491 | FIXED-UNVERIFIED | Generatory `docs/naklejki-qr/gen_*.py`: `BASE_URL = https://serwis.wawis.pl/u/`. `normalizeQrStickerCode` bez zmian (czyta ścieżkę `/u/<KOD>` z dowolnej domeny). `smoke-qr-stickers-v1408` (+ oba adresy, generatory). Domena: Vercel zweryfikowana, SSL ważny, `/app-version.json` przez serwis.wawis.pl = 14.90 (zrzut właściciela 23.11.2026). |
+| TEST-MFA-1491 | FIXED-UNVERIFIED | E2E `mfa-admin-v1472`: `logoutAndWaitForReload` — nasłuch `load` przed kliknięciem „Wyloguj” (`auth.js`: `location.replace` w `setTimeout 0`). |
+| QR-1491-SCAN | OPEN | Wydruk próbny nowej naklejki i skan aparatem iPhone'a → strona zgłoszenia na serwis.wawis.pl. |
+
 ## DARK-THEME-1490 — tryb ciemny na komputerze (decyzja właściciela 23.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

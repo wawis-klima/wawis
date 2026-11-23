@@ -1,7 +1,7 @@
 # Naklejki QR WAWIS — partia 1 (02.11.2026)
 
 - 162 unikalnych kodów (3 strony A4, 6 × 9 naklejek 30 × 30 mm), lista: `partia-1-kody.csv`.
-- QR zawiera adres `https://wawis-klima.vercel.app/u/<KOD>`; pod kodem numer `XXXX-XXXX` do wpisania ręcznie.
+- QR zawiera adres `https://wawis-klima.vercel.app/u/<KOD>` (partie 1–2; od 14.91 nowe naklejki: `https://serwis.wawis.pl/u/<KOD>`); pod kodem numer `XXXX-XXXX` do wpisania ręcznie.
 - Alfabet bez znaków mylących (0/O, 1/I/L), kody losowe (`secrets`), korekcja błędów QR poziom Q.
 - Kontrola: każdy z 162 kodów odczytany z wydruku PDF i z Worda (render 300 dpi, dekoder WeChat/OpenCV).
 - Decyzje właściciela: naklejka przypisana do urządzenia; instalacja multi = jedna naklejka na cały zestaw.
@@ -34,3 +34,9 @@
 ## Partia 2 — uzupełnienie do 4 pełnych stron (06.11.2026)
 - 18 nowych kodów (`partia-2-uzupelnienie-kody.csv`, nr 163–180), bez powtórzeń z partiami 1 i 2; w bazie jako partia 2 (migracja 20261106100000).
 - Wydruk: `gen_v5_zglos.py <katalog> <nazwa> partia-2-kody.csv partia-2-uzupelnienie-kody.csv` → 180 naklejek, 4 pełne strony. Kontrola odczytu: PDF 180/180, Word 180/180.
+
+## Adres w nowych naklejkach (14.91, 23.11.2026)
+- Generatory (`gen_*.py`) wpisują do QR adres `https://serwis.wawis.pl/u/<KOD>` — własna domena firmy,
+  wskazuje na tę samą aplikację na Vercel (CNAME, certyfikat SSL wystawiony przez Vercel).
+- Już wydrukowane naklejki z adresem `wawis-klima.vercel.app` działają dalej bez zmian; nie trzeba ich wymieniać.
+- Aplikacja rozpoznaje kod z obu adresów (`normalizeQrStickerCode` czyta samą ścieżkę `/u/<KOD>`).

@@ -10,6 +10,12 @@ const read = (path) => fs.readFileSync(new URL(`../${path}`, import.meta.url), '
 // ---------- 1. Normalizacja i format ----------
 assert.equal(qr.normalizeQrStickerCode('https://wawis-klima.vercel.app/u/UYE8EYCQ'), 'UYE8EYCQ', 'Adres z naklejki.');
 assert.equal(qr.normalizeQrStickerCode('https://wawis-klima.vercel.app/u/UYE8EYCQ/'), 'UYE8EYCQ');
+// 14.91: nowe naklejki mają adres serwis.wawis.pl, stare wawis-klima.vercel.app — oba działają.
+assert.equal(qr.normalizeQrStickerCode('https://serwis.wawis.pl/u/UYE8EYCQ'), 'UYE8EYCQ', 'Adres z nowej naklejki (14.91).');
+assert.equal(qr.normalizeQrStickerCode('https://serwis.wawis.pl/u/UYE8EYCQ/'), 'UYE8EYCQ');
+for (const gen of ['gen_codes.py', 'gen_v2_zglos.py', 'gen_v3_zglos_35x30.py', 'gen_v4_zglos.py', 'gen_v5_zglos.py']) {
+  assert.match(read(`docs/naklejki-qr/${gen}`), /BASE_URL = 'https:\/\/serwis\.wawis\.pl\/u\/'/, `${gen}: nowe naklejki z adresem serwis.wawis.pl.`);
+}
 assert.equal(qr.normalizeQrStickerCode('uye8-eycq'), 'UYE8EYCQ', 'Ręcznie wpisany numer.');
 assert.equal(qr.normalizeQrStickerCode(' UYE8 EYCQ '), 'UYE8EYCQ');
 assert.equal(qr.normalizeQrStickerCode('UYE8EYC0'), '', 'Cyfra 0 nie występuje na naklejkach.');

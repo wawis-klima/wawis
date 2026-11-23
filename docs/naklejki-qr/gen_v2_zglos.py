@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 src_csv, OUT, PREFIX = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
 OUT.mkdir(parents=True, exist_ok=True)
-BASE_URL = 'https://wawis-klima.vercel.app/u/'
+BASE_URL = 'https://serwis.wawis.pl/u/'
 rows = list(csv.DictReader(open(src_csv, encoding='utf-8'), delimiter=';'))
 codes = [r['kod'] for r in rows]
 assert len(codes) == 162 and len(set(codes)) == 162

@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.90",
+  "version": "14.91",
   "scope": "full",
-  "release_branch": "release/v14.90",
+  "release_branch": "release/v14.91",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Komputer: przełącznik trybu ciemnego — tylko interfejs, bez zmian backendu."
+    "notes": "Generator naklejek QR (adres serwis.wawis.pl) i test E2E — bez zmian działania aplikacji i backendu."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.90",
+    "source_branch": "release/v14.91",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.90.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.91.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.90: tryb ciemny na komputerze",
-    "release_ci": "WAWIS PR checks + smoke-dark-theme-v1484 + E2E dark-theme-desktop-v1490",
-    "postdeploy": "Vercel READY/14.90; brak błędów runtime."
+    "code": "14.91: naklejki QR z adresem serwis.wawis.pl; stabilny E2E MFA",
+    "release_ci": "WAWIS PR checks + smoke-qr-stickers-v1408 + E2E mfa-admin-v1472",
+    "postdeploy": "Vercel READY/14.91; brak błędów runtime."
   }
 }
