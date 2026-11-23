@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1493 — kolory osób (decyzja właściciela 23.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1493 | FIXED-UNVERIFIED | `BADGE_COLOR_OVERRIDES` (obie kopie jobHelpers): Piotr Wasik `badgeRed`, Krystian Swat `badgeBlue`; zespół (5 osób, SELECT profiles 23.11.2026) bez powtórzeń. Kółko w pasku: klasa `getBadgeColorClass(profile.full_name)`. Smoke `smoke-badge-colors-v1459`, E2E `person-badge-colors-v1493`. |
+| UI-1493-IPHONE | OPEN | iPhone: kółko w pasku i plakietki w kartach w kolorze osoby (jasny i ciemny). |
+
 ## UI-1492 — menu boczne komputera (decyzja właściciela 23.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

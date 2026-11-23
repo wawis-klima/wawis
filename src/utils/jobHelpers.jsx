@@ -20,11 +20,13 @@ export function getInitials(name) {
     .join("");
 }
 
-// Stałe kolory dla osób, którym automatyczny wybór dał ten sam kolor co komuś
-// innemu (14.59: Piotr Wasik i Kacper Wydmański mieli obaj zielony).
-// Klucz: imię i nazwisko małymi literami. Pozostałe osoby — bez zmian.
+// Stałe kolory osób (klucz: imię i nazwisko małymi literami). Pozostałe osoby — kolor wyliczany.
+// 14.59: Piotr Wasik i Kacper Wydmański mieli obaj zielony.
+// 14.93 (decyzja właściciela 23.11.2026): Piotr Wasik czerwony (jak kółko w górnym pasku),
+// Krystian Swat niebieski zamiast różowego — różowy był za bliski czerwonemu.
 const BADGE_COLOR_OVERRIDES = {
-  "piotr wasik": "badgeBlue",
+  "piotr wasik": "badgeRed",
+  "krystian swat": "badgeBlue",
 };
 
 export function getBadgeColorClass(personKey) {
