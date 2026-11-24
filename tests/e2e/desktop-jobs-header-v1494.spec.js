@@ -24,6 +24,17 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
   // Licznik na ikonie: rozmiar liter bez zmian (11 px).
   expect(await row.locator('.statusActionBadge').first().evaluate((el) => getComputedStyle(el).fontSize)).toBe('11px');
 
+  const preview = (await page.screenshot({ type: 'jpeg', quality: 70, scale: 'css' })).toString('base64');
+  const parts = Math.ceil(preview.length / 6000);
+  for (let i = 0; i < parts; i += 1) console.log(`WAWIS-SHOT ${testInfo.project.name}/montaze-1494 ${i + 1}/${parts} ${preview.slice(i * 6000, (i + 1) * 6000)}`);
+  const widths = await row.evaluate((el) => ({
+    row: el.clientWidth,
+    icons: el.querySelector('.desktopStatusInlineWrap').offsetWidth,
+    filter: el.querySelector('.desktopFilterBoxV1494').offsetWidth,
+    actions: el.querySelector('.desktopHeaderActionsBox').offsetWidth,
+  }));
+  console.log(`WAWIS-HEADER ${JSON.stringify(widths)}`);
+
   const filter = row.locator('.desktopFilterBoxV1494');
   const filterBox = await filter.boundingBox();
   const iconsBox = await row.locator('.desktopStatusInlineWrap').boundingBox();
@@ -31,10 +42,6 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
   expect(Math.abs(centre(filterBox) - centre(iconsBox)), 'filtr w tym samym wierszu co ikony').toBeLessThan(12);
   expect(filterBox.x).toBeGreaterThan(iconsBox.x + iconsBox.width);
   await expect(page.locator('.desktopHeaderBottomRow')).toHaveCount(0);
-
-  const preview = (await page.screenshot({ type: 'jpeg', quality: 70, scale: 'css' })).toString('base64');
-  const parts = Math.ceil(preview.length / 6000);
-  for (let i = 0; i < parts; i += 1) console.log(`WAWIS-SHOT ${testInfo.project.name}/montaze-1494 ${i + 1}/${parts} ${preview.slice(i * 6000, (i + 1) * 6000)}`);
 
   // Filtr działa jak wcześniej.
   await page.locator('.desktopFilterInput').fill('zzz-brak-takiego-klienta');

@@ -56,25 +56,14 @@ test.describe('desktop E2E na mock Supabase', () => {
     await expect(page.getByText('Klienci na liście')).toBeVisible();
   });
 
-  test('Centrum 360 używa tylko głównego wyszukiwania i otwiera wskazanego kontrahenta', async ({ page }) => {
+  // 14.94 (decyzja właściciela 24.11.2026): bez górnego paska wyszukiwania na komputerze.
+  test('Centrum 360 bez małych przycisków i bez górnego paska wyszukiwania', async ({ page }) => {
     await login(page, ADMIN);
 
     await expect(page.locator('.centrum360SearchButton')).toHaveCount(0);
     await expect(page.locator('.centrum360DateButton')).toHaveCount(0);
-
-    const search = page.getByRole('searchbox', { name: 'Globalne wyszukiwanie' });
-    await search.fill('Klient Testowy A');
-    const contractorResult = page
-      .locator('.globalDesktopSearchResult')
-      .filter({ has: page.getByText('Kontrahent', { exact: true }) })
-      .filter({ hasText: 'Klient Testowy A' })
-      .first();
-    await expect(contractorResult).toBeVisible();
-    await contractorResult.click();
-
-    await expect(page.getByRole('heading', { name: 'Kontrahenci', exact: true })).toBeVisible();
-    await expect(page.locator('.contractorsSidePanel.isOpen').getByRole('heading', { name: 'Klient Testowy A', exact: true })).toBeVisible();
-    await expect(page.locator('tr.contractorsSelectedRow')).toContainText('Klient Testowy A');
+    await expect(page.getByRole('searchbox', { name: 'Globalne wyszukiwanie' })).toHaveCount(0);
+    await expect(page.locator('.adminDesktopGlobalSearchTopbar')).toHaveCount(0);
   });
 
   test('administrator tworzy i edytuje montaż', async ({ page }) => {
