@@ -1018,8 +1018,12 @@ export function createMockSupabaseClient() {
           ? [...new Set(value.map((item) => String(item || '').trim()).filter(Boolean))].sort()
           : null;
 
+        // Jak produkcja (hotfix v1181): konflikt tylko, gdy wartość w bazie różni się i od bazowej,
+        // i od docelowej — ponowne wysłanie tej samej wartości nie jest konfliktem.
         for (const key of Object.keys(fields)) {
-          if (JSON.stringify(normalizeComparable(job[key])) !== JSON.stringify(normalizeComparable(expected[key]))) {
+          const current = JSON.stringify(normalizeComparable(job[key]));
+          if (current !== JSON.stringify(normalizeComparable(expected[key]))
+            && current !== JSON.stringify(normalizeComparable(fields[key]))) {
             return { data: null, error: { message: `JOB_EDIT_CONFLICT:${key}`, code: 'P0001' } };
           }
         }

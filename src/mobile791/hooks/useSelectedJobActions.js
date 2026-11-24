@@ -31,7 +31,8 @@ import { verifyNameplatesWithRecovery } from "../modules/nameplate-save-recovery
 import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-devices.js";
 import { describeDuplicateDeviceSerials, findDuplicateDeviceSerials } from "../modules/device-serial-duplicates.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
-import { createOfflineUuid, queueOfflineJobOperation } from "../modules/job-offline-store.js";
+import { createOfflineUuid, listOfflineJobOperations, queueOfflineJobOperation } from "../modules/job-offline-store.js";
+import { buildOfflineContactChange } from "../modules/jobs-form.js";
 import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
 import { clearDeviceFormDraft, saveDeviceFormDraft, takeDeviceFormDraft } from "../modules/device-form-drafts.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -535,6 +536,49 @@ export function useSelectedJobActions({
     }
   }
 
+  // 14.96 (decyzja właściciela 24.11.2026): dane kontaktowe klienta (nazwa, telefon, e-mail, adres)
+  // można zapisać bez internetu albo przy słabym zasięgu — trafiają do kolejki offline (jak status i komentarze)
+  // i wysyłają się same. Zwraca true, gdy formularz został obsłużony (zapisany w kolejce albo pokazano błąd).
+  function describeOfflineContactChange(form) {
+    const baseJob = jobFormBaseJobRef?.current || getResolvedJob(editingJobId);
+    if (!baseJob || !profile?.id) return null;
+    const linkedContractor = (contractorsCatalog || []).find((item) => String(item?.id || '') === String(baseJob.contractor_id || '')) || null;
+    return buildOfflineContactChange({ form, baseJob, isAdmin, normalizeStatus, baseNip: linkedContractor?.nip || '' });
+  }
+
+  async function queueContactChangeOffline(form, change, reason) {
+    const jobId = editingJobId;
+    if (!form.client?.trim()) { alert('Podaj klienta.'); return true; }
+    if (!form.city?.trim()) { alert('Podaj miejscowość.'); return true; }
+    if (!form.street?.trim()) { alert('Podaj ulicę.'); return true; }
+    let queued = null;
+    try {
+      queued = await queueOfflineJobOperation({
+        user_id: profile.id,
+        job_id: jobId,
+        type: 'contact',
+        payload: { fields: change.fields, expected: change.expected },
+      });
+      // „Zapisano na telefonie” dopiero po potwierdzonym odczycie wpisu z pamięci telefonu.
+      const stored = (await listOfflineJobOperations(profile.id)).some((item) => String(item.id) === String(queued?.id));
+      if (!stored) throw new Error('Wpis nie został odnaleziony w pamięci telefonu.');
+    } catch (error) {
+      logDiagnostic('offline.contact.queue-failed', { jobId, reason, error });
+      alert('Nie udało się zapisać danych na telefonie. Formularz pozostaje otwarty — spróbuj ponownie, gdy złapiesz zasięg.');
+      return true;
+    }
+    applyOptimisticJobPatch(jobId, { ...change.fields, offline_pending: true });
+    logDiagnostic('offline.contact.queued', { jobId, reason, fields: Object.keys(change.fields) });
+    resetJobModalState();
+    alert(reason === 'offline'
+      ? 'Brak internetu — dane klienta zapisano na telefonie. Wyślą się automatycznie, gdy wróci internet.'
+      : 'Słaby internet — dane klienta zapisano na telefonie. Wyślą się automatycznie, gdy połączenie się poprawi.');
+    if (reason !== 'offline' && typeof window !== 'undefined') {
+      window.setTimeout(() => { void performOfflineJobSync?.(); }, 1500);
+    }
+    return true;
+  }
+
   async function saveEditedJob(formOverride) {
     if (!supabase || !editingJobId) return;
     if (!canEditResolvedJob(editingJobId)) {
@@ -568,6 +612,14 @@ export function useSelectedJobActions({
 
     try {
       if (isBrowserOffline()) {
+        // 14.96: same dane kontaktowe klienta — zapis do kolejki offline.
+        if (!serialOnlyMode) {
+          const contactChange = describeOfflineContactChange(form);
+          if (contactChange?.contactOnly) {
+            await queueContactChangeOffline(form, contactChange, 'offline');
+            return;
+          }
+        }
         // 13.66 (decyzja właściciela): urządzenia, tabliczki i pełna edycja wymagają internetu — u każdego.
         logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
         // 13.68: zamiast samego komunikatu — wybór „Zamknij okno” (powrót do aplikacji) albo „Zostań w formularzu”.
@@ -576,7 +628,7 @@ export function useSelectedJobActions({
           title: 'Brak internetu',
           message: serialOnlyMode
             ? 'Urządzeń i tabliczek nie można teraz zapisać. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
-            : 'Pełna edycja montażu wymaga połączenia z internetem. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
+            : 'Bez internetu można zapisać tylko dane kontaktowe klienta (nazwa, telefon, e-mail, adres). Pozostałe zmiany wymagają internetu. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
           confirmLabel: 'Zamknij okno',
           cancelLabel: 'Zostań w formularzu',
           onConfirm: async () => runConfirmAction(async () => {
@@ -604,7 +656,16 @@ export function useSelectedJobActions({
       const recordResult = await settleWithin(recordSave, NAMEPLATE_SAVE_TIMEOUT_MS, 'record-save');
       if (recordResult.timedOut) {
         logDiagnostic('nameplate.save.record.timeout', { jobId: editingJobId, operationId, timeoutMs: NAMEPLATE_SAVE_TIMEOUT_MS });
-        throw new Error('Zapisywanie danych urządzenia trwa zbyt długo. Spróbuj ponownie.');
+        if (serialOnlyMode) throw new Error('Zapisywanie danych urządzenia trwa zbyt długo. Spróbuj ponownie.');
+        // 14.96: słaby zasięg przy zwykłej edycji. Dane kontaktowe — do kolejki (ponowna wysyłka tej samej
+        // wartości jest bezpieczna, nawet jeśli pierwszy zapis jednak dotarł). Inne zmiany — jasny komunikat.
+        const contactChange = describeOfflineContactChange(form);
+        if (contactChange?.contactOnly) {
+          await queueContactChangeOffline(form, contactChange, 'weak-connection');
+          return;
+        }
+        alert('Słaby internet — zapisu nie udało się potwierdzić. Dane są nadal w formularzu. Spróbuj ponownie, gdy złapiesz zasięg.');
+        return;
       }
       logDiagnostic('nameplate.save.record.completed', { jobId: editingJobId, operationId });
 
@@ -736,7 +797,14 @@ export function useSelectedJobActions({
       logDiagnostic('nameplate.save.failed', { jobId: editingJobId, operationId, error });
       if (isTransientSupabaseError(error)) {
         logDiagnostic('offline.full-edit.network-unconfirmed', { jobId: editingJobId, operationId, isAdmin });
-        alert('Nie udało się potwierdzić pełnego zapisu z powodu problemu z połączeniem. Formularz pozostaje otwarty — po odzyskaniu internetu sprawdź dane i zapisz ponownie.');
+        if (!serialOnlyMode) {
+          const contactChange = describeOfflineContactChange(form);
+          if (contactChange?.contactOnly) {
+            await queueContactChangeOffline(form, contactChange, 'weak-connection');
+            return;
+          }
+        }
+        alert('Słaby internet — zapisu nie udało się potwierdzić. Formularz pozostaje otwarty — po odzyskaniu internetu sprawdź dane i zapisz ponownie.');
         return;
       }
       alert(normalizeDatabaseErrorMessage(error, EDIT_SAVE_ERROR_MESSAGE));

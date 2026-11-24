@@ -1,3 +1,16 @@
+## 14.96
+- **Telefon: dane kontaktowe klienta można zapisać bez internetu** (decyzja właściciela z 24.11.2026, po zgłoszeniu Kacpra o słabym zasięgu). Dotyczy pól: nazwa klienta, telefon, e-mail, miejscowość i ulica. Zmiana trafia do tej samej kolejki na telefonie co status i komentarze i wysyła się sama, gdy wróci internet.
+  - Wysyłka idzie tą samą funkcją serwera co zwykła edycja (`save_job_concurrent_v1168`). Jeśli ktoś w międzyczasie zmienił to samo pole w biurze, telefon **niczego nie nadpisuje** i pokazuje „Konflikt synchronizacji” w Centrum synchronizacji, gdzie można odrzucić zmianę z telefonu.
+  - Kolejne zmiany tego samego montażu łączą się w jedną. Wartość bazowa pochodzi z pierwszej zmiany.
+  - Komunikat „zapisano na telefonie” pojawia się dopiero po potwierdzonym odczycie wpisu z pamięci telefonu.
+- **Słaby zasięg** (telefon „myśli”, że ma internet, ale zapis nie dochodzi): dane kontaktowe także trafiają do kolejki. Ponowna wysyłka tej samej wartości jest bezpieczna. Przy innych zmianach zamiast mylącego „Zapisywanie danych urządzenia trwa zbyt długo” jest teraz „Słaby internet — zapisu nie udało się potwierdzić. Dane są nadal w formularzu…”.
+- Bez zmian, nadal wymagają internetu (decyzja 13.66): urządzenia, tabliczki, zdjęcia, status w formularzu edycji, data, kontrahent i NIP, przypisani monterzy, naklejki QR.
+- Atrapa Supabase w testach działa jak produkcja od v1181: ponowne wysłanie tej samej wartości nie jest konfliktem.
+- Testy: nowy smoke `smoke-offline-contact-v1496` i nowy E2E `mobile-offline-contact-v1496` (zapis bez internetu i wysyłka po powrocie, konflikt bez nadpisania, inne pola nadal zablokowane).
+
+## 14.96
+- uzupełnij opis zmian dla wersji 14.96
+
 ## 14.95
 - **Montaże na komputerze: ikony statusów mają 72 px wszędzie.** Wcześniej było 56 px, a 88 px z 14.94 okazało się za duże (decyzja właściciela 24.11.2026).
 - **„Wersja” i „+” (dodaj montaż) są w nagłówku „Montaże”, po prawej stronie.** W wierszu ikon zostały tylko ikony i filtr. U pracownika na komputerze bez zmian: wersja zostaje przy ikonach, bo pracownik nie ma nagłówka.

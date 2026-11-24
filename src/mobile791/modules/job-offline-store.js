@@ -276,6 +276,19 @@ async function putOfflineJobOperationAtomically(record) {
               .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
               .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
             if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
+            // 14.96: kolejne zmiany danych kontaktowych tego samego montażu łączymy w jedną:
+            // nowsze wartości wygrywają, a wartość bazowa (expected) zostaje z NAJSTARSZEJ zmiany.
+            if (record.type === 'contact' && superseded.length) {
+              const mergedFields = {};
+              const mergedExpected = {};
+              for (const item of [...superseded, record]) {
+                Object.assign(mergedFields, item.payload?.fields || {});
+                for (const [key, value] of Object.entries(item.payload?.expected || {})) {
+                  if (!Object.prototype.hasOwnProperty.call(mergedExpected, key)) mergedExpected[key] = value;
+                }
+              }
+              finalRecord = { ...finalRecord, payload: { ...(record.payload || {}), fields: mergedFields, expected: mergedExpected } };
+            }
             for (const item of superseded) objectStore.delete(item.id);
             putFinalRecord();
           } catch (error) {
@@ -477,11 +490,12 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
     for (const operation of jobOperations) {
       const operationStatus = String(operation?.status || 'pending').toLowerCase();
-      const terminalStatusOperation = operation.type === 'status'
+      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'contact')
         && (operationStatus === 'conflict' || operationStatus === 'error');
 
       if (terminalStatusOperation) {
-        const confirmedStatus = operation?.server_state?.status || operation?.base?.status || '';
+        // 14.96: konflikt danych kontaktowych — pokazujemy dane z systemu (bez nakładki z telefonu).
+        const confirmedStatus = operation.type === 'status' ? (operation?.server_state?.status || operation?.base?.status || '') : '';
         if (confirmedStatus) nextJob = { ...nextJob, status: confirmedStatus };
         if (operationStatus === 'conflict') {
           nextJob = {
@@ -500,6 +514,8 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
         nextJob = { ...nextJob, ...(operation.payload?.device_fields || {}) };
       } else if (operation.type === 'status') {
         nextJob = { ...nextJob, status: operation.payload?.status || nextJob.status };
+      } else if (operation.type === 'contact') {
+        nextJob = { ...nextJob, ...(operation.payload?.fields || {}) };
       } else if (operation.type === 'comment') {
         const commentId = operation.payload?.comment_id || operation.id;
         const comments = Array.isArray(nextJob.comments) ? nextJob.comments : [];
