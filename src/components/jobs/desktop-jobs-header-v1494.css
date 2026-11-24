@@ -1,5 +1,6 @@
 /* WAWIS 14.94 (decyzja właściciela 24.11.2026) — Montaże na komputerze:
-   większe ikony statusów (56 → 88 px) i filtr „Filtruj klienta” w jednym wierszu z nimi.
+   większe ikony statusów i filtr „Filtruj klienta” w jednym wierszu z nimi.
+   14.95: ikony 72 px wszędzie (było 56; 88 px było za duże); wersja i „+” w nagłówku „Montaże”.
    Liczniki na ikonach i wszystkie napisy: rozmiar liter bez zmian. */
 @media (min-width: 701px) {
   .desktopHeaderV2 .desktopHeaderTopRow.desktopHeaderTopRowV1494 {
@@ -12,26 +13,26 @@
   .desktopHeaderTopRowV1494 .desktopStatusInlineWrap {
     flex: 0 0 auto;
     min-height: 0 !important;
-    padding: 6px 14px !important;
+    padding: 4px 12px !important;
   }
 
   .desktopHeaderTopRowV1494 .desktopStatusInlineInner {
-    gap: 14px !important;
+    gap: 10px !important;
     flex-wrap: nowrap !important;
   }
 
   .desktopHeaderTopRowV1494 .desktopInlineStatusButton,
   .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionShape,
   .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionImage {
-    width: 88px !important;
-    min-width: 88px !important;
-    max-width: 88px !important;
-    min-height: 88px !important;
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    min-height: 72px !important;
   }
 
   .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionBadge {
     left: 0 !important;
-    top: 22px !important;
+    top: 16px !important;
   }
 
   /* Filtr ma pierwszeństwo przed wersją i „+”: przy wąskim obszarze listy to one przechodzą niżej. */
@@ -47,33 +48,20 @@
   }
 }
 
-/* Wąski obszar listy (otwarte miejsce na szczegóły montażu): ikony 72 px, żeby filtr został w tym samym wierszu. */
+
+/* 14.95: nagłówek „Montaże” — tytuł po lewej, wersja i „+” po prawej. */
 @media (min-width: 701px) {
-  .desktopHeaderV2 {
-    container-type: inline-size;
-    container-name: wawisJobsHeader;
-  }
-}
-
-@container wawisJobsHeader (max-width: 720px) {
-  .desktopHeaderTopRowV1494 .desktopStatusInlineWrap {
-    padding: 4px 10px !important;
+  .desktopJobsPageHeaderV1495 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 14px;
   }
 
-  .desktopHeaderTopRowV1494 .desktopStatusInlineInner {
-    gap: 8px !important;
-  }
-
-  .desktopHeaderTopRowV1494 .desktopInlineStatusButton,
-  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionShape,
-  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionImage {
-    width: 72px !important;
-    min-width: 72px !important;
-    max-width: 72px !important;
-    min-height: 72px !important;
-  }
-
-  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionBadge {
-    top: 16px !important;
+  .desktopJobsPageHeaderV1495 .desktopJobsPageHeaderActionsV1495 {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    margin-left: auto !important;
   }
 }

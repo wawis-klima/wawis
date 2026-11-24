@@ -5,7 +5,7 @@ import { ADMIN, login, resetMockSupabase } from './mock-helpers.js';
 
 test.use({ viewport: { width: 1536, height: 760 } });
 
-test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, filtr obok ikon', async ({ page }, testInfo) => {
+test('14.94/14.95 komputer: Montaże — bez górnego wyszukiwania, większe ikony, filtr obok ikon', async ({ page }, testInfo) => {
   await resetMockSupabase(page);
   await login(page, ADMIN);
   await page.locator('.adminDesktopNavItem', { hasText: /^Montaże\d*$/ }).click();
@@ -17,13 +17,20 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
 
   const icons = row.locator('.desktopInlineStatusButton');
   await expect(icons).toHaveCount(4);
-  // Ikony większe niż wcześniej (56 px): 88 px, a w wąskiej liście 72 px.
-  const headerWidth = await page.locator('.desktopHeaderV2').evaluate((el) => el.clientWidth);
-  const expectedIcon = headerWidth > 720 ? 88 : 72;
+  // 14.95: ikony 72 px (było 56; 88 px w 14.94 było za duże).
   for (let i = 0; i < 4; i += 1) {
     const box = await icons.nth(i).boundingBox();
-    expect(Math.round(box.width), `ikona statusu ${expectedIcon} px (nagłówek ${headerWidth} px)`).toBe(expectedIcon);
+    expect(Math.round(box.width), 'ikona statusu 72 px').toBe(72);
   }
+  // 14.95: wersja i „+” w nagłówku „Montaże”, po prawej; nie ma ich już w wierszu ikon.
+  const pageHeader = page.locator('.desktopJobsPageHeaderV1495');
+  await expect(pageHeader.getByRole('heading', { name: 'Montaże', exact: true })).toBeVisible();
+  await expect(pageHeader.locator('.desktopVersionTag')).toHaveText(/WERSJA \d+\.\d+/i);
+  await expect(pageHeader.locator('button.desktopActionBtn.primary[title="Dodaj"]')).toBeVisible();
+  await expect(row.locator('.desktopHeaderActionsBox')).toHaveCount(0);
+  const headerBox = await pageHeader.boundingBox();
+  const plusBox = await pageHeader.locator('button[title="Dodaj"]').boundingBox();
+  expect(headerBox.x + headerBox.width - (plusBox.x + plusBox.width), '„+” przy prawej krawędzi nagłówka').toBeLessThan(40);
   // Licznik na ikonie: rozmiar liter bez zmian (11 px).
   expect(await row.locator('.statusActionBadge').first().evaluate((el) => getComputedStyle(el).fontSize)).toBe('11px');
 
@@ -34,7 +41,6 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
     row: el.clientWidth,
     icons: el.querySelector('.desktopStatusInlineWrap').offsetWidth,
     filter: el.querySelector('.desktopFilterBoxV1494').offsetWidth,
-    actions: el.querySelector('.desktopHeaderActionsBox').offsetWidth,
   }));
   console.log(`WAWIS-HEADER ${JSON.stringify(widths)}`);
 
@@ -60,7 +66,7 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
     filterTop: el.querySelector('.desktopFilterBoxV1494').getBoundingClientRect(),
   }));
   console.log(`WAWIS-HEADER wide ${JSON.stringify({ header: wide.header, icon: wide.icon })}`);
-  if (wide.header > 720) expect(Math.round(wide.icon)).toBe(88);
+  expect(Math.round(wide.icon)).toBe(72);
   const mid = (r) => r.top + r.height / 2;
   expect(Math.abs(mid(wide.filterTop) - mid(wide.iconsTop))).toBeLessThan(12);
 });

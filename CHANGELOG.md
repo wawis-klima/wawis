@@ -1,3 +1,11 @@
+## 14.95
+- **Montaże na komputerze: ikony statusów mają 72 px wszędzie.** Wcześniej było 56 px, a 88 px z 14.94 okazało się za duże (decyzja właściciela 24.11.2026).
+- **„Wersja” i „+” (dodaj montaż) są w nagłówku „Montaże”, po prawej stronie.** W wierszu ikon zostały tylko ikony i filtr. U pracownika na komputerze bez zmian: wersja zostaje przy ikonach, bo pracownik nie ma nagłówka.
+- Testy: E2E `desktop-jobs-header-v1494` (ikony 72 px, wersja i „+” w nagłówku przy prawej krawędzi, brak ich w wierszu ikon).
+
+## 14.95
+- uzupełnij opis zmian dla wersji 14.95
+
 ## 14.94
 - **Komputer: bez górnego paska wyszukiwania** („Szukaj klienta, telefonu, adresu…”, Ctrl K). Decyzja właściciela z 24.11.2026, bo w Montażach jest filtr. Wyłączone flagą `DESKTOP_GLOBAL_SEARCH_ENABLED = false` w `App.jsx`. Komponent i dane zostają, żeby pasek mógł wrócić jedną zmianą.
 - **Montaże na komputerze: większe ikony statusów** (56 → 88 px; w wąskiej liście 72 px) i **filtr „Filtruj klienta, telefon…” w tym samym wierszu**, między ikonami a wersją i „+”. Rozmiar liter, także liczników, bez zmian. Styl w `src/components/jobs/desktop-jobs-header-v1494.css`.

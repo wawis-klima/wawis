@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.94",
+  "version": "14.95",
   "scope": "full",
-  "release_branch": "release/v14.94",
+  "release_branch": "release/v14.95",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Komputer: bez górnego wyszukiwania, nagłówek Montaży — tylko interfejs, bez zmian backendu."
+    "notes": "Komputer, Montaże: rozmiar ikon i położenie wersji/„+” — tylko interfejs."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.94",
+    "source_branch": "release/v14.95",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.94.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.95.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.94: komputer bez górnego wyszukiwania; Montaże — większe ikony, filtr obok",
-    "release_ci": "WAWIS PR checks + E2E desktop-jobs-header-v1494",
-    "postdeploy": "Vercel READY/14.94; brak błędów runtime."
+    "code": "14.95: ikony 72 px; wersja i „+” w nagłówku Montaże",
+    "release_ci": "WAWIS PR checks + E2E desktop-jobs-header-v1494, desktop-app",
+    "postdeploy": "Vercel READY/14.95; brak błędów runtime."
   }
 }

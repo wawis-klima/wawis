@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1495 — Montaże na komputerze: rozmiar ikon i przyciski w nagłówku (24.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1495 | FIXED-UNVERIFIED | Ikony 72 px (`desktop-jobs-header-v1494.css`); `JobsPanel` (administrator, komputer): wersja i „+” w `desktopJobsPageHeaderV1495`; `DesktopJobsLayout`: `actionsInPageHeader = isAdmin`. Selektor `button.desktopActionBtn.primary[title="Dodaj"]` bez zmian (E2E dodawania montażu). |
+| UI-1495-PC | OPEN | Komputer właściciela: ikony 72 px, wersja i „+” po prawej w nagłówku „Montaże”. |
+
 ## UI-1494 — komputer: wyszukiwanie i nagłówek Montaży (decyzja właściciela 24.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
