@@ -3,7 +3,8 @@
 // Motyw ciemny = atrybut data-theme="dark" na <html>; kolory w src/styles/theme-dark.css.
 export const THEME_STORAGE_KEY = 'wawis-theme-v1484';
 // Kolor paska przeglądarki / systemu (meta theme-color) w każdym motywie.
-export const THEME_BAR_COLORS = Object.freeze({ light: '#2563eb', dark: '#0c0c0d' });
+// 15.01: w trybie ciemnym kolor paska = kolor tła strony (#141416), żeby przejście pod paskiem stanu iPhone'a było niewidoczne.
+export const THEME_BAR_COLORS = Object.freeze({ light: '#2563eb', dark: '#141416' });
 
 export function normalizeTheme(value) {
   return value === 'dark' ? 'dark' : 'light';

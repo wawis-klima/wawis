@@ -28,4 +28,10 @@
     width: min(18.5vw, 74px) !important;
     max-width: 74px !important;
   }
+
+  /* 15.01 (decyzja właściciela 24.11.2026): menu 12 px niżej, żeby jego górna ramka nie wpadała
+     w przyciemniony pas, który iPhone rysuje pod paskiem stanu (godzina, bateria). */
+  .page.pageDesktopStatusLeft.pageDesktopStatusLeft {
+    padding-top: 22px !important;
+  }
 }

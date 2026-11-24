@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1501 — telefon: menu poza przyciemnieniem iOS pod paskiem stanu (24.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1501 | FIXED-UNVERIFIED | `v1500-mobile-top-compact.css`: `padding-top: 22px` (było 10 px); `THEME_BAR_COLORS.dark = #141416`. E2E `mobile-top-compact-v1500`, `dark-theme-v1484`. |
+| UI-1501-IPHONE | OPEN | iPhone (tryb ciemny): górna ramka menu bez przyciemnienia. |
+
 ## UI-1500 — telefon: pasek modułów i ikony statusów (24.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

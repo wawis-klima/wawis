@@ -28,7 +28,7 @@ test.describe('@mobile 14.84 motyw ciemny', () => {
     await expect(toggle).toHaveAttribute('aria-label', 'Włącz tryb jasny');
     const cardBg = () => page.locator('.mobileJobCard').first().evaluate((el) => getComputedStyle(el).backgroundColor);
     expect(await cardBg()).toBe('rgb(24, 24, 26)');
-    expect(await page.evaluate(() => document.querySelector('meta[name="theme-color"]')?.getAttribute('content'))).toBe('#0c0c0d');
+    expect(await page.evaluate(() => document.querySelector('meta[name="theme-color"]')?.getAttribute('content'))).toBe('#141416'); // 15.01: kolor tła strony w trybie ciemnym
     expectReadable(await shot(page, testInfo, '01-ciemny-lista'), 'lista montaży');
 
     await page.locator('.statusActionButton[title="W trakcie"]').click();
