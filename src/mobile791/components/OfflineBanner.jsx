@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { JOB_OFFLINE_CHANGED_EVENT, listOfflineJobOperations } from "../modules/job-offline-store.js";
 
 // WAWIS 14.97 (decyzja właściciela 24.11.2026): pasek pojawia się WYŁĄCZNIE, gdy telefon nie ma internetu.

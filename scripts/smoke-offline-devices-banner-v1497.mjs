@@ -22,7 +22,8 @@ assert.match(form, /export async function saveJobDeviceSerialsRecord[\s\S]*?save
 assert.match(sync, /async function syncDeviceOperation[\s\S]*?saveJobDeviceFieldsPatch\([\s\S]*?OfflineConflictError/);
 assert.doesNotMatch(sync, /\.from\('jobs'\)\s*\.update\(\{\s*device_model/);
 assert.match(store, /operation\.type === 'status' \|\| operation\.type === 'contact' \|\| operation\.type === 'device'/);
-// Pasek: tylko bez internetu.
+// Pasek: tylko bez internetu. React w zasięgu (klasyczny JSX w buildzie) — bez tego ekran padał bez internetu.
+assert.match(banner, /^import React, \{ useEffect, useState \} from "react";/m);
 assert.match(banner, /if \(online\) return null;/);
 assert.match(banner, /data-testid="offline-banner"/);
 assert.match(layout, /<OfflineBanner userId=\{profile\?\.id\} \/>/);
