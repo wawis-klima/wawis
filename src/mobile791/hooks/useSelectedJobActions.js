@@ -571,8 +571,8 @@ export function useSelectedJobActions({
     logDiagnostic('offline.contact.queued', { jobId, reason, fields: Object.keys(change.fields) });
     resetJobModalState();
     alert(reason === 'offline'
-      ? 'Brak internetu — dane klienta zapisano na telefonie. Wyślą się automatycznie, gdy wróci internet.'
-      : 'Słaby internet — dane klienta zapisano na telefonie. Wyślą się automatycznie, gdy połączenie się poprawi.');
+      ? 'Brak internetu — zmiany zapisano na telefonie. Wyślą się automatycznie, gdy wróci internet.'
+      : 'Słaby internet — zmiany zapisano na telefonie. Wyślą się automatycznie, gdy połączenie się poprawi.');
     if (reason !== 'offline' && typeof window !== 'undefined') {
       window.setTimeout(() => { void performOfflineJobSync?.(); }, 1500);
     }
@@ -691,7 +691,7 @@ export function useSelectedJobActions({
           title: 'Brak internetu',
           message: serialOnlyMode
             ? 'Nowych zdjęć tabliczek i naklejek QR nie można zapisać bez internetu. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
-            : 'Bez internetu można zapisać tylko dane kontaktowe klienta (nazwa, telefon, e-mail, adres). Pozostałe zmiany wymagają internetu. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
+            : 'Bez internetu można zapisać dane klienta (nazwa, telefon, e-mail, adres), datę montażu i notatkę administratora. Pozostałe zmiany (np. NIP, kontrahent, monterzy, status) wymagają internetu. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
           confirmLabel: 'Zamknij okno',
           cancelLabel: 'Zostań w formularzu',
           onConfirm: async () => runConfirmAction(async () => {
@@ -1206,9 +1206,40 @@ export function useSelectedJobActions({
       || jobs.find((job) => job.id === jobId);
     const expectedAdminNote = original?.admin_note ?? null;
 
+    // 14.98 (decyzja właściciela 24.11.2026): notatka administratora bez internetu / przy słabym zasięgu — do kolejki
+    // na telefonie (ta sama funkcja serwera z kontrolą równoległej zmiany, ponowna wysyłka bezpieczna).
+    const queueAdminNoteOffline = async (reason) => {
+      try {
+        const queued = await queueOfflineJobOperation({
+          user_id: profile.id,
+          job_id: jobId,
+          type: 'contact',
+          payload: { fields: { admin_note: normalizedAdminNote }, expected: { admin_note: String(expectedAdminNote || '').trim() || null } },
+        });
+        const stored = (await listOfflineJobOperations(profile.id)).some((item) => String(item.id) === String(queued?.id));
+        if (!stored) throw new Error('Wpis nie został odnaleziony w pamięci telefonu.');
+      } catch (queueError) {
+        logDiagnostic('offline.admin-note.queue-failed', { jobId, reason, error: queueError });
+        alert('Nie udało się zapisać notatki na telefonie. Spróbuj ponownie, gdy złapiesz zasięg.');
+        return false;
+      }
+      applyOptimisticJobPatch(jobId, { admin_note: normalizedAdminNote, offline_pending: true });
+      logDiagnostic('offline.admin-note.queued', { jobId, reason });
+      alert(reason === 'offline'
+        ? 'Brak internetu — notatkę zapisano na telefonie. Wyśle się automatycznie, gdy wróci internet.'
+        : 'Słaby internet — notatkę zapisano na telefonie. Wyśle się automatycznie, gdy połączenie się poprawi.');
+      if (reason !== 'offline' && typeof window !== 'undefined') {
+        window.setTimeout(() => { void performOfflineJobSync?.(); }, 1500);
+      }
+      return true;
+    };
+
+    if (isBrowserOffline() && profile?.id) return queueAdminNoteOffline('offline');
+
     try {
       await saveJobAdminNote({ supabase, jobId, adminNote: normalizedAdminNote, expectedAdminNote });
     } catch (error) {
+      if (isTransientSupabaseError(error) && profile?.id) return queueAdminNoteOffline('weak-connection');
       alert(normalizeDatabaseErrorMessage(error, ADMIN_NOTE_DELETE_ERROR_MESSAGE));
       return false;
     }
