@@ -92,7 +92,8 @@ assert.match(actions, /Urządzeń i tabliczek nie można teraz zapisać w aplika
 assert.match(actions, /queueCommentOffline/);
 assert.match(actions, /queueStatusOffline/);
 assert.match(actions, /Dodanie nowego klienta wymaga internetu/);
-assert.match(actions, /Pełna edycja montażu wymaga połączenia z internetem/);
+// 14.96: bez internetu tylko dane kontaktowe klienta; reszta edycji nadal wymaga internetu.
+assert.match(actions, /Bez internetu można zapisać tylko dane kontaktowe klienta/);
 assert.match(actions, /PHOTO_OFFLINE_BLOCKED_MESSAGE/);
 assert.match(actions, /offline\.full-edit\.network-unconfirmed/);
 assert.match(sync, /OfflineConflictError/);

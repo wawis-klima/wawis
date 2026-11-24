@@ -1,4 +1,5 @@
 import { addJobComment } from './jobs-comments.js';
+import { saveJobContactPatch } from './jobs-form.js';
 import { loadJobNameplatePhotosData } from './jobs-fetch.js';
 import { getJobNameplateCompletion } from './nameplate-requirements.js';
 import { isTransientSupabaseError } from './supabase-errors.js';
@@ -144,17 +145,44 @@ async function syncCommentOperation({
   });
 }
 
+// 14.96: dane kontaktowe klienta zapisane bez internetu. Serwer sprawdza wartości bazowe —
+// jeśli ktoś w międzyczasie zmienił to samo pole, niczego nie nadpisujemy (konflikt do decyzji użytkownika).
+async function syncContactOperation({ supabase, operation }) {
+  const fields = operation.payload?.fields || {};
+  const expected = operation.payload?.expected || {};
+  if (!Object.keys(fields).length) return;
+  try {
+    await saveJobContactPatch({ supabase, jobId: operation.job_id, fields, expected });
+  } catch (error) {
+    if (/JOB_EDIT_CONFLICT:/i.test(String(error?.message || ''))) {
+      let latestServerState = null;
+      try {
+        latestServerState = await readJobForConflictCheck(supabase, operation.job_id);
+      } catch {
+        // Brak ponownego odczytu nie zmienia konfliktu w sukces.
+      }
+      throw new OfflineConflictError(
+        'Dane klienta zmieniono w systemie, zanim telefon je wysłał. Niczego nie nadpisano.',
+        { serverState: latestServerState },
+      );
+    }
+    throw error;
+  }
+}
+
 async function syncSingleOperation(options) {
   const { operation } = options;
   if (operation.type === 'device') return syncDeviceOperation(options);
   if (operation.type === 'status') return syncStatusOperation(options);
   if (operation.type === 'comment') return syncCommentOperation(options);
+  if (operation.type === 'contact') return syncContactOperation(options);
   throw new Error(`Nieznany typ zmiany offline: ${operation.type}`);
 }
 
 function operationPriority(operation = {}) {
   if (operation.type === 'device') return 1;
   if (operation.type === 'comment') return 2;
+  if (operation.type === 'contact') return 2;
   if (operation.type === 'status') return 3;
   return 9;
 }

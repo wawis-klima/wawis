@@ -453,6 +453,40 @@ export function buildJobEditChangeSet({ form = {}, baseJob = {}, isAdmin = false
   return { fields, expected };
 }
 
+// WAWIS 14.96 (decyzja właściciela 24.11.2026): bez internetu pracownik może zapisać DANE KONTAKTOWE
+// klienta (nazwa, telefon, e-mail, miejscowość, ulica). Zmiana trafia do kolejki offline i jest wysyłana
+// tą samą funkcją serwera co zwykła edycja (save_job_concurrent_v1168: kontrola równoległej zmiany,
+// ponowna wysyłka tej samej wartości jest bezpieczna). Urządzenia, tabliczki, zdjęcia i pozostałe pola
+// nadal wymagają internetu (decyzja 13.66).
+export const OFFLINE_CONTACT_FIELDS = Object.freeze(['client', 'title', 'email', 'phone', 'sms_recipient_phone', 'city', 'street', 'location']);
+
+export function buildOfflineContactChange({ form = {}, baseJob = {}, isAdmin = false, normalizeStatus, baseNip = '' }) {
+  const { fields, expected } = buildJobEditChangeSet({
+    form, baseJob, isAdmin, normalizeStatus, includeDeviceChanges: !isAdmin,
+  });
+  const blocked = Object.keys(fields).filter((key) => !OFFLINE_CONTACT_FIELDS.includes(key));
+  if (normalizeEditText(form.nip) !== normalizeEditText(baseNip)) blocked.push('nip');
+  if (Array.isArray(form.pending_nameplate_photos) && form.pending_nameplate_photos.length) blocked.push('photos');
+  if (form.pending_qr_stickers && Object.keys(form.pending_qr_stickers).length) blocked.push('qr_stickers');
+  if (!isAdmin) {
+    const expectedInstallerIds = Array.isArray(baseJob.installer_ids) ? normalizeInstallerIds(baseJob.installer_ids) : null;
+    const baselineInstallerIds = expectedInstallerIds ?? getLegacyInstallerSuggestionIds(baseJob);
+    if (!valuesMatch(getAssignedUserIdsFromForm(form), baselineInstallerIds)) blocked.push('installer_ids');
+  }
+  return {
+    fields,
+    expected,
+    blocked,
+    changed: Object.keys(fields).length > 0,
+    contactOnly: Object.keys(fields).length > 0 && blocked.length === 0,
+  };
+}
+
+// 14.96: wysyłka zmiany danych kontaktowych z kolejki offline.
+export async function saveJobContactPatch({ supabase, jobId, fields = {}, expected = {} }) {
+  return saveJobConcurrentPatch({ supabase, editingJobId: jobId, fields, expected });
+}
+
 async function saveJobConcurrentPatch({
   supabase,
   editingJobId,

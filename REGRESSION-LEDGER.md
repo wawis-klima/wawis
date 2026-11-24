@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## OFFLINE-CONTACT-1496 — dane kontaktowe klienta bez internetu (decyzja właściciela 24.11.2026)
+
+Obszar chroniony: kolejka offline i synchronizacja (IndexedDB `wawis-mobile-offline-data`, bez zmiany wersji bazy; nowy typ wpisu `contact`).
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OFFLINE-CONTACT-1496 | FIXED-UNVERIFIED | `buildOfflineContactChange` (tylko client/title/email/phone/sms_recipient_phone/city/street/location; blokada: inne pola, NIP, zdjęcia, QR, monterzy). Kolejka `type: 'contact'` z łączeniem zmian; wysyłka `save_job_concurrent_v1168` (konflikt → `OfflineConflictError`, bez nadpisania). Komunikat po odczycie wpisu z IndexedDB. Smoke `smoke-offline-contact-v1496`, E2E `mobile-offline-contact-v1496`. |
+| OFFLINE-CONTACT-1496-WEAK | FIXED-UNVERIFIED | Timeout/transient przy zwykłej edycji: dane kontaktowe → kolejka; inne → komunikat „Słaby internet…”. Kreator urządzeń bez zmian. |
+| OFFLINE-CONTACT-1496-IPHONE | OPEN | iPhone (tryb samolotowy): zmiana e-maila → „zapisano na telefonie”; po włączeniu internetu e-mail w systemie (SELECT jobs.email). |
+
 ## UI-1495 — Montaże na komputerze: rozmiar ikon i przyciski w nagłówku (24.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
