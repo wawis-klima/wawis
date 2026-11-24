@@ -29,7 +29,7 @@ for (const [label, user] of [['administrator', ADMIN], ['pracownik', WORKER]]) {
     });
     console.log(`WAWIS-TOP ${label} ${JSON.stringify(sizes)}`);
     // Przed 15.00: 56 px (administrator), 54 px (pracownik).
-    expect(sizes.barHeight, 'pasek modułów niższy').toBeLessThanOrEqual(46);
+    expect(sizes.barHeight, 'pasek modułów niższy').toBeLessThanOrEqual(51);
     // Wielkość liter bez zmian (jak przed 15.00 na iPhonie 14: administrator 13.845 px, pracownik 15.015 px).
     expect(sizes.btnFont).toBe(user === ADMIN ? '13.845px' : '15.015px');
     expect(sizes.icons).toHaveLength(4);
@@ -37,7 +37,8 @@ for (const [label, user] of [['administrator', ADMIN], ['pracownik', WORKER]]) {
     const sorted = [...sizes.icons].sort((a, b) => a - b);
     expect(sorted[0]).toBeGreaterThanOrEqual(70);
     expect(sorted[0]).toBeLessThanOrEqual(75);
-    expect(new Set(sizes.iconTops.map((top) => Math.round(top / 10))).size, 'ikony w jednym rzędzie').toBe(1);
+    // Jeden rząd: różnica położenia mniejsza niż połowa ikony (aktywna ikona jest powiększona).
+    expect(Math.max(...sizes.iconTops) - Math.min(...sizes.iconTops), 'ikony w jednym rzędzie').toBeLessThan(30);
     expect(sizes.rightmost).toBeLessThanOrEqual(sizes.viewport);
     await shot(page, testInfo, `top-${label}`);
   });

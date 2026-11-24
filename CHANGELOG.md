@@ -1,5 +1,5 @@
 ## 15.00
-- **Telefon: niższy górny pasek modułów** (Montaże, Kontrahenci, Paliwo, Urządzenia, Cennik). Decyzja właściciela z 24.11.2026. Zmieniły się tylko odstępy i wysokość przycisków, wielkość liter bez zmian.
+- **Telefon: niższy górny pasek modułów** (Montaże, Kontrahenci, Paliwo, Urządzenia, Cennik). Decyzja właściciela z 24.11.2026. Wysokość spada z 56 do ok. 50 px. Przyciski zostają 44 px, bo to zalecenie Apple dla obszaru dotyku i pilnują tego istniejące testy, więc mniejsza jest tylko ramka wokół nich. Wielkość liter bez zmian.
 - **Telefon: cztery ikony statusów montaży trochę większe**: 64 → 74 px, ok. +15%. Puste odstępy między nimi są mniejsze, a wszystkie cztery nadal mieszczą się w jednym rzędzie.
 - Styl w nowym pliku `src/mobile791/v1500-mobile-top-compact.css`.
 - Testy: nowy E2E `mobile-top-compact-v1500` (administrator i pracownik: wysokość paska, ikony 74 px w jednym rzędzie, litery 11 px).
