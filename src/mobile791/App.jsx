@@ -1627,6 +1627,7 @@ export default function App() {
         detailsPanel={activeModule === "jobs" && selectedJob ? (
           <Suspense fallback={jobDetailsFallback}>
             <JobDetailsPanel
+              currentUserId={profile?.id || ''}
               selectedJob={selectedJob}
               isAdmin={isAdmin}
               quickProtocolRequest={quickProtocolRequest}

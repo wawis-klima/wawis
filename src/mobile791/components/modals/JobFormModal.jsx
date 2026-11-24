@@ -815,6 +815,7 @@ export default function JobFormModal({
             setQrScanIndex(null);
           }}
           onClose={() => setQrScanIndex(null)}
+          allowOffline
         />
       </AppModal>
     );

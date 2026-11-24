@@ -1,5 +1,6 @@
 import { addJobComment } from './jobs-comments.js';
 import { saveJobContactPatch, saveJobDeviceFieldsPatch } from './jobs-form.js';
+import { assignQrStickerToJobDevice, describeQrAssignFailure, notifyQrStickersChanged } from '../../modules/qr-stickers.js';
 import { loadJobNameplatePhotosData } from './jobs-fetch.js';
 import { getJobNameplateCompletion } from './nameplate-requirements.js';
 import { isTransientSupabaseError } from './supabase-errors.js';
@@ -171,17 +172,35 @@ async function syncContactOperation({ supabase, operation }) {
   }
 }
 
+// 14.99 (decyzja właściciela 24.11.2026): naklejka QR zeskanowana bez internetu. Serwer sprawdza naklejkę
+// (czy istnieje, czy nie jest przypisana gdzie indziej, czy urządzenie nie ma już naklejki) — odmowa = konflikt,
+// niczego nie przepisujemy (przepisanie/wymiana tylko przez administratora, z internetem).
+async function syncQrOperation({ supabase, operation }) {
+  const code = String(operation.payload?.code || '');
+  const deviceIndex = Number(operation.payload?.device_index);
+  if (!code || !Number.isInteger(deviceIndex) || deviceIndex < 1) return;
+  const result = await assignQrStickerToJobDevice({ supabase, code, jobId: operation.job_id, deviceIndex });
+  if (result?.ok) {
+    notifyQrStickersChanged(operation.job_id);
+    return;
+  }
+  throw new OfflineConflictError(`Naklejka QR (Urządzenie ${deviceIndex}): ${describeQrAssignFailure({ ...(result || {}), code })}`, { serverState: null });
+}
+
 async function syncSingleOperation(options) {
   const { operation } = options;
   if (operation.type === 'device') return syncDeviceOperation(options);
   if (operation.type === 'status') return syncStatusOperation(options);
   if (operation.type === 'comment') return syncCommentOperation(options);
   if (operation.type === 'contact') return syncContactOperation(options);
+  if (operation.type === 'qr') return syncQrOperation(options);
   throw new Error(`Nieznany typ zmiany offline: ${operation.type}`);
 }
 
 function operationPriority(operation = {}) {
   if (operation.type === 'device') return 1;
+  // 14.99: naklejka po zapisie urządzeń (wiersz urządzenia musi istnieć), przed zakończeniem montażu.
+  if (operation.type === 'qr') return 1.5;
   if (operation.type === 'comment') return 2;
   if (operation.type === 'contact') return 2;
   if (operation.type === 'status') return 3;

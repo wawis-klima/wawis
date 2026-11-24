@@ -258,6 +258,14 @@ export async function validateWizardQrSticker({ supabase, code, deviceIndex, sav
   if (!normalized) throw new Error('To nie jest kod naklejki WAWIS.');
   const otherPending = Object.entries(pendingStickers || {}).find(([index, value]) => Number(index) !== Number(deviceIndex) && value === normalized);
   if (otherPending) throw new Error(`Naklejka ${formatQrStickerCode(normalized)} jest już wybrana dla Urządzenia ${Number(otherPending[0]) + 1}.`);
+  // 14.99: bez internetu tylko sprawdzenia lokalne — serwer sprawdzi naklejkę przy wysyłce z kolejki (konflikt = bez zmian).
+  const savedElsewhere = Object.entries(savedStickers || {}).find(([index, value]) => value === normalized && Number(index) !== Number(deviceIndex));
+  if (!isOnline()) {
+    if (savedElsewhere) throw new Error(`Naklejka ${formatQrStickerCode(normalized)} jest już przypisana do Urządzenia ${Number(savedElsewhere[0]) + 1}.`);
+    const savedHere = Object.entries(savedStickers || {}).find(([index]) => Number(index) === Number(deviceIndex))?.[1];
+    if (savedHere === normalized) return { code: normalized, already: true };
+    return { code: normalized, already: false, offline: true };
+  }
   const result = await lookupQrSticker({ supabase, code: normalized });
   if (result?.status === 'unknown' || result?.status === 'invalid') {
     throw new Error(describeQrAssignFailure({ reason: 'unknown_code', code: normalized }));

@@ -12,16 +12,18 @@ const layout = read('src/mobile791/components/jobs/MobileJobsLayout.jsx');
 const main = read('src/main.jsx');
 
 // Tekst urządzeń: tylko bez nowych zdjęć tabliczek i naklejek QR; duplikaty numerów sprawdzane przed kolejką.
-assert.match(actions, /textOnly: change\.changed && !pendingPhotos && !pendingQr/);
+// 14.99: naklejki QR też do kolejki — blokują tylko nowe zdjęcia tabliczek.
+assert.match(actions, /textOnly: \(change\.changed \|\| pendingQr > 0\) && !pendingPhotos/);
 assert.match(actions, /async function queueDeviceTextOffline[\s\S]*?findDuplicateDeviceSerials\(form\)[\s\S]*?type: 'device'/);
 assert.match(actions, /listOfflineJobOperations\(profile\.id\)\)\.some\([\s\S]*?clearDeviceFormDraft\(jobId\)/);
-assert.match(actions, /Brak internetu — modele i numery seryjne zapisano na telefonie/);
+assert.match(actions, /modele i numery seryjne' : ''/);
+assert.match(actions, /`Brak internetu — \$\{savedWhat\} zapisano na telefonie/);
 // Wysyłka tą samą funkcją co online (RPC + scalanie niekolidujących wierszy), konflikt bez nadpisania.
 assert.match(form, /export async function saveJobDeviceFieldsPatch/);
 assert.match(form, /export async function saveJobDeviceSerialsRecord[\s\S]*?saveJobDeviceFieldsPatch\(/);
 assert.match(sync, /async function syncDeviceOperation[\s\S]*?saveJobDeviceFieldsPatch\([\s\S]*?OfflineConflictError/);
 assert.doesNotMatch(sync, /\.from\('jobs'\)\s*\.update\(\{\s*device_model/);
-assert.match(store, /operation\.type === 'status' \|\| operation\.type === 'contact' \|\| operation\.type === 'device'/);
+assert.match(store, /operation\.type === 'status' \|\| operation\.type === 'contact' \|\| operation\.type === 'device' \|\| operation\.type === 'qr'/);
 // Pasek: tylko bez internetu. React w zasięgu (klasyczny JSX w buildzie) — bez tego ekran padał bez internetu.
 assert.match(banner, /^import React, \{ useEffect, useState \} from "react";/m);
 assert.match(banner, /if \(online\) return null;/);
