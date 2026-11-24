@@ -5,6 +5,8 @@ import DesktopJobsTableHeader, { DesktopJobsTableColGroup } from "../DesktopJobs
 import DesktopJobsTableRow from "../DesktopJobsTableRow.jsx";
 import JobsPagination from "./JobsPagination.jsx";
 import { DESKTOP_JOBS_TABLE_LAYOUT_VARS } from "../desktop-jobs-table.columns.jsx";
+// 14.94: większe ikony statusów i filtr w jednym wierszu z nimi.
+import "./desktop-jobs-header-v1494.css";
 
 export default function DesktopJobsLayout({
   statuses,
@@ -35,7 +37,7 @@ export default function DesktopJobsLayout({
   return (
     <>
       <div className="desktopHeaderV2">
-        <div className="desktopHeaderTopRow">
+        <div className="desktopHeaderTopRow desktopHeaderTopRowV1494">
           <div className="desktopStatusInlineWrap">
             <div className="desktopStatusInlineInner">
               {statuses.map((status) => {
@@ -62,6 +64,12 @@ export default function DesktopJobsLayout({
             </div>
           </div>
 
+          {/* 14.94 (decyzja właściciela 24.11.2026): filtr w jednym wierszu z ikonami statusów. */}
+          <div className="desktopFilterBox desktopFilterBoxV1494">
+            <IconFilter />
+            <input className="desktopFilterInput" placeholder="Filtruj klienta, telefon..." value={query} onChange={(e) => setQuery(e.target.value)} />
+          </div>
+
           <div className="desktopHeaderActionsBox">
             <div className="desktopVersionTag">WERSJA {APP_VERSION}</div>
             {isAdmin ? (
@@ -72,12 +80,6 @@ export default function DesktopJobsLayout({
           </div>
         </div>
 
-        <div className="desktopHeaderBottomRow">
-          <div className="desktopFilterBox">
-            <IconFilter />
-            <input className="desktopFilterInput" placeholder="Filtruj klienta, telefon..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          </div>
-        </div>
       </div>
 
       <div className="tableWrap">

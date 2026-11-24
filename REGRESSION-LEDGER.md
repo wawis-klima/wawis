@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1494 — komputer: wyszukiwanie i nagłówek Montaży (decyzja właściciela 24.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1494 | FIXED-UNVERIFIED | `App.jsx`: `DESKTOP_GLOBAL_SEARCH_ENABLED = false` → `globalSearchProps = null` (pasek nie renderuje się, urządzenia do indeksu nie są pobierane). `DesktopJobsLayout`: filtr w `desktopHeaderTopRowV1494`, ikony 88 px. E2E `desktop-jobs-header-v1494`. |
+| UI-1494-PC | OPEN | Komputer właściciela: brak górnego paska, większe ikony, filtr obok ikon. |
+
 ## UI-1493 — kolory osób (decyzja właściciela 23.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
