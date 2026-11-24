@@ -1,3 +1,11 @@
+## 15.01
+- **Telefon: górne menu 12 px niżej** (decyzja właściciela z 24.11.2026). iPhone przyciemnia górną krawędź ekranu pod paskiem stanu, czyli pod godziną i baterią. Górna ramka menu wpadała w ten pas i wyglądała na przyciemnioną. Pomiar na zrzucie właściciela: tło od jasności ok. 3 do ok. 20 na odcinku ok. 40 px. Styl aplikacji niczego tam nie przyciemniał.
+- **Tryb ciemny: kolor paska systemu (meta `theme-color`) = kolor tła strony** (`#141416` zamiast `#0c0c0d`), żeby przejście pod paskiem stanu było mniej widoczne.
+- Testy: E2E `mobile-top-compact-v1500` (menu co najmniej 20 px od góry), `dark-theme-v1484` (nowy kolor paska).
+
+## 15.01
+- uzupełnij opis zmian dla wersji 15.01
+
 ## 15.00
 - **Telefon: niższy górny pasek modułów** (Montaże, Kontrahenci, Paliwo, Urządzenia, Cennik). Decyzja właściciela z 24.11.2026. Wysokość spada z 56 do ok. 50 px. Przyciski zostają 44 px, bo to zalecenie Apple dla obszaru dotyku i pilnują tego istniejące testy, więc mniejsza jest tylko ramka wokół nich. Wielkość liter bez zmian.
 - **Telefon: cztery ikony statusów montaży trochę większe**: 64 → 74 px, ok. +15%. Puste odstępy między nimi są mniejsze, a wszystkie cztery nadal mieszczą się w jednym rzędzie.
