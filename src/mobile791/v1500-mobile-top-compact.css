@@ -1,0 +1,31 @@
+/* WAWIS 15.00 (decyzja właściciela 24.11.2026) — telefon:
+   1) górny pasek modułów (Montaże, Kontrahenci, Paliwo, Urządzenia, Cennik) niższy — tylko odstępy i wysokość,
+      wielkość liter bez zmian;
+   2) cztery ikony statusów montaży trochę większe (64 → 74 px, ok. +15%), mniejsze puste odstępy między nimi. */
+@media (max-width: 700px) {
+  /* Silniejsze niż reguły 13.90 (ServiceAdminPanel.css) i pricelist-mobile.css: 56 → ok. 50 px.
+     Przyciski zostają 44 px (zalecenie Apple dla obszaru dotyku, pilnowane w release-visual-checks) —
+     mniejsza jest tylko ramka wokół nich. */
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isAdmin,
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isWorker {
+    min-height: 0 !important;
+    padding: 2px !important;
+  }
+
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isAdmin .moduleSwitcherBtn.moduleSwitcherBtn,
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isWorker .moduleSwitcherBtn.moduleSwitcherBtn {
+    min-height: 44px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .mobileJobsShellV959 .statusActionButton.statusActionButton,
+  .mobileJobsShellV959 .statusActionButton .statusActionShape {
+    min-height: 66px !important;
+  }
+
+  .mobileJobsShellV959 .statusActionButton .statusActionImage {
+    width: min(18.5vw, 74px) !important;
+    max-width: 74px !important;
+  }
+}
