@@ -32,6 +32,9 @@ export default function DesktopJobsLayout({
   getSortLabel,
   profiles,
 }) {
+  // 14.95: DesktopJobsLayout działa tylko na komputerze, a tam administrator ma nagłówek „Montaże”
+  // z wersją i „+” (JobsPanel) — wtedy nie powtarzamy ich w wierszu ikon.
+  const actionsInPageHeader = Boolean(isAdmin);
   const jobsPageRows = pagedVisibleJobs || visibleJobs;
 
   return (
@@ -70,14 +73,17 @@ export default function DesktopJobsLayout({
             <input className="desktopFilterInput" placeholder="Filtruj klienta, telefon..." value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
 
-          <div className="desktopHeaderActionsBox">
-            <div className="desktopVersionTag">WERSJA {APP_VERSION}</div>
-            {isAdmin ? (
-              <button className="desktopActionBtn primary" onClick={openAddJob} title="Dodaj">
-                <IconPlus />
-              </button>
-            ) : null}
-          </div>
+          {/* 14.95: u administratora wersja i „+” są w nagłówku „Montaże” (JobsPanel). */}
+          {actionsInPageHeader ? null : (
+            <div className="desktopHeaderActionsBox">
+              <div className="desktopVersionTag">WERSJA {APP_VERSION}</div>
+              {isAdmin ? (
+                <button className="desktopActionBtn primary" onClick={openAddJob} title="Dodaj">
+                  <IconPlus />
+                </button>
+              ) : null}
+            </div>
+          )}
         </div>
 
       </div>
