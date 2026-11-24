@@ -25,6 +25,9 @@ test('14.94/14.95 komputer: Montaże — bez górnego wyszukiwania, większe iko
   // 14.95: wersja i „+” w nagłówku „Montaże”, po prawej; nie ma ich już w wierszu ikon.
   const pageHeader = page.locator('.desktopJobsPageHeaderV1495');
   await expect(pageHeader.getByRole('heading', { name: 'Montaże', exact: true })).toBeVisible();
+  // Tytuł w jednej linii (nie ściśnięty do pojedynczych liter).
+  const title = await pageHeader.getByRole('heading', { name: 'Montaże', exact: true }).boundingBox();
+  expect(title.width).toBeGreaterThan(title.height);
   await expect(pageHeader.locator('.desktopVersionTag')).toHaveText(/WERSJA \d+\.\d+/i);
   await expect(pageHeader.locator('button.desktopActionBtn.primary[title="Dodaj"]')).toBeVisible();
   await expect(row.locator('.desktopHeaderActionsBox')).toHaveCount(0);
