@@ -33,7 +33,11 @@ test('14.94/14.95 komputer: Montaże — bez górnego wyszukiwania, większe iko
   await expect(row.locator('.desktopHeaderActionsBox')).toHaveCount(0);
   const headerBox = await pageHeader.boundingBox();
   const plusBox = await pageHeader.locator('button[title="Dodaj"]').boundingBox();
-  expect(headerBox.x + headerBox.width - (plusBox.x + plusBox.width), '„+” przy prawej krawędzi nagłówka').toBeLessThan(40);
+  const plusGap = headerBox.x + headerBox.width - (plusBox.x + plusBox.width);
+  expect(plusGap, '„+” w całości w nagłówku').toBeGreaterThanOrEqual(8);
+  expect(plusGap, '„+” przy prawej krawędzi nagłówka').toBeLessThan(40);
+  const versionBox = await pageHeader.locator('.desktopVersionTag').boundingBox();
+  expect(versionBox.x, 'wersja za tytułem, po prawej').toBeGreaterThan(title.x + title.width);
   // Licznik na ikonie: rozmiar liter bez zmian (11 px).
   expect(await row.locator('.statusActionBadge').first().evaluate((el) => getComputedStyle(el).fontSize)).toBe('11px');
 

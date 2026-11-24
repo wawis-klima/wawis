@@ -60,18 +60,21 @@
 
   /* Tytuł nie może się ściskać (bez tego „MONTAŻE” łamało się na pojedyncze litery). */
   .desktopJobsPageHeaderV1495 .smsDesktopHeaderCopy {
-    flex: 1 1 auto;
-    min-width: max-content;
+    flex: 0 0 auto;
+    width: auto !important;
   }
 
   .desktopJobsPageHeaderV1495 .smsDesktopHeaderCopy h1 {
     white-space: nowrap;
   }
 
+  /* Ogólny styl daje .desktopHeaderActionsBox szerokość 100% — tu tylko tyle, ile zajmują wersja i „+”. */
   .desktopJobsPageHeaderV1495 .desktopJobsPageHeaderActionsV1495 {
-    display: flex;
+    display: flex !important;
     align-items: center;
-    flex: 0 0 auto;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
     margin-left: auto !important;
   }
 }
