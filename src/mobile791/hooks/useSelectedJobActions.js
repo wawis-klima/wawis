@@ -33,6 +33,7 @@ import { describeDuplicateDeviceSerials, findDuplicateDeviceSerials } from "../m
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, listOfflineJobOperations, queueOfflineJobOperation } from "../modules/job-offline-store.js";
 import { buildDeviceFieldsChange, buildOfflineContactChange } from "../modules/jobs-form.js";
+import { queueQrStickerOffline } from "../modules/qr-offline.js";
 import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
 import { clearDeviceFormDraft, saveDeviceFormDraft, takeDeviceFormDraft } from "../modules/device-form-drafts.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -587,7 +588,8 @@ export function useSelectedJobActions({
     const pendingPhotos = getPendingNameplateKeys(form.pending_nameplate_photos || []).size;
     const pendingQr = form.pending_qr_stickers ? Object.keys(form.pending_qr_stickers).length : 0;
     const change = buildDeviceFieldsChange({ form, baseJob });
-    return { ...change, baseJob, textOnly: change.changed && !pendingPhotos && !pendingQr };
+    // 14.99: naklejki QR zeskanowane w kreatorze też idą do kolejki (bez nowych zdjęć tabliczek).
+    return { ...change, baseJob, pendingQr, textOnly: (change.changed || pendingQr > 0) && !pendingPhotos };
   }
 
   async function queueDeviceTextOffline(form, change, reason) {
@@ -603,7 +605,17 @@ export function useSelectedJobActions({
       device_serial_number: String(deviceFields.device_serial_number || '').trim() || null,
     };
     let queued = null;
+    const pendingQrEntries = Object.entries(form.pending_qr_stickers || {})
+      .map(([index, code]) => [Number(index) + 1, String(code || '')])
+      .filter(([index, code]) => Number.isInteger(index) && index >= 1 && code);
     try {
+      if (!change.changed) {
+        // Same naklejki QR (dane urządzeń bez zmian).
+        for (const [deviceIndex, code] of pendingQrEntries) {
+          await queueQrStickerOffline({ userId: profile.id, jobId, deviceIndex, code });
+        }
+        queued = null;
+      } else {
       queued = await queueOfflineJobOperation({
         user_id: profile.id,
         job_id: jobId,
@@ -617,18 +629,24 @@ export function useSelectedJobActions({
       // „Zapisano na telefonie” dopiero po potwierdzonym odczycie wpisu z pamięci telefonu.
       const stored = (await listOfflineJobOperations(profile.id)).some((item) => String(item.id) === String(queued?.id));
       if (!stored) throw new Error('Wpis nie został odnaleziony w pamięci telefonu.');
+      // 14.99: naklejki QR po urządzeniach (w kolejce wysyłają się po zapisie urządzeń).
+      for (const [deviceIndex, code] of pendingQrEntries) {
+        await queueQrStickerOffline({ userId: profile.id, jobId, deviceIndex, code });
+      }
+      }
     } catch (error) {
       logDiagnostic('offline.device.queue-failed', { jobId, reason, error });
       alert('Nie udało się zapisać urządzeń na telefonie. Formularz pozostaje otwarty — spróbuj ponownie, gdy złapiesz zasięg.');
       return true;
     }
     clearDeviceFormDraft(jobId);
-    applyOptimisticJobPatch(jobId, { ...desired, offline_pending: true });
+    if (change.changed) applyOptimisticJobPatch(jobId, { ...desired, offline_pending: true });
     logDiagnostic('offline.device.queued', { jobId, reason });
     resetJobModalState();
+    const savedWhat = [change.changed ? 'modele i numery seryjne' : '', pendingQrEntries.length ? 'naklejki QR' : ''].filter(Boolean).join(' i ');
     alert(reason === 'offline'
-      ? 'Brak internetu — modele i numery seryjne zapisano na telefonie. Wyślą się automatycznie, gdy wróci internet. Zdjęcia tabliczek dodaj, gdy będzie internet.'
-      : 'Słaby internet — modele i numery seryjne zapisano na telefonie. Wyślą się automatycznie, gdy połączenie się poprawi. Zdjęcia tabliczek dodaj, gdy będzie internet.');
+      ? `Brak internetu — ${savedWhat} zapisano na telefonie. Wyślą się automatycznie, gdy wróci internet. Zdjęcia tabliczek dodaj, gdy będzie internet.`
+      : `Słaby internet — ${savedWhat} zapisano na telefonie. Wyślą się automatycznie, gdy połączenie się poprawi. Zdjęcia tabliczek dodaj, gdy będzie internet.`);
     if (reason !== 'offline' && typeof window !== 'undefined') {
       window.setTimeout(() => { void performOfflineJobSync?.(); }, 1500);
     }
@@ -690,7 +708,7 @@ export function useSelectedJobActions({
           variant: 'warning',
           title: 'Brak internetu',
           message: serialOnlyMode
-            ? 'Nowych zdjęć tabliczek i naklejek QR nie można zapisać bez internetu. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
+            ? 'Nowych zdjęć tabliczek nie można zapisać bez internetu. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
             : 'Bez internetu można zapisać dane klienta (nazwa, telefon, e-mail, adres), datę montażu i notatkę administratora. Pozostałe zmiany (np. NIP, kontrahent, monterzy, status) wymagają internetu. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
           confirmLabel: 'Zamknij okno',
           cancelLabel: 'Zostań w formularzu',

@@ -7,7 +7,8 @@ const SCAN_INTERVAL_MS = 350;
 
 // WAWIS 14.08: skaner naklejki QR — aparat na żywo, zdjęcie albo ręczne wpisanie numeru z naklejki.
 // onCode(code) zwraca Promise; komunikat błędu z onCode zostaje w oknie, można spróbować ponownie.
-export default function QrStickerScanner({ open, title = 'Naklejka QR', description = '', onCode, onClose }) {
+// 14.99: allowOffline — skan i ręczne wpisanie także bez internetu (naklejka trafia do kolejki na telefonie).
+export default function QrStickerScanner({ open, title = 'Naklejka QR', description = '', onCode, onClose, allowOffline = false }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const timerRef = useRef(0);
@@ -38,7 +39,7 @@ export default function QrStickerScanner({ open, title = 'Naklejka QR', descript
         : 'To nie jest naklejka WAWIS. Zeskanuj naklejkę z napisem „WAWIS Klimatyzacja”.');
       return false;
     }
-    if (!isOnline()) {
+    if (!allowOffline && !isOnline()) {
       setError('Brak internetu. Naklejkę przypiszesz po odzyskaniu połączenia.');
       return false;
     }
@@ -86,7 +87,7 @@ export default function QrStickerScanner({ open, title = 'Naklejka QR', descript
   async function startCamera() {
     setError('');
     setStatus('');
-    if (!isOnline()) {
+    if (!allowOffline && !isOnline()) {
       setCameraState('unavailable');
       setError('Brak internetu. Przypisanie naklejki wymaga połączenia.');
       return;

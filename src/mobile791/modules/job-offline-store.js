@@ -274,6 +274,8 @@ async function putOfflineJobOperationAtomically(record) {
             const superseded = (Array.isArray(readRequest.result) ? readRequest.result : [])
               .filter((item) => String(item.user_id) === record.user_id)
               .filter((item) => String(item.job_id) === record.job_id && String(item.type) === record.type)
+              // 14.99: naklejki QR — zastępujemy tylko wpis tego samego urządzenia (każde urządzenie ma swoją naklejkę).
+              .filter((item) => record.type !== 'qr' || Number(item.payload?.device_index) === Number(record.payload?.device_index))
               .sort((left, right) => String(left.created_at || '').localeCompare(String(right.created_at || '')));
             if (superseded[0]?.base) finalRecord = { ...record, base: superseded[0].base };
             // 14.96: kolejne zmiany danych kontaktowych tego samego montażu łączymy w jedną:
@@ -490,7 +492,7 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
     for (const operation of jobOperations) {
       const operationStatus = String(operation?.status || 'pending').toLowerCase();
-      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'contact' || operation.type === 'device')
+      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'contact' || operation.type === 'device' || operation.type === 'qr')
         && (operationStatus === 'conflict' || operationStatus === 'error');
 
       if (terminalStatusOperation) {

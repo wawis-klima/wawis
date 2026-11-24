@@ -294,6 +294,7 @@ export default function JobDetailsPanel({
   requestRemoveComment,
   updateStatus,
   supabase,
+  currentUserId = '',
   showReturnToCalendar = false,
   calendarReturnDateKey = "",
   onReturnToCalendar,
@@ -1396,11 +1397,17 @@ export default function JobDetailsPanel({
         jobId={selectedJobId}
         target={qrScanTarget}
         isAdmin={isAdmin}
+        userId={currentUserId}
         onClose={() => setQrScanTarget(null)}
-        onAssigned={async (deviceIndex, code, already) => {
+        onAssigned={async (deviceIndex, code, already, info = {}) => {
           setQrScanTarget(null);
           jobQr.setStickers((current) => ({ ...current, [deviceIndex]: code }));
           setExpandedDeviceIndexes((current) => (current.includes(deviceIndex) ? current : [...current, deviceIndex]));
+          if (info.queued) {
+            // 14.99: zapis na telefonie — przypisze się po powrocie internetu.
+            setQrMessage({ deviceIndex, ok: true, text: `Brak internetu — naklejkę ${formatQrStickerCode(code)} zapisano na telefonie. Przypisze się automatycznie, gdy wróci internet.` });
+            return;
+          }
           setQrMessage({ deviceIndex, ok: true, text: already ? `Naklejka ${formatQrStickerCode(code)} była już przypisana do tego urządzenia.` : `Przypisano naklejkę ${formatQrStickerCode(code)} do Urządzenia ${deviceIndex}.` });
           await jobQr.reload();
         }}

@@ -4,6 +4,7 @@ import {
   assignQrStickerToDevice, assignQrStickerToJobDevice, describeQrAssignFailure, describeQrDevice,
   formatQrStickerCode, isOnline, loadJobQrStickers, QR_STICKERS_CHANGED_EVENT, unassignQrSticker,
 } from '../../../modules/qr-stickers.js';
+import { queueQrStickerOffline } from '../../modules/qr-offline.js';
 
 // WAWIS 14.08: naklejka QR przy urządzeniu montażu.
 // 14.24 (decyzja właściciela 06.11.2026): wymagana do zakończenia montażu przez pracownika (jak tabliczki).
@@ -73,11 +74,26 @@ export function JobDeviceQrStickerRow({ code, canAssign, isAdmin, busy, onAssign
 }
 
 /** Okno skanera dla urządzenia montażu: przypisanie, a dla administratora także wymiana i przepisanie. */
-export function JobDeviceQrScanner({ supabase, jobId, target, isAdmin, onClose, onAssigned }) {
+export function JobDeviceQrScanner({ supabase, jobId, target, isAdmin, onClose, onAssigned, userId = '' }) {
   const deviceIndex = target?.deviceIndex || 0;
   const currentCode = target?.currentCode || '';
+  // 14.99: bez internetu naklejka trafia do kolejki na telefonie; serwer sprawdzi ją po powrocie zasięgu.
+  // Wymiana istniejącej naklejki (administrator) nadal tylko z internetem.
+  async function queueOffline(code) {
+    if (currentCode) throw new Error('Wymiana naklejki wymaga internetu.');
+    await queueQrStickerOffline({ userId, jobId, deviceIndex, code });
+    onAssigned?.(deviceIndex, code, false, { queued: true });
+  }
   async function handleCode(code) {
-    let result = await assignQrStickerToJobDevice({ supabase, code, jobId, deviceIndex });
+    if (!isOnline() && userId) return queueOffline(code);
+    let result;
+    try {
+      result = await assignQrStickerToJobDevice({ supabase, code, jobId, deviceIndex });
+    } catch (error) {
+      // Słaby zasięg: żądanie nie doszło — kolejka (ponowne przypisanie tej samej naklejki do tego samego urządzenia jest bezpieczne).
+      if (userId && /fetch|network|timeout|Failed to fetch|Load failed/i.test(String(error?.message || error))) return queueOffline(code);
+      throw error;
+    }
     if (!result?.ok && isAdmin && result?.can_replace && result?.target_device_id) {
       const question = result.reason === 'device_has_sticker'
         ? `Urządzenie ${deviceIndex} ma naklejkę ${formatQrStickerCode(result.existing_code)}.\n\nZastąpić ją naklejką ${formatQrStickerCode(code)}? Stara naklejka zostanie zwolniona.`
@@ -97,6 +113,7 @@ export function JobDeviceQrScanner({ supabase, jobId, target, isAdmin, onClose, 
         : 'Przyklej naklejkę na urządzeniu i zeskanuj kod. Instalacja multi ma jedną naklejkę.'}
       onCode={handleCode}
       onClose={onClose}
+      allowOffline={Boolean(userId) && !currentCode}
     />
   );
 }

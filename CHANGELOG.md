@@ -1,3 +1,15 @@
+## 14.99
+- **Telefon: naklejki QR bez internetu** (decyzja właściciela z 24.11.2026). Naklejkę można zeskanować albo wpisać ręcznie w karcie urządzenia („Przypisz naklejkę QR”) i w kreatorze urządzeń. Zapisuje się na telefonie i przypisuje sama, gdy wróci internet. Działa też przy słabym zasięgu.
+  - Po powrocie zasięgu **serwer sprawdza naklejkę**: czy pochodzi z naklejek WAWIS, czy nie jest już przypisana gdzie indziej i czy urządzenie nie ma już naklejki. Jeśli coś się nie zgadza, pojawia się konflikt z opisem (np. „…jest już przypisana: …”) i **nic nie jest przepisywane**.
+  - Naklejka czeka w kolejce po zapisie urządzeń, a przed zakończeniem montażu.
+  - Bez internetu aparat może nie odczytać kodu, bo czytnik pobiera się z sieci. Wtedy wpisuje się 8 znaków spod kodu.
+  - Nadal tylko z internetem: **wymiana i zwalnianie naklejki** (administrator) oraz otwieranie montażu przez zeskanowanie naklejki.
+- Zdjęcia i tabliczki: bez zmian, tylko z internetem (decyzja 13.66).
+- Testy: nowy E2E `qr-offline-v1499` (karta urządzenia, konflikt bez przepisania, kreator urządzeń); smoke `smoke-offline-devices-banner-v1497` zaktualizowany.
+
+## 14.99
+- uzupełnij opis zmian dla wersji 14.99
+
 ## 14.98
 - **Telefon: data montażu i notatka administratora zapisują się bez internetu i przy słabym zasięgu** (decyzja właściciela z 24.11.2026). Używają tej samej kolejki i tej samej ochrony przed nadpisaniem co dane klienta z 14.96. Notatkę może zmieniać tylko administrator.
 - Notatka administratora wysyłana albo usuwana z karty montażu („Usuń”) także trafia do kolejki, gdy nie ma internetu.

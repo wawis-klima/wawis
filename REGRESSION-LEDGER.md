@@ -1,5 +1,14 @@
 # WAWIS — Regression Ledger
 
+## QR-OFFLINE-1499 — naklejki QR bez internetu (decyzja właściciela 24.11.2026)
+
+Obszar chroniony: kolejka offline i synchronizacja (nowy typ `qr`; bez zmiany wersji IndexedDB). Backend bez zmian — `qr_sticker_assign_job_device`.
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| QR-OFFLINE-1499 | FIXED-UNVERIFIED | `queueQrStickerOffline` (potwierdzony odczyt z IndexedDB); kolejka zastępuje tylko wpis tego samego urządzenia; `syncQrOperation` → odmowa serwera = `OfflineConflictError` (bez przepisania). Kreator: walidacja lokalna offline, kolejka po urządzeniach (priorytet 1.5). Wymiana/zwolnienie i otwieranie z naklejki — tylko online. E2E `qr-offline-v1499`. |
+| QR-OFFLINE-1499-IPHONE | OPEN | iPhone (tryb samolotowy): wpisanie kodu naklejki → po włączeniu internetu naklejka przypisana (SELECT qr_stickers). |
+
 ## OFFLINE-1498 — data montażu i notatka administratora offline (decyzja właściciela 24.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |
