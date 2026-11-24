@@ -1,0 +1,47 @@
+/* WAWIS 14.94 (decyzja właściciela 24.11.2026) — Montaże na komputerze:
+   większe ikony statusów (56 → 88 px) i filtr „Filtruj klienta” w jednym wierszu z nimi.
+   Liczniki na ikonach i wszystkie napisy: rozmiar liter bez zmian. */
+@media (min-width: 701px) {
+  .desktopHeaderV2 .desktopHeaderTopRow.desktopHeaderTopRowV1494 {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopStatusInlineWrap {
+    flex: 0 0 auto;
+    min-height: 0 !important;
+    padding: 6px 14px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopStatusInlineInner {
+    gap: 14px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton,
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionShape,
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionImage {
+    width: 88px !important;
+    min-width: 88px !important;
+    max-width: 88px !important;
+    min-height: 88px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionBadge {
+    left: 0 !important;
+    top: 22px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopFilterBoxV1494 {
+    flex: 1 1 260px;
+    min-width: 220px;
+    max-width: 560px;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopHeaderActionsBox {
+    flex: 0 0 auto;
+    margin-left: auto !important;
+  }
+}

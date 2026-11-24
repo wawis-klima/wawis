@@ -56,6 +56,8 @@ const LeakTestsPanel = lazy(() => import("./components/leak-tests/LeakTestsPanel
 import { formatNavBadge, loadNewServiceRequestCount, loadSmsNavCount } from "./modules/communication-counters.js";
 import { setServiceRequestStatus } from "./modules/service-requests.js";
 
+const DESKTOP_GLOBAL_SEARCH_ENABLED = false;
+
 const adminModuleFallback = (
   <div className="card authCard">Trwa ładowanie modułu...</div>
 );
@@ -1100,7 +1102,9 @@ export default function App() {
         onDesktopNavigate={handleDesktopNavigation}
         profile={profile}
         logout={logout}
-        globalSearchProps={isAdmin && !isMobile ? {
+        // 14.94 (decyzja właściciela 24.11.2026): bez górnego paska wyszukiwania na komputerze —
+        // w Montażach jest filtr obok ikon statusów. Komponent zostaje, gdyby pasek miał wrócić.
+        globalSearchProps={DESKTOP_GLOBAL_SEARCH_ENABLED && isAdmin && !isMobile ? {
           jobs,
           contractors: globalSearchContractors,
           devices: globalSearchDevices,

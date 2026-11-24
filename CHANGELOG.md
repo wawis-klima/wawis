@@ -1,3 +1,11 @@
+## 14.94
+- **Komputer: bez górnego paska wyszukiwania** („Szukaj klienta, telefonu, adresu…”, Ctrl K). Decyzja właściciela z 24.11.2026, bo w Montażach jest filtr. Wyłączone flagą `DESKTOP_GLOBAL_SEARCH_ENABLED = false` w `App.jsx`. Komponent i dane zostają, żeby pasek mógł wrócić jedną zmianą.
+- **Montaże na komputerze: większe ikony statusów** (56 → 88 px) i **filtr „Filtruj klienta, telefon…” w tym samym wierszu**, między ikonami a wersją i „+”. Rozmiar liter, także liczników, bez zmian. Styl w `src/components/jobs/desktop-jobs-header-v1494.css`.
+- Testy: nowy E2E `desktop-jobs-header-v1494` (brak paska, ikony 88 px, filtr w wierszu ikon, filtr działa).
+
+## 14.94
+- uzupełnij opis zmian dla wersji 14.94
+
 ## 14.93
 - **Każda osoba ma jeden kolor** (decyzja właściciela 23.11.2026). Kółko z inicjałami w górnym pasku telefonu ma ten sam kolor co plakietka tej osoby w kartach montaży, w trybie jasnym i ciemnym.
 - **Piotr Wasik: czerwony** (nowa klasa `badgeRed`). **Krystian Swat: niebieski** zamiast różowego, bo różowy był za bliski czerwonemu. Kacper (zielony), Michał (żółty) i Paweł (fioletowy) bez zmian.
