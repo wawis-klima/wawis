@@ -199,6 +199,8 @@ async function boot() {
     await import('./mobile791/v1485-edit-actions-device-table.css')
     // 14.97: pasek „Brak internetu”.
     await import('./mobile791/v1497-offline-banner.css')
+    // 15.00: niższy pasek modułów i większe ikony statusów.
+    await import('./mobile791/v1500-mobile-top-compact.css')
     // WAWIS 13.33: styl menu po wszystkich legacy mobile CSS, PRZED pierwszym renderem.
     await import('./mobile791/components/pricelist/pricelist-mobile.css')
     // 5 zakładek wyłącznie administratora; CSS ładowany przed pierwszym renderem.

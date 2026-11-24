@@ -1,3 +1,12 @@
+## 15.00
+- **Telefon: niższy górny pasek modułów** (Montaże, Kontrahenci, Paliwo, Urządzenia, Cennik). Decyzja właściciela z 24.11.2026. Zmieniły się tylko odstępy i wysokość przycisków, wielkość liter bez zmian.
+- **Telefon: cztery ikony statusów montaży trochę większe**: 64 → 74 px, ok. +15%. Puste odstępy między nimi są mniejsze, a wszystkie cztery nadal mieszczą się w jednym rzędzie.
+- Styl w nowym pliku `src/mobile791/v1500-mobile-top-compact.css`.
+- Testy: nowy E2E `mobile-top-compact-v1500` (administrator i pracownik: wysokość paska, ikony 74 px w jednym rzędzie, litery 11 px).
+
+## 15.00
+- uzupełnij opis zmian dla wersji 15.00
+
 ## 14.99
 - **Telefon: naklejki QR bez internetu** (decyzja właściciela z 24.11.2026). Naklejkę można zeskanować albo wpisać ręcznie w karcie urządzenia („Przypisz naklejkę QR”) i w kreatorze urządzeń. Zapisuje się na telefonie i przypisuje sama, gdy wróci internet. Działa też przy słabym zasięgu.
   - Po powrocie zasięgu **serwer sprawdza naklejkę**: czy pochodzi z naklejek WAWIS, czy nie jest już przypisana gdzie indziej i czy urządzenie nie ma już naklejki. Jeśli coś się nie zgadza, pojawia się konflikt z opisem (np. „…jest już przypisana: …”) i **nic nie jest przepisywane**.

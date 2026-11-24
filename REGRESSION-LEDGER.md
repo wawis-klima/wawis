@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## UI-1500 — telefon: pasek modułów i ikony statusów (24.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| UI-1500 | FIXED-UNVERIFIED | `v1500-mobile-top-compact.css` (import w punkcie wejścia, gałąź telefonu). E2E `mobile-top-compact-v1500`. |
+| UI-1500-IPHONE | OPEN | iPhone: niższy pasek modułów, większe ikony statusów w jednym rzędzie. |
+
 ## QR-OFFLINE-1499 — naklejki QR bez internetu (decyzja właściciela 24.11.2026)
 
 Obszar chroniony: kolejka offline i synchronizacja (nowy typ `qr`; bez zmiany wersji IndexedDB). Backend bez zmian — `qr_sticker_assign_job_device`.

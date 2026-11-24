@@ -1,0 +1,26 @@
+/* WAWIS 15.00 (decyzja właściciela 24.11.2026) — telefon:
+   1) górny pasek modułów (Montaże, Kontrahenci, Paliwo, Urządzenia, Cennik) niższy — tylko odstępy i wysokość,
+      wielkość liter bez zmian;
+   2) cztery ikony statusów montaży trochę większe (64 → 74 px, ok. +15%), mniejsze puste odstępy między nimi. */
+@media (max-width: 700px) {
+  .moduleSwitcher.moduleSwitcherMobile.moduleSwitcherMobile {
+    min-height: 0 !important;
+    padding: 3px !important;
+  }
+
+  .moduleSwitcher.moduleSwitcherMobile.moduleSwitcherMobile .moduleSwitcherBtn {
+    min-height: 32px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .mobileJobsShellV959 .statusActionButton.statusActionButton,
+  .mobileJobsShellV959 .statusActionButton .statusActionShape {
+    min-height: 66px !important;
+  }
+
+  .mobileJobsShellV959 .statusActionButton .statusActionImage {
+    width: min(18.5vw, 74px) !important;
+    max-width: 74px !important;
+  }
+}
