@@ -78,7 +78,19 @@ test('@mobile 14.99 pracownik: naklejka zajęta w międzyczasie — konflikt, ni
     return id;
   });
   await setOnline(page, true);
-  await expect(page.getByText(/jest już przypisana/).first()).toBeVisible({ timeout: 20_000 });
+  // Karta montażu: ogólny komunikat; szczegół („…jest już przypisana…”) zapisany przy wpisie w kolejce.
+  await expect(page.getByText(/Konflikt synchronizacji/).first()).toBeVisible({ timeout: 20_000 });
+  const conflict = await page.evaluate(() => new Promise((resolve) => {
+    const request = indexedDB.open('wawis-mobile-offline-data');
+    request.onsuccess = () => {
+      const db = request.result;
+      const all = db.transaction('job-operations', 'readonly').objectStore('job-operations').getAll();
+      all.onsuccess = () => { resolve(all.result.filter((item) => item.type === 'qr').map((item) => ({ status: item.status, error: item.error }))); db.close(); };
+    };
+  }));
+  expect(conflict).toHaveLength(1);
+  expect(conflict[0].status).toBe('conflict');
+  expect(conflict[0].error).toContain('jest już przypisana');
   expect(await stickerDevice(page, 'UYE8EYCQ')).toBe(otherDevice);
 });
 
