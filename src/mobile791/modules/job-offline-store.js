@@ -490,7 +490,7 @@ export function applyOfflineOperationsToJobs(jobs = [], operations = [], profile
 
     for (const operation of jobOperations) {
       const operationStatus = String(operation?.status || 'pending').toLowerCase();
-      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'contact')
+      const terminalStatusOperation = (operation.type === 'status' || operation.type === 'contact' || operation.type === 'device')
         && (operationStatus === 'conflict' || operationStatus === 'error');
 
       if (terminalStatusOperation) {

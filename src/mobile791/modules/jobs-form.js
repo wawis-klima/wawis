@@ -618,13 +618,7 @@ export async function saveEditedJobRecord({
   };
 }
 
-export async function saveJobDeviceSerialsRecord({
-  supabase,
-  editingJobId,
-  form,
-  baseJob = null,
-}) {
-  if (!supabase || !editingJobId) return null;
+export function buildDeviceFieldsChange({ form = {}, baseJob = {} }) {
   const originalJob = baseJob || {};
   const deviceFields = serializeJobDevicesToFields(form);
   const fields = {};
@@ -642,7 +636,24 @@ export async function saveJobDeviceSerialsRecord({
     fields.device_serial_number = nextSerial;
     expected.device_serial_number = originalJob.device_serial_number ?? null;
   }
+  return { fields, expected, changed: Object.keys(fields).length > 0 };
+}
 
+export async function saveJobDeviceSerialsRecord({
+  supabase,
+  editingJobId,
+  form,
+  baseJob = null,
+}) {
+  if (!supabase || !editingJobId) return null;
+  const { fields, expected } = buildDeviceFieldsChange({ form, baseJob });
+  return saveJobDeviceFieldsPatch({ supabase, jobId: editingJobId, fields, expected });
+}
+
+// 14.97: zapis modeli i numerów seryjnych (tekst) — wspólny dla zapisu online i kolejki offline.
+export async function saveJobDeviceFieldsPatch({ supabase, jobId, fields = {}, expected = {} }) {
+  const editingJobId = jobId;
+  if (!supabase || !editingJobId) return null;
   try {
     const result = await saveJobConcurrentPatch({
       supabase,

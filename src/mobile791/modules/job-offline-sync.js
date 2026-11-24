@@ -1,5 +1,5 @@
 import { addJobComment } from './jobs-comments.js';
-import { saveJobContactPatch } from './jobs-form.js';
+import { saveJobContactPatch, saveJobDeviceFieldsPatch } from './jobs-form.js';
 import { loadJobNameplatePhotosData } from './jobs-fetch.js';
 import { getJobNameplateCompletion } from './nameplate-requirements.js';
 import { isTransientSupabaseError } from './supabase-errors.js';
@@ -28,11 +28,6 @@ function normalizeText(value) {
   return String(value || '').trim();
 }
 
-function sameDeviceFields(left = {}, right = {}) {
-  return normalizeText(left.device_model) === normalizeText(right.device_model)
-    && normalizeText(left.device_serial_number) === normalizeText(right.device_serial_number);
-}
-
 async function readJobForConflictCheck(supabase, jobId) {
   const { data, error } = await supabase
     .from('jobs')
@@ -44,30 +39,36 @@ async function readJobForConflictCheck(supabase, jobId) {
   return data;
 }
 
+// 14.97 (decyzja właściciela 24.11.2026): modele i numery seryjne wpisane bez internetu wysyłają się same.
+// Ta sama funkcja serwera co zapis online (save_job_concurrent_v1168 + scalanie niekolidujących wierszy);
+// prawdziwa równoległa zmiana tych samych danych → konflikt, niczego nie nadpisujemy.
 async function syncDeviceOperation({ supabase, operation }) {
-  const current = await readJobForConflictCheck(supabase, operation.job_id);
   const desired = operation.payload?.device_fields || {};
-  if (sameDeviceFields(current, desired)) return;
-  if (!sameDeviceFields(current, operation.base || {})) {
-    throw new OfflineConflictError('Dane urządzenia zostały w międzyczasie zmienione w systemie. Niczego nie nadpisano.');
+  const base = operation.base || {};
+  const fields = {};
+  const expected = {};
+  for (const key of ['device_model', 'device_serial_number']) {
+    if (!Object.prototype.hasOwnProperty.call(desired, key)) continue;
+    const next = normalizeText(desired[key]) || null;
+    if (next === (normalizeText(base[key]) || null)) continue;
+    fields[key] = next;
+    expected[key] = base[key] ?? null;
   }
-
-  let updateQuery = supabase
-    .from('jobs')
-    .update({
-      device_model: desired.device_model || null,
-      device_serial_number: desired.device_serial_number || null,
-    })
-    .eq('id', operation.job_id);
-  updateQuery = current.device_model == null
-    ? updateQuery.is('device_model', null)
-    : updateQuery.eq('device_model', current.device_model);
-  updateQuery = current.device_serial_number == null
-    ? updateQuery.is('device_serial_number', null)
-    : updateQuery.eq('device_serial_number', current.device_serial_number);
-  const { data, error } = await updateQuery.select('id').maybeSingle();
-  if (error) throw error;
-  if (!data) throw new OfflineConflictError('Dane urządzenia zmieniły się podczas synchronizacji. Niczego nie nadpisano.');
+  if (!Object.keys(fields).length) return;
+  try {
+    await saveJobDeviceFieldsPatch({ supabase, jobId: operation.job_id, fields, expected });
+  } catch (error) {
+    if (/JOB_EDIT_CONFLICT:/i.test(String(error?.message || ''))) {
+      let latestServerState = null;
+      try {
+        latestServerState = await readJobForConflictCheck(supabase, operation.job_id);
+      } catch {
+        // Brak ponownego odczytu nie zmienia konfliktu w sukces.
+      }
+      throw new OfflineConflictError('Dane urządzenia zostały w międzyczasie zmienione w systemie. Niczego nie nadpisano.', { serverState: latestServerState });
+    }
+    throw error;
+  }
 }
 
 async function syncStatusOperation({ supabase, operation, jobs, sendCompletionPush }) {

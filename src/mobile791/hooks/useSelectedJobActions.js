@@ -32,7 +32,7 @@ import { getJobDeviceRows, serializeJobDevicesToFields } from "../modules/job-de
 import { describeDuplicateDeviceSerials, findDuplicateDeviceSerials } from "../modules/device-serial-duplicates.js";
 import { validateJobDevicesForCompletion } from "../../modules/job-device-completion-validation.js";
 import { createOfflineUuid, listOfflineJobOperations, queueOfflineJobOperation } from "../modules/job-offline-store.js";
-import { buildOfflineContactChange } from "../modules/jobs-form.js";
+import { buildDeviceFieldsChange, buildOfflineContactChange } from "../modules/jobs-form.js";
 import { describePhotoQueueFailure } from "../modules/photo-offline-queue.js";
 import { clearDeviceFormDraft, saveDeviceFormDraft, takeDeviceFormDraft } from "../modules/device-form-drafts.js";
 import { isTransientSupabaseError } from "../modules/supabase-errors.js";
@@ -579,6 +579,62 @@ export function useSelectedJobActions({
     return true;
   }
 
+  // 14.97 (decyzja właściciela 24.11.2026): modele i numery seryjne (sam tekst) bez internetu albo przy słabym
+  // zasięgu trafiają do kolejki i wysyłają się same. Zdjęcia tabliczek i naklejki QR nadal tylko z internetem.
+  function describeOfflineDeviceChange(form) {
+    const baseJob = jobFormBaseJobRef?.current || getResolvedJob(editingJobId);
+    if (!baseJob || !profile?.id) return null;
+    const pendingPhotos = getPendingNameplateKeys(form.pending_nameplate_photos || []).size;
+    const pendingQr = form.pending_qr_stickers ? Object.keys(form.pending_qr_stickers).length : 0;
+    const change = buildDeviceFieldsChange({ form, baseJob });
+    return { ...change, baseJob, textOnly: change.changed && !pendingPhotos && !pendingQr };
+  }
+
+  async function queueDeviceTextOffline(form, change, reason) {
+    const jobId = editingJobId;
+    const duplicateSerials = findDuplicateDeviceSerials(form);
+    if (duplicateSerials.length) {
+      alert(describeDuplicateDeviceSerials(duplicateSerials));
+      return true;
+    }
+    const deviceFields = serializeJobDevicesToFields(form);
+    const desired = {
+      device_model: String(deviceFields.device_model || '').trim() || null,
+      device_serial_number: String(deviceFields.device_serial_number || '').trim() || null,
+    };
+    let queued = null;
+    try {
+      queued = await queueOfflineJobOperation({
+        user_id: profile.id,
+        job_id: jobId,
+        type: 'device',
+        base: {
+          device_model: change.baseJob?.device_model ?? null,
+          device_serial_number: change.baseJob?.device_serial_number ?? null,
+        },
+        payload: { device_fields: desired },
+      });
+      // „Zapisano na telefonie” dopiero po potwierdzonym odczycie wpisu z pamięci telefonu.
+      const stored = (await listOfflineJobOperations(profile.id)).some((item) => String(item.id) === String(queued?.id));
+      if (!stored) throw new Error('Wpis nie został odnaleziony w pamięci telefonu.');
+    } catch (error) {
+      logDiagnostic('offline.device.queue-failed', { jobId, reason, error });
+      alert('Nie udało się zapisać urządzeń na telefonie. Formularz pozostaje otwarty — spróbuj ponownie, gdy złapiesz zasięg.');
+      return true;
+    }
+    clearDeviceFormDraft(jobId);
+    applyOptimisticJobPatch(jobId, { ...desired, offline_pending: true });
+    logDiagnostic('offline.device.queued', { jobId, reason });
+    resetJobModalState();
+    alert(reason === 'offline'
+      ? 'Brak internetu — modele i numery seryjne zapisano na telefonie. Wyślą się automatycznie, gdy wróci internet. Zdjęcia tabliczek dodaj, gdy będzie internet.'
+      : 'Słaby internet — modele i numery seryjne zapisano na telefonie. Wyślą się automatycznie, gdy połączenie się poprawi. Zdjęcia tabliczek dodaj, gdy będzie internet.');
+    if (reason !== 'offline' && typeof window !== 'undefined') {
+      window.setTimeout(() => { void performOfflineJobSync?.(); }, 1500);
+    }
+    return true;
+  }
+
   async function saveEditedJob(formOverride) {
     if (!supabase || !editingJobId) return;
     if (!canEditResolvedJob(editingJobId)) {
@@ -619,6 +675,13 @@ export function useSelectedJobActions({
             await queueContactChangeOffline(form, contactChange, 'offline');
             return;
           }
+        } else {
+          // 14.97: modele i numery seryjne (bez nowych zdjęć tabliczek i naklejek QR) — do kolejki offline.
+          const deviceChange = describeOfflineDeviceChange(form);
+          if (deviceChange?.textOnly) {
+            await queueDeviceTextOffline(form, deviceChange, 'offline');
+            return;
+          }
         }
         // 13.66 (decyzja właściciela): urządzenia, tabliczki i pełna edycja wymagają internetu — u każdego.
         logDiagnostic('offline.full-edit.blocked', { jobId: editingJobId, operationId, serialOnlyMode, isAdmin });
@@ -627,7 +690,7 @@ export function useSelectedJobActions({
           variant: 'warning',
           title: 'Brak internetu',
           message: serialOnlyMode
-            ? 'Urządzeń i tabliczek nie można teraz zapisać. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
+            ? 'Nowych zdjęć tabliczek i naklejek QR nie można zapisać bez internetu. „Zamknij okno” zachowa wpisane dane i zdjęcia — gdy będziesz mieć internet, otwórz ponownie „Urządzenia” w tym montażu i naciśnij „Zapisz”. Dane są zachowane do zamknięcia aplikacji.'
             : 'Bez internetu można zapisać tylko dane kontaktowe klienta (nazwa, telefon, e-mail, adres). Pozostałe zmiany wymagają internetu. Możesz zamknąć okno albo zostać w formularzu i zapisać po odzyskaniu internetu.',
           confirmLabel: 'Zamknij okno',
           cancelLabel: 'Zostań w formularzu',
@@ -656,7 +719,15 @@ export function useSelectedJobActions({
       const recordResult = await settleWithin(recordSave, NAMEPLATE_SAVE_TIMEOUT_MS, 'record-save');
       if (recordResult.timedOut) {
         logDiagnostic('nameplate.save.record.timeout', { jobId: editingJobId, operationId, timeoutMs: NAMEPLATE_SAVE_TIMEOUT_MS });
-        if (serialOnlyMode) throw new Error('Zapisywanie danych urządzenia trwa zbyt długo. Spróbuj ponownie.');
+        if (serialOnlyMode) {
+          // 14.97: słaby zasięg — sam tekst urządzeń do kolejki (ponowna wysyłka tej samej wartości jest bezpieczna).
+          const deviceChange = describeOfflineDeviceChange(form);
+          if (deviceChange?.textOnly) {
+            await queueDeviceTextOffline(form, deviceChange, 'weak-connection');
+            return;
+          }
+          throw new Error('Zapisywanie danych urządzenia trwa zbyt długo. Spróbuj ponownie.');
+        }
         // 14.96: słaby zasięg przy zwykłej edycji. Dane kontaktowe — do kolejki (ponowna wysyłka tej samej
         // wartości jest bezpieczna, nawet jeśli pierwszy zapis jednak dotarł). Inne zmiany — jasny komunikat.
         const contactChange = describeOfflineContactChange(form);
@@ -801,6 +872,12 @@ export function useSelectedJobActions({
           const contactChange = describeOfflineContactChange(form);
           if (contactChange?.contactOnly) {
             await queueContactChangeOffline(form, contactChange, 'weak-connection');
+            return;
+          }
+        } else {
+          const deviceChange = describeOfflineDeviceChange(form);
+          if (deviceChange?.textOnly) {
+            await queueDeviceTextOffline(form, deviceChange, 'weak-connection');
             return;
           }
         }

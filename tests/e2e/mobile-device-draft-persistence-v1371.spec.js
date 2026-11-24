@@ -63,17 +63,12 @@ test('@mobile 13.71: dane urządzeń wpisane bez internetu przetrwają wyjście 
   await resetMockSupabase(page);
   await loginWithoutReset(page, WORKER);
 
-  // 1. Bez internetu: nowe urządzenie → Zapisz → „Brak internetu” → Zamknij okno.
+  // 1. Bez internetu: nowe urządzenie → wyjście bez zapisu („Zamknij — zachowaj dane”).
+  //    (14.97: sam „Zapisz” bez internetu zapisuje już tekst urządzeń w kolejce — test szkicu używa wyjścia bez zapisu.)
   await openJobNameplates(page);
   await addUnsavedDevice(page);
   await setOnline(page, false);
-  await page.locator('.mobileDeviceWizardFooter .btn.primary').click();
-  const offlinePrompt = page.locator('.confirmDeleteModal', { hasText: 'Brak internetu' });
-  const confirmWarning = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia', exact: true });
-  await expect.poll(async () => await offlinePrompt.isVisible().catch(() => false) || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
-  if (!(await offlinePrompt.isVisible().catch(() => false))) await confirmWarning.click();
-  await offlinePrompt.getByRole('button', { name: 'Zamknij okno', exact: true }).click();
-  await expect(wizard(page)).toHaveCount(0);
+  await closeWizardKeepingData(page);
 
   // 2. Internet wrócił: otwarcie przywraca dane; wyjście BEZ zapisu nie może ich skasować (błąd z 26.10).
   await setOnline(page, true);

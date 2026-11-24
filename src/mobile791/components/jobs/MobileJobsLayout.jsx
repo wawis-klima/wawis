@@ -13,6 +13,7 @@ import "./mobile-interactions-v1307.css";
 import InlineJobDetailsMotion from "./InlineJobDetailsMotion.jsx";
 import PendingDeviceDraftsBar from "../devices/PendingDeviceDraftsBar.jsx";
 import PhotoSyncStatus from "../PhotoSyncStatus.jsx";
+import OfflineBanner from "../OfflineBanner.jsx";
 
 const MobileDiagnosticsPanel = lazy(() => import("../diagnostics/MobileDiagnosticsPanel.jsx"));
 
@@ -172,6 +173,8 @@ export default function MobileJobsLayout({
 
   return (
     <>
+      {/* 14.97: tylko gdy telefon nie ma internetu. */}
+      <OfflineBanner userId={profile?.id} />
       <div className={`mobileHeaderV2 wawisCompactHeader ${isAdmin ? "wawisCompactHeaderAdmin mobileHeaderAdmin" : "wawisCompactHeaderWorker mobileHeaderWorker"}`}>
         <div className={`wawisOneLineToolbar ${isAdmin ? "isAdmin" : "isWorker"}`}>
           <button

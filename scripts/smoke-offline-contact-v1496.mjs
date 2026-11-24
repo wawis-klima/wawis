@@ -24,7 +24,7 @@ assert.match(actions, /listOfflineJobOperations\(profile\.id\)\)\.some\(/);
 assert.match(actions, /Brak internetu — dane klienta zapisano na telefonie/);
 assert.match(actions, /Słaby internet — dane klienta zapisano na telefonie/);
 assert.match(actions, /Słaby internet — zapisu nie udało się potwierdzić/);
-// Kreator urządzeń bez zmian (13.66).
-assert.match(actions, /if \(serialOnlyMode\) throw new Error\('Zapisywanie danych urządzenia trwa zbyt długo/);
+// 14.97: kreator urządzeń — sam tekst do kolejki, inaczej dotychczasowy błąd.
+assert.match(actions, /throw new Error\('Zapisywanie danych urządzenia trwa zbyt długo/);
 assert.match(status, /item\.type === 'contact'\) return 'Dane kontaktowe klienta'/);
 console.log('smoke-offline-contact-v1496: OK');

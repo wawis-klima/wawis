@@ -1,3 +1,15 @@
+## 14.97
+- **Telefon: pasek „Brak internetu”** (decyzja właściciela z 24.11.2026). Pojawia się **wyłącznie wtedy, gdy telefon nie ma internetu**, i podaje, ile zmian czeka na wysłanie, np. „Brak internetu · 2 zmiany czekają na wysłanie”. Z internetem nic się nie wyświetla. Działa w trybie jasnym i ciemnym.
+- **Telefon: modele i numery seryjne urządzeń zapisują się bez internetu**, także przy słabym zasięgu. Chodzi o sam tekst. Trafiają do kolejki na telefonie i wysyłają się same tą samą funkcją serwera co zapis online (`save_job_concurrent_v1168` ze scalaniem niekolidujących wierszy). Przy równoległej zmianie w biurze aplikacja niczego nie nadpisuje i pokazuje konflikt.
+  - Przed zapisem w kolejce aplikacja sprawdza powtórzone numery seryjne.
+  - Szkic urządzeń jest usuwany dopiero po potwierdzonym zapisie w pamięci telefonu.
+  - Nadal tylko z internetem (decyzja 13.66): **nowe zdjęcia tabliczek i naklejki QR**. Jeśli w formularzu są takie zdjęcia, działa dotychczasowe okno „Zamknij okno / Zostań w formularzu”.
+- Synchronizacja urządzeń z kolejki używa teraz tej samej funkcji serwera co zapis online, zamiast bezpośredniego `update`.
+- Testy: nowy smoke `smoke-offline-devices-banner-v1497`. Nowy E2E `mobile-offline-banner-v1497` (pasek tylko offline, licznik, znika po powrocie internetu; pracownik i administrator). Zaktualizowane E2E 13.63, 13.71 i 13.72: zapis bez internetu trafia teraz do kolejki, a szkic powstaje przy wyjściu bez zapisu.
+
+## 14.97
+- uzupełnij opis zmian dla wersji 14.97
+
 ## 14.96
 - **Telefon: dane kontaktowe klienta można zapisać bez internetu** (decyzja właściciela z 24.11.2026, po zgłoszeniu Kacpra o słabym zasięgu). Dotyczy pól: nazwa klienta, telefon, e-mail, miejscowość i ulica. Zmiana trafia do tej samej kolejki na telefonie co status i komentarze i wysyła się sama, gdy wróci internet.
   - Wysyłka idzie tą samą funkcją serwera co zwykła edycja (`save_job_concurrent_v1168`). Jeśli ktoś w międzyczasie zmienił to samo pole w biurze, telefon **niczego nie nadpisuje** i pokazuje „Konflikt synchronizacji” w Centrum synchronizacji, gdzie można odrzucić zmianę z telefonu.
