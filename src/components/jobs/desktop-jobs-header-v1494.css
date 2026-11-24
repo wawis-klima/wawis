@@ -46,3 +46,34 @@
     margin-left: auto !important;
   }
 }
+
+/* Wąski obszar listy (otwarte miejsce na szczegóły montażu): ikony 72 px, żeby filtr został w tym samym wierszu. */
+@media (min-width: 701px) {
+  .desktopHeaderV2 {
+    container-type: inline-size;
+    container-name: wawisJobsHeader;
+  }
+}
+
+@container wawisJobsHeader (max-width: 720px) {
+  .desktopHeaderTopRowV1494 .desktopStatusInlineWrap {
+    padding: 4px 10px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopStatusInlineInner {
+    gap: 8px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton,
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionShape,
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionImage {
+    width: 72px !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    min-height: 72px !important;
+  }
+
+  .desktopHeaderTopRowV1494 .desktopInlineStatusButton .statusActionBadge {
+    top: 16px !important;
+  }
+}

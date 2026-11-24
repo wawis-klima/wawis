@@ -1,6 +1,6 @@
 ## 14.94
 - **Komputer: bez górnego paska wyszukiwania** („Szukaj klienta, telefonu, adresu…”, Ctrl K). Decyzja właściciela z 24.11.2026, bo w Montażach jest filtr. Wyłączone flagą `DESKTOP_GLOBAL_SEARCH_ENABLED = false` w `App.jsx`. Komponent i dane zostają, żeby pasek mógł wrócić jedną zmianą.
-- **Montaże na komputerze: większe ikony statusów** (56 → 88 px) i **filtr „Filtruj klienta, telefon…” w tym samym wierszu**, między ikonami a wersją i „+”. Rozmiar liter, także liczników, bez zmian. Styl w `src/components/jobs/desktop-jobs-header-v1494.css`.
+- **Montaże na komputerze: większe ikony statusów** (56 → 88 px; w wąskiej liście 72 px) i **filtr „Filtruj klienta, telefon…” w tym samym wierszu**, między ikonami a wersją i „+”. Rozmiar liter, także liczników, bez zmian. Styl w `src/components/jobs/desktop-jobs-header-v1494.css`.
 - Testy: nowy E2E `desktop-jobs-header-v1494` (brak paska, ikony 88 px, filtr w wierszu ikon, filtr działa).
 
 ## 14.94

@@ -17,9 +17,12 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
 
   const icons = row.locator('.desktopInlineStatusButton');
   await expect(icons).toHaveCount(4);
+  // Ikony większe niż wcześniej (56 px): 88 px, a w wąskiej liście 72 px.
+  const headerWidth = await page.locator('.desktopHeaderV2').evaluate((el) => el.clientWidth);
+  const expectedIcon = headerWidth > 720 ? 88 : 72;
   for (let i = 0; i < 4; i += 1) {
     const box = await icons.nth(i).boundingBox();
-    expect(box.width, 'ikona statusu 88 px').toBeGreaterThanOrEqual(86);
+    expect(Math.round(box.width), `ikona statusu ${expectedIcon} px (nagłówek ${headerWidth} px)`).toBe(expectedIcon);
   }
   // Licznik na ikonie: rozmiar liter bez zmian (11 px).
   expect(await row.locator('.statusActionBadge').first().evaluate((el) => getComputedStyle(el).fontSize)).toBe('11px');
@@ -47,4 +50,17 @@ test('14.94 komputer: Montaże — bez górnego wyszukiwania, większe ikony, fi
   await page.locator('.desktopFilterInput').fill('zzz-brak-takiego-klienta');
   await expect(page.getByText('Brak klientów pasujących do wyszukiwania.')).toBeVisible();
   await page.locator('.desktopFilterInput').fill('');
+
+  // Szeroki ekran: ikony 88 px, filtr nadal obok.
+  await page.setViewportSize({ width: 2400, height: 900 });
+  const wide = await row.evaluate((el) => ({
+    header: el.parentElement.clientWidth,
+    icon: el.querySelector('.desktopInlineStatusButton').getBoundingClientRect().width,
+    iconsTop: el.querySelector('.desktopStatusInlineWrap').getBoundingClientRect(),
+    filterTop: el.querySelector('.desktopFilterBoxV1494').getBoundingClientRect(),
+  }));
+  console.log(`WAWIS-HEADER wide ${JSON.stringify({ header: wide.header, icon: wide.icon })}`);
+  if (wide.header > 720) expect(Math.round(wide.icon)).toBe(88);
+  const mid = (r) => r.top + r.height / 2;
+  expect(Math.abs(mid(wide.filterTop) - mid(wide.iconsTop))).toBeLessThan(12);
 });
