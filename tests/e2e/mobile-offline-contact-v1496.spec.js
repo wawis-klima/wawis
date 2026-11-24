@@ -2,7 +2,7 @@
 // pracownik bez internetu może zapisać dane kontaktowe klienta (e-mail, telefon, nazwa, adres).
 // Zmiana trafia do kolejki na telefonie i wysyła się sama; równoległej zmiany w biurze nie nadpisuje.
 import { devices, expect, test } from '@playwright/test';
-import { WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
+import { ADMIN, WORKER, loginWithoutReset, resetMockSupabase } from './mock-helpers.js';
 
 const { defaultBrowserType: _defaultBrowserType, ...iphone14 } = devices['iPhone 14'];
 test.use(iphone14);
@@ -56,7 +56,7 @@ test('@mobile 14.96 pracownik: e-mail klienta bez internetu — zapis na telefon
   await modal.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
 
   await expect.poll(() => dialogs.length).toBe(1);
-  expect(dialogs[0]).toContain('Brak internetu — dane klienta zapisano na telefonie');
+  expect(dialogs[0]).toContain('Brak internetu — zmiany zapisano na telefonie');
   await expect(modal.getByRole('heading', { name: 'Edytuj montaż' })).toHaveCount(0);
   // Serwer jeszcze nic nie dostał.
   expect((await serverJob(page)).email).toBe(before.email);
@@ -102,15 +102,45 @@ test('@mobile 14.96 pracownik: zmiana w biurze w międzyczasie — telefon nicze
   expect((await serverJob(page)).email).toBe('z.biura@example.com');
 });
 
-test('@mobile 14.96 pracownik: inne zmiany bez internetu nadal wymagają internetu', async ({ page }) => {
+test('@mobile 14.98 pracownik: data montażu bez internetu — zapis na telefonie i wysyłka po powrocie zasięgu', async ({ page }) => {
+  await installControllableNetworkState(page);
+  await resetMockSupabase(page);
+  await loginWithoutReset(page, WORKER);
+  const dialogs = [];
+  page.on('dialog', async (dialog) => { dialogs.push(dialog.message()); await dialog.accept(); });
+  const modal = await openJobEdit(page);
+  await setOnline(page, false);
+  await modal.locator('input[type="date"]').first().fill('2030-01-15');
+  await modal.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect.poll(() => dialogs.length).toBe(1);
+  expect(dialogs[0]).toContain('Brak internetu — zmiany zapisano na telefonie');
+  await setOnline(page, true);
+  await expect.poll(() => page.evaluate((id) => String(window.__KLIMA_MOCK_SUPABASE__.getStore().jobs.find((job) => job.id === id)?.installation_date || '').slice(0, 10), JOB_ID), { timeout: 20_000 }).toBe('2030-01-15');
+});
+
+test('@mobile 14.96 pracownik: inne zmiany (NIP) bez internetu nadal wymagają internetu', async ({ page }) => {
   await installControllableNetworkState(page);
   await resetMockSupabase(page);
   await loginWithoutReset(page, WORKER);
   const modal = await openJobEdit(page);
   await setOnline(page, false);
-  const dateInput = modal.locator('input[type="date"]').first();
-  await expect(dateInput).toBeVisible();
-  await dateInput.fill('2030-01-15');
+  await modal.getByLabel('NIP (opcjonalnie)').first().fill('5250001009');
   await modal.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
-  await expect(page.getByText(/Bez internetu można zapisać tylko dane kontaktowe klienta/)).toBeVisible();
+  await expect(page.getByText(/Pozostałe zmiany \(np\. NIP, kontrahent, monterzy, status\) wymagają internetu/)).toBeVisible();
+});
+
+test('@mobile 14.98 administrator: notatka administratora bez internetu — zapis na telefonie i wysyłka po powrocie zasięgu', async ({ page }) => {
+  await installControllableNetworkState(page);
+  await resetMockSupabase(page);
+  await loginWithoutReset(page, ADMIN);
+  const dialogs = [];
+  page.on('dialog', async (dialog) => { dialogs.push(dialog.message()); await dialog.accept(); });
+  const modal = await openJobEdit(page);
+  await setOnline(page, false);
+  await modal.getByPlaceholder('Komentarz administratora').fill('Notatka zapisana bez internetu');
+  await modal.getByRole('button', { name: 'Zapisz zmiany', exact: true }).click();
+  await expect.poll(() => dialogs.length).toBe(1);
+  expect(dialogs[0]).toContain('Brak internetu — zmiany zapisano na telefonie');
+  await setOnline(page, true);
+  await expect.poll(() => page.evaluate((id) => window.__KLIMA_MOCK_SUPABASE__.getStore().jobs.find((job) => job.id === id)?.admin_note || '', JOB_ID), { timeout: 20_000 }).toBe('Notatka zapisana bez internetu');
 });

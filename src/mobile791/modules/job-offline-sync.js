@@ -163,7 +163,7 @@ async function syncContactOperation({ supabase, operation }) {
         // Brak ponownego odczytu nie zmienia konfliktu w sukces.
       }
       throw new OfflineConflictError(
-        'Dane klienta zmieniono w systemie, zanim telefon je wysłał. Niczego nie nadpisano.',
+        'Te dane montażu zmieniono w systemie, zanim telefon je wysłał. Niczego nie nadpisano.',
         { serverState: latestServerState },
       );
     }

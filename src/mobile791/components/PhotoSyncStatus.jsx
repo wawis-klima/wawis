@@ -45,7 +45,7 @@ function getJobLocation(jobs = [], jobId) {
 
 function getOperationLabel(item = {}) {
   if (item.type === 'comment') return 'Komentarz';
-  if (item.type === 'contact') return 'Dane kontaktowe klienta';
+  if (item.type === 'contact') return 'Zmiany w montażu (dane klienta, data, notatka)';
   if (item.type === 'device') return 'Dane urządzenia i tabliczek';
   if (item.type === 'status') return item.payload?.status === 'Zakończone' ? 'Zakończenie montażu' : 'Zmiana statusu';
   return 'Zmiana montażu';

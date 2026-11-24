@@ -458,7 +458,9 @@ export function buildJobEditChangeSet({ form = {}, baseJob = {}, isAdmin = false
 // tą samą funkcją serwera co zwykła edycja (save_job_concurrent_v1168: kontrola równoległej zmiany,
 // ponowna wysyłka tej samej wartości jest bezpieczna). Urządzenia, tabliczki, zdjęcia i pozostałe pola
 // nadal wymagają internetu (decyzja 13.66).
-export const OFFLINE_CONTACT_FIELDS = Object.freeze(['client', 'title', 'email', 'phone', 'sms_recipient_phone', 'city', 'street', 'location']);
+// 14.98 (decyzja właściciela 24.11.2026): także data montażu i notatka administratora (admin_note tylko administrator —
+// buildJobEditChangeSet dodaje to pole wyłącznie dla administratora).
+export const OFFLINE_CONTACT_FIELDS = Object.freeze(['client', 'title', 'email', 'phone', 'sms_recipient_phone', 'city', 'street', 'location', 'installation_date', 'admin_note']);
 
 export function buildOfflineContactChange({ form = {}, baseJob = {}, isAdmin = false, normalizeStatus, baseNip = '' }) {
   const { fields, expected } = buildJobEditChangeSet({

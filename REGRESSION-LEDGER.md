@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## OFFLINE-1498 — data montażu i notatka administratora offline (decyzja właściciela 24.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OFFLINE-1498 | FIXED-UNVERIFIED | `OFFLINE_CONTACT_FIELDS` + `installation_date`, `admin_note`; `saveAdminNote`: offline/transient → kolejka `contact` (potwierdzony odczyt z IndexedDB). E2E `mobile-offline-contact-v1496` (data, notatka, blokada NIP). |
+| OFFLINE-1498-IPHONE | OPEN | iPhone (tryb samolotowy): zmiana daty → po włączeniu internetu data w systemie. |
+
 ## OFFLINE-1497 — pasek „Brak internetu” i urządzenia offline (decyzja właściciela 24.11.2026)
 
 Obszar chroniony: kolejka offline i synchronizacja (typ `device` przywrócony w kolejce — tylko tekst; bez zmiany wersji IndexedDB).

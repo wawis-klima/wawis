@@ -1,3 +1,13 @@
+## 14.98
+- **Telefon: data montażu i notatka administratora zapisują się bez internetu i przy słabym zasięgu** (decyzja właściciela z 24.11.2026). Używają tej samej kolejki i tej samej ochrony przed nadpisaniem co dane klienta z 14.96. Notatkę może zmieniać tylko administrator.
+- Notatka administratora wysyłana albo usuwana z karty montażu („Usuń”) także trafia do kolejki, gdy nie ma internetu.
+- Komunikaty: „Brak internetu — zmiany zapisano na telefonie…”. W Centrum synchronizacji wpis nazywa się „Zmiany w montażu (dane klienta, data, notatka)”.
+- Nadal wymagają internetu: NIP, kontrahent, monterzy, status w formularzu edycji, zdjęcia, tabliczki i naklejki QR.
+- Testy: E2E `mobile-offline-contact-v1496`, nowe przypadki dla daty montażu (pracownik) i notatki (administrator). Blokada pozostałych pól jest sprawdzana na zmianie NIP.
+
+## 14.98
+- uzupełnij opis zmian dla wersji 14.98
+
 ## 14.97
 - **Telefon: pasek „Brak internetu”** (decyzja właściciela z 24.11.2026). Pojawia się **wyłącznie wtedy, gdy telefon nie ma internetu**, i podaje, ile zmian czeka na wysłanie, np. „Brak internetu · 2 zmiany czekają na wysłanie”. Z internetem nic się nie wyświetla. Działa w trybie jasnym i ciemnym.
 - **Telefon: modele i numery seryjne urządzeń zapisują się bez internetu**, także przy słabym zasięgu. Chodzi o sam tekst. Trafiają do kolejki na telefonie i wysyłają się same tą samą funkcją serwera co zapis online (`save_job_concurrent_v1168` ze scalaniem niekolidujących wierszy). Przy równoległej zmianie w biurze aplikacja niczego nie nadpisuje i pokazuje konflikt.
