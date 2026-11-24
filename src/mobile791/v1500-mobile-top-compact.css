@@ -3,13 +3,17 @@
       wielkość liter bez zmian;
    2) cztery ikony statusów montaży trochę większe (64 → 74 px, ok. +15%), mniejsze puste odstępy między nimi. */
 @media (max-width: 700px) {
-  .moduleSwitcher.moduleSwitcherMobile.moduleSwitcherMobile {
+  /* Silniejsze niż reguły 13.90 (ServiceAdminPanel.css) i pricelist-mobile.css: 56 → ok. 44 px.
+     Przyciski 38 px — nadal wygodne do trafienia palcem. */
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isAdmin,
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isWorker {
     min-height: 0 !important;
     padding: 3px !important;
   }
 
-  .moduleSwitcher.moduleSwitcherMobile.moduleSwitcherMobile .moduleSwitcherBtn {
-    min-height: 32px !important;
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isAdmin .moduleSwitcherBtn.moduleSwitcherBtn,
+  .page.pageDesktopStatusLeft .moduleSwitcherWrap .moduleSwitcher.moduleSwitcherMobile.isWorker .moduleSwitcherBtn.moduleSwitcherBtn {
+    min-height: 38px !important;
     padding-top: 4px !important;
     padding-bottom: 4px !important;
   }

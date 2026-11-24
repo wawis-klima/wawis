@@ -12,6 +12,8 @@ for (const [label, user] of [['administrator', ADMIN], ['pracownik', WORKER]]) {
     await loginWithoutReset(page, user);
     const switcher = page.locator('.moduleSwitcher.moduleSwitcherMobile');
     await expect(switcher).toBeVisible();
+    await expect(page.locator('.mobileJobsShellV959 .statusActionButton .statusActionImage')).toHaveCount(4);
+    await page.waitForTimeout(400);
     const sizes = await page.evaluate(() => {
       const bar = document.querySelector('.moduleSwitcher.moduleSwitcherMobile');
       const btn = bar.querySelector('.moduleSwitcherBtn');
@@ -26,8 +28,10 @@ for (const [label, user] of [['administrator', ADMIN], ['pracownik', WORKER]]) {
       };
     });
     console.log(`WAWIS-TOP ${label} ${JSON.stringify(sizes)}`);
-    expect(sizes.barHeight, 'pasek modułów niższy').toBeLessThanOrEqual(42);
-    expect(sizes.btnFont).toBe('11px');
+    // Przed 15.00: 56 px (administrator), 54 px (pracownik).
+    expect(sizes.barHeight, 'pasek modułów niższy').toBeLessThanOrEqual(46);
+    // Wielkość liter bez zmian (jak przed 15.00 na iPhonie 14: administrator 13.845 px, pracownik 15.015 px).
+    expect(sizes.btnFont).toBe(user === ADMIN ? '13.845px' : '15.015px');
     expect(sizes.icons).toHaveLength(4);
     // Aktywna ikona jest powiększona (scale 1.16) — sprawdzamy nieaktywne.
     const sorted = [...sizes.icons].sort((a, b) => a - b);
