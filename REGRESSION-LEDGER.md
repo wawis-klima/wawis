@@ -1,5 +1,15 @@
 # WAWIS — Regression Ledger
 
+## OFFLINE-1497 — pasek „Brak internetu” i urządzenia offline (decyzja właściciela 24.11.2026)
+
+Obszar chroniony: kolejka offline i synchronizacja (typ `device` przywrócony w kolejce — tylko tekst; bez zmiany wersji IndexedDB).
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| OFFLINE-BANNER-1497 | FIXED-UNVERIFIED | `OfflineBanner`: `if (online) return null`; licznik z `listOfflineJobOperations` (bez konfliktów). E2E `mobile-offline-banner-v1497`. |
+| OFFLINE-DEVICE-1497 | FIXED-UNVERIFIED | `queueDeviceTextOffline` (bez nowych zdjęć/QR, kontrola duplikatów, potwierdzony odczyt z IndexedDB, potem usunięcie szkicu). `syncDeviceOperation` → `saveJobDeviceFieldsPatch` (RPC + reconcile), konflikt → `OfflineConflictError`. E2E 13.63 (pracownik: kolejka → wysyłka). |
+| OFFLINE-1497-IPHONE | OPEN | iPhone (tryb samolotowy): pasek widoczny tylko offline; numer seryjny zapisany offline pojawia się w systemie po włączeniu internetu. |
+
 ## OFFLINE-CONTACT-1496 — dane kontaktowe klienta bez internetu (decyzja właściciela 24.11.2026)
 
 Obszar chroniony: kolejka offline i synchronizacja (IndexedDB `wawis-mobile-offline-data`, bez zmiany wersji bazy; nowy typ wpisu `contact`).

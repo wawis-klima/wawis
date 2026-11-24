@@ -57,7 +57,7 @@ async function addUnsavedDevice(page) {
 
 // 13.68: bez internetu okno „Brak internetu” z wyborem „Zamknij okno” / „Zostań w formularzu” (nie blokuje aplikacji).
 for (const [roleName, credentials, buttonName, choice] of [['administrator', ADMIN, 'Urządzenia', 'stay'], ['pracownik', WORKER, 'Tabliczki', 'close']]) {
-  test(`@mobile ${roleName}: bez internetu tabliczki nie są zapisywane (okno z wyborem), ${choice === 'stay' ? 'po powrocie internetu zapis działa' : '„Zamknij okno” zachowuje dane do ponownego otwarcia'}`, async ({ page }) => {
+  test(`@mobile ${roleName}: bez internetu ${choice === 'stay' ? 'bez zmian — okno z wyborem, po powrocie internetu zapis działa' : 'tekst urządzeń zapisuje się w kolejce i wysyła po powrocie internetu (14.97)'}`, async ({ page }) => {
     test.setTimeout(90_000);
     await installControllableNetworkState(page);
     await resetMockSupabase(page);
@@ -77,6 +77,22 @@ for (const [roleName, credentials, buttonName, choice] of [['administrator', ADM
     await setLogicalOnlineState(page, false);
     await saveButton.click();
     const confirmWarning = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia', exact: true });
+    if (choice === 'close') {
+      // 14.97 (decyzja właściciela 24.11.2026): sam tekst urządzeń (bez nowych zdjęć tabliczek) zapisuje się
+      // bez internetu w kolejce na telefonie i wysyła się sam po powrocie internetu.
+      await expect.poll(async () => dialogs.length > 0 || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
+      if (!dialogs.length && await confirmWarning.isVisible().catch(() => false)) await confirmWarning.click();
+      await expect.poll(() => dialogs.length, { timeout: 20_000 }).toBe(1);
+      expect(dialogs[0]).toContain('Brak internetu — modele i numery seryjne zapisano na telefonie');
+      await expect(page.locator('.mobileDeviceWizardModal')).toHaveCount(0);
+      expect(await countOfflineDeviceOperations(page)).toBe(1);
+      await setLogicalOnlineState(page, true);
+      await expect.poll(() => countOfflineDeviceOperations(page), { timeout: 30_000 }).toBe(0);
+      await page.getByRole('button', { name: buttonName, exact: true }).click();
+      await expect(page.locator('.mobileDeviceWizardFooter .btn.primary')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('device-draft-restored')).toHaveCount(0);
+      return;
+    }
     const offlinePrompt = page.locator('.confirmDeleteModal', { hasText: 'Brak internetu' });
     await expect.poll(async () => await offlinePrompt.isVisible().catch(() => false) || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
     if (!(await offlinePrompt.isVisible().catch(() => false))) await confirmWarning.click();

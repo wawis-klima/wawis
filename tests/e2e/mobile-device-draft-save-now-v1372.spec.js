@@ -56,14 +56,13 @@ test('@mobile 13.72: „Zapisz teraz” po powrocie internetu zapisuje urządzen
   const devicesBefore = await wizard(page).locator('.mobileDeviceOverviewCard').count();
   await addUnsavedDevice(page);
 
-  // Bez internetu: zapis niemożliwy → „Zamknij okno”. Pasek się nie pokazuje (nie ma jak zapisać).
+  // Bez internetu: wyjście bez zapisu zachowuje szkic. Pasek się nie pokazuje (nie ma jak zapisać).
+  // (14.97: „Zapisz” bez internetu zapisuje tekst urządzeń w kolejce — szkic powstaje przy wyjściu bez zapisu.)
   await setOnline(page, false);
-  await saveButton.click();
-  const offlinePrompt = page.locator('.confirmDeleteModal', { hasText: 'Brak internetu' });
   const confirmWarning = page.getByRole('button', { name: 'Zapisz mimo ostrzeżenia', exact: true });
-  await expect.poll(async () => await offlinePrompt.isVisible().catch(() => false) || await confirmWarning.isVisible().catch(() => false), { timeout: 20_000 }).toBe(true);
-  if (!(await offlinePrompt.isVisible().catch(() => false))) await confirmWarning.click();
-  await offlinePrompt.getByRole('button', { name: 'Zamknij okno', exact: true }).click();
+  await wizard(page).locator('.mobileDeviceWizardClose').click();
+  const keepDraft = page.locator('.appModalOverlay.confirmDeleteOverlay');
+  await keepDraft.getByRole('button', { name: 'Zamknij — zachowaj dane' }).click();
   await expect(wizard(page)).toHaveCount(0);
   await expect(page.getByTestId('pending-device-drafts')).toHaveCount(0);
 

@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "14.96",
+  "version": "14.97",
   "scope": "full",
-  "release_branch": "release/v14.96",
+  "release_branch": "release/v14.97",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Telefon: kolejka offline dla danych kontaktowych klienta (obszar chroniony: offline/sync). Backend bez zmian — istniejąca funkcja save_job_concurrent_v1168."
+    "notes": "Telefon: pasek offline; tekst urządzeń w kolejce offline (obszar chroniony: offline/sync). Backend bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v14.96",
+    "source_branch": "release/v14.97",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 14.96.",
+    "evidence_source": "Vercel READY, /app-version.json = 14.97.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "14.96: dane kontaktowe klienta offline / słaby zasięg",
-    "release_ci": "WAWIS PR checks + smoke-offline-contact-v1496 + E2E mobile-offline-contact-v1496 + WebKit",
-    "postdeploy": "Vercel READY/14.96; brak błędów runtime; test iPhone (tryb samolotowy) — OPEN."
+    "code": "14.97: pasek „Brak internetu”; modele i numery seryjne offline",
+    "release_ci": "WAWIS PR checks + smoke v1497 + E2E offline (v1363/v1371/v1372/v1497) + WebKit",
+    "postdeploy": "Vercel READY/14.97; brak błędów runtime; test iPhone — OPEN."
   }
 }

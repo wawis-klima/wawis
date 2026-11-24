@@ -71,6 +71,7 @@ const GROUPS = {
     'node scripts/smoke-css-tokens-v1451.mjs',
     'node scripts/smoke-badge-colors-v1459.mjs',
     'node scripts/smoke-offline-contact-v1496.mjs',
+    'node scripts/smoke-offline-devices-banner-v1497.mjs',
     'node scripts/smoke-css-shadows-v1464.mjs',
     'node scripts/smoke-css-alpha-v1467.mjs',
     'node scripts/smoke-css-housekeeping-v1469.mjs',

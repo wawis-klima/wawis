@@ -1,0 +1,13 @@
+/* WAWIS 14.97 — pasek „Brak internetu” (tylko bez internetu). Kolory przez role: tryb jasny i ciemny. */
+.wawisOfflineBanner {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 60;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--wr-line-amber-300);
+  border-radius: 12px;
+  background: var(--wr-bg-amber-100);
+  color: var(--wr-text-amber-800);
+  text-align: center;
+}
