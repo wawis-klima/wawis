@@ -2,7 +2,7 @@
 - **Komputer: po powrocie z Fakturowni potwierdzona faktura nie wraca już na ekranie do „Faktura VAT niewystawiona”.** Zgłoszenie właściciela z 25.11.2026, faktura 33/11/2026.
   - Przyczyna: po powrocie do karty aplikacja jednocześnie odświeżała listę montaży i potwierdzała fakturę. Odpowiedź listy, wysłana sekundę przed potwierdzeniem, przyszła po nim i nadpisała ekran starym stanem. Druga kontrola dostała z serwera „Faktura została już potwierdzona.” i pokazała to jak błąd. **W bazie przez cały czas było dobrze.**
   - Poprawka: po potwierdzeniu aplikacja ponownie czyta z bazy stan faktury tego montażu (po 2,5 s i po 7 s) i ustawia go na ekranie. Odpowiedź „już potwierdzona” jest traktowana jako sukces: aplikacja odczytuje stan z bazy i pokazuje „Potwierdzono fakturę VAT … w Fakturowni.”
-- Atrapa Supabase w testach obsługuje akcje `pending` i `verify` funkcji `fakturownia-client`.
+- Obie atrapy Supabase w testach (komputer i telefon) obsługują akcje `pending` i `verify` funkcji `fakturownia-client`.
 - Testy: nowy E2E `desktop-invoice-already-confirmed-v1502`.
 
 ## 15.02
