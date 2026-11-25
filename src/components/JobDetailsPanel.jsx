@@ -354,6 +354,42 @@ export default function JobDetailsPanel({
   }
 
 
+  // WAWIS 15.02 (zgłoszenie właściciela 25.11.2026): po powrocie z Fakturowni aplikacja jednocześnie odświeża listę
+  // montaży i potwierdza fakturę. Odpowiedź listy wysłana PRZED potwierdzeniem potrafiła przyjść PO nim i nadpisać
+  // ekran starym „Faktura VAT niewystawiona” (w bazie wszystko było dobrze). Dlatego po potwierdzeniu — i gdy serwer
+  // odpowie „już potwierdzona” — ponownie czytamy z bazy stan faktury tego montażu i ustawiamy go na ekranie.
+  const INVOICE_STATE_FIELDS = 'id, vat_invoice_issued, vat_invoice_fakturownia_confirmed, vat_invoice_fakturownia_invoice_id, vat_invoice_fakturownia_invoice_number, vat_invoice_fakturownia_confirmed_at';
+  async function syncInvoiceStateFromServer(jobId) {
+    const targetId = String(jobId || '').trim();
+    if (!supabase || !targetId) return null;
+    try {
+      const { data, error } = await supabase.from('jobs').select(INVOICE_STATE_FIELDS).eq('id', targetId).maybeSingle();
+      if (error || !data) return null;
+      const patchJob = (job) => (job && String(job.id) === targetId ? { ...job, ...data } : job);
+      setJobs?.((previous) => previous.map(patchJob));
+      setSelectedJobByUpdater?.(patchJob);
+      return data;
+    } catch (error) {
+      console.warn('Nie udało się odczytać stanu faktury z bazy.', error);
+      return null;
+    }
+  }
+
+  function scheduleInvoiceStateResync(jobId) {
+    if (typeof window === 'undefined') return;
+    for (const delayMs of [2500, 7000]) window.setTimeout(() => { void syncInvoiceStateFromServer(jobId); }, delayMs);
+  }
+
+  async function handleAlreadyConfirmedInvoice() {
+    fakturowniaVerificationRef.current = null;
+    const state = await syncInvoiceStateFromServer(selectedJobId);
+    if (activeInvoiceJobIdRef.current === selectedJobId) {
+      setInvoiceVerificationCandidates([]);
+      const number = String(state?.vat_invoice_fakturownia_invoice_number || '').trim();
+      setInvoiceVerificationMessage(number ? `Potwierdzono fakturę VAT ${number} w Fakturowni.` : '');
+    }
+  }
+
   async function confirmAndPatchVerifiedInvoice(result) {
     const saved = await confirmVatInvoiceFromFakturownia({
       supabase,
@@ -376,6 +412,7 @@ export default function JobDetailsPanel({
     setJobs?.((previous) => previous.map(patchJob));
     setSelectedJobByUpdater?.(patchJob);
     fakturowniaVerificationRef.current = null;
+    scheduleInvoiceStateResync(selectedJobId);
     if (activeInvoiceJobIdRef.current === selectedJobId) {
       setInvoiceVerificationMessage(`Potwierdzono fakturę VAT ${String(result.invoiceNumber || '').trim()} w Fakturowni.`);
       setManualInvoiceExpanded(false);
@@ -400,6 +437,10 @@ export default function JobDetailsPanel({
     setInvoiceVerificationMessage('');
     try {
       const result = await lookupFakturowniaInvoiceByNumber({ supabase, jobId: selectedJobId, invoiceNumber: number });
+      if (result?.reasonCode === 'ALREADY_CONFIRMED') {
+        await handleAlreadyConfirmedInvoice();
+        return;
+      }
       if (!result?.found || !result.invoiceId) {
         if (activeInvoiceJobIdRef.current === selectedJobId) {
           setInvoiceVerificationMessage(result?.reason || 'Nie udało się jednoznacznie odnaleźć faktury.');
@@ -434,6 +475,11 @@ export default function JobDetailsPanel({
         clientId: pending?.clientId || '',
       });
 
+      // 15.02: „już potwierdzona” to nie błąd — zwykle druga kontrola po powrocie z Fakturowni.
+      if (result?.reasonCode === 'ALREADY_CONFIRMED') {
+        await handleAlreadyConfirmedInvoice();
+        return;
+      }
       if (!result?.found || !result?.invoiceId) {
         if (activeInvoiceJobIdRef.current === selectedJobId) {
           setInvoiceVerificationCandidates(Array.isArray(result?.candidates) ? result.candidates : []);

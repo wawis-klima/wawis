@@ -1,5 +1,12 @@
 # WAWIS — Regression Ledger
 
+## INVOICE-1502 — komputer: stary stan faktury po powrocie z Fakturowni (25.11.2026)
+
+| ID | Stan przed CI | Dowód i zabezpieczenia |
+|---|---|---|
+| INVOICE-1502 | FIXED-UNVERIFIED | Produkcja (SELECT): montaż 36f244c2… `vat_invoice_fakturownia_confirmed = true`, 33/11/2026, 13:14:34 UTC; logi: GET jobs 13:14:33 przed RPC potwierdzenia 13:14:34. `JobDetailsPanel`: `syncInvoiceStateFromServer` po potwierdzeniu (2,5 s / 7 s) i przy `ALREADY_CONFIRMED`. E2E `desktop-invoice-already-confirmed-v1502`. |
+| INVOICE-1502-PC | OPEN | Komputer właściciela: po wystawieniu faktury zielony status zostaje. |
+
 ## UI-1501 — telefon: menu poza przyciemnieniem iOS pod paskiem stanu (24.11.2026)
 
 | ID | Stan przed CI | Dowód i zabezpieczenia |

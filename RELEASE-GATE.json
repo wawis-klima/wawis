@@ -1,12 +1,12 @@
 {
   "policy_enforced_from": "10.60",
-  "version": "15.01",
+  "version": "15.02",
   "scope": "full",
-  "release_branch": "release/v15.01",
+  "release_branch": "release/v15.02",
   "baseline_diagnostics": {
     "checked": true,
     "result": "READ_ONLY",
-    "notes": "Telefon: odstęp menu od góry i kolor paska systemu w trybie ciemnym — tylko wygląd."
+    "notes": "Komputer: odświeżenie stanu faktury z bazy po potwierdzeniu z Fakturowni. Backend bez zmian."
   },
   "drive_backup": {
     "required": false,
@@ -14,7 +14,7 @@
     "file_name": "klima-app-v13.59.zip"
   },
   "main_protection": {
-    "source_branch": "release/v15.01",
+    "source_branch": "release/v15.02",
     "ready_for_main": true,
     "status": "GO_AFTER_GREEN_CI",
     "required_check": "WAWIS PR checks / targeted-checks"
@@ -22,7 +22,7 @@
   "postdeploy_diagnostics": {
     "checked": false,
     "result": "READ_ONLY",
-    "evidence_source": "Vercel READY, /app-version.json = 15.01.",
+    "evidence_source": "Vercel READY, /app-version.json = 15.02.",
     "notes": ""
   },
   "archive": {
@@ -32,8 +32,8 @@
   },
   "release_mode": "standard",
   "production_verification": {
-    "code": "15.01: menu niżej; theme-color ciemny = tło",
-    "release_ci": "WAWIS PR checks + E2E mobile-top-compact-v1500, dark-theme-v1484 + WebKit",
-    "postdeploy": "Vercel READY/15.01; brak błędów runtime."
+    "code": "15.02: stan faktury po powrocie z Fakturowni",
+    "release_ci": "WAWIS PR checks + E2E desktop-invoice-already-confirmed-v1502",
+    "postdeploy": "Vercel READY/15.02; brak błędów runtime."
   }
 }

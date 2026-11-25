@@ -969,6 +969,15 @@ export function createMockSupabaseClient() {
           if (!job?.vat_invoice_fakturownia_confirmed) return { data: { error: 'Ten montaż nie ma potwierdzonej faktury z Fakturowni.' }, error: null };
           return { data: { ok: true, invoiceNumber: job.vat_invoice_fakturownia_invoice_number || '', fileName: 'faktura-mock.pdf', pdfBase64: 'JVBERi0xLjQKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCAyMDAgMjAwXS9SZXNvdXJjZXM8PD4+Pj4KZW5kb2JqCnhyZWYKMCA0CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU0IDAwMDAwIG4gCjAwMDAwMDAxMDUgMDAwMDAgbiAKdHJhaWxlcgo8PC9TaXplIDQvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgoxODQKJSVFT0YK' }, error: null };
         }
+        // 15.02: kontrola faktury (atrapa jak Edge Function: potwierdzona → ALREADY_CONFIRMED).
+        if (name === 'fakturownia-client' && body.action === 'pending') return { data: { ok: true, pending: false }, error: null };
+        if (name === 'fakturownia-client' && body.action === 'verify') {
+          const invoiceJob = store.jobs.find((item) => String(item.id) === String(body.jobId));
+          if (invoiceJob?.vat_invoice_fakturownia_confirmed) {
+            return { data: { ok: true, found: false, reasonCode: 'ALREADY_CONFIRMED', reason: 'Faktura została już potwierdzona.', candidates: [] }, error: null };
+          }
+          return { data: { ok: true, found: false, reasonCode: 'NO_MATCHING_BUYER', reason: 'Nie znaleziono faktury dla tego klienta.', candidates: [] }, error: null };
+        }
         if (name !== 'send-job-protocol-email') return { data: null, error: { message: `Mock Functions nie obsługuje funkcji: ${name}` } };
         const job = store.jobs.find((item) => String(item.id) === String(body.jobId));
         const protocol = store.job_protocols.find((item) => String(item.id) === String(body.protocolId) && String(item.job_id) === String(body.jobId));
