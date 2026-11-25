@@ -35,5 +35,7 @@ test('15.02 komputer: „już potwierdzona” z Fakturowni → ekran pokazuje fa
   await expect(vatButton).toContainText('Wystawiona');
   await expect(vatButton).not.toContainText('Niewystawiona');
   await expect(page.getByText('Faktura została już potwierdzona.')).toHaveCount(0);
-  await expect(page.getByText('Potwierdzono fakturę VAT 33/11/2026 w Fakturowni.')).toBeVisible();
+  // Faktura potwierdzona: przycisk zablokowany jako wystawiony (karta nie pokazuje już opcji awaryjnych).
+  await expect(vatButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Sprawdź wystawioną fakturę' })).toHaveCount(0);
 });
